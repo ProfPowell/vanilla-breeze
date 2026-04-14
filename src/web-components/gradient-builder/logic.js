@@ -74,45 +74,52 @@ class GradientBuilder extends VBElement {
     // Preview strip
     const preview = `<div class="gb-preview" style="height:4rem;border-radius:${radius};background:${css};border:1px solid ${border}"></div>`;
 
-    // Controls bar
+    // Controls bar — row 1: Type + Space, row 2: Angle
+    const selectStyle = `font:inherit;font-size:${smFont};padding:0.25rem 0.5rem;border:1px solid ${border};border-radius:4px;background:${surface}`;
     let controls = '';
     if (showControls) {
-      controls = `<div style="display:flex;flex-wrap:wrap;gap:${smGap};align-items:center;font-size:${smFont}">
-        <label style="display:flex;align-items:center;gap:${xsGap}">
-          Type
-          <select class="gb-type" style="font:inherit;font-size:${smFont};padding:0.25rem 0.5rem;border:1px solid ${border};border-radius:4px;background:${surface}">
-            <option value="linear"${this.#type === 'linear' ? ' selected' : ''}>Linear</option>
-            <option value="radial"${this.#type === 'radial' ? ' selected' : ''}>Radial</option>
-          </select>
-        </label>
+      controls = `<div style="display:flex;flex-direction:column;gap:${smGap};font-size:${smFont}">
+        <div style="display:flex;flex-wrap:wrap;gap:${gap};align-items:center">
+          <label style="display:flex;align-items:center;gap:${xsGap}">
+            Type
+            <select class="gb-type" style="${selectStyle}">
+              <option value="linear"${this.#type === 'linear' ? ' selected' : ''}>Linear</option>
+              <option value="radial"${this.#type === 'radial' ? ' selected' : ''}>Radial</option>
+            </select>
+          </label>
+          <label style="display:flex;align-items:center;gap:${xsGap}">
+            Space
+            <select class="gb-space" style="${selectStyle}">
+              <option value="oklab"${this.#interpolation === 'oklab' ? ' selected' : ''}>oklab</option>
+              <option value="oklch"${this.#interpolation === 'oklch' ? ' selected' : ''}>oklch</option>
+              <option value="srgb"${this.#interpolation === 'srgb' ? ' selected' : ''}>sRGB</option>
+            </select>
+          </label>
+        </div>
         <label style="display:flex;align-items:center;gap:${xsGap}${this.#type === 'radial' ? ';opacity:0.4;pointer-events:none' : ''}">
           Angle
-          <input type="range" class="gb-angle" min="0" max="360" value="${this.#angle}" style="width:5rem;accent-color:var(--color-interactive,oklch(55% .2 260))">
+          <input type="range" class="gb-angle" min="0" max="360" value="${this.#angle}" style="flex:1;max-width:12rem;accent-color:var(--color-interactive,oklch(55% .2 260))">
           <span class="gb-angle-value" style="min-width:2.5em;font-family:${mono};font-size:${xsFont}">${this.#angle}°</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:${xsGap}">
-          Space
-          <select class="gb-space" style="font:inherit;font-size:${smFont};padding:0.25rem 0.5rem;border:1px solid ${border};border-radius:4px;background:${surface}">
-            <option value="oklab"${this.#interpolation === 'oklab' ? ' selected' : ''}>oklab</option>
-            <option value="oklch"${this.#interpolation === 'oklch' ? ' selected' : ''}>oklch</option>
-            <option value="srgb"${this.#interpolation === 'srgb' ? ' selected' : ''}>sRGB</option>
-          </select>
         </label>
       </div>`;
     }
 
-    // Stop editors
-    const stopRows = this.#stops.map((stop, i) => `
-      <div style="display:flex;align-items:center;gap:${xsGap}" data-stop="${i}">
+    // Sort stops by position for display
+    const sorted = [...this.#stops].map((s, i) => ({ ...s, origIndex: i })).sort((a, b) => a.position - b.position);
+
+    // Stop editors — horizontal wrapping row
+    const stopRows = sorted.map((stop) => {
+      const i = stop.origIndex;
+      return `<div style="display:flex;align-items:center;gap:${xsGap}" data-stop="${i}">
         <input type="color" value="${stop.color}" class="gb-stop-color" data-i="${i}"
           style="width:2rem;height:2rem;padding:0;border:1px solid ${border};border-radius:4px;cursor:pointer">
-        <input type="number" value="${stop.position}" min="0" max="100" class="gb-stop-pos" data-i="${i}"
-          style="width:3.5rem;font:inherit;font-size:${xsFont};font-family:${mono};padding:0.2rem 0.4rem;border:1px solid ${border};border-radius:4px;text-align:right">
-        <span style="font-size:${xsFont};color:${muted}">%</span>
+        <input type="range" min="0" max="100" value="${stop.position}" class="gb-stop-pos-range" data-i="${i}"
+          style="width:4rem;accent-color:${stop.color}">
+        <span style="font-family:${mono};font-size:${xsFont};min-width:2.5em;text-align:right" class="gb-stop-pos-label" data-i="${i}">${stop.position}%</span>
         ${this.#stops.length > 2 ? `<button type="button" class="gb-remove" data-i="${i}"
           style="all:unset;cursor:pointer;font-size:1rem;color:${muted};padding:0 0.25rem" title="Remove stop">&times;</button>` : ''}
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
 
     const addBtn = `<button type="button" class="gb-add"
       style="all:unset;cursor:pointer;font-size:${smFont};color:var(--color-interactive,oklch(55% .2 260));font-weight:600">+ Add Stop</button>`;
@@ -183,11 +190,14 @@ class GradientBuilder extends VBElement {
       });
     });
 
-    // Stop position inputs
-    this.querySelectorAll('.gb-stop-pos').forEach((input) => {
+    // Stop position range sliders
+    this.querySelectorAll('.gb-stop-pos-range').forEach((input) => {
       input.addEventListener('input', (e) => {
         const i = Number(e.target.dataset.i);
-        this.#stops[i].position = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+        const val = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+        this.#stops[i].position = val;
+        const label = this.querySelector(`.gb-stop-pos-label[data-i="${i}"]`);
+        if (label) label.textContent = `${val}%`;
         this.#updatePreview();
         this.#emit();
       });
