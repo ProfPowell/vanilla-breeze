@@ -23,41 +23,75 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { FONTS, SUGGESTED_PAIRINGS, loadFont, googleFontsUrl } from './_font-data.js';
 
+/* Editable helper — makes any text contenteditable */
+const E = (font, tag, role, extra = '') =>
+  `${extra} contenteditable="plaintext-only" spellcheck="false" class="fp-editable" data-role="${role}"`;
+
 const PREVIEWS = {
   combined: {
     label: 'Combined',
     render: (f, t) => `
-      <h3 style="font-family:${f.heading};font-size:var(--font-size-2xl,1.75rem);font-weight:700;margin:0"
-          contenteditable="plaintext-only" spellcheck="false" class="fp-editable" data-role="heading">${t.heading}</h3>
+      <p style="font-family:${f.display};font-size:var(--font-size-3xl,2rem);font-weight:800;margin:0;line-height:1.15"
+        ${E(f.display,'p','heading')}>${t.heading}</p>
+      <h3 style="font-family:${f.heading};font-size:var(--font-size-lg,1.125rem);font-weight:600;margin:0"
+        ${E(f.heading,'h3','subheading')}>${t.subheading}</h3>
       <p style="font-family:${f.body};font-size:var(--font-size-md,1rem);line-height:1.65;margin:0;color:var(--color-text-muted,#666)"
-         contenteditable="plaintext-only" spellcheck="false" class="fp-editable" data-role="body">${t.body}</p>
-      <pre style="font-family:${f.code};font-size:var(--font-size-sm,0.875rem);line-height:1.5;margin:0;padding:var(--size-s,0.75rem);background:var(--color-surface-sunken,#eee);border-radius:var(--radius-s,0.25rem);overflow-x:auto"><code contenteditable="plaintext-only" spellcheck="false" class="fp-editable" data-role="code">${t.code}</code></pre>`,
+        ${E(f.body,'p','body')}>${t.body}</p>
+      <pre style="font-family:${f.code};font-size:var(--font-size-sm,0.875rem);line-height:1.5;margin:0;padding:var(--size-s,0.75rem);background:var(--color-surface-sunken,#eee);border-radius:var(--radius-s,0.25rem);overflow-x:auto"><code ${E(f.code,'code','code')}>${t.code}</code></pre>`,
   },
   article: {
     label: 'Article',
     render: (f, t) => `
-      <small style="font-family:${f.body};font-size:var(--font-size-xs,0.75rem);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-interactive,oklch(55% .2 260));font-weight:600">Design Systems</small>
+      <small style="font-family:${f.body};font-size:var(--font-size-xs,0.75rem);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-interactive,oklch(55% .2 260));font-weight:600"
+        ${E(f.body,'small','eyebrow')}>${t.eyebrow}</small>
       <h2 style="font-family:${f.heading};font-size:var(--font-size-2xl,1.75rem);font-weight:700;margin:0;line-height:1.2"
-          contenteditable="plaintext-only" spellcheck="false" class="fp-editable" data-role="heading">${t.heading}</h2>
-      <p style="font-family:${f.body};font-size:var(--font-size-sm,0.875rem);color:var(--color-text-muted,#666);margin:0">By Jamie Chen · April 14, 2026 · 8 min read</p>
-      <p style="font-family:${f.body};line-height:1.7;margin:0"
-         contenteditable="plaintext-only" spellcheck="false" class="fp-editable" data-role="body">${t.body}</p>
-      <blockquote style="font-family:${f.display};font-style:italic;font-size:var(--font-size-lg,1.125rem);border-inline-start:3px solid var(--color-interactive,oklch(55% .2 260));padding-inline-start:var(--size-m,1rem);margin:0;color:var(--color-text-muted,#666)">"Good typography is invisible — it lets the content breathe."</blockquote>`,
+        ${E(f.heading,'h2','heading')}>${t.heading}</h2>
+      <p style="font-family:${f.body};font-size:var(--font-size-sm,0.875rem);color:var(--color-text-muted,#666);margin:0"
+        ${E(f.body,'p','byline')}>${t.byline}</p>
+      <p style="font-family:${f.body};line-height:1.7;margin:0" ${E(f.body,'p','body')}>${t.body}</p>
+      <h3 style="font-family:${f.heading};font-size:var(--font-size-lg,1.125rem);font-weight:600;margin:0"
+        ${E(f.heading,'h3','subheading')}>${t.subheading}</h3>
+      <p style="font-family:${f.body};line-height:1.7;margin:0" ${E(f.body,'p','body2')}>${t.body2}</p>
+      <blockquote style="font-family:${f.display};font-style:italic;font-size:var(--font-size-lg,1.125rem);border-inline-start:3px solid var(--color-interactive,oklch(55% .2 260));padding-inline-start:var(--size-m,1rem);margin:0;color:var(--color-text-muted,#666)"
+        ${E(f.display,'blockquote','quote')}>${t.quote}</blockquote>
+      <pre style="font-family:${f.code};font-size:var(--font-size-sm,0.875rem);line-height:1.5;margin:0;padding:var(--size-s,0.75rem);background:var(--color-surface-sunken,#eee);border-radius:var(--radius-s,0.25rem);overflow-x:auto"><code ${E(f.code,'code','code')}>${t.code}</code></pre>`,
+  },
+  'long-article': {
+    label: 'Long Article',
+    render: (f, t) => `
+      <small style="font-family:${f.body};font-size:var(--font-size-xs,0.75rem);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-interactive,oklch(55% .2 260));font-weight:600">${t.eyebrow}</small>
+      <h1 style="font-family:${f.display};font-size:var(--font-size-3xl,2rem);font-weight:800;margin:0;line-height:1.15">${t.heading}</h1>
+      <p style="font-family:${f.body};font-size:var(--font-size-sm,0.875rem);color:var(--color-text-muted,#666);margin:0">${t.byline}</p>
+      <p style="font-family:${f.body};font-size:var(--font-size-lg,1.125rem);line-height:1.6;margin:0;color:var(--color-text-muted,#666)">${t.lead}</p>
+      <h2 style="font-family:${f.heading};font-size:var(--font-size-xl,1.375rem);font-weight:700;margin:0">${t.subheading}</h2>
+      <p style="font-family:${f.body};line-height:1.7;margin:0">${t.body}</p>
+      <p style="font-family:${f.body};line-height:1.7;margin:0">${t.body2}</p>
+      <blockquote style="font-family:${f.display};font-style:italic;font-size:var(--font-size-lg,1.125rem);border-inline-start:3px solid var(--color-interactive,oklch(55% .2 260));padding-inline-start:var(--size-m,1rem);margin:0;color:var(--color-text-muted,#666)">${t.quote}</blockquote>
+      <h2 style="font-family:${f.heading};font-size:var(--font-size-xl,1.375rem);font-weight:700;margin:0">Implementation Details</h2>
+      <p style="font-family:${f.body};line-height:1.7;margin:0">Design tokens form the atomic layer of any visual system. Colors, spacing, typography, and motion are expressed as named variables that cascade through every component. When a token changes, every surface that references it updates automatically — no find-and-replace, no missed instances.</p>
+      <pre style="font-family:${f.code};font-size:var(--font-size-sm,0.875rem);line-height:1.5;margin:0;padding:var(--size-s,0.75rem);background:var(--color-surface-sunken,#eee);border-radius:var(--radius-s,0.25rem);overflow-x:auto"><code>${t.code}</code></pre>
+      <h3 style="font-family:${f.heading};font-size:var(--font-size-lg,1.125rem);font-weight:600;margin:0">Key Takeaways</h3>
+      <ul style="font-family:${f.body};line-height:1.7;margin:0;padding-inline-start:1.5rem">
+        <li>Typography sets the emotional tone before a single word is read</li>
+        <li>Pair contrast with harmony — serif headings with sans-serif body</li>
+        <li>Test at real content lengths, not just sample sentences</li>
+        <li>Code fonts need clear distinction between similar glyphs</li>
+      </ul>`,
   },
   card: {
     label: 'Card UI',
     render: (f, t) => `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--size-m,1rem)">
         <div style="border:1px solid var(--color-border,#ddd);border-radius:var(--radius-m,0.5rem);padding:var(--size-m,1rem);display:flex;flex-direction:column;gap:var(--size-xs,0.5rem)">
-          <h4 style="font-family:${f.heading};font-weight:600;margin:0">Premium Plan</h4>
+          <h4 style="font-family:${f.heading};font-weight:600;margin:0" ${E(f.heading,'h4','cardTitle')}>Premium Plan</h4>
           <p style="font-family:${f.display};font-size:var(--font-size-2xl,1.75rem);font-weight:700;margin:0">$49<small style="font-size:0.5em;font-weight:400">/mo</small></p>
-          <p style="font-family:${f.body};font-size:var(--font-size-sm,0.875rem);color:var(--color-text-muted,#666);margin:0">Everything you need to build faster.</p>
-          <code style="font-family:${f.code};font-size:var(--font-size-xs,0.75rem);background:var(--color-surface-sunken,#eee);padding:0.2rem 0.4rem;border-radius:0.25rem">npm install acme</code>
+          <p style="font-family:${f.body};font-size:var(--font-size-sm,0.875rem);color:var(--color-text-muted,#666);margin:0" ${E(f.body,'p','cardBody')}>Everything you need to build faster.</p>
+          <code style="font-family:${f.code};font-size:var(--font-size-xs,0.75rem);background:var(--color-surface-sunken,#eee);padding:0.2rem 0.4rem;border-radius:0.25rem" ${E(f.code,'code','cardCode')}>npm install acme</code>
         </div>
         <div style="border:1px solid var(--color-border,#ddd);border-radius:var(--radius-m,0.5rem);padding:var(--size-m,1rem);display:flex;flex-direction:column;gap:var(--size-xs,0.5rem)">
           <h4 style="font-family:${f.heading};font-weight:600;margin:0">Enterprise</h4>
           <p style="font-family:${f.display};font-size:var(--font-size-2xl,1.75rem);font-weight:700;margin:0">Custom</p>
-          <p style="font-family:${f.body};font-size:var(--font-size-sm,0.875rem);color:var(--color-text-muted,#666);margin:0">Dedicated support and SLA.</p>
+          <p style="font-family:${f.body};font-size:var(--font-size-sm,0.875rem);color:var(--color-text-muted,#666);margin:0">Dedicated support and SLA guarantees.</p>
           <code style="font-family:${f.code};font-size:var(--font-size-xs,0.75rem);background:var(--color-surface-sunken,#eee);padding:0.2rem 0.4rem;border-radius:0.25rem">contact@acme.dev</code>
         </div>
       </div>`,
@@ -66,11 +100,12 @@ const PREVIEWS = {
     label: 'Hero',
     render: (f, t) => `
       <div style="text-align:center;padding:var(--size-xl,2rem) 0">
-        <p style="font-family:${f.body};font-size:var(--font-size-xs,0.75rem);text-transform:uppercase;letter-spacing:0.1em;color:var(--color-interactive,oklch(55% .2 260));font-weight:600;margin:0 0 var(--size-xs,0.5rem)">Introducing</p>
+        <p style="font-family:${f.body};font-size:var(--font-size-xs,0.75rem);text-transform:uppercase;letter-spacing:0.1em;color:var(--color-interactive,oklch(55% .2 260));font-weight:600;margin:0 0 var(--size-xs,0.5rem)"
+          ${E(f.body,'p','eyebrow')}>${t.eyebrow}</p>
         <h1 style="font-family:${f.display};font-size:clamp(2rem,5vw,3rem);font-weight:800;margin:0;line-height:1.1"
-            contenteditable="plaintext-only" spellcheck="false" class="fp-editable" data-role="heading">${t.heading}</h1>
+          ${E(f.display,'h1','heading')}>${t.heading}</h1>
         <p style="font-family:${f.body};font-size:var(--font-size-lg,1.125rem);color:var(--color-text-muted,#666);margin:var(--size-s,0.75rem) auto 0;max-width:40ch"
-           contenteditable="plaintext-only" spellcheck="false" class="fp-editable" data-role="body">${t.body}</p>
+          ${E(f.body,'p','body')}>${t.body}</p>
       </div>`,
   },
 };
@@ -82,8 +117,14 @@ class FontPairer extends VBElement {
   #preview = 'combined';
   #sampleText = {
     heading: 'The Art of Typography',
-    body: 'Good typography is invisible — it lets the content speak without distraction. The best font pairings create harmony between heading impact and body readability.',
-    code: 'const theme = { font: "Inter", size: 16 };',
+    subheading: 'Building visual harmony through font pairing',
+    body: 'Good typography is invisible — it lets the content speak without distraction. The best font pairings create harmony between heading impact and body readability. Every typeface carries personality: serif fonts convey trust and tradition, while sans-serif fonts feel modern and clean.',
+    body2: 'Choosing the right pairing is about contrast and complement. A bold display font for headlines needs a quiet, readable body font to balance it. Monospace fonts ground technical content in precision. The interplay between these roles defines your brand voice.',
+    code: 'const theme = {\n  heading: "Playfair Display",\n  body: "Inter",\n  tokens: { size: 16, scale: 1.25 }\n};',
+    eyebrow: 'Design Systems',
+    byline: 'By Jamie Chen · April 14, 2026 · 8 min read',
+    lead: 'How native CSS features and design tokens are replacing the complex tooling we thought we needed.',
+    quote: '"Good typography is invisible — it lets the content breathe."',
   };
 
   setup() {
@@ -163,18 +204,12 @@ class FontPairer extends VBElement {
     };
     const previewHTML = PREVIEWS[this.#preview]?.render(fontStyles, this.#sampleText) || '';
 
-    // Suggestions
-    let suggestions = '';
-    if (showSuggestions) {
-      const pills = SUGGESTED_PAIRINGS.map(([h, b]) =>
-        `<button type="button" class="fp-suggestion" data-h="${h}" data-b="${b}"
-          style="all:unset;cursor:pointer;font-size:${xsFont};padding:0.25rem 0.5rem;border:1px solid ${border};border-radius:999px;white-space:nowrap">${h} + ${b}</button>`
-      ).join('');
-      suggestions = `<div style="display:flex;flex-direction:column;gap:${xsGap}">
-        <span style="font-size:${xsFont};font-weight:600;color:${muted};text-transform:uppercase;letter-spacing:0.04em">Suggested Pairings</span>
-        <div style="display:flex;flex-wrap:wrap;gap:0.375rem">${pills}</div>
-      </div>`;
-    }
+    // Suggestion pills (used in sidebar)
+    const suggestionPills = SUGGESTED_PAIRINGS.map(([h, b]) =>
+      `<button type="button" class="fp-suggestion" data-h="${h}" data-b="${b}"
+        style="all:unset;cursor:pointer;font-size:${xsFont};padding:0.3rem 0.5rem;border:1px solid ${border};border-radius:4px;white-space:nowrap;text-align:left;line-height:1.3"
+        title="${h} + ${b}"><strong>${h}</strong><br><span style="color:${muted}">${b}</span></button>`
+    ).join('');
 
     // CSS code output
     const cssCode = this.#buildCSS();
@@ -191,18 +226,33 @@ class FontPairer extends VBElement {
       </div>
     </details>`;
 
-    this.innerHTML = `<div style="display:flex;flex-direction:column;gap:${gap}">
+    // Main layout — content + optional sidebar
+    const mainContent = `<div style="display:flex;flex-direction:column;gap:${gap};flex:1;min-width:0">
       <div style="display:flex;flex-wrap:wrap;gap:${xsGap}">${selects}</div>
       <div style="display:flex;flex-wrap:wrap;gap:0.375rem;align-items:center">
-        <span style="font-size:${xsFont};font-weight:600;color:${muted};text-transform:uppercase;letter-spacing:0.04em;margin-inline-end:${xsGap}">Preview</span>
+        <span style="font-size:${xsFont};font-weight:600;color:${muted};text-transform:uppercase;letter-spacing:0.04em;margin-inline-end:${xsGap}">Examples</span>
         ${previewTabs}
       </div>
-      <div class="fp-preview" style="padding:var(--size-l,1.5rem);background:${raised};border-radius:${radius};border:1px solid ${border};display:flex;flex-direction:column;gap:${smGap}">
-        ${previewHTML}
+      <div style="display:flex;flex-direction:column;gap:${xsGap}">
+        <span style="font-size:${xsFont};font-weight:600;color:${muted};text-transform:uppercase;letter-spacing:0.04em">Preview</span>
+        <div class="fp-preview" style="padding:var(--size-l,1.5rem);background:${raised};border-radius:${radius};border:1px solid ${border};display:flex;flex-direction:column;gap:${smGap};max-height:24rem;overflow-y:auto">
+          ${previewHTML}
+        </div>
       </div>
-      ${suggestions}
       ${codeSection}
     </div>`;
+
+    if (showSuggestions) {
+      this.innerHTML = `<div style="display:flex;gap:${gap};flex-wrap:wrap">
+        ${mainContent}
+        <aside style="flex:0 0 11rem;display:flex;flex-direction:column;gap:${xsGap}">
+          <span style="font-size:${xsFont};font-weight:600;color:${muted};text-transform:uppercase;letter-spacing:0.04em">Pairings</span>
+          <div style="display:flex;flex-direction:column;gap:0.25rem">${suggestionPills}</div>
+        </aside>
+      </div>`;
+    } else {
+      this.innerHTML = mainContent;
+    }
 
     this.#wire();
   }
