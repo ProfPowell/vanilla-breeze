@@ -74,7 +74,7 @@ class GradientBuilder extends VBElement {
     // Preview strip
     const preview = `<div class="gb-preview" style="height:4rem;border-radius:${radius};background:${css};border:1px solid ${border}"></div>`;
 
-    // Controls bar — row 1: Type + Space, row 2: Angle
+    // Controls — Row 1: Type + Angle, Row 2: Color Space
     const selectStyle = `font:inherit;font-size:${smFont};padding:0.25rem 0.5rem;border:1px solid ${border};border-radius:4px;background:${surface}`;
     let controls = '';
     if (showControls) {
@@ -87,19 +87,19 @@ class GradientBuilder extends VBElement {
               <option value="radial"${this.#type === 'radial' ? ' selected' : ''}>Radial</option>
             </select>
           </label>
-          <label style="display:flex;align-items:center;gap:${xsGap}">
-            Space
-            <select class="gb-space" style="${selectStyle}">
-              <option value="oklab"${this.#interpolation === 'oklab' ? ' selected' : ''}>oklab</option>
-              <option value="oklch"${this.#interpolation === 'oklch' ? ' selected' : ''}>oklch</option>
-              <option value="srgb"${this.#interpolation === 'srgb' ? ' selected' : ''}>sRGB</option>
-            </select>
+          <label style="display:flex;align-items:center;gap:${xsGap}${this.#type === 'radial' ? ';opacity:0.4;pointer-events:none' : ''}">
+            Angle
+            <input type="range" class="gb-angle" min="0" max="360" value="${this.#angle}" style="width:8rem;accent-color:var(--color-interactive,oklch(55% .2 260))">
+            <span class="gb-angle-value" style="min-width:2.5em;font-family:${mono};font-size:${xsFont}">${this.#angle}°</span>
           </label>
         </div>
-        <label style="display:flex;align-items:center;gap:${xsGap}${this.#type === 'radial' ? ';opacity:0.4;pointer-events:none' : ''}">
-          Angle
-          <input type="range" class="gb-angle" min="0" max="360" value="${this.#angle}" style="flex:1;max-width:12rem;accent-color:var(--color-interactive,oklch(55% .2 260))">
-          <span class="gb-angle-value" style="min-width:2.5em;font-family:${mono};font-size:${xsFont}">${this.#angle}°</span>
+        <label style="display:flex;align-items:center;gap:${xsGap}">
+          Color Space
+          <select class="gb-space" style="${selectStyle}">
+            <option value="oklab"${this.#interpolation === 'oklab' ? ' selected' : ''}>oklab</option>
+            <option value="oklch"${this.#interpolation === 'oklch' ? ' selected' : ''}>oklch</option>
+            <option value="srgb"${this.#interpolation === 'srgb' ? ' selected' : ''}>sRGB</option>
+          </select>
         </label>
       </div>`;
     }
@@ -124,17 +124,6 @@ class GradientBuilder extends VBElement {
     const addBtn = `<button type="button" class="gb-add"
       style="all:unset;cursor:pointer;font-size:${smFont};color:var(--color-interactive,oklch(55% .2 260));font-weight:600">+ Add Stop</button>`;
 
-    // CSS preview
-    const cssPreview = `<div style="font-family:${mono};font-size:${xsFont};padding:${smGap};background:var(--color-surface-raised,#f5f5f5);border-radius:${radius};word-break:break-all;color:var(--color-text,#222)">${css}</div>`;
-
-    // Export toolbar
-    let exportBar = '';
-    if (showExport) {
-      exportBar = `<div style="display:flex;gap:${xsGap}">
-        <button type="button" class="gb-copy"
-          style="all:unset;cursor:pointer;font-size:${xsFont};padding:0.35rem 0.75rem;border:1px solid ${border};border-radius:4px;background:${surface}">Copy CSS</button>
-      </div>`;
-    }
 
     this.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:${gap}">
@@ -145,8 +134,14 @@ class GradientBuilder extends VBElement {
           ${stopRows}
           ${addBtn}
         </div>
-        ${cssPreview}
-        ${exportBar}
+        <div style="display:flex;flex-direction:column;gap:${xsGap}">
+          <span style="font-size:${xsFont};font-weight:600;color:${muted};text-transform:uppercase;letter-spacing:0.05em">Code</span>
+          <div style="display:flex;align-items:start;gap:${xsGap}">
+            <div style="flex:1;font-family:${mono};font-size:${xsFont};padding:${smGap};background:var(--color-surface-raised,#f5f5f5);border-radius:${radius};word-break:break-all;color:var(--color-text,#222)" class="gb-css-output">${css}</div>
+            ${showExport ? `<button type="button" class="gb-copy"
+              style="all:unset;cursor:pointer;font-size:${xsFont};padding:0.35rem 0.75rem;border:1px solid ${border};border-radius:4px;background:${surface};white-space:nowrap;flex-shrink:0">Copy CSS</button>` : ''}
+          </div>
+        </div>
       </div>
     `;
 
@@ -238,16 +233,8 @@ class GradientBuilder extends VBElement {
     const css = this.css;
     const preview = this.querySelector('.gb-preview');
     if (preview) preview.style.background = css;
-    // Update CSS text display
-    const cssDisplay = this.querySelector('div[style*="font-family"]');
-    // Find the CSS preview div (the one showing the gradient CSS text)
-    const allDivs = this.querySelectorAll('div');
-    for (const div of allDivs) {
-      if (div.style.fontFamily && div.textContent.includes('gradient')) {
-        div.textContent = css;
-        break;
-      }
-    }
+    const output = this.querySelector('.gb-css-output');
+    if (output) output.textContent = css;
   }
 
   #emit() {
