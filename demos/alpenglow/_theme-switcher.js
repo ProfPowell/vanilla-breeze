@@ -196,6 +196,7 @@
 
   /* ── Active brand override — defends against ThemeManager ── */
   var activeBrandOverride = null;
+  var savedVBTheme = null;
 
   /* ── Core mode logic ── */
   function applyMode(mode) {
@@ -223,34 +224,14 @@
     if (isVB) loadJS();
   }
 
-  /* Prevent ThemeManager from overriding the brand theme.
-     When VB main.js loads, ThemeManager reads localStorage and re-applies
-     the doc site's saved theme (e.g. Brutalist), clobbering our brand.
-     This listener re-asserts the brand theme on every vb:theme-change. */
+  /* Guard: when ThemeManager fires changes, re-assert brand override */
   document.addEventListener('vb:theme-change', function () {
-    if (activeBrandOverride) {
-      document.documentElement.dataset.theme = activeBrandOverride;
-      /* Re-enable only the active brand CSS, disable any theme CSS ThemeManager loaded */
-      BRAND_THEMES.forEach(function (name) {
-        var link = document.getElementById('theme-' + name);
-        if (link) link.disabled = name !== activeBrandOverride;
-      });
-    }
-  });
-
-  /* Also watch for ThemeManager init which sets data-theme via MutationObserver */
-  var themeGuard = new MutationObserver(function (mutations) {
     if (!activeBrandOverride) return;
-    for (var i = 0; i < mutations.length; i++) {
-      if (mutations[i].attributeName === 'data-theme') {
-        var current = document.documentElement.dataset.theme;
-        if (current !== activeBrandOverride) {
-          document.documentElement.dataset.theme = activeBrandOverride;
-        }
-      }
+    var root = document.documentElement;
+    if (root.dataset.theme !== activeBrandOverride) {
+      root.dataset.theme = activeBrandOverride;
     }
   });
-  themeGuard.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   function updateBrandMarks(brandName) {
     var marks = document.querySelectorAll('brand-mark');
@@ -280,10 +261,33 @@
 
   function loadJS() {
     if (document.getElementById('vb-js')) return;
+
+    /* Pre-empt ThemeManager: temporarily override vb-theme in localStorage
+       so init() reads "default" brand and doesn't load the doc site's saved
+       theme (e.g. Brutalist). This prevents FOUC entirely — no reactive fix needed. */
+    try {
+      savedVBTheme = localStorage.getItem('vb-theme');
+      var neutralPrefs = savedVBTheme ? JSON.parse(savedVBTheme) : {};
+      neutralPrefs.brand = 'default';
+      localStorage.setItem('vb-theme', JSON.stringify(neutralPrefs));
+    } catch (e) { /* storage unavailable */ }
+
     var script = document.createElement('script');
     script.id = 'vb-js';
     script.type = 'module';
     script.src = '/src/main.js';
     document.head.appendChild(script);
+
+    /* Restore original vb-theme after ThemeManager has initialized.
+       Module scripts are deferred, so a microtask after next frame is enough. */
+    requestAnimationFrame(function () {
+      setTimeout(function () {
+        try {
+          if (savedVBTheme !== null) {
+            localStorage.setItem('vb-theme', savedVBTheme);
+          }
+        } catch (e) { /* storage unavailable */ }
+      }, 0);
+    });
   }
 })();
