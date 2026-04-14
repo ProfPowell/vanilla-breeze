@@ -120,7 +120,7 @@
             <p><code>data-vt-class="slide-left"</code></p>
           </header>
           <div class="preview-area">
-            <div class="preview-box" id="slide-left-box" data-vt-name="demo-slide-left" data-vt-class="slide-left" style="background: oklch(65% 0.15 200);">
+            <div class="preview-box" id="slide-left-box" data-vt-class="slide-left" style="background: oklch(65% 0.15 200);">
               Content A
             </div>
             <button class="demo-btn" data-demo="slide-left">Trigger</button>
@@ -133,7 +133,7 @@
             <p><code>data-vt-class="slide-right"</code></p>
           </header>
           <div class="preview-area">
-            <div class="preview-box" id="slide-right-box" data-vt-name="demo-slide-right" data-vt-class="slide-right" style="background: oklch(65% 0.15 140);">
+            <div class="preview-box" id="slide-right-box" data-vt-class="slide-right" style="background: oklch(65% 0.15 140);">
               Content A
             </div>
             <button class="demo-btn" data-demo="slide-right">Trigger</button>
@@ -146,7 +146,7 @@
             <p><code>data-vt-class="scale"</code></p>
           </header>
           <div class="preview-area">
-            <div class="preview-box" id="scale-box" data-vt-name="demo-scale" data-vt-class="scale" style="background: oklch(65% 0.15 30);">
+            <div class="preview-box" id="scale-box" data-vt-class="scale" style="background: oklch(65% 0.15 30);">
               Content A
             </div>
             <button class="demo-btn" data-demo="scale">Trigger</button>
@@ -159,7 +159,7 @@
             <p><code>data-vt-class="fade"</code></p>
           </header>
           <div class="preview-area">
-            <div class="preview-box" id="fade-box" data-vt-name="demo-fade" data-vt-class="fade" style="background: oklch(65% 0.15 280);">
+            <div class="preview-box" id="fade-box" data-vt-class="fade" style="background: oklch(65% 0.15 280);">
               Content A
             </div>
             <button class="demo-btn" data-demo="fade">Trigger</button>
@@ -172,7 +172,7 @@
             <p><code>data-vt-class="none"</code></p>
           </header>
           <div class="preview-area">
-            <div class="preview-box" id="none-box" data-vt-name="demo-none" data-vt-class="none" style="background: oklch(65% 0.15 60);">
+            <div class="preview-box" id="none-box" data-vt-class="none" style="background: oklch(65% 0.15 60);">
               Content A
             </div>
             <button class="demo-btn" data-demo="none">Trigger</button>
@@ -185,7 +185,7 @@
             <p>No <code>data-vt-class</code> — browser default</p>
           </header>
           <div class="preview-area">
-            <div class="preview-box" id="default-box" data-vt-name="demo-default" style="background: oklch(65% 0.15 350);">
+            <div class="preview-box" id="default-box" style="background: oklch(65% 0.15 350);">
               Content A
             </div>
             <button class="demo-btn" data-demo="default">Trigger</button>
@@ -198,18 +198,36 @@
   <script type="module" src="/src/main.js"></script>
   <script type="module">
     const state = {};
+    const originals = {
+      'slide-left': 'oklch(65% 0.15 200)',
+      'slide-right': 'oklch(65% 0.15 140)',
+      'scale': 'oklch(65% 0.15 30)',
+      'fade': 'oklch(65% 0.15 280)',
+      'none': 'oklch(65% 0.15 60)',
+      'default': 'oklch(65% 0.15 350)'
+    };
 
     document.querySelectorAll('[data-demo]').forEach(btn => {
       const preset = btn.dataset.demo;
       state[preset] = 'A';
 
       btn.addEventListener('click', () => {
+        const box = document.getElementById(`${preset}-box`);
+        if (!box) return;
+
         if (!document.startViewTransition) {
-          // Fallback: just swap without transition
           swap(preset);
           return;
         }
-        document.startViewTransition(() => swap(preset));
+
+        // Only name THIS box so only it participates in the transition
+        box.style.viewTransitionName = `demo-${preset}`;
+
+        const transition = document.startViewTransition(() => swap(preset));
+
+        transition.finished.then(() => {
+          box.style.viewTransitionName = '';
+        });
       });
     });
 
@@ -219,24 +237,12 @@
       state[preset] = state[preset] === 'A' ? 'B' : 'A';
       box.textContent = `Content ${state[preset]}`;
 
-      const hues = { A: null, B: null };
-      const currentBg = getComputedStyle(box).backgroundColor;
-
       if (state[preset] === 'B') {
         box.style.background = box.style.background.replace(/\d+\)$/, (m) => {
           const hue = parseInt(m);
           return ((hue + 180) % 360) + ')';
         });
       } else {
-        // Reset to original
-        const originals = {
-          'slide-left': 'oklch(65% 0.15 200)',
-          'slide-right': 'oklch(65% 0.15 140)',
-          'scale': 'oklch(65% 0.15 30)',
-          'fade': 'oklch(65% 0.15 280)',
-          'none': 'oklch(65% 0.15 60)',
-          'default': 'oklch(65% 0.15 350)'
-        };
         box.style.background = originals[preset];
       }
     }
