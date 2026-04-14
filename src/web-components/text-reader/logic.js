@@ -9,6 +9,7 @@
  * @attr {string} selectors - Comma-separated selectors for text extraction (default: "p,li")
  * @attr {number} speed - Playback rate 0.5–2 (default: 1)
  * @attr {string} voice - voiceURI to pre-select
+ * @attr {string} variant - Set to "icon" for compact trigger with floating toolbar
  * @attr {string} highlight - Set to "false" to disable word highlighting
  * @attr {string} scroll - Set to "false" to disable auto-scroll
  */
@@ -54,6 +55,12 @@ class TextReader extends VBElement {
   #speedValue = null;
   /** @type {HTMLDivElement | null} */
   #controls = null;
+  // icon variant
+  #isIconMode = false;
+  /** @type {HTMLButtonElement | null} */
+  #triggerBtn = null;
+  /** @type {HTMLDivElement | null} */
+  #toolbar = null;
 
   // ---------- observed attributes ----------
 
@@ -73,9 +80,9 @@ class TextReader extends VBElement {
       this.#restartFromPosition();
     }
 
-    if (name === 'speed' && this.#speedInput) {
+    if (name === 'speed') {
       const val = this.#clampSpeed(parseFloat(newVal) || 1);
-      this.#speedInput.value = String(val);
+      if (this.#speedInput) this.#speedInput.value = String(val);
       if (this.#speedValue) this.#speedValue.textContent = `${val}\u00d7`;
     }
   }
@@ -88,7 +95,12 @@ class TextReader extends VBElement {
       return false;
     }
 
-    this.#render();
+    if (this.getAttribute('variant') === 'icon') {
+      this.#renderIcon();
+    } else {
+      this.#render();
+    }
+
     this.#resolveTarget();
     this.#injectHighlightSheet();
     this.#voicesPromise = this.#loadVoices();
@@ -100,6 +112,10 @@ class TextReader extends VBElement {
   teardown() {
     this.stop();
     this.#removeHighlightSheet();
+    if (this.#toolbar) {
+      this.#toolbar.remove();
+      this.#toolbar = null;
+    }
   }
 
   // ---------- public API ----------
@@ -238,6 +254,154 @@ class TextReader extends VBElement {
     }
   }
 
+  // ---------- icon variant ----------
+
+  #renderIcon() {
+    this.#isIconMode = true;
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.setAttribute('part', 'trigger');
+    trigger.setAttribute('aria-label', 'Article reader');
+    trigger.setAttribute('aria-pressed', 'false');
+
+    const slotIcon = this.querySelector('[slot="icon-trigger"]');
+    if (slotIcon) {
+      slotIcon.removeAttribute('slot');
+      trigger.append(slotIcon);
+    } else {
+      const icon = document.createElement('icon-wc');
+      icon.setAttribute('name', 'volume-2');
+      icon.setAttribute('aria-hidden', 'true');
+      trigger.append(icon);
+    }
+
+    trigger.addEventListener('click', () => this.#handleTriggerClick());
+    this.append(trigger);
+    this.#triggerBtn = trigger;
+
+    this.#createToolbar();
+  }
+
+  #createToolbar() {
+    const toolbar = document.createElement('div');
+    toolbar.setAttribute('data-text-reader-toolbar', '');
+    toolbar.setAttribute('role', 'group');
+    toolbar.setAttribute('aria-label', 'Reader controls');
+    toolbar.hidden = true;
+
+    const playBtn = this.#makeButton('play', this.getAttribute('label-play') || 'Play', '\u25b6');
+    playBtn.addEventListener('click', () => this.play());
+
+    const pauseBtn = this.#makeButton('pause', this.getAttribute('label-pause') || 'Pause', '\u23f8');
+    pauseBtn.hidden = true;
+    pauseBtn.addEventListener('click', () => this.pause());
+
+    const stopBtn = this.#makeButton('stop', this.getAttribute('label-stop') || 'Stop', '\u23f9');
+    stopBtn.addEventListener('click', () => this.stop());
+
+    const speedDown = this.#makeButton('speed-down', 'Slower', '\u2212');
+    speedDown.addEventListener('click', () => this.#adjustSpeed(-0.1));
+
+    const speedVal = document.createElement('span');
+    speedVal.setAttribute('data-speed-value', '');
+    const initSpeed = this.#clampSpeed(parseFloat(this.getAttribute('speed') ?? '1') || 1);
+    speedVal.textContent = `${initSpeed}\u00d7`;
+
+    const speedUp = this.#makeButton('speed-up', 'Faster', '+');
+    speedUp.addEventListener('click', () => this.#adjustSpeed(0.1));
+
+    this.#moveSlotIcon('icon-play', playBtn);
+    this.#moveSlotIcon('icon-pause', pauseBtn);
+    this.#moveSlotIcon('icon-stop', stopBtn);
+
+    toolbar.append(playBtn, pauseBtn, stopBtn, speedDown, speedVal, speedUp);
+    document.body.append(toolbar);
+
+    this.#playBtn = playBtn;
+    this.#pauseBtn = pauseBtn;
+    this.#stopBtn = stopBtn;
+    this.#speedValue = speedVal;
+    this.#toolbar = toolbar;
+
+    this.listen(document, 'pointerdown', this.#onToolbarOutsidePointerDown);
+    this.listen(document, 'keydown', this.#onToolbarKeyDown);
+  }
+
+  #handleTriggerClick() {
+    if (!this.#isSpeaking) {
+      this.play();
+      return;
+    }
+    // Re-show toolbar if it was dismissed
+    if (this.#toolbar?.hidden) {
+      this.#showToolbar();
+    }
+    if (this.#isPaused) {
+      this.resume();
+    } else {
+      this.pause();
+    }
+  }
+
+  #showToolbar() {
+    if (!this.#toolbar || !this.#triggerBtn) return;
+    const toolbar = this.#toolbar;
+    toolbar.hidden = false;
+    toolbar.style.visibility = 'hidden';
+    requestAnimationFrame(() => {
+      this.#positionToolbar();
+      toolbar.style.visibility = '';
+    });
+  }
+
+  #hideToolbar() {
+    if (this.#toolbar) this.#toolbar.hidden = true;
+  }
+
+  #positionToolbar() {
+    const toolbar = this.#toolbar;
+    const trigger = this.#triggerBtn;
+    if (!toolbar || !trigger) return;
+
+    const tr = trigger.getBoundingClientRect();
+    const tw = toolbar.offsetWidth;
+    const th = toolbar.offsetHeight;
+    const GAP = 8;
+    const EDGE = 8;
+
+    // Prefer above the trigger
+    let top = tr.top - th - GAP;
+    if (top < EDGE) top = tr.bottom + GAP;
+
+    // Center horizontally on trigger
+    let left = tr.left + tr.width / 2 - tw / 2;
+    const maxLeft = window.innerWidth - tw - EDGE;
+    left = Math.max(EDGE, Math.min(left, maxLeft));
+
+    toolbar.style.top = `${top}px`;
+    toolbar.style.left = `${left}px`;
+  }
+
+  #adjustSpeed(delta) {
+    const current = parseFloat(this.getAttribute('speed') ?? '1') || 1;
+    const newSpeed = this.#clampSpeed(current + delta);
+    this.setAttribute('speed', String(newSpeed));
+  }
+
+  #onToolbarOutsidePointerDown = (e) => {
+    if (!this.#toolbar || this.#toolbar.hidden) return;
+    if (this.#toolbar.contains(e.target)) return;
+    if (this.#triggerBtn?.contains(e.target)) return;
+    this.#hideToolbar();
+  };
+
+  #onToolbarKeyDown = (e) => {
+    if (e.key === 'Escape' && this.#toolbar && !this.#toolbar.hidden) {
+      this.#hideToolbar();
+    }
+  };
+
   // ---------- target resolution ----------
 
   #resolveTarget() {
@@ -308,7 +472,7 @@ class TextReader extends VBElement {
     if (!text.trim()) return;
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = this.#clampSpeed(parseFloat(this.#speedInput?.value ?? '1') || 1);
+    utterance.rate = this.#clampSpeed(parseFloat(this.#speedInput?.value ?? this.getAttribute('speed') ?? '1') || 1);
 
     // Apply selected voice
     const selectedOption = this.#voiceSelect?.selectedOptions[0];
@@ -576,6 +740,10 @@ class TextReader extends VBElement {
       this.#playBtn.hidden = false;
       this.#pauseBtn.hidden = true;
       this.#stopBtn.disabled = true;
+    }
+    if (this.#isIconMode) {
+      if (this.#triggerBtn) this.#triggerBtn.setAttribute('aria-pressed', String(speaking));
+      if (speaking) this.#showToolbar(); else this.#hideToolbar();
     }
   }
 

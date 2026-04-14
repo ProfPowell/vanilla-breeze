@@ -4,6 +4,10 @@ text-reader {
   display: block;
 }
 
+text-reader[variant="icon"] {
+  display: inline-flex;
+}
+
 text-reader:not(:defined) {
   display: none;
 }
@@ -97,9 +101,97 @@ text-reader input[type="range"]:focus-visible {
   outline-offset: 2px;
 }
 
+/* Icon variant trigger */
+text-reader[variant="icon"] [part="trigger"] {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--size-2xs, 0.25rem);
+  border-radius: var(--radius-s, 4px);
+  color: var(--color-text-muted, #666);
+  cursor: pointer;
+  transition: color var(--duration-fast, 150ms);
+}
+
+text-reader[variant="icon"] [part="trigger"]:hover {
+  color: var(--color-interactive, oklch(55% 0.2 260));
+}
+
+text-reader[variant="icon"] [part="trigger"]:focus-visible {
+  outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
+  outline-offset: 2px;
+}
+
+text-reader[variant="icon"] [part="trigger"][aria-pressed="true"] {
+  color: var(--color-interactive, oklch(55% 0.2 260));
+}
+
+/* Floating mini-toolbar (appended to body in icon mode) */
+[data-text-reader-toolbar] {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: var(--size-2xs, 0.25rem);
+  padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
+  background: var(--color-surface-overlay, var(--color-surface, #fff));
+  border: var(--border-width-thin, 1px) solid var(--color-border, #ddd);
+  border-radius: var(--radius-m, 0.5rem);
+  box-shadow: var(--shadow-m, 0 4px 12px rgba(0,0,0,.1));
+  white-space: nowrap;
+}
+
+[data-text-reader-toolbar][hidden] {
+  display: none !important;
+}
+
+[data-text-reader-toolbar] [part~="button"] {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: var(--radius-s, 4px);
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+  transition: background var(--duration-fast, 150ms);
+}
+
+[data-text-reader-toolbar] [part~="button"]:hover {
+  background: color-mix(in oklab, var(--color-interactive, oklch(55% 0.2 260)) 12%, transparent);
+}
+
+[data-text-reader-toolbar] [part~="button"]:focus-visible {
+  outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
+  outline-offset: 2px;
+}
+
+[data-text-reader-toolbar] [part~="button"][hidden] {
+  display: none;
+}
+
+[data-text-reader-toolbar] [data-speed-value] {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-variant-numeric: tabular-nums;
+  min-inline-size: 2em;
+  text-align: center;
+  color: var(--color-text-muted, #666);
+}
+
+@media print {
+  [data-text-reader-toolbar] {
+    display: none !important;
+  }
+}
+
 /* Reduced motion: no transitions */
 @media (prefers-reduced-motion: reduce) {
-  text-reader [part~="button"] {
+  text-reader [part~="button"],
+  text-reader[variant="icon"] [part="trigger"],
+  [data-text-reader-toolbar] [part~="button"] {
     transition: none;
   }
 }
