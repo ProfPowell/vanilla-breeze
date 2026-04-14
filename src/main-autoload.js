@@ -78,6 +78,8 @@ if (document.querySelector('data[data-format-number]')) import('./utils/format-n
 if (document.querySelector('data[data-format-bytes]')) import('./utils/format-bytes-init.js');
 if (document.querySelector('[data-splitter]')) import('./utils/splitter-init.js');
 if (document.querySelector('fieldset[data-toggle-tags][data-max]')) import('./utils/toggle-tags-init.js');
+if (document.querySelector(':is(img, video, iframe, canvas)[data-mock]')) import('./utils/mock-init.js');
+if (document.querySelector('[data-lorem]')) import('./utils/lorem-init.js');
 
 // Boot unified effects observer
 VB.observe();
