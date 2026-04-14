@@ -27,6 +27,42 @@
   var cssLink = document.getElementById('vb-css');
   if (!cssLink) return;
 
+  /* ── Brand theme defense state — MUST be before applyMode() call ── */
+  var activeBrandOverride = null;
+  var savedVBTheme = null;
+
+  /* ── MutationObserver: defend data-theme against ThemeManager.apply() ──
+     ThemeManager.apply({brand:"default"}) deletes data-theme entirely.
+     The observer re-asserts it in the same microtask — before the next
+     paint frame. Uses re-entry guard to prevent infinite loops. */
+  var guardProcessing = false;
+  var themeGuard = new MutationObserver(function (records) {
+    if (guardProcessing || !activeBrandOverride) return;
+    guardProcessing = true;
+    var root = document.documentElement;
+    var current = root.getAttribute('data-theme');
+    if (current !== activeBrandOverride) {
+      root.setAttribute('data-theme', activeBrandOverride);
+    }
+    guardProcessing = false;
+  });
+  themeGuard.observe(document.documentElement, {
+    attributes: true,
+    attributeOldValue: true,
+    attributeFilter: ['data-theme']
+  });
+
+  /* Catch vb:theme-change events (settings-panel interactions, etc.) */
+  document.addEventListener('vb:theme-change', function () {
+    if (!activeBrandOverride) return;
+    var root = document.documentElement;
+    if (root.getAttribute('data-theme') !== activeBrandOverride) {
+      guardProcessing = true;
+      root.setAttribute('data-theme', activeBrandOverride);
+      guardProcessing = false;
+    }
+  });
+
   /* ── Inject isolation styles ── */
   var styleEl = document.createElement('style');
   styleEl.textContent = [
@@ -194,10 +230,6 @@
   if (document.body) mount();
   else document.addEventListener('DOMContentLoaded', mount);
 
-  /* ── Active brand override — defends against ThemeManager ── */
-  var activeBrandOverride = null;
-  var savedVBTheme = null;
-
   /* ── Core mode logic ── */
   function applyMode(mode) {
     var isVB = mode !== 'raw';
@@ -223,37 +255,6 @@
 
     if (isVB) loadJS();
   }
-
-  /* ── MutationObserver: defend data-theme against ThemeManager.apply() ──
-     ThemeManager.apply({brand:"default"}) deletes data-theme entirely,
-     wiping out the Alpenglow brand. The observer re-asserts it in the
-     same microtask — before the next paint frame, preventing FOUC.
-     Uses re-entry guard per the VB MutationObserver research. */
-  var guardProcessing = false;
-  var themeGuard = new MutationObserver(function (records) {
-    if (guardProcessing || !activeBrandOverride) return;
-    guardProcessing = true;
-    var root = document.documentElement;
-    var current = root.getAttribute('data-theme');
-    if (current !== activeBrandOverride) {
-      root.setAttribute('data-theme', activeBrandOverride);
-    }
-    guardProcessing = false;
-  });
-  themeGuard.observe(document.documentElement, {
-    attributes: true,
-    attributeOldValue: true,
-    attributeFilter: ['data-theme']
-  });
-
-  /* Also catch vb:theme-change events (settings-panel interactions, etc.) */
-  document.addEventListener('vb:theme-change', function () {
-    if (!activeBrandOverride) return;
-    var root = document.documentElement;
-    if (root.getAttribute('data-theme') !== activeBrandOverride) {
-      root.setAttribute('data-theme', activeBrandOverride);
-    }
-  });
 
   function updateBrandMarks(brandName) {
     var marks = document.querySelectorAll('brand-mark');
