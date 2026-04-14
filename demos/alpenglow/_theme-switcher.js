@@ -9,17 +9,19 @@
 (function () {
   var STORAGE_KEY = 'alpenglow-theme';
   var THEMES = [
-    { value: 'raw',       label: 'Raw HTML' },
-    { value: 'vb',        label: 'Vanilla Breeze' },
-    { value: 'anthropic', label: 'Anthropic' },
-    { value: 'mcdonalds', label: "McDonald\u2019s" },
-    { value: 'ibm',       label: 'IBM' }
+    { value: 'raw',        label: 'Raw HTML' },
+    { value: 'vb',         label: 'Vanilla Breeze' },
+    { value: 'anthropic',  label: 'Anthropic' },
+    { value: 'mcdonalds',  label: "McDonald\u2019s" },
+    { value: 'ibm',        label: 'IBM' },
+    { value: 'starbucks',  label: 'Starbucks' }
   ];
-  var BRAND_THEMES = ['anthropic', 'mcdonalds', 'ibm'];
+  var BRAND_THEMES = ['anthropic', 'mcdonalds', 'ibm', 'starbucks'];
   var BRAND_LOGOS = {
     anthropic: '/docs/alpenglow/themes/anthropic-logo.svg',
     mcdonalds: '/docs/alpenglow/themes/mcdonalds-logo.svg',
-    ibm:       '/docs/alpenglow/themes/ibm-logo.svg'
+    ibm:       '/docs/alpenglow/themes/ibm-logo.svg',
+    starbucks: '/docs/alpenglow/themes/starbucks-logo.svg'
   };
 
   var cssLink = document.getElementById('vb-css');
