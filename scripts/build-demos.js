@@ -25,6 +25,7 @@ const DEMO_DIRS = [
   'patterns/demos',
   'snippets/demos',
   'tools/theme-lab/surfaces',
+  'alpenglow',
 ];
 
 /** Top-level files to copy verbatim */

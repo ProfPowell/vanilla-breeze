@@ -65,6 +65,9 @@ link(demoSource('tools/theme-lab/surfaces'), resolve(dist, 'docs/tools/theme-lab
 mkdirSync(resolve(dist, 'docs/examples'), { recursive: true });
 link(demoSource('examples/demos'), resolve(dist, 'docs/examples/demos'));
 
+// Alpenglow brand demo
+link(demoSource('alpenglow'), resolve(dist, 'docs/alpenglow'));
+
 // Docs CSS — prefer built copies
 function demoCss(file) {
   const built = resolve(builtDemos, file);
