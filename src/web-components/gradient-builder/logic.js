@@ -93,7 +93,7 @@ class GradientBuilder extends VBElement {
             <span class="gb-angle-value" style="min-width:2.5em;font-family:${mono};font-size:${xsFont}">${this.#angle}°</span>
           </label>
         </div>
-        <label style="display:flex;align-items:center;gap:${xsGap}">
+        <label style="display:inline-flex;align-items:center;gap:${xsGap}">
           Color Space
           <select class="gb-space" style="${selectStyle}">
             <option value="oklab"${this.#interpolation === 'oklab' ? ' selected' : ''}>oklab</option>

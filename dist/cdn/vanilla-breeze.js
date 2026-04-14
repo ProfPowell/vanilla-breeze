@@ -636,7 +636,7 @@ svg {
             <span class="gb-angle-value" style="min-width:2.5em;font-family:${h};font-size:${p}">${this.#s}\xB0</span>
           </label>
         </div>
-        <label style="display:flex;align-items:center;gap:${a}">
+        <label style="display:inline-flex;align-items:center;gap:${a}">
           Color Space
           <select class="gb-space" style="${m}">
             <option value="oklab"${this.#i==="oklab"?" selected":""}>oklab</option>

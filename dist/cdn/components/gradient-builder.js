@@ -13,7 +13,7 @@ var A=window.matchMedia("(prefers-reduced-motion: reduce)");var x=new Map;functi
             <span class="gb-angle-value" style="min-width:2.5em;font-family:${f};font-size:${p}">${this.#o}\xB0</span>
           </label>
         </div>
-        <label style="display:flex;align-items:center;gap:${n}">
+        <label style="display:inline-flex;align-items:center;gap:${n}">
           Color Space
           <select class="gb-space" style="${$}">
             <option value="oklab"${this.#s==="oklab"?" selected":""}>oklab</option>
