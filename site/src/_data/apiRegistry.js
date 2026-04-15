@@ -3263,6 +3263,56 @@ export default {
       }
     ]
   },
+  "font-pairer": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "font-pairer",
+    "type": "web-component",
+    "description": "Interactive font pairing tool with Google Fonts loading and CSS export",
+    "attributes": [
+      {
+        "name": "heading-font",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Google Fonts family name for headings"
+      },
+      {
+        "name": "body-font",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Google Fonts family name for body text"
+      },
+      {
+        "name": "sample",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Custom sample heading text"
+      },
+      {
+        "name": "show-export",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show Copy CSS / Copy @import toolbar"
+      },
+      {
+        "name": "show-suggestions",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show curated pairing suggestions"
+      }
+    ],
+    "events": [
+      {
+        "name": "font-pairer:change"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
   "foot-note": {
     "element": "foot-note",
     "type": "web-component",
@@ -3608,6 +3658,63 @@ export default {
         "description": "On search input"
       }
     ]
+  },
+  "gradient-builder": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "gradient-builder",
+    "type": "web-component",
+    "description": "Interactive CSS gradient builder with color stops, angle control, and export",
+    "attributes": [
+      {
+        "name": "colors",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated initial stop colors (e.g. \"#6366f1,#ec4899\")"
+      },
+      {
+        "name": "type",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Gradient type: \"linear\" (default) or \"radial\""
+      },
+      {
+        "name": "angle",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Angle in degrees for linear gradients (default: 90)"
+      },
+      {
+        "name": "interpolation",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Color space: \"oklab\" (default), \"oklch\", \"srgb\""
+      },
+      {
+        "name": "show-export",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show Copy CSS toolbar"
+      },
+      {
+        "name": "show-controls",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show type/angle/space controls (default: true)"
+      }
+    ],
+    "events": [
+      {
+        "name": "gradient-builder:change"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "heading-links": {
     "$schema": "../../../schemas/api.schema.json",

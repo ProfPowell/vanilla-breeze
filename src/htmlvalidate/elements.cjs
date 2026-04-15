@@ -595,6 +595,16 @@ module.exports = {
     }
   },
 
+  "font-pairer": {
+    attributes: {
+      "heading-font": {},
+      "body-font": {},
+      "sample": {},
+      "show-export": { boolean: true },
+      "show-suggestions": { boolean: true }
+    }
+  },
+
   "foot-note": {
     flow: true,
     phrasing: true,
@@ -661,6 +671,17 @@ module.exports = {
       "src": {},
       "searchable": { boolean: true },
       "compact": { boolean: true }
+    }
+  },
+
+  "gradient-builder": {
+    attributes: {
+      "colors": {},
+      "type": {},
+      "angle": {},
+      "interpolation": {},
+      "show-export": { boolean: true },
+      "show-controls": { boolean: true }
     }
   },
 
