@@ -135,23 +135,8 @@ jobs:
       - name: Run template audit
         run: cd site && npm run audit:templates
 
-      - name: Copy CDN to site output
-        run: cp -r dist/cdn site/dist/pages/cdn
-
-      - name: Copy icons to site output
-        run: mkdir -p site/dist/pages/src && cp -r src/icons site/dist/pages/src/icons
-
-      - name: Copy VB source for dev references
-        run: cp -r src/base src/tokens src/native-elements src/custom-elements src/web-components src/utils src/lib src/charts src/*.css src/*.js site/dist/pages/src/
-
-      - name: Copy demo HTML files and docs CSS
-        run: |
-          cp -r demos/snippets/demos site/dist/pages/docs/snippets/demos
-          cp -r demos/patterns/demos site/dist/pages/docs/patterns/demos
-          cp demos/docs.css site/dist/pages/docs/docs.css
-          cp demos/homepage.css site/dist/pages/docs/homepage.css
-          cp -r demos/tools site/dist/pages/docs/tools 2>/dev/null || true
-          cp -r demos/examples site/dist/pages/docs/examples 2>/dev/null || true
+      - name: Assemble site assets (CDN, icons, src, demos)
+        run: npm run build:site-assets
 
       - name: Fix paths for GitHub Pages
         run: npm run build:fix-paths
