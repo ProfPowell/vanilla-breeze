@@ -82,6 +82,21 @@ currentPath: /stats/
 
   .stats-error { padding: 1rem; border: 1px solid #dc2626; border-radius: .5rem; background: #fef2f2; color: #7f1d1d; }
   .stats-loading { color: var(--text-2, #71717a); font-style: italic; }
+
+  .rating-pill {
+    display: inline-block; padding: .125rem .5rem; border-radius: 999px;
+    font-size: .75rem; font-weight: 600; text-transform: capitalize;
+    background: var(--surface-3, #e4e4e7);
+  }
+  .rating-pill.rating-good { background: #dcfce7; color: #15803d; }
+  .rating-pill.rating-meh  { background: #fef3c7; color: #92400e; }
+  .rating-pill.rating-poor { background: #fee2e2; color: #991b1b; }
+
+  .stats-errors-wrap { grid-column: 1 / -1; }
+  .stats-errors-wrap code { font-size: .75rem; color: var(--text-2, #71717a); }
+  .stats-errors-wrap td:nth-child(2) {
+    max-width: 32rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
 </style>
 
 <script type="module">
@@ -139,10 +154,68 @@ currentPath: /stats/
           d.topCountries.map(r => [r.country, r.views]))}
         ${table('Outbound clicks', ['Domain', 'Clicks'],
           d.topClicks.map(r => [r.to_domain, r.clicks]))}
+        ${vitalsTable(d.vitals ?? [])}
+        ${errorsTable(d.errors ?? [])}
         ${table('Recent events', ['Name', 'Path', 'When'],
           d.recent.map(r => [r.event_name, r.path, new Date(r.created_at).toLocaleTimeString()]))}
       </div>
     `;
+  }
+
+  function vitalsTable(rows) {
+    if (!rows.length) {
+      return `<section class="stats-table-wrap">
+        <h2>Web Vitals</h2>
+        <p class="empty">No performance data yet — visit a few pages to populate.</p>
+      </section>`;
+    }
+    const METRIC_LABEL = { 'perf.lcp': 'LCP', 'perf.cls': 'CLS', 'perf.inp': 'INP', 'perf.ttfb': 'TTFB' };
+    const UNIT         = { 'perf.lcp': 'ms', 'perf.cls': '',   'perf.inp': 'ms', 'perf.ttfb': 'ms' };
+    const body = rows.map(r => {
+      const metric = METRIC_LABEL[r.event_name] ?? r.event_name;
+      const avg = r.avg_value != null ? `${Math.round(r.avg_value * 100) / 100}${UNIT[r.event_name] ?? ''}` : '—';
+      const ratingClass = r.rating === 'good' ? 'rating-good'
+                        : r.rating === 'needs-improvement' ? 'rating-meh'
+                        : r.rating === 'poor' ? 'rating-poor' : '';
+      return `<tr>
+        <td>${escape(metric)}</td>
+        <td><span class="rating-pill ${ratingClass}">${escape(r.rating)}</span></td>
+        <td>${r.count}</td>
+        <td>${escape(avg)}</td>
+      </tr>`;
+    }).join('');
+    return `<section class="stats-table-wrap">
+      <h2>Web Vitals</h2>
+      <table>
+        <thead><tr><th>Metric</th><th>Rating</th><th>Count</th><th>Avg</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </section>`;
+  }
+
+  function errorsTable(rows) {
+    if (!rows.length) {
+      return `<section class="stats-table-wrap">
+        <h2>Recent errors</h2>
+        <p class="empty">No runtime errors captured in this window. &#127881;</p>
+      </section>`;
+    }
+    const body = rows.map(r => `
+      <tr>
+        <td><code>${escape(r.event_name)}</code></td>
+        <td>${escape(r.message ?? '')}</td>
+        <td><code>${escape(r.source ?? '')}${r.line ? ':' + r.line : ''}</code></td>
+        <td>${escape(r.path ?? '')}</td>
+        <td>${new Date(r.created_at).toLocaleTimeString()}</td>
+      </tr>
+    `).join('');
+    return `<section class="stats-table-wrap stats-errors-wrap">
+      <h2>Recent errors</h2>
+      <table>
+        <thead><tr><th>Type</th><th>Message</th><th>Source</th><th>Path</th><th>When</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </section>`;
   }
 
   function table(title, cols, rows) {

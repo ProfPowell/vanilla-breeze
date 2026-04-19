@@ -87,6 +87,33 @@ export async function onRequestGet({ request, env }) {
           WHERE site_id = ?1 AND created_at > ?2
           ORDER BY created_at DESC LIMIT 20`
       ).bind(site, since).all(),
+
+      // Web Vitals — rating breakdown per metric.
+      db.prepare(
+        `SELECT event_name,
+                COALESCE(json_extract(props, '$.rating'), 'unknown') AS rating,
+                COUNT(*) AS count,
+                AVG(CAST(json_extract(props, '$.value') AS REAL)) AS avg_value
+           FROM hits
+          WHERE site_id = ?1 AND created_at > ?2
+            AND event_name LIKE 'perf.%'
+          GROUP BY event_name, rating
+          ORDER BY event_name, rating`
+      ).bind(site, since).all(),
+
+      // Recent errors — most recent first.
+      db.prepare(
+        `SELECT event_name,
+                json_extract(props, '$.message') AS message,
+                json_extract(props, '$.source')  AS source,
+                json_extract(props, '$.line')    AS line,
+                path,
+                created_at
+           FROM hits
+          WHERE site_id = ?1 AND created_at > ?2
+            AND event_name LIKE 'error.%'
+          ORDER BY created_at DESC LIMIT 10`
+      ).bind(site, since).all(),
     ]);
   } catch (err) {
     const msg = err?.message ?? String(err);
@@ -100,7 +127,7 @@ export async function onRequestGet({ request, env }) {
     }, { status: 503 });
   }
 
-  const [totals, topPages, topEvents, topReferrers, topCountries, topClicks, recent] = results;
+  const [totals, topPages, topEvents, topReferrers, topCountries, topClicks, recent, vitals, errors] = results;
 
   return json({
     ok: true,
@@ -119,5 +146,7 @@ export async function onRequestGet({ request, env }) {
     topCountries: topCountries?.results ?? [],
     topClicks:    topClicks?.results ?? [],
     recent:       recent?.results ?? [],
+    vitals:       vitals?.results ?? [],
+    errors:       errors?.results ?? [],
   });
 }

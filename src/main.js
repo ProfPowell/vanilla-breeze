@@ -86,3 +86,7 @@ Analytics.init({
   endpoint:  globalThis.vbAnalyticsConfig?.endpoint  ?? '/api/analytics',
 });
 wireAnalyticsEvents();
+
+// Optional observability modules — Web Vitals + runtime error capture.
+import('./utils/analytics-vitals-init.js');
+import('./utils/analytics-errors-init.js');
