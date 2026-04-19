@@ -34,12 +34,21 @@ export async function onRequestPost({ request, env, waitUntil }) {
   const ua      = request.headers.get('user-agent') ?? '';
   const ip      = request.headers.get('cf-connecting-ip') ?? '';
 
+  const eventName = String(body.name).slice(0, 128);
+  const isPageView = eventName === 'page.view';
   const screenWidth = Number(body.props?.screenWidth ?? body.context?.screenWidth ?? 0);
   const tx = body.context ?? {};
   const props = stringifyProps(body.props);
 
   try {
-    const isUnique = await checkUnique(env, siteId, ip, ua, screenWidth);
+    // `is_unique` belongs to the *visit*, not to individual events. Only
+    // check uniqueness on page.view rows — otherwise the first named event
+    // of the day (e.g. a theme-picker extension_toggle fired on mount)
+    // steals the `is_unique=1` flag from the subsequent page.view row.
+    const isUnique = isPageView
+      ? await checkUnique(env, siteId, ip, ua, screenWidth)
+      : false;
+
     const insert = db.prepare(
       `INSERT INTO hits
          (site_id, event_name, path, referrer, country, is_unique, props,
@@ -47,7 +56,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)`
     ).bind(
       siteId,
-      String(body.name).slice(0, 128),
+      eventName,
       path,
       ref,
       country,
