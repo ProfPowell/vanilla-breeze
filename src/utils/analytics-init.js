@@ -47,8 +47,7 @@ const TIER_1 = {
   'page-toc:navigate':      (e) => Analytics.track('docs.toc_navigate',  { id: e.detail?.id }),
   'site-search:open':       ( ) => Analytics.track('search.open'),
   'site-search:close':      (e) => Analytics.track('search.close',       { hasQuery: e.detail?.hasQuery }),
-  // 'theme-composer:change' is a Phase 2 dependency — the component does not
-  // yet dispatch this event. Add to the map once instrumented.
+  'theme-composer:change':  (e) => Analytics.track('theme.compose',      { dimension: e.detail?.dimension, source: e.detail?.source, token: e.detail?.token }),
 };
 
 const TIER_2 = {

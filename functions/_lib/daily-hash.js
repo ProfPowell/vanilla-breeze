@@ -77,9 +77,45 @@ export async function checkUnique(env, siteId, ip, ua, screenWidth) {
   // "first hit?" signal. D1 serialises writes per database, so concurrent
   // Workers hitting the same hash still produce a single winner.
   const result = await db
-    .prepare('INSERT OR IGNORE INTO daily_uniques (day_hash) VALUES (?1)')
-    .bind(level2)
+    .prepare('INSERT OR IGNORE INTO daily_uniques (day, day_hash) VALUES (?1, ?2)')
+    .bind(utcDay(), level2)
     .run();
 
   return (result?.meta?.changes ?? 0) > 0;
+}
+
+/**
+ * Prune stale salts and expired uniqueness hashes. Safe to call repeatedly;
+ * all DELETEs are no-ops when nothing matches. Called amortised into the
+ * normal ingest path (see hit.js) rather than from a separate cron Worker
+ * so there's no extra infra to deploy for daily cleanup.
+ *
+ * Retention:
+ *  - daily_uniques: keep today + yesterday (buffer for UTC-boundary clock skew)
+ *  - daily_salts:   keep last 7 days (spec default)
+ *
+ * @param {{ DB?: D1Database, vanilla_breeze_analytics?: D1Database }} env
+ */
+export async function pruneOldData(env) {
+  const db = getDB(env);
+  if (!db) return;
+
+  const today = new Date();
+  const ymd = (offsetDays) => {
+    const d = new Date(today);
+    d.setUTCDate(d.getUTCDate() - offsetDays);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const uniquesCutoff = ymd(1);  // delete entries older than yesterday
+  const saltsCutoff   = ymd(7);  // delete salts older than a week
+
+  try {
+    await db.batch([
+      db.prepare('DELETE FROM daily_uniques WHERE day < ?1').bind(uniquesCutoff),
+      db.prepare('DELETE FROM daily_salts   WHERE day < ?1').bind(saltsCutoff),
+    ]);
+  } catch (err) {
+    console.error('[analytics/prune] cleanup failed', err?.message ?? err);
+  }
 }

@@ -29,11 +29,13 @@ These are manual steps — Claude can't do them for you.
 
 2. **Paste the ID into [`wrangler.toml`](../../../wrangler.toml)** (the commented `database_id` line) so local `wrangler pages dev` works.
 
-3. **Apply the schema migration:**
+3. **Apply the schema migrations:**
    ```bash
-   npx wrangler d1 migrations apply vanilla-breeze-analytics
-   # For local dev add: --local
+   npx wrangler d1 migrations apply vanilla-breeze-analytics --remote
+   # For local dev drop --remote and add --local
    ```
+   The same command applies any later migrations. Re-running is safe —
+   every statement is idempotent (`CREATE TABLE IF NOT EXISTS`, etc.).
 
 4. **Bind the database in the Cloudflare dashboard:**
    - Pages → your project → **Settings** → **Functions** → **D1 database bindings**.
@@ -74,12 +76,28 @@ so you can validate ingest and stats without touching the production database.
 
 ## Schema
 
-See [`db/migrations/0001_init.sql`](../../../db/migrations/0001_init.sql). Tables:
+Migrations under `db/migrations/`. Tables:
 
 - `hits` — page views and named events (one row per `Analytics.track()` call)
 - `clicks` — outbound link clicks
 - `daily_salts` — per-UTC-day rotating salt for the visitor hash
-- `daily_uniques` — seen-today hash entries, used as a race-safe unique counter
+- `daily_uniques` — (day, hash) entries used as a race-safe unique counter. The `day` column lets the pruner drop yesterday's rows without touching today's.
+
+## Cleanup
+
+No separate cron Worker — each hit has a ~0.5% chance of triggering
+`pruneOldData(env)` via `waitUntil`. That runs:
+
+```sql
+DELETE FROM daily_uniques WHERE day < <yesterday>;
+DELETE FROM daily_salts   WHERE day < <7 days ago>;
+```
+
+At ≥200 hits/day the cleanup runs about once daily on average. Because
+the DELETEs are idempotent, running more often is free — and running
+less often is bounded by storage (one salt/day, one hash per unique
+visitor/day). If you outgrow this, swap to a scheduled Worker that calls
+the same `pruneOldData()` helper.
 
 ## Privacy contract
 

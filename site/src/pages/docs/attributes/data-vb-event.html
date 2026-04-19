@@ -1,0 +1,134 @@
+---
+layout: attribute
+title: "data-vb-event"
+description: "Declarative analytics — fire a normalised analytics event on click without writing JavaScript. Properties via data-vb-event-* siblings."
+attributeName: data-vb-event
+category: analytics
+attributeType: data
+currentPath: /docs/attributes/data-vb-event/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-vb-event</code> attribute turns any interactive element into an analytics tracking point. When the element (or a descendant) is clicked, the Vanilla Breeze analytics runtime fires a single normalised event through <code>Analytics.track()</code> — no JavaScript authored per element, no glue code per page.</p>
+  <p><strong>Applies to:</strong> any element (the runtime uses a single delegated click listener on <code>document</code>).</p>
+  <p><strong>Requires:</strong> <code>vanilla-breeze-core.js</code> (the analytics runtime auto-wires this attribute on boot).</p>
+</section>
+
+<section>
+  <h2>Basic Usage</h2>
+  <p>Put the attribute on any element users can click. The value becomes the analytics event name.</p>
+
+  <code-block language="html" label="Click tracking" data-escape><button data-vb-event="signup_click">Create account</button>
+
+<a href="/pricing" data-vb-event="pricing_nav">See pricing</a>
+
+<article data-vb-event="card_open">
+  <h3>Getting Started</h3>
+  <p>Click anywhere on the card.</p>
+</article></code-block>
+
+  <p>Clicking any of these elements fires one <code>Analytics.track(name, props)</code> call. The runtime is idempotent and safe to put on elements that already have their own handlers.</p>
+</section>
+
+<section>
+  <h2>Event Properties</h2>
+  <p>Add any number of <code>data-vb-event-*</code> attributes to attach named properties. The attribute name is lower-camelised into the props object.</p>
+
+  <code-block language="html" label="Properties" data-escape><button
+  data-vb-event="signup_click"
+  data-vb-event-plan="pro"
+  data-vb-event-source="hero"
+  data-vb-event-variant="green">
+  Start Pro Plan
+</button>
+
+<!-- Fires: Analytics.track('signup_click', { plan: 'pro', source: 'hero', variant: 'green' }) --></code-block>
+
+  <p>Property values are always strings — the runtime does not parse numbers or booleans. Keep values short and enumerable (categories, IDs, slugs) rather than raw user input.</p>
+</section>
+
+<section>
+  <h2>Event Naming Convention</h2>
+  <p>Vanilla Breeze normalises event names using a <code>category.action_detail</code> pattern. For custom events, follow the same convention so your data groups cleanly in dashboards alongside the <a href="/docs/attributes/data-vb-no-track/">auto-wired VB events</a>.</p>
+
+  <code-block language="text" label="Naming convention"><!-- Good -->
+data-vb-event="form.submit_pricing"
+data-vb-event="nav.docs_click"
+data-vb-event="cta.download_theme"
+
+<!-- Avoid (too generic) -->
+data-vb-event="click"
+data-vb-event="button1"
+data-vb-event="event42"</code-block>
+</section>
+
+<section>
+  <h2>How It Differs from <code>ping</code></h2>
+  <p>The native <a href="/docs/attributes/ping/"><code>ping</code></a> attribute sends a fixed POST body to a URL on link click. <code>data-vb-event</code> fires a structured event through the analytics pipeline — richer payload, browser-agnostic, works on any element.</p>
+
+  <table>
+    <thead><tr><th></th><th><code>ping</code></th><th><code>data-vb-event</code></th></tr></thead>
+    <tbody>
+      <tr><td>Works on</td><td><code>&lt;a&gt;</code> only</td><td>Any element</td></tr>
+      <tr><td>Requires JavaScript</td><td>No</td><td>Yes</td></tr>
+      <tr><td>Payload</td><td>Fixed <code>PING</code> body</td><td>Structured event + props</td></tr>
+      <tr><td>Fires in Firefox</td><td>No (disabled by default)</td><td>Yes</td></tr>
+      <tr><td>Respects opt-out</td><td>No (always sends)</td><td>Yes (GPC / DNT / session opt-out)</td></tr>
+    </tbody>
+  </table>
+
+  <p>The two compose well — use <code>ping</code> on outbound anchors for zero-JS attribution, and add <code>data-vb-event</code> for richer event data when JavaScript is available.</p>
+</section>
+
+<section>
+  <h2>Excluding Elements</h2>
+  <p>To prevent an element (and its descendants) from firing any analytics — including both <code>data-vb-event</code> and the auto-wired VB events — add <a href="/docs/attributes/data-vb-no-track/"><code>data-vb-no-track</code></a> to an ancestor. Exclusion wins over event declaration.</p>
+
+  <code-block language="html" label="Exclusion" data-escape><section data-vb-no-track>
+  <!-- No analytics from anything in here, even with data-vb-event -->
+  <button data-vb-event="admin_action">Admin Action</button>
+</section></code-block>
+</section>
+
+<section>
+  <h2>Programmatic API</h2>
+  <p>For events that don't originate from a click — form submissions, timers, custom component state — call <code>Analytics.track()</code> directly.</p>
+
+  <code-block language="js" label="Analytics.track()" data-escape>import { Analytics } from 'vanilla-breeze';
+
+Analytics.track('wizard.step_skipped', { step: 2 });
+Analytics.track('timer.idle_30s');</code-block>
+
+  <p>Both paths share the same envelope, opt-out gates, transport, and URL masking — they are interchangeable and can coexist on the same element.</p>
+</section>
+
+<section>
+  <h2>Opt-Out and Consent</h2>
+  <ul>
+    <li>All <code>data-vb-event</code> firings respect the same opt-out precedence as direct <code>Analytics.track()</code> calls: session opt-out → Global Privacy Control (<code>navigator.globalPrivacyControl</code>) → Do Not Track → app-supplied <code>consent</code> function.</li>
+    <li>If any signal indicates opt-out, the event is dropped — no beacon, no console log, no buffer write.</li>
+    <li>Authors do not need to check consent themselves.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The attribute has no effect on the accessibility tree. Screen readers announce the element as they would without it.</li>
+    <li>Firing an event does not change focus, visible state, or navigation behaviour.</li>
+    <li>Keyboard activation (Enter / Space on interactive elements) triggers the event the same as a mouse click because the runtime listens at <code>document</code> for <code>click</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-vb-no-track/"><code>data-vb-no-track</code></a> — opt an element and its descendants out of analytics</li>
+    <li><a href="/docs/attributes/ping/"><code>ping</code></a> — native link-click tracking</li>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> — control referrer leakage on analytics requests</li>
+  </ul>
+</section>

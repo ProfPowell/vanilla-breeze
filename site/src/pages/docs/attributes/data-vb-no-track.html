@@ -1,0 +1,109 @@
+---
+layout: attribute
+title: "data-vb-no-track"
+description: "Exclude an element (and everything inside it) from Vanilla Breeze analytics. No beacons fire from any descendant, regardless of data-vb-event or auto-wired VB events."
+attributeName: data-vb-no-track
+category: analytics
+attributeType: data
+currentPath: /docs/attributes/data-vb-no-track/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>Put <code>data-vb-no-track</code> on any element to exclude it and all of its descendants from the Vanilla Breeze analytics pipeline. No click event fires, no outbound-link <code>ping</code> is wired, no custom VB event is forwarded — analytics treats the subtree as invisible.</p>
+  <p><strong>Applies to:</strong> any element.</p>
+  <p><strong>Value:</strong> boolean — presence is what matters; the attribute value is ignored.</p>
+</section>
+
+<section>
+  <h2>Basic Usage</h2>
+  <p>Wrap any section you don't want measured.</p>
+
+  <code-block language="html" label="Whole subtree" data-escape><section data-vb-no-track>
+  <h2>Internal tools</h2>
+  <button>Delete account</button>      <!-- click not tracked -->
+  <a href="/admin/logs">View logs</a>  <!-- no ping, no beacon -->
+</section></code-block>
+
+  <p>The exclusion is recursive. Anything nested inside, at any depth, is opted out.</p>
+</section>
+
+<section>
+  <h2>Single-Element Exclusion</h2>
+  <p>You can also put the attribute on a single element.</p>
+
+  <code-block language="html" label="One element" data-escape><button data-vb-no-track>Skip survey</button>
+
+<a href="https://internal.example/tools" data-vb-no-track>Admin portal</a></code-block>
+</section>
+
+<section>
+  <h2>Exclusion Wins Over Tracking</h2>
+  <p>If a descendant has <code>data-vb-event</code> or would otherwise fire an auto-wired VB event, the nearest <code>data-vb-no-track</code> ancestor suppresses it. This makes it safe to gate a whole page region without combing through its children.</p>
+
+  <code-block language="html" label="Exclusion precedence" data-escape><section data-vb-no-track>
+  <!-- None of these fire analytics: -->
+  <button data-vb-event="secret_action">Secret</button>
+  <tab-set>
+    <!-- tab-set:change normally fires ui.tab_change — suppressed here -->
+    <tab-panel label="A">…</tab-panel>
+    <tab-panel label="B">…</tab-panel>
+  </tab-set>
+</section></code-block>
+</section>
+
+<section>
+  <h2>What Still Gets Tracked</h2>
+  <p>The page-level <code>page.view</code> event fires once on page load from <code>Analytics.init()</code>, regardless of where <code>data-vb-no-track</code> is placed — it is a page-level signal, not element-scoped. To opt the entire page out of all analytics, put the attribute on <code>&lt;html&gt;</code> or <code>&lt;body&gt;</code>.</p>
+
+  <code-block language="html" label="Whole-page exclusion" data-escape><!-- No page.view, no events, no beacons — the analytics runtime
+     early-returns when documentElement has this attribute. -->
+<html data-vb-no-track>
+  …
+</html></code-block>
+</section>
+
+<section>
+  <h2>When to Use It</h2>
+  <ul>
+    <li><strong>Internal tools</strong> — admin dashboards, staff-only pages you don't want contaminating visitor analytics.</li>
+    <li><strong>Automated / synthetic traffic</strong> — add it programmatically when an E2E test suite is running, or to iframes embedding third-party content.</li>
+    <li><strong>Sensitive actions</strong> — surfaces where even anonymous event-level analytics could hint at user intent you don't want stored (e.g. account deletion flows).</li>
+    <li><strong>Preview / scratch sections</strong> — content that is visible but shouldn't be measured (staging banners, experimental widgets behind a feature flag).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Opt-Out vs. <code>data-vb-no-track</code></h2>
+  <p>There are two complementary mechanisms:</p>
+  <table>
+    <thead><tr><th>Mechanism</th><th>Scope</th><th>Who controls it</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-vb-no-track</code></td><td>Per element / subtree</td><td>Author (markup)</td></tr>
+      <tr><td>Session opt-out (<code>sessionStorage.vb_optout</code>)</td><td>Entire page, this session</td><td>Visitor (via UI or <code>Analytics.setConsent(false)</code>)</td></tr>
+      <tr><td>Global Privacy Control / Do Not Track</td><td>Entire page, respected on every load</td><td>Visitor (browser setting)</td></tr>
+    </tbody>
+  </table>
+  <p>All three are evaluated on every event. Any one of them suppresses tracking.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The attribute has no effect on the accessibility tree or visible rendering.</li>
+    <li>Screen readers, keyboard users, and assistive tech interact with the subtree exactly as they would without it.</li>
+    <li>Does not change focus behaviour, navigation, or any native element semantics.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-vb-event/"><code>data-vb-event</code></a> — declare trackable click events</li>
+    <li><a href="/docs/attributes/ping/"><code>ping</code></a> — native link-click tracking (not suppressed by <code>data-vb-no-track</code> on the link itself — the runtime removes <code>ping</code> wiring on excluded links, but an author-written <code>ping</code> attribute still fires)</li>
+    <li><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> — control referrer information on any request</li>
+  </ul>
+</section>

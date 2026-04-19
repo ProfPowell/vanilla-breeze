@@ -15,8 +15,14 @@
  * Response: 204 on success, 400 on malformed body.
  */
 
-import { checkUnique } from '../../_lib/daily-hash.js';
+import { checkUnique, pruneOldData } from '../../_lib/daily-hash.js';
 import { getDB, sanitizePath, stringifyProps, noContent } from '../../_lib/sanitize.js';
+
+// Probability that a given hit triggers amortised cleanup of expired
+// daily_uniques / stale daily_salts. Tuned so that at >~200 hits/day we
+// run cleanup about once daily on average, without needing a separate
+// scheduled Worker. Safe to over-run: the DELETEs are idempotent.
+const PRUNE_PROBABILITY = 0.005;
 
 export async function onRequestPost({ request, env, waitUntil }) {
   const db = getDB(env);
@@ -76,5 +82,12 @@ export async function onRequestPost({ request, env, waitUntil }) {
     // A common cause pre-migration: "no such table: hits" / "daily_salts".
     console.error('[analytics/hit] insert failed', err?.message ?? err);
   }
+
+  // Amortised cleanup — roughly once per ~200 hits, prune stale salts
+  // and expired uniqueness hashes. Avoids a separate cron Worker.
+  if (Math.random() < PRUNE_PROBABILITY) {
+    waitUntil(pruneOldData(env));
+  }
+
   return noContent();
 }
