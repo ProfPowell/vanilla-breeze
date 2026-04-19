@@ -1,28 +1,39 @@
 ---
 title: Vanilla Breeze Analytics - Master Implementation Brief
 description: Pragmatic synthesis of the analytics R&D docs into an implementation-oriented plan.
-date: 2026-03-23
+date: 2026-04-17
 status: synthesis
-version: 0.1.0
+version: 0.2.0
+deployment-target: cloudflare-pages
 sources:
-  - analytics.md
   - analytics-spec.md
   - analytics-backend-spec.md
-  - analytics-part2.md
-  - analytics-part3.md
 ---
 
 # Vanilla Breeze Analytics - Master Implementation Brief
 
 This document synthesizes the analytics R&D docs into a single recommendation for what Vanilla Breeze should actually build. It favors the parts that are aligned, incremental, privacy-safe, and compatible with the current codebase. It explicitly de-prioritizes ideas that are better treated as optional modules, site-specific infrastructure, or later-phase experiments.
 
+> **v0.2 — what changed.** Deployment target updated to **Cloudflare Pages + Functions** (the site's real host since April 2026). Event list extended with design-system tool events (`color-palette`, `semantic-palette`, `token-specimen`, `theme-export`, `spacing-specimen`, `type-specimen`) added to the codebase after the original brief. A new Phase-2 dependency is called out: `<theme-composer>` currently wires specimen edits directly to CSS custom properties and must be updated to dispatch `theme-composer:change` before analytics can observe theme-composition.
+
+## Deployment pivot
+
+Vanilla Breeze now ships to **Cloudflare Pages** with Pages Functions for server-side code. The nginx + SQLite + Node ingest design in [`analytics-backend-spec.md`](analytics-backend-spec.md) is retained as a reference for self-hosted deployments but is **not** the target for VB's own site.
+
+Practical consequences for this brief:
+
+1. Ingest endpoints live under `functions/api/analytics/*.js` — Cloudflare resolves `/api/analytics/hit` to `functions/api/analytics/hit.js`.
+2. Storage is **Cloudflare D1** (SQLite at the edge). The schema in the backend spec mostly ports unchanged; see its [D1 Compatibility Notes](analytics-backend-spec.md#d1-compatibility-notes).
+3. Optional high-cardinality telemetry uses **Workers Analytics Engine**. Cloudflare Logpush → R2 is the fallback for deep bot analysis.
+4. `functions/_middleware.js` currently gates the whole site with HTTP Basic Auth. When analytics endpoints go live it must bypass `/api/analytics/*` (or a shared-secret must be introduced) — see the backend spec's [Basic Auth Compatibility](analytics-backend-spec.md#basic-auth-compatibility) section.
+5. No MaxMind, no `node:crypto`, no long-lived in-memory Set — Workers are stateless, so the daily hash and uniqueness check live in D1 (race-safe with `INSERT OR IGNORE`).
+
+The reference backend in [`analytics-backend-spec.md`](analytics-backend-spec.md) v0.4 documents both targets side by side.
+
 ## Source priority
 
-1. `analytics-spec.md` is the best client-side baseline and supersedes `analytics.md` and `analytics-part2.md`.
+1. `analytics-spec.md` is the canonical client-side baseline.
 2. `analytics-backend-spec.md` is the canonical reference for a VB-owned backend, but it should be treated as optional reference infrastructure rather than a prerequisite for the client API.
-3. `analytics.md` remains the clearest short statement of strategy: normalize existing semantic events, use `ping` as a supplement, and keep the core small.
-4. `analytics-part2.md` is useful for rationale and examples, but where it differs from v0.3, the newer spec wins.
-5. `analytics-part3.md` is research input, not implementation scope.
 
 ## What makes sense to implement
 
@@ -78,6 +89,22 @@ Ship first:
 | `page-toc:navigate` | `docs.toc_navigate` | |
 | `site-search:open` | `search.open` | |
 | `site-search:close` | `search.close` | |
+| `theme-composer:change` | `theme.compose` | **Not yet emitted — must instrument `<theme-composer>` to dispatch this event. Phase 2 dependency.** |
+
+**Design-system tooling events (added to the codebase after the original brief — wire in Phase 2 alongside the core map):**
+
+| Current source event | Normalized analytics event | Notes |
+|---|---|---|
+| `color-palette:select` | `palette.color_select` | From `<color-palette>` |
+| `color-palette:change` | `palette.color_edit` | Editable mode |
+| `semantic-palette:change` | `palette.semantic_change` | Preview-only refactor |
+| `token-specimen:change` | `tokens.edit` | Design-token editor |
+| `spacing-specimen:change` | `tokens.spacing_edit` | |
+| `type-specimen:change` | `tokens.type_edit` | |
+| `theme-export:change` | `theme.export_format` | Export format toggle |
+| `color-picker:change` | `ui.color_pick` | Opt-in, not auto-wired — high-frequency |
+
+See [`analytics-spec.md`](analytics-spec.md#vb-event-catalog-and-analytics-mapping) v0.4 for the full Tier 1/2 catalog with payload schemas.
 
 Defer the noisier UI events until there is a real reporting need.
 
@@ -189,9 +216,10 @@ That is much simpler than trying to build a pure counter-only system from the st
 ### Phase 2: VB event integration
 
 1. Create `src/utils/analytics-init.js`.
-2. Wire the high-value current events listed above.
-3. Keep payloads minimal and avoid raw user-entered text.
-4. Publish the normalized event catalog in docs.
+2. **Instrument `<theme-composer>` to dispatch `theme-composer:change`** — current implementation wires specimen edits directly to `:root` custom properties without a summary event. This is a hard blocker for `theme.compose` analytics. File as a beads issue before Phase 2 starts.
+3. Wire the high-value current events listed above, including the design-system tooling events.
+4. Keep payloads minimal and avoid raw user-entered text.
+5. Publish the normalized event catalog in docs.
 
 ### Phase 3: optional client modules
 
@@ -200,12 +228,16 @@ That is much simpler than trying to build a pure counter-only system from the st
 3. Add optional JS error tracking.
 4. Add sample-rate support if needed.
 
-### Phase 4: reference backend
+### Phase 4: reference backend on Cloudflare Pages
 
-1. Add same-origin ingest endpoints.
-2. Support simple page hits, events, and outbound clicks first.
-3. Add dedupe for `ping` plus JS click tracking.
-4. Add log processing and bot intelligence only after the basic ingest and query path works.
+1. Add `functions/api/analytics/hit.js`, `events.js`, `click.js` Pages Functions returning `204`.
+2. Support simple page hits, events, and outbound clicks first. Back with D1 via the `DB` binding.
+3. Update `functions/_middleware.js` so `/api/analytics/*` bypasses the Basic Auth gate (or introduce a shared-secret header).
+4. Add D1 migrations for `hits`, `events`, `clicks`, `daily_salts`, `daily_uniques`, `layer0_hits`.
+5. Add scheduled Worker for daily salt rotation.
+6. Add dedupe for `ping` plus JS click tracking at query time.
+7. Add optional Analytics Engine and Logpush → R2 paths only after core ingest is stable.
+8. nginx log processor and honeypot trap remain **reference-only** for self-hosted deployments; do not port to Cloudflare.
 
 ## Minimal canonical architecture
 

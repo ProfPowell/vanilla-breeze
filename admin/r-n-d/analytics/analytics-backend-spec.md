@@ -1,38 +1,49 @@
 ---
 title: Vanilla Breeze Analytics — Backend Specification
 description: >
-  Server-side infrastructure for the VB analytics system. Covers ingest
-  endpoints, visitor uniqueness, log processing, bot intelligence, data
-  schema, dashboard queries, and storage engine considerations.
-date: 2026-02-27
-status: design
-version: 0.3.0
-companion: analytics-spec.md
+  Server-side infrastructure for the VB analytics system on Cloudflare Pages.
+  Covers Pages Functions ingest endpoints, D1 schema, visitor uniqueness,
+  Workers Analytics Engine, bot intelligence, and dashboard queries.
+  nginx + SQLite variant retained as reference for self-hosted deployments.
+date: 2026-04-17
+status: ready-for-implementation
+version: 0.4.0
+deployment-target: cloudflare-pages
+companion:
+  - analytics-spec.md
+  - analytics-master.md
 tags:
   - analytics
   - backend
   - privacy
   - vanilla-breeze
+  - cloudflare
 ---
 
 # Vanilla Breeze Analytics — Backend Specification
 
-Server-side companion to the [client-side analytics spec](analytics-spec.md). This document covers everything that runs on the site owner's infrastructure: HTTP ingest endpoints, visitor uniqueness hashing, nginx log processing, bot intelligence, the SQLite data schema, and dashboard queries.
+Server-side companion to the [client-side analytics spec](analytics-spec.md). This document covers the VB-owned ingest: HTTP endpoints, visitor uniqueness hashing, request telemetry, bot intelligence, the data schema, and dashboard queries.
 
-**Implementation phase:** Phase 4 of the [client spec roadmap](analytics-spec.md#phased-roadmap). The client-side core script (Phases 1–3) can operate independently — beacons fire to any endpoint that returns `204`. This spec defines the canonical VB backend for those beacons.
+**Implementation phase:** Phase 4 of the [client spec roadmap](analytics-spec.md#phased-roadmap). The client core (Phases 1–3) can operate independently — beacons fire to any endpoint that returns `204`. This spec defines the canonical VB backend for those beacons.
+
+> **v0.4 — architectural pivot.** VB now deploys to **Cloudflare Pages**, not a traditional nginx origin. This revision promotes **Cloudflare Pages Functions + D1 (+ optional Workers Analytics Engine)** to the canonical backend. The original nginx + SQLite + Node ingest design is retained as the *self-hosted reference* alternative. Core privacy, hashing, and compliance logic are unchanged — only the hosting surface differs.
+
+> **Basic Auth gate note.** `functions/_middleware.js` currently enforces HTTP Basic Auth across the whole site. Ingest endpoints added under `functions/api/analytics/*` must either (a) be exempted from the middleware, (b) use a shared-secret header instead, or (c) accept that beacons will `401` while the site stays pre-release. Pick one explicitly before shipping Phase 4. See [Basic Auth Compatibility](#basic-auth-compatibility).
 
 ---
 
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
-- [Ingest Handler](#ingest-handler)
+- [Basic Auth Compatibility](#basic-auth-compatibility)
+- [Ingest Handler (Pages Functions)](#ingest-handler-pages-functions)
 - [Daily Hash and Visitor Uniqueness](#daily-hash-and-visitor-uniqueness)
 - [Layer 0 — HTTP Header Counting](#layer-0--http-header-counting)
-- [Server Logs and Log Processor](#server-logs-and-log-processor)
+- [Layer 1 — Request Telemetry on Cloudflare](#layer-1--request-telemetry-on-cloudflare)
 - [Bot Intelligence System](#bot-intelligence-system)
-- [Server Configuration](#server-configuration)
+- [Server Configuration (nginx reference only)](#server-configuration-nginx-reference-only)
 - [Data Schema](#data-schema)
+- [D1 Compatibility Notes](#d1-compatibility-notes)
 - [Dashboard Query Reference](#dashboard-query-reference)
 - [Storage Engine Considerations](#storage-engine-considerations)
 - [Module Map](#module-map)
@@ -41,67 +52,161 @@ Server-side companion to the [client-side analytics spec](analytics-spec.md). Th
 
 ## Architecture Overview
 
+**Canonical target — Cloudflare Pages:**
+
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        SERVER                                │
+┌──────────────────────────────────────────────────────────────┐
+│                    CLOUDFLARE PAGES                          │
 │                                                              │
 │  ┌────────────────────────────────────────────────────────┐  │
-│  │  nginx reverse proxy                                   │  │
-│  │  · JSON structured access logs (Client Hints)          │  │
-│  │  · Accept-CH headers for high-entropy hints            │  │
-│  │  · Layer 0: Last-Modified/If-Modified-Since counting   │  │
-│  │  · Honeypot trap location (/~trap/)                    │  │
-│  └──────────┬─────────────────────────────────────────────┘  │
-│             │                                                 │
-│             ▼                                                 │
+│  │  Static asset host (built by GitHub Actions)           │  │
+│  │  · site/ content served at the edge                    │  │
+│  │  · Accept-CH headers set via _headers file             │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                              │
 │  ┌────────────────────────────────────────────────────────┐  │
-│  │  Ingest Handler (Node/Deno/Bun)                        │  │
+│  │  functions/_middleware.js (Basic Auth gate)            │  │
+│  │  · currently wraps every request                       │  │
+│  │  · must bypass /api/analytics/* for Phase 4            │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  Pages Functions                                       │  │
 │  │                                                        │  │
-│  │  POST /analytics/hit    ← page views + taxonomy        │  │
-│  │  POST /analytics/events ← buffered event queue         │  │
-│  │  POST /analytics/click  ← ping + beacon outbound       │  │
-│  │  POST /analytics/forget ← user-initiated erasure       │  │
+│  │  functions/api/analytics/hit.js     ← page views       │  │
+│  │  functions/api/analytics/events.js  ← buffered events  │  │
+│  │  functions/api/analytics/click.js   ← ping + beacon    │  │
 │  │                                                        │  │
-│  │  · Parse Client Hints headers                          │  │
-│  │  · Geo-IP → country code (IP discarded)                │  │
-│  │  · Daily hash → is_unique flag (hash discarded)        │  │
-│  │  · Increment aggregate counters                        │  │
-│  │  · Discard raw event                                   │  │
-│  └──────────┬─────────────────────────────────────────────┘  │
-│             │                                                 │
-│             ▼                                                 │
+│  │  · request.cf.country / .botManagement (free)          │  │
+│  │  · request.headers (Client Hints)                      │  │
+│  │  · Daily hash → is_unique (hash discarded)             │  │
+│  │  · Write to D1 and/or Analytics Engine                 │  │
+│  └──────────┬───────────────────────┬─────────────────────┘  │
+│             │                       │                        │
+│             ▼                       ▼                        │
+│  ┌──────────────────┐    ┌──────────────────────────────┐   │
+│  │  D1 (SQLite)     │    │  Workers Analytics Engine    │   │
+│  │  hits · events   │    │  (optional, high-cardinality │   │
+│  │  clicks · bot_log│    │   request telemetry)         │   │
+│  │  daily_salts     │    │                              │   │
+│  └──────────────────┘    └──────────────────────────────┘   │
+│                                                              │
 │  ┌────────────────────────────────────────────────────────┐  │
-│  │  Log Processor (cron schedule)                         │  │
-│  │  · Reads nginx JSON access logs                        │  │
-│  │  · Classifies bot vs human traffic                     │  │
-│  │  · Records log-layer hits (no-JS visitors, bots)       │  │
-│  └──────────┬─────────────────────────────────────────────┘  │
-│             │                                                 │
-│             ▼                                                 │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │  SQLite (primary) / PostgreSQL (optional)              │  │
-│  │  hits · events · clicks · bot_log · log_hits           │  │
-│  │  honeypot_ips · daily_salts                            │  │
+│  │  Scheduled Worker (cron)                               │  │
+│  │  · rotate daily_salts at UTC midnight                  │  │
+│  │  · optional: Logpush → R2 processing                   │  │
 │  └────────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────────┘
 ```
 
+**Reference alternative — self-hosted nginx + SQLite:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     ORIGIN SERVER                           │
+│                                                             │
+│  nginx reverse proxy                                        │
+│    · JSON structured access logs (Client Hints)             │
+│    · Layer 0: Last-Modified/If-Modified-Since counting      │
+│    · Honeypot trap location (/~trap/)                       │
+│        │                                                    │
+│        ▼                                                    │
+│  Ingest Handler (Node/Deno/Bun)                             │
+│    · Parse Client Hints headers                             │
+│    · Geo-IP → country code (IP discarded)                   │
+│    · Daily hash → is_unique (hash discarded)                │
+│        │                                                    │
+│        ▼                                                    │
+│  Log Processor (cron)                                       │
+│    · Reads nginx JSON access logs                           │
+│    · Classifies bot vs human traffic                        │
+│        │                                                    │
+│        ▼                                                    │
+│  SQLite (primary) / PostgreSQL (optional)                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+The self-hosted variant is documented in [Server Configuration (nginx reference only)](#server-configuration-nginx-reference-only). The rest of this spec assumes Cloudflare Pages unless noted.
+
 ---
 
-## Ingest Handler
+## Basic Auth Compatibility
 
-All endpoints live on the same domain as the site. All return `204 No Content` on success. The handler runs as a lightweight HTTP server behind nginx.
+The existing `functions/_middleware.js` authenticates every request with HTTP Basic Auth while vanilla-breeze.com is pre-release. Analytics ingest routes need one of these resolutions before Phase 4 ships:
+
+1. **Exempt `/api/analytics/*` from the middleware.** Update `_middleware.js` to call `next()` immediately when `new URL(request.url).pathname.startsWith('/api/analytics/')`. Gives pre-release telemetry with minimal code change. Accepts that a public-facing ingest surface exists while the site itself is gated.
+2. **Shared-secret header.** Middleware requires either Basic Auth credentials **or** a `X-VB-Analytics: <token>` header on `/api/analytics/*`. Client injects the token via `data-token` on the analytics script. Slightly more protection against internet-scale beacon spam, but the token is visible in HTML source.
+3. **Defer ingest until the gate is removed.** Ship Phases 1–3 against a dummy endpoint (e.g., a Cloudflare Worker that `204`s everything, or `localhost` in dev). Turn on real ingest the same commit that removes the Basic Auth gate. Cleanest, zero incremental surface area.
+
+**Recommended:** Option 1 for pre-release visibility; revisit at launch. Decision should be captured in a beads issue alongside the Phase 4 implementation.
+
+---
+
+## Ingest Handler (Pages Functions)
+
+All endpoints live on the same domain as the site under `/api/analytics/*` — Cloudflare Pages resolves these to files under `functions/api/analytics/`. All return `204 No Content` on success.
 
 ### Endpoints
 
-| Method | Path | Source | Purpose |
-|--------|------|--------|---------|
-| `POST` | `/analytics/hit` | JS beacon | Page view with taxonomy |
-| `POST` | `/analytics/events` | JS buffer | Batched events (scroll, attention, custom) |
-| `POST` | `/analytics/click` | `ping` + beacon | Outbound link click |
-| `POST` | `/analytics/forget` | Settings panel | Delete this session's data |
+| Method | Path | Source | File | Purpose |
+|--------|------|--------|------|---------|
+| `POST` | `/api/analytics/hit` | JS beacon | `functions/api/analytics/hit.js` | Page view with taxonomy |
+| `POST` | `/api/analytics/events` | JS buffer | `functions/api/analytics/events.js` | Batched events (scroll, attention, custom) |
+| `POST` | `/api/analytics/click` | `ping` + beacon | `functions/api/analytics/click.js` | Outbound link click |
 
-### `/analytics/hit` — Page View
+> **`/analytics/forget` is deferred.** Per the master brief: an aggregate-only system has no per-session record to delete, so the endpoint exposes an action with no meaningful effect. Revisit once optional session-token mode exists.
+
+### Pages Function shape
+
+Each endpoint exports `onRequestPost`. Cloudflare binds D1 and (optional) Analytics Engine via the Pages project configuration:
+
+```javascript
+// functions/api/analytics/hit.js
+export async function onRequestPost({ request, env, waitUntil }) {
+  const body = await request.json().catch(() => null);
+  if (!body) return new Response(null, { status: 400 });
+
+  const country = request.cf?.country ?? 'XX';
+  const ua      = request.headers.get('user-agent') ?? '';
+  const ip      = request.headers.get('cf-connecting-ip') ?? '';
+
+  // Daily hash — computed, used for uniqueness, then discarded.
+  const isUnique = await checkUnique(env, body.s, ip, ua, body.w ?? 0);
+
+  waitUntil(env.DB.prepare(`
+    INSERT INTO hits (site_id, path, referrer, country, is_unique,
+                      persona, activity, topic, content, stage, created_at)
+    VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+  `).bind(
+    body.s, body.p, body.r ?? '', country, isUnique ? 1 : 0,
+    body.taxonomy?.persona ?? null,
+    body.taxonomy?.activity ?? null,
+    body.taxonomy?.topic ?? null,
+    body.taxonomy?.content ?? null,
+    body.taxonomy?.stage ?? null,
+    Date.now()
+  ).run());
+
+  // Optional: write a data point to Analytics Engine for high-cardinality dashboards
+  env.ANALYTICS?.writeDataPoint({
+    blobs: [body.s, body.p, country],
+    indexes: [body.s],
+    doubles: [1],
+  });
+
+  return new Response(null, { status: 204 });
+}
+```
+
+**Bindings required in the Pages project:**
+
+| Binding | Type | Purpose |
+|---|---|---|
+| `DB` | D1 | Primary store (hits, events, clicks, bot_log, daily_salts) |
+| `ANALYTICS` | Analytics Engine | Optional high-cardinality request telemetry |
+| `SALT_KV` | KV (optional) | If rotating salts via Worker cron; otherwise store in `daily_salts` D1 table |
+
+### `/api/analytics/hit` — Page View
 
 **Request body:**
 
@@ -123,75 +228,58 @@ All endpoints live on the same domain as the site. All return `204 No Content` o
 }
 ```
 
-**Server processing:**
+**Function processing:**
 
-1. Parse Client Hints headers from the request (`Sec-CH-UA`, `Sec-CH-UA-Mobile`, `Sec-CH-UA-Platform`)
-2. Geo-IP lookup → ISO country code → **discard IP immediately**
-3. Daily hash (`SHA-256(ip + ua + siteId + dailySalt)`) → check in-memory Set → `is_unique` flag → **discard hash**
-4. Extract taxonomy fields
-5. `INSERT INTO hits` — raw event never stored, only derived aggregate columns
-6. Return `204`
+1. Read Client Hints headers from the request (`Sec-CH-UA`, `Sec-CH-UA-Mobile`, `Sec-CH-UA-Platform`).
+2. Read `request.cf.country` for geo — no MaxMind, IP never leaves Cloudflare.
+3. Daily hash (`SHA-256(ip + ua + siteId + dailySalt)`) → check against D1 `daily_uniques` row or KV key → `is_unique` flag → **discard hash**.
+4. Extract taxonomy fields.
+5. `INSERT INTO hits` via D1 prepared statement — raw event never stored, only derived aggregate columns.
+6. Optionally `env.ANALYTICS.writeDataPoint(...)` for the high-cardinality request-telemetry view.
+7. Return `204`.
 
-### `/analytics/click` — Outbound Link Click
+### `/api/analytics/click` — Outbound Link Click
 
 Handles both browser `ping` POSTs (`Content-Type: text/ping`) and `sendBeacon` fallback POSTs (`Content-Type: application/json`).
 
 ```javascript
-// POST /analytics/click
-// Content-Type: text/ping (browser ping) or application/json (sendBeacon fallback)
-// Headers guaranteed by ping spec: Ping-From, Ping-To
-export async function handlePingClick(req) {
-  const contentType = req.headers.get('content-type');
+// functions/api/analytics/click.js
+export async function onRequestPost({ request, env, waitUntil }) {
+  const contentType = request.headers.get('content-type') ?? '';
 
-  if (contentType === 'text/ping') {
-    // Browser-native ping POST
-    const pingFrom = req.headers.get('ping-from');
-    const pingTo   = req.headers.get('ping-to');
-    const url      = new URL(req.url);
+  let site, fromPage, toDomain;
 
-    await db.run(`
-      INSERT INTO clicks (site_id, from_page, to_domain, created_at)
-      VALUES (?, ?, ?, ?)
-    `, [
-      url.searchParams.get('site') || 'default',
-      sanitizePath(url.searchParams.get('page') || pingFrom),
-      extractDomain(pingTo),
-      Date.now(),
-    ]);
-  } else if (contentType === 'application/json') {
-    // sendBeacon fallback (Firefox, Brave)
-    const body = await req.json();
-    await db.run(`
-      INSERT INTO clicks (site_id, from_page, to_domain, created_at)
-      VALUES (?, ?, ?, ?)
-    `, [
-      body.s || 'default',
-      sanitizePath(body.from),
-      body.to,
-      Date.now(),
-    ]);
+  if (contentType.startsWith('text/ping')) {
+    const pingFrom = request.headers.get('ping-from');
+    const pingTo   = request.headers.get('ping-to');
+    const url      = new URL(request.url);
+    site     = url.searchParams.get('site') || 'default';
+    fromPage = sanitizePath(url.searchParams.get('page') || pingFrom);
+    toDomain = extractDomain(pingTo);
+  } else if (contentType.startsWith('application/json')) {
+    const body = await request.json().catch(() => null);
+    if (!body) return new Response(null, { status: 400 });
+    site     = body.s || 'default';
+    fromPage = sanitizePath(body.from);
+    toDomain = body.to;
   } else {
     return new Response(null, { status: 400 });
   }
 
+  waitUntil(env.DB.prepare(
+    `INSERT INTO clicks (site_id, from_page, to_domain, created_at)
+     VALUES (?1, ?2, ?3, ?4)`
+  ).bind(site, fromPage, toDomain, Date.now()).run());
+
   return new Response(null, { status: 204 });
 }
 ```
 
-### `/analytics/forget` — Session Erasure
+> **Dedupe.** Browser `ping` and the `sendBeacon` fallback both fire for Firefox/Brave. Dedupe at query time using `(site_id, from_page, to_domain, time_bucket)` rather than at write time — D1 writes are cheap, and query-time dedupe avoids racy transactions across Workers.
 
-Called by the settings panel "Clear my data" button. For a pure aggregate system, there is no per-session data to delete on the server (no session ID was ever stored). The endpoint exists for completeness and future session-token support.
+### `/analytics/forget` — Deferred
 
-```javascript
-export async function handleForget(req) {
-  // If using session tokens (optional extended mode):
-  const { token } = await req.json().catch(() => ({}));
-  if (token) {
-    await db.run('DELETE FROM events WHERE session_token = ?', [token]);
-  }
-  return new Response(null, { status: 204 });
-}
-```
+**Deferred per master brief.** A pure aggregate system has no per-session record to delete: no session ID was ever stored, the daily hash was discarded, and the IP never landed in durable storage. The endpoint adds a surface with no meaningful effect, so it is not included in v0.4. If session-token mode is added later to support per-user erasure, reintroduce the endpoint with real semantics.
 
 ---
 
@@ -224,29 +312,31 @@ This is a heuristic, not an exact count. It undercounts returning visitors who a
 
 ### Approach 3 — Two-Level Daily Hash (Primary)
 
-Inspired by Fathom's daily hash with OpenPanel's screen-width input for additional entropy without adding identifiability.
+Inspired by Fathom's daily hash with OpenPanel's screen-width input for additional entropy without adding identifiability. **Cloudflare Workers are stateless across invocations**, so the reference-nginx in-memory Set becomes a D1 table (or a KV namespace with daily expiry).
 
 ```javascript
-// daily-hash.js
-import { createHash } from 'node:crypto';
+// functions/_lib/daily-hash.js
 
-// Salt rotates at midnight UTC — stored in DB, never logged
-let currentSalt = null;
-let saltDate    = null;
+async function sha256Hex(input) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
-async function getDailySalt() {
+async function getDailySalt(env) {
   const today = new Date().toISOString().slice(0, 10);
-  if (saltDate === today && currentSalt) return currentSalt;
+  const row = await env.DB.prepare('SELECT salt FROM daily_salts WHERE day = ?1').bind(today).first();
+  if (row?.salt) return row.salt;
 
-  const row = await db.get('SELECT salt FROM daily_salts WHERE day = ?', [today]);
-  if (row) {
-    currentSalt = row.salt;
-  } else {
-    currentSalt = crypto.randomUUID();
-    await db.run('INSERT INTO daily_salts (day, salt) VALUES (?, ?)', [today, currentSalt]);
-  }
-  saltDate = today;
-  return currentSalt;
+  // Salt not yet created today — generate and insert. Use INSERT OR IGNORE
+  // so concurrent Workers don't race to write duplicate salts.
+  const salt = crypto.randomUUID();
+  await env.DB.prepare(
+    'INSERT OR IGNORE INTO daily_salts (day, salt) VALUES (?1, ?2)'
+  ).bind(today, salt).run();
+
+  // Read back — if another Worker won the race, its salt is authoritative.
+  const confirmed = await env.DB.prepare('SELECT salt FROM daily_salts WHERE day = ?1').bind(today).first();
+  return confirmed.salt;
 }
 
 /**
@@ -261,37 +351,27 @@ async function getDailySalt() {
  *     common values, so it refines uniqueness without creating a
  *     fingerprint.
  *
- * The hash is checked against an in-memory Set, used to set
- * is_unique=1 on the first hit, then discarded. Neither the hash
- * nor its inputs are stored.
+ * The hash is checked against the daily_uniques D1 table (or a
+ * KV namespace with TTL), used to set is_unique=1 on the first
+ * hit, then discarded. Neither the hash nor its inputs are stored
+ * long-term — daily_uniques is truncated at salt rotation.
  */
-const dailyUniques = new Set();
+export async function checkUnique(env, siteId, ip, ua, screenWidth) {
+  const salt = await getDailySalt(env);
+  const level1 = await sha256Hex(`${ip}|${ua}|${siteId}|${salt}`);
+  const level2 = await sha256Hex(`${level1}|${screenWidth || 0}`);
 
-export async function checkUnique(ip, ua, siteId, screenWidth) {
-  const salt = await getDailySalt();
+  // INSERT OR IGNORE returns a non-zero rowsAffected only if the hash
+  // was not already seen today. That's our "first hit" signal.
+  const result = await env.DB.prepare(
+    'INSERT OR IGNORE INTO daily_uniques (day_hash) VALUES (?1)'
+  ).bind(level2).run();
 
-  // Level 1: core identity signals
-  const level1 = createHash('sha256')
-    .update(`${ip}|${ua}|${siteId}|${salt}`)
-    .digest('hex');
-
-  // Level 2: add screen width for extra entropy
-  const level2 = createHash('sha256')
-    .update(`${level1}|${screenWidth || 0}`)
-    .digest('hex');
-
-  if (dailyUniques.has(level2)) return false;
-  dailyUniques.add(level2);
-  return true;
-}
-
-// Clear the Set at midnight (salt rotation also invalidates all hashes)
-export function resetDailyUniques() {
-  dailyUniques.clear();
-  currentSalt = null;
-  saltDate = null;
+  return result.meta.changes > 0;
 }
 ```
+
+**Salt rotation.** A scheduled Worker triggers at UTC midnight, deletes `daily_salts` and `daily_uniques` rows older than N days (default 2), and lets the next request seed the new day's salt on demand. See `functions/_scheduled/rotate-salts.js` in the module map.
 
 **Privacy guarantees:**
 
@@ -304,7 +384,42 @@ export function resetDailyUniques() {
 
 ## Layer 0 — HTTP Header Counting
 
-Zero-JavaScript visit counting using Cabin's `Last-Modified` / `If-Modified-Since` pattern. This is the most privacy-friendly layer: no scripts, no cookies, no client-side state.
+Zero-JavaScript visit counting using Cabin's `Last-Modified` / `If-Modified-Since` pattern. The most privacy-friendly layer: no scripts, no cookies, no client-side state.
+
+### On Cloudflare Pages
+
+Implement as a **catch-all Pages Function** that wraps HTML responses. The Function sets `Last-Modified` to UTC midnight, reads `If-Modified-Since` from the incoming request, and writes one data point per request into D1 (or Analytics Engine) before chaining to the static asset response. Cloudflare's edge cache honors `Last-Modified` but must be told **not** to strip the conditional request — set `Cache-Control: private, must-revalidate` on HTML so the Function sees each hit.
+
+```javascript
+// functions/_middleware-layer0.js — chain AFTER the auth middleware
+export async function onRequest({ request, next, env, waitUntil }) {
+  const url = new URL(request.url);
+  // Only instrument HTML pages
+  if (!isHtmlPath(url.pathname)) return next();
+
+  const ims     = request.headers.get('if-modified-since');
+  const returns = !!ims; // returning visitor within today's Last-Modified window
+
+  waitUntil(env.DB.prepare(
+    `INSERT INTO layer0_hits (site_id, path, is_returning, created_at)
+     VALUES (?1, ?2, ?3, ?4)`
+  ).bind('default', sanitizePath(url.pathname), returns ? 1 : 0, Date.now()).run());
+
+  const response = await next();
+  const headers = new Headers(response.headers);
+  headers.set('Last-Modified', utcMidnight());
+  headers.set('Cache-Control', 'private, must-revalidate');
+  return new Response(response.body, { status: response.status, headers });
+}
+
+function utcMidnight() {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  return d.toUTCString();
+}
+```
+
+### On nginx (reference only)
 
 ### How It Works
 
@@ -370,7 +485,59 @@ A single page load with no subsequent requests (no `If-Modified-Since` on later 
 
 ---
 
-## Server Logs and Log Processor
+## Layer 1 — Request Telemetry on Cloudflare
+
+Replaces the nginx log processor with edge-native primitives. Runs on every HTTP request, independent of the JS beacon, and captures visitors who never load JavaScript (bots, no-JS, strict privacy browsers).
+
+### Primary — Workers Analytics Engine
+
+Workers Analytics Engine is Cloudflare's high-cardinality time-series store. A catch-all Pages Function writes one data point per HTML request with `request.cf` data (country, bot management, HTTP version) and parsed Client Hints:
+
+```javascript
+// functions/_middleware-telemetry.js
+export async function onRequest({ request, next, env, waitUntil }) {
+  const url = new URL(request.url);
+  if (!isHtmlPath(url.pathname)) return next();
+
+  const cf   = request.cf ?? {};
+  const bot  = cf.botManagement?.score ?? null;
+  const hint = {
+    ua:       request.headers.get('sec-ch-ua') ?? '',
+    mobile:   request.headers.get('sec-ch-ua-mobile') === '?1' ? 1 : 0,
+    platform: request.headers.get('sec-ch-ua-platform') ?? '',
+  };
+
+  env.ANALYTICS?.writeDataPoint({
+    blobs:   ['default', url.pathname, cf.country ?? 'XX', hint.platform, hint.ua],
+    indexes: ['default'],
+    doubles: [bot ?? -1, hint.mobile],
+  });
+
+  return next();
+}
+```
+
+Analytics Engine queries are SQL-like and support high-cardinality aggregation without per-row billing, making them ideal for the dashboard query layer.
+
+### Optional — Cloudflare Logpush to R2
+
+For deeper bot analysis or cold-storage compliance, enable Cloudflare Logpush (available on paid plans) to stream raw request logs to an R2 bucket. A scheduled Worker reads new Logpush batches from R2 and runs the existing bot classifier for backfilled analytics. Not required for core telemetry.
+
+### `Accept-CH` opt-in
+
+Set `Accept-CH` on HTML responses via the `_headers` file so Chromium browsers send high-entropy Client Hints on subsequent requests:
+
+```
+# site/_headers (Pages convention)
+/*
+  Accept-CH: Sec-CH-UA, Sec-CH-UA-Platform, Sec-CH-UA-Mobile, Sec-CH-Viewport-Width, Sec-CH-DPR, Sec-CH-Prefers-Color-Scheme
+```
+
+---
+
+## Server Configuration (nginx reference only)
+
+> **Reference only.** The sections below describe the self-hosted nginx + log-processor design. On Cloudflare Pages, use [Layer 1 — Request Telemetry on Cloudflare](#layer-1--request-telemetry-on-cloudflare) instead.
 
 ### nginx Configuration
 
@@ -803,7 +970,39 @@ CREATE TABLE daily_salts (
   day   TEXT PRIMARY KEY,  -- 'YYYY-MM-DD'
   salt  TEXT NOT NULL
 );
+
+-- Daily uniques — replaces the in-memory Set from the nginx reference.
+-- A row here means this daily hash has been seen today. Truncated at salt rotation.
+CREATE TABLE daily_uniques (
+  day_hash  TEXT PRIMARY KEY
+);
+
+-- Layer 0 zero-JS hit counter (new for Cloudflare deployment)
+CREATE TABLE layer0_hits (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  site_id       TEXT NOT NULL,
+  path          TEXT NOT NULL,
+  is_returning  INTEGER NOT NULL DEFAULT 0,
+  created_at    INTEGER NOT NULL
+);
+CREATE INDEX idx_layer0_site_created ON layer0_hits (site_id, created_at);
 ```
+
+---
+
+## D1 Compatibility Notes
+
+The schema above targets SQLite syntax. Cloudflare **D1** is SQLite-compatible but differs in a few ways worth calling out before copying migrations over:
+
+- **`AUTOINCREMENT` supported** — D1 accepts the `INTEGER PRIMARY KEY AUTOINCREMENT` form used throughout the schema. Omit it and D1 will still allocate rowids, but explicit AUTOINCREMENT guarantees monotonicity.
+- **No extensions** — JSON1 (`json_extract`) is available, but FTS, R*Tree, and other loadable extensions are not. The "Content performance by series" query's `json_extract` calls will work; anything relying on FTS has to be rewritten.
+- **Binding parameter style** — D1 prepared statements use `?1, ?2` positional binding (shown in the Function examples above), not the `?` style used by `better-sqlite3`.
+- **Query size limits** — D1 rows are limited to ~1 MB; individual queries return up to 100 MB. Aggregate ingest is well within limits; bulk imports from R2 may need chunking.
+- **`PRAGMA` support is restricted** — the `journal_mode`, `synchronous`, and `busy_timeout` tunings in the self-hosted reference are managed by Cloudflare and not settable by the Function.
+- **Transactions** — D1 supports single-request transactions via `env.DB.batch([...statements])`. There is no cross-request `BEGIN; ... COMMIT;`.
+- **Concurrency** — D1 serialises writes per database; the `INSERT OR IGNORE` + `SELECT` pattern used in `getDailySalt` is the correct way to race-safely seed daily rows.
+
+Migrations are managed via `wrangler d1 migrations apply` (or the Pages equivalent once integrated). Each migration file should be idempotent (`CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`) so re-running the pipeline against a partially-migrated D1 never fails.
 
 ---
 
@@ -1056,15 +1255,58 @@ The ingest handler abstracts the database behind a `db.run()` / `db.get()` inter
 
 ## Module Map
 
+### Canonical — Cloudflare Pages
+
+```
+vanilla-breeze/
+├── functions/
+│   ├── _middleware.js                    # Existing: Basic Auth gate
+│   │                                      # Must be updated to bypass /api/analytics/*
+│   ├── _middleware-layer0.js             # Layer 0 counter (Last-Modified wrapper)
+│   ├── _middleware-telemetry.js          # Layer 1 Analytics Engine writer
+│   │
+│   ├── api/analytics/
+│   │   ├── hit.js                        # Page view ingest
+│   │   ├── events.js                     # Buffered event ingest
+│   │   └── click.js                      # Outbound link click ingest
+│   │
+│   ├── _lib/
+│   │   ├── daily-hash.js                 # Web Crypto + D1 salt rotation
+│   │   ├── bot-classifier.js             # Portable bot taxonomy (reusable)
+│   │   ├── ua-parser.js                  # Client Hints parsing
+│   │   └── sanitize.js                   # Path + domain helpers
+│   │
+│   └── _scheduled/
+│       └── rotate-salts.js               # Cron Worker — midnight UTC cleanup
+│
+├── db/
+│   └── migrations/                       # `wrangler d1 migrations` source
+│       ├── 0001_init.sql                 # hits, events, clicks, daily_salts
+│       ├── 0002_bot_log.sql              # bot classification tables
+│       ├── 0003_layer0.sql               # layer0_hits + daily_uniques
+│       └── 0004_indexes.sql              # Dashboard query indexes
+│
+└── admin/r-n-d/analytics/
+    └── dashboards/                       # SQL query library (docs only)
+```
+
+**Pages project bindings (`wrangler.toml` or Pages dashboard):**
+
+- `DB` → D1 database for aggregate storage
+- `ANALYTICS` → Workers Analytics Engine dataset (optional but recommended)
+- `SALT_KV` → KV namespace (optional, only if KV-based salt mode is preferred)
+
+### Reference — Self-hosted nginx
+
 ```
 analytics/
 ├── server/
 │   ├── ingest.js                 # /analytics/* endpoint handlers
-│   ├── bot-classifier.js         # Bot detection and taxonomy
+│   ├── bot-classifier.js         # Bot detection and taxonomy (portable)
 │   ├── log-processor.js          # nginx log → database pipeline
-│   ├── ua-parser.js              # Client Hints + User-Agent parsing
+│   ├── ua-parser.js              # Client Hints + User-Agent parsing (portable)
 │   ├── geoip.js                  # IP → country code (MaxMind Lite)
-│   ├── daily-hash.js             # Two-level daily hash + salt rotation
+│   ├── daily-hash.js             # Two-level daily hash + salt rotation (Node crypto variant)
 │   └── honeypot-expire.js        # TTL cleanup for honeypot IP table
 │
 ├── db/
@@ -1077,7 +1319,9 @@ analytics/
     └── analytics-locations.conf  # Location blocks for ingest proxy
 ```
 
+`bot-classifier.js` and `ua-parser.js` are pure functions and should be shared between the two deployment targets — publish from `functions/_lib/` and symlink or import from the self-hosted bundle.
+
 ---
 
-*Vanilla Breeze Analytics — Backend Specification v0.3.0. February 2026.*
-*Companion to: [analytics-spec.md](analytics-spec.md) (client-side specification).*
+*Vanilla Breeze Analytics — Backend Specification v0.4.0. April 2026.*
+*Companions: [`analytics-spec.md`](analytics-spec.md) (client-side), [`analytics-master.md`](analytics-master.md) (implementation brief).*

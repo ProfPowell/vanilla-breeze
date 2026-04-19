@@ -32,7 +32,10 @@ import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import { initBotProtection } from './lib/bot-protection.js';
 import './lib/sw-register.js';
+import { Analytics } from './lib/analytics.js';
+import { wireAnalyticsEvents } from './utils/analytics-init.js';
 export { registerEffect, registerComponent, activateBundle } from './lib/bundle-registry.js';
+export { Analytics } from './lib/analytics.js';
 
 // VB effects system — unified data-effect API
 import { VB } from './lib/vb.js';
@@ -46,6 +49,7 @@ import './effects/typewriter.js';
 import './effects/scramble.js';
 import './effects/ticker.js';
 import './effects/animate-image.js';
+import './effects/flipboard.js';
 import './effects/rating.js';
 export { VB } from './lib/vb.js';
 
@@ -70,3 +74,15 @@ initFormFieldEnhancements();
 
 // Bot protection (honeypot + behavioural scoring)
 initBotProtection();
+
+// Analytics (first-cut, Phase 1). Transport defaults to 'console' so events
+// are visible in devtools without a backend. Sites that want real ingest
+// call Analytics.init({ transport: 'beacon', endpoint: '/api/analytics' })
+// from their own entry after this module loads, or set the override via
+// window.vbAnalyticsConfig before main.js runs.
+Analytics.init({
+  siteId:    globalThis.vbAnalyticsConfig?.siteId    ?? 'vb-docs',
+  transport: globalThis.vbAnalyticsConfig?.transport ?? 'console',
+  endpoint:  globalThis.vbAnalyticsConfig?.endpoint  ?? '/api/analytics',
+});
+wireAnalyticsEvents();

@@ -4,13 +4,15 @@ description: >
   Client-side design for a first-party, privacy-transparent analytics system
   for Vanilla Breeze. Covers collection layers, page taxonomy, event catalog,
   declarative attributes, modular script architecture, and compliance.
-date: 2026-02-27
-status: design
-version: 0.3.0
-companion: analytics-backend-spec.md
+date: 2026-04-17
+status: ready-for-implementation
+version: 0.4.0
+deployment-target: cloudflare-pages
+companion:
+  - analytics-master.md
+  - analytics-backend-spec.md
 supersedes:
-  - analytics.md
-  - analytics-part2.md
+  - analytics-spec.md@0.3.0
 tags:
   - analytics
   - privacy
@@ -21,6 +23,8 @@ tags:
 # Vanilla Breeze Analytics System
 
 A first-party, cookieless, privacy-transparent analytics system. Collected data is visible and clearable by the user through the VB settings panel. Page taxonomy metadata categorises visitors into broad interest and persona buckets without identifying individuals. Server-side infrastructure (ingest, bot intelligence, schema, queries) is documented in the companion [backend specification](analytics-backend-spec.md).
+
+> **v0.4 — what changed.** Event names now match the live codebase (`wizard:step-change`, `vb:theme-change`, `carousel-wc:change`, etc.). Template paths updated for the `site/src/` tree. Collection layers restructured around Cloudflare Pages + Functions (the real deployment), with nginx/SQLite kept as a generic reference. Tier 1/2 catalog extended with design-system tool events (`color-palette`, `semantic-palette`, `token-specimen`, `theme-export`, etc.). Reconciled with [`analytics-master.md`](analytics-master.md): backend is reference-only, settings-panel integration deferred, page taxonomy optional.
 
 ---
 
@@ -83,7 +87,15 @@ This spec was informed by studying 13 privacy-first analytics platforms. Key pat
 - **Rybbit** — SPA navigation debounce and URL path masking
 - **Swetrix** — JavaScript error tracking as an analytics event category
 
-See [analytics-part3.md](analytics-part3.md) for the full research index with links.
+The v0.3 competitive-landscape table below captures the patterns adopted from each platform.
+
+### Relationship to the Master Brief
+
+[`analytics-master.md`](analytics-master.md) is the pragmatic implementation brief that narrows this spec to what should ship first. Where they differ, the master brief wins on scope and phasing; this spec remains the canonical reference for architecture, vocabulary, and compliance. Three decisions flow from the master brief into this revision:
+
+1. **Backend is reference, not prerequisite.** The client core must operate against any endpoint that returns `204`. The Cloudflare Pages Functions design in [`analytics-backend-spec.md`](analytics-backend-spec.md) is the recommended reference implementation — not a gate on shipping the client library.
+2. **Page taxonomy is optional.** Runtime context from the `<html>` dataset is always collected. `<meta name="vb:*">` is an opt-in content layer authored per site. The starter vocabulary below is a recommendation, not a requirement.
+3. **`<analytics-panel>` is deferred.** `SettingsPanel` currently renders via `innerHTML` with no slots. The panel component is retained as a Phase 3+ reference design; ship the client library and event catalog first.
 
 ### What the System Does Not Do
 
@@ -133,28 +145,41 @@ Patterns studied across 13 platforms and how they influenced this spec:
 
 ### What Already Exists
 
-1. **Root page context on `<html>`:**
-   - `data-page` (layout/page type hook used by docs/lab layouts)
-   - `data-theme`, `data-mode`, and `data-fluid` (theme/mode/fluid context)
-   - Optional extension context like `data-motion-reduced`
+1. **Root page context on `<html>`.** `ThemeManager` populates the dataset at runtime (see `src/lib/theme-manager.js`):
+   - `data-page` — layout/page type hook, set by the template in `site/src/layouts/base.html`
+   - `data-mode` — `light`, `dark`, or a computed value from system preference
+   - `data-theme` — brand name (optionally space-separated with a11y suffixes like `a11y-high-contrast`)
+   - `data-fluid` — `compact`, `spacious`, `default`, or empty
+   - `data-borderStyle`, `data-iconSet`, `data-backdrop`, `data-backdropChrome` — extension context (only present when non-default)
 
-2. **`ping` is already documented as a first-class native attribute:**
-   - `11ty-site/src/pages/docs/attributes/ping.njk`
+2. **`ping` is documented as a first-class native attribute:**
+   - `site/src/pages/docs/attributes/ping.html`
    - Docs correctly call out major limitations:
      - Firefox disables `ping` by default (`browser.send_pings=false`)
      - Privacy browsers/extensions can block pings
-     - Payload is fixed (`PING`) so rich data must be in query params
+     - Payload is fixed (`PING`) so rich data must live in query params
 
-3. **The component/runtime layer emits many analytics-ready events already:**
-   - Form/wizard: `vb:submit`, `wizard:stepchange`, `wizard:complete`, `wizard:reset`
-   - Theme/a11y: `theme-change`, `a11y-themes-change`, `extensions-change`
-   - UI interaction: `accordion-wc:toggle`, `drop-down:open|close`, `tab-set:change`, `site-search:open|close`
-   - Data interactions: `data-table:sort|filter|expand|selection|page`
-   - Navigation helpers: `page-toc:navigate`, `heading-links:navigate`
+3. **The component/runtime layer emits many analytics-ready events already** (names verified against live source — use these exact names in instrumentation):
+   - **Form/wizard**: `vb:submit`, `wizard:step-change`, `wizard:complete`, `wizard:reset`, `vb:botblocked`
+   - **Theme/a11y**: `vb:theme-change`, `vb:a11y-themes-change`, `vb:extensions-change`, `vb:locale-change`
+   - **UI interaction**: `accordion-wc:toggle`, `tab-set:change`, `carousel-wc:change`, `carousel-wc:play`, `carousel-wc:pause`, `site-search:open`, `site-search:close`, `theme-picker:open`, `theme-picker:close`
+   - **Data interactions**: `data-table:sort`, `data-table:filter`, `data-table:expand`, `data-table:selection`, `data-table:page`
+   - **Navigation helpers**: `page-toc:navigate`, `heading-links:navigate`
+   - **Commands**: `vb:command-registry-change`
+   - **Design-system tooling** (added after the v0.3 spec — see [Event Catalog](#vb-event-catalog-and-analytics-mapping)): `color-palette:select`, `color-palette:change`, `color-picker:change`, `color-picker:open`, `color-picker:close`, `semantic-palette:change`, `token-specimen:change`, `spacing-specimen:change`, `type-specimen:change`, `theme-export:change`
 
-4. **Privacy primitives are already documented:**
-   - `referrerpolicy` guidance exists and is detailed
-   - This gives a solid foundation for analytics that does not leak unnecessary URL data
+4. **Privacy primitives are documented:**
+   - `site/src/pages/docs/attributes/referrerpolicy.html` — detailed policy guidance
+   - Solid foundation for analytics that does not leak unnecessary URL data
+
+### Deployment Reality
+
+Vanilla Breeze ships to **Cloudflare Pages**, not a traditional origin server. As of April 2026:
+
+- The site is currently gated by HTTP Basic Auth via `functions/_middleware.js` (pre-release). Any `/api/analytics/*` ingest endpoints added later must be either placed outside this gate or treated as public-by-design.
+- There is no nginx, no raw access log, and no long-lived SQLite file on disk. Everything server-side runs as Pages Functions. The reference backend target is Pages Functions + Cloudflare D1 (see [`analytics-backend-spec.md`](analytics-backend-spec.md) v0.4).
+- Deployment is driven by GitHub Actions (`.github/workflows/deploy.yml`) producing the static site; Pages Functions under `functions/` ship alongside.
+- Geo, bot, and client-hint data are available cheaply via the incoming `request.cf` object — no MaxMind, no UA parsing library.
 
 ### What Is Missing
 
@@ -162,7 +187,9 @@ Patterns studied across 13 platforms and how they influenced this spec:
 2. No standard event taxonomy across component events.
 3. No consent gate or policy layer in runtime.
 4. No transport abstraction (`sendBeacon`/`fetch keepalive`/queue fallback).
-5. No single analytics document tying context + events + ping + privacy together.
+5. No `<meta name="vb:*">` taxonomy tags authored in any template — the vocabulary below is specified but not yet emitted.
+6. `theme-composer` currently wires specimen edits directly to `:root` CSS custom properties **without** dispatching a summary event. A `theme-composer:change` CustomEvent is required before analytics can observe theme-composition as a coherent action. See [Event Catalog → action item](#theme-composer-instrumentation-gap).
+7. No ingest endpoint in `functions/api/analytics/`.
 
 ---
 
@@ -225,7 +252,9 @@ The five-layer model maps to concrete implementations:
 
 ## Page Taxonomy Schema
 
-Pages are annotated with `<meta>` tags that describe their content type, target audience, and intended visitor activity. The analytics script reads these on page load and includes the values in every beacon. This enables aggregate reporting by persona and content type without tracking individuals.
+> **Optional content layer.** Runtime context from the `<html>` dataset is always collected. `<meta name="vb:*">` is an **opt-in, per-site** content classification layer — not a requirement of the core library. The vocabulary below is a recommended starter; teams may add, remove, or rename dimensions.
+
+Pages may be annotated with `<meta>` tags that describe their content type, target audience, and intended visitor activity. When authored, the analytics script reads them on page load and includes the values in every beacon. This enables aggregate reporting by persona and content type without tracking individuals. VB's own 11ty site does not yet author these tags; a build-time task will generate them from page frontmatter.
 
 ### Meta Tag Vocabulary
 
@@ -336,32 +365,39 @@ The analytics module reads both. The `<html>` dataset provides runtime context t
 
 ### Layer 0 — HTTP Header Counting
 
-Zero-JavaScript visit counting using HTTP conditional requests. This is the most privacy-friendly layer: no scripts, no cookies, no client-side state. Inspired by Cabin's `Last-Modified` / `If-Modified-Since` pattern.
+Zero-JavaScript visit counting using HTTP conditional requests. The most privacy-friendly layer: no scripts, no cookies, no client-side state. Inspired by Cabin's `Last-Modified` / `If-Modified-Since` pattern.
 
 **How it works:**
 
-1. Server sets `Last-Modified` on page responses to midnight of the current day
-2. On first visit, browser has no `If-Modified-Since` → server counts a new visit
-3. On subsequent visits (same day), browser sends `If-Modified-Since` → server counts a returning visit
+1. Origin (Pages Function or nginx) sets `Last-Modified` on HTML responses to midnight of the current day
+2. On first visit, browser has no `If-Modified-Since` → origin counts a new visit
+3. On subsequent visits (same day), browser sends `If-Modified-Since` → origin counts a returning visit
 4. The difference gives a rough unique visitor count with zero client cooperation
 
-**Client requirements:** None. This layer is entirely server-side. See the [backend specification](analytics-backend-spec.md#layer-0--http-header-counting) for implementation.
+**On Cloudflare Pages:** Implement as a catch-all Pages Function that wraps HTML responses, sets `Last-Modified`, and increments a D1 row or Analytics Engine data point on the conditional-request miss. Pages' default edge cache honours `Last-Modified` but must be configured (`Cache-Control: private, must-revalidate`) so the Function sees each conditional request. See [backend specification → Layer 0 on Cloudflare](analytics-backend-spec.md#layer-0--http-header-counting).
+
+**On nginx (reference only):** See the original nginx configuration in the backend spec — retained as a reference for self-hosted deployments.
+
+**Client requirements:** None. This layer is entirely server-side.
 
 **Limitations:**
 
 - Privacy browsers may strip `If-Modified-Since`
 - Cannot distinguish between different visitors — only "new today" vs "returning today"
+- Cloudflare's default cache rules may short-circuit conditional requests at the edge; explicit cache control is required
 - Best used as a baseline floor count, supplemented by Layer 1+ signals
 
 ---
 
-### Layer 1 — Server Logs with Client Hints
+### Layer 1 — Request Telemetry with Client Hints
 
-The foundation layer. Captures every HTTP request including bots, no-JS visitors, monitoring tools, and AI crawlers. Requires no client cooperation.
+Captures every HTTP request including bots, no-JS visitors, monitoring tools, and AI crawlers. Requires no client cooperation.
 
-Server logs are processed by a scheduled job that classifies requests as human or bot traffic, extracts device information from Client Hints headers, and records structured hits in the database.
+**On Cloudflare Pages (primary):** A catch-all Pages Function intercepts HTML requests, reads Client Hints + `request.cf` (country, bot score, user agent), and writes one data point per request to **Workers Analytics Engine** (high-cardinality time-series storage) or appends a row to **D1**. The function returns immediately and lets Pages serve the static HTML from its asset store. Optional **Cloudflare Logpush** delivers the raw request log to R2 for cold-storage bot analysis.
 
-**Client requirements:** None — the browser sends Client Hints headers automatically when the server opts in via `Accept-CH`. The [backend specification](analytics-backend-spec.md#server-logs-and-log-processor) covers nginx configuration, the log processor, and bot classification.
+**On nginx (reference only):** The original design — JSON structured access logs processed by a scheduled job — is preserved in the backend spec for self-hosted deployments. Not the canonical path for VB.
+
+**Client requirements:** None — the browser sends Client Hints headers automatically when the origin opts in via `Accept-CH`. See the [backend specification](analytics-backend-spec.md#layer-1--request-telemetry-on-cloudflare) for the Pages Function implementation, the optional nginx log processor, and bot classification.
 
 **Referrer-based unique detection:** Visitors arriving with an external referrer are flagged as likely unique (Simple Analytics pattern). This supplements the Layer 3 daily hash for log-only traffic.
 
@@ -396,7 +432,7 @@ For static sites, apply `ping` at build time in your template layer:
 <!-- Template: all external links get ping automatically -->
 <a
   href="https://github.com/example/repo"
-  ping="/analytics/click?page=/docs/installation&type=outbound"
+  ping="/api/analytics/click?page=/docs/installation&type=outbound"
   rel="noopener noreferrer"
 >
   View on GitHub
@@ -424,7 +460,7 @@ The server-side `ping` handler is documented in the [backend specification](anal
  */
 
 const SITE_ID  = document.currentScript?.dataset.site ?? '';
-const ENDPOINT = '/analytics';
+const ENDPOINT = '/api/analytics'; // Cloudflare Pages Functions convention — see functions/api/analytics/*
 
 // --- Opt-out signals — respect unconditionally ---
 function isOptedOut() {
@@ -575,6 +611,8 @@ if (!isOptedOut() && !document.documentElement.hasAttribute('data-vb-no-track'))
 <script src="/js/vb-analytics.js" data-site="mysite" async></script>
 ```
 
+> **Ingest route on Cloudflare Pages.** Endpoints resolve to files under `functions/api/analytics/` — for example `/api/analytics/hit` → `functions/api/analytics/hit.js`. The existing `functions/_middleware.js` Basic Auth gate must be updated to bypass `/api/analytics/*` if telemetry is desired while the site remains pre-release.
+
 ---
 
 ### Layer 4 — `sessionStorage` Event Buffer
@@ -590,7 +628,7 @@ A separate module that handles event queueing, scroll depth, and attention track
  * No cross-session persistence — sessionStorage only.
  */
 
-const ENDPOINT  = '/analytics';
+const ENDPOINT  = '/api/analytics';
 const QUEUE_KEY = 'vb_q';
 const MAX_QUEUE = 50;
 
@@ -711,6 +749,8 @@ See the [backend specification](analytics-backend-spec.md#daily-hash-and-visitor
 
 HTML authors can instrument analytics through data attributes without writing JavaScript. Inspired by Umami's `data-umami-event` pattern and PostHog's `ph-no-capture` exclusion.
 
+> **Namespace fits house style.** VB already uses `data-vb-*` for other declarative hooks — `data-vb-attract`, `data-vb-whimsy`, `data-vb-math-font`. The analytics attributes below extend the existing convention and do not introduce a new prefix.
+
 ### Tracking Events
 
 Add `data-vb-event` to any interactive element. The analytics system observes clicks via event delegation:
@@ -800,22 +840,30 @@ Source events use `component:action` format (e.g., `data-table:sort`). Analytics
 
 ### Tier 1 — High-Value (Phase 1)
 
-These events represent meaningful user intent and should be wired from day one.
+These events represent meaningful user intent and should be wired from day one. **Source event names verified against live code — use these exact strings in instrumentation.**
 
 | Source Event | Analytics Name | Props |
 |---|---|---|
 | `vb:submit` | `form.submit_valid` | `{ formId }` |
-| `wizard:stepchange` | `form.wizard_step` | `{ step, direction }` |
+| `wizard:step-change` | `form.wizard_step` | `{ from, to, direction }` |
 | `wizard:complete` | `form.wizard_complete` | `{ steps }` |
 | `wizard:reset` | `form.wizard_reset` | `{}` |
-| `data-table:sort` | `table.sort` | `{ column, direction }` |
-| `data-table:filter` | `table.filter` | `{ column, value }` |
+| `data-table:sort` | `table.sort` | `{ column, direction, columnName }` |
+| `data-table:filter` | `table.filter` | `{ column, hasValue, length }` |
 | `data-table:page` | `table.paginate` | `{ page }` |
-| `theme-change` | `ui.theme_change` | `{ theme, mode }` |
+| `vb:theme-change` | `ui.theme_change` | `{ theme, mode }` |
+| `vb:a11y-themes-change` | `ui.a11y_theme` | `{ themes }` |
+| `vb:extensions-change` | `ui.extension_toggle` | `{ extensions }` |
 | `heading-links:navigate` | `docs.anchor_navigate` | `{ id }` |
 | `page-toc:navigate` | `docs.toc_navigate` | `{ id }` |
 | `site-search:open` | `search.open` | `{}` |
 | `site-search:close` | `search.close` | `{ hasQuery }` |
+| `theme-composer:change` **(gap — not yet emitted)** | `theme.compose` | `{ dimension, value }` |
+
+<a id="theme-composer-instrumentation-gap"></a>
+> **Instrumentation gap — `theme-composer:change`.** The `<theme-composer>` tool at `site/src/pages/docs/tools/theme-composer/` currently wires specimen edits directly to CSS custom properties on `:root` without dispatching a summary event. Before analytics can observe theme-composition as a coherent action, add a `theme-composer:change` CustomEvent in its logic module. This should be tracked as a beads issue and blocks Phase 2.
+
+**Payload rules (from master brief):** Do not send raw filter text, search query text, or `FormData` contents. Send counts, lengths, boolean "has value" flags, or typed field identifiers instead.
 
 ### Tier 2 — Medium-Value (Phase 2)
 
@@ -825,12 +873,27 @@ Useful for understanding engagement depth but not critical for launch.
 |---|---|---|
 | `accordion-wc:toggle` | `ui.accordion_toggle` | `{ open, index }` |
 | `tab-set:change` | `ui.tab_change` | `{ tab }` |
-| `carousel-wc:slide-change` | `ui.carousel_slide` | `{ index }` |
-| `carousel-wc:autoplay-toggle` | `ui.carousel_autoplay` | `{ playing }` |
+| `carousel-wc:change` | `ui.carousel_slide` | `{ index }` |
+| `carousel-wc:play` | `ui.carousel_play` | `{}` |
+| `carousel-wc:pause` | `ui.carousel_pause` | `{}` |
+| `data-table:expand` | `table.row_expand` | `{ row }` |
+| `data-table:selection` | `table.row_select` | `{ count }` |
 | `rating-change` | `ui.rating` | `{ value }` |
 | `copy` | `ui.copy` | `{ target }` |
-| `a11y-themes-change` | `ui.a11y_theme` | `{ theme }` |
-| `extensions-change` | `ui.extension_toggle` | `{ extension, enabled }` |
+| `theme-picker:open` | `ui.theme_picker_open` | `{}` |
+| `theme-picker:close` | `ui.theme_picker_close` | `{}` |
+
+**Design-system tooling events (post-v0.3 components).** Wire these when the docs site launches its design-system tool pages:
+
+| Source Event | Analytics Name | Props |
+|---|---|---|
+| `color-palette:select` | `palette.color_select` | `{ name, index }` |
+| `color-palette:change` | `palette.color_edit` | `{ name, index }` |
+| `semantic-palette:change` | `palette.semantic_change` | `{ role }` |
+| `token-specimen:change` | `tokens.edit` | `{ token }` |
+| `spacing-specimen:change` | `tokens.spacing_edit` | `{ token }` |
+| `type-specimen:change` | `tokens.type_edit` | `{ token }` |
+| `theme-export:change` | `theme.export_format` | `{ format }` |
 
 ### Tier 3 — Error and Performance Events (Phase 3)
 
@@ -862,13 +925,15 @@ Events that have niche value. Wire only when a specific analytics question requi
 
 | Source Event | Analytics Name | When Useful |
 |---|---|---|
+| `color-picker:change` | `ui.color_pick` | Design-tool engagement depth |
+| `color-picker:open` / `:close` | `ui.color_picker_open` / `_close` | Design-tool session framing |
+| `vb:command-registry-change` | `ui.command_registry_change` | Measuring command surface evolution |
+| `vb:locale-change` | `ui.locale_change` | Internationalisation uptake |
+| `vb:botblocked` | `security.bot_blocked` | Form-spam / abuse visibility |
 | `command-palette:select` | `ui.command_select` | Measuring feature discovery |
 | `emoji-picker:select` | `ui.emoji_select` | Content creation analytics |
 | `geo-map:activate` | `ui.map_interact` | Measuring map engagement |
-| `drop-down:open` | `ui.dropdown_open` | Navigation pattern analysis |
-| `drop-down:close` | `ui.dropdown_close` | Navigation pattern analysis |
-| `data-table:expand` | `table.row_expand` | Detail engagement depth |
-| `data-table:selection` | `table.row_select` | Bulk action usage patterns |
+| `drop-down:open` / `:close` | `ui.dropdown_open` / `_close` | Navigation pattern analysis |
 
 ---
 
@@ -940,17 +1005,20 @@ import { Analytics } from '../lib/analytics.js';
 
 const TIER_1_MAP = {
   'vb:submit':              (e) => Analytics.track('form.submit_valid', { formId: e.detail?.formId }),
-  'wizard:stepchange':      (e) => Analytics.track('form.wizard_step', { step: e.detail?.step, direction: e.detail?.direction }),
+  'wizard:step-change':     (e) => Analytics.track('form.wizard_step', { from: e.detail?.from, to: e.detail?.to, direction: e.detail?.direction }),
   'wizard:complete':        (e) => Analytics.track('form.wizard_complete', { steps: e.detail?.steps }),
   'wizard:reset':           ()  => Analytics.track('form.wizard_reset'),
-  'data-table:sort':        (e) => Analytics.track('table.sort', { column: e.detail?.column, direction: e.detail?.direction }),
-  'data-table:filter':      (e) => Analytics.track('table.filter', { column: e.detail?.column, value: e.detail?.value }),
+  'data-table:sort':        (e) => Analytics.track('table.sort', { column: e.detail?.column, direction: e.detail?.direction, columnName: e.detail?.columnName }),
+  'data-table:filter':      (e) => Analytics.track('table.filter', { column: e.detail?.column, hasValue: !!e.detail?.value, length: e.detail?.value?.length ?? 0 }),
   'data-table:page':        (e) => Analytics.track('table.paginate', { page: e.detail?.page }),
-  'theme-change':           (e) => Analytics.track('ui.theme_change', { theme: e.detail?.theme, mode: e.detail?.mode }),
+  'vb:theme-change':        (e) => Analytics.track('ui.theme_change', { theme: e.detail?.theme, mode: e.detail?.mode }),
+  'vb:a11y-themes-change':  (e) => Analytics.track('ui.a11y_theme', { themes: e.detail }),
+  'vb:extensions-change':   (e) => Analytics.track('ui.extension_toggle', { extensions: e.detail }),
   'heading-links:navigate': (e) => Analytics.track('docs.anchor_navigate', { id: e.detail?.id }),
   'page-toc:navigate':      (e) => Analytics.track('docs.toc_navigate', { id: e.detail?.id }),
   'site-search:open':       ()  => Analytics.track('search.open'),
   'site-search:close':      (e) => Analytics.track('search.close', { hasQuery: e.detail?.hasQuery }),
+  'theme-composer:change':  (e) => Analytics.track('theme.compose', { dimension: e.detail?.dimension, value: e.detail?.value }),
 };
 
 export function wireAnalyticsEvents() {
@@ -1119,9 +1187,9 @@ This runs client-side before the beacon is sent, so the server never sees the or
 
 ## The `<analytics-panel>` Component
 
-The analytics panel lives inside the existing `<settings-panel>` web component. It renders what is currently stored on the user's device, explains each field in plain language, provides configuration controls, and exposes a clear action.
+> **Deferred to Phase 3+.** The current `<settings-panel>` component (`src/web-components/settings-panel/logic.js`) renders internal sections via `innerHTML` with `<details>` elements and does not expose named slots. The master brief defers this component until either (a) `<settings-panel>` grows a formal extension/slot API or (b) a dedicated section is added directly to `<settings-panel>`. The design below is retained as a **reference** for that future work.
 
-> **Integration note:** `SettingsPanel` currently renders internal sections via `innerHTML` with `<details>` elements — it does not support named slots. Integration requires either adding slot support to `<settings-panel>` or placing `<analytics-panel>` adjacent to it. This is a design decision to resolve during implementation.
+The analytics panel is intended to live inside the existing `<settings-panel>` web component. It renders what is currently stored on the user's device, explains each field in plain language, provides configuration controls, and exposes a clear action.
 
 ### Component Design
 
@@ -1361,7 +1429,7 @@ The system's compliance properties are architectural, not policy-level. Each is 
 | No cross-session tracking | Session counter uses `sessionStorage` (tab-scoped). Daily hash expires at midnight via salt rotation. |
 | No cross-site tracking | Hash salt includes site ID. A hash from site A cannot be correlated with site B. |
 | User transparency | `<analytics-panel>` renders all device-side data in plain language. No JSON dumps. |
-| User control | "Clear my data" button wipes `sessionStorage` and calls `/analytics/forget`. "Pause analytics" sets `vb_optout` in `sessionStorage` and stops all collection. |
+| User control | "Clear my data" button wipes `sessionStorage` (no server-side record exists to delete in v0.4 — `/api/analytics/forget` is deferred per the master brief). "Pause analytics" sets `vb_optout` in `sessionStorage` and stops all collection. |
 | DNT / GPC signals | Checked on every page load. If set, collection stops entirely. |
 | Data minimisation | Server stores only what appears in the dashboard. No raw events table. |
 | Layer 0 strengthens CNIL | Zero-JS counting produces no client-side state at all — no sessionStorage, no scripts — further strengthening the CNIL exemption case. |
@@ -1390,43 +1458,49 @@ Your privacy policy should describe the analytics system in plain language. Mini
 
 ## Phased Roadmap
 
-### Phase 1 — Core Script
+> **Decoupled from the backend.** The client core (Phases 1–3) writes to any endpoint that returns `204`. Nothing blocks shipping against a placeholder collector while the Cloudflare reference backend is still in design.
 
-1. Publish `vb-analytics.js` (<1.5 KB gzipped).
-2. Page view beacon with taxonomy, SPA debounce, opt-out checks.
-3. Declarative `data-vb-event` delegation handler.
-4. `data-vb-no-track` exclusion.
-5. `instrumentLinks()` with `ping` + `sendBeacon` fallback.
+### Phase 1 — Client Foundation
 
-### Phase 2 — Declarative Events and Buffer
+1. Publish `src/lib/analytics.js` — `init`, `track`, `flush`, `setConsent`. <1.5 KB gzipped.
+2. Context extraction from `<html>` dataset (`data-page`, `data-theme`, `data-mode`, `data-fluid`, extension attrs).
+3. Transport: `sendBeacon` primary, `fetch({ keepalive: true })` fallback. Flush on `visibilitychange` / `pagehide`.
+4. Opt-out precedence: explicit `sessionStorage` → GPC → DNT → app consent function.
+5. URL masking hook.
+6. Declarative `data-vb-event`, `data-vb-event-*`, `data-vb-no-track` delegation.
+7. Outbound-link `ping` instrumentation with `sendBeacon` fallback.
 
-1. Deploy `vb-analytics-events.js` (Layer 4 buffer).
-2. Wire **Tier 1 high-value events** via `analytics-init.js`.
-3. Wire **Tier 2 medium-value events**.
-4. Deploy `<analytics-panel>` component and integrate with `<settings-panel>`.
-5. Add consent policy hooks and GPC/DNT support.
-6. Add dedupe strategy for combined `ping` + JS click tracking.
+### Phase 2 — VB Event Integration
 
-### Phase 3 — Observability Modules
+1. Publish `src/utils/analytics-init.js` with the corrected Tier 1 map (verified live event names above).
+2. **Instrument `<theme-composer>` to dispatch `theme-composer:change`** — blocker for `theme.compose` tracking.
+3. Wire Tier 2 medium-value events, including design-system tooling events.
+4. Document the normalised event catalog in VB docs (`site/src/pages/docs/analytics/`).
+5. Add dedupe guidance for combined `ping` + JS click tracking.
 
-1. Deploy `vb-analytics-vitals.js` (LCP, CLS, INP, TTFB).
-2. Deploy `vb-analytics-errors.js` (runtime errors, unhandled rejections).
-3. Add URL masking configuration.
-4. Wire **Tier 3 error and performance events**.
+### Phase 3 — Optional Modules
 
-### Phase 4 — Server Infrastructure
+1. `vb-analytics-events.js` — Layer 4 sessionStorage buffer with scroll depth and attention time.
+2. `vb-analytics-vitals.js` — LCP, CLS, INP, TTFB.
+3. `vb-analytics-errors.js` — runtime errors, unhandled rejections.
+4. `<analytics-panel>` — contingent on `<settings-panel>` growing a slot/extension API (see deferred section).
+5. Sample-rate support.
 
-1. Deploy ingest handler (`ingest.js`, endpoints).
-2. Deploy bot classifier and log processor.
-3. Set up SQLite schema and daily salt rotation.
-4. Deploy honeypot trap.
-5. See [analytics-backend-spec.md](analytics-backend-spec.md) for full server-side roadmap.
+### Phase 4 — Reference Backend on Cloudflare
+
+1. `functions/api/analytics/hit.js`, `events.js`, `click.js` — Pages Functions returning `204`.
+2. D1 schema + daily salt rotation (scheduled Worker).
+3. Workers Analytics Engine binding for high-cardinality request telemetry.
+4. Update `functions/_middleware.js` to bypass `/api/analytics/*` if pre-release telemetry is wanted.
+5. Optional Logpush → R2 for cold-storage log processing.
+6. See [`analytics-backend-spec.md`](analytics-backend-spec.md) v0.4 for the full server-side roadmap.
+7. Honeypot trap and nginx log processor remain **reference-only** for self-hosted deployments.
 
 ### Phase 5 — Ecosystem and Adapters
 
-1. Add adapters for common analytics backends (PostHog, Plausible, custom endpoint) without hard dependency.
-2. Add documented schema versioning and migration policy.
-3. Deploy dashboard query layer and admin reporting.
+1. Adapters for common analytics backends (PostHog, Plausible, custom endpoint) without hard dependency.
+2. Documented schema versioning and migration policy.
+3. Dashboard query layer and admin reporting.
 4. Publish analytics spec in VB documentation.
 
 ---
@@ -1435,18 +1509,21 @@ Your privacy policy should describe the analytics system in plain language. Mini
 
 ### Existing VB files
 
-- `11ty-site/src/pages/docs/attributes/ping.njk` — ping attribute documentation
-- `11ty-site/src/pages/docs/attributes/referrerpolicy.njk` — referrer policy docs
-- `11ty-site/src/_includes/layouts/base.njk` — base layout template
-- `11ty-site/src/_includes/partials/head.njk` — head partial
+- `site/src/pages/docs/attributes/ping.html` — ping attribute documentation
+- `site/src/pages/docs/attributes/referrerpolicy.html` — referrer policy docs
+- `site/src/layouts/base.html` — base layout template (sets `data-page` on `<html>`)
+- `functions/_middleware.js` — Cloudflare Pages Basic Auth gate (must bypass `/api/analytics/*` for pre-release telemetry)
 - `src/main.js` — main JS entry point
 - `src/main-core.js` — core module loader
 - `src/main-autoload.js` — autoload module
-- `src/lib/theme-manager.js` — theme manager (analytics init after this)
-- `src/lib/wizard.js` — wizard component (emits analytics events)
+- `src/lib/theme-manager.js` — theme manager (analytics init runs after this; emits `vb:theme-change`)
+- `src/lib/wizard.js` — wizard component (emits `wizard:step-change`, `wizard:complete`, `wizard:reset`)
 - `src/lib/form-validation.js` — form validation (emits `vb:submit`)
-- `src/web-components/data-table/logic.js` — data table (emits sort/filter/page events)
-- `src/web-components/settings-panel.js` — settings panel component
+- `src/lib/bot-protection.js` — emits `vb:botblocked`
+- `src/web-components/data-table/logic.js` — data table (emits sort/filter/page/expand/selection)
+- `src/web-components/settings-panel/logic.js` — settings panel component (emits `vb:a11y-themes-change`, `vb:extensions-change`)
+- `src/web-components/theme-composer/` — **must be updated to dispatch `theme-composer:change`**
+- `src/web-components/color-palette/logic.js`, `color-picker/logic.js`, `semantic-palette/logic.js`, `token-specimen/logic.js`, `spacing-specimen/logic.js`, `type-specimen/logic.js`, `theme-export/logic.js` — design-system tooling event sources
 
 ### New files — client (this spec)
 
@@ -1460,10 +1537,10 @@ Your privacy policy should describe the analytics system in plain language. Mini
 
 ### New files — server (companion spec)
 
-See [analytics-backend-spec.md](analytics-backend-spec.md#module-map) for the server-side module map.
+Cloudflare Pages Functions under `functions/api/analytics/` — see [`analytics-backend-spec.md`](analytics-backend-spec.md#module-map) for the full server-side module map.
 
 ---
 
-*Vanilla Breeze Analytics System — Client Specification v0.3.0. February 2026.*
-*Companion: [analytics-backend-spec.md](analytics-backend-spec.md) (server-side specification).*
-*Supersedes: analytics.md (architecture blueprint), analytics-part2.md (design spec).*
+*Vanilla Breeze Analytics System — Client Specification v0.4.0. April 2026.*
+*Companions: [`analytics-master.md`](analytics-master.md) (implementation brief), [`analytics-backend-spec.md`](analytics-backend-spec.md) (server-side specification).*
+*Supersedes `analytics-spec.md@0.3.0`.*

@@ -21,6 +21,9 @@ import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import { initBotProtection } from './lib/bot-protection.js';
 import './lib/sw-register.js';
+import { Analytics } from './lib/analytics.js';
+import { wireAnalyticsEvents } from './utils/analytics-init.js';
+export { Analytics } from './lib/analytics.js';
 
 // Initialize theme system early to prevent FOUC
 await ThemeManager.init();
@@ -39,6 +42,16 @@ initFormFieldEnhancements();
 
 // Bot protection (honeypot + behavioral scoring)
 initBotProtection();
+
+// Analytics (first-cut, Phase 1). Transport defaults to 'console' so events
+// are visible in devtools without a backend. Override before this script
+// runs via <script>window.vbAnalyticsConfig = { transport: 'beacon' }</script>.
+Analytics.init({
+  siteId:    globalThis.vbAnalyticsConfig?.siteId    ?? 'vb-docs',
+  transport: globalThis.vbAnalyticsConfig?.transport ?? 'console',
+  endpoint:  globalThis.vbAnalyticsConfig?.endpoint  ?? '/api/analytics',
+});
+wireAnalyticsEvents();
 
 // Lazy-load wizard only when [data-wizard] is present
 if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');

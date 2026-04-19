@@ -1,0 +1,29 @@
+# Cloudflare Pages + Workers configuration for vanilla-breeze.com
+#
+# This file is informational for local development and documents the
+# bindings the Pages project expects. Production bindings are configured
+# in the Cloudflare dashboard (Pages project → Settings → Functions).
+#
+# Local dev with Pages Functions:
+#   npx wrangler pages dev site/dist/pages --d1=DB --compatibility-date=2026-04-17
+
+name = "vanilla-breeze"
+compatibility_date = "2026-04-17"
+pages_build_output_dir = "site/dist/pages"
+
+# D1 database binding for analytics ingest + stats endpoint.
+# Create once via:
+#   wrangler d1 create vanilla-breeze-analytics
+# Then copy the returned database_id below and into the Pages dashboard.
+[[d1_databases]]
+binding = "vanilla_breeze_analytics"
+database_name = "vanilla-breeze-analytics"
+database_id = "da49ab0f-c252-4799-ab37-490130340e88"
+migrations_dir = "db/migrations"
+
+
+# Optional: Workers Analytics Engine binding for high-cardinality
+# request telemetry (see admin/r-n-d/analytics/analytics-backend-spec.md).
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
+# dataset = "vb_analytics_events"
