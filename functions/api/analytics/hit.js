@@ -35,32 +35,37 @@ export async function onRequestPost({ request, env, waitUntil }) {
   const ip      = request.headers.get('cf-connecting-ip') ?? '';
 
   const screenWidth = Number(body.props?.screenWidth ?? body.context?.screenWidth ?? 0);
-  const isUnique = await checkUnique(env, siteId, ip, ua, screenWidth);
-
   const tx = body.context ?? {};
   const props = stringifyProps(body.props);
 
-  const insert = db.prepare(
-    `INSERT INTO hits
-       (site_id, event_name, path, referrer, country, is_unique, props,
-        persona, activity, topic, content, stage, created_at)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)`
-  ).bind(
-    siteId,
-    String(body.name).slice(0, 128),
-    path,
-    ref,
-    country,
-    isUnique ? 1 : 0,
-    props,
-    tx.persona ?? null,
-    tx.activity ?? null,
-    tx.topic ?? null,
-    tx.content ?? null,
-    tx.stage ?? null,
-    Date.now(),
-  );
+  try {
+    const isUnique = await checkUnique(env, siteId, ip, ua, screenWidth);
+    const insert = db.prepare(
+      `INSERT INTO hits
+         (site_id, event_name, path, referrer, country, is_unique, props,
+          persona, activity, topic, content, stage, created_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)`
+    ).bind(
+      siteId,
+      String(body.name).slice(0, 128),
+      path,
+      ref,
+      country,
+      isUnique ? 1 : 0,
+      props,
+      tx.persona ?? null,
+      tx.activity ?? null,
+      tx.topic ?? null,
+      tx.content ?? null,
+      tx.stage ?? null,
+      Date.now(),
+    );
 
-  waitUntil(insert.run());
+    waitUntil(insert.run());
+  } catch (err) {
+    // Log for Cloudflare Workers observability; never fail the beacon.
+    // A common cause pre-migration: "no such table: hits" / "daily_salts".
+    console.error('[analytics/hit] insert failed', err?.message ?? err);
+  }
   return noContent();
 }

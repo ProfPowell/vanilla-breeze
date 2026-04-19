@@ -32,15 +32,9 @@ export async function onRequestGet({ request, env }) {
   const windowKey = url.searchParams.get('window') ?? '24h';
   const since = Date.now() - (WINDOWS[windowKey] ?? WINDOWS['24h']);
 
-  const [
-    totals,
-    topPages,
-    topEvents,
-    topReferrers,
-    topCountries,
-    topClicks,
-    recent,
-  ] = await Promise.all([
+  let results;
+  try {
+    results = await Promise.all([
     db.prepare(
       `SELECT COUNT(*) AS hits,
               SUM(is_unique) AS uniques,
@@ -87,13 +81,26 @@ export async function onRequestGet({ request, env }) {
         GROUP BY to_domain ORDER BY clicks DESC LIMIT 10`
     ).bind(site, since).all(),
 
-    db.prepare(
-      `SELECT event_name, path, created_at
-         FROM hits
-        WHERE site_id = ?1 AND created_at > ?2
-        ORDER BY created_at DESC LIMIT 20`
-    ).bind(site, since).all(),
-  ]);
+      db.prepare(
+        `SELECT event_name, path, created_at
+           FROM hits
+          WHERE site_id = ?1 AND created_at > ?2
+          ORDER BY created_at DESC LIMIT 20`
+      ).bind(site, since).all(),
+    ]);
+  } catch (err) {
+    const msg = err?.message ?? String(err);
+    const missingTable = /no such table/i.test(msg);
+    return json({
+      ok: false,
+      error: missingTable
+        ? 'D1 tables not found. Apply migrations: `npx wrangler d1 migrations apply vanilla-breeze-analytics --remote`.'
+        : `D1 query failed: ${msg}`,
+      hint: 'See functions/api/analytics/README.md for setup steps.',
+    }, { status: 503 });
+  }
+
+  const [totals, topPages, topEvents, topReferrers, topCountries, topClicks, recent] = results;
 
   return json({
     ok: true,

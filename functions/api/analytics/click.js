@@ -45,16 +45,20 @@ export async function onRequestPost({ request, env, waitUntil }) {
 
   if (!toDomain) return noContent();
 
-  waitUntil(db.prepare(
-    `INSERT INTO clicks (site_id, from_page, to_domain, href, created_at)
-     VALUES (?1, ?2, ?3, ?4, ?5)`
-  ).bind(
-    site,
-    fromPage,
-    toDomain,
-    href ? String(href).slice(0, 2048) : null,
-    Date.now(),
-  ).run());
+  try {
+    waitUntil(db.prepare(
+      `INSERT INTO clicks (site_id, from_page, to_domain, href, created_at)
+       VALUES (?1, ?2, ?3, ?4, ?5)`
+    ).bind(
+      site,
+      fromPage,
+      toDomain,
+      href ? String(href).slice(0, 2048) : null,
+      Date.now(),
+    ).run());
+  } catch (err) {
+    console.error('[analytics/click] insert failed', err?.message ?? err);
+  }
 
   return noContent();
 }

@@ -49,6 +49,10 @@ export async function onRequestPost({ request, env, waitUntil }) {
     );
   });
 
-  waitUntil(db.batch(rows));
+  try {
+    waitUntil(db.batch(rows));
+  } catch (err) {
+    console.error('[analytics/events] batch failed', err?.message ?? err);
+  }
   return noContent();
 }
