@@ -29,6 +29,7 @@ import './color-picker/logic.js';
 import './context-menu/logic.js';
 import './include-file/logic.js';
 import './settings-panel/logic.js';
+import './analytics-panel/logic.js';
 
 // Core custom elements with JS
 import './brand-mark/logic.js';

@@ -1,0 +1,103 @@
+---
+layout: element
+title: "analytics-panel"
+description: "Self-serve view of analytics data stored on the device — shows what's been captured this session, with Pause and Clear controls."
+elementName: analytics-panel
+category: component
+currentPath: /docs/elements/web-components/analytics-panel/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;analytics-panel&gt;</code> component lets visitors see exactly what Vanilla Breeze analytics has captured about their current browsing session — no hand-waving about "anonymous data". Users can pause collection for the session, clear stored data, or both.</p>
+  <p>The panel reads from <code>sessionStorage</code> (<code>vb_sc</code>, <code>vb_q</code>, <code>vb_optout</code>) — the same storage the analytics runtime writes to. No server round-trip, no identifier lookup.</p>
+
+  <analytics-panel title="Your analytics data"></analytics-panel>
+</section>
+
+<section>
+  <h2>Basic Usage</h2>
+  <p>Place the element anywhere — dashboard, privacy page, settings section. The component self-renders on upgrade.</p>
+
+  <code-block language="html" show-lines label="Minimal placement" data-escape><analytics-panel></analytics-panel></code-block>
+</section>
+
+<section>
+  <h2>Compact Mode</h2>
+  <p>Add <code>compact</code> for a tighter layout when embedding alongside other UI. The heading and action buttons reduce in size; data readouts stay legible.</p>
+
+  <code-block language="html" label="Compact mode" data-escape><analytics-panel title="Your data" compact></analytics-panel></code-block>
+</section>
+
+<section>
+  <h2>Custom Title</h2>
+  <p>Override the default <q>Analytics data</q> heading with <code>title</code>.</p>
+
+  <code-block language="html" label="Custom title" data-escape><analytics-panel title="What we've captured"></analytics-panel></code-block>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <p>The panel dispatches custom events when the user takes an action, so embedding pages can react (e.g. showing a confirmation toast, updating a status indicator).</p>
+
+  <table>
+    <thead><tr><th>Event</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>analytics-panel:cleared</code></td><td>After the user clears their session data</td></tr>
+      <tr><td><code>analytics-panel:optout</code></td><td>When the user pauses analytics for this tab</td></tr>
+      <tr><td><code>analytics-panel:optin</code></td><td>When the user resumes analytics for this tab</td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="js" show-lines label="Listening for user actions" data-escape>document.addEventListener('analytics-panel:optout', () => {
+  console.info('User paused analytics for this session');
+});</code-block>
+</section>
+
+<section>
+  <h2>How It Relates to <code>Analytics.setConsent()</code></h2>
+  <p>The panel's <q>Pause analytics</q> button writes <code>vb_optout</code> to <code>sessionStorage</code>, which the core runtime checks on every <code>Analytics.track()</code> call. The same flag can be set programmatically:</p>
+
+  <code-block language="js" label="Programmatic parity" data-escape>import { Analytics } from 'vanilla-breeze';
+
+Analytics.setConsent(false); // same effect as clicking "Pause analytics"
+Analytics.setConsent(true);  // same effect as clicking "Resume analytics"</code-block>
+
+  <p>The panel and the API share the same <code>sessionStorage</code> key, so they stay in sync automatically. If you set consent via the API while the panel is open, click <strong>Refresh</strong> (or re-render the panel) to reflect the new state.</p>
+</section>
+
+<section>
+  <h2>Privacy Boundaries</h2>
+  <p>The panel shows only data the runtime has captured about <em>this tab</em> in <em>this session</em>:</p>
+
+  <ul>
+    <li><strong>Pages this session</strong> — a simple counter, no path history.</li>
+    <li><strong>Max scroll depth</strong> — the furthest point reached on any page (0–100%).</li>
+    <li><strong>Active reading time</strong> — milliseconds the tab was visible.</li>
+    <li><strong>Queued events</strong> — count of component interactions waiting to flush.</li>
+  </ul>
+
+  <p>The panel does <strong>not</strong> display or have access to server-side aggregates. There is no user identifier, no cross-tab history, and no cross-site correlation. Closing the tab clears everything automatically.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Status indicator is announced to assistive tech via <code>role="status"</code>.</li>
+    <li>Actions are standard <code>&lt;button&gt;</code> elements — keyboard activatable.</li>
+    <li>The panel uses semantic landmarks: <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;footer&gt;</code>.</li>
+    <li>Data readout uses a <code>&lt;dl&gt;</code> so screen readers announce labels with their values.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>See Also</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-vb-event/"><code>data-vb-event</code></a> — declare trackable click events</li>
+    <li><a href="/docs/attributes/data-vb-no-track/"><code>data-vb-no-track</code></a> — opt a page region out of analytics</li>
+    <li><a href="/stats/">Analytics stats dashboard</a> — aggregate view across all visitors</li>
+  </ul>
+</section>

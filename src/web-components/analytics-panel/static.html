@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Analytics Panel (Static Fallback)</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      max-inline-size: 40rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+    section {
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    h3 { margin-block-start: 0; }
+    dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: .25rem 1rem;
+      margin: 0;
+    }
+    dt { color: #666; font-weight: 500; }
+    dd { margin: 0; }
+    button {
+      padding: .375rem .75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      margin-inline-end: .5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <analytics-panel> enhances.
+
+    Without JavaScript, the panel shows a static privacy statement with
+    a link to the server-side privacy page — accessible and informative.
+
+    When JavaScript loads and <analytics-panel> is defined, the upgrade:
+
+      1. Reads sessionStorage (vb_sc, vb_q, vb_optout) and renders the
+         actual data captured this session.
+      2. Adds Pause / Resume analytics controls (session-scoped opt-out).
+      3. Adds Clear my data control that wipes sessionStorage.
+      4. Dispatches custom events so embedding pages can react.
+
+    The static fallback works without any analytics runtime — it just
+    describes what the runtime WOULD capture if enabled.
+  -->
+
+  <section>
+    <h3>Analytics data</h3>
+    <p>
+      This site uses a first-party, cookieless analytics system.
+      When you have JavaScript enabled and the analytics runtime is loaded,
+      the following is captured — visible to you here and nowhere else on your device:
+    </p>
+
+    <dl>
+      <dt>Pages this session</dt><dd>count of pages you've visited in this tab</dd>
+      <dt>Max scroll depth</dt><dd>how far down the longest page you scrolled</dd>
+      <dt>Active reading time</dt><dd>visible-tab time across this session</dd>
+      <dt>Queued events</dt><dd>component interactions waiting to flush on tab close</dd>
+    </dl>
+
+    <p style="margin-block-start: 1rem;">
+      <button type="button" disabled title="Requires JavaScript">Clear my data</button>
+      <button type="button" disabled title="Requires JavaScript">Pause analytics</button>
+    </p>
+
+    <p style="font-size: .8125rem; color: #666;">
+      No cookies, no cross-site identifiers, no IP address stored.
+      Data is cleared automatically when you close this tab.
+    </p>
+  </section>
+
+</body>
+</html>
