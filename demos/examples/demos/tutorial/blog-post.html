@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Blog Post — Tutorial Preview</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>body { padding: var(--size-l); }</style>
+</head>
+<body>
+
+<main data-layout="center" data-layout-max="prose" data-layout-gap="m">
+  <article data-layout="stack" data-layout-gap="m">
+    <header data-layout="stack" data-layout-gap="xs" aria-label="Article metadata">
+      <p><small>Engineering · 6 min read</small></p>
+      <h1>Shipping a design system without a framework</h1>
+      <p><small>By Jane Doe · April 20, 2026</small></p>
+    </header>
+
+    <p class="lead">Frameworks aren't the only way to scale. Semantic HTML, cascade layers, and a handful of custom elements can carry a brand further than most teams expect.</p>
+
+    <p>The pitch is familiar: pick a framework, adopt the ecosystem, then spend the next two years fighting it. What if we didn't? What if the platform was enough on its own?</p>
+
+    <blockquote>
+      <p>"The most durable UI is the one that works before any JavaScript runs."</p>
+    </blockquote>
+
+    <h2>Three layers, three promises</h2>
+    <p>Think about a web page the way the platform thinks about it. HTML renders content. CSS provides design. JavaScript adds polish. Each layer is optional, each layer is testable, and the page still works when any one fails.</p>
+
+    <ul>
+      <li>Semantic elements do the heavy lifting</li>
+      <li>Design tokens keep colors and spacing consistent</li>
+      <li>Web components fill the gaps — no build step required</li>
+    </ul>
+
+    <h2>What you trade</h2>
+    <p>Going framework-free doesn't mean giving up structure. You still get tokens, themes, and layout primitives — just expressed as plain HTML attributes on plain elements. The trade you make is the one you wanted anyway: less tooling, more control.</p>
+
+    <p>If you've ever wanted your "hello world" to ship in under a second on a mid-range phone, this is the architecture that gets you there.</p>
+
+    <details>
+      <summary>Further reading</summary>
+      <ul>
+        <li><a href="/docs/concepts/">Concepts — progressive enhancement in depth</a></li>
+        <li><a href="/docs/semantic-layouts/">Semantic layouts with data-layout</a></li>
+        <li><a href="/docs/themes/">Theme system and token architecture</a></li>
+      </ul>
+    </details>
+
+    <footer data-layout="cluster" data-layout-gap="s" aria-label="Article actions">
+      <button type="button">Share</button>
+      <button type="button" class="secondary">Subscribe</button>
+    </footer>
+  </article>
+</main>
+
+<script type="module" src="/src/main.js"></script>
+<script type="module">
+  import { ThemeManager } from '/src/lib/theme-manager.js';
+  import { ensureThemeLoaded } from '/src/lib/theme-loader.js';
+  await ThemeManager.init();
+  const params = new URLSearchParams(location.search);
+  const theme = params.get('theme');
+  if (theme) { await ensureThemeLoaded(theme); ThemeManager.apply({ brand: theme, mode: params.get('mode') || 'auto' }); }
+</script>
+<script>
+  if (window.parent !== window) {
+    const report = () => window.parent.postMessage({ type: 'surface-height', height: document.documentElement.scrollHeight }, '*');
+    addEventListener('load', () => setTimeout(report, 200));
+    new ResizeObserver(report).observe(document.documentElement);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dashboard — Tutorial Preview</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze-charts.css"/>
+  <style>body { padding: var(--size-l); }</style>
+</head>
+<body>
+
+<main data-layout="stack" data-layout-gap="l">
+  <header data-layout="cluster" data-layout-justify="between" data-layout-align="center" aria-label="Dashboard header">
+    <h1>Dashboard</h1>
+    <nav data-layout="cluster" data-layout-gap="s" aria-label="Dashboard actions">
+      <button type="button" class="secondary">Export</button>
+      <button type="button">Invite</button>
+    </nav>
+  </header>
+
+  <section data-layout="grid" data-layout-min="180px" data-layout-gap="m" aria-label="Key metrics">
+    <layout-card data-variant="outlined" data-padding="m">
+      <p style="margin:0; color: var(--color-text-muted); font-size: var(--font-size-sm);">Signups</p>
+      <p style="margin: var(--size-2xs) 0 0; font-size: var(--font-size-2xl); font-weight: 600;">1,284</p>
+      <p style="margin: var(--size-2xs) 0 0; color: var(--color-success, green); font-size: var(--font-size-sm);">▲ 12.4%</p>
+    </layout-card>
+    <layout-card data-variant="outlined" data-padding="m">
+      <p style="margin:0; color: var(--color-text-muted); font-size: var(--font-size-sm);">Active users</p>
+      <p style="margin: var(--size-2xs) 0 0; font-size: var(--font-size-2xl); font-weight: 600;">8,927</p>
+      <p style="margin: var(--size-2xs) 0 0; color: var(--color-success, green); font-size: var(--font-size-sm);">▲ 4.1%</p>
+    </layout-card>
+    <layout-card data-variant="outlined" data-padding="m">
+      <p style="margin:0; color: var(--color-text-muted); font-size: var(--font-size-sm);">Revenue</p>
+      <p style="margin: var(--size-2xs) 0 0; font-size: var(--font-size-2xl); font-weight: 600;">$42.3k</p>
+      <p style="margin: var(--size-2xs) 0 0; color: var(--color-success, green); font-size: var(--font-size-sm);">▲ 8.7%</p>
+    </layout-card>
+    <layout-card data-variant="outlined" data-padding="m">
+      <p style="margin:0; color: var(--color-text-muted); font-size: var(--font-size-sm);">Churn</p>
+      <p style="margin: var(--size-2xs) 0 0; font-size: var(--font-size-2xl); font-weight: 600;">2.1%</p>
+      <p style="margin: var(--size-2xs) 0 0; color: var(--color-text-muted); font-size: var(--font-size-sm);">▼ 0.3%</p>
+    </layout-card>
+  </section>
+
+  <section data-layout="stack" data-layout-gap="s">
+    <h2>Page views this week</h2>
+    <layout-card data-variant="outlined" data-padding="m">
+      <chart-wc
+        data-type="area"
+        data-title=""
+        data-label-x=""
+        data-label-y="Views"
+        data-legend
+        data-tooltip
+        data-values='[
+          {"name": "Organic", "values": {"Mon": 3200, "Tue": 4100, "Wed": 3800, "Thu": 5200, "Fri": 4700, "Sat": 2400, "Sun": 2100}},
+          {"name": "Direct",  "values": {"Mon": 1200, "Tue": 1400, "Wed": 1100, "Thu": 1800, "Fri": 2200, "Sat": 900,  "Sun": 800}}
+        ]'>
+      </chart-wc>
+    </layout-card>
+  </section>
+
+  <section data-layout="stack" data-layout-gap="s">
+    <header data-layout="cluster" data-layout-justify="between" data-layout-align="center" aria-label="Recent projects header">
+      <h2>Recent projects</h2>
+      <nav data-layout="cluster" data-layout-gap="xs" aria-label="Table actions">
+        <button type="button" class="ghost">Filter</button>
+        <button type="button" class="ghost">Sort</button>
+      </nav>
+    </header>
+    <table>
+      <thead>
+        <tr><th scope="col">Project</th><th scope="col">Owner</th><th scope="col">Status</th><th scope="col">Tasks</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Website Redesign</td><td>Alice</td><td>Active</td><td>12</td></tr>
+        <tr><td>Mobile App</td><td>Bob</td><td>In review</td><td>8</td></tr>
+        <tr><td>Design System</td><td>Carol</td><td>Active</td><td>23</td></tr>
+        <tr><td>Marketing Site</td><td>Dan</td><td>Shipped</td><td>5</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<script type="module" src="/src/main.js"></script>
+<script type="module" src="/cdn/vanilla-breeze-charts.js"></script>
+<script type="module">
+  import { ThemeManager } from '/src/lib/theme-manager.js';
+  import { ensureThemeLoaded } from '/src/lib/theme-loader.js';
+  await ThemeManager.init();
+  const params = new URLSearchParams(location.search);
+  const theme = params.get('theme');
+  if (theme) { await ensureThemeLoaded(theme); ThemeManager.apply({ brand: theme, mode: params.get('mode') || 'auto' }); }
+</script>
+<script>
+  if (window.parent !== window) {
+    const report = () => window.parent.postMessage({ type: 'surface-height', height: document.documentElement.scrollHeight }, '*');
+    addEventListener('load', () => setTimeout(report, 200));
+    new ResizeObserver(report).observe(document.documentElement);
+  }
+</script>
+</body>
+</html>

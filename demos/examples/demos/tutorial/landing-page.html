@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Landing Page — Tutorial Preview</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>body { padding: 0; }</style>
+</head>
+<body>
+
+<header data-layout="cluster" data-layout-justify="between" data-layout-align="center" data-layout-gap="m" aria-label="Site header" style="padding: var(--size-m) var(--size-l); border-block-end: var(--border-width-thin) solid var(--color-border);">
+  <a href="/" style="font-weight: 600; text-decoration: none; color: inherit;">Acme</a>
+  <nav data-layout="cluster" data-layout-gap="m" aria-label="Primary">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<main>
+  <section data-layout="center" data-layout-max="wide" data-layout-gap="l" style="padding-block: var(--size-2xl); text-align: center;">
+    <h1 style="font-size: var(--font-size-3xl); margin: 0;">Build products customers love</h1>
+    <p class="lead">The all-in-one platform that helps modern teams ship faster — with zero boilerplate, zero lock-in, and zero build step.</p>
+    <nav data-layout="cluster" data-layout-justify="center" data-layout-gap="s" aria-label="Hero actions">
+      <a href="#signup" class="button">Start free</a>
+      <a href="#demo" class="button secondary">Watch demo</a>
+    </nav>
+  </section>
+
+  <section id="features" data-layout="center" data-layout-max="wide" data-layout-gap="l" style="padding-block: var(--size-2xl);">
+    <h2>Why teams pick Acme</h2>
+    <ul data-layout="grid" data-layout-min="220px" data-layout-gap="l" style="list-style: none; padding: 0; margin: 0;">
+      <li>
+        <layout-card data-variant="outlined" data-padding="l">
+          <h3>Fast by default</h3>
+          <p>Sub-second page loads and a 30ms cold start, measured in production.</p>
+        </layout-card>
+      </li>
+      <li>
+        <layout-card data-variant="outlined" data-padding="l">
+          <h3>Accessible by default</h3>
+          <p>Every component ships WAI-ARIA patterns and keyboard support out of the box.</p>
+        </layout-card>
+      </li>
+      <li>
+        <layout-card data-variant="outlined" data-padding="l">
+          <h3>Themeable by default</h3>
+          <p>Flip a single attribute and 30+ themes re-skin the whole surface.</p>
+        </layout-card>
+      </li>
+    </ul>
+  </section>
+
+  <section id="pricing" data-layout="center" data-layout-max="normal" data-layout-gap="m" style="padding-block: var(--size-2xl); text-align: center;">
+    <h2>Ready when you are</h2>
+    <p>Start with the free plan. Upgrade when your team grows past five people.</p>
+    <nav data-layout="cluster" data-layout-justify="center" aria-label="Pricing action">
+      <a href="#signup" class="button">Create your account</a>
+    </nav>
+  </section>
+</main>
+
+<footer data-layout="cluster" data-layout-justify="between" aria-label="Site footer" style="padding: var(--size-m) var(--size-l); border-block-start: var(--border-width-thin) solid var(--color-border);">
+  <small>© 2026 Acme</small>
+  <nav data-layout="cluster" data-layout-gap="m" aria-label="Legal">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+  </nav>
+</footer>
+
+<script type="module" src="/src/main.js"></script>
+<script type="module">
+  import { ThemeManager } from '/src/lib/theme-manager.js';
+  import { ensureThemeLoaded } from '/src/lib/theme-loader.js';
+  await ThemeManager.init();
+  const params = new URLSearchParams(location.search);
+  const theme = params.get('theme');
+  if (theme) { await ensureThemeLoaded(theme); ThemeManager.apply({ brand: theme, mode: params.get('mode') || 'auto' }); }
+</script>
+<script>
+  if (window.parent !== window) {
+    const report = () => window.parent.postMessage({ type: 'surface-height', height: document.documentElement.scrollHeight }, '*');
+    addEventListener('load', () => setTimeout(report, 200));
+    new ResizeObserver(report).observe(document.documentElement);
+  }
+</script>
+</body>
+</html>

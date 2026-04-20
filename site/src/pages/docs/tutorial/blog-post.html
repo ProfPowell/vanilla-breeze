@@ -1,0 +1,138 @@
+---
+layout: docs
+title: "Tutorial: Blog Post"
+description: "Build a long-form article page with prose typography, tags, a pull quote, collapsible further reading, and an on-page table of contents."
+currentSection: start
+currentPath: /docs/tutorial/blog-post/
+---
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <p><small><a href="/docs/tutorial/">← All tutorials</a> · ~10 minutes · Layer focus: <strong>typography &amp; reading</strong></small></p>
+  <h1>Tutorial: Blog post</h1>
+  <p class="lead">Build a long-form article with prose typography, tag pills, a collapsible "further reading" section, and a sticky table of contents — everything you need for a readable blog template.</p>
+
+  <browser-window url="example.com/blog/post" src="/docs/examples/demos/tutorial/blog-post.html"></browser-window>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-1">Step 1 — Just the article</h2>
+  <p>An article is an article. Native HTML already has the elements we need: <code>&lt;article&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;blockquote&gt;</code>, <code>&lt;footer&gt;</code>. Start with the content.</p>
+
+  <code-block language="html" label="Step 1 — semantic article" data-escape><article>
+  <header>
+    <p><small>Engineering · 6 min read</small></p>
+    <h1>Shipping a design system without a framework</h1>
+    <p><small>By Jane Doe · April 20, 2026</small></p>
+  </header>
+
+  <p>Frameworks aren't the only way to scale...</p>
+
+  <blockquote>
+    <p>"The most durable UI is the one that works before any JavaScript runs."</p>
+  </blockquote>
+
+  <h2>Three layers, three promises</h2>
+  <p>Think about a web page the way the platform thinks about it...</p>
+  <ul>
+    <li>Semantic elements do the heavy lifting</li>
+    <li>Design tokens keep colors and spacing consistent</li>
+    <li>Web components fill the gaps</li>
+  </ul>
+
+  <footer>
+    <button type="button">Share</button>
+    <button type="button">Subscribe</button>
+  </footer>
+</article></code-block>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-2">Step 2 — Give it reading width</h2>
+  <p>Long text needs a measure — a constrained line length that keeps eyes moving horizontally without getting lost. That's exactly what <code>data-layout-max="prose"</code> is for.</p>
+
+  <code-block language="html" label="Step 2 — prose width + rhythm" data-escape><main data-layout="center" data-layout-max="prose" data-layout-gap="m">
+  <article data-layout="stack" data-layout-gap="m">
+    <header data-layout="stack" data-layout-gap="xs">
+      <p><small>Engineering · 6 min read</small></p>
+      <h1>Shipping a design system without a framework</h1>
+      <p><small>By Jane Doe · April 20, 2026</small></p>
+    </header>
+
+    <!-- paragraphs, blockquote, lists… -->
+
+    <footer data-layout="cluster" data-layout-gap="s">
+      <button type="button">Share</button>
+      <button type="button" class="secondary">Subscribe</button>
+    </footer>
+  </article>
+</main></code-block>
+
+  <p>Values for <code>data-layout-max</code> on a <code>center</code> region: <code>narrow</code>, <code>normal</code>, <code>wide</code>, and <code>prose</code>. <code>prose</code> caps the line at 65 characters — the width research suggests for comfortable reading.</p>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-3">Step 3 — Custom elements for the flair</h2>
+  <p>A few places call for a custom element: the tag pills in the header, and a clear "callout" surface for a key takeaway. <code>&lt;layout-badge&gt;</code> gives you the pill shape, and <code>&lt;layout-card&gt;</code> gives you the callout.</p>
+
+  <code-block language="html" label="Step 3 — badges and a callout card" data-escape><header data-layout="stack" data-layout-gap="xs">
+  <nav data-layout="cluster" data-layout-gap="xs" aria-label="Tags">
+    <layout-badge data-variant="info">Engineering</layout-badge>
+    <layout-badge data-variant="info">Platform</layout-badge>
+    <layout-badge>6 min read</layout-badge>
+  </nav>
+  <h1>Shipping a design system without a framework</h1>
+  <p><small>By Jane Doe · April 20, 2026</small></p>
+</header>
+
+<!-- later in the article… -->
+
+<layout-card data-variant="ghost" data-padding="l">
+  <p><strong>Key takeaway.</strong> Going framework-free doesn't mean giving up structure. You still get tokens, themes, and layout primitives — just expressed as plain HTML.</p>
+</layout-card></code-block>
+
+  <p>Still no JavaScript. The badges and card are pure CSS custom elements.</p>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-4">Step 4 — Add navigation helpers with web components</h2>
+  <p>Two genuine-JS wins on a long article: a clickable table of contents that highlights the current section as you scroll, and a collapsible "further reading" group that saves vertical space. The first is <code>&lt;page-toc&gt;</code>, the second is a native <code>&lt;details&gt;</code> grouped by <code>&lt;accordion-wc&gt;</code>.</p>
+
+  <code-block language="html" label="Step 4a — page-toc" data-escape><page-toc scope="article" levels="h2" title="On this page"></page-toc></code-block>
+
+  <p><code>&lt;page-toc&gt;</code> scans the article for headings, renders anchored links, and updates the active link as the reader scrolls. Without JavaScript it renders nothing — so the reader never sees a broken widget.</p>
+
+  <code-block language="html" label="Step 4b — collapsible further reading" data-escape><accordion-wc single>
+  <details name="reading">
+    <summary>Further reading</summary>
+    <ul>
+      <li><a href="/docs/concepts/">Progressive enhancement in depth</a></li>
+      <li><a href="/docs/semantic-layouts/">Semantic layouts with data-layout</a></li>
+      <li><a href="/docs/themes/">Theme system and token architecture</a></li>
+    </ul>
+  </details>
+  <details name="reading">
+    <summary>Code samples</summary>
+    <ul>
+      <li><a href="/docs/snippets/html/hero-section/">Hero section snippets</a></li>
+      <li><a href="/docs/patterns/forms/contact/">Contact form pattern</a></li>
+    </ul>
+  </details>
+</accordion-wc></code-block>
+
+  <p><code>&lt;accordion-wc&gt;</code> enhances native <code>&lt;details name="…"&gt;</code> groups with keyboard navigation and smoother transitions. If JavaScript fails, the browser's built-in exclusive-disclosure behavior still works — that's why we use <code>name=""</code> on the <code>&lt;details&gt;</code> elements.</p>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="recap">What you learned</h2>
+  <ul>
+    <li><code>data-layout-max="prose"</code> constrains line length to a comfortable reading width.</li>
+    <li><code>&lt;layout-badge&gt;</code> gives you pill-shaped tags without <code>&lt;span class=""&gt;</code> everywhere.</li>
+    <li><code>&lt;page-toc&gt;</code> generates a scroll-aware table of contents with zero config.</li>
+    <li><code>&lt;accordion-wc&gt;</code> enhances native <code>&lt;details name="…"&gt;</code> — and gracefully falls back to it.</li>
+  </ul>
+
+  <nav data-layout="cluster" data-layout-gap="m" aria-label="Next">
+    <a class="button" href="/docs/tutorial/">Back to all tutorials</a>
+    <a href="/docs/quick-start/">Revisit Quick Start</a>
+  </nav>
+</section>

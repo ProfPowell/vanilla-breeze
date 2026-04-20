@@ -1,0 +1,182 @@
+---
+layout: docs
+title: "Tutorial: Dashboard"
+description: "Build an admin dashboard with KPI tiles, an area chart, and a sortable table. Layered from semantic HTML through custom elements to web components."
+currentSection: start
+currentPath: /docs/tutorial/dashboard/
+includeCharts: true
+---
+
+<template slot="extraHead">
+<style>
+  /* The dashboard preview needs vertical room for the chart + table. */
+  #tut-dash-hero::part(content) { min-height: 720px; }
+</style>
+</template>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <p><small><a href="/docs/tutorial/">← All tutorials</a> · ~15 minutes · Layer focus: <strong>custom elements &amp; web components</strong></small></p>
+  <h1>Tutorial: Dashboard</h1>
+  <p class="lead">Build an admin dashboard with four KPI tiles, a live chart, and a sortable table. The layout is semantic HTML, the cards are custom elements, and the chart and table are web components — each layer pulling its weight.</p>
+
+  <browser-window id="tut-dash-hero" url="example.com/dashboard" src="/docs/examples/demos/tutorial/dashboard.html"></browser-window>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-1">Step 1 — Semantic skeleton</h2>
+  <p>A dashboard is just a page with a heading, four numbers, a chart, and a table. In semantic HTML that's exactly what we write — no framework vocabulary required.</p>
+
+  <code-block language="html" label="Step 1 — semantic dashboard" data-escape><main>
+  <header>
+    <h1>Dashboard</h1>
+    <button type="button">Invite</button>
+  </header>
+
+  <section aria-label="Key metrics">
+    <article><h2>Signups</h2><p>1,284</p></article>
+    <article><h2>Active users</h2><p>8,927</p></article>
+    <article><h2>Revenue</h2><p>$42.3k</p></article>
+    <article><h2>Churn</h2><p>2.1%</p></article>
+  </section>
+
+  <section>
+    <h2>Page views this week</h2>
+    <!-- chart will live here -->
+  </section>
+
+  <section>
+    <h2>Recent projects</h2>
+    <table>
+      <thead><tr><th>Project</th><th>Owner</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Website Redesign</td><td>Alice</td><td>Active</td></tr>
+        <tr><td>Mobile App</td><td>Bob</td><td>In review</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main></code-block>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-2">Step 2 — Lay it out with <code>data-*</code></h2>
+  <p>Four KPIs in a responsive row? That's <code>data-layout="grid"</code> with a sensible <code>data-layout-min</code>. The header is a <code>cluster</code>. Nothing else changes.</p>
+
+  <code-block language="html" label="Step 2 — data-layout on the skeleton" data-escape><main data-layout="stack" data-layout-gap="l">
+  <header data-layout="cluster" data-layout-justify="between" data-layout-align="center">
+    <h1>Dashboard</h1>
+    <nav data-layout="cluster" data-layout-gap="s">
+      <button type="button" class="secondary">Export</button>
+      <button type="button">Invite</button>
+    </nav>
+  </header>
+
+  <section data-layout="grid" data-layout-min="180px" data-layout-gap="m" aria-label="Key metrics">
+    <article>
+      <p>Signups</p>
+      <p>1,284</p>
+      <p>▲ 12.4%</p>
+    </article>
+    <!-- three more articles… -->
+  </section>
+</main></code-block>
+
+  <p>One attribute per section, all on the elements we already had.</p>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-3">Step 3 — Upgrade KPI tiles to <code>&lt;layout-card&gt;</code></h2>
+  <p>A KPI tile is a surface with a border, padding, and a consistent inner rhythm. That's what <code>&lt;layout-card&gt;</code> is for. You get the visual treatment, keep the semantic <code>&lt;article&gt;</code> meaning, and gain no JavaScript.</p>
+
+  <code-block language="html" label="Step 3 — cards as the tile surface" data-escape><section data-layout="grid" data-layout-min="180px" data-layout-gap="m" aria-label="Key metrics">
+  <layout-card data-variant="outlined" data-padding="m">
+    <p>Signups</p>
+    <p>1,284</p>
+    <p>▲ 12.4%</p>
+  </layout-card>
+
+  <layout-card data-variant="outlined" data-padding="m">
+    <p>Active users</p>
+    <p>8,927</p>
+    <p>▲ 4.1%</p>
+  </layout-card>
+
+  <layout-card data-variant="outlined" data-padding="m">
+    <p>Revenue</p>
+    <p>$42.3k</p>
+    <p>▲ 8.7%</p>
+  </layout-card>
+
+  <layout-card data-variant="outlined" data-padding="m">
+    <p>Churn</p>
+    <p>2.1%</p>
+    <p>▼ 0.3%</p>
+  </layout-card>
+</section></code-block>
+
+  <p><code>&lt;layout-card&gt;</code> variants: <code>outlined</code>, <code>elevated</code>, <code>ghost</code>. Padding scale: <code>s</code>, <code>m</code>, <code>l</code>. The whole component is CSS — no runtime cost.</p>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="step-4">Step 4 — Reach for web components only where you need JS</h2>
+  <p>Two places on this page genuinely benefit from JavaScript: the chart (rendering to canvas) and the data table (sorting, filtering). For everything else we stayed declarative.</p>
+
+  <h3>The chart</h3>
+  <p><code>&lt;chart-wc&gt;</code> is a thin Chart.js wrapper driven entirely by data attributes. Pass a JSON <code>data-values</code> payload and you get an accessible, themed, responsive chart that respects the current theme tokens.</p>
+
+  <code-block language="html" label="Step 4a — area chart in a card" data-escape><section data-layout="stack" data-layout-gap="s">
+  <h2>Page views this week</h2>
+  <layout-card data-variant="outlined" data-padding="m">
+    <chart-wc
+      data-type="area"
+      data-label-y="Views"
+      data-legend
+      data-tooltip
+      data-values='[
+        {"name": "Organic", "values": {"Mon": 3200, "Tue": 4100, "Wed": 3800, "Thu": 5200, "Fri": 4700, "Sat": 2400, "Sun": 2100}},
+        {"name": "Direct",  "values": {"Mon": 1200, "Tue": 1400, "Wed": 1100, "Thu": 1800, "Fri": 2200, "Sat": 900,  "Sun": 800}}
+      ]'>
+    </chart-wc>
+  </layout-card>
+</section></code-block>
+
+  <p>To use <code>&lt;chart-wc&gt;</code>, add one CSS and one JS file to your page:</p>
+
+  <code-block language="html" label="Add the chart bundle" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze-charts.css"/>
+<script type="module" src="https://unpkg.com/vanilla-breeze/dist/cdn/vanilla-breeze-charts.js"></script></code-block>
+
+  <p>Supported types: <code>line</code>, <code>area</code>, <code>bar</code>, <code>column</code>, <code>pie</code>, <code>scatter</code>, <code>bubble</code>.</p>
+
+  <h3>The sortable table</h3>
+  <p>A plain <code>&lt;table&gt;</code> already has semantics and a readable default style. Wrap it in <code>&lt;data-table&gt;</code> and every column header becomes clickable, sortable, and announces its state to screen readers — without you writing any JavaScript.</p>
+
+  <code-block language="html" label="Step 4b — data-table enhances a plain table" data-escape><data-table sortable>
+  <table>
+    <thead>
+      <tr><th>Project</th><th>Owner</th><th>Status</th><th>Tasks</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Website Redesign</td><td>Alice</td><td>Active</td><td>12</td></tr>
+      <tr><td>Mobile App</td><td>Bob</td><td>In review</td><td>8</td></tr>
+      <tr><td>Design System</td><td>Carol</td><td>Active</td><td>23</td></tr>
+      <tr><td>Marketing Site</td><td>Dan</td><td>Shipped</td><td>5</td></tr>
+    </tbody>
+  </table>
+</data-table></code-block>
+
+  <p>If JavaScript fails to load, the plain <code>&lt;table&gt;</code> is still perfectly readable. That's the whole point.</p>
+</section>
+
+<section data-layout="center" data-layout-max="wide" data-layout-gap="l">
+  <h2 id="recap">What you learned</h2>
+  <ul>
+    <li><code>data-layout="grid" data-layout-min="180px"</code> gives you a KPI row that reflows on any screen.</li>
+    <li><code>&lt;layout-card data-variant="outlined"&gt;</code> is the declarative way to spend a surface.</li>
+    <li><code>&lt;chart-wc&gt;</code> accepts a JSON <code>data-values</code> attribute — no imperative setup.</li>
+    <li><code>&lt;data-table&gt;</code> wraps a native <code>&lt;table&gt;</code> and degrades to it gracefully without JS.</li>
+  </ul>
+
+  <nav data-layout="cluster" data-layout-gap="m" aria-label="Next">
+    <a class="button" href="/docs/tutorial/contact-form/">Next: Contact form →</a>
+    <a href="/docs/tutorial/">All tutorials</a>
+  </nav>
+</section>
