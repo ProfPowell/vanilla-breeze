@@ -48,9 +48,9 @@ currentPath: /stats/
     </form>
   </header>
 
-  <output id="stats-output" class="stats-output" aria-live="polite">
+  <div id="stats-output" class="stats-output" role="status" aria-live="polite">
     <p class="stats-loading">Loading&hellip;</p>
-  </output>
+  </div>
 
 </div>
 
@@ -86,16 +86,24 @@ currentPath: /stats/
     border: 1px solid var(--surface-4, #d4d4d8); background: var(--surface-1, #fff);
   }
 
+  .stats-output { display: block; width: 100%; }
+
   .stats-totals {
-    display: grid; gap: 1rem; margin-block-end: 2rem;
-    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    display: grid; gap: 1rem; margin-block-end: 2rem; width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
   }
   .stat-card {
+    display: flex; flex-direction: column; gap: .25rem;
     padding: 1rem 1.25rem; border: 1px solid var(--surface-4, #d4d4d8);
     border-radius: .5rem; background: var(--surface-1, #fff);
   }
-  .stat-card dt { font-size: .8rem; color: var(--text-2, #71717a); text-transform: uppercase; letter-spacing: .05em; }
-  .stat-card dd { margin: .25rem 0 0; font-size: 2rem; font-weight: 600; }
+  .stat-card__label {
+    font-size: .8rem; color: var(--text-2, #71717a);
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  .stat-card__value {
+    font-size: 2rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  }
 
   .stats-grid {
     display: grid; gap: 1.5rem;
@@ -205,12 +213,12 @@ currentPath: /stats/
     return `
       <p><small>Site <code>${escape(d.site)}</code> · window ${escape(d.window)} · since ${escape(when)}</small></p>
 
-      <dl class="stats-totals">
-        <div class="stat-card"><dt>Page views</dt><dd>${t.pageViews}</dd></div>
-        <div class="stat-card"><dt>Events</dt><dd>${t.events}</dd></div>
-        <div class="stat-card"><dt>Unique visitors</dt><dd>${t.uniques}</dd></div>
-        <div class="stat-card"><dt>Total hits</dt><dd>${t.hits}</dd></div>
-      </dl>
+      <div class="stats-totals">
+        <div class="stat-card"><span class="stat-card__label">Page views</span><span class="stat-card__value">${t.pageViews}</span></div>
+        <div class="stat-card"><span class="stat-card__label">Events</span><span class="stat-card__value">${t.events}</span></div>
+        <div class="stat-card"><span class="stat-card__label">Unique visitors</span><span class="stat-card__value">${t.uniques}</span></div>
+        <div class="stat-card"><span class="stat-card__label">Total hits</span><span class="stat-card__value">${t.hits}</span></div>
+      </div>
 
       <div class="stats-grid">
         ${timeseriesPanel(d.timeseries ?? [], d.bucketMs)}
