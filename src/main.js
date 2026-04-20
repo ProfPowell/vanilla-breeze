@@ -87,6 +87,7 @@ Analytics.init({
 });
 wireAnalyticsEvents();
 
-// Optional observability modules — Web Vitals + runtime error capture.
+// Optional observability modules — Web Vitals + runtime errors + engagement.
 import('./utils/analytics-vitals-init.js');
 import('./utils/analytics-errors-init.js');
+import('./utils/analytics-buffer-init.js');

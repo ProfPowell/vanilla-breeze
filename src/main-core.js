@@ -54,10 +54,11 @@ Analytics.init({
 wireAnalyticsEvents();
 
 // Optional observability modules. Imports with side effects — they
-// attach PerformanceObservers / error handlers and report via
-// Analytics.track(), which is safely opt-out gated above.
+// attach PerformanceObservers / error handlers / scroll listeners and
+// report via Analytics.track(), which is safely opt-out gated above.
 import('./utils/analytics-vitals-init.js');
 import('./utils/analytics-errors-init.js');
+import('./utils/analytics-buffer-init.js');
 
 // Lazy-load wizard only when [data-wizard] is present
 if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');

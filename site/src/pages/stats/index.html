@@ -155,6 +155,7 @@ currentPath: /stats/
         ${table('Outbound clicks', ['Domain', 'Clicks'],
           d.topClicks.map(r => [r.to_domain, r.clicks]))}
         ${vitalsTable(d.vitals ?? [])}
+        ${engagementTable(d.engagement ?? [])}
         ${errorsTable(d.errors ?? [])}
         ${table('Recent events', ['Name', 'Path', 'When'],
           d.recent.map(r => [r.event_name, r.path, new Date(r.created_at).toLocaleTimeString()]))}
@@ -188,6 +189,38 @@ currentPath: /stats/
       <h2>Web Vitals</h2>
       <table>
         <thead><tr><th>Metric</th><th>Rating</th><th>Count</th><th>Avg</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </section>`;
+  }
+
+  function engagementTable(rows) {
+    if (!rows.length) {
+      return `<section class="stats-table-wrap">
+        <h2>Engagement</h2>
+        <p class="empty">No scroll or attention data yet — data is captured when visitors leave a page.</p>
+      </section>`;
+    }
+    const fmtMs = (ms) => {
+      if (ms == null) return '—';
+      if (ms < 60000) return `${Math.round(ms / 1000)}s`;
+      const mins = Math.floor(ms / 60000);
+      const secs = Math.round((ms % 60000) / 1000);
+      return `${mins}m ${secs}s`;
+    };
+    const fmtPct = (n) => n == null ? '—' : `${Math.round(n)}%`;
+    const body = rows.map(r => `
+      <tr>
+        <td>${escape(r.path ?? '')}</td>
+        <td>${fmtPct(r.avg_scroll)}</td>
+        <td>${fmtMs(r.avg_attention_ms)}</td>
+        <td>${r.scroll_samples ?? 0}</td>
+      </tr>
+    `).join('');
+    return `<section class="stats-table-wrap">
+      <h2>Engagement (per page)</h2>
+      <table>
+        <thead><tr><th>Path</th><th>Avg scroll</th><th>Avg attention</th><th>Samples</th></tr></thead>
         <tbody>${body}</tbody>
       </table>
     </section>`;

@@ -54,7 +54,11 @@ export async function onRequestGet({ request, env }) {
     db.prepare(
       `SELECT event_name AS name, COUNT(*) AS count
          FROM hits
-        WHERE site_id = ?1 AND created_at > ?2 AND event_name <> 'page.view'
+        WHERE site_id = ?1 AND created_at > ?2
+          AND event_name <> 'page.view'
+          AND event_name NOT LIKE '__%'
+          AND event_name NOT LIKE 'perf.%'
+          AND event_name NOT LIKE 'error.%'
         GROUP BY event_name ORDER BY count DESC LIMIT 15`
     ).bind(site, since).all(),
 
@@ -114,6 +118,24 @@ export async function onRequestGet({ request, env }) {
             AND event_name LIKE 'error.%'
           ORDER BY created_at DESC LIMIT 10`
       ).bind(site, since).all(),
+
+      // Engagement — avg scroll depth + avg attention time per page.
+      // __scroll carries props.depth (0-100); __attention carries props.ms.
+      db.prepare(
+        `SELECT path,
+                AVG(CASE WHEN event_name = '__scroll'
+                         THEN CAST(json_extract(props, '$.depth') AS REAL) END) AS avg_scroll,
+                AVG(CASE WHEN event_name = '__attention'
+                         THEN CAST(json_extract(props, '$.ms') AS REAL) END) AS avg_attention_ms,
+                SUM(CASE WHEN event_name = '__scroll' THEN 1 ELSE 0 END) AS scroll_samples,
+                SUM(CASE WHEN event_name = '__attention' THEN 1 ELSE 0 END) AS attention_samples
+           FROM hits
+          WHERE site_id = ?1 AND created_at > ?2
+            AND event_name IN ('__scroll', '__attention')
+          GROUP BY path
+          ORDER BY (scroll_samples + attention_samples) DESC
+          LIMIT 10`
+      ).bind(site, since).all(),
     ]);
   } catch (err) {
     const msg = err?.message ?? String(err);
@@ -127,7 +149,7 @@ export async function onRequestGet({ request, env }) {
     }, { status: 503 });
   }
 
-  const [totals, topPages, topEvents, topReferrers, topCountries, topClicks, recent, vitals, errors] = results;
+  const [totals, topPages, topEvents, topReferrers, topCountries, topClicks, recent, vitals, errors, engagement] = results;
 
   return json({
     ok: true,
@@ -148,5 +170,6 @@ export async function onRequestGet({ request, env }) {
     recent:       recent?.results ?? [],
     vitals:       vitals?.results ?? [],
     errors:       errors?.results ?? [],
+    engagement:   engagement?.results ?? [],
   });
 }
