@@ -32,6 +32,9 @@ export async function onRequestGet({ request, env }) {
   const windowKey = url.searchParams.get('window') ?? '24h';
   const since = Date.now() - (WINDOWS[windowKey] ?? WINDOWS['24h']);
 
+  // Time-series bucket granularity — hourly for 24h, daily otherwise.
+  const BUCKET_MS = windowKey === '24h' ? 3_600_000 : 86_400_000;
+
   let results;
   try {
     results = await Promise.all([
@@ -119,6 +122,18 @@ export async function onRequestGet({ request, env }) {
           ORDER BY created_at DESC LIMIT 10`
       ).bind(site, since).all(),
 
+      // Time-series — hits bucketed at BUCKET_MS granularity.
+      // Integer division + multiplication truncates to the bucket start.
+      db.prepare(
+        `SELECT (created_at / ?3) * ?3 AS bucket_ms,
+                COUNT(*) AS hits,
+                SUM(CASE WHEN event_name = 'page.view' THEN 1 ELSE 0 END) AS page_views
+           FROM hits
+          WHERE site_id = ?1 AND created_at > ?2
+          GROUP BY bucket_ms
+          ORDER BY bucket_ms ASC`
+      ).bind(site, since, BUCKET_MS).all(),
+
       // Engagement — avg scroll depth + avg attention time per page.
       // __scroll carries props.depth (0-100); __attention carries props.ms.
       db.prepare(
@@ -149,13 +164,14 @@ export async function onRequestGet({ request, env }) {
     }, { status: 503 });
   }
 
-  const [totals, topPages, topEvents, topReferrers, topCountries, topClicks, recent, vitals, errors, engagement] = results;
+  const [totals, topPages, topEvents, topReferrers, topCountries, topClicks, recent, vitals, errors, timeseries, engagement] = results;
 
   return json({
     ok: true,
     site,
     window: windowKey,
     since,
+    bucketMs: BUCKET_MS,
     totals: {
       hits:       totals?.hits ?? 0,
       uniques:    totals?.uniques ?? 0,
@@ -168,6 +184,7 @@ export async function onRequestGet({ request, env }) {
     topCountries: topCountries?.results ?? [],
     topClicks:    topClicks?.results ?? [],
     recent:       recent?.results ?? [],
+    timeseries:   timeseries?.results ?? [],
     vitals:       vitals?.results ?? [],
     errors:       errors?.results ?? [],
     engagement:   engagement?.results ?? [],

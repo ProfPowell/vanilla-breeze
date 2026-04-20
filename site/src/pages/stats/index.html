@@ -1,17 +1,21 @@
 ---
 layout: base
 title: "Analytics Stats"
-description: "Rudimentary dashboard for the vanilla-breeze analytics ingest. Lives behind the Basic Auth gate."
+description: "Live aggregate of the vanilla-breeze analytics ingest. Behind the Basic Auth gate."
 dataPage: stats
 currentSection: stats
 currentPath: /stats/
 ---
 
+<template slot="extraHead">
+<link rel="stylesheet" href="/cdn/vanilla-breeze-charts.css">
+</template>
+
 <main class="stats-page" data-vb-no-track>
 
   <header class="stats-header">
     <h1>Analytics stats</h1>
-    <p class="lead">Aggregate snapshot of events landing in the <code>DB</code> D1 binding. Refreshes on page load.</p>
+    <p class="lead">Aggregate snapshot of events landing in the D1 store. Uses <code>&lt;chart-wc&gt;</code> and <code>&lt;data-table&gt;</code>.</p>
 
     <form class="stats-controls" data-stats-controls>
       <label>
@@ -31,13 +35,17 @@ currentPath: /stats/
   </header>
 
   <output id="stats-output" class="stats-output" aria-live="polite">
-    <p class="stats-loading">Loading…</p>
+    <p class="stats-loading">Loading&hellip;</p>
   </output>
 
 </main>
 
+<template slot="extraScripts">
+<script type="module" src="/cdn/vanilla-breeze-charts.js"></script>
+</template>
+
 <style>
-  .stats-page { max-width: 72rem; margin-inline: auto; padding: 2rem 1rem 4rem; }
+  .stats-page { max-width: 80rem; margin-inline: auto; padding: 2rem 1rem 4rem; }
   .stats-header h1 { margin-block-end: .25rem; }
   .stats-controls {
     display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;
@@ -55,10 +63,6 @@ currentPath: /stats/
     border: 1px solid var(--surface-4, #d4d4d8); background: var(--surface-1, #fff);
   }
 
-  .stats-grid {
-    display: grid; gap: 1.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
-  }
   .stats-totals {
     display: grid; gap: 1rem; margin-block-end: 2rem;
     grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
@@ -70,15 +74,21 @@ currentPath: /stats/
   .stat-card dt { font-size: .8rem; color: var(--text-2, #71717a); text-transform: uppercase; letter-spacing: .05em; }
   .stat-card dd { margin: .25rem 0 0; font-size: 2rem; font-weight: 600; }
 
-  .stats-table-wrap {
+  .stats-grid {
+    display: grid; gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  }
+  .stats-panel {
     padding: 1rem; border: 1px solid var(--surface-4, #d4d4d8);
     border-radius: .5rem; background: var(--surface-1, #fff); display: block;
   }
-  .stats-table-wrap h2 { margin: 0 0 .75rem; font-size: 1rem; }
-  .stats-table-wrap table { width: 100%; border-collapse: collapse; font-size: .875rem; }
-  .stats-table-wrap th, .stats-table-wrap td { padding: .375rem .5rem; text-align: left; border-bottom: 1px solid var(--surface-3, #e4e4e7); }
-  .stats-table-wrap th:last-child, .stats-table-wrap td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
-  .stats-table-wrap .empty { color: var(--text-2, #71717a); font-style: italic; font-size: .875rem; }
+  .stats-panel > h2 { margin: 0 0 .75rem; font-size: 1rem; }
+  .stats-panel .empty { color: var(--text-2, #71717a); font-style: italic; font-size: .875rem; }
+  .stats-panel table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+  .stats-panel th, .stats-panel td { padding: .375rem .5rem; text-align: left; border-bottom: 1px solid var(--surface-3, #e4e4e7); }
+  .stats-panel td[data-numeric], .stats-panel th[data-numeric] { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .stats-wide { grid-column: 1 / -1; }
 
   .stats-error { padding: 1rem; border: 1px solid #dc2626; border-radius: .5rem; background: #fef2f2; color: #7f1d1d; }
   .stats-loading { color: var(--text-2, #71717a); font-style: italic; }
@@ -92,11 +102,10 @@ currentPath: /stats/
   .rating-pill.rating-meh  { background: #fef3c7; color: #92400e; }
   .rating-pill.rating-poor { background: #fee2e2; color: #991b1b; }
 
-  .stats-errors-wrap { grid-column: 1 / -1; }
-  .stats-errors-wrap code { font-size: .75rem; color: var(--text-2, #71717a); }
-  .stats-errors-wrap td:nth-child(2) {
-    max-width: 32rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
+  .stats-panel code { font-size: .75rem; color: var(--text-2, #71717a); }
+
+  /* Give chart-wc some breathing room */
+  .stats-panel chart-wc { display: block; min-height: 20rem; }
 </style>
 
 <script type="module">
@@ -109,7 +118,7 @@ currentPath: /stats/
       site: fd.get('site') || 'vb-docs',
       window: fd.get('window') || '24h',
     });
-    output.innerHTML = '<p class="stats-loading">Loading…</p>';
+    output.innerHTML = '<p class="stats-loading">Loading&hellip;</p>';
 
     let data;
     try {
@@ -120,9 +129,8 @@ currentPath: /stats/
       output.innerHTML = `
         <div class="stats-error">
           <strong>Could not load stats.</strong> ${escape(err.message)}
-          <p>If this says the D1 binding is missing, follow the steps in
-             <code>functions/api/analytics/README.md</code> to create a database,
-             apply the migration, and bind it as <code>DB</code> in the Cloudflare Pages dashboard.</p>
+          <p>If this says the D1 binding or tables are missing, see
+             <code>functions/api/analytics/README.md</code>.</p>
         </div>`;
       return;
     }
@@ -144,94 +152,179 @@ currentPath: /stats/
       </dl>
 
       <div class="stats-grid">
-        ${table('Top pages', ['Path', 'Views', 'Uniques'],
-          d.topPages.map(r => [r.path, r.views, r.uniques]))}
-        ${table('Top events', ['Event', 'Count'],
-          d.topEvents.map(r => [r.name, r.count]))}
-        ${table('Top referrers', ['Referrer', 'Views'],
-          d.topReferrers.map(r => [r.referrer, r.views]))}
-        ${table('Top countries', ['Country', 'Views'],
-          d.topCountries.map(r => [r.country, r.views]))}
-        ${table('Outbound clicks', ['Domain', 'Clicks'],
-          d.topClicks.map(r => [r.to_domain, r.clicks]))}
-        ${vitalsTable(d.vitals ?? [])}
-        ${engagementTable(d.engagement ?? [])}
-        ${errorsTable(d.errors ?? [])}
-        ${table('Recent events', ['Name', 'Path', 'When'],
-          d.recent.map(r => [r.event_name, r.path, new Date(r.created_at).toLocaleTimeString()]))}
+        ${timeseriesPanel(d.timeseries ?? [], d.bucketMs)}
+        ${topEventsPanel(d.topEvents ?? [])}
+        ${topPagesPanel(d.topPages ?? [])}
+        ${topReferrersPanel(d.topReferrers ?? [])}
+        ${topCountriesPanel(d.topCountries ?? [])}
+        ${topClicksPanel(d.topClicks ?? [])}
+        ${vitalsPanel(d.vitals ?? [])}
+        ${engagementPanel(d.engagement ?? [])}
+        ${errorsPanel(d.errors ?? [])}
+        ${recentPanel(d.recent ?? [])}
       </div>
     `;
   }
 
-  function vitalsTable(rows) {
+  // ── Panel builders ─────────────────────────────────────────────────
+
+  function timeseriesPanel(rows, bucketMs) {
     if (!rows.length) {
-      return `<section class="stats-table-wrap">
-        <h2>Web Vitals</h2>
-        <p class="empty">No performance data yet — visit a few pages to populate.</p>
-      </section>`;
+      return panel('Activity over time', '<p class="empty">No hits in this window yet.</p>', { wide: true });
     }
-    const METRIC_LABEL = { 'perf.lcp': 'LCP', 'perf.cls': 'CLS', 'perf.inp': 'INP', 'perf.ttfb': 'TTFB' };
-    const UNIT         = { 'perf.lcp': 'ms', 'perf.cls': '',   'perf.inp': 'ms', 'perf.ttfb': 'ms' };
-    const body = rows.map(r => {
-      const metric = METRIC_LABEL[r.event_name] ?? r.event_name;
-      const avg = r.avg_value != null ? `${Math.round(r.avg_value * 100) / 100}${UNIT[r.event_name] ?? ''}` : '—';
-      const ratingClass = r.rating === 'good' ? 'rating-good'
-                        : r.rating === 'needs-improvement' ? 'rating-meh'
-                        : r.rating === 'poor' ? 'rating-poor' : '';
+    const bodyRows = rows.map(r => {
+      const d = new Date(r.bucket_ms);
+      const label = bucketMs < 86_400_000
+        ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : d.toLocaleDateString();
       return `<tr>
-        <td>${escape(metric)}</td>
-        <td><span class="rating-pill ${ratingClass}">${escape(r.rating)}</span></td>
-        <td>${r.count}</td>
-        <td>${escape(avg)}</td>
+        <td>${escape(label)}</td>
+        <td data-numeric>${r.page_views ?? 0}</td>
+        <td data-numeric>${(r.hits ?? 0) - (r.page_views ?? 0)}</td>
       </tr>`;
     }).join('');
-    return `<section class="stats-table-wrap">
-      <h2>Web Vitals</h2>
-      <table>
-        <thead><tr><th>Metric</th><th>Rating</th><th>Count</th><th>Avg</th></tr></thead>
-        <tbody>${body}</tbody>
-      </table>
-    </section>`;
+    return panel('Activity over time', `
+      <chart-wc data-type="line" data-chart="replace" data-legend data-tooltip>
+        <table>
+          <thead>
+            <tr>
+              <th data-chart-label>Bucket</th>
+              <th data-chart-series data-numeric>Page views</th>
+              <th data-chart-series data-numeric>Other events</th>
+            </tr>
+          </thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      </chart-wc>
+    `, { wide: true });
   }
 
-  function engagementTable(rows) {
+  function topEventsPanel(rows) {
     if (!rows.length) {
-      return `<section class="stats-table-wrap">
-        <h2>Engagement</h2>
-        <p class="empty">No scroll or attention data yet — data is captured when visitors leave a page.</p>
-      </section>`;
+      return panel('Top events', '<p class="empty">No user-intent events yet.</p>');
+    }
+    const body = rows.map(r => `
+      <tr>
+        <td>${escape(r.name)}</td>
+        <td data-numeric>${r.count}</td>
+      </tr>
+    `).join('');
+    return panel('Top events', `
+      <chart-wc data-type="bar" data-chart="replace" data-tooltip>
+        <table>
+          <thead>
+            <tr>
+              <th data-chart-label>Event</th>
+              <th data-chart-series data-numeric>Count</th>
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      </chart-wc>
+    `);
+  }
+
+  function topPagesPanel(rows) {
+    return dataTablePanel('Top pages',
+      ['Path', 'Views', 'Uniques'],
+      rows.map(r => [r.path, r.views, r.uniques]),
+      { sortTypes: ['string', 'number', 'number'], numericCols: [1, 2] });
+  }
+
+  function topReferrersPanel(rows) {
+    return dataTablePanel('Top referrers',
+      ['Referrer', 'Views'],
+      rows.map(r => [r.referrer, r.views]),
+      { sortTypes: ['string', 'number'], numericCols: [1] });
+  }
+
+  function topCountriesPanel(rows) {
+    return dataTablePanel('Top countries',
+      ['Country', 'Views'],
+      rows.map(r => [r.country, r.views]),
+      { sortTypes: ['string', 'number'], numericCols: [1] });
+  }
+
+  function topClicksPanel(rows) {
+    return dataTablePanel('Outbound clicks',
+      ['Domain', 'Clicks'],
+      rows.map(r => [r.to_domain, r.clicks]),
+      { sortTypes: ['string', 'number'], numericCols: [1] });
+  }
+
+  function vitalsPanel(rows) {
+    if (!rows.length) {
+      return panel('Web Vitals', '<p class="empty">No performance data yet — browse a few pages and hide the tab to trigger reporting.</p>');
+    }
+    const METRIC = { 'perf.lcp': 'LCP', 'perf.cls': 'CLS', 'perf.inp': 'INP', 'perf.ttfb': 'TTFB' };
+    const UNIT   = { 'perf.lcp': 'ms', 'perf.cls': '', 'perf.inp': 'ms', 'perf.ttfb': 'ms' };
+    const body = rows.map(r => {
+      const metric = METRIC[r.event_name] ?? r.event_name;
+      const avg = r.avg_value != null ? `${Math.round(r.avg_value * 100) / 100}${UNIT[r.event_name] ?? ''}` : '—';
+      const cls = r.rating === 'good' ? 'rating-good'
+                : r.rating === 'needs-improvement' ? 'rating-meh'
+                : r.rating === 'poor' ? 'rating-poor' : '';
+      return `<tr>
+        <td>${escape(metric)}</td>
+        <td><span class="rating-pill ${cls}">${escape(r.rating)}</span></td>
+        <td data-numeric data-sort-value="${r.count}">${r.count}</td>
+        <td data-numeric>${escape(avg)}</td>
+      </tr>`;
+    }).join('');
+    return panel('Web Vitals', `
+      <data-table>
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="string">Metric</th>
+              <th data-sort="string">Rating</th>
+              <th data-sort="number" data-numeric>Count</th>
+              <th data-sort="string" data-numeric>Avg</th>
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      </data-table>
+    `);
+  }
+
+  function engagementPanel(rows) {
+    if (!rows.length) {
+      return panel('Engagement (per page)', '<p class="empty">No scroll/attention data yet — captured when visitors leave a page.</p>');
     }
     const fmtMs = (ms) => {
       if (ms == null) return '—';
       if (ms < 60000) return `${Math.round(ms / 1000)}s`;
-      const mins = Math.floor(ms / 60000);
-      const secs = Math.round((ms % 60000) / 1000);
-      return `${mins}m ${secs}s`;
+      return `${Math.floor(ms / 60000)}m ${Math.round((ms % 60000) / 1000)}s`;
     };
-    const fmtPct = (n) => n == null ? '—' : `${Math.round(n)}%`;
     const body = rows.map(r => `
       <tr>
         <td>${escape(r.path ?? '')}</td>
-        <td>${fmtPct(r.avg_scroll)}</td>
-        <td>${fmtMs(r.avg_attention_ms)}</td>
-        <td>${r.scroll_samples ?? 0}</td>
+        <td data-numeric data-sort-value="${r.avg_scroll ?? 0}">${r.avg_scroll == null ? '—' : `${Math.round(r.avg_scroll)}%`}</td>
+        <td data-numeric data-sort-value="${r.avg_attention_ms ?? 0}">${fmtMs(r.avg_attention_ms)}</td>
+        <td data-numeric>${r.scroll_samples ?? 0}</td>
       </tr>
     `).join('');
-    return `<section class="stats-table-wrap">
-      <h2>Engagement (per page)</h2>
-      <table>
-        <thead><tr><th>Path</th><th>Avg scroll</th><th>Avg attention</th><th>Samples</th></tr></thead>
-        <tbody>${body}</tbody>
-      </table>
-    </section>`;
+    return panel('Engagement (per page)', `
+      <data-table>
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="string">Path</th>
+              <th data-sort="number" data-numeric>Avg scroll</th>
+              <th data-sort="number" data-numeric>Avg attention</th>
+              <th data-sort="number" data-numeric>Samples</th>
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      </data-table>
+    `);
   }
 
-  function errorsTable(rows) {
+  function errorsPanel(rows) {
     if (!rows.length) {
-      return `<section class="stats-table-wrap">
-        <h2>Recent errors</h2>
-        <p class="empty">No runtime errors captured in this window. &#127881;</p>
-      </section>`;
+      return panel('Recent errors', '<p class="empty">No runtime errors captured in this window. 🎉</p>', { wide: true });
     }
     const body = rows.map(r => `
       <tr>
@@ -239,27 +332,85 @@ currentPath: /stats/
         <td>${escape(r.message ?? '')}</td>
         <td><code>${escape(r.source ?? '')}${r.line ? ':' + r.line : ''}</code></td>
         <td>${escape(r.path ?? '')}</td>
-        <td>${new Date(r.created_at).toLocaleTimeString()}</td>
+        <td data-sort-value="${r.created_at}">${new Date(r.created_at).toLocaleTimeString()}</td>
       </tr>
     `).join('');
-    return `<section class="stats-table-wrap stats-errors-wrap">
-      <h2>Recent errors</h2>
-      <table>
-        <thead><tr><th>Type</th><th>Message</th><th>Source</th><th>Path</th><th>When</th></tr></thead>
-        <tbody>${body}</tbody>
-      </table>
-    </section>`;
+    return panel('Recent errors', `
+      <data-table data-filterable>
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="string">Type</th>
+              <th data-sort="string">Message</th>
+              <th data-sort="string">Source</th>
+              <th data-sort="string">Path</th>
+              <th data-sort="number">When</th>
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      </data-table>
+    `, { wide: true });
   }
 
-  function table(title, cols, rows) {
-    const head = cols.map(c => `<th>${escape(c)}</th>`).join('');
-    const body = rows.length
-      ? rows.map(r => `<tr>${r.map((c, i) => `<td${i === r.length - 1 ? '' : ''}>${escape(String(c ?? ''))}</td>`).join('')}</tr>`).join('')
-      : `<tr><td class="empty" colspan="${cols.length}">No data in this window.</td></tr>`;
-    return `<section class="stats-table-wrap">
-      <h2>${escape(title)}</h2>
-      <table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
-    </section>`;
+  function recentPanel(rows) {
+    if (!rows.length) {
+      return panel('Recent events', '<p class="empty">No events yet.</p>', { wide: true });
+    }
+    const body = rows.map(r => `
+      <tr>
+        <td><code>${escape(r.event_name)}</code></td>
+        <td>${escape(r.path ?? '')}</td>
+        <td data-sort-value="${r.created_at}">${new Date(r.created_at).toLocaleTimeString()}</td>
+      </tr>
+    `).join('');
+    return panel('Recent events', `
+      <data-table data-filterable data-paginate="10">
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="string">Name</th>
+              <th data-sort="string">Path</th>
+              <th data-sort="number">When</th>
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      </data-table>
+    `, { wide: true });
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────
+
+  function dataTablePanel(title, cols, rows, opts = {}) {
+    if (!rows.length) {
+      return panel(title, '<p class="empty">No data in this window.</p>');
+    }
+    const sortTypes = opts.sortTypes ?? cols.map(() => 'string');
+    const numericCols = new Set(opts.numericCols ?? []);
+    const head = cols.map((c, i) => {
+      const numeric = numericCols.has(i) ? ' data-numeric' : '';
+      return `<th data-sort="${sortTypes[i]}"${numeric}>${escape(c)}</th>`;
+    }).join('');
+    const body = rows.map(r => `<tr>${
+      r.map((c, i) => {
+        const numeric = numericCols.has(i) ? ' data-numeric' : '';
+        return `<td${numeric}>${escape(String(c ?? ''))}</td>`;
+      }).join('')
+    }</tr>`).join('');
+    return panel(title, `
+      <data-table>
+        <table>
+          <thead><tr>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </data-table>
+    `);
+  }
+
+  function panel(title, bodyHtml, opts = {}) {
+    const cls = opts.wide ? 'stats-panel stats-wide' : 'stats-panel';
+    return `<section class="${cls}"><h2>${escape(title)}</h2>${bodyHtml}</section>`;
   }
 
   function escape(s) {
