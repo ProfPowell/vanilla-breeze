@@ -249,7 +249,14 @@ const defaults = {
   autoPageView: true,
   autoOutboundLinks: true,
   autoDeclarative: true,
+  /** Allow analytics inside iframes. Default false so sandboxed demos
+   *  embedded via <browser-window> / <iframe> don't spam events. */
+  allowInIframe: false,
 };
+
+function isInIframe() {
+  try { return window.top !== window.self; } catch { return true; }
+}
 
 export const Analytics = {
   /**
@@ -259,6 +266,17 @@ export const Analytics = {
   init(config = {}) {
     if (state.config) return; // idempotent
     state.config = { ...defaults, ...config };
+
+    // Sandboxed demos embedded via iframe should not report analytics —
+    // every page-view beacon would be a demo load, not a real visit.
+    // Callers that *do* want analytics inside an iframe set allowInIframe.
+    if (isInIframe() && !state.config.allowInIframe) {
+      state.config.transport = 'disabled';
+      state.config.autoPageView = false;
+      state.config.autoOutboundLinks = false;
+      state.config.autoDeclarative = false;
+      return;
+    }
 
     if (state.config.autoDeclarative) {
       document.addEventListener('click', handleDocumentClick, { capture: true });
