@@ -86,12 +86,19 @@ ${serviceWorkerMeta}
 
 <!-- Analytics config (read by src/lib/analytics.js when vanilla-breeze-core.js boots).
      Transport 'beacon' POSTs to /api/analytics/*. Use 'console' to log events to
-     devtools instead, or 'disabled' to turn analytics off entirely. -->
+     devtools instead, or 'disabled' to turn analytics off entirely.
+
+     urlMasks collapses the /stats/?site=…&window=… query-string variants into
+     a single canonical /stats/ path so the Top Pages panel doesn't fragment
+     across every filter combination. See /docs/analytics/#url-masking. -->
 <script>
   window.vbAnalyticsConfig = {
     siteId: 'vb-docs',
     transport: 'beacon',
     endpoint: '/api/analytics',
+    urlMasks: [
+      { pattern: /^\/stats\/\?.*$/, replace: '/stats/' },
+    ],
   };
 </script>
 

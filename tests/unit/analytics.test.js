@@ -60,6 +60,7 @@ function installBrowserGlobals() {
 // ── Suite ─────────────────────────────────────────────────────────────
 
 let Analytics;
+let maskUrl;
 let beacons;
 
 before(async () => {
@@ -70,7 +71,7 @@ before(async () => {
     beacons.push({ url, body: blob?.parts?.join('') ?? '' });
     return true;
   };
-  ({ Analytics } = await import('../../src/lib/analytics.js'));
+  ({ Analytics, maskUrl } = await import('../../src/lib/analytics.js'));
 });
 
 beforeEach(() => {
@@ -135,5 +136,41 @@ describe('Transport selection', () => {
     // earlier suite — track once and confirm the spy stays empty.
     Analytics.track('test.disabled', {});
     assert.equal(beacons.length, 0);
+  });
+});
+
+describe('URL masking', () => {
+  it('returns the path unchanged when no masks are configured', () => {
+    assert.equal(maskUrl('/docs/elements/native/em/', null), '/docs/elements/native/em/');
+    assert.equal(maskUrl('/docs/elements/native/em/', []), '/docs/elements/native/em/');
+    assert.equal(maskUrl('/docs/elements/native/em/', undefined), '/docs/elements/native/em/');
+  });
+
+  it('applies the first matching mask and stops', () => {
+    const masks = [
+      { pattern: /^\/users\/[^/]+/, replace: '/users/*' },
+      { pattern: /^\/users/,        replace: '/users/ALL' }, // never reached
+    ];
+    assert.equal(maskUrl('/users/abc-123/settings', masks), '/users/*/settings');
+  });
+
+  it('returns the original path if no pattern matches', () => {
+    const masks = [{ pattern: /^\/admin\//, replace: '/admin/*' }];
+    assert.equal(maskUrl('/docs/overview', masks), '/docs/overview');
+  });
+
+  it('normalises UUID-like segments anywhere in the path', () => {
+    const masks = [{ pattern: /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, replace: '/*' }];
+    const url = '/orders/550e8400-e29b-41d4-a716-446655440000/items';
+    assert.equal(maskUrl(url, masks), '/orders/*/items');
+  });
+
+  it('strips query strings from a specific page', () => {
+    const masks = [{ pattern: /^\/stats\/\?.*$/, replace: '/stats/' }];
+    assert.equal(maskUrl('/stats/?site=vb-docs&window=24h', masks), '/stats/');
+    assert.equal(maskUrl('/stats/?site=other&window=7d',    masks), '/stats/');
+    assert.equal(maskUrl('/stats/',                          masks), '/stats/');
+    // Other query strings pass through unchanged
+    assert.equal(maskUrl('/docs/?q=test', masks), '/docs/?q=test');
   });
 });

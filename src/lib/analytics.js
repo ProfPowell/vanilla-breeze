@@ -68,7 +68,17 @@ function readTaxonomy() {
 
 // ── URL masking ──────────────────────────────────────────────────────
 
-function maskUrl(path, masks) {
+/**
+ * Rewrite sensitive path segments (user IDs, draft hashes, query strings)
+ * before the beacon is sent. Applied client-side so the server never sees
+ * the original URL. The first matching mask wins — order patterns from
+ * most specific to least specific.
+ *
+ * @param {string} path - `location.pathname + location.search`
+ * @param {Array<{pattern: RegExp, replace: string}>} [masks]
+ * @returns {string} Rewritten path (or original if nothing matched).
+ */
+export function maskUrl(path, masks) {
   if (!masks?.length) return path;
   for (const { pattern, replace } of masks) {
     if (pattern.test(path)) return path.replace(pattern, replace);

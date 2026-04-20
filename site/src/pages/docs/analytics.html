@@ -122,6 +122,36 @@ const halfWidth = 1.96 * Math.sqrt(observed) / sampleRate;
 </section>
 
 <section>
+  <h2 id="url-masking">URL masking</h2>
+  <p>URLs end up on two D1 columns: <code>path</code> and <code>referrer</code>. Both are the raw values the browser had — including any sensitive path segments, query parameters, or session tokens. <code>urlMasks</code> rewrites the tracked <code>path</code> client-side, before the beacon is sent, so the server never sees the original.</p>
+
+  <p>Each mask is a <code>{ pattern, replace }</code> pair. Masks are applied in order; the first match wins (so put the most specific patterns first). The input is <code>location.pathname + location.search</code>, so masks can target either the path or the query string.</p>
+
+  <code-block language="js" label="Typical masks" data-escape>window.vbAnalyticsConfig = {
+  urlMasks: [
+    // User profiles — collapse /users/<id>/... to /users/*/...
+    { pattern: /^\/users\/[^/]+/,            replace: '/users/*' },
+
+    // Preview drafts — hex or uuid ids anywhere in the path
+    { pattern: /\/[0-9a-f]{8,}/g,            replace: '/*' },
+
+    // Filter query strings on the stats dashboard so every combination
+    // of ?site=…&window=… doesn't get its own row in Top Pages.
+    { pattern: /^\/stats\/\?.*$/,            replace: '/stats/' },
+
+    // Strip utm_*, ref, fbclid, gclid — keep acquisition info out of path
+    { pattern: /[?&](utm_[^=]+|ref|fbclid|gclid)=[^&]*/g, replace: '' },
+  ],
+};</code-block>
+
+  <p>Masking is <strong>one-way</strong> and runs in the browser; there is no "unmask" step at query time. If you later want the unredacted path, you need to add it to <code>props</code> explicitly via <code>Analytics.track()</code>.</p>
+
+  <aside class="note">
+    <strong>The docs site exercises this.</strong> The <code>/stats/</code> dashboard accepts <code>?site=…&amp;window=…</code>; without a mask, every filter combination would become a separate row in the Top Pages panel. A single mask collapses them all to a canonical <code>/stats/</code>. See <code>site/src/includes/head.html</code>.
+  </aside>
+</section>
+
+<section>
   <h2>Transport choices</h2>
 
   <h3><code>beacon</code> (production)</h3>
