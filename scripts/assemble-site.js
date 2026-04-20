@@ -131,6 +131,10 @@ for (const entry of readdirSync(srcRoot)) {
 // on repeat visits. The pre-build step (build:demos, wired into the
 // build:site-assets npm script) produces dist/demos/ with those paths
 // rewritten.
+// Cloudflare Pages response headers — sets Cache-Control on /cdn/*
+// so assets don't revalidate on every page load (304 roundtrips).
+copyFile('_headers', join(pagesDir, '_headers'));
+
 copyDir('dist/demos/snippets/demos', join(pagesDir, 'docs', 'snippets', 'demos'));
 copyDir('dist/demos/patterns/demos', join(pagesDir, 'docs', 'patterns', 'demos'));
 copyFile('demos/docs.css', join(pagesDir, 'docs', 'docs.css'));
