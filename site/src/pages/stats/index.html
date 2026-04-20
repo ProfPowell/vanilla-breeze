@@ -211,7 +211,7 @@ currentPath: /stats/
     const t = d.totals;
     const when = new Date(d.since).toLocaleString();
     return `
-      <p><small>Site <code>${escape(d.site)}</code> · window ${escape(d.window)} · since ${escape(when)}</small></p>
+      <p><small>Site <code>${escape(d.site)}</code> · window ${escape(d.window)} · since ${escape(when)}${sampleRateNote()}</small></p>
 
       <div class="stats-totals">
         <div class="stat-card"><span class="stat-card__label">Page views</span><span class="stat-card__value">${t.pageViews}</span></div>
@@ -568,6 +568,15 @@ currentPath: /stats/
 
   function escape(s) {
     return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // If analytics is sampling, surface the factor so counts can be extrapolated.
+  // Reads from the same vbAnalyticsConfig that configured the client runtime.
+  function sampleRateNote() {
+    const rate = Number(window.vbAnalyticsConfig?.sampleRate ?? 1);
+    if (!(rate < 1) || rate <= 0) return '';
+    const factor = Math.round(1 / rate);
+    return ` · sampling <code>${rate}</code> — multiply counts by ~${factor}× for a population estimate (<a href="/docs/analytics/#sample-rate">why</a>)`;
   }
 
   form.addEventListener('submit', (e) => { e.preventDefault(); load(); });
