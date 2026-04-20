@@ -30,10 +30,39 @@ export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const site = url.searchParams.get('site') ?? 'vb-docs';
   const windowKey = url.searchParams.get('window') ?? '24h';
+  const event = url.searchParams.get('event') ?? null;
   const since = Date.now() - (WINDOWS[windowKey] ?? WINDOWS['24h']);
 
   // Time-series bucket granularity — hourly for 24h, daily otherwise.
   const BUCKET_MS = windowKey === '24h' ? 3_600_000 : 86_400_000;
+
+  // Drill-in mode: ?event=<name> returns the props-value distribution
+  // for that event instead of the full aggregate snapshot. Cheaper
+  // to query separately than to attach to every dashboard load.
+  if (event) {
+    try {
+      const rows = await db.prepare(
+        `SELECT props, COUNT(*) AS count
+           FROM hits
+          WHERE site_id = ?1 AND created_at > ?2 AND event_name = ?3
+            AND props IS NOT NULL AND props <> ''
+          GROUP BY props
+          ORDER BY count DESC
+          LIMIT 25`
+      ).bind(site, since, event).all();
+      return json({
+        ok: true,
+        mode: 'event-props',
+        site, window: windowKey, event,
+        propsBreakdown: rows?.results ?? [],
+      });
+    } catch (err) {
+      return json({
+        ok: false,
+        error: `Event props query failed: ${err?.message ?? err}`,
+      }, { status: 503 });
+    }
+  }
 
   let results;
   try {

@@ -9,15 +9,27 @@ currentPath: /stats/
 
 <template slot="extraHead">
 <link rel="stylesheet" href="/cdn/vanilla-breeze-charts.css">
+<style>
+  /* The default core `main` rule caps at --canvas-width (72rem).
+     The stats dashboard is dense with columns and benefits from the
+     full viewport. Only applies when this page is active. */
+  html[data-page="stats"] body > main {
+    max-inline-size: min(110rem, 100%);
+    padding-inline: var(--size-l, 1.5rem);
+  }
+</style>
 </template>
 
-<main class="stats-page" data-vb-no-track>
+<div class="stats-page" data-vb-no-track>
 
   <header class="stats-header">
-    <h1>Analytics stats</h1>
-    <p class="lead">Aggregate snapshot of events landing in the D1 store. Uses <code>&lt;chart-wc&gt;</code> and <code>&lt;data-table&gt;</code>.</p>
-
-    <analytics-panel title="Your analytics data" compact></analytics-panel>
+    <div class="stats-title-row">
+      <div>
+        <h1>Analytics stats</h1>
+        <p class="lead">Aggregate snapshot of events landing in the D1 store. Uses <code>&lt;chart-wc&gt;</code> and <code>&lt;data-table&gt;</code>.</p>
+      </div>
+      <analytics-panel title="Your analytics data" compact></analytics-panel>
+    </div>
 
     <form class="stats-controls" data-stats-controls>
       <label>
@@ -40,18 +52,27 @@ currentPath: /stats/
     <p class="stats-loading">Loading&hellip;</p>
   </output>
 
-</main>
+</div>
 
 <template slot="extraScripts">
 <script type="module" src="/cdn/vanilla-breeze-charts.js"></script>
 </template>
 
 <style>
-  .stats-page { max-width: 80rem; margin-inline: auto; padding: 2rem 1rem 4rem; }
+  .stats-page { padding-block: 1.5rem 4rem; }
   .stats-header h1 { margin-block-end: .25rem; }
+  .stats-title-row {
+    display: grid; gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 28rem);
+    align-items: start;
+    margin-block-end: 1.5rem;
+  }
+  @media (width < 56rem) {
+    .stats-title-row { grid-template-columns: 1fr; }
+  }
   .stats-controls {
     display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;
-    margin-block: 1.5rem 2rem;
+    margin-block: 0 2rem;
     padding: 1rem; border: 1px solid var(--surface-4, #d4d4d8); border-radius: .5rem;
     background: var(--surface-2, #f4f4f5);
   }
@@ -78,7 +99,13 @@ currentPath: /stats/
 
   .stats-grid {
     display: grid; gap: 1.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+  }
+  @media (width >= 85rem) {
+    .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (width >= 120rem) {
+    .stats-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
   .stats-panel {
     padding: 1rem; border: 1px solid var(--surface-4, #d4d4d8);
@@ -108,6 +135,38 @@ currentPath: /stats/
 
   /* Give chart-wc some breathing room */
   .stats-panel chart-wc { display: block; min-height: 20rem; }
+
+  /* Clickable top-events rows for drill-in */
+  .stats-events-panel tbody tr {
+    cursor: pointer;
+    transition: background 120ms;
+  }
+  .stats-events-panel tbody tr:hover,
+  .stats-events-panel tbody tr:focus-visible {
+    background: var(--surface-2, #f4f4f5);
+    outline: none;
+  }
+  .stats-events-panel tbody tr[data-selected] {
+    background: color-mix(in oklab, var(--primary, #6366f1) 10%, transparent);
+    box-shadow: inset 3px 0 0 var(--primary, #6366f1);
+  }
+  .stats-props-wrap .props-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; margin-block-end: .5rem;
+  }
+  .stats-props-wrap .props-dismiss {
+    font-size: .8125rem; padding: .25rem .625rem;
+    border: 1px solid var(--surface-4, #d4d4d8);
+    border-radius: .25rem; background: var(--surface-1, #fff); cursor: pointer;
+  }
+  .stats-props-wrap td:first-child {
+    max-width: 0; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .stats-props-wrap td code {
+    background: var(--surface-2, #f4f4f5);
+    padding: .125rem .375rem; border-radius: .25rem;
+  }
 </style>
 
 <script type="module">
@@ -206,13 +265,14 @@ currentPath: /stats/
       return panel('Top events', '<p class="empty">No user-intent events yet.</p>');
     }
     const body = rows.map(r => `
-      <tr>
+      <tr tabindex="0" data-event-name="${escape(r.name)}">
         <td>${escape(r.name)}</td>
         <td data-numeric>${r.count}</td>
       </tr>
     `).join('');
-    return panel('Top events', `
-      <chart-wc data-type="bar" data-chart="replace" data-tooltip>
+    return `<section class="stats-panel stats-events-panel">
+      <h2>Top events <small style="font-weight:400;color:var(--text-2,#71717a)">· click to see prop breakdown</small></h2>
+      <chart-wc data-type="bar" data-chart="enhance" data-tooltip>
         <table>
           <thead>
             <tr>
@@ -223,7 +283,90 @@ currentPath: /stats/
           <tbody>${body}</tbody>
         </table>
       </chart-wc>
-    `);
+    </section>`;
+  }
+
+  async function loadPropsBreakdown(eventName) {
+    const fd = new FormData(form);
+    const params = new URLSearchParams({
+      site: fd.get('site') || 'vb-docs',
+      window: fd.get('window') || '24h',
+      event: eventName,
+    });
+    let data;
+    try {
+      const res = await fetch(`/api/analytics/stats?${params}`);
+      data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+    } catch (err) {
+      renderPropsBreakdown(eventName, null, err.message);
+      return;
+    }
+    renderPropsBreakdown(eventName, data.propsBreakdown ?? [], null);
+  }
+
+  function renderPropsBreakdown(eventName, rows, errorMsg) {
+    const existing = document.querySelector('[data-props-wrap]');
+    if (existing) existing.remove();
+
+    // Drop the selected styling from any currently-selected row.
+    document.querySelectorAll('[data-selected]').forEach(el => el.removeAttribute('data-selected'));
+    const row = document.querySelector(`[data-event-name="${cssEscape(eventName)}"]`);
+    if (row) row.setAttribute('data-selected', '');
+
+    const eventsPanel = document.querySelector('.stats-events-panel');
+    if (!eventsPanel) return;
+
+    let bodyHtml;
+    if (errorMsg) {
+      bodyHtml = `<p class="empty">Could not load props: ${escape(errorMsg)}</p>`;
+    } else if (!rows || rows.length === 0) {
+      bodyHtml = `<p class="empty">This event has no props in the selected window.</p>`;
+    } else {
+      const tableBody = rows.map(r => {
+        let parsed;
+        try { parsed = JSON.parse(r.props); } catch { parsed = null; }
+        const pretty = parsed
+          ? Object.entries(parsed)
+              .map(([k, v]) => `<code>${escape(k)}=${escape(JSON.stringify(v))}</code>`)
+              .join(' ')
+          : `<code>${escape(r.props)}</code>`;
+        return `<tr><td>${pretty}</td><td data-numeric>${r.count}</td></tr>`;
+      }).join('');
+      bodyHtml = `
+        <data-table>
+          <table>
+            <thead>
+              <tr>
+                <th data-sort="string">Props</th>
+                <th data-sort="number" data-numeric>Count</th>
+              </tr>
+            </thead>
+            <tbody>${tableBody}</tbody>
+          </table>
+        </data-table>
+      `;
+    }
+
+    const wrap = document.createElement('section');
+    wrap.className = 'stats-panel stats-wide stats-props-wrap';
+    wrap.setAttribute('data-props-wrap', '');
+    wrap.innerHTML = `
+      <div class="props-header">
+        <h2>Props for <code>${escape(eventName)}</code></h2>
+        <button type="button" class="props-dismiss" data-props-dismiss>Dismiss</button>
+      </div>
+      ${bodyHtml}
+    `;
+    eventsPanel.insertAdjacentElement('afterend', wrap);
+    wrap.querySelector('[data-props-dismiss]').addEventListener('click', () => {
+      wrap.remove();
+      document.querySelectorAll('[data-selected]').forEach(el => el.removeAttribute('data-selected'));
+    });
+  }
+
+  function cssEscape(s) {
+    return CSS?.escape?.(s) ?? String(s).replace(/["\\]/g, '\\$&');
   }
 
   function topPagesPanel(rows) {
@@ -420,5 +563,21 @@ currentPath: /stats/
   }
 
   form.addEventListener('submit', (e) => { e.preventDefault(); load(); });
+
+  // Delegated handler for Top-events drill-in. Listens at the output so
+  // it keeps working after each render() replaces the innerHTML.
+  output.addEventListener('click', (e) => {
+    const row = e.target?.closest?.('.stats-events-panel tbody tr[data-event-name]');
+    if (!row) return;
+    loadPropsBreakdown(row.dataset.eventName);
+  });
+  output.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const row = e.target?.closest?.('.stats-events-panel tbody tr[data-event-name]');
+    if (!row) return;
+    e.preventDefault();
+    loadPropsBreakdown(row.dataset.eventName);
+  });
+
   load();
 </script>
