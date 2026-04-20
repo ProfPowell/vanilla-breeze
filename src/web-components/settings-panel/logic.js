@@ -175,18 +175,19 @@ class SettingsPanel extends VBElement {
           <summary>Appearance</summary>
           <div class="settings-section">
             <span class="settings-label">Color Mode</span>
-            <div class="segmented-control" role="radiogroup" aria-label="Color mode">
+            <fieldset data-segmented>
+              <legend class="visually-hidden">Color mode</legend>
               ${[
                 { id: 'auto', name: 'Auto', icon: 'monitor' },
                 { id: 'light', name: 'Light', icon: 'sun' },
                 { id: 'dark', name: 'Dark', icon: 'moon' },
               ].map(m => `
-                <label class="segment">
+                <label>
                   <input type="radio" name="settings-mode" value="${m.id}" ${mode === m.id ? 'checked' : ''} />
-                  <span><icon-wc name="${m.icon}" size="xs"></icon-wc> ${m.name}</span>
+                  <icon-wc name="${m.icon}" size="xs"></icon-wc> ${m.name}
                 </label>
               `).join('')}
-            </div>
+            </fieldset>
 
             <label class="settings-label" for="settings-theme">Theme</label>
             <select id="settings-theme" name="settings-theme">
@@ -230,14 +231,15 @@ class SettingsPanel extends VBElement {
             </label>
             <div class="density-row" ${fluidOn ? '' : 'hidden'}>
               <span class="settings-label">Density</span>
-              <div class="segmented-control" role="radiogroup" aria-label="Density">
+              <fieldset data-segmented>
+                <legend class="visually-hidden">Density</legend>
                 ${['compact', 'default', 'spacious'].map(d => `
-                  <label class="segment">
+                  <label>
                     <input type="radio" name="settings-density" value="${d}" ${density === d ? 'checked' : ''} />
-                    <span>${d[0].toUpperCase() + d.slice(1)}</span>
+                    ${d[0].toUpperCase() + d.slice(1)}
                   </label>
                 `).join('')}
-              </div>
+              </fieldset>
             </div>
 
             <label class="toggle-row">
@@ -246,25 +248,27 @@ class SettingsPanel extends VBElement {
             </label>
             <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
               <span class="settings-label">Style</span>
-              <div class="segmented-control" role="radiogroup" aria-label="Backdrop style">
+              <fieldset data-segmented>
+                <legend class="visually-hidden">Backdrop style</legend>
                 ${['default', 'flush', 'elevated'].map(p => `
-                  <label class="segment">
+                  <label>
                     <input type="radio" name="settings-backdrop" value="${p}" ${backdropPreset === p ? 'checked' : ''} />
-                    <span>${p[0].toUpperCase() + p.slice(1)}</span>
+                    ${p[0].toUpperCase() + p.slice(1)}
                   </label>
                 `).join('')}
-              </div>
+              </fieldset>
             </div>
             <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
               <span class="settings-label">Chrome</span>
-              <div class="segmented-control" role="radiogroup" aria-label="Backdrop chrome mode">
+              <fieldset data-segmented>
+                <legend class="visually-hidden">Backdrop chrome mode</legend>
                 ${['card', 'stretch', 'integrated'].map(c => `
-                  <label class="segment">
+                  <label>
                     <input type="radio" name="settings-backdrop-chrome" value="${c}" ${this.#getChromeMode(backdropChrome) === c ? 'checked' : ''} />
-                    <span>${c[0].toUpperCase() + c.slice(1)}</span>
+                    ${c[0].toUpperCase() + c.slice(1)}
                   </label>
                 `).join('')}
-              </div>
+              </fieldset>
             </div>
             <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
               <label class="toggle-row">

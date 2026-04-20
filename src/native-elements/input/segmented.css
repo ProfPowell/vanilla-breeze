@@ -1,0 +1,112 @@
+/* Segmented control: public pattern over native radio inputs
+ *
+ * <fieldset data-segmented>
+ *   <legend class="visually-hidden">Color mode</legend>
+ *   <label><input type="radio" name="mode" value="auto" checked>Auto</label>
+ *   <label><input type="radio" name="mode" value="light">Light</label>
+ *   <label><input type="radio" name="mode" value="dark">Dark</label>
+ * </fieldset>
+ *
+ * Variants:
+ *   [data-segmented-vertical]  - stack segments in a column
+ *   [data-segmented-compact]   - smaller min-height, tighter padding
+ */
+
+[data-segmented] {
+  display: flex;
+  padding: 2px;
+  gap: 2px;
+  border: none;
+  margin: 0;
+  background: var(--color-surface-alt, oklch(95% 0 0));
+  border-radius: var(--radius-s);
+}
+
+[data-segmented] > legend {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+[data-segmented] > label {
+  flex: 1;
+  min-inline-size: 0;
+  margin: 0;
+  font-weight: inherit;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--size-2xs, 4px);
+  padding: var(--size-2xs, 4px) var(--size-xs, 8px);
+  min-block-size: 2.5rem;
+  border-radius: calc(var(--radius-s) - 2px);
+  font-size: var(--font-size-sm);
+  line-height: 1.2;
+  color: inherit;
+  transition:
+    background var(--duration-fast, 150ms),
+    box-shadow var(--duration-fast, 150ms);
+}
+
+[data-segmented] > label > input[type="radio"] {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+[data-segmented] > label:hover {
+  background: var(--color-surface);
+}
+
+[data-segmented] > label:has(input:checked) {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs, 0 1px 2px oklch(0 0 0 / 0.08));
+  font-weight: var(--font-weight-medium, 500);
+}
+
+[data-segmented] > label:has(input:focus-visible) {
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+[data-segmented] > label:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- Vertical variant --- */
+[data-segmented-vertical] {
+  flex-direction: column;
+}
+
+[data-segmented-vertical] > label {
+  min-block-size: 2rem;
+}
+
+/* --- Compact variant --- */
+[data-segmented-compact] > label {
+  min-block-size: 1.75rem;
+  padding: var(--size-3xs, 2px) var(--size-2xs, 4px);
+  font-size: var(--font-size-xs, 0.75rem);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  [data-segmented] > label {
+    transition-duration: 0s;
+  }
+}

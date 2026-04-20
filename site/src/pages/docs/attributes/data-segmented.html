@@ -1,0 +1,145 @@
+---
+layout: attribute
+title: "data-segmented"
+description: "Group radio inputs into a compact segmented control with sunken track and raised active segment. CSS-only pattern over native radios with vertical and compact variants."
+attributeName: data-segmented
+category: form-controls
+attributeType: data
+currentPath: /docs/attributes/data-segmented/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+    <h2>Overview</h2>
+    <p>Add <code>data-segmented</code> to a <code>&lt;fieldset&gt;</code> wrapping radio inputs to render a segmented control. Pure CSS &mdash; no JavaScript required. The native radios still submit with the form, support keyboard navigation, and participate in validation.</p>
+
+    <browser-window
+      src="/docs/examples/demos/segmented-basic.html"
+      url="https://vanilla-breeze.dev/segmented"
+      title="Segmented control"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic segmented control" data-escape><fieldset data-segmented>
+  <legend class="visually-hidden">Color mode</legend>
+  <label><input type="radio" name="mode" value="auto" checked> Auto</label>
+  <label><input type="radio" name="mode" value="light"> Light</label>
+  <label><input type="radio" name="mode" value="dark"> Dark</label>
+</fieldset></code-block>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <ul>
+      <li>The fieldset becomes a flex row with a tinted track background.</li>
+      <li>Each <code>&lt;label&gt;</code> is a segment; its radio is visually hidden but still focusable.</li>
+      <li><code>label:has(input:checked)</code> paints the active segment with the surface color and a small drop shadow.</li>
+      <li><code>label:has(input:focus-visible)</code> draws the focus ring on the segment, not the hidden radio.</li>
+      <li>Give the <code>&lt;legend&gt;</code> the <code>.visually-hidden</code> class to keep the group accessible without showing a visible heading.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-segmented</code></td>
+          <td>boolean</td>
+          <td>Opts the fieldset in to the segmented-control layout.</td>
+        </tr>
+        <tr>
+          <td><code>data-segmented-vertical</code></td>
+          <td>boolean</td>
+          <td>Stack segments in a column instead of a row.</td>
+        </tr>
+        <tr>
+          <td><code>data-segmented-compact</code></td>
+          <td>boolean</td>
+          <td>Tighter padding and a smaller font size for dense toolbars.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Icons in Segments</h2>
+    <p>Place <code>&lt;icon-wc&gt;</code> alongside the label text. Both inline and icon-only segments work &mdash; for icon-only, set <code>aria-label</code> on the input.</p>
+
+    <browser-window
+      src="/docs/examples/demos/segmented-icons.html"
+      url="https://vanilla-breeze.dev/segmented/icons"
+      title="Segmented control with icons"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Icons inside segments" data-escape><fieldset data-segmented>
+  <legend class="visually-hidden">View mode</legend>
+  <label>
+    <input type="radio" name="view" value="grid" checked>
+    <icon-wc name="grid" size="xs"></icon-wc> Grid
+  </label>
+  <label>
+    <input type="radio" name="view" value="list">
+    <icon-wc name="list" size="xs"></icon-wc> List
+  </label>
+  <label>
+    <input type="radio" name="view" value="map">
+    <icon-wc name="map" size="xs"></icon-wc> Map
+  </label>
+</fieldset></code-block>
+  </section>
+
+  <section>
+    <h2>Variants</h2>
+    <p>Combine <code>data-segmented-compact</code> for tight toolbar usage or <code>data-segmented-vertical</code> to stack segments. Native <code>disabled</code> on any radio greys out its segment.</p>
+
+    <browser-window
+      src="/docs/examples/demos/segmented-variants.html"
+      url="https://vanilla-breeze.dev/segmented/variants"
+      title="Segmented control variants"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Compact and vertical variants" data-escape><fieldset data-segmented data-segmented-compact>
+  <legend class="visually-hidden">Size</legend>
+  <label><input type="radio" name="size" value="s" checked> S</label>
+  <label><input type="radio" name="size" value="m"> M</label>
+  <label><input type="radio" name="size" value="l"> L</label>
+</fieldset>
+
+<fieldset data-segmented data-segmented-vertical>
+  <legend class="visually-hidden">Alignment</legend>
+  <label><input type="radio" name="align" value="start" checked> Start</label>
+  <label><input type="radio" name="align" value="center"> Center</label>
+  <label><input type="radio" name="align" value="end"> End</label>
+</fieldset></code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The fieldset already announces as a group; the legend names it. Use <code>.visually-hidden</code> on the legend when a visible heading is redundant.</li>
+      <li>Radios keep native arrow-key navigation and form submission &mdash; nothing to re-implement.</li>
+      <li>Focus-visible draws an outline on the segment label, which remains visible in high-contrast modes.</li>
+      <li>For icon-only segments, put the accessible name on <code>input[aria-label]</code>, not on the icon.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>When Not to Use</h2>
+    <ul>
+      <li>For two mutually exclusive states that read as on/off, prefer <a href="/docs/attributes/data-switch/"><code>data-switch</code></a> on a single checkbox.</li>
+      <li>For more than 5&ndash;6 options, use a native <code>&lt;select&gt;</code> &mdash; segments become cramped and lose their quick-scan benefit.</li>
+      <li>For action buttons rather than mutually exclusive selection, use the <a href="/docs/elements/native/menu/">menu / toolbar</a> pattern.</li>
+    </ul>
+  </section>
