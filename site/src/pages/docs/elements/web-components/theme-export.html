@@ -1,0 +1,124 @@
+---
+layout: element
+title: "theme-export"
+description: "Collects VB custom property overrides from a scope and emits them as a theme.css block or JSON. The assembly glue for the Theme Composer."
+elementName: theme-export
+category: component
+currentPath: /docs/elements/web-components/theme-export/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;theme-export&gt;</code> component turns a page full of editable specimens into a downloadable theme. It scans a scope (default <code>:root</code>) for VB custom property overrides and emits either a <code>:root { ... }</code> CSS block or a flat JSON object.</p>
+
+  <p>When paired with editable <a href="/docs/elements/web-components/type-specimen/">type-specimen</a>, <a href="/docs/elements/web-components/spacing-specimen/">spacing-specimen</a>, <a href="/docs/elements/web-components/token-specimen/">token-specimen</a>, and <a href="/docs/elements/web-components/semantic-palette/">semantic-palette</a> components, it forms the backbone of the Theme Composer: specimens write overrides, <code>theme-export</code> collects them.</p>
+
+  <div class="example">
+    <theme-export live label="Live Theme Output"></theme-export>
+    <p style="margin-block-start:1rem;font-size:0.875rem;color:var(--color-text-muted,#666)">Edit any token below to see it appear in the export above.</p>
+    <spacing-specimen editable tokens="xs,s,m,l" label="Spacing"></spacing-specimen>
+  </div>
+
+  <code-block language="html" show-lines label="Live export with editable specimen" data-escape><theme-export live label="Live Theme Output"></theme-export>
+
+<spacing-specimen editable tokens="xs,s,m,l" label="Spacing"></spacing-specimen></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>scope</code></td>
+        <td>string</td>
+        <td><code>:root</code></td>
+        <td>CSS selector for the element to read overrides from.</td>
+      </tr>
+      <tr>
+        <td><code>selector</code></td>
+        <td>string</td>
+        <td><code>:root</code></td>
+        <td>Selector written in the emitted CSS output.</td>
+      </tr>
+      <tr>
+        <td><code>include</code></td>
+        <td>string</td>
+        <td>All VB prefixes</td>
+        <td>Comma-separated prefixes to collect: <code>--color-,--hue-,--lightness-,--chroma-,--font-,--size-,--radius-,--shadow-,--border-width-,--ease-,--duration-</code>.</td>
+      </tr>
+      <tr>
+        <td><code>format</code></td>
+        <td>enum</td>
+        <td><code>css</code></td>
+        <td><code>css</code> or <code>json</code>.</td>
+      </tr>
+      <tr>
+        <td><code>label</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>Optional heading label.</td>
+      </tr>
+      <tr>
+        <td><code>live</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Re-scan whenever an editable specimen on the page fires a <code>:change</code> event.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Scoping to a Subtree</h2>
+  <p>Pass <code>scope</code> and <code>selector</code> to collect overrides from a subtree and emit them targeting a different selector &mdash; useful for building theme stylesheets from a preview block.</p>
+
+  <code-block language="html" show-lines label="Scoped collection" data-escape><div id="preview" data-theme="custom">
+  <type-specimen editable target="#preview"></type-specimen>
+  <spacing-specimen editable target="#preview"></spacing-specimen>
+</div>
+
+<theme-export
+  scope="#preview"
+  selector="[data-theme='custom']"
+  live
+  label="Custom Theme CSS">
+</theme-export></code-block>
+</section>
+
+<section>
+  <h2>JSON Format</h2>
+  <p>Switch to <code>format="json"</code> for a design tokens pipeline.</p>
+
+  <code-block language="html" show-lines label="JSON output" data-escape><theme-export format="json" live></theme-export></code-block>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Detail</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>theme-export:change</code></td>
+        <td><code>{ output, format, tokens }</code></td>
+        <td>Fires whenever the output is regenerated.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

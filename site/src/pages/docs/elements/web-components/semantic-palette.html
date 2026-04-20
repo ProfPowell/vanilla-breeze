@@ -1,0 +1,177 @@
+---
+layout: element
+title: "semantic-palette"
+description: "Preview a palette in use as VB semantic roles — button, link, badge, alert — each with its own WCAG contrast chip. Editing happens upstream in <color-palette editable> or <palette-generator>."
+elementName: semantic-palette
+category: component
+currentPath: /docs/elements/web-components/semantic-palette/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;semantic-palette&gt;</code> component is a live preview. Give it a palette &mdash; either as a child <a href="/docs/elements/web-components/color-palette/"><code>&lt;color-palette&gt;</code></a>, a child <a href="/docs/elements/web-components/palette-generator/"><code>&lt;palette-generator&gt;</code></a>, or a <code>colors</code> attribute &mdash; and it renders one preview card per semantic role (primary, secondary, accent, and optional status roles). Each card shows the color <strong>in use</strong> (button, link, badge for brand roles; alert, solid badge, inline for status roles) with a per-pairing WCAG chip next to each sample.</p>
+  <p>There are no hex inputs, no OKLCh inputs, and no drag-to-reassign inside this component &mdash; editing happens upstream. To let users change a color, pair it with <code>&lt;color-palette editable&gt;</code>.</p>
+
+  <div class="example">
+    <semantic-palette show-export>
+      <color-palette colors="#6366f1,#ec4899,#22c55e" editable></color-palette>
+    </semantic-palette>
+  </div>
+
+  <code-block language="html" show-lines label="Editable palette + preview" data-escape><semantic-palette show-export>
+  <color-palette colors="#6366f1,#ec4899,#22c55e" editable></color-palette>
+</semantic-palette></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>colors</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>Comma-separated hex palette (fallback when no child <code>&lt;color-palette&gt;</code> or <code>&lt;palette-generator&gt;</code>).</td>
+      </tr>
+      <tr>
+        <td><code>roles</code></td>
+        <td>string</td>
+        <td><code>primary,secondary,accent</code></td>
+        <td>Comma-separated roles in assignment order (positional — <code>colors[0]</code> is assigned to <code>roles[0]</code>). Valid: <code>primary</code>, <code>secondary</code>, <code>accent</code>, <code>success</code>, <code>warning</code>, <code>error</code>, <code>info</code>.</td>
+      </tr>
+      <tr>
+        <td><code>show-export</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Show Copy Theme CSS / Copy JSON toolbar.</td>
+      </tr>
+      <tr>
+        <td><code>label</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>Optional heading label above the previews.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Context over abstract numbers</h2>
+  <p>A contrast ratio only means something when you know <em>which pair</em> it measures. Each card shows three real samples and labels the ratio for each:</p>
+  <dl>
+    <dt>Brand roles (primary, secondary, accent)</dt>
+    <dd><strong>Button</strong> (role as background) &middot; <strong>Link on surface</strong> (role as foreground) &middot; <strong>Subtle badge</strong> (tinted pair).</dd>
+    <dt>Status roles (success, warning, error, info)</dt>
+    <dd><strong>Alert</strong> (role text on role subtle) &middot; <strong>Solid badge</strong> (auto-picked foreground on role) &middot; <strong>Inline status</strong> (role as text on surface).</dd>
+  </dl>
+  <p>If a combination fails WCAG, you see the failure where the user would actually encounter it &mdash; not as an abstract number in a column.</p>
+</section>
+
+<section>
+  <h2>All seven roles</h2>
+  <p>Pass all seven roles to produce a complete theme preview.</p>
+
+  <div class="example">
+    <semantic-palette
+      roles="primary,secondary,accent,success,warning,error,info"
+      show-export>
+      <color-palette
+        colors="#6366f1,#8b5cf6,#ec4899,#22c55e,#eab308,#ef4444,#3b82f6"
+        editable></color-palette>
+    </semantic-palette>
+  </div>
+
+  <code-block language="html" show-lines label="Brand + status roles" data-escape><semantic-palette
+  roles="primary,secondary,accent,success,warning,error,info"
+  show-export>
+  <color-palette
+    colors="#6366f1,#8b5cf6,#ec4899,#22c55e,#eab308,#ef4444,#3b82f6"
+    editable></color-palette>
+</semantic-palette></code-block>
+</section>
+
+<section>
+  <h2>Wire to palette-generator</h2>
+  <p>Nest a <code>&lt;palette-generator&gt;</code> inside to source colors algorithmically. The preview updates whenever the generator emits <code>palette-generator:generate</code>.</p>
+
+  <div class="example">
+    <semantic-palette show-export>
+      <palette-generator seed="#6366f1" harmony="triadic" show-values show-names>
+        <color-picker><input type="color" value="#6366f1" /></color-picker>
+      </palette-generator>
+    </semantic-palette>
+  </div>
+
+  <code-block language="html" show-lines label="Palette-generator source" data-escape><semantic-palette show-export>
+  <palette-generator seed="#6366f1" harmony="triadic" show-values show-names>
+    <color-picker><input type="color" value="#6366f1" /></color-picker>
+  </palette-generator>
+</semantic-palette></code-block>
+</section>
+
+<section>
+  <h2>Export Format</h2>
+  <p>The <strong>Copy Theme CSS</strong> button emits a <code>:root</code> block ready to paste into a VB theme file. Brand roles write hue/lightness/chroma seeds (so all derived tokens like <code>-hover</code>, <code>-active</code>, <code>-subtle</code> follow); status roles write explicit <code>oklch()</code> values.</p>
+
+  <code-block language="css" show-lines label="Example output" data-escape>:root {
+  /* Brand seeds */
+  --hue-primary: 262.8;
+  --lightness-primary: 58.2%;
+  --chroma-primary: 0.209;
+
+  --hue-secondary: 337.6;
+  --lightness-secondary: 64.3%;
+  --chroma-secondary: 0.226;
+
+  --hue-accent: 150.2;
+  --lightness-accent: 74.8%;
+  --chroma-accent: 0.187;
+
+  /* Status colors */
+  --color-success: oklch(72.3% 0.198 150.2);
+  --color-error: oklch(64.1% 0.227 27.5);
+}</code-block>
+
+  <p>The <strong>Copy JSON</strong> button emits a role → hex object, handy for design tokens pipelines.</p>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Detail</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>semantic-palette:change</code></td>
+        <td><code>{ mapping, tokens, source }</code></td>
+        <td>Fires on initial render and whenever the upstream palette emits a change. <code>source</code> is one of <code>init</code>, <code>palette</code>, <code>attribute</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Each card is an <code>&lt;article&gt;</code> with an <code>aria-label</code> naming the role.</li>
+    <li>Sample buttons use <code>tabindex="-1"</code> &mdash; they're decorative previews, not interactive.</li>
+    <li>Contrast chips include text labels (AAA/AA/Fail) alongside color &mdash; never color-only communication.</li>
+    <li>Editing the palette is a responsibility of the upstream <code>&lt;color-palette editable&gt;</code> or <code>&lt;palette-generator&gt;</code>, which handle their own accessibility.</li>
+  </ul>
+</section>
