@@ -36,10 +36,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers (pa11y needs headless Chromium)
-        run: npx playwright install --with-deps chromium
-
+      # pa11y tests skip in CI (they need puppeteer's Chromium, which we
+      # don't install here — a11y coverage lives in quality-report's
+      # Playwright integration tests instead).
       - name: Run validator tests
+        env:
+          CI: 'true'
         run: npm test
 
       - name: Type check (tsc --noEmit)
