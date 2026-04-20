@@ -87,10 +87,14 @@ copyDir('dist/cdn', join(pagesDir, 'cdn'));
 copyDir('src/icons', join(pagesDir, 'src', 'icons'));
 
 // VB source for dev references (/src/base/…, /src/tokens/…, etc.)
-// Demos that load `/src/main-full.css` transitively pull in CSS from
-// other top-level dirs (shapes is imported from utils/index.css). Any
-// missing dir here 404s with HTML, which the browser then rejects with
-// a MIME-type error — noise in the console.
+//
+// Demo HTML files load /src/main.js and /src/main-full.css raw. Both of
+// these transitively import from the dirs below — any missing one causes
+// the browser to 404 and reject the asset with a MIME-type mismatch.
+//
+// To audit: grep the tree for /src/<dir>/ references from demos/ and
+// follow the static-import chain from src/main.js, src/main-full.css,
+// and src/main-autoload.js.
 const srcDirs = [
   'base',
   'tokens',
@@ -100,7 +104,11 @@ const srcDirs = [
   'utils',
   'lib',
   'charts',
-  'shapes',
+  'shapes',    // imported transitively from utils/index.css
+  'effects',   // imported by main.js / main-autoload.js
+  'data',      // emoji-picker dynamic imports (emoji-data-extended.js)
+  'labs',      // labs.css referenced by lab demos
+  'packs',     // design-system / icons / kawaii / memphis / fonts demos
 ];
 for (const d of srcDirs) {
   copyDir(join('src', d), join(pagesDir, 'src', d));
