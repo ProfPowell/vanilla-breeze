@@ -124,11 +124,18 @@ for (const entry of readdirSync(srcRoot)) {
 }
 
 // Demo HTML and docs CSS under /docs/…
-copyDir('demos/snippets/demos', join(pagesDir, 'docs', 'snippets', 'demos'));
-copyDir('demos/patterns/demos', join(pagesDir, 'docs', 'patterns', 'demos'));
+// Use dist/demos/ (post-rewrite) so iframed demos reference the bundled
+// CDN assets (/cdn/vanilla-breeze-autoload.js etc.) instead of the raw
+// /src/main.js — the raw path fans out to 20+ individual logic.js
+// requests per iframe, with each one doing a 304-revalidate roundtrip
+// on repeat visits. The pre-build step (build:demos, wired into the
+// build:site-assets npm script) produces dist/demos/ with those paths
+// rewritten.
+copyDir('dist/demos/snippets/demos', join(pagesDir, 'docs', 'snippets', 'demos'));
+copyDir('dist/demos/patterns/demos', join(pagesDir, 'docs', 'patterns', 'demos'));
 copyFile('demos/docs.css', join(pagesDir, 'docs', 'docs.css'));
 copyFile('demos/homepage.css', join(pagesDir, 'docs', 'homepage.css'));
-copyDir('demos/tools', join(pagesDir, 'docs', 'tools'), { optional: true });
-copyDir('demos/examples', join(pagesDir, 'docs', 'examples'), { optional: true });
+copyDir('dist/demos/tools', join(pagesDir, 'docs', 'tools'), { optional: true });
+copyDir('dist/demos/examples', join(pagesDir, 'docs', 'examples'), { optional: true });
 
 console.log('✓ Site assembly complete');
