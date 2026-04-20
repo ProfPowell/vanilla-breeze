@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dashboard — Quick Start</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>body { padding: var(--size-l); }</style>
+</head>
+<body>
+<main>
+  <section data-layout="stack" data-layout-gap="l">
+    <header data-layout="cluster" data-layout-justify="between" data-layout-align="center">
+      <h1>Projects</h1>
+      <nav data-layout="cluster" data-layout-gap="s">
+        <button type="button">New</button>
+        <button type="button" class="secondary">Import</button>
+      </nav>
+    </header>
+
+    <table>
+      <thead>
+        <tr><th scope="col">Project</th><th scope="col">Owner</th><th scope="col">Tasks</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Website Redesign</td><td>Alice</td><td>12</td></tr>
+        <tr><td>Mobile App</td><td>Bob</td><td>8</td></tr>
+        <tr><td>Design System</td><td>Carol</td><td>23</td></tr>
+      </tbody>
+    </table>
+
+    <details>
+      <summary>Filters</summary>
+      <form data-layout="cluster" data-layout-gap="m">
+        <label>Status
+          <select><option>All</option><option>Active</option><option>Archived</option></select>
+        </label>
+        <button type="submit">Apply</button>
+      </form>
+    </details>
+  </section>
+</main>
+
+<script type="module" src="/src/main.js"></script>
+<script type="module">
+  import { ThemeManager } from '/src/lib/theme-manager.js';
+  import { ensureThemeLoaded } from '/src/lib/theme-loader.js';
+  await ThemeManager.init();
+  const params = new URLSearchParams(location.search);
+  const theme = params.get('theme');
+  if (theme) {
+    await ensureThemeLoaded(theme);
+    ThemeManager.apply({ brand: theme, mode: params.get('mode') || 'auto' });
+  }
+</script>
+<script>
+  if (window.parent !== window) {
+    const report = () => window.parent.postMessage(
+      { type: 'surface-height', height: document.documentElement.scrollHeight }, '*'
+    );
+    addEventListener('load', () => setTimeout(report, 200));
+    new ResizeObserver(report).observe(document.documentElement);
+  }
+</script>
+</body>
+</html>

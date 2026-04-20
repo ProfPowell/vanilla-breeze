@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sign-up Form — Quick Start</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>body { padding: var(--size-l); }</style>
+</head>
+<body>
+<main data-layout="center" data-layout-max="narrow">
+  <form data-layout="stack" data-layout-gap="m" aria-labelledby="form-title">
+    <header data-layout="stack" data-layout-gap="xs">
+      <h1 id="form-title">Create your account</h1>
+      <p>Takes about a minute. Cancel anytime.</p>
+    </header>
+
+    <p>
+      <label for="qs-form-name">Full name</label>
+      <input id="qs-form-name" name="name" type="text" required/>
+    </p>
+
+    <p>
+      <label for="qs-form-email">Email</label>
+      <input id="qs-form-email" name="email" type="email" required/>
+    </p>
+
+    <p>
+      <label for="qs-form-role">Role</label>
+      <select id="qs-form-role" name="role">
+        <option>Developer</option>
+        <option>Designer</option>
+        <option>Product</option>
+      </select>
+    </p>
+
+    <p>
+      <label>
+        <input type="checkbox" name="newsletter" checked/>
+        Send me product updates
+      </label>
+    </p>
+
+    <footer data-layout="cluster" data-layout-gap="s">
+      <button type="submit">Create account</button>
+      <button type="button" class="ghost">Cancel</button>
+    </footer>
+  </form>
+</main>
+
+<script type="module" src="/src/main.js"></script>
+<script type="module">
+  import { ThemeManager } from '/src/lib/theme-manager.js';
+  import { ensureThemeLoaded } from '/src/lib/theme-loader.js';
+  await ThemeManager.init();
+  const params = new URLSearchParams(location.search);
+  const theme = params.get('theme');
+  if (theme) {
+    await ensureThemeLoaded(theme);
+    ThemeManager.apply({ brand: theme, mode: params.get('mode') || 'auto' });
+  }
+</script>
+<script>
+  if (window.parent !== window) {
+    const report = () => window.parent.postMessage(
+      { type: 'surface-height', height: document.documentElement.scrollHeight }, '*'
+    );
+    addEventListener('load', () => setTimeout(report, 200));
+    new ResizeObserver(report).observe(document.documentElement);
+  }
+</script>
+</body>
+</html>

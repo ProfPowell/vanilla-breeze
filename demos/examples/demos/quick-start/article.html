@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Article — Quick Start</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>body { padding: var(--size-l); }</style>
+</head>
+<body>
+<main data-layout="center" data-layout-max="prose" data-layout-gap="m">
+  <article data-layout="stack" data-layout-gap="m">
+    <header data-layout="stack" data-layout-gap="xs">
+      <p><small>Engineering · 6 min read</small></p>
+      <h1>Shipping a design system without a framework</h1>
+      <p><small>By Jane Doe · April 20, 2026</small></p>
+    </header>
+
+    <p class="lead">Frameworks aren't the only way to scale. Semantic HTML, cascade layers, and a handful of custom elements can carry a brand further than you'd expect.</p>
+
+    <p>The pitch is familiar: pick a framework, adopt the ecosystem, then spend the next two years fighting it. What if we didn't?</p>
+
+    <blockquote>
+      <p>"The most durable UI is the one that works before any JavaScript runs."</p>
+    </blockquote>
+
+    <h2>Three layers</h2>
+    <p>HTML renders content. CSS provides design. JavaScript adds polish. Each layer is optional, each layer is testable, and the page still works when any one fails.</p>
+
+    <ul>
+      <li>Semantic elements do the heavy lifting</li>
+      <li>Design tokens keep colors and spacing consistent</li>
+      <li>Web components fill the gaps — no build step required</li>
+    </ul>
+
+    <footer data-layout="cluster" data-layout-gap="s">
+      <button type="button">Share</button>
+      <button type="button" class="secondary">Subscribe</button>
+    </footer>
+  </article>
+</main>
+
+<script type="module" src="/src/main.js"></script>
+<script type="module">
+  import { ThemeManager } from '/src/lib/theme-manager.js';
+  import { ensureThemeLoaded } from '/src/lib/theme-loader.js';
+  await ThemeManager.init();
+  const params = new URLSearchParams(location.search);
+  const theme = params.get('theme');
+  if (theme) {
+    await ensureThemeLoaded(theme);
+    ThemeManager.apply({ brand: theme, mode: params.get('mode') || 'auto' });
+  }
+</script>
+<script>
+  if (window.parent !== window) {
+    const report = () => window.parent.postMessage(
+      { type: 'surface-height', height: document.documentElement.scrollHeight }, '*'
+    );
+    addEventListener('load', () => setTimeout(report, 200));
+    new ResizeObserver(report).observe(document.documentElement);
+  }
+</script>
+</body>
+</html>
