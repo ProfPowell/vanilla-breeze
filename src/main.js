@@ -23,8 +23,9 @@ if (document.querySelector('button[data-loading]')) import('./utils/loading-butt
 if (document.querySelector('[data-floating-label]')) import('./utils/floating-label-init.js');
 // Lazy-load hotkey action binding when [data-hotkey] is on non-kbd elements
 if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-action-init.js');
-// Lazy-load page-watch only when a [data-watch-page] trigger is present
-if (document.querySelector('[data-watch-page]')) import('./utils/page-watch-init.js');
+// Lazy-load page-watch when either a [data-watch-page] trigger or a
+// <watch-wc> wrapper is present (the wrapper renders the trigger at setup).
+if (document.querySelector('[data-watch-page], watch-wc')) import('./utils/page-watch-init.js');
 // Lazy-load email-form enhancement only when a form opts in
 if (document.querySelector('form[data-vb-email-form]')) import('./utils/email-form-init.js');
 // Lazy-load newsletter-form enhancement only when a form opts in

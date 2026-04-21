@@ -1136,6 +1136,18 @@ module.exports = {
     }
   },
 
+  "watch-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "variant": { enum: ["icon", "compact", "button"] },
+      "label": {},
+      "server-sync": { boolean: true },
+      "data-variant": {},
+      "data-upgraded": { boolean: true }
+    }
+  },
+
   "star-rating": {
     attributes: {
       "name": {},

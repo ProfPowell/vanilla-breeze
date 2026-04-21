@@ -1,0 +1,89 @@
+---
+layout: element
+title: "watch-wc"
+description: "Drop-in wrapper for the data-watch-page button. One tag renders an icon, compact, or full-button toggle that adds the current page to the user's watch list."
+elementName: watch-wc
+category: component
+currentPath: /docs/elements/web-components/watch-wc/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;watch-wc&gt;</code> wraps the <a href="/docs/attributes/data-watch-page/"><code>data-watch-page</code></a> button into a one-tag component. Drop it anywhere on a page and a user can toggle whether that page is in their watch list. State persists in <a href="/docs/concepts/architecture-decisions/">VBStore</a> under the <code>watches</code> namespace; the bell&rsquo;s <a href="/docs/elements/web-components/notification-wc/">Watching tab</a> surfaces the list.</p>
+  <p>The component is a thin author convenience &mdash; the watch state machine still lives in <code>src/utils/page-watch-init.js</code>. The wrapper just renders <code>&lt;button data-watch-page&gt;</code> with the right markup, label, and icon for the chosen variant, and re-syncs across instances when watch state changes anywhere on the page.</p>
+</section>
+
+<section>
+  <h2>Variants</h2>
+  <p>Three visual presets fit different surfaces. All three behave identically &mdash; the difference is layout and density.</p>
+
+  <browser-window
+    src="/docs/examples/demos/watch-wc-basic.html"
+    url="https://vanilla-breeze.dev/watch"
+    title="watch-wc variants"
+    style="min-height: 16rem;"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" label="The three variants" data-escape><watch-wc></watch-wc>                          <!-- icon (default) -->
+<watch-wc variant="compact"></watch-wc>        <!-- small icon + text -->
+<watch-wc variant="button"></watch-wc>         <!-- full ghost button -->
+<watch-wc variant="button" label="Save for later"></watch-wc></code-block>
+</section>
+
+<section>
+  <h2>Where to put it</h2>
+  <p>The four docs layouts (<code>guide</code>, <code>element</code>, <code>attribute</code>, <code>pattern</code>) ship a <code>&lt;watch-wc&gt;</code> inside their <code>&lt;page-tools&gt;</code> sticky sidebar &mdash; that&rsquo;s the eye icon you see on this page next to print and share. Other natural places: the floating <code>fab-stack</code>, an article header, or a sidebar block.</p>
+
+  <code-block language="html" label="Inside page-tools" data-escape><page-tools data-position="sticky" data-orientation="horizontal">
+  <print-page></print-page>
+  <share-wc variant="icon" size="s"></share-wc>
+  <watch-wc></watch-wc>
+</page-tools></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>variant</code></td><td><code>icon</code> (default), <code>compact</code>, <code>button</code></td><td>Visual preset. <code>icon</code> is a 2.25-rem ghost icon button, <code>compact</code> is small icon plus text, <code>button</code> is a full-size ghost button.</td></tr>
+      <tr><td><code>label</code></td><td>string</td><td>Override the visible text in <code>compact</code> and <code>button</code> variants. Default toggles between &ldquo;Watch for updates&rdquo; and &ldquo;Watching&rdquo;.</td></tr>
+      <tr><td><code>server-sync</code></td><td>boolean</td><td>Per-instance opt-in for server-side sync via <a href="/docs/concepts/service-contracts/"><code>VBService('notify')</code></a>. Sets <code>window.vbPageWatch.serverSync = true</code> before the page-watch script evaluates.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <p>The component bubbles the same events the underlying <code>[data-watch-page]</code> button emits, so listeners attached to the document don&rsquo;t care which one was clicked:</p>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>page-watch:add</code></td><td><code>{ entry }</code></td><td>User started watching the page</td></tr>
+      <tr><td><code>page-watch:remove</code></td><td><code>{ url, subscriptionId }</code></td><td>User stopped watching</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Multiple instances stay in sync</h2>
+  <p>Put two or three <code>&lt;watch-wc&gt;</code> elements on the same page (article header, sticky sidebar, footer call-to-action) and they&rsquo;ll stay synchronised &mdash; clicking any one of them updates the others. The component listens for <code>page-watch:add</code> / <code>page-watch:remove</code> on the document and re-reads VBStore to repaint its own button.</p>
+</section>
+
+<section>
+  <h2>Without JavaScript</h2>
+  <p>The component is hidden via <code>watch-wc:not(:defined)</code> until JS upgrades it. If you want a no-JS fallback (e.g. a server-rendered &ldquo;subscribe by email&rdquo; link), put it inside the element &mdash; the wrapper appends its own button after upgrade and the static fallback can be styled away with a sibling selector or removed entirely.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-watch-page/"><code>data-watch-page</code></a> &mdash; the underlying attribute pattern this component wraps</li>
+    <li><a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> &mdash; surfaces the watch list in its Watching tab</li>
+    <li><a href="/docs/concepts/service-contracts/">Service contracts</a> &mdash; the <code>/go/notify/subscribe</code> endpoint server-sync uses</li>
+  </ul>
+</section>

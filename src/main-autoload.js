@@ -59,7 +59,7 @@ if (document.querySelector('input[data-accept]')) import('./utils/accept-init.js
 if (document.querySelector('[data-highlights]')) import('./utils/highlights-init.js');
 if (document.querySelector('[data-copy], [data-copy-target]')) import('./utils/copy-init.js');
 if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-action-init.js');
-if (document.querySelector('[data-watch-page]')) import('./utils/page-watch-init.js');
+if (document.querySelector('[data-watch-page], watch-wc')) import('./utils/page-watch-init.js');
 if (document.querySelector('form[data-vb-email-form]')) import('./utils/email-form-init.js');
 if (document.querySelector('form[data-vb-newsletter-form]')) import('./utils/newsletter-form-init.js');
 if (document.querySelector('[data-select-all]')) import('./utils/select-all-init.js');

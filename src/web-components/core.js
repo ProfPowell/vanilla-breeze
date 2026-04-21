@@ -30,6 +30,7 @@ import './context-menu/logic.js';
 import './include-file/logic.js';
 import './settings-panel/logic.js';
 import './notification-wc/logic.js';
+import './watch-wc/logic.js';
 import './analytics-panel/logic.js';
 
 // Core custom elements with JS
