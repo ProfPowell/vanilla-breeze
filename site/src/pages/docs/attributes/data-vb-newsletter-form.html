@@ -1,0 +1,139 @@
+---
+layout: attribute
+title: "data-vb-newsletter-form"
+description: "Newsletter signup, unsubscribe, and preferences forms wired through VBService('newsletter'). Progressive enhancement on top of native form action."
+attributeName: data-vb-newsletter-form
+category: form-controls
+attributeType: data
+currentPath: /docs/attributes/data-vb-newsletter-form/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>Add <code>data-vb-newsletter-form</code> to a <code>&lt;form&gt;</code> to wire it through <code>VBService('newsletter')</code> against the <a href="/docs/concepts/service-contracts/">/go/newsletter/*</a> endpoints. Three modes share the same attribute &mdash; subscribe (default), unsubscribe, and preferences. Without JS the form falls back to its native <code>action</code>, so the same markup works as a server-side post.</p>
+</section>
+
+<section>
+  <h2>Subscribe</h2>
+  <p>The default mode. Reads list ids from any <code>&lt;input type="checkbox" name="lists"&gt;</code> children that are checked, or from <code>data-vb-newsletter-lists</code> as a comma-separated default. POSTs <code>{ email, lists }</code> to <code>/go/newsletter/subscribe</code>.</p>
+
+  <browser-window
+    src="/docs/examples/demos/newsletter-form.html"
+    url="https://vanilla-breeze.dev/newsletter"
+    title="Newsletter sign-up via /go/newsletter"
+    style="min-height: 36rem;"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" label="Subscribe form" data-escape><form action="/newsletter/subscribe" method="POST"
+      data-vb-newsletter-form="subscribe"
+      data-vb-newsletter-subscribed="Welcome aboard.">
+  <p>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required autocomplete="email"/>
+  </p>
+  <fieldset>
+    <legend>Lists</legend>
+    <label><input type="checkbox" name="lists" value="weekly-digest" checked> Weekly digest</label>
+    <label><input type="checkbox" name="lists" value="release-notes"> Release notes</label>
+  </fieldset>
+  <output data-vb-newsletter-status aria-live="polite"></output>
+  <button type="submit">Subscribe</button>
+</form></code-block>
+
+  <p>For a single-list signup, drop the checkboxes and pass the list via the data attribute:</p>
+
+  <code-block language="html" label="Single-list signup" data-escape><form data-vb-newsletter-form
+      data-vb-newsletter-lists="release-notes"
+      action="/newsletter/subscribe" method="POST">
+  <input type="email" name="email" required autocomplete="email"/>
+  <button type="submit">Get release notes</button>
+</form></code-block>
+</section>
+
+<section>
+  <h2>Unsubscribe</h2>
+  <p>Same shape, different endpoint. POSTs <code>{ email, lists }</code> to <code>/go/newsletter/unsubscribe</code>.</p>
+
+  <code-block language="html" label="Unsubscribe form" data-escape><form data-vb-newsletter-form="unsubscribe"
+      action="/newsletter/unsubscribe" method="POST">
+  <p>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required/>
+  </p>
+  <fieldset>
+    <legend>Stop sending</legend>
+    <label><input type="checkbox" name="lists" value="weekly-digest" checked> Weekly digest</label>
+    <label><input type="checkbox" name="lists" value="release-notes"> Release notes</label>
+  </fieldset>
+  <output data-vb-newsletter-status aria-live="polite"></output>
+  <button type="submit">Unsubscribe</button>
+</form></code-block>
+</section>
+
+<section>
+  <h2>Preferences</h2>
+  <p>Loads existing subscriptions for the email on commit (blur or change of the email field) and fills in the checkboxes. Submitting computes the diff and posts <code>subscribe</code> + <code>unsubscribe</code> in parallel, then re-snapshots the new state. Useful as a per-user &ldquo;manage your subscriptions&rdquo; surface.</p>
+
+  <code-block language="html" label="Preferences form" data-escape><form data-vb-newsletter-form="preferences"
+      action="/newsletter/preferences" method="POST"
+      data-vb-newsletter-saved="Preferences saved.">
+  <p>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required autocomplete="email"/>
+  </p>
+  <fieldset>
+    <legend>Lists</legend>
+    <label><input type="checkbox" name="lists" value="weekly-digest"> Weekly digest</label>
+    <label><input type="checkbox" name="lists" value="release-notes"> Release notes</label>
+    <label><input type="checkbox" name="lists" value="security-alerts"> Security alerts</label>
+  </fieldset>
+  <output data-vb-newsletter-status aria-live="polite"></output>
+  <button type="submit">Save</button>
+</form></code-block>
+
+  <p>The <code>vb-newsletter-form:preferences</code> event fires when the load completes, with detail <code>{ email, subscriptions, available }</code> &mdash; useful for syncing parent UI (e.g., disabling lists not exposed by the backend).</p>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Required</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-vb-newsletter-form</code></td><td>yes</td><td><code>subscribe</code> (default), <code>unsubscribe</code>, or <code>preferences</code></td></tr>
+      <tr><td><code>data-vb-newsletter-lists</code></td><td>no</td><td>Comma-separated default list ids when the form has no checkboxes (e.g. single-list signup).</td></tr>
+      <tr><td><code>data-vb-newsletter-loading-label</code></td><td>no</td><td>Replaces the submit button label while in flight.</td></tr>
+      <tr><td><code>data-vb-newsletter-subscribed</code></td><td>no</td><td>Success message for subscribe mode (default: &ldquo;Subscribed. Check your inbox.&rdquo;)</td></tr>
+      <tr><td><code>data-vb-newsletter-unsubscribed</code></td><td>no</td><td>Success message for unsubscribe mode (default: &ldquo;Unsubscribed.&rdquo;)</td></tr>
+      <tr><td><code>data-vb-newsletter-saved</code></td><td>no</td><td>Success message for preferences mode (default: &ldquo;Preferences saved.&rdquo;)</td></tr>
+      <tr><td><code>data-vb-newsletter-error</code></td><td>no</td><td>Error message (default: &ldquo;Sorry, that did not work. Try again.&rdquo;)</td></tr>
+      <tr><td><code>data-vb-newsletter-no-reset</code></td><td>no</td><td>Skip the auto <code>form.reset()</code> on subscribe success.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>vb-newsletter-form:submitting</code></td><td><code>{ mode }</code></td><td>Just before the request goes out</td></tr>
+      <tr><td><code>vb-newsletter-form:success</code></td><td><code>{ mode, lists, response }</code></td><td>2xx response</td></tr>
+      <tr><td><code>vb-newsletter-form:error</code></td><td><code>{ mode, error, status?, body? }</code></td><td>Network failure or non-2xx</td></tr>
+      <tr><td><code>vb-newsletter-form:preferences</code></td><td><code>{ email, subscriptions, available }</code></td><td>Preferences mode finished loading existing subscriptions</td></tr>
+    </tbody>
+  </table>
+  <p>All events bubble + composed.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/concepts/service-contracts/">Service contracts &rsaquo; /go/newsletter</a> &mdash; the JSON shapes this attribute submits</li>
+    <li><a href="/docs/attributes/data-vb-email-form/"><code>data-vb-email-form</code></a> &mdash; sibling enhancement for transactional email forms</li>
+    <li><a href="/docs/concepts/go-convention/">/go/ convention</a> &mdash; the namespace and the lock-in problem it solves</li>
+  </ul>
+</section>
