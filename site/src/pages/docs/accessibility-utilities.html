@@ -1,0 +1,213 @@
+---
+layout: guide
+title: "Accessibility Utilities"
+description: "Copy-paste utilities for screen-reader-only content, skip links, icon-only buttons, and 'opens in new tab' hints."
+guideGroup: Accessibility
+currentPath: /docs/accessibility-utilities/
+toc: true
+---
+
+<p>Small CSS/HTML patterns that give screen reader users what sighted users already get from visual layout. All are shipped in the core bundle or trivial to copy.</p>
+
+  <section>
+    <h2 id="visually-hidden">.visually-hidden</h2>
+    <p>A utility class that hides content from the screen while keeping it available to assistive tech. Use it for labels, headings, and helper text that are redundant for sighted users but essential for screen reader navigation. Shipped in the core CSS &mdash; no import needed.</p>
+
+    <h3>Icon-only button label</h3>
+    <p>Icon-only controls need an accessible name. Put the label in a <code>.visually-hidden</code> span inside the button. Both pick the label up: sighted users see the icon, screen reader users hear &ldquo;Close&rdquo;.</p>
+
+    <code-block language="html" label="Icon-only button with hidden label" data-escape><button type="button">
+  <icon-wc name="x"></icon-wc>
+  <span class="visually-hidden">Close</span>
+</button></code-block>
+
+    <p><strong>Prefer <code>aria-label</code> for the simple case</strong> (<code>&lt;button aria-label="Close"&gt;</code>). Reach for <code>.visually-hidden</code> when you want the label to be translatable by the same pipeline that handles the rest of your page content, or when the label needs to include formatted markup.</p>
+
+    <h3>Section heading for screen reader navigation</h3>
+    <p>When a section&rsquo;s purpose is obvious visually but would read as unstructured to a screen reader, add a hidden heading. Screen reader users can then jump between sections with their heading-navigation shortcut.</p>
+
+    <code-block language="html" label="Hidden section heading" data-escape><section>
+  <h2 class="visually-hidden">Recent messages</h2>
+  <ul>
+    <li>...</li>
+  </ul>
+</section></code-block>
+
+    <h3>Form legend that is not visually needed</h3>
+    <p>Radio and checkbox groups need a <code>&lt;legend&gt;</code> for the <code>&lt;fieldset&gt;</code>&rsquo;s accessible name. If the page already makes the group&rsquo;s purpose obvious (e.g. a <a href="/docs/attributes/data-segmented/">segmented control</a> next to a label), hide the legend rather than leaving it off.</p>
+
+    <code-block language="html" label="Hidden legend" data-escape><fieldset data-segmented>
+  <legend class="visually-hidden">Color mode</legend>
+  <label><input type="radio" name="mode" value="auto" checked> Auto</label>
+  <label><input type="radio" name="mode" value="light"> Light</label>
+  <label><input type="radio" name="mode" value="dark"> Dark</label>
+</fieldset></code-block>
+
+    <h3>The utility itself</h3>
+    <p>For reference (already in the bundle &mdash; you do not need to copy this):</p>
+    <code-block language="css" label="visually-hidden.css (shipped)" data-escape>.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}</code-block>
+
+    <aside class="note" aria-label="display: none warning">
+      <p><strong>Do not use <code>display: none</code> or <code>visibility: hidden</code></strong> as a substitute. Both hide the element from screen readers too, defeating the purpose. Use <code>hidden</code> or <code>display: none</code> only when the content is irrelevant to <em>all</em> users.</p>
+    </aside>
+  </section>
+
+  <section>
+    <h2 id="skip-link">Skip link</h2>
+    <p>A keyboard user tabs in from the address bar and should not have to walk through every header link before reaching the page content. A skip link &mdash; hidden until focused &mdash; gives them a one-keystroke shortcut to <code>#main</code>.</p>
+
+    <h3>Markup</h3>
+    <p>Place as the first focusable element in <code>&lt;body&gt;</code>. Target any element with a matching <code>id</code> (typically <code>&lt;main id="main"&gt;</code>).</p>
+
+    <code-block language="html" label="Skip link markup" data-escape><body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <header>...</header>
+  <main id="main">
+    ...
+  </main>
+</body></code-block>
+
+    <h3>Styles</h3>
+    <p>The skip link starts off-screen via the same clip technique <code>.visually-hidden</code> uses, then snaps into place when it receives focus. Drop this into your project CSS:</p>
+
+    <code-block language="css" label="Skip link styles" data-escape>.skip-link {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  padding: var(--size-s) var(--size-m);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-s);
+  box-shadow: var(--shadow-m);
+  z-index: 1000;
+
+  /* Off-screen until focused */
+  transform: translateY(-120%);
+  transition: transform var(--duration-fast, 150ms) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link { transition-duration: 0s; }
+}</code-block>
+
+    <h3>Multi-target pattern</h3>
+    <p>For docs pages with several large regions (sidebar, TOC, content, etc.), ship two or more skip links in a list. Sighted keyboard users tab through them in order; screen reader users find them via the heading-navigation shortcut.</p>
+
+    <code-block language="html" label="Multi-target skip links" data-escape><ul class="skip-links" aria-label="Skip links">
+  <li><a href="#main" class="skip-link">Skip to main content</a></li>
+  <li><a href="#sidebar" class="skip-link">Skip to sidebar navigation</a></li>
+  <li><a href="#search" class="skip-link">Skip to search</a></li>
+</ul></code-block>
+
+    <aside class="note" aria-label="Target focusability">
+      <p><strong>Make sure the target is focusable.</strong> Native sectioning elements like <code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code>, and <code>&lt;article&gt;</code> are not focusable by default; add <code>tabindex="-1"</code> so the browser moves focus to the region when the skip link is activated.</p>
+      <p>Example: <code>&lt;main id="main" tabindex="-1"&gt;</code>. See <a href="/docs/attributes/tabindex/">tabindex</a> for the full semantics.</p>
+    </aside>
+  </section>
+
+  <section>
+    <h2 id="opens-in-new-tab">&ldquo;Opens in new tab&rdquo; hint</h2>
+    <p>When a link opens in a new window (<code>target="_blank"</code>) or triggers a file download, WCAG 3.2.5 says users need advance warning. Sighted users can get that from an icon; screen reader users need text.</p>
+
+    <h3>With an icon</h3>
+    <code-block language="html" label="Icon + hidden text" data-escape><a href="https://example.com" target="_blank" rel="noopener">
+  Read the full article
+  <icon-wc name="external-link" size="xs"></icon-wc>
+  <span class="visually-hidden">(opens in new tab)</span>
+</a></code-block>
+
+    <h3>Without an icon</h3>
+    <p>Even cleaner: always append the hint. Since it&rsquo;s only audible, there is no visual cost.</p>
+
+    <code-block language="html" label="Text-only hint" data-escape><a href="report.pdf" download>
+  Download report
+  <span class="visually-hidden">(PDF, 2.4&nbsp;MB)</span>
+</a></code-block>
+
+    <aside class="note" aria-label="rel=noopener">
+      <p><strong>Always pair <code>target="_blank"</code> with <code>rel="noopener"</code></strong> to prevent the opened page from tampering with your <code>window.opener</code>. Browsers do this implicitly now, but stating it explicitly is still a security-review best practice.</p>
+    </aside>
+  </section>
+
+  <section>
+    <h2 id="hidden-labels">Hidden form labels</h2>
+    <p>Every form control needs a label. When a visible label would be redundant &mdash; a search input with a magnifying-glass icon, for instance &mdash; hide the label with <code>.visually-hidden</code> rather than omitting it or relying on <code>placeholder</code>. Placeholders vanish on input and are not a substitute.</p>
+
+    <code-block language="html" label="Hidden label on search input" data-escape><form role="search">
+  <label for="site-search" class="visually-hidden">Search documentation</label>
+  <input type="search" id="site-search" name="q" placeholder="Search...">
+  <button type="submit">
+    <icon-wc name="search"></icon-wc>
+    <span class="visually-hidden">Submit search</span>
+  </button>
+</form></code-block>
+  </section>
+
+  <section>
+    <h2 id="when-to-use-which">When to reach for what</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Need</th>
+          <th>Use</th>
+          <th>Why not the alternative</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Name an icon-only button</td>
+          <td><code>aria-label</code></td>
+          <td>Simplest. Reach for <code>.visually-hidden</code> only if the label needs translation pipeline parity with body copy.</td>
+        </tr>
+        <tr>
+          <td>Describe an icon next to visible text</td>
+          <td><code>aria-hidden="true"</code> on the icon</td>
+          <td>The visible text already names the control. Avoid doubling up.</td>
+        </tr>
+        <tr>
+          <td>Section heading for screen readers only</td>
+          <td><code>&lt;h2 class="visually-hidden"&gt;</code></td>
+          <td><code>aria-label</code> on the wrapper works but screen readers read it as a label, not a navigable heading.</td>
+        </tr>
+        <tr>
+          <td>Hide a <code>&lt;legend&gt;</code> from sighted users</td>
+          <td><code>.visually-hidden</code></td>
+          <td>A fieldset without a legend has no accessible name. Styling <code>legend</code> with <code>display: none</code> breaks it.</td>
+        </tr>
+        <tr>
+          <td>Let keyboard users jump past nav</td>
+          <td>Skip link</td>
+          <td>Sectioning landmarks help screen readers but not sighted keyboard users. Both need the skip link.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2 id="related">Related</h2>
+    <ul>
+      <li><a href="/docs/accessibility/">Accessibility overview</a> &mdash; WCAG commitment, keyboard shortcut tables, testing guidance</li>
+      <li><a href="/docs/elements/native/label/"><code>&lt;label&gt;</code></a> &mdash; native form labeling</li>
+      <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> &mdash; link semantics and <code>target</code> handling</li>
+      <li><a href="/docs/attributes/tabindex/"><code>tabindex</code></a> &mdash; making non-focusable elements focusable (needed for skip-link targets)</li>
+      <li><a href="/docs/snippets/html/page-shell/">Page shell snippet</a> &mdash; uses <code>.skip-link</code> in context</li>
+    </ul>
+  </section>
