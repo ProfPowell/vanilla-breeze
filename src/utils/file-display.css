@@ -1,0 +1,114 @@
+/* File display: public pattern for file rows, download links, and upload-list items.
+ *
+ *   <li data-file>
+ *     <icon-wc name="file-text"></icon-wc>
+ *     <span class="file-name">report.pdf</span>
+ *     <span class="file-meta">2.4 MB</span>
+ *     <a href="/report.pdf" download>Download</a>
+ *   </li>
+ *
+ * Works on <li>, <a>, and any block container (e.g. <layout-card>, <div>).
+ *
+ * Variants:
+ *   [data-file-layout="card"]  stacked icon-above-name layout for grids
+ *   [data-file-status="..."]   color the meta text (uploading, success, error)
+ */
+
+[data-file] {
+  display: flex;
+  align-items: center;
+  gap: var(--size-s);
+  padding: var(--size-xs) var(--size-s);
+  border-radius: var(--radius-s);
+  background: var(--color-surface);
+  color: inherit;
+  text-decoration: none;
+  min-block-size: 2.5rem;
+}
+
+[data-file] > icon-wc,
+[data-file] > svg {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+[data-file] .file-name {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--font-weight-medium, 500);
+}
+
+[data-file] .file-meta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+[data-file] .file-actions {
+  display: flex;
+  gap: var(--size-2xs);
+  flex-shrink: 0;
+}
+
+a[data-file]:hover,
+a[data-file]:focus-visible {
+  background: var(--color-hover-bg, var(--color-surface-raised));
+}
+
+a[data-file]:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+/* --- Card layout: stacked icon-above-name (for grids) --- */
+[data-file-layout="card"] {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--size-2xs);
+  padding: var(--size-m);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  min-block-size: auto;
+}
+
+[data-file-layout="card"] > icon-wc,
+[data-file-layout="card"] > svg {
+  font-size: 2rem;
+}
+
+[data-file-layout="card"] .file-name {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+[data-file-layout="card"] .file-meta {
+  font-size: var(--font-size-xs, 0.75rem);
+}
+
+/* --- Status colors for upload/processing flows --- */
+[data-file-status="uploading"] .file-meta,
+[data-file-status="processing"] .file-meta {
+  color: var(--color-interactive, var(--color-info, var(--color-text-muted)));
+}
+
+[data-file-status="success"] .file-meta {
+  color: var(--color-success, var(--color-text-muted));
+}
+
+[data-file-status="error"] .file-meta {
+  color: var(--color-error, var(--color-text-muted));
+}
+
+/* --- File list container: zero list styling, gap between rows --- */
+ul.file-list,
+ol.file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2xs, 4px);
+}

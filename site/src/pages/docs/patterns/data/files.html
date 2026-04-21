@@ -1,0 +1,260 @@
+---
+layout: pattern
+title: "File Display Pattern"
+description: "Render uploaded or downloadable files as accessible rows, links, or cards. Uses [data-file] with icon-wc, native download links, and optional status/actions."
+patternName: "File Display"
+category: data
+currentPath: /docs/patterns/data/files/
+---
+
+<section>
+    <h2>Overview</h2>
+    <layout-text>
+      <p>Most interfaces that move files around &mdash; attachments, downloads, upload progress, asset galleries &mdash; need the same four ingredients: a <strong>type icon</strong>, a <strong>name</strong>, some <strong>meta</strong> (size, status, extension), and optional <strong>actions</strong> (download, remove, retry).</p>
+      <p>Vanilla Breeze ships a CSS-only pattern for this under <code>[data-file]</code>. It applies to <code>&lt;li&gt;</code>, <code>&lt;a&gt;</code>, or any block container, so you can compose it inside a list, use it as a clickable download link, or drop it into a <code>&lt;layout-grid&gt;</code>. No web component &mdash; just markup.</p>
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Row layout (default) or card layout via <code>data-file-layout="card"</code></li>
+        <li>Status colors for upload flows via <code>data-file-status="uploading|success|error"</code></li>
+        <li>Works as a pure link (<code>&lt;a data-file href="…" download&gt;</code>) with hover and focus states</li>
+        <li>Pairs with <code>icon-wc</code> for type icons and <code>&lt;layout-grid&gt;</code> for galleries</li>
+        <li>No JavaScript &mdash; style only</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Basic File Row</h2>
+    <layout-text>
+      <p>The default layout: icon, name, meta, and actions in a single row. Name truncates with an ellipsis, meta is <code>font-variant-numeric: tabular-nums</code> so sizes align vertically in a list.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/examples/demos/file-row-basic.html"
+      url="https://vanilla-breeze.dev/files/basic"
+      title="Basic file rows"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Basic file row list" data-escape><ul class="file-list">
+  <li data-file>
+    <icon-wc name="file-text"></icon-wc>
+    <span class="file-name">quarterly-report.pdf</span>
+    <span class="file-meta">2.4 MB</span>
+    <span class="file-actions">
+      <a href="/files/quarterly-report.pdf" download>Download</a>
+    </span>
+  </li>
+  <li data-file>
+    <icon-wc name="image"></icon-wc>
+    <span class="file-name">site-screenshot.png</span>
+    <span class="file-meta">842 KB</span>
+    <span class="file-actions">
+      <a href="/files/site-screenshot.png" download>Download</a>
+    </span>
+  </li>
+</ul></code-block>
+  </section>
+
+  <section>
+    <h2>Entire row as a download link</h2>
+    <layout-text>
+      <p>For a quieter list, put <code>data-file</code> directly on an <code>&lt;a&gt;</code>. The whole row becomes clickable and picks up hover/focus styles automatically. Pair with <code>download</code> for same-origin files and <code>target="_blank" rel="noopener"</code> for external links.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/examples/demos/file-link.html"
+      url="https://vanilla-breeze.dev/files/links"
+      title="File links"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Row-as-link pattern" data-escape><ul class="file-list">
+  <li>
+    <a data-file href="/files/quarterly-report.pdf" download>
+      <icon-wc name="file-text"></icon-wc>
+      <span class="file-name">quarterly-report.pdf</span>
+      <span class="file-meta">2.4 MB</span>
+    </a>
+  </li>
+  <li>
+    <a data-file href="https://example.com/schedule" target="_blank" rel="noopener">
+      <icon-wc name="external-link"></icon-wc>
+      <span class="file-name">Event schedule (web)</span>
+      <span class="file-meta">example.com</span>
+    </a>
+  </li>
+</ul></code-block>
+  </section>
+
+  <section>
+    <h2>Card Grid</h2>
+    <layout-text>
+      <p>Add <code>data-file-layout="card"</code> for a stacked icon-above-name layout that slots into a <a href="/docs/elements/custom-elements/layout-grid/"><code>&lt;layout-grid&gt;</code></a>. Good for asset galleries and download directories.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/examples/demos/file-card-grid.html"
+      url="https://vanilla-breeze.dev/files/cards"
+      title="File card grid"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="File cards in a grid" data-escape><layout-grid data-layout-min="180px" data-layout-gap="m">
+  <a data-file data-file-layout="card" href="/files/quarterly-report.pdf" download>
+    <icon-wc name="file-text"></icon-wc>
+    <span class="file-name">quarterly-report.pdf</span>
+    <span class="file-meta">2.4 MB &middot; PDF</span>
+  </a>
+  <a data-file data-file-layout="card" href="/files/design-assets.zip" download>
+    <icon-wc name="archive"></icon-wc>
+    <span class="file-name">design-assets.zip</span>
+    <span class="file-meta">18.7 MB &middot; ZIP</span>
+  </a>
+</layout-grid></code-block>
+  </section>
+
+  <section>
+    <h2>Upload list with status</h2>
+    <layout-text>
+      <p>For upload flows, the meta text is the status. Use <code>data-file-status</code> to color it semantically: <code>uploading</code> / <code>processing</code> map to the interactive color, <code>success</code> to green, <code>error</code> to red. Put the remove or retry action in <code>.file-actions</code>.</p>
+    </layout-text>
+
+    <browser-window
+      src="/docs/examples/demos/file-upload-list.html"
+      url="https://vanilla-breeze.dev/files/upload"
+      title="Upload list"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Upload list with per-row status" data-escape><section aria-label="Selected files">
+<ul class="file-list">
+  <li data-file data-file-status="success">
+    <icon-wc name="file-text"></icon-wc>
+    <span class="file-name">contract.pdf</span>
+    <span class="file-meta">1.2 MB &middot; uploaded</span>
+    <span class="file-actions">
+      <button type="button" class="ghost icon-only" aria-label="Remove contract.pdf">
+        <icon-wc name="x"></icon-wc>
+      </button>
+    </span>
+  </li>
+  <li data-file data-file-status="uploading">
+    <icon-wc name="image"></icon-wc>
+    <span class="file-name">scan-page-3.jpg</span>
+    <span class="file-meta">4.8 MB &middot; uploading 62%</span>
+    <span class="file-actions">
+      <button type="button" class="ghost icon-only" aria-label="Cancel upload">
+        <icon-wc name="x"></icon-wc>
+      </button>
+    </span>
+  </li>
+  <li data-file data-file-status="error">
+    <icon-wc name="file-warning"></icon-wc>
+    <span class="file-name">payroll.xlsx</span>
+    <span class="file-meta">22 MB &middot; too large (max 10 MB)</span>
+    <span class="file-actions">
+      <button type="button" class="secondary">Retry</button>
+    </span>
+  </li>
+</ul>
+</section></code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-file</code></td>
+          <td>boolean</td>
+          <td>Opts the element in to the file row layout. Works on <code>&lt;li&gt;</code>, <code>&lt;a&gt;</code>, or any block container.</td>
+        </tr>
+        <tr>
+          <td><code>data-file-layout</code></td>
+          <td><code>card</code></td>
+          <td>Switch to a stacked (icon-above-name) card layout. Default omitted = single-row layout.</td>
+        </tr>
+        <tr>
+          <td><code>data-file-status</code></td>
+          <td><code>uploading</code>, <code>processing</code>, <code>success</code>, <code>error</code></td>
+          <td>Colors the <code>.file-meta</code> text to signal upload state. Falls back to muted text when omitted.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Supporting classes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Where</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>.file-list</code></td>
+          <td>on <code>&lt;ul&gt;</code>/<code>&lt;ol&gt;</code></td>
+          <td>Removes list styling and stacks rows with a small gap. Optional &mdash; only needed when rows are in a list.</td>
+        </tr>
+        <tr>
+          <td><code>.file-name</code></td>
+          <td>inside <code>[data-file]</code></td>
+          <td>Flexible; truncates long names with ellipsis. Wraps in card layout instead.</td>
+        </tr>
+        <tr>
+          <td><code>.file-meta</code></td>
+          <td>inside <code>[data-file]</code></td>
+          <td>Muted, tabular-numeric text for size/status/type.</td>
+        </tr>
+        <tr>
+          <td><code>.file-actions</code></td>
+          <td>inside <code>[data-file]</code></td>
+          <td>Right-aligned slot for download/remove/retry controls.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <layout-text>
+      <ul>
+        <li>Use a real <code>&lt;a&gt;</code> for downloads and <code>&lt;button type="button"&gt;</code> for in-page actions (remove, retry, cancel). No <code>div role="button"</code> tricks.</li>
+        <li>Icon-only action buttons need an accessible name. Use <code>aria-label="Remove &lt;filename&gt;"</code> so screen readers can distinguish one row&rsquo;s remove button from the next.</li>
+        <li>If the status message changes during an upload, consider wrapping the meta span in <code>&lt;output aria-live="polite"&gt;</code> so screen readers hear progress updates.</li>
+        <li>Type icons are decorative &mdash; <code>icon-wc</code> already sets <code>aria-hidden="true"</code> automatically. The filename carries the meaning.</li>
+        <li>For external links, pair <code>target="_blank"</code> with the &ldquo;opens in new tab&rdquo; hint from <a href="/docs/accessibility-utilities/#opens-in-new-tab">Accessibility Utilities</a>.</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/attributes/data-upload/" class="section-card">
+        <h3>data-upload</h3>
+        <p>Drag-and-drop file input. The file list it renders uses this same <code>[data-file]</code> pattern.</p>
+      </a>
+      <a href="/docs/attributes/data-accept/" class="section-card">
+        <h3>data-accept</h3>
+        <p>Declarative file-type gating for file inputs.</p>
+      </a>
+      <a href="/docs/elements/native/a/" class="section-card">
+        <h3>a[download]</h3>
+        <p>Native download semantics and filename hints.</p>
+      </a>
+      <a href="/docs/elements/web-components/icon-wc/" class="section-card">
+        <h3>icon-wc</h3>
+        <p>Lucide-backed icon component &mdash; source for the type icons used here.</p>
+      </a>
+    </layout-grid>
+  </section>
