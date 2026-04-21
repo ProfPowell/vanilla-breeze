@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Drawer Dialog Snippet"
-description: "Slide-in panel using native dialog element. Side drawers for navigation, settings, or detail views."
+description: "Slide-in panel using the native dialog element with data-position. Side drawers for navigation, settings, or detail views — zero custom CSS."
 currentSection: explore
 currentPath: /docs/snippets/components/drawer-dialog/
 ---
@@ -14,18 +14,18 @@ currentPath: /docs/snippets/components/drawer-dialog/
   </nav>
 
   <h1>Drawer Dialog</h1>
-  <p class="lead">Slide-in panel using native <code>&lt;dialog&gt;</code> element. Side drawers for navigation, settings, or detail views.</p>
+  <p class="lead">Slide-in panel using the native <code>&lt;dialog&gt;</code> element with <code>data-position</code>. Zero custom CSS — everything comes from <a href="/docs/elements/native/dialog/">the canonical dialog styles</a>.</p>
 
   <section>
     <h2>Overview</h2>
     <layout-text>
-      <p>A drawer is a dialog that slides in from the side of the screen. It uses the native <code>&lt;dialog&gt;</code> element for built-in accessibility (focus trapping, escape key, backdrop). CSS handles the slide animation with <code>@starting-style</code> for entry transitions.</p>
+      <p>A drawer is a dialog that slides in from the side of the screen. In Vanilla Breeze any <code>&lt;dialog&gt;</code> with <code>data-position</code> automatically gains drawer geometry, slide-in animation, and reduced-motion handling. You inherit everything native <code>&lt;dialog&gt;</code> provides: focus trapping, <kbd>Esc</kbd> to close, <code>role="dialog"</code>, and a proper backdrop.</p>
       <p><strong>Key features:</strong></p>
       <ul>
-        <li>Native <code>&lt;dialog&gt;</code> with focus trapping and escape key</li>
-        <li>Slides from left (<code>start</code>) or right (<code>end</code>)</li>
-        <li>CSS animation with <code>@starting-style</code></li>
-        <li>Full-height panel with scrollable body</li>
+        <li>Native <code>&lt;dialog&gt;</code> with focus trapping and <kbd>Esc</kbd> to close</li>
+        <li>Slides from <code>start</code>, <code>end</code>, <code>top</code>, or <code>bottom</code></li>
+        <li>Trigger via the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API">Invokers API</a> — no inline JS required</li>
+        <li>Scrollable body via <code>&lt;section&gt;</code> with overscroll containment built in</li>
       </ul>
     </layout-text>
   </section>
@@ -33,125 +33,28 @@ currentPath: /docs/snippets/components/drawer-dialog/
   <section>
     <h2>Basic Drawer</h2>
     <layout-text>
-      <p>A right-side drawer with header, scrollable body, and footer actions.</p>
+      <p>A right-side drawer with header, scrollable body, and footer actions. Uses the Invokers API to open and close — no event handlers to wire up.</p>
     </layout-text>
 
-    <code-block language="html" label="Basic drawer" data-escape><button type="button" id="open-drawer">Open Drawer</button>
+    <code-block language="html" label="Basic drawer" data-escape><button commandfor="drawer" command="show-modal">Open Drawer</button>
 
-<dialog id="drawer" class="drawer" data-position="end">
-  <layout-stack data-layout-gap="l">
-    <header>
-      <h2>Drawer Title</h2>
-      <button type="button" class="ghost" id="close-drawer" aria-label="Close">
-        &#x2715;
-      </button>
-    </header>
-
-    <div class="drawer-body">
-      <p>Drawer content slides in from the side.</p>
-    </div>
-
-    <footer>
-      <layout-cluster data-layout-justify="flex-end" data-layout-gap="m">
-        <button type="button" class="secondary" id="cancel-drawer">Cancel</button>
-        <button type="button" class="primary">Save</button>
-      </layout-cluster>
-    </footer>
-  </layout-stack>
-</dialog>
-
-<script>
-  const drawer = document.getElementById('drawer');
-  document.getElementById('open-drawer').onclick = () => drawer.showModal();
-  document.getElementById('close-drawer').onclick = () => drawer.close();
-  document.getElementById('cancel-drawer').onclick = () => drawer.close();
-</script></code-block>
-  </section>
+<dialog id="drawer" data-position="end">
+  <header>
+    <h2>Drawer Title</h2>
+    <button commandfor="drawer" command="close" class="ghost icon-only" aria-label="Close">
+      <icon-wc name="x"></icon-wc>
+    </button>
+  </header>
 
   <section>
-    <h2>Drawer Styles</h2>
-    <layout-text>
-      <p>Add these styles to your project. The <code>data-position</code> attribute controls which side the drawer slides from.</p>
-    </layout-text>
+    <p>Drawer content slides in from the side. This body scrolls independently.</p>
+  </section>
 
-    <code-block language="css" label="Drawer styles" data-escape>.drawer {
-  padding: 0;
-  border: none;
-  max-width: min(90vw, 400px);
-  max-height: 100vh;
-  height: 100vh;
-  margin: 0;
-  border-radius: 0;
-  box-shadow: var(--shadow-xl);
-}
-
-/* Slide from right (end) */
-.drawer[data-position="end"] {
-  margin-inline-start: auto;
-}
-
-/* Slide from left (start) */
-.drawer[data-position="start"] {
-  margin-inline-end: auto;
-}
-
-.drawer::backdrop {
-  background: var(--color-overlay-strong);
-  backdrop-filter: blur(4px);
-}
-
-.drawer > layout-stack {
-  padding: var(--size-l);
-  height: 100%;
-}
-
-.drawer header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.drawer header h2 {
-  margin: 0;
-  font-size: var(--font-size-xl);
-}
-
-.drawer-body {
-  flex: 1;
-  overflow-y: auto;
-}
-
-/* Animation */
-.drawer {
-  transform: translateX(100%);
-  transition: transform var(--duration-normal, 300ms) var(--ease-out, ease-out),
-              display var(--duration-normal, 300ms) allow-discrete,
-              overlay var(--duration-normal, 300ms) allow-discrete;
-}
-
-.drawer[data-position="start"] {
-  transform: translateX(-100%);
-}
-
-.drawer[open] {
-  transform: translateX(0);
-}
-
-@starting-style {
-  .drawer[open] {
-    transform: translateX(100%);
-  }
-  .drawer[open][data-position="start"] {
-    transform: translateX(-100%);
-  }
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .drawer {
-    transition-duration: 0s;
-  }
-}</code-block>
+  <footer>
+    <button commandfor="drawer" command="close" class="secondary">Cancel</button>
+    <button type="button" class="primary">Save</button>
+  </footer>
+</dialog></code-block>
   </section>
 
   <section>
@@ -160,12 +63,16 @@ currentPath: /docs/snippets/components/drawer-dialog/
       <p>A left-side drawer for mobile navigation. Use <code>data-position="start"</code> for conventional left-side navigation.</p>
     </layout-text>
 
-    <code-block language="html" label="Navigation drawer" data-escape><dialog id="nav-drawer" class="drawer" data-position="start">
-  <layout-stack data-layout-gap="l">
-    <header>
-      <h2>Navigation</h2>
-      <button type="button" class="ghost" aria-label="Close">&#x2715;</button>
-    </header>
+    <code-block language="html" label="Navigation drawer" data-escape><button commandfor="nav-drawer" command="show-modal">Menu</button>
+
+<dialog id="nav-drawer" data-position="start">
+  <header>
+    <h2>Navigation</h2>
+    <button commandfor="nav-drawer" command="close" class="ghost icon-only" aria-label="Close">
+      <icon-wc name="x"></icon-wc>
+    </button>
+  </header>
+  <section>
     <nav>
       <ul>
         <li><a href="/">Home</a></li>
@@ -174,19 +81,58 @@ currentPath: /docs/snippets/components/drawer-dialog/
         <li><a href="/contact/">Contact</a></li>
       </ul>
     </nav>
-  </layout-stack>
+  </section>
 </dialog></code-block>
+  </section>
+
+  <section>
+    <h2>Position Options</h2>
+    <layout-text>
+      <p>Four edges are supported out of the box. See <a href="/docs/elements/native/dialog/#drawer-variants">Dialog &rsaquo; Drawer Variants</a> for the full attribute table and bottom-sheet drag gestures.</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Slides from</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-position="end"</code></td>
+          <td>Right (in LTR)</td>
+          <td>Settings, details, filters</td>
+        </tr>
+        <tr>
+          <td><code>data-position="start"</code></td>
+          <td>Left (in LTR)</td>
+          <td>Navigation, sidebars</td>
+        </tr>
+        <tr>
+          <td><code>data-position="bottom"</code></td>
+          <td>Bottom</td>
+          <td>Mobile action sheets, share menus</td>
+        </tr>
+        <tr>
+          <td><code>data-position="top"</code></td>
+          <td>Top</td>
+          <td>Banners, announcements</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>Usage Notes</h2>
     <layout-text>
       <ul>
-        <li><strong>Position:</strong> Use <code>data-position="end"</code> for settings/details, <code>data-position="start"</code> for navigation</li>
-        <li><strong>Width:</strong> Adjust <code>max-width</code> in the CSS (default: <code>min(90vw, 400px)</code>)</li>
-        <li><strong>Scrolling:</strong> The <code>.drawer-body</code> scrolls independently with <code>overflow-y: auto</code></li>
-        <li><strong>Click outside:</strong> Add a click listener on the dialog for backdrop dismissal</li>
-        <li><strong>Animation:</strong> Uses <code>@starting-style</code> for entry animation. Respects <code>prefers-reduced-motion</code></li>
+        <li><strong>Don&rsquo;t re-style the drawer.</strong> The canonical dialog CSS already handles geometry, border-radius, animation, and reduced motion. Adding a <code>.drawer</code> class or redefining these rules will drift and break theme overrides.</li>
+        <li><strong>Use <code>&lt;section&gt;</code> for the body.</strong> VB pins <code>overflow-y: auto</code> and <code>overscroll-behavior: contain</code> on <code>dialog[data-position] &gt; section</code> so scrolling inside the drawer never bubbles to the page.</li>
+        <li><strong>Width:</strong> defaults to <code>min(90vw, 28rem)</code> for side drawers. Override on a per-drawer basis with a local class if you need a wider panel.</li>
+        <li><strong>Click outside to dismiss:</strong> attach a one-liner <code>dialog.addEventListener('click', e =&gt; e.target === dialog &amp;&amp; dialog.close())</code> if needed.</li>
+        <li><strong>Animation:</strong> slide animations are token-driven (<code>--motion-enter-duration</code>, <code>--ease-out</code>) and automatically collapse to a fade for <code>prefers-reduced-motion</code>.</li>
       </ul>
     </layout-text>
   </section>
@@ -196,7 +142,7 @@ currentPath: /docs/snippets/components/drawer-dialog/
     <layout-grid data-layout-min="200px" data-layout-gap="m">
       <a href="/docs/elements/native/dialog/" class="section-card">
         <h3>Dialog Element</h3>
-        <p>Native dialog documentation</p>
+        <p>Canonical dialog + drawer styles. Start here.</p>
       </a>
       <a href="/docs/snippets/components/modal-dialog/" class="section-card">
         <h3>Modal Dialog</h3>
