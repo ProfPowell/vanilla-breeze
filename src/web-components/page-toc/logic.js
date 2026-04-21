@@ -169,7 +169,9 @@ class PageToc extends VBElement {
   }
 
   #buildToc() {
-    const levels = this.getAttribute('levels') || 'h2,h3';
+    const levels = (this.getAttribute('levels') || 'h2,h3')
+      .split(',')
+      .map(l => l.trim().toLowerCase());
     const scope = this.getAttribute('scope') || 'main';
     const title = this.getAttribute('title') || 'On this page';
 
@@ -177,65 +179,73 @@ class PageToc extends VBElement {
     const container = document.querySelector(scope);
     if (!container) return;
 
-    const selector = levels.split(',').map(l => l.trim()).join(',');
-    this.#headings = Array.from(container.querySelectorAll(selector))
-      .filter(h => h.id) // Only headings with IDs
+    this.#headings = Array.from(container.querySelectorAll(levels.join(',')))
+      .filter(h => h.id)
       .filter(h => !h.hasAttribute('data-toc-ignore') && !h.closest('[data-toc-ignore]'));
 
     if (this.#headings.length === 0) return;
 
-    // Build ToC structure with details/summary for mobile disclosure
+    // Build a hierarchical tree from the flat heading list so sub-trees
+    // can collapse when their parent section isn't active. Scroll-spy
+    // adds `.active` to the current link; CSS :has() rules in styles.css
+    // expand the ancestor branch automatically.
+    const sentinel = { depth: -1, children: [] };
+    const stack = [sentinel];
+    for (const heading of this.#headings) {
+      const depth = levels.indexOf(heading.tagName.toLowerCase());
+      while (stack[stack.length - 1].depth >= depth) stack.pop();
+      const node = { heading, depth, children: [] };
+      stack[stack.length - 1].children.push(node);
+      stack.push(node);
+    }
+
+    const renderList = (nodes) => {
+      const ul = document.createElement('ul');
+      ul.className = 'list';
+      for (const node of nodes) {
+        const li = document.createElement('li');
+        li.className = 'item';
+        li.dataset.level = String(node.depth);
+
+        const link = document.createElement('a');
+        link.href = `#${node.heading.id}`;
+        link.className = 'link';
+        link.textContent = this.#getHeadingText(node.heading);
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.#scrollToHeading(node.heading);
+        });
+        li.appendChild(link);
+
+        if (node.children.length) {
+          li.appendChild(renderList(node.children));
+        }
+
+        ul.appendChild(li);
+        this.#links.set(node.heading.id, link);
+      }
+      return ul;
+    };
+
+    // Mobile disclosure wrapper — the whole TOC collapses behind a
+    // summary on narrow screens. Per-section collapse (above) is
+    // orthogonal and works at every width.
     this.#details = document.createElement('details');
     this.#details.className = 'details';
-    this.#details.open = true; // Start open; CSS controls visibility on narrow screens
-    const details = this.#details;
+    this.#details.open = true;
 
     const summary = document.createElement('summary');
     summary.className = 'summary';
     summary.textContent = title;
-    details.appendChild(summary);
+    this.#details.appendChild(summary);
 
     const nav = document.createElement('nav');
     nav.className = 'nav';
     nav.setAttribute('aria-label', title);
+    nav.appendChild(renderList(sentinel.children));
+    this.#details.appendChild(nav);
 
-    const list = document.createElement('ul');
-    list.className = 'list';
-
-    // Group headings by level for nesting
-    const levelOrder = levels.split(',').map(l => l.trim().toLowerCase());
-
-    for (const heading of this.#headings) {
-      const tagName = heading.tagName.toLowerCase();
-      const levelIndex = levelOrder.indexOf(tagName);
-      const level = levelIndex >= 0 ? levelIndex : 0;
-
-      // Create list item
-      const li = document.createElement('li');
-      li.className = 'item';
-      li.dataset.level = String(level);
-
-      const link = document.createElement('a');
-      link.href = `#${heading.id}`;
-      link.className = 'link';
-      link.textContent = this.#getHeadingText(heading);
-
-      // Smooth scroll on click
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.#scrollToHeading(heading);
-      });
-
-      li.appendChild(link);
-      list.appendChild(li);
-
-      // Track for scroll-spy
-      this.#links.set(heading.id, link);
-    }
-
-    nav.appendChild(list);
-    details.appendChild(nav);
-    this.appendChild(details);
+    this.appendChild(this.#details);
   }
 
   #getHeadingText(heading) {
