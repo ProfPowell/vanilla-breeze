@@ -19,9 +19,10 @@ const ROOT = join(__dirname, '..');
 const DEMOS = join(ROOT, 'demos');
 const OUT = join(ROOT, 'dist', 'demos');
 
-/** Directories containing demo HTML files */
+/** Directories containing demo HTML files (non-HTML files are copied verbatim) */
 const DEMO_DIRS = [
   'examples/demos',
+  'examples/fixtures',
   'patterns/demos',
   'snippets/demos',
   'tools/theme-lab/surfaces',
