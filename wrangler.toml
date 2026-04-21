@@ -21,6 +21,31 @@ database_name = "vanilla-breeze-analytics"
 database_id = "da49ab0f-c252-4799-ab37-490130340e88"
 migrations_dir = "db/migrations"
 
+# KV namespace for /go/* service relay (functions/go/*).
+# Provision once with:
+#   wrangler kv namespace create VB_GO_KV
+# Then copy the returned id below AND add the binding to the Pages
+# dashboard (Settings → Functions → KV namespace bindings).
+# Until both steps are done, every /go/* endpoint returns 503 with a
+# 'service_unavailable' error envelope (see functions/_lib/go/shared.js).
+[[kv_namespaces]]
+binding = "VB_GO_KV"
+id = "REPLACE_WITH_VB_GO_KV_ID"
+
+# Optional secrets for /go/email Resend transport. Without these, the
+# endpoint runs in record-only mode (audit-trail in KV under email:{id},
+# 202 returned, no actual send). Set with:
+#   wrangler pages secret put RESEND_API_KEY
+#   wrangler pages secret put RESEND_FROM
+# RESEND_API_KEY and RESEND_FROM live in the Pages secrets store, not
+# in this file.
+
+# Optional: comma-separated list of newsletter list ids exposed by
+# /go/newsletter/preferences. Override per environment via dashboard or
+# `wrangler pages env`.
+[vars]
+NEWSLETTER_LISTS = "weekly-digest,release-notes,security-alerts"
+
 
 # Optional: Workers Analytics Engine binding for high-cardinality
 # request telemetry (see admin/r-n-d/analytics/analytics-backend-spec.md).

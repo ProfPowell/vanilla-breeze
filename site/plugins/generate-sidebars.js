@@ -215,6 +215,13 @@ export class GenerateSidebars {
     html += `        Search\n`;
     html += `      </button>\n`;
     html += `    </site-search>\n`;
+    html += `    <notification-wc src="/go/notify/messages">\n`;
+    html += `      <article data-id="welcome" data-type="update" data-date="2026-04-21T00:00:00Z">\n`;
+    html += `        <h3>Welcome to Vanilla Breeze</h3>\n`;
+    html += `        <p>This bell pulls live notifications from <code>/go/notify/messages</code> &mdash; the same contract documented at <a href="/docs/concepts/service-contracts/">/docs/concepts/service-contracts/</a>. Static articles like this one are the no-JS / no-backend fallback.</p>\n`;
+    html += `        <a href="/docs/concepts/go-convention/">Read the /go/ convention</a>\n`;
+    html += `      </article>\n`;
+    html += `    </notification-wc>\n`;
     html += `    <theme-picker compact>\n`;
     html += `      <button type="button" data-trigger class="ghost">\n`;
     html += `        <icon-wc name="palette" size="sm"></icon-wc>\n`;

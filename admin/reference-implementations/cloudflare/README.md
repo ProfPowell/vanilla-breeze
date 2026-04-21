@@ -113,6 +113,34 @@ HTML/markdown/MJML pipeline as needed.
 Add the handler in a new module, import it in `index.js`, push a row
 to `routes`. CORS, JSON, and the error envelope come from `shared.js`.
 
+## How VB uses this on its own docs site
+
+The vanilla-breeze docs site (Cloudflare Pages) ships these contracts as
+**Pages Functions** under `functions/go/*`, with the route handlers
+copied verbatim into `functions/_lib/go/*`. That keeps the source files
+short — each `functions/go/*.js` is a thin wrapper that delegates to
+the same handler this Worker uses.
+
+To stand it up on a new Pages project:
+
+```bash
+# 1. KV
+wrangler kv namespace create VB_GO_KV          # copy id into wrangler.toml
+# 2. Optional email transport
+wrangler pages secret put RESEND_API_KEY
+wrangler pages secret put RESEND_FROM
+# 3. Bind VB_GO_KV in Pages dashboard → Settings → Functions
+
+# 4. Seed an initial notification so the bell shows something
+wrangler kv key put --binding=VB_GO_KV "msg:welcome" \
+  '{"id":"welcome","type":"update","title":"Welcome","body":"Hi.","date":"2026-04-21T00:00:00Z","read":false,"dismissed":false,"priority":"normal"}'
+wrangler kv key put --binding=VB_GO_KV "index:msgs" '["welcome"]'
+```
+
+Until the binding is provisioned, every `/go/*` endpoint returns a
+clean 503 (`service_unavailable`) instead of a 500 — the runtime guard
+lives in `functions/_lib/go/shared.js#requireKV`.
+
 ## Limitations
 
 - Single KV namespace shared across all services. Hot keys can hit KV
