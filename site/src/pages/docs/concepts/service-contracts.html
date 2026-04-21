@@ -1,0 +1,216 @@
+---
+layout: guide
+title: "Service Contracts"
+description: "JSON request/response schemas for every /go/ endpoint — what backend implementations must fulfill and what VBService consumers can rely on."
+guideGroup: Concepts
+currentPath: /docs/concepts/service-contracts/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Service Contracts</span></li>
+  </ol>
+</nav>
+
+<h1>Service Contracts</h1>
+<p class="lead">JSON request/response schemas for every <a href="/docs/concepts/go-convention/"><code>/go/</code></a> endpoint. VB ships the contracts and a VBService client; you ship a backend that fulfils them. Pick the worker, framework, or service of your choice.</p>
+
+<section>
+  <h2>Common conventions</h2>
+  <ul>
+    <li><strong>Content type</strong> &mdash; all requests and responses are <code>application/json</code>. <code>VBService</code> sets the request <code>content-type</code> automatically and parses JSON responses.</li>
+    <li><strong>Authentication</strong> &mdash; out of scope for the contract. Inject auth via <code>VBService.configure({ headers: { Authorization: '…' } })</code> and validate server-side however you like.</li>
+    <li><strong>HTTP status codes</strong> &mdash; standard. <code>200</code> on read success, <code>201</code> on create, <code>202</code> on async accept, <code>204</code> when there is no body, <code>4xx/5xx</code> on errors.</li>
+    <li><strong>Pagination</strong> &mdash; query params <code>limit</code>, <code>since</code> where listed. Beyond v1, add cursor-based pagination as needed.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Error response</h2>
+  <p>Every <code>/go/</code> endpoint uses a single error envelope on non-2xx responses. <a href="/docs/concepts/go-convention/">VBService</a> wraps this in a <code>VBServiceError</code> with <code>{ status, body, role, path }</code> for consistent client-side handling.</p>
+  <code-block language="json" label="Error response shape" data-escape>{
+  "error": "not_found",
+  "message": "Subscription sub_abc123 not found",
+  "status": 404
+}</code-block>
+  <ul>
+    <li><code>error</code> &mdash; short snake_case code (<code>not_found</code>, <code>invalid_input</code>, <code>rate_limited</code>, <code>unauthorized</code>, <code>internal</code>)</li>
+    <li><code>message</code> &mdash; human-readable detail; safe to show in dev consoles, not necessarily user-facing</li>
+    <li><code>status</code> &mdash; mirrors the HTTP status code for clients that don&rsquo;t plumb the response status through their wrapper</li>
+  </ul>
+</section>
+
+<section>
+  <h2>/go/notify &mdash; Notifications</h2>
+  <p>Powers <a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> in panel mode, plus the page-watch subscription flow.</p>
+
+  <h3>GET /go/notify/messages</h3>
+  <p>Fetch notifications for the current user/session.</p>
+  <table class="props-table">
+    <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>since</code></td><td>ISO datetime</td><td>&mdash;</td><td>Only return notifications after this timestamp</td></tr>
+      <tr><td><code>type</code></td><td>string</td><td>&mdash;</td><td>Filter by type (<code>update</code>, <code>alert</code>, <code>watch</code>, <code>stewardship</code>, &hellip;)</td></tr>
+      <tr><td><code>unread</code></td><td>boolean</td><td>&mdash;</td><td>Only return unread notifications</td></tr>
+      <tr><td><code>limit</code></td><td>number</td><td>50</td><td>Maximum items to return</td></tr>
+    </tbody>
+  </table>
+  <code-block language="json" label="Response (200)" data-escape>{
+  "items": [
+    {
+      "id": "release-3.0",
+      "type": "update",
+      "title": "v3.0 Released",
+      "body": "New notification system.",
+      "url": "/changelog#v3",
+      "date": "2026-04-10T00:00:00Z",
+      "read": false,
+      "priority": "normal",
+      "expires": null
+    }
+  ],
+  "total": 12,
+  "unread": 3
+}</code-block>
+
+  <h3>PATCH /go/notify/messages/:id</h3>
+  <p>Mark a notification as read or dismissed.</p>
+  <code-block language="json" label="Request" data-escape>{ "read": true }
+// or
+{ "dismissed": true }</code-block>
+  <code-block language="json" label="Response (200)" data-escape>{ "id": "release-3.0", "read": true }</code-block>
+
+  <h3>POST /go/notify/subscribe</h3>
+  <p>Subscribe to page-watch or topic notifications. The <code>notify</code> array selects delivery channels &mdash; <code>panel</code> (in-app via notification-wc) and/or <code>email</code> (via <code>/go/email</code>).</p>
+  <code-block language="json" label="Request" data-escape>{
+  "url": "/docs/getting-started",
+  "type": "page-watch",
+  "notify": ["panel"],
+  "email": "user@example.com"
+}</code-block>
+  <code-block language="json" label="Response (201)" data-escape>{ "id": "sub_abc123", "status": "active" }</code-block>
+
+  <h3>DELETE /go/notify/subscribe/:id</h3>
+  <code-block language="json" label="Response (200)" data-escape>{ "status": "removed" }</code-block>
+
+  <h3>GET /go/notify/subscribe</h3>
+  <p>List active subscriptions.</p>
+  <code-block language="json" label="Response (200)" data-escape>{
+  "subscriptions": [
+    {
+      "id": "sub_abc123",
+      "url": "/docs/getting-started",
+      "type": "page-watch",
+      "notify": ["panel"],
+      "createdAt": "2026-04-13T16:00:00Z"
+    }
+  ]
+}</code-block>
+</section>
+
+<section>
+  <h2>/go/feed &mdash; Content feed</h2>
+  <p>Changelog / what&rsquo;s-new entries in JSON. Same data source as <code>/rss</code>, different format. <code>&lt;notification-wc&gt;</code> can read this for &ldquo;new release&rdquo; notifications; build pipelines can render both feeds from one source.</p>
+
+  <h3>GET /go/feed</h3>
+  <table class="props-table">
+    <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>since</code></td><td>ISO datetime</td><td>&mdash;</td><td>Only return entries after this date</td></tr>
+      <tr><td><code>limit</code></td><td>number</td><td>20</td><td>Maximum items</td></tr>
+    </tbody>
+  </table>
+  <code-block language="json" label="Response (200)" data-escape>{
+  "items": [
+    {
+      "id": "v3.0",
+      "type": "update",
+      "title": "v3.0 — Notification System",
+      "body": "New notification panel and service layer.",
+      "url": "/changelog#v3.0",
+      "date": "2026-04-10"
+    }
+  ]
+}</code-block>
+  <p><strong>Relationship to <code>/rss</code>.</strong> <code>/rss</code> serves the same content as RSS/Atom for feed readers; <code>/go/feed</code> serves it as JSON for the notification panel and any in-app changelog component. Generate both from the same source &mdash; a CHANGELOG.md, a CMS, or a database.</p>
+</section>
+
+<section>
+  <h2>/go/newsletter &mdash; Newsletter subscriptions</h2>
+
+  <h3>POST /go/newsletter/subscribe</h3>
+  <code-block language="json" label="Request" data-escape>{
+  "email": "user@example.com",
+  "lists": ["weekly-digest", "release-notes"]
+}</code-block>
+  <code-block language="json" label="Response (201)" data-escape>{ "status": "subscribed", "lists": ["weekly-digest", "release-notes"] }</code-block>
+
+  <h3>POST /go/newsletter/unsubscribe</h3>
+  <code-block language="json" label="Request" data-escape>{
+  "email": "user@example.com",
+  "lists": ["weekly-digest"]
+}</code-block>
+  <code-block language="json" label="Response (200)" data-escape>{ "status": "unsubscribed", "lists": ["weekly-digest"] }</code-block>
+
+  <h3>GET /go/newsletter/preferences</h3>
+  <p>Required query param: <code>email</code>.</p>
+  <code-block language="json" label="Response (200)" data-escape>{
+  "subscriptions": ["release-notes"],
+  "available": ["weekly-digest", "release-notes", "security-alerts"]
+}</code-block>
+</section>
+
+<section>
+  <h2>/go/email &mdash; Transactional email</h2>
+  <p>Used by page-watch alerts, GoodURL digests, contact-form submissions, and newsletter welcomes. The contract is template-driven: VB names the template, the backend renders it.</p>
+
+  <h3>POST /go/email</h3>
+  <code-block language="json" label="Request" data-escape>{
+  "to": "user@example.com",
+  "template": "page-watch-update",
+  "data": {
+    "pageTitle": "Getting Started",
+    "pageUrl": "/docs/getting-started",
+    "changeDescription": "Section 3 rewritten"
+  }
+}</code-block>
+  <code-block language="json" label="Response (202)" data-escape>{ "status": "queued", "id": "msg_xyz" }</code-block>
+
+  <h3>Template registry</h3>
+  <p>VB defines named templates and the data fields each one expects. The backend implements the rendering &mdash; pick whichever templating engine you like.</p>
+  <table class="props-table">
+    <thead><tr><th>Template</th><th>Data fields</th><th>Used by</th></tr></thead>
+    <tbody>
+      <tr><td><code>page-watch-update</code></td><td><code>pageTitle</code>, <code>pageUrl</code>, <code>changeDescription</code></td><td>Page-watch (see <code>page-watch.md</code>)</td></tr>
+      <tr><td><code>goodurl-digest</code></td><td><code>items</code>, <code>score</code>, <code>trend</code></td><td>GoodURL daily digest</td></tr>
+      <tr><td><code>contact-form</code></td><td><code>name</code>, <code>email</code>, <code>message</code>, <code>subject</code></td><td>Contact-form submissions</td></tr>
+      <tr><td><code>newsletter-welcome</code></td><td><code>email</code>, <code>lists</code></td><td>Newsletter sign-ups</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Reference implementations</h2>
+  <p>VB will ship starter implementations for common platforms once their beads land:</p>
+  <ul>
+    <li><strong>Cloudflare Workers</strong> &mdash; one Worker per service, KV for storage, Email Workers for sending, Analytics Engine for metrics.</li>
+    <li><strong>Express middleware</strong> &mdash; one router per service, pluggable storage, Nodemailer for email.</li>
+    <li><strong>Dev stub</strong> &mdash; a single Node.js script with in-memory storage, suitable for local development against the VBService client.</li>
+  </ul>
+  <p>None are blocking for adopting the contracts &mdash; the JSON shapes above are enough to write your own backend in any language. The references will land at <code>admin/reference-implementations/</code> in the repo.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <layout-grid data-layout-min="220px" data-layout-gap="m">
+    <a href="/docs/concepts/go-convention/" class="section-card">
+      <h3>/go/ Convention</h3>
+      <p>The URL namespace these contracts live under, plus the <code>VBService</code> client that calls them.</p>
+    </a>
+    <a href="/docs/elements/web-components/notification-wc/" class="section-card">
+      <h3>notification-wc</h3>
+      <p>Consumes <code>/go/notify</code> for dynamic notifications and the panel-mode unread badge.</p>
+    </a>
+  </layout-grid>
+</section>
