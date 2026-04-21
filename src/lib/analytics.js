@@ -288,6 +288,12 @@ export const Analytics = {
       return;
     }
 
+    // Transport 'disabled' means no backend — skip the outbound link
+    // ping wiring so external clicks don't POST to a 404 endpoint.
+    if (state.config.transport === 'disabled') {
+      state.config.autoOutboundLinks = false;
+    }
+
     if (state.config.autoDeclarative) {
       document.addEventListener('click', handleDocumentClick, { capture: true });
     }

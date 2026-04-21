@@ -88,18 +88,28 @@ ${serviceWorkerMeta}
      Transport 'beacon' POSTs to /api/analytics/*. Use 'console' to log events to
      devtools instead, or 'disabled' to turn analytics off entirely.
 
+     Local dev (*.test, localhost, 127.0.0.1) has no analytics Worker, so the
+     transport drops to 'disabled' to avoid 404 spam. Flip to 'console' in
+     devtools via `vbAnalyticsConfig.transport = 'console'` before reload to
+     inspect events locally.
+
      urlMasks collapses the /stats/?site=…&window=… query-string variants into
      a single canonical /stats/ path so the Top Pages panel doesn't fragment
      across every filter combination. See /docs/analytics/#url-masking. -->
 <script>
-  window.vbAnalyticsConfig = {
-    siteId: 'vb-docs',
-    transport: 'beacon',
-    endpoint: '/api/analytics',
-    urlMasks: [
-      { pattern: /^\/stats\/\?.*$/, replace: '/stats/' },
-    ],
-  };
+  (function () {
+    const host = location.hostname;
+    const isLocal =
+      host === 'localhost' || host === '127.0.0.1' || host.endsWith('.test');
+    window.vbAnalyticsConfig = {
+      siteId: 'vb-docs',
+      transport: isLocal ? 'disabled' : 'beacon',
+      endpoint: '/api/analytics',
+      urlMasks: [
+        { pattern: /^\/stats\/\?.*$/, replace: '/stats/' },
+      ],
+    };
+  })();
 </script>
 
 <!-- Main CSS -->
