@@ -7,7 +7,7 @@ in the contract docs verbatim.
 | Directory | Purpose | Status |
 |-----------|---------|--------|
 | [`dev-stub/`](./dev-stub/) | Single-file Node.js script with in-memory storage. Develop against it locally. | shipped |
-| `cloudflare/` | Cloudflare Workers — one Worker per service, KV for storage, Email Workers for sending. | bead `vanilla-breeze-4nav` |
+| [`cloudflare/`](./cloudflare/) | One Cloudflare Worker, single KV namespace, optional Resend transport for email. Deploy with `wrangler deploy`. | shipped |
 | `express/` | Express middleware — one router per service, pluggable storage, Nodemailer for email. | bead `vanilla-breeze-v1fl` |
 
 These are not the only ways to implement the contracts — they are

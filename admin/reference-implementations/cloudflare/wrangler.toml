@@ -1,0 +1,29 @@
+# Wrangler config for the VB /go/* reference Worker.
+# Copy this file into your project, replace the KV namespace id, and run
+# `npx wrangler deploy`. Adjust `name`, `routes`, and `account_id` per your setup.
+
+name = "vb-go-services"
+main = "src/index.js"
+compatibility_date = "2026-04-01"
+
+# Bind one KV namespace for all storage.
+# Create it with: npx wrangler kv namespace create VB_KV
+[[kv_namespaces]]
+binding = "VB_KV"
+id = "REPLACE_WITH_YOUR_KV_ID"
+
+# Optional: bind a domain route so the Worker handles vb.test/go/* (or your domain).
+# [[routes]]
+# pattern = "yourdomain.com/go/*"
+# zone_name = "yourdomain.com"
+
+# Optional: configure the available newsletter lists (comma-separated).
+# Override per environment with --var or via the dashboard.
+[vars]
+NEWSLETTER_LISTS = "weekly-digest,release-notes,security-alerts"
+
+# Email transport — leave blank to run in record-only mode (auditable in KV
+# under the `email:{id}` keys), populate to deliver via Resend.
+# Set with: npx wrangler secret put RESEND_API_KEY
+# RESEND_API_KEY  → secret
+# RESEND_FROM     → "noreply@yourdomain.com" (set as a secret or [vars])
