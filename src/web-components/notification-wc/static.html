@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Notification-WC (Static Fallback)</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+    }
+    .banner {
+      padding: 0.75rem 1.25rem;
+      background: #dbeafe;
+      border-bottom: 1px solid #bfdbfe;
+      color: #1e3a8a;
+    }
+    main {
+      max-inline-size: 36rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+    }
+    article { margin-block-end: 1.5rem; }
+    article h3 { margin: 0 0 0.25rem; }
+    article p  { margin: 0 0 0.25rem; color: #555; }
+    article time { color: #777; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+  <!--
+    Upgrade relationship
+    ====================
+    This static HTML IS the baseline that <notification-wc> enhances.
+
+    Without JS the banner is just a strip of content; the panel's
+    static articles render as a normal article list. When JS loads:
+
+      1. Banner mode gains dismiss persistence via VBStore
+      2. Panel mode gains a bell trigger, badge count, drawer, and
+         per-row "mark as read" that persists across reloads
+      3. If `src` is set, panel mode fetches more notifications and
+         merges them over the static children by id
+  -->
+
+  <!-- Banner example -->
+  <notification-wc mode="banner" persist="site-update-v3" variant="info" position="top">
+    <div class="banner">
+      <strong>v3.0 is out.</strong> <a href="/changelog">See what's new</a>
+      <button type="button" value="dismiss">Dismiss</button>
+    </div>
+  </notification-wc>
+
+  <main>
+    <h1>Notifications (static fallback)</h1>
+
+    <h2>Recent activity</h2>
+
+    <!-- Panel example - renders as a list without JS -->
+    <notification-wc>
+      <article data-id="release-3.0" data-type="update" data-date="2026-04-10">
+        <h3>v3.0 Released</h3>
+        <p>New notification system and service layer.</p>
+        <a href="/changelog#v3">Read more</a>
+      </article>
+
+      <article data-id="maintenance" data-type="alert" data-date="2026-04-12">
+        <h3>Scheduled Maintenance</h3>
+        <p>Brief downtime Sunday 2am-4am UTC.</p>
+      </article>
+
+      <article data-id="stewardship" data-type="stewardship" data-date="2026-04-20">
+        <h3>3 broken links need attention</h3>
+        <p>GoodURL's daily digest flagged three non-2xx URLs.</p>
+        <a href="/admin/goodurl/">Review</a>
+      </article>
+    </notification-wc>
+  </main>
+
+</body>
+</html>

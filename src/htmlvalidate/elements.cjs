@@ -224,6 +224,15 @@ module.exports = {
     }
   },
 
+  "analytics-panel": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "title": {},
+      "compact": { boolean: true }
+    }
+  },
+
   "audio-player": {
     attributes: {
       "autoplay": { boolean: true },
@@ -362,7 +371,8 @@ module.exports = {
       "layout": {},
       "show-values": { boolean: true },
       "show-names": { boolean: true },
-      "size": {}
+      "size": {},
+      "editable": { boolean: true }
     }
   },
 
@@ -816,6 +826,17 @@ module.exports = {
     }
   },
 
+  "motion-specimen": {
+    attributes: {
+      "type": { enum: ["easing", "duration", "both"] },
+      "tokens": {},
+      "prefix": {},
+      "duration": {},
+      "show-values": { boolean: true },
+      "label": {}
+    }
+  },
+
   "note-wc": {
     flow: true,
     permittedContent: ["@flow"]
@@ -958,6 +979,15 @@ module.exports = {
     }
   },
 
+  "semantic-palette": {
+    attributes: {
+      "colors": {},
+      "roles": {},
+      "show-export": { boolean: true },
+      "label": {}
+    }
+  },
+
   "settings-panel": {
     attributes: {
       "open": { boolean: true },
@@ -1066,7 +1096,9 @@ module.exports = {
       "tokens": {},
       "prefix": {},
       "show-values": { boolean: true },
-      "label": {}
+      "label": {},
+      "editable": { boolean: true },
+      "target": {}
     }
   },
 
@@ -1080,6 +1112,27 @@ module.exports = {
       "max": {},
       "persist": {},
       "collapsible": { boolean: true }
+    }
+  },
+
+  "notification-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "mode": { enum: ["banner", "panel"] },
+      "persist": {},
+      "variant": { enum: ["info", "success", "warning", "error"] },
+      "position": { enum: ["top", "bottom"] },
+      "expires": {},
+      "src": {},
+      "poll": {},
+      "toast-new": { boolean: true },
+      "storage-key": {},
+      "data-mode": {},
+      "data-variant": {},
+      "data-position": {},
+      "data-trigger": {},
+      "data-upgraded": { boolean: true }
     }
   },
 
@@ -1137,6 +1190,17 @@ module.exports = {
       "data-speed-group": {},
       "data-speed-value": {},
       "slot": {}
+    }
+  },
+
+  "theme-export": {
+    attributes: {
+      "scope": {},
+      "selector": {},
+      "include": {},
+      "format": { enum: ["css", "json"] },
+      "label": {},
+      "live": { boolean: true }
     }
   },
 
@@ -1199,11 +1263,15 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "type": { enum: ["shadow", "radius", "border", "color", "size"] },
+      "type": { enum: ["shadow", "radius", "border", "color", "size", "icon"] },
       "tokens": {},
       "prefix": {},
       "show-values": { boolean: true },
-      "label": {}
+      "label": {},
+      "size": {},
+      "icon-set": {},
+      "editable": { boolean: true },
+      "target": {}
     }
   },
 
@@ -1230,7 +1298,10 @@ module.exports = {
       "show-scale": { boolean: true },
       "show-weights": { boolean: true },
       "show-characters": { boolean: true },
-      "weights": {}
+      "weights": {},
+      "editable": { boolean: true },
+      "target": {},
+      "token": {}
     }
   },
 

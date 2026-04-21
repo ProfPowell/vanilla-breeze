@@ -61,6 +61,7 @@ import './motion-specimen/logic.js';
 import './theme-export/logic.js';
 import './emoji-picker/logic.js';
 import './settings-panel/logic.js';
+import './notification-wc/logic.js';
 import './analytics-panel/logic.js';
 import './day-view/logic.js';
 import '../lib/environment-manager-init.js';

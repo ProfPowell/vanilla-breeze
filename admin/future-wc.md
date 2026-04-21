@@ -12,7 +12,7 @@ Current surface: **67 web components** across 7 categories.
 |-----------|------|-------|
 | `rich-editor` | New | Rich text editor. ProseMirror AST-based, on hold until VB stabilizes. See `admin/r-n-d/editor-plan.md`. Upscale of `contenteditable`. |
 | `stepper-wc` | New | Numeric stepper with +/- buttons. Complements `data-stepper` attribute with richer UI. |
-| `notification-center` | New | Aggregated notification panel with history. Extends `toast-msg` pattern. |
+| ~~`notification-center`~~ | **Shipped as `notification-wc`** (banner + panel modes; see `admin/r-n-d/april13-plan/notification-wc.md`) | |
 | `pop-over` | New | General-purpose popover content container beyond tooltips. Anchored positioning. |
 
 ## Data & Charts

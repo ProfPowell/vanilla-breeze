@@ -1,0 +1,151 @@
+---
+layout: element
+title: "notification-wc"
+description: "Dual-mode notification component: dismissible banner with persistent state, or bell-icon panel with per-item read tracking and optional dynamic feed."
+elementName: notification-wc
+category: component
+currentPath: /docs/elements/web-components/notification-wc/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;notification-wc&gt;</code> ships two modes that share an element name. Pick with <code>mode="banner"</code> or <code>mode="panel"</code> (the default).</p>
+  <ul>
+    <li><strong>Banner</strong> &mdash; full-width, sticky strip with a dismiss button. Dismissal persists across reloads via <a href="/docs/elements/web-components/vb-store/"><code>VBStore</code></a> under the namespace <code>notifications</code>; optional <code>expires</code> re-shows after N days.</li>
+    <li><strong>Panel</strong> &mdash; bell-icon trigger with an unread badge. Click opens a drawer with a list of notifications composed from static <code>&lt;article&gt;</code> children and (optionally) a dynamic JSON feed. Per-item read state persists via VBStore.</li>
+  </ul>
+  <p>Both modes work without JavaScript &mdash; banner is plain HTML; panel renders its static articles inline. JS only adds dismissal, read tracking, and dynamic fetches.</p>
+</section>
+
+<section>
+  <h2>Banner Mode</h2>
+  <p>A site-wide announcement strip. The <code>persist</code> attribute is the VBStore key under which dismissal is recorded. <code>variant</code> sets the color, <code>position</code> sticks it to the top or bottom, <code>expires</code> (days) lets the banner re-show after a time window.</p>
+
+  <browser-window
+    src="/docs/examples/demos/notification-banner.html"
+    url="https://vanilla-breeze.dev/notifications/banner"
+    title="Notification banner"
+    style="min-height: 14rem;"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" label="Banner mode" data-escape><notification-wc mode="banner" persist="site-update-v3" variant="info" position="top">
+  <p>
+    <strong>v3.0 is out.</strong>
+    <a href="/changelog">See what's new</a>
+  </p>
+  <button type="button" value="dismiss">Dismiss</button>
+</notification-wc></code-block>
+
+  <p>Dismissal is recorded as <code>vb:notifications:site-update-v3</code> in VBStore. Wipe the key from devtools (or call <code>VBStore.remove('notifications', 'site-update-v3')</code>) to test the show flow again.</p>
+</section>
+
+<section>
+  <h2>Panel Mode</h2>
+  <p>An ambient bell-icon trigger that opens a panel listing notifications. Static <code>&lt;article&gt;</code> children are the no-JS fallback and the source of truth for the IDs they declare; dynamic notifications fetched via <code>src</code> are merged on top by <code>data-id</code>.</p>
+
+  <browser-window
+    src="/docs/examples/demos/notification-panel.html"
+    url="https://vanilla-breeze.dev/notifications/panel"
+    title="Notification panel"
+    style="min-height: 24rem;"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" label="Panel mode (static + dynamic)" data-escape><toast-msg position="top-end"></toast-msg>
+
+<notification-wc src="/api/notify" toast-new>
+  <article data-id="release-3.0" data-type="update" data-date="2026-04-10">
+    <h3>v3.0 Released</h3>
+    <p>New notification system.</p>
+    <a href="/changelog#v3">Read more</a>
+  </article>
+
+  <article data-id="maintenance" data-type="alert" data-date="2026-04-12">
+    <h3>Scheduled Maintenance</h3>
+    <p>Brief downtime Sunday 2am-4am UTC.</p>
+  </article>
+</notification-wc></code-block>
+
+  <p>Read state is persisted under VBStore namespace <code>notifications</code>, key <code>read-ids</code>. Override the namespace per instance with <code>storage-key="…"</code>.</p>
+
+  <h3>Dynamic feed shape</h3>
+  <p>The <code>src</code> attribute accepts an absolute URL (<code>/api/notify</code> or <code>https://&hellip;</code>) or a <a href="/docs/elements/web-components/vb-service/"><code>VBService</code></a> role name. The endpoint must return either an array or an object with a <code>notifications</code> array. Each entry:</p>
+
+  <code-block language="json" label="Notification entry" data-escape>{
+  "id": "release-3.0",
+  "type": "update",
+  "title": "v3.0 Released",
+  "body": "New notification system.",
+  "url": "/changelog#v3",
+  "date": "2026-04-10T00:00:00Z",
+  "dismissed": false
+}</code-block>
+
+  <p>Six recognized <code>type</code> values pick the row icon: <code>update</code> (package), <code>alert</code> (alert-triangle), <code>watch</code> (eye), <code>system</code> (settings), <code>message</code> (mail), <code>stewardship</code> (shield).</p>
+
+  <h3>Polling</h3>
+  <p>Set <code>poll</code> in milliseconds to re-fetch on an interval (e.g. <code>poll="300000"</code> for every 5 minutes). The component runs <code>setInterval</code>, cleared automatically when the element disconnects.</p>
+
+  <h3>Toast on new</h3>
+  <p>With <code>toast-new</code> set, every never-before-seen entry on a non-initial fetch fires a toast on the nearest <code>&lt;toast-msg&gt;</code>. The first fetch is silent so the page does not light up on every reload.</p>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Modes</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>mode</code></td><td>both</td><td><code>banner</code> or <code>panel</code> (default)</td></tr>
+      <tr><td><code>persist</code></td><td>banner</td><td>VBStore key for dismiss state</td></tr>
+      <tr><td><code>variant</code></td><td>banner</td><td><code>info</code>, <code>success</code>, <code>warning</code>, <code>error</code></td></tr>
+      <tr><td><code>position</code></td><td>banner</td><td><code>top</code> (default) or <code>bottom</code></td></tr>
+      <tr><td><code>expires</code></td><td>banner</td><td>Days until the banner re-shows after dismiss</td></tr>
+      <tr><td><code>src</code></td><td>panel</td><td>URL or VBService role for dynamic notifications</td></tr>
+      <tr><td><code>poll</code></td><td>panel</td><td>Polling interval (ms)</td></tr>
+      <tr><td><code>toast-new</code></td><td>panel</td><td>Fire a toast on each new dynamic notification</td></tr>
+      <tr><td><code>storage-key</code></td><td>panel</td><td>VBStore namespace for read-state (default <code>notifications</code>)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Event</th><th>Detail</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>notification-wc:new</code></td><td><code>{ notification }</code></td><td>A previously-unseen entry arrived in a dynamic fetch</td></tr>
+      <tr><td><code>notification-wc:read</code></td><td><code>{ id }</code></td><td>An entry was marked read</td></tr>
+      <tr><td><code>notification-wc:dismiss</code></td><td><code>{ id }</code></td><td>Banner was dismissed</td></tr>
+      <tr><td><code>notification-wc:open</code></td><td>&mdash;</td><td>Panel drawer opened</td></tr>
+      <tr><td><code>notification-wc:close</code></td><td>&mdash;</td><td>Panel drawer closed</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The bell trigger gets <code>aria-haspopup="dialog"</code> and tracks its open state with <code>aria-expanded</code>; the drawer carries <code>role="dialog" aria-label="Notifications"</code>.</li>
+    <li>Outside-click and <kbd>Esc</kbd> both close the drawer; focus returns to the trigger on Esc.</li>
+    <li>Static <code>&lt;article&gt;</code> children remain in the light DOM &mdash; screen readers can navigate them by heading even when the panel is closed.</li>
+    <li>The unread count is announced when present (a numeric badge inside the trigger button).</li>
+    <li>Banner dismiss respects <code>prefers-reduced-motion</code> &mdash; no entry/exit animation.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/toast/"><code>&lt;toast-msg&gt;</code></a> &mdash; toast container used by <code>toast-new</code></li>
+    <li><a href="/docs/elements/web-components/consent-banner/"><code>&lt;consent-banner&gt;</code></a> &mdash; one-per-page consent dialog (different from a notification banner)</li>
+    <li><a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> &mdash; the trigger+panel pattern this component is modeled on</li>
+  </ul>
+</section>
