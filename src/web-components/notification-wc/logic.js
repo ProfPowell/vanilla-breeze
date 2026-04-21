@@ -489,9 +489,11 @@ class NotificationWc extends VBElement {
     const src = this.getAttribute('src');
     if (!src) return;
     let payload;
+    let status = 0;
     try {
       if (src.startsWith('http') || src.startsWith('/')) {
         const response = await fetch(src, { headers: { accept: 'application/json' } });
+        status = response.status;
         if (!response.ok) throw new Error(`${response.status}`);
         payload = await response.json();
       } else {
@@ -499,6 +501,11 @@ class NotificationWc extends VBElement {
         payload = await svc.get('/');
       }
     } catch (err) {
+      // 404 / 503 are expected when no /go/* backend is running (e.g. on
+      // local dev or before KV is provisioned). Static fallback children
+      // already render in the panel — no need to spam the console.
+      const errStatus = err instanceof VBServiceError ? err.status : status;
+      if (errStatus === 404 || errStatus === 503) return;
       const label = err instanceof VBServiceError ? `${err.status}` : String(err);
       console.warn('[notification-wc] failed to fetch', src, label);
       return;
