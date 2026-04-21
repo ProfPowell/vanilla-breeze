@@ -8,7 +8,7 @@ in the contract docs verbatim.
 |-----------|---------|--------|
 | [`dev-stub/`](./dev-stub/) | Single-file Node.js script with in-memory storage. Develop against it locally. | shipped |
 | [`cloudflare/`](./cloudflare/) | One Cloudflare Worker, single KV namespace, optional Resend transport for email. Deploy with `wrangler deploy`. | shipped |
-| `express/` | Express middleware — one router per service, pluggable storage, Nodemailer for email. | bead `vanilla-breeze-v1fl` |
+| [`express/`](./express/) | One Express app, four routers, pluggable storage adapter (in-memory default, Postgres example), optional Nodemailer SMTP transport. `npm start`. | shipped |
 
 These are not the only ways to implement the contracts — they are
 starter kits. A backend in any language that respects the JSON shapes
