@@ -1,0 +1,128 @@
+---
+layout: guide
+title: "/go/ Convention"
+description: "VB's reserved URL namespace for service relay endpoints, GoodURL link facades, and shortlinks. One indirection layer between components and third-party services."
+guideGroup: Concepts
+currentPath: /docs/concepts/go-convention/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">/go/ Convention</span></li>
+  </ol>
+</nav>
+
+<h1>/go/ Convention</h1>
+<p class="lead">A single URL namespace on Vanilla Breeze sites for service relay endpoints, link facades, and shortlinks. The convention lets components stay decoupled from the concrete service behind each endpoint.</p>
+
+<section>
+  <h2>The lock-in problem</h2>
+  <p>Modern web development couples components directly to third-party services. Changing email providers means hunting through every <code>fetch('https://api.sendgrid.com/...')</code> call in your code. Swapping search backends means touching every component that hits Algolia. The same is true for analytics, AI, payments, maps, fonts &mdash; the list keeps growing.</p>
+  <p>The <code>/go/</code> convention introduces one indirection layer. Components call a stable first-party URL; the developer points that URL at whichever provider they want, server-side. Swap the implementation, leave the components untouched.</p>
+  <code-block language="text" label="Indirection at a glance" data-escape>Component  &rarr;  VBService('email')  &rarr;  /go/email  &rarr;  [your worker]  &rarr;  Sendgrid | Postmark | SES | self-hosted</code-block>
+</section>
+
+<section>
+  <h2>Reserved service names</h2>
+  <p>These slugs are reserved for VB service endpoints. They <strong>must not</strong> be used as GoodURL curated link slugs or as shortlink keywords.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Path</th><th>Service</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>/go/notify</code></td><td>Notifications</td><td>Push/poll notification delivery</td></tr>
+      <tr><td><code>/go/email</code></td><td>Email</td><td>Transactional email (contact forms, watch alerts, GoodURL digests)</td></tr>
+      <tr><td><code>/go/feed</code></td><td>Content Feed</td><td>Changelog, what&rsquo;s new, release notes (JSON format)</td></tr>
+      <tr><td><code>/go/newsletter</code></td><td>Newsletter</td><td>Newsletter subscription management</td></tr>
+      <tr><td><code>/go/search</code></td><td>Search</td><td>Site search relay (Algolia, Meilisearch, Pagefind, etc.)</td></tr>
+      <tr><td><code>/go/ai</code></td><td>AI/LLM</td><td>AI chat relay (keeps API keys server-side)</td></tr>
+      <tr><td><code>/go/chat</code></td><td>Chat</td><td>Live chat relay (Intercom, Crisp, custom)</td></tr>
+      <tr><td><code>/go/webhook</code></td><td>Webhooks</td><td>Incoming webhook receiver</td></tr>
+      <tr><td><code>/go/auth</code></td><td>Authentication</td><td>OAuth/session management relay</td></tr>
+      <tr><td><code>/go/analytics</code></td><td>Analytics</td><td>First-party analytics endpoint</td></tr>
+      <tr><td><code>/go/storage</code></td><td>Storage</td><td>File upload/asset management relay</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Other reserved paths</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Path</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>/rss</code></td><td>RSS/Atom feed (root-level, not under <code>/go/</code>)</td></tr>
+      <tr><td><code>/p/{id}</code></td><td>GoodURL permalink system &mdash; permanent page identifiers</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Routing priority</h2>
+  <p>When a request arrives at <code>/go/{slug}</code>, the router resolves in this order:</p>
+  <ol>
+    <li><strong>Reserved service name?</strong> &mdash; route to the service handler (returns JSON)</li>
+    <li><strong>GoodURL link facade?</strong> &mdash; 301 redirect to destination URL (from KV registry)</li>
+    <li><strong>Shortlink?</strong> &mdash; 301 redirect to target</li>
+    <li><strong>None of the above?</strong> &mdash; 404</li>
+  </ol>
+  <p>Reserved names always win. The reserved list is a small, finite set; checking it first is fast. Service endpoints respond with <code>application/json</code> on a 200; facades respond with a 301 redirect &mdash; same namespace, different response shape based on the slug.</p>
+</section>
+
+<section>
+  <h2>Pairing with VBService</h2>
+  <p>The client side of the convention is <a href="/docs/elements/web-components/notification-wc/">VBService</a>. Components instantiate by role name; <code>VBService.resolve()</code> maps the role to a URL, defaulting to <code>/go/{role}</code>.</p>
+  <code-block language="js" label="Default resolution" data-escape>import { VBService } from './lib/vb-service.js';
+
+const notify = new VBService('notify');
+await notify.get('/messages');
+//   GET /go/notify/messages
+//   ─── because baseUrl defaults to '/go' and the role is 'notify'
+
+VBService.resolve('email');   // '/go/email'
+VBService.resolve('search');  // '/go/search'</code-block>
+
+  <p>Two override hooks. <code>baseUrl</code> moves every service under a different prefix:</p>
+  <code-block language="js" label="Move every service to /api/" data-escape>VBService.configure({ baseUrl: '/api' });
+VBService.resolve('email');  // '/api/email'</code-block>
+
+  <p><code>services</code> overrides individual roles &mdash; useful when one service points at a third-party host directly:</p>
+  <code-block language="js" label="Per-service override" data-escape>VBService.configure({
+  services: {
+    ai: 'https://api.openai.com/v1',
+  },
+});
+VBService.resolve('ai');     // 'https://api.openai.com/v1'
+VBService.resolve('email');  // '/go/email'  (still default)</code-block>
+</section>
+
+<section>
+  <h2>Why /go/?</h2>
+  <p><code>/go/</code> is short, memorable, and verb-like &mdash; &ldquo;go do this thing for me.&rdquo; It doubles as the home for outbound link management (GoodURL facades) and shortlinks, so a single namespace covers services, facades, and redirects without needing parallel prefixes. It won&rsquo;t collide with content the way <code>/api/</code> can on sites that already serve an API, or the way <code>/services/</code> can on sites that have an org page. Go-links at Google, Slack, and many organizations set the precedent.</p>
+</section>
+
+<section>
+  <h2>Developer responsibilities</h2>
+  <p>Vanilla Breeze ships the convention, the client (<code>VBService</code>), and JSON contracts. The developer ships whatever lives behind each <code>/go/</code> endpoint &mdash; a Cloudflare Worker, an Express route, a Lambda, a static file. VB stays agnostic about the backend on purpose.</p>
+  <ul>
+    <li>Pick a backend per service (or share one).</li>
+    <li>Implement to the contract for that role (see Service Contracts &mdash; coming soon as part of the April-13 plan).</li>
+    <li>Override <code>VBService.configure({ services })</code> when one role lives somewhere other than your own <code>/go/</code> prefix.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <layout-grid data-layout-min="220px" data-layout-gap="m">
+    <a href="/docs/elements/web-components/notification-wc/" class="section-card">
+      <h3>notification-wc</h3>
+      <p>Reads <code>/go/notify</code> via VBService for dynamic notifications and the panel-mode unread badge.</p>
+    </a>
+    <a href="/docs/concepts/architecture-decisions/" class="section-card">
+      <h3>Architecture Decisions</h3>
+      <p>Other architectural choices and the failure modes they prevent.</p>
+    </a>
+  </layout-grid>
+</section>
