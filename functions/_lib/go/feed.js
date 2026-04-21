@@ -1,11 +1,13 @@
 /**
  * /go/feed — read-only changelog/what's-new entries.
  *
- * Two storage modes:
- *  1. KV: write entries with `feed:{id}` keys; this Worker reads them.
- *  2. Static: bundle a feed.json into the Worker via a build step and
- *     read it at the top of the file. (Not done here — KV is the path
- *     this starter implements.)
+ * Two storage layers:
+ *  1. KV (preferred): write entries with `feed:{id}` keys; this handler
+ *     reads them when the index is non-empty.
+ *  2. Bundled fallback: scripts/build-feed.js parses CHANGELOG.md and
+ *     emits feed-data.js (an ESM module). When KV is empty (or never
+ *     provisioned) we serve from the bundle so /go/feed is responsive
+ *     on day one without a separate KV upload step.
  *
  * Storage layout (in env.VB_KV):
  *   feed:{id}        Entry record
@@ -13,6 +15,7 @@
  */
 
 import { json } from './shared.js';
+import bundledFeed from './feed-data.js';
 
 const FEED_INDEX = 'index:feed';
 
@@ -21,9 +24,14 @@ export async function getFeed(request, env) {
   const since = url.searchParams.get('since');
   const limit = Math.max(1, Math.min(200, Number(url.searchParams.get('limit') ?? 20)));
 
-  const ids = (await env.VB_KV.get(FEED_INDEX, 'json')) || [];
-  const records = await Promise.all(ids.map(id => env.VB_KV.get(`feed:${id}`, 'json')));
-  let items = records.filter(Boolean);
+  const ids = env?.VB_KV ? (await env.VB_KV.get(FEED_INDEX, 'json')) || [] : [];
+  let items;
+  if (ids.length === 0) {
+    items = Array.isArray(bundledFeed?.items) ? [...bundledFeed.items] : [];
+  } else {
+    const records = await Promise.all(ids.map(id => env.VB_KV.get(`feed:${id}`, 'json')));
+    items = records.filter(Boolean);
+  }
 
   if (since) {
     const cutoff = Date.parse(since);
