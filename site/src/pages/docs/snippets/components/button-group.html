@@ -1,0 +1,158 @@
+---
+layout: docs
+title: "Button Group Snippet"
+description: "Discoverability alias for grouped buttons. VB ships three patterns — menu.toolbar, menu.pills, and layout-cluster — plus an aria-pressed toggle-group recipe."
+currentSection: explore
+currentPath: /docs/snippets/components/button-group/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/docs/snippets/">Snippets</a></li>
+      <li><span aria-current="page">Button Group</span></li>
+    </ol>
+  </nav>
+
+  <h1>Button Group</h1>
+  <p class="lead">A &ldquo;button group&rdquo; in Vanilla Breeze is not a new component &mdash; it is whichever of <code>menu.toolbar</code>, <code>menu.pills</code>, or <code>layout-cluster</code> fits the job. This page is the signpost.</p>
+
+  <section>
+    <h2>Pick by intent</h2>
+    <layout-text>
+      <p>Before reaching for a custom element, match the interaction to the pattern already shipped:</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>What you need</th>
+          <th>Use</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Action bar in a panel or card header (bold, copy, link, &hellip;)</td>
+          <td><a href="/docs/elements/native/menu/"><code>menu.toolbar</code></a></td>
+          <td>Groups icon/text buttons with a rounded track, single focus-ring style, and <code>role="toolbar"</code> via the native <code>&lt;menu&gt;</code> element.</td>
+        </tr>
+        <tr>
+          <td>Filter or category chips (&ldquo;All&rdquo;, &ldquo;Open&rdquo;, &ldquo;Closed&rdquo;)</td>
+          <td><a href="/docs/elements/native/menu/"><code>menu.pills</code></a></td>
+          <td>Pill-shaped buttons with chip spacing. Pair with <code>aria-pressed</code> for sticky selections.</td>
+        </tr>
+        <tr>
+          <td>Form or dialog footer buttons (Cancel / Save)</td>
+          <td><a href="/docs/elements/custom-elements/layout-cluster/"><code>&lt;layout-cluster&gt;</code></a></td>
+          <td>Wrapping flex row with consistent gap and end-justified alignment. Not semantically a toolbar.</td>
+        </tr>
+        <tr>
+          <td>Mutually exclusive options with radio semantics</td>
+          <td><a href="/docs/attributes/data-segmented/"><code>data-segmented</code></a></td>
+          <td>CSS-only segmented control over native radio inputs. Proper form submission and arrow-key nav.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Toolbar Group</h2>
+    <layout-text>
+      <p>Use <code>menu.toolbar</code> for grouped action buttons. The native <code>&lt;menu&gt;</code> element already means &ldquo;group of commands,&rdquo; so you get the right semantics without extra roles.</p>
+    </layout-text>
+
+    <code-block language="html" label="Toolbar group" data-escape><menu class="toolbar" aria-label="Formatting">
+  <li><button type="button" aria-label="Bold"><icon-wc name="bold"></icon-wc></button></li>
+  <li><button type="button" aria-label="Italic"><icon-wc name="italic"></icon-wc></button></li>
+  <li><button type="button" aria-label="Underline"><icon-wc name="underline"></icon-wc></button></li>
+  <li role="separator"></li>
+  <li><button type="button" aria-label="Insert link"><icon-wc name="link"></icon-wc></button></li>
+</menu></code-block>
+  </section>
+
+  <section>
+    <h2>Toggle Group (aria-pressed)</h2>
+    <layout-text>
+      <p>For a sticky multi-select toolbar &mdash; where several options can be on at once &mdash; use <code>aria-pressed</code> on each button. The attribute exposes the pressed state to assistive tech and lets you style both states with a single rule: <code>button[aria-pressed="true"]</code>.</p>
+      <p>For <strong>mutually exclusive</strong> selection (one must be on, all others off), use <a href="/docs/attributes/data-segmented/"><code>data-segmented</code></a> over native radio inputs instead &mdash; that is what radios are for.</p>
+    </layout-text>
+
+    <code-block language="html" label="Multi-select toggle group" data-escape><menu class="toolbar" aria-label="Text alignment">
+  <li><button type="button" aria-pressed="true" aria-label="Bold"><icon-wc name="bold"></icon-wc></button></li>
+  <li><button type="button" aria-pressed="false" aria-label="Italic"><icon-wc name="italic"></icon-wc></button></li>
+  <li><button type="button" aria-pressed="false" aria-label="Underline"><icon-wc name="underline"></icon-wc></button></li>
+</menu>
+
+<script>
+  document.querySelectorAll('menu.toolbar button[aria-pressed]').forEach(btn =&gt; {
+    btn.addEventListener('click', () =&gt; {
+      btn.setAttribute('aria-pressed', btn.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    });
+  });
+</script></code-block>
+
+    <layout-text>
+      <p><strong>Styling pressed state.</strong> Add this alongside your toolbar CSS:</p>
+    </layout-text>
+    <code-block language="css" label="aria-pressed visual state" data-escape>menu.toolbar button[aria-pressed="true"] {
+  background: var(--color-surface-active);
+  color: var(--color-text-strong);
+  box-shadow: inset 0 1px 2px oklch(0% 0 0 / 0.1);
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Pill Group</h2>
+    <layout-text>
+      <p>For rounded chip-style groups &mdash; filters, tag selectors, view switchers &mdash; use <code>menu.pills</code>. Same semantics as the toolbar, different shape.</p>
+    </layout-text>
+
+    <code-block language="html" label="Pill group" data-escape><menu class="pills" aria-label="Status filter">
+  <li><button type="button" aria-pressed="true">All</button></li>
+  <li><button type="button" aria-pressed="false">Open</button></li>
+  <li><button type="button" aria-pressed="false">Closed</button></li>
+</menu></code-block>
+  </section>
+
+  <section>
+    <h2>Footer Buttons</h2>
+    <layout-text>
+      <p>For modal/dialog/form footers, reach for <code>&lt;layout-cluster&gt;</code>. It is not a toolbar &mdash; just a wrapping flex row with consistent gap and end-justified alignment.</p>
+    </layout-text>
+
+    <code-block language="html" label="Dialog footer cluster" data-escape><footer>
+  <layout-cluster data-layout-justify="flex-end" data-layout-gap="s">
+    <button type="button" class="secondary">Cancel</button>
+    <button type="submit" class="primary">Save</button>
+  </layout-cluster>
+</footer></code-block>
+  </section>
+
+  <section>
+    <h2>When Not to Use a Menu-Based Group</h2>
+    <layout-text>
+      <ul>
+        <li><strong>Exclusive selection</strong> belongs in radio inputs. Use <a href="/docs/attributes/data-segmented/"><code>data-segmented</code></a> for the segmented-control look.</li>
+        <li><strong>A dropdown of actions</strong> (primary + overflow) is a <a href="/docs/snippets/components/dropdown-menu/">dropdown menu</a>, not a button group.</li>
+        <li><strong>Connected/welded buttons</strong> (no gaps, shared border) are not supported as a first-class variant. If you genuinely need them, add a local CSS tweak &mdash; do not create a new element.</li>
+      </ul>
+    </layout-text>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <layout-grid data-layout-min="200px" data-layout-gap="m">
+      <a href="/docs/elements/native/menu/" class="section-card">
+        <h3>menu Element</h3>
+        <p>Full reference for <code>menu.toolbar</code>, <code>.pills</code>, <code>.icons</code>, and <code>.vertical</code>.</p>
+      </a>
+      <a href="/docs/attributes/data-segmented/" class="section-card">
+        <h3>data-segmented</h3>
+        <p>Segmented control over native radios for mutually-exclusive selection.</p>
+      </a>
+      <a href="/docs/snippets/components/dropdown-menu/" class="section-card">
+        <h3>Dropdown Menu</h3>
+        <p>Overflow or secondary actions behind a trigger.</p>
+      </a>
+    </layout-grid>
+  </section>

@@ -20,7 +20,7 @@ crumbLabel: Native Elements
       <li>Breadcrumb navigation</li>
       <li>Table of contents</li>
       <li>Pagination links</li>
-      <li>Hierarchical tree navigation for documentation or file browsers</li>
+      <li>Hierarchical disclosure navigation for documentation sidebars (see <code>.tree</code> below) &mdash; <strong>not</strong> application tree widgets</li>
     </ul>
     <p>Not all groups of links need to be in a nav element. Reserve nav for major navigation blocks. Use <code>aria-label</code> or <code>aria-labelledby</code> to distinguish multiple nav elements.</p>
   </section>
@@ -185,8 +185,12 @@ crumbLabel: Native Elements
   </ul>
 </nav></code-block>
 
-    <h3>.tree</h3>
-    <p>Hierarchical tree navigation using <code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code> for collapsible sections. Uses +/- indicators for expand/collapse state.</p>
+    <h3>.tree (disclosure tree navigation)</h3>
+    <p>Hierarchical &ldquo;tree-style&rdquo; navigation using <code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code> for collapsible sections. Uses +/- indicators for expand/collapse state.</p>
+    <aside class="note" aria-label="Disclosure vs ARIA tree">
+      <p><strong>This is disclosure navigation, not an ARIA tree widget.</strong> <code>nav.tree</code> deliberately omits <code>role="tree"</code>, <code>role="treeitem"</code>, and roving <code>tabindex</code>. The <a href="https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/">WAI&mdash;ARIA APG</a> recommends disclosure over <code>tree</code> for site navigation &mdash; <code>tree</code> is a heavier widget contract (arrow-key traversal, Home/End, single focusable node, typeahead) that typical sidebars do not need.</p>
+      <p>For application-style trees &mdash; file explorers, IDE sidebars, permission editors, nested selectable datasets &mdash; use a dedicated widget with the full <code>role="tree"</code> contract. <a href="/docs/elements/web-components/site-map-wc/"><code>&lt;site-map-wc&gt;</code></a> is VB&rsquo;s example of that pattern; build a separate <code>tree-view</code> component only when you need that behavior.</p>
+    </aside>
     <browser-window src="/docs/snippets/demos/nav-tree.html" url="https://vanilla-breeze.dev/nav/tree" title="Tree navigation" shadow></browser-window>
     <code-block language="html" label="Tree navigation" data-escape><nav class="tree" aria-label="Documentation">
   <details open>
@@ -294,7 +298,7 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>.tree</code></td>
-          <td>Hierarchical tree navigation using <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code>; supports <code>data-density</code></td>
+          <td>Hierarchical disclosure navigation using <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code>; supports <code>data-density</code>. <em>Not</em> an ARIA tree widget.</td>
         </tr>
         <tr>
           <td><code>.bottom</code></td>

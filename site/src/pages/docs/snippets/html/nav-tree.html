@@ -1,7 +1,7 @@
 ---
 layout: docs
-title: "Tree Navigation Snippet"
-description: "Collapsible tree navigation using native details/summary elements. Works without JavaScript."
+title: "Disclosure Tree Navigation Snippet"
+description: "Collapsible navigation using native details/summary elements. Progressive-enhancement pattern — NOT an ARIA tree widget."
 currentSection: explore
 currentPath: /docs/snippets/html/nav-tree/
 ---
@@ -9,26 +9,31 @@ currentPath: /docs/snippets/html/nav-tree/
 <nav class="breadcrumb" aria-label="Breadcrumb">
     <ol>
       <li><a href="/docs/snippets/">Snippets</a></li>
-      <li><span aria-current="page">Tree Navigation</span></li>
+      <li><span aria-current="page">Disclosure Tree Navigation</span></li>
     </ol>
   </nav>
 
-  <h1>Tree Navigation</h1>
-  <p class="lead">Collapsible tree navigation using native details/summary elements. Works without JavaScript.</p>
+  <h1>Disclosure Tree Navigation</h1>
+  <p class="lead">Collapsible &ldquo;tree-style&rdquo; navigation using native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code>. Works without JavaScript. <strong>Not</strong> an ARIA tree widget.</p>
 
   <section>
     <h2>Overview</h2>
     <layout-text>
-      <p>This pattern creates a hierarchical navigation menu with collapsible sections. It uses native HTML5 <code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code> elements for the expand/collapse functionality, requiring no JavaScript.</p>
+      <p>This pattern creates a hierarchical navigation menu with collapsible sections, using native HTML5 <code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code> for the expand/collapse behavior. No JavaScript required.</p>
       <p><strong>Key features:</strong></p>
       <ul>
-        <li>Progressive enhancement - works without JavaScript</li>
-        <li>Native keyboard accessibility</li>
+        <li>Progressive enhancement &mdash; works without JavaScript</li>
+        <li>Native keyboard accessibility (<kbd>Tab</kbd>, <kbd>Enter</kbd>, <kbd>Space</kbd>)</li>
         <li>Supports unlimited nesting depth</li>
         <li>Active state via <code>aria-current="page"</code></li>
         <li>Compact density option via <code>data-layout-density</code></li>
       </ul>
     </layout-text>
+
+    <aside class="note" aria-label="Disclosure vs ARIA tree">
+      <p><strong>Disclosure, not <code>role="tree"</code>.</strong> This snippet is VB&rsquo;s answer for docs sidebars, section outlines, and other site navigation with nested groups. The WAI&mdash;ARIA APG explicitly recommends <a href="https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/">the disclosure pattern</a> over <code>role="tree"</code> for this use case &mdash; the tree widget&rsquo;s roving <code>tabindex</code>, arrow-key traversal, and Home/End semantics are not what sidebar users expect.</p>
+      <p>If you need an application-style tree &mdash; a file explorer, an IDE sidebar, a permission editor, or any other selectable nested dataset &mdash; that is a different component with the full <code>role="tree"</code> contract. See <a href="/docs/elements/web-components/site-map-wc/"><code>&lt;site-map-wc&gt;</code></a> for VB&rsquo;s example of that pattern, and build a separate <code>tree-view</code> web component rather than retrofitting this snippet.</p>
+    </aside>
   </section>
 
   <section>
@@ -144,6 +149,7 @@ currentPath: /docs/snippets/html/nav-tree/
         <li><strong>Active state:</strong> Use <code>aria-current="page"</code> on the link representing the current page</li>
         <li><strong>Open sections:</strong> Add the <code>open</code> attribute to <code>&lt;details&gt;</code> elements that should be expanded by default</li>
         <li><strong>Styling:</strong> The <code>.tree</code> class applies Vanilla Breeze navigation styles automatically</li>
+        <li><strong>Do not add <code>role="tree"</code></strong> to <code>nav.tree</code> or its summaries. Partial ARIA is worse than none &mdash; it promises a widget contract this pattern does not implement.</li>
       </ul>
     </layout-text>
   </section>
