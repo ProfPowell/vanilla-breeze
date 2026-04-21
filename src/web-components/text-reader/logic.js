@@ -479,8 +479,17 @@ class TextReader extends VBElement {
   #speak(fromIndex) {
     if (!this.#fullText) return;
 
-    const text = fromIndex > 0 ? this.#fullText.slice(fromIndex) : this.#fullText;
-    if (!text.trim()) return;
+    const rawText = fromIndex > 0 ? this.#fullText.slice(fromIndex) : this.#fullText;
+    if (!rawText.trim()) return;
+
+    // Browser TTS engines silently halt on literal `<` — the character is
+    // reserved as the start of an SSML tag. If a paragraph contains text
+    // extracted from an inline <code> element (e.g. "<geo-map>"), speech
+    // stops after the first word before the `<` and onend fires with no
+    // error. Replace angle brackets with spaces so playback continues;
+    // same-length substitution preserves charIndex alignment so the DOM
+    // highlight range math stays correct.
+    const text = rawText.replace(/[<>]/g, ' ');
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = this.#clampSpeed(parseFloat(this.#speedInput?.value ?? this.getAttribute('speed') ?? '1') || 1);
@@ -525,6 +534,11 @@ class TextReader extends VBElement {
     utterance.onerror = (e) => {
       // "interrupted" fires on cancel — not a real error
       if (e.error === 'interrupted' || e.error === 'canceled') return;
+      // Surface real errors to the console so silent-halt regressions
+      // (e.g. unescaped angle brackets, engine-rejected characters) are
+      // visible during development instead of appearing as mysterious
+      // early end-of-speech.
+      console.warn('<text-reader>: SpeechSynthesisUtterance error:', e.error);
       this.#cleanup();
       this.#emit('text-reader:error', { error: e.error });
     };
