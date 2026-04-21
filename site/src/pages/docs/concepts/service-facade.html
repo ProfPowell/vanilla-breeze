@@ -1,0 +1,187 @@
+---
+layout: guide
+title: "Server-Side Service Facade"
+description: "A first-party endpoint that proxies a third-party service. Keep external dependencies behind your own API surface for privacy, caching, swappability, and rate limiting."
+guideGroup: Concepts
+currentPath: /docs/concepts/service-facade/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Server-Side Service Facade</span></li>
+  </ol>
+</nav>
+
+<h1>Server-Side Service Facade</h1>
+<p class="lead">A first-party endpoint that proxies a third-party service. Clients talk to your origin; your origin talks to the provider. One indirection layer yields privacy, caching, swappability, and rate limiting.</p>
+
+<section>
+  <h2>The problem with direct third-party calls</h2>
+  <p>When a browser fetches from <code>tile.openstreetmap.org</code>, <code>fonts.googleapis.com</code>, or <code>api.sendgrid.com</code> directly, four concerns travel with it:</p>
+  <ul>
+    <li><strong>Privacy.</strong> The user&rsquo;s IP, referrer, and cookies go straight to the third party. Tile providers, font CDNs, and analytics services all get a full view of your audience.</li>
+    <li><strong>Lock-in.</strong> Hostnames and keys are baked into client code. Switching providers means touching every component that calls them.</li>
+    <li><strong>No caching control.</strong> Your cache policy is whatever the upstream sets. You can&rsquo;t cache a slow endpoint aggressively, or bust a stale one.</li>
+    <li><strong>No rate limiting.</strong> A misbehaving component (or an abusive user) hits the upstream directly. No per-user, per-page, or global budget.</li>
+  </ul>
+  <p>These are not individually severe, but they compound. GDPR scrutiny, a provider outage, or a pricing change turns a one-line <code>fetch()</code> into a migration project.</p>
+</section>
+
+<section>
+  <h2>The pattern</h2>
+  <p>Route every third-party request through a first-party endpoint:</p>
+  <code-block language="text" label="One indirection layer" data-escape>Client  &rarr;  /api/tiles/{z}/{x}/{y}  &rarr;  your edge  &rarr;  tile.openstreetmap.org/{z}/{x}/{y}</code-block>
+  <p>The client never contacts the third party. Your edge fetches upstream, caches the response, and serves it as a first-party resource.</p>
+
+  <h3>Characteristics</h3>
+  <ul>
+    <li><strong>Same-origin.</strong> No CORS, no third-party cookies, no mixed-content issues.</li>
+    <li><strong>Swappable backend.</strong> Change provider server-side; the frontend stays the same.</li>
+    <li><strong>Cacheable.</strong> Apply your own <code>Cache-Control</code>, edge cache, KV, or R2.</li>
+    <li><strong>Observable.</strong> Log requests, latency, and errors at your proxy layer.</li>
+    <li><strong>Rate-limited.</strong> Enforce fair-use policies before a request reaches upstream.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Direct call vs. service facade</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Concern</th><th>Direct call</th><th>Service facade</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>User privacy</td><td>IP + referrer sent to third party</td><td>Only your server contacts upstream</td></tr>
+      <tr><td>Provider lock-in</td><td>URLs hardcoded in client</td><td>Swap backend transparently</td></tr>
+      <tr><td>Caching</td><td>Upstream headers only</td><td>Your cache policy + edge / KV</td></tr>
+      <tr><td>Rate limiting</td><td>None</td><td>Per-user, per-page, global</td></tr>
+      <tr><td>Offline / SSR</td><td>Client-only</td><td>Pre-fetch, pre-cache server-side</td></tr>
+      <tr><td>Monitoring</td><td>No visibility</td><td>Full request / response logging</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Applications beyond maps</h2>
+  <p>Any third-party asset or service is a candidate:</p>
+  <ul>
+    <li><strong>Icon CDNs.</strong> Proxy sprite sheets; swap Lucide for Heroicons without touching markup.</li>
+    <li><strong>Font services.</strong> Proxy Google Fonts, self-cache, and avoid FOUT on flaky upstreams.</li>
+    <li><strong>Analytics.</strong> A first-party endpoint sidesteps ad blockers and third-party tracking.</li>
+    <li><strong>Payment SDKs.</strong> Proxy tokenization for PCI isolation; the client only sees your origin.</li>
+    <li><strong>Social embeds.</strong> Render server-side; avoid loading tracking scripts into the page.</li>
+    <li><strong>Image CDNs.</strong> Proxy and transform images through your own endpoint.</li>
+    <li><strong>AI / LLM APIs.</strong> Keep keys server-side; rate-limit per user or session.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Relationship to <code>/go/</code></h2>
+  <p>Vanilla Breeze&rsquo;s <a href="/docs/concepts/go-convention/"><code>/go/</code> convention</a> is one disciplined instance of this pattern. Every component that talks to a backend service uses a stable <code>/go/{role}</code> URL; the operator wires that URL to whatever provider currently fits. The broader pattern is the same &mdash; facades in front of third parties &mdash; but <code>/go/</code> is opinionated about naming, reserved roles, and how <a href="/docs/concepts/service-contracts/">service contracts</a> are documented.</p>
+  <p>Think of the facade pattern as the general shape and <code>/go/</code> as the VB-flavoured recipe. You can adopt the shape anywhere; adopt <code>/go/</code> when you want VB&rsquo;s components and tooling to plug in with zero configuration.</p>
+</section>
+
+<section>
+  <h2>Geo-map integration</h2>
+  <p>Future <code>&lt;geo-map&gt;</code> support will expose a <code>tile-url</code> attribute pointing to the first-party proxy:</p>
+  <code-block language="html" label="Current: direct tile provider" data-escape><geo-map lat="40.7484" lng="-73.9857" provider="osm"></geo-map></code-block>
+  <code-block language="html" label="Future: via service facade" data-escape><geo-map lat="40.7484" lng="-73.9857" tile-url="/api/tiles/{z}/{x}/{y}"></geo-map></code-block>
+  <p>The component doesn&rsquo;t care where tiles come from &mdash; it only needs a URL template with <code>{z}</code>, <code>{x}</code>, and <code>{y}</code> placeholders.</p>
+</section>
+
+<section>
+  <h2>Implementation sketch</h2>
+  <p>A minimal Cloudflare Worker fronting OpenStreetMap tiles, with KV as the cache layer:</p>
+
+  <code-block language="js" label="Cloudflare Worker — tile proxy with KV cache" data-escape>export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const match = url.pathname.match(/^\/api\/tiles\/(\d+)\/(\d+)\/(\d+)$/);
+    if (!match) return new Response('Not found', { status: 404 });
+
+    const [, z, x, y] = match;
+    const cacheKey = `tile:${z}:${x}:${y}`;
+
+    // Check KV cache
+    const cached = await env.TILE_CACHE.get(cacheKey, 'arrayBuffer');
+    if (cached) {
+      return new Response(cached, {
+        headers: {
+          'Content-Type': 'image/png',
+          'Cache-Control': 'public, max-age=86400',
+          'X-Cache': 'HIT',
+        },
+      });
+    }
+
+    // Fetch upstream
+    const upstream = await fetch(
+      `https://tile.openstreetmap.org/${z}/${x}/${y}.png`,
+      { headers: { 'User-Agent': 'MyApp/1.0 (contact@example.com)' } }
+    );
+    if (!upstream.ok) {
+      return new Response('Upstream error', { status: 502 });
+    }
+
+    const body = await upstream.arrayBuffer();
+
+    // Cache in KV (24h TTL)
+    await env.TILE_CACHE.put(cacheKey, body, { expirationTtl: 86400 });
+
+    return new Response(body, {
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control': 'public, max-age=86400',
+        'X-Cache': 'MISS',
+      },
+    });
+  },
+};</code-block>
+
+  <p>The same shape works on any edge runtime &mdash; Vercel Edge Functions, Deno Deploy, Netlify Edge, Node behind Caddy. The five moving pieces are:</p>
+  <ol>
+    <li>Parse identifying parameters from the URL.</li>
+    <li>Check a cache layer (KV, R2, Redis, filesystem).</li>
+    <li>Fetch upstream on cache miss.</li>
+    <li>Store the response with an appropriate TTL.</li>
+    <li>Return with first-party headers and cache metadata.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Trade-offs</h2>
+  <ul>
+    <li><strong>Infrastructure.</strong> You need an edge function or origin to run the proxy. For static-only sites, this is a new dependency.</li>
+    <li><strong>Origin bandwidth.</strong> Cache misses pay egress to upstream through your infra.</li>
+    <li><strong>Cache invalidation.</strong> Pick a TTL strategy. OSM tiles update slowly; 24h is fine. API responses may need shorter windows or purge hooks.</li>
+    <li><strong>Upstream policies.</strong> Some providers (OSM tiles, Google Fonts, AI APIs) require a valid <code>User-Agent</code>, attribution, or usage caps. A caching proxy that <em>reduces</em> upstream load is usually welcomed; bulk scraping through your facade is still bulk scraping &mdash; read the <a href="https://operations.osmfoundation.org/policies/tiles/" rel="noopener">tile usage policy</a> or the equivalent before shipping.</li>
+    <li><strong>Cold-start latency.</strong> The first uncached request adds a hop. Mitigate with prefetch, long TTLs, and warming jobs.</li>
+    <li><strong>Cost.</strong> KV / R2 storage and edge invocations have a price. For tiles and icons this is typically pennies; for high-volume API calls, budget it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>When to use this pattern</h2>
+  <p><strong>Use it when:</strong></p>
+  <ul>
+    <li>Privacy matters (GDPR, user expectations, B2B trust).</li>
+    <li>You might switch providers &mdash; or have been bitten by a surprise deprecation.</li>
+    <li>You want caching control beyond what the upstream offers.</li>
+    <li>You need usage monitoring or rate limiting.</li>
+  </ul>
+  <p><strong>Skip it when:</strong></p>
+  <ul>
+    <li>You&rsquo;re prototyping or building an internal tool.</li>
+    <li>The third party is already same-origin (a self-hosted tile server, your own microservice).</li>
+    <li>The service requires client-side auth (OAuth redirect flows) that a proxy would break.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/concepts/go-convention/"><code>/go/</code> Convention</a> &mdash; VB&rsquo;s opinionated take on this pattern with reserved role names.</li>
+    <li><a href="/docs/concepts/service-contracts/">Service Contracts</a> &mdash; the request / response schemas VB facades must satisfy.</li>
+    <li><a href="/docs/concepts/architecture-decisions/">Architecture Decisions</a> &mdash; the broader rationale for first-party indirection in VB.</li>
+  </ul>
+</section>
