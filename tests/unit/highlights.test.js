@@ -21,14 +21,9 @@ function fnv1a(str) {
   return (hash >>> 0).toString(36);
 }
 
-// ---------- Storage key logic (replicated from source) ----------
-
-const STORAGE_PREFIX = 'vb-highlights:';
-
-function resolveStorageKey(datasetValue, pathname) {
-  const suffix = (datasetValue && datasetValue !== '') ? datasetValue : pathname;
-  return STORAGE_PREFIX + suffix;
-}
+// Storage-key derivation is now `(dataset.highlights || location.pathname)`
+// passed straight to VBStore.set('highlights', key, ...). No prefix involved
+// — covered by VBStore's own tests.
 
 // ---------- Envelope validation (replicated from source) ----------
 
@@ -71,28 +66,6 @@ describe('fnv1a', () => {
     const hash = fnv1a('café ☕');
     assert.ok(hash.length > 0);
     assert.equal(hash, fnv1a('café ☕'));
-  });
-});
-
-describe('resolveStorageKey', () => {
-  it('uses pathname as default suffix', () => {
-    const key = resolveStorageKey('', '/docs/article/');
-    assert.equal(key, 'vb-highlights:/docs/article/');
-  });
-
-  it('uses explicit value when provided', () => {
-    const key = resolveStorageKey('my-notes', '/docs/article/');
-    assert.equal(key, 'vb-highlights:my-notes');
-  });
-
-  it('uses pathname when value is empty string', () => {
-    const key = resolveStorageKey('', '/page/');
-    assert.equal(key, 'vb-highlights:/page/');
-  });
-
-  it('handles undefined value (boolean attribute)', () => {
-    const key = resolveStorageKey(undefined, '/page/');
-    assert.equal(key, 'vb-highlights:/page/');
   });
 });
 

@@ -24,8 +24,10 @@
  * </article>
  */
 
+import { VBStore } from '../lib/vb-store.js';
+
 const SELECTOR = '[data-highlights]';
-const STORAGE_PREFIX = 'vb-highlights:';
+const STORAGE_NS = 'highlights';
 const DEFAULT_COLORS = ['yellow', 'green', 'blue', 'pink'];
 const TOOLBAR_GAP = 8;
 const TOOLBAR_EDGE_PADDING = 8;
@@ -448,10 +450,9 @@ class HighlightController {
     this.#element = element;
     this.#readonly = element.hasAttribute('data-highlights-readonly');
 
-    // Storage key
+    // Storage key — VBStore namespace `highlights`, key = explicit suffix or pathname
     const keyVal = element.dataset.highlights;
-    const suffix = (keyVal && keyVal !== '') ? keyVal : location.pathname;
-    this.#storageKey = STORAGE_PREFIX + suffix;
+    this.#storageKey = (keyVal && keyVal !== '') ? keyVal : location.pathname;
 
     // Colors
     const colorAttr = element.dataset.highlightsColors;
@@ -464,8 +465,7 @@ class HighlightController {
       injectSharedSheet(this.#colors);
     }
 
-    // Load persisted highlights
-    this.#load();
+    // Initial render with empty highlights, then async-load and re-render.
     this.#render();
 
     // Set up interaction unless readonly
@@ -478,6 +478,11 @@ class HighlightController {
 
     // Mark as initialized
     element.setAttribute('data-highlights-init', '');
+
+    // Kick off async load — render again once persisted highlights arrive.
+    this.#load().then(() => {
+      if (!this.#destroyed) this.#render();
+    });
   }
 
   get colors() { return [...this.#colors]; }
@@ -697,38 +702,33 @@ class HighlightController {
 
   // ---------- Persistence ----------
 
-  #load() {
-    try {
-      const raw = localStorage.getItem(this.#storageKey);
-      if (!raw) return;
+  async #load() {
+    const data = /** @type {{ version?: number, contentHash?: string, highlights?: Array }|null} */ (
+      await VBStore.get(STORAGE_NS, this.#storageKey)
+    );
+    if (!data || !Array.isArray(data.highlights)) return;
 
-      const data = JSON.parse(raw);
-      if (!data.highlights || !Array.isArray(data.highlights)) return;
-
-      const currentHash = fnv1a(this.#element.textContent);
-      if (data.contentHash && data.contentHash !== currentHash) {
-        this.#highlights = data.highlights.filter(h => {
-          const range = findRangeFromOffsets(this.#element, h.startOffset, h.endOffset);
-          if (!range) return false;
-          const currentText = range.toString().trim();
-          return currentText === h.text;
-        });
-        this.#save();
-      } else {
-        this.#highlights = data.highlights;
-      }
-    } catch { /* corrupt data, start fresh */ }
+    const currentHash = fnv1a(this.#element.textContent);
+    if (data.contentHash && data.contentHash !== currentHash) {
+      this.#highlights = data.highlights.filter(h => {
+        const range = findRangeFromOffsets(this.#element, h.startOffset, h.endOffset);
+        if (!range) return false;
+        const currentText = range.toString().trim();
+        return currentText === h.text;
+      });
+      this.#save();
+    } else {
+      this.#highlights = data.highlights;
+    }
   }
 
   #save() {
-    try {
-      const envelope = {
-        version: 1,
-        contentHash: fnv1a(this.#element.textContent),
-        highlights: this.#highlights,
-      };
-      localStorage.setItem(this.#storageKey, JSON.stringify(envelope));
-    } catch { /* storage full */ }
+    const envelope = {
+      version: 1,
+      contentHash: fnv1a(this.#element.textContent),
+      highlights: this.#highlights,
+    };
+    VBStore.set(STORAGE_NS, this.#storageKey, envelope).catch(() => { /* ignore */ });
   }
 
   // ---------- Rendering ----------

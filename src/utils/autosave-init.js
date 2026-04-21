@@ -14,7 +14,10 @@
  * </form>
  */
 
+import { VBStore } from '../lib/vb-store.js';
+
 const SELECTOR = 'form[data-autosave]';
+const STORAGE_NS = 'autosave';
 const DEBOUNCE_MS = 500;
 const EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -26,7 +29,7 @@ function enhanceForm(form) {
   if (form.hasAttribute('data-autosave-init')) return;
   form.setAttribute('data-autosave-init', '');
 
-  const key = `vb-autosave:${form.dataset.autosave}`;
+  const key = form.dataset.autosave;
   let saveTimer;
 
   /**
@@ -53,62 +56,45 @@ function enhanceForm(form) {
   }
 
   /**
-   * Save form data to localStorage
+   * Save form data through VBStore (timestamp envelope is automatic).
    */
   function save() {
-    const data = collectData();
-    const envelope = { data, timestamp: Date.now() };
-    try {
-      localStorage.setItem(key, JSON.stringify(envelope));
-    } catch {
-      // Storage full or unavailable
-    }
+    VBStore.set(STORAGE_NS, key, collectData()).catch(() => { /* ignore */ });
   }
 
   /**
-   * Restore form data from localStorage
-   * @returns {boolean} Whether data was restored
+   * Restore form data from VBStore (24-hour expiry via maxAge).
+   * @returns {Promise<boolean>} Whether data was restored
    */
-  function restore() {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return false;
+  async function restore() {
+    const data = /** @type {Record<string, string>|null} */ (
+      await VBStore.get(STORAGE_NS, key, { maxAge: EXPIRY_MS })
+    );
+    if (!data) return false;
 
-      const envelope = JSON.parse(raw);
-      if (Date.now() - envelope.timestamp > EXPIRY_MS) {
-        localStorage.removeItem(key);
-        return false;
-      }
-
-      const data = envelope.data;
-      let restored = false;
-
-      for (const [name, value] of Object.entries(data)) {
-        const fields = form.querySelectorAll(`[name="${CSS.escape(name)}"]`);
-        fields.forEach(f => {
-          const field = /** @type {HTMLInputElement} */ (f);
-          if (field.type === 'checkbox') {
-            field.checked = value === 'on';
-          } else if (field.type === 'radio') {
-            field.checked = field.value === value;
-          } else {
-            field.value = value;
-          }
-        });
-        if (fields.length) restored = true;
-      }
-
-      return restored;
-    } catch {
-      return false;
+    let restored = false;
+    for (const [name, value] of Object.entries(data)) {
+      const fields = form.querySelectorAll(`[name="${CSS.escape(name)}"]`);
+      fields.forEach(f => {
+        const field = /** @type {HTMLInputElement} */ (f);
+        if (field.type === 'checkbox') {
+          field.checked = value === 'on';
+        } else if (field.type === 'radio') {
+          field.checked = field.value === value;
+        } else {
+          field.value = value;
+        }
+      });
+      if (fields.length) restored = true;
     }
+    return restored;
   }
 
   /**
-   * Clear saved draft
+   * Clear saved draft (fire-and-forget)
    */
   function clear() {
-    localStorage.removeItem(key);
+    VBStore.remove(STORAGE_NS, key).catch(() => { /* ignore */ });
   }
 
   /**
@@ -124,8 +110,9 @@ function enhanceForm(form) {
     }
   }
 
-  // Restore on init
-  if (restore()) {
+  // Restore on init (async — wires listeners immediately, restores when ready)
+  restore().then((didRestore) => {
+    if (!didRestore) return;
     notifyRestored();
     // Trigger input events so other enhancements (count, grow) update
     Array.from(form.elements).forEach(e => {
@@ -134,7 +121,7 @@ function enhanceForm(form) {
         el.dispatchEvent(new Event('input', { bubbles: true }));
       }
     });
-  }
+  });
 
   // Save on input (debounced)
   form.addEventListener('input', () => {

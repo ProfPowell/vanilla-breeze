@@ -29,6 +29,7 @@
 import { styles } from './styles.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { esc, initials, hashColor, lucideSvg, UX_ICONS } from '../_ux-base.js';
+import { VBStore } from '../../lib/vb-store.js';
 
 /* ── Adapters ──────────────────────────────────────── */
 
@@ -60,20 +61,17 @@ class MemoryAdapter {
 class LocalStorageAdapter {
   #key;
 
-  constructor(key = 'review-surface') {
+  constructor(key = 'default') {
     this.#key = key;
   }
 
-  #read() {
-    try {
-      return JSON.parse(localStorage.getItem(this.#key) || '[]');
-    } catch {
-      return [];
-    }
+  async #read() {
+    const pins = await VBStore.get('reviews', this.#key);
+    return Array.isArray(pins) ? pins : [];
   }
 
-  #write(pins) {
-    localStorage.setItem(this.#key, JSON.stringify(pins));
+  async #write(pins) {
+    await VBStore.set('reviews', this.#key, pins);
   }
 
   async load() {
@@ -82,24 +80,24 @@ class LocalStorageAdapter {
 
   async save(pin) {
     if (!pin.id) pin.id = crypto.randomUUID();
-    const pins = this.#read();
+    const pins = await this.#read();
     pins.push(pin);
-    this.#write(pins);
+    await this.#write(pins);
     return pin;
   }
 
   async update(id, changes) {
-    const pins = this.#read();
+    const pins = await this.#read();
     const idx = pins.findIndex(p => p.id === id);
     if (idx === -1) throw new Error(`Pin ${id} not found`);
     Object.assign(pins[idx], changes);
-    this.#write(pins);
+    await this.#write(pins);
     return pins[idx];
   }
 
   async remove(id) {
-    const pins = this.#read().filter(p => p.id !== id);
-    this.#write(pins);
+    const pins = (await this.#read()).filter(p => p.id !== id);
+    await this.#write(pins);
   }
 }
 
@@ -246,7 +244,7 @@ class ReviewSurface extends HTMLElement {
     const type = this.getAttribute('adapter') || 'memory';
     switch (type) {
       case 'local':
-        this.__adapter = new LocalStorageAdapter(this.getAttribute('storage-key') || 'review-surface');
+        this.__adapter = new LocalStorageAdapter(this.getAttribute('storage-key') || 'default');
         break;
       case 'rest':
         try {

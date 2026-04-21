@@ -8,7 +8,7 @@
  * @attr {number}  position   - Initial split position 0-100 (default: 50)
  * @attr {number}  min        - Minimum panel size % (default: 10)
  * @attr {number}  max        - Maximum panel size % (default: 90)
- * @attr {string}  persist    - localStorage key for position persistence
+ * @attr {string}  persist    - VBStore key suffix for position persistence (vb:layout:split:{key})
  * @attr {boolean} collapsible - Double-click divider to collapse first panel
  *
  * @example
@@ -19,6 +19,7 @@
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { VBStore } from '../../lib/vb-store.js';
 
 class SplitSurface extends VBElement {
   #divider;
@@ -71,7 +72,7 @@ class SplitSurface extends VBElement {
     this.#clearPersist();
   }
 
-  setup() {
+  async setup() {
     // Select panels: exclude any previously-generated divider
     const panels = [...this.children].filter(el => !el.classList.contains('split-divider'));
     if (panels.length < 2) return false;
@@ -83,7 +84,7 @@ class SplitSurface extends VBElement {
     const posAttr = this.getAttribute('position');
     const posVal = Number(posAttr);
     const authored = posAttr !== null && !isNaN(posVal) ? posVal : null;
-    const persisted = this.#readPersist();
+    const persisted = await this.#readPersist();
     const initial = authored ?? persisted ?? 50;
 
     // Create divider
@@ -222,27 +223,23 @@ class SplitSurface extends VBElement {
     }));
   }
 
-  #readPersist() {
+  async #readPersist() {
     const key = this.getAttribute('persist');
     if (!key) return null;
-    try {
-      const val = localStorage.getItem(`split-surface:${key}`);
-      return val !== null ? Number(val) : null;
-    } catch { return null; }
+    const val = await VBStore.get('layout', `split:${key}`);
+    return typeof val === 'number' ? val : null;
   }
 
   #writePersist() {
     const key = this.getAttribute('persist');
     if (!key) return;
-    try {
-      localStorage.setItem(`split-surface:${key}`, String(Math.round(this.#position)));
-    } catch { /* storage full or blocked */ }
+    VBStore.set('layout', `split:${key}`, Math.round(this.#position)).catch(() => { /* ignore */ });
   }
 
   #clearPersist() {
     const key = this.getAttribute('persist');
     if (!key) return;
-    try { localStorage.removeItem(`split-surface:${key}`); } catch {}
+    VBStore.remove('layout', `split:${key}`).catch(() => { /* ignore */ });
   }
 }
 
