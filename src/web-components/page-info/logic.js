@@ -192,18 +192,18 @@ class PageInfo extends VBElement {
           <section>
             <h2 class="page-info-section-heading">History</h2>
             <dl>
-              ${modified ? `<div><dt>Last updated</dt><dd><time datetime="${modified}" data-relative>${modified}</time></dd></div>` : ''}
-              ${version ? `<div><dt>Version</dt><dd>${versionUrl ? `<a href="${versionUrl}">${version}</a>` : version}</dd></div>` : ''}
+              ${modified ? `<dl-item><dt>Last updated</dt><dd><time datetime="${modified}" data-relative>${modified}</time></dd></dl-item>` : ''}
+              ${version ? `<dl-item><dt>Version</dt><dd>${versionUrl ? `<a href="${versionUrl}">${version}</a>` : version}</dd></dl-item>` : ''}
             </dl>
           </section>
           ${provenance ? `
             <section>
               <h2 class="page-info-section-heading">How this was made</h2>
               <dl>
-                <div><dt>Authorship</dt><dd>${provenanceLabel}</dd></div>
-                ${aiTools ? `<div><dt>AI tools used</dt><dd>${aiTools}</dd></div>` : ''}
-                ${humanReview ? `<div><dt>Human review</dt><dd>${humanReview}</dd></div>` : ''}
-                ${license ? `<div><dt>License</dt><dd>${licenseUrl ? `<a href="${licenseUrl}" rel="license">${license}</a>` : license}</dd></div>` : ''}
+                <dl-item><dt>Authorship</dt><dd>${provenanceLabel}</dd></dl-item>
+                ${aiTools ? `<dl-item><dt>AI tools used</dt><dd>${aiTools}</dd></dl-item>` : ''}
+                ${humanReview ? `<dl-item><dt>Human review</dt><dd>${humanReview}</dd></dl-item>` : ''}
+                ${license ? `<dl-item><dt>License</dt><dd>${licenseUrl ? `<a href="${licenseUrl}" rel="license">${license}</a>` : license}</dd></dl-item>` : ''}
               </dl>
             </section>
           ` : ''}
