@@ -2,8 +2,28 @@
 
 watch-wc:not(:defined) { display: none; }
 
+/* Host is a passthrough — the inner <button> participates directly
+   in whatever flex/grid container watch-wc sits in (e.g. <page-tools>). */
 watch-wc {
+  display: contents;
+}
+
+/* Icon variant — compact square button when used standalone.
+   When inside page-tools, page-tools' toolbar normalization wins by
+   source order / equivalent specificity and supplies the geometry. */
+watch-wc[data-variant="icon"] > button {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--size-2xs);
+  aspect-ratio: 1;
+  min-block-size: 0;
+  min-inline-size: 0;
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
 }
 
 /* Button variant — pill with icon + text */
@@ -26,9 +46,9 @@ watch-wc[data-variant="compact"] > button {
   font-size: var(--font-size-xs, 0.75rem);
 }
 
-/* Icon variant inherits the .ghost.icon-only sizing already in core.
-   Add a subtle pressed-state indicator that works across all variants. */
+/* Pressed/active indicator for all variants */
 watch-wc > button[aria-pressed="true"] {
-  color: var(--color-text-strong, var(--color-text));
+  color: var(--color-interactive, var(--color-text-strong, var(--color-text)));
+  border-color: var(--color-interactive);
   background: var(--color-surface-active, var(--color-hover-bg));
 }

@@ -6,7 +6,7 @@
  * lives in src/utils/page-watch-init.js — this component is a
  * one-tag wrapper that authors can use instead of the verbose
  *
- *   <button type="button" data-watch-page class="ghost icon-only"
+ *   <button type="button" data-watch-page class="ghost"
  *           aria-label="Watch this page for updates">
  *     <icon-wc name="eye" size="sm"></icon-wc>
  *   </button>
@@ -70,7 +70,7 @@ class WatchWc extends VBElement {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.setAttribute('data-watch-page', '');
-    btn.className = variant === 'icon' ? 'ghost icon-only' : 'ghost';
+    btn.className = 'ghost';
     btn.setAttribute('aria-label', 'Watch this page for updates');
 
     const iconSize = variant === 'icon' ? 'sm' : 'xs';
