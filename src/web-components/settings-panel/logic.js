@@ -6,7 +6,7 @@ import { VBElement } from '../../lib/vb-element.js';
  *
  * A gear-button-triggered settings panel using <details> accordion sections,
  * <select> dropdowns, and toggle switches. Runs in parallel with theme-picker
- * and shares state through ThemeManager, localStorage, and custom events.
+ * and shares state through ThemeManager, VBStore, and custom events.
  *
  * @example Footer integration (auto-generates gear trigger)
  * <settings-panel></settings-panel>
@@ -23,13 +23,12 @@ import { ThemeManager } from '../../lib/theme-manager.js';
 import { EnvironmentManager } from '../../lib/environment-manager.js';
 import { getVBVersion, getSWStatus, clearSWCache, checkForUpdate } from '../../lib/sw-register.js';
 import { THEME_GROUPS } from '../../lib/theme-data.js';
+import { VBStore } from '../../lib/vb-store.js';
 // SoundManager is lazy-loaded when sounds are enabled
 let _SoundManager = null;
 
-const EXTENSIONS_KEY = 'vb-extensions';
+const SETTINGS_NS = 'settings';
 const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
-const A11Y_THEMES_KEY = 'vb-a11y-themes';
-const STICKY_KEY = 'vb-sticky';
 
 class SettingsPanel extends VBElement {
   /** @type {HTMLElement} */
@@ -38,7 +37,15 @@ class SettingsPanel extends VBElement {
   #panel = /** @type {*} */ (null);
   #isOpen = false;
 
-  setup() {
+  // VBStore-backed state cached for synchronous render reads
+  /** @type {string[]} */
+  #a11yThemes = [];
+  /** @type {{ motionFx: boolean, sounds: boolean }} */
+  #extensions = { ...EXTENSION_DEFAULTS };
+  #stickyOn = false;
+
+  async setup() {
+    await this.#hydrateFromStore();
     this.#render();
     this.#bindEvents();
     this.#syncState();
@@ -49,6 +56,18 @@ class SettingsPanel extends VBElement {
   }
 
   teardown() {}
+
+  /** Pre-load all VBStore-backed state into instance fields so render is sync. */
+  async #hydrateFromStore() {
+    const [a11y, ext, sticky] = await Promise.all([
+      VBStore.get(SETTINGS_NS, 'a11y'),
+      VBStore.get(SETTINGS_NS, 'extensions'),
+      VBStore.get(SETTINGS_NS, 'sticky'),
+    ]);
+    this.#a11yThemes = Array.isArray(a11y) ? a11y : [];
+    this.#extensions = { ...EXTENSION_DEFAULTS, ...(ext ?? {}) };
+    this.#stickyOn = sticky === 'on';
+  }
 
   // --- Mapping helpers ---
 
@@ -74,7 +93,7 @@ class SettingsPanel extends VBElement {
 
   /** Is sticky navigation enabled? */
   #isStickyOn() {
-    try { return localStorage.getItem(STICKY_KEY) === 'on'; } catch { return false; }
+    return this.#stickyOn;
   }
 
   /** Is backdrop enabled? (any non-empty backdrop value) */
@@ -513,7 +532,8 @@ class SettingsPanel extends VBElement {
 
   #handleStickyToggle = async (e) => {
     const on = e.target.checked;
-    try { localStorage.setItem(STICKY_KEY, on ? 'on' : 'off'); } catch { /* ignore */ }
+    this.#stickyOn = on;
+    await VBStore.set(SETTINGS_NS, 'sticky', on ? 'on' : 'off');
 
     const header = document.querySelector('header');
 
@@ -599,11 +619,13 @@ class SettingsPanel extends VBElement {
     window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: [] }));
 
     // Reset extensions
-    try { localStorage.removeItem(EXTENSIONS_KEY); } catch { /* ignore */ }
+    this.#extensions = { ...EXTENSION_DEFAULTS };
+    VBStore.remove(SETTINGS_NS, 'extensions').catch(() => { /* ignore */ });
     this.#applyExtensions();
 
     // Reset sticky navigation
-    try { localStorage.removeItem(STICKY_KEY); } catch { /* ignore */ }
+    this.#stickyOn = false;
+    VBStore.remove(SETTINGS_NS, 'sticky').catch(() => { /* ignore */ });
     delete document.documentElement.dataset.sticky;
     import('../../lib/sticky-manager.js').then(m => m.destroyStickyManager()).catch(() => {});
 
@@ -729,18 +751,15 @@ class SettingsPanel extends VBElement {
     if (gradDirRow) gradDirRow.hidden = type !== 'gradient';
   }
 
-  // --- localStorage helpers ---
+  // --- VBStore-backed state helpers (read from cache, write through) ---
 
   #loadA11yThemes() {
-    try {
-      const stored = localStorage.getItem(A11Y_THEMES_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch { return []; }
+    return [...this.#a11yThemes];
   }
 
   #saveA11yThemes(themes) {
-    try { localStorage.setItem(A11Y_THEMES_KEY, JSON.stringify(themes)); }
-    catch { /* ignore */ }
+    this.#a11yThemes = [...themes];
+    VBStore.set(SETTINGS_NS, 'a11y', this.#a11yThemes).catch(() => { /* ignore */ });
   }
 
   #applyA11yThemes() {
@@ -765,18 +784,12 @@ class SettingsPanel extends VBElement {
   }
 
   #loadExtensions() {
-    try {
-      const stored = localStorage.getItem(EXTENSIONS_KEY);
-      return stored ? { ...EXTENSION_DEFAULTS, ...JSON.parse(stored) } : { ...EXTENSION_DEFAULTS };
-    } catch { return { ...EXTENSION_DEFAULTS }; }
+    return { ...this.#extensions };
   }
 
   #saveExtension(id, enabled) {
-    try {
-      const current = this.#loadExtensions();
-      current[id] = enabled;
-      localStorage.setItem(EXTENSIONS_KEY, JSON.stringify(current));
-    } catch { /* ignore */ }
+    this.#extensions = { ...this.#extensions, [id]: enabled };
+    VBStore.set(SETTINGS_NS, 'extensions', this.#extensions).catch(() => { /* ignore */ });
   }
 
   async #applyExtensions() {

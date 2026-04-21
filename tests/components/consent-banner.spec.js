@@ -33,10 +33,10 @@ test.describe('consent-banner — simple', () => {
     await expect(page.locator('consent-banner')).toHaveCount(0);
 
     /* localStorage should have consent */
-    const stored = await page.evaluate(() => localStorage.getItem('demo-simple'));
-    const parsed = JSON.parse(stored);
-    expect(parsed.action).toBe('accept');
-    expect(parsed.timestamp).toBeGreaterThan(0);
+    const stored = await page.evaluate(() => localStorage.getItem('vb:consent:demo-simple'));
+    const envelope = JSON.parse(stored);
+    expect(envelope.timestamp).toBeGreaterThan(0);
+    expect(envelope.data.action).toBe('accept');
   });
 
   test('reject stores consent and removes banner', async ({ page }) => {
@@ -47,8 +47,8 @@ test.describe('consent-banner — simple', () => {
 
     await expect(page.locator('consent-banner')).toHaveCount(0);
 
-    const stored = await page.evaluate(() => localStorage.getItem('demo-simple'));
-    expect(JSON.parse(stored).action).toBe('reject');
+    const stored = await page.evaluate(() => localStorage.getItem('vb:consent:demo-simple'));
+    expect(JSON.parse(stored).data.action).toBe('reject');
   });
 
   test('banner does not reappear after consent', async ({ page }) => {
@@ -91,8 +91,8 @@ test.describe('consent-banner — granular', () => {
     await page.check('input[name="analytics"]');
     await page.click('button[value="save"]');
 
-    const stored = await page.evaluate(() => localStorage.getItem('demo-granular'));
-    const parsed = JSON.parse(stored);
+    const stored = await page.evaluate(() => localStorage.getItem('vb:consent:demo-granular'));
+    const parsed = JSON.parse(stored).data;
     expect(parsed.action).toBe('save');
     expect(parsed.preferences.necessary).toBe(true);
     expect(parsed.preferences.analytics).toBe(true);
@@ -105,8 +105,8 @@ test.describe('consent-banner — granular', () => {
 
     await page.click('button[value="accept"]');
 
-    const stored = await page.evaluate(() => localStorage.getItem('demo-granular'));
-    const parsed = JSON.parse(stored);
+    const stored = await page.evaluate(() => localStorage.getItem('vb:consent:demo-granular'));
+    const parsed = JSON.parse(stored).data;
     expect(parsed.preferences.analytics).toBe(true);
     expect(parsed.preferences.marketing).toBe(true);
   });
@@ -117,8 +117,8 @@ test.describe('consent-banner — granular', () => {
 
     await page.click('button[value="reject"]');
 
-    const stored = await page.evaluate(() => localStorage.getItem('demo-granular'));
-    const parsed = JSON.parse(stored);
+    const stored = await page.evaluate(() => localStorage.getItem('vb:consent:demo-granular'));
+    const parsed = JSON.parse(stored).data;
     expect(parsed.preferences.necessary).toBe(true);
     expect(parsed.preferences.analytics).toBe(false);
     expect(parsed.preferences.marketing).toBe(false);

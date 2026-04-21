@@ -1,54 +1,24 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { VBStore } from '../../lib/vb-store.js';
 
 /**
  * consent-banner: Cookie/privacy consent banner
  *
  * A non-modal banner (bottom/top) or modal dialog (center) that records
- * user consent preferences to localStorage. Supports simple accept/reject
- * and granular checkbox-based preferences.
+ * user consent preferences via VBStore (namespace `consent`). Supports
+ * simple accept/reject and granular checkbox-based preferences.
  *
  * Bottom/top positions use dialog.show() (non-modal — page remains
  * interactive). Center uses dialog.showModal() (modal — user must choose).
  *
- * @attr {string} persist   - localStorage key (default: 'consent-banner')
+ * @attr {string} persist   - VBStore key under namespace `consent` (default: 'banner')
  * @attr {string} position  - 'bottom' (default), 'top', 'center'
  * @attr {string} trigger   - CSS selector for a "manage cookies" re-open button
  * @attr {string} expires   - Days until consent expires (default: 365, 0 = never)
  *
  * @fires consent-banner:change - When user makes a consent choice
  *   detail: { preferences: Object, action: string }
- *
- * @example Simple banner
- * <consent-banner>
- *   <dialog>
- *     <p>We use cookies. <a href="/privacy">Privacy Policy</a></p>
- *     <footer>
- *       <button value="reject" class="secondary">Reject All</button>
- *       <button value="accept">Accept All</button>
- *     </footer>
- *   </dialog>
- * </consent-banner>
- *
- * @example Granular preferences with trigger
- * <consent-banner persist="cookie-prefs" trigger="#manage-cookies">
- *   <dialog>
- *     <header><h2>Cookie Preferences</h2></header>
- *     <section>
- *       <p>We use cookies. <a href="/privacy">Learn more</a></p>
- *       <fieldset>
- *         <label><input type="checkbox" name="necessary" checked disabled> Necessary</label>
- *         <label><input type="checkbox" name="analytics"> Analytics</label>
- *         <label><input type="checkbox" name="marketing"> Marketing</label>
- *       </fieldset>
- *     </section>
- *     <footer>
- *       <button value="reject" class="secondary">Reject All</button>
- *       <button value="save" class="secondary">Save Preferences</button>
- *       <button value="accept">Accept All</button>
- *     </footer>
- *   </dialog>
- * </consent-banner>
  */
 class ConsentBanner extends VBElement {
   /** @type {HTMLDialogElement} */
@@ -59,7 +29,7 @@ class ConsentBanner extends VBElement {
   }
 
   get #key() {
-    return this.getAttribute('persist') || 'consent-banner';
+    return this.getAttribute('persist') || 'banner';
   }
 
   get #expiryDays() {
@@ -68,7 +38,12 @@ class ConsentBanner extends VBElement {
     return val ? parseInt(val, 10) : 365;
   }
 
-  setup() {
+  get #maxAge() {
+    const days = this.#expiryDays;
+    return days > 0 ? days * 86_400_000 : undefined;
+  }
+
+  async setup() {
     this.#dialog = /** @type {HTMLDialogElement} */ (this.querySelector('dialog'));
     if (!this.#dialog) return false;
 
@@ -76,8 +51,8 @@ class ConsentBanner extends VBElement {
       this.listen(document, 'click', this.#onTriggerClick);
     }
 
-    const stored = this.#read();
-    if (stored && !this.#isExpired(stored)) {
+    const stored = await this.#read();
+    if (stored) {
       if (this.getAttribute('trigger')) {
         this.hidden = true;
       } else {
@@ -119,7 +94,7 @@ class ConsentBanner extends VBElement {
     e.preventDefault();
   };
 
-  #onClick = (e) => {
+  #onClick = async (e) => {
     const btn = /** @type {HTMLButtonElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('button[value]'));
     if (!btn) return;
 
@@ -137,7 +112,7 @@ class ConsentBanner extends VBElement {
       checkboxes.forEach(cb => { preferences[cb.name] = cb.checked; });
     }
 
-    this.#write({ preferences, action, timestamp: Date.now() });
+    await this.#write({ preferences, action });
 
     this.dispatchEvent(new CustomEvent('consent-banner:change', {
       bubbles: true,
@@ -147,7 +122,7 @@ class ConsentBanner extends VBElement {
     this.#close();
   };
 
-  #onTriggerClick = (e) => {
+  #onTriggerClick = async (e) => {
     const sel = this.getAttribute('trigger');
     if (!sel) return;
 
@@ -157,7 +132,7 @@ class ConsentBanner extends VBElement {
     e.preventDefault();
 
     /* Restore stored preferences to checkboxes */
-    const stored = this.#read();
+    const stored = await this.#read();
     if (stored?.preferences) {
       for (const [name, checked] of Object.entries(stored.preferences)) {
         const cb = /** @type {HTMLInputElement | null} */ (this.querySelector(
@@ -171,54 +146,34 @@ class ConsentBanner extends VBElement {
     this.#open();
   };
 
-  /* ── localStorage ── */
+  /* ── VBStore ── */
 
-  #read() {
-    try {
-      const raw = localStorage.getItem(this.#key);
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
+  async #read() {
+    const maxAge = this.#maxAge;
+    return await VBStore.get('consent', this.#key, maxAge ? { maxAge } : undefined);
   }
 
-  #write(data) {
-    try {
-      localStorage.setItem(this.#key, JSON.stringify(data));
-    } catch {
-      /* localStorage unavailable or full */
-    }
-  }
-
-  #isExpired(stored) {
-    const days = this.#expiryDays;
-    if (days === 0) return false;
-    const elapsed = Date.now() - (stored.timestamp || 0);
-    return elapsed > days * 86_400_000;
+  async #write(data) {
+    await VBStore.set('consent', this.#key, data);
   }
 
   /* ── Static API ── */
 
   /**
    * Clear stored consent so the banner reappears on next page load.
-   * @param {string} [key='consent-banner'] - localStorage key
+   * @param {string} [key='banner'] - VBStore key under namespace `consent`
    */
-  static reset(key = 'consent-banner') {
-    try { localStorage.removeItem(key); } catch { /* noop */ }
+  static async reset(key = 'banner') {
+    await VBStore.remove('consent', key);
   }
 
   /**
    * Read stored consent preferences.
-   * @param {string} [key='consent-banner'] - localStorage key
-   * @returns {object|null} { preferences, action, timestamp } or null
+   * @param {string} [key='banner'] - VBStore key under namespace `consent`
+   * @returns {Promise<{ preferences: Record<string, boolean>, action: string } | null>}
    */
-  static getConsent(key = 'consent-banner') {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
+  static async getConsent(key = 'banner') {
+    return /** @type {*} */ (await VBStore.get('consent', key));
   }
 }
 

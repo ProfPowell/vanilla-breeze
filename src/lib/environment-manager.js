@@ -10,12 +10,22 @@
  * and sets them as inline styles on :root. CSS handles the smooth shift.
  *
  * Listens for 'vb:theme-change' events to re-capture base hues when the user
- * switches themes. Manages its own localStorage key independently of ThemeManager.
+ * switches themes.
+ *
+ * Persistence goes through VBStore (namespace `environment`, key
+ * `preferences`). State is cached in memory after init() so the existing
+ * synchronous methods stay synchronous for callers.
  */
 
-const ENV_KEY = 'vb-environment';
+import { VBStore } from './vb-store.js';
+
+const NS = 'environment';
+const KEY = 'preferences';
 const ENV_DEFAULTS = { timeOfDay: false, seasonal: false };
 const UPDATE_INTERVAL = 15 * 60 * 1000; // 15 minutes
+
+/** @type {{ timeOfDay: boolean, seasonal: boolean }} In-memory cache */
+let _state = { ...ENV_DEFAULTS };
 
 export function lerp(a, b, t) {
   return a + (b - a) * Math.min(1, Math.max(0, t));
@@ -32,9 +42,11 @@ export const EnvironmentManager = {
   _monthOverride: null,
 
   /** Initialize — read prefs, start tick loop if any source enabled */
-  init() {
-    const prefs = this.load();
-    if (prefs.timeOfDay || prefs.seasonal) {
+  async init() {
+    const stored = /** @type {Partial<typeof ENV_DEFAULTS>|null} */ (await VBStore.get(NS, KEY));
+    _state = stored ? { ...ENV_DEFAULTS, ...stored } : { ...ENV_DEFAULTS };
+
+    if (_state.timeOfDay || _state.seasonal) {
       this._captureBaseHues();
       this._update();
       this._startLoop();
@@ -50,22 +62,16 @@ export const EnvironmentManager = {
     });
   },
 
-  /** Load environment prefs from localStorage */
+  /** Read environment prefs from the in-memory cache (populated by init()) */
   load() {
-    try {
-      const stored = localStorage.getItem(ENV_KEY);
-      return stored ? { ...ENV_DEFAULTS, ...JSON.parse(stored) } : { ...ENV_DEFAULTS };
-    } catch {
-      return { ...ENV_DEFAULTS };
-    }
+    return { ..._state };
   },
 
-  /** Save environment prefs to localStorage */
+  /** Save environment prefs through VBStore (fire-and-forget) and update cache */
   save(prefs) {
-    try {
-      localStorage.setItem(ENV_KEY, JSON.stringify(prefs));
-    } catch { /* ignore */ }
-    return prefs;
+    _state = { ..._state, ...prefs };
+    VBStore.set(NS, KEY, _state).catch(() => { /* ignore */ });
+    return { ..._state };
   },
 
   /** Override time for demos/testing. Pass null to clear. */
@@ -82,8 +88,7 @@ export const EnvironmentManager = {
 
   /** Enable/disable a source, restart loop as needed */
   setSource(source, enabled) {
-    const prefs = { ...this.load(), [source]: enabled };
-    this.save(prefs);
+    const prefs = this.save({ [source]: enabled });
 
     if (enabled) {
       this._captureBaseHues();

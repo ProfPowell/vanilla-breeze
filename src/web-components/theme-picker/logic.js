@@ -39,15 +39,14 @@ import {
   COMMUNITY_THEMES, FLUID_PRESETS, ACCESSIBILITY_THEMES,
   EXTENSIONS, THEME_GROUPS
 } from '../../lib/theme-data.js';
+import { VBStore } from '../../lib/vb-store.js';
 // SoundManager is lazy-loaded when sounds are enabled
 let _SoundManager = null;
 
-// Extension preferences storage key
-const EXTENSIONS_KEY = 'vb-extensions';
+// Shared VBStore namespace with settings-panel — both components keep
+// extension and a11y-theme state in sync via the same key.
+const SETTINGS_NS = 'settings';
 const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
-
-// Accessibility themes storage key
-const A11Y_THEMES_KEY = 'vb-a11y-themes';
 
 class ThemePicker extends VBElement {
   // Delay before auto-dismissing after selection (ms)
@@ -62,12 +61,19 @@ class ThemePicker extends VBElement {
   #autoDismissTimer = null;
   #extensionsExpanded = false;
 
+  // VBStore-backed state cached for synchronous render reads
+  /** @type {string[]} */
+  #a11yThemes = [];
+  /** @type {{ motionFx: boolean, sounds: boolean }} */
+  #extensions = { ...EXTENSION_DEFAULTS };
+
   /** Bound handler for scroll/resize repositioning */
   #onReposition = () => this.#positionPanel();
 
-  setup() {
+  async setup() {
     this.#isInline = this.getAttribute('variant') === 'inline';
     this.#isCompact = this.hasAttribute('compact');
+    await this.#hydrateFromStore();
     this.#render();
     this.#bindEvents();
     this.#syncState();
@@ -80,6 +86,16 @@ class ThemePicker extends VBElement {
 
     // Apply accessibility themes on load
     this.#applyA11yThemes();
+  }
+
+  /** Pre-load shared settings state into instance fields so render is sync. */
+  async #hydrateFromStore() {
+    const [a11y, ext] = await Promise.all([
+      VBStore.get(SETTINGS_NS, 'a11y'),
+      VBStore.get(SETTINGS_NS, 'extensions'),
+    ]);
+    this.#a11yThemes = Array.isArray(a11y) ? a11y : [];
+    this.#extensions = { ...EXTENSION_DEFAULTS, ...(ext ?? {}) };
   }
 
   teardown() {
@@ -513,31 +529,22 @@ class ThemePicker extends VBElement {
   };
 
   /**
-   * Load extension preferences from localStorage
+   * Load extension preferences from the in-memory cache.
    * @returns {object}
    */
   #loadExtensions() {
-    try {
-      const stored = localStorage.getItem(EXTENSIONS_KEY);
-      return stored ? { ...EXTENSION_DEFAULTS, ...JSON.parse(stored) } : { ...EXTENSION_DEFAULTS };
-    } catch {
-      return { ...EXTENSION_DEFAULTS };
-    }
+    return { ...this.#extensions };
   }
 
   /**
-   * Save a single extension preference
+   * Save a single extension preference. Updates the cache and writes through
+   * to VBStore (fire-and-forget — matches old localStorage silent-fail).
    * @param {string} id
    * @param {boolean} enabled
    */
   #saveExtension(id, enabled) {
-    try {
-      const current = this.#loadExtensions();
-      current[id] = enabled;
-      localStorage.setItem(EXTENSIONS_KEY, JSON.stringify(current));
-    } catch {
-      // Ignore storage errors
-    }
+    this.#extensions = { ...this.#extensions, [id]: enabled };
+    VBStore.set(SETTINGS_NS, 'extensions', this.#extensions).catch(() => { /* ignore */ });
   }
 
   /**
@@ -573,28 +580,21 @@ class ThemePicker extends VBElement {
   }
 
   /**
-   * Load accessibility theme preferences from localStorage
+   * Load accessibility theme preferences from the in-memory cache.
    * @returns {string[]} Array of active a11y theme IDs
    */
   #loadA11yThemes() {
-    try {
-      const stored = localStorage.getItem(A11Y_THEMES_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
+    return [...this.#a11yThemes];
   }
 
   /**
-   * Save accessibility theme preferences
+   * Save accessibility theme preferences. Updates the cache and writes
+   * through to VBStore (fire-and-forget).
    * @param {string[]} themes Array of active a11y theme IDs
    */
   #saveA11yThemes(themes) {
-    try {
-      localStorage.setItem(A11Y_THEMES_KEY, JSON.stringify(themes));
-    } catch {
-      // Ignore storage errors
-    }
+    this.#a11yThemes = [...themes];
+    VBStore.set(SETTINGS_NS, 'a11y', this.#a11yThemes).catch(() => { /* ignore */ });
   }
 
   /**

@@ -2,6 +2,14 @@
  * Theme Manager
  * Handles theme persistence, application, and system preference detection.
  *
+ * Persistence goes through VBStore (namespace `theme`, key `current`).
+ * State is cached in memory after init() so the synchronous getters
+ * (load/getState/getEffectiveMode/apply) stay synchronous for callers —
+ * settings-panel, theme-picker, external-theme-sync all continue to read
+ * state without awaiting. Writes go fire-and-forget to VBStore through the
+ * cache, which is the same semantics the old localStorage path had
+ * (failures were silent there too).
+ *
  * Integrates with ThemeLoader for on-demand CSS loading of externalized themes.
  * init() and setBrand() are async — they ensure theme CSS is loaded before applying.
  *
@@ -28,8 +36,10 @@
 
 import { ensureThemeLoaded } from './theme-loader.js';
 import { COLOR_ACCENTS } from './theme-data.js';
+import { VBStore } from './vb-store.js';
 
-const STORAGE_KEY = 'vb-theme';
+const NS = 'theme';
+const KEY = 'current';
 const DEFAULTS = { mode: 'auto', brand: 'default', accent: 'default', borderStyle: '', iconSet: '', fluid: '', backdrop: '', backdropChrome: '', pageBgType: '', pageBgColor: '', pageBgGradStart: '', pageBgGradEnd: '', pageBgGradDir: '' };
 
 const SEED_PROPERTIES = [
@@ -38,6 +48,9 @@ const SEED_PROPERTIES = [
   '--lightness-secondary', '--chroma-secondary',
   '--lightness-accent', '--chroma-accent'
 ];
+
+/** @type {VBThemePrefs|null} In-memory cache populated on init() */
+let _state = null;
 
 export const ThemeManager = {
   /**
@@ -54,50 +67,45 @@ export const ThemeManager = {
     if (this._initPromise) return this._initPromise;
 
     this._initPromise = (async () => {
-      const saved = this.load();
+      const stored = /** @type {Partial<VBThemePrefs>|null} */ (await VBStore.get(NS, KEY));
+      _state = stored ? { ...DEFAULTS, ...stored } : { ...DEFAULTS };
 
       // Load saved brand CSS before applying
       try {
-        await ensureThemeLoaded(saved.brand);
+        await ensureThemeLoaded(_state.brand);
       } catch {
         // Network error — fall back to default
-        saved.brand = 'default';
+        _state.brand = 'default';
       }
 
-      this.apply(saved);
+      this.apply(_state);
       this._watchSystemPreference();
-      return saved;
+      return _state;
     })();
 
     return this._initPromise;
   },
 
   /**
-   * Load theme preferences from localStorage
+   * Load theme preferences from the in-memory cache (populated by init()).
+   * Synchronous for caller convenience; reflects the latest committed state.
    * @returns {VBThemePrefs}
    */
   load() {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? { ...DEFAULTS, ...JSON.parse(stored) } : { ...DEFAULTS };
-    } catch {
-      return { ...DEFAULTS };
-    }
+    return _state ? { ..._state } : { ...DEFAULTS };
   },
 
   /**
-   * Save theme preferences to localStorage
+   * Save theme preferences. Updates the in-memory cache synchronously and
+   * fires the VBStore write asynchronously (errors swallowed, matching the
+   * historical localStorage behavior).
    * @param {Partial<VBThemePrefs>} prefs - Partial preferences to update
    * @returns {VBThemePrefs} - Updated full preferences
    */
   save(prefs) {
-    const current = this.load();
-    const updated = { ...current, ...prefs };
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch {
-      // localStorage unavailable, continue without persistence
-    }
+    const updated = { ...(_state ?? DEFAULTS), ...prefs };
+    _state = updated;
+    VBStore.set(NS, KEY, updated).catch(() => { /* ignore */ });
     return updated;
   },
 
@@ -214,7 +222,7 @@ export const ThemeManager = {
    * @param {string} accentId - Accent ID from COLOR_ACCENTS (e.g., 'ocean', 'forest', 'sunset')
    */
   setAccent(accentId) {
-    const updated = this.save({ accent: accentId });
+    this.save({ accent: accentId });
     this._applyAccent(accentId);
     // Dispatch event
     window.dispatchEvent(new CustomEvent('vb:theme-change', {
@@ -309,11 +317,8 @@ export const ThemeManager = {
    * Reset to default theme
    */
   reset() {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Ignore
-    }
+    _state = { ...DEFAULTS };
+    VBStore.remove(NS, KEY).catch(() => { /* ignore */ });
     const root = document.documentElement;
     root.style.removeProperty('--page-bg-color');
     root.style.removeProperty('--page-bg-gradient');
