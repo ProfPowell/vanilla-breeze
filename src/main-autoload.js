@@ -60,6 +60,7 @@ if (document.querySelector('[data-highlights]')) import('./utils/highlights-init
 if (document.querySelector('[data-copy], [data-copy-target]')) import('./utils/copy-init.js');
 if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-action-init.js');
 if (document.querySelector('[data-watch-page]')) import('./utils/page-watch-init.js');
+if (document.querySelector('form[data-vb-email-form]')) import('./utils/email-form-init.js');
 if (document.querySelector('[data-select-all]')) import('./utils/select-all-init.js');
 if (document.querySelector('[data-show-when], [data-hide-when]')) import('./utils/conditional-init.js');
 if (document.querySelector('button[data-loading]')) import('./utils/loading-button-init.js');

@@ -25,6 +25,8 @@ if (document.querySelector('[data-floating-label]')) import('./utils/floating-la
 if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-action-init.js');
 // Lazy-load page-watch only when a [data-watch-page] trigger is present
 if (document.querySelector('[data-watch-page]')) import('./utils/page-watch-init.js');
+// Lazy-load email-form enhancement only when a form opts in
+if (document.querySelector('form[data-vb-email-form]')) import('./utils/email-form-init.js');
 // Progress ring upscale — static import, self-guards via MutationObserver
 import './utils/progress-ring-init.js';
 import { initStickyManager } from './lib/sticky-manager.js';

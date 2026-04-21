@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Contact form via /go/email</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body { padding: var(--size-l); }
+    [data-vb-email-status] {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+    [data-vb-email-status][data-state="success"] { color: var(--color-success, oklch(50% 0.15 145)); }
+    [data-vb-email-status][data-state="error"]   { color: var(--color-error, oklch(60% 0.2 20)); }
+  </style>
+</head>
+<body>
+  <toast-msg position="top-end"></toast-msg>
+
+  <layout-center data-layout-max="narrow">
+    <layout-card>
+      <h1>Get in touch</h1>
+      <p>This form posts to <code>/go/email</code> via <code>VBService('email')</code> using the <code>contact-form</code> template. Without JavaScript it falls back to the native <code>action="/contact"</code> endpoint.</p>
+
+      <form action="/contact" method="POST"
+            data-vb-email-form="contact-form"
+            data-vb-email-to="hello@example.com"
+            data-vb-email-success="Thanks — we'll be in touch."
+            data-vb-email-loading-label="Sending…"
+            data-layout="stack" data-layout-gap="m">
+        <p>
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" required autocomplete="name"/>
+        </p>
+        <p>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required autocomplete="email"/>
+        </p>
+        <p>
+          <label for="subject">Subject</label>
+          <input type="text" id="subject" name="subject"/>
+        </p>
+        <p>
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="5" required></textarea>
+        </p>
+        <layout-cluster data-layout-justify="space-between" data-layout-align="center">
+          <output data-vb-email-status aria-live="polite"></output>
+          <button type="submit" class="primary">Send</button>
+        </layout-cluster>
+      </form>
+    </layout-card>
+  </layout-center>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // Fire a toast on success so the demo gives instant feedback
+    document.addEventListener('vb-email-form:success', (e) => {
+      document.querySelector('toast-msg')?.show({
+        message: 'Sent.',
+        variant: 'success',
+        duration: 4000,
+      });
+    });
+    document.addEventListener('vb-email-form:error', (e) => {
+      document.querySelector('toast-msg')?.show({
+        message: 'Failed to send.',
+        variant: 'error',
+        duration: 6000,
+      });
+    });
+  </script>
+</body>
+</html>

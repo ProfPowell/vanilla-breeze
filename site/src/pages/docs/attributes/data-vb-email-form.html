@@ -1,0 +1,103 @@
+---
+layout: attribute
+title: "data-vb-email-form"
+description: "Submit any HTML form through VBService('email') using a named template. Progressive enhancement on top of native form action."
+attributeName: data-vb-email-form
+category: form-controls
+attributeType: data
+currentPath: /docs/attributes/data-vb-email-form/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>Add <code>data-vb-email-form="<em>template-name</em>"</code> to any <code>&lt;form&gt;</code> to intercept its submit and POST <code>{ to, template, data }</code> to <a href="/docs/concepts/service-contracts/">/go/email</a> via <code>VBService('email')</code>. The template name maps to a renderer registered in your backend (see the <a href="/docs/concepts/service-contracts/">/go/email template registry</a>).</p>
+  <p><strong>Progressive enhancement.</strong> Without JS the form falls back to its native <code>action</code> attribute, so the same markup works as a server-side form post. With JS the submission goes through <code>/go/email</code> &mdash; one indirection layer between the form and whichever provider (Sendgrid, Postmark, SES, …) sits behind the endpoint.</p>
+</section>
+
+<section>
+  <h2>Markup</h2>
+  <browser-window
+    src="/docs/examples/demos/email-form-contact.html"
+    url="https://vanilla-breeze.dev/contact"
+    title="Contact form via /go/email"
+    style="min-height: 32rem;"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" label="Contact form using the contact-form template" data-escape><form action="/contact" method="POST"
+      data-vb-email-form="contact-form"
+      data-vb-email-to="hello@example.com">
+  <form-field>
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required autocomplete="name"/>
+  </form-field>
+  <form-field>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required autocomplete="email"/>
+  </form-field>
+  <form-field>
+    <label for="subject">Subject</label>
+    <input type="text" id="subject" name="subject"/>
+  </form-field>
+  <form-field>
+    <label for="message">Message</label>
+    <textarea id="message" name="message" rows="5" required></textarea>
+  </form-field>
+  <output data-vb-email-status aria-live="polite"></output>
+  <button type="submit">Send</button>
+</form></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Required</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-vb-email-form</code></td><td>yes</td><td>Template name. Must match a renderer registered server-side. VB names four built-ins: <code>contact-form</code>, <code>page-watch-update</code>, <code>goodurl-digest</code>, <code>newsletter-welcome</code>.</td></tr>
+      <tr><td><code>data-vb-email-to</code></td><td>typically</td><td>Recipient email. If omitted, the script looks for a form field named <code>to</code> or <code>email</code>; failing that the backend determines the recipient (e.g. a configured contact-form inbox).</td></tr>
+      <tr><td><code>data-vb-email-loading-label</code></td><td>no</td><td>Replaces the submit button label while the request is in flight (e.g. <code>"Sending…"</code>).</td></tr>
+      <tr><td><code>data-vb-email-success</code></td><td>no</td><td>Message shown inside <code>[data-vb-email-status]</code> on 2xx. Default: &ldquo;Sent. Thank you.&rdquo;</td></tr>
+      <tr><td><code>data-vb-email-error</code></td><td>no</td><td>Message shown inside <code>[data-vb-email-status]</code> on failure. Default: &ldquo;Sorry, the message could not be sent. Try again.&rdquo;</td></tr>
+      <tr><td><code>data-vb-email-no-reset</code></td><td>no</td><td>Skip the automatic <code>form.reset()</code> on success.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Status output</h2>
+  <p>Place an element with <code>data-vb-email-status</code> anywhere inside the form. The script writes the success or error message into it and toggles <code>data-state="success"</code> or <code>data-state="error"</code>, so you can style each state with CSS:</p>
+  <code-block language="css" label="Status styling" data-escape>[data-vb-email-status][data-state="success"] { color: var(--color-success); }
+[data-vb-email-status][data-state="error"]   { color: var(--color-error); }</code-block>
+  <p>An <code>&lt;output aria-live="polite"&gt;</code> is the natural element &mdash; screen readers announce the status without stealing focus.</p>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>vb-email-form:submitting</code></td><td><code>{ template }</code></td><td>Just before the request goes out</td></tr>
+      <tr><td><code>vb-email-form:success</code></td><td><code>{ id }</code></td><td>2xx response (id is whatever the backend returns)</td></tr>
+      <tr><td><code>vb-email-form:error</code></td><td><code>{ error, status?, body? }</code></td><td>Network failure or non-2xx response</td></tr>
+    </tbody>
+  </table>
+  <p>All three bubble and cross shadow boundaries so a parent app can listen at the document level.</p>
+</section>
+
+<section>
+  <h2>Backend</h2>
+  <p>The Pages Function at <code>functions/go/email.js</code> (and the Cloudflare reference at <a href="https://github.com/profpowell/vanilla-breeze/tree/main/admin/reference-implementations/cloudflare">admin/reference-implementations/cloudflare/</a>) accepts the contract as-is and dispatches to a configured transport (Resend by default, fallback to record-only when secrets are absent). Wire any other provider by following <a href="https://github.com/profpowell/vanilla-breeze/tree/main/admin/reference-implementations">the reference implementations</a> as templates.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/concepts/service-contracts/">Service contracts &rsaquo; /go/email</a> &mdash; the JSON shape this attribute submits</li>
+    <li><a href="/docs/concepts/go-convention/">/go/ convention</a> &mdash; the namespace and the lock-in problem it solves</li>
+    <li><a href="/docs/patterns/forms/contact/">Contact form patterns</a> &mdash; layout patterns this attribute layers onto</li>
+    <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> &mdash; the wrapper used inside the form</li>
+  </ul>
+</section>
