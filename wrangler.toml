@@ -23,13 +23,14 @@ migrations_dir = "db/migrations"
 
 # KV namespace for /go/* service relay (functions/go/*).
 # Provision once with:
-#   wrangler kv namespace create VB_GO_KV
-# Then copy the returned id below AND add the binding to the Pages
-# dashboard (Settings → Functions → KV namespace bindings).
-# Until both steps are done, every /go/* endpoint returns 503 with a
-# 'service_unavailable' error envelope (see functions/_lib/go/shared.js).
+#   wrangler kv namespace create VB_KV
+# Then copy the returned id below. The binding name MUST be VB_KV —
+# that's what functions/_lib/go/{notify,feed,newsletter,email}.js read
+# from env. Until this file lands a valid id, every /go/* endpoint
+# returns 503 with a 'service_unavailable' error envelope (see
+# functions/_lib/go/shared.js → requireKV).
 [[kv_namespaces]]
-binding = "VB_GO_KV"
+binding = "VB_KV"
 id = "16d05d05f815436f950876a82f577bc4"
 
 # Optional secrets for /go/email Resend transport. Without these, the
