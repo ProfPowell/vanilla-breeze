@@ -75,6 +75,10 @@ class NotificationWc extends VBElement {
   #pollTimer = null;
   /** @type {Set<string>} Seen notification ids for toast debounce */
   #seenIds = new Set();
+  /** "all" | "watching" — which tab is visible */
+  #activeTab = 'all';
+  /** @type {Array<{key: string, data: object, timestamp: number}>} Watch list rows */
+  #watches = [];
 
   setup() {
     this.#mode = this.getAttribute('mode') === 'banner' ? 'banner' : 'panel';
@@ -145,10 +149,13 @@ class NotificationWc extends VBElement {
     await this.#loadReadState();
     this.#renderTrigger();
     this.#renderPanel();
+    await this.#loadWatches(); // pre-populate the Watching tab so the count badge is accurate before first open
     this.#updateBadge();
 
     this.listen(document, 'click', this.#handleOutsideClick);
     this.listen(document, 'keydown', this.#handleEscape);
+    this.listen(document, 'page-watch:add', () => this.#loadWatches());
+    this.listen(document, 'page-watch:remove', () => this.#loadWatches());
 
     if (this.getAttribute('src')) {
       await this.#fetchDynamic();
@@ -216,7 +223,12 @@ class NotificationWc extends VBElement {
         <strong>Notifications</strong>
         <button type="button" class="notification-mark-all">Mark all read</button>
       </header>
-      <ul class="notification-list" role="list"></ul>
+      <nav class="notification-tabs" role="tablist" aria-label="Notification categories">
+        <button type="button" role="tab" data-tab="all" aria-selected="true">All</button>
+        <button type="button" role="tab" data-tab="watching" aria-selected="false">Watching <span class="notification-tab-count" hidden>0</span></button>
+      </nav>
+      <ul class="notification-list" role="list" data-tab-panel="all"></ul>
+      <ul class="notification-watch-list" role="list" data-tab-panel="watching" hidden></ul>
       <footer class="notification-footer" hidden>
         <em>No notifications</em>
       </footer>
@@ -225,6 +237,10 @@ class NotificationWc extends VBElement {
 
     const markAll = this.#panel.querySelector('.notification-mark-all');
     if (markAll) this.listen(markAll, 'click', this.#handleMarkAllRead);
+
+    for (const tab of this.#panel.querySelectorAll('[role="tab"]')) {
+      this.listen(tab, 'click', this.#handleTabClick);
+    }
 
     this.#renderList();
   }
@@ -310,6 +326,95 @@ class NotificationWc extends VBElement {
     }
   }
 
+  // ── Watch list (page-watch surface) ────────────────────────────────
+
+  /** Hydrate the in-memory watch list from VBStore namespace `watches`. */
+  async #loadWatches() {
+    try {
+      this.#watches = await VBStore.list('watches');
+    } catch {
+      this.#watches = [];
+    }
+    this.#renderWatchList();
+  }
+
+  #renderWatchList() {
+    if (!this.#panel) return;
+    const list = /** @type {HTMLElement|null} */ (this.#panel.querySelector('.notification-watch-list'));
+    const tabCount = /** @type {HTMLElement|null} */ (this.#panel.querySelector('.notification-tab-count'));
+    if (!list) return;
+
+    list.innerHTML = this.#watches.map((row) => this.#renderWatchItem(row)).join('') ||
+      '<li class="notification-empty"><em>You aren\'t watching any pages yet. Use the &ldquo;Watch&rdquo; button on a page to start.</em></li>';
+
+    if (tabCount) {
+      const count = this.#watches.length;
+      if (count > 0) {
+        tabCount.textContent = String(count);
+        tabCount.hidden = false;
+      } else {
+        tabCount.hidden = true;
+      }
+    }
+
+    for (const btn of list.querySelectorAll('[data-watch-unwatch]')) {
+      this.listen(btn, 'click', this.#handleUnwatch);
+    }
+  }
+
+  #renderWatchItem(row) {
+    const data = /** @type {{url: string, title: string, lastChecked?: string, lastChanged?: string|null, watchedAt: string}} */ (row.data || {});
+    const url = data.url || row.key;
+    const title = data.title || url;
+    const lastChecked = data.lastChecked ? new Date(data.lastChecked).toLocaleString() : '—';
+    const changed = !!data.lastChanged;
+    return `<li class="notification-watch-item"${changed ? ' data-changed' : ''}>
+      <a class="notification-watch-row" href="${escapeHtml(url)}">
+        <icon-wc class="notification-type-icon" name="eye" size="sm"></icon-wc>
+        <div class="notification-body">
+          <h4>${escapeHtml(title)}${changed ? ' <span class="notification-changed-badge">Changed</span>' : ''}</h4>
+          <p>${escapeHtml(url)}</p>
+          <time>Last checked: ${escapeHtml(lastChecked)}</time>
+        </div>
+      </a>
+      <button type="button" class="notification-unwatch" data-watch-unwatch data-watch-key="${escapeHtml(row.key)}" aria-label="Unwatch ${escapeHtml(title)}">
+        <icon-wc name="x" size="xs"></icon-wc>
+      </button>
+    </li>`;
+  }
+
+  #handleTabClick = (e) => {
+    const tab = /** @type {HTMLElement} */ (e.currentTarget).dataset.tab;
+    if (!tab || tab === this.#activeTab) return;
+    this.#activeTab = tab;
+    if (!this.#panel) return;
+    for (const t of this.#panel.querySelectorAll('[role="tab"]')) {
+      const active = /** @type {HTMLElement} */ (t).dataset.tab === tab;
+      t.setAttribute('aria-selected', active ? 'true' : 'false');
+    }
+    for (const panel of this.#panel.querySelectorAll('[data-tab-panel]')) {
+      /** @type {HTMLElement} */ (panel).hidden = /** @type {HTMLElement} */ (panel).dataset.tabPanel !== tab;
+    }
+    const footer = /** @type {HTMLElement|null} */ (this.#panel.querySelector('.notification-footer'));
+    if (footer) footer.hidden = true; // footer is for "no notifications"; watch list has its own empty state
+  };
+
+  #handleUnwatch = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const btn = /** @type {HTMLElement} */ (e.currentTarget);
+    const key = btn.getAttribute('data-watch-key');
+    if (!key) return;
+    const row = this.#watches.find(w => w.key === key);
+    await VBStore.remove('watches', key);
+    this.#watches = this.#watches.filter(w => w.key !== key);
+    this.#renderWatchList();
+    this.dispatchEvent(new CustomEvent('page-watch:remove', {
+      bubbles: true, composed: true,
+      detail: { url: row?.data?.url || key, subscriptionId: row?.data?.subscriptionId || null },
+    }));
+  };
+
   // ── Events ─────────────────────────────────────────────────────────
 
   #handleTriggerClick = (e) => {
@@ -366,6 +471,7 @@ class NotificationWc extends VBElement {
     this.#isOpen = true;
     this.#panel.hidden = false;
     this.#trigger?.setAttribute('aria-expanded', 'true');
+    this.#loadWatches(); // refresh watch list each time the panel opens
     this.dispatchEvent(new CustomEvent('notification-wc:open', { bubbles: true, composed: true }));
   }
 

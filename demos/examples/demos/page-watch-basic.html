@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>page-watch demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body { margin: 0; padding: var(--size-l); }
+    header { display: flex; justify-content: space-between; align-items: center; margin-block-end: var(--size-l); }
+    main { max-inline-size: 40rem; margin-inline: auto; }
+    .actions { display: flex; gap: var(--size-s); }
+    [data-watch-page] {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--size-2xs);
+      padding: var(--size-xs) var(--size-s);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-s);
+      background: var(--color-surface);
+      color: var(--color-text);
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+    }
+    [data-watch-page][aria-pressed="true"] {
+      background: var(--color-surface-raised);
+      border-color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Page Watch demo</h1>
+    <nav class="actions" aria-label="Page actions">
+      <button type="button" data-watch-page>
+        <icon-wc name="eye"></icon-wc>
+        <span>Watch for updates</span>
+      </button>
+      <notification-wc></notification-wc>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <h2>About this demo</h2>
+      <p>Click the eye-icon button above to start watching this page. The button toggles to a &ldquo;Watching&rdquo; state and the notification panel&rsquo;s Watching tab gets a count.</p>
+      <p>Open the bell icon and switch to the <strong>Watching</strong> tab to see the entry. Each row shows the page title, URL, and the time it was last checked. Use the <strong>x</strong> button to unwatch.</p>
+      <p>To simulate a content change: open devtools, paste <code>localStorage.setItem('vb:watches:' + location.pathname, JSON.stringify({ data: { url: location.pathname, title: document.title, contentHash: 'stale', watchedAt: new Date().toISOString(), lastChecked: new Date().toISOString(), lastChanged: null, subscriptionId: null }, timestamp: Date.now() }))</code>, then reload. The Watching tab will show a &ldquo;Changed&rdquo; badge and a new notification of type <code>watch</code> appears in the All tab.</p>
+      <p>Server-side sync is opt-in. To enable it, add <code>&lt;meta name="vb-page-watch-server" content="true"&gt;</code> to your page&rsquo;s <code>&lt;head&gt;</code> and have a <code>/go/notify/subscribe</code> endpoint reachable. Without it, the watch is purely client-side.</p>
+    </article>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

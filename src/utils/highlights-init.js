@@ -895,4 +895,4 @@ const observer = new MutationObserver((mutations) => {
 
 observer.observe(document.documentElement, { childList: true, subtree: true });
 
-export { initHighlights, HighlightController, showNotePanel, hideNotePanel };
+export { initHighlights, HighlightController, showNotePanel, hideNotePanel, fnv1a };

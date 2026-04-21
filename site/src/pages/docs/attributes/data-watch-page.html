@@ -1,0 +1,95 @@
+---
+layout: attribute
+title: "data-watch-page"
+description: "Mark a button as the watch toggle for the current page. Stores a content hash; on revisit, fires a watch notification when content has changed."
+attributeName: data-watch-page
+category: content
+attributeType: data
+currentPath: /docs/attributes/data-watch-page/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>Add <code>data-watch-page</code> to any <code>&lt;button&gt;</code> to make it a per-page bookmark + change-watcher. Click toggles between &ldquo;Watch&rdquo; and &ldquo;Watching.&rdquo; State persists per-URL via <a href="/docs/concepts/architecture-decisions/">VBStore</a>.</p>
+  <p>On every subsequent visit the script recomputes a content hash of the page&rsquo;s <code>&lt;main&gt;</code> (or <code>&lt;article&gt;</code>); if it differs from the stored hash, a <code>notification-wc:new</code> event fires so <a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> can surface the change. The watch list itself appears in the notification panel&rsquo;s &ldquo;Watching&rdquo; tab.</p>
+  <p>This is the <strong>internal</strong> equivalent of GoodURL&rsquo;s outbound link health monitoring &mdash; it watches your <em>own</em> pages for content drift, not other sites&rsquo; URLs.</p>
+</section>
+
+<section>
+  <h2>Markup</h2>
+  <p>Place the button anywhere &mdash; <code>&lt;page-tools&gt;</code> is the conventional home, but any DOM location works. The script lazy-loads when it sees the attribute on the page.</p>
+
+  <code-block language="html" label="Basic watch button" data-escape><button type="button" data-watch-page>
+  <icon-wc name="eye"></icon-wc>
+  <span>Watch for updates</span>
+</button></code-block>
+
+  <p>The script swaps the <code>&lt;icon-wc&gt;</code> name (<code>eye</code> &harr; <code>eye-off</code>) and the inline text label (<code>Watch for updates</code> &harr; <code>Watching</code>). To keep your own label, add <code>data-watch-label-locked</code>.</p>
+
+  <code-block language="html" label="Inside page-tools" data-escape><page-tools data-position="sticky">
+  <print-page></print-page>
+  <button type="button" data-watch-page>
+    <icon-wc name="eye"></icon-wc>
+    <span>Watch</span>
+  </button>
+</page-tools></code-block>
+</section>
+
+<section>
+  <h2>What gets stored</h2>
+  <p>VBStore namespace <code>watches</code>, key = <code>location.pathname</code>. Each entry:</p>
+  <code-block language="js" label="Stored shape" data-escape>{
+  url: '/docs/getting-started',
+  title: 'Getting Started — Vanilla Breeze',
+  contentHash: 'a8f3c2b9',          // FNV-1a of <main> textContent
+  watchedAt: '2026-04-21T10:00:00Z',
+  lastChecked: '2026-04-21T15:30:00Z',
+  lastChanged: null,                 // ISO timestamp when hash last differed
+  subscriptionId: null,              // server-side id if /go/notify/subscribe was used
+}</code-block>
+  <p>The hash deliberately covers only <code>&lt;main&gt;</code> (or the first <code>&lt;article&gt;</code>) so nav/footer/sidebar churn doesn&rsquo;t trigger false positives.</p>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>page-watch:add</code></td><td><code>{ entry }</code></td><td>User clicked Watch</td></tr>
+      <tr><td><code>page-watch:remove</code></td><td><code>{ url, subscriptionId }</code></td><td>User clicked Unwatch (in the button or in the notification panel&rsquo;s Watching tab)</td></tr>
+      <tr><td><code>notification-wc:new</code></td><td><code>{ notification }</code></td><td>Page revisit detected a hash change &mdash; type is <code>watch</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Server-side sync (opt-in)</h2>
+  <p>If your site has a <code>/go/notify</code> backend, you can mirror watches server-side so the system can notify users between visits (e.g., via email). Opt in with a meta tag or a global flag:</p>
+
+  <code-block language="html" label="Opt in via meta tag" data-escape><meta name="vb-page-watch-server" content="true"></code-block>
+
+  <code-block language="js" label="Or via a global before main.js loads" data-escape>window.vbPageWatch = { serverSync: true };</code-block>
+
+  <p>When enabled, the watch button additionally <code>POST</code>s <a href="/docs/concepts/service-contracts/"><code>/go/notify/subscribe</code></a> with <code>{ url, type: "page-watch", notify: ["panel"] }</code> on watch, and <code>DELETE</code>s the subscription on unwatch. Failures are logged to the console; the local watch still works regardless.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The button uses <code>aria-pressed</code> to expose watched/unwatched state to assistive tech.</li>
+    <li><code>title</code> updates to describe the next action (&ldquo;Watch this page for content updates&rdquo; vs. &ldquo;Stop watching this page&rdquo;).</li>
+    <li>Operates as a normal <code>&lt;button&gt;</code> &mdash; native keyboard activation, focus styles, and screen-reader announcements come for free.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> &mdash; surfaces the watch list in its panel and renders <code>watch</code> notifications when content changes</li>
+    <li><a href="/docs/concepts/service-contracts/">Service Contracts &mdash; <code>/go/notify/subscribe</code></a> &mdash; the server-side subscription contract</li>
+    <li><a href="/docs/attributes/data-highlights/"><code>data-highlights</code></a> &mdash; uses the same FNV-1a hash to detect content drift on highlights</li>
+  </ul>
+</section>

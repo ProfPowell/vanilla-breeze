@@ -33,6 +33,7 @@ import './effects/typewriter.js';
 import './effects/scramble.js';
 import './effects/ticker.js';
 import './effects/animate-image.js';
+import './effects/flipboard.js';
 import './effects/rating.js';
 
 // Initialize theme system
@@ -58,6 +59,7 @@ if (document.querySelector('input[data-accept]')) import('./utils/accept-init.js
 if (document.querySelector('[data-highlights]')) import('./utils/highlights-init.js');
 if (document.querySelector('[data-copy], [data-copy-target]')) import('./utils/copy-init.js');
 if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-action-init.js');
+if (document.querySelector('[data-watch-page]')) import('./utils/page-watch-init.js');
 if (document.querySelector('[data-select-all]')) import('./utils/select-all-init.js');
 if (document.querySelector('[data-show-when], [data-hide-when]')) import('./utils/conditional-init.js');
 if (document.querySelector('button[data-loading]')) import('./utils/loading-button-init.js');
