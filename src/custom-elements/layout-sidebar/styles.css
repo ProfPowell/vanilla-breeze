@@ -53,6 +53,20 @@ layout-sidebar[data-layout-content-min="60"] { --_content-min: 60%; }
   overscroll-behavior: contain;
 }
 
+/* When a sticky sidebar already provides pinning + internal scroll, its
+   children should flow normally inside it. Otherwise both the container
+   and inner `position: sticky` children fight for the same viewport edge
+   and collide (toolbar icons wedged into the TOC, etc.).
+
+   !important is needed because inner sticky rules (e.g. page-toc's own
+   wide-screen rule) live in the component's own stylesheet and win via
+   source order or layer precedence even when specificity favours us. */
+:root[data-sticky] layout-sidebar > :is(nav, aside)[data-layout-sticky] :is(page-toc, page-tools) {
+  position: static !important;
+  inset-block-start: auto !important;
+  max-block-size: none !important;
+}
+
 /* No wrap - sidebar always visible */
 layout-sidebar[data-layout-nowrap] {
   flex-wrap: nowrap;

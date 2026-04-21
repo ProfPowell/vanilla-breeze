@@ -52,6 +52,14 @@ class WatchWc extends VBElement {
 
     const variant = this.#variant();
     this.dataset.variant = variant;
+
+    // Defensive: if a prior render is still in the tree (e.g. after a
+    // disconnect/reconnect cycle from print preview reflow), clear it
+    // before appending a fresh button.
+    for (const child of Array.from(this.children)) {
+      if (child.hasAttribute?.('data-watch-page')) child.remove();
+    }
+
     this.#button = this.#renderButton(variant);
     this.appendChild(this.#button);
 
@@ -59,6 +67,13 @@ class WatchWc extends VBElement {
     // re-read VBStore so this instance's button matches.
     this.listen(document, 'page-watch:add', this.#syncFromStore);
     this.listen(document, 'page-watch:remove', this.#syncFromStore);
+  }
+
+  teardown() {
+    if (this.#button) {
+      this.#button.remove();
+      this.#button = null;
+    }
   }
 
   #variant() {

@@ -116,6 +116,10 @@ class TextReader extends VBElement {
       this.#toolbar.remove();
       this.#toolbar = null;
     }
+    if (this.#triggerBtn) {
+      this.#triggerBtn.remove();
+      this.#triggerBtn = null;
+    }
   }
 
   // ---------- public API ----------
@@ -258,6 +262,13 @@ class TextReader extends VBElement {
 
   #renderIcon() {
     this.#isIconMode = true;
+
+    // Defensive: if a prior trigger is still in the tree (e.g. after a
+    // disconnect/reconnect cycle from print preview reflow), remove it
+    // so we don't end up with duplicates.
+    for (const existing of this.querySelectorAll(':scope > [part="trigger"]')) {
+      existing.remove();
+    }
 
     const trigger = document.createElement('button');
     trigger.type = 'button';
