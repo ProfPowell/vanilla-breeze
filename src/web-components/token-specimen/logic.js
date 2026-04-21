@@ -9,16 +9,23 @@
  * computed values after paint. All layout is inline so the component
  * works without external CSS.
  *
- * @attr {string} type - Token type: "shadow", "radius", "border", "color", "size"
+ * @attr {string} type - Token type: "shadow", "radius", "border", "color", "size", "icon"
  * @attr {string} tokens - Comma-separated token names (defaults vary by type)
  * @attr {string} prefix - CSS variable prefix (auto-set from type if omitted)
  * @attr {boolean} show-values - Show computed values (default: true)
  * @attr {string} label - Optional heading label
+ * @attr {string} size - Icon size (icon type only): xs, sm, md, lg, xl, 2xl
+ * @attr {string} icon-set - Icon set (icon type only, default: "lucide")
+ * @attr {boolean} editable - Turn value cells into inputs that write the token on target scope
+ * @attr {string} target - CSS selector for the element to receive token overrides (default: ":root")
+ *
+ * @fires token-specimen:change - When a token is edited. detail: { name, value, token, target }
  *
  * @example
  * <token-specimen type="shadow"></token-specimen>
  * <token-specimen type="radius" tokens="s,m,l,xl,full"></token-specimen>
- * <token-specimen type="border" label="Border Widths"></token-specimen>
+ * <token-specimen type="icon" tokens="chevron-right,check,x,search"></token-specimen>
+ * <token-specimen type="color" editable></token-specimen>
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
@@ -44,6 +51,10 @@ const TYPE_DEFAULTS = {
     prefix: '--size-',
     tokens: '3xs,2xs,xs,s,m,l,xl,2xl,3xl',
   },
+  icon: {
+    prefix: '',
+    tokens: 'home,search,settings,user,bell,heart,star,check,x,chevron-right,menu,trash',
+  },
 };
 
 const RENDERERS = {
@@ -52,10 +63,11 @@ const RENDERERS = {
   border: renderBorder,
   color: renderColor,
   size: renderSize,
+  icon: renderIcon,
 };
 
 class TokenSpecimen extends VBElement {
-  static observedAttributes = ['type', 'tokens', 'prefix', 'show-values', 'label'];
+  static observedAttributes = ['type', 'tokens', 'prefix', 'show-values', 'label', 'size', 'icon-set', 'editable', 'target'];
 
   setup() { this.#render(); }
 
@@ -79,11 +91,58 @@ class TokenSpecimen extends VBElement {
       html += `<p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted,#666);margin-block-end:0.75rem;font-family:var(--font-sans,system-ui)">${label}</p>`;
     }
 
-    html += renderer(tokens, prefix, showValues);
+    html += renderer(tokens, prefix, showValues, this);
     this.innerHTML = html;
 
-    if (showValues) {
-      requestAnimationFrame(() => this.#readComputedValues(type, prefix, tokens));
+    const editable = this.hasAttribute('editable') && type !== 'icon';
+
+    if (showValues && type !== 'icon') {
+      requestAnimationFrame(() => {
+        this.#readComputedValues(type, prefix, tokens);
+        if (editable) this.#injectEditors(type, prefix);
+      });
+    } else if (editable) {
+      requestAnimationFrame(() => this.#injectEditors(type, prefix));
+    }
+  }
+
+  #injectEditors(type, prefix) {
+    const cs = getComputedStyle(this);
+    this.querySelectorAll('[data-token-value]').forEach((el) => {
+      const name = el.dataset.tokenValue;
+      const raw = cs.getPropertyValue(`${prefix}${name}`).trim();
+      const input = document.createElement('input');
+      input.type = type === 'color' && /^#[0-9a-f]{3,8}$/i.test(raw) ? 'color' : 'text';
+      input.value = raw || '';
+      input.className = 'ts-edit';
+      input.setAttribute('data-token', name);
+      input.setAttribute('aria-label', `${name} value`);
+      input.style.cssText = `font-family:var(--font-mono,monospace);font-size:0.625rem;padding:0.125rem 0.25rem;border:1px solid var(--color-border,#ccc);border-radius:var(--radius-s,0.25rem);background:var(--color-surface,#fff);color:var(--color-text,#222);inline-size:${type === 'color' ? '3rem' : '100%'};${type === 'color' ? 'block-size:1.5rem;padding:0;' : 'max-inline-size:8rem;'}`;
+      el.replaceWith(input);
+      this.listen(input, 'change', () => this.#applyEdit(input, prefix));
+      this.listen(input, 'keydown', (e) => { if (e.key === 'Enter') this.#applyEdit(input, prefix); });
+    });
+  }
+
+  #applyEdit(input, prefix) {
+    const name = input.getAttribute('data-token');
+    const value = input.value.trim();
+    if (!name || !value) return;
+    const target = this.#resolveTarget();
+    const token = `${prefix}${name}`;
+    if (target) target.style.setProperty(token, value);
+    this.dispatchEvent(new CustomEvent('token-specimen:change', {
+      bubbles: true,
+      detail: { name, value, token, target: this.getAttribute('target') || ':root' },
+    }));
+  }
+
+  #resolveTarget() {
+    const sel = this.getAttribute('target') || ':root';
+    try {
+      return sel === ':root' ? document.documentElement : document.querySelector(sel);
+    } catch {
+      return document.documentElement;
     }
   }
 
@@ -169,6 +228,23 @@ function renderSize(tokens, prefix, showValues) {
       <span style="font-family:var(--font-mono,monospace);font-size:0.875rem;color:var(--color-text-muted,#666);text-align:end">${name}</span>
       <div data-token-sample="${name}" style="display:block;block-size:var(--size-m,1rem);min-inline-size:2px;inline-size:var(${prefix}${name});background:var(--color-interactive,oklch(55% 0.2 260));border-radius:var(--radius-s,0.25rem)" aria-hidden="true"></div>
       ${showValues ? `<span data-token-value="${name}" style="font-family:var(--font-mono,monospace);font-size:0.75rem;color:var(--color-text-muted,#666);font-variant-numeric:tabular-nums;min-inline-size:3.5rem;text-align:end"></span>` : ''}
+    </div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderIcon(tokens, _prefix, showValues, host) {
+  const size = host?.getAttribute('size') || 'md';
+  const iconSet = host?.getAttribute('icon-set') || '';
+  const setAttr = iconSet ? ` set="${iconSet}"` : '';
+  let html = `<div role="list" style="display:flex;flex-wrap:wrap;gap:1rem">`;
+  for (const name of tokens) {
+    html += `<div role="listitem" style="display:flex;flex-direction:column;align-items:center;gap:0.375rem;min-inline-size:4.5rem">
+      <span style="display:inline-flex;align-items:center;justify-content:center;padding:var(--size-s,0.75rem);background:var(--color-surface-raised,#f5f5f5);border-radius:var(--radius-s,0.25rem);border:1px solid var(--color-border,#ddd);color:var(--color-text,#222)">
+        <icon-wc name="${name}" size="${size}"${setAttr}></icon-wc>
+      </span>
+      ${showValues ? `<code style="font-family:var(--font-mono,monospace);font-size:0.625rem;color:var(--color-text-muted,#666);max-inline-size:5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</code>` : ''}
     </div>`;
   }
   html += '</div>';

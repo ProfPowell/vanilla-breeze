@@ -141,6 +141,44 @@ crumbLabel: Web Components
 </section>
 
 <section>
+  <h2>Editable Mode</h2>
+  <p>Add the <code>editable</code> attribute to turn the font label into a live input with quick-pick chips. Changes write to a CSS custom property (default: <code>--font-family-base</code>) on the <code>target</code> selector (default: <code>:root</code>), so any element using that token updates immediately.</p>
+
+  <div class="example">
+    <type-specimen font-family="Georgia" editable show-characters show-weights></type-specimen>
+  </div>
+
+  <code-block language="html" show-lines label="Live font editing" data-escape><type-specimen
+  font-family="Georgia"
+  editable
+  show-characters
+  show-weights>
+</type-specimen></code-block>
+
+  <p>Restrict overrides to a scoped subtree by pointing <code>target</code> at any selector:</p>
+
+  <code-block language="html" show-lines label="Scoped target" data-escape><div id="preview-scope">
+  <h2>Preview</h2>
+  <p>Edits only affect this block.</p>
+</div>
+
+<type-specimen
+  font-family="Georgia"
+  editable
+  target="#preview-scope"
+  token="font-family-base"
+  show-scale>
+</type-specimen></code-block>
+
+  <p>Listen for <code>type-specimen:change</code> events to collect the edits elsewhere:</p>
+  <code-block language="javascript" show-lines label="Collecting edits" data-escape>document.querySelector('type-specimen')
+  .addEventListener('type-specimen:change', (e) => {
+    console.log(e.detail);
+    // { fontFamily: "Inter, sans-serif", token: "font-family-base", target: ":root" }
+  });</code-block>
+</section>
+
+<section>
   <h2>Accessibility</h2>
   <ul>
     <li>The sample text uses <code>contenteditable="plaintext-only"</code> with <code>spellcheck="false"</code> to avoid intrusive browser features.</li>

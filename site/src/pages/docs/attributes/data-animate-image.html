@@ -1,8 +1,8 @@
 ---
 layout: attribute
-title: "data-animate-image"
-description: "Play/pause control for animated images. Add data-animate-image to any GIF, WebP, or APNG for a toggle button with automatic reduced-motion support."
-attributeName: data-animate-image
+title: "data-effect=\"animate-image\""
+description: "Play/pause control for animated images. Add data-effect='animate-image' to any GIF, WebP, or APNG for a toggle button with automatic reduced-motion support."
+attributeName: data-effect="animate-image"
 category: interaction
 attributeType: data
 pack: effects
@@ -14,15 +14,23 @@ crumbLabel: Data Attributes
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>data-animate-image</code> attribute adds a play/pause toggle button to animated images. Users can stop distracting animations with a single click, and the image automatically pauses when <code>prefers-reduced-motion</code> is active.</p>
+    <p>The <code>data-effect="animate-image"</code> effect adds a play/pause toggle button to animated images. Users can stop distracting animations with a single click, and the image automatically pauses when <code>prefers-reduced-motion</code> is active.</p>
+    <p>This is part of the <a href="/docs/attributes/data-effect/">unified effects system</a>. It ships in the <strong>effects</strong> pack.</p>
 
-    <code-block language="html" show-lines label="Basic usage" data-escape><img src="animation.gif" data-animate-image alt="Animated demo"></code-block>
+    <browser-window
+      src="/docs/examples/demos/animate-image-basic.html"
+      url="https://vanilla-breeze.dev/data-animate-image"
+      title="Animate Image Control"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic usage" data-escape><img src="animation.gif" data-effect="animate-image" alt="Animated demo"></code-block>
   </section>
 
   <section>
     <h2>How It Works</h2>
     <ol>
-      <li>The init script wraps the <code>&lt;img&gt;</code> in a <code>.animate-image-wrapper</code> container for positioning</li>
+      <li>The effect wraps the <code>&lt;img&gt;</code> in a <code>.animate-image-wrapper</code> container for positioning</li>
       <li>A toggle <code>&lt;button&gt;</code> is injected alongside the image</li>
       <li>On load, the first frame is captured to a canvas and converted to a static PNG data URL</li>
       <li>When paused, the image <code>src</code> is swapped to the static frame; when played, it reverts to the original animated source</li>
@@ -30,11 +38,11 @@ crumbLabel: Data Attributes
     </ol>
 
     <code-block language="html" show-lines label="Before and after enhancement" data-escape><!-- Before enhancement -->
-<img src="animation.gif" data-animate-image alt="Demo">
+<img src="animation.gif" data-effect="animate-image" alt="Demo">
 
 <!-- After enhancement (auto-generated wrapper) -->
 <div class="animate-image-wrapper">
-  <img src="animation.gif" data-animate-image data-animate-image-init alt="Demo">
+  <img src="animation.gif" data-effect="animate-image" data-effect-animate-image-init alt="Demo">
   <button type="button" class="animate-image-toggle" aria-label="Pause animation"></button>
 </div></code-block>
   </section>
@@ -51,9 +59,9 @@ crumbLabel: Data Attributes
       </thead>
       <tbody>
         <tr>
-          <td><code>data-animate-image</code></td>
-          <td>boolean</td>
-          <td>Marks an <code>&lt;img&gt;</code> for animation control enhancement.</td>
+          <td><code>data-effect="animate-image"</code></td>
+          <td>string</td>
+          <td>Activates animation control on an <code>&lt;img&gt;</code> element via the effects system.</td>
         </tr>
         <tr>
           <td><code>data-animate-image-paused</code></td>
@@ -61,7 +69,7 @@ crumbLabel: Data Attributes
           <td>Set initially to start the image paused. Also set/removed automatically when the user toggles playback.</td>
         </tr>
         <tr>
-          <td><code>data-animate-image-init</code></td>
+          <td><code>data-effect-animate-image-init</code></td>
           <td>boolean</td>
           <td>Set automatically to prevent double-binding. Do not set manually.</td>
         </tr>
@@ -73,12 +81,12 @@ crumbLabel: Data Attributes
     <h2>Start Paused</h2>
     <p>Add <code>data-animate-image-paused</code> to the image to start it in a paused state. The first frame is captured on load and displayed as a static image until the user clicks play.</p>
 
-    <code-block language="html" show-lines label="Start paused" data-escape><img src="animation.gif" data-animate-image data-animate-image-paused alt="Paused by default"></code-block>
+    <code-block language="html" show-lines label="Start paused" data-escape><img src="animation.gif" data-effect="animate-image" data-animate-image-paused alt="Paused by default"></code-block>
   </section>
 
   <section>
     <h2>Reduced Motion</h2>
-    <p>The init script automatically pauses animated images when the user has requested reduced motion. This is detected via two mechanisms:</p>
+    <p>The effect automatically pauses animated images when the user has requested reduced motion. This is detected via two mechanisms:</p>
 
     <ul>
       <li><code>prefers-reduced-motion: reduce</code> &mdash; the OS-level media query</li>
@@ -89,7 +97,7 @@ crumbLabel: Data Attributes
 
     <p>Runtime changes to the <code>prefers-reduced-motion</code> media query are also detected &mdash; if the user enables reduced motion while viewing the page, animated images will pause automatically.</p>
 
-    <code-block language="javascript" show-lines label="Reduced motion handling" data-escape>/* The init script checks for reduced motion preference:
+    <code-block language="javascript" show-lines label="Reduced motion handling" data-escape>/* The effect checks for reduced motion preference:
  *
  * 1. prefers-reduced-motion: reduce (OS setting)
  * 2. data-motion-reduced attribute on <html>
@@ -102,15 +110,15 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>Dynamic Elements</h2>
-    <p>Images added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+    <p>Images added to the DOM after page load are automatically enhanced via the effects system MutationObserver. No manual initialization is needed.</p>
 
-    <code-block language="javascript" show-lines label="Dynamically added animated images" data-escape>// Dynamically added images are auto-enhanced via MutationObserver
+    <code-block language="javascript" show-lines label="Dynamically added animated images" data-escape>// Dynamically added images are auto-enhanced
 const img = document.createElement('img');
 img.src = 'animation.gif';
 img.alt = 'Dynamic animation';
-img.dataset.animateImage = '';
+img.dataset.effect = 'animate-image';
 document.body.appendChild(img);
-// img is wrapped and enhanced automatically — no manual init needed</code-block>
+// img is wrapped and enhanced automatically</code-block>
   </section>
 
   <section>

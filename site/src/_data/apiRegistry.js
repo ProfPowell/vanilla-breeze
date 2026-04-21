@@ -1051,6 +1051,50 @@ export default {
       }
     ]
   },
+  "analytics-panel": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "analytics-panel",
+    "type": "web-component",
+    "description": "Self-serve view of analytics data stored on the device — shows what's been captured this session, with Pause and Clear controls.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "title",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Override the panel heading (default: \"Analytics data\")"
+      },
+      {
+        "name": "compact",
+        "kind": "host-api",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Tighter layout for embedding alongside other UI"
+      }
+    ],
+    "structure": [],
+    "childAttributes": [],
+    "events": [
+      {
+        "name": "analytics-panel:cleared",
+        "description": "Fired after session data is cleared by the user"
+      },
+      {
+        "name": "analytics-panel:optout",
+        "description": "Fired when the user pauses analytics for this tab"
+      },
+      {
+        "name": "analytics-panel:optin",
+        "description": "Fired when the user resumes analytics for this tab"
+      }
+    ]
+  },
   "audio-player": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "audio-player",
@@ -1850,11 +1894,21 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Swatch size: \"sm\", \"md\" (default), \"lg\""
+      },
+      {
+        "name": "editable",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Click a swatch to edit its color via the native OS picker. Updates the colors attribute and fires color-palette:change."
       }
     ],
     "events": [
       {
         "name": "color-palette:select"
+      },
+      {
+        "name": "color-palette:change"
       }
     ],
     "childAttributes": [],
@@ -2311,8 +2365,8 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "default": "consent-banner",
-        "description": "localStorage key for storing consent"
+        "default": "banner",
+        "description": "VBStore key under namespace 'consent' for storing consent"
       },
       {
         "name": "position",
@@ -4601,6 +4655,64 @@ export default {
       }
     ]
   },
+  "motion-specimen": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "motion-specimen",
+    "type": "web-component",
+    "description": "Design token motion scale display. Shows easing curves with animated preview dots and/or durations as bars.",
+    "attributes": [
+      {
+        "name": "type",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "easing",
+          "duration",
+          "both"
+        ],
+        "default": "easing",
+        "description": "Which motion tokens to display."
+      },
+      {
+        "name": "tokens",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated token names (defaults vary by type)."
+      },
+      {
+        "name": "prefix",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS variable prefix. Auto-set to --ease- or --duration- from type."
+      },
+      {
+        "name": "duration",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "1.2s",
+        "description": "Animation duration for easing previews (only applies to easing rows)."
+      },
+      {
+        "name": "show-values",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "default": "true",
+        "description": "Show computed token values."
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional heading label."
+      }
+    ]
+  },
   "note-wc": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "note-wc",
@@ -4617,6 +4729,123 @@ export default {
     "css": {
       "tokens": []
     }
+  },
+  "notification-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "notification-wc",
+    "type": "web-component",
+    "description": "Dual-mode notification component: dismissible banner or bell-icon panel with history + read tracking.",
+    "attributes": [
+      {
+        "name": "mode",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "banner",
+          "panel"
+        ],
+        "description": "Which presentation mode to render (default: panel)"
+      },
+      {
+        "name": "persist",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Banner mode: VBStore key used to record dismiss state"
+      },
+      {
+        "name": "variant",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "info",
+          "success",
+          "warning",
+          "error"
+        ],
+        "description": "Banner mode: color variant"
+      },
+      {
+        "name": "position",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "top",
+          "bottom"
+        ],
+        "description": "Banner mode: sticky position"
+      },
+      {
+        "name": "expires",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "description": "Banner mode: days until the banner re-shows after dismiss"
+      },
+      {
+        "name": "src",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Panel mode: absolute URL or VBService role name for dynamic notifications"
+      },
+      {
+        "name": "poll",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "description": "Panel mode: polling interval in milliseconds"
+      },
+      {
+        "name": "toast-new",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Panel mode: fire a toast via the nearest <toast-msg> when a new dynamic notification arrives"
+      },
+      {
+        "name": "storage-key",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Panel mode: VBStore namespace for read state (default: notifications)"
+      },
+      {
+        "name": "data-trigger",
+        "kind": "data",
+        "purpose": "config",
+        "description": "Panel mode: marks a custom trigger element, replacing the auto-generated bell"
+      }
+    ],
+    "events": [
+      {
+        "name": "notification-wc:new",
+        "detail": {
+          "notification": "object"
+        }
+      },
+      {
+        "name": "notification-wc:read",
+        "detail": {
+          "id": "string"
+        }
+      },
+      {
+        "name": "notification-wc:dismiss",
+        "detail": {
+          "id": "string"
+        }
+      },
+      {
+        "name": "notification-wc:open"
+      },
+      {
+        "name": "notification-wc:close"
+      }
+    ]
   },
   "page-info": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5300,7 +5529,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "localStorage key (when adapter=local)"
+        "description": "VBStore key under namespace 'reviews' (when adapter=local)"
       },
       {
         "name": "author",
@@ -5416,6 +5645,49 @@ export default {
     "css": {
       "tokens": []
     }
+  },
+  "semantic-palette": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "semantic-palette",
+    "type": "web-component",
+    "description": "Preview a palette in use as VB semantic roles. Reads colors from a descendant <color-palette> or <palette-generator> and renders one preview card per role with per-pairing WCAG chips. Editing happens upstream in the palette; this component is a preview + theme CSS exporter.",
+    "attributes": [
+      {
+        "name": "colors",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated hex palette (fallback when no <color-palette> or <palette-generator> child)."
+      },
+      {
+        "name": "roles",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated roles in assignment order. Valid: primary, secondary, accent, success, warning, error, info. Default: \"primary,secondary,accent\"."
+      },
+      {
+        "name": "show-export",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show Copy Theme CSS / Copy JSON toolbar."
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional heading label above the previews."
+      }
+    ],
+    "events": [
+      {
+        "name": "semantic-palette:change"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
   },
   "settings-panel": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5972,6 +6244,25 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Optional heading label"
+      },
+      {
+        "name": "editable",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Turn value cells into inputs that write the token on the target scope."
+      },
+      {
+        "name": "target",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS selector for the element to receive token overrides (default: \":root\"). Only used when editable."
+      }
+    ],
+    "events": [
+      {
+        "name": "spacing-specimen:change"
       }
     ],
     "childAttributes": [],
@@ -6031,7 +6322,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "localStorage key for position persistence"
+        "description": "VBStore key suffix under namespace 'layout' (vb:layout:split:{key}) for position persistence"
       },
       {
         "name": "collapsible",
@@ -6373,6 +6664,68 @@ export default {
     "childAttributes": [],
     "structure": []
   },
+  "theme-export": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "theme-export",
+    "type": "web-component",
+    "description": "Collects VB custom property overrides from a scope and emits them as a theme.css block (or JSON). The assembly glue for the Theme Composer.",
+    "attributes": [
+      {
+        "name": "scope",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": ":root",
+        "description": "CSS selector for the scope to read overrides from."
+      },
+      {
+        "name": "selector",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": ":root",
+        "description": "Selector written in the emitted CSS output."
+      },
+      {
+        "name": "include",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Comma-separated prefixes to collect. Default covers all VB token categories."
+      },
+      {
+        "name": "format",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "css",
+          "json"
+        ],
+        "default": "css",
+        "description": "Output format."
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional heading label."
+      },
+      {
+        "name": "live",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Re-scan whenever an editable specimen fires a :change event."
+      }
+    ],
+    "events": [
+      {
+        "name": "theme-export:change"
+      }
+    ]
+  },
   "theme-picker": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "theme-picker",
@@ -6654,7 +7007,8 @@ export default {
           "radius",
           "border",
           "color",
-          "size"
+          "size",
+          "icon"
         ],
         "description": "Token type to display"
       },
@@ -6663,14 +7017,14 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Comma-separated token names (defaults vary by type)"
+        "description": "Comma-separated token names (for icon type: comma-separated icon names). Defaults vary by type"
       },
       {
         "name": "prefix",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "CSS variable prefix (auto-set from type if omitted)"
+        "description": "CSS variable prefix (auto-set from type if omitted; ignored for icon type)"
       },
       {
         "name": "show-values",
@@ -6678,7 +7032,7 @@ export default {
         "purpose": "config",
         "type": "boolean",
         "default": "true",
-        "description": "Show computed token values"
+        "description": "Show computed token values (for icon type: show icon name labels)"
       },
       {
         "name": "label",
@@ -6686,6 +7040,39 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Optional heading label"
+      },
+      {
+        "name": "size",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Icon size (icon type only): xs, sm, md, lg, xl, 2xl"
+      },
+      {
+        "name": "icon-set",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Icon set (icon type only): lucide, phosphor, tabler, etc. Defaults to icon-wc's default"
+      },
+      {
+        "name": "editable",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Turn value cells into inputs that write the token on the target scope. Ignored for icon type."
+      },
+      {
+        "name": "target",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS selector for the element to receive token overrides (default: \":root\"). Only used when editable."
+      }
+    ],
+    "events": [
+      {
+        "name": "token-specimen:change"
       }
     ]
   },
@@ -6819,6 +7206,32 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Comma-separated available weights (default: \"400,700\")"
+      },
+      {
+        "name": "editable",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Turn the font-family label into a live input + quick-picks that write a CSS custom property."
+      },
+      {
+        "name": "target",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS selector for the element to receive token overrides (default: \":root\"). Only used when editable."
+      },
+      {
+        "name": "token",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Token name to write when editing (default: \"font-family-base\"). Only used when editable."
+      }
+    ],
+    "events": [
+      {
+        "name": "type-specimen:change"
       }
     ],
     "childAttributes": [],
@@ -7276,6 +7689,63 @@ export default {
     ],
     "childAttributes": [],
     "structure": []
+  },
+  "watch-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "watch-wc",
+    "type": "web-component",
+    "description": "Drop-in wrapper for the data-watch-page button. Renders an icon, compact, or full-button variant that toggles whether the current page is in the user's VBStore('watches') list. State machine lives in src/utils/page-watch-init.js — this is a one-tag author convenience.",
+    "attributes": [
+      {
+        "name": "variant",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "icon",
+          "compact",
+          "button"
+        ],
+        "description": "Visual preset (default: icon)"
+      },
+      {
+        "name": "label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Override the visible text in compact and button variants. Defaults to 'Watch for updates' / 'Watching'."
+      },
+      {
+        "name": "server-sync",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Per-instance opt-in for server-side sync via VBService('notify'). Sets window.vbPageWatch.serverSync = true before page-watch-init evaluates."
+      },
+      {
+        "name": "data-variant",
+        "kind": "data",
+        "purpose": "config",
+        "description": "Reflected by the component to pick the visual variant in CSS"
+      }
+    ],
+    "events": [
+      {
+        "name": "page-watch:add",
+        "detail": {
+          "entry": "object"
+        },
+        "description": "Bubbles from the inner button when the user starts watching"
+      },
+      {
+        "name": "page-watch:remove",
+        "detail": {
+          "url": "string",
+          "subscriptionId": "string|null"
+        },
+        "description": "Bubbles from the inner button when the user stops watching"
+      }
+    ]
   },
   "week-view": {
     "$schema": "../../../schemas/api.schema.json",

@@ -842,6 +842,21 @@ module.exports = {
     permittedContent: ["@flow"]
   },
 
+  "notification-wc": {
+    attributes: {
+      "mode": { enum: ["banner", "panel"] },
+      "persist": {},
+      "variant": { enum: ["info", "success", "warning", "error"] },
+      "position": { enum: ["top", "bottom"] },
+      "expires": {},
+      "src": {},
+      "poll": {},
+      "toast-new": { boolean: true },
+      "storage-key": {},
+      "data-trigger": {}
+    }
+  },
+
   "page-info": {
     attributes: {
       "auto": { boolean: true },
@@ -1115,39 +1130,6 @@ module.exports = {
     }
   },
 
-  "notification-wc": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "mode": { enum: ["banner", "panel"] },
-      "persist": {},
-      "variant": { enum: ["info", "success", "warning", "error"] },
-      "position": { enum: ["top", "bottom"] },
-      "expires": {},
-      "src": {},
-      "poll": {},
-      "toast-new": { boolean: true },
-      "storage-key": {},
-      "data-mode": {},
-      "data-variant": {},
-      "data-position": {},
-      "data-trigger": {},
-      "data-upgraded": { boolean: true }
-    }
-  },
-
-  "watch-wc": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "variant": { enum: ["icon", "compact", "button"] },
-      "label": {},
-      "server-sync": { boolean: true },
-      "data-variant": {},
-      "data-upgraded": { boolean: true }
-    }
-  },
-
   "star-rating": {
     attributes: {
       "name": {},
@@ -1379,6 +1361,15 @@ module.exports = {
       "data-dynamic": {},
       "shuffle": {},
       "aria-valuetext": {}
+    }
+  },
+
+  "watch-wc": {
+    attributes: {
+      "variant": { enum: ["icon", "compact", "button"] },
+      "label": {},
+      "server-sync": { boolean: true },
+      "data-variant": {}
     }
   },
 
