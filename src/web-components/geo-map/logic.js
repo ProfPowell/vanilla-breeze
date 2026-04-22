@@ -33,10 +33,14 @@ function markerSvg(color) {
  * @attr {string} marker - Show pin at center; "false" to hide
  * @attr {string} marker-color - Pin fill color (default: #e74c3c)
  * @attr {string} provider - Tile source: osm, carto-light, carto-dark
+ * @attr {string} tile-url - URL template with {z}/{x}/{y} placeholders.
+ *   Overrides `provider`. Lets you point at a first-party proxy that
+ *   caches a third-party tile source server-side — see
+ *   /docs/concepts/service-facade/ for the pattern.
  */
 class GeoMap extends VBElement {
     static get observedAttributes() {
-        return ['lat', 'lng', 'zoom', 'marker', 'marker-color', 'provider', 'interactive', 'static-only', 'src', 'place'];
+        return ['lat', 'lng', 'zoom', 'marker', 'marker-color', 'provider', 'tile-url', 'interactive', 'static-only', 'src', 'place'];
     }
 
     /** @type {import('./interact.js').MapInteraction|null} */
@@ -71,6 +75,15 @@ class GeoMap extends VBElement {
 
     get provider() {
         return this.getAttribute('provider') || 'osm';
+    }
+
+    /**
+     * URL template for first-party tile proxying. When set, `provider`
+     * is ignored and `getTileUrl()` substitutes {z}/{x}/{y} into this
+     * template instead.
+     */
+    get tileUrl() {
+        return this.getAttribute('tile-url') || '';
     }
 
     get interactive() {
@@ -311,7 +324,7 @@ class GeoMap extends VBElement {
             for (let dx = -1; dx <= 1; dx++) {
                 const tx = tileX + dx;
                 const ty = tileY + dy;
-                const url = getTileUrl(provider, zoom, tx, ty);
+                const url = getTileUrl(provider, zoom, tx, ty, this.tileUrl);
 
                 const img = document.createElement('img');
                 img.src = url;
@@ -367,11 +380,35 @@ class GeoMap extends VBElement {
 
     /**
      * Inject a preconnect link for the tile server on hover/focus.
+     * Skipped when tile-url points at a same-origin proxy — preconnect
+     * is only useful for cross-origin DNS/TLS warmup.
      */
     #preconnect() {
         if (this.#preconnected) return;
-        this.#preconnected = true;
 
+        // First-party tile proxy: tileUrl that's relative or matches
+        // location.origin doesn't benefit from preconnect.
+        const tileUrl = this.tileUrl;
+        if (tileUrl) {
+            try {
+                const url = new URL(tileUrl, location.origin);
+                if (url.origin === location.origin) {
+                    this.#preconnected = true;
+                    return;
+                }
+                this.#preconnected = true;
+                const link = document.createElement('link');
+                link.rel = 'preconnect';
+                link.href = url.origin;
+                link.crossOrigin = '';
+                document.head.appendChild(link);
+                return;
+            } catch {
+                // Malformed template — fall through to provider preconnect
+            }
+        }
+
+        this.#preconnected = true;
         const provider = this.provider;
         let origin;
         if (provider === 'carto-light' || provider === 'carto-dark') {
@@ -413,6 +450,7 @@ class GeoMap extends VBElement {
             lng,
             zoom: this.zoom,
             provider: this.provider,
+            tileUrl: this.tileUrl,
             onDeactivate: () => this.#deactivate(),
         });
 

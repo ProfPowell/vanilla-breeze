@@ -654,6 +654,7 @@ module.exports = {
       "marker": {},
       "marker-color": {},
       "provider": {},
+      "tile-url": {},
       "interactive": {},
       "static-only": {},
       "src": {},

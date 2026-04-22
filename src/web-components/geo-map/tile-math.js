@@ -37,6 +37,9 @@ export function latLngToTile(lat, lng, zoom) {
  * @param {number} z - Zoom level
  * @param {number} x - Tile X coordinate
  * @param {number} y - Tile Y coordinate
+ * @param {string} [tileUrlTemplate] - Optional URL template with {z}/{x}/{y}
+ *   placeholders. When set, it wins over `provider` — used by the
+ *   first-party tile proxy pattern (see /docs/concepts/service-facade/).
  * @returns {string} Tile image URL
  */
 /**
@@ -56,7 +59,13 @@ export function worldPixelToLatLng(worldX, worldY, zoom) {
     return { lat, lng };
 }
 
-export function getTileUrl(provider, z, x, y) {
+export function getTileUrl(provider, z, x, y, tileUrlTemplate) {
+    if (tileUrlTemplate) {
+        return tileUrlTemplate
+            .replace('{z}', String(z))
+            .replace('{x}', String(x))
+            .replace('{y}', String(y));
+    }
     switch (provider) {
         case 'carto-light':
             return `https://basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`;

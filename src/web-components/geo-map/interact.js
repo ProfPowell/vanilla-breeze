@@ -18,6 +18,8 @@ export class MapInteraction {
     #tiles;
     /** @type {string} */
     #provider;
+    /** @type {string} */
+    #tileUrl;
     /** @type {Function} */
     #onDeactivate;
 
@@ -55,12 +57,14 @@ export class MapInteraction {
      * @param {number} config.lng
      * @param {number} config.zoom
      * @param {string} config.provider
+     * @param {string} [config.tileUrl] - URL template overriding provider
      * @param {Function} config.onDeactivate - called when user presses Escape
      */
-    constructor({ shadow, host, lat, lng, zoom, provider, onDeactivate }) {
+    constructor({ shadow, host, lat, lng, zoom, provider, tileUrl, onDeactivate }) {
         this.#shadow = shadow;
         this.#host = host;
         this.#provider = provider;
+        this.#tileUrl = tileUrl || '';
         this.#onDeactivate = onDeactivate;
         this.#zoom = zoom;
 
@@ -301,7 +305,7 @@ export class MapInteraction {
         const pxTop = posY * 256;
 
         const img = document.createElement('img');
-        img.src = getTileUrl(this.#provider, z, wrappedX, posY);
+        img.src = getTileUrl(this.#provider, z, wrappedX, posY, this.#tileUrl);
         img.alt = '';
         img.draggable = false;
         img.style.left = pxLeft + 'px';

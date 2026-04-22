@@ -92,6 +92,12 @@ crumbLabel: Web Components
           <td>Tile source: <code>osm</code>, <code>carto-light</code>, <code>carto-dark</code></td>
         </tr>
         <tr>
+          <td><code>tile-url</code></td>
+          <td>String</td>
+          <td>&mdash;</td>
+          <td>URL template with <code>{z}</code>, <code>{x}</code>, <code>{y}</code> placeholders. Overrides <code>provider</code>. Used for <a href="/docs/concepts/service-facade/">first-party tile proxying</a> &mdash; point at your own endpoint instead of OSM/Carto directly.</td>
+        </tr>
+        <tr>
           <td><code>src</code></td>
           <td>String</td>
           <td>&mdash;</td>
@@ -138,6 +144,24 @@ crumbLabel: Web Components
 
 <!-- Carto Dark — great for dark themes -->
 <geo-map lat="51.5007" lng="-0.1246" zoom="15" provider="carto-dark"></geo-map></code-block>
+  </section>
+
+  <section>
+    <h2>First-Party Tile Proxy</h2>
+    <layout-text>
+      <p>For privacy, swappability, caching control, or rate limiting, point <code>&lt;geo-map&gt;</code> at your own endpoint instead of contacting OSM / Carto directly. The <code>tile-url</code> attribute takes a URL template with <code>{z}</code>, <code>{x}</code>, <code>{y}</code> placeholders &mdash; the component substitutes them per tile request. See <a href="/docs/concepts/service-facade/">Server-Side Service Facade</a> for the broader pattern and a Cloudflare Worker example that proxies + caches OSM tiles in KV.</p>
+    </layout-text>
+
+    <code-block language="html" label="Point at a same-origin proxy" data-escape><geo-map lat="40.7484" lng="-73.9857" zoom="15"
+         tile-url="/api/tiles/{z}/{x}/{y}"></geo-map>
+
+<!-- Or a third-party CDN, with attribution unchanged -->
+<geo-map lat="40.7484" lng="-73.9857" zoom="15"
+         tile-url="https://tiles.example.com/{z}/{x}/{y}.png"></geo-map></code-block>
+
+    <layout-text>
+      <p><code>tile-url</code> overrides <code>provider</code> when both are set. Same-origin URLs skip the preconnect hint (no DNS / TLS warmup needed for first-party). Attribution remains visible &mdash; if you proxy a non-OSM source, override the <code>[part="attribution"]</code> styling or hide it via CSS.</p>
+    </layout-text>
   </section>
 
   <section>
