@@ -1,0 +1,148 @@
+---
+layout: guide
+title: "Feel"
+description: "Small visual and motion details that make Vanilla Breeze interfaces feel considered. Most are already in the framework — this page makes them legible and adds the few that weren't."
+guideGroup: Concepts
+currentPath: /docs/concepts/feel/
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Feel</span></li>
+  </ol>
+</nav>
+</template>
+
+<section>
+  <h2>Where this list comes from</h2>
+  <p>Jakub Krehel's <a href="https://jakub.kr/writing/details-that-make-interfaces-feel-better" rel="external noopener">Details that make interfaces feel better</a> catalogues a dozen small techniques that lift the perceived quality of an interface without adding features. Cross-referenced against Vanilla Breeze, most were already shipped &mdash; the framework's reset and tokens already handle balanced text, tabular numerals, smoothed text, staggered entry, separate enter/exit timing, and reduced-motion respect.</p>
+  <p>This page does two things: it makes the existing primitives findable, and it adds the few details that weren't in VB yet.</p>
+</section>
+
+<section>
+  <h2>Already in VB</h2>
+  <table class="props-table">
+    <thead><tr><th>Detail</th><th>What VB does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>text-wrap: balance</code> on headings</td>
+        <td>Applied globally on <code>h1</code>&ndash;<code>h6</code> and lead paragraphs in <code>src/native-elements/headings/styles.css</code> and <code>paragraph/styles.css</code>. Headings distribute words evenly across lines without per-page tuning.</td>
+      </tr>
+      <tr>
+        <td><code>text-wrap: pretty</code> on body prose</td>
+        <td>Default on <code>p</code> and inside <code>hgroup</code>. Browsers prevent single-word orphans on the last line.</td>
+      </tr>
+      <tr>
+        <td><code>font-variant-numeric: tabular-nums</code> on <code>&lt;time&gt;</code></td>
+        <td>Default on every <code>&lt;time&gt;</code> element via <code>src/native-elements/inline-semantics/styles.css</code>. Updating digits don't cause horizontal jitter in dates, durations, version strings, or relative-time labels.</td>
+      </tr>
+      <tr>
+        <td><code>-webkit-font-smoothing: antialiased</code></td>
+        <td>Set in the global reset (<code>src/base/reset.css</code>). Text reads slightly thinner and crisper on macOS without per-component overrides.</td>
+      </tr>
+      <tr>
+        <td>Staggered entry animations</td>
+        <td><code>--motion-stagger-delay</code> in <code>src/tokens/extensions/motion-fx.css</code>. Applied via <code>animation-delay: calc(var(--i) * var(--motion-stagger-delay))</code> on list items.</td>
+      </tr>
+      <tr>
+        <td>Subdued exit timing</td>
+        <td><code>--motion-exit-duration: 200ms</code> ships separately from <code>--motion-enter-duration: 300ms</code>, so exits feel quicker and less attention-grabbing than entrances.</td>
+      </tr>
+      <tr>
+        <td>Reduced-motion respect</td>
+        <td>Both the OS-level <code>prefers-reduced-motion: reduce</code> and the user-controlled <code>:root[data-motion-reduced]</code> attribute collapse stagger, hover lift, and enter/exit durations to zero. Set automatically by <a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a>.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Concentric border radius</h2>
+  <p>An outer container's border-radius and the radius of an element nested inside it should look concentric: the inner radius equals the outer radius minus the padding between them. VB ships a CSS helper that derives the inner value automatically.</p>
+
+  <code-block language="css" label="--radius-inner formula" data-escape>/* In src/tokens/borders.css */
+--radius-inner: max(0px, calc(var(--_radius, var(--radius-m)) - var(--_inset, 0px)));</code-block>
+
+  <p>Parents declare their own radius in <code>--_radius</code> and their padding in <code>--_inset</code>. Children that should hug the parent's inner edge use <code>border-radius: var(--radius-inner)</code>.</p>
+
+  <code-block language="html" label="Card with concentric inner button" data-escape><article style="
+  --_radius: var(--radius-l);
+  --_inset: var(--size-m);
+  border-radius: var(--_radius);
+  padding: var(--_inset);
+  background: var(--color-surface-raised);
+">
+  <button style="border-radius: var(--radius-inner);">Inner button hugs the card edge</button>
+</article></code-block>
+</section>
+
+<section>
+  <h2>Image outlines</h2>
+  <p>A 1-pixel <code>outline</code> with <code>outline-offset: -1px</code> sits inside the image edge and gives photographs definition on light or transparent backgrounds without changing layout (which a real <code>border</code> would). Opt-in via <code>data-outlined</code> so existing imagery is unchanged.</p>
+
+  <code-block language="html" label="Opt-in image outline" data-escape><img src="/photo.jpg" alt="…" data-outlined>
+
+<!-- Or apply once to a <picture> wrapper -->
+<picture data-outlined>
+  <img src="/photo.jpg" alt="…">
+</picture></code-block>
+
+  <p>The line uses <code>color-mix(in oklch, currentColor 8%, transparent)</code> so it adapts to the surrounding text colour and works equally well in light and dark themes.</p>
+</section>
+
+<section>
+  <h2>Shadow as border (<code>--shadow-flush</code>)</h2>
+  <p>For raised surfaces &mdash; cards, popovers, code blocks &mdash; a layered shadow reads as edge definition <em>and</em> a touch of elevation, where a flat <code>border: 1px solid</code> reads as just an outline.</p>
+
+  <code-block language="css" label="--shadow-flush token" data-escape>/* In src/tokens/shadows.css */
+--shadow-flush: 0 0 0 1px hsl(0 0% 0% / 0.04),
+                0 1px 2px hsl(0 0% 0% / 0.06);</code-block>
+
+  <code-block language="css" label="Use it where you'd reach for a flat border" data-escape>.card {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-flush);
+}</code-block>
+
+  <p>Stack with <code>--shadow-md</code> or <code>--shadow-lg</code> to combine edge + lift: <code>box-shadow: var(--shadow-flush), var(--shadow-md);</code>.</p>
+</section>
+
+<section>
+  <h2>Blur-fade entrance</h2>
+  <p>A blur + scale + opacity entrance reads softer than a hard scale-in. Useful for icons, thumbnails, or any element that should feel like it focused into place rather than slid. Pair the symmetric <code>vb-blur-out</code> when you need an exit.</p>
+
+  <code-block language="html" label="Scroll-driven blur-in via data-animate" data-escape><img src="/feature.jpg" alt="…" data-animate="blur-in"></code-block>
+
+  <code-block language="css" label="One-shot blur-in directly" data-escape>icon-wc {
+  animation: vb-blur-in var(--motion-enter-duration) var(--motion-ease-out) both;
+}</code-block>
+
+  <p>Both honour reduced-motion: the keyframe still runs but at <code>--motion-enter-duration: 0ms</code>, which collapses to an immediate snap.</p>
+</section>
+
+<section>
+  <h2>Transitions for interruptible state, keyframes for one-shot</h2>
+  <p>This is the article's most important subtle point and worth restating as a VB convention:</p>
+  <ul>
+    <li>Use a <strong>CSS transition</strong> when an element moves between persistent states the user can change (open/closed, focused/blurred, hovered/not, dragged/dropped). The browser retargets mid-flight when the user changes intent &mdash; the animation never feels like it's fighting the user.</li>
+    <li>Use a <strong>keyframe animation</strong> for one-shot effects with a defined start and end (entrance, exit, success flash, attention pulse).</li>
+  </ul>
+  <p>VB follows this in practice: <code>&lt;details&gt;</code>, <code>&lt;dialog&gt;</code>, hover lift, focus ring, and form-field hint reveal all use transitions. <code>vb-fade-in</code>, <code>vb-pop</code>, <code>vb-blur-in</code>, and the spinner are keyframe animations. When you reach for one or the other in your own code, the same rule keeps interfaces from feeling brittle.</p>
+</section>
+
+<section>
+  <h2>One the framework can't help you with: optical alignment</h2>
+  <p>No primitive can decide whether an icon needs <code>margin-block-start: 1px</code> to look centred next to text, or whether a triangle needs to shift right of its bounding box to feel balanced. The framework gives you predictable defaults so the cases that need optical adjustment stand out clearly. When they do, override with a small inline <code>style</code> or a one-off CSS rule. Resist the urge to invent a token for it &mdash; tokens are for repeating patterns, not per-element vibes.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/concepts/effect-compositing/">Effect Compositing</a> &mdash; how visual effects layer via space-separated <code>data-effect</code> values</li>
+    <li><a href="/docs/typography/">Typography</a> &mdash; the rest of VB's typographic refinement (font synthesis control, sub/sup positioning, drop caps, character tokens)</li>
+    <li><a href="/docs/principles/">Principles</a> &mdash; progressive enhancement, smart defaults, the broader philosophy these details live inside</li>
+  </ul>
+</section>
