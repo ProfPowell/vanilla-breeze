@@ -94,6 +94,38 @@ page-tools watch-wc[data-variant="icon"] > button[aria-pressed="true"] {
   border-color: var(--color-interactive);
 }
 
+/* Watch toggle gets a stronger filled state — the user just told the
+   system "yes, watch this page", and the click-site needs to read as a
+   commit, not a hover. The bell-icon Watching badge in the header is
+   the secondary confirmation; this is the primary one. */
+page-tools watch-wc[data-variant="icon"] > button[aria-pressed="true"] {
+  background: var(--color-interactive);
+  color: var(--color-text-on-primary, white);
+}
+
+/* Smooth out the colour swap and add a brief press-pulse so the click
+   is felt at the click-site, not just registered upstream. */
+page-tools watch-wc[data-variant="icon"] > button {
+  transition:
+    background var(--duration-fast, 150ms) var(--ease-out, ease),
+    border-color var(--duration-fast, 150ms) var(--ease-out, ease),
+    color var(--duration-fast, 150ms) var(--ease-out, ease),
+    transform 90ms ease-out;
+}
+
+page-tools watch-wc[data-variant="icon"] > button:active {
+  transform: scale(0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  page-tools watch-wc[data-variant="icon"] > button {
+    transition: none;
+  }
+  page-tools watch-wc[data-variant="icon"] > button:active {
+    transform: none;
+  }
+}
+
 /* Keep inner icons at a consistent toolbar size regardless of each tool's own default. */
 page-tools print-page .print-trigger icon-wc,
 page-tools share-wc[variant="icon"] button icon-wc,
