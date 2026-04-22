@@ -3563,6 +3563,13 @@ export default {
         "description": "Tile source: osm, carto-light, carto-dark"
       },
       {
+        "name": "tile-url",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL template with {z}/{x}/{y} placeholders for first-party tile proxying. Overrides provider when set. See /docs/concepts/service-facade/."
+      },
+      {
         "name": "interactive",
         "kind": "host-api",
         "purpose": "config"
