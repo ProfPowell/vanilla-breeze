@@ -92,9 +92,9 @@ class WatchWc extends VBElement {
     const labelText = this.getAttribute('label') ?? WATCH_LABEL;
 
     if (variant === 'icon') {
-      btn.innerHTML = `<icon-wc name="eye" size="${iconSize}"></icon-wc>`;
+      btn.innerHTML = `<icon-wc name="bookmark" size="${iconSize}"></icon-wc>`;
     } else {
-      btn.innerHTML = `<icon-wc name="eye" size="${iconSize}"></icon-wc><span>${this.#escape(labelText)}</span>`;
+      btn.innerHTML = `<icon-wc name="bookmark" size="${iconSize}"></icon-wc><span>${this.#escape(labelText)}</span>`;
       // Lock the label so page-watch-init doesn't rewrite it; we manage it here.
       btn.setAttribute('data-watch-label-locked', '');
     }
@@ -116,7 +116,7 @@ class WatchWc extends VBElement {
       const watching = !!entry;
       this.#button.setAttribute('aria-pressed', watching ? 'true' : 'false');
       const icon = this.#button.querySelector('icon-wc');
-      if (icon) icon.setAttribute('name', watching ? 'eye-off' : 'eye');
+      if (icon) icon.setAttribute('name', watching ? 'bookmark-check' : 'bookmark');
       const labelSpan = this.#button.querySelector('span');
       if (labelSpan && this.#variant() !== 'icon') {
         const customLabel = this.getAttribute('label');

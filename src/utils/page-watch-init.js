@@ -125,9 +125,12 @@ function syncButton(btn, watched) {
   btn.dataset.watching = watched ? '' : '';
   if (!watched) delete btn.dataset.watching;
 
-  // Swap icon if an <icon-wc> child is present
+  // Swap icon if an <icon-wc> child is present. Bookmark ↔ bookmark-check
+  // reads unambiguously as "you marked this" when the check appears; the
+  // previous eye / eye-off pair confused users because a slashed eye looks
+  // like "watching is OFF" even when toggled on.
   const icon = btn.querySelector('icon-wc');
-  if (icon) icon.setAttribute('name', watched ? 'eye-off' : 'eye');
+  if (icon) icon.setAttribute('name', watched ? 'bookmark-check' : 'bookmark');
 
   // If the button's text content is just a label (no element children), update it
   const textNode = [...btn.childNodes].find(n => n.nodeType === Node.TEXT_NODE && (n.textContent || '').trim());
