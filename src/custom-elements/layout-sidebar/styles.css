@@ -43,12 +43,19 @@ layout-sidebar[data-layout-content-min="60"] { --_content-min: 60%; }
 
 /* Sticky sidebar — only active when smart sticky system is enabled on :root.
    Always constrain to remaining viewport so the sidebar sticks cleanly and
-   gains inner scroll when its content overflows the available space. */
+   gains inner scroll when its content overflows the available space.
+
+   A small inline padding gives neumorphism / claymorphism / other
+   emboss-heavy themes room to paint outset box-shadows on the inner
+   page-toc and page-tools without the aside's overflow:auto clipping
+   their soft edges. On flat themes this is ~2px of dead margin — small
+   enough not to matter, large enough to hold the shadow corners. */
 :root[data-sticky] layout-sidebar > :is(nav, aside)[data-layout-sticky] {
   position: sticky;
   top: calc(var(--sticky-offset, 0px) + var(--sticky-gap, 0px));
   align-self: start;
   max-height: calc(100dvh - var(--sticky-offset, 0px) - var(--sticky-gap, 0px));
+  padding-inline: var(--sticky-aside-inline-pad, var(--size-2xs));
   overflow-y: auto;
   overscroll-behavior: contain;
 }
