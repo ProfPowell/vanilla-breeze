@@ -33,9 +33,14 @@ const SRC = join(ROOT, 'src');
 const DIST = join(ROOT, 'dist');
 const CDN = join(DIST, 'cdn');
 
-// Read version from package.json for build injection
+// Read version from package.json for build injection.
+// Suffix with a per-build timestamp so the service worker's CACHE_NAME
+// (vb-${VERSION}) actually changes between deploys — pkg.version alone
+// stays constant across commits and left the SW serving stale CDN assets
+// for up to 24h after each prod deploy (stale-while-revalidate window).
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8'));
-const VERSION = pkg.version;
+const BUILD_STAMP = String(Date.now());
+const VERSION = `${pkg.version}-${BUILD_STAMP}`;
 
 // Common esbuild options for JS builds
 const JS_DEFAULTS = {

@@ -8,28 +8,30 @@
 # round-trips per docs page before this was added.
 
 # ── CDN bundles (JS + CSS) ───────────────────────────────────────────
-# Same filename per deploy, contents change. Short max-age so a new
-# deploy shows up within 5 min; stale-while-revalidate lets the browser
-# serve cached bytes instantly for up to a day while refreshing in the
-# background.
+# Same filename per deploy, contents change. Tight max-age so a fresh
+# deploy lands for users within ~1 min; stale-while-revalidate bounded
+# at 1h so the worst-case "developer fixed it but user still sees old"
+# delay is bounded. The service worker's CACHE_NAME carries a per-build
+# stamp (see scripts/build-cdn.js) so a deploy that lands here also
+# evicts the SW cache on activation.
 /cdn/vanilla-breeze*.js
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  Cache-Control: public, max-age=60, stale-while-revalidate=3600
 /cdn/vanilla-breeze*.css
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  Cache-Control: public, max-age=60, stale-while-revalidate=3600
 /cdn/doc-extras.js
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  Cache-Control: public, max-age=60, stale-while-revalidate=3600
 /cdn/emoji-extended.js
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  Cache-Control: public, max-age=60, stale-while-revalidate=3600
 /cdn/sw.js
   Cache-Control: public, max-age=0, must-revalidate
 
 # ── Component + pack bundles ────────────────────────────────────────
 /cdn/components/*
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  Cache-Control: public, max-age=60, stale-while-revalidate=3600
 /cdn/packs/*
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  Cache-Control: public, max-age=60, stale-while-revalidate=3600
 /cdn/themes/*
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  Cache-Control: public, max-age=60, stale-while-revalidate=3600
 
 # ── Icons — change rarely, safe to cache a month ───────────────────
 /cdn/icons/*
