@@ -55,7 +55,24 @@
 
 <script data-vb-is-dev="${site.isDev}">
   try {
-    const stored = JSON.parse(localStorage.getItem('vb-theme') || '{}');
+    // Read VBStore-format keys: `vb:{namespace}:{key}` with an envelope
+    // { data, timestamp }. The boot used to read simple keys like
+    // 'vb-theme' — those were never written by any code (theme-picker
+    // and settings-panel both persist through VBStore), so every
+    // localStorage.getItem returned null, the boot fell through to
+    // the default theme, and ThemeManager.init() belatedly applied
+    // the real brand — producing the visible flash from default →
+    // stored theme on every page load.
+    const vbRead = (ns, key) => {
+      try {
+        const raw = localStorage.getItem(`vb:${ns}:${key}`);
+        if (!raw) return null;
+        const env = JSON.parse(raw);
+        return env && typeof env === 'object' && 'data' in env ? env.data : null;
+      } catch { return null; }
+    };
+
+    const stored = vbRead('theme', 'current') || {};
     const mode = stored.mode || 'auto';
     const brand = stored.brand || 'default';
     const isDev = document.currentScript?.dataset.vbIsDev === 'true';
@@ -74,10 +91,10 @@
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       document.documentElement.dataset.mode = 'dark';
     }
-    const a11y = JSON.parse(localStorage.getItem('vb-a11y-themes') || '[]');
+    const a11y = vbRead('settings', 'a11y') || [];
     const parts = [];
     if (brand && brand !== 'default') parts.push(brand);
-    parts.push(...a11y);
+    parts.push(...(Array.isArray(a11y) ? a11y : []));
     if (parts.length) document.documentElement.dataset.theme = parts.join(' ');
     const safeBrand = /^[a-z0-9-]+$/.test(brand) ? brand : 'default';
     if (!isDev && safeBrand && !coreThemes.has(safeBrand) && !document.querySelector(`link[data-vb-theme="${safeBrand}"]`)) {
@@ -104,9 +121,9 @@
       m.removeAttribute('media');
     });
     document.querySelector('meta[name="theme-color"]').content = themeColor;
-    const ext = JSON.parse(localStorage.getItem('vb-extensions') || '{}');
+    const ext = vbRead('settings', 'extensions') || {};
     if (ext.motionFx === false) document.documentElement.dataset.motionReduced = '';
-    if (localStorage.getItem('vb-sticky') === 'on') document.documentElement.dataset.sticky = '';
+    if (vbRead('settings', 'sticky') === 'on') document.documentElement.dataset.sticky = '';
   } catch(e) {}
 </script>
 
