@@ -62,3 +62,11 @@ import('./utils/analytics-buffer-init.js');
 
 // Lazy-load wizard only when [data-wizard] is present
 if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
+
+// Lazy-load page-watch when either a [data-watch-page] trigger or a
+// <watch-wc> wrapper is on the page. The wrapper renders the trigger
+// at setup() time, so match either. Previously the trigger only lived
+// in main.js + main-autoload.js, which dev loads directly — production
+// loads this core bundle and was missing the enhancement entirely,
+// which is why clicking the watch button did nothing on vanilla-breeze.com.
+if (document.querySelector('[data-watch-page], watch-wc')) import('./utils/page-watch-init.js');
