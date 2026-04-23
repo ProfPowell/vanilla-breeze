@@ -49,12 +49,18 @@ page-tools[data-gap="s"]   { --page-tools-gap: var(--size-s); }
 page-tools[data-gap="m"]   { --page-tools-gap: var(--size-m); }
 page-tools[data-gap="l"]   { --page-tools-gap: var(--size-l); }
 
-/* --- Child button normalization (icon toolbar) --- */
+/* --- Child button normalization (icon toolbar) ---
 
-page-tools print-page .print-trigger,
-page-tools share-wc[variant="icon"] button,
-page-tools text-reader[variant="icon"] [part="trigger"],
-page-tools watch-wc[data-variant="icon"] > button {
+   The `:root` prefix bumps specificity from (0,1,3) to (0,2,3) so this
+   beats theme overrides shaped like `:root[data-theme="editorial"] button`
+   (0,2,1). Without it the Editorial / 8-bit / Cyber / NES / Win9x themes
+   paint their chunky button styles over the toolbar icons, causing the
+   2×-3× sizing and wrap-to-multiple-rows reported on vanilla-breeze.com. */
+
+:root page-tools print-page .print-trigger,
+:root page-tools share-wc[variant="icon"] button,
+:root page-tools text-reader[variant="icon"] [part="trigger"],
+:root page-tools watch-wc[data-variant="icon"] > button {
   all: unset;
   display: inline-flex;
   align-items: center;
@@ -72,24 +78,24 @@ page-tools watch-wc[data-variant="icon"] > button {
   transition: background var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast);
 }
 
-page-tools print-page .print-trigger:hover,
-page-tools share-wc[variant="icon"] button:hover,
-page-tools text-reader[variant="icon"] [part="trigger"]:hover,
-page-tools watch-wc[data-variant="icon"] > button:hover {
+:root page-tools print-page .print-trigger:hover,
+:root page-tools share-wc[variant="icon"] button:hover,
+:root page-tools text-reader[variant="icon"] [part="trigger"]:hover,
+:root page-tools watch-wc[data-variant="icon"] > button:hover {
   border-color: var(--color-interactive);
   background: color-mix(in oklab, var(--color-interactive) 8%, transparent);
 }
 
-page-tools print-page .print-trigger:focus-visible,
-page-tools share-wc[variant="icon"] button:focus-visible,
-page-tools text-reader[variant="icon"] [part="trigger"]:focus-visible,
-page-tools watch-wc[data-variant="icon"] > button:focus-visible {
+:root page-tools print-page .print-trigger:focus-visible,
+:root page-tools share-wc[variant="icon"] button:focus-visible,
+:root page-tools text-reader[variant="icon"] [part="trigger"]:focus-visible,
+:root page-tools watch-wc[data-variant="icon"] > button:focus-visible {
   outline: 2px solid var(--color-interactive);
   outline-offset: 2px;
 }
 
-page-tools text-reader[variant="icon"] [part="trigger"][aria-pressed="true"],
-page-tools watch-wc[data-variant="icon"] > button[aria-pressed="true"] {
+:root page-tools text-reader[variant="icon"] [part="trigger"][aria-pressed="true"],
+:root page-tools watch-wc[data-variant="icon"] > button[aria-pressed="true"] {
   color: var(--color-interactive);
   border-color: var(--color-interactive);
 }
@@ -104,7 +110,7 @@ page-tools watch-wc[data-variant="icon"] > button[aria-pressed="true"] {
    --color-interactive is saturated (e.g. red), the "darker border"
    reads as an unwanted stroke ringing the fill. A flat filled block
    looks cleaner and matches the "commit" intent. */
-page-tools watch-wc[data-variant="icon"] > button[aria-pressed="true"] {
+:root page-tools watch-wc[data-variant="icon"] > button[aria-pressed="true"] {
   background: var(--color-interactive);
   color: var(--color-text-on-primary, white);
   border-color: transparent;
@@ -112,7 +118,7 @@ page-tools watch-wc[data-variant="icon"] > button[aria-pressed="true"] {
 
 /* Smooth out the colour swap and add a brief press-pulse so the click
    is felt at the click-site, not just registered upstream. */
-page-tools watch-wc[data-variant="icon"] > button {
+:root page-tools watch-wc[data-variant="icon"] > button {
   transition:
     background var(--duration-fast, 150ms) var(--ease-out, ease),
     border-color var(--duration-fast, 150ms) var(--ease-out, ease),
@@ -120,24 +126,24 @@ page-tools watch-wc[data-variant="icon"] > button {
     transform 90ms ease-out;
 }
 
-page-tools watch-wc[data-variant="icon"] > button:active {
+:root page-tools watch-wc[data-variant="icon"] > button:active {
   transform: scale(0.92);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  page-tools watch-wc[data-variant="icon"] > button {
+  :root page-tools watch-wc[data-variant="icon"] > button {
     transition: none;
   }
-  page-tools watch-wc[data-variant="icon"] > button:active {
+  :root page-tools watch-wc[data-variant="icon"] > button:active {
     transform: none;
   }
 }
 
 /* Keep inner icons at a consistent toolbar size regardless of each tool's own default. */
-page-tools print-page .print-trigger icon-wc,
-page-tools share-wc[variant="icon"] button icon-wc,
-page-tools text-reader[variant="icon"] [part="trigger"] icon-wc,
-page-tools watch-wc[data-variant="icon"] > button icon-wc {
+:root page-tools print-page .print-trigger icon-wc,
+:root page-tools share-wc[variant="icon"] button icon-wc,
+:root page-tools text-reader[variant="icon"] [part="trigger"] icon-wc,
+:root page-tools watch-wc[data-variant="icon"] > button icon-wc {
   inline-size: var(--page-tools-icon-size, 1.25rem);
   block-size: var(--page-tools-icon-size, 1.25rem);
 }
