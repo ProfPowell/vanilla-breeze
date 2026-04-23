@@ -33,13 +33,21 @@ const SRC = join(ROOT, 'src');
 const DIST = join(ROOT, 'dist');
 const CDN = join(DIST, 'cdn');
 
-// Read version from package.json for build injection.
-// Suffix with a per-build timestamp so the service worker's CACHE_NAME
-// (vb-${VERSION}) actually changes between deploys — pkg.version alone
-// stays constant across commits and left the SW serving stale CDN assets
-// for up to 24h after each prod deploy (stale-while-revalidate window).
+// Read version from package.json, suffix with the current git commit SHA.
+// The SW CACHE_NAME (vb-${VERSION}) then changes on every deploy so stale
+// caches get evicted, AND two builds from the same commit produce the
+// same bundle bytes — the audit-deploy-parity script can then verify
+// bit-for-bit parity between local and prod when they're built from the
+// same commit. A timestamp would always diff, making audits noisy.
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8'));
-const BUILD_STAMP = String(Date.now());
+let BUILD_STAMP = 'dev';
+try {
+  const { execSync } = await import('node:child_process');
+  BUILD_STAMP = execSync('git rev-parse --short HEAD', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+} catch {
+  // Not a git checkout (CI fallback, shouldn't happen in normal use).
+  BUILD_STAMP = String(Date.now());
+}
 const VERSION = `${pkg.version}-${BUILD_STAMP}`;
 
 // Common esbuild options for JS builds

@@ -142,4 +142,11 @@ copyFile('demos/homepage.css', join(pagesDir, 'docs', 'homepage.css'));
 copyDir('dist/demos/tools', join(pagesDir, 'docs', 'tools'), { optional: true });
 copyDir('dist/demos/examples', join(pagesDir, 'docs', 'examples'), { optional: true });
 
+// Alpenglow demo site. Local dev gets this via setup-preview.js as a
+// symlink; CF Pages needs a real copy because symlinks don't survive the
+// Pages artifact upload. Without this, /docs/alpenglow/ 200s with the VB
+// home page HTML because CF Pages falls back to /index.html for missing
+// routes (the bug the audit script surfaced).
+copyDir('dist/demos/alpenglow', join(pagesDir, 'docs', 'alpenglow'), { optional: true });
+
 console.log('✓ Site assembly complete');
