@@ -37,6 +37,22 @@
 <meta property="twitter:image" content="${siteUrl}/og-image.png">
 
 <!-- Theme: prevent flash of wrong theme -->
+<!-- FOUC guard: hide body while a non-core brand theme is still loading.
+     The inline boot script below may document.write a <link rel="stylesheet"
+     data-vb-theme-state="loading"> for the user's saved theme. With
+     cross-document View Transitions enabled (@view-transition in
+     view-transitions.css), the new page's first paint can happen before
+     that stylesheet arrives, producing a one-frame flash in default theme
+     before the user's real theme repaints. Hiding the body via :has()
+     on the loading attribute keeps paint suppressed until the onload
+     handler flips state → "ready" (or onerror → "error"), at which point
+     this selector no longer matches and body becomes visible. -->
+<style>
+  html:has(link[data-vb-theme-state="loading"]) body {
+    visibility: hidden;
+  }
+</style>
+
 <script data-vb-is-dev="${site.isDev}">
   try {
     const stored = JSON.parse(localStorage.getItem('vb-theme') || '{}');
@@ -70,6 +86,15 @@
       document.write(
         `<link rel="stylesheet" href="${href}" data-vb-theme="${safeBrand}" data-vb-theme-state="loading" data-vb-theme-boot=""${packAttr} onload="this.setAttribute('data-vb-theme-state','ready')" onerror="this.setAttribute('data-vb-theme-state','error')">`
       );
+      // Safety fallback: if neither onload nor onerror fires within 1.5s
+      // (slow network, broken cache, …), flip the state anyway so the
+      // :has(loading) FOUC guard above doesn't leave the page invisible.
+      setTimeout(() => {
+        const link = document.querySelector('link[data-vb-theme-boot]');
+        if (link && link.getAttribute('data-vb-theme-state') === 'loading') {
+          link.setAttribute('data-vb-theme-state', 'timeout');
+        }
+      }, 1500);
     }
     if (stored.fluid) document.documentElement.dataset.fluid = stored.fluid;
     const effectiveMode = mode !== 'auto' ? mode
