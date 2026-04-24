@@ -56,7 +56,7 @@ function animateTicker(el) {
 
   const params = VB.params(el)
   const startValue = params.getNumber('ticker-start', 0)
-  const duration = params.getNumber('ticker-duration', 1000)
+  const duration = params.getTime('ticker-duration', 1000)
   const decimals = params.get('ticker-decimals')
     ? parseInt(params.get('ticker-decimals'), 10)
     : detectDecimals(raw)

@@ -37,8 +37,8 @@ function deleteText(el, speed, onDone) {
 function startTypewriter(el) {
   const text = el.getAttribute('data-typewriter-text')
   const params = VB.params(el)
-  const speed = params.getNumber('typewriter-speed', 50)
-  const initialDelay = params.getNumber('typewriter-delay', 0)
+  const speed = params.getTime('typewriter-speed', 50)
+  const initialDelay = params.getTime('typewriter-delay', 0)
   const isLooping = el.classList.contains('loop')
   const loopPause = isLooping ? 2000 : null
 

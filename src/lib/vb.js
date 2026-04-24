@@ -183,6 +183,15 @@ const VB = {
         const val = style.getPropertyValue(`--vb-${name}`).trim()
         return val ? parseFloat(val) : fallback
       },
+      // Parse a CSS <time> token (2s, 400ms, or bare number treated as ms)
+      // into milliseconds. Returns fallback if the property is unset.
+      getTime(name, fallback = 0) {
+        const val = style.getPropertyValue(`--vb-${name}`).trim()
+        if (!val) return fallback
+        const n = parseFloat(val)
+        if (!Number.isFinite(n)) return fallback
+        return /s\s*$/.test(val) && !/ms\s*$/.test(val) ? n * 1000 : n
+      },
       hasClass(name) {
         return el.classList.contains(name)
       },

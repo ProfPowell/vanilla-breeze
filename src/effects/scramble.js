@@ -14,9 +14,9 @@ function randomChar(chars) {
 function runScramble(el) {
   const text = el.getAttribute('data-scramble-text')
   const params = VB.params(el)
-  const duration = params.getNumber('scramble-duration', 1500)
+  const duration = params.getTime('scramble-duration', 1500)
   const chars = params.get('scramble-chars') || DEFAULT_CHARS
-  const speed = params.getNumber('scramble-speed', 30)
+  const speed = params.getTime('scramble-speed', 30)
 
   const length = text.length
   let frame = 0
