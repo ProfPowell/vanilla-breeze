@@ -80,6 +80,7 @@ export const ThemeManager = {
 
       this.apply(_state);
       this._watchSystemPreference();
+      this._watchRootAttributes();
       return _state;
     })();
 
@@ -368,6 +369,73 @@ export const ThemeManager = {
         root.style.setProperty(prop, String(value));
       }
     }
+  },
+
+  /**
+   * Watch for external edits to data-theme / data-mode on <html>.
+   *
+   * When someone (DevTools, a userscript, a server-rendered attribute, a
+   * test harness) changes these attributes directly, we react: lazy-load
+   * the brand stylesheet if needed, update the in-memory cache, and fire
+   * vb:theme-change so UI (theme-picker, external-theme-sync, etc.) reflects
+   * the new state. We do NOT write through to VBStore — session-scoped by
+   * design. Callers that want persistence should use setBrand()/setMode().
+   *
+   * Feedback-loop guard: the handler is a no-op when the attribute value
+   * already matches the cached state, which is exactly what apply() leaves
+   * after every internal write.
+   * @private
+   */
+  _watchRootAttributes() {
+    if (this._rootObserver) return;
+    this._rootObserver = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.attributeName === 'data-theme') this._syncFromDataTheme();
+        else if (m.attributeName === 'data-mode') this._syncFromDataMode();
+      }
+    });
+    this._rootObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'data-mode'],
+    });
+  },
+
+  /**
+   * Pick up a brand change driven from outside the API.
+   * @private
+   */
+  _syncFromDataTheme() {
+    if (!_state) return;
+    const raw = document.documentElement.dataset.theme || '';
+    const tokens = raw.split(/\s+/).filter(Boolean);
+    const brand = tokens.find(t => !t.startsWith('a11y-')) || 'default';
+    if (brand === _state.brand) return; // our own write or a no-op edit
+    _state.brand = brand;
+    // Fire-and-forget lazy-load. A bogus brand ("made-up") 404s and the
+    // page falls back to the already-applied tokens — no crash.
+    ensureThemeLoaded(brand).catch(() => { /* bad brand name — ignore */ });
+    window.dispatchEvent(new CustomEvent('vb:theme-change', {
+      detail: { ...this.getState() }
+    }));
+  },
+
+  /**
+   * Pick up a mode change driven from outside the API.
+   * Modes are pure CSS (no lazy-load), so this is just state + event sync.
+   * @private
+   */
+  _syncFromDataMode() {
+    if (!_state) return;
+    const raw = document.documentElement.dataset.mode || 'auto';
+    const effective = _state.mode === 'auto' ? this.getEffectiveMode() : _state.mode;
+    if (raw === effective) return; // our own write or a no-op edit
+    // Treat the attribute as an explicit session-scoped override. 'auto'
+    // can't be expressed directly on the attribute (we always write the
+    // effective value), so we only see concrete 'light'/'dark' here.
+    _state.mode = /** @type {'light' | 'dark'} */ (raw);
+    window.dispatchEvent(new CustomEvent('vb:theme-change', {
+      detail: { ...this.getState() }
+    }));
   },
 
   /**

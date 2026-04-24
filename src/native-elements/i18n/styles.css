@@ -63,7 +63,11 @@
    Controlled by data-ruby on <html>:
      show — always visible
      hide — hidden from view, kept in DOM (accessible + copyable)
-     auto — show only for CJK languages (default behavior)
+     auto — show only for CJK languages
+     (attribute absent) — same as "auto"
+   The no-attribute case is treated as "auto" so that removing the
+   attribute at runtime leaves a sensible default rather than reverting
+   to the UA's "always visible" default. See spec in i18n/api.json.
    ============================================================ */
 
 /* Ruby text inherits script font for CJK */
@@ -86,20 +90,27 @@
   line-height: 0;
 }
 
-/* auto: start hidden */
-:root[data-ruby="auto"] rt {
+/* auto (and no data-ruby attribute at all): start hidden */
+:root[data-ruby="auto"] rt,
+:root:not([data-ruby]) rt {
   visibility: hidden;
   font-size: 0;
   line-height: 0;
 }
 
-/* auto: re-show for CJK languages */
+/* auto (and no data-ruby): re-show for CJK languages */
 :root[data-ruby="auto"]:lang(ja) rt,
 :root[data-ruby="auto"]:lang(zh) rt,
 :root[data-ruby="auto"]:lang(ko) rt,
 :root[data-ruby="auto"] :lang(ja) rt,
 :root[data-ruby="auto"] :lang(zh) rt,
-:root[data-ruby="auto"] :lang(ko) rt {
+:root[data-ruby="auto"] :lang(ko) rt,
+:root:not([data-ruby]):lang(ja) rt,
+:root:not([data-ruby]):lang(zh) rt,
+:root:not([data-ruby]):lang(ko) rt,
+:root:not([data-ruby]) :lang(ja) rt,
+:root:not([data-ruby]) :lang(zh) rt,
+:root:not([data-ruby]) :lang(ko) rt {
   visibility: visible;
   font-size: 0.5em;
   line-height: 1;
