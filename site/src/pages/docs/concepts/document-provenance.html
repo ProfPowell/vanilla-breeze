@@ -1,0 +1,171 @@
+---
+layout: guide
+title: "Document Provenance"
+description: "How Vanilla Breeze declares, displays, and (in time) verifies who made content, how it was made, and whether it has been tampered with since publication."
+guideGroup: Concepts
+currentPath: /docs/concepts/document-provenance/
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Document Provenance</span></li>
+  </ol>
+</nav>
+</template>
+
+<h1>Document Provenance</h1>
+<p class="lead">An honest signal for honest publishers in an era of zero-cost AI content.</p>
+
+<section>
+  <h2>The problem</h2>
+  <p>AI content generation has reduced the cost of publishing to near-zero. Visitors can no longer assume human authorship. Content farms produce convincing but inaccurate material at scale. Attribution and revision history are routinely stripped. There is no standard way for honest publishers to <em>prove</em> their content is what they say it is.</p>
+  <p>Vanilla Breeze's provenance layer doesn't solve the problem for bad actors — it gives <em>honest publishers</em> a way to signal trustworthiness to readers who care enough to check.</p>
+</section>
+
+<section>
+  <h2>Three layers, additive</h2>
+
+  <ol>
+    <li><strong>Layer 0 — Hand-authored static HTML.</strong> A page can declare full provenance using <code>&lt;meta&gt;</code> tags and <code>&lt;dl&gt;</code> structures inside <code>&lt;page-info&gt;</code>. No build step required. <a href="/docs/examples/demos/page-info-minimal.html">See a minimal proof</a>.</li>
+    <li><strong>Layer 1 — SSG-driven.</strong> A static-site generator (such as Cook SSG, which builds <a href="https://vanilla-breeze.com">vanilla-breeze.com</a>) reads frontmatter and emits the meta-tag contract automatically. Authors edit YAML, not HTML.</li>
+    <li><strong>Layer 2 — CMS with editor UI and signing.</strong> A CMS adds an editor interface, change-tracking inputs, and a signing step that runs at publish time. Pages are cryptographically verifiable in the reader's browser.</li>
+  </ol>
+
+  <p>Each layer validates the ones beneath it. Vanilla Breeze owns Layer 0 — the components, attributes, and meta-tag contract — and is stack-agnostic above it.</p>
+</section>
+
+<section>
+  <h2>The metadata substrate</h2>
+  <p>Provenance is one field family in a single metadata substrate that every Vanilla Breeze lens component can consume. The full set of fields is documented in <a href="/admin/specs/meta-tag-contract-v1/">meta-tag contract v1</a>; the short version is:</p>
+
+  <table class="props-table">
+    <thead>
+      <tr><th>Family</th><th>Fields</th><th>Source</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Identity</strong></td>
+        <td><code>author</code>, <code>article:author</code>, <code>rel="author"</code></td>
+        <td>HTML5, Open Graph</td>
+      </tr>
+      <tr>
+        <td><strong>Temporal</strong></td>
+        <td><code>article:published_time</code>, <code>article:modified_time</code>, <code>last-modified</code>, <code>itemprop="version"</code></td>
+        <td>Open Graph, Microdata</td>
+      </tr>
+      <tr>
+        <td><strong>Topic</strong></td>
+        <td><code>keywords</code>, <code>vb:topic</code></td>
+        <td>HTML5 / VB</td>
+      </tr>
+      <tr>
+        <td><strong>Provenance</strong></td>
+        <td><code>vb:provenance</code>, <code>vb:review</code>, <code>vb:status</code>, <code>vb:ai-tools</code></td>
+        <td>VB</td>
+      </tr>
+      <tr>
+        <td><strong>Integrity</strong></td>
+        <td><code>vb:hash</code>, <code>vb:signature</code>, <code>vb:signature-algorithm</code>, <code>link rel="author-key"</code></td>
+        <td>VB</td>
+      </tr>
+      <tr>
+        <td><strong>License</strong></td>
+        <td><code>license</code>, <code>link rel="license"</code></td>
+        <td>HTML5</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>The principle: <strong>public-first when public exists; <code>vb:*</code> only for private extensions.</strong> JSON-LD is the canonical machine-readable mirror.</p>
+</section>
+
+<section>
+  <h2>Three orthogonal DOM attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Answers</th><th>Where used</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="/docs/attributes/data-author/"><code>data-author</code></a></td>
+        <td>WHO made this specific edit?</td>
+        <td><code>&lt;ins&gt;</code>, <code>&lt;del&gt;</code></td>
+      </tr>
+      <tr>
+        <td><a href="/docs/attributes/data-provenance/"><code>data-provenance</code></a></td>
+        <td>HOW was the content made?</td>
+        <td><code>&lt;article&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;html&gt;</code></td>
+      </tr>
+      <tr>
+        <td><a href="/docs/attributes/data-review/"><code>data-review</code></a></td>
+        <td>What review did it receive?</td>
+        <td>same</td>
+      </tr>
+      <tr>
+        <td><a href="/docs/attributes/data-status/"><code>data-status</code></a></td>
+        <td>What's its publication state?</td>
+        <td>same</td>
+      </tr>
+      <tr>
+        <td><a href="/docs/attributes/data-trust/"><code>data-trust</code></a></td>
+        <td>Verification tier (computed at runtime)</td>
+        <td><code>.page-info-badge</code> only</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Provenance, review, and status are author-declared claims. Trust is a runtime-computed result. Each answers exactly one question.</p>
+</section>
+
+<section>
+  <h2>Lens architecture</h2>
+  <p>Provenance metadata is consumed not just by <code>&lt;page-info&gt;</code> but by the entire family of view components — each presents the same data through a different lens:</p>
+
+  <ul>
+    <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> — per-page disclosure panel</li>
+    <li><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a> — chronological lens (changelog, recently-updated)</li>
+    <li><a href="/docs/elements/web-components/site-index/"><code>&lt;site-index&gt;</code></a> — keyword lens</li>
+    <li><a href="/docs/elements/web-components/glossary-index/"><code>&lt;glossary-index&gt;</code></a> — definitional lens</li>
+    <li><a href="/docs/elements/web-components/site-map/"><code>&lt;site-map&gt;</code></a> — structural-hierarchy lens</li>
+    <li><a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a> — diff lens</li>
+  </ul>
+
+  <p>The reader chooses the lens at read-time. Even when the author doesn't expose the controls, "the nature of the web always allows them to change it" — every lens exposes its underlying data via JSON-LD or queryable DOM, so readers, crawlers, and AI tools can all reframe the same content.</p>
+</section>
+
+<section>
+  <h2>What signing does and does not prove</h2>
+  <p>The integrity layer (still being built — see Stage 4 of the <a href="/admin/r-n-d/data-provenance-april-24/">document-provenance plan</a>) cryptographically signs the canonical content of a page. When complete, <code>&lt;page-info&gt;</code> verifies the signature in the reader's browser using the Web Crypto API.</p>
+
+  <p><strong>Verification proves:</strong></p>
+  <ul>
+    <li>The content has not been altered since the author signed it.</li>
+    <li>The signature was made by whoever controls the key at the author-key URL.</li>
+    <li>The key is hosted on the same domain as the page (domain anchoring).</li>
+  </ul>
+
+  <p><strong>Verification does not prove:</strong></p>
+  <ul>
+    <li>That the content is accurate or factual.</li>
+    <li>That the author is who they claim to be.</li>
+    <li>That AI wasn't used (only <code>data-provenance</code> addresses that, and it's self-reported).</li>
+    <li>That the signing key hasn't been compromised.</li>
+  </ul>
+
+  <p>The signing layer is a <em>floor</em>, not a ceiling. It defends against mid-stream tampering (CDN swap, proxy injection, post-publish modification). It does not defend against deliberate dishonesty.</p>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code> component</a></li>
+    <li><a href="/docs/attributes/data-provenance/"><code>data-provenance</code> attribute</a></li>
+    <li><a href="/docs/attributes/data-review/"><code>data-review</code> attribute</a></li>
+    <li><a href="/docs/attributes/data-status/"><code>data-status</code> attribute</a></li>
+    <li><a href="/docs/attributes/data-trust/"><code>data-trust</code> attribute</a></li>
+    <li><a href="/docs/examples/demos/document-provenance.html">Full feature showcase demo</a></li>
+    <li><a href="/docs/examples/demos/page-info-minimal.html">Minimal Layer-0 static proof</a></li>
+  </ul>
+</section>
