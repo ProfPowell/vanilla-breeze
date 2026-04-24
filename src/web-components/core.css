@@ -616,6 +616,13 @@ textarea[data-grow][data-grow-init] {
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    /* Shrink-wrap the element to the text so the gradient paints across
+       the glyphs, not the full line-box. Without this, block-level headings
+       span the content column and the gradient's last color falls in the
+       empty space to the right of the text — users see only the first
+       color. `max-width: 100%` preserves wrapping for long headings. */
+    width: fit-content;
+    max-width: 100%;
     background-image: linear-gradient(
       135deg,
       var(--color-primary, oklch(55% 0.2 260)),
