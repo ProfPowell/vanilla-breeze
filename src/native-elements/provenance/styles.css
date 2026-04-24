@@ -1,71 +1,129 @@
-/* provenance: Trust indicators and content provenance styling */
+/* provenance: Content provenance, review, and status indicators.
+   See admin/specs/meta-tag-contract-v1.md §C.
 
-/* --- Trust indicator custom properties (theme-overridable) --- */
+   Three orthogonal attributes:
+     data-provenance — HOW the content was made (human / ai-assisted / ai-generated
+                       + extensions: translated, synthesized, migrated)
+     data-review     — what human review it received (unreviewed / fact-checked / editor-reviewed)
+     data-status     — publication state (draft / published / archived)
 
-[data-trust] {
-  --trust-color: var(--color-text-muted);
-  --trust-border: var(--border-width-thin) solid var(--trust-color);
+   data-trust is reserved for the verification tier on <page-info> badges only
+   (see src/web-components/page-info/styles.css). Do not use it here. */
+
+/* --- data-provenance: how the content was made --- */
+
+[data-provenance] {
+  --provenance-color: var(--color-text-muted);
+  --provenance-border: var(--border-width-thin) solid var(--provenance-color);
   position: relative;
 }
 
 /* Human is the default — no visual noise */
-[data-trust="human"] {
-  --trust-color: transparent;
+[data-provenance="human"] {
+  --provenance-color: transparent;
 }
 
 /* AI-assisted: subtle accent */
-[data-trust~="ai-assisted"] {
-  --trust-color: var(--trust-color-ai-assisted, oklch(65% 0.15 250));
-  border-inline-start: var(--size-3xs) solid var(--trust-color);
+[data-provenance~="ai-assisted"] {
+  --provenance-color: var(--provenance-color-ai-assisted, oklch(65% 0.15 250));
+  border-inline-start: var(--size-3xs) solid var(--provenance-color);
   padding-inline-start: var(--size-s);
 }
 
 /* AI-generated: visible background tint */
-[data-trust~="ai-generated"] {
-  --trust-color: var(--trust-color-ai-generated, oklch(65% 0.18 290));
-  background: oklch(from var(--trust-color) l c h / 0.05);
-  border-inline-start: var(--size-3xs) solid var(--trust-color);
+[data-provenance~="ai-generated"] {
+  --provenance-color: var(--provenance-color-ai-generated, oklch(65% 0.18 290));
+  background: oklch(from var(--provenance-color) l c h / 0.05);
+  border-inline-start: var(--size-3xs) solid var(--provenance-color);
   padding-inline-start: var(--size-s);
 }
 
-/* Editor-reviewed: approval indicator */
-[data-trust~="editor-reviewed"] {
-  border-inline-start-color: var(--trust-color-reviewed, oklch(60% 0.18 145));
+/* Extension tokens — composable alongside a core value */
+[data-provenance~="translated"] {
+  --provenance-color: var(--provenance-color-translated, oklch(65% 0.14 200));
 }
 
-/* Draft: work-in-progress styling */
-[data-trust~="draft"] {
-  --trust-color: var(--trust-color-draft, oklch(70% 0.15 75));
-  border: var(--border-width-thin) dashed var(--trust-color);
+[data-provenance~="synthesized"] {
+  --provenance-color: var(--provenance-color-synthesized, oklch(65% 0.14 170));
+}
+
+[data-provenance~="migrated"] {
+  --provenance-color: var(--provenance-color-migrated, oklch(65% 0.10 50));
+}
+
+/* --- data-review: what review the content has received --- */
+
+[data-review="fact-checked"] {
+  --review-color: var(--review-color-fact-checked, oklch(60% 0.15 160));
+}
+
+[data-review="editor-reviewed"] {
+  --review-color: var(--review-color-editor-reviewed, oklch(60% 0.18 145));
+  border-inline-start-color: var(--review-color);
+}
+
+/* --- data-status: publication state --- */
+
+[data-status="draft"] {
+  --status-color: var(--status-color-draft, oklch(70% 0.15 75));
+  border: var(--border-width-thin) dashed var(--status-color);
   padding: var(--size-s);
   opacity: 0.85;
 }
 
-/* --- Trust badge labels via ::before (opt-in with .labeled) --- */
+[data-status="archived"] {
+  --status-color: var(--status-color-archived, var(--color-text-muted));
+  opacity: 0.7;
+}
 
-[data-trust~="ai-assisted"].labeled::before {
+/* --- Labeled badges (opt-in with .labeled on any of the three attributes) --- */
+
+[data-provenance~="ai-assisted"].labeled::before {
   content: "AI-Assisted";
 }
 
-[data-trust~="ai-generated"].labeled::before {
+[data-provenance~="ai-generated"].labeled::before {
   content: "AI-Generated";
 }
 
-[data-trust~="editor-reviewed"].labeled::before {
+[data-provenance~="translated"].labeled::before {
+  content: "Translated";
+}
+
+[data-provenance~="synthesized"].labeled::before {
+  content: "Synthesized";
+}
+
+[data-provenance~="migrated"].labeled::before {
+  content: "Migrated";
+}
+
+[data-review="fact-checked"].labeled::before {
+  content: "Fact-Checked \2713";
+}
+
+[data-review="editor-reviewed"].labeled::before {
   content: "Reviewed \2713";
 }
 
-[data-trust~="draft"].labeled::before {
+[data-status="draft"].labeled::before {
   content: "Draft";
 }
 
-[data-trust].labeled::before {
+[data-status="archived"].labeled::before {
+  content: "Archived";
+}
+
+/* Shared badge chrome — applies when any of the three attributes has .labeled */
+[data-provenance].labeled::before,
+[data-review].labeled::before,
+[data-status].labeled::before {
   display: inline-block;
   font-size: var(--font-size-xs);
   font-weight: 500;
-  color: var(--trust-color);
+  color: var(--provenance-color, var(--review-color, var(--status-color, var(--color-text-muted))));
   padding: var(--size-3xs) var(--size-2xs);
-  border: var(--border-width-thin) solid var(--trust-color);
+  border: var(--border-width-thin) solid var(--provenance-color, var(--review-color, var(--status-color, var(--color-text-muted))));
   border-radius: var(--radius-s);
   margin-block-end: var(--size-xs);
 }
