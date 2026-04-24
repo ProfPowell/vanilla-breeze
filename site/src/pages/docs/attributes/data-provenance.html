@@ -1,0 +1,236 @@
+---
+layout: attribute
+title: "data-provenance"
+description: "Declare how content was made — human, AI-assisted, AI-generated, translated, synthesized, or migrated. CSS-only indicators for authorship provenance."
+attributeName: data-provenance
+category: content
+attributeType: data
+currentPath: /docs/attributes/data-provenance/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-provenance</code> attribute declares how content was produced. It answers <em>how was this made?</em> — not <em>who wrote this edit?</em> (that's <code>data-author</code>) and not <em>is this rendering verified?</em> (that's <code>data-trust</code>, scoped to <code>&lt;page-info&gt;</code> badges).</p>
+  <p>Trust levels can be applied at the page level (on <code>&lt;html&gt;</code> or <code>&lt;article&gt;</code>) or scoped to individual sections. Extension tokens compose with a core value via space-separation.</p>
+
+  <browser-window
+    src="/docs/examples/demos/trust-basic.html"
+    url="https://vanilla-breeze.dev/data-provenance"
+    title="Provenance Indicators"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic usage" data-escape><!-- Whole-page authorship declaration -->
+<article data-provenance="ai-assisted">
+  <h1>Migration Guide</h1>
+  <p>This guide was written with AI assistance.</p>
+</article>
+
+<!-- Section-level provenance override -->
+<article data-provenance="ai-assisted">
+  <section data-provenance="human">
+    <h2>When to Migrate</h2>
+    <p>Written from direct experience...</p>
+  </section>
+
+  <section data-provenance="ai-generated">
+    <h2>API Reference</h2>
+    <p>Auto-generated from the OpenAPI spec...</p>
+  </section>
+</article></code-block>
+</section>
+
+<section>
+  <h2>Core Tokens</h2>
+  <p>Pick exactly one core token as the primary authorship declaration.</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Token</th>
+        <th>Meaning</th>
+        <th>Visual Treatment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>human</code></td>
+        <td>Written entirely by a person</td>
+        <td>No indicator (the default assumption)</td>
+      </tr>
+      <tr>
+        <td><code>ai-assisted</code></td>
+        <td>Human wrote with AI tooling</td>
+        <td>Subtle border accent</td>
+      </tr>
+      <tr>
+        <td><code>ai-generated</code></td>
+        <td>Primarily AI-generated content</td>
+        <td>Background tint + border accent</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Extension Tokens</h2>
+  <p>Compose one or more extension tokens alongside a core value with space-separation. Useful for content that has been translated, synthesized from sources, or migrated from another system.</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Token</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>translated</code></td>
+        <td>Derived from another language</td>
+      </tr>
+      <tr>
+        <td><code>synthesized</code></td>
+        <td>Aggregated or summarized from cited sources</td>
+      </tr>
+      <tr>
+        <td><code>migrated</code></td>
+        <td>Moved from another system; may have been reformatted</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" show-lines label="Composed tokens" data-escape><!-- AI-generated then translated from English to French -->
+<section data-provenance="ai-generated translated">
+  <h2>Guide d'installation</h2>
+  <p>Contenu généré puis traduit.</p>
+</section></code-block>
+</section>
+
+<section>
+  <h2>Related attributes</h2>
+  <p>The three attributes below are orthogonal — each answers a separate question. Use them together as needed.</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Answers</th>
+        <th>Vocabulary</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="/docs/attributes/data-provenance/"><code>data-provenance</code></a></td>
+        <td>How was this content made?</td>
+        <td>human, ai-assisted, ai-generated, translated, synthesized, migrated</td>
+      </tr>
+      <tr>
+        <td><a href="/docs/attributes/data-review/"><code>data-review</code></a></td>
+        <td>What review did it receive?</td>
+        <td>unreviewed, fact-checked, editor-reviewed</td>
+      </tr>
+      <tr>
+        <td><a href="/docs/attributes/data-status/"><code>data-status</code></a></td>
+        <td>What's its publication state?</td>
+        <td>draft, published, archived</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" show-lines label="All three together" data-escape><article data-provenance="ai-assisted"
+         data-review="editor-reviewed"
+         data-status="published">
+  <h1>Migration Guide</h1>
+  <p>AI-drafted content that an editor reviewed and approved.</p>
+</article></code-block>
+</section>
+
+<section>
+  <h2>Labeled Badges</h2>
+  <p>Add the <code>labeled</code> class to show a visible text badge via <code>::before</code>. Without this class, provenance indicators are purely structural.</p>
+
+  <code-block language="html" show-lines label="Labeled badges" data-escape><section data-provenance="ai-assisted" class="labeled">
+  <h2>Getting Started</h2>
+  <p>AI-assisted content with a visible badge.</p>
+</section>
+
+<section data-provenance="ai-generated" class="labeled">
+  <h2>API Reference</h2>
+  <p>AI-generated content with a visible badge.</p>
+</section>
+
+<section data-status="draft" class="labeled">
+  <h2>Roadmap</h2>
+  <p>Work in progress.</p>
+</section></code-block>
+</section>
+
+<section>
+  <h2>With Change Tracking</h2>
+  <p>Provenance and <code>&lt;ins&gt;</code>/<code>&lt;del&gt;</code> change tracking are complementary. <code>data-provenance</code> declares the authorship model for the whole element; inline edits show specific changes, with <code>data-author</code> identifying who made each edit.</p>
+
+  <code-block language="html" show-lines label="Provenance + change tracking" data-escape><article data-provenance="ai-assisted">
+  <p>
+    The migration requires
+    <del datetime="2026-02-15"
+         data-author="claude"
+         data-reason="correction">
+      Node.js 16
+    </del>
+    <ins datetime="2026-02-15"
+         data-author="tpowell"
+         data-reason="review">
+      Node.js 20 LTS
+    </ins>
+    or later.
+  </p>
+</article></code-block>
+</section>
+
+<section>
+  <h2>CSS Tokens</h2>
+  <p>Provenance and review colors are exposed as custom properties that themes can override.</p>
+
+  <code-block language="css" show-lines label="Theme-overridable tokens" data-escape>/* Theme-overridable provenance / review / status colors */
+[data-provenance] {
+  --provenance-color-ai-assisted: oklch(65% 0.15 250);
+  --provenance-color-ai-generated: oklch(65% 0.18 290);
+  --provenance-color-translated: oklch(65% 0.14 200);
+  --provenance-color-synthesized: oklch(65% 0.14 170);
+  --provenance-color-migrated: oklch(65% 0.10 50);
+}
+
+[data-review] {
+  --review-color-fact-checked: oklch(60% 0.15 160);
+  --review-color-editor-reviewed: oklch(60% 0.18 145);
+}
+
+[data-status] {
+  --status-color-draft: oklch(70% 0.15 75);
+}</code-block>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <p>No JavaScript is needed. The attribute is queryable via standard DOM methods.</p>
+
+  <code-block language="javascript" show-lines label="Querying provenance" data-escape>// Find all AI-generated content on the page
+document.querySelectorAll('[data-provenance~="ai-generated"]');
+
+// Check provenance of a specific element
+element.dataset.provenance; // "ai-generated translated"</code-block>
+</section>
+
+<section>
+  <h2>Meta-tag contract</h2>
+  <p>The page-level provenance declaration also appears as <code>&lt;meta name="vb:provenance"&gt;</code> in the document head. See <a href="/docs/specs/meta-tag-contract/">the meta-tag contract</a> for the full mapping between DOM attributes, <code>&lt;meta&gt;</code> tags, and Schema.org JSON-LD.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Provenance indicators are visual-only decorations; the DOM content and ARIA attributes are unaffected.</li>
+    <li>The <code>.labeled</code> badges use <code>::before</code> pseudo-elements. Screen readers may or may not announce pseudo-element content depending on the browser.</li>
+    <li>For critical trust disclosure, include the provenance level in visible text content via <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a>.</li>
+  </ul>
+</section>

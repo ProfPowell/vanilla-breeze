@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-trust"
-description: "Content trust indicators for declaring authorship provenance. CSS-only trust badges for human, AI-assisted, AI-generated, editor-reviewed, and draft content."
+description: "Verification tier indicator on page-info badges. Runtime-computed state showing whether page content matches its cryptographic signature."
 attributeName: data-trust
 category: content
 attributeType: data
@@ -13,172 +13,94 @@ crumbLabel: Data Attributes
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>data-trust</code> attribute declares content provenance on any block element. It provides CSS-only visual indicators that communicate how content was produced and what review it received.</p>
-  <p>Trust levels can be applied at the page level (on <code>&lt;article&gt;</code>) or scoped to individual sections. Compound values support content that has been both generated and reviewed.</p>
-
-  <browser-window
-    src="/docs/examples/demos/trust-basic.html"
-    url="https://vanilla-breeze.dev/data-trust"
-    title="Trust Indicators"
-    shadow>
-  </browser-window>
-
-  <code-block language="html" show-lines label="Basic usage" data-escape><!-- Whole-page trust level -->
-<article data-trust="ai-assisted">
-  <h1>Migration Guide</h1>
-  <p>This guide was written with AI assistance.</p>
-</article>
-
-<!-- Section-level trust -->
-<article data-trust="ai-assisted">
-  <section data-trust="human">
-    <h2>When to Migrate</h2>
-    <p>Written from direct experience...</p>
-  </section>
-
-  <section data-trust="ai-generated">
-    <h2>API Reference</h2>
-    <p>Auto-generated from the OpenAPI spec...</p>
-  </section>
-</article></code-block>
+  <p>The <code>data-trust</code> attribute represents the <strong>verification tier</strong> of a rendered page — whether the DOM content matches its cryptographic signature. It is set by the <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> component at runtime on the <code>.page-info-badge</code> element; authors do not set it directly.</p>
+  <p>For declaring <em>how content was made</em> (human, AI-assisted, AI-generated, etc.), use <a href="/docs/attributes/data-provenance/"><code>data-provenance</code></a>. The two attributes answer different questions:</p>
+  <ul>
+    <li><code>data-provenance</code> is a <em>claim</em> by the author about how the content was produced — unverifiable on its own.</li>
+    <li><code>data-trust</code> is a <em>result</em> computed at runtime — it changes based on whether the signature verifies.</li>
+  </ul>
 </section>
 
 <section>
-  <h2>Trust Tokens</h2>
+  <h2>Verification Tiers</h2>
   <table class="props-table">
     <thead>
       <tr>
         <th>Token</th>
         <th>Meaning</th>
-        <th>Visual Treatment</th>
+        <th>Badge color</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><code>human</code></td>
-        <td>Written entirely by a human</td>
-        <td>No indicator (the default assumption)</td>
+        <td><code>undeclared</code></td>
+        <td>No provenance or signature metadata present</td>
+        <td>Neutral</td>
       </tr>
       <tr>
-        <td><code>ai-assisted</code></td>
-        <td>Human-written with AI tooling</td>
-        <td>Subtle border accent</td>
+        <td><code>declared</code></td>
+        <td>Provenance claimed in meta tags; no verification attempted</td>
+        <td>Warning (soft)</td>
       </tr>
       <tr>
-        <td><code>ai-generated</code></td>
-        <td>Primarily AI-generated content</td>
-        <td>Background tint + border accent</td>
+        <td><code>domain-anchored</code></td>
+        <td>Public key reachable at the author's domain (<code>/.well-known/content-keys/…</code>)</td>
+        <td>Info</td>
       </tr>
       <tr>
-        <td><code>editor-reviewed</code></td>
-        <td>Reviewed and approved by editor</td>
-        <td>Green border accent</td>
+        <td><code>verified</code></td>
+        <td>DOM content matches the cryptographic signature</td>
+        <td>Success</td>
       </tr>
       <tr>
-        <td><code>draft</code></td>
-        <td>Unreviewed work in progress</td>
-        <td>Dashed border + muted opacity</td>
+        <td><code>failed</code></td>
+        <td>Signature present but content does not match — page may have been modified since signing</td>
+        <td>Error</td>
+      </tr>
+      <tr>
+        <td><code>key-unavailable</code></td>
+        <td>Signature present but the key URL is unreachable</td>
+        <td>Neutral</td>
       </tr>
     </tbody>
   </table>
 </section>
 
 <section>
-  <h2>Labeled Badges</h2>
-  <p>Add the <code>labeled</code> class to show a visible text badge via <code>::before</code>. Without this class, trust indicators are purely structural (border and background only).</p>
+  <h2>What verification does and does not prove</h2>
 
-  <code-block language="html" show-lines label="Labeled badges" data-escape><!-- Add .labeled to show a visible badge -->
-<section data-trust="ai-assisted" class="labeled">
-  <h2>Getting Started</h2>
-  <p>AI-assisted content with a visible badge.</p>
-</section>
-
-<section data-trust="ai-generated" class="labeled">
-  <h2>API Reference</h2>
-  <p>AI-generated content with a visible badge.</p>
-</section>
-
-<section data-trust="draft" class="labeled">
-  <h2>Roadmap</h2>
-  <p>Unreviewed work in progress.</p>
-</section></code-block>
-</section>
-
-<section>
-  <h2>Compound Values</h2>
-  <p>Space-separated tokens allow composable trust declarations. The <code>~=</code> CSS selector matches individual tokens within the compound value.</p>
-
-  <code-block language="html" show-lines label="Compound values" data-escape><!-- Compound values for content that has been
-     both generated and reviewed -->
-<section data-trust="ai-generated editor-reviewed">
-  <h2>Release Notes</h2>
-  <p>AI-drafted from commit history, reviewed
-     and approved by the release manager.</p>
-</section></code-block>
-</section>
-
-<section>
-  <h2>With Change Tracking</h2>
-  <p>Trust indicators and <code>&lt;ins&gt;</code>/<code>&lt;del&gt;</code> change tracking are complementary. <code>data-trust</code> declares the authorship model; inline edits show specific changes, including when a human corrects an AI suggestion.</p>
-
-  <code-block language="html" show-lines label="Trust + change tracking" data-escape><!-- Trust + change tracking together -->
-<article data-trust="ai-assisted">
-  <p>
-    The migration requires
-    <del datetime="2026-02-15"
-         data-author="claude"
-         data-reason="correction">
-      Node.js 16
-    </del>
-    <ins datetime="2026-02-15"
-         data-author="tpowell"
-         data-reason="review">
-      Node.js 20 LTS
-    </ins>
-    or later.
-  </p>
-</article></code-block>
-</section>
-
-<section>
-  <h2>CSS Tokens</h2>
-  <p>Trust indicator colors are exposed as custom properties that themes can override.</p>
-
-  <code-block language="css" show-lines label="Theme-overridable tokens" data-escape>/* Theme-overridable trust colors */
-[data-trust] {
-  --trust-color-ai-assisted: oklch(65% 0.15 250);
-  --trust-color-ai-generated: oklch(65% 0.18 290);
-  --trust-color-reviewed: oklch(60% 0.18 145);
-  --trust-color-draft: oklch(70% 0.15 75);
-}</code-block>
-</section>
-
-<section>
-  <h2>JavaScript API</h2>
-  <p>No JavaScript is needed for trust indicators. The <code>data-trust</code> attribute is queryable via standard DOM methods.</p>
-
-  <code-block language="javascript" show-lines label="Querying trust" data-escape>// Find all AI-generated content on the page
-document.querySelectorAll('[data-trust~="ai-generated"]');
-
-// Check trust level of a specific element
-element.dataset.trust; // "ai-generated editor-reviewed"</code-block>
-</section>
-
-<section>
-  <h2>Why <code>data-trust</code> Instead of a Class</h2>
+  <p><strong>Verification proves:</strong></p>
   <ul>
-    <li><strong>Queryable.</strong> <code>document.querySelectorAll('[data-trust~="ai-generated"]')</code> finds all AI content</li>
-    <li><strong>Composable.</strong> Space-separated tokens matched by the <code>~=</code> selector</li>
-    <li><strong>Semantic.</strong> Data attributes declare <em>what the content is</em>, not <em>how it looks</em></li>
-    <li><strong>Machine-readable.</strong> Crawlers and tools can extract trust signals without understanding CSS classes</li>
+    <li>The signable content has not been altered since the author signed it.</li>
+    <li>The signature was made by whoever controls the key at the author-key URL.</li>
+    <li>The key is hosted on the same domain as the page (domain anchoring).</li>
+  </ul>
+
+  <p><strong>Verification does not prove:</strong></p>
+  <ul>
+    <li>That the content is accurate or factual.</li>
+    <li>That the author is who they claim to be.</li>
+    <li>That AI wasn't used (only <a href="/docs/attributes/data-provenance/"><code>data-provenance</code></a> addresses that, and it's self-reported).</li>
+    <li>That the signing key hasn't been compromised.</li>
   </ul>
 </section>
 
 <section>
-  <h2>Accessibility</h2>
+  <h2>Reading the tier in JavaScript</h2>
+  <p>Listen for the <code>page-info:verified</code> event to be notified when verification completes:</p>
+
+  <code-block language="javascript" show-lines label="Verification event" data-escape>document.addEventListener('page-info:verified', (e) => {
+  console.log(e.detail.status); // 'verified' | 'failed' | 'key-unavailable' | 'declared' | 'undeclared'
+  console.log(e.detail.tier);   // 0 | 1 | 2 | 3
+});</code-block>
+</section>
+
+<section>
+  <h2>See also</h2>
   <ul>
-    <li>Trust indicators are visual-only decorations; the DOM content and ARIA attributes are unaffected</li>
-    <li>The <code>.labeled</code> badges use <code>::before</code> pseudo-elements. Screen readers may or may not announce pseudo-element content depending on the browser</li>
-    <li>For critical trust disclosure, include the trust level in visible text content (e.g., in a <code>&lt;page-meta&gt;</code> or <code>&lt;page-info&gt;</code> component)</li>
+    <li><a href="/docs/attributes/data-provenance/"><code>data-provenance</code></a> — how content was made (authorship)</li>
+    <li><a href="/docs/attributes/data-review/"><code>data-review</code></a> — what review the content received</li>
+    <li><a href="/docs/attributes/data-status/"><code>data-status</code></a> — content publication state</li>
+    <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> — the component that computes and displays verification</li>
   </ul>
 </section>
