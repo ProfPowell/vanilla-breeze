@@ -88,7 +88,6 @@ import './social-embed/providers/x.js';
 import './social-embed/providers/instagram.js';
 import './social-embed/providers/youtube.js';
 import './reader-view/logic.js';
-import './page-meta/logic.js';
 import './change-set/logic.js';
 import './page-info/logic.js';
 import './page-stats/logic.js';

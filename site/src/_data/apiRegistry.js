@@ -4893,15 +4893,6 @@ export default {
     "childAttributes": [],
     "structure": []
   },
-  "page-meta": {
-    "$schema": "../../../schemas/api.schema.json",
-    "element": "page-meta",
-    "type": "web-component",
-    "description": "Document metadata display with JSON-LD injection",
-    "attributes": [],
-    "childAttributes": [],
-    "structure": []
-  },
   "page-stats": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "page-stats",

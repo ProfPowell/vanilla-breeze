@@ -867,10 +867,6 @@ module.exports = {
     }
   },
 
-  "page-meta": {
-
-  },
-
   "page-stats": {
     attributes: {
       "data-for": {},
