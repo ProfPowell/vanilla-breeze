@@ -73,7 +73,12 @@ class ThemePicker extends VBElement {
   async setup() {
     this.#isInline = this.getAttribute('variant') === 'inline';
     this.#isCompact = this.hasAttribute('compact');
-    await this.#hydrateFromStore();
+    // When loaded from the ui pack bundle, this file's ThemeManager import is
+    // a separate singleton from the core bundle's — so its _state stays null
+    // until we init it ourselves. Without this, #applyA11yThemes below reads
+    // brand='default' (DEFAULTS), finds a mismatch with the boot-applied
+    // data-theme, and wipes it. init() is idempotent.
+    await Promise.all([ThemeManager.init(), this.#hydrateFromStore()]);
     this.#render();
     this.#bindEvents();
     this.#syncState();
