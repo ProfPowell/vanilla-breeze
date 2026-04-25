@@ -16,6 +16,7 @@ const elementsByLetter = {
     { name: 'audio', type: 'native', href: '/docs/elements/native/audio/' },
     { name: 'audio-player', type: 'component', href: '/docs/elements/web-components/audio-player/' },
     { name: 'audio-visualizer', type: 'component', href: '/docs/elements/web-components/audio-visualizer/' },
+    { name: 'author-index', type: 'component', href: '/docs/elements/web-components/author-index/' },
   ],
   B: [
     { name: 'b', type: 'native', href: '/docs/elements/native/b/' },
@@ -52,6 +53,7 @@ const elementsByLetter = {
     { name: 'compare-surface', type: 'component', href: '/docs/elements/web-components/comparison/' },
     { name: 'component-sampler', type: 'component', href: '/docs/elements/web-components/component-sampler/', pack: 'design-system' },
     { name: 'consent-banner', type: 'component', href: '/docs/elements/web-components/consent-banner/' },
+    { name: 'content-lens', type: 'component', href: '/docs/elements/web-components/content-lens/' },
     { name: 'content-swap', type: 'component', href: '/docs/elements/web-components/content-swap/' },
     { name: 'context-menu', type: 'component', href: '/docs/elements/web-components/context-menu/' },
   ],
@@ -164,12 +166,12 @@ const elementsByLetter = {
   P: [
     { name: 'p', type: 'native', href: '/docs/elements/native/p/' },
     { name: 'page-info', type: 'component', href: '/docs/elements/web-components/page-info/' },
-    { name: 'page-meta', type: 'component', href: '/docs/elements/web-components/page-meta/' },
     { name: 'page-stats', type: 'component', href: '/docs/elements/web-components/page-stats/' },
     { name: 'page-toc', type: 'component', href: '/docs/elements/web-components/page-toc/' },
     { name: 'page-tools', type: 'component', href: '/docs/elements/web-components/page-tools/' },
     { name: 'page-tour', type: 'component', href: '/docs/elements/web-components/page-tour/' },
     { name: 'picture', type: 'native', href: '/docs/elements/native/picture/' },
+    { name: 'popularity-index', type: 'component', href: '/docs/elements/web-components/popularity-index/' },
     { name: 'pre', type: 'native', href: '/docs/elements/native/pre/' },
     { name: 'print-page', type: 'component', href: '/docs/elements/web-components/print-page/' },
     { name: 'progress', type: 'native', href: '/docs/elements/native/progress/' },
@@ -181,6 +183,7 @@ const elementsByLetter = {
   ],
   R: [
     { name: 'reader-view', type: 'component', href: '/docs/elements/web-components/reader-view/' },
+    { name: 'recently-visited', type: 'component', href: '/docs/elements/web-components/recently-visited/' },
     { name: 'rp', type: 'native', href: '/docs/elements/native/rp/' },
     { name: 'rt', type: 'native', href: '/docs/elements/native/rt/' },
     { name: 'ruby', type: 'native', href: '/docs/elements/native/ruby/' },
@@ -238,8 +241,10 @@ const elementsByLetter = {
     { name: 'toast-msg', type: 'component', href: '/docs/elements/web-components/toast/' },
     { name: 'token-specimen', type: 'component', href: '/docs/elements/web-components/token-specimen/', pack: 'design-system' },
     { name: 'tool-tip', type: 'component', href: '/docs/elements/web-components/tooltip/' },
+    { name: 'topic-map', type: 'component', href: '/docs/elements/web-components/topic-map/' },
     { name: 'tr', type: 'native', href: '/docs/elements/native/tr/' },
     { name: 'track', type: 'native', href: '/docs/elements/native/track/' },
+    { name: 'trust-filter', type: 'component', href: '/docs/elements/web-components/trust-filter/' },
   ],
   U: [
     { name: 'u', type: 'native', href: '/docs/elements/native/u/' },

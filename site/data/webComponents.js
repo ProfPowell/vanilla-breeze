@@ -117,7 +117,6 @@ export default {
     { name: 'icon-wc', href: '/docs/elements/web-components/icons/', desc: 'Icon component with Lucide, Phosphor, Tabler, Bold, and Mage icon sets' },
     { name: 'include-file', href: '/docs/elements/web-components/include-file/', desc: 'Load remote HTML fragments with progressive enhancement' },
     { name: 'page-info', href: '/docs/elements/web-components/page-info/', desc: 'Document provenance disclosure with trust badges and authorship' },
-    { name: 'page-meta', href: '/docs/elements/web-components/page-meta/', desc: 'Document metadata display with automatic JSON-LD injection' },
     { name: 'page-stats', href: '/docs/elements/web-components/page-stats/', desc: 'Reading statistics with word count, reading time, and last-modified date' },
     { name: 'page-tools', href: '/docs/elements/web-components/page-tools/', desc: 'Configurable toolbar for page-level utilities with responsive FAB collapse' },
     { name: 'print-page', href: '/docs/elements/web-components/print-page/', desc: 'Print button with raw-mode toggle' },
