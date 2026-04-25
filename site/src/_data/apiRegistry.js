@@ -1196,6 +1196,42 @@ export default {
     "childAttributes": [],
     "structure": []
   },
+  "author-index": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "author-index",
+    "type": "web-component",
+    "description": "Author-grouped view of site content",
+    "attributes": [
+      {
+        "name": "data-lens-src",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to pages.json (or compatible source)"
+      },
+      {
+        "name": "src",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Alias for data-lens-src"
+      },
+      {
+        "name": "placeholder",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Search input placeholder (default \"Filter authors…\")"
+      },
+      {
+        "name": "sort",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Sort mode: \"alpha\" (default) | \"count\""
+      }
+    ]
+  },
   "calendar-wc": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "calendar-wc",
@@ -2455,6 +2491,62 @@ export default {
         "name": "consent-banner:save",
         "detail": "{ preferences }",
         "description": "Fired when user saves granular preferences"
+      }
+    ]
+  },
+  "content-lens": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "content-lens",
+    "type": "web-component",
+    "description": "Universal switchable host for VB lens components",
+    "attributes": [
+      {
+        "name": "data-lens-default",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Lens name to show on first load"
+      },
+      {
+        "name": "data-lens-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "\"on\" (default) | \"off\" — render reader controls"
+      },
+      {
+        "name": "data-lens-src",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Shared JSON source URL forwarded to children"
+      },
+      {
+        "name": "data-lens-storage",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Key for sessionStorage persistence (default: pathname)"
+      },
+      {
+        "name": "data-active-lens",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "string",
+        "description": "Reflects the currently active lens"
+      }
+    ],
+    "events": [
+      {
+        "name": "content-lens:change",
+        "detail": "{ lens: string }",
+        "description": "Fires when the reader switches lenses"
+      }
+    ],
+    "slots": [
+      {
+        "name": "default",
+        "description": "Lens components, each with data-lens-name"
       }
     ]
   },
@@ -5328,6 +5420,42 @@ export default {
     "childAttributes": [],
     "structure": []
   },
+  "popularity-index": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "popularity-index",
+    "type": "web-component",
+    "description": "Aggregated most-visited lens (degrades gracefully when endpoint is unavailable)",
+    "attributes": [
+      {
+        "name": "data-lens-src",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Endpoint URL (default \"/api/analytics/popular\")"
+      },
+      {
+        "name": "data-meta-src",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional pages.json URL for metadata enrichment"
+      },
+      {
+        "name": "limit",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Max entries shown (default 10)"
+      },
+      {
+        "name": "window",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Time-window query forwarded to endpoint (e.g. \"24h\", \"7d\", \"30d\")"
+      }
+    ]
+  },
   "print-page": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "print-page",
@@ -5481,6 +5609,41 @@ export default {
     ],
     "childAttributes": [],
     "structure": []
+  },
+  "recently-visited": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "recently-visited",
+    "type": "web-component",
+    "description": "Device-local reader history lens (localStorage, never aggregated)",
+    "attributes": [
+      {
+        "name": "limit",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Max entries kept in local history (default 25)"
+      },
+      {
+        "name": "no-track",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Don't append the current page on connectedCallback"
+      },
+      {
+        "name": "empty-text",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Message rendered when there is no history"
+      }
+    ],
+    "events": [
+      {
+        "name": "recently-visited:clear",
+        "description": "Fires when the reader clears the local history"
+      }
+    ]
   },
   "review-surface": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7149,6 +7312,64 @@ export default {
     ],
     "childAttributes": [],
     "structure": []
+  },
+  "topic-map": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "topic-map",
+    "type": "web-component",
+    "description": "Hierarchical view of vb:topic dotted paths",
+    "attributes": [
+      {
+        "name": "data-lens-src",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to pages.json (or compatible source)"
+      },
+      {
+        "name": "src",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Alias for data-lens-src"
+      },
+      {
+        "name": "expand-all",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Render with every level expanded"
+      }
+    ]
+  },
+  "trust-filter": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "trust-filter",
+    "type": "web-component",
+    "description": "Provenance-based filter lens (vb:provenance, vb:review, vb:status, signed)",
+    "attributes": [
+      {
+        "name": "data-lens-src",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to pages.json (or compatible source)"
+      },
+      {
+        "name": "src",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Alias for data-lens-src"
+      }
+    ],
+    "events": [
+      {
+        "name": "trust-filter:change",
+        "detail": "{ selected, count }",
+        "description": "Fires when the reader changes any filter chip"
+      }
+    ]
   },
   "type-specimen": {
     "$schema": "../../../schemas/api.schema.json",

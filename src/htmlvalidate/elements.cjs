@@ -254,6 +254,15 @@ module.exports = {
     }
   },
 
+  "author-index": {
+    attributes: {
+      "data-lens-src": {},
+      "src": {},
+      "placeholder": {},
+      "sort": {}
+    }
+  },
+
   "calendar-wc": {
     attributes: {
       "data-month": {},
@@ -475,6 +484,16 @@ module.exports = {
       "position": { enum: ["bottom", "top", "center"] },
       "trigger": {},
       "expires": {}
+    }
+  },
+
+  "content-lens": {
+    attributes: {
+      "data-lens-default": {},
+      "data-lens-controls": {},
+      "data-lens-src": {},
+      "data-lens-storage": {},
+      "data-active-lens": {}
     }
   },
 
@@ -930,6 +949,15 @@ module.exports = {
     }
   },
 
+  "popularity-index": {
+    attributes: {
+      "data-lens-src": {},
+      "data-meta-src": {},
+      "limit": {},
+      "window": {}
+    }
+  },
+
   "print-page": {
     attributes: {
       "raw-toggle": { boolean: true },
@@ -964,6 +992,14 @@ module.exports = {
       "storage-key": {},
       "data-reader-state": {},
       "aria-pressed": {}
+    }
+  },
+
+  "recently-visited": {
+    attributes: {
+      "limit": {},
+      "no-track": { boolean: true },
+      "empty-text": {}
     }
   },
 
@@ -1278,6 +1314,21 @@ module.exports = {
       "data-anchor": {},
       "interestfor": {},
       "data-content": {}
+    }
+  },
+
+  "topic-map": {
+    attributes: {
+      "data-lens-src": {},
+      "src": {},
+      "expand-all": { boolean: true }
+    }
+  },
+
+  "trust-filter": {
+    attributes: {
+      "data-lens-src": {},
+      "src": {}
     }
   },
 
