@@ -2,6 +2,9 @@
 
 > Definitive catalog of every element, attribute, class, and data-attribute in Vanilla Breeze.
 > Machine-readable for LLM code generation. Human-scannable for quick lookup.
+>
+> **Last verified:** 2026-04-24 against commit `13e93ba0` (provenance Stage 4 shipped).
+> **Companion truth-sources:** `custom-elements.json` (auto-generated CEM, authoritative for web-component APIs), `admin/specs/meta-tag-contract-v1.md` (provenance contract), `admin/specs/canonical-document-v1.md` (signing canonicalization).
 
 **CSS Layer Order:** `tokens → reset → native-elements → custom-elements → web-components → charts → utils`
 
@@ -899,6 +902,73 @@ CSS custom property `--progress` (0–100) controls fill.
 
 JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 
+> **Authoritative manifest:** `custom-elements.json` (CEM) at the repo root is the
+> machine-readable source of truth for every web component, regenerated on every
+> build (`npm run build:cem`). The entries below are the human-readable companion;
+> when a component is missing detail here, read its `api.json` and `logic.js`.
+
+### Component index (60 elements)
+
+| Element | Purpose | Detail below |
+|---------|---------|:------------:|
+| `<accordion-wc>` | Enhanced details/summary accordion | ✓ |
+| `<audio-player>` | Custom-controls audio playback | |
+| `<audio-visualizer>` | Real-time audio waveform visualization | |
+| `<card-list>` | Data-driven repeating card list | ✓ |
+| `<carousel-wc>` | Slideshow / carousel with autoplay, indicators | ✓ |
+| `<change-set>` | Change-tracking surface for `<ins>`/`<del>` blocks (provenance lens) | |
+| `<chart-wc>` | Charting wrapper around `src/charts/` types | |
+| `<chat-input>` | Chat composer (textarea, attachments, send) | |
+| `<chat-window>` | Threaded chat surface (works with `<chat-message>`) | |
+| `<color-palette>` | Swatch grid for theme/brand color demos | |
+| `<combo-box>` | Accessible autocomplete combobox | ✓ |
+| `<command-palette>` / `<command-group>` / `<command-item>` | Cmd+K command surface | ✓ |
+| `<compare-surface>` | Before/after image slider | ✓ |
+| `<consent-banner>` | Cookie / privacy consent banner | |
+| `<content-swap>` | Flippable / swap front-and-back content | ✓ |
+| `<context-menu>` | Right-click context menu | ✓ |
+| `<data-table>` | Sortable, filterable, selectable table | ✓ |
+| `<drag-surface>` | Drag-and-drop reorder zone | |
+| `<drop-down>` | Generic dropdown menu | ✓ |
+| `<emoji-picker>` | Emoji search & insert popover | ✓ |
+| `<foot-notes>` / `<foot-note>` | Footnote collection / inline reference | ✓ |
+| `<form-field>` | Field shell with label, help, error, password rules | (see §3) |
+| `<geo-map>` | OpenStreetMap-backed map embed | ✓ |
+| `<glossary-index>` | Page reference for term definitions | |
+| `<heading-links>` | Auto-anchor permalinks on headings | ✓ |
+| `<icon-wc>` | Lucide icon insertion | ✓ |
+| `<image-map>` / `<map-area>` | Modern hotspot image map | |
+| `<include-file>` (alias `<html-include-wc>`) | HTML include with caching, lazy mode | ✓ |
+| `<markdown-editor>` | Markdown authoring textarea + preview | |
+| `<markdown-viewer>` | Render markdown to sanitized HTML | |
+| `<page-info>` | Document provenance disclosure (auto-reads §11 metadata) | (see §11) |
+| `<page-toc>` | Auto-generated table of contents | ✓ |
+| `<page-tour>` / `<tour-step>` | Guided product tour overlays | |
+| `<print-page>` | Print preview / paginated print view | |
+| `<qr-code>` | QR code generator | ✓ |
+| `<reader-view>` | Reader-mode style stripping | |
+| `<settings-panel>` | Application settings drawer | |
+| `<short-cuts>` | Keyboard shortcut overlay (reads `data-hotkey`) | ✓ |
+| `<site-index>` | Aggregates `vb:topic`/keywords across pages | |
+| `<site-map>` | Hierarchical sitemap renderer | |
+| `<site-search>` | Pagefind-backed site search | ✓ |
+| `<slide-accept>` | "Slide to confirm" affordance | ✓ |
+| `<social-embed>` | oEmbed-style social media embed | |
+| `<spacing-specimen>` | Token specimen — spacing scale demo | |
+| `<split-surface>` | Resizable split-pane | ✓ |
+| `<star-rating>` | Star rating input (works on `[data-rating]` too) | ✓ |
+| `<tab-set>` | Accessible tabs | ✓ |
+| `<text-reader>` | Text-to-speech reader (Web Speech API) | |
+| `<theme-picker>` | Theme switcher dropdown | ✓ |
+| `<time-index>` | Timeline of recently-updated pages (reads `last-modified`) | |
+| `<toast-msg>` | Toast notification queue | ✓ |
+| `<tool-tip>` | Anchor-positioned rich tooltip | ✓ |
+| `<type-specimen>` | Token specimen — typography scale demo | |
+| `<video-player>` | Custom-controls video playback | |
+| `<youtube-player>` | Privacy-respecting YouTube embed | |
+
+Detailed entries follow for the components with extended attributes/events. See `api.json` per component for the complete attribute & event surface.
+
 ### `<tab-set>`
 Accessible tabbed interface. Wraps `<button role="tab">` + `<div role="tabpanel">`.
 
@@ -991,8 +1061,8 @@ Full-text search overlay with keyboard navigation.
 |--------|
 | `site-search:open`, `site-search:close` |
 
-### `<command-wc>` / `<command-group>` / `<command-item>`
-Command palette (Cmd+K).
+### `<command-palette>` / `<command-group>` / `<command-item>`
+Command palette (Cmd+K). Opens via `data-command` button or programmatic API.
 
 | Events | Detail |
 |--------|--------|
@@ -1530,7 +1600,76 @@ Applied to `<html>` or `<body>` root elements.
 
 ---
 
-## 10. Quick Reference — All `data-*` Attributes
+## 10. Provenance & Authorship Surface
+
+VB ships a stack-agnostic content-provenance contract. Any HTML page that emits the tags below lights up VB's `<page-info>`, `<change-set>`, and lens components. The contract is authoritative in `admin/specs/meta-tag-contract-v1.md` (v1.0, stable). Canonicalization rules for signing live in `admin/specs/canonical-document-v1.md`.
+
+**Principle: public-first.** Where an open-standard name exists (Schema.org, Open Graph, HTML5), VB reads the open name. The `vb:*` namespace is reserved for VB-specific extensions only.
+
+### Public-standard `<meta>` and `<link>` (Section A)
+
+| Field | Purpose |
+|---|---|
+| `<meta name="author">`, `<link rel="author">`, `<meta property="article:author">` | Author identity |
+| `<meta name="last-modified">`, `article:published_time`, `article:modified_time` | Temporal |
+| `<meta name="keywords">`, repeated `<meta property="article:tag">` | Classification |
+| `<meta name="license">`, `<link rel="license">` | License |
+| `<meta itemprop="version">` | Semantic version |
+| `<meta property="og:*">` | Social preview |
+| `<script type="application/ld+json">` Article/TechArticle | JSON-LD mirror (canonical machine-readable) |
+
+### `vb:*` namespace (Section B)
+
+| Field | Vocabulary |
+|---|---|
+| `<meta name="vb:provenance">` | Core: `human` (default), `ai-assisted`, `ai-generated`. Extensions (space-composed): `translated`, `synthesized`, `migrated` |
+| `<meta name="vb:review">` | `unreviewed` (default), `fact-checked`, `editor-reviewed` |
+| `<meta name="vb:status">` | `draft`, `published` (default), `archived` |
+| `<meta name="vb:ai-tools">` | Comma-separated tool names (`Claude, GPT-5`) |
+| `<meta name="vb:topic">` | Dotted-path taxonomy (`engineering.web.css`) — shared with analytics |
+| `<meta name="vb:version-url">` | Link to changelog anchor for this page's version |
+
+### Content-integrity (signing) — Section B + E
+
+| Field | Purpose |
+|---|---|
+| `<meta name="vb:hash">` | Base64 SHA-256 of canonical document |
+| `<meta name="vb:signature">` | Base64 ECDSA signature over canonical document |
+| `<meta name="vb:signature-algorithm">` | Algorithm id (e.g. `ECDSA-P256-SHA256`) |
+| `<link rel="author-key" data-key-id="…">` | JWK pointer (`/.well-known/content-keys/{author}.jwk`) |
+
+Public-key infrastructure lives at `/.well-known/content-keys/{author-id}.jwk` and `/.well-known/content-authenticity.json`. Build pipeline: `scripts/sign-pages.js`.
+
+### DOM attributes (Section C — applied to content elements)
+
+These are NOT meta tags. They live on `<article>`, `<section>`, `<aside>`, or inline elements like `<ins>`/`<del>`.
+
+| Attribute | Answers | Vocabulary |
+|---|---|---|
+| `data-author` | Who made this specific edit? | Free-form person identifier |
+| `data-provenance` | How was this content made? | Same vocabulary as `vb:provenance`. Space-composes: `data-provenance="ai-generated translated"`. CSS uses `[data-provenance~="ai-generated"]` |
+| `data-review` | What review did it receive? | Same vocabulary as `vb:review` |
+| `data-status` | What's its publication state? | Same vocabulary as `vb:status` |
+| `data-trust` | **Verification tier** (badge-only) | `undeclared`, `declared`, `domain-anchored`, `verified`, `failed`, `key-unavailable` |
+
+**Critical distinction:** `data-provenance` is an author claim about *how content was made*. `data-trust` is a *runtime computation* by `<page-info>` and is reserved for the verification badge. Authorship is never `data-trust`.
+
+**Page-level defaults** can go on `<html data-provenance="…" data-status="…">`. Section-level declarations override.
+
+### Consumers in VB
+
+| Component | Reads |
+|---|---|
+| `<page-info>` | All of Sections A, B, and the canonical-document hash/signature for live verification |
+| `<change-set>` | `data-author`, `data-provenance` on `<ins>`/`<del>` blocks |
+| `<site-index>` | `<meta name="keywords">`, `article:tag`, `vb:topic` |
+| `<time-index>` | `<meta name="last-modified">`, `itemprop="version"`, `vb:version-url` |
+| Trust / topic lens pages | `vb:provenance`, `vb:review`, `vb:status`, `vb:topic` aggregated across the site |
+| Analytics subsystem | All `vb:*` tags via `document.querySelectorAll('meta[name^="vb:"]')` |
+
+---
+
+## 11. Quick Reference — All `data-*` Attributes
 
 Alphabetical index of every `data-*` attribute with where it applies.
 
@@ -1543,6 +1682,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-animate-image` | `<img>` — play/pause control |
 | `data-attention` | UI elements — attention indicator |
 | `data-auto` | Various — auto behavior |
+| `data-author` | `<ins>`, `<del>`, content blocks — edit authorship (see §10) |
 | ~~`data-autoplay`~~ | **Removed** — use `autoplay` on `<carousel-wc>` |
 | ~~`data-autoplay-delay`~~ | **Removed** — use `autoplay-delay` on `<carousel-wc>` |
 | `data-autosave` | `<form>` — localStorage save |
@@ -1645,6 +1785,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | ~~`data-persist`~~ | **Removed** — use `persist` on `<split-surface>` |
 | `data-position` | Various — positioning |
 | `data-prev` | Pagination button — previous page |
+| `data-provenance` | Content blocks, `<html>` — authorship claim (see §10) |
 | `data-radius` | `[data-media]` — border radius |
 | `data-range` | `<input type="range">` — enhanced range |
 | `data-rating` | `<fieldset>` — star rating |
@@ -1655,6 +1796,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | ~~`data-required`~~ | **Removed** — use `required` on `<combo-box>` |
 | `data-responsive` | Table — mobile layout |
 | `data-reveal` | Text — reveal entrance |
+| `data-review` | Content blocks, `<html>` — review state (see §10) |
 | `data-ring` | `<user-avatar>` — border ring |
 | `data-scramble` | Text — decode effect |
 | `data-select-all` | Checkbox — select-all toggle |
@@ -1679,7 +1821,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-state-hidden` | Table row — hidden |
 | `data-state-selected` | Table row — selection state |
 | `data-state-sorted` | Table th — sort direction |
-| `data-status` | Avatar child — online status |
+| `data-status` | Avatar child — online status; content blocks, `<html>` — publication state (see §10) |
 | `data-stepper` | Number input — +/- buttons |
 | `data-sticky` | Table — sticky header/column |
 | `data-sticky-column` | Table — sticky N columns |
@@ -1690,6 +1832,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-title` | Various — title text |
 | `data-toggle-tags` | `<fieldset>` — pill chip toggle |
 | `data-tooltip` | Chart td — tooltip text |
+| `data-trust` | `.page-info-badge` only — verification tier (runtime-computed; see §10) |
 | `data-tooltip-delay` | `<tool-tip>` — show delay |
 | `data-tooltip-position` | Tooltip — position |
 | `data-trigger` | `<tool-tip>` — trigger mode |

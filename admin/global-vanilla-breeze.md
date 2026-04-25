@@ -1,29 +1,26 @@
 # Vanilla Breeze — Project Overview & Roadmap
 
-> **Living document.** Consolidates the 37 R&D docs in `admin/r-n-d/`, the active task backlog, and the current codebase state into a single navigable reference. Updated 2026-03-01.
+> **Living document.** Consolidates R&D docs in `admin/r-n-d/`, formal specs in `admin/specs/`, and the current codebase state into a single navigable reference.
+> **Last updated:** 2026-04-24 against commit `13e93ba0` (provenance Stage 4 shipped). Package version `0.1.1` — VB is pre-release; breaking changes still acceptable.
 
 ---
 
 ## What VB Is Today
 
-Vanilla Breeze is an HTML-first web framework that styles 65+ native HTML elements, provides 32 web components, 25 layout custom elements, 54 progressive enhancement utilities, and 53 theme variants — all without requiring a build step for consumers.
+Vanilla Breeze is an HTML-first web framework: 65+ styled native HTML elements, 60 declared web components (per `custom-elements.json`), 25+ layout / utility custom elements, a deep progressive-enhancement layer, and 50 theme variants — all without requiring a build step for consumers.
 
-| Metric | Count |
-|--------|------:|
-| Web components (with JS logic) | 31 |
-| Web components (CSS-only) | 1 |
-| Custom layout elements | 13 |
-| Custom utility elements | 9 |
-| Enhancement init scripts | 43 |
-| Theme variants | 53 |
-| Demo pages | 491 |
-| Doc site pages | 366 |
-| Unit tests | 294 |
-| Quality scripts | 38 |
+| Metric | Count | Source |
+|--------|------:|--------|
+| Declared web components (CEM) | 60 | `custom-elements.json` |
+| Web-component dirs in `src/web-components/` | 95 | Includes shared modules + work-in-progress |
+| Custom elements in `src/custom-elements/` | 30+ | Layout primitives, form-field, chat, semantic-card, etc. |
+| Theme variants | 50 | `src/tokens/themes/` |
+| Token stylesheets | 14 | `src/tokens/` |
+| `package.json` scripts | 48 | Build, lint, test, audit |
 
-**CDN bundle:** Core 98 KB gzip, Full 169 KB gzip.
+**Quality gates:** tsc strict null checks, ESLint + jsdoc, html-validate (custom-element registry), pa11y, VB conformance checker, unit tests, visual regression tests, component tests, lighthouse, bundle budgets.
 
-**Quality gates (all green):** tsc strict null checks, ESLint + jsdoc, html-validate, pa11y, VB conformance checker, 294 unit tests, visual regression tests, component tests.
+**Doc site:** 11ty (Nunjucks) at `site/`, with provenance-aware Cook SSG metadata pipeline. Local dev: Caddy at `https://vb.test`.
 
 ---
 
@@ -141,43 +138,58 @@ Everything below is organized into **work streams** — coherent groups of relat
 
 ---
 
-### 6. Analytics (Open Analytics)
+### 6. Analytics (Open Analytics) — **Shipped**
 
-**What exists:** Nothing shipped in VB yet. Comprehensive spec exists.
+**What exists:** Active analytics subsystem deployed on Cloudflare Pages with D1 + Analytics Engine bindings. Layer-3 JS beacon ships in the bundle and reads page metadata via the `vb:*` meta-tag namespace.
 
-**R&D docs:** `analytics.md` (status), `analytics-spec.md` (client v0.3.0), `analytics-backend-spec.md` (server), `analytics-part2.md`, `analytics-part3.md` (research)
+**R&D docs:** `analytics.md` (status), `analytics-spec.md` (client v0.3.0), `analytics-backend-spec.md` (server), `analytics-part2.md`, `analytics-part3.md`
 
 **Architecture (5 layers, from spec):**
-| Layer | What | JS needed? |
-|-------|------|-----------|
-| 0 | HTTP `Last-Modified` header counting | No |
-| 1 | Server log analysis (referrer-based uniques) | No |
-| 2 | `ping` attribute on links | No |
-| 3 | JS beacon for SPA, metadata, events | Yes (<1.5 KB) |
-| 4 | Web Vitals (LCP, CLS, INP, TTFB) | Yes (opt-in) |
-| 5 | Error tracking (JS errors, unhandled rejections) | Yes (opt-in) |
+| Layer | What | Status |
+|-------|------|--------|
+| 0 | HTTP `Last-Modified` header counting | Available via Cloudflare logs |
+| 1 | Server log analysis (referrer-based uniques) | Available |
+| 2 | `ping` attribute on links | HTML-native, no code needed |
+| 3 | JS beacon for SPA, metadata, events | **Shipped**; reads `vb:*` meta envelope |
+| 4 | Web Vitals (LCP, CLS, INP, TTFB) | Opt-in path implemented |
+| 5 | Error tracking (JS errors, unhandled rejections) | Opt-in path implemented |
 
-**Status:** Client and server specs are detailed and implementation-ready. No code exists yet.
+**Production gotchas (see memory):** `VB_KV` binding name must match code exactly; `wrangler kv key put` JSON line-wrap corruption; default mode is LOCAL — always pass `--remote` for production writes.
 
-**Decisions needed:**
-- Backend infrastructure: Cloudflare Workers + D1, or self-hosted Postgres?
-- Data retention policy (30/90/365 days)?
-- Dashboard: build custom or use Grafana/similar?
-- When to start implementation vs. stabilizing VB core?
+**Open work:**
+- Backend dashboard (build custom or Grafana?)
+- Data retention policy
+- Public consumer-facing dashboards in VB doc site
 
 ---
 
-### 7. Content Trust & Provenance
+### 7. Document Provenance — **Stage 4 shipped (Apr 24, 2026)**
 
-**What exists:** Nothing shipped. Concept documented.
+**What exists:** End-to-end content-provenance system shipped in four stages. Authors emit standard meta tags + a `vb:*` namespace; VB components surface them; pages can be cryptographically signed and verified live in the browser.
 
-**R&D docs:** `document-provenance.md`
+**Authoritative specs (NOT R&D — stable contracts):**
+- `admin/specs/meta-tag-contract-v1.md` — public contract for `<meta>`, `<link>`, `data-*`, JSON-LD that VB consumes (v1.0, stable, 2026-04-24)
+- `admin/specs/canonical-document-v1.md` — canonicalization rules for hashing & signing (v1, stable)
 
-**Concept:** `data-trust` attributes for content origin (human/AI/bot), change tracking via native `<ins>`/`<del>`, JSON-LD metadata, future cryptographic signatures.
+**What shipped (commit `13e93ba0`):**
 
-**Status:** Early-stage thinking. Cross-cuts with CMS strategy (Vanilla Press) and global-overview's "Data Integrity & Meta Initiative."
+| Stage | Delivered |
+|-------|-----------|
+| 0 — Vocabulary | `data-provenance` (separated from `data-trust`), core/extension token composition, page-level defaults via `<html>` |
+| 1 — Components | `<page-info>` (auto mode reads `<meta>` tags, static mode enhances CMS markup), `<change-set>` for `<ins>`/`<del>` blocks, refactor of attribute pages |
+| 2 — Build pipeline | Cook SSG metadata plugin, four lens pages (changelog, glossary, sitemap, keyword index), provenance frontmatter wired through every layout |
+| 3 — Canonical document | Format spec v1 + `src/lib/canonicalize.js` library |
+| 4 — Signing | `scripts/sign-pages.js` build step, `.well-known/content-keys/{author}.jwk` + `.well-known/content-authenticity.json`, live ECDSA-P256-SHA256 verification in `<page-info>` |
 
-**Decision needed:** Is this a VB feature or a separate project?
+**Stack-agnostic by design:** VB does NOT ship 11ty, Cook SSG, or VanillaPress integrations from core. Any tool that emits the v1 contract lights up VB components.
+
+**Cross-cuts:** Vanilla Press (CMS) is the primary consumer being onboarded — see `admin/handoffs/vanilla-press-integration.md`. Analytics subsystem co-owns the `vb:*` meta namespace.
+
+**Open work:**
+- VanillaPress editor integration (in progress)
+- Additional lens components beyond the four shipped
+- Multi-author signing chains
+- Future C2PA / Verifiable Credentials interop
 
 ---
 
@@ -251,20 +263,22 @@ Combining active tasks, R&D maturity, and user impact:
 
 | Item | Type | Source |
 |------|------|--------|
-| Analytics client Layer 0-3 | Feature | `analytics-spec.md` |
+| VanillaPress editor integration with provenance contract | Feature | `admin/handoffs/vanilla-press-integration.md` |
 | Print styles completion | Feature | `print-styles.md` |
 | I18n architecture unification | Architecture | `i18n.md` |
 | CSS `::part()` theming design | Architecture | `css-parts.md` |
 | PWA polish (Phase 5 mobile) | Feature | `mobile-phases.md` |
+| Analytics public dashboard | Feature | `analytics-backend-spec.md` |
 
 ### Later (backlog)
 
 | Item | Type | Source |
 |------|------|--------|
-| Analytics backend + dashboard | Feature | `analytics-backend-spec.md` |
+| Additional provenance lens components | Feature | `meta-tag-contract-v1.md` consumers |
+| Multi-author signing chains | Feature | `canonical-document-v1.md` extension |
 | Scroll-driven animations | Feature | `css-layout-future.md` |
-| Document provenance system | Feature | `document-provenance.md` |
 | Subgrid adoption | Feature | `css-layout-future.md` (wait for baseline) |
+| C2PA / VC interop | Feature | Provenance roadmap |
 | Montane SSR engine | Adjacent | `enhance-for-montane.md` |
 
 ---
@@ -326,7 +340,12 @@ Quick reference to all 37 R&D documents, grouped by work stream:
 - [`analytics-part3.md`](r-n-d/analytics-part3.md) — Platform comparison
 
 ### Content & Provenance
-- [`document-provenance.md`](r-n-d/document-provenance.md) — Content trust and change tracking
+- [`specs/meta-tag-contract-v1.md`](specs/meta-tag-contract-v1.md) — **Stable v1 contract.** Public-first meta-tag namespace VB reads at runtime
+- [`specs/canonical-document-v1.md`](specs/canonical-document-v1.md) — **Stable v1.** Canonicalization rules for hashing & signing
+- [`r-n-d/data-provenance/`](r-n-d/data-provenance/) — Stage planning and design artifacts
+- [`r-n-d/data-provenance-april-24.md`](r-n-d/data-provenance-april-24.md) — Decision history and rationale
+- [`r-n-d/document-provenance.md`](r-n-d/document-provenance.md) — Original concept (superseded by v1 contract)
+- [`handoffs/vanilla-press-integration.md`](handoffs/vanilla-press-integration.md) — Integration guide for downstream consumers
 
 ### Print
 - [`print-styles.md`](r-n-d/print-styles.md) — Print media implementation

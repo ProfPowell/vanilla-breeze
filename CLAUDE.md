@@ -45,5 +45,8 @@ See `.claude/AGENTS.md` for the full workflow.
 | **Commands** | `.claude/commands/` | Slash commands for common operations |
 | **Hooks** | `.claude/settings.json` | Auto-run validators on file edits |
 | **Beads** | `.beads/` | Issue tracking (synced with git) |
+| **Reference docs** | `admin/syntax.md`, `admin/global-vanilla-breeze.md` | Element/attribute catalog and project roadmap |
+| **Stable contracts** | `admin/specs/` | Versioned specs (meta-tag contract v1, canonical-document v1) |
+| **External handoffs** | `admin/handoffs/` | Onboarding docs for downstream consumers (e.g. vanilla-press) |
 
 Each system has one owner. Do not duplicate across systems.
