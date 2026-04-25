@@ -36,6 +36,18 @@
 1. **`admin/syntax.md`** — definitive catalog of every element, attribute, class, and `data-*`. Machine-readable for codegen.
 2. **`custom-elements.json`** at the repo root — auto-generated from JSDoc. Use this for precise web-component APIs (attributes, events, slots).
 
+### Reference implementations
+
+VB ships working code for every contract above. Treat these as the source of truth when prose disagrees with behaviour:
+
+| File | Role |
+|---|---|
+| `src/lib/canonicalize.js` | **Single shared library** that the signer (Node) AND verifier (browser) both import. Pure DOM walk, NFC normalization, fixed §G key order per `canonical-document-v1.md`. If VanillaPress writes its own signer, its output **must be byte-identical** to this library's. The cleanest interop path is to vendor or import `canonicalize.js` directly. |
+| `scripts/sign-pages.js` | Reference Node CLI signer. Walks built HTML, runs `canonicalize.js`, signs with ECDSA-P256-SHA256, injects `vb:hash` / `vb:signature` / `vb:signature-algorithm` / `<link rel="author-key">`. Idempotent, lenient by default. |
+| `scripts/generate-key.js` | Generates fresh ECDSA-P256 keypairs with the JWK metadata shape VB expects. |
+| `src/web-components/page-info/logic.js` (`#verifySignature`) | Browser-side verifier. Fetches the JWK at `<link rel="author-key">`, rebuilds the canonical doc from the live DOM, runs `crypto.subtle.verify`, updates `[data-trust]` on the badge. |
+| `tests/unit/canonicalize.test.js` + `tests/unit/sign-roundtrip.test.js` | The contract test suite. The round-trip test exercises sign → parse → verify against the demo keypair. Easiest way to confirm VanillaPress-emitted HTML round-trips correctly: clone VB and run the suite against your output. |
+
 ---
 
 ## What VanillaPress must emit (the rules)
@@ -152,6 +164,40 @@ If VanillaPress wants to publish *signed* documents:
 - Canonicalization rules: `admin/specs/canonical-document-v1.md` — read carefully if VanillaPress builds its own signer. Identical input HTML must produce byte-identical canonical output across signer and verifier.
 
 Signing is **optional** and orthogonal to the meta-tag contract. The contract works without it.
+
+---
+
+## Current operational state
+
+A few things are true *right now* (as of `13e93ba0`) that aren't permanent contracts but affect VanillaPress integration choices.
+
+### Demo keypair
+
+VB ships a publicly-checked-in **DEMO** keypair so the round-trip works out of the box without secrets:
+
+- Public half: `site/src/pages/.well-known/content-keys/vb-release-demo.jwk` (deployed at `/.well-known/content-keys/vb-release-demo.jwk`)
+- Private half: `scripts/demo-keys/vb-release-demo.private.jwk`
+- Both halves carry an explicit `metadata.warning` saying signatures from this key prove nothing about authorship.
+
+**VanillaPress should not reuse the demo key.** Generate your own via `node scripts/generate-key.js --kid your-key-id --owner "Your Name" --domain your.tld`, keep the private half off the public internet, and publish the public half at `/.well-known/content-keys/{your-kid}.jwk`. Add the new key to `/.well-known/content-authenticity.json`.
+
+The `VB_PRIVATE_KEY_JWK` env var lets the signer read a key from any path, so production deploys can keep their key in CI secrets and never on disk in the repo.
+
+### Signer is lenient
+
+`scripts/sign-pages.js` runs in **lenient mode by default** today: it logs per-page errors and continues. The build does not fail when a page fails to sign. A `--strict` flag exists for the future flip but isn't wired into the default build chain yet.
+
+VanillaPress should plan for either mode: a strict-mode flip is the natural next step once the kinks are out, and downstream "always-on signing" becomes meaningful only at that point.
+
+### What's still in flight
+
+| Bead | Title | Status |
+|---|---|---|
+| `vanilla-breeze-t1eo` | Stage 5 — VanillaPress integration on thomasapowell.com | **This work**. P3, depends on the above. |
+| `vanilla-breeze-rmoi` | Stage 6 — lens extensions + `<content-lens>` universal host | Open, P3. Will add `<author-index>`, `<topic-map>`, `<trust-filter>`, and a reader-controllable lens host. VanillaPress should not bake assumptions about lens-component shape until this lands; the meta-tag contract is stable, the lens consumers are not. |
+| `vanilla-breeze-bknc` | RSS/Atom feed for `/changelog/` | Open, P3. Cosmetic — does not affect the integration contract. |
+
+Run `bd ready` from the repo root to see the live list.
 
 ---
 
