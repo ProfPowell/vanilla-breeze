@@ -53,4 +53,13 @@ export default {
   themeRegistry,
   budgetReport,
   resilience,
+
+  /* Provenance defaults — overridden per-page by generate-provenance-meta plugin
+     when frontmatter declares author/dates/version/provenance/etc. Default to
+     empty strings so layouts that reference ${provenanceMeta} etc. don't
+     render literal placeholders on pages without frontmatter. */
+  provenanceMeta: '',
+  provenanceJsonLd: '',
+  provenanceHtmlAttrs: '',
+  pageInfoBlock: '',
 };
