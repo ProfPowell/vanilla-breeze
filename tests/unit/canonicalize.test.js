@@ -211,16 +211,17 @@ describe('buildCanonicalText (via internal)', () => {
     assert.equal(buildCanonicalText(d), 'keep');
   });
 
-  it('excludes lens and chrome custom elements', () => {
+  it('excludes derived-view lenses but not content-host lenses', () => {
     const d = doc({
       body: [el('ARTICLE', { 'data-signable': '' }, [
-        el('PAGE-INFO', {}, [text('lens')]),
-        el('CHANGE-SET', {}, [text('lens')]),
-        el('PAGE-TOC', {}, [text('lens')]),
-        el('P', {}, [text('content')])
+        el('PAGE-INFO', {}, [text('derived')]),
+        el('CHANGE-SET', {}, [text('derived')]),
+        el('PAGE-TOC', {}, [text('derived')]),
+        el('TIME-INDEX', {}, [el('P', {}, [text('host content')])]),
+        el('P', {}, [text('regular')])
       ])]
     });
-    assert.equal(buildCanonicalText(d), 'content');
+    assert.equal(buildCanonicalText(d), 'host content\n\nregular');
   });
 
   it('honours data-signable="false" opt-out', () => {

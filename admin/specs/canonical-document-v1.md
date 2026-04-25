@@ -54,12 +54,21 @@ The following elements and their entire subtrees are **excluded** regardless of 
 script, style, template, noscript,
 nav, aside, header, footer,
 figcaption,
-page-info, change-set, page-toc, page-tools, page-stats,
-site-map, site-index, glossary-index, time-index, content-lens,
+page-info, change-set, page-toc, page-tools, page-stats, content-lens,
 button, dialog, menu, form,
 [hidden], [aria-hidden="true"],
 [data-signable="false"]
 ```
+
+**Lens-component split.** VB's lens family divides into two groups:
+- **Derived-view lenses** (excluded above) — render metadata about the page
+  itself or interactive views on stored state: `page-info` (provenance panel),
+  `change-set` (diff viewer), `page-toc` (table of contents), `page-tools`,
+  `page-stats`, `content-lens` (universal host).
+- **Content-host lenses** (NOT excluded) — wrap the page's published prose
+  and enhance it with filtering/sort: `time-index`, `glossary-index`,
+  `site-index`, `site-map`. Their light-DOM children ARE the content the
+  reader sees, so they participate in the canonical document.
 
 **Excluded inline elements (text dropped, surrounding text continues):**
 

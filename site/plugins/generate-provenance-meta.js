@@ -221,5 +221,11 @@ export class GenerateProvenanceMeta {
     const hasAny = fm.author || fm.published || fm.lastModified || fm.version
       || fm.provenance || fm.review || fm.aiTools || fm.license;
     fm.pageInfoBlock = hasAny ? '<page-info auto></page-info>' : '';
+
+    /* Pages with provenance frontmatter become signable — the Stage 4
+       signer (scripts/sign-pages.js) skips pages with no [data-signable]
+       descendants. Layouts inject this attribute onto <article> (article
+       layouts) or <main> (docs/base layouts). */
+    fm.signableAttr = hasAny ? ' data-signable=""' : '';
   }
 }

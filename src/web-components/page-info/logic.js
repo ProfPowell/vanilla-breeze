@@ -1,5 +1,6 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { buildCanonicalDocument, serializeCanonical } from '../../lib/canonicalize.js';
 
 /**
  * page-info: Document provenance disclosure panel
@@ -53,6 +54,10 @@ class PageInfo extends VBElement {
     this.#renderRelativeTimes();
     this.#computeReadingTime();
     this.#assessTrust();
+    /* Run async verification but don't block setup. The badge starts at
+       'declared'; #verifySignature upgrades to 'verified' / 'failed' /
+       'key-unavailable' once the work completes. */
+    this.#verifySignature();
   }
 
   /* ── Relative time rendering ── */
@@ -106,9 +111,12 @@ class PageInfo extends VBElement {
   /* ── Trust assessment ── */
 
   #assessTrust() {
-    /* Crypto verification deferred — always report 'declared' for now */
-    const status = 'declared';
-    const tier = 1;
+    /* Initial state — `declared` if any provenance metadata is present,
+       `undeclared` otherwise. #verifySignature upgrades the badge later. */
+    const hasMetadata = !!document.querySelector(
+      'meta[name="vb:provenance"], meta[name="author"]'
+    );
+    const status = hasMetadata ? 'declared' : 'undeclared';
 
     const badge = this.querySelector('.page-info-badge');
     if (badge) {
@@ -116,7 +124,100 @@ class PageInfo extends VBElement {
     }
 
     this.dispatchEvent(new CustomEvent('page-info:verified', {
-      detail: { status, tier },
+      detail: { status, tier: hasMetadata ? 1 : 0 },
+      bubbles: true
+    }));
+  }
+
+  /* ── Cryptographic signature verification (Stage 4) ── */
+
+  async #verifySignature() {
+    const signatureEl = document.querySelector('meta[name="vb:signature"]');
+    const signature = signatureEl?.content;
+    if (!signature) return; /* nothing to verify; stay at `declared` */
+
+    const algorithm = document.querySelector('meta[name="vb:signature-algorithm"]')?.content;
+    if (algorithm && algorithm !== 'ECDSA-P256-SHA256') {
+      this.#setTrust('failed', { reason: `unsupported-algorithm:${algorithm}` });
+      return;
+    }
+
+    const keyHref = document.querySelector('link[rel="author-key"]')?.getAttribute('href');
+    if (!keyHref) {
+      this.#setTrust('failed', { reason: 'missing-author-key' });
+      return;
+    }
+
+    let publicKey;
+    try {
+      const url = new URL(keyHref, document.baseURI);
+      const res = await fetch(url, { credentials: 'omit' });
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      const jwk = await res.json();
+      const importable = {
+        kty: jwk.kty,
+        crv: jwk.crv,
+        x: jwk.x,
+        y: jwk.y,
+        use: jwk.use || 'sig',
+        key_ops: ['verify']
+      };
+      publicKey = await crypto.subtle.importKey(
+        'jwk',
+        importable,
+        { name: 'ECDSA', namedCurve: 'P-256' },
+        false,
+        ['verify']
+      );
+    } catch (err) {
+      this.#setTrust('key-unavailable', { reason: err.message });
+      return;
+    }
+
+    let canonical;
+    try {
+      const canonicalUrl = document.querySelector('link[rel="canonical"]')?.href || document.location.href;
+      canonical = serializeCanonical(buildCanonicalDocument(document, { url: canonicalUrl }));
+    } catch (err) {
+      this.#setTrust('failed', { reason: `canonicalize:${err.message}` });
+      return;
+    }
+
+    let isValid;
+    try {
+      const data = new TextEncoder().encode(canonical);
+      const sig = Uint8Array.from(atob(signature), (c) => c.charCodeAt(0));
+      isValid = await crypto.subtle.verify(
+        { name: 'ECDSA', hash: 'SHA-256' },
+        publicKey,
+        sig,
+        data
+      );
+    } catch (err) {
+      this.#setTrust('failed', { reason: `verify:${err.message}` });
+      return;
+    }
+
+    this.#setTrust(isValid ? 'verified' : 'failed', { reason: isValid ? 'ok' : 'mismatch' });
+  }
+
+  #setTrust(status, detail = {}) {
+    const tierMap = { undeclared: 0, declared: 1, 'domain-anchored': 2, verified: 3, failed: -1, 'key-unavailable': -2 };
+    const tier = tierMap[status] ?? 0;
+    const badge = this.querySelector('.page-info-badge');
+    if (badge) {
+      badge.setAttribute('data-trust', status);
+      const aria = badge.getAttribute('aria-label') || '';
+      if (status === 'verified' && !aria.includes('verified')) {
+        badge.setAttribute('aria-label', `${aria} — verified`.trim());
+      } else if (status === 'failed') {
+        badge.setAttribute('aria-label', `${aria} — verification failed`.trim());
+      } else if (status === 'key-unavailable') {
+        badge.setAttribute('aria-label', `${aria} — author key unavailable`.trim());
+      }
+    }
+    this.dispatchEvent(new CustomEvent('page-info:verified', {
+      detail: { status, tier, ...detail },
       bubbles: true
     }));
   }

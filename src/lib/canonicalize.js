@@ -15,13 +15,18 @@
 const SPEC_VERSION = 1;
 const SPEC_CONTEXT = 'https://vanilla-breeze.com/specs/canonical-document-v1';
 
-/* §C — Excluded element tag names. Subtree dropped entirely. */
+/* §C — Excluded element tag names. Subtree dropped entirely.
+   Note: content-host lens components (time-index, glossary-index,
+   site-index, site-map) are NOT excluded — they wrap the published
+   prose and enhance it; their light-DOM children ARE the content
+   to be signed. Only derived-view components (page-info, page-toc,
+   change-set, page-tools, page-stats, content-lens) are excluded
+   because they render metadata about the page itself. */
 const EXCLUDED_TAGS = new Set([
   'SCRIPT', 'STYLE', 'TEMPLATE', 'NOSCRIPT',
   'NAV', 'ASIDE', 'HEADER', 'FOOTER',
   'FIGCAPTION',
-  'PAGE-INFO', 'CHANGE-SET', 'PAGE-TOC', 'PAGE-TOOLS', 'PAGE-STATS',
-  'SITE-MAP', 'SITE-INDEX', 'GLOSSARY-INDEX', 'TIME-INDEX', 'CONTENT-LENS',
+  'PAGE-INFO', 'CHANGE-SET', 'PAGE-TOC', 'PAGE-TOOLS', 'PAGE-STATS', 'CONTENT-LENS',
   'BUTTON', 'DIALOG', 'MENU', 'FORM',
   'DEL'
 ]);

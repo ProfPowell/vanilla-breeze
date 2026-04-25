@@ -62,4 +62,5 @@ export default {
   provenanceJsonLd: '',
   provenanceHtmlAttrs: '',
   pageInfoBlock: '',
+  signableAttr: '',
 };
