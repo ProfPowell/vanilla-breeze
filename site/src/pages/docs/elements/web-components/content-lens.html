@@ -1,0 +1,53 @@
+---
+layout: element
+title: "content-lens"
+description: "Universal switchable host for VB lens components. Wraps a set of light-DOM lens children and exposes reader controls to switch which one is active."
+elementName: content-lens
+category: component
+currentPath: /docs/elements/web-components/content-lens/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;content-lens&gt;</code> component is the universal host for VB's lens family. It wraps any number of lens children (each carrying a <code>data-lens-name</code> attribute) and renders a reader-facing radio control so visitors can switch between views over the same underlying data.</p>
+  <p>Without JavaScript, every lens child is rendered stacked &mdash; the page remains usable.</p>
+
+  <code-block language="html" show-lines label="Switchable lens host with shared data source" data-escape><content-lens data-lens-default="trust" data-lens-src="/pages.json">
+  <time-index   data-lens-name="time">…</time-index>
+  <author-index data-lens-name="author"></author-index>
+  <topic-map    data-lens-name="topic"></topic-map>
+  <trust-filter data-lens-name="trust"></trust-filter>
+</content-lens></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-lens-default</code></td><td>string</td><td>first child</td><td>Lens to activate on first load</td></tr>
+      <tr><td><code>data-lens-controls</code></td><td><code>"on" | "off"</code></td><td><code>"on"</code></td><td>Render the reader chip group</td></tr>
+      <tr><td><code>data-lens-src</code></td><td>string</td><td>&mdash;</td><td>Shared data URL forwarded to every child unless the child sets its own</td></tr>
+      <tr><td><code>data-lens-storage</code></td><td>string</td><td>pathname</td><td>Key for sessionStorage so the reader's last choice persists per page</td></tr>
+      <tr><td><code>data-active-lens</code></td><td>string</td><td>computed</td><td>Reflects the active lens (state, not config)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>content-lens:change</code></td><td><code>{ lens: string }</code></td><td>Reader switches lenses (or programmatic <code>setLens()</code>)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Reader sovereignty</h2>
+  <p>The lens family follows VB's reader-sovereignty principle: <em>the author defines the exposed view, the reader can always reframe.</em> <code>&lt;content-lens&gt;</code> exposes the radio chips by default; authors who want to lock to a single view can set <code>data-lens-controls="off"</code>, but the underlying data is still discoverable via the shared <code>data-lens-src</code>.</p>
+</section>

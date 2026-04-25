@@ -1,0 +1,53 @@
+---
+layout: element
+title: "recently-visited"
+description: "Device-local reader history lens. Tracks pages the reader has visited on this device only. Stored in localStorage, never sent to a backend, never aggregated."
+elementName: recently-visited
+category: component
+currentPath: /docs/elements/web-components/recently-visited/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>This is the <em>private</em> half of the lens family. It records pages the reader has visited on this device only and surfaces them as a most-recent-first list. The data lives in <code>localStorage</code> under <code>vb:recently-visited</code> and never crosses the network.</p>
+  <p>Reader sovereignty is non-negotiable here: the component renders both a <strong>Pause</strong> toggle and a <strong>Clear</strong> control alongside the list, and an explicit explainer that this history is local-only.</p>
+
+  <code-block language="html" data-escape><recently-visited limit="20"></recently-visited></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>limit</code></td><td>number</td><td>25</td><td>Max entries kept in local history</td></tr>
+      <tr><td><code>no-track</code></td><td>boolean</td><td>false</td><td>Don't append the current page on connect (useful for an embed on the home page)</td></tr>
+      <tr><td><code>empty-text</code></td><td>string</td><td>built-in</td><td>Message rendered when history is empty</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Storage</h2>
+  <p>Two <code>localStorage</code> keys are used:</p>
+  <dl>
+    <dt><code>vb:recently-visited</code></dt>
+    <dd>JSON array of <code>{ url, title, ts }</code> records, most-recent-first.</dd>
+    <dt><code>vb:recently-visited:paused</code></dt>
+    <dd><code>"1"</code> when the reader has paused tracking. Existence of the key is the signal &mdash; absence means tracking is active.</dd>
+  </dl>
+  <p>Both keys are reader-controllable: the Clear button removes the first; the Pause toggle manages the second. Privacy/incognito modes that block <code>localStorage</code> degrade silently &mdash; tracking just doesn't happen.</p>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>recently-visited:clear</code></td><td>&mdash;</td><td>Reader clears the local history</td></tr>
+    </tbody>
+  </table>
+</section>

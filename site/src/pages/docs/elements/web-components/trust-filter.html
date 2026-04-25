@@ -1,0 +1,45 @@
+---
+layout: element
+title: "trust-filter"
+description: "Filter pages by provenance, review level, status, and signed state. Interactive checkbox chips drive a live results list."
+elementName: trust-filter
+category: component
+currentPath: /docs/elements/web-components/trust-filter/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>Reads <code>pages.json</code> and presents four orthogonal dimensions as checkbox groups: <strong>provenance</strong>, <strong>review level</strong>, <strong>status</strong>, and <strong>signed state</strong>. Multiple chips combine with OR within a dimension and AND across dimensions.</p>
+  <p>This is the most direct expression of the meta-tag contract from a reader's perspective &mdash; it answers questions like <em>show me every page that's AI-generated and editor-reviewed and signed</em>.</p>
+
+  <code-block language="html" data-escape><trust-filter data-lens-src="/pages.json"></trust-filter></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-lens-src</code></td><td>string</td><td>&mdash;</td><td>URL to <code>pages.json</code></td></tr>
+      <tr><td><code>src</code></td><td>string</td><td>&mdash;</td><td>Alias for <code>data-lens-src</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>trust-filter:change</code></td><td><code>{ selected, count }</code></td><td>Reader changes any chip; <code>selected</code> is a per-dimension array of values</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Provenance composition</h2>
+  <p>The <code>vb:provenance</code> attribute is space-composable (e.g., <code>"ai-generated translated"</code>). The trust-filter splits each page's tokens and matches against any selected chip. A page tagged <code>"ai-generated translated"</code> matches both the <em>ai-generated</em> chip and the <em>translated</em> chip independently.</p>
+</section>

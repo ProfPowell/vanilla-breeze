@@ -1,0 +1,70 @@
+/* content-lens: Universal switchable host for VB lens components */
+
+@scope (content-lens) {
+
+  :scope {
+    display: block;
+  }
+
+  [data-content-lens-controls] {
+    margin-block-end: var(--size-l);
+  }
+
+  [data-content-lens-controls] fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--size-s);
+  }
+
+  [data-content-lens-controls] legend {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold, 600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-disabled, var(--color-text-muted));
+    margin-inline-end: var(--size-s);
+    padding: 0;
+  }
+
+  [data-content-lens-controls] label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-2xs);
+    padding-block: var(--size-2xs);
+    padding-inline: var(--size-s);
+    border-radius: var(--radius-full);
+    border: var(--border-width-thin) solid var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+  }
+
+  [data-content-lens-controls] label:has(input:checked) {
+    background: var(--color-interactive, var(--color-info));
+    color: var(--color-on-interactive, white);
+    border-color: transparent;
+  }
+
+  [data-content-lens-controls] input[type="radio"] {
+    /* Keep the input accessible but hide it visually — the label is the chip */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+  }
+}
+
+/* No-JS fallback: show all lenses stacked */
+content-lens:not(:defined) > [data-lens-name] {
+  display: block;
+  margin-block-start: var(--size-xl);
+  padding-block-start: var(--size-m);
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+}

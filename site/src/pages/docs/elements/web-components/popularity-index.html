@@ -1,0 +1,43 @@
+---
+layout: element
+title: "popularity-index"
+description: "Aggregated most-visited lens. Fetches from an analytics endpoint and degrades gracefully when the endpoint is unavailable, returns 5xx, or returns an empty list."
+elementName: popularity-index
+category: component
+currentPath: /docs/elements/web-components/popularity-index/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The aggregated counterpart to <a href="/docs/elements/web-components/recently-visited/"><code>&lt;recently-visited&gt;</code></a>. Where that surface is local-only, this one consumes site-wide aggregate data from an analytics endpoint and shows the most-visited pages.</p>
+  <p>The default endpoint <code>/api/analytics/popular</code> is not yet implemented in the VB site &mdash; the component degrades to a friendly explanatory message when the endpoint is unavailable, returns 5xx, or returns an empty list. Sites that don't run analytics can hide it via <code>display: none</code> or simply not place the element.</p>
+
+  <code-block language="html" data-escape><popularity-index limit="10" window="7d"
+                  data-meta-src="/pages.json"></popularity-index></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-lens-src</code></td><td>string</td><td><code>"/api/analytics/popular"</code></td><td>Endpoint URL that returns popularity data</td></tr>
+      <tr><td><code>data-meta-src</code></td><td>string</td><td>&mdash;</td><td>Optional <code>pages.json</code> URL used to enrich each entry with title/topic/provenance metadata when the endpoint returns sparse data</td></tr>
+      <tr><td><code>limit</code></td><td>number</td><td>10</td><td>Max entries shown</td></tr>
+      <tr><td><code>window</code></td><td>string</td><td>&mdash;</td><td>Optional time-window query forwarded as <code>?window=24h</code> (or <code>7d</code>, <code>30d</code>)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Endpoint contract</h2>
+  <p>The component expects the endpoint to respond with JSON in either of these shapes:</p>
+  <code-block language="json"><![CDATA[{ "pages": [
+  { "url": "/docs/concepts/document-provenance/", "title": "Document Provenance", "views": 1234 },
+  { "url": "/glossary/", "title": "Glossary", "views": 980 }
+]}]]></code-block>
+  <p>or simply an array. Each entry must carry <code>url</code>; <code>title</code> and <code>views</code> are optional but improve the rendered list. If <code>data-meta-src</code> is set, missing titles fall back to the matching <code>pages.json</code> record.</p>
+</section>
