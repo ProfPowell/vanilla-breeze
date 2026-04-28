@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "topic-map"
-description: "Hierarchical view of vb:topic dotted paths. Renders pages as a nested details/ul tree where each level is one segment of the topic path."
+description: "SKOS-aware hierarchical view of site concepts. Joins vocabulary.json with pages.json to render a nested details tree rooted at top concepts."
 elementName: topic-map
 category: component
 currentPath: /docs/elements/web-components/topic-map/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>Reads <code>pages.json</code> and builds a tree from each page's <code>vb:topic</code> dotted path. Pages without a topic land under <strong>Uncategorized</strong>. The native <code>&lt;details&gt;</code> elements give expand/collapse without JavaScript.</p>
+  <p>Joins two data sources to draw a concept tree. <code>vocabulary.json</code> supplies the SKOS graph (<code>skos:broader</code>, <code>skos:narrower</code>, <code>skos:hasTopConcept</code>) and the display labels. <code>pages.json</code> supplies each page's <code>concepts: []</code> array, harvested by the build from repeated <code>&lt;meta name="concept"&gt;</code> tags (per <a href="/admin/specs/meta-tag-contract-v1/">meta-tag contract v1.1</a>). Each node shows the concept's <code>skos:prefLabel</code>, a count of pages tagged with that concept or any descendant, and links to <code>/topics/{id}/</code>. The native <code>&lt;details&gt;</code> tree expands and collapses without JavaScript.</p>
 
   <browser-window
     src="/docs/examples/demos/topic-map.html"
@@ -25,10 +25,13 @@ crumbLabel: Web Components
 </section>
 
 <section>
-  <h2>Topic path conventions</h2>
-  <p>The <code>vb:topic</code> meta tag uses dotted paths to express hierarchy:</p>
-  <code-block language="html" data-escape><meta name="vb:topic" content="documentation.concepts.provenance"></code-block>
-  <p>Each segment becomes a level in the tree. Authors are free to invent any taxonomy; if VanillaPress, Cook SSG, or another stack adopts a shared vocabulary, lenses across sites become navigable in the same shape.</p>
+  <h2>Authoring concept tags</h2>
+  <p>Each content page declares the concepts it covers in frontmatter:</p>
+  <code-block language="yaml" data-escape>concepts:
+  - data-provenance
+  - page-info
+  - meta-tag-contract</code-block>
+  <p>The build emits one <code>&lt;meta name="concept"&gt;</code> per id, and <code>generate-pages-json.js</code> harvests them into the page's <code>concepts: []</code> array. The ids must resolve against <code>vocabulary.json</code> — concepts not in the vocabulary land under <strong>Uncategorized</strong>. Hierarchy comes from <code>skos:broader</code> / <code>skos:narrower</code> in the vocabulary, not from path strings.</p>
 </section>
 
 <section>
@@ -36,9 +39,10 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>data-lens-src</code></td><td>string</td><td>&mdash;</td><td>URL to <code>pages.json</code></td></tr>
-      <tr><td><code>src</code></td><td>string</td><td>&mdash;</td><td>Alias for <code>data-lens-src</code></td></tr>
-      <tr><td><code>expand-all</code></td><td>boolean</td><td>false</td><td>Render with every level expanded</td></tr>
+      <tr><td><code>data-lens-src</code></td><td>string</td><td>&mdash;</td><td>URL to <code>pages.json</code>. Each record must expose a <code>concepts: []</code> array.</td></tr>
+      <tr><td><code>src</code></td><td>string</td><td>&mdash;</td><td>Alias for <code>data-lens-src</code>.</td></tr>
+      <tr><td><code>data-vocabulary-src</code></td><td>string</td><td><code>/vocabulary.json</code></td><td>URL to the SKOS vocabulary file used to resolve labels and hierarchy.</td></tr>
+      <tr><td><code>expand-all</code></td><td>boolean</td><td>false</td><td>Render with every level expanded.</td></tr>
     </tbody>
   </table>
 </section>

@@ -1321,6 +1321,7 @@ module.exports = {
     attributes: {
       "data-lens-src": {},
       "src": {},
+      "data-vocabulary-src": {},
       "expand-all": { boolean: true }
     }
   },
