@@ -16,8 +16,8 @@ export default {
   // Custom plugins
   plugins: {
     before: ['generate-sidebars'],
-    default: ['normalize-legacy-nunjucks', 'generate-provenance-meta', 'generate-api-tables', 'generate-indexes', 'render-dynamic-pages'],
-    after: ['generate-pages-json'],
+    default: ['normalize-legacy-nunjucks', 'generate-provenance-meta', 'generate-api-tables', 'generate-indexes', 'render-dynamic-pages', 'generate-glossary'],
+    after: ['generate-pages-json', 'generate-definitions-json'],
   },
   pluginPath: 'plugins',
 
