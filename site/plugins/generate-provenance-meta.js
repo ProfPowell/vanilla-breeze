@@ -34,6 +34,31 @@
  * See admin/specs/meta-tag-contract-v1.md and admin/r-n-d/evaluate/decisions.md.
  */
 
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __pluginDir = dirname(fileURLToPath(import.meta.url));
+const VOCAB_PATH = resolve(__pluginDir, '../src/_data/vocabulary.json');
+
+let vocabularyLabelCache = null;
+function vocabularyLabels() {
+  if (vocabularyLabelCache) return vocabularyLabelCache;
+  vocabularyLabelCache = new Map();
+  if (!existsSync(VOCAB_PATH)) return vocabularyLabelCache;
+  try {
+    const vocab = JSON.parse(readFileSync(VOCAB_PATH, 'utf-8'));
+    for (const c of vocab.concepts || []) {
+      if (c['@id'] && c['skos:prefLabel']) {
+        vocabularyLabelCache.set(c['@id'], c['skos:prefLabel']);
+      }
+    }
+  } catch {
+    /* leave cache empty; labels fall back to slug */
+  }
+  return vocabularyLabelCache;
+}
+
 function escAttr(value) {
   if (value == null) return '';
   return String(value)
@@ -195,6 +220,22 @@ function buildJsonLd(fm, opts) {
   return `<script type="application/ld+json">\n${jsonForScript(ld)}\n</script>`;
 }
 
+function buildArticleTagsFooter(fm) {
+  const concepts = asList(fm.concepts);
+  if (!concepts.length) return '';
+  const labels = vocabularyLabels();
+  const items = concepts.map((id) => {
+    const label = labels.get(id) || id;
+    return `      <li><a href="/topics/${escAttr(id)}/" rel="tag" data-concept="${escAttr(id)}">${escAttr(label)}</a></li>`;
+  }).join('\n');
+  return `<footer data-article-tags>
+  <h2 class="visually-hidden">Topics</h2>
+  <ul>
+${items}
+  </ul>
+</footer>`;
+}
+
 function buildHtmlAttrs(fm) {
   const attrs = [];
   if (fm.provenance) attrs.push(`data-provenance="${escAttr(fm.provenance)}"`);
@@ -237,6 +278,7 @@ export class GenerateProvenanceMeta {
     fm.provenanceMeta = meta;
     fm.provenanceJsonLd = jsonLd;
     fm.provenanceHtmlAttrs = htmlAttrs;
+    fm.articleTagsBlock = buildArticleTagsFooter(fm);
 
     /* Only render <page-info auto> when there is provenance metadata to surface,
        so pages without frontmatter don't sprout an empty divider. */
