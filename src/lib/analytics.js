@@ -63,6 +63,16 @@ function readTaxonomy() {
     const val = meta.getAttribute('content')?.trim();
     if (key && val) taxonomy[key] = val;
   }
+  /* meta-tag-contract v1.1: SKOS concept ids ride alongside the vb:*
+     namespace as repeated <meta name="concept"> tags. Collect into an
+     array so a single page tagged with multiple concepts ships every
+     id with its event envelope. */
+  const concepts = [];
+  for (const meta of document.querySelectorAll('meta[name="concept"]')) {
+    const val = meta.getAttribute('content')?.trim();
+    if (val) concepts.push(val);
+  }
+  if (concepts.length) taxonomy.concepts = concepts;
   return taxonomy;
 }
 

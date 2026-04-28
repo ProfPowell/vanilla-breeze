@@ -280,8 +280,17 @@ class PageInfo extends VBElement {
     const review = meta('vb:review');
     const status = meta('vb:status');
     const aiTools = meta('vb:ai-tools');
-    const topic = meta('vb:topic');
     const versionUrl = meta('vb:version-url');
+
+    /* meta-tag-contract v1.1: concept taxonomy is repeated meta name="concept"
+       tags resolving SKOS @ids in /vocabulary.json. Render slugs as links to
+       /topics/{id}/; full labels remain in the build-time article-tags footer
+       that the layouts inject after page-info. */
+    const concepts = Array.from(
+      document.querySelectorAll('meta[name="concept"]')
+    )
+      .map((m) => m.getAttribute('content')?.trim())
+      .filter(Boolean);
 
     const provenanceLabel = PageInfo.#provenanceLabel(provenance);
     const reviewLabel = PageInfo.#REVIEW_LABELS[review] || review || '';
@@ -352,11 +361,13 @@ class PageInfo extends VBElement {
               </dl>
             </section>
           ` : ''}
-          ${(keywords || topic) ? `
+          ${(keywords || concepts.length) ? `
             <section>
               <h2 class="page-info-section-heading">Topic</h2>
               <dl>
-                ${topic ? `<dl-item><dt>Subject</dt><dd>${topic}</dd></dl-item>` : ''}
+                ${concepts.length ? `<dl-item><dt>Concepts</dt><dd>${concepts.map((id) =>
+                  `<a href="/topics/${id}/" rel="tag" data-concept="${id}">${id}</a>`
+                ).join(', ')}</dd></dl-item>` : ''}
                 ${keywords ? `<dl-item><dt>Keywords</dt><dd>${keywords}</dd></dl-item>` : ''}
               </dl>
             </section>
