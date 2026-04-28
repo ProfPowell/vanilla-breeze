@@ -38,19 +38,27 @@ concepts: ["glossary", "content-lens", "metadata-substrate"]
 
 <section>
   <h2>The pattern</h2>
-  <p>Two forms, depending on whether this is the first mention of the concept on the page.</p>
+  <p>Three forms, depending on whether the mention is the first defining use, a subsequent reference, or an abbreviation.</p>
 
-  <h3>First (defining) use</h3>
+  <h3>First (defining) use &mdash; <code>&lt;dfn&gt;</code></h3>
   <p>Wrap the link in <code>&lt;dfn&gt;</code>. The <code>data-concept</code> attribute carries the SKOS <code>@id</code> from <code>vocabulary.json</code>. The <code>href</code> deep-links to the term's anchor on the glossary page so the link is meaningful with no JS.</p>
   <code-block language="html" show-lines data-escape><p>We use <dfn><a href="/glossary/#term-progressive-enhancement"
    data-concept="progressive-enhancement">progressive enhancement</a></dfn>
    to ensure content is available before scripts load.</p></code-block>
 
-  <h3>Subsequent uses</h3>
-  <p>Plain anchor — no <code>&lt;dfn&gt;</code>. <code>&lt;dfn&gt;</code> marks the <em>defining instance</em>; using it on every mention would be wrong semantically and visually noisy.</p>
+  <h3>Subsequent uses &mdash; plain anchor</h3>
+  <p>Plain anchor &mdash; no <code>&lt;dfn&gt;</code>. <code>&lt;dfn&gt;</code> marks the <em>defining instance</em>; using it on every mention would be wrong semantically and visually noisy.</p>
   <code-block language="html" show-lines data-escape><p>This <a href="/glossary/#term-progressive-enhancement"
    data-concept="progressive-enhancement">progressive enhancement</a>
    approach also benefits search engine indexing.</p></code-block>
+
+  <h3>Abbreviated mentions &mdash; <code>&lt;abbr&gt;</code></h3>
+  <p>When you reference a concept by an abbreviation that lives in its <code>skos:altLabel</code> array, wrap the link in <code>&lt;abbr&gt;</code> with <code>title</code> set to the prefLabel. The <code>title</code> tooltip gives sighted hover-readers the expansion; the popover still triggers because the script queries <code>a[data-concept]</code> regardless of wrapper.</p>
+  <code-block language="html" show-lines data-escape><p>The
+  <abbr title="Progressive Enhancement"><a href="/glossary/#term-progressive-enhancement"
+     data-concept="progressive-enhancement">PE</a></abbr>
+  approach pairs well with semantic HTML.</p></code-block>
+  <p>Use <code>&lt;dfn&gt;</code> exactly once per concept per page (the defining mention, regardless of label form). Subsequent mentions are either plain anchors (full label) or <code>&lt;abbr&gt;</code>-wrapped (altLabel/abbreviation).</p>
 </section>
 
 <section>

@@ -112,9 +112,39 @@ abbr.plain {
   </section>
 
   <section>
+    <h2>Glossary integration: altLabel mentions</h2>
+    <p>Vanilla Breeze's <a href="/glossary/" rel="glossary">glossary</a> is generated from <code>site/src/_data/vocabulary.json</code>, where each concept can declare a <code>skos:altLabel</code> array of synonyms and abbreviations. Examples from the shipped vocabulary:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Concept (<code>@id</code>)</th>
+          <th><code>skos:prefLabel</code></th>
+          <th><code>skos:altLabel</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>progressive-enhancement</code></td><td>progressive enhancement</td><td><code>PE</code></td></tr>
+        <tr><td><code>data-review</code></td><td>data-review</td><td><code>review</code></td></tr>
+        <tr><td><code>keyword-index</code></td><td>keyword index</td><td><code>index</code>, <code>site index</code></td></tr>
+        <tr><td><code>metadata-substrate</code></td><td>metadata substrate</td><td><code>substrate</code></td></tr>
+        <tr><td><code>content-lens</code></td><td>content lens</td><td><code>lens</code></td></tr>
+      </tbody>
+    </table>
+    <p>When you reference a concept by its abbreviated altLabel rather than its full prefLabel, <code>&lt;abbr&gt;</code> is the right wrapper: it shows the expansion via <code>title</code> and signals the dotted underline to sighted readers, while the inner anchor with <code>data-concept</code> drives the glossary popover.</p>
+    <code-block language="html" show-lines label="altLabel mention with abbr + data-concept" data-escape><p>The
+  <abbr title="Progressive Enhancement"><a href="/glossary/#term-progressive-enhancement"
+     data-concept="progressive-enhancement">PE</a></abbr>
+  approach also benefits search engine indexing.</p></code-block>
+    <p>The popover script queries <code>a[data-concept]</code> regardless of wrapper, so this composes cleanly with the <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a>-wrapped first-mention pattern. Use <code>&lt;dfn&gt;</code> for the prefLabel form on first mention; use <code>&lt;abbr&gt;</code> for altLabel/abbreviation mentions.</p>
+    <p>See <a href="/docs/concepts/glossary-terms/">Glossary terms in prose</a> for the full authoring pattern.</p>
+  </section>
+
+  <section>
     <h2>Related</h2>
     <ul>
       <li><a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> &mdash; For defining terms (often wraps <code>&lt;abbr&gt;</code> on first use)</li>
+      <li><a href="/glossary/" rel="glossary">Glossary</a> &mdash; concept entries with <code>skos:altLabel</code> abbreviations</li>
+      <li><a href="/docs/concepts/glossary-terms/">Glossary terms in prose</a> &mdash; <code>&lt;dfn&gt;</code> vs <code>&lt;abbr&gt;</code> authoring patterns</li>
       <li><a href="/docs/elements/custom-elements/tool-tip/"><code>&lt;tool-tip&gt;</code></a> &mdash; For accessible tooltips that work on touch and keyboard</li>
       <li><a href="/docs/elements/native/dt/"><code>&lt;dt&gt;</code></a> &mdash; Abbreviations inside definition terms for glossaries</li>
     </ul>

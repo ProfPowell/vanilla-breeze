@@ -88,9 +88,26 @@ crumbLabel: Native Elements
   </section>
 
   <section>
+    <h2>Glossary integration</h2>
+    <p>Vanilla Breeze ships a generated <a href="/glossary/" rel="glossary">glossary</a> backed by a single SKOS vocabulary file (<code>site/src/_data/vocabulary.json</code>). Every entry on that page renders as <code>&lt;dt id="term-{id}"&gt;&lt;dfn&gt;label&lt;/dfn&gt;&lt;/dt&gt;</code> &mdash; the <code>&lt;dfn&gt;</code> marks the canonical defining instance per HTML5.</p>
+    <p>When you mention one of those concepts in article prose, link the first occurrence with the same <code>data-concept</code> attribute the build pipeline emits. Subsequent mentions on the same page use a plain anchor.</p>
+    <code-block language="html" show-lines label="First (defining) mention in prose" data-escape><p>We use <dfn><a href="/glossary/#term-progressive-enhancement"
+   data-concept="progressive-enhancement">progressive enhancement</a></dfn>
+   to ensure content is available before scripts load.</p></code-block>
+    <p>Two things light up automatically:</p>
+    <ul>
+      <li>The link is valid with no JS &mdash; <code>href</code> deep-links to the term's anchor on the glossary page.</li>
+      <li>A small popover script (<code>/js/definition-popover.js</code>) fetches <code>/definitions.json</code> on first interaction and shows the definition in a native popover anchored to the term. The script queries <code>a[data-concept]</code>, so the wrapping element doesn't matter &mdash; <code>&lt;dfn&gt;</code> is purely the HTML5-correct semantic for the first mention.</li>
+    </ul>
+    <p>See <a href="/docs/concepts/glossary-terms/">Glossary terms in prose</a> for the full authoring pattern, including subsequent-mention and abbreviated-mention forms.</p>
+  </section>
+
+  <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/native/abbr/"><code>&lt;abbr&gt;</code></a> &mdash; For abbreviations (often used inside <code>&lt;dfn&gt;</code>)</li>
+      <li><a href="/glossary/" rel="glossary">Glossary</a> &mdash; the canonical defining-instance corpus, generated from <code>vocabulary.json</code></li>
+      <li><a href="/docs/concepts/glossary-terms/">Glossary terms in prose</a> &mdash; first-mention / subsequent / abbreviated patterns</li>
+      <li><a href="/docs/elements/native/abbr/"><code>&lt;abbr&gt;</code></a> &mdash; for abbreviations (often used inside <code>&lt;dfn&gt;</code>; also pairs with concept altLabels)</li>
       <li><a href="/docs/elements/native/dl/"><code>&lt;dl&gt;</code></a> &mdash; Definition lists for glossaries</li>
       <li><a href="/docs/elements/native/dt/"><code>&lt;dt&gt;</code></a> &mdash; Definition term (wraps <code>&lt;dfn&gt;</code> in glossary patterns)</li>
       <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> &mdash; For linking back to definitions via <code>id</code></li>
