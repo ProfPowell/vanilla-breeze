@@ -10,7 +10,7 @@ var oe=Object.defineProperty;var ce=(t,e)=>()=>(t&&(e=t(t=0)),e);var le=(t,e)=>{
         />
         <span class="swatch-visual" style="--swatch-bg: ${s}; --swatch-fg: ${r}">
           ${i?`<icon-wc name="${i}"></icon-wc>`:""}
-          <span class="sr-only">${e.name}</span>
+          <span class="visually-hidden">${e.name}</span>
         </span>
       </label>
     `}#T(){let{mode:e,brand:a,fluid:s,accent:r}=m.getState(),i=q.filter(n=>n.tier==="showcase");return`
@@ -41,7 +41,7 @@ var oe=Object.defineProperty;var ce=(t,e)=>()=>(t&&(e=t(t=0)),e);var le=(t,e)=>{
             <label class="accent-dot" title="${n.name}">
               <input type="radio" name="theme-accent" value="${n.id}" ${r===n.id?"checked":""} />
               <span class="accent-dot-visual" style="background: ${n.swatchBg}"></span>
-              <span class="sr-only">${n.name}</span>
+              <span class="visually-hidden">${n.name}</span>
             </label>
           `).join("")}
         </div>

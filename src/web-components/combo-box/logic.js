@@ -97,7 +97,7 @@ class ComboBox extends VBElement {
       this.#liveRegion = document.createElement('div');
       this.#liveRegion.setAttribute('aria-live', 'polite');
       this.#liveRegion.setAttribute('aria-atomic', 'true');
-      this.#liveRegion.className = 'sr-only';
+      this.#liveRegion.className = 'visually-hidden';
       this.appendChild(this.#liveRegion);
     }
 

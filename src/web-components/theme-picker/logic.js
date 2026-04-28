@@ -166,7 +166,7 @@ class ThemePicker extends VBElement {
         />
         <span class="swatch-visual" style="--swatch-bg: ${bg}; --swatch-fg: ${fg}">
           ${icon ? `<icon-wc name="${icon}"></icon-wc>` : ''}
-          <span class="sr-only">${t.name}</span>
+          <span class="visually-hidden">${t.name}</span>
         </span>
       </label>
     `;
@@ -204,7 +204,7 @@ class ThemePicker extends VBElement {
             <label class="accent-dot" title="${a.name}">
               <input type="radio" name="theme-accent" value="${a.id}" ${accent === a.id ? 'checked' : ''} />
               <span class="accent-dot-visual" style="background: ${a.swatchBg}"></span>
-              <span class="sr-only">${a.name}</span>
+              <span class="visually-hidden">${a.name}</span>
             </label>
           `).join('')}
         </div>

@@ -88,7 +88,7 @@ function announce(message, context) {
   const el = document.createElement('div');
   el.setAttribute('role', 'status');
   el.setAttribute('aria-live', 'polite');
-  el.className = 'sr-only';
+  el.className = 'visually-hidden';
   el.textContent = message;
   context.appendChild(el);
   setTimeout(() => el.remove(), ANNOUNCE_DURATION);

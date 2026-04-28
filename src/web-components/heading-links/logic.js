@@ -141,7 +141,7 @@ class HeadingLinks extends VBElement {
     const announcement = document.createElement('div');
     announcement.setAttribute('role', 'status');
     announcement.setAttribute('aria-live', 'polite');
-    announcement.className = 'sr-only';
+    announcement.className = 'visually-hidden';
     announcement.textContent = message;
     this.appendChild(announcement);
     setTimeout(() => announcement.remove(), 1000);

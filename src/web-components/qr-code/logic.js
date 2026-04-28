@@ -107,7 +107,7 @@ class QrCodeWc extends VBElement {
 
     // Keep the encoded value accessible as text (visually hidden but available to AT)
     const caption = document.createElement('span');
-    caption.className = 'sr-only';
+    caption.className = 'visually-hidden';
     caption.textContent = text;
     this.appendChild(caption);
   }

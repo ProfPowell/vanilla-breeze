@@ -14,7 +14,7 @@
  * <page-stats>
  *   <dl class="page-stats-list">
  *     <dl-item>
- *       <dt class="sr-only">Reading time</dt>
+ *       <dt class="visually-hidden">Reading time</dt>
  *       <dd><time datetime="PT5M">5 min read</time></dd>
  *     </dl-item>
  *   </dl>
@@ -84,7 +84,7 @@ class PageStats extends VBElement {
   #statItem(label, valueHTML) {
     const item = document.createElement('dl-item');
     const dt = document.createElement('dt');
-    dt.className = 'sr-only';
+    dt.className = 'visually-hidden';
     dt.textContent = label;
     const dd = document.createElement('dd');
     dd.innerHTML = valueHTML;

@@ -217,7 +217,7 @@ class PageTour extends VBElement {
     this.#announcer = document.createElement('div');
     this.#announcer.setAttribute('aria-live', 'polite');
     this.#announcer.setAttribute('aria-atomic', 'true');
-    this.#announcer.className = 'sr-only';
+    this.#announcer.className = 'visually-hidden';
     this.#announcer.id = `page-tour-announcer-${crypto.randomUUID().slice(0, 8)}`;
 
     this.append(this.#backdrop, this.#spotlight, this.#card, this.#announcer);
