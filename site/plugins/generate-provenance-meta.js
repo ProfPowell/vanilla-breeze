@@ -23,9 +23,15 @@
  *   review        : "editor-reviewed"     → vb:review
  *   status        : "published"           → vb:status
  *   aiTools       : "Claude Opus 4.7"     → vb:ai-tools
- *   topic         : "engineering.web"     → vb:topic
+ *   concepts      : ["data-provenance",   → repeated <meta name="concept">,
+ *                    "page-info"]            <link rel="tag" href="/topics/{id}">,
+ *                                            and JSON-LD `about` array (DefinedTerm)
  *   ogImage       : "/og/page.jpg"        → og:image
  *   ogType        : "article"             → og:type (default)
+ *
+ * v1.1 (2026-04-27): replaced `topic` (single dotted-path string) with
+ * `concepts` (array of SKOS concept @ids resolved against vocabulary.json).
+ * See admin/specs/meta-tag-contract-v1.md and admin/r-n-d/evaluate/decisions.md.
  */
 
 function escAttr(value) {
@@ -117,7 +123,16 @@ function buildMetaTags(fm) {
   if (fm.review) push(`<meta name="vb:review" content="${escAttr(fm.review)}">`);
   if (fm.status) push(`<meta name="vb:status" content="${escAttr(fm.status)}">`);
   if (fm.aiTools) push(`<meta name="vb:ai-tools" content="${escAttr(fm.aiTools)}">`);
-  if (fm.topic) push(`<meta name="vb:topic" content="${escAttr(fm.topic)}">`);
+  const concepts = asList(fm.concepts);
+  if (concepts.length) {
+    for (const c of concepts) {
+      push(`<meta name="concept" content="${escAttr(c)}">`);
+    }
+    for (const c of concepts) {
+      push(`<link rel="tag" href="/topics/${escAttr(c)}/">`);
+    }
+    push(`<link rel="glossary" href="/glossary/">`);
+  }
   if (fm.versionUrl) push(`<meta name="vb:version-url" content="${escAttr(fm.versionUrl)}">`);
 
   return lines.join('\n  ');
@@ -149,7 +164,14 @@ function buildJsonLd(fm, opts) {
 
   const keywords = asList(fm.keywords);
   if (keywords.length) ld.keywords = keywords.join(', ');
-  if (fm.topic) ld.about = fm.topic;
+  const concepts = asList(fm.concepts);
+  if (concepts.length) {
+    ld.about = concepts.map((c) => ({
+      '@type': 'DefinedTerm',
+      termCode: c,
+      inDefinedTermSet: '/vocabulary.json'
+    }));
+  }
   if (fm.licenseUrl) ld.license = fm.licenseUrl;
   else if (fm.license) ld.license = fm.license;
 

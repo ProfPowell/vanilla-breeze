@@ -1,9 +1,11 @@
-# Vanilla Breeze Meta-Tag Contract — v1.0
+# Vanilla Breeze Meta-Tag Contract — v1.1
 
-> **Status:** stable, 2026-04-24
+> **Status:** stable, 2026-04-27
 > **Owner:** VB document-provenance initiative
 > **Consumers:** `<page-info>`, `<change-set>`, lens component family, analytics subsystem
-> **Source of truth:** this file. Changes require a new version (v2, v3…) — readers check the version and fall back when unknown.
+> **Source of truth:** this file.
+
+**v1.1 — 2026-04-27.** Replaces `vb:topic` (single dotted-path string) with `concepts: []` frontmatter and repeated `<meta name="concept">` tags pointing into a SKOS `vocabulary.json`. Authored as a breaking change while VB is pre-release; no compat shim. See `admin/r-n-d/evaluate/decisions.md` for the adoption rationale and the SKOS Foundation bead (`vanilla-breeze-ii2k`).
 
 This is the public contract between VB components and the HTML documents they consume. It defines which `<meta>` tags, `<link>` relationships, `data-*` attributes, and JSON-LD fields VB reads at runtime, and how their values are interpreted.
 
@@ -89,13 +91,19 @@ VB-specific fields with no adequate public equivalent. The namespace is **shared
 
 **Defaults if absent:** `vb:provenance` defaults to `human`. `vb:review` defaults to `unreviewed`. `vb:status` defaults to `published`. Absence is never a badge — badges only render for non-default values unless `.labeled` is applied.
 
-### Topic taxonomy (shared with analytics)
+### Concept taxonomy (shared with analytics)
+
+Pages declare their topics as a list of SKOS concept IDs that resolve against the site's `vocabulary.json`. Each concept ID is emitted as a separate `<meta name="concept">` tag (repeating allowed) and as a `<link rel="tag">` pointing to the concept's topic detail page.
 
 | Field | Values | JSON-LD mirror | Consumers |
 |---|---|---|---|
-| `<meta name="vb:topic" content="web-components.lifecycle">` | Dotted-path hierarchy, free-form | `about` | `<topic-map>` lens, analytics envelope |
+| `<meta name="concept" content="data-provenance">` (repeated) | SKOS concept `@id` from `vocabulary.json` | `about` (array of `DefinedTerm`) | `<topic-map>`, topic-index lens, analytics envelope |
+| `<link rel="tag" href="/topics/{id}">` (repeated) | URL of the topic detail page | — | crawlers, microformat consumers |
+| `<link rel="glossary" href="/glossary">` | URL of the glossary page | — | hint to clients/crawlers |
 
-Dotted paths express hierarchy (`engineering.web.css` is a child of `engineering.web`). Flat single-segment values are also valid.
+Concept IDs are flat slugs (kebab-case). Hierarchy is expressed in `vocabulary.json` via `skos:broader` / `skos:narrower` rather than in the meta-tag value. A page may declare multiple concepts; the order is the author's preferred relevance order.
+
+**Replaced fields (v1.0 → v1.1):** `<meta name="vb:topic" content="a.b.c">` and the analogous `topic:` frontmatter key are removed. Consumers that previously parsed dotted paths should read `concept` meta tags and resolve hierarchy from `vocabulary.json`.
 
 ### Version reference
 
@@ -189,7 +197,11 @@ A single page demonstrating every field VB consumes:
   <meta name="vb:review" content="editor-reviewed">
   <meta name="vb:status" content="published">
   <meta name="vb:ai-tools" content="Claude Opus 4.7">
-  <meta name="vb:topic" content="engineering.web.migration">
+  <meta name="concept" content="migration">
+  <meta name="concept" content="upgrade-guide">
+  <link rel="tag" href="/topics/migration">
+  <link rel="tag" href="/topics/upgrade-guide">
+  <link rel="glossary" href="/glossary">
   <meta name="vb:version-url" content="/changelog#v2-1-0">
 
   <!-- Signing (Section B integrity) -->
@@ -213,7 +225,10 @@ A single page demonstrating every field VB consumes:
     "dateModified": "2026-02-20",
     "version": "2.1.0",
     "keywords": "migration, upgrade, node, api",
-    "about": "engineering.web.migration",
+    "about": [
+      { "@type": "DefinedTerm", "termCode": "migration", "inDefinedTermSet": "/vocabulary.json" },
+      { "@type": "DefinedTerm", "termCode": "upgrade-guide", "inDefinedTermSet": "/vocabulary.json" }
+    ],
     "license": "https://creativecommons.org/licenses/by/4.0/",
     "creativeWorkStatus": "Published",
     "creditText": "AI-Assisted — Written with Claude Opus 4.7, reviewed by Thomas A. Powell",
@@ -311,6 +326,11 @@ A discovery document for crawlers and tools:
 
 ## Section G — Versioning
 
-This contract is **v1.0**. Field additions that are backward-compatible (new optional `vb:*` keys, new tokens in existing vocabularies) increment the minor version and do not break v1 readers. Changes that rename fields, remove fields, or re-meaning tokens require a new major version (`v2`).
+This contract is **v1.1**. Field additions that are backward-compatible (new optional `vb:*` keys, new tokens in existing vocabularies) increment the minor version. Renames, removals, and re-meanings of tokens normally require a new major version (`v2`); v1.1's removal of `vb:topic` is the one pre-release exception, taken under the adoption decision recorded in `admin/r-n-d/evaluate/decisions.md` while the consumer surface is small enough that no compat shim is warranted.
 
-VB components read v1 indefinitely unless explicitly updated. A future v2 reader must detect and support v1 documents for at least one major release cycle.
+VB components read v1.1 indefinitely unless explicitly updated. A future v2 reader must detect and support v1.1 documents for at least one major release cycle.
+
+### Changelog
+
+- **v1.1 (2026-04-27)** — Replaced `vb:topic` (dotted-path string) with repeated `<meta name="concept">` resolving SKOS concept IDs against `vocabulary.json`. Added `<link rel="tag">` and `<link rel="glossary">`. Updated JSON-LD `about` to use `DefinedTerm` array. Source: SKOS Foundation bead (`vanilla-breeze-ii2k`).
+- **v1.0 (2026-04-24)** — Initial contract.

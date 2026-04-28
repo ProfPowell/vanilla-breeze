@@ -1,0 +1,209 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "schema": "https://schema.org/",
+    "@base": "https://vanilla-breeze.dev/concepts/"
+  },
+  "@type": "skos:ConceptScheme",
+  "@id": "https://vanilla-breeze.dev/vocabulary",
+  "skos:prefLabel": "Vanilla Breeze Vocabulary",
+  "skos:hasTopConcept": ["html-first", "provenance", "content-lens"],
+  "concepts": [
+    {
+      "@id": "html-first",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "HTML-first",
+      "skos:definition": "The framework stance: semantic HTML carries meaning, CSS carries presentation, JavaScript only adds behaviours that genuinely require it. Components must remain readable without JS.",
+      "skos:narrower": ["progressive-enhancement", "web-component", "custom-element", "attribute", "design-token"],
+      "skos:related": ["progressive-enhancement"]
+    },
+    {
+      "@id": "progressive-enhancement",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "progressive enhancement",
+      "skos:altLabel": ["PE"],
+      "skos:definition": "The practice of building features as additive layers: a baseline (HTML) that works without enhancement, then CSS, then JS — each layer optional. VB applies this both at the file level (every component has a static fallback) and at the system level (Layer 0 static → Layer 1 SSG → Layer 2 CMS for provenance).",
+      "skos:broader": "html-first",
+      "skos:related": ["web-component", "custom-element"]
+    },
+    {
+      "@id": "web-component",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "web component",
+      "skos:definition": "A custom element that ships with shadow DOM, styles, and behaviour. VB web components must work as static HTML (the baseline) and progressively enhance when JS loads.",
+      "skos:broader": "html-first",
+      "skos:related": ["custom-element", "progressive-enhancement"]
+    },
+    {
+      "@id": "custom-element",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "custom element",
+      "skos:definition": "An HTML element with a hyphenated tag name registered via customElements.define(). VB ships custom elements as web components (with shadow DOM/styles) and as plain custom elements (CSS-only sugar over native semantics).",
+      "skos:broader": "html-first",
+      "skos:related": ["web-component"]
+    },
+    {
+      "@id": "attribute",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "attribute",
+      "skos:definition": "A name–value pair on an HTML element that configures behaviour or carries metadata. VB uses three orthogonal provenance attributes: data-provenance, data-review, and data-status.",
+      "skos:broader": "html-first",
+      "skos:related": ["data-provenance", "data-review", "data-status"]
+    },
+    {
+      "@id": "design-token",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "design token",
+      "skos:definition": "A named value (color, spacing, font size) stored as a CSS custom property. Tokens form the vocabulary of a design system; VB ships its own and lets sites override with their own.",
+      "skos:broader": "html-first"
+    },
+
+    {
+      "@id": "provenance",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "provenance",
+      "skos:definition": "The traceable origin of a piece of content — who made it, how, with what tools, reviewed by whom, signed by which key. VB ships a contract (Stage 0–1 done) and a verification path (Stages 3–4 in progress).",
+      "skos:narrower": [
+        "data-provenance",
+        "data-review",
+        "data-status",
+        "data-trust",
+        "trust-tier",
+        "signing",
+        "canonical-document",
+        "page-info",
+        "change-set",
+        "meta-tag-contract"
+      ]
+    },
+    {
+      "@id": "data-provenance",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "data-provenance",
+      "skos:definition": "The DOM attribute that declares how a page or section was made. Vocabulary core: human, ai-assisted, ai-generated. Extensions: translated, synthesized, migrated. Tokens compose space-separated.",
+      "skos:broader": "provenance",
+      "skos:related": ["data-trust", "attribute"]
+    },
+    {
+      "@id": "data-review",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "data-review",
+      "skos:altLabel": ["review"],
+      "skos:definition": "The DOM attribute that records what review a page received. Values: unreviewed (default), fact-checked, editor-reviewed.",
+      "skos:broader": "provenance",
+      "skos:related": ["attribute"]
+    },
+    {
+      "@id": "data-status",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "data-status",
+      "skos:definition": "The DOM attribute that records publication state. Values: draft, published (default), archived.",
+      "skos:broader": "provenance",
+      "skos:related": ["attribute"]
+    },
+    {
+      "@id": "data-trust",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "data-trust",
+      "skos:definition": "Runtime verification tier emitted by <page-info> on its badge. Values: undeclared, declared, domain-anchored, verified, failed, key-unavailable. Distinct from data-provenance — author-declared vs. runtime-computed.",
+      "skos:broader": "provenance",
+      "skos:related": ["data-provenance", "trust-tier", "page-info"]
+    },
+    {
+      "@id": "trust-tier",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "trust tier",
+      "skos:definition": "The verification result computed by <page-info>: declared, domain-anchored, verified, failed, or key-unavailable. Surfaced via data-trust on the badge.",
+      "skos:broader": "provenance",
+      "skos:related": ["data-trust", "page-info"]
+    },
+    {
+      "@id": "signing",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "signing",
+      "skos:definition": "The cryptographic step that binds a canonical document to an author key. VB defines a verifier and a canonicalization spec; signing tools are reference implementations (Stage 4).",
+      "skos:broader": "provenance",
+      "skos:related": ["canonical-document"]
+    },
+    {
+      "@id": "canonical-document",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "canonical document",
+      "skos:definition": "The normalized text representation of a page used as the input for hashing and signing. Defined by admin/specs/canonical-document-v1.md (Stage 3, in progress).",
+      "skos:broader": "provenance",
+      "skos:related": ["signing"]
+    },
+    {
+      "@id": "page-info",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "page-info",
+      "skos:definition": "The disclosure-panel web component that surfaces author, dates, version, provenance, review, status, license, and verification state. In auto mode, reads from the page's meta-tag contract; in static mode, enhances hand-authored markup.",
+      "skos:broader": "provenance",
+      "skos:related": ["meta-tag-contract", "data-trust", "trust-tier"]
+    },
+    {
+      "@id": "change-set",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "change-set",
+      "skos:definition": "A grouped collection of <ins>/<del> edits with view toggles for tracking, final, and original states. Implemented by the <change-set> component.",
+      "skos:broader": "provenance"
+    },
+    {
+      "@id": "meta-tag-contract",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "meta-tag contract",
+      "skos:definition": "The published, versioned specification for which <meta>, <link>, DOM attributes, and JSON-LD fields VB consumes at runtime. Source of truth: admin/specs/meta-tag-contract-v1.md.",
+      "skos:broader": "provenance",
+      "skos:related": ["page-info", "content-lens"]
+    },
+
+    {
+      "@id": "content-lens",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "content lens",
+      "skos:altLabel": ["lens"],
+      "skos:definition": "A view over the site's metadata substrate that groups pages by one field family — time (changelog), keyword (index), term (glossary), structure (sitemap), authorship (forthcoming), or provenance (forthcoming). Each lens shares the same data; only the projection differs.",
+      "skos:narrower": ["glossary", "changelog", "sitemap", "keyword-index", "metadata-substrate"],
+      "skos:related": ["meta-tag-contract"]
+    },
+    {
+      "@id": "glossary",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "glossary",
+      "skos:definition": "The term lens: an alphabetical listing of vocabulary concepts with definitions, generated from vocabulary.json.",
+      "skos:broader": "content-lens"
+    },
+    {
+      "@id": "changelog",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "changelog",
+      "skos:altLabel": ["release notes"],
+      "skos:definition": "The time lens: versioned release history, most recent first.",
+      "skos:broader": "content-lens"
+    },
+    {
+      "@id": "sitemap",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "sitemap",
+      "skos:altLabel": ["site map"],
+      "skos:definition": "The structural lens: every page on the site organised by section. Distinct from /sitemap.xml, which is the machine-readable version for search engines.",
+      "skos:broader": "content-lens"
+    },
+    {
+      "@id": "keyword-index",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "keyword index",
+      "skos:altLabel": ["index", "site index"],
+      "skos:definition": "The keyword lens: a book-style alphabetical index of every concept, attribute, component, and topic in the documentation, with one or more page references per entry.",
+      "skos:broader": "content-lens"
+    },
+    {
+      "@id": "metadata-substrate",
+      "@type": "skos:Concept",
+      "skos:prefLabel": "metadata substrate",
+      "skos:altLabel": ["substrate"],
+      "skos:definition": "The shared field family — identity, temporal, topic, provenance, integrity, engagement, license — that every lens consumes. Adding a new field once exposes it to every lens at once.",
+      "skos:broader": "content-lens"
+    }
+  ]
+}

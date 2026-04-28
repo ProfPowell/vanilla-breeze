@@ -15,13 +15,17 @@
  *     modified: "2026-04-24",
  *     version: "0.1.0",
  *     keywords: ["provenance", "trust", "metadata"],
- *     topic: "documentation.concepts.provenance",
+ *     concepts: ["provenance", "data-provenance", "page-info"],
  *     provenance: "ai-assisted",
  *     review: "editor-reviewed",
  *     status: "published",
  *     license: "CC BY 4.0",
  *     signed: true
  *   }
+ *
+ * v1.1 (2026-04-27): `topic` (single dotted-path string) replaced by
+ * `concepts` (array of SKOS concept @ids harvested from repeated
+ * <meta name="concept"> tags). See admin/specs/meta-tag-contract-v1.md.
  *
  * Runs as an `after` Cook plugin so it sees every page in its final form.
  * Pages without any provenance metadata are skipped.
@@ -35,13 +39,16 @@ const META_RE = /<meta\s+([^>]+?)\/?>/gi;
 const ATTR_RE = /(\w[\w:-]*)\s*=\s*"([^"]*)"/g;
 
 function parseMetaTags(html) {
-  const tags = { name: {}, property: {}, itemprop: {} };
+  const tags = { name: {}, property: {}, itemprop: {}, concepts: [] };
   for (const match of html.matchAll(META_RE)) {
     const attrs = {};
     for (const a of match[1].matchAll(ATTR_RE)) {
       attrs[a[1].toLowerCase()] = a[2];
     }
-    if (attrs.name && attrs.content) tags.name[attrs.name] = attrs.content;
+    if (attrs.name && attrs.content) {
+      if (attrs.name === 'concept') tags.concepts.push(attrs.content);
+      else tags.name[attrs.name] = attrs.content;
+    }
     if (attrs.property && attrs.content) tags.property[attrs.property] = attrs.content;
     if (attrs.itemprop && attrs.content) tags.itemprop[attrs.itemprop] = attrs.content;
   }
@@ -111,7 +118,7 @@ export class GeneratePagesJson {
       /* Skip pages without ANY provenance signal — keeps pages.json
          scoped to "pages the author has explicitly described". */
       const hasSignal = m['vb:provenance'] || m['vb:review'] || m['vb:status']
-        || m['vb:topic'] || m['author'] || ip['version'];
+        || meta.concepts.length > 0 || m['author'] || ip['version'];
       if (!hasSignal) continue;
 
       const url = urlFromPath(file, distDir);
@@ -128,7 +135,7 @@ export class GeneratePagesJson {
         modified: (m['last-modified'] || p['article:modified_time'] || '').slice(0, 10),
         version: ip['version'] || '',
         keywords: asKeywords(m['keywords']),
-        topic: m['vb:topic'] || '',
+        concepts: meta.concepts,
         provenance: m['vb:provenance'] || '',
         review: m['vb:review'] || '',
         status: m['vb:status'] || '',
