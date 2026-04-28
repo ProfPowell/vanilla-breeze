@@ -295,7 +295,13 @@ class ChartWc extends VBElement {
     const mode = this.dataset.chart || table.dataset.chart || 'replace';
 
     if (mode === 'replace') {
-      table.classList.add('sr-only');
+      /* Use the site-wide .visually-hidden utility from src/utils/visually-hidden.css
+         instead of a chart-wc-scoped sr-only class. The bespoke rule
+         (chart-wc > table.sr-only) was being partially overridden by cascade
+         layers — position/clip/overflow applied but width/height did not, so
+         the table rendered at its natural content size (~270 × 5236 on the
+         /stats/ page) and added phantom scroll past the visible footer. */
+      table.classList.add('visually-hidden');
       table.setAttribute('aria-hidden', 'false');
     }
   }
