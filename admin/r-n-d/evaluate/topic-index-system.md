@@ -1,5 +1,7 @@
 # Vanilla Breeze Tag and Topic Index
 
+> **Status: Adopted (2026-04-27).** See [decisions.md](./decisions.md). Implementation is tracked in sequence beads S3 (SKOS Topic Index) and S4 (`topic-map` SKOS upgrade).
+
 A platform-native tag and topic index pattern for content-oriented websites. This system provides sortable, filterable navigation over a site's SKOS vocabulary, with sort dimensions including alphabetical, usage count, popularity (views within a time period), creation date, and last update date. It is a core navigation mechanism that complements the glossary system.
 
 ## Table of Contents
