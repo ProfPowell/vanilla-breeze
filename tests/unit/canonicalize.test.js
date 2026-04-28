@@ -296,13 +296,14 @@ describe('buildCanonicalDocument', () => {
       '@context', '@version',
       'url', 'title', 'author', 'authorUrl',
       'published', 'modified', 'version',
-      'keywords', 'topic', 'provenance', 'review', 'status',
+      'keywords', 'concepts', 'provenance', 'review', 'status',
       'license', 'content'
     ]);
     assert.equal(out['@version'], 1);
     assert.equal(out.title, '');
     assert.equal(out.author, '');
     assert.deepEqual(out.keywords, []);
+    assert.deepEqual(out.concepts, []);
   });
 
   it('reads §G-3 fields from the right meta tags', () => {
@@ -318,7 +319,8 @@ describe('buildCanonicalDocument', () => {
         el('META', { name: 'last-modified', content: '2026-02-20' }),
         el('META', { itemprop: 'version', content: '2.1.0' }),
         el('META', { name: 'keywords', content: 'a, b , c' }),
-        el('META', { name: 'vb:topic', content: 'engineering.web' }),
+        el('META', { name: 'concept', content: 'progressive-enhancement' }),
+        el('META', { name: 'concept', content: 'accessibility' }),
         el('META', { name: 'vb:provenance', content: 'ai-assisted' }),
         el('META', { name: 'vb:review', content: 'editor-reviewed' }),
         el('META', { name: 'vb:status', content: 'published' }),
@@ -335,7 +337,11 @@ describe('buildCanonicalDocument', () => {
     assert.equal(out.modified, '2026-02-20');
     assert.equal(out.version, '2.1.0');
     assert.deepEqual(out.keywords, ['a', 'b', 'c']);
-    assert.equal(out.topic, 'engineering.web');
+    /* concepts: harvested from all meta[name="concept"] tags,
+       deduplicated, sorted alphabetically — see canonical-document
+       v1.1 §G-3. Source order was [progressive-enhancement, accessibility]
+       above; canonical output sorts to [accessibility, progressive-enhancement]. */
+    assert.deepEqual(out.concepts, ['accessibility', 'progressive-enhancement']);
     assert.equal(out.provenance, 'ai-assisted');
     assert.equal(out.review, 'editor-reviewed');
     assert.equal(out.status, 'published');
@@ -367,6 +373,32 @@ describe('buildCanonicalDocument', () => {
     assert.match(json, /^\{"@context":/);
     assert.match(json, /,"@version":1,/);
     assert.match(json, /,"content":/);
+  });
+
+  it('concepts: dedupes repeated meta tags and sorts alphabetically', () => {
+    const d = doc({
+      url: 'https://example.com/',
+      head: [
+        el('META', { name: 'concept', content: 'zebra' }),
+        el('META', { name: 'concept', content: 'apple' }),
+        el('META', { name: 'concept', content: 'apple' }), /* duplicate */
+        el('META', { name: 'concept', content: 'mango' })
+      ],
+      body: [el('ARTICLE', { 'data-signable': '' }, [el('P', {}, [text('x')])])]
+    });
+    const out = buildCanonicalDocument(d);
+    assert.deepEqual(out.concepts, ['apple', 'mango', 'zebra']);
+  });
+
+  it('concepts: same set in different source order produces byte-identical JSON', () => {
+    const make = (order) => doc({
+      url: 'https://example.com/',
+      head: order.map((id) => el('META', { name: 'concept', content: id })),
+      body: [el('ARTICLE', { 'data-signable': '' }, [el('P', {}, [text('x')])])]
+    });
+    const a = serializeCanonical(buildCanonicalDocument(make(['b', 'a', 'c'])));
+    const b = serializeCanonical(buildCanonicalDocument(make(['c', 'b', 'a'])));
+    assert.equal(a, b);
   });
 
   it('produces identical output for identical input (determinism)', () => {

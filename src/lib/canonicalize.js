@@ -194,6 +194,18 @@ function getKeywords(doc) {
   return raw.split(',').map((s) => s.trim()).filter(Boolean);
 }
 
+/* §G-3 — concepts: harvested from all meta[name="concept"] tags,
+   deduplicated, sorted alphabetically. Sort is what makes the canonical
+   JSON byte-stable regardless of source order. v1.1 — see spec §K-1. */
+function getConcepts(doc) {
+  const seen = new Set();
+  for (const m of doc.querySelectorAll('meta[name="concept"]')) {
+    const val = (m.getAttribute('content') || '').trim();
+    if (val) seen.add(val);
+  }
+  return [...seen].sort();
+}
+
 function getLicense(doc) {
   return linkHref(doc, 'license') || meta(doc, 'license');
 }
@@ -219,7 +231,7 @@ export function buildCanonicalDocument(doc, opts = {}) {
     modified,
     version: itemprop(doc, 'version'),
     keywords: getKeywords(doc),
-    topic: meta(doc, 'vb:topic'),
+    concepts: getConcepts(doc),
     provenance: meta(doc, 'vb:provenance'),
     review: meta(doc, 'vb:review'),
     status: meta(doc, 'vb:status'),

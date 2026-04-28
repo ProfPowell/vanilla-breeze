@@ -1,9 +1,11 @@
-# Vanilla Breeze Canonical Document Format — v1.0
+# Vanilla Breeze Canonical Document Format — v1.1
 
-> **Status:** stable, 2026-04-24
+> **Status:** stable, 2026-04-27
 > **Owner:** VB document-provenance initiative
 > **Consumers:** `src/lib/canonicalize.js` (signer + verifier), Stage 4 signing reference, `<page-info>` verifier
-> **Source of truth:** this file. Changes that alter the byte output require a new major version (v2, v3…). Verifiers SHOULD support the previous major version for one release cycle.
+> **Source of truth:** this file.
+
+**v1.1 — 2026-04-27.** Replaces the `topic: string` field with `concepts: string[]` (sorted, alphabetical) to track meta-tag-contract v1.1. Renaming a field would normally require a new major version per §K below; v1.1 is taken as a one-time pre-release exception, matching the same exception meta-tag-contract took. See `admin/r-n-d/evaluate/decisions.md` and the canonical-document spec bump bead (`vanilla-breeze-5a1y`).
 
 This spec defines the deterministic, byte-stable representation of a published HTML document used as input to ECDSA signing and SHA-256 hashing. The canonical document is a JSON object. Identical input HTML MUST produce byte-identical output across signer (Node, build-time) and verifier (browser, runtime).
 
@@ -165,7 +167,7 @@ The signed object is a UTF-8 JSON encoding with **fixed key order** (no alphabet
   "modified": "<YYYY-MM-DD or empty string>",
   "version": "<semver string or empty string>",
   "keywords": ["<term>", "..."],
-  "topic": "<vb:topic value or empty string>",
+  "concepts": ["<concept @id>", "..."],
   "provenance": "<vb:provenance value or empty string>",
   "review": "<vb:review value or empty string>",
   "status": "<vb:status value or empty string>",
@@ -177,7 +179,8 @@ The signed object is a UTF-8 JSON encoding with **fixed key order** (no alphabet
 **Serialization rules:**
 - `JSON.stringify(doc)` with **no** indent, no trailing newline. The output is a single line of JSON (no pretty-printing).
 - Keys appear in the order listed above. Implementations MUST construct the object with keys inserted in that order; standard ES engines preserve insertion order for string keys.
-- `keywords` is always an array (possibly empty). All other string fields default to `""` when absent.
+- `keywords` and `concepts` are always arrays (possibly empty). All other string fields default to `""` when absent.
+- `concepts` MUST be sorted alphabetically (lexicographic, case-sensitive ASCII order via `Array.prototype.sort()`). The sort guarantees a single canonical ordering regardless of how meta tags appear in source — two HTML documents with the same set of `<meta name="concept">` tags in any order produce byte-identical canonical JSON.
 - The `content` field is the canonical text from §D-F as a single JSON string (newlines encoded as `\n`).
 
 ### G-1. URL canonicalization
@@ -200,7 +203,7 @@ The signed object is a UTF-8 JSON encoding with **fixed key order** (no alphabet
 | `modified` | `meta[name="last-modified"]` content, else `meta[property="article:modified_time"]`, date portion |
 | `version` | `meta[itemprop="version"]` content |
 | `keywords` | `meta[name="keywords"]` content split on `,` and trimmed; empty array if absent |
-| `topic` | `meta[name="vb:topic"]` content |
+| `concepts` | All `meta[name="concept"]` content values, deduplicated, sorted alphabetically; empty array if absent |
 | `provenance` | `meta[name="vb:provenance"]` content |
 | `review` | `meta[name="vb:review"]` content |
 | `status` | `meta[name="vb:status"]` content |
@@ -281,7 +284,7 @@ The library MUST be import-compatible with both Node 20+ (test runner, signer) a
 
 ## Section K — Versioning and forward compatibility
 
-This spec is **v1.0**. The following changes require a new major version:
+This spec is **v1.1**. The following changes require a new major version:
 
 - Renaming, removing, or reordering any field in §G.
 - Adding new excluded element selectors that change the walker output.
@@ -294,7 +297,12 @@ The following changes are backward-compatible (minor version bumps):
 - Adding new sources for an existing field (with a documented precedence).
 - Clarifying ambiguous prose without changing behaviour.
 
-Verifiers detect the version by the `@version` field in the canonical JSON. A v2 verifier MUST also accept v1 documents for at least one major release cycle to allow gradual migration.
+Verifiers detect the version by the `@version` field in the canonical JSON. A v2 verifier MUST also accept v1 documents for at least one major release cycle to allow gradual migration. The integer `@version: 1` covers all v1.x minor revisions; minor changes are recorded in §K-1.
+
+### K-1. Changelog
+
+- **v1.1 (2026-04-27)** — Replaced `topic: string` (sourced from `meta[name="vb:topic"]`) with `concepts: string[]` (sorted, sourced from repeated `meta[name="concept"]`). Renaming a field strictly requires a major bump per the rules above; v1.1 is a one-time pre-release exception, taken under the SKOS adoption decision in `admin/r-n-d/evaluate/decisions.md` and matching the analogous exception in `meta-tag-contract-v1.md` v1.1. Pages already signed under v1.0 will rehash on next build via `scripts/sign-pages.js`; there are no external v1.0 verifiers to support.
+- **v1.0 (2026-04-24)** — Initial spec.
 
 ---
 
