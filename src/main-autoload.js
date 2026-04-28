@@ -14,6 +14,7 @@ import './web-components/core.js';
 import './utils/tooltip-init.js';
 import './utils/view-transition-init.js';
 import './utils/progress-ring-init.js';
+import './utils/recently-visited-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
 import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';

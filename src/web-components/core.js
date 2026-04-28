@@ -62,3 +62,4 @@ import '../effects/reveal.js';
 import '../effects/highlight.js';
 import '../utils/select-all-init.js';
 import '../utils/math-init.js';
+import '../utils/recently-visited-init.js';

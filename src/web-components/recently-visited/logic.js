@@ -4,16 +4,16 @@ import { VBElement } from '../../lib/vb-element.js';
 /**
  * recently-visited: Device-local reader history lens.
  *
- * Tracks pages the reader has visited *on this device only*. Stored in
- * localStorage under `vb:recently-visited`. Never sent to a backend, never
- * aggregated, never crosses devices. Reader sovereignty: there's a Clear
- * History control and a Pause toggle.
+ * Renders the reader's local visit history (stored under
+ * `vb:recently-visited` in localStorage). Tracking is handled by the
+ * sitewide tracker in src/utils/recently-visited-init.js, which is
+ * loaded by the autoload bundle so every page gets recorded — not
+ * just pages that mount this component. Reader sovereignty controls
+ * (Pause / Clear) live here because they only matter when the lens
+ * is on screen.
  *
- * Pages list is most-recent-first, deduplicated by URL, capped by `limit`.
- *
- * @attr {number} limit       Max entries to keep (default 25)
- * @attr {boolean} no-track   Don't append the current page on connect
- * @attr {string}  empty-text Message shown when history is empty
+ * @attr {number}  limit       Max entries rendered (default 25)
+ * @attr {string}  empty-text  Message shown when history is empty
  *
  * @example
  *   <recently-visited limit="20"></recently-visited>
@@ -23,10 +23,28 @@ class RecentlyVisited extends VBElement {
   static PAUSE_KEY = 'vb:recently-visited:paused';
 
   setup() {
-    if (!this.hasAttribute('no-track') && !this.#isPaused()) {
-      this.#trackCurrent();
-    }
     this.#render();
+    this.#wireStorage();
+  }
+
+  disconnect() {
+    if (this.#storageHandler) {
+      window.removeEventListener('storage', this.#storageHandler);
+      this.#storageHandler = null;
+    }
+  }
+
+  #storageHandler = null;
+
+  #wireStorage() {
+    /* Re-render when another tab updates the store (clear, pause toggle,
+       new visits) so the lens stays consistent across windows. */
+    this.#storageHandler = (e) => {
+      if (e.key === RecentlyVisited.STORAGE_KEY || e.key === RecentlyVisited.PAUSE_KEY) {
+        this.#render();
+      }
+    };
+    window.addEventListener('storage', this.#storageHandler);
   }
 
   #isPaused() {
@@ -58,7 +76,7 @@ class RecentlyVisited extends VBElement {
   #write(entries) {
     try {
       localStorage.setItem(RecentlyVisited.STORAGE_KEY, JSON.stringify(entries));
-    } catch { /* quota / private mode — silently drop */ }
+    } catch { /* quota / private mode */ }
   }
 
   #limit() {
@@ -66,26 +84,36 @@ class RecentlyVisited extends VBElement {
     return Number.isFinite(raw) && raw > 0 ? raw : 25;
   }
 
-  #trackCurrent() {
-    const url = location.pathname + location.search;
-    const title = document.title;
-    const ts = Date.now();
-    const entries = this.#read().filter((e) => e.url !== url);
-    entries.unshift({ url, title, ts });
-    this.#write(entries.slice(0, this.#limit()));
-  }
-
   #render() {
     const entries = this.#read().slice(0, this.#limit());
     const emptyText = this.getAttribute('empty-text') || 'No recently visited pages yet.';
     const paused = this.#isPaused();
 
+    /* Icon buttons (icon-wc + visually-hidden label + tooltip via title)
+       follow the share-wc/print-page pattern: icon-only at the size of
+       the action header, accessible to screen readers. */
+    const pauseLabel = paused ? 'Resume tracking' : 'Pause tracking';
+    const pauseIcon = paused ? 'play' : 'pause';
+    const clearDisabled = entries.length === 0;
+
     const parts = [];
     parts.push('<header class="recently-visited-header">');
     parts.push(`<h2 class="recently-visited-heading">Recently visited</h2>`);
     parts.push('<menu class="recently-visited-actions">');
-    parts.push(`<li><label class="recently-visited-pause"><input type="checkbox" data-recently-visited-pause${paused ? ' checked' : ''}> <span>Pause</span></label></li>`);
-    parts.push(`<li><button type="button" data-recently-visited-clear class="ghost">Clear</button></li>`);
+    parts.push(`<li><button type="button"
+        data-recently-visited-pause
+        class="icon-button"
+        aria-pressed="${paused}"
+        aria-label="${pauseLabel}"
+        title="${pauseLabel}"
+      ><icon-wc name="${pauseIcon}" size="sm"></icon-wc></button></li>`);
+    parts.push(`<li><button type="button"
+        data-recently-visited-clear
+        class="icon-button"
+        aria-label="Clear history"
+        title="Clear history"
+        ${clearDisabled ? 'disabled' : ''}
+      ><icon-wc name="trash-2" size="sm"></icon-wc></button></li>`);
     parts.push('</menu>');
     parts.push('</header>');
     parts.push('<p class="recently-visited-explainer"><small>Stored on this device only. Never sent to a server.</small></p>');
@@ -102,10 +130,10 @@ class RecentlyVisited extends VBElement {
     }
 
     this.innerHTML = parts.join('\n');
-    this.#wire();
+    this.#wireControls();
   }
 
-  #wire() {
+  #wireControls() {
     const clear = this.querySelector('[data-recently-visited-clear]');
     if (clear) {
       clear.addEventListener('click', () => {
@@ -116,8 +144,13 @@ class RecentlyVisited extends VBElement {
     }
     const pause = this.querySelector('[data-recently-visited-pause]');
     if (pause) {
-      pause.addEventListener('change', () => {
-        this.#setPaused(pause.checked);
+      pause.addEventListener('click', () => {
+        this.#setPaused(!this.#isPaused());
+        this.#render(); /* re-render to flip the icon and aria-pressed */
+        this.dispatchEvent(new CustomEvent('recently-visited:pause-toggle', {
+          bubbles: true,
+          detail: { paused: this.#isPaused() }
+        }));
       });
     }
   }
