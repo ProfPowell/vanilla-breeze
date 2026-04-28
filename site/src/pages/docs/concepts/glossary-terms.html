@@ -1,0 +1,91 @@
+---
+layout: guide
+title: "Glossary terms in prose"
+description: "How to link a vocabulary concept inline so the popover enhancement and the glossary page both pick it up. First mention in <dfn>, subsequent mentions plain."
+guideGroup: Concepts
+currentPath: /docs/concepts/glossary-terms/
+author: "Thomas A. Powell"
+authorUrl: "/team/tpowell/"
+published: "2026-04-27"
+lastModified: "2026-04-27"
+keywords: ["glossary", "vocabulary", "authoring", "dfn", "data-concept"]
+license: "CC BY 4.0"
+licenseUrl: "https://creativecommons.org/licenses/by/4.0/"
+provenance: "human"
+review: "editor-reviewed"
+status: "published"
+concepts: ["glossary", "content-lens", "metadata-substrate"]
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Glossary terms in prose</span></li>
+  </ol>
+</nav>
+</template>
+
+<section>
+  <h2>Why this exists</h2>
+  <p>The site has a single <a href="/glossary/" rel="glossary">glossary</a> generated from <code>site/src/_data/vocabulary.json</code>. When you mention one of those concepts in article prose, link to it. Two things light up:</p>
+  <ul>
+    <li>The <a href="/glossary/">glossary page</a> is the canonical anchor (every concept has <code>id="term-{@id}"</code>), so the link is always valid even without JS.</li>
+    <li>A small popover script (<code>/js/definition-popover.js</code>, generated at build) fetches <code>/definitions.json</code> on first interaction and shows the definition in a native popover anchored to the term. Modifier-clicks fall through to the glossary page.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>The pattern</h2>
+  <p>Two forms, depending on whether this is the first mention of the concept on the page.</p>
+
+  <h3>First (defining) use</h3>
+  <p>Wrap the link in <code>&lt;dfn&gt;</code>. The <code>data-concept</code> attribute carries the SKOS <code>@id</code> from <code>vocabulary.json</code>. The <code>href</code> deep-links to the term's anchor on the glossary page so the link is meaningful with no JS.</p>
+  <code-block language="html" show-lines data-escape><p>We use <dfn><a href="/glossary/#term-progressive-enhancement"
+   data-concept="progressive-enhancement">progressive enhancement</a></dfn>
+   to ensure content is available before scripts load.</p></code-block>
+
+  <h3>Subsequent uses</h3>
+  <p>Plain anchor — no <code>&lt;dfn&gt;</code>. <code>&lt;dfn&gt;</code> marks the <em>defining instance</em>; using it on every mention would be wrong semantically and visually noisy.</p>
+  <code-block language="html" show-lines data-escape><p>This <a href="/glossary/#term-progressive-enhancement"
+   data-concept="progressive-enhancement">progressive enhancement</a>
+   approach also benefits search engine indexing.</p></code-block>
+</section>
+
+<section>
+  <h2>Rules of thumb</h2>
+  <ul>
+    <li><strong>Link the concept, not the word.</strong> Only link when you genuinely mean the vocabulary entry — not every casual use of the word "review" or "trust".</li>
+    <li><strong>One <code>&lt;dfn&gt;</code> per concept per page.</strong> Subsequent mentions on the same page should be plain anchors.</li>
+    <li><strong>Don't link inside a heading.</strong> Headings are navigation; the popover would fight with the heading-link affordance. Link from the body prose right after.</li>
+    <li><strong>Don't link inside <code>&lt;code&gt;</code>, <code>&lt;pre&gt;</code>, or another <code>&lt;a&gt;</code>.</strong> Code samples carry their own typography contract; nested anchors are invalid HTML.</li>
+    <li><strong>Don't link more than one or two terms per paragraph.</strong> The dotted-underline cue is helpful in moderation; turn into noise quickly.</li>
+    <li><strong>Add the concept to the page's frontmatter.</strong> If the page <em>is about</em> the concept, list it in <code>concepts: [...]</code>. The meta-tag contract already emits <code>&lt;meta name="concept"&gt;</code> + <code>&lt;link rel="tag"&gt;</code> + <code>&lt;link rel="glossary"&gt;</code> automatically.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>How to find the right <code>@id</code></h2>
+  <p>Open <code>site/src/_data/vocabulary.json</code> and search for the concept's pref-label. The <code>@id</code> is the slug-form (e.g. <code>"meta-tag-contract"</code>, <code>"data-provenance"</code>, <code>"page-info"</code>). The <code>href</code> is always <code>/glossary/#term-{@id}</code> — that's what the build emits and what the popover script expects.</p>
+  <p>If the concept isn't in the vocabulary yet but should be, add it to <code>vocabulary.json</code> first (see the SKOS shape used by sibling entries) and re-run <code>npm run build</code>. The glossary page, <code>/definitions.json</code>, and head metadata regenerate from that single source.</p>
+</section>
+
+<section>
+  <h2>What the popover does (and doesn't)</h2>
+  <ul>
+    <li>Feature-detects the Popover API; on browsers without it, every link is a normal navigation to the glossary anchor. Same accessibility either way.</li>
+    <li>Caches <code>/definitions.json</code> in <code>sessionStorage</code> under <code>vb:definitions</code>. One fetch per browsing session.</li>
+    <li>Respects <kbd>Cmd</kbd> / <kbd>Ctrl</kbd> / <kbd>Shift</kbd> / <kbd>Alt</kbd> / middle-click — those open the glossary page like any other link.</li>
+    <li>Native popover handles <kbd>Escape</kbd> and light-dismiss. We don't reimplement focus management.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/glossary/">The glossary page</a></li>
+    <li><a href="/admin/specs/meta-tag-contract-v1/">Meta-tag contract v1</a> &mdash; defines <code>&lt;meta name="concept"&gt;</code></li>
+    <li><a href="/docs/elements/web-components/glossary-index/"><code>&lt;glossary-index&gt;</code></a> &mdash; the wrapper that adds search filter + scroll-spy</li>
+  </ul>
+</section>
