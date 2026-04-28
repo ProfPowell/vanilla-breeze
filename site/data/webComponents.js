@@ -129,7 +129,7 @@ export default {
     { name: 'time-index', href: '/docs/elements/web-components/time-index/', desc: 'Changelog/timeline with relative dates and version filtering' },
     { name: 'content-lens', href: '/docs/elements/web-components/content-lens/', desc: 'Universal switchable host for VB lens components' },
     { name: 'author-index', href: '/docs/elements/web-components/author-index/', desc: 'Author-grouped view of site content' },
-    { name: 'topic-map', href: '/docs/elements/web-components/topic-map/', desc: 'Hierarchical view of vb:topic dotted paths' },
+    { name: 'topic-map', href: '/docs/elements/web-components/topic-map/', desc: 'SKOS-aware concept tree from vocabulary.json + pages.json' },
     { name: 'trust-filter', href: '/docs/elements/web-components/trust-filter/', desc: 'Filter pages by provenance, review level, status, and signed state' },
     { name: 'recently-visited', href: '/docs/elements/web-components/recently-visited/', desc: 'Device-local reader history (localStorage, never aggregated)' },
     { name: 'popularity-index', href: '/docs/elements/web-components/popularity-index/', desc: 'Aggregated most-visited lens (degrades when endpoint unavailable)' },

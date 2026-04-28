@@ -7317,28 +7317,64 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "topic-map",
     "type": "web-component",
-    "description": "Hierarchical view of vb:topic dotted paths",
+    "description": "SKOS-aware hierarchical view of site concepts. Joins vocabulary.json (skos:broader/narrower edges) with pages.json (each page's concepts:[] array) to render a nested <details> tree rooted at top concepts.",
     "attributes": [
       {
         "name": "data-lens-src",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "URL to pages.json (or compatible source)"
+        "description": "URL to pages.json. Each page record must expose a concepts:[] array (per meta-tag-contract v1.1)."
       },
       {
         "name": "src",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Alias for data-lens-src"
+        "description": "Alias for data-lens-src."
+      },
+      {
+        "name": "data-vocabulary-src",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "/vocabulary.json",
+        "description": "URL to the SKOS vocabulary.json. Provides concept @id, skos:prefLabel, and skos:broader/narrower/hasTopConcept edges used to build the tree."
       },
       {
         "name": "expand-all",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Render with every level expanded"
+        "description": "Render with every level expanded. Default opens only the top-level concepts."
+      }
+    ],
+    "childAttributes": [],
+    "structure": [
+      {
+        "element": "details[data-topic-node]",
+        "required": false,
+        "description": "Generated. One <details> per concept node. data-topic-node carries the concept @id (or '__uncategorized'). Native disclosure widgets work without JS."
+      },
+      {
+        "element": "summary > a.topic-name",
+        "required": false,
+        "description": "Generated. Concept prefLabel linked to /topics/{id}/."
+      },
+      {
+        "element": "summary > .topic-count",
+        "required": false,
+        "description": "Generated. Total page count for the concept and all descendant concepts."
+      },
+      {
+        "element": "ul.topic-pages > li > a",
+        "required": false,
+        "description": "Generated. Pages tagged directly with this concept, in source order."
+      },
+      {
+        "element": "p[data-topic-map-error]",
+        "required": false,
+        "description": "Rendered when either data source fails to load."
       }
     ]
   },

@@ -31,7 +31,7 @@
  * Pages without any provenance metadata are skipped.
  */
 
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile, copyFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { resolve, join, relative } from 'node:path';
 
@@ -156,5 +156,16 @@ export class GeneratePagesJson {
     const outPath = resolve(distDir, 'pages.json');
     await writeFile(outPath, JSON.stringify(out, null, 2) + '\n', 'utf-8');
     console.log(`  ✓ Generated pages.json (${pages.length} entries)`);
+
+    /* Expose vocabulary.json at /vocabulary.json so SKOS-aware lens
+       components (e.g. <topic-map>) can fetch it alongside pages.json.
+       Cook copies _data/ into dist/_data/ verbatim, but lens components
+       are a runtime contract that lives at the site root. */
+    const vocabSrc = resolve(cwd, 'src/_data/vocabulary.json');
+    if (existsSync(vocabSrc)) {
+      const vocabDest = resolve(distDir, 'vocabulary.json');
+      await copyFile(vocabSrc, vocabDest);
+      console.log('  ✓ Copied vocabulary.json to dist root');
+    }
   }
 }
