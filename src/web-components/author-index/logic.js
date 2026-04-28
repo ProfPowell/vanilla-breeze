@@ -61,7 +61,7 @@ class AuthorIndex extends VBElement {
       const sample = items[0];
       const slug = author.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       html.push(`<details data-author-group id="author-${slug}">`);
-      html.push(`<summary><span class="author-name">${escapeHtml(author)}</span> <span class="author-count">${items.length}</span></summary>`);
+      html.push(`<summary><span class="author-name">${escapeHtml(author)}</span><span class="author-count" aria-label="${items.length} ${items.length === 1 ? 'page' : 'pages'}">(${items.length})</span></summary>`);
       if (sample.authorUrl) {
         html.push(`<p class="author-link"><a href="${escapeAttr(sample.authorUrl)}" rel="author">View ${escapeHtml(author)}'s profile</a></p>`);
       }
