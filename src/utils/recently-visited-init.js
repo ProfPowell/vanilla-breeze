@@ -1,19 +1,16 @@
 /**
  * recently-visited-init: Sitewide reader-history tracker.
  *
- * Runs on every page where the VB autoload bundle is present. Writes
- * { url, hash, title, hashTitle, ts } to localStorage under
- * `vb:recently-visited` so that <recently-visited> on any page can
- * render the reader's history. Pure client-side, never sent to a backend.
+ * Runs on every page where the VB autoload bundle is present. Records
+ * every page navigation AND every in-page hash change to localStorage
+ * under `vb:recently-visited`. Tracking is unconditional (data fidelity);
+ * the <recently-visited> renderer decides whether anchor entries are
+ * surfaced in the UI via the `vb:recently-visited:show-anchors` flag.
  *
  * Reader sovereignty:
- *   - Reads `vb:recently-visited:paused` from localStorage; if "1",
- *     skips the write entirely.
- *   - Reads `vb:recently-visited:track-anchors`; when "1", hash
- *     navigations are recorded as separate entries; otherwise only the
- *     base pathname+search is tracked. Default OFF — anchors are noisy.
- *   - Honors opt-out per-page via <meta name="vb:no-track-history">.
- *   - Caps the stored list at MAX_ENTRIES so localStorage doesn't bloat.
+ *   - `vb:recently-visited:paused` = "1" suspends recording entirely.
+ *   - `<meta name="vb:no-track-history">` opts a single page out.
+ *   - History is capped at MAX_ENTRIES (100) so localStorage doesn't bloat.
  *
  * Why a separate init: the <recently-visited> component used to track
  * inside its own connectedCallback, which only fired on pages that
@@ -23,20 +20,12 @@
 
 const STORAGE_KEY = 'vb:recently-visited';
 const PAUSE_KEY = 'vb:recently-visited:paused';
-const TRACK_ANCHORS_KEY = 'vb:recently-visited:track-anchors';
+const SHOW_ANCHORS_KEY = 'vb:recently-visited:show-anchors';
 const MAX_ENTRIES = 100;
 
 function isPaused() {
   try {
     return localStorage.getItem(PAUSE_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function isAnchorMode() {
-  try {
-    return localStorage.getItem(TRACK_ANCHORS_KEY) === '1';
   } catch {
     return false;
   }
@@ -66,7 +55,7 @@ function write(entries) {
 }
 
 /**
- * Resolve the human-readable label for the current hash, if any. Falls
+ * Resolve a human-readable label for the current hash, if any. Falls
  * back to the slug when no element matches the hash id.
  */
 function resolveHashTitle(hash) {
@@ -74,15 +63,16 @@ function resolveHashTitle(hash) {
   const id = hash.slice(1);
   if (!id) return '';
   let target = null;
-  try { target = document.getElementById(id); } catch { /* invalid selector */ }
+  try { target = document.getElementById(id); } catch { /* invalid id selector */ }
   if (target) return (target.textContent || '').trim().slice(0, 80) || id;
   return id;
 }
 
 /**
- * Record the current page (and optionally hash) in history. Idempotent
- * within a single pageview: if the same (url, hash) pair is already at
- * the top, skip.
+ * Record the current location. Always writes both the page and (when
+ * present) the hash. The renderer decides whether to surface anchor
+ * entries — tracking is unconditional so the data is there if/when the
+ * reader wants it.
  */
 function trackCurrent() {
   if (isPaused() || isOptedOut()) return;
@@ -90,7 +80,7 @@ function trackCurrent() {
   if (location.protocol === 'file:' || location.protocol === 'about:') return;
 
   const url = location.pathname + location.search;
-  const hash = isAnchorMode() ? location.hash : '';
+  const hash = location.hash;
   const title = (document.title || '').trim();
   if (!title) return; /* untitled scratch pages — skip */
 
@@ -107,30 +97,22 @@ function trackCurrent() {
   write(filtered.slice(0, MAX_ENTRIES));
 }
 
-/* Track once when this script runs. */
+/* Track once when this script runs, on bfcache restore, and on every
+   in-page hash change. The renderer's show-anchors flag is irrelevant
+   to tracking — it only controls visibility. */
 trackCurrent();
-
-/* Re-track on bfcache restore so a page that was previously "current"
-   gets its timestamp refreshed if revisited via back/forward. */
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) trackCurrent();
 });
-
-/* Track hash navigations only when anchor mode is on. The check happens
-   on every hashchange so the user can flip the toggle and have it take
-   effect immediately. */
-window.addEventListener('hashchange', () => {
-  if (isAnchorMode()) trackCurrent();
-});
+window.addEventListener('hashchange', trackCurrent);
 
 /* Public surface for components / tests. */
 export {
   STORAGE_KEY,
   PAUSE_KEY,
-  TRACK_ANCHORS_KEY,
+  SHOW_ANCHORS_KEY,
   MAX_ENTRIES,
   isPaused,
-  isAnchorMode,
   read,
   write,
 };

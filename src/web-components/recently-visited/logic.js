@@ -22,7 +22,7 @@ import { VBElement } from '../../lib/vb-element.js';
 class RecentlyVisited extends VBElement {
   static STORAGE_KEY = 'vb:recently-visited';
   static PAUSE_KEY = 'vb:recently-visited:paused';
-  static TRACK_ANCHORS_KEY = 'vb:recently-visited:track-anchors';
+  static SHOW_ANCHORS_KEY = 'vb:recently-visited:show-anchors';
 
   setup() {
     this.#render();
@@ -44,7 +44,7 @@ class RecentlyVisited extends VBElement {
     const watched = new Set([
       RecentlyVisited.STORAGE_KEY,
       RecentlyVisited.PAUSE_KEY,
-      RecentlyVisited.TRACK_ANCHORS_KEY,
+      RecentlyVisited.SHOW_ANCHORS_KEY,
     ]);
     this.#storageHandler = (e) => {
       if (watched.has(e.key)) this.#render();
@@ -64,15 +64,15 @@ class RecentlyVisited extends VBElement {
     } catch { /* private mode */ }
   }
 
-  #isAnchorMode() {
-    try { return localStorage.getItem(RecentlyVisited.TRACK_ANCHORS_KEY) === '1'; }
+  #showAnchors() {
+    try { return localStorage.getItem(RecentlyVisited.SHOW_ANCHORS_KEY) === '1'; }
     catch { return false; }
   }
 
-  #setAnchorMode(value) {
+  #setShowAnchors(value) {
     try {
-      if (value) localStorage.setItem(RecentlyVisited.TRACK_ANCHORS_KEY, '1');
-      else localStorage.removeItem(RecentlyVisited.TRACK_ANCHORS_KEY);
+      if (value) localStorage.setItem(RecentlyVisited.SHOW_ANCHORS_KEY, '1');
+      else localStorage.removeItem(RecentlyVisited.SHOW_ANCHORS_KEY);
     } catch { /* private mode */ }
   }
 
@@ -137,11 +137,11 @@ class RecentlyVisited extends VBElement {
     const grouped = this.#groupByUrl(entries).slice(0, this.#limit());
     const emptyText = this.getAttribute('empty-text') || 'No recently visited pages yet.';
     const paused = this.#isPaused();
-    const anchorMode = this.#isAnchorMode();
+    const showAnchors = this.#showAnchors();
 
     const pauseLabel = paused ? 'Resume tracking' : 'Pause tracking';
     const pauseIcon = paused ? 'play' : 'pause';
-    const anchorLabel = anchorMode ? 'Hide anchor visits' : 'Track anchor visits';
+    const anchorLabel = showAnchors ? 'Hide anchor visits' : 'Show anchor visits';
     const clearDisabled = entries.length === 0;
 
     const parts = [];
@@ -158,7 +158,7 @@ class RecentlyVisited extends VBElement {
     parts.push(`<li><button type="button"
         data-recently-visited-anchors
         class="icon-button"
-        aria-pressed="${anchorMode}"
+        aria-pressed="${showAnchors}"
         aria-label="${anchorLabel}"
         title="${anchorLabel}"
       ><icon-wc name="hash" size="sm"></icon-wc></button></li>`);
@@ -178,8 +178,8 @@ class RecentlyVisited extends VBElement {
     } else {
       parts.push('<ol class="recently-visited-list">');
       for (const g of grouped) {
-        const showAnchors = anchorMode && g.anchors.length > 0;
-        if (showAnchors) {
+        const renderAnchors = showAnchors && g.anchors.length > 0;
+        if (renderAnchors) {
           /* Page with anchor sub-visits — render as <details>. */
           const anchorItems = g.anchors.map((a) => (
             `<li><a href="${escapeAttr(g.url)}${escapeAttr(a.hash)}">${escapeHtml(a.hashTitle)}</a><small>${relativeTime(a.ts)}</small></li>`
@@ -227,11 +227,11 @@ class RecentlyVisited extends VBElement {
     const anchors = this.querySelector('[data-recently-visited-anchors]');
     if (anchors) {
       anchors.addEventListener('click', () => {
-        this.#setAnchorMode(!this.#isAnchorMode());
+        this.#setShowAnchors(!this.#showAnchors());
         this.#render();
         this.dispatchEvent(new CustomEvent('recently-visited:anchors-toggle', {
           bubbles: true,
-          detail: { anchorMode: this.#isAnchorMode() },
+          detail: { showAnchors: this.#showAnchors() },
         }));
       });
     }
