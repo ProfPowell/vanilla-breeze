@@ -338,7 +338,7 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-type": { enum: ["bar", "column", "line", "area", "pie", "scatter", "bubble"] },
+      "data-type": { enum: ["bar", "column", "line", "area", "pie", "ring", "scatter", "bubble"] },
       "data-values": {},
       "data-config": {},
       "data-title": {},

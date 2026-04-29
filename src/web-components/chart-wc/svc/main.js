@@ -5,6 +5,7 @@ import Column from './charts/Column.js';
 import Scatter from './charts/Scatter.js';
 import Bubble from './charts/Bubble.js';
 import Pie from './charts/Pie.js';
+import Ring from './charts/Ring.js';
 
 export {
   Line as LineChart,
@@ -14,4 +15,5 @@ export {
   Scatter as ScatterChart,
   Bubble as BubbleChart,
   Pie as PieChart,
+  Ring as RingChart,
 };

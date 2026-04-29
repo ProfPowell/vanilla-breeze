@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "chart-wc"
-description: "SVG chart component with progressive enhancement: semantic table → CSS chart → SVG chart. Supports bar, column, line, area, pie, scatter, and bubble types."
+description: "SVG chart component with progressive enhancement: semantic table → CSS chart → SVG chart. Supports bar, column, line, area, pie, ring, scatter, and bubble types."
 elementName: chart-wc
 category: component
 currentPath: /docs/elements/web-components/chart-wc/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Overview</h2>
-    <p>An SVG chart web component with built-in charting engine. Supports seven chart types with five data source options. Progressive enhancement means a semantic <code>&lt;table&gt;</code> is visible without JavaScript &mdash; with JS, the SVG chart renders and the table becomes screen-reader only.</p>
+    <p>An SVG chart web component with built-in charting engine. Supports eight chart types with five data source options. Progressive enhancement means a semantic <code>&lt;table&gt;</code> is visible without JavaScript &mdash; with JS, the SVG chart renders and the table becomes screen-reader only.</p>
 
     <browser-window
       src="/docs/examples/demos/chart-wc-basic.html"
@@ -24,7 +24,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Chart Types</h2>
-    <p>Set <code>data-type</code> to one of: <code>bar</code>, <code>column</code>, <code>line</code>, <code>area</code>, <code>pie</code>, <code>scatter</code>, or <code>bubble</code>.</p>
+    <p>Set <code>data-type</code> to one of: <code>bar</code>, <code>column</code>, <code>line</code>, <code>area</code>, <code>pie</code>, <code>ring</code>, <code>scatter</code>, or <code>bubble</code>.</p>
 
     <h3>Line Chart</h3>
     <code-block language="html" show-lines label="Line chart with JSON data" data-escape><chart-wc
@@ -47,6 +47,37 @@ crumbLabel: Web Components
   data-title="Market Share"
   data-legend
   data-values='{"Chrome": 65, "Safari": 18, "Firefox": 8, "Edge": 5, "Other": 4}'>
+</chart-wc></code-block>
+
+    <h3>Ring Chart</h3>
+    <p>A ring (donut) chart is a pie with a transparent center hole. Same data shape as <code>pie</code>: a flat object of label &rarr; value. Slices below an angular threshold render with external leader-line labels; the percentage labels inside the slices are suppressed in ring mode to keep the chart readable at small sizes.</p>
+    <code-block language="html" show-lines label="Ring chart" data-escape><chart-wc
+  data-type="ring"
+  data-title="Storage Used"
+  data-legend
+  data-tooltip
+  data-values='{"Documents": 42, "Photos": 28, "Music": 15, "Apps": 10, "Free": 5}'>
+</chart-wc></code-block>
+
+    <p>Tunables specific to ring (and pie) charts &mdash; pass via <code>data-config</code>:</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Path</th><th>Default</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>center.size</code></td><td><code>"40%"</code></td><td>Hole diameter as a percent of the chart's viewBox. Larger values produce a thinner ring.</td></tr>
+        <tr><td><code>center.style.fill</code></td><td><code>var(--color-surface, #fff)</code></td><td>Hole fill. Follows the active VB theme by default; override with a custom <code>--color-surface</code> or an explicit fill value.</td></tr>
+        <tr><td><code>plot.node.label.placement</code></td><td><code>"auto"</code></td><td><code>auto</code> uses external labels for small slices and hides internal labels in ring mode. Force with <code>"outside"</code>.</td></tr>
+        <tr><td><code>plot.node.label.threshold</code></td><td><code>12</code></td><td>Slice angle (degrees) below which auto-placement switches to an external leader-line label.</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Thicker ring with custom hole fill" data-escape><chart-wc
+  data-type="ring"
+  data-title="Storage"
+  data-legend
+  data-config='{"center":{"size":"55%","style":{"fill":"transparent"}}}'
+  data-values='{"Used": 78, "Free": 22}'>
 </chart-wc></code-block>
   </section>
 

@@ -1629,6 +1629,7 @@ export default {
           "line",
           "area",
           "pie",
+          "ring",
           "scatter",
           "bubble"
         ],

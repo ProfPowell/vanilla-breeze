@@ -184,7 +184,7 @@ function extractScatter(table) {
 /**
  * Main extraction function. Determines chart type and delegates.
  * @param {HTMLTableElement} table
- * @param {string} chartType - One of: bar, column, line, area, pie, scatter, bubble
+ * @param {string} chartType - One of: bar, column, line, area, pie, ring, scatter, bubble
  * @returns {{data: Array|object, config: object}}
  */
 export function extractTableData(table, chartType) {
@@ -194,7 +194,7 @@ export function extractTableData(table, chartType) {
 
   const type = (chartType || '').toLowerCase();
 
-  if (type === 'pie') {
+  if (type === 'pie' || type === 'ring') {
     return extractPie(table);
   }
 

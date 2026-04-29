@@ -16,6 +16,7 @@ import {
   BarChart,
   ColumnChart,
   PieChart,
+  RingChart,
   ScatterChart,
   BubbleChart,
 } from './svc/main.js';
@@ -31,6 +32,7 @@ const CHART_TYPES = {
   bar: BarChart,
   column: ColumnChart,
   pie: PieChart,
+  ring: RingChart,
   scatter: ScatterChart,
   bubble: BubbleChart,
 };

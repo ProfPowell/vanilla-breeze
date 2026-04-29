@@ -13,7 +13,12 @@ export default defineConfig({
     },
   },
   use: {
-    baseURL: 'http://localhost:4321',
+    // Tests run against the local Caddy at https://vb.test, which serves
+    // /cdn/* from dist/, /src/* from the repo root, and everything else
+    // from site/dist/pages/ (see /opt/homebrew/etc/Caddyfile). Build the
+    // site (`npm run build`) and ensure Caddy is up before running.
+    baseURL: 'https://vb.test',
+    ignoreHTTPSErrors: true,
     screenshot: 'only-on-failure',
   },
   projects: [
@@ -26,10 +31,4 @@ export default defineConfig({
       use: { viewport: { width: 375, height: 667 } },
     },
   ],
-  webServer: {
-    command: 'npm run dev',
-    port: 4321,
-    reuseExistingServer: true,
-    timeout: 30000,
-  },
 });
