@@ -17,7 +17,15 @@ class VBElement extends HTMLElement {
     if (this.hasAttribute('data-upgraded')) return;
     if (this.setup() === false) return;
     this.setAttribute('data-upgraded', '');
-    this.dispatchEvent(new CustomEvent(`${this.localName}:upgraded`, { bubbles: true }));
+    // Dispatch :upgraded in a microtask so any sibling component definitions
+    // queued in the same synchronous script (e.g. a pack's registerComponent
+    // calls) complete before consumers react. Without this, listeners that
+    // immediately assign .items can hit a race where downstream components
+    // (work-item, etc.) aren't defined yet and the default renderer falls
+    // back to a plain element.
+    queueMicrotask(() => {
+      this.dispatchEvent(new CustomEvent(`${this.localName}:upgraded`, { bubbles: true }));
+    });
   }
 
   disconnectedCallback() {
