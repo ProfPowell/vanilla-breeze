@@ -92,67 +92,110 @@ class UserStory extends HTMLElement {
     return this.getAttribute(attr) || this.#slotCache.get(attr) || '';
   }
 
+  /* ── Data API ──────────────────────────────────── */
+
+  /**
+   * Read the user story as a plain data object. Mirrors what a consumer
+   * would assign to .data — useful for diffing, persistence, or echo.
+   */
+  get data() {
+    return {
+      storyId: this.storyId || undefined,
+      personaId: this.personaId || undefined,
+      priority: this.priority,
+      status: this.status,
+      points: this.points || undefined,
+      epic: this.epic || undefined,
+      detail: this.getAttribute('detail') || undefined,
+      persona: this.persona || undefined,
+      action: this.action || undefined,
+      benefit: this.benefit || undefined,
+      title: this.storyTitle || undefined,
+    };
+  }
+
+  /**
+   * Set state attributes and slotted content from a plain object in one call.
+   * Replaces multiple setAttribute calls + manual slotted-child creation.
+   * Idempotent for repeat calls.
+   */
+  set data(value) {
+    if (!value || typeof value !== 'object') return;
+    this._applyData(value);
+    this.#cacheSlotValues();
+    if (this.shadowRoot) this.#render();
+    this.dispatchEvent(new CustomEvent('user-story:data-changed', {
+      detail: { data: this.data, source: 'property' },
+      bubbles: true, composed: true,
+    }));
+  }
+
+  /**
+   * Apply a data record to attributes + slotted children. Used by both the
+   * .data setter and async _loadSrc. No render or cache update — caller decides.
+   * @param {Record<string, unknown>} data
+   */
+  _applyData(data) {
+    for (const [jsonKey, attr] of [
+      ['storyId', 'story-id'], ['personaId', 'persona-id'], ['priority', 'priority'],
+      ['status', 'status'], ['points', 'points'], ['epic', 'epic'], ['detail', 'detail']
+    ]) {
+      if (data[jsonKey] != null) this.setAttribute(attr, String(data[jsonKey]));
+    }
+
+    if (data.persona && !this.querySelector('[slot="persona"]')) {
+      const el = document.createElement('span');
+      el.slot = 'persona';
+      el.textContent = data.persona;
+      this.appendChild(el);
+    }
+    if (data.action && !this.querySelector('[slot="action"]')) {
+      const el = document.createElement('span');
+      el.slot = 'action';
+      el.textContent = data.action;
+      this.appendChild(el);
+    }
+    if (data.benefit && !this.querySelector('[slot="benefit"]')) {
+      const el = document.createElement('span');
+      el.slot = 'benefit';
+      el.textContent = data.benefit;
+      this.appendChild(el);
+    }
+    if (data.title && !this.querySelector('[slot="title"]')) {
+      const el = document.createElement('h3');
+      el.slot = 'title';
+      el.textContent = data.title;
+      this.appendChild(el);
+    }
+    for (const key of ['acceptance-criteria', 'tasks', 'notes']) {
+      const jsonKey = key === 'acceptance-criteria' ? 'acceptanceCriteria' : key;
+      if (data[jsonKey] && !this.querySelector(`[slot="${key}"]`)) {
+        if (Array.isArray(data[jsonKey])) {
+          const ul = document.createElement('ul');
+          ul.slot = key;
+          for (const item of data[jsonKey]) {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+          }
+          this.appendChild(ul);
+        } else {
+          const p = document.createElement('p');
+          p.slot = key;
+          p.textContent = data[jsonKey];
+          this.appendChild(p);
+        }
+      }
+    }
+  }
+
   async _loadSrc(url) {
     if (!url) return;
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-
-      // State attributes
-      for (const [jsonKey, attr] of [
-        ['storyId', 'story-id'], ['personaId', 'persona-id'], ['priority', 'priority'],
-        ['status', 'status'], ['points', 'points'], ['epic', 'epic'], ['detail', 'detail']
-      ]) {
-        if (data[jsonKey] != null) this.setAttribute(attr, String(data[jsonKey]));
-      }
-
-      // Content → slotted elements
-      if (data.persona && !this.querySelector('[slot="persona"]')) {
-        const el = document.createElement('span');
-        el.slot = 'persona';
-        el.textContent = data.persona;
-        this.appendChild(el);
-      }
-      if (data.action && !this.querySelector('[slot="action"]')) {
-        const el = document.createElement('span');
-        el.slot = 'action';
-        el.textContent = data.action;
-        this.appendChild(el);
-      }
-      if (data.benefit && !this.querySelector('[slot="benefit"]')) {
-        const el = document.createElement('span');
-        el.slot = 'benefit';
-        el.textContent = data.benefit;
-        this.appendChild(el);
-      }
-      if (data.title && !this.querySelector('[slot="title"]')) {
-        const el = document.createElement('h3');
-        el.slot = 'title';
-        el.textContent = data.title;
-        this.appendChild(el);
-      }
-      for (const key of ['acceptance-criteria', 'tasks', 'notes']) {
-        const jsonKey = key === 'acceptance-criteria' ? 'acceptanceCriteria' : key;
-        if (data[jsonKey] && !this.querySelector(`[slot="${key}"]`)) {
-          if (Array.isArray(data[jsonKey])) {
-            const ul = document.createElement('ul');
-            ul.slot = key;
-            for (const item of data[jsonKey]) {
-              const li = document.createElement('li');
-              li.textContent = item;
-              ul.appendChild(li);
-            }
-            this.appendChild(ul);
-          } else {
-            const p = document.createElement('p');
-            p.slot = key;
-            p.textContent = data[jsonKey];
-            this.appendChild(p);
-          }
-        }
-      }
-
+      this._applyData(data);
       this.#cacheSlotValues();
       this.#render();
     } catch (err) {

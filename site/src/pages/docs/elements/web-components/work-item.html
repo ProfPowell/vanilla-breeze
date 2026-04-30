@@ -123,8 +123,39 @@ crumbLabel: Web Components
         <tr><td><code>work-item:ready</code></td><td><code>{ itemId, title, type, priority, status }</code></td><td>After render</td></tr>
         <tr><td><code>work-item:status</code></td><td><code>{ status, itemId }</code></td><td>When <code>updateStatus()</code> is called</td></tr>
         <tr><td><code>work-item:priority</code></td><td><code>{ priority, itemId }</code></td><td>When <code>updatePriority()</code> is called</td></tr>
+        <tr><td><code>work-item:data-changed</code></td><td><code>{ data, source: 'property' }</code></td><td>After <code>.data</code> is assigned</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Property API (JS-first)</h2>
+    <p>The whole work item — state attributes and slotted content — can be set in one assignment. Useful when a reactive framework or kanban-board owns the data.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>.data</code></td><td><code>{ itemId?, type?, priority?, status?, estimate?, assignee?, storyIds?, detail?, title?, description?, checklist?, notes? }</code></td><td>Sets state attributes <em>and</em> creates slotted children for any text fields not already present. Idempotent.</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label=".data assignment" data-escape>const wi = document.createElement('work-item');
+wi.data = {
+  itemId: 'PROJ-42',
+  type: 'task',
+  priority: 'high',
+  status: 'in-progress',
+  assignee: 'Sam',
+  estimate: 5,
+  title: 'Wire OAuth flow',
+  description: 'Add the /auth callback and refresh-token rotation.',
+  checklist: ['Endpoint', 'Tests', 'Telemetry'],
+};
+document.body.appendChild(wi);</code-block>
+
+    <p>Reading <code>.data</code> back returns the current shape — handy for persistence or logging. See the <a href="/docs/concepts/data-api/">Data API concepts guide</a>.</p>
   </section>
 
   <section>

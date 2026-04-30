@@ -90,5 +90,31 @@ export function VBCollection(Base) {
     _nodeFor(key) {
       return this.#nodes.get(key) || null;
     }
+
+    /**
+     * Seed the collection from existing DOM (HTML-first upgrade path).
+     * Subclass calls this once after parsing initial children so the next
+     * `.items = ...` assignment diffs against existing rendered nodes
+     * instead of recreating them.
+     *
+     * @param {any[]} items
+     * @param {Map<unknown, Element>} nodeMap  key → existing element
+     */
+    _seedCollection(items, nodeMap) {
+      this.#items = items;
+      this.#nodes.clear();
+      for (const [key, el] of nodeMap) this.#nodes.set(key, el);
+    }
+
+    /**
+     * Update the in-memory items array without running a diff (e.g. after
+     * a drag mutates the DOM). Subclass is expected to keep the DOM and
+     * the items array in sync; this method just records the new model.
+     *
+     * @param {any[]} items
+     */
+    _setItemsSilently(items) {
+      this.#items = items;
+    }
   };
 }

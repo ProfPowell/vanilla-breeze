@@ -187,6 +187,85 @@ class WorkItem extends HTMLElement {
     }
   }
 
+  /* ── Data API ──────────────────────────────────── */
+
+  /**
+   * Read the work item as a plain data object. Mirrors what a consumer
+   * would assign to .data — useful for diffing, persistence, or echo.
+   */
+  get data() {
+    return {
+      itemId: this.itemId || undefined,
+      type: this.itemType,
+      priority: this.priority,
+      status: this.status,
+      estimate: this.estimate || undefined,
+      assignee: this.assignee || undefined,
+      storyIds: this.storyIds.length ? this.storyIds : undefined,
+      detail: this.getAttribute('detail') || undefined,
+      title: this.itemTitle || undefined,
+    };
+  }
+
+  /**
+   * Set state attributes and slotted content from a plain object in one call.
+   * Replaces nine setAttribute calls + manual slotted-child creation.
+   * Idempotent for repeat calls.
+   */
+  set data(value) {
+    if (!value || typeof value !== 'object') return;
+    this._applyData(value);
+    if (this.shadowRoot) this.#render();
+    this.dispatchEvent(new CustomEvent('work-item:data-changed', {
+      detail: { data: this.data, source: 'property' },
+      bubbles: true, composed: true,
+    }));
+  }
+
+  /**
+   * Apply a data record to attributes + slotted children. Used by both the
+   * .data setter and async _loadSrc. No render or event emit — caller decides.
+   * @param {Record<string, unknown>} data
+   */
+  _applyData(data) {
+    for (const [jsonKey, attr] of [
+      ['itemId', 'item-id'], ['type', 'type'], ['priority', 'priority'],
+      ['status', 'status'], ['estimate', 'estimate'], ['assignee', 'assignee'],
+      ['detail', 'detail'],
+    ]) {
+      if (data[jsonKey] != null) this.setAttribute(attr, String(data[jsonKey]));
+    }
+    if (data.storyIds) {
+      this.setAttribute('story-ids', Array.isArray(data.storyIds) ? data.storyIds.join(',') : data.storyIds);
+    }
+
+    if (data.title && !this.querySelector('[slot="title"]')) {
+      const el = document.createElement('h3');
+      el.slot = 'title';
+      el.textContent = data.title;
+      this.appendChild(el);
+    }
+    for (const key of ['description', 'notes']) {
+      if (data[key] && !this.querySelector(`[slot="${key}"]`)) {
+        const el = document.createElement('p');
+        el.slot = key;
+        el.textContent = data[key];
+        this.appendChild(el);
+      }
+    }
+    if (data.checklist && !this.querySelector('[slot="checklist"]')) {
+      const ul = document.createElement('ul');
+      ul.slot = 'checklist';
+      const items = Array.isArray(data.checklist) ? data.checklist : [data.checklist];
+      for (const item of items) {
+        const li = document.createElement('li');
+        li.textContent = item;
+        ul.appendChild(li);
+      }
+      this.appendChild(ul);
+    }
+  }
+
   /* ── JSON loading ──────────────────────────────── */
 
   async _loadSrc(url) {
@@ -196,44 +275,7 @@ class WorkItem extends HTMLElement {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      // State attributes
-      for (const [jsonKey, attr] of [
-        ['itemId', 'item-id'], ['type', 'type'], ['priority', 'priority'],
-        ['status', 'status'], ['estimate', 'estimate'], ['assignee', 'assignee'],
-        ['detail', 'detail'],
-      ]) {
-        if (data[jsonKey] != null) this.setAttribute(attr, String(data[jsonKey]));
-      }
-      if (data.storyIds) {
-        this.setAttribute('story-ids', Array.isArray(data.storyIds) ? data.storyIds.join(',') : data.storyIds);
-      }
-
-      // Content → slotted elements
-      if (data.title && !this.querySelector('[slot="title"]')) {
-        const el = document.createElement('h3');
-        el.slot = 'title';
-        el.textContent = data.title;
-        this.appendChild(el);
-      }
-      for (const key of ['description', 'notes']) {
-        if (data[key] && !this.querySelector(`[slot="${key}"]`)) {
-          const el = document.createElement('p');
-          el.slot = key;
-          el.textContent = data[key];
-          this.appendChild(el);
-        }
-      }
-      if (data.checklist && !this.querySelector('[slot="checklist"]')) {
-        const ul = document.createElement('ul');
-        ul.slot = 'checklist';
-        const items = Array.isArray(data.checklist) ? data.checklist : [data.checklist];
-        for (const item of items) {
-          const li = document.createElement('li');
-          li.textContent = item;
-          ul.appendChild(li);
-        }
-        this.appendChild(ul);
-      }
+      this._applyData(data);
       this.#render();
     } catch (err) {
       this.shadowRoot.innerHTML = `<style>${styles}</style>` +

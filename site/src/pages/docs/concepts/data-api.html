@@ -1,0 +1,199 @@
+---
+layout: guide
+title: "HTML-first + JS-first data API"
+description: "How VB components support both declarative HTML markup and reactive property assignment without forcing a choice."
+guideGroup: Concepts
+currentPath: /docs/concepts/data-api/
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">HTML-first + JS-first data API</span></li>
+  </ol>
+</nav>
+</template>
+<p class="lead">VB components accept the same data through two doors. Author them in HTML and they work without a single line of script. Drive them from a reactive framework via <code>.items</code> and <code>.data</code> and they diff against existing markup, preserving in-flight state. Either mode is valid; you can mix them.</p>
+
+<section>
+  <h2>Why both modes</h2>
+  <p>Pure HTML-first components are great for static pages, server rendering, and progressive enhancement, but they fight back when a framework re-renders the same DOM. Pure JS-first components are convenient for SPAs but require ceremony to ship anything visible before hydration. VB picks both: the same element accepts declarative children at upgrade <em>and</em> property assignments after — without a separate hydration step.</p>
+
+  <ul>
+    <li><strong>HTML-first:</strong> SSR / Eleventy / Astro emit normal markup. The component upgrades in place, parses children, and works.</li>
+    <li><strong>JS-first:</strong> A reactive framework (Montane, Lit, Solid, React) creates an empty element and assigns <code>.columns</code> / <code>.items</code> / <code>.data</code>. The component renders accordingly.</li>
+    <li><strong>Mixed:</strong> SSR the initial state for fast first paint, then take over with property assignments after hydration. Existing nodes are reused; nothing rebuilds.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Two roles, two contracts</h2>
+  <p>Each component declares one of two roles in its data API.</p>
+
+  <h3>Record components — <code>.data</code></h3>
+  <p>One element represents one logical record. Examples: <code>&lt;work-item&gt;</code>, <code>&lt;user-story&gt;</code>. The <code>.data</code> property accepts a plain object whose fields map to the component's state attributes and slotted children. Reading <code>.data</code> returns the current shape.</p>
+
+  <code-block language="javascript" label="Record contract" data-escape>const wi = document.createElement('work-item');
+wi.data = {
+  itemId: 'PROJ-42',
+  type: 'task',
+  priority: 'high',
+  title: 'Wire OAuth flow',
+};
+document.body.appendChild(wi);
+
+console.log(wi.data); // { itemId: 'PROJ-42', type: 'task', priority: 'high', title: '...' }</code-block>
+
+  <p>Setting <code>.data</code> is idempotent (shallow-equal short-circuit) and emits <code>&lt;localName&gt;:data-changed</code> with <code>{ data, source: 'property' }</code>.</p>
+
+  <h3>Collection components — <code>.items</code></h3>
+  <p>One element manages a keyed list of children. Examples: <code>&lt;kanban-board&gt;</code>, and (forthcoming) <code>&lt;calendar-wc&gt;</code>, <code>&lt;chart-wc&gt;</code>, <code>&lt;gantt-chart&gt;</code>. The <code>.items</code> setter runs a keyed diff: existing nodes whose key persists are <strong>moved, never recreated</strong>, so in-flight drag, focus, and CSS animations survive across updates.</p>
+
+  <code-block language="javascript" label="Collection contract" data-escape>const board = document.querySelector('kanban-board');
+
+board.columns = [
+  { id: 'todo',  label: 'To Do',       wip: 5 },
+  { id: 'doing', label: 'In Progress', wip: 3 },
+  { id: 'done',  label: 'Done' },
+];
+
+board.items = [
+  { id: 'PROJ-1', column: 'todo',  title: 'Wire auth',     type: 'task' },
+  { id: 'PROJ-2', column: 'doing', title: 'Refactor cache', type: 'feature' },
+];
+
+// A second assignment diffs against the previous list — same keys are reused.
+board.items = [
+  { id: 'PROJ-1', column: 'doing', title: 'Wire auth',     type: 'task' },  // moved column
+  { id: 'PROJ-2', column: 'doing', title: 'Refactor cache', type: 'feature' },
+  { id: 'PROJ-3', column: 'todo',  title: 'New thing',     type: 'task' },  // new key
+];</code-block>
+</section>
+
+<section>
+  <h2>The preservation guarantee</h2>
+  <p>VB's collection diff makes a formal promise: <strong>any element whose key is present in both the previous and the next <code>.items</code> list is never destroyed and recreated</strong>. The same DOM node may be moved across containers or reordered within one, but its identity — and any state held against that identity — is preserved.</p>
+
+  <p>This matters for:</p>
+  <ul>
+    <li><strong>Drag-and-drop.</strong> A user can be mid-drag when a remote update arrives; the dragged element survives the diff.</li>
+    <li><strong>Focus.</strong> The currently focused element does not lose focus when an unrelated item is added or removed.</li>
+    <li><strong>CSS animations / transitions.</strong> Active animations don't restart from scratch on every framework re-render.</li>
+    <li><strong>Iframe / video / canvas children.</strong> Long-lived embedded content keeps its connection / playback / paint state.</li>
+  </ul>
+
+  <p>The diff is keyed by an <code>id</code> field on each item by default. Components can override with a <code>static keyOf</code>.</p>
+</section>
+
+<section>
+  <h2>Lifecycle: the upgrade signal</h2>
+  <p>VB components fire <code>&lt;localName&gt;:upgraded</code> exactly once after their initial <code>setup()</code> succeeds. Frameworks should wait on this event before assigning <code>.items</code> or <code>.data</code> from outside, to avoid races where a property arrives before the element's internal structure is ready.</p>
+
+  <code-block language="javascript" label="Wait for upgrade" data-escape>const board = document.querySelector('kanban-board');
+
+if (!board.hasAttribute('data-upgraded')) {
+  await new Promise(resolve =&gt;
+    board.addEventListener('kanban-board:upgraded', resolve, { once: true })
+  );
+}
+
+board.items = visibleItems.get();</code-block>
+</section>
+
+<section>
+  <h2>Source-tagged events for loop avoidance</h2>
+  <p>Reactive systems often listen to a component's own change events to update external state. Without a source tag, programmatic updates trigger a feedback loop: assignment → event → handler updates state → state pushes new <code>.items</code> → event again.</p>
+
+  <p>VB collection components emit <code>&lt;localName&gt;:items-changed</code> with a <code>source</code> field. Filter on it:</p>
+
+  <code-block language="javascript" label="Filtering by source" data-escape>board.addEventListener('kanban-board:items-changed', (e) =&gt; {
+  // Only react to changes the user made by dragging — not echoes from .items = ...
+  if (e.detail.source === 'drag') {
+    saveToServer(e.detail.items);
+  }
+});</code-block>
+
+  <p>Possible <code>source</code> values:</p>
+  <ul>
+    <li><code>api</code> — set programmatically via <code>.items = ...</code></li>
+    <li><code>drag</code> — user dragged a card to a new column or position</li>
+    <li><code>attribute</code> — set via attribute mutation (rare for collections)</li>
+    <li><code>internal</code> — component-internal mutation</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Custom rendering with <code>.renderItem</code></h2>
+  <p>Collection components ship with a default item renderer that reproduces today's markup. To take over rendering — say, to inject your design system's card or wrap the work-item with extra chrome — assign a function to <code>.renderItem</code>.</p>
+
+  <code-block language="javascript" label="Custom renderer" data-escape>board.renderItem = (item) =&gt; {
+  const card = document.createElement('article');
+  card.className = 'my-custom-card';
+  card.dataset.id = item.id;
+  card.draggable = true;
+  card.innerHTML = `&lt;h3&gt;${item.title}&lt;/h3&gt;&lt;span&gt;${item.assignee}&lt;/span&gt;`;
+  return card;
+};
+board.items = [...];</code-block>
+
+  <p>The renderer must return an <code>Element</code>. Strings and tagged templates are not accepted in v1 — see <a href="https://github.com/anthropics/vanilla-breeze/issues">issue VB-XG5X</a> for the open decision.</p>
+</section>
+
+<section>
+  <h2>Building your own dual-mode component</h2>
+  <p>VB exposes the building blocks under <code>src/lib/</code>:</p>
+
+  <ul>
+    <li><code>VBElement</code> — minimal base class with <code>setup() / teardown()</code> lifecycle and <code>:upgraded</code> event.</li>
+    <li><code>VBRecord</code> — mixin that adds <code>.data</code> with attribute reflection per a <code>static dataSchema</code>.</li>
+    <li><code>VBCollection</code> — mixin that adds <code>.items</code> with the keyed diff and the preservation guarantee.</li>
+    <li><code>diffByKey</code> — the pure reconciler under <code>VBCollection</code>; useable directly if you want the algorithm without the mixin.</li>
+  </ul>
+
+  <code-block language="javascript" label="Composing the mixins" data-escape>import { VBElement } from 'vanilla-breeze/lib/vb-element.js';
+import { VBCollection } from 'vanilla-breeze/lib/vb-collection.js';
+
+class MyList extends VBCollection(VBElement) {
+  static keyOf = (item) =&gt; item.uuid;
+
+  setup() {
+    // Build any shell DOM here. Inherited :upgraded fires after this returns.
+  }
+
+  _renderItem(item) {
+    const li = document.createElement('li');
+    li.dataset.id = item.uuid;
+    li.textContent = item.label;
+    return li;
+  }
+
+  // Optional: route items into specific child containers.
+  // _containerFor(item, existing) { return this.querySelector(`#col-${item.column}`); }
+
+  // Optional: refresh placeholders / counts after every diff.
+  // _postRender({ added, moved, removed, items }) { ... }
+}
+
+customElements.define('my-list', MyList);</code-block>
+</section>
+
+<section>
+  <h2>Open decisions</h2>
+  <ul>
+    <li><strong>String / template return from <code>renderItem</code>.</strong> v1 ships Element-only to avoid a parse step on every diff. We'll revisit after pilot consumers report their needs.</li>
+    <li><strong>Form-associated controls.</strong> <code>&lt;color-picker&gt;</code>, <code>&lt;date-picker&gt;</code>, <code>&lt;combo-box&gt;</code>, etc. expose <code>.value</code> as their canonical property; they do not get <code>.data</code> bolted on.</li>
+    <li><strong>Async data loading.</strong> Out of scope. Consumers handle <code>fetch</code> / framework resources and feed the result into <code>.items</code> or <code>.data</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/kanban-board/"><code>&lt;kanban-board&gt;</code></a> — the pilot collection component</li>
+    <li><a href="/docs/elements/web-components/work-item/"><code>&lt;work-item&gt;</code></a> — record component used by kanban</li>
+    <li><a href="/docs/elements/web-components/user-story/"><code>&lt;user-story&gt;</code></a> — record component used by kanban</li>
+    <li><a href="/docs/concepts/form-association/">Form-Associated Custom Elements</a> — sister contract for controls</li>
+  </ul>
+</section>

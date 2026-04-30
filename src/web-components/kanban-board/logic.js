@@ -34,9 +34,11 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { VBCollection } from '../../lib/vb-collection.js';
 
-class KanbanBoard extends VBElement {
+class KanbanBoard extends VBCollection(VBElement) {
   static get observedAttributes() { return ['src', 'compact', 'title']; }
+  static keyOf(item) { return item.id ?? item.storyId; }
 
   static #instanceCount = 0;
 
@@ -52,6 +54,8 @@ class KanbanBoard extends VBElement {
   #groupId = '';
   /** @type {Array<{ id: string, label: string, wip: number | null, color: string | null, children: HTMLElement[] }>} */
   #columns = [];
+  /** @type {((item: any) => Element) | null} */
+  #renderItem = null;
 
   setup() {
     this.#groupId = `kb-${++KanbanBoard.#instanceCount}`;
@@ -179,6 +183,7 @@ class KanbanBoard extends VBElement {
       if (!columnId) return;
 
       this.#updateCount(columnId);
+      this.#syncItemsFromDom('drag');
 
       this.dispatchEvent(new CustomEvent('kanban-board:reorder', {
         bubbles: true,
@@ -228,6 +233,8 @@ class KanbanBoard extends VBElement {
       const toLabel = this.#columnLabel(toColumn);
       this.#announce(`${itemLabel} moved from ${fromLabel} to ${toLabel}`);
 
+      this.#syncItemsFromDom('drag');
+
       this.dispatchEvent(new CustomEvent('kanban-board:transfer', {
         bubbles: true,
         detail: {
@@ -254,14 +261,18 @@ class KanbanBoard extends VBElement {
       }
     });
 
-    // 9. Handle src attribute for data mode
+    // 9. Seed VBCollection state from existing rendered children so future
+    //    .items assignments diff against them instead of recreating.
+    this.#seedFromDom();
+
+    // 10. Handle src attribute for data mode
     const src = this.getAttribute('src');
     if (src) {
       this._loadSrc(src);
       return; // ready event fires after src loads
     }
 
-    // 10. Dispatch ready event
+    // 11. Dispatch ready event
     this.dispatchEvent(new CustomEvent('kanban-board:ready', {
       bubbles: true,
       detail: {
@@ -269,6 +280,57 @@ class KanbanBoard extends VBElement {
         itemCount: totalItems,
       },
     }));
+  }
+
+  /**
+   * Walk the rendered drag-surfaces and register each draggable child by
+   * its data-id so VBCollection's diff treats them as managed nodes.
+   */
+  #seedFromDom() {
+    /** @type {any[]} */
+    const items = [];
+    /** @type {Map<unknown, Element>} */
+    const nodeMap = new Map();
+    for (const [columnId, surface] of Object.entries(this.#surfaces)) {
+      const draggables = surface.querySelectorAll(':scope > [draggable="true"]');
+      for (const el of draggables) {
+        const id = el.getAttribute('data-id');
+        if (!id) continue;
+        items.push({ id, column: columnId });
+        nodeMap.set(id, el);
+      }
+    }
+    this._seedCollection(items, nodeMap);
+  }
+
+  /**
+   * Re-derive the internal items array from current DOM order (used after
+   * a drag mutates the DOM directly). Preserves consumer-supplied fields
+   * by carrying over each item's prior shape and just updating column.
+   * Emits `kanban-board:items-changed` with the given source.
+   *
+   * @param {'drag' | 'api' | 'attribute'} source
+   */
+  #syncItemsFromDom(source) {
+    /** @type {any[]} */
+    const next = [];
+    /** @type {Map<string, any>} */
+    const previous = new Map();
+    for (const it of this.items) {
+      const k = String(it.id ?? it.storyId ?? '');
+      if (k) previous.set(k, it);
+    }
+    for (const [columnId, surface] of Object.entries(this.#surfaces)) {
+      const draggables = surface.querySelectorAll(':scope > [draggable="true"]');
+      for (const el of draggables) {
+        const id = el.getAttribute('data-id');
+        if (!id) continue;
+        const prior = previous.get(id);
+        next.push(prior ? { ...prior, column: columnId } : { id, column: columnId });
+      }
+    }
+    this._setItemsSilently(next);
+    this._emit('items-changed', { items: next }, source);
   }
 
   teardown() {
@@ -286,6 +348,181 @@ class KanbanBoard extends VBElement {
     this.#surfaces = {};
     this.#columnEls = {};
     this.#columns = [];
+  }
+
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * The current column definitions. After upgrade this reflects the parsed
+   * `<section data-column>` children. Setting replaces all columns and
+   * rebuilds the shell — items already in nodes get re-routed to the new
+   * surfaces; orphaned items (column id no longer present) are dropped.
+   */
+  get columns() {
+    return this.#columns.map(c => ({
+      id: c.id, label: c.label, wip: c.wip ?? undefined, color: c.color ?? undefined,
+    }));
+  }
+
+  set columns(value) {
+    const next = (value || []).map(c => ({
+      id: c.id, label: c.label || this.#titleCase(c.id),
+      wip: c.wip ?? null, color: c.color ?? null, children: [],
+    }));
+    // Tear down existing shell + rebuild empty columns.
+    if (this.#columnsEl) {
+      this.#columnsEl.remove();
+      this.#columnsEl = null;
+    }
+    this.#surfaces = {};
+    this.#columnEls = {};
+    this.#columns = next;
+    this.#buildShell();
+  }
+
+  /**
+   * Optional custom item renderer. When set, replaces the default
+   * `<work-item>` factory used by the `.items` setter.
+   */
+  get renderItem() { return this.#renderItem; }
+  set renderItem(fn) { this.#renderItem = typeof fn === 'function' ? fn : null; }
+
+  /**
+   * VBCollection hook: build a fresh element for a new key.
+   * Default: a `<work-item>` with the item's fields applied via .data.
+   * Always returns a draggable element with data-id set for drag-surface.
+   */
+  _renderItem(item) {
+    let el;
+    if (this.#renderItem) {
+      const out = this.#renderItem(item);
+      if (!(out instanceof Element)) {
+        throw new Error('kanban-board: renderItem must return an Element');
+      }
+      el = out;
+    } else {
+      el = this.#defaultRenderItem(item);
+    }
+    if (!el.hasAttribute('draggable')) el.setAttribute('draggable', 'true');
+    if (!el.hasAttribute('data-id')) el.setAttribute('data-id', String(KanbanBoard.keyOf(item)));
+    return el;
+  }
+
+  /**
+   * VBCollection hook: route this item to the drag-surface for its column.
+   */
+  _containerFor(item, _existing) {
+    const surface = this.#surfaces[item.column];
+    if (!surface) {
+      throw new Error(`kanban-board: no column "${item.column}" — set .columns first or include item.column matching an existing column id`);
+    }
+    // Remove the empty placeholder before inserting managed children.
+    const placeholder = surface.querySelector(':scope > .kb-empty');
+    if (placeholder) placeholder.remove();
+    return surface;
+  }
+
+  /**
+   * VBCollection hook: refresh count badges, WIP markers, and empty
+   * placeholders after every diff.
+   */
+  _postRender() {
+    for (const id of Object.keys(this.#surfaces)) {
+      this.#updateCount(id);
+      const surface = this.#surfaces[id];
+      const draggables = surface.querySelectorAll(':scope > [draggable="true"]');
+      const placeholder = surface.querySelector(':scope > .kb-empty');
+      if (draggables.length === 0 && !placeholder) {
+        const p = document.createElement('p');
+        p.className = 'kb-empty';
+        p.textContent = 'No items';
+        surface.appendChild(p);
+      } else if (draggables.length > 0 && placeholder) {
+        placeholder.remove();
+      }
+    }
+  }
+
+  /**
+   * Default renderer: build a `<work-item>` and apply item fields via .data.
+   * Falls back to a plain `<article>` if work-item isn't registered.
+   */
+  #defaultRenderItem(item) {
+    const tag = customElements.get('work-item') ? 'work-item' : 'article';
+    const el = document.createElement(tag);
+    if (tag === 'work-item') {
+      // Map the kanban item shape to work-item's data shape.
+      el.data = {
+        itemId: item.id ?? item.storyId,
+        type: item.type,
+        priority: item.priority,
+        status: item.status,
+        estimate: item.estimate != null ? String(item.estimate) : undefined,
+        assignee: item.assignee,
+        title: item.title,
+        description: item.description,
+        checklist: item.checklist,
+        notes: item.notes,
+        detail: item.detail,
+      };
+    } else {
+      el.className = 'kb-card';
+      el.textContent = item.title || item.label || item.id;
+    }
+    return el;
+  }
+
+  /**
+   * Build the kb-columns shell from the current `#columns` metas.
+   * Used by the columns setter when entering JS-first mode.
+   */
+  #buildShell() {
+    this.#columnsEl = document.createElement('div');
+    this.#columnsEl.className = 'kb-columns';
+    this.#columnsEl.setAttribute('role', 'region');
+    this.#columnsEl.setAttribute('aria-label', 'Kanban board');
+
+    for (const col of this.#columns) {
+      const column = document.createElement('section');
+      column.className = 'kb-column';
+      column.setAttribute('data-column-id', col.id);
+      if (col.color) column.setAttribute('data-column-tint', col.color);
+
+      const header = document.createElement('header');
+      header.className = 'kb-column-header';
+      const h3 = document.createElement('h3');
+      h3.textContent = col.label;
+      const countBadge = document.createElement('output');
+      countBadge.className = 'kb-count';
+      countBadge.textContent = '0';
+      h3.appendChild(countBadge);
+      if (col.wip != null && !isNaN(col.wip)) {
+        const wipBadge = document.createElement('span');
+        wipBadge.className = 'kb-wip';
+        wipBadge.textContent = `/ ${col.wip}`;
+        wipBadge.setAttribute('aria-label', `WIP limit ${col.wip}`);
+        h3.appendChild(wipBadge);
+      }
+      header.appendChild(h3);
+      column.appendChild(header);
+
+      const surface = document.createElement('drag-surface');
+      surface.setAttribute('group', this.#groupId);
+      surface.setAttribute('aria-label', `${col.label} items`);
+      surface.setAttribute('data-layout', 'stack');
+      surface.setAttribute('data-layout-gap', 'xs');
+      const placeholder = document.createElement('p');
+      placeholder.className = 'kb-empty';
+      placeholder.textContent = 'No items';
+      surface.appendChild(placeholder);
+
+      column.appendChild(surface);
+      this.#columnsEl.appendChild(column);
+      this.#surfaces[col.id] = surface;
+      this.#columnEls[col.id] = column;
+    }
+
+    this.appendChild(this.#columnsEl);
   }
 
   // ── Attribute changes ────────────────────────────────

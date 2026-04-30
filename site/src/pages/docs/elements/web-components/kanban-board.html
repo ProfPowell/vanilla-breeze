@@ -158,8 +158,54 @@ crumbLabel: Web Components
         <tr><td><code>kanban-board:reorder</code></td><td><code>{ itemId, column, oldIndex, newIndex }</code></td><td>Item reordered within a column</td></tr>
         <tr><td><code>kanban-board:ready</code></td><td><code>{ columnCount, itemCount }</code></td><td>Fired after component initializes</td></tr>
         <tr><td><code>kanban-board:wip-exceeded</code></td><td><code>{ column, limit, count }</code></td><td>Fired when a column exceeds its WIP limit</td></tr>
+        <tr><td><code>kanban-board:upgraded</code></td><td>&mdash;</td><td>Fired once after first connect; safe signal for assigning <code>.items</code> from a framework.</td></tr>
+        <tr><td><code>kanban-board:items-changed</code></td><td><code>{ items, source: 'api' \| 'drag' }</code></td><td>Fired after the items array changes for any reason. Filter on <code>source</code> to avoid feedback loops.</td></tr>
       </tbody>
     </table>
+</section>
+
+<section>
+    <h2>Property API (JS-first)</h2>
+    <p>Reactive frameworks (Montane, Lit, Solid, Vue, React, Svelte) can drive the board directly with property assignments — no need to template the column structure. Existing card nodes whose <code>id</code> is in both the previous and next list are <strong>preserved across diffs</strong>: in-flight drag state, focus, and CSS animations survive untouched.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>.columns</code></td><td><code>{ id, label?, wip?, color? }[]</code></td><td>Replaces all columns and rebuilds the shell. Setting an empty array clears the board.</td></tr>
+        <tr><td><code>.items</code></td><td><code>{ id, column, ... }[]</code></td><td>Setter runs a keyed diff. <code>id</code> is the key; <code>column</code> selects the target drag-surface. Other fields go to the renderer.</td></tr>
+        <tr><td><code>.renderItem</code></td><td><code>(item) =&gt; Element</code></td><td>Optional custom item renderer. Default builds a <code>&lt;work-item&gt;</code> and applies fields via <code>.data</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Reactive framework integration" data-escape>const board = document.querySelector('kanban-board');
+
+// Wait for the upgrade signal before assigning.
+await new Promise(r =&gt; board.addEventListener('kanban-board:upgraded', r, { once: true }));
+
+board.columns = [
+  { id: 'todo',  label: 'To Do',       wip: 5 },
+  { id: 'doing', label: 'In Progress', wip: 3, color: 'warning' },
+  { id: 'done',  label: 'Done',        color: 'success' },
+];
+
+// Assigning .items diffs against current cards.
+board.items = [
+  { id: 'PROJ-1', column: 'todo',  title: 'Wire auth',     type: 'task',    priority: 'high'   },
+  { id: 'PROJ-2', column: 'doing', title: 'Refactor cache', type: 'feature', priority: 'medium' },
+];
+
+// Avoid feedback loops by ignoring drag-sourced changes:
+board.addEventListener('kanban-board:items-changed', (e) =&gt; {
+  if (e.detail.source === 'drag') updateMyState(e.detail.items);
+});</code-block>
+
+    <aside class="note">
+      <strong>HTML-first still works.</strong> If <code>&lt;kanban-board&gt;</code> has <code>&lt;section data-column&gt;</code> children at upgrade, they're parsed into the initial state. Setting <code>.items</code> later takes over data ownership without rebuilding what's already there.
+    </aside>
+
+    <p>See the <a href="/docs/concepts/data-api/">Data API concepts guide</a> for the full design rationale, the diff algorithm's preservation guarantee, and how to migrate an imperative integration to the property API.</p>
 </section>
 
 <section>

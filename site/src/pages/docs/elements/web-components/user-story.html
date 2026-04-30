@@ -397,6 +397,47 @@ story.addEventListener('status-changed', (e) => {
   </section>
 
   <section>
+    <h2>Property API (JS-first)</h2>
+    <p>The whole story — state and slotted content — can be set in one assignment, useful when a reactive framework or kanban-board owns the data.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>.data</code></td><td><code>{ storyId?, personaId?, priority?, status?, points?, epic?, detail?, persona?, action?, benefit?, title?, acceptanceCriteria?, tasks?, notes? }</code></td><td>Sets state attributes <em>and</em> creates slotted children for any fields not already present. Idempotent.</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label=".data assignment" data-escape>const us = document.createElement('user-story');
+us.data = {
+  storyId: 'PROJ-200',
+  priority: 'high',
+  status: 'in-progress',
+  points: 5,
+  persona: 'Product Manager',
+  action: 'filter projects by date range',
+  benefit: 'I can spot bottlenecks faster',
+  acceptanceCriteria: [
+    'Date pickers default to last 30 days',
+    'Empty state shown when no matches',
+  ],
+};
+document.body.appendChild(us);</code-block>
+
+    <p>Reading <code>.data</code> back returns the current shape. See the <a href="/docs/concepts/data-api/">Data API concepts guide</a>.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>user-story:data-changed</code></td><td><code>{ data, source: 'property' }</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
     <h2>CSS Custom Properties</h2>
     <table class="props-table">
       <thead>
