@@ -5,7 +5,18 @@ content-swap,
   --_swap-duration: var(--motion-enter-duration, 300ms);
   --_swap-easing: var(--ease-default, ease);
 
-  display: grid;
+  /* Structural invariant: faces must stack in a single grid cell.
+     !important so author styles in unlayered <style> blocks (which beat
+     layered component CSS regardless of specificity) cannot accidentally
+     turn this into flex/block and break the swap. */
+  display: grid !important;
+}
+
+/* Structural invariant: every face occupies the same grid cell so they
+   overlap. Locked with !important for the same reason as the container. */
+content-swap > [data-face],
+[data-swap] > [data-face] {
+  grid-area: 1 / 1 !important;
 }
 
 /* Whole-element trigger: show pointer cursor */
