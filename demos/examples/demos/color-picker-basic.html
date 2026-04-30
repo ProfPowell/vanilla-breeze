@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Color Picker Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+
+    .preview-bar {
+      display: flex;
+      gap: var(--size-xs);
+      margin-block-start: var(--size-m);
+    }
+
+    .preview-swatch {
+      flex: 1;
+      block-size: 3rem;
+      border-radius: var(--radius-m);
+      border: var(--border-width-thin) solid var(--color-border);
+      transition: background 200ms;
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="2xl">
+
+      <layout-card>
+        <h2 style="margin: 0 0 var(--size-m);">Color Picker</h2>
+        <form id="demo-form">
+          <layout-stack data-layout-gap="l">
+            <form-field>
+              <label for="brand">Brand color</label>
+              <color-picker name="brand">
+                <input type="color" id="brand" value="#6366f1"/>
+              </color-picker>
+            </form-field>
+
+            <form-field>
+              <label for="accent">Accent color (with swatches)</label>
+              <color-picker name="accent">
+                <input type="color" id="accent" value="#3b82f6"/>
+                <datalist>
+                  <option value="#ef4444">Red</option>
+                  <option value="#f97316">Orange</option>
+                  <option value="#eab308">Yellow</option>
+                  <option value="#22c55e">Green</option>
+                  <option value="#3b82f6">Blue</option>
+                  <option value="#8b5cf6">Purple</option>
+                  <option value="#ec4899">Pink</option>
+                  <option value="#64748b">Slate</option>
+                </datalist>
+              </color-picker>
+            </form-field>
+
+            <form-field>
+              <label for="bg">Background color</label>
+              <color-picker name="bg">
+                <input type="color" id="bg" value="#f8fafc"/>
+              </color-picker>
+            </form-field>
+
+            <layout-cluster data-layout-gap="s">
+              <button type="submit">Apply</button>
+              <button type="reset" data-variant="outline">Reset</button>
+            </layout-cluster>
+          </layout-stack>
+        </form>
+
+        <aside class="preview-bar" id="preview">
+          <span class="preview-swatch" id="p-brand" style="background:#6366f1;"></span>
+          <span class="preview-swatch" id="p-accent" style="background:#3b82f6;"></span>
+          <span class="preview-swatch" id="p-bg" style="background:#f8fafc;"></span>
+        </aside>
+
+        <output id="form-output" style="display:block;margin-block-start:var(--size-m);padding:var(--size-m);background:var(--color-surface-alt);border-radius:var(--radius-m);font-family:var(--font-mono);font-size:var(--font-size-sm);white-space:pre-wrap;min-height:2em;">Submit the form to see data here</output>
+      </layout-card>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    document.querySelectorAll('color-picker').forEach(picker => {
+      picker.addEventListener('color-picker:change', (e) => {
+        const name = picker.getAttribute('name');
+        const swatch = document.getElementById(`p-${name}`);
+        if (swatch) swatch.style.background = e.detail.hex;
+      });
+    });
+
+    document.getElementById('demo-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
+      document.getElementById('form-output').textContent = entries || '(no data)';
+    });
+  </script>
+</body>
+</html>
