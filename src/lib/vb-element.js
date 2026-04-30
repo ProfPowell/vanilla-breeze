@@ -17,6 +17,7 @@ class VBElement extends HTMLElement {
     if (this.hasAttribute('data-upgraded')) return;
     if (this.setup() === false) return;
     this.setAttribute('data-upgraded', '');
+    this.dispatchEvent(new CustomEvent(`${this.localName}:upgraded`, { bubbles: true }));
   }
 
   disconnectedCallback() {
