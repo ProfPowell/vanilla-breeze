@@ -119,6 +119,57 @@ class EmpathyMap extends HTMLElement {
     }
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the empathy map as a plain data object combining state and
+   * slotted content. Mirrors what a consumer would assign to .data.
+   */
+  get data() {
+    const titleEl = this.querySelector('[slot="title"]');
+    const summaryEl = this.querySelector('[slot="summary"]');
+    return {
+      persona: this.getAttribute('persona') || undefined,
+      personaId: this.getAttribute('persona-id') || undefined,
+      title: titleEl?.textContent?.trim() || undefined,
+      summary: summaryEl?.textContent?.trim() || undefined,
+      quadrants: this.__quadrants || undefined,
+      goals: this.__goals || undefined,
+      painPoints: this.__painPoints || undefined,
+    };
+  }
+
+  /**
+   * Set state attributes, slotted content, and quadrant/goals/pain-point
+   * arrays from a plain object in one call. Idempotent for repeat calls.
+   * Emits empathy-map:data-changed { data, source: 'property' }.
+   */
+  set data(value) {
+    if (!value || typeof value !== 'object') return;
+    if (value.persona)   this.setAttribute('persona',    String(value.persona));
+    if (value.personaId) this.setAttribute('persona-id', String(value.personaId));
+    if (value.title && !this.querySelector('[slot="title"]')) {
+      const el = document.createElement('h2');
+      el.slot = 'title';
+      el.textContent = value.title;
+      this.appendChild(el);
+    }
+    if (value.summary && !this.querySelector('[slot="summary"]')) {
+      const el = document.createElement('p');
+      el.slot = 'summary';
+      el.textContent = value.summary;
+      this.appendChild(el);
+    }
+    if (value.quadrants  != null) this.__quadrants  = value.quadrants;
+    if (value.goals      != null) this.__goals      = value.goals;
+    if (value.painPoints != null) this.__painPoints = value.painPoints;
+    if (this.isConnected) this._render();
+    this.dispatchEvent(new CustomEvent('empathy-map:data-changed', {
+      detail: { data: this.data, source: 'property' },
+      bubbles: true, composed: true,
+    }));
+  }
+
   /* ── Public API ────────────────────────────────── */
 
   /**

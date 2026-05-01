@@ -236,6 +236,82 @@ class StoryMap extends VBElement {
     this.#activities = [];
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the current activities + stories as a nested data array.
+   * Each activity: `{ id, label, journeyPhase?, stories: [...] }`.
+   * Each story: `{ id?, title?, ... }` (passed through to renderItem).
+   */
+  get activities() {
+    return this.#activities.map(a => ({
+      id: a.id,
+      label: a.label,
+      journeyPhase: a.journeyPhase || undefined,
+      stories: [...(this.#surfaces[a.id]?.querySelectorAll(':scope > [draggable="true"]') || [])]
+        .map(el => ({
+          id: el.getAttribute('data-id') || undefined,
+          storyId: el.getAttribute('story-id') || undefined,
+          title: el.querySelector('[slot="title"]')?.textContent?.trim() || undefined,
+        })),
+    }));
+  }
+
+  /**
+   * Replace the entire story map. Accepts a nested tree:
+   *   [{ id, label, journeyPhase?, stories: [{ id, ... }] }]
+   * Stories are rendered as <user-story> elements (via .data) by default;
+   * override via `.renderStory`.
+   *
+   * v1 is record-shaped — full rebuild on assignment. Per-story
+   * preservation across diffs is on the roadmap.
+   *
+   * Emits story-map:activities-changed { activities, source: 'property' }.
+   */
+  set activities(value) {
+    const next = Array.isArray(value) ? value : [];
+
+    // Clear children, then synthesize the <section data-activity> markup
+    // that setup() expects. Re-run setup().
+    while (this.firstChild) this.firstChild.remove();
+    for (const a of next) {
+      const section = document.createElement('section');
+      section.setAttribute('data-activity', a.id || '');
+      if (a.label) section.setAttribute('data-activity-label', a.label);
+      if (a.journeyPhase) section.setAttribute('data-journey-phase', a.journeyPhase);
+      for (const story of (a.stories || [])) {
+        let el;
+        if (typeof this.renderStory === 'function') {
+          const out = this.renderStory(story);
+          el = out instanceof Element ? out : null;
+        }
+        if (!el) {
+          if (customElements.get('user-story')) {
+            el = document.createElement('user-story');
+            el.data = story;
+          } else {
+            el = document.createElement('article');
+            el.className = 'sm-card';
+            el.textContent = story.title || story.id || '';
+          }
+        }
+        if (!el.hasAttribute('draggable')) el.setAttribute('draggable', 'true');
+        if (story.id && !el.hasAttribute('data-id')) el.setAttribute('data-id', String(story.id));
+        section.appendChild(el);
+      }
+      this.appendChild(section);
+    }
+
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+
+    this.dispatchEvent(new CustomEvent('story-map:activities-changed', {
+      detail: { activities: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   // ── Attribute changes ────────────────────────────────
 
   attributeChangedCallback(name, oldValue, newValue) {

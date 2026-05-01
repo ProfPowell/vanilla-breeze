@@ -122,6 +122,51 @@ class GlossaryWc extends VBElement {
     }));
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the glossary terms as a plain data array. Each entry:
+   * `{ id, term, definition, category }`.
+   */
+  get terms() {
+    return this.#terms.map(t => ({
+      id: t.id, term: t.term, definition: t.definition, category: t.category,
+    }));
+  }
+
+  /**
+   * Replace the glossary contents and re-render. Each entry needs `id`,
+   * `term`, `definition`; `category` defaults to 'Uncategorized'.
+   * Emits glossary-wc:terms-changed { terms, source: 'property' }.
+   */
+  set terms(value) {
+    const next = Array.isArray(value) ? value : [];
+    while (this.firstChild) this.firstChild.remove();
+    const dl = document.createElement('dl');
+    for (const t of next) {
+      const div = document.createElement('div');
+      div.setAttribute('data-term-id', t.id || '');
+      if (t.category) div.setAttribute('data-category', t.category);
+      const dt = document.createElement('dt');
+      dt.textContent = t.term || '';
+      const dd = document.createElement('dd');
+      dd.textContent = t.definition || '';
+      div.appendChild(dt);
+      div.appendChild(dd);
+      dl.appendChild(div);
+    }
+    this.appendChild(dl);
+
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+
+    this.dispatchEvent(new CustomEvent('glossary-wc:terms-changed', {
+      detail: { terms: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   teardown() {
     if (this.#debounceTimer) clearTimeout(this.#debounceTimer);
 

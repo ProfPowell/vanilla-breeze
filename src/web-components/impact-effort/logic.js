@@ -22,6 +22,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { diffByKey } from '../../lib/diff-by-key.js';
 
 class ImpactEffort extends VBElement {
   static QUADRANTS = ['quick-wins', 'big-bets', 'fill-ins', 'money-pit'];
@@ -200,6 +201,77 @@ class ImpactEffort extends VBElement {
     }
     this.#grid = null;
     this.#surfaces = {};
+    this.#nodes.clear();
+    this.#items = [];
+  }
+
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /** @type {any[]} */
+  #items = [];
+  /** @type {Map<unknown, Element>} */
+  #nodes = new Map();
+
+  /**
+   * Read the matrix items as a plain array. Each entry:
+   * `{ id, quadrant: 'quick-wins'|'big-bets'|'fill-ins'|'money-pit', text? }`.
+   * After upgrade reflects the parsed children; after assignment reflects
+   * what was passed in.
+   */
+  get items() {
+    if (this.#items.length) return this.#items;
+    const result = [];
+    for (const [q, surface] of Object.entries(this.#surfaces)) {
+      for (const el of surface.querySelectorAll(':scope > [draggable="true"]')) {
+        result.push({
+          id: el.getAttribute('data-id') || undefined,
+          quadrant: q,
+          text: el.textContent?.trim() || undefined,
+        });
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Replace the matrix items and route each into its quadrant surface.
+   * Runs a keyed diff so existing nodes whose id persists are preserved
+   * across re-assignment (in-flight drag state, focus, animations survive).
+   * New ids render as <article class="ie-card"> by default; override via
+   * `.renderItem`.
+   *
+   * Emits impact-effort:items-changed { items, source: 'property' }.
+   */
+  set items(value) {
+    if (!this.#grid) return;
+    const next = Array.isArray(value) ? value : [];
+    diffByKey({
+      newItems: next,
+      nodes: this.#nodes,
+      keyOf: (it) => it.id ?? `${it.quadrant}:${it.text}`,
+      renderItem: (it) => {
+        if (typeof this.renderItem === 'function') {
+          const out = this.renderItem(it);
+          if (out instanceof Element) {
+            if (!out.hasAttribute('draggable')) out.setAttribute('draggable', 'true');
+            if (!out.hasAttribute('data-id')) out.setAttribute('data-id', String(it.id ?? ''));
+            return out;
+          }
+        }
+        const article = document.createElement('article');
+        article.className = 'ie-card';
+        article.setAttribute('draggable', 'true');
+        if (it.id) article.setAttribute('data-id', String(it.id));
+        article.textContent = it.text || it.id || '';
+        return article;
+      },
+      containerFor: (it) => this.#surfaces[it.quadrant] || this.#surfaces['quick-wins'],
+    });
+    this.#items = next;
+    this.dispatchEvent(new CustomEvent('impact-effort:items-changed', {
+      detail: { items: next, source: 'property' },
+      bubbles: true,
+    }));
   }
 
   attributeChangedCallback(name, oldVal, newVal) {

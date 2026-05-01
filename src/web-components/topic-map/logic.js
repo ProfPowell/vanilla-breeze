@@ -42,6 +42,35 @@ class TopicMap extends VBElement {
     }
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the in-memory payloads if they were assigned via .data, else
+   * `null`. (When loaded from src, the rendered tree IS the source of
+   * truth — there's no JSON to round-trip.)
+   */
+  get data() { return this.__data || null; }
+
+  /**
+   * Assign already-loaded `{ pages, vocabulary }` payloads to bypass the
+   * fetch path. Useful when a reactive framework owns the data and wants
+   * topic-map to render against in-memory state.
+   *
+   * Emits topic-map:data-changed { pages, vocabulary, source: 'property' }.
+   */
+  set data(value) {
+    if (!value || typeof value !== 'object') return;
+    const pages = Array.isArray(value.pages) ? value.pages : [];
+    const vocabulary = value.vocabulary || {};
+    this.__data = { pages, vocabulary };
+    this.#renderTree(pages, vocabulary);
+    this.#enhance();
+    this.dispatchEvent(new CustomEvent('topic-map:data-changed', {
+      detail: { pages, vocabulary, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   async #loadFromSrc(pagesSrc, vocabSrc) {
     const [pagesPayload, vocabPayload] = await Promise.all([
       this.#fetchJson(pagesSrc),

@@ -81,12 +81,32 @@ class ChangeSet extends VBElement {
     return this.getAttribute('view') ?? 'tracking';
   }
 
+  /**
+   * Set the view mode. Idempotent — assigning the current view is a
+   * no-op. Emits change-set:view with `source: 'api'` so reactive
+   * consumers can filter their own assignments out of the event stream
+   * (user-driven button clicks emit with no source field, behavior
+   * preserved).
+   */
   set view(value) {
+    const current = this.view;
+    if (current === value) return;
     if (value === 'tracking') {
       this.removeAttribute('view');
     } else {
       this.setAttribute('view', value);
     }
+    // Sync button pressed state so JS-first changes show in the UI.
+    const controls = this.querySelector('[data-controls]');
+    if (controls) {
+      for (const btn of controls.querySelectorAll('button')) {
+        btn.setAttribute('aria-pressed', btn.dataset.action === value);
+      }
+    }
+    this.dispatchEvent(new CustomEvent('change-set:view', {
+      detail: { view: value, source: 'api' },
+      bubbles: true,
+    }));
   }
 }
 

@@ -57,10 +57,62 @@ class UserJourney extends HTMLElement {
   /** @returns {Array|null} */
   get phases() { return this.__phases; }
 
-  /** @param {Array|null} data */
+  /**
+   * Replace the phase list. Idempotent (skip on same array reference).
+   * Emits user-journey:phases-changed { phases, source: 'property' }.
+   * @param {Array|null} data
+   */
   set phases(data) {
+    if (this.__phases === data) return;
     this.__phases = data;
     if (this.isConnected) this._render();
+    this.dispatchEvent(new CustomEvent('user-journey:phases-changed', {
+      detail: { phases: data, source: 'property' },
+      bubbles: true, composed: true,
+    }));
+  }
+
+  /**
+   * Read the journey as a plain data object combining state, slotted
+   * content, and the phase array. Mirrors what a consumer would assign
+   * to .data.
+   */
+  get data() {
+    return {
+      persona: this.getAttribute('persona') || undefined,
+      personaId: this.getAttribute('persona-id') || undefined,
+      title: this.querySelector('[slot="title"]')?.textContent?.trim() || undefined,
+      summary: this.querySelector('[slot="summary"]')?.textContent?.trim() || undefined,
+      phases: this.__phases || undefined,
+    };
+  }
+
+  /**
+   * Set state attributes, slotted content, and phases in one assignment.
+   * Emits user-journey:data-changed { data, source: 'property' }.
+   */
+  set data(value) {
+    if (!value || typeof value !== 'object') return;
+    if (value.persona)   this.setAttribute('persona',    String(value.persona));
+    if (value.personaId) this.setAttribute('persona-id', String(value.personaId));
+    if (value.title && !this.querySelector('[slot="title"]')) {
+      const el = document.createElement('h2');
+      el.slot = 'title';
+      el.textContent = value.title;
+      this.appendChild(el);
+    }
+    if (value.summary && !this.querySelector('[slot="summary"]')) {
+      const el = document.createElement('p');
+      el.slot = 'summary';
+      el.textContent = value.summary;
+      this.appendChild(el);
+    }
+    if (value.phases != null) this.__phases = value.phases;
+    if (this.isConnected) this._render();
+    this.dispatchEvent(new CustomEvent('user-journey:data-changed', {
+      detail: { data: this.data, source: 'property' },
+      bubbles: true, composed: true,
+    }));
   }
 
   /* ── Slot caching ──────────────────────────── */
@@ -143,6 +195,8 @@ class UserJourney extends HTMLElement {
     const compact   = this.hasAttribute('compact');
     const phases    = this.__phases;
     const hasSummary = !!this.querySelector('[slot="summary"]') || this.#slotCache.has('summary');
+    const title     = this.querySelector('[slot="title"]')?.textContent?.trim()
+      || this.#slotCache.get('title') || '';
 
     this.shadowRoot.innerHTML = `<style>${styles}</style>
       <article class="journey${compact ? ' journey--compact' : ''}">

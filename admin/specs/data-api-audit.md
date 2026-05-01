@@ -18,7 +18,7 @@ truth: `/docs/concepts/data-api/`.
 
 ## Status by component
 
-### Done — record / collection / form-control (30 components)
+### Done — record / collection / form-control (37 components)
 
 | Component | Shape | Property | Phase |
 |---|---|---|---|
@@ -52,6 +52,13 @@ truth: `/docs/concepts/data-api/`.
 | `<chat-window>` | collection | `.messages` (keyed diff) | 5b |
 | `<chat-input>` | form | `.value` | 5b |
 | `<review-surface>` | collection | `.pins` | 5b |
+| `<empathy-map>` | record | `.data` | 5c |
+| `<impact-effort>` | collection | `.items` (keyed diff, quadrant routing) | 5c |
+| `<story-map>` | tree | `.activities` | 5c |
+| `<user-journey>` | record | `.data` / `.phases` | 5c |
+| `<glossary-wc>` | collection | `.terms` | 5c |
+| `<change-set>` | atomic | `.view` (form-style audit) | 5c |
+| `<topic-map>` | atomic | `.data` (`{ pages, vocabulary }`) | 5c |
 
 ### Soon — collection-shaped, candidate for Phase 5
 
@@ -71,19 +78,12 @@ match the rest of the library.
 | `<heading-links>` | link list | auto-derived; no setter needed | skip |
 | `<author-index>` | author list | auto-derived from posts; no setter needed | skip |
 | `<glossary-index>` | glossary entries | auto-derived; no setter needed | skip |
-| `<glossary-wc>` | term + definition | record (`.data`) | low |
 | `<time-index>` | date-grouped items | auto-derived; getter only | skip |
 | `<popularity-index>` | ranked posts | auto-derived; getter only | skip |
 | `<site-index>` | flat page list | could overlap with `<site-map-wc>` | skip |
 | `<site-search>` | search results | record (`.results`) + form `.value` | medium |
-| `<topic-map>` | topic graph | collection (`.topics`) | low |
-| `<note-wc>` | annotation note | record (`.data`) | low |
-| `<comment-wc>` | comment thread item | record (`.data`) | low |
-| `<change-set>` | diff entries | collection (`.changes`) | low |
-| `<empathy-map>` | persona quadrants | record (`.data`) | low |
-| `<impact-effort>` | matrix items | collection (`.items`) | low |
-| `<story-map>` | activities + tasks tree | tree (`.activities`) | low |
-| `<user-journey>` | journey steps | collection (`.steps`) | low |
+| `<note-wc>` | stateless action button | no data API — notes live in highlights controller | n/a |
+| `<comment-wc>` | stateless action button | no data API — pins live on review-surface | n/a |
 | `<day-view>` | calendar day view | atomic (`.events`) | medium — borrow from calendar-wc |
 | `<week-view>` | calendar week view | atomic (`.events`) | medium |
 | `<image-map>` | clickable regions | collection (`.regions`) | low |
