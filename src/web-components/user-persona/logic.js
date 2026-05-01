@@ -107,39 +107,74 @@ class UserPersona extends HTMLElement {
     return this.getAttribute(attr) || this.#slotCache.get(attr) || '';
   }
 
+  /* ── Data API ──────────────────────────────────── */
+
+  /**
+   * Read the persona as a plain data object. Mirrors what a consumer
+   * would assign to .data — useful for diffing or persistence.
+   */
+  get data() {
+    return {
+      name: this.personaName,
+      role: this.personaRole || undefined,
+      age: this.age || undefined,
+      location: this.location || undefined,
+      avatar: this.avatar || undefined,
+      quote: this.quote || undefined,
+      bio: this.#slotCache.get('bio') || undefined,
+      goals: this.#slotCache.get('goals') || undefined,
+      frustrations: this.#slotCache.get('frustrations') || undefined,
+      behaviors: this.#slotCache.get('behaviors') || undefined,
+    };
+  }
+
+  /**
+   * Set state attributes and slotted content from a plain object in one
+   * call. Idempotent for repeat calls.
+   */
+  set data(value) {
+    if (!value || typeof value !== 'object') return;
+    this._applyData(value);
+    if (this.shadowRoot) this.#render();
+    this.dispatchEvent(new CustomEvent('user-persona:data-changed', {
+      detail: { data: this.data, source: 'property' },
+      bubbles: true, composed: true,
+    }));
+  }
+
+  /**
+   * Apply a data record to attributes + slotted children. Used by both
+   * the .data setter and async _loadSrc.
+   * @param {Record<string, unknown>} data
+   */
+  _applyData(data) {
+    for (const key of ['role', 'age', 'location', 'avatar']) {
+      if (data[key]) this.setAttribute(key, data[key]);
+    }
+    if (data.name && !this.querySelector('[slot="name"]')) {
+      const el = document.createElement('h2');
+      el.slot = 'name';
+      el.textContent = data.name;
+      this.appendChild(el);
+    }
+    if (data.quote && !this.querySelector('[slot="quote"]')) {
+      const el = document.createElement('p');
+      el.slot = 'quote';
+      el.textContent = data.quote;
+      this.appendChild(el);
+    }
+    for (const key of ['bio', 'goals', 'frustrations', 'behaviors']) {
+      if (data[key]) this.#slotCache.set(key, data[key]);
+    }
+  }
+
   async _loadSrc(url) {
     if (!url) return;
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      // State attributes
-      for (const key of ['role', 'age', 'location', 'avatar']) {
-        if (data[key]) this.setAttribute(key, data[key]);
-      }
-      // Content → slotted elements
-      if (data.name && !this.querySelector('[slot="name"]')) {
-        const el = document.createElement('h2');
-        el.slot = 'name';
-        el.textContent = data.name;
-        this.appendChild(el);
-      }
-      if (data.quote && !this.querySelector('[slot="quote"]')) {
-        const el = document.createElement('p');
-        el.slot = 'quote';
-        el.textContent = data.quote;
-        this.appendChild(el);
-      }
-      // For list fields, store as JSON in slot cache (render will handle)
-      for (const key of ['bio', 'goals', 'frustrations', 'behaviors']) {
-        if (data[key]) {
-          if (Array.isArray(data[key])) {
-            this.#slotCache.set(key, data[key]);
-          } else {
-            this.#slotCache.set(key, data[key]);
-          }
-        }
-      }
+      this._applyData(data);
       this.#render();
     } catch (err) {
       console.warn(`[user-persona] Failed to load src="${url}":`, err);

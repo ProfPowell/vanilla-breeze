@@ -19,6 +19,7 @@
 import { sanitizeHTML } from '../../lib/sanitize-html.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { diffByKey } from '../../lib/diff-by-key.js';
 
 // Strict regex for safe property paths only
 // Allows: name, user.email, items[0].title
@@ -73,6 +74,8 @@ class CardList extends VBElement {
   #template = null;
   #items = [];
   #keyProp = 'id';
+  /** Map<key, root Element> for the keyed diff. */
+  #nodes = new Map();
 
   static get observedAttributes() {
     return ['src', 'data-items', 'data-key'];
@@ -144,27 +147,66 @@ class CardList extends VBElement {
     }
   }
 
-  #render() {
+  /**
+   * Render or reconcile rendered cards against the current #items.
+   * Uses diffByKey to preserve existing nodes whose key persists across
+   * updates (focus, animation, scroll position survive). For preserved
+   * nodes, data is re-bound in place — assignment of new field values
+   * for the same key still updates the displayed text.
+   *
+   * Falls back to wholesale re-render if the template has multiple root
+   * elements per card (diff requires a single root per item).
+   *
+   * @param {'api' | 'attribute' | 'internal'} [source='internal']
+   */
+  #render(source = 'internal') {
     if (!this.#template) return;
 
-    // Clear existing rendered items (keep template)
-    const existing = this.querySelectorAll(':scope > :not(template)');
-    existing.forEach(el => el.remove());
-
-    // Render each item
-    const fragment = document.createDocumentFragment();
-
-    for (const item of this.#items) {
-      const clone = this.#template.content.cloneNode(true);
-      this.#bindData(clone, item);
-      fragment.appendChild(clone);
+    const roots = [...this.#template.content.children];
+    if (roots.length !== 1) {
+      // Multi-root templates can't be diffed by key — wholesale re-render.
+      const existing = this.querySelectorAll(':scope > :not(template)');
+      existing.forEach(el => el.remove());
+      this.#nodes.clear();
+      const fragment = document.createDocumentFragment();
+      for (const item of this.#items) {
+        const clone = this.#template.content.cloneNode(true);
+        this.#bindData(clone, item);
+        fragment.appendChild(clone);
+      }
+      this.appendChild(fragment);
+    } else {
+      const result = diffByKey({
+        newItems: this.#items,
+        nodes: this.#nodes,
+        keyOf: (item) => item?.[this.#keyProp],
+        renderItem: (item) => {
+          const clone = this.#template.content.cloneNode(true);
+          const wrapper = clone.firstElementChild;
+          this.#bindData(wrapper, item);
+          return wrapper;
+        },
+        containerFor: () => this,
+      });
+      // Re-bind data on preserved nodes so updated field values for the
+      // same key still propagate. New nodes were already bound in renderItem.
+      const addedSet = new Set(result.added);
+      for (const item of this.#items) {
+        const key = item?.[this.#keyProp];
+        if (addedSet.has(key)) continue;
+        const node = this.#nodes.get(key);
+        if (node) this.#bindData(node, item);
+      }
     }
 
-    this.appendChild(fragment);
-
-    // Dispatch event
+    // Legacy event preserved for back-compat.
     this.dispatchEvent(new CustomEvent('card-list:rendered', {
       detail: { count: this.#items.length },
+      bubbles: true
+    }));
+    // New tagged event for the dual-API contract.
+    this.dispatchEvent(new CustomEvent('card-list:items-changed', {
+      detail: { items: this.#items, source },
       bubbles: true
     }));
   }
@@ -216,16 +258,30 @@ class CardList extends VBElement {
   }
 
   /**
-   * Programmatically set items
+   * The current items array. After upgrade, reflects the parsed
+   * data-items / src JSON; after assignment, reflects what was passed in.
    */
-  setItems(items) {
-    this.#items = Array.isArray(items) ? items : [];
-    this.#render();
+  get items() {
+    return this.#items;
   }
 
   /**
-   * Get current items
+   * Replace the items list. Runs a keyed diff against existing rendered
+   * cards: nodes whose key (per data-key) persists across assignments
+   * are preserved (focus, animation, scroll position survive). New keys
+   * trigger a fresh template clone; dropped keys are removed.
    */
+  set items(value) {
+    this.#items = Array.isArray(value) ? value : [];
+    this.#render('api');
+  }
+
+  /** @deprecated use `.items = [...]` instead. */
+  setItems(items) {
+    this.items = items;
+  }
+
+  /** @deprecated use `.items` getter instead. */
   getItems() {
     return [...this.#items];
   }

@@ -78,12 +78,22 @@ class MarkdownEditor extends VBElement {
     return this.#textarea?.value ?? '';
   }
 
-  /** Set the markdown value and update preview. */
+  /**
+   * Set the markdown value and update preview. Idempotent — assigning
+   * the current value is a no-op. Emits markdown-editor:change with
+   * source: 'api' so consumers can filter their own assignments out
+   * of the event stream.
+   */
   set value(md) {
-    if (this.#textarea) {
-      this.#textarea.value = md;
-      this.#updatePreview();
-    }
+    if (!this.#textarea) return;
+    const next = md == null ? '' : String(md);
+    if (this.#textarea.value === next) return;
+    this.#textarea.value = next;
+    this.#updatePreview();
+    this.dispatchEvent(new CustomEvent('markdown-editor:change', {
+      detail: { value: next, source: 'api' },
+      bubbles: true,
+    }));
   }
 
   /** The textarea element (for form integration). */

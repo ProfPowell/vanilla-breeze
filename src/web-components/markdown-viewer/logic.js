@@ -50,6 +50,10 @@ class MarkdownViewer extends VBElement {
   #abortController = null;
   /** @type {HTMLElement|null} */
   #contentEl = null;
+  /** @type {string|null} Programmatic markdown override (wins over slot resolution) */
+  #markdownOverride = null;
+  /** @type {string|null} Last successfully resolved markdown source */
+  #lastResolved = null;
 
   static get observedAttributes() {
     return ['src'];
@@ -77,6 +81,22 @@ class MarkdownViewer extends VBElement {
   get parser() { return this.#parser; }
   set parser(fn) {
     this.#parser = typeof fn === 'function' ? fn : null;
+  }
+
+  /**
+   * The current markdown source as a string. Reading returns whatever
+   * was either resolved from slots/src or last assigned via this setter.
+   *
+   * Assigning a string takes over from the slot resolution and triggers
+   * an immediate re-render with the new content. Pass `null` or `''` to
+   * fall back to the slot pipeline on the next render.
+   */
+  get markdown() { return this.#markdownOverride ?? this.#lastResolved ?? ''; }
+  set markdown(value) {
+    const next = value == null ? null : String(value);
+    if (this.#markdownOverride === next) return;
+    this.#markdownOverride = next;
+    this.#render();
   }
 
   /** Force a re-render from the current content source. */
@@ -149,11 +169,15 @@ class MarkdownViewer extends VBElement {
       }
 
       this.removeAttribute('data-loading');
+    } else if (this.#markdownOverride != null) {
+      // Programmatic .markdown setter wins over slot resolution.
+      md = this.#markdownOverride;
     } else {
       md = this.#resolveMarkdown();
     }
 
     if (md == null) return;
+    this.#lastResolved = md;
 
     // Parse
     let html;

@@ -1400,29 +1400,82 @@ class SiteMapWc extends VBElement {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-
-      // Clear existing children
-      while (this.firstChild) this.firstChild.remove();
-
-      // Set title from JSON if not already set
       if (data.title && !this.getAttribute('title')) {
         this.setAttribute('title', data.title);
       }
-
-      // Build nav > ul structure from JSON
-      const nav = document.createElement('nav');
-      const ul = document.createElement('ul');
-      this.#buildListFromJson(ul, data.pages || []);
-      nav.appendChild(ul);
-      this.appendChild(nav);
-
-      // Tear down old state and re-run setup
-      this.teardown();
-      this.removeAttribute('data-upgraded');
-      this.setup();
+      this._setPages(data.pages || []);
     } catch (err) {
       console.warn(`[site-map-wc] Failed to load src="${url}":`, err);
     }
+  }
+
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the current page tree as a nested array.
+   * Each page: `{ label, href?, pageType?, template?, status?, children? }`.
+   */
+  get pages() {
+    const nav = this.querySelector(':scope > nav');
+    const ul = nav?.querySelector('ul');
+    return ul ? this.#serializeListToJson(ul) : [];
+  }
+
+  /**
+   * Replace the page tree and re-render. Accepts the same nested-pages
+   * shape that the JSON `src` mode uses. v1 is record-shaped — the whole
+   * tree rebuilds on assignment, so per-node collapse state is lost.
+   * Preserving collapse state across re-assignments is on the roadmap
+   * if consumers report it as a felt need.
+   *
+   * Emits site-map-wc:pages-changed { pages, source: 'property' }.
+   */
+  set pages(value) {
+    this._setPages(Array.isArray(value) ? value : []);
+    this.dispatchEvent(new CustomEvent('site-map-wc:pages-changed', {
+      detail: { pages: this.pages, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
+  /**
+   * Internal: rebuild the nav>ul structure from a pages array and re-run
+   * setup. Shared between _loadSrc and the .pages setter.
+   * @param {Array<any>} pages
+   */
+  _setPages(pages) {
+    while (this.firstChild) this.firstChild.remove();
+    const nav = document.createElement('nav');
+    const ul = document.createElement('ul');
+    this.#buildListFromJson(ul, pages);
+    nav.appendChild(ul);
+    this.appendChild(nav);
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+  }
+
+  /**
+   * Recursive serializer: nav>ul tree → nested pages array. Inverse of
+   * #buildListFromJson so .pages getter round-trips through the setter.
+   * @param {HTMLUListElement} ul
+   */
+  #serializeListToJson(ul) {
+    const pages = [];
+    for (const li of ul.querySelectorAll(':scope > li')) {
+      const a = li.querySelector(':scope > a');
+      const childUl = li.querySelector(':scope > ul');
+      const page = {
+        label: a?.textContent?.trim() || '',
+        href: a?.getAttribute('href') || undefined,
+        pageType: li.getAttribute('data-page-type') || undefined,
+        template: li.getAttribute('data-template') || undefined,
+        status: li.getAttribute('data-status') || undefined,
+      };
+      if (childUl) page.children = this.#serializeListToJson(childUl);
+      pages.push(page);
+    }
+    return pages;
   }
 
   /**

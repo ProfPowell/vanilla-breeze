@@ -64,6 +64,8 @@ class FlowDiagram extends VBElement {
   #liveRegion = null;
   /** @type {number} */
   #nodeCount = 0;
+  /** @type {Array<any>} */
+  #cachedSteps = [];
 
   setup() {
     const ol = this.querySelector(':scope > ol');
@@ -72,6 +74,7 @@ class FlowDiagram extends VBElement {
     // 1. Parse the flow from the <ol>
     const steps = this.#parseSteps(ol);
     if (steps.length === 0) return false;
+    this.#cachedSteps = steps;
 
     // 2. Hide the original <ol>
     ol.style.display = 'none';
@@ -155,6 +158,89 @@ class FlowDiagram extends VBElement {
       this.removeAttribute('data-upgraded');
       this.setup();
     }
+  }
+
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * The current parsed step structure. Each step is
+   * `{ type, text, annotation, branches: [{ label, steps }] }`.
+   * After upgrade this reflects the parsed <ol> source; after
+   * assignment, reflects what was passed in.
+   */
+  get steps() {
+    return this.#cachedSteps;
+  }
+
+  /**
+   * Replace the diagram with a new step list and re-render. Each step
+   * matches the shape the parser produces. Auto-creates the source <ol>
+   * scaffold if none exists (so JS-first usage doesn't need any markup).
+   * Emits flow-diagram:steps-changed { steps, source: 'property' }.
+   */
+  set steps(value) {
+    const next = Array.isArray(value) ? value : [];
+    this.#cachedSteps = next;
+
+    // Tear down existing chrome.
+    if (this.#titleEl) { this.#titleEl.remove(); this.#titleEl = null; }
+    if (this.#container) { this.#container.remove(); this.#container = null; }
+    if (this.#liveRegion) { this.#liveRegion.remove(); this.#liveRegion = null; }
+
+    // Ensure a source <ol> exists (hidden) so attribute-driven re-render
+    // and accessibility fallbacks behave consistently.
+    let ol = this.querySelector(':scope > ol');
+    if (!ol) {
+      ol = document.createElement('ol');
+      ol.style.display = 'none';
+      ol.setAttribute('aria-hidden', 'true');
+      this.appendChild(ol);
+    }
+
+    if (next.length === 0) {
+      this.dispatchEvent(new CustomEvent('flow-diagram:steps-changed', {
+        detail: { steps: next, source: 'property' }, bubbles: true,
+      }));
+      return;
+    }
+
+    // Title
+    const title = this.getAttribute('title');
+    if (title) {
+      this.#titleEl = document.createElement('h2');
+      this.#titleEl.className = 'fd-title';
+      this.#titleEl.textContent = title;
+      this.insertBefore(this.#titleEl, ol);
+    }
+
+    // Visual container
+    this.#container = document.createElement('div');
+    this.#container.className = 'fd-container';
+    this.#container.setAttribute('role', 'img');
+    this.#container.setAttribute('aria-label', `Flow diagram${title ? ': ' + title : ''}`);
+
+    this.#nodeCount = 0;
+    this.#buildNodes(next, this.#container);
+
+    const summary = document.createElement('div');
+    summary.className = 'fd-summary';
+    summary.textContent = `${this.#nodeCount} step${this.#nodeCount !== 1 ? 's' : ''}`;
+    this.#container.appendChild(summary);
+
+    this.insertBefore(this.#container, ol);
+
+    // Live region
+    this.#liveRegion = document.createElement('div');
+    this.#liveRegion.className = 'fd-live';
+    this.#liveRegion.setAttribute('role', 'status');
+    this.#liveRegion.setAttribute('aria-live', 'polite');
+    this.#liveRegion.setAttribute('aria-atomic', 'true');
+    this.appendChild(this.#liveRegion);
+
+    this.dispatchEvent(new CustomEvent('flow-diagram:steps-changed', {
+      detail: { steps: next, source: 'property' },
+      bubbles: true,
+    }));
   }
 
   /* ── Parse steps from <ol> ─────────────────────── */

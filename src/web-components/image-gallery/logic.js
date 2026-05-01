@@ -83,6 +83,67 @@ class ImageGallery extends VBElement {
     this.#items = [];
   }
 
+  // --- Data API (HTML-first / JS-first dual contract) ---
+
+  /**
+   * Read the current image set as a plain data array. Each entry is
+   * `{ href, thumbSrc, alt, caption }` mirroring what was either parsed
+   * from <a><img></a> markup at upgrade or assigned via the setter.
+   */
+  get images() {
+    return this.#items.map(it => ({
+      href: it.href,
+      thumbSrc: it.thumbSrc,
+      alt: it.alt,
+      caption: it.caption,
+    }));
+  }
+
+  /**
+   * Replace the gallery with a new image set. Each entry needs at least
+   * `href` and `thumbSrc`; `alt` and `caption` are optional. Rebuilds
+   * the thumbnail children, preserves the lightbox chrome (which lives
+   * outside the gallery's child slot), and refreshes internal state.
+   * Emits image-gallery:images-changed { images, source: 'property' }.
+   */
+  set images(value) {
+    const next = Array.isArray(value) ? value : [];
+
+    // Remove existing thumbnail children. Preserve any non-thumbnail
+    // children the consumer may have added (the lightbox dialog lives
+    // outside `this` so it isn't touched).
+    for (const child of [...this.children]) {
+      if (child.tagName === 'FIGURE' || child.tagName === 'A') child.remove();
+    }
+
+    // Build fresh <figure><a href><img></a><figcaption></figure> per image.
+    for (const img of next) {
+      if (!img?.href || !img?.thumbSrc) continue;
+      const wrapper = img.caption ? document.createElement('figure') : document.createElement('a');
+      const anchor = wrapper.tagName === 'FIGURE' ? document.createElement('a') : wrapper;
+      anchor.href = img.href;
+      const imgEl = document.createElement('img');
+      imgEl.src = img.thumbSrc;
+      imgEl.alt = img.alt || '';
+      anchor.appendChild(imgEl);
+      if (wrapper.tagName === 'FIGURE') {
+        wrapper.appendChild(anchor);
+        const cap = document.createElement('figcaption');
+        cap.innerHTML = img.caption;
+        wrapper.appendChild(cap);
+      }
+      this.appendChild(wrapper);
+    }
+
+    // Re-collect from the freshly built DOM so #items + thumbEl refs are valid.
+    this.#collectItems();
+
+    this.dispatchEvent(new CustomEvent('image-gallery:images-changed', {
+      detail: { images: this.images, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   // --- Public API ---
 
   /** Open the lightbox at a given index */

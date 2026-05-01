@@ -151,6 +151,90 @@ class AdrWc extends HTMLElement {
     return this.adrTitle || this.adrId || 'ADR';
   }
 
+  /* ── Data API ──────────────────────────────────── */
+
+  /**
+   * Read the ADR as a plain data object. Mirrors what a consumer would
+   * assign to .data — useful for diffing or persistence.
+   */
+  get data() {
+    return {
+      adrId: this.adrId || undefined,
+      status: this.status,
+      detail: this.getAttribute('detail') || undefined,
+      supersedes: this.supersedes.length ? this.supersedes : undefined,
+      supersededBy: this.supersededBy.length ? this.supersededBy : undefined,
+      title: this.adrTitle || undefined,
+      date: this.adrDate || undefined,
+    };
+  }
+
+  /**
+   * Set state attributes and slotted content from a plain object in one
+   * call. Idempotent for repeat calls.
+   */
+  set data(value) {
+    if (!value || typeof value !== 'object') return;
+    this._applyData(value);
+    this.#cacheSlotValues();
+    if (this.shadowRoot) this.#render();
+    this.dispatchEvent(new CustomEvent('adr-wc:data-changed', {
+      detail: { data: this.data, source: 'property' },
+      bubbles: true, composed: true,
+    }));
+  }
+
+  /**
+   * Apply a data record to attributes + slotted children. Used by both
+   * the .data setter and async _loadSrc.
+   * @param {Record<string, unknown>} data
+   */
+  _applyData(data) {
+    if (data.adrId != null) this.setAttribute('adr-id', String(data.adrId));
+    if (data.status != null) this.setAttribute('status', String(data.status));
+    if (data.detail != null) this.setAttribute('detail', String(data.detail));
+
+    if (data.supersedes) {
+      this.setAttribute('supersedes', Array.isArray(data.supersedes) ? data.supersedes.join(',') : data.supersedes);
+    }
+    if (data.supersededBy) {
+      this.setAttribute('superseded-by', Array.isArray(data.supersededBy) ? data.supersededBy.join(',') : data.supersededBy);
+    }
+
+    if (data.title && !this.querySelector('[slot="title"]')) {
+      const h = document.createElement('h3');
+      h.slot = 'title';
+      h.textContent = data.title;
+      this.appendChild(h);
+    }
+    if (data.date && !this.querySelector('[slot="date"]')) {
+      const t = document.createElement('time');
+      t.slot = 'date';
+      t.setAttribute('datetime', data.date);
+      t.textContent = new Date(data.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      this.appendChild(t);
+    }
+    for (const key of ['context', 'decision']) {
+      if (data[key] && !this.querySelector(`[slot="${key}"]`)) {
+        const p = document.createElement('p');
+        p.slot = key;
+        p.textContent = data[key];
+        this.appendChild(p);
+      }
+    }
+    if (data.consequences && !this.querySelector('[slot="consequences"]')) {
+      const ul = document.createElement('ul');
+      ul.slot = 'consequences';
+      const items = Array.isArray(data.consequences) ? data.consequences : [data.consequences];
+      for (const item of items) {
+        const li = document.createElement('li');
+        li.textContent = item;
+        ul.appendChild(li);
+      }
+      this.appendChild(ul);
+    }
+  }
+
   /* ── JSON loading ──────────────────────────────── */
 
   async _loadSrc(url) {
@@ -161,51 +245,7 @@ class AdrWc extends HTMLElement {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
-      if (data.adrId != null) this.setAttribute('adr-id', String(data.adrId));
-      if (data.status != null) this.setAttribute('status', String(data.status));
-      if (data.detail != null) this.setAttribute('detail', String(data.detail));
-
-      if (data.supersedes) {
-        this.setAttribute('supersedes', Array.isArray(data.supersedes) ? data.supersedes.join(',') : data.supersedes);
-      }
-      if (data.supersededBy) {
-        this.setAttribute('superseded-by', Array.isArray(data.supersededBy) ? data.supersededBy.join(',') : data.supersededBy);
-      }
-
-      // Create slotted content elements from JSON
-      if (data.title && !this.querySelector('[slot="title"]')) {
-        const h = document.createElement('h3');
-        h.slot = 'title';
-        h.textContent = data.title;
-        this.appendChild(h);
-      }
-      if (data.date && !this.querySelector('[slot="date"]')) {
-        const t = document.createElement('time');
-        t.slot = 'date';
-        t.setAttribute('datetime', data.date);
-        t.textContent = new Date(data.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-        this.appendChild(t);
-      }
-      for (const key of ['context', 'decision']) {
-        if (data[key] && !this.querySelector(`[slot="${key}"]`)) {
-          const p = document.createElement('p');
-          p.slot = key;
-          p.textContent = data[key];
-          this.appendChild(p);
-        }
-      }
-      if (data.consequences && !this.querySelector('[slot="consequences"]')) {
-        const ul = document.createElement('ul');
-        ul.slot = 'consequences';
-        const items = Array.isArray(data.consequences) ? data.consequences : [data.consequences];
-        for (const item of items) {
-          const li = document.createElement('li');
-          li.textContent = item;
-          ul.appendChild(li);
-        }
-        this.appendChild(ul);
-      }
-
+      this._applyData(data);
       this.#cacheSlotValues();
       this.#render();
     } catch (err) {
