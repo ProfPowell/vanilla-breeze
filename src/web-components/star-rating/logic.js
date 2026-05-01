@@ -258,11 +258,18 @@ class StarRating extends VBElement {
   set value(val) {
     if (!this.#fieldset) return;
 
+    const numVal = Number(val);
+    // Idempotent: skip if same as currently checked.
+    const currentChecked = /** @type {HTMLInputElement | null} */ (
+      this.#fieldset.querySelector('input[type="radio"]:checked')
+    );
+    const currentVal = currentChecked ? Number(currentChecked.value) : 0;
+    if (currentVal === numVal) return;
+
     this.#fieldset.querySelectorAll('input[type="radio"]').forEach(
       (/** @type {HTMLInputElement} */ r) => { r.checked = false; }
     );
 
-    const numVal = Number(val);
     if (numVal > 0) {
       const target = /** @type {HTMLInputElement | null} */ (
         this.#fieldset.querySelector(`input[value="${numVal}"]`)

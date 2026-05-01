@@ -487,9 +487,15 @@ class ComboBox extends VBElement {
 
   // --- Selection (single mode) ---
 
-  #selectOption(option) {
+  /**
+   * @param {Element} option
+   * @param {'internal' | 'api' | 'pointer' | 'keyboard'} [source='internal']
+   */
+  #selectOption(option, source = 'internal') {
     const value = option.getAttribute('data-value');
     const label = option.textContent.trim();
+    // Idempotent: skip if same option already selected.
+    if (this.#selectedValue === value) return;
 
     // Clear previous selection
     this.#options.forEach(opt => opt.setAttribute('aria-selected', 'false'));
@@ -508,15 +514,15 @@ class ComboBox extends VBElement {
 
     this.dispatchEvent(new CustomEvent('combo-box:change', {
       bubbles: true,
-      detail: { value, label }
+      detail: { value, label, source }
     }));
   }
 
-  #selectByValue(value, fireEvent = true) {
+  #selectByValue(value, fireEvent = true, source = 'api') {
     const option = this.#options.find(opt => opt.getAttribute('data-value') === value);
     if (option) {
       if (fireEvent) {
-        this.#selectOption(option);
+        this.#selectOption(option, source);
       } else {
         option.setAttribute('aria-selected', 'true');
         this.#selectedValue = value;

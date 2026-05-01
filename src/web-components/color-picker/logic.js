@@ -413,7 +413,13 @@ class ColorPicker extends VBElement {
 
   // --- Update/Commit ---
 
-  #commit() {
+  /**
+   * Commit the current HSL state and emit a tagged change event.
+   * @param {'internal' | 'api' | 'pointer' | 'keyboard'} [source='internal']
+   *   Where the change originated. Lets framework consumers filter their
+   *   own .value assignments out of the event stream.
+   */
+  #commit(source = 'internal') {
     this.#updateAll();
     this.#syncFormValue();
 
@@ -425,6 +431,7 @@ class ColorPicker extends VBElement {
         hex,
         rgb: { r: rgb.r, g: rgb.g, b: rgb.b },
         hsl: { h: this.#h, s: this.#s, l: this.#l },
+        source,
       },
     }));
   }
@@ -547,11 +554,15 @@ class ColorPicker extends VBElement {
 
   set value(val) {
     if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val)) return;
+    // Idempotent short-circuit: skip if the assignment matches current state.
+    const currentHex = hslToHex(this.#h, this.#s, this.#l).toLowerCase();
+    const incoming = val.toLowerCase();
+    if (currentHex === incoming || currentHex === incoming.toLowerCase()) return;
     const hsl = hexToHsl(val);
     this.#h = hsl.h;
     this.#s = hsl.s;
     this.#l = hsl.l;
-    this.#commit();
+    this.#commit('api');
   }
 }
 

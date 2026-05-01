@@ -555,9 +555,15 @@ class DatePicker extends VBElement {
     this.#focusDate(this.#focusedDate);
   }
 
-  #selectDate(date) {
+  /**
+   * @param {Date} date
+   * @param {'internal' | 'api' | 'pointer' | 'keyboard'} [source='internal']
+   */
+  #selectDate(date, source = 'internal') {
     const iso = toISO(date);
     if (this.#isDateDisabled(date, iso)) return;
+    // Idempotent: skip if same as currently selected.
+    if (this.#selectedDate && toISO(this.#selectedDate) === iso) return;
 
     this.#selectedDate = date;
     this.#focusedDate = date;
@@ -570,7 +576,7 @@ class DatePicker extends VBElement {
 
     this.dispatchEvent(new CustomEvent('date-picker:change', {
       bubbles: true,
-      detail: { value: iso, date: new Date(date) },
+      detail: { value: iso, date: new Date(date), source },
     }));
   }
 
@@ -910,7 +916,7 @@ class DatePicker extends VBElement {
   set value(val) {
     const date = fromISO(val);
     if (date) {
-      this.#selectDate(date);
+      this.#selectDate(date, 'api');
     }
   }
 

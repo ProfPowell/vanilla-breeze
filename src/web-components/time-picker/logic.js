@@ -571,7 +571,12 @@ class TimePicker extends VBElement {
     this.#commit();
   }
 
-  #commit() {
+  /**
+   * @param {'internal' | 'api' | 'pointer' | 'keyboard'} [source='internal']
+   *   Where the change originated. Lets framework consumers filter their
+   *   own .value assignments out of the event stream.
+   */
+  #commit(source = 'internal') {
     this.#updateDisplay();
     this.#updateTextInput();
     this.#syncFormValue();
@@ -583,6 +588,7 @@ class TimePicker extends VBElement {
         hours: this.#hours,
         minutes: this.#minutes,
         seconds: this.#seconds,
+        source,
       },
     }));
   }
@@ -696,13 +702,15 @@ class TimePicker extends VBElement {
   set value(val) {
     const parsed = parseTime(val);
     if (!parsed) return;
+    // Idempotent: skip if matches current state.
+    if (parsed.h === this.#hours && parsed.m === this.#minutes && parsed.s === this.#seconds) return;
     this.#hours = parsed.h;
     this.#minutes = parsed.m;
     this.#seconds = parsed.s;
     if (this.#format === '12h') {
       this.#period = this.#hours >= 12 ? 'PM' : 'AM';
     }
-    this.#commit();
+    this.#commit('api');
   }
 }
 
