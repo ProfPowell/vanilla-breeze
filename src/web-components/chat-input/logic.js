@@ -168,13 +168,25 @@ class ChatInput extends VBElement {
     return this.#textarea?.value ?? '';
   }
 
+  /**
+   * Set the input value. Idempotent — assigning the current value is a
+   * no-op (no event re-fire, no resize thrash). Emits chat-input:change
+   * with `source: 'api'` so reactive consumers can filter their own
+   * assignments out of the event stream.
+   */
   set value(val) {
     if (!this.#textarea) return;
-    this.#textarea.value = val;
+    const next = val == null ? '' : String(val);
+    if (this.#textarea.value === next) return;
+    this.#textarea.value = next;
     // Trigger resize if data-grow is present
     this.#textarea.dispatchEvent(new Event('input', { bubbles: true }));
     this.#syncFormValue();
     this.#validate();
+    this.dispatchEvent(new CustomEvent('chat-input:change', {
+      bubbles: true,
+      detail: { value: next, source: 'api' },
+    }));
   }
 
   get disabled() {

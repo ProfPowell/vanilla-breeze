@@ -18,7 +18,7 @@ truth: `/docs/concepts/data-api/`.
 
 ## Status by component
 
-### Done — record / collection / form-control (27 components)
+### Done — record / collection / form-control (30 components)
 
 | Component | Shape | Property | Phase |
 |---|---|---|---|
@@ -49,6 +49,9 @@ truth: `/docs/concepts/data-api/`.
 | `<selection-menu>` | collection | `.actions` | 5a |
 | `<context-menu>` | collection | `.items` | 5a |
 | `<drop-down>` | collection | `.items` | 5a |
+| `<chat-window>` | collection | `.messages` (keyed diff) | 5b |
+| `<chat-input>` | form | `.value` | 5b |
+| `<review-surface>` | collection | `.pins` | 5b |
 
 ### Soon — collection-shaped, candidate for Phase 5
 
@@ -63,8 +66,6 @@ match the rest of the library.
 | `<recently-visited>` | history items | `.entries` | medium — reads from localStorage; read-only `.entries` getter ok |
 | `<toast-msg>` | toast queue | already has `show()` API; alias as `.notify(...)` or expose `.queue` getter | low — imperative is the right shape |
 | `<notification-wc>` | banner + panel | `.notifications` array with read state | medium |
-| `<chat-window>` | message list | `.messages` collection | medium |
-| `<chat-input>` | form input | `.value` audit (form-control style) | low |
 | `<page-toc>` | TOC items | usually auto-derived from headings; `.entries` getter only | low |
 | `<foot-notes>` | footnote list | usually auto-derived; `.notes` getter only | low |
 | `<heading-links>` | link list | auto-derived; no setter needed | skip |
@@ -79,7 +80,6 @@ match the rest of the library.
 | `<note-wc>` | annotation note | record (`.data`) | low |
 | `<comment-wc>` | comment thread item | record (`.data`) | low |
 | `<change-set>` | diff entries | collection (`.changes`) | low |
-| `<review-surface>` | review thread | shadow-DOM heavy; record (`.data`) | low |
 | `<empathy-map>` | persona quadrants | record (`.data`) | low |
 | `<impact-effort>` | matrix items | collection (`.items`) | low |
 | `<story-map>` | activities + tasks tree | tree (`.activities`) | low |

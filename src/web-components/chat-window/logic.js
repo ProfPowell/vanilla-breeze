@@ -53,6 +53,7 @@
 import { sanitizeHTML } from '../../lib/sanitize-html.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { diffByKey } from '../../lib/diff-by-key.js';
 
 class ChatWindow extends VBElement {
   /** @type {HTMLElement} */
@@ -64,6 +65,8 @@ class ChatWindow extends VBElement {
   #participants = new Map();
   /** @type {HTMLElement | null} */
   #emptyEl = null;
+  /** @type {Map<unknown, Element>} For .messages keyed-diff. */
+  #messageNodes = new Map();
 
   setup() {
     this.#discoverChildren();
@@ -358,6 +361,62 @@ class ChatWindow extends VBElement {
     this.#thread.appendChild(msg);
     this.#scrollToBottom();
     this.#updateEmptyState();
+  }
+
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * The current message list as a plain data array. Each entry:
+   * `{ id, role, content, from? }`. After upgrade reflects whatever
+   * <chat-message> children exist; after assignment reflects what was
+   * passed in via the setter.
+   */
+  get messages() {
+    if (!this.#thread) return [];
+    return [...this.#thread.querySelectorAll(':scope > chat-message:not([data-status="typing"])')]
+      .map(m => ({
+        id: m.id || m.getAttribute('data-id') || undefined,
+        role: m.getAttribute('data-role') || 'user',
+        content: m.querySelector('chat-bubble')?.innerHTML || '',
+        from: m.getAttribute('data-from') || undefined,
+      }));
+  }
+
+  /**
+   * Replace the chat thread with a new message list. Each entry needs
+   * `id` (the diff key), `role` ('user' | 'agent' | ...), and `content`
+   * (HTML or text). Optional `from` tags the message with a participant id.
+   *
+   * Runs a keyed diff: <chat-message> nodes whose id persists across
+   * assignments are preserved (mid-animation messages, focused inputs
+   * inside a message, sticky scroll state survive). New ids render
+   * fresh; dropped ids are removed.
+   *
+   * Emits chat-window:messages-changed { messages, source: 'property' }.
+   */
+  set messages(value) {
+    if (!this.#thread) return;
+    const next = Array.isArray(value) ? value : [];
+
+    diffByKey({
+      newItems: next,
+      nodes: this.#messageNodes,
+      keyOf: (m) => m.id ?? m.role + ':' + m.content,
+      renderItem: (m) => {
+        const node = this.#buildMessage(m.role || 'user', m.content || '', m.from);
+        if (m.id) node.id = m.id;
+        return node;
+      },
+      containerFor: () => this.#thread,
+    });
+
+    this.#updateEmptyState();
+    this.#scrollToBottom();
+
+    this.dispatchEvent(new CustomEvent('chat-window:messages-changed', {
+      detail: { messages: next, source: 'property' },
+      bubbles: true,
+    }));
   }
 }
 

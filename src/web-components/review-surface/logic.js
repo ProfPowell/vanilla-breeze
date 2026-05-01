@@ -172,10 +172,22 @@ class ReviewSurface extends HTMLElement {
   /** @returns {Object[]} */
   get pins() { return this.__pins; }
 
-  /** @param {Object[]} data */
+  /**
+   * Replace the pin list and re-render. Idempotent — assigning the
+   * same array reference is a no-op. Emits review-surface:pins-changed
+   * with `source: 'property'` so reactive consumers can filter their
+   * own assignments out of the event stream.
+   * @param {Object[]} data
+   */
   set pins(data) {
-    this.__pins = Array.isArray(data) ? data : [];
+    const next = Array.isArray(data) ? data : [];
+    if (this.__pins === next) return;
+    this.__pins = next;
     if (this.isConnected) this._render();
+    this.dispatchEvent(new CustomEvent('review-surface:pins-changed', {
+      detail: { pins: next, source: 'property' },
+      bubbles: true, composed: true,
+    }));
   }
 
   /** @returns {MemoryAdapter|LocalStorageAdapter|RestAdapter|null} */
