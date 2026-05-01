@@ -46,6 +46,93 @@ class CommandPalette extends VBElement {
     this.#unbindHotkey?.();
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * The current commands as a plain data array. Each entry:
+   * `{ value, label, hotkey?, group?, icon? }`. Reading reflects either
+   * the parsed <command-group>/<command-item> children or what was last
+   * assigned via the setter.
+   */
+  get commands() {
+    const result = [];
+    for (const group of this.#groups) {
+      const groupLabel = group.getAttribute('label') || '';
+      for (const item of group.querySelectorAll('command-item')) {
+        result.push({
+          value: item.getAttribute('value') || '',
+          label: item.textContent.trim(),
+          hotkey: item.getAttribute('data-hotkey') || undefined,
+          group: groupLabel || undefined,
+        });
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Replace the command set and re-render. Each entry needs `value`
+   * (the dispatch identifier) and `label` (display text). Optional
+   * `hotkey` (e.g. "ctrl+k"), `group` (string used to bucket commands
+   * into <command-group>s), and `icon` (HTML string rendered in the
+   * icon slot).
+   *
+   * Commands with the same `group` are placed into one <command-group>;
+   * commands without a group go into a default unlabeled group.
+   *
+   * Emits command-palette:commands-changed { commands, source: 'property' }.
+   */
+  set commands(value) {
+    const next = Array.isArray(value) ? value : [];
+
+    // Group by .group field (preserving first-seen order).
+    const buckets = new Map();
+    for (const cmd of next) {
+      const key = cmd.group || '';
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(cmd);
+    }
+
+    // Remove existing <command-group> children (and any orphan
+    // <command-item>s); leave the dialog/listbox chrome alone — it
+    // lives outside the light-DOM children.
+    for (const child of [...this.children]) {
+      if (child.tagName === 'COMMAND-GROUP' || child.tagName === 'COMMAND-ITEM') {
+        child.remove();
+      }
+    }
+
+    // Rebuild groups + items from data.
+    for (const [groupLabel, cmds] of buckets) {
+      const group = document.createElement('command-group');
+      if (groupLabel) group.setAttribute('label', groupLabel);
+      for (const cmd of cmds) {
+        const item = document.createElement('command-item');
+        if (cmd.value) item.setAttribute('value', cmd.value);
+        if (cmd.hotkey) item.setAttribute('data-hotkey', cmd.hotkey);
+        if (cmd.icon) {
+          const iconWrap = document.createElement('span');
+          iconWrap.setAttribute('slot', 'icon');
+          iconWrap.innerHTML = cmd.icon;
+          item.appendChild(iconWrap);
+        }
+        item.appendChild(document.createTextNode(cmd.label || cmd.value || ''));
+        group.appendChild(item);
+      }
+      this.appendChild(group);
+    }
+
+    // Re-run setup so the dialog rebuilds against the new children.
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+
+    this.dispatchEvent(new CustomEvent('command-palette:commands-changed', {
+      detail: { commands: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   #build() {
     // Create dialog shell
     this.#dialog = document.createElement('dialog');

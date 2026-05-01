@@ -61,6 +61,58 @@ class SelectionMenu extends VBElement {
     this.#hide();
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * The current toolbar actions as a plain data array. Each entry:
+   * `{ tag, attrs?, html? }`. After upgrade reflects the authored
+   * children; after assignment reflects what was passed in.
+   */
+  get actions() {
+    return [...this.children].map(el => ({
+      tag: el.tagName.toLowerCase(),
+      attrs: Object.fromEntries(
+        [...el.attributes].map(a => [a.name, a.value])
+      ),
+      html: el.innerHTML || undefined,
+    }));
+  }
+
+  /**
+   * Replace the toolbar actions and let them upgrade. Each entry is
+   * either a plain object describing the action component, OR an
+   * already-constructed Element (which is appended as-is).
+   *
+   * Plain object shape:
+   *   { tag: 'highlight-wc', attrs: { color: 'yellow' }, html: '...' }
+   *
+   * Emits selection-menu:actions-changed { actions, source: 'property' }.
+   */
+  set actions(value) {
+    const next = Array.isArray(value) ? value : [];
+    while (this.firstChild) this.firstChild.remove();
+    for (const a of next) {
+      if (a instanceof Element) {
+        this.appendChild(a);
+        continue;
+      }
+      if (!a?.tag) continue;
+      const el = document.createElement(a.tag);
+      if (a.attrs) {
+        for (const [name, val] of Object.entries(a.attrs)) {
+          if (val == null || val === false) continue;
+          el.setAttribute(name, val === true ? '' : String(val));
+        }
+      }
+      if (a.html) el.innerHTML = a.html;
+      this.appendChild(el);
+    }
+    this.dispatchEvent(new CustomEvent('selection-menu:actions-changed', {
+      detail: { actions: this.actions, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   // --- Target collection ---
 
   #collectTargets() {

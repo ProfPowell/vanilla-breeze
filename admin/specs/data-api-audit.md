@@ -18,7 +18,7 @@ truth: `/docs/concepts/data-api/`.
 
 ## Status by component
 
-### Done — record / collection / form-control (23 components)
+### Done — record / collection / form-control (27 components)
 
 | Component | Shape | Property | Phase |
 |---|---|---|---|
@@ -45,6 +45,10 @@ truth: `/docs/concepts/data-api/`.
 | `<accordion-wc>` | collection | `.panels` | 4e |
 | `<tab-set>` | collection | `.tabs` | 4e |
 | `<carousel-wc>` | collection | `.slides` | 4e |
+| `<command-palette>` | collection | `.commands` | 5a |
+| `<selection-menu>` | collection | `.actions` | 5a |
+| `<context-menu>` | collection | `.items` | 5a |
+| `<drop-down>` | collection | `.items` | 5a |
 
 ### Soon — collection-shaped, candidate for Phase 5
 
@@ -55,10 +59,6 @@ match the rest of the library.
 
 | Component | Shape | Suggested property | Priority |
 |---|---|---|---|
-| `<command-palette>` | collection of commands | `.commands` | high — common app feature |
-| `<selection-menu>` | collection of action buttons | `.actions` | medium |
-| `<context-menu>` | collection of menu items | `.items` | medium |
-| `<drop-down>` | collection of menu items | `.items` | medium |
 | `<short-cuts>` | keyboard shortcut list | `.shortcuts` | low — usually static |
 | `<recently-visited>` | history items | `.entries` | medium — reads from localStorage; read-only `.entries` getter ok |
 | `<toast-msg>` | toast queue | already has `show()` API; alias as `.notify(...)` or expose `.queue` getter | low — imperative is the right shape |

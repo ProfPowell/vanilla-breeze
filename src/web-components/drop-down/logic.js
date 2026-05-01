@@ -112,6 +112,81 @@ class DropDown extends VBElement {
     }
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * The current menu items as a plain data array. Each entry is one of:
+   *   { label, value?, href?, disabled? }   — action item
+   *   { separator: true }                    — divider
+   * Reads from the live <menu>/<ul> children.
+   */
+  get items() {
+    if (!this.#menu) return [];
+    const result = [];
+    for (const li of this.#menu.querySelectorAll(':scope > li')) {
+      if (li.matches('[role="separator"]') || li.querySelector('hr')) {
+        result.push({ separator: true });
+        continue;
+      }
+      const action = li.querySelector('button, a, [role="menuitem"]');
+      if (!action) continue;
+      result.push({
+        label: action.textContent.trim().replace(/\s+/g, ' '),
+        value: action.getAttribute('data-value') || undefined,
+        href: action.tagName === 'A' ? action.getAttribute('href') : undefined,
+        disabled: action.disabled || action.hasAttribute('data-disabled') || undefined,
+      });
+    }
+    return result;
+  }
+
+  /**
+   * Replace the menu items and re-render. Each entry can be an action
+   * (`{ label, value?, href?, disabled? }`) or a separator
+   * (`{ separator: true }`). Auto-creates the <menu> shell if none
+   * exists. The trigger button is preserved.
+   *
+   * Emits drop-down:items-changed { items, source: 'property' }.
+   */
+  set items(value) {
+    const next = Array.isArray(value) ? value : [];
+    let menu = this.querySelector(':scope > menu, :scope > ul[role="menu"]');
+    if (!menu) {
+      menu = document.createElement('menu');
+      this.appendChild(menu);
+    }
+    while (menu.firstChild) menu.firstChild.remove();
+
+    for (const entry of next) {
+      const li = document.createElement('li');
+      if (entry.separator) {
+        li.setAttribute('role', 'separator');
+      } else {
+        const action = entry.href
+          ? document.createElement('a')
+          : document.createElement('button');
+        if (entry.href) action.setAttribute('href', entry.href);
+        if (entry.value) action.setAttribute('data-value', entry.value);
+        if (entry.disabled) {
+          if (action.tagName === 'BUTTON') action.disabled = true;
+          else action.setAttribute('data-disabled', '');
+        }
+        action.textContent = entry.label || '';
+        li.appendChild(action);
+      }
+      menu.appendChild(li);
+    }
+
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+
+    this.dispatchEvent(new CustomEvent('drop-down:items-changed', {
+      detail: { items: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   #collectItems() {
     this.#items = Array.from(
       this.#menu.querySelectorAll('button, a, [role="menuitem"]')
