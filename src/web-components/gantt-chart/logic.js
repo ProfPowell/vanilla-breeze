@@ -151,6 +151,73 @@ class GanttChart extends VBElement {
     }
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * The current task list. After upgrade this reflects the parsed
+   * <table> rows; after assignment, it reflects whatever was passed in.
+   * Each entry: { id, name, start, end, progress?, group?, depends?,
+   * status?, assignee?, milestone?, color?, storyIds?, itemIds? }.
+   */
+  get tasks() { return this.#tasks; }
+
+  /**
+   * Replace the task set and re-render. Accepts plain task objects with
+   * start/end as ISO strings or timestamps; both are normalized.
+   *
+   * Note: v1 is record-shaped (full rebuild on assignment). Per-bar
+   * preservation across diffs is on the roadmap for when drag-resize
+   * state preservation becomes a felt need.
+   */
+  set tasks(value) {
+    const next = (value || []).map((t, i) => ({
+      id: t.id ?? `gc-task-${i}`,
+      name: t.name ?? `Task ${i + 1}`,
+      start: typeof t.start === 'number' ? t.start : toTimestamp(t.start),
+      end: typeof t.end === 'number' ? t.end : (t.end != null ? toTimestamp(t.end) : (typeof t.start === 'number' ? t.start : toTimestamp(t.start))),
+      progress: t.progress ?? 0,
+      group: t.group ?? null,
+      depends: Array.isArray(t.depends) ? t.depends : (t.depends ? String(t.depends).split(',').map(s => s.trim()) : []),
+      status: t.status ?? null,
+      assignee: t.assignee ?? null,
+      milestone: !!t.milestone,
+      color: t.color ?? null,
+      storyIds: t.storyIds ?? [],
+      itemIds: t.itemIds ?? [],
+    }));
+
+    // Tear down existing chrome and re-render from the new task list.
+    if (this.#container || this.#titleEl || this.#liveRegion) {
+      if (this.#titleEl) { this.#titleEl.remove(); this.#titleEl = null; }
+      if (this.#container) { this.#container.remove(); this.#container = null; }
+      if (this.#liveRegion) { this.#liveRegion.remove(); this.#liveRegion = null; }
+    }
+
+    this.#tasks = next;
+
+    if (next.length > 0) {
+      this.#rangeStart = Math.min(...next.map(t => t.start));
+      this.#rangeEnd = Math.max(...next.map(t => t.end));
+      this.#rangeTotal = this.#rangeEnd - this.#rangeStart;
+      if (this.#rangeTotal <= 0) this.#rangeTotal = DAY;
+
+      // Source <table> may not exist (JS-first scaffold). Find or create one
+      // for the build path; we hide it via gc-sr-only either way.
+      let table = this.querySelector(':scope > table');
+      if (!table) {
+        table = document.createElement('table');
+        table.classList.add('gc-sr-only');
+        this.appendChild(table);
+      }
+      this.#build(table);
+    }
+
+    this.dispatchEvent(new CustomEvent('gantt-chart:tasks-changed', {
+      detail: { tasks: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   /* ── Table parsing ─────────────────────────────── */
 
   #parseTasks(table) {

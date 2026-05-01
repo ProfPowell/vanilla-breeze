@@ -243,8 +243,31 @@ crumbLabel: Web Components
           <td><code>(date: Date) =&gt; string | string[] | null</code></td>
           <td>Inject custom <code>data-day-part</code> attributes per cell for CSS targeting.</td>
         </tr>
+        <tr>
+          <td><code>.events</code></td>
+          <td><code>{ [iso]: Event[] } | Event[]</code></td>
+          <td>Live event data. Accepts the date-keyed object that <code>data-events</code> uses, OR a flat array of events with a <code>date</code> field (auto-grouped). Triggers re-render. Reading always returns the date-keyed shape.</td>
+        </tr>
       </tbody>
     </table>
+
+    <h3>Reactive events (JS-first)</h3>
+    <code-block language="javascript" show-lines label="Push events from a framework" data-escape>const cal = document.querySelector('calendar-wc');
+
+await new Promise(r =&gt; cal.addEventListener('calendar-wc:upgraded', r, { once: true }));
+
+// Flat array shape — calendar-wc groups by date for you.
+cal.events = [
+  { id: 'mtg-1', date: '2026-04-10', label: 'Standup',  time: '09:00' },
+  { id: 'mtg-2', date: '2026-04-10', label: 'Review',   time: '14:00' },
+  { id: 'mtg-3', date: '2026-04-12', label: 'All-hands', time: '15:30' },
+];
+
+cal.addEventListener('calendar-wc:events-changed', (e) =&gt; {
+  if (e.detail.source !== 'property') syncStore(e.detail.events);
+});</code-block>
+
+    <p>See the <a href="/docs/concepts/data-api/">Data API concepts guide</a> for the dual-mode contract.</p>
 
     <h3>isDateDisallowed</h3>
     <code-block language="javascript" show-lines label="Disable weekends" data-escape>const cal = document.querySelector('calendar-wc');

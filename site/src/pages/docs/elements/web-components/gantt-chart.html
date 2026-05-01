@@ -144,8 +144,54 @@ crumbLabel: Web Components
           <td><code>{ task }</code></td>
           <td>When a task bar or milestone is clicked</td>
         </tr>
+        <tr>
+          <td><code>gantt-chart:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Once after first connect; safe signal for the first <code>.tasks</code> assignment.</td>
+        </tr>
+        <tr>
+          <td><code>gantt-chart:tasks-changed</code></td>
+          <td><code>{ tasks, source: 'property' }</code></td>
+          <td>After <code>.tasks</code> is assigned and the chart re-renders.</td>
+        </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Property API (JS-first)</h2>
+    <p>For reactive frameworks, assign <code>.tasks</code> directly instead of templating the source <code>&lt;table&gt;</code>. Each task is a plain object; ISO date strings and timestamps both work.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>.tasks</code></td><td><code>Task[]</code></td><td>Setter replaces the chart contents and re-renders. Reading returns the normalized internal array.</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Reactive integration" data-escape>const g = document.querySelector('gantt-chart');
+
+await new Promise(r =&gt; g.addEventListener('gantt-chart:upgraded', r, { once: true }));
+
+g.tasks = [
+  { id: 'T1', name: 'Design',  start: '2026-04-01', end: '2026-04-15', progress: 0.6 },
+  { id: 'T2', name: 'Build',   start: '2026-04-10', end: '2026-04-25', depends: ['T1'] },
+  { id: 'T3', name: 'Release', start: '2026-04-30', end: '2026-04-30', milestone: true },
+];
+
+effect(() =&gt; { g.tasks = sprintTasks.get(); });
+
+g.addEventListener('gantt-chart:tasks-changed', (e) =&gt; {
+  if (e.detail.source !== 'property') syncStore(e.detail.tasks);
+});</code-block>
+
+    <aside class="note">
+      <strong>v1 is record-shaped.</strong> Assigning <code>.tasks</code> rebuilds the entire chart. Per-bar preservation across diffs (to keep drag-resize state) is on the roadmap when consumers report it as a felt need.
+    </aside>
+
+    <p>See the <a href="/docs/concepts/data-api/">Data API concepts guide</a> for the dual-mode contract.</p>
   </section>
 
   <section>

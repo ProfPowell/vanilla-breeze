@@ -143,6 +143,48 @@ class CalendarWc extends VBElement {
   get getDayParts() { return this.#getDayPartsFn; }
   set getDayParts(fn) { this.#getDayPartsFn = fn; if (this.#built) this.#renderMonth(); }
 
+  /**
+   * Events as a date-keyed object, the canonical internal shape.
+   * Setting accepts EITHER:
+   *   - The same object shape: `{ "2026-04-10": [{ label, time, ... }] }`
+   *   - A flat array of events: `[{ id, date: "2026-04-10", label, ... }]`
+   *     Flat arrays are grouped by `date` automatically.
+   * Reading always returns the date-keyed object.
+   */
+  get events() { return this.#events; }
+  set events(value) {
+    const next = this._normalizeEventsInput(value);
+    // Identity short-circuit on object reference
+    if (this.#events === next) return;
+    this.#events = next;
+    if (this.#built) this.#renderMonth();
+    this.dispatchEvent(new CustomEvent('calendar-wc:events-changed', {
+      detail: { events: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
+  /**
+   * Normalize either a date-keyed object or a flat event array into
+   * the internal date-keyed shape. Flat arrays group entries by `date`,
+   * preserving array order within a date.
+   */
+  _normalizeEventsInput(value) {
+    if (!value) return {};
+    if (Array.isArray(value)) {
+      const grouped = {};
+      for (const evt of value) {
+        const date = evt?.date;
+        if (!date) continue;
+        if (!grouped[date]) grouped[date] = [];
+        grouped[date].push(evt);
+      }
+      return grouped;
+    }
+    if (typeof value === 'object') return value;
+    return {};
+  }
+
   #built = false;
 
   // DOM refs
