@@ -113,6 +113,36 @@ class AudioPlayerElement extends VBElement {
     }
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /** The audio source URL (mirror of the inner <audio src> attribute). */
+  get src() {
+    return this.#audio?.getAttribute('src') || this.#audio?.currentSrc || '';
+  }
+
+  /**
+   * Set a new audio source. Loads the audio (browser handles `load()`).
+   * Emits audio-player:src-changed { src, source: 'property' } for
+   * reactive consumers.
+   */
+  set src(value) {
+    if (!this.#audio) return;
+    const next = value == null ? '' : String(value);
+    if (this.#audio.getAttribute('src') === next) return;
+    this.#audio.setAttribute('src', next);
+    this.#audio.load?.();
+    this.dispatchEvent(new CustomEvent('audio-player:src-changed', {
+      detail: { src: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
+  /** Current playback position in seconds. */
+  get currentTime() { return this.#audio?.currentTime ?? 0; }
+  set currentTime(value) {
+    if (this.#audio) this.#audio.currentTime = Number(value) || 0;
+  }
+
   // ─── Shadow DOM ────────────────────────────────────────────────────────────
 
   #buildShadow() {

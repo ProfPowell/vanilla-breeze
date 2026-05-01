@@ -203,6 +203,50 @@ class ImageMapWc extends VBElement {
     this.#focusAnchors = [];
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the current map regions as plain data. Each entry mirrors a
+   * `<map-area>` child: `{ shape, coords, label?, href?, target? }`.
+   */
+  get regions() {
+    return [...this.querySelectorAll(':scope > map-area')].map(a => ({
+      shape: a.getAttribute('shape') || undefined,
+      coords: a.getAttribute('coords') || undefined,
+      label: a.getAttribute('label') || a.textContent?.trim() || undefined,
+      href: a.getAttribute('href') || undefined,
+      target: a.getAttribute('target') || undefined,
+    }));
+  }
+
+  /**
+   * Replace the map regions and rebuild the overlay. Each entry is a
+   * `<map-area>` shape; `coords` is the percentage-coords string.
+   *
+   * Emits image-map:regions-changed { regions, source: 'property' }.
+   */
+  set regions(value) {
+    const next = Array.isArray(value) ? value : [];
+    // Remove existing map-area children but keep the <img>.
+    for (const a of [...this.querySelectorAll(':scope > map-area')]) a.remove();
+    for (const r of next) {
+      const a = document.createElement('map-area');
+      if (r.shape)  a.setAttribute('shape', r.shape);
+      if (r.coords) a.setAttribute('coords', r.coords);
+      if (r.label)  a.setAttribute('label', r.label);
+      if (r.href)   a.setAttribute('href', r.href);
+      if (r.target) a.setAttribute('target', r.target);
+      this.appendChild(a);
+    }
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+    this.dispatchEvent(new CustomEvent('image-map:regions-changed', {
+      detail: { regions: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   #build() {
     // Collect <map-area> children
     const areas = [...this.querySelectorAll(':scope > map-area')];

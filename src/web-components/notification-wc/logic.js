@@ -92,6 +92,35 @@ class NotificationWc extends VBElement {
     }
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the current notification list (panel mode). Each entry mirrors
+   * what was assigned via the setter or fetched from the configured
+   * source. Banner mode returns an empty array.
+   */
+  get notifications() {
+    return [...this.#dynamic];
+  }
+
+  /**
+   * Replace the dynamic notification list (panel mode only). Each entry:
+   * `{ id, title, body?, timestamp?, variant? }`. Re-renders the panel
+   * and updates the unread badge. Banner mode ignores this setter.
+   *
+   * Emits notification-wc:notifications-changed { notifications, source: 'property' }.
+   */
+  set notifications(value) {
+    if (this.#mode !== 'panel') return;
+    this.#dynamic = Array.isArray(value) ? value : [];
+    if (typeof this.#renderList === 'function') this.#renderList();
+    if (typeof this.#updateBadge === 'function') this.#updateBadge();
+    this.dispatchEvent(new CustomEvent('notification-wc:notifications-changed', {
+      detail: { notifications: this.#dynamic, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   // ══════════════════════════════════════════════════════════════════
   // Banner mode
   // ══════════════════════════════════════════════════════════════════

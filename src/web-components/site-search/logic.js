@@ -70,6 +70,34 @@ class SiteSearch extends VBElement {
     this.#clearDebounce();
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /** Read the current search query string. */
+  get value() { return this.#input?.value ?? ''; }
+
+  /**
+   * Set the search query string. Idempotent; triggers the same
+   * debounce + pagefind path as user input. Emits site-search:change
+   * with source: 'api'.
+   */
+  set value(val) {
+    if (!this.#input) return;
+    const next = val == null ? '' : String(val);
+    if (this.#input.value === next) return;
+    this.#input.value = next;
+    this.#input.dispatchEvent(new Event('input', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('site-search:change', {
+      detail: { value: next, source: 'api' },
+      bubbles: true,
+    }));
+  }
+
+  /**
+   * Read the current results as a plain array. Reflects whatever
+   * pagefind / the underlying search produced.
+   */
+  get results() { return [...this.#results]; }
+
   #render() {
     // Find or create trigger
     this.#trigger = /** @type {HTMLElement} */ (this.querySelector(':scope > [data-trigger]'));

@@ -61,7 +61,8 @@ class ToastMsg extends VBElement {
       duration = this.#getDefaultDuration(),
       dismissible = true,
       action,
-      onAction
+      onAction,
+      source = 'api',
     } = options;
 
     const toast = this.#createToast({ message, variant, dismissible, action, onAction });
@@ -75,7 +76,34 @@ class ToastMsg extends VBElement {
       this.#showToast(toast, duration);
     }
 
+    this.dispatchEvent(new CustomEvent('toast-msg:enqueued', {
+      detail: { message, variant, duration, source },
+      bubbles: true,
+    }));
+
     return toast;
+  }
+
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the current visible + queued toasts as a plain array. Each
+   * entry: `{ message, variant, state }` where state is 'visible' or
+   * 'queued'. Toast-msg is intentionally imperative — there is no
+   * `.queue` setter; use `.show(...)` to add a toast.
+   */
+  get queue() {
+    const visible = this.#visible.map(t => ({
+      message: t.querySelector('.message')?.textContent || '',
+      variant: t.getAttribute('data-variant') || 'info',
+      state: 'visible',
+    }));
+    const queued = this.#queue.map(({ toast }) => ({
+      message: toast.querySelector('.message')?.textContent || '',
+      variant: toast.getAttribute('data-variant') || 'info',
+      state: 'queued',
+    }));
+    return [...visible, ...queued];
   }
 
   #createToast({ message, variant, dismissible, action, onAction }) {

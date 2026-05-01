@@ -83,6 +83,56 @@ class WeekView extends VBElement {
     this.#positionSpanningEvents();
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the week's events as a plain data array. Each entry:
+   * `{ date, time, text, category?, duration? }`.
+   */
+  get events() {
+    return [...this.querySelectorAll('calendar-event')].map(el => ({
+      date: el.dataset.date || undefined,
+      time: el.querySelector('time[datetime]')?.getAttribute('datetime') || undefined,
+      text: el.textContent.trim(),
+      category: el.dataset.category || undefined,
+      duration: el.dataset.duration || undefined,
+    }));
+  }
+
+  /**
+   * Replace the week's events. Each entry needs `date` (ISO YYYY-MM-DD)
+   * and `time` (HH:MM); other fields optional. Auto-builds the table
+   * from the supplied events using the existing #buildAutoTable path.
+   *
+   * Emits week-view:events-changed { events, source: 'property' }.
+   */
+  set events(value) {
+    const next = Array.isArray(value) ? value : [];
+    while (this.firstChild) this.firstChild.remove();
+    for (const e of next) {
+      const el = document.createElement('calendar-event');
+      if (e.date) el.dataset.date = e.date;
+      if (e.category) el.dataset.category = e.category;
+      if (e.duration) el.dataset.duration = String(e.duration);
+      if (e.time) {
+        const t = document.createElement('time');
+        t.setAttribute('datetime', e.time);
+        t.textContent = e.time;
+        el.appendChild(t);
+        el.appendChild(document.createTextNode(' '));
+      }
+      el.appendChild(document.createTextNode(e.text || ''));
+      this.appendChild(el);
+    }
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+    this.dispatchEvent(new CustomEvent('week-view:events-changed', {
+      detail: { events: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   #buildAutoTable() {
     const events = [...this.querySelectorAll(':scope > calendar-event')];
     if (events.length === 0) return;

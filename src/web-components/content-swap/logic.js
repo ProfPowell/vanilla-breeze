@@ -138,7 +138,7 @@ function swapTo(el, show, source = 'api') {
     }
 
     syncState(el, front, back);
-    dispatchSwapEvent(el);
+    dispatchSwapEvent(el, source);
 
     // Focus management: only move focus on keyboard-triggered swaps
     // or when the target face has [autofocus]
@@ -158,9 +158,9 @@ function toggleSwap(el, source = 'api') {
   swapTo(el, !el.hasAttribute(attrName(el, 'swapped')), source);
 }
 
-function dispatchSwapEvent(el) {
+function dispatchSwapEvent(el, source = 'internal') {
   el.dispatchEvent(new CustomEvent('content-swap:swap', {
-    detail: { swapped: el.hasAttribute(attrName(el, 'swapped')) },
+    detail: { swapped: el.hasAttribute(attrName(el, 'swapped')), source },
     bubbles: true,
   }));
 }

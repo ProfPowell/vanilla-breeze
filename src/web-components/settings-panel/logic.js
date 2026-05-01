@@ -57,6 +57,52 @@ class SettingsPanel extends VBElement {
 
   teardown() {}
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the current settings as a plain data object combining all the
+   * VBStore-backed state the panel manages. Reactive consumers can use
+   * this to mirror the user's settings into framework state.
+   */
+  get data() {
+    return {
+      a11yThemes: [...this.#a11yThemes],
+      extensions: { ...this.#extensions },
+      sticky: this.#stickyOn,
+    };
+  }
+
+  /**
+   * Replace the panel's settings in one assignment. Writes through to
+   * VBStore for each non-undefined field, then re-syncs the UI.
+   * Setter returns synchronously; the VBStore writes complete in the
+   * background. Emits settings-panel:data-changed { data, source: 'property' }
+   * once the writes finish.
+   */
+  set data(value) {
+    if (!value || typeof value !== 'object') return;
+    const writes = [];
+    if (Array.isArray(value.a11yThemes)) {
+      this.#a11yThemes = [...value.a11yThemes];
+      writes.push(VBStore.set(SETTINGS_NS, 'a11y', this.#a11yThemes));
+    }
+    if (value.extensions && typeof value.extensions === 'object') {
+      this.#extensions = { ...EXTENSION_DEFAULTS, ...value.extensions };
+      writes.push(VBStore.set(SETTINGS_NS, 'extensions', this.#extensions));
+    }
+    if (value.sticky != null) {
+      this.#stickyOn = !!value.sticky;
+      writes.push(VBStore.set(SETTINGS_NS, 'sticky', this.#stickyOn ? 'on' : 'off'));
+    }
+    Promise.all(writes).then(() => {
+      this.#syncState?.();
+      this.dispatchEvent(new CustomEvent('settings-panel:data-changed', {
+        detail: { data: this.data, source: 'property' },
+        bubbles: true,
+      }));
+    });
+  }
+
   /** Pre-load all VBStore-backed state into instance fields so render is sync. */
   async #hydrateFromStore() {
     const [a11y, ext, sticky] = await Promise.all([

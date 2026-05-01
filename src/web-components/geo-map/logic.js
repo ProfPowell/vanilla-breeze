@@ -233,6 +233,52 @@ class GeoMap extends VBElement {
         }
     }
 
+    // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+    /**
+     * Read the current map state as `{ lat, lng, zoom, marker, markerColor }`.
+     */
+    get data() {
+        return {
+            lat: isNaN(this.lat) ? undefined : this.lat,
+            lng: isNaN(this.lng) ? undefined : this.lng,
+            zoom: this.zoom,
+            marker: this.showMarker,
+            markerColor: this.markerColor,
+        };
+    }
+
+    /**
+     * Set map state in one call. Idempotent — assigning the same
+     * lat/lng/zoom is a no-op. Re-renders the map.
+     * Emits geo-map:data-changed { data, source: 'property' }.
+     */
+    set data(value) {
+        if (!value || typeof value !== 'object') return;
+        const cur = this.data;
+        if (cur.lat === value.lat && cur.lng === value.lng && cur.zoom === value.zoom) return;
+        if (value.lat != null) this.setAttribute('lat', String(value.lat));
+        if (value.lng != null) this.setAttribute('lng', String(value.lng));
+        if (value.zoom != null) this.setAttribute('zoom', String(value.zoom));
+        if (value.marker != null) this.setAttribute('marker', value.marker ? 'true' : 'false');
+        if (value.markerColor) this.setAttribute('marker-color', value.markerColor);
+        this.dispatchEvent(new CustomEvent('geo-map:data-changed', {
+            detail: { data: this.data, source: 'property' },
+            bubbles: true, composed: true,
+        }));
+    }
+
+    /**
+     * Read the markers as a single-element array `[{ lat, lng, color }]`
+     * if coordinates are set, else `[]`. Multi-marker support is on the
+     * roadmap; today the component is single-point.
+     */
+    get markers() {
+        const c = this.#resolveCoordinates();
+        if (!c) return [];
+        return [{ lat: c.lat, lng: c.lng, color: this.markerColor }];
+    }
+
     /**
      * Build the shadow DOM structure
      */

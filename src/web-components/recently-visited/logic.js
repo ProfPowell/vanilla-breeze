@@ -29,6 +29,26 @@ class RecentlyVisited extends VBElement {
     this.#wireStorage();
   }
 
+  // ── Data API (read-only — content is derived from localStorage) ──────
+
+  /**
+   * Read the current visit history as a plain data array. Each entry:
+   * `{ url, title, timestamp }`. The list is auto-derived from the
+   * `vb:recently-visited` localStorage key — there is no setter, since
+   * the tracker (src/utils/recently-visited-init.js) owns writes.
+   * Frameworks can observe via the `recently-visited:refreshed` event
+   * which fires after every internal re-render (storage event from
+   * another tab, or local write).
+   */
+  get entries() {
+    try {
+      const raw = localStorage.getItem(RecentlyVisited.STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
   disconnect() {
     if (this.#storageHandler) {
       window.removeEventListener('storage', this.#storageHandler);

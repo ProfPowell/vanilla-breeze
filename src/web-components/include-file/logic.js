@@ -61,6 +61,27 @@ class IncludeFile extends VBElement {
     this.#abortController?.abort();
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /** The current src URL (mirror of the `src` attribute). */
+  get src() { return this.getAttribute('src') || ''; }
+
+  /**
+   * Idempotent .src setter. Triggers a fetch via the existing
+   * attributeChangedCallback path. Emits include-file:src-changed with
+   * source: 'property' so reactive consumers can filter loops.
+   */
+  set src(value) {
+    const next = value == null ? '' : String(value);
+    if (this.src === next) return;
+    if (next) this.setAttribute('src', next);
+    else this.removeAttribute('src');
+    this.dispatchEvent(new CustomEvent('include-file:src-changed', {
+      detail: { src: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   static get observedAttributes() {
     return ['src'];
   }

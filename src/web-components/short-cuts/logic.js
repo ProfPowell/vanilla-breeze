@@ -40,6 +40,26 @@ class ShortCuts extends VBElement {
     this.#dialog = null;
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Optional override for the shortcut list. When set, replaces the
+   * command-registry-derived shortcuts shown in the dialog.
+   * Shape: `{ [groupName]: Array<{ label, shortcut }> }`.
+   *
+   * Reading returns the override or `null` if the registry default is
+   * in effect.
+   */
+  get shortcuts() { return this.__shortcuts || null; }
+
+  set shortcuts(value) {
+    this.__shortcuts = value && typeof value === 'object' ? value : null;
+    this.dispatchEvent(new CustomEvent('short-cuts:shortcuts-changed', {
+      detail: { shortcuts: this.__shortcuts, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   #build() {
     this.#dialog = document.createElement('dialog');
     this.#dialog.className = 'shortcut-dialog';

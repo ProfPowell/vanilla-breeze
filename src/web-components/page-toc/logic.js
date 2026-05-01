@@ -45,6 +45,21 @@ class PageToc extends VBElement {
     requestAnimationFrame(() => this.#init());
   }
 
+  // ── Data API (read-only — content is derived from page headings) ──────
+
+  /**
+   * Read the current TOC entries as a plain data array. Each entry:
+   * `{ id, text, level }`. Auto-derived from page headings by the
+   * scope= attribute; there is no setter.
+   */
+  get entries() {
+    return this.#headings.map(h => ({
+      id: h.id || undefined,
+      text: h.textContent?.trim() || '',
+      level: parseInt(h.tagName.slice(1), 10) || 0,
+    }));
+  }
+
   teardown() {
     this.#observer?.disconnect();
     clearTimeout(this.#resizeTimer);

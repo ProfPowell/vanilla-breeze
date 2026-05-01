@@ -1,7 +1,7 @@
 # Data API Audit — VB component classification
 
 Captures the JS-first / HTML-first dual-mode contract status for every
-component in `src/web-components/` as of Phase 4 completion. Source of
+component in `src/web-components/` as of Phase 6 completion. Source of
 truth: `/docs/concepts/data-api/`.
 
 ## Legend
@@ -9,16 +9,15 @@ truth: `/docs/concepts/data-api/`.
 - **Done** — exposes a property API (`.data` / `.items` / `.rows` /
   `.value` / etc.) with idempotent setter and source-tagged change
   event. Reactive frameworks can drive it.
-- **Skip** — display-only, effect, or composition primitive with no
-  data surface. No reactive use case to serve.
-- **Soon** — collection or record shape that would benefit but isn't
-  yet retrofitted; covered by future Phase 5+ work or one-off PRs.
-- **Form-control** — exposes `.value` already; covered by Phase 3e
-  audit (idempotent + source tag).
+- **Confirmed Skip** — display-only, effect, or composition primitive
+  with no JS data surface to expose. Audited and confirmed.
+- **No data API** — stateless action button or composition wrapper;
+  data lives elsewhere (in a sibling controller, parent component, or
+  page state). Documented here so we don't re-audit.
 
 ## Status by component
 
-### Done — record / collection / form-control (37 components)
+### Done — record / collection / form-control / atomic (50 components)
 
 | Component | Shape | Property | Phase |
 |---|---|---|---|
@@ -59,70 +58,83 @@ truth: `/docs/concepts/data-api/`.
 | `<glossary-wc>` | collection | `.terms` | 5c |
 | `<change-set>` | atomic | `.view` (form-style audit) | 5c |
 | `<topic-map>` | atomic | `.data` (`{ pages, vocabulary }`) | 5c |
+| `<day-view>` | atomic | `.events` | 6a |
+| `<week-view>` | atomic | `.events` | 6a |
+| `<short-cuts>` | record | `.shortcuts` | 6b |
+| `<toast-msg>` | imperative + observer | `.show()` / `.queue` getter / `:enqueued` event | 6b |
+| `<notification-wc>` | collection | `.notifications` | 6b |
+| `<geo-map>` | atomic | `.data` (`{ lat, lng, zoom, marker, markerColor }`) + `.markers` getter | 6c |
+| `<image-map>` | collection | `.regions` | 6c |
+| `<site-search>` | form + collection | `.value` + `.results` getter | 6d |
+| `<settings-panel>` | record | `.data` (VBStore-backed nested values) | 6d |
+| `<include-file>` | atomic | `.src` | 6d |
+| `<recently-visited>` | read-only | `.entries` getter | 6e |
+| `<page-toc>` | read-only | `.entries` getter | 6e |
+| `<audio-player>` | atomic | `.src` + `.currentTime` | 6f |
+| `<video-player>` | atomic | `.src` + `.currentTime` | 6f |
+| `<content-swap>` | atomic | `.swapped` (existed); `:swap` event now source-tagged | 6f |
 
-### Soon — collection-shaped, candidate for Phase 5
+### Auto-derived getter recommended (open as filed)
 
-These exist today as collections of children (commands, items, options,
-messages, etc.) but currently expect HTML markup or imperative
-`show()` / `add()` calls. Adding `.items` / `.commands` / similar would
-match the rest of the library.
+These components derive their content from other page state (headings,
+posts, glossary entries, etc.). Adding a `.entries` getter for
+read-only access would help reactive consumers observe the derived
+list without re-implementing the derivation. Not blocking — file a
+ticket if a consumer needs one.
 
-| Component | Shape | Suggested property | Priority |
-|---|---|---|---|
-| `<short-cuts>` | keyboard shortcut list | `.shortcuts` | low — usually static |
-| `<recently-visited>` | history items | `.entries` | medium — reads from localStorage; read-only `.entries` getter ok |
-| `<toast-msg>` | toast queue | already has `show()` API; alias as `.notify(...)` or expose `.queue` getter | low — imperative is the right shape |
-| `<notification-wc>` | banner + panel | `.notifications` array with read state | medium |
-| `<page-toc>` | TOC items | usually auto-derived from headings; `.entries` getter only | low |
-| `<foot-notes>` | footnote list | usually auto-derived; `.notes` getter only | low |
-| `<heading-links>` | link list | auto-derived; no setter needed | skip |
-| `<author-index>` | author list | auto-derived from posts; no setter needed | skip |
-| `<glossary-index>` | glossary entries | auto-derived; no setter needed | skip |
-| `<time-index>` | date-grouped items | auto-derived; getter only | skip |
-| `<popularity-index>` | ranked posts | auto-derived; getter only | skip |
-| `<site-index>` | flat page list | could overlap with `<site-map-wc>` | skip |
-| `<site-search>` | search results | record (`.results`) + form `.value` | medium |
-| `<note-wc>` | stateless action button | no data API — notes live in highlights controller | n/a |
-| `<comment-wc>` | stateless action button | no data API — pins live on review-surface | n/a |
-| `<day-view>` | calendar day view | atomic (`.events`) | medium — borrow from calendar-wc |
-| `<week-view>` | calendar week view | atomic (`.events`) | medium |
-| `<image-map>` | clickable regions | collection (`.regions`) | low |
-| `<geo-map>` | map markers | collection (`.markers`) + record `.center` / `.zoom` | medium |
-| `<settings-panel>` | grouped form fields | record (`.data`) wrapping nested values | low — already framework-friendly via slots |
+| Component | Suggested getter |
+|---|---|
+| `<foot-notes>` | `.notes` from inline `<foot-note>` refs |
+| `<heading-links>` | `.headings` from page heading scan |
+| `<author-index>` | `.authors` from harvested author groups |
+| `<glossary-index>` | `.terms` from glossary section scan |
+| `<time-index>` | `.entries` from version sections |
+| `<popularity-index>` | `.entries` from rank order |
+| `<site-index>` | `.sections` from nav scan |
 
-### Soon — form-control audit (5 components)
+### No data API — stateless action / composition (4 components)
 
-These should get the same treatment as Phase 3e: idempotent `.value`
-setter and source-tagged change event.
+These have no JS data state to expose. Their behavior either delegates
+to a sibling/parent (action buttons) or wraps another control.
 
-| Component | Why | Priority |
-|---|---|---|
-| `<chat-input>` | text input with command parsing | low |
-| `<emoji-picker>` | inserts into target — has `:select` event but no `.value` | review whether `.value` even applies |
-| `<slide-accept>` | one-shot accept button | already correct shape; no `.value` needed |
-| `<form-field>` | wraps a native input | the wrapped input already has `.value`; no surface to audit |
-| `<include-file>` | file embed | `.src` setter; record-shaped |
+| Component | Why |
+|---|---|
+| `<note-wc>` | Stateless action button; notes live in highlights controller |
+| `<comment-wc>` | Stateless action button; pins live on `<review-surface>` |
+| `<slide-accept>` | One-shot accept gesture; `:accept` event is the surface |
+| `<form-field>` | Wraps a native input — input has `.value` already |
 
-### Skip — display / effect / composition (49 components)
+### Confirmed Skip — display / effect / composition / theme (40 components)
 
-No data API needed. These render presentational content, layout
-primitives, themes, or are interaction-only chrome. Included here so
-the audit is complete and we don't revisit them.
+No data API needed. These render presentational content, are theme
+tools, are layout primitives, or are interaction-only chrome. Audited
+and confirmed; data lives in author markup or external state.
 
-`<accordion-wc>` (already done above), `<analytics-panel>`,
-`<audio-player>`, `<audio-visualizer>`, `<brand-mark>`,
+`<analytics-panel>`, `<audio-visualizer>`, `<brand-mark>`,
 `<color-palette>`, `<compare-surface>`, `<component-sampler>`,
-`<consent-banner>`, `<content-lens>`, `<content-swap>`,
-`<drag-surface>`, `<font-pairer>`, `<gradient-builder>`,
-`<heading-links>`, `<highlight-wc>`, `<icon-wc>`, `<image-map>`,
-`<motion-specimen>`, `<page-info>`, `<page-stats>`, `<page-tools>`,
-`<page-tour>`, `<palette-generator>`, `<print-page>`, `<qr-code>`,
-`<reader-view>`, `<semantic-palette>`, `<settings-panel>`,
+`<consent-banner>`, `<content-lens>`, `<drag-surface>`,
+`<emoji-picker>`, `<font-pairer>`, `<gradient-builder>`,
+`<highlight-wc>`, `<icon-wc>`, `<motion-specimen>`, `<page-info>`,
+`<page-stats>`, `<page-tools>`, `<page-tour>`, `<palette-generator>`,
+`<print-page>`, `<qr-code>`, `<reader-view>`, `<semantic-palette>`,
 `<share-wc>`, `<social-embed>`, `<spacing-specimen>`,
 `<split-surface>`, `<text-reader>`, `<theme-export>`,
 `<theme-picker>`, `<token-specimen>`, `<tool-tip>`,
-`<trust-filter>`, `<type-specimen>`, `<video-player>`, `<watch-wc>`,
+`<trust-filter>`, `<type-specimen>`, `<watch-wc>`,
 `<youtube-player>`.
+
+### Open from Phase 6f (deferred)
+
+The following had quick state surfaces noted in the re-audit but were
+not retrofitted because the contract sits on top of native browser
+state that frameworks can already access directly. File a ticket if
+a consumer wants explicit exposure:
+
+- `<consent-banner>` — `.accepted` read state (lives in VBStore)
+- `<reader-view>` — `.active` mode toggle (lives in attribute)
+- `<theme-picker>` — already has theme attribute; `.value` would alias
+- `<watch-wc>` — `.url` / `.interval` for poll-driven URL watchers
+- `<youtube-player>` — `.videoId` for embed URL changes
 
 ## Process for adding new dual-mode components
 
@@ -144,14 +156,15 @@ the audit is complete and we don't revisit them.
 
 ## Roadmap signals
 
-We will revisit "Soon" components when:
+The audit is complete. Future per-component work happens when:
 
 - A consumer (Montane, downstream framework integration) reports a
   specific gap.
 - A bug filed against a component reveals a missing setter that would
   have made the workaround unnecessary.
-- Aggregate signal: 3+ consumers want the same shape.
+- The "Auto-derived getter" or "Open from Phase 6f" tables get a
+  filed ticket.
 
-Per-component PRs from the "Soon" table can land independently — the
-mixins and concepts guide are stable; new retrofits don't require any
-framework-level changes.
+Per-component PRs land independently — the mixins, concepts guide, and
+this audit are stable; new retrofits don't require any framework-level
+changes.

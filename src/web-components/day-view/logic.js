@@ -184,6 +184,65 @@ class DayView extends VBElement {
     this.#positionSpanningEvents();
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * Read the day's events as a plain data array. Each entry:
+   * `{ time, text, category?, duration?, href? }`. Reflects whatever
+   * <calendar-event> children currently exist.
+   */
+  get events() {
+    return [...this.querySelectorAll('calendar-event')].map(el => ({
+      time: el.querySelector('time[datetime]')?.getAttribute('datetime') || undefined,
+      text: el.textContent.trim(),
+      category: el.dataset.category || undefined,
+      duration: el.dataset.duration || undefined,
+      href: el.querySelector('a[href]')?.getAttribute('href') || undefined,
+    }));
+  }
+
+  /**
+   * Replace the day's events. Each entry: `{ time, text, category?,
+   * duration?, href? }`. Time is an ISO string ("HH:MM" or full ISO
+   * datetime). Sets `data-start-hour="auto"` so the auto-grid path
+   * builds the hour scaffold from the supplied events.
+   *
+   * Emits day-view:events-changed { events, source: 'property' }.
+   */
+  set events(value) {
+    const next = Array.isArray(value) ? value : [];
+    while (this.firstChild) this.firstChild.remove();
+    this.dataset.startHour = 'auto';
+    for (const e of next) {
+      const el = document.createElement('calendar-event');
+      if (e.category) el.dataset.category = e.category;
+      if (e.duration) el.dataset.duration = String(e.duration);
+      if (e.time) {
+        const t = document.createElement('time');
+        t.setAttribute('datetime', e.time);
+        t.textContent = e.time;
+        el.appendChild(t);
+        el.appendChild(document.createTextNode(' '));
+      }
+      if (e.href) {
+        const a = document.createElement('a');
+        a.href = e.href;
+        a.textContent = e.text || '';
+        el.appendChild(a);
+      } else {
+        el.appendChild(document.createTextNode(e.text || ''));
+      }
+      this.appendChild(el);
+    }
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+    this.dispatchEvent(new CustomEvent('day-view:events-changed', {
+      detail: { events: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   #positionSpanningEvents() {
     const ol = this.#ol;
     const spanningEvents = ol.querySelectorAll('calendar-event[data-duration]');

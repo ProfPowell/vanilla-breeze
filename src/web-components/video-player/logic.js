@@ -157,6 +157,29 @@ class VideoPlayerElement extends VBElement {
     if (this.#idleTimer != null) clearTimeout(this.#idleTimer)
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  get src() {
+    return this.#video?.getAttribute('src') || this.#video?.currentSrc || '';
+  }
+
+  set src(value) {
+    if (!this.#video) return;
+    const next = value == null ? '' : String(value);
+    if (this.#video.getAttribute('src') === next) return;
+    this.#video.setAttribute('src', next);
+    this.#video.load?.();
+    this.dispatchEvent(new CustomEvent('video-player:src-changed', {
+      detail: { src: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
+  get currentTime() { return this.#video?.currentTime ?? 0; }
+  set currentTime(value) {
+    if (this.#video) this.#video.currentTime = Number(value) || 0;
+  }
+
   // ─── Shadow DOM ────────────────────────────────────────────────────────────
 
   #buildShadow() {
