@@ -86,8 +86,10 @@ class ChartWc extends VBElement {
   // -- Public property API --
 
   set data(value) {
+    if (this.#data === value) return;
     this.#data = value;
     this.#queueRender();
+    this.#emitDataChanged('property');
   }
 
   get data() {
@@ -95,12 +97,26 @@ class ChartWc extends VBElement {
   }
 
   set config(value) {
+    if (this.#config === value) return;
     this.#config = value;
     this.#queueRender();
+    this.#emitDataChanged('property');
   }
 
   get config() {
     return this.#config;
+  }
+
+  /**
+   * Emit a tagged data-changed event. Frameworks can filter by source to
+   * avoid feedback loops (e.g. ignore their own .data assignments and only
+   * react to internal changes like table re-extraction).
+   */
+  #emitDataChanged(source) {
+    this.dispatchEvent(new CustomEvent('chart-wc:data-changed', {
+      detail: { data: this.#data, config: this.#config, source },
+      bubbles: true,
+    }));
   }
 
   // -- Public methods --

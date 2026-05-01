@@ -47,6 +47,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { diffByKey } from '../../lib/diff-by-key.js';
 
 class DataTable extends VBElement {
   #table;
@@ -71,6 +72,14 @@ class DataTable extends VBElement {
   /** @type {Element | null} */
   #selectedCountElement = null;
 
+  // -- Data API state --
+  /** @type {Array<Record<string, unknown>>} */
+  #rows = [];
+  /** @type {Map<unknown, Element>} */
+  #rowNodes = new Map();
+  /** @type {Array<{ key: string, label: string, sort?: string }>} */
+  #columnSpec = [];
+
   setup() {
     this.#table = this.querySelector(':scope > table');
     if (!this.#table) return false;
@@ -93,6 +102,28 @@ class DataTable extends VBElement {
     // This ensures sort/filter/pagination treat expandable + content as a group
     this.#allRows = [...this.#tbody.querySelectorAll(':scope > tr:not([data-expand-content])')];
     this.#filteredRows = [...this.#allRows];
+
+    // Derive column spec from <thead> for the JS-first .rows API.
+    // Columns are keyed by data-key on each <th>, falling back to the
+    // header's lowercased text content. Sort type carries over for parity
+    // with attribute-driven mode.
+    this.#columnSpec = [...(this.#table.tHead?.rows[0]?.cells || [])].map(th => ({
+      key: th.getAttribute('data-key') || th.textContent.trim().toLowerCase(),
+      label: th.textContent.trim(),
+      sort: th.getAttribute('data-sort') || undefined,
+    }));
+
+    // Seed VBCollection-style row map from existing <tr>s so any future
+    // .rows = [...] assignment diffs against existing nodes (preserving
+    // selection / expansion / inline-edit state for keys that persist).
+    this.#rowNodes.clear();
+    this.#rows = [];
+    for (const tr of this.#allRows) {
+      const id = tr.getAttribute('data-id') || tr.getAttribute('data-key');
+      if (!id) continue;
+      this.#rowNodes.set(id, tr);
+      this.#rows.push({ id });
+    }
 
     // Set up sorting
     this.#setupSorting();
@@ -119,6 +150,71 @@ class DataTable extends VBElement {
 
     // Initial render
     this.#render();
+  }
+
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * The current rows. After upgrade this is seeded from existing <tr>s
+   * (each row carries an `id` from its data-id attribute). After
+   * assignment, it reflects whatever the consumer last passed in.
+   */
+  get rows() { return this.#rows; }
+
+  /**
+   * Replace the row set. Runs a keyed diff against existing <tr> nodes:
+   * rows whose id appears in both old and new lists keep their DOM node
+   * (preserving selection, expansion, inline-edit, focus, and CSS
+   * animation state). New ids render via _renderRow; dropped ids are
+   * removed from the tbody.
+   */
+  set rows(value) {
+    const next = value || [];
+    const result = diffByKey({
+      newItems: next,
+      nodes: this.#rowNodes,
+      keyOf: (row) => row.id,
+      renderItem: (row) => this._renderRow(row),
+      containerFor: () => this.#tbody,
+    });
+    this.#rows = next;
+    this.#allRows = [...this.#tbody.querySelectorAll(':scope > tr:not([data-expand-content])')];
+    this.#applyFilter(this.#filterQuery);
+    this.dispatchEvent(new CustomEvent('data-table:rows-changed', {
+      detail: { rows: next, added: result.added, moved: result.moved, removed: result.removed, source: 'api' },
+      bubbles: true,
+    }));
+  }
+
+  /**
+   * Read the column spec derived from <thead> on upgrade, or whatever was
+   * last assigned. Each entry is `{ key, label, sort? }`.
+   */
+  get columns() { return this.#columnSpec; }
+
+  /**
+   * Default row renderer. Override in a subclass or replace via .renderRow.
+   * Builds a <tr> with one <td> per column in #columnSpec, populated from
+   * `row[column.key]`. Sets data-id from row.id for diff stability.
+   */
+  _renderRow(row) {
+    if (typeof this.renderRow === 'function') {
+      const out = this.renderRow(row, this.#columnSpec);
+      if (!(out instanceof Element)) {
+        throw new Error('data-table: renderRow must return an Element');
+      }
+      if (!out.hasAttribute('data-id')) out.setAttribute('data-id', String(row.id));
+      return out;
+    }
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-id', String(row.id));
+    for (const col of this.#columnSpec) {
+      const td = document.createElement('td');
+      const value = row[col.key];
+      td.textContent = value == null ? '' : String(value);
+      tr.appendChild(td);
+    }
+    return tr;
   }
 
   #cleanup() {

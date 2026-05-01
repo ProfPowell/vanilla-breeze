@@ -226,6 +226,39 @@ chart.refresh();
 
 // Get SVG markup for export
 const svg = chart.toSVG();</code-block>
+
+    <h3>Reactive updates (JS-first)</h3>
+    <p>For frameworks pushing live data, wait for <code>chart-wc:upgraded</code> before the first assignment, then react to changes via <code>chart-wc:data-changed</code>. The <code>source</code> field lets consumers ignore echoes from their own assignments.</p>
+
+    <code-block language="javascript" show-lines label="Reactive integration" data-escape>const chart = document.querySelector('chart-wc');
+
+await new Promise(r =&gt; chart.addEventListener('chart-wc:upgraded', r, { once: true }));
+
+// Initial assignment
+chart.data = visibleSeries.get();
+
+// Re-assign whenever the framework's signal changes
+effect(() =&gt; { chart.data = visibleSeries.get(); });
+
+// Avoid feedback loops by filtering on source.
+chart.addEventListener('chart-wc:data-changed', (e) =&gt; {
+  if (e.detail.source !== 'property') {
+    // Internal change (e.g. table re-extracted) — push back to your store.
+    syncStore(e.detail.data);
+  }
+});</code-block>
+
+    <p>See the <a href="/docs/concepts/data-api/">Data API concepts guide</a> for the dual HTML-first / JS-first contract that <code>&lt;chart-wc&gt;</code> shares with <code>&lt;kanban-board&gt;</code>, <code>&lt;work-item&gt;</code>, and <code>&lt;user-story&gt;</code>.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>When</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>chart-wc:upgraded</code></td><td>&mdash;</td><td>Once after first connect; safe signal for the first <code>.data</code> assignment.</td></tr>
+        <tr><td><code>chart-wc:data-changed</code></td><td><code>{ data, config, source: 'property' }</code></td><td>Fires when <code>.data</code> or <code>.config</code> is assigned via the property API.</td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section>

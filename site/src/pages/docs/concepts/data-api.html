@@ -48,8 +48,9 @@ console.log(wi.data); // { itemId: 'PROJ-42', type: 'task', priority: 'high', ti
 
   <p>Setting <code>.data</code> is idempotent (shallow-equal short-circuit) and emits <code>&lt;localName&gt;:data-changed</code> with <code>{ data, source: 'property' }</code>.</p>
 
-  <h3>Collection components — <code>.items</code></h3>
-  <p>One element manages a keyed list of children. Examples: <code>&lt;kanban-board&gt;</code>, and (forthcoming) <code>&lt;calendar-wc&gt;</code>, <code>&lt;chart-wc&gt;</code>, <code>&lt;gantt-chart&gt;</code>. The <code>.items</code> setter runs a keyed diff: existing nodes whose key persists are <strong>moved, never recreated</strong>, so in-flight drag, focus, and CSS animations survive across updates.</p>
+  <h3>Collection components — <code>.items</code> / <code>.rows</code></h3>
+  <p>One element manages a keyed list of children. Examples shipping today: <code>&lt;kanban-board&gt;</code> (<code>.items</code>) and <code>&lt;data-table&gt;</code> (<code>.rows</code>). Forthcoming: <code>&lt;calendar-wc&gt;</code>, <code>&lt;gantt-chart&gt;</code>. The setter runs a keyed diff: existing nodes whose key persists are <strong>moved, never recreated</strong>, so in-flight drag, focus, selection, expansion, and CSS animations survive across updates.</p>
+  <p><code>&lt;chart-wc&gt;</code> is a related but distinct shape — it owns the entire SVG render, so its <code>.data</code> setter is atomic (no per-item diff) but it shares the same upgrade signal and tagged <code>:data-changed</code> event for loop avoidance.</p>
 
   <code-block language="javascript" label="Collection contract" data-escape>const board = document.querySelector('kanban-board');
 

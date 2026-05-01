@@ -415,6 +415,68 @@ selected.forEach(row => {
 });</code-block>
   </section>
 
+  <section>
+    <h2>Property API (JS-first)</h2>
+    <p>For reactive frameworks pushing live data, <code>data-table</code> exposes <code>.rows</code> and <code>.columns</code> alongside the markup-driven path. Existing <code>&lt;tr&gt;</code> nodes whose <code>id</code> persists across <code>.rows</code> assignments are preserved — selection, expansion, inline-edit state, focus, and CSS animations survive the diff.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>.rows</code></td><td><code>{ id, [colKey]: value, ... }[]</code></td><td>Setter runs a keyed diff against current <code>&lt;tr&gt;</code> children. <code>id</code> is the diff key; other fields populate cells per the column spec.</td></tr>
+        <tr><td><code>.columns</code></td><td><code>{ key, label, sort? }[]</code></td><td>Read-only: column spec derived from <code>&lt;thead&gt;</code> on upgrade. Each <code>&lt;th&gt;</code>'s <code>data-key</code> attribute becomes the column key (falls back to lowercased text).</td></tr>
+        <tr><td><code>.renderRow</code></td><td><code>(row, columns) =&gt; Element</code></td><td>Optional custom row renderer. Default builds one <code>&lt;td&gt;</code> per column populated from <code>row[col.key]</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="JS-first scaffold" data-escape>&lt;data-table&gt;
+  &lt;table data-filterable&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th data-key="name"  data-sort="string"&gt;Name&lt;/th&gt;
+        &lt;th data-key="email" data-sort="string"&gt;Email&lt;/th&gt;
+        &lt;th data-key="dept"  data-sort="string"&gt;Department&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;&lt;!-- empty; populated via .rows --&gt;&lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/data-table&gt;</code-block>
+
+    <code-block language="javascript" show-lines label="Reactive integration" data-escape>const table = document.querySelector('data-table');
+
+await new Promise(r =&gt; table.addEventListener('data-table:upgraded', r, { once: true }));
+
+table.rows = [
+  { id: 'u1', name: 'Alice', email: 'a@x.io', dept: 'Engineering' },
+  { id: 'u2', name: 'Bob',   email: 'b@x.io', dept: 'Sales' },
+];
+
+// Subsequent assignments diff: same ids keep their <tr> nodes (selection survives).
+effect(() =&gt; { table.rows = visibleUsers.get(); });
+
+// Tag custom rendering when the default cell layout isn't enough.
+table.renderRow = (row, cols) =&gt; {
+  const tr = document.createElement('tr');
+  tr.innerHTML = cols.map(c =&gt;
+    `&lt;td&gt;${c.key === 'email' ? `&lt;a href="mailto:${row.email}"&gt;${row.email}&lt;/a&gt;` : (row[c.key] ?? '')}&lt;/td&gt;`
+  ).join('');
+  return tr;
+};</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Event</th><th>Detail</th><th>When</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-table:upgraded</code></td><td>&mdash;</td><td>Once after first connect; safe signal for the first <code>.rows</code> assignment.</td></tr>
+        <tr><td><code>data-table:rows-changed</code></td><td><code>{ rows, added, moved, removed, source: 'api' }</code></td><td>Fires after every <code>.rows</code> assignment with diff stats.</td></tr>
+      </tbody>
+    </table>
+
+    <p>See the <a href="/docs/concepts/data-api/">Data API concepts guide</a> for the full dual-mode contract.</p>
+  </section>
+
   {% from "partials/attribute-table.njk" import attributeTable, structureTable, childAttributeTable, eventsTable %}
   <section>
     <h2>Attributes Reference</h2>
