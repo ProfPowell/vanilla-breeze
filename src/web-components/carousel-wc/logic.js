@@ -205,6 +205,51 @@ class CarouselWc extends VBElement {
     this.#vtMode = false;
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * The current slides as a plain data array.
+   * Each entry: `{ id?, html, label? }`.
+   */
+  get slides() {
+    return this.#slides.map((s, i) => ({
+      id: s.id || undefined,
+      html: s.innerHTML,
+      label: s.getAttribute('aria-label') || `${i + 1} of ${this.#slides.length}`,
+    }));
+  }
+
+  /**
+   * Replace the slide set and re-render. Each entry needs `html` (slide
+   * content as HTML string). Optional `id` becomes the slide element's
+   * id; optional `label` overrides the default ARIA label.
+   *
+   * v1 is record-shaped — full rebuild on assignment. The carousel resets
+   * to slide 0 (or `start` attribute if set).
+   *
+   * Emits carousel-wc:slides-changed { slides, source: 'property' }.
+   */
+  set slides(value) {
+    const next = Array.isArray(value) ? value : [];
+    while (this.firstChild) this.firstChild.remove();
+    for (const s of next) {
+      const div = document.createElement('div');
+      if (s.id) div.id = s.id;
+      if (s.label) div.setAttribute('aria-label', s.label);
+      div.innerHTML = s.html || '';
+      this.appendChild(div);
+    }
+
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+
+    this.dispatchEvent(new CustomEvent('carousel-wc:slides-changed', {
+      detail: { slides: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   next() {
     const loop = this.hasAttribute('loop');
     if (this.#currentIndex < this.#slides.length - 1) {

@@ -53,6 +53,66 @@ class AccordionWc extends VBElement {
     this.#vtEnabled = false;
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  /**
+   * The current panel set as a plain data array. Each entry:
+   * `{ id?, summary, content, open? }`. After upgrade reflects the
+   * authored <details>/<summary> children; after assignment reflects
+   * what was passed in.
+   */
+  get panels() {
+    return this.#details.map((d, i) => ({
+      id: d.id || undefined,
+      summary: d.querySelector('summary')?.textContent?.trim() || `Panel ${i + 1}`,
+      content: this.#panels[i]?.innerHTML || '',
+      open: d.hasAttribute('open'),
+    }));
+  }
+
+  /**
+   * Replace the panel set and re-render. Each entry needs `summary`
+   * (text) and `content` (HTML string or text). Optional `id` becomes
+   * the <details>'s id; optional `open: true` opens that panel.
+   *
+   * v1 is record-shaped — full rebuild on assignment. Per-panel
+   * preservation across assignments (to keep open/closed state by id)
+   * is on the roadmap if consumers report it as a felt need.
+   *
+   * Emits accordion-wc:panels-changed { panels, source: 'property' }.
+   */
+  set panels(value) {
+    const next = Array.isArray(value) ? value : [];
+    const single = this.hasAttribute('single');
+    const groupName = single ? `acc-${++accordionVtId}` : null;
+
+    // Tear down existing children, rebuild from data.
+    while (this.firstChild) this.firstChild.remove();
+    for (const p of next) {
+      const details = document.createElement('details');
+      if (p.id) details.id = p.id;
+      if (p.open) details.setAttribute('open', '');
+      if (groupName) details.setAttribute('name', groupName);
+      const summary = document.createElement('summary');
+      summary.textContent = p.summary || '';
+      details.appendChild(summary);
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = p.content || '';
+      details.appendChild(wrapper);
+      this.appendChild(details);
+    }
+
+    // Re-run setup so panel refs / VT / listeners reattach.
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+
+    this.dispatchEvent(new CustomEvent('accordion-wc:panels-changed', {
+      detail: { panels: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   /**
    * Ensure each <details> has a single panel wrapper after <summary>.
    * If there are multiple siblings after summary, wrap them in a <div>.

@@ -27,6 +27,60 @@ class TabSet extends VBElement {
     this.#vtEnabled = false;
   }
 
+  // ── Data API (HTML-first / JS-first dual contract) ──────────────
+
+  get tabs() {
+    return this.#details.map((d, i) => ({
+      id: d.id || undefined,
+      label: d.querySelector('summary')?.textContent?.trim() || `Tab ${i + 1}`,
+      content: d.querySelector(':scope > :not(summary)')?.innerHTML || '',
+      active: d.hasAttribute('open'),
+    }));
+  }
+
+  /**
+   * Replace the tab set and re-render. Each entry needs `label` (text)
+   * and `content` (HTML or text). Optional `id` becomes the <details>'s
+   * id; optional `active: true` opens that tab. Defaults to first tab
+   * open if none specified.
+   *
+   * v1 is record-shaped — full rebuild on assignment.
+   *
+   * Emits tab-set:tabs-changed { tabs, source: 'property' }.
+   */
+  set tabs(value) {
+    const next = Array.isArray(value) ? value : [];
+    while (this.firstChild) this.firstChild.remove();
+    let activeFound = false;
+    for (const t of next) {
+      const details = document.createElement('details');
+      if (t.id) details.id = t.id;
+      if (t.active && !activeFound) {
+        details.setAttribute('open', '');
+        activeFound = true;
+      }
+      const summary = document.createElement('summary');
+      summary.textContent = t.label || '';
+      details.appendChild(summary);
+      const panel = document.createElement('div');
+      panel.innerHTML = t.content || '';
+      details.appendChild(panel);
+      this.appendChild(details);
+    }
+    if (!activeFound && this.firstElementChild) {
+      this.firstElementChild.setAttribute('open', '');
+    }
+
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    this.setup();
+
+    this.dispatchEvent(new CustomEvent('tab-set:tabs-changed', {
+      detail: { tabs: next, source: 'property' },
+      bubbles: true,
+    }));
+  }
+
   #initVT() {
     if (!this.hasAttribute('transition') || !document.startViewTransition) return;
 
