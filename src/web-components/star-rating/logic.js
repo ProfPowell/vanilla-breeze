@@ -34,6 +34,7 @@ class StarRating extends VBElement {
   constructor() {
     super();
     this.#internals = this.attachInternals();
+    this._adoptInternals(this.#internals);
   }
 
   setup() {

@@ -203,6 +203,7 @@ class CalendarWc extends VBElement {
     super();
     if (typeof this.attachInternals === 'function') {
       this.#internals = this.attachInternals();
+      this._adoptInternals(this.#internals);
     }
   }
 

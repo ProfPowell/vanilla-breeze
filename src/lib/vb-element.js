@@ -12,6 +12,8 @@
  */
 class VBElement extends HTMLElement {
   #cleanups = [];
+  /** @type {ElementInternals | undefined} */
+  #internals;
 
   connectedCallback() {
     if (this.hasAttribute('data-upgraded')) return;
@@ -52,6 +54,40 @@ class VBElement extends HTMLElement {
 
   /** Override in subclass for cleanup beyond event listeners. */
   teardown() {}
+
+  /**
+   * Toggle a CustomStateSet entry targetable via the `:state(name)` CSS selector.
+   * Use for component-private flags. For author-facing state, keep using
+   * data-* / aria-* attributes — see admin/specs/custom-state-set-research.md.
+   *
+   * Lazily attaches ElementInternals on first call; subclasses that already
+   * attached internals (form-associated components) must hand them over via
+   * `_adoptInternals(this.attachInternals())` in their constructor to avoid
+   * the double-attach throw.
+   *
+   * @param {string} name
+   * @param {boolean} on
+   */
+  setState(name, on) {
+    if (!this.#internals) this.#internals = this.attachInternals();
+    const states = this.#internals.states;
+    try {
+      if (on) states.add(name); else states.delete(name);
+    } catch {
+      // Legacy --name syntax for older Chromium/WebKit releases
+      const legacy = `--${name}`;
+      if (on) states.add(legacy); else states.delete(legacy);
+    }
+  }
+
+  /**
+   * Hand pre-attached ElementInternals to the base class. Form-associated
+   * subclasses call this in their constructor right after attachInternals().
+   * @param {ElementInternals} internals
+   */
+  _adoptInternals(internals) {
+    if (!this.#internals) this.#internals = internals;
+  }
 }
 
 export { VBElement };

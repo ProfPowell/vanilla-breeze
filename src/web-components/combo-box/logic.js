@@ -64,6 +64,7 @@ class ComboBox extends VBElement {
   constructor() {
     super();
     this.#internals = this.attachInternals();
+    this._adoptInternals(this.#internals);
   }
 
   get #isMultiple() {
