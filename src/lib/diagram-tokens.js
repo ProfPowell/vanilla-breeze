@@ -177,6 +177,10 @@ export function buildMermaidConfig(el, opts = {}) {
   return {
     startOnLoad: false,
     securityLevel: 'strict',
+    // Stop Mermaid's built-in bomb-icon error renderer from mounting itself
+    // into the page on parse errors — diagram-wc surfaces errors in the
+    // host element instead.
+    suppressErrorRendering: true,
     theme: opts.themeBase || 'base',
     themeVariables: readMermaidTokens(el),
   };

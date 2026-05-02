@@ -166,6 +166,9 @@ class DiagramWc extends VBElement {
       this.#rendered = true;
       this.removeAttribute('data-rendering');
       this.removeAttribute('data-error');
+      // A successful render clears any stale parse-error pill from a
+      // transient state (typical during live editing).
+      this.querySelector(':scope > .dwc-error')?.remove();
 
       this.dispatchEvent(new CustomEvent('diagram-wc:ready', {
         bubbles: true,
@@ -173,7 +176,10 @@ class DiagramWc extends VBElement {
       }));
     } catch (error) {
       this.removeAttribute('data-rendering');
-      this.setAttribute('data-error', '');
+      // Only flip to source-fallback mode if no diagram has rendered yet.
+      // For transient parse errors during live editing we keep the prior
+      // figure visible (see #showError).
+      if (!this.#rendered) this.setAttribute('data-error', '');
       this.#showError(/** @type {Error} */ (error));
     }
   }
@@ -209,17 +215,28 @@ class DiagramWc extends VBElement {
   }
 
   #showError(err) {
-    // Restore the <pre> fallback so the source is at least readable
-    if (!this.querySelector(':scope > pre') && this.#fallbackTpl) {
-      const node = this.#fallbackTpl.content.firstElementChild;
-      if (node) this.appendChild(node.cloneNode(true));
+    // Live-editing UX: if we already rendered a valid diagram once, keep it
+    // visible so transient parse errors during typing don't blank the
+    // canvas. We only fall back to <pre> when there is no figure to show.
+    if (!this.#rendered) {
+      if (!this.querySelector(':scope > pre') && this.#fallbackTpl) {
+        const node = this.#fallbackTpl.content.firstElementChild;
+        if (node) this.appendChild(node.cloneNode(true));
+      }
+      if (this.#figure) { this.#figure.remove(); this.#figure = null; }
     }
-    if (this.#figure) { this.#figure.remove(); this.#figure = null; }
+
+    // Replace any prior error rather than stacking them up.
+    this.querySelector(':scope > .dwc-error')?.remove();
 
     const msg = document.createElement('p');
     msg.className = 'dwc-error';
-    msg.setAttribute('role', 'alert');
-    msg.textContent = `Diagram render failed: ${err.message}`;
+    msg.setAttribute('role', 'status');
+    // Keep just the headline of Mermaid's parser error — the full token
+    // dump is in the event detail for callers who want it. Headline is the
+    // first line up to a reasonable cap.
+    const headline = (err.message || String(err)).split('\n')[0].slice(0, 240);
+    msg.textContent = `Diagram syntax error: ${headline}`;
     this.appendChild(msg);
 
     this.dispatchEvent(new CustomEvent('diagram-wc:error', {
