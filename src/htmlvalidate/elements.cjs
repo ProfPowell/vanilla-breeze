@@ -555,6 +555,17 @@ module.exports = {
     }
   },
 
+  "diagram-wc": {
+    attributes: {
+      "type": {},
+      "src": {},
+      "caption": {},
+      "loading": {},
+      "data-theme-base": {},
+      "min-height": {}
+    }
+  },
+
   "drag-surface": {
     attributes: {
       "group": {},

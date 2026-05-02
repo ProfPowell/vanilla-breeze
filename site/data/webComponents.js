@@ -41,6 +41,7 @@ export default {
   'Data & Visualization': [
     { name: 'chart-wc', href: '/docs/elements/web-components/chart-wc/', desc: 'SVG chart component with progressive table-to-SVG enhancement' },
     { name: 'data-table', href: '/docs/elements/web-components/data-table/', desc: 'Enhanced data tables with sorting and filtering' },
+    { name: 'diagram-wc', href: '/docs/elements/web-components/diagram-wc/', desc: 'Mermaid diagram renderer with VB token theming and lazy loading' },
     { name: 'flow-diagram', href: '/docs/elements/web-components/flow-diagram/', desc: 'SVG flow diagram renderer for process and workflow visualization' },
     { name: 'gantt-chart', href: '/docs/elements/web-components/gantt-chart/', desc: 'Timeline-based Gantt chart with task bars, dependencies, and milestones' },
     { name: 'geo-map', href: '/docs/elements/web-components/geo-map/', desc: 'Static map tiles with marker and address caption' },
