@@ -31,6 +31,7 @@ export default {
   'Navigation & Menus': [
     { name: 'command-palette', href: '/docs/elements/web-components/command-palette/', desc: 'Cmd+K command palette with search and actions' },
     { name: 'context-menu', href: '/docs/elements/web-components/context-menu/', desc: 'Right-click context menu with keyboard navigation' },
+    { name: 'nav-bar', href: '/docs/elements/web-components/nav-bar/', desc: 'Top-level site/app nav primitive with auto aria-current sync (HTML-first or .items setter)' },
     { name: 'page-toc', href: '/docs/elements/web-components/page-toc/', desc: 'Table of contents generator' },
     { name: 'page-tour', href: '/docs/elements/web-components/page-tour/', desc: 'Progressive-enhancement guided tour with spotlight overlay and action gating' },
     { name: 'short-cuts', href: '/docs/elements/web-components/shortcuts/', desc: 'Keyboard shortcuts help overlay' },

@@ -1,0 +1,49 @@
+{
+  "$schema": "../../schemas/api.schema.json",
+  "element": "nav-bar",
+  "type": "web-component",
+  "description": "Top-level site/app navigation primitive. HTML-first wrap or JSON-first .items setter; auto aria-current sync via pathname matching with popstate listener.",
+  "attributes": [
+    {
+      "name": "aria-label",
+      "kind": "aria",
+      "purpose": "config",
+      "type": "string",
+      "description": "Accessible name for the navigation region."
+    },
+    {
+      "name": "data-match",
+      "kind": "data",
+      "purpose": "config",
+      "type": "enum",
+      "values": ["exact"],
+      "description": "Pathname matching strictness. 'exact' requires exact match. Default: exact wins, longest prefix breaks ties, first-in-DOM-order breaks remaining ties."
+    }
+  ],
+  "events": [
+    { "name": "nav-bar:upgraded" },
+    { "name": "nav-bar:items-changed", "detail": "{ items, source: 'property' }" },
+    { "name": "nav-bar:current-changed", "detail": "{ current, previous, source: 'property' | 'popstate' | 'pathname' }" }
+  ],
+  "childAttributes": [
+    {
+      "name": "href",
+      "on": "a",
+      "type": "string",
+      "description": "Standard anchor href. Used for both navigation and pathname matching."
+    },
+    {
+      "name": "data-route",
+      "on": "a",
+      "type": "string",
+      "description": "Optional .current target. Falls back to href when absent."
+    },
+    {
+      "name": "data-nav-link",
+      "on": "a",
+      "type": "boolean",
+      "description": "Marks a descendant <a> as a candidate for active-state matching when the link list is wrapped (e.g. inside <li> or <drop-down>). When any descendant carries this attribute, those replace 'direct children' as the candidate set."
+    }
+  ],
+  "structure": []
+}

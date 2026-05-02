@@ -186,14 +186,22 @@ export class GenerateSidebars {
 
     html += `<header class="site" data-sticky data-vt="header">\n`;
     html += `  <a href="${header.logo.href}"><brand-mark>${header.logo.text}</brand-mark></a>\n`;
-    html += `  <nav class="horizontal pills" aria-label="Main navigation">\n`;
+    // <nav-bar> wraps the link list so aria-current="page" is set on
+    // the matching section trigger automatically (popstate-aware).
+    // Triggers carry data-nav-link to opt into nested-link matching;
+    // see /docs/elements/web-components/nav-bar/.
+    // <nav> stays inside so the existing .horizontal.pills CSS (scoped
+    // to native nav) keeps applying — nav-bar adds behavior, not a
+    // visual reset.
+    html += `  <nav-bar aria-label="Main navigation">\n`;
+    html += `    <nav class="horizontal pills">\n`;
     html += `    <ul>\n`;
 
     for (const item of header.nav) {
       if (item.children) {
         html += `      <li>\n`;
         html += `        <drop-down position="bottom-start" hover>\n`;
-        html += `          <a href="${item.href}" data-trigger data-nav-section="${item.section}">${item.label}</a>\n`;
+        html += `          <a href="${item.href}" data-trigger data-nav-link data-nav-section="${item.section}">${item.label}</a>\n`;
         html += `          <menu>\n`;
         for (const child of item.children) {
           html += `            <li><a href="${child.href}">${child.label}</a></li>\n`;
@@ -202,12 +210,13 @@ export class GenerateSidebars {
         html += `        </drop-down>\n`;
         html += `      </li>\n`;
       } else {
-        html += `      <li><a href="${item.href}" data-nav-section="${item.section}">${item.label}</a></li>\n`;
+        html += `      <li><a href="${item.href}" data-nav-link data-nav-section="${item.section}">${item.label}</a></li>\n`;
       }
     }
 
     html += `    </ul>\n`;
-    html += `  </nav>\n`;
+    html += `    </nav>\n`;
+    html += `  </nav-bar>\n`;
     html += `  <site-tools>\n`;
     html += `    <site-search>\n`;
     html += `      <button type="button" data-trigger class="ghost">\n`;

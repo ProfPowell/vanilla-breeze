@@ -13,6 +13,7 @@ import './data-table/logic.js';
 import './site-search/logic.js';
 import './card-list/logic.js';
 import './content-swap/logic.js';
+import './nav-bar/logic.js';
 import './compare-surface/logic.js';
 import './split-surface/logic.js';
 import './carousel-wc/logic.js';

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Nav Bar - Basic Demo</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      margin: 0;
+      padding: var(--size-l);
+      max-inline-size: 60rem;
+    }
+    h2 {
+      margin-block: var(--size-l) var(--size-s);
+    }
+    h2:first-child {
+      margin-block-start: 0;
+    }
+  </style>
+</head>
+<body>
+  <h2>HTML-first</h2>
+  <nav-bar id="nav-html-first" aria-label="Main">
+    <a href="/">Home</a>
+    <a href="/docs/">Docs</a>
+    <a href="/docs/elements/">Elements</a>
+    <a href="/changelog/">Changelog</a>
+  </nav-bar>
+
+  <h2>JS-first (driven by .items)</h2>
+  <nav-bar id="nav-js-first" aria-label="Demo"></nav-bar>
+
+  <h2>Exact match only</h2>
+  <nav-bar id="nav-exact" aria-label="Exact" data-match="exact">
+    <a href="/">Home</a>
+    <a href="/docs/">Docs</a>
+    <a href="/docs/elements/">Elements</a>
+  </nav-bar>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    // main.js (above) runs first per module source order, so by here
+    // <nav-bar> is registered and #nav-js-first is upgraded. Set items
+    // directly; if upgrade hasn't happened yet (e.g. test races),
+    // fall back to the upgraded event.
+    const nav = document.getElementById('nav-js-first');
+    const items = [
+      { href: '/',           label: 'Home' },
+      { href: '/dashboard/', label: 'Dashboard', icon: 'gauge' },
+      { href: '/settings/',  label: 'Settings', badge: '3' },
+    ];
+    if (nav.hasAttribute('data-upgraded')) {
+      nav.items = items;
+    } else {
+      nav.addEventListener('nav-bar:upgraded', () => { nav.items = items; }, { once: true });
+    }
+  </script>
+</body>
+</html>

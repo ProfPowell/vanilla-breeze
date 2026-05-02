@@ -1,0 +1,160 @@
+---
+layout: element
+title: "nav-bar"
+description: "Top-level site/app navigation primitive. HTML-first wrap or JSON-first .items setter; auto aria-current sync via pathname matching with popstate listener."
+elementName: nav-bar
+category: component
+currentPath: /docs/elements/web-components/nav-bar/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;nav-bar&gt;</code> component is the top-level navigation primitive for VB sites and apps. It does one thing: synchronizes <code>aria-current="page"</code> on the matching link as the URL changes, so consumers stop hand-rolling that logic. There are two ways to use it:</p>
+  <ul>
+    <li><strong>HTML-first:</strong> wrap your existing <code>&lt;a&gt;</code> children — pathname matching and popstate sync run automatically.</li>
+    <li><strong>JS-first:</strong> assign <code>.items = [...]</code> and let the default renderer build the link list from data.</li>
+  </ul>
+  <p>It is deliberately small — no router, no click interception, no custom renderer in v1. See <a href="#reactive-integration">Reactive integration</a> for the trade-offs.</p>
+</section>
+
+<section>
+  <h2>HTML-first</h2>
+  <p>Wrap a normal set of links. Without JS the nav still works as plain HTML; with JS, <code>aria-current="page"</code> appears on the link that best matches <code>location.pathname</code>.</p>
+
+  <code-block language="html" label="HTML-first nav-bar"><nav-bar aria-label="Main">
+  <a href="/">Home</a>
+  <a href="/docs/">Docs</a>
+  <a href="/docs/elements/">Elements</a>
+  <a href="/changelog/">Changelog</a>
+</nav-bar></code-block>
+
+  <p>Matching policy:</p>
+  <ol>
+    <li>Exact pathname match wins.</li>
+    <li>Otherwise, longest <code>href</code> prefix wins. So on <code>/docs/elements/web-components/nav-bar/</code> the link <code>/docs/elements/</code> beats <code>/docs/</code>.</li>
+    <li>Ties broken by first-in-DOM-order.</li>
+  </ol>
+  <p>Add <code>data-match="exact"</code> on the <code>&lt;nav-bar&gt;</code> to opt out of prefix matching.</p>
+</section>
+
+<section>
+  <h2>Nested links (e.g. inside <code>&lt;drop-down&gt;</code> or <code>&lt;li&gt;</code>)</h2>
+  <p>By default <code>nav-bar</code> only manages <strong>direct <code>&lt;a&gt;</code> children</strong>. If your link list is wrapped (each item inside a <code>&lt;li&gt;</code>, or each section in a <code>&lt;drop-down&gt;</code>), tag the canonical link in each item with <code>data-nav-link</code>:</p>
+  <code-block language="html" label="Nested links opt in via data-nav-link"><nav-bar aria-label="Main">
+  <ul>
+    <li>
+      <drop-down hover>
+        <a href="/docs/quick-start/" data-nav-link data-trigger>Start</a>
+        <menu>...</menu>
+      </drop-down>
+    </li>
+  </ul>
+</nav-bar></code-block>
+  <p>When any descendant link carries <code>data-nav-link</code>, those become the candidate set; otherwise direct-children behavior applies.</p>
+</section>
+
+<section>
+  <h2>JS-first</h2>
+  <p>When your routes live in JSON or are produced by code, assign <code>.items</code>. The component renders <code>&lt;a&gt;</code> children with the default markup.</p>
+
+  <code-block language="js" label="JS-first nav-bar">const nav = document.querySelector('nav-bar');
+
+await new Promise(r => nav.addEventListener('nav-bar:upgraded', r, { once: true }));
+
+nav.items = [
+  { href: '/',           label: 'Home' },
+  { href: '/dashboard/', label: 'Dashboard', icon: 'gauge' },
+  { href: '/settings/',  label: 'Settings' },
+  { href: 'https://github.com/...', label: 'Repo', external: true },
+];</code-block>
+
+  <p>The setter is idempotent — assigning a deep-equal array is a no-op and emits no event.</p>
+</section>
+
+<section>
+  <h2>Item shape</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>href</code></td><td>string</td><td>Required. Anchor target.</td></tr>
+      <tr><td><code>label</code></td><td>string</td><td>Required. Link text.</td></tr>
+      <tr><td><code>route</code></td><td>string</td><td>Optional. <code>.current</code> diff target. Falls back to <code>href</code>.</td></tr>
+      <tr><td><code>icon</code></td><td>string</td><td>Optional. Renders <code>&lt;icon-wc name="..."&gt;</code> before the label.</td></tr>
+      <tr><td><code>external</code></td><td>boolean</td><td>Adds <code>target="_blank"</code>, <code>rel="noopener noreferrer"</code>, and an SR-only "(opens in new tab)" suffix.</td></tr>
+      <tr><td><code>badge</code></td><td>string | number</td><td>Optional pill chip after the label.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Properties</h2>
+  <table class="props-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>.items</code></td><td>NavItem[] | null</td><td>Read returns last assignment, else inferred from children. Set replaces children with default renderer; idempotent.</td></tr>
+      <tr><td><code>.current</code></td><td>string | null</td><td>Read returns the active route (data-route or href of the <code>aria-current</code> link). Set takes ownership and disables popstate sync.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Methods</h2>
+  <table class="props-table">
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>.releaseCurrent()</code></td><td>Restore auto mode after explicit assignment to <code>.current</code>. Re-runs pathname matching.</td></tr>
+      <tr><td><code>.refresh()</code></td><td>Manually re-run pathname matching. Useful for AJAX frameworks (e.g. HTML-Star) that change the URL without firing <code>popstate</code>. No-op when <code>.current</code> is explicitly owned.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>nav-bar:upgraded</code></td><td>—</td><td>Once after first connect.</td></tr>
+      <tr><td><code>nav-bar:items-changed</code></td><td><code>{ items, source: 'property' }</code></td><td>After <code>.items</code> is assigned to a new value.</td></tr>
+      <tr><td><code>nav-bar:current-changed</code></td><td><code>{ current, previous, source }</code></td><td><code>source</code> is one of <code>'property'</code> | <code>'popstate'</code> | <code>'pathname'</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="reactive-integration">
+  <h2>Reactive integration <small>(important caveat)</small></h2>
+  <callout-wc tone="warning">
+    <p><strong>v1 does not support driving <code>.items</code> from a signal/effect</strong> with preserved in-flight state. Each <code>.items</code> assignment <em>fully replaces</em> children. There is no keyed diff, so a link mid-focus loses focus on reassignment, and any <code>&lt;icon-wc&gt;</code> inside re-mounts. This is fine for nav (links don't carry load-bearing state) but it is not the right primitive for reactive route lists.</p>
+  </callout-wc>
+
+  <p>If you need reactive routing with preserved state, use your framework's link primitive instead of <code>&lt;nav-bar&gt;</code>:</p>
+  <ul>
+    <li><strong>Montane</strong> — use <code>Link()</code> from <code>montane/router.js</code>. It is bound to the Montane router and reactively tracks active state. <code>&lt;nav-bar&gt;</code> would duplicate that work less well.</li>
+    <li><strong>View-switching without a router</strong> — use <a href="/docs/elements/web-components/content-swap/"><code>&lt;content-swap&gt;</code></a>.</li>
+    <li><strong>Other frameworks</strong> — keep using their <code>Link</code> primitive. <code>&lt;nav-bar&gt;</code> is a drop-in for HTML-first sites and JSON-driven apps without a reactive router.</li>
+  </ul>
+  <p>If your use case needs <code>renderItem</code> or keyed diff, <a href="https://github.com/anthropics/vanilla-breeze/issues">open an issue with the concrete scenario</a> so we can scope a Phase 2.</p>
+</section>
+
+<section>
+  <h2>Composition</h2>
+  <ul>
+    <li><strong>Inside <code>&lt;mobile-menu&gt;</code></strong> — <code>nav-bar</code> is content; <code>mobile-menu</code> is the off-canvas shell. They compose: <code>&lt;mobile-menu&gt;&lt;nav-bar&gt;...&lt;/nav-bar&gt;&lt;/mobile-menu&gt;</code>.</li>
+    <li><strong>With <code>&lt;drop-down&gt;</code></strong> — wrap an item in <code>&lt;drop-down&gt;</code> for a sub-menu. <code>nav-bar</code> only manages its direct <code>&lt;a&gt;</code> children.</li>
+    <li><strong>Not</strong> a router and not a view-switcher. See <a href="#reactive-integration">Reactive integration</a>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Sets <code>role="navigation"</code> on the host if absent.</li>
+    <li><code>aria-current="page"</code> on the active link only.</li>
+    <li>External links get <code>target="_blank"</code>, <code>rel="noopener noreferrer"</code>, and an SR-only "(opens in new tab)" suffix.</li>
+    <li>Native keyboard navigation — Tab through links, Enter / Space activates. No custom focus management.</li>
+  </ul>
+</section>

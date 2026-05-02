@@ -857,6 +857,13 @@ module.exports = {
     }
   },
 
+  "nav-bar": {
+    attributes: {
+      "aria-label": {},
+      "data-match": { enum: ["exact"] }
+    }
+  },
+
   "note-wc": {
     flow: true,
     permittedContent: ["@flow"]
