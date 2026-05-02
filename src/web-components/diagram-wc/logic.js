@@ -63,6 +63,7 @@ function loadMermaid(url) {
 
 class DiagramWc extends VBElement {
   static #idCounter = 0;
+  static #vtCounter = 0;
 
   /** @type {string|null} */
   #source = null;
@@ -212,17 +213,40 @@ class DiagramWc extends VBElement {
       fig.appendChild(fc);
     }
 
-    // Swap atomically: replace the previous figure (if any) in one operation,
-    // so the diagram never blanks during theme-driven re-renders. Also remove
-    // the <pre> fallback only at the moment the new figure mounts.
     const prior = this.#figure;
-    if (prior && prior.isConnected) {
-      prior.replaceWith(fig);
+
+    // Single, atomic swap. Wrapped in document.startViewTransition where
+    // supported (Chromium, Safari) so the browser captures the prior
+    // pixels, performs the DOM swap, captures the new pixels, and
+    // crossfades between them — no flash or layout thrash during theme
+    // changes or content edits. Falls through to a plain swap on browsers
+    // without view-transition support (e.g. Firefox today).
+    const swap = () => {
+      if (prior && prior.isConnected) {
+        prior.replaceWith(fig);
+      } else {
+        this.appendChild(fig);
+      }
+      this.querySelector(':scope > pre')?.remove();
+      this.#figure = fig;
+    };
+
+    if (prior?.isConnected
+        && 'startViewTransition' in document
+        && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Pin the same view-transition-name on prior and new so the browser
+      // captures only this diagram's region, not the whole document.
+      const name = `dwc-vt-${++DiagramWc.#vtCounter}`;
+      prior.style.viewTransitionName = name;
+      fig.style.viewTransitionName = name;
+      const tx = document.startViewTransition(swap);
+      tx.finished.finally(() => {
+        // Clean up so a subsequent transition gets a fresh name.
+        fig.style.viewTransitionName = '';
+      });
     } else {
-      this.appendChild(fig);
+      swap();
     }
-    this.querySelector(':scope > pre')?.remove();
-    this.#figure = fig;
   }
 
   #showError(err) {

@@ -48,7 +48,9 @@ function rgbify(ctx, value) {
   // when computed style preserves the source color space (oklch/oklab/lch).
   const canvas = rgbify._canvas || (rgbify._canvas = document.createElement('canvas'));
   canvas.width = canvas.height = 1;
-  const c = canvas.getContext('2d');
+  // willReadFrequently: hint to browsers we'll readback often (every token,
+  // every render); avoids a Canvas2D performance warning.
+  const c = rgbify._ctx || (rgbify._ctx = canvas.getContext('2d', { willReadFrequently: true }));
   c.clearRect(0, 0, 1, 1);
   c.fillStyle = resolved;
   c.fillRect(0, 0, 1, 1);
