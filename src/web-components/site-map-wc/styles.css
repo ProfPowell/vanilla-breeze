@@ -309,9 +309,22 @@ site-map-wc[compact] .sm-title {
   background: var(--color-surface, #ffffff);
   border: 1px solid var(--color-border, #e0e0e0);
   border-radius: var(--radius-m, 0.5rem);
-  overflow: auto;
   padding: 0;
-  max-height: 80vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-block-size: 80vh;
+  overflow: hidden;
+}
+
+/*
+ * Inner scroller. The toolbar and summary are siblings of this element so
+ * they remain fixed in the visual frame while the user pans the SVG.
+ */
+.sm-visual-scroll {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: auto;
   position: relative;
 }
 
@@ -337,21 +350,23 @@ site-map-wc[compact] .sm-title {
 }
 
 .sm-visual-summary {
+  flex: 0 0 auto;
   font-size: 0.75rem;
   color: var(--color-text-muted, #666);
   text-align: center;
   padding: var(--size-xs, 0.5rem);
+  border-block-start: 1px solid var(--color-border, #e0e0e0);
+  background: var(--color-surface, #fff);
 }
 
 /* ── Visual toolbar ────────────────────────────────────────────────────── */
 
 /*
- * Sticky inside .sm-visual (its scroll container) so zoom buttons and the
- * Detail slider stay accessible while the user pans the map vertically.
+ * Lives outside the scrolling region (sibling of .sm-visual-scroll) so it
+ * stays fixed regardless of which direction the user pans.
  */
 .sm-vtoolbar {
-  position: sticky;
-  top: 0;
+  flex: 0 0 auto;
   z-index: 2;
   display: flex;
   align-items: center;

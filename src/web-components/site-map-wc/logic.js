@@ -711,13 +711,17 @@ class SiteMapWc extends VBElement {
     // For horizontal, swap the coordinate space (SVG transform handles rotation)
     if (horiz) [svgW, svgH] = [svgH, svgW];
 
-    // Wrapper
+    // Outer frame — toolbar/summary stay fixed, scroller lives in the middle
     this.#visualContainer = document.createElement('div');
     this.#visualContainer.className = 'sm-visual';
     this.#visualContainer.setAttribute('tabindex', '-1'); // not keyboard-focusable; SVG inside handles keys
 
-    // Toolbar
+    // Toolbar (sibling of scroller — fixed in the frame)
     this.#visualContainer.appendChild(this.#buildToolbar());
+
+    // Inner scroller — only this element scrolls when panning
+    const scroller = document.createElement('div');
+    scroller.className = 'sm-visual-scroll';
 
     // SVG element — fixed size, zoom via CSS transform on a wrapper
     const svg = document.createElementNS(NS, 'svg');
@@ -748,9 +752,10 @@ class SiteMapWc extends VBElement {
     }
 
     zoomWrap.appendChild(svg);
-    this.#visualContainer.appendChild(zoomWrap);
+    scroller.appendChild(zoomWrap);
+    this.#visualContainer.appendChild(scroller);
 
-    // Summary
+    // Summary (sibling of scroller — fixed in the frame)
     const summary = document.createElement('div');
     summary.className = 'sm-visual-summary';
     const zoomPct = Math.round(this.#zoom * 100);
@@ -959,11 +964,12 @@ class SiteMapWc extends VBElement {
     this.#markFocused(g);
     this.#visualFocusId = nodeId;
 
-    // Scroll the node into view within the container
+    // Scroll the node into view within the scroller
     const box = g.querySelector('rect');
-    if (box && this.#visualContainer) {
+    const scroller = this.#visualContainer?.querySelector('.sm-visual-scroll');
+    if (box && scroller) {
       const r = box.getBoundingClientRect();
-      const c = this.#visualContainer.getBoundingClientRect();
+      const c = scroller.getBoundingClientRect();
       if (r.left < c.left || r.right > c.right || r.top < c.top || r.bottom > c.bottom) {
         box.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
       }
@@ -1119,7 +1125,7 @@ class SiteMapWc extends VBElement {
 
     this.listen(this, 'pointerdown', (e) => {
       if (/** @type {HTMLElement} */ (e.target).closest('button, [data-toggle], .sm-vtoolbar, input')) return;
-      const cont = this.querySelector('.sm-visual');
+      const cont = this.querySelector('.sm-visual-scroll');
       if (!cont) return;
       ds.dragging = true;
       ds.moved = false;
@@ -1136,7 +1142,7 @@ class SiteMapWc extends VBElement {
       const dx = e.clientX - ds.startX;
       const dy = e.clientY - ds.startY;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) ds.moved = true;
-      const cont = this.querySelector('.sm-visual');
+      const cont = this.querySelector('.sm-visual-scroll');
       if (cont) {
         cont.scrollLeft = ds.scrollLeft - dx;
         cont.scrollTop = ds.scrollTop - dy;
