@@ -328,22 +328,5 @@ JS enhancement: clicking opens the image in a `<dialog>` (using VB's existing di
 **Effort:** CSS + optional enhancer | **Value:** High — product pages, portfolios, documentation.
 
 ---
---
-
-### 16. `<output>` Live Calculation Display
-
-`<output>` is the semantic element for computed results but rarely used because connecting it to inputs requires JS. A declarative attribute could make simple calculations markup-driven.
-
-```html
-<form oninput="total.value = (price.valueAsNumber * qty.valueAsNumber).toFixed(2)">
-  <label>Price <input type="number" name="price" value="9.99" step="0.01"></label>
-  <label>Quantity <input type="number" name="qty" value="1" min="1"></label>
-  <output name="total" for="price qty" data-format-number="currency">9.99</output>
-</form>
-```
-
-The `oninput` handler is native HTML (no framework needed). VB's `data-format-number` already exists for number formatting — it just needs to work on `<output>` elements that update dynamically. The connection point: a MutationObserver on the output's `value` property to re-format when it changes.
-
-**Effort:** Integration with existing data-format-number | **Value:** Medium — calculators, order forms, configuration pages.
 
 ---
