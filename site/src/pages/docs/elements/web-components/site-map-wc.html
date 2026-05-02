@@ -169,16 +169,86 @@ crumbLabel: Web Components
   </section>
 
   <section>
-    <h2>Events</h2>
+    <h2>JavaScript API</h2>
+    <p>
+      <code>&lt;site-map-wc&gt;</code> follows the
+      <a href="/docs/concepts/data-api/">HTML-first + JS-first dual-mode contract</a>
+      so it can be authored as nested HTML, populated from a JSON URL,
+      or driven from a reactive framework. Reactive consumers (Montane,
+      Lit, Solid, etc.) should wait for the upgrade event before
+      assigning <code>.pages</code>.
+    </p>
+
+    <h3>Properties</h3>
     <table class="props-table">
-      <thead>
-        <tr><th>Event</th><th>Detail</th><th>When</th></tr>
-      </thead>
+      <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td><code>site-map-wc:ready</code></td><td><code>{ nodeCount, depth }</code></td><td>After setup (both modes)</td></tr>
-        <tr><td><code>site-map-wc:select</code></td><td><code>{ href, pageType, template }</code></td><td>Node clicked (both modes)</td></tr>
+        <tr>
+          <td><code>.pages</code></td>
+          <td><code>Page[]</code></td>
+          <td>
+            Read returns the current tree as a nested array
+            <code>{ label, href?, pageType?, template?, status?, children? }</code>.
+            Set replaces the tree and re-runs setup; whole-tree rebuild
+            on assignment (per-node collapse state is not preserved &mdash;
+            see "Reactive integration caveat" below). Round-trips
+            through the getter.
+          </td>
+        </tr>
       </tbody>
     </table>
+
+    <h3>Events</h3>
+    <table class="props-table">
+      <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>site-map-wc:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Once after first connect. <strong>Wait for this before assigning <code>.pages</code></strong> from a framework so you don't race the initial setup.</td>
+        </tr>
+        <tr>
+          <td><code>site-map-wc:pages-changed</code></td>
+          <td><code>{ pages, source: 'property' }</code></td>
+          <td>After <code>.pages</code> is assigned. Source-tagged per the dual-mode contract so consumers can ignore echoes from their own writes.</td>
+        </tr>
+        <tr>
+          <td><code>site-map-wc:ready</code></td>
+          <td><code>{ nodeCount, depth }</code></td>
+          <td>After setup (both modes; fires on initial upgrade and on every <code>.pages</code> rebuild).</td>
+        </tr>
+        <tr>
+          <td><code>site-map-wc:select</code></td>
+          <td><code>{ href, pageType, template }</code></td>
+          <td>Node clicked (both modes).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Reactive integration sketch</h3>
+    <code-block language="javascript" label="Reactive consumer (e.g. Montane)" data-escape>const sm = document.querySelector('site-map-wc');
+
+await new Promise(r =&gt; sm.addEventListener('site-map-wc:upgraded', r, { once: true }));
+
+sm.pages = [
+  {
+    label: 'Home', href: '/', pageType: 'layout', template: 'app-shell',
+    children: [
+      { label: 'Dashboard', href: '/dashboard', pageType: 'dashboard' },
+      { label: 'Settings',  href: '/settings',  pageType: 'page' },
+    ],
+  },
+];
+
+// React to user clicks (e.g. drive your router instead of full navigation).
+sm.addEventListener('site-map-wc:select', (e) =&gt; {
+  e.preventDefault?.();
+  router.go(e.detail.href);
+});</code-block>
+
+    <callout-wc tone="warning">
+      <p><strong>Reactive integration caveat:</strong> assigning <code>.pages</code> currently <em>fully replaces</em> the tree &mdash; per-node collapse state and any in-flight focus/animation are lost. Fine for the common "load data once, then maybe a periodic refresh" pattern; not yet a fit for signal-driven incremental updates. If you need keyed diff preservation, open an issue with the use case so we can scope it.</p>
+    </callout-wc>
   </section>
 
   <section>
@@ -194,10 +264,8 @@ crumbLabel: Web Components
 
   <section>
     <h2>Tree widget vs disclosure navigation</h2>
-    <layout-text>
-      <p><code>&lt;site-map-wc&gt;</code> is deliberately a full <code>role="tree"</code> widget because the use case &mdash; exploring and selecting nodes in an information-architecture graph &mdash; matches the ARIA tree pattern&rsquo;s keyboard contract. For <em>ordinary site navigation</em> (docs sidebars, settings menus, nested link lists) the correct pattern is disclosure, not a tree.</p>
-      <p>Reach for <a href="/docs/elements/native/nav/"><code>nav.tree</code></a> / <a href="/docs/snippets/html/nav-tree/">the disclosure tree snippet</a> when you want collapsible groups of links. Reach for <code>&lt;site-map-wc&gt;</code> only when you want the ARIA tree behavior and the IA-visualization layer on top. Don&rsquo;t retrofit <code>role="tree"</code> onto <code>nav.tree</code>: partial ARIA is worse than none.</p>
-    </layout-text>
+    <p><code>&lt;site-map-wc&gt;</code> is deliberately a full <code>role="tree"</code> widget because the use case &mdash; exploring and selecting nodes in an information-architecture graph &mdash; matches the ARIA tree pattern&rsquo;s keyboard contract. For <em>ordinary site navigation</em> (docs sidebars, settings menus, nested link lists) the correct pattern is disclosure, not a tree.</p>
+    <p>Reach for <a href="/docs/elements/native/nav/"><code>nav.tree</code></a> / <a href="/docs/snippets/html/nav-tree/">the disclosure tree snippet</a> when you want collapsible groups of links. Reach for <code>&lt;site-map-wc&gt;</code> only when you want the ARIA tree behavior and the IA-visualization layer on top. Don&rsquo;t retrofit <code>role="tree"</code> onto <code>nav.tree</code>: partial ARIA is worse than none.</p>
   </section>
 
   <section>

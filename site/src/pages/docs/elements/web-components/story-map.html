@@ -266,8 +266,49 @@ map.addEventListener('story-map:reorder', (e) => {
           <td><code>{ activityCount, storyCount }</code></td>
           <td>Fires after the component initializes with the total number of activity columns and stories</td>
         </tr>
+        <tr>
+          <td><code>story-map:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Once after first connect. Wait for this before assigning <code>.activities</code> from a framework.</td>
+        </tr>
+        <tr>
+          <td><code>story-map:activities-changed</code></td>
+          <td><code>{ activities, source: 'property' }</code></td>
+          <td>After <code>.activities</code> assignment.</td>
+        </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>
+      <code>&lt;story-map&gt;</code> follows the
+      <a href="/docs/concepts/data-api/">HTML-first + JS-first dual-mode contract</a>.
+      Reactive consumers (Montane, Lit, Solid, etc.) should wait for
+      <code>story-map:upgraded</code> before assigning <code>.activities</code>.
+    </p>
+    <table class="props-table">
+      <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>.activities</code></td>
+          <td><code>Activity[]</code></td>
+          <td>
+            Replace the column structure with an array of activities,
+            each with a <code>{ name, items: [{ itemId, title, ... }] }</code>
+            shape. Whole-map rebuild on assignment; round-trips through
+            the getter.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="javascript" label="Reactive consumer" data-escape>const map = document.querySelector('story-map');
+await new Promise(r =&gt; map.addEventListener('story-map:upgraded', r, { once: true }));
+map.activities = [
+  { name: 'Discover',  items: [{ itemId: 'PROJ-1', title: 'Browse landing' }] },
+  { name: 'Onboard',   items: [{ itemId: 'PROJ-2', title: 'Sign up' }] },
+];</code-block>
   </section>
 
   <section>

@@ -218,8 +218,48 @@ matrix.addEventListener('impact-effort:move', (e) => {
           <td><code>{ quadrantCounts }</code></td>
           <td>Fires after the component initializes. <code>quadrantCounts</code> is an object mapping each quadrant name to the number of items it contains.</td>
         </tr>
+        <tr>
+          <td><code>impact-effort:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Once after first connect. Wait for this before assigning <code>.items</code> from a framework.</td>
+        </tr>
+        <tr>
+          <td><code>impact-effort:items-changed</code></td>
+          <td><code>{ items, source: 'property' }</code></td>
+          <td>After <code>.items</code> assignment.</td>
+        </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>
+      <code>&lt;impact-effort&gt;</code> follows the
+      <a href="/docs/concepts/data-api/">HTML-first + JS-first dual-mode contract</a>.
+      Reactive consumers (Montane, Lit, Solid, etc.) should wait for
+      <code>impact-effort:upgraded</code> before assigning <code>.items</code>.
+    </p>
+    <table class="props-table">
+      <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>.items</code></td>
+          <td><code>Item[]</code></td>
+          <td>
+            Replace the matrix items with an array of
+            <code>{ id, quadrant, label }</code> records. Idempotent;
+            round-trips through the getter.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="javascript" label="Reactive consumer" data-escape>const matrix = document.querySelector('impact-effort');
+await new Promise(r =&gt; matrix.addEventListener('impact-effort:upgraded', r, { once: true }));
+matrix.items = [
+  { id: 'PROJ-101', quadrant: 'quick-wins', label: 'Add keyboard shortcuts' },
+  { id: 'PROJ-102', quadrant: 'big-bets',   label: 'Rebuild reporting' },
+];</code-block>
   </section>
 
   <section>

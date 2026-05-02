@@ -156,6 +156,27 @@ wi.data = {
 document.body.appendChild(wi);</code-block>
 
     <p>Reading <code>.data</code> back returns the current shape — handy for persistence or logging. See the <a href="/docs/concepts/data-api/">Data API concepts guide</a>.</p>
+
+    <h3>Events</h3>
+    <table class="props-table">
+      <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>work-item:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Once after first connect. Wait for this before assigning <code>.data</code> from a framework.</td>
+        </tr>
+        <tr>
+          <td><code>work-item:data-changed</code></td>
+          <td><code>{ data, source: 'property' }</code></td>
+          <td>After <code>.data</code> assignment.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" label="Reactive consumer (e.g. Montane)" data-escape>const wi = document.querySelector('work-item');
+await new Promise(r =&gt; wi.addEventListener('work-item:upgraded', r, { once: true }));
+wi.data = { itemId: 'PROJ-42', type: 'task', priority: 'high', title: 'Wire OAuth' };</code-block>
   </section>
 
   <section>

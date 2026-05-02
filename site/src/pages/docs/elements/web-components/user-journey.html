@@ -419,8 +419,32 @@ journey.phases = [
           <td><code>{ title, persona, phaseCount }</code></td>
           <td>Fires after the component finishes rendering (including after JSON load)</td>
         </tr>
+        <tr>
+          <td><code>user-journey:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Once after first connect. Wait for this before assigning <code>.data</code> or <code>.phases</code> from a framework.</td>
+        </tr>
+        <tr>
+          <td><code>user-journey:data-changed</code></td>
+          <td><code>{ data, source: 'property' }</code></td>
+          <td>After <code>.data</code> assignment.</td>
+        </tr>
+        <tr>
+          <td><code>user-journey:phases-changed</code></td>
+          <td><code>{ phases, source: 'property' }</code></td>
+          <td>After <code>.phases</code> assignment.</td>
+        </tr>
       </tbody>
     </table>
+    <p>
+      <code>&lt;user-journey&gt;</code> follows the
+      <a href="/docs/concepts/data-api/">HTML-first + JS-first dual-mode contract</a>.
+      For reactive consumers (Montane, Lit, Solid, etc.), wait for
+      <code>user-journey:upgraded</code> before assigning <code>.data</code> or
+      <code>.phases</code>; use <code>.data</code> for the whole record
+      (<code>{ title, persona, phases, ... }</code>) and <code>.phases</code> for fine-grained updates.
+      See the "Programmatic Usage" section above for the phase shape.
+    </p>
   </section>
 
   <section>

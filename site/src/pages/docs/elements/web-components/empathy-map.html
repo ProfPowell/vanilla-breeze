@@ -379,8 +379,64 @@ map.painPoints = ['Too many disconnected tools'];</code-block>
           <td><code>{ quadrant, items }</code></td>
           <td>Fires when a quadrant is closed after editing, with the quadrant name and updated items array</td>
         </tr>
+        <tr>
+          <td><code>empathy-map:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Once after first connect. Wait for this before assigning <code>.data</code> from a framework.</td>
+        </tr>
+        <tr>
+          <td><code>empathy-map:data-changed</code></td>
+          <td><code>{ data, source: 'property' }</code></td>
+          <td>After <code>.data</code> assignment.</td>
+        </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>
+      <code>&lt;empathy-map&gt;</code> follows the
+      <a href="/docs/concepts/data-api/">HTML-first + JS-first dual-mode contract</a>.
+      Reactive consumers (Montane, Lit, Solid, etc.) should wait for
+      <code>empathy-map:upgraded</code> before assigning <code>.data</code>.
+      The individual <code>.quadrants</code>, <code>.goals</code>, and
+      <code>.painPoints</code> setters remain for fine-grained updates;
+      use <code>.data</code> when you have the whole record.
+    </p>
+    <table class="props-table">
+      <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>.data</code></td>
+          <td><code>{ title?, persona?, personaId?, summary?, quadrants?, goals?, painPoints? }</code></td>
+          <td>Whole-record assignment. Idempotent; round-trips through the getter.</td>
+        </tr>
+        <tr>
+          <td><code>.quadrants</code></td>
+          <td><code>{ says, thinks, does, feels }</code></td>
+          <td>Replace just the four quadrant arrays.</td>
+        </tr>
+        <tr>
+          <td><code>.goals</code> / <code>.painPoints</code></td>
+          <td><code>string[]</code></td>
+          <td>Replace just the goals / pain-points list.</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="javascript" label="Reactive consumer" data-escape>const map = document.querySelector('empathy-map');
+await new Promise(r =&gt; map.addEventListener('empathy-map:upgraded', r, { once: true }));
+map.data = {
+  title: 'PM Empathy Map', persona: 'Sarah Chen',
+  quadrants: {
+    says:   ['I need everything in one place'],
+    thinks: ['There must be a faster way'],
+    does:   ['Checks dashboards every morning'],
+    feels:  ['frustrated', 'hopeful'],
+  },
+  goals: ['Ship weekly'],
+  painPoints: ['Too many tools'],
+};</code-block>
   </section>
 
   <section>

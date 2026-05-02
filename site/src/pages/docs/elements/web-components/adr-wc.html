@@ -112,9 +112,38 @@ crumbLabel: Web Components
         <tr><th>Event</th><th>Detail</th><th>When</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>adr-wc:ready</code></td><td><code>{ adrId, title, status }</code></td><td>After render</td></tr>
+        <tr><td><code>adr-wc:upgraded</code></td><td>&mdash;</td><td>Once after first connect. Wait for this before assigning <code>.data</code> from a framework.</td></tr>
+        <tr><td><code>adr-wc:data-changed</code></td><td><code>{ data, source: 'property' }</code></td><td>After <code>.data</code> assignment.</td></tr>
+        <tr><td><code>adr-wc:ready</code></td><td><code>{ adrId, title, status }</code></td><td>After render.</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>
+      <code>&lt;adr-wc&gt;</code> follows the
+      <a href="/docs/concepts/data-api/">HTML-first + JS-first dual-mode contract</a>.
+      Reactive consumers (Montane, Lit, Solid, etc.) should wait for
+      <code>adr-wc:upgraded</code> before assigning <code>.data</code>.
+    </p>
+    <table class="props-table">
+      <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>.data</code></td>
+          <td><code>{ adrId?, title?, status?, date?, supersedes?, supersededBy?, context?, decision?, consequences? }</code></td>
+          <td>Whole-record assignment. Sets state attributes <em>and</em> creates slotted children for any text fields not already present. Idempotent.</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="javascript" label="Reactive consumer" data-escape>const adr = document.querySelector('adr-wc');
+await new Promise(r =&gt; adr.addEventListener('adr-wc:upgraded', r, { once: true }));
+adr.data = {
+  adrId: 'ADR-007', title: 'Adopt OAuth 2.1', status: 'accepted', date: '2026-04-01',
+  context: 'Existing auth uses session cookies...',
+  decision: 'Move to OAuth 2.1 with PKCE...',
+};</code-block>
   </section>
 
   <section>

@@ -344,8 +344,46 @@ crumbLabel: Web Components
           <td><code>{ name, role, age, location }</code></td>
           <td>Fires after the component renders for the first time</td>
         </tr>
+        <tr>
+          <td><code>user-persona:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Once after first connect. Wait for this before assigning <code>.data</code> from a framework.</td>
+        </tr>
+        <tr>
+          <td><code>user-persona:data-changed</code></td>
+          <td><code>{ data, source: 'property' }</code></td>
+          <td>After <code>.data</code> assignment.</td>
+        </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>
+      <code>&lt;user-persona&gt;</code> follows the
+      <a href="/docs/concepts/data-api/">HTML-first + JS-first dual-mode contract</a>.
+      Reactive consumers (Montane, Lit, Solid, etc.) should wait for
+      <code>user-persona:upgraded</code> before assigning <code>.data</code>.
+    </p>
+    <table class="props-table">
+      <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>.data</code></td>
+          <td><code>{ name?, role?, age?, location?, avatar?, quote?, bio?, goals?, frustrations?, behaviors? }</code></td>
+          <td>Whole-record assignment. Sets state attributes <em>and</em> creates slotted children for any text fields not already present. Idempotent.</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="javascript" label="Reactive consumer" data-escape>const persona = document.querySelector('user-persona');
+await new Promise(r =&gt; persona.addEventListener('user-persona:upgraded', r, { once: true }));
+persona.data = {
+  name: 'Sarah Chen', role: 'Product Manager', age: 34, location: 'Portland, OR',
+  quote: 'I want to ship faster without breaking things.',
+  goals: ['Ship weekly', 'Reduce churn'],
+  frustrations: ['Slow CI', 'Unclear specs'],
+};</code-block>
   </section>
 
   <section>

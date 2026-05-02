@@ -259,8 +259,54 @@ surface.adapter = {
           <td><code>{ mode }</code></td>
           <td>View/annotate mode is toggled (<code>"view"</code> or <code>"annotate"</code>)</td>
         </tr>
+        <tr>
+          <td><code>review-surface:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Once after first connect. Wait for this before assigning <code>.pins</code> from a framework.</td>
+        </tr>
+        <tr>
+          <td><code>review-surface:pins-changed</code></td>
+          <td><code>{ pins, source: 'property' }</code></td>
+          <td>After <code>.pins</code> assignment.</td>
+        </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>
+      <code>&lt;review-surface&gt;</code> follows the
+      <a href="/docs/concepts/data-api/">HTML-first + JS-first dual-mode contract</a>.
+      Reactive consumers (Montane, Lit, Solid, etc.) should wait for
+      <code>review-surface:upgraded</code> before assigning <code>.pins</code>.
+      For server-backed pin storage, use the <code>.adapter</code> hook
+      instead (see "Adapters" above).
+    </p>
+    <table class="props-table">
+      <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>.pins</code></td>
+          <td><code>Pin[]</code></td>
+          <td>
+            Replace the pin set with an array of
+            <code>{ id, x, y, text, resolved?, replies? }</code> records.
+            Idempotent; round-trips through the getter.
+          </td>
+        </tr>
+        <tr>
+          <td><code>.adapter</code></td>
+          <td><code>Adapter</code></td>
+          <td>Persistence hook for CRUD operations. See "Adapters".</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="javascript" label="Reactive consumer" data-escape>const surface = document.querySelector('review-surface');
+await new Promise(r =&gt; surface.addEventListener('review-surface:upgraded', r, { once: true }));
+surface.pins = [
+  { id: 'p1', x: 0.34, y: 0.62, text: 'Logo too small here', resolved: false },
+];</code-block>
   </section>
 
   <section>

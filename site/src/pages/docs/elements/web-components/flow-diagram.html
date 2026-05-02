@@ -129,10 +129,45 @@ crumbLabel: Web Components
         <tr><th>Event</th><th>Detail</th><th>When</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>flow-diagram:ready</code></td><td><code>{ nodeCount }</code></td><td>After setup</td></tr>
-        <tr><td><code>flow-diagram:select</code></td><td><code>{ type, text }</code></td><td>Node clicked</td></tr>
+        <tr><td><code>flow-diagram:upgraded</code></td><td>&mdash;</td><td>Once after first connect. Wait for this before assigning <code>.steps</code> from a framework.</td></tr>
+        <tr><td><code>flow-diagram:steps-changed</code></td><td><code>{ steps, source: 'property' }</code></td><td>After <code>.steps</code> assignment.</td></tr>
+        <tr><td><code>flow-diagram:ready</code></td><td><code>{ nodeCount }</code></td><td>After setup (initial render and on every <code>.steps</code> rebuild).</td></tr>
+        <tr><td><code>flow-diagram:select</code></td><td><code>{ type, text }</code></td><td>Node clicked.</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <p>
+      <code>&lt;flow-diagram&gt;</code> follows the
+      <a href="/docs/concepts/data-api/">HTML-first + JS-first dual-mode contract</a>.
+      Reactive consumers (Montane, Lit, Solid, etc.) should wait for
+      <code>flow-diagram:upgraded</code> before assigning <code>.steps</code>.
+    </p>
+    <table class="props-table">
+      <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>.steps</code></td>
+          <td><code>Step[]</code></td>
+          <td>
+            Replace the flow with an array of step records:
+            <code>{ type, text, branch?, target? }</code>.
+            Whole-tree rebuild on assignment; round-trips through the
+            getter.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="javascript" label="Reactive consumer" data-escape>const flow = document.querySelector('flow-diagram');
+await new Promise(r =&gt; flow.addEventListener('flow-diagram:upgraded', r, { once: true }));
+flow.steps = [
+  { type: 'start',    text: 'Visitor lands' },
+  { type: 'process',  text: 'Browses catalog' },
+  { type: 'decision', text: 'Logged in?', branch: ['yes', 'no'] },
+  { type: 'end',      text: 'Conversion' },
+];</code-block>
   </section>
 
   <section>
