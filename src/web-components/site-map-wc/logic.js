@@ -684,14 +684,83 @@ class SiteMapWc extends VBElement {
 
   static #DETAIL_LABELS = ['Shape', 'Shape + Title', 'Full', 'Full + Status', 'Wireframe'];
 
+  /** @type {number} */
+  static #vtCounter = 0;
+
+  /**
+   * Capture the visual anchor state of an existing render so we can restore
+   * the user's place after a re-render. We pin the toggled (or focused) node
+   * to its current pixel position — that's the most natural mental model
+   * after expand/collapse: the node you clicked stays where it was.
+   *
+   * @param {string|null} anchorId - Preferred anchor node (the toggled node).
+   *   Falls back to the focused node, then the SVG center.
+   * @returns {{ nodeId: string|null, rectTop: number, rectLeft: number,
+   *             focusId: string|null }}
+   */
+  #captureAnchor(anchorId) {
+    const scroller = this.#visualContainer?.querySelector('.sm-visual-scroll');
+    const svg = this.#visualContainer?.querySelector('svg[role="tree"]');
+    const anchor = { nodeId: null, rectTop: 0, rectLeft: 0, focusId: this.#visualFocusId };
+    if (!scroller || !svg) return anchor;
+
+    const targetId = anchorId || this.#visualFocusId;
+    if (!targetId) return anchor;
+
+    const g = svg.querySelector(`[data-node-id="${targetId}"]`);
+    const rect = g?.querySelector('rect');
+    if (!rect) return anchor;
+
+    const r = rect.getBoundingClientRect();
+    const c = scroller.getBoundingClientRect();
+    anchor.nodeId = targetId;
+    anchor.rectTop = r.top - c.top;
+    anchor.rectLeft = r.left - c.left;
+    return anchor;
+  }
+
+  /**
+   * After a re-render, scroll the new SVG so the anchor node ends up at the
+   * same pixel position relative to the scroller, and restore keyboard focus.
+   *
+   * @param {{ nodeId: string|null, rectTop: number, rectLeft: number, focusId: string|null }} anchor
+   */
+  #restoreAnchor(anchor) {
+    const scroller = this.#visualContainer?.querySelector('.sm-visual-scroll');
+    const svg = this.#visualContainer?.querySelector('svg[role="tree"]');
+    if (!scroller || !svg) return;
+
+    if (anchor.nodeId) {
+      const g = svg.querySelector(`[data-node-id="${anchor.nodeId}"]`);
+      const rect = g?.querySelector('rect');
+      if (rect) {
+        const r = rect.getBoundingClientRect();
+        const c = scroller.getBoundingClientRect();
+        const dy = (r.top - c.top) - anchor.rectTop;
+        const dx = (r.left - c.left) - anchor.rectLeft;
+        scroller.scrollTop += dy;
+        scroller.scrollLeft += dx;
+      }
+    }
+
+    if (anchor.focusId) {
+      this.#focusVisualNode(anchor.focusId);
+      svg.focus({ preventScroll: true });
+    }
+  }
+
   /**
    * Render (or re-render) the SVG from the current visual data + collapse state.
+   * @param {{ anchorId?: string }} [opts] - When set, pins this node's pixel
+   *   position across the re-render so the user stays anchored at the node
+   *   they just toggled.
    */
-  #renderSvg() {
+  #renderSvg(opts = {}) {
     if (!this.#visualData) return;
 
-    // Remove old SVG container (but keep toolbar if re-rendering)
-    if (this.#visualContainer) this.#visualContainer.remove();
+    // Capture user position BEFORE replacing the container.
+    const anchor = this.#captureAnchor(opts.anchorId || null);
+    const priorContainer = this.#visualContainer;
 
     const NS = SiteMapWc.#NS;
     const W = SiteMapWc.#NODE_W;
@@ -762,7 +831,37 @@ class SiteMapWc extends VBElement {
     summary.textContent = `${this.#nodeCount} pages \u00B7 ${this.#maxDepth} levels \u00B7 ${zoomPct}%`;
     this.#visualContainer.appendChild(summary);
 
-    this.appendChild(this.#visualContainer);
+    // Atomic swap: replace the prior container in one DOM operation, wrapped
+    // in a View Transition so the browser crossfades old → new instead of
+    // showing a hard snap. Same pattern as diagram-wc. The prior container's
+    // DOM listeners are torn down implicitly when it's removed; new
+    // listeners are bound to the new svg below.
+    const newContainer = this.#visualContainer;
+    const swap = () => {
+      if (priorContainer && priorContainer.isConnected) {
+        priorContainer.replaceWith(newContainer);
+      } else {
+        this.appendChild(newContainer);
+      }
+    };
+
+    if (priorContainer?.isConnected
+        && 'startViewTransition' in document
+        && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const name = `sm-vt-${++SiteMapWc.#vtCounter}`;
+      priorContainer.style.viewTransitionName = name;
+      newContainer.style.viewTransitionName = name;
+      const tx = document.startViewTransition(swap);
+      tx.finished.finally(() => {
+        newContainer.style.viewTransitionName = '';
+      });
+      // Restore the anchor and focus after the transition finishes so the
+      // user's clicked node lands at the same pixel position.
+      tx.updateCallbackDone.then(() => this.#restoreAnchor(anchor));
+    } else {
+      swap();
+      this.#restoreAnchor(anchor);
+    }
 
     // Drag-to-pan on the scroll container (mouse + touch)
     this.#initDragPan(this.#visualContainer, svg);
@@ -1361,22 +1460,21 @@ class SiteMapWc extends VBElement {
   }
 
   /**
-   * Toggle collapsed state on a node and re-render SVG.
+   * Toggle collapsed state on a node and re-render SVG. The toggled node
+   * is pinned to its current pixel position via the anchor mechanism in
+   * #renderSvg/#restoreAnchor, so the user stays anchored where they
+   * clicked rather than having the whole tree shift around them.
    * @param {string} nodeId - Dot-separated path like "0-1-2"
    */
   #toggleCollapse(nodeId) {
     const node = this.#findNodeById(nodeId, this.#visualData);
     if (!node) return;
     node.collapsed = !node.collapsed;
-    const focusId = this.#visualFocusId || nodeId;
-    this.#renderSvg();
-    // Restore focus after re-render
-    requestAnimationFrame(() => {
-      this.#focusVisualNode(focusId);
-      // Re-focus the SVG so keyboard events continue
-      const svg = this.#visualContainer?.querySelector('svg[role="tree"]');
-      if (svg) svg.focus({ preventScroll: true });
-    });
+    // Keep the toggled node anchored at the same pixel position. If the
+    // user had a different node focused, that one keeps focus too (handled
+    // inside #restoreAnchor via the captured focusId).
+    if (!this.#visualFocusId) this.#visualFocusId = nodeId;
+    this.#renderSvg({ anchorId: nodeId });
   }
 
   /**
