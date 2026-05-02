@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>markdown-editor + Mermaid (live preview)</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/cdn/packs/ux-planning.full.css">
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); max-inline-size: 70rem; margin-inline: auto; }
+    markdown-editor { display: block; min-block-size: 32rem; }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <header>
+    <h1>markdown-editor + Mermaid</h1>
+    <p><small>Edit on the left. Mermaid fences in the preview auto-upgrade to <code>&lt;diagram-wc&gt;</code> because the editor has <code>data-auto-mermaid</code>.</small></p>
+  </header>
+
+  <markdown-editor data-auto-mermaid rows="20">
+    <textarea name="content"># Architecture overview
+
+The data layer feeds the API layer, which the UI consumes.
+
+```mermaid
+flowchart LR
+  DB[(Database)] --> API[/HTTP API/]
+  API --> UI[Web UI]
+  API --> CLI[CLI tool]
+```
+
+## Sequence
+
+```mermaid
+sequenceDiagram
+  participant UI
+  participant API
+  participant DB
+  UI->>API: GET /items
+  API->>DB: SELECT *
+  DB-->>API: rows
+  API-->>UI: JSON
+```
+
+Edit the markdown above &mdash; the diagrams update live with a debounce so typing stays smooth.</textarea>
+  </markdown-editor>
+
+  <!--
+    Load the extras bundle which compiles markdown-viewer + markdown-editor
+    together (their private-field render hooks must share a compilation unit).
+    Then load main.js so VB picks up the bridge for data-auto-mermaid.
+  -->
+  <script type="module" src="/cdn/vanilla-breeze-extras.js"></script>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/packs/ux-planning.full.js"></script>
+</body>
+</html>

@@ -63,6 +63,8 @@ if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-act
 if (document.querySelector('[data-watch-page], watch-wc')) import('./utils/page-watch-init.js');
 if (document.querySelector('form[data-vb-email-form]')) import('./utils/email-form-init.js');
 if (document.querySelector('form[data-vb-newsletter-form]')) import('./utils/newsletter-form-init.js');
+// Auto-upgrade mermaid fences inside markdown-viewer / markdown-editor when opted in
+if (document.querySelector('markdown-viewer[data-auto-mermaid], markdown-editor[data-auto-mermaid]')) import('./lib/markdown-mermaid-bridge.js');
 if (document.querySelector('[data-select-all]')) import('./utils/select-all-init.js');
 if (document.querySelector('[data-show-when], [data-hide-when]')) import('./utils/conditional-init.js');
 if (document.querySelector('button[data-loading]')) import('./utils/loading-button-init.js');

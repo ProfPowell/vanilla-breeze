@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>diagram-wc — Theme integration</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/cdn/packs/ux-planning.full.css">
+  <!-- Showcase themes — each is scoped by [data-theme="x"] so they coexist -->
+  <link rel="stylesheet" href="/cdn/themes/swiss.css">
+  <link rel="stylesheet" href="/cdn/themes/brutalist.css">
+  <link rel="stylesheet" href="/cdn/themes/rough.css">
+  <link rel="stylesheet" href="/cdn/themes/cyber.css">
+  <link rel="stylesheet" href="/cdn/themes/vaporwave.css">
+  <link rel="stylesheet" href="/cdn/themes/win9x.css">
+  <style>
+    body { padding: var(--size-l); max-inline-size: 56rem; margin-inline: auto; background: var(--color-surface); color: var(--color-text); transition: background 0.2s; }
+    .theme-toolbar { display: flex; gap: var(--size-2xs); flex-wrap: wrap; }
+    .theme-toolbar button { padding: var(--size-2xs) var(--size-s); border: 1px solid var(--color-border); border-radius: var(--radius-s); background: var(--color-surface); color: var(--color-text); cursor: pointer; }
+    .theme-toolbar button[aria-pressed="true"] { background: var(--color-interactive); color: var(--color-on-interactive, #fff); border-color: transparent; }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <header>
+    <h1>diagram-wc — Theme integration</h1>
+    <p><small>Pick a theme below. The diagrams subscribe to <code>vb:theme-change</code> and repaint with the new VB tokens — no per-instance config required.</small></p>
+  </header>
+
+  <nav class="theme-toolbar" id="theme-toolbar" aria-label="Switch theme"></nav>
+
+  <h2>Flowchart</h2>
+  <diagram-wc type="mermaid">
+    <pre><code class="language-mermaid">flowchart LR
+  A[Persona] --> B[Story]
+  B --> C[Work item]
+  C --> D([Ship])
+</code></pre>
+  </diagram-wc>
+
+  <h2>Sequence</h2>
+  <diagram-wc type="mermaid">
+    <pre><code class="language-mermaid">sequenceDiagram
+  participant U as User
+  participant A as App
+  U->>A: Click "Save"
+  A-->>U: Confirmation
+</code></pre>
+  </diagram-wc>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/packs/ux-planning.full.js"></script>
+  <script type="module">
+    // Showcase themes — these have strong, distinctive palettes that prove
+    // the diagram repaints meaningfully on theme change.
+    const themes = ['default', 'swiss', 'brutalist', 'rough', 'cyber', 'vaporwave', 'win9x'];
+    const root = document.documentElement;
+    const tb = document.getElementById('theme-toolbar');
+
+    for (const t of themes) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = t;
+      b.dataset.theme = t;
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => apply(t));
+      tb.appendChild(b);
+    }
+
+    function apply(theme) {
+      root.dataset.theme = theme;
+      for (const b of tb.querySelectorAll('button')) {
+        b.setAttribute('aria-pressed', String(b.dataset.theme === theme));
+      }
+      window.dispatchEvent(new CustomEvent('vb:theme-change', { detail: { brand: theme } }));
+    }
+
+    apply('default');
+  </script>
+</body>
+</html>

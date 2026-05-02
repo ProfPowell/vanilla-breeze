@@ -30,6 +30,8 @@ if (document.querySelector('[data-watch-page], watch-wc')) import('./utils/page-
 if (document.querySelector('form[data-vb-email-form]')) import('./utils/email-form-init.js');
 // Lazy-load newsletter-form enhancement only when a form opts in
 if (document.querySelector('form[data-vb-newsletter-form]')) import('./utils/newsletter-form-init.js');
+// Auto-upgrade mermaid fences inside markdown-viewer or markdown-editor when opted in
+if (document.querySelector('markdown-viewer[data-auto-mermaid], markdown-editor[data-auto-mermaid]')) import('./lib/markdown-mermaid-bridge.js');
 // Progress ring upscale — static import, self-guards via MutationObserver
 import './utils/progress-ring-init.js';
 import { initStickyManager } from './lib/sticky-manager.js';

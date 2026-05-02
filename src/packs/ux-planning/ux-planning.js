@@ -23,3 +23,4 @@ import '../../web-components/work-item/logic.js';
 import '../../web-components/site-map-wc/logic.js';
 import '../../web-components/adr-wc/logic.js';
 import '../../web-components/flow-diagram/logic.js';
+import '../../web-components/diagram-wc/logic.js';

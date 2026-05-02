@@ -1,0 +1,144 @@
+---
+layout: element
+title: "diagram-wc"
+description: "Declarative diagram renderer — wraps Mermaid (v1) with VB token-driven theming, lazy load, and HTML-first authoring via fenced code blocks."
+elementName: diagram-wc
+category: component
+pack: ux-planning
+currentPath: /docs/elements/web-components/diagram-wc/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>A web component that progressively enhances a fenced Mermaid code block into a rendered SVG figure. Without JavaScript the page shows the source as a readable code block; with JavaScript the source is replaced by an SVG <code>&lt;figure&gt;</code>.</p>
+  <p>Mermaid is loaded from a CDN URL via dynamic <code>import()</code> only when a <code>&lt;diagram-wc&gt;</code> reaches setup, so the library never lands in VB's core or pack bundles.</p>
+
+  <browser-window
+    src="/docs/examples/demos/diagram-wc-basic.html"
+    url="https://vanilla-breeze.dev/diagram-wc"
+    title="Diagram WC"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic usage" data-escape><diagram-wc type="mermaid" caption="Login flow">
+  <pre><code class="language-mermaid">flowchart LR
+    A[Visit] --> B{Valid creds?}
+    B -->|Yes| C[Session]
+    B -->|No| A
+  </code></pre>
+</diagram-wc></code-block>
+</section>
+
+<section>
+  <h2>Diagram type gallery</h2>
+  <p>Six common diagram types — flowchart, sequence, ER, journey, gantt, mindmap — share the same authoring shape. Mermaid supports many more in v11.</p>
+  <browser-window
+    src="/docs/examples/demos/diagram-wc-types.html"
+    url="https://vanilla-breeze.dev/diagram-wc/types"
+    title="Diagram types"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Theme integration</h2>
+  <p>VB design tokens drive Mermaid's appearance. The component reads tokens at render time via <code>getComputedStyle</code>, maps them onto Mermaid's <code>themeVariables</code> (see <code>src/lib/diagram-tokens.js</code>), and re-renders when the global <code>vb:theme-change</code> event fires. No per-instance config is required.</p>
+  <browser-window
+    src="/docs/examples/demos/diagram-wc-themes.html"
+    url="https://vanilla-breeze.dev/diagram-wc/themes"
+    title="Theme integration"
+    shadow>
+  </browser-window>
+  <h3>Token map</h3>
+  <table class="props-table">
+    <thead><tr><th>Mermaid <code>themeVariables</code></th><th>VB token</th></tr></thead>
+    <tbody>
+      <tr><td><code>primaryColor</code>, <code>primaryBorderColor</code></td><td><code>--color-primary</code></td></tr>
+      <tr><td><code>primaryTextColor</code>, <code>titleColor</code>, <code>actorTextColor</code>, <code>noteTextColor</code></td><td><code>--color-text</code></td></tr>
+      <tr><td><code>secondaryColor</code>, <code>secondBkg</code></td><td><code>--color-secondary</code></td></tr>
+      <tr><td><code>tertiaryColor</code>, <code>tertiaryBkg</code></td><td><code>--color-accent</code></td></tr>
+      <tr><td><code>mainBkg</code>, <code>background</code>, <code>actorBkg</code>, <code>edgeLabelBackground</code></td><td><code>--color-surface</code></td></tr>
+      <tr><td><code>lineColor</code>, <code>nodeBorder</code>, <code>gridColor</code>, <code>defaultLinkColor</code>, <code>actorBorder</code>, <code>noteBorderColor</code></td><td><code>--color-border</code></td></tr>
+      <tr><td><code>clusterBkg</code>, <code>noteBkgColor</code>, <code>labelBoxBkgColor</code></td><td><code>--color-surface-raised</code></td></tr>
+      <tr><td><code>fontFamily</code></td><td><code>--font-sans</code></td></tr>
+      <tr><td><code>fontSize</code></td><td><code>--font-size-md</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Markdown integration</h2>
+  <p><code>&lt;markdown-viewer&gt;</code> emits standard <code>&lt;pre&gt;&lt;code class="language-mermaid"&gt;</code> for Mermaid fences. To upgrade those automatically, set <code>data-auto-mermaid</code> on the viewer (or on a <code>&lt;markdown-editor&gt;</code> wrapping it):</p>
+
+  <code-block language="html" show-lines label="Auto-upgrade in markdown-viewer" data-escape><markdown-viewer data-auto-mermaid>
+  <script type="text/markdown">
+    ```mermaid
+    flowchart LR
+      A --> B
+    ```
+  </script>
+</markdown-viewer></code-block>
+
+  <p>The bridge debounces re-enhancement so live editor previews don't thrash Mermaid:</p>
+
+  <browser-window
+    src="/docs/examples/demos/markdown-editor-mermaid.html"
+    url="https://vanilla-breeze.dev/diagram-wc/markdown-editor"
+    title="markdown-editor + Mermaid"
+    shadow>
+  </browser-window>
+
+  <p>For manual wiring (no <code>data-auto-mermaid</code>):</p>
+
+  <code-block language="javascript" show-lines label="Manual wiring" data-escape>import { enhanceMermaidFences } from 'vanilla-breeze/dist/cdn/components/diagram-wc.js';
+
+document.addEventListener('markdown-viewer:rendered', (e) => {
+  enhanceMermaidFences(e.detail.node);
+});</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>type</code></td><td>Backend selector. v1 only supports <code>"mermaid"</code>; reserved for future <code>"d2"</code>, <code>"kroki"</code>.</td></tr>
+      <tr><td><code>src</code></td><td>URL of a diagram source file. Inline <code>&lt;pre&gt;&lt;code&gt;</code> takes priority if absent.</td></tr>
+      <tr><td><code>caption</code></td><td>Rendered as <code>&lt;figcaption&gt;</code> below the SVG.</td></tr>
+      <tr><td><code>loading="lazy"</code></td><td>Defers render until the element scrolls into view.</td></tr>
+      <tr><td><code>data-theme-base</code></td><td>Mermaid base theme (<code>base|default|dark|forest|neutral</code>). Default <code>"base"</code> so VB tokens win.</td></tr>
+      <tr><td><code>data-mermaid-src</code></td><td>Override the URL Mermaid loads from (per-element). The default is jsDelivr; <code>window.VB_MERMAID_URL</code> overrides globally.</td></tr>
+      <tr><td><code>min-height</code></td><td>CSS length reserved for the diagram before render to prevent layout shift.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>diagram-wc:ready</code></td><td><code>{ svg, type, source }</code></td><td>After successful render</td></tr>
+      <tr><td><code>diagram-wc:error</code></td><td><code>{ error, source, type }</code></td><td>Render failed; the <code>&lt;pre&gt;</code> fallback is restored</td></tr>
+      <tr><td><code>diagram-wc:source-changed</code></td><td><code>{ source }</code></td><td>The <code>.source</code> setter was used</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <code-block language="javascript" show-lines label="Programmatic source updates" data-escape>const dw = document.querySelector('diagram-wc');
+dw.source = 'flowchart LR\n  A --> B --> C';   // re-renders, fires source-changed
+console.log(dw.svg);                              // serialized current SVG</code-block>
+</section>
+
+<section>
+  <h2>Notes</h2>
+  <ul>
+    <li>Mermaid runs with <code>securityLevel: 'strict'</code> by default. Author content is escaped.</li>
+    <li>This is the first VB component to wrap an external runtime library. The library is loaded from a CDN URL at runtime — never bundled. The <code>type="mermaid"</code> attribute reserves the door for substitution backends per VB's wrapped-dependency policy.</li>
+    <li>Bundle audit: enabling <code>&lt;diagram-wc&gt;</code> in the <code>ux-planning</code> pack adds &lt; 5 KB gzip; Mermaid (~360 KB gzip) is fetched from jsDelivr only on pages that use a diagram.</li>
+  </ul>
+</section>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>diagram-wc — UX Planning relationship graph</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/cdn/packs/ux-planning.full.css">
+  <style>
+    body { padding: var(--size-m); background: var(--color-surface); margin: 0; }
+    h1 { margin: 0 0 var(--size-2xs) 0; font-size: 1.1rem; }
+    header { margin-block-end: var(--size-s); }
+    header p { margin: 0; }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="l">
+  <header>
+    <h1>UX Planning — Component relationship graph</h1>
+    <p><small>Replaces the ASCII diagram on the UX Planning pack page. Rendered with VB tokens.</small></p>
+  </header>
+
+  <diagram-wc type="mermaid" caption="Components flow from research → product → engineering">
+    <pre><code class="language-mermaid">flowchart LR
+  classDef research fill:transparent,stroke:#94a3b8,stroke-dasharray:3 3
+  classDef product  fill:transparent,stroke:#94a3b8,stroke-dasharray:3 3
+  classDef eng      fill:transparent,stroke:#94a3b8,stroke-dasharray:3 3
+
+  subgraph R[Research]
+    direction TB
+    Persona[user-persona]
+    Empathy[empathy-map]
+    Journey[user-journey]
+    Persona --> Empathy
+    Persona --> Journey
+  end
+  subgraph P[Product]
+    direction TB
+    Story[user-story]
+    StoryMap[story-map]
+    Impact[impact-effort]
+    Story --> StoryMap
+    Story --> Impact
+  end
+  subgraph E[Engineering]
+    direction TB
+    Item[work-item]
+    Kanban[kanban-board]
+    Gantt[gantt-chart]
+    Item --> Kanban
+    Item --> Gantt
+  end
+  Persona -- persona-id --> Story
+  Story -- story-ids --> Item
+  StoryMap -. items .-> Kanban
+  Story -. data-story-ids .-> Gantt
+  Item -. data-item-ids .-> Review[review-surface]
+
+  class R research
+  class P product
+  class E eng
+</code></pre>
+  </diagram-wc>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/packs/ux-planning.full.js"></script>
+</body>
+</html>

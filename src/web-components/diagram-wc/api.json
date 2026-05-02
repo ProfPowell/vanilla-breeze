@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "diagram-wc",
+  "type": "web-component",
+  "description": "Declarative diagram renderer — wraps Mermaid (v1) with VB token-driven theming, lazy load, and HTML-first authoring via fenced code blocks",
+  "attributes": [
+    { "name": "type",            "kind": "host-api", "purpose": "config", "type": "string",  "description": "Backend selector. v1 only supports \"mermaid\"" },
+    { "name": "src",             "kind": "host-api", "purpose": "config", "type": "string",  "description": "URL of a diagram source file (.mmd). Inline source via <pre><code> takes priority if absent." },
+    { "name": "caption",         "kind": "host-api", "purpose": "content","type": "string",  "description": "Rendered as <figcaption> below the SVG" },
+    { "name": "loading",         "kind": "host-api", "purpose": "config", "type": "string",  "description": "\"lazy\" defers render until the element scrolls into view" },
+    { "name": "data-theme-base", "kind": "data",     "purpose": "config", "type": "string",  "description": "Mermaid base theme: base|default|dark|forest|neutral. Default \"base\" so VB tokens win." },
+    { "name": "min-height",      "kind": "host-api", "purpose": "config", "type": "string",  "description": "CSS length reserved for the diagram before render to prevent layout shift" }
+  ],
+  "events": [
+    { "name": "diagram-wc:ready",          "detail": "{ svg, type, source }",   "description": "After successful render" },
+    { "name": "diagram-wc:error",          "detail": "{ error, source, type }", "description": "Render failed; the <pre> fallback is restored" },
+    { "name": "diagram-wc:source-changed", "detail": "{ source }",              "description": ".source setter fired" }
+  ]
+}
