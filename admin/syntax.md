@@ -1549,7 +1549,8 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-toggle-tags` | `<fieldset>` | Checkbox pill chips |
 | `data-show-when` | any | Conditional visibility (show when field matches) |
 | `data-hide-when` | any | Conditional visibility (hide when field matches) |
-| `data-autosave` | `<form>` | Auto-save form to localStorage |
+| `data-autosave` | `<form>` | Auto-save form to localStorage. Empty value derives key from `method`+`action` |
+| `data-autosave-retain` | `<form data-autosave>` | Space-separated allowlist of field names to persist |
 | `data-select-all` | `<input type="checkbox">` | Select/deselect all checkboxes |
 
 ### Text Effects
@@ -1685,7 +1686,8 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-author` | `<ins>`, `<del>`, content blocks — edit authorship (see §10) |
 | ~~`data-autoplay`~~ | **Removed** — use `autoplay` on `<carousel-wc>` |
 | ~~`data-autoplay-delay`~~ | **Removed** — use `autoplay-delay` on `<carousel-wc>` |
-| `data-autosave` | `<form>` — localStorage save |
+| `data-autosave` | `<form>` — localStorage save (boolean form derives key from method+action) |
+| `data-autosave-retain` | `<form data-autosave>` — field-name allowlist for persistence |
 | `data-axes` | `.vb-chart` — axis display |
 | `data-blur-reveal` | Text — blur-to-clear entrance |
 | `data-bordered` | Various — border variant |

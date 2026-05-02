@@ -42,6 +42,8 @@ crumbLabel: Data Attributes
       <li>Sets <code>data-autosave-init</code> to prevent double-binding</li>
     </ol>
     <p>Password fields (<code>type="password"</code>) and file inputs (<code>type="file"</code>) are always skipped &mdash; sensitive data and file references are never stored.</p>
+
+    <p>Multi-select dropdowns (<code>&lt;select multiple&gt;</code>) round-trip correctly: every selected option is stored, and all matching options are reselected on restore.</p>
   </section>
 
   <section>
@@ -57,8 +59,13 @@ crumbLabel: Data Attributes
       <tbody>
         <tr>
           <td><code>data-autosave</code></td>
-          <td>string (required)</td>
-          <td>A unique storage key for this form. Used as part of the <code>localStorage</code> key: <code>vb-autosave:{<em>key</em>}</code>.</td>
+          <td>string (optional)</td>
+          <td>Storage key for this form. When the value is empty (boolean form, e.g. <code>&lt;form data-autosave&gt;</code>), the key is derived from the form's <code>method</code> and <code>action</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-autosave-retain</code></td>
+          <td>space-separated field names</td>
+          <td>Allowlist of fields to persist. When set, only listed fields are saved and restored. Useful for opting out of sensitive or large fields.</td>
         </tr>
         <tr>
           <td><code>data-autosave-init</code></td>
@@ -67,6 +74,38 @@ crumbLabel: Data Attributes
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Auto-derived Storage Key</h2>
+    <p>If you omit the value, the storage key is derived from the form's <code>method</code> and <code>action</code>. Two pages pointing at the same endpoint will share state, which is usually what you want.</p>
+
+    <code-block language="html" show-lines label="Boolean data-autosave" data-escape><!-- Key derived as "post https://example.com/contact" -->
+<form action="/contact" method="post" data-autosave>
+  <input name="name" autocomplete="name">
+  <input name="email" type="email" autocomplete="email">
+  <button type="submit">Send</button>
+</form>
+
+<!-- Equivalent explicit form -->
+<form data-autosave="post https://example.com/contact">…</form></code-block>
+
+    <p>Provide an explicit value when two forms on the same endpoint should not share drafts (e.g. an inline edit form and a full edit form).</p>
+  </section>
+
+  <section>
+    <h2>Selective Retention</h2>
+    <p>Use <code>data-autosave-retain</code> to limit which fields are persisted. Useful when a form mixes lookup-friendly identity fields (name, email) with sensitive or transient content (a message body, a one-time code).</p>
+
+    <code-block language="html" show-lines label="data-autosave-retain" data-escape><form data-autosave="checkout" data-autosave-retain="name email">
+  <input name="name" autocomplete="name">       <!-- persisted -->
+  <input name="email" type="email">             <!-- persisted -->
+  <textarea name="message"></textarea>          <!-- NOT persisted -->
+  <input name="cvv" autocomplete="cc-csc">      <!-- NOT persisted -->
+  <button type="submit">Pay</button>
+</form></code-block>
+
+    <p>Field names not in the retain list are skipped during both save and restore. Tightening the list later will not surface previously-saved fields that fall outside the new allowlist.</p>
   </section>
 
   <section>

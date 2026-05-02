@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Form Autosave — Advanced</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="l">
+
+      <layout-card>
+        <layout-stack data-layout-gap="m">
+          <h2 style="margin: 0;">Auto-derived storage key</h2>
+          <p style="margin: 0; color: var(--color-text-muted); font-size: var(--font-size-sm);">
+            <code>data-autosave</code> with no value &mdash; the key is derived from the form's
+            <code>method</code> and <code>action</code>, so duplicate forms on the same endpoint share state automatically.
+          </p>
+
+          <form action="/contact" method="post" data-autosave>
+            <layout-stack data-layout-gap="m">
+              <form-field>
+                <label for="adv-name">Name</label>
+                <input type="text" id="adv-name" name="name" autocomplete="name"/>
+              </form-field>
+
+              <form-field>
+                <label for="adv-email">Email</label>
+                <input type="email" id="adv-email" name="email" autocomplete="email"/>
+              </form-field>
+
+              <layout-cluster data-layout-gap="s">
+                <button type="submit">Send</button>
+                <button type="reset">Clear Draft</button>
+              </layout-cluster>
+            </layout-stack>
+          </form>
+        </layout-stack>
+      </layout-card>
+
+      <layout-card>
+        <layout-stack data-layout-gap="m">
+          <h2 style="margin: 0;">Selective retention</h2>
+          <p style="margin: 0; color: var(--color-text-muted); font-size: var(--font-size-sm);">
+            <code>data-autosave-retain="name email"</code> only persists the listed fields.
+            Sensitive or noisy fields (like the message body below) are deliberately excluded.
+          </p>
+
+          <form data-autosave="advanced-contact" data-autosave-retain="name email">
+            <layout-stack data-layout-gap="m">
+              <form-field>
+                <label for="ret-name">Name (retained)</label>
+                <input type="text" id="ret-name" name="name" autocomplete="name"/>
+              </form-field>
+
+              <form-field>
+                <label for="ret-email">Email (retained)</label>
+                <input type="email" id="ret-email" name="email" autocomplete="email"/>
+              </form-field>
+
+              <form-field>
+                <label for="ret-message">Message (NOT retained)</label>
+                <textarea id="ret-message" name="message" rows="3" placeholder="This field is not persisted."></textarea>
+              </form-field>
+
+              <layout-cluster data-layout-gap="s">
+                <button type="submit">Send</button>
+                <button type="reset">Clear Draft</button>
+              </layout-cluster>
+            </layout-stack>
+          </form>
+        </layout-stack>
+      </layout-card>
+
+    </layout-stack>
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
