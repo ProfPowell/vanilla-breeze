@@ -10,14 +10,20 @@
  * Skips fences already inside a `<diagram-wc>`.
  *
  * @param {ParentNode} [root=document]
- * @param {{ type?: string, language?: string }} [opts]
- * @returns {number} Number of fences upgraded
+ * @param {{ type?: string, language?: string, primingSvgs?: string[] }} [opts]
+ *   `primingSvgs[i]` (optional) seeds the i-th newly-wrapped diagram-wc with a
+ *   cached SVG so the prior render stays visible across markdown re-renders.
+ *   See markdown-mermaid-bridge.js for the position-keyed cache.
+ * @returns {HTMLElement[]} The diagram-wc elements that were created (in order)
  */
 export function enhanceMermaidFences(root = document, opts = {}) {
   const language = opts.language || 'mermaid';
   const type = opts.type || 'mermaid';
+  const priming = Array.isArray(opts.primingSvgs) ? opts.primingSvgs : null;
   const selector = `pre > code.language-${language}`;
-  let count = 0;
+  /** @type {HTMLElement[]} */
+  const created = [];
+  let i = 0;
   for (const code of root.querySelectorAll(selector)) {
     const pre = code.parentElement;
     if (!pre || pre.parentElement?.tagName.toLowerCase() === 'diagram-wc') continue;
@@ -28,8 +34,16 @@ export function enhanceMermaidFences(root = document, opts = {}) {
     // Build the wrapper fully before attaching it to the live tree, so the
     // component's setup() sees the <pre> child as soon as it connects.
     wrap.appendChild(pre);
+    if (priming && priming[i]) {
+      const fig = document.createElement('figure');
+      fig.className = 'dwc-figure';
+      fig.setAttribute('role', 'img');
+      fig.innerHTML = priming[i];
+      wrap.appendChild(fig);
+    }
     parent.insertBefore(wrap, next);
-    count++;
+    created.push(wrap);
+    i++;
   }
-  return count;
+  return created;
 }

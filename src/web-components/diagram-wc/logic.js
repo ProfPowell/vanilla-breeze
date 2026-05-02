@@ -95,6 +95,17 @@ class DiagramWc extends VBElement {
       this.setAttribute('data-rendering', '');
     }
 
+    // Adopt a primed figure if one was injected before connection (see the
+    // markdown-mermaid-bridge cache). Treating it as a prior render means
+    // transient parse errors during typing won't blank the diagram —
+    // #showError keeps the prior figure visible when #rendered is true.
+    const primed = this.querySelector(':scope > .dwc-figure');
+    if (primed) {
+      this.#figure = primed;
+      this.#rendered = true;
+      this.removeAttribute('data-rendering');
+    }
+
     // Listen for theme changes — re-render with fresh tokens, debounced
     this.listen(window, 'vb:theme-change', () => {
       if (this.#themeRerenderTimer) clearTimeout(this.#themeRerenderTimer);
