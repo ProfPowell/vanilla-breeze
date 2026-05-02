@@ -139,15 +139,38 @@ class GanttChart extends VBElement {
     this.#tasks = [];
   }
 
+  /** @type {number} */
+  static #vtCounter = 0;
+
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue || !this.isConnected) return;
     if (name === 'src') {
       this._loadSrc(newValue);
     } else if (this.hasAttribute('data-upgraded')) {
-      // Re-render for attribute changes
+      this.#refresh();
+    }
+  }
+
+  /**
+   * Tear down and re-setup, wrapped in a View Transition so the swap
+   * crossfades instead of flashing. Same pattern as diagram-wc and
+   * site-map-wc.
+   */
+  #refresh() {
+    const swap = () => {
       this.teardown();
       this.removeAttribute('data-upgraded');
       this.setup();
+    };
+    if (this.hasAttribute('data-upgraded')
+        && 'startViewTransition' in document
+        && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const name = `gc-vt-${++GanttChart.#vtCounter}`;
+      this.style.viewTransitionName = name;
+      const tx = document.startViewTransition(swap);
+      tx.finished.finally(() => { this.style.viewTransitionName = ''; });
+    } else {
+      swap();
     }
   }
 
@@ -758,10 +781,7 @@ class GanttChart extends VBElement {
       // Apply title from JSON
       if (data.title) this.setAttribute('title', data.title);
 
-      // Teardown and re-setup
-      this.teardown();
-      this.removeAttribute('data-upgraded');
-      this.setup();
+      this.#refresh();
     } catch (err) {
       console.warn(`[gantt-chart] Failed to load src="${url}":`, err);
     }

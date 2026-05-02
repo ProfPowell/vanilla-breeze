@@ -149,14 +149,38 @@ class FlowDiagram extends VBElement {
     this.#nodeCount = 0;
   }
 
+  /** @type {number} */
+  static #vtCounter = 0;
+
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue || !this.isConnected) return;
     if (name === 'src') {
       this._loadSrc(newValue);
     } else if (this.hasAttribute('data-upgraded')) {
+      this.#refresh();
+    }
+  }
+
+  /**
+   * Tear down and re-setup, wrapped in a View Transition so the swap
+   * crossfades instead of flashing. Same pattern as diagram-wc and
+   * site-map-wc.
+   */
+  #refresh() {
+    const swap = () => {
       this.teardown();
       this.removeAttribute('data-upgraded');
       this.setup();
+    };
+    if (this.hasAttribute('data-upgraded')
+        && 'startViewTransition' in document
+        && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const name = `fd-vt-${++FlowDiagram.#vtCounter}`;
+      this.style.viewTransitionName = name;
+      const tx = document.startViewTransition(swap);
+      tx.finished.finally(() => { this.style.viewTransitionName = ''; });
+    } else {
+      swap();
     }
   }
 
@@ -407,9 +431,7 @@ class FlowDiagram extends VBElement {
       this.#buildOlFromJson(data.steps || [], ol);
       this.appendChild(ol);
 
-      this.teardown();
-      this.removeAttribute('data-upgraded');
-      this.setup();
+      this.#refresh();
     } catch (err) {
       console.warn(`[flow-diagram] Failed to load src="${url}":`, err);
     }
