@@ -80,11 +80,33 @@ export function readMermaidTokens(el) {
   const fontFamily = tok(cs, '--font-sans',            'system-ui, -apple-system, "Segoe UI", sans-serif');
   const fontSize   = tok(cs, '--font-size-md',         '14px');
 
+  // Mindmap and gitGraph branches use cScale0..cScale11 to color each
+  // depth/branch. Mermaid's default derivation produces unreadable
+  // dark-on-dark when only primary/secondary are token-driven, so we set an
+  // explicit palette that cycles VB's three accent colors and pin the
+  // corresponding label colors to --color-text for guaranteed contrast.
+  const palette = [primary, accent, secondary];
+  const cScales = {};
+  for (let i = 0; i < 12; i++) {
+    cScales[`cScale${i}`] = palette[i % palette.length];
+    cScales[`cScaleLabel${i}`] = text;
+    cScales[`cScalePeer${i}`] = border;
+    cScales[`cScaleInv${i}`] = surface;
+  }
+  // gitGraph uses git0..git7 with the same intent
+  const gitColors = {};
+  for (let i = 0; i < 8; i++) {
+    gitColors[`git${i}`] = palette[i % palette.length];
+    gitColors[`gitInv${i}`] = surface;
+    gitColors[`gitBranchLabel${i}`] = text;
+  }
+
   return {
     // Primary nodes
     primaryColor: primary,
     primaryBorderColor: border,
     primaryTextColor: text,
+    nodeTextColor: text,
 
     // Secondary / tertiary
     secondaryColor: secondary,
@@ -136,6 +158,10 @@ export function readMermaidTokens(el) {
     // Typography
     fontFamily,
     fontSize,
+
+    // Branch palettes (mindmap, gitGraph) — pinned for legibility
+    ...cScales,
+    ...gitColors,
   };
 }
 

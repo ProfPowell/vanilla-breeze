@@ -11,11 +11,18 @@ diagram-wc:not([data-upgraded]) {
   display: block;
 }
 
-/* Hide the authoring fallback once the figure has rendered. The component
-   removes the <pre> on success, but suppress it during the brief render
-   window too if [data-rendering] gets set externally. */
-diagram-wc[data-rendering] > pre {
+/*
+ * Without JS: the <pre> is the readable fallback. Once the component class
+ * is defined (the moment its module evaluates — before connectedCallback
+ * even runs), hide the source so the SVG can take its place without any
+ * intermediate flash. Restored on render failure via [data-error].
+ */
+diagram-wc:defined > pre {
   display: none;
+}
+
+diagram-wc[data-error] > pre {
+  display: block;
 }
 
 .dwc-figure {

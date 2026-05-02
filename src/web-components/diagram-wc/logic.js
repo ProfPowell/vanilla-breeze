@@ -90,6 +90,9 @@ class DiagramWc extends VBElement {
       this.#fallbackTpl = document.createElement('template');
       this.#fallbackTpl.appendChild(pre.cloneNode(true));
       this.#source = this.#extractSourceFromPre(pre);
+      // Hide the source immediately to prevent the fallback from flashing
+      // before the SVG mounts. CSS rule: diagram-wc[data-rendering] > pre { display:none }
+      this.setAttribute('data-rendering', '');
     }
 
     // Listen for theme changes — re-render with fresh tokens, debounced
@@ -161,21 +164,21 @@ class DiagramWc extends VBElement {
       const { svg } = await mermaid.render(id, this.#source);
       this.#mountSvg(svg);
       this.#rendered = true;
+      this.removeAttribute('data-rendering');
+      this.removeAttribute('data-error');
 
       this.dispatchEvent(new CustomEvent('diagram-wc:ready', {
         bubbles: true,
         detail: { svg, type, source: this.#source },
       }));
     } catch (error) {
+      this.removeAttribute('data-rendering');
+      this.setAttribute('data-error', '');
       this.#showError(/** @type {Error} */ (error));
     }
   }
 
   #mountSvg(svg) {
-    // Remove the existing fallback <pre> and any prior figure
-    this.querySelector(':scope > pre')?.remove();
-    if (this.#figure) this.#figure.remove();
-
     const fig = document.createElement('figure');
     fig.className = 'dwc-figure';
     fig.setAttribute('role', 'img');
@@ -192,7 +195,16 @@ class DiagramWc extends VBElement {
       fig.appendChild(fc);
     }
 
-    this.appendChild(fig);
+    // Swap atomically: replace the previous figure (if any) in one operation,
+    // so the diagram never blanks during theme-driven re-renders. Also remove
+    // the <pre> fallback only at the moment the new figure mounts.
+    const prior = this.#figure;
+    if (prior && prior.isConnected) {
+      prior.replaceWith(fig);
+    } else {
+      this.appendChild(fig);
+    }
+    this.querySelector(':scope > pre')?.remove();
     this.#figure = fig;
   }
 
