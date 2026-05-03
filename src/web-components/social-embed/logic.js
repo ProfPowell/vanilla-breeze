@@ -73,13 +73,41 @@ export async function fetchOEmbed(endpoint, url, params = {}) {
 }
 
 /**
- * Resolve theme hint to 'light' or 'dark'.
+ * Resolve theme hint to 'light' or 'dark', preferring VB's active theme over
+ * the OS preference. Order of precedence:
+ *   1. Explicit "light" / "dark" hint passed by the author
+ *   2. The host element's resolved CSS color-scheme
+ *      (driven by VB tokens via the active data-theme / data-mode)
+ *   3. The document's data-mode attribute (set by VB's theme-manager)
+ *   4. window.matchMedia('(prefers-color-scheme: dark)') as a last resort
+ *
+ * Without this priority, embeds got the OS preference even when the page
+ * was on a light VB theme like swiss/default — producing a dark Twitter
+ * inside a light page.
+ *
  * @param {string} hint
+ * @param {Element} [host] - the social-embed element, used to resolve the
+ *   color-scheme in its computed style scope. Falls back to documentElement.
  * @returns {'light' | 'dark'}
  */
-function resolveTheme(hint) {
+function resolveTheme(hint, host) {
   if (hint === 'light') return 'light';
   if (hint === 'dark') return 'dark';
+
+  // 2. CSS color-scheme on the host. Modern themes set color-scheme: dark
+  // (or "light dark") so getComputedStyle returns the resolved scheme.
+  const el = host || document.documentElement;
+  const cs = getComputedStyle(el).colorScheme || '';
+  if (/\bdark\b/.test(cs) && !/\blight\b/.test(cs)) return 'dark';
+  if (/\blight\b/.test(cs) && !/\bdark\b/.test(cs)) return 'light';
+
+  // 3. VB's theme-manager attribute. light/dark take priority; "auto"
+  // falls through.
+  const mode = document.documentElement.dataset.mode;
+  if (mode === 'dark') return 'dark';
+  if (mode === 'light') return 'light';
+
+  // 4. OS preference fallback.
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
@@ -105,12 +133,30 @@ class SocialEmbed extends VBElement {
   /** @type {((e: MouseEvent) => void) | null} */
   #clickHandler = null;
 
+  /** @type {object|null} Provider resolved during setup, kept for theme re-render */
+  #provider = null;
+  /** @type {number|null} */
+  #themeRerenderTimer = null;
+
   setup() {
     // Capture fallback once, before any live region or other DOM is prepended.
     // On reconnect #fallback is already set — don't recapture.
     if (!this.#fallback) {
       this.#fallback = this.innerHTML;
     }
+
+    // Re-render the embed with a fresh theme when VB's theme changes.
+    // Debounced because rapid switches would re-initialize the third-party
+    // iframe excessively. Only fires when an embed is actually loaded —
+    // idle / unsupported / error states are unaffected.
+    this.listen(window, 'vb:theme-change', () => {
+      if (this.#themeRerenderTimer) clearTimeout(this.#themeRerenderTimer);
+      this.#themeRerenderTimer = setTimeout(() => {
+        if (this.#provider && this.getAttribute('state') === 'loaded') {
+          this.#init(this.#provider);
+        }
+      }, 100);
+    });
 
     const url = this.getAttribute('url');
     if (!url) {
@@ -166,6 +212,8 @@ class SocialEmbed extends VBElement {
 
   teardown() {
     this.#observer?.disconnect();
+    if (this.#themeRerenderTimer) { clearTimeout(this.#themeRerenderTimer); this.#themeRerenderTimer = null; }
+    this.#provider = null;
     if (this.#clickHandler) {
       this.removeEventListener('click', this.#clickHandler);
       this.#clickHandler = null;
@@ -185,6 +233,9 @@ class SocialEmbed extends VBElement {
    * @param {EmbedProvider} provider
    */
   async #init(provider) {
+    // Remember the provider so the vb:theme-change listener can re-init.
+    this.#provider = provider;
+
     // Clean up click-gate a11y attrs and listener
     this.removeAttribute('tabindex');
     this.removeAttribute('role');
@@ -200,7 +251,7 @@ class SocialEmbed extends VBElement {
     this.#announce('Loading embed\u2026');
 
     try {
-      const theme = resolveTheme(this.getAttribute('theme') ?? 'auto');
+      const theme = resolveTheme(this.getAttribute('theme') ?? 'auto', this);
       await provider.render(this, url, { theme });
       this.setAttribute('state', 'loaded');
     } catch (err) {
