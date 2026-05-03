@@ -8,7 +8,13 @@ const styles = `
   overflow: hidden;
   height: var(--geo-map-height, 300px);
   border-radius: var(--geo-map-border-radius, 0.5rem);
-  background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 100%);
+  /* Loading-state placeholder gradient — derived from VB surface tokens
+     so it shifts with the active theme rather than freezing on grey. */
+  background: linear-gradient(
+    135deg,
+    var(--color-surface-raised, #e8e8e8) 0%,
+    var(--color-surface-sunken, var(--color-border, #d0d0d0)) 100%
+  );
   color-scheme: light dark;
 }
 
@@ -48,13 +54,16 @@ const styles = `
   z-index: 2;
 }
 
-/* Caption (slot projection) */
+/* Caption (slot projection). Translucent surface over the map; uses
+   light-dark() so the pair switches automatically with the page's
+   resolved color-scheme (driven by VB tokens). */
 [part="caption"] {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--geo-map-caption-bg, rgba(255, 255, 255, 0.9));
+  background: var(--geo-map-caption-bg, light-dark(rgba(255, 255, 255, 0.9), rgba(0, 0, 0, 0.75)));
+  color: var(--geo-map-caption-color, var(--color-text, light-dark(#1a1a1a, #e0e0e0)));
   padding: var(--geo-map-caption-padding, 0.5rem 0.75rem);
   font-size: 0.875rem;
   z-index: 3;
@@ -65,22 +74,15 @@ const styles = `
   display: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  [part="caption"] {
-    background: var(--geo-map-caption-bg, rgba(0, 0, 0, 0.75));
-    color: #e0e0e0;
-  }
-}
-
-/* Attribution */
+/* Attribution — translucent surface over the map; same pattern as caption */
 [part="attribution"] {
   position: absolute;
   bottom: 0;
   right: 0;
   padding: 2px 5px;
   font-size: var(--geo-map-attribution-font-size, 0.625rem);
-  background: rgba(255, 255, 255, 0.7);
-  color: #333;
+  background: var(--geo-map-attribution-bg, light-dark(rgba(255, 255, 255, 0.7), rgba(0, 0, 0, 0.6)));
+  color: var(--geo-map-attribution-color, var(--color-text, light-dark(#333, #ddd)));
   z-index: 4;
   line-height: 1.4;
 }
@@ -109,7 +111,7 @@ const styles = `
   align-items: center;
   justify-content: center;
   background: var(--geo-map-overlay-bg, rgba(0, 0, 0, 0.35));
-  color: var(--geo-map-overlay-color, #fff);
+  color: var(--geo-map-overlay-color, var(--color-text-inverted, #fff));
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -131,7 +133,7 @@ const styles = `
 }
 
 [part="activate"]:focus-visible {
-  outline: 2px solid #fff;
+  outline: 2px solid var(--color-text-inverted, #fff);
   outline-offset: 4px;
 }
 
@@ -178,7 +180,7 @@ const styles = `
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
+  color: var(--color-text-muted, #666);
   font-size: 0.875rem;
   text-align: center;
   padding: 1rem;

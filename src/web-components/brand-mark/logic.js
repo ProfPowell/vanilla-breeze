@@ -25,6 +25,8 @@ class BrandMark extends VBElement {
   #darkMql = null;
   /** @type {MutationObserver|null} */
   #modeObserver = null;
+  /** @type {boolean} */
+  #themeChangeBound = false;
 
   setup() {
     // Cache original text before any render
@@ -43,6 +45,10 @@ class BrandMark extends VBElement {
     this.#darkMql = null;
     this.#modeObserver?.disconnect();
     this.#modeObserver = null;
+    if (this.#themeChangeBound) {
+      window.removeEventListener('vb:theme-change', this.#onModeChange);
+      this.#themeChangeBound = false;
+    }
   }
 
   attributeChangedCallback(_name, oldVal, newVal) {
@@ -55,19 +61,35 @@ class BrandMark extends VBElement {
       else {
         this.#darkMql?.removeEventListener('change', this.#onModeChange);
         this.#modeObserver?.disconnect();
+        if (this.#themeChangeBound) {
+          window.removeEventListener('vb:theme-change', this.#onModeChange);
+          this.#themeChangeBound = false;
+        }
       }
     }
 
     this.#render();
   }
 
-  /** Determine if dark mode is active */
+  /**
+   * Determine if dark mode is active.
+   *
+   * Priority order (matches social-embed and other VB components):
+   *   1. Explicit data-mode on <html> — set by VB's theme-manager
+   *   2. The host element's resolved CSS color-scheme — driven by the
+   *      active VB theme tokens, catches theme changes that don't go
+   *      through data-mode
+   *   3. System preference (prefers-color-scheme) as a last resort
+   */
   #isDark() {
-    // Explicit data-mode on root takes priority
     const mode = document.documentElement.getAttribute('data-mode');
     if (mode === 'dark') return true;
     if (mode === 'light') return false;
-    // Fall back to system preference
+
+    const cs = getComputedStyle(this).colorScheme || '';
+    if (/\bdark\b/.test(cs) && !/\blight\b/.test(cs)) return true;
+    if (/\blight\b/.test(cs) && !/\bdark\b/.test(cs)) return false;
+
     return this.#darkMql?.matches ?? false;
   }
 
@@ -84,8 +106,15 @@ class BrandMark extends VBElement {
       this.#modeObserver = new MutationObserver(this.#onModeChange);
       this.#modeObserver.observe(document.documentElement, {
         attributes: true,
-        attributeFilter: ['data-mode'],
+        attributeFilter: ['data-mode', 'data-theme'],
       });
+    }
+
+    // VB theme-manager events — catches changes that don't mutate data-mode
+    // (e.g. brand-only theme swaps that change tokens but keep mode auto).
+    if (!this.#themeChangeBound) {
+      window.addEventListener('vb:theme-change', this.#onModeChange);
+      this.#themeChangeBound = true;
     }
   }
 
