@@ -456,6 +456,10 @@ class ComboBox extends VBElement {
 
     this.#activeIndex = -1;
     this.#clearActiveDescendant();
+
+    // Internal :state(no-matches) for component CSS — no public attribute is
+    // added or removed. Useful for showing an empty-state message.
+    this.setState('no-matches', this.#filteredOptions.length === 0);
   }
 
   // --- Option navigation ---

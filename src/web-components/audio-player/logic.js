@@ -562,6 +562,13 @@ class AudioPlayerElement extends VBElement {
       this.#audio.currentTime = (Number(this.#timeline.value) / 100) * this.#audio.duration
     })
 
+    // Internal :state(scrub-active) while the user is dragging the timeline.
+    // Used by component CSS to suppress timeupdate-driven UI flicker during scrub.
+    this.#timeline.addEventListener('pointerdown', () => this.setState('scrub-active', true))
+    const endScrub = () => this.setState('scrub-active', false)
+    this.#timeline.addEventListener('pointerup', endScrub)
+    this.#timeline.addEventListener('pointercancel', endScrub)
+
     // Volume
     this.#volumeSlider.addEventListener('input', () => {
       this.#audio.volume = Number(this.#volumeSlider.value)

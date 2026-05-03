@@ -151,7 +151,20 @@ function swapTo(el, show, source = 'api') {
     }
   };
 
-  startSwapTransition(applySwap);
+  // Internal :state(transition-running) for component CSS that wants to react
+  // during the View Transitions window (e.g. disable interaction). Only the
+  // <content-swap> custom element exposes setState; [data-swap] enhanced
+  // elements skip this transparently.
+  const setRunning = (on) => {
+    if (typeof el.setState === 'function') el.setState('transition-running', on);
+  };
+  setRunning(true);
+  const result = startSwapTransition(applySwap);
+  if (result && result.finished && typeof result.finished.finally === 'function') {
+    result.finished.finally(() => setRunning(false));
+  } else {
+    setRunning(false);
+  }
 }
 
 function toggleSwap(el, source = 'api') {
