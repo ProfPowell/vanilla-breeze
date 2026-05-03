@@ -217,13 +217,16 @@ class DropDown extends VBElement {
     if (this.#closeTimeout) {
       clearTimeout(this.#closeTimeout);
       this.#closeTimeout = null;
+      this.setState('hover-grace-pending', false);
     }
     this.open();
   };
 
   #handleMouseLeave = () => {
     // Small delay to allow moving between trigger and menu
+    this.setState('hover-grace-pending', true);
     this.#closeTimeout = setTimeout(() => {
+      this.setState('hover-grace-pending', false);
       this.close();
     }, 100);
   };
@@ -232,6 +235,7 @@ class DropDown extends VBElement {
     if (this.#closeTimeout) {
       clearTimeout(this.#closeTimeout);
       this.#closeTimeout = null;
+      this.setState('hover-grace-pending', false);
     }
     this.open();
   };
@@ -242,7 +246,9 @@ class DropDown extends VBElement {
       return;
     }
     // Small delay to check if focus is moving into menu
+    this.setState('hover-grace-pending', true);
     this.#closeTimeout = setTimeout(() => {
+      this.setState('hover-grace-pending', false);
       if (!this.contains(document.activeElement)) {
         this.close();
       }

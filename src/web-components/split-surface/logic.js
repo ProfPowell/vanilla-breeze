@@ -25,7 +25,6 @@ class SplitSurface extends VBElement {
   #divider;
   #first;
   #second;
-  #dragging = false;
   #position = 50;
   #collapsed = false;
   #preCollapsePosition = 50;
@@ -119,15 +118,14 @@ class SplitSurface extends VBElement {
 
   #onPointerDown = (e) => {
     e.preventDefault();
-    this.#dragging = true;
+    this.setState('divider-dragging', true);
     this.#divider.setPointerCapture(e.pointerId);
-    this.style.userSelect = 'none';
     this.#divider.addEventListener('pointermove', this.#onPointerMove);
     this.#divider.addEventListener('pointerup', this.#onPointerUp);
   };
 
   #onPointerMove = (e) => {
-    if (!this.#dragging) return;
+    if (!this.matches(':state(divider-dragging)')) return;
     const rect = this.getBoundingClientRect();
     let percent;
     if (this.#vertical) {
@@ -142,9 +140,8 @@ class SplitSurface extends VBElement {
   };
 
   #onPointerUp = (e) => {
-    this.#dragging = false;
+    this.setState('divider-dragging', false);
     this.#divider.releasePointerCapture(e.pointerId);
-    this.style.userSelect = '';
     this.#divider.removeEventListener('pointermove', this.#onPointerMove);
     this.#divider.removeEventListener('pointerup', this.#onPointerUp);
     this.#writePersist();

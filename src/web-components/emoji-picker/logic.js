@@ -79,7 +79,10 @@ class EmojiPicker extends VBElement {
   }
 
   teardown() {
-    if (this.#searchTimer) clearTimeout(this.#searchTimer);
+    if (this.#searchTimer) {
+      clearTimeout(this.#searchTimer);
+      this.setState('search-pending', false);
+    }
   }
 
   #build() {
@@ -270,7 +273,9 @@ class EmojiPicker extends VBElement {
 
   #handleSearchInput = () => {
     if (this.#searchTimer) clearTimeout(this.#searchTimer);
+    this.setState('search-pending', true);
     this.#searchTimer = setTimeout(() => {
+      this.setState('search-pending', false);
       this.#currentQuery = this.#searchInput.value.trim();
       if (this.#currentQuery) {
         const results = this.#emojiData.searchEmoji(this.#currentQuery);

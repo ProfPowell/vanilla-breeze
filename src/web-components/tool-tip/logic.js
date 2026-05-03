@@ -233,11 +233,16 @@ class ToolTip extends VBElement {
     clearTimeout(this.#hideTimer);
     const defaultDelay = this.#isCard ? 300 : 200;
     const delay = parseInt(this.getAttribute('delay') || String(defaultDelay), 10);
-    this.#showTimer = setTimeout(() => this.show(), delay);
+    this.setState('show-pending', true);
+    this.#showTimer = setTimeout(() => {
+      this.setState('show-pending', false);
+      this.show();
+    }, delay);
   };
 
   #scheduleHide = () => {
     clearTimeout(this.#showTimer);
+    this.setState('show-pending', false);
     const hideDelay = this.#isCard ? 200 : 100;
     this.#hideTimer = setTimeout(() => this.hide(), hideDelay);
   };
@@ -249,6 +254,7 @@ class ToolTip extends VBElement {
 
   #hideImmediate = () => {
     clearTimeout(this.#showTimer);
+    this.setState('show-pending', false);
     this.hide();
   };
 

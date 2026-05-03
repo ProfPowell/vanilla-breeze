@@ -204,7 +204,9 @@ class SiteSearch extends VBElement {
 
   #handleInput = () => {
     this.#clearDebounce();
+    this.setState('input-debounce-pending', true);
     this.#debounceTimer = setTimeout(() => {
+      this.setState('input-debounce-pending', false);
       this.#search(this.#input.value);
     }, SiteSearch.#DEBOUNCE_MS);
   };
@@ -354,6 +356,7 @@ class SiteSearch extends VBElement {
     if (this.#debounceTimer) {
       clearTimeout(this.#debounceTimer);
       this.#debounceTimer = null;
+      this.setState('input-debounce-pending', false);
     }
   }
 

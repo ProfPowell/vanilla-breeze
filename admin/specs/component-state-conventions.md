@@ -47,6 +47,11 @@ Kept short on purpose — the surface should be small and named for what it gate
 | `audio-player` | `:state(scrub-active)` | `pointerdown` on the timeline | `pointerup` / `pointercancel` |
 | `content-swap` | `:state(transition-running)` | View Transition starts | `transition.finished` resolves (or immediately if no View Transitions) |
 | `combo-box` | `:state(no-matches)` | `#filteredOptions` is empty after a filter pass | next filter pass produces matches |
+| `split-surface` | `:state(divider-dragging)` | `pointerdown` on the divider | `pointerup` / `pointercancel`. Also drives `user-select: none` via CSS, replacing a prior inline-style toggle. |
+| `tool-tip` | `:state(show-pending)` | `mouseenter` on trigger; show-delay timer starts | Timer fires (tooltip becomes visible), `mouseleave` cancels, or `hide()` is called |
+| `drop-down` | `:state(hover-grace-pending)` | `mouseleave` / `blur` on a hover-mode dropdown; close timer starts | Timer fires (dropdown closes) or `mouseenter` / `focus` cancels |
+| `site-search` | `:state(input-debounce-pending)` | `input` event on the search field; pagefind debounce begins | Debounce timer fires (search runs) or input is cleared |
+| `emoji-picker` | `:state(search-pending)` | `input` event on the search field; debounce begins | Debounce timer fires (grid re-renders) or component is torn down |
 
 ## Adding a new internal state
 
@@ -62,18 +67,12 @@ The list below is the output of `vanilla-breeze-jdsv` — a sweep of all 103 web
 
 The bar is intentionally high. The vast majority of components had nothing to surface, because their state is either documented (public attribute), ARIA-driven, or correctly absent.
 
-### Strong candidates
+### Status — sweep completed
 
-| Component | Proposed `:state()` name | Set when | Cleared when | Currently expressed as |
-|---|---|---|---|---|
-| `drag-surface` | `drag-over` | `dragover` event on the surface | `dragleave` or drop completes | `[data-drag-over]` attribute (undocumented) — `logic.js:162,172,179,232`; `styles.css:34` |
-| `drag-surface` | `reorder-mode` | Keyboard-initiated reorder begins | Reorder confirmed or Escape pressed | `[data-reorder-mode]` attribute (undocumented) — `logic.js:258,284,363,373`; `styles.css:46`. The `aria-grabbed` mirror on the child item stays as ARIA. |
-| `drag-surface` | `drop-flash` | Drop completes; pulse animation begins | `animationend` fires or 500ms timeout elapses | `[data-just-dropped]` attribute (undocumented) — `logic.js:397,399,402`; `styles.css:57` |
-| `tool-tip` | `show-pending` | `mouseenter` on trigger; show-delay timer starts | Delay timer fires (tooltip becomes visible) or `mouseleave` cancels | `#showTimer` private field — `logic.js:61,236`. No DOM expression today; would gate optional CSS during the show-delay window. |
-| `drop-down` | `hover-grace-pending` | `mouseleave` on a hover-mode dropdown; close timer starts | Timer fires (dropdown closes) or `mouseenter` cancels | `#hoverMode` + close-timer field — `logic.js:46-47,86`. No DOM expression today. |
-| `site-search` | `input-debounce-pending` | User types into the search input | Debounce window expires (pagefind invocation begins) | Internal `setTimeout` for pagefind debounce. No DOM expression today. |
-| `split-surface` | `divider-dragging` | `pointerdown` on the divider | `pointerup` / `pointercancel` | `#dragging` boolean — `logic.js:28,122,130,145`, plus inline `userSelect` style manipulation. No CSS-targetable expression today. |
-| `emoji-picker` | `search-pending` | Search input receives input; debounce begins | Debounce timer fires or input is cleared | `#searchTimer` private field — `logic.js:54-55,82`. No DOM expression today. |
+Of the 8 strong candidates surveyed, 5 shipped (split-surface, tool-tip, drop-down, site-search, emoji-picker — see "Currently shipped" above). The 3 drag-surface candidates were **rolled back during implementation**:
+
+- `drag-surface :state(drag-over)`, `:state(reorder-mode)` — the `[data-drag-over]` and `[data-reorder-mode]` attributes have CSS rules in *two* stylesheets (the component's `styles.css` and a shared `src/native-elements/draggable/styles.css`, including a `drag-surface[data-drag-over]:not(:has([data-drop-target]))::after` pseudo-element rule). Migrating cleanly requires touching the shared sheet and either deleting now-unused global `[data-X]` rules or converting them per-element. That exceeds the additive scope of this batch. Revisit only when the shared draggable styling is being touched for an unrelated reason.
+- `drag-surface :state(drop-flash)` — **invalid**. `[data-just-dropped]` is set on child list items, not on the `<drag-surface>` host. CustomStateSet only works on autonomous custom elements; the list items are plain HTML. Stays as an attribute permanently.
 
 ### Tentative
 
