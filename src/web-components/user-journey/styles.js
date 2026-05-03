@@ -1,14 +1,18 @@
 /**
  * Shadow DOM styles for <user-journey>
  *
- * Uses 3-tier custom property pattern:
- *   --user-journey-*  (author override)
- *   --color-*         (VB theme token)
- *   #fallback         (hardcoded default)
+ * Theme integration:
+ *   --user-journey-*  (per-instance author override)
+ *   --color-*         (VB theme token — adapts to data-theme and color mode)
+ *   #fallback         (last-resort hex for component used outside VB)
  *
- * Dark-mode token values come from VB's theme system.
- * Semantic colors (zones, chips, row tints, table header) keep
- * their own @media (prefers-color-scheme: dark) rules.
+ * VB tokens already swap on color-scheme change and across themes, so we
+ * deliberately DO NOT define our own @media (prefers-color-scheme: dark)
+ * overrides — those would override the user's chosen VB theme. Semantic
+ * tints (positive/neutral/negative emotion zones, painpoint/opportunity
+ * row tints) are derived via color-mix from the corresponding theme
+ * tokens (--color-success/--color-warning/--color-error) so they shift
+ * automatically with the active theme.
  */
 const styles = `
   :host {
@@ -18,13 +22,17 @@ const styles = `
     color: var(--_text);
     container-type: inline-size;
 
-    --_bg:     var(--user-journey-bg, var(--color-surface-raised, #f8f9fa));
-    --_card:   var(--user-journey-card, var(--color-surface, #ffffff));
-    --_border: var(--user-journey-border, var(--color-border, #e0e0e0));
-    --_muted:  var(--user-journey-muted, var(--color-text-muted, #666666));
-    --_text:   var(--user-journey-text, var(--color-text, #1a1a1a));
-    --_curve-stroke: var(--user-journey-curve-stroke, #6366f1);
-    --_radius: var(--user-journey-radius, var(--radius-l, 0.75rem));
+    --_bg:        var(--user-journey-bg, var(--color-surface-raised, #f8f9fa));
+    --_card:      var(--user-journey-card, var(--color-surface, #ffffff));
+    --_border:    var(--user-journey-border, var(--color-border, #e0e0e0));
+    --_muted:     var(--user-journey-muted, var(--color-text-muted, #666666));
+    --_text:      var(--user-journey-text, var(--color-text, #1a1a1a));
+    --_inverted:  var(--user-journey-text-inverted, var(--color-text-inverted, #ffffff));
+    --_primary:   var(--user-journey-primary, var(--color-primary, var(--color-interactive, #6366f1)));
+    --_accent:    var(--user-journey-accent, var(--color-accent, #8b5cf6));
+    --_link:      var(--user-journey-link, var(--color-interactive, var(--color-primary, #6366f1)));
+    --_curve-stroke: var(--user-journey-curve-stroke, var(--_primary));
+    --_radius:    var(--user-journey-radius, var(--radius-l, 0.75rem));
 
     --_font-sans: var(--user-journey-font, var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif));
     --_font-mono: var(--user-journey-font-mono, var(--font-mono, ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace));
@@ -37,6 +45,20 @@ const styles = `
     --_space-s:   var(--user-journey-space-s, var(--size-s, 0.75rem));
     --_space-m:   var(--user-journey-space-m, var(--size-m, 1rem));
     --_space-l:   var(--user-journey-space-l, var(--size-l, 1.5rem));
+
+    /* Semantic tints derived from theme tokens via color-mix.
+       Subtle backgrounds (10–14%) for body cells, header at 22%. */
+    --_tint-pos:  color-mix(in oklch, var(--color-success, #22c55e) 14%, var(--_card));
+    --_tint-neu:  color-mix(in oklch, var(--color-warning, #f59e0b) 12%, var(--_card));
+    --_tint-neg:  color-mix(in oklch, var(--color-error,   #ef4444) 12%, var(--_card));
+    --_tint-row-pain: color-mix(in oklch, var(--color-error,   #ef4444) 8%,  var(--_card));
+    --_tint-row-opp:  color-mix(in oklch, var(--color-success, #22c55e) 8%,  var(--_card));
+    --_chip-type-bg:  color-mix(in oklch, var(--_accent)  18%, var(--_card));
+    --_chip-type-fg:  var(--color-accent-text, var(--_accent));
+    --_chip-story-bg: color-mix(in oklch, var(--_link)    18%, var(--_card));
+    --_chip-story-bg-hover: color-mix(in oklch, var(--_link) 28%, var(--_card));
+    --_chip-story-fg: var(--_link);
+    --_grid-head-bg:  color-mix(in oklch, var(--_primary) 85%, var(--color-text, #000));
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; }
@@ -63,7 +85,7 @@ const styles = `
     inset-block: 0;
     inset-inline-start: 0;
     width: 4px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, var(--_primary), var(--_accent));
   }
 
   .journey__header-top {
@@ -95,22 +117,16 @@ const styles = `
   }
 
   .chip--type {
-    color: #6366f1;
-    background: #ede9fe;
+    color: var(--_chip-type-fg);
+    background: var(--_chip-type-bg);
   }
 
   .chip--story {
-    color: #0369a1;
-    background: #e0f2fe;
+    color: var(--_chip-story-fg);
+    background: var(--_chip-story-bg);
   }
 
-  .chip--story:hover { background: #bae6fd; }
-
-  @media (prefers-color-scheme: dark) {
-    .chip--type  { color: #a78bfa; background: #2e1065; }
-    .chip--story { color: #38bdf8; background: #082f49; }
-    .chip--story:hover { background: #0c4a6e; }
-  }
+  .chip--story:hover { background: var(--_chip-story-bg-hover); }
 
   /* Persona ref */
   .persona-ref {
@@ -124,7 +140,7 @@ const styles = `
     white-space: nowrap;
   }
   .persona-ref svg { width: 14px; height: 14px; flex-shrink: 0; }
-  a.persona-ref:hover { color: #6366f1; text-decoration: underline; }
+  a.persona-ref:hover { color: var(--_link); text-decoration: underline; }
 
   /* Title & summary (slotted content) */
   .journey__title-wrap {
@@ -173,16 +189,10 @@ const styles = `
 
   .journey--compact .curve-svg { height: 54px; }
 
-  .zone { opacity: 0.35; }
-  .zone--pos { fill: #dcfce7; }
-  .zone--neu { fill: #fef9c3; }
-  .zone--neg { fill: #fee2e2; }
-
-  @media (prefers-color-scheme: dark) {
-    .zone--pos { fill: #14532d; }
-    .zone--neu { fill: #713f12; }
-    .zone--neg { fill: #7f1d1d; }
-  }
+  .zone { opacity: 0.55; }
+  .zone--pos { fill: var(--_tint-pos); }
+  .zone--neu { fill: var(--_tint-neu); }
+  .zone--neg { fill: var(--_tint-neg); }
 
   .vline      { stroke: var(--_border); stroke-width: 1; stroke-dasharray: 3 4; }
   .curve-line { stroke: var(--_curve-stroke); stroke-width: 2.5; stroke-linecap: round; }
@@ -199,12 +209,8 @@ const styles = `
 
   /* Head row */
   .journey__grid thead tr {
-    background: #1e1b4b;
-    color: #fff;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .journey__grid thead tr { background: #0f0d30; }
+    background: var(--_grid-head-bg);
+    color: var(--_inverted);
   }
 
   .corner {
@@ -219,19 +225,15 @@ const styles = `
     min-width: 100px;
     position: sticky;
     left: 0;
-    background: #1e1b4b;
+    background: var(--_grid-head-bg);
     z-index: 2;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .corner { background: #0f0d30; }
   }
 
   .phase-head {
     padding: 10px 14px;
     text-align: left;
     vertical-align: top;
-    border-inline-start: 1px solid rgba(255 255 255 / 0.12);
+    border-inline-start: 1px solid color-mix(in oklch, var(--_inverted) 12%, transparent);
     min-width: 160px;
     position: relative;
   }
@@ -243,7 +245,7 @@ const styles = `
     inset-block-start: 0;
     inset-inline: 0;
     height: 3px;
-    background: var(--ec, #6366f1);
+    background: var(--ec, var(--_primary));
   }
 
   .ph-num   { display: block; font-size: 10px; opacity: 0.5; margin-block-end: 2px; }
@@ -283,13 +285,8 @@ const styles = `
   .data-cell--empty   { color: var(--_muted); opacity: 0.35; }
 
   /* Semantic row tints */
-  .grid-row--painpoints    .data-cell { background: #fff5f5; }
-  .grid-row--opportunities .data-cell { background: #f0fdf4; }
-
-  @media (prefers-color-scheme: dark) {
-    .grid-row--painpoints    .data-cell { background: #2d0a0a; }
-    .grid-row--opportunities .data-cell { background: #052e16; }
-  }
+  .grid-row--painpoints    .data-cell { background: var(--_tint-row-pain); }
+  .grid-row--opportunities .data-cell { background: var(--_tint-row-opp); }
 
   /* Compact */
   .journey--compact .phase-head { min-width: 120px; padding: 8px 10px; }
@@ -298,7 +295,7 @@ const styles = `
 
   /* Utility */
   .state-msg           { padding: var(--_space-l); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-  .state-msg--error    { color: #dc2626; }
+  .state-msg--error    { color: var(--color-error-text, var(--color-error, #dc2626)); }
   .journey__placeholder { padding: 20px 24px; font-size: var(--_font-sm); color: var(--_muted); }
   code { font-family: var(--_font-mono); font-size: 0.88em; }
 

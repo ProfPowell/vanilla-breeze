@@ -190,12 +190,12 @@ const styles = `
   }
 
   .rs-popover__btn--delete {
-    color: #dc2626;
+    color: var(--color-error-text, var(--color-error, #dc2626));
   }
 
   .rs-popover__btn--delete:hover {
-    background: #fef2f2;
-    color: #dc2626;
+    background: color-mix(in oklch, var(--color-error, #dc2626) 8%, var(--_card));
+    color: var(--color-error-text, var(--color-error, #dc2626));
   }
 
   /* ── Comment thread ──────────────────────────────── */
@@ -219,7 +219,7 @@ const styles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: var(--color-text-inverted, #fff);
     flex-shrink: 0;
   }
 
@@ -301,7 +301,7 @@ const styles = `
     border: none;
     border-radius: 6px;
     background: var(--_accent);
-    color: #fff;
+    color: var(--color-text-inverted, #fff);
     cursor: pointer;
     padding: 0;
     flex-shrink: 0;
@@ -363,7 +363,7 @@ const styles = `
 
   .rs-toolbar__btn[aria-pressed="true"] {
     background: var(--_accent);
-    color: #fff;
+    color: var(--color-text-inverted, #fff);
     border-color: var(--_accent);
   }
 
@@ -453,13 +453,7 @@ const styles = `
 
   /* ── Utility ─────────────────────────────────────── */
   .state-msg        { padding: var(--_space-l); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-  .state-msg--error { color: #dc2626; }
-
-  @media (prefers-color-scheme: dark) {
-    .rs-popover__btn--delete:hover {
-      background: #450a0a;
-    }
-  }
+  .state-msg--error { color: var(--color-error-text, var(--color-error, #dc2626)); }
 `;
 
 export { styles };

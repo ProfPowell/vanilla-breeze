@@ -1,13 +1,20 @@
 /**
  * Shadow DOM styles for <empathy-map>
  *
- * Uses 3-tier custom property pattern:
- *   --empathy-map-*  (author override)
- *   --color-*        (VB theme token)
- *   #fallback        (hardcoded default)
+ * Theme integration:
+ *   --empathy-map-*  (per-instance author override)
+ *   --color-*        (VB theme token — adapts to data-theme and color mode)
+ *   #fallback        (last-resort hex for component used outside VB)
  *
- * Quadrant colors use dedicated tokens per quadrant:
- *   --_says, --_thinks, --_does, --_feels
+ * VB tokens already swap on color-scheme change and across themes, so we
+ * deliberately DO NOT define our own @media (prefers-color-scheme: dark)
+ * overrides. Quadrant accent colors map to VB semantic tokens:
+ *   says   → --color-info
+ *   thinks → --color-accent
+ *   does   → --color-warning
+ *   feels  → --color-error
+ * Quadrant icon backgrounds derive via color-mix from the same accents
+ * so they shift automatically with the active theme.
  */
 const styles = `
   :host {
@@ -23,11 +30,20 @@ const styles = `
     --_muted:  var(--empathy-map-muted, var(--color-text-muted, #666666));
     --_text:   var(--empathy-map-text, var(--color-text, #1a1a1a));
     --_radius: var(--empathy-map-radius, var(--radius-xl, 1rem));
-    --_accent: var(--empathy-map-accent, var(--color-interactive, #0066cc));
-    --_says:   var(--empathy-map-says, #3b82f6);
-    --_thinks: var(--empathy-map-thinks, #8b5cf6);
-    --_does:   var(--empathy-map-does, #f59e0b);
-    --_feels:  var(--empathy-map-feels, #ef4444);
+    --_accent: var(--empathy-map-accent, var(--color-interactive, var(--color-primary, #0066cc)));
+    --_link:   var(--empathy-map-link, var(--color-interactive, var(--color-primary, #6366f1)));
+    --_primary: var(--empathy-map-primary, var(--color-primary, #6366f1));
+    --_accent-bar: var(--empathy-map-accent-bar, var(--color-accent, #8b5cf6));
+    --_says:   var(--empathy-map-says, var(--color-info, #3b82f6));
+    --_thinks: var(--empathy-map-thinks, var(--color-accent, #8b5cf6));
+    --_does:   var(--empathy-map-does, var(--color-warning, #f59e0b));
+    --_feels:  var(--empathy-map-feels, var(--color-error, #ef4444));
+    --_says-bg:   color-mix(in oklch, var(--_says)   16%, var(--_card));
+    --_thinks-bg: color-mix(in oklch, var(--_thinks) 16%, var(--_card));
+    --_does-bg:   color-mix(in oklch, var(--_does)   16%, var(--_card));
+    --_feels-bg:  color-mix(in oklch, var(--_feels)  16%, var(--_card));
+    --_chip-type-bg: color-mix(in oklch, var(--_accent-bar) 18%, var(--_card));
+    --_chip-type-fg: var(--_accent-bar);
     --_font-sans:    var(--empathy-map-font, var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif));
     --_font-xs:      var(--empathy-map-font-xs, var(--font-size-xs, 0.75rem));
     --_font-sm:      var(--empathy-map-font-sm, var(--font-size-sm, 0.875rem));
@@ -69,7 +85,7 @@ const styles = `
     inset-block: 0;
     inset-inline-start: 0;
     width: 4px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, var(--_primary), var(--_accent-bar));
   }
 
   .empathy-map__header-top {
@@ -101,12 +117,8 @@ const styles = `
   }
 
   .chip--type {
-    color: #6366f1;
-    background: #ede9fe;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .chip--type { color: #a78bfa; background: #2e1065; }
+    color: var(--_chip-type-fg);
+    background: var(--_chip-type-bg);
   }
 
   /* ── Persona ref ──────────────────────────────────── */
@@ -127,7 +139,7 @@ const styles = `
     flex-shrink: 0;
   }
 
-  a.persona-ref:hover { color: #6366f1; text-decoration: underline; }
+  a.persona-ref:hover { color: var(--_link); text-decoration: underline; }
 
   /* ── Title & summary (slotted content) ────────────── */
   .empathy-map__title-wrap {
@@ -216,17 +228,10 @@ const styles = `
     height: 16px;
   }
 
-  .quadrant--says   .quadrant__icon { background: #dbeafe; color: var(--_says); }
-  .quadrant--thinks .quadrant__icon { background: #ede9fe; color: var(--_thinks); }
-  .quadrant--does   .quadrant__icon { background: #fef3c7; color: var(--_does); }
-  .quadrant--feels  .quadrant__icon { background: #fee2e2; color: var(--_feels); }
-
-  @media (prefers-color-scheme: dark) {
-    .quadrant--says   .quadrant__icon { background: #1e3a5f; }
-    .quadrant--thinks .quadrant__icon { background: #2e1065; }
-    .quadrant--does   .quadrant__icon { background: #451a03; }
-    .quadrant--feels  .quadrant__icon { background: #450a0a; }
-  }
+  .quadrant--says   .quadrant__icon { background: var(--_says-bg);   color: var(--_says); }
+  .quadrant--thinks .quadrant__icon { background: var(--_thinks-bg); color: var(--_thinks); }
+  .quadrant--does   .quadrant__icon { background: var(--_does-bg);   color: var(--_does); }
+  .quadrant--feels  .quadrant__icon { background: var(--_feels-bg);  color: var(--_feels); }
 
   .quadrant__label {
     font-size: 13px;
@@ -503,7 +508,7 @@ const styles = `
   @media print {
     .empathy-map {
       break-inside: avoid;
-      border-color: #ccc;
+      border-color: var(--_border);
     }
 
     .quadrant__edit-btn,
@@ -522,8 +527,8 @@ const styles = `
 
   /* ── Utility ──────────────────────────────────────── */
   .state-msg        { padding: var(--_space-l); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-  .state-msg--error { color: #dc2626; }
-  code { font-family: Monaco, Menlo, monospace; font-size: 0.88em; }
+  .state-msg--error { color: var(--color-error-text, var(--color-error, #dc2626)); }
+  code { font-family: var(--font-mono, Monaco, Menlo, monospace); font-size: 0.88em; }
 `;
 
 export { styles };

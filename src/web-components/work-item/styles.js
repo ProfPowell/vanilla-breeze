@@ -98,12 +98,13 @@ const styles = `
   height: 12px;
 }
 
-/* Type colors */
-.wi-type[data-type="task"]    { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-.wi-type[data-type="bug"]     { color: #dc2626; background: rgba(220, 38, 38, 0.1); }
-.wi-type[data-type="chore"]   { color: #6b7280; background: rgba(107, 114, 128, 0.1); }
-.wi-type[data-type="spike"]   { color: #8b5cf6; background: rgba(139, 92, 246, 0.1); }
-.wi-type[data-type="feature"] { color: #059669; background: rgba(5, 150, 105, 0.1); }
+/* Type colors — driven by VB theme tokens, with color-mix surfaces so the
+   pill background shifts with the active theme. */
+.wi-type[data-type="task"]    { color: var(--color-info,    #3b82f6); background: color-mix(in oklch, var(--color-info,    #3b82f6) 12%, transparent); }
+.wi-type[data-type="bug"]     { color: var(--color-error,   #dc2626); background: color-mix(in oklch, var(--color-error,   #dc2626) 12%, transparent); }
+.wi-type[data-type="chore"]   { color: var(--color-text-muted, #6b7280); background: color-mix(in oklch, var(--color-text-muted, #6b7280) 12%, transparent); }
+.wi-type[data-type="spike"]   { color: var(--color-accent,  #8b5cf6); background: color-mix(in oklch, var(--color-accent,  #8b5cf6) 12%, transparent); }
+.wi-type[data-type="feature"] { color: var(--color-success, #059669); background: color-mix(in oklch, var(--color-success, #059669) 12%, transparent); }
 
 /* ── Badges ────────────────────────────────────────── */
 .wi-badges {
@@ -186,7 +187,7 @@ const styles = `
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--color-text-inverted, #fff);
   flex-shrink: 0;
 }
 
@@ -253,12 +254,12 @@ const styles = `
 .wi-section-icon svg {
   width: 13px;
   height: 13px;
-  fill: white;
+  fill: var(--color-text-inverted, #fff);
 }
 
-.wi-section-icon.description { background: #3b82f6; }
-.wi-section-icon.checklist   { background: #22c55e; }
-.wi-section-icon.notes       { background: #f59e0b; }
+.wi-section-icon.description { background: var(--color-info,    #3b82f6); }
+.wi-section-icon.checklist   { background: var(--color-success, #22c55e); }
+.wi-section-icon.notes       { background: var(--color-warning, #f59e0b); }
 
 .wi-section-title {
   font-size: var(--_font-xs);
@@ -369,7 +370,7 @@ const styles = `
 }
 
 .state-msg        { padding: var(--_space-m); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-.state-msg--error { color: #dc2626; }
+.state-msg--error { color: var(--color-error-text, var(--color-error, #dc2626)); }
 `;
 
 export { styles };

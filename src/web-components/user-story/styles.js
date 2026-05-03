@@ -203,10 +203,11 @@ const styles = `
   fill: white;
 }
 
-/* Semantic section-icon colors (hardcoded by intent) */
-.section-icon.acceptance { background: #22c55e; }
-.section-icon.notes      { background: #f59e0b; }
-.section-icon.tasks      { background: #8b5cf6; }
+/* Semantic section-icon colors — driven by VB theme tokens so they shift
+   with the active theme rather than fighting it. */
+.section-icon.acceptance { background: var(--color-success, #22c55e); }
+.section-icon.notes      { background: var(--color-warning, #f59e0b); }
+.section-icon.tasks      { background: var(--color-accent,  #8b5cf6); }
 
 .section-title {
   font-size: var(--_font-xs);

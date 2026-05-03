@@ -216,12 +216,12 @@ const styles = `
 .adr-section-icon svg {
   width: 13px;
   height: 13px;
-  fill: white;
+  fill: var(--color-text-inverted, #fff);
 }
 
-.adr-section-icon.context      { background: #8b5cf6; }
-.adr-section-icon.decision     { background: #22c55e; }
-.adr-section-icon.consequences { background: #f59e0b; }
+.adr-section-icon.context      { background: var(--color-accent,  #8b5cf6); }
+.adr-section-icon.decision     { background: var(--color-success, #22c55e); }
+.adr-section-icon.consequences { background: var(--color-warning, #f59e0b); }
 
 .adr-section-title {
   font-size: var(--_font-xs);
@@ -332,7 +332,7 @@ const styles = `
 }
 
 .state-msg        { padding: var(--_space-m); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-.state-msg--error { color: #dc2626; }
+.state-msg--error { color: var(--color-error-text, var(--color-error, #dc2626)); }
 `;
 
 export { styles };
