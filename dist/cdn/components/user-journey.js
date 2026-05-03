@@ -1,4 +1,4 @@
-var g=`
+var v=`
   :host {
     display: block;
     font-family: var(--_font-sans);
@@ -6,13 +6,17 @@ var g=`
     color: var(--_text);
     container-type: inline-size;
 
-    --_bg:     var(--user-journey-bg, var(--color-surface-raised, #f8f9fa));
-    --_card:   var(--user-journey-card, var(--color-surface, #ffffff));
-    --_border: var(--user-journey-border, var(--color-border, #e0e0e0));
-    --_muted:  var(--user-journey-muted, var(--color-text-muted, #666666));
-    --_text:   var(--user-journey-text, var(--color-text, #1a1a1a));
-    --_curve-stroke: var(--user-journey-curve-stroke, #6366f1);
-    --_radius: var(--user-journey-radius, var(--radius-l, 0.75rem));
+    --_bg:        var(--user-journey-bg, var(--color-surface-raised, #f8f9fa));
+    --_card:      var(--user-journey-card, var(--color-surface, #ffffff));
+    --_border:    var(--user-journey-border, var(--color-border, #e0e0e0));
+    --_muted:     var(--user-journey-muted, var(--color-text-muted, #666666));
+    --_text:      var(--user-journey-text, var(--color-text, #1a1a1a));
+    --_inverted:  var(--user-journey-text-inverted, var(--color-text-inverted, #ffffff));
+    --_primary:   var(--user-journey-primary, var(--color-primary, var(--color-interactive, #6366f1)));
+    --_accent:    var(--user-journey-accent, var(--color-accent, #8b5cf6));
+    --_link:      var(--user-journey-link, var(--color-interactive, var(--color-primary, #6366f1)));
+    --_curve-stroke: var(--user-journey-curve-stroke, var(--_primary));
+    --_radius:    var(--user-journey-radius, var(--radius-l, 0.75rem));
 
     --_font-sans: var(--user-journey-font, var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif));
     --_font-mono: var(--user-journey-font-mono, var(--font-mono, ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace));
@@ -25,6 +29,20 @@ var g=`
     --_space-s:   var(--user-journey-space-s, var(--size-s, 0.75rem));
     --_space-m:   var(--user-journey-space-m, var(--size-m, 1rem));
     --_space-l:   var(--user-journey-space-l, var(--size-l, 1.5rem));
+
+    /* Semantic tints derived from theme tokens via color-mix.
+       Subtle backgrounds (10\u201314%) for body cells, header at 22%. */
+    --_tint-pos:  color-mix(in oklch, var(--color-success, #22c55e) 14%, var(--_card));
+    --_tint-neu:  color-mix(in oklch, var(--color-warning, #f59e0b) 12%, var(--_card));
+    --_tint-neg:  color-mix(in oklch, var(--color-error,   #ef4444) 12%, var(--_card));
+    --_tint-row-pain: color-mix(in oklch, var(--color-error,   #ef4444) 8%,  var(--_card));
+    --_tint-row-opp:  color-mix(in oklch, var(--color-success, #22c55e) 8%,  var(--_card));
+    --_chip-type-bg:  color-mix(in oklch, var(--_accent)  18%, var(--_card));
+    --_chip-type-fg:  var(--color-accent-text, var(--_accent));
+    --_chip-story-bg: color-mix(in oklch, var(--_link)    18%, var(--_card));
+    --_chip-story-bg-hover: color-mix(in oklch, var(--_link) 28%, var(--_card));
+    --_chip-story-fg: var(--_link);
+    --_grid-head-bg:  color-mix(in oklch, var(--_primary) 85%, var(--color-text, #000));
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; }
@@ -51,7 +69,7 @@ var g=`
     inset-block: 0;
     inset-inline-start: 0;
     width: 4px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, var(--_primary), var(--_accent));
   }
 
   .journey__header-top {
@@ -83,22 +101,16 @@ var g=`
   }
 
   .chip--type {
-    color: #6366f1;
-    background: #ede9fe;
+    color: var(--_chip-type-fg);
+    background: var(--_chip-type-bg);
   }
 
   .chip--story {
-    color: #0369a1;
-    background: #e0f2fe;
+    color: var(--_chip-story-fg);
+    background: var(--_chip-story-bg);
   }
 
-  .chip--story:hover { background: #bae6fd; }
-
-  @media (prefers-color-scheme: dark) {
-    .chip--type  { color: #a78bfa; background: #2e1065; }
-    .chip--story { color: #38bdf8; background: #082f49; }
-    .chip--story:hover { background: #0c4a6e; }
-  }
+  .chip--story:hover { background: var(--_chip-story-bg-hover); }
 
   /* Persona ref */
   .persona-ref {
@@ -112,7 +124,7 @@ var g=`
     white-space: nowrap;
   }
   .persona-ref svg { width: 14px; height: 14px; flex-shrink: 0; }
-  a.persona-ref:hover { color: #6366f1; text-decoration: underline; }
+  a.persona-ref:hover { color: var(--_link); text-decoration: underline; }
 
   /* Title & summary (slotted content) */
   .journey__title-wrap {
@@ -161,16 +173,10 @@ var g=`
 
   .journey--compact .curve-svg { height: 54px; }
 
-  .zone { opacity: 0.35; }
-  .zone--pos { fill: #dcfce7; }
-  .zone--neu { fill: #fef9c3; }
-  .zone--neg { fill: #fee2e2; }
-
-  @media (prefers-color-scheme: dark) {
-    .zone--pos { fill: #14532d; }
-    .zone--neu { fill: #713f12; }
-    .zone--neg { fill: #7f1d1d; }
-  }
+  .zone { opacity: 0.55; }
+  .zone--pos { fill: var(--_tint-pos); }
+  .zone--neu { fill: var(--_tint-neu); }
+  .zone--neg { fill: var(--_tint-neg); }
 
   .vline      { stroke: var(--_border); stroke-width: 1; stroke-dasharray: 3 4; }
   .curve-line { stroke: var(--_curve-stroke); stroke-width: 2.5; stroke-linecap: round; }
@@ -187,12 +193,8 @@ var g=`
 
   /* Head row */
   .journey__grid thead tr {
-    background: #1e1b4b;
-    color: #fff;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .journey__grid thead tr { background: #0f0d30; }
+    background: var(--_grid-head-bg);
+    color: var(--_inverted);
   }
 
   .corner {
@@ -207,19 +209,15 @@ var g=`
     min-width: 100px;
     position: sticky;
     left: 0;
-    background: #1e1b4b;
+    background: var(--_grid-head-bg);
     z-index: 2;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .corner { background: #0f0d30; }
   }
 
   .phase-head {
     padding: 10px 14px;
     text-align: left;
     vertical-align: top;
-    border-inline-start: 1px solid rgba(255 255 255 / 0.12);
+    border-inline-start: 1px solid color-mix(in oklch, var(--_inverted) 12%, transparent);
     min-width: 160px;
     position: relative;
   }
@@ -231,7 +229,7 @@ var g=`
     inset-block-start: 0;
     inset-inline: 0;
     height: 3px;
-    background: var(--ec, #6366f1);
+    background: var(--ec, var(--_primary));
   }
 
   .ph-num   { display: block; font-size: 10px; opacity: 0.5; margin-block-end: 2px; }
@@ -271,13 +269,8 @@ var g=`
   .data-cell--empty   { color: var(--_muted); opacity: 0.35; }
 
   /* Semantic row tints */
-  .grid-row--painpoints    .data-cell { background: #fff5f5; }
-  .grid-row--opportunities .data-cell { background: #f0fdf4; }
-
-  @media (prefers-color-scheme: dark) {
-    .grid-row--painpoints    .data-cell { background: #2d0a0a; }
-    .grid-row--opportunities .data-cell { background: #052e16; }
-  }
+  .grid-row--painpoints    .data-cell { background: var(--_tint-row-pain); }
+  .grid-row--opportunities .data-cell { background: var(--_tint-row-opp); }
 
   /* Compact */
   .journey--compact .phase-head { min-width: 120px; padding: 8px 10px; }
@@ -286,7 +279,7 @@ var g=`
 
   /* Utility */
   .state-msg           { padding: var(--_space-l); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-  .state-msg--error    { color: #dc2626; }
+  .state-msg--error    { color: var(--color-error-text, var(--color-error, #dc2626)); }
   .journey__placeholder { padding: 20px 24px; font-size: var(--_font-sm); color: var(--_muted); }
   code { font-family: var(--_font-mono); font-size: 0.88em; }
 
@@ -303,18 +296,18 @@ var g=`
     .journey__grid-wrap { overflow: visible; }
     .row-label, .corner { position: relative; }
   }
-`;var S=window.matchMedia("(prefers-reduced-motion: reduce)");var $=new Map;function j(i,e,t={}){let s=t.priority??10,o={impl:e,bundle:t.bundle,contract:t.contract,priority:s},r=$.get(i);if(customElements.get(i)){if(!r||r.priority>=s){r&&r.priority===s&&r.impl!==e&&console.warn(`[VB Bundle] Tag <${i}> already registered by "${r.bundle}" (priority ${r.priority}). Skipping "${t.bundle}".`);return}console.warn(`[VB Bundle] Tag <${i}> defined by "${r.bundle}" cannot be replaced (customElements.define is permanent). "${t.bundle}" has higher priority but arrived late.`);return}if(r&&r.priority>=s){r.priority===s&&console.warn(`[VB Bundle] Tag <${i}> already registered by "${r.bundle}". Skipping "${t.bundle}" (first wins at equal priority).`);return}$.set(i,o),customElements.define(i,e)}function l(i){return String(i).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}function _(i){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${i}</svg>`}var h={user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',pencil:'<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',check:'<path d="M20 6 9 17l-5-5"/>',target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',alertTriangle:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',messageCircle:'<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>',lightbulb:'<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/>',heart:'<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',mapPin:'<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',checkCircle:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>',x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',send:'<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>'},A={says:{label:"Says",icon:h.messageCircle,color:"#3b82f6"},thinks:{label:"Thinks",icon:h.lightbulb,color:"#8b5cf6"},does:{label:"Does",icon:h.wrench,color:"#f59e0b"},feels:{label:"Feels",icon:h.heart,color:"#ef4444"}},f={delighted:{emoji:"\u{1F604}",score:.95,color:"#16a34a"},satisfied:{emoji:"\u{1F60A}",score:.8,color:"#22c55e"},hopeful:{emoji:"\u{1F642}",score:.68,color:"#84cc16"},curious:{emoji:"\u{1F914}",score:.55,color:"#eab308"},neutral:{emoji:"\u{1F610}",score:.5,color:"#94a3b8"},uncertain:{emoji:"\u{1F615}",score:.4,color:"#f97316"},confused:{emoji:"\u{1F635}",score:.3,color:"#fb923c"},frustrated:{emoji:"\u{1F624}",score:.18,color:"#ef4444"},angry:{emoji:"\u{1F620}",score:.05,color:"#dc2626"}};var z=[{key:"actions",label:"Actions"},{key:"thoughts",label:"Thoughts"},{key:"touchpoints",label:"Touchpoints"},{key:"painPoints",label:"Pain Points"},{key:"opportunities",label:"Opportunities"}],v=class extends HTMLElement{static get observedAttributes(){return["src","persona","persona-id","story-ids","compact"]}#e=new Map;constructor(){super(),this.attachShadow({mode:"open"}),this.__phases=null}get phases(){return this.__phases}set phases(e){this.__phases!==e&&(this.__phases=e,this.isConnected&&this._render(),this.dispatchEvent(new CustomEvent("user-journey:phases-changed",{detail:{phases:e,source:"property"},bubbles:!0,composed:!0})))}get data(){return{persona:this.getAttribute("persona")||void 0,personaId:this.getAttribute("persona-id")||void 0,title:this.querySelector('[slot="title"]')?.textContent?.trim()||void 0,summary:this.querySelector('[slot="summary"]')?.textContent?.trim()||void 0,phases:this.__phases||void 0}}set data(e){if(!(!e||typeof e!="object")){if(e.persona&&this.setAttribute("persona",String(e.persona)),e.personaId&&this.setAttribute("persona-id",String(e.personaId)),e.title&&!this.querySelector('[slot="title"]')){let t=document.createElement("h2");t.slot="title",t.textContent=e.title,this.appendChild(t)}if(e.summary&&!this.querySelector('[slot="summary"]')){let t=document.createElement("p");t.slot="summary",t.textContent=e.summary,this.appendChild(t)}e.phases!=null&&(this.__phases=e.phases),this.isConnected&&this._render(),this.dispatchEvent(new CustomEvent("user-journey:data-changed",{detail:{data:this.data,source:"property"},bubbles:!0,composed:!0}))}}#t(){for(let e of this.children){let t=e.getAttribute("slot");t&&this.#e.set(t,e.textContent.trim())}}_resolve(e){return this.getAttribute(e)||this.#e.get(e)||""}connectedCallback(){this.#t(),this.setAttribute("data-upgraded",""),this.hasAttribute("src")?this._loadSrc(this.getAttribute("src")):this._render()}disconnectedCallback(){this.removeAttribute("data-upgraded")}attributeChangedCallback(e){this.isConnected&&(e==="src"?this._loadSrc(this.getAttribute("src")):this._render())}async _loadSrc(e){if(e){this.shadowRoot.innerHTML=`<style>${g}</style><div class="state-msg">Loading\u2026</div>`;try{let t=await fetch(e);if(!t.ok)throw new Error(`HTTP ${t.status}`);let s=await t.json();if(s.persona&&this.setAttribute("persona",s.persona),s.personaId&&this.setAttribute("persona-id",s.personaId),s.title&&!this.querySelector('[slot="title"]')){let o=document.createElement("h2");o.slot="title",o.textContent=s.title,this.appendChild(o)}if(s.summary&&!this.querySelector('[slot="summary"]')){let o=document.createElement("p");o.slot="summary",o.textContent=s.summary,this.appendChild(o)}this.__phases=s.phases||[],this._render()}catch(t){this.shadowRoot.innerHTML=`<style>${g}</style><div class="state-msg state-msg--error">Could not load journey: ${l(t.message)}</div>`}}}_render(){let e=this._resolve("persona")||"",t=this._resolve("persona-id")||"",s=(this.getAttribute("story-ids")||"").split(",").map(n=>n.trim()).filter(Boolean),o=this.hasAttribute("compact"),r=this.__phases,d=!!this.querySelector('[slot="summary"]')||this.#e.has("summary"),p=this.querySelector('[slot="title"]')?.textContent?.trim()||this.#e.get("title")||"";this.shadowRoot.innerHTML=`<style>${g}</style>
+`;var S=window.matchMedia("(prefers-reduced-motion: reduce)");var j=new Map;function $(i,e,t={}){let a=t.priority??10,o={impl:e,bundle:t.bundle,contract:t.contract,priority:a},r=j.get(i);if(customElements.get(i)){if(!r||r.priority>=a){r&&r.priority===a&&r.impl!==e&&console.warn(`[VB Bundle] Tag <${i}> already registered by "${r.bundle}" (priority ${r.priority}). Skipping "${t.bundle}".`);return}console.warn(`[VB Bundle] Tag <${i}> defined by "${r.bundle}" cannot be replaced (customElements.define is permanent). "${t.bundle}" has higher priority but arrived late.`);return}if(r&&r.priority>=a){r.priority===a&&console.warn(`[VB Bundle] Tag <${i}> already registered by "${r.bundle}". Skipping "${t.bundle}" (first wins at equal priority).`);return}j.set(i,o),customElements.define(i,e)}function l(i){return String(i).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}function x(i){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${i}</svg>`}var h={user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',pencil:'<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',check:'<path d="M20 6 9 17l-5-5"/>',target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',alertTriangle:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',messageCircle:'<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>',lightbulb:'<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/>',heart:'<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',mapPin:'<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',checkCircle:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>',x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',send:'<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>'},A={says:{label:"Says",icon:h.messageCircle,color:"#3b82f6"},thinks:{label:"Thinks",icon:h.lightbulb,color:"#8b5cf6"},does:{label:"Does",icon:h.wrench,color:"#f59e0b"},feels:{label:"Feels",icon:h.heart,color:"#ef4444"}},m={delighted:{emoji:"\u{1F604}",score:.95,color:"#16a34a"},satisfied:{emoji:"\u{1F60A}",score:.8,color:"#22c55e"},hopeful:{emoji:"\u{1F642}",score:.68,color:"#84cc16"},curious:{emoji:"\u{1F914}",score:.55,color:"#eab308"},neutral:{emoji:"\u{1F610}",score:.5,color:"#94a3b8"},uncertain:{emoji:"\u{1F615}",score:.4,color:"#f97316"},confused:{emoji:"\u{1F635}",score:.3,color:"#fb923c"},frustrated:{emoji:"\u{1F624}",score:.18,color:"#ef4444"},angry:{emoji:"\u{1F620}",score:.05,color:"#dc2626"}};var z=[{key:"actions",label:"Actions"},{key:"thoughts",label:"Thoughts"},{key:"touchpoints",label:"Touchpoints"},{key:"painPoints",label:"Pain Points"},{key:"opportunities",label:"Opportunities"}],b=class extends HTMLElement{static get observedAttributes(){return["src","persona","persona-id","story-ids","compact"]}#e=new Map;constructor(){super(),this.attachShadow({mode:"open"}),this.__phases=null}get phases(){return this.__phases}set phases(e){this.__phases!==e&&(this.__phases=e,this.isConnected&&this._render(),this.dispatchEvent(new CustomEvent("user-journey:phases-changed",{detail:{phases:e,source:"property"},bubbles:!0,composed:!0})))}get data(){return{persona:this.getAttribute("persona")||void 0,personaId:this.getAttribute("persona-id")||void 0,title:this.querySelector('[slot="title"]')?.textContent?.trim()||void 0,summary:this.querySelector('[slot="summary"]')?.textContent?.trim()||void 0,phases:this.__phases||void 0}}set data(e){if(!(!e||typeof e!="object")){if(e.persona&&this.setAttribute("persona",String(e.persona)),e.personaId&&this.setAttribute("persona-id",String(e.personaId)),e.title&&!this.querySelector('[slot="title"]')){let t=document.createElement("h2");t.slot="title",t.textContent=e.title,this.appendChild(t)}if(e.summary&&!this.querySelector('[slot="summary"]')){let t=document.createElement("p");t.slot="summary",t.textContent=e.summary,this.appendChild(t)}e.phases!=null&&(this.__phases=e.phases),this.isConnected&&this._render(),this.dispatchEvent(new CustomEvent("user-journey:data-changed",{detail:{data:this.data,source:"property"},bubbles:!0,composed:!0}))}}#t(){for(let e of this.children){let t=e.getAttribute("slot");t&&this.#e.set(t,e.textContent.trim())}}_resolve(e){return this.getAttribute(e)||this.#e.get(e)||""}connectedCallback(){this.#t(),this.setAttribute("data-upgraded",""),this.hasAttribute("src")?this._loadSrc(this.getAttribute("src")):this._render()}disconnectedCallback(){this.removeAttribute("data-upgraded")}attributeChangedCallback(e){this.isConnected&&(e==="src"?this._loadSrc(this.getAttribute("src")):this._render())}async _loadSrc(e){if(e){this.shadowRoot.innerHTML=`<style>${v}</style><div class="state-msg">Loading\u2026</div>`;try{let t=await fetch(e);if(!t.ok)throw new Error(`HTTP ${t.status}`);let a=await t.json();if(a.persona&&this.setAttribute("persona",a.persona),a.personaId&&this.setAttribute("persona-id",a.personaId),a.title&&!this.querySelector('[slot="title"]')){let o=document.createElement("h2");o.slot="title",o.textContent=a.title,this.appendChild(o)}if(a.summary&&!this.querySelector('[slot="summary"]')){let o=document.createElement("p");o.slot="summary",o.textContent=a.summary,this.appendChild(o)}this.__phases=a.phases||[],this._render()}catch(t){this.shadowRoot.innerHTML=`<style>${v}</style><div class="state-msg state-msg--error">Could not load journey: ${l(t.message)}</div>`}}}_render(){let e=this._resolve("persona")||"",t=this._resolve("persona-id")||"",a=(this.getAttribute("story-ids")||"").split(",").map(n=>n.trim()).filter(Boolean),o=this.hasAttribute("compact"),r=this.__phases,d=!!this.querySelector('[slot="summary"]')||this.#e.has("summary"),p=this.querySelector('[slot="title"]')?.textContent?.trim()||this.#e.get("title")||"";this.shadowRoot.innerHTML=`<style>${v}</style>
       <article class="journey${o?" journey--compact":""}">
 
         <header class="journey__header">
           <div class="journey__header-top">
             <div class="journey__chips">
               <span class="chip chip--type">Journey Map</span>
-              ${s.map(n=>`<a class="chip chip--story" href="#${n}">${this._label(n)}</a>`).join("")}
+              ${a.map(n=>`<a class="chip chip--story" href="#${n}">${this._label(n)}</a>`).join("")}
             </div>
             ${e?`
               <div class="journey__persona">
-                ${t?`<a class="persona-ref" href="#${t}">${_(h.user)} ${l(e)}</a>`:`<span class="persona-ref">${_(h.user)} ${l(e)}</span>`}
+                ${t?`<a class="persona-ref" href="#${t}">${x(h.user)} ${l(e)}</a>`:`<span class="persona-ref">${x(h.user)} ${l(e)}</span>`}
               </div>`:""}
           </div>
           <div class="journey__title-wrap">
@@ -327,7 +320,7 @@ var g=`
                <p>Add phase data via <code>src</code> (JSON) or set <code>.phases</code> programmatically.</p>
              </div>`}
 
-      </article>`,this.dispatchEvent(new CustomEvent("journey-ready",{bubbles:!0,composed:!0,detail:{title:p,persona:e,phaseCount:r?r.length:0}}))}_curve(e){let n=e.length,b=a=>28+(n<2?944/2:a/(n-1)*944),k=a=>14+(1-(f[a.emotion]||f.neutral).score)*72,c=e.map((a,u)=>({x:b(u),y:k(a),ph:a})),x=`M ${c[0].x},${c[0].y}`;for(let a=1;a<c.length;a++){let u=c[a-1],m=c[a],y=(u.x+m.x)/2;x+=` C ${y},${u.y} ${y},${m.y} ${m.x},${m.y}`}let w=`uj-${Math.random().toString(36).slice(2,8)}`,C=c.at(-1);return`
+      </article>`,this.dispatchEvent(new CustomEvent("journey-ready",{bubbles:!0,composed:!0,detail:{title:p,persona:e,phaseCount:r?r.length:0}}))}_curve(e){let n=e.length,_=s=>28+(n<2?944/2:s/(n-1)*944),k=s=>14+(1-(m[s.emotion]||m.neutral).score)*72,c=e.map((s,u)=>({x:_(u),y:k(s),ph:s})),g=`M ${c[0].x},${c[0].y}`;for(let s=1;s<c.length;s++){let u=c[s-1],f=c[s],y=(u.x+f.x)/2;g+=` C ${y},${u.y} ${y},${f.y} ${f.x},${f.y}`}let w=`uj-${Math.random().toString(36).slice(2,8)}`,C=c.at(-1);return`
       <div class="journey__curve" aria-hidden="true">
         <svg viewBox="0 0 1000 100" preserveAspectRatio="none" class="curve-svg">
           <defs>
@@ -339,20 +332,20 @@ var g=`
           <rect x="0"             y="0"          width="1000" height="${100*.4}"  class="zone zone--pos"/>
           <rect x="0"             y="${100*.4}" width="1000" height="${100*.2}"  class="zone zone--neu"/>
           <rect x="0"             y="${100*.6}" width="1000" height="${100*.4}"  class="zone zone--neg"/>
-          ${c.map(({x:a})=>`<line x1="${a}" y1="0" x2="${a}" y2="100" class="vline"/>`).join("")}
-          <path d="${x} L ${C.x},100 L ${c[0].x},100 Z" fill="url(#${w})"/>
-          <path d="${x}" fill="none" class="curve-line"/>
-          ${c.map(({x:a,y:u,ph:m})=>{let y=f[m.emotion]||f.neutral;return`<circle cx="${a}" cy="${u}" r="5" class="dot" style="fill:${y.color}"/>`}).join("")}
+          ${c.map(({x:s})=>`<line x1="${s}" y1="0" x2="${s}" y2="100" class="vline"/>`).join("")}
+          <path d="${g} L ${C.x},100 L ${c[0].x},100 Z" fill="url(#${w})"/>
+          <path d="${g}" fill="none" class="curve-line"/>
+          ${c.map(({x:s,y:u,ph:f})=>{let y=m[f.emotion]||m.neutral;return`<circle cx="${s}" cy="${u}" r="5" class="dot" style="fill:${y.color}"/>`}).join("")}
         </svg>
-      </div>`}_grid(e){let t=e.map((o,r)=>{let d=f[o.emotion]||f.neutral,p=o.storyIds||[];return`
+      </div>`}_grid(e){let t=e.map((o,r)=>{let d=m[o.emotion]||m.neutral,p=o.storyIds||[];return`
         <th class="phase-head" data-emotion="${o.emotion||"neutral"}"
             style="--ec:${d.color}">
           <span class="ph-num">${r+1}</span>
           <span class="ph-name">${l(o.name||"")}</span>
           <span class="ph-emoji" title="${o.emotion||"neutral"}"><span role="img" aria-label="${l(o.emotion||"neutral")}">${d.emoji}</span></span>
           ${p.length?`<div class="ph-stories">${p.map(n=>`<a class="chip chip--story" href="#${n}">${this._label(n)}</a>`).join("")}</div>`:""}
-        </th>`}).join(""),s=z.map(({key:o,label:r})=>{let d=e.map(p=>{let n=p[o]||[];return n.length?`<td class="data-cell data-cell--${o.toLowerCase()}">
-          ${n.map(b=>`<p>${l(b)}</p>`).join("")}
+        </th>`}).join(""),a=z.map(({key:o,label:r})=>{let d=e.map(p=>{let n=p[o]||[];return n.length?`<td class="data-cell data-cell--${o.toLowerCase()}">
+          ${n.map(_=>`<p>${l(_)}</p>`).join("")}
         </td>`:'<td class="data-cell data-cell--empty">\u2014</td>'}).join("");return`
         <tr class="grid-row grid-row--${o.toLowerCase()}">
           <th class="row-label">${r}</th>
@@ -367,7 +360,7 @@ var g=`
               ${t}
             </tr>
           </thead>
-          <tbody>${s}</tbody>
+          <tbody>${a}</tbody>
         </table>
-      </div>`}_label(e){return e.replace(/^(activity|persona|journey|story|user)-/,"").replace(/-/g," ").replace(/\b\w/g,t=>t.toUpperCase())}};j("user-journey",v);export{v as UserJourney};
+      </div>`}_label(e){return e.replace(/^(activity|persona|journey|story|user)-/,"").replace(/-/g," ").replace(/\b\w/g,t=>t.toUpperCase())}};$("user-journey",b);export{b as UserJourney};
 //# sourceMappingURL=user-journey.js.map

@@ -535,10 +535,11 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
   fill: white;
 }
 
-/* Semantic section-icon colors (hardcoded by intent) */
-.section-icon.acceptance { background: #22c55e; }
-.section-icon.notes      { background: #f59e0b; }
-.section-icon.tasks      { background: #8b5cf6; }
+/* Semantic section-icon colors \u2014 driven by VB theme tokens so they shift
+   with the active theme rather than fighting it. */
+.section-icon.acceptance { background: var(--color-success, #22c55e); }
+.section-icon.notes      { background: var(--color-warning, #f59e0b); }
+.section-icon.tasks      { background: var(--color-accent,  #8b5cf6); }
 
 .section-title {
   font-size: var(--_font-xs);
@@ -752,13 +753,17 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     color: var(--_text);
     container-type: inline-size;
 
-    --_bg:     var(--user-journey-bg, var(--color-surface-raised, #f8f9fa));
-    --_card:   var(--user-journey-card, var(--color-surface, #ffffff));
-    --_border: var(--user-journey-border, var(--color-border, #e0e0e0));
-    --_muted:  var(--user-journey-muted, var(--color-text-muted, #666666));
-    --_text:   var(--user-journey-text, var(--color-text, #1a1a1a));
-    --_curve-stroke: var(--user-journey-curve-stroke, #6366f1);
-    --_radius: var(--user-journey-radius, var(--radius-l, 0.75rem));
+    --_bg:        var(--user-journey-bg, var(--color-surface-raised, #f8f9fa));
+    --_card:      var(--user-journey-card, var(--color-surface, #ffffff));
+    --_border:    var(--user-journey-border, var(--color-border, #e0e0e0));
+    --_muted:     var(--user-journey-muted, var(--color-text-muted, #666666));
+    --_text:      var(--user-journey-text, var(--color-text, #1a1a1a));
+    --_inverted:  var(--user-journey-text-inverted, var(--color-text-inverted, #ffffff));
+    --_primary:   var(--user-journey-primary, var(--color-primary, var(--color-interactive, #6366f1)));
+    --_accent:    var(--user-journey-accent, var(--color-accent, #8b5cf6));
+    --_link:      var(--user-journey-link, var(--color-interactive, var(--color-primary, #6366f1)));
+    --_curve-stroke: var(--user-journey-curve-stroke, var(--_primary));
+    --_radius:    var(--user-journey-radius, var(--radius-l, 0.75rem));
 
     --_font-sans: var(--user-journey-font, var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif));
     --_font-mono: var(--user-journey-font-mono, var(--font-mono, ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace));
@@ -771,6 +776,20 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     --_space-s:   var(--user-journey-space-s, var(--size-s, 0.75rem));
     --_space-m:   var(--user-journey-space-m, var(--size-m, 1rem));
     --_space-l:   var(--user-journey-space-l, var(--size-l, 1.5rem));
+
+    /* Semantic tints derived from theme tokens via color-mix.
+       Subtle backgrounds (10\u201314%) for body cells, header at 22%. */
+    --_tint-pos:  color-mix(in oklch, var(--color-success, #22c55e) 14%, var(--_card));
+    --_tint-neu:  color-mix(in oklch, var(--color-warning, #f59e0b) 12%, var(--_card));
+    --_tint-neg:  color-mix(in oklch, var(--color-error,   #ef4444) 12%, var(--_card));
+    --_tint-row-pain: color-mix(in oklch, var(--color-error,   #ef4444) 8%,  var(--_card));
+    --_tint-row-opp:  color-mix(in oklch, var(--color-success, #22c55e) 8%,  var(--_card));
+    --_chip-type-bg:  color-mix(in oklch, var(--_accent)  18%, var(--_card));
+    --_chip-type-fg:  var(--color-accent-text, var(--_accent));
+    --_chip-story-bg: color-mix(in oklch, var(--_link)    18%, var(--_card));
+    --_chip-story-bg-hover: color-mix(in oklch, var(--_link) 28%, var(--_card));
+    --_chip-story-fg: var(--_link);
+    --_grid-head-bg:  color-mix(in oklch, var(--_primary) 85%, var(--color-text, #000));
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; }
@@ -797,7 +816,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     inset-block: 0;
     inset-inline-start: 0;
     width: 4px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, var(--_primary), var(--_accent));
   }
 
   .journey__header-top {
@@ -829,22 +848,16 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
   }
 
   .chip--type {
-    color: #6366f1;
-    background: #ede9fe;
+    color: var(--_chip-type-fg);
+    background: var(--_chip-type-bg);
   }
 
   .chip--story {
-    color: #0369a1;
-    background: #e0f2fe;
+    color: var(--_chip-story-fg);
+    background: var(--_chip-story-bg);
   }
 
-  .chip--story:hover { background: #bae6fd; }
-
-  @media (prefers-color-scheme: dark) {
-    .chip--type  { color: #a78bfa; background: #2e1065; }
-    .chip--story { color: #38bdf8; background: #082f49; }
-    .chip--story:hover { background: #0c4a6e; }
-  }
+  .chip--story:hover { background: var(--_chip-story-bg-hover); }
 
   /* Persona ref */
   .persona-ref {
@@ -858,7 +871,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     white-space: nowrap;
   }
   .persona-ref svg { width: 14px; height: 14px; flex-shrink: 0; }
-  a.persona-ref:hover { color: #6366f1; text-decoration: underline; }
+  a.persona-ref:hover { color: var(--_link); text-decoration: underline; }
 
   /* Title & summary (slotted content) */
   .journey__title-wrap {
@@ -907,16 +920,10 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
 
   .journey--compact .curve-svg { height: 54px; }
 
-  .zone { opacity: 0.35; }
-  .zone--pos { fill: #dcfce7; }
-  .zone--neu { fill: #fef9c3; }
-  .zone--neg { fill: #fee2e2; }
-
-  @media (prefers-color-scheme: dark) {
-    .zone--pos { fill: #14532d; }
-    .zone--neu { fill: #713f12; }
-    .zone--neg { fill: #7f1d1d; }
-  }
+  .zone { opacity: 0.55; }
+  .zone--pos { fill: var(--_tint-pos); }
+  .zone--neu { fill: var(--_tint-neu); }
+  .zone--neg { fill: var(--_tint-neg); }
 
   .vline      { stroke: var(--_border); stroke-width: 1; stroke-dasharray: 3 4; }
   .curve-line { stroke: var(--_curve-stroke); stroke-width: 2.5; stroke-linecap: round; }
@@ -933,12 +940,8 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
 
   /* Head row */
   .journey__grid thead tr {
-    background: #1e1b4b;
-    color: #fff;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .journey__grid thead tr { background: #0f0d30; }
+    background: var(--_grid-head-bg);
+    color: var(--_inverted);
   }
 
   .corner {
@@ -953,19 +956,15 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     min-width: 100px;
     position: sticky;
     left: 0;
-    background: #1e1b4b;
+    background: var(--_grid-head-bg);
     z-index: 2;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .corner { background: #0f0d30; }
   }
 
   .phase-head {
     padding: 10px 14px;
     text-align: left;
     vertical-align: top;
-    border-inline-start: 1px solid rgba(255 255 255 / 0.12);
+    border-inline-start: 1px solid color-mix(in oklch, var(--_inverted) 12%, transparent);
     min-width: 160px;
     position: relative;
   }
@@ -977,7 +976,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     inset-block-start: 0;
     inset-inline: 0;
     height: 3px;
-    background: var(--ec, #6366f1);
+    background: var(--ec, var(--_primary));
   }
 
   .ph-num   { display: block; font-size: 10px; opacity: 0.5; margin-block-end: 2px; }
@@ -1017,13 +1016,8 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
   .data-cell--empty   { color: var(--_muted); opacity: 0.35; }
 
   /* Semantic row tints */
-  .grid-row--painpoints    .data-cell { background: #fff5f5; }
-  .grid-row--opportunities .data-cell { background: #f0fdf4; }
-
-  @media (prefers-color-scheme: dark) {
-    .grid-row--painpoints    .data-cell { background: #2d0a0a; }
-    .grid-row--opportunities .data-cell { background: #052e16; }
-  }
+  .grid-row--painpoints    .data-cell { background: var(--_tint-row-pain); }
+  .grid-row--opportunities .data-cell { background: var(--_tint-row-opp); }
 
   /* Compact */
   .journey--compact .phase-head { min-width: 120px; padding: 8px 10px; }
@@ -1032,7 +1026,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
 
   /* Utility */
   .state-msg           { padding: var(--_space-l); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-  .state-msg--error    { color: #dc2626; }
+  .state-msg--error    { color: var(--color-error-text, var(--color-error, #dc2626)); }
   .journey__placeholder { padding: 20px 24px; font-size: var(--_font-sm); color: var(--_muted); }
   code { font-family: var(--_font-mono); font-size: 0.88em; }
 
@@ -1129,11 +1123,20 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     --_muted:  var(--empathy-map-muted, var(--color-text-muted, #666666));
     --_text:   var(--empathy-map-text, var(--color-text, #1a1a1a));
     --_radius: var(--empathy-map-radius, var(--radius-xl, 1rem));
-    --_accent: var(--empathy-map-accent, var(--color-interactive, #0066cc));
-    --_says:   var(--empathy-map-says, #3b82f6);
-    --_thinks: var(--empathy-map-thinks, #8b5cf6);
-    --_does:   var(--empathy-map-does, #f59e0b);
-    --_feels:  var(--empathy-map-feels, #ef4444);
+    --_accent: var(--empathy-map-accent, var(--color-interactive, var(--color-primary, #0066cc)));
+    --_link:   var(--empathy-map-link, var(--color-interactive, var(--color-primary, #6366f1)));
+    --_primary: var(--empathy-map-primary, var(--color-primary, #6366f1));
+    --_accent-bar: var(--empathy-map-accent-bar, var(--color-accent, #8b5cf6));
+    --_says:   var(--empathy-map-says, var(--color-info, #3b82f6));
+    --_thinks: var(--empathy-map-thinks, var(--color-accent, #8b5cf6));
+    --_does:   var(--empathy-map-does, var(--color-warning, #f59e0b));
+    --_feels:  var(--empathy-map-feels, var(--color-error, #ef4444));
+    --_says-bg:   color-mix(in oklch, var(--_says)   16%, var(--_card));
+    --_thinks-bg: color-mix(in oklch, var(--_thinks) 16%, var(--_card));
+    --_does-bg:   color-mix(in oklch, var(--_does)   16%, var(--_card));
+    --_feels-bg:  color-mix(in oklch, var(--_feels)  16%, var(--_card));
+    --_chip-type-bg: color-mix(in oklch, var(--_accent-bar) 18%, var(--_card));
+    --_chip-type-fg: var(--_accent-bar);
     --_font-sans:    var(--empathy-map-font, var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif));
     --_font-xs:      var(--empathy-map-font-xs, var(--font-size-xs, 0.75rem));
     --_font-sm:      var(--empathy-map-font-sm, var(--font-size-sm, 0.875rem));
@@ -1175,7 +1178,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     inset-block: 0;
     inset-inline-start: 0;
     width: 4px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, var(--_primary), var(--_accent-bar));
   }
 
   .empathy-map__header-top {
@@ -1207,12 +1210,8 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
   }
 
   .chip--type {
-    color: #6366f1;
-    background: #ede9fe;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .chip--type { color: #a78bfa; background: #2e1065; }
+    color: var(--_chip-type-fg);
+    background: var(--_chip-type-bg);
   }
 
   /* \u2500\u2500 Persona ref \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
@@ -1233,7 +1232,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     flex-shrink: 0;
   }
 
-  a.persona-ref:hover { color: #6366f1; text-decoration: underline; }
+  a.persona-ref:hover { color: var(--_link); text-decoration: underline; }
 
   /* \u2500\u2500 Title & summary (slotted content) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
   .empathy-map__title-wrap {
@@ -1322,17 +1321,10 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     height: 16px;
   }
 
-  .quadrant--says   .quadrant__icon { background: #dbeafe; color: var(--_says); }
-  .quadrant--thinks .quadrant__icon { background: #ede9fe; color: var(--_thinks); }
-  .quadrant--does   .quadrant__icon { background: #fef3c7; color: var(--_does); }
-  .quadrant--feels  .quadrant__icon { background: #fee2e2; color: var(--_feels); }
-
-  @media (prefers-color-scheme: dark) {
-    .quadrant--says   .quadrant__icon { background: #1e3a5f; }
-    .quadrant--thinks .quadrant__icon { background: #2e1065; }
-    .quadrant--does   .quadrant__icon { background: #451a03; }
-    .quadrant--feels  .quadrant__icon { background: #450a0a; }
-  }
+  .quadrant--says   .quadrant__icon { background: var(--_says-bg);   color: var(--_says); }
+  .quadrant--thinks .quadrant__icon { background: var(--_thinks-bg); color: var(--_thinks); }
+  .quadrant--does   .quadrant__icon { background: var(--_does-bg);   color: var(--_does); }
+  .quadrant--feels  .quadrant__icon { background: var(--_feels-bg);  color: var(--_feels); }
 
   .quadrant__label {
     font-size: 13px;
@@ -1609,7 +1601,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
   @media print {
     .empathy-map {
       break-inside: avoid;
-      border-color: #ccc;
+      border-color: var(--_border);
     }
 
     .quadrant__edit-btn,
@@ -1628,8 +1620,8 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
 
   /* \u2500\u2500 Utility \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
   .state-msg        { padding: var(--_space-l); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-  .state-msg--error { color: #dc2626; }
-  code { font-family: Monaco, Menlo, monospace; font-size: 0.88em; }
+  .state-msg--error { color: var(--color-error-text, var(--color-error, #dc2626)); }
+  code { font-family: var(--font-mono, Monaco, Menlo, monospace); font-size: 0.88em; }
 `;var it=["says","thinks","does","feels"],at=class extends HTMLElement{static get observedAttributes(){return["persona","persona-id","src","editable","compact"]}#t=new Map;constructor(){super(),this.attachShadow({mode:"open"}),this.__quadrants=null,this.__goals=null,this.__painPoints=null,this._editingQuadrants=new Set}get quadrants(){return this.__quadrants}set quadrants(t){this.__quadrants=t,this.isConnected&&this._render()}get goals(){return this.__goals}set goals(t){this.__goals=t,this.isConnected&&this._render()}get painPoints(){return this.__painPoints}set painPoints(t){this.__painPoints=t,this.isConnected&&this._render()}#e(){for(let t of this.children){let e=t.getAttribute("slot");e&&this.#t.set(e,t.textContent.trim())}}_resolve(t){return this.getAttribute(t)||this.#t.get(t)||""}connectedCallback(){this.#e(),this.setAttribute("data-upgraded",""),this.hasAttribute("src")?this._loadSrc(this.getAttribute("src")):this._render()}disconnectedCallback(){this.removeAttribute("data-upgraded")}attributeChangedCallback(t){this.isConnected&&(t==="src"?this._loadSrc(this.getAttribute("src")):this._render())}get data(){let t=this.querySelector('[slot="title"]'),e=this.querySelector('[slot="summary"]');return{persona:this.getAttribute("persona")||void 0,personaId:this.getAttribute("persona-id")||void 0,title:t?.textContent?.trim()||void 0,summary:e?.textContent?.trim()||void 0,quadrants:this.__quadrants||void 0,goals:this.__goals||void 0,painPoints:this.__painPoints||void 0}}set data(t){if(!(!t||typeof t!="object")){if(t.persona&&this.setAttribute("persona",String(t.persona)),t.personaId&&this.setAttribute("persona-id",String(t.personaId)),t.title&&!this.querySelector('[slot="title"]')){let e=document.createElement("h2");e.slot="title",e.textContent=t.title,this.appendChild(e)}if(t.summary&&!this.querySelector('[slot="summary"]')){let e=document.createElement("p");e.slot="summary",e.textContent=t.summary,this.appendChild(e)}t.quadrants!=null&&(this.__quadrants=t.quadrants),t.goals!=null&&(this.__goals=t.goals),t.painPoints!=null&&(this.__painPoints=t.painPoints),this.isConnected&&this._render(),this.dispatchEvent(new CustomEvent("empathy-map:data-changed",{detail:{data:this.data,source:"property"},bubbles:!0,composed:!0}))}}editQuadrant(t){it.includes(t)&&this.hasAttribute("editable")&&this._openEdit(t)}closeQuadrant(t){it.includes(t)&&this._closeEdit(t)}async _loadSrc(t){if(t){this.shadowRoot.innerHTML=`<style>${O}</style><div class="state-msg">Loading\u2026</div>`;try{let e=await fetch(t);if(!e.ok)throw new Error(`HTTP ${e.status}`);let s=await e.json();if(s.persona&&this.setAttribute("persona",s.persona),s.personaId&&this.setAttribute("persona-id",s.personaId),s.title&&!this.querySelector('[slot="title"]')){let r=document.createElement("h2");r.slot="title",r.textContent=s.title,this.appendChild(r)}if(s.summary&&!this.querySelector('[slot="summary"]')){let r=document.createElement("p");r.slot="summary",r.textContent=s.summary,this.appendChild(r)}this.__quadrants=s.quadrants||null,this.__goals=s.goals||null,this.__painPoints=s.painPoints||null,this._render()}catch(e){this.shadowRoot.innerHTML=`<style>${O}</style><div class="state-msg state-msg--error">Could not load empathy map: ${m(e.message)}</div>`}}}_render(){let t=this._resolve("persona")||"",e=this._resolve("persona-id")||"",s=this.hasAttribute("compact"),r=this.hasAttribute("editable"),i=!!this.querySelector('[slot="title"]')||this.#t.has("title"),a=!!this.querySelector('[slot="summary"]')||this.#t.has("summary"),o=this.__goals?.length||this.querySelector('[slot="goals"]'),n=this.__painPoints?.length||this.querySelector('[slot="pain-points"]');this.shadowRoot.innerHTML=`<style>${O}</style>
       <article class="empathy-map${s?" empathy-map--compact":""}">
 
@@ -1881,12 +1873,12 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
   }
 
   .rs-popover__btn--delete {
-    color: #dc2626;
+    color: var(--color-error-text, var(--color-error, #dc2626));
   }
 
   .rs-popover__btn--delete:hover {
-    background: #fef2f2;
-    color: #dc2626;
+    background: color-mix(in oklch, var(--color-error, #dc2626) 8%, var(--_card));
+    color: var(--color-error-text, var(--color-error, #dc2626));
   }
 
   /* \u2500\u2500 Comment thread \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
@@ -1910,7 +1902,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: var(--color-text-inverted, #fff);
     flex-shrink: 0;
   }
 
@@ -1992,7 +1984,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
     border: none;
     border-radius: 6px;
     background: var(--_accent);
-    color: #fff;
+    color: var(--color-text-inverted, #fff);
     cursor: pointer;
     padding: 0;
     flex-shrink: 0;
@@ -2054,7 +2046,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
 
   .rs-toolbar__btn[aria-pressed="true"] {
     background: var(--_accent);
-    color: #fff;
+    color: var(--color-text-inverted, #fff);
     border-color: var(--_accent);
   }
 
@@ -2144,13 +2136,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
 
   /* \u2500\u2500 Utility \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
   .state-msg        { padding: var(--_space-l); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-  .state-msg--error { color: #dc2626; }
-
-  @media (prefers-color-scheme: dark) {
-    .rs-popover__btn--delete:hover {
-      background: #450a0a;
-    }
-  }
+  .state-msg--error { color: var(--color-error-text, var(--color-error, #dc2626)); }
 `;function Wt(){let c=globalThis.localStorage;if(!c)throw new Error("VBStore: localStorage is not available in this environment");return{async getRaw(t){return c.getItem(t)},async setRaw(t,e){c.setItem(t,e)},async removeRaw(t){c.removeItem(t)},async keys(t){let e=[];for(let s=0;s<c.length;s++){let r=c.key(s);r&&r.startsWith(t)&&e.push(r)}return e}}}var F=null;function $(){return F||(F=Wt()),F}function ct(c,t){if(typeof c!="string"||!c)throw new TypeError("VBStore: namespace must be a non-empty string");if(typeof t!="string"||!t)throw new TypeError("VBStore: key must be a non-empty string");return`vb:${c}:${t}`}function Et(c){if(typeof c!="string"||!c)throw new TypeError("VBStore: namespace must be a non-empty string");return`vb:${c}:`}function St(c){try{let t=JSON.parse(c);if(t&&typeof t=="object"&&typeof t.timestamp=="number")return t}catch{}return null}var V={configure(c={}){F=c.backend??null},async set(c,t,e){let s={data:e,timestamp:Date.now()};await $().setRaw(ct(c,t),JSON.stringify(s))},async get(c,t,e){let s=await $().getRaw(ct(c,t));if(s==null)return null;let r=St(s);return!r||e?.maxAge!=null&&Date.now()-r.timestamp>e.maxAge?null:r.data},async remove(c,t){await $().removeRaw(ct(c,t))},async list(c){let t=Et(c),e=await $().keys(t),s=[];for(let r of e){let i=await $().getRaw(r);if(i==null)continue;let a=St(i);a&&s.push({key:r.slice(t.length),data:a.data,timestamp:a.timestamp})}return s},async clear(c){let t=Et(c),e=await $().keys(t);for(let s of e)await $().removeRaw(s)},async clearAll(){let c=await $().keys("vb:");for(let t of c)await $().removeRaw(t)},async setMany(c,t){for(let[e,s]of t)await V.set(c,e,s)}};var L=class{#t=new Map;async load(){return[...this.#t.values()]}async save(t){return t.id||(t.id=crypto.randomUUID()),this.#t.set(t.id,t),t}async update(t,e){let s=this.#t.get(t);if(!s)throw new Error(`Pin ${t} not found`);return Object.assign(s,e),s}async remove(t){this.#t.delete(t)}},W=class{#t;constructor(t="default"){this.#t=t}async#e(){let t=await V.get("reviews",this.#t);return Array.isArray(t)?t:[]}async#s(t){await V.set("reviews",this.#t,t)}async load(){return this.#e()}async save(t){t.id||(t.id=crypto.randomUUID());let e=await this.#e();return e.push(t),await this.#s(e),t}async update(t,e){let s=await this.#e(),r=s.findIndex(i=>i.id===t);if(r===-1)throw new Error(`Pin ${t} not found`);return Object.assign(s[r],e),await this.#s(s),s[r]}async remove(t){let e=(await this.#e()).filter(s=>s.id!==t);await this.#s(e)}},X=class{#t;constructor(t){if(!t)throw new Error("RestAdapter requires an endpoint URL");this.#t=t.replace(/\/$/,"")}async load(){let t=await fetch(this.#t);if(!t.ok)throw new Error(`HTTP ${t.status}`);let e=await t.json();return Array.isArray(e)?e:e.pins||[]}async save(t){let e=await fetch(this.#t,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(t)});if(!e.ok)throw new Error(`HTTP ${e.status}`);return e.json()}async update(t,e){let s=await fetch(`${this.#t}/${encodeURIComponent(t)}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(e)});if(!s.ok)throw new Error(`HTTP ${s.status}`);return s.json()}async remove(t){let e=await fetch(`${this.#t}/${encodeURIComponent(t)}`,{method:"DELETE"});if(!e.ok)throw new Error(`HTTP ${e.status}`)}},dt=class extends HTMLElement{static get observedAttributes(){return["src","editable","adapter","endpoint","storage-key","author","compact","show-resolved"]}#t=new Map;constructor(){super(),this.attachShadow({mode:"open"}),this.__pins=[],this.__adapter=null,this._activePin=null,this._annotating=!1}get pins(){return this.__pins}set pins(t){let e=Array.isArray(t)?t:[];this.__pins!==e&&(this.__pins=e,this.isConnected&&this._render(),this.dispatchEvent(new CustomEvent("review-surface:pins-changed",{detail:{pins:e,source:"property"},bubbles:!0,composed:!0})))}get adapter(){return this.__adapter}set adapter(t){this.__adapter=t,this.isConnected&&this._loadFromAdapter()}#e(){for(let t of this.children){let e=t.getAttribute("slot");e&&this.#t.set(e,t.textContent.trim())}}_resolve(t){return this.getAttribute(t)||this.#t.get(t)||""}connectedCallback(){this.#e(),this.setAttribute("data-upgraded",""),this.#s(),this.hasAttribute("src")?this._loadSrc(this.getAttribute("src")):this._loadFromAdapter()}disconnectedCallback(){this.removeAttribute("data-upgraded"),this.removeAttribute("data-annotating")}attributeChangedCallback(t){this.isConnected&&(t==="src"?this._loadSrc(this.getAttribute("src")):t==="adapter"||t==="endpoint"||t==="storage-key"?(this.#s(),this._loadFromAdapter()):this._render())}#s(){if(this.__adapter&&!(this.__adapter instanceof L)&&!(this.__adapter instanceof W)&&!(this.__adapter instanceof X))return;switch(this.getAttribute("adapter")||"memory"){case"local":this.__adapter=new W(this.getAttribute("storage-key")||"default");break;case"rest":try{this.__adapter=new X(this.getAttribute("endpoint"))}catch{this.__adapter=new L}break;default:this.__adapter=new L}}async _loadSrc(t){if(t){this.shadowRoot.innerHTML=`<style>${U}</style><div class="state-msg">Loading\u2026</div>`;try{let e=await fetch(t);if(!e.ok)throw new Error(`HTTP ${e.status}`);let s=await e.json();this.__pins=Array.isArray(s)?s:s.pins||[],this._render()}catch(e){this.shadowRoot.innerHTML=`<style>${U}</style><div class="state-msg state-msg--error">Could not load pins: ${m(e.message)}</div>`}}}async _loadFromAdapter(){if(this.__adapter){try{this.__pins=await this.__adapter.load()}catch{this.__pins=[]}this._render()}}async addPin(t){let e={id:crypto.randomUUID(),x:Math.max(0,Math.min(100,t.x)),y:Math.max(0,Math.min(100,t.y)),text:t.text||"",author:t.author||this.getAttribute("author")||"Anonymous",createdAt:new Date().toISOString(),resolved:!1,resolvedBy:null,resolvedAt:null,replies:[]};return this.__adapter&&await this.__adapter.save(e),this.__pins.push(e),this._render(),this.#n(`Pin ${this.#r().length} added`),this.dispatchEvent(new CustomEvent("review-surface:add",{bubbles:!0,composed:!0,detail:{pin:e}})),e}async removePin(t){let e=this.__pins.find(s=>s.id===t);e&&(this.__adapter&&await this.__adapter.remove(t),this.__pins=this.__pins.filter(s=>s.id!==t),this._activePin===t&&(this._activePin=null),this._render(),this.#n("Pin removed"),this.dispatchEvent(new CustomEvent("review-surface:remove",{bubbles:!0,composed:!0,detail:{pin:e}})))}async resolvePin(t){let e=this.__pins.find(r=>r.id===t);if(!e)return;let s={resolved:!0,resolvedBy:this.getAttribute("author")||"Anonymous",resolvedAt:new Date().toISOString()};this.__adapter&&await this.__adapter.update(t,s),Object.assign(e,s),this._render(),this.#n("Pin resolved"),this.dispatchEvent(new CustomEvent("review-surface:resolve",{bubbles:!0,composed:!0,detail:{pin:e}}))}async unresolvePin(t){let e=this.__pins.find(r=>r.id===t);if(!e)return;let s={resolved:!1,resolvedBy:null,resolvedAt:null};this.__adapter&&await this.__adapter.update(t,s),Object.assign(e,s),this._render(),this.#n("Pin re-opened"),this.dispatchEvent(new CustomEvent("review-surface:update",{bubbles:!0,composed:!0,detail:{pin:e,changes:s}}))}exportPins(){return structuredClone(this.__pins)}importPins(t){this.__pins=Array.isArray(t)?structuredClone(t):[],this._activePin=null,this._render()}#r(){let t=this.hasAttribute("show-resolved");return this.__pins.filter(e=>t||!e.resolved).sort((e,s)=>new Date(e.createdAt)-new Date(s.createdAt))}_render(){let t=this.hasAttribute("editable"),e=this.#r(),s=this._activePin?this.__pins.find(r=>r.id===this._activePin):null;this.setAttribute("pin-count",String(e.length)),this.shadowRoot.innerHTML=`<style>${U}</style>
       <div class="rs-container">
         <slot></slot>
@@ -2326,12 +2312,13 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
   height: 12px;
 }
 
-/* Type colors */
-.wi-type[data-type="task"]    { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-.wi-type[data-type="bug"]     { color: #dc2626; background: rgba(220, 38, 38, 0.1); }
-.wi-type[data-type="chore"]   { color: #6b7280; background: rgba(107, 114, 128, 0.1); }
-.wi-type[data-type="spike"]   { color: #8b5cf6; background: rgba(139, 92, 246, 0.1); }
-.wi-type[data-type="feature"] { color: #059669; background: rgba(5, 150, 105, 0.1); }
+/* Type colors \u2014 driven by VB theme tokens, with color-mix surfaces so the
+   pill background shifts with the active theme. */
+.wi-type[data-type="task"]    { color: var(--color-info,    #3b82f6); background: color-mix(in oklch, var(--color-info,    #3b82f6) 12%, transparent); }
+.wi-type[data-type="bug"]     { color: var(--color-error,   #dc2626); background: color-mix(in oklch, var(--color-error,   #dc2626) 12%, transparent); }
+.wi-type[data-type="chore"]   { color: var(--color-text-muted, #6b7280); background: color-mix(in oklch, var(--color-text-muted, #6b7280) 12%, transparent); }
+.wi-type[data-type="spike"]   { color: var(--color-accent,  #8b5cf6); background: color-mix(in oklch, var(--color-accent,  #8b5cf6) 12%, transparent); }
+.wi-type[data-type="feature"] { color: var(--color-success, #059669); background: color-mix(in oklch, var(--color-success, #059669) 12%, transparent); }
 
 /* \u2500\u2500 Badges \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
 .wi-badges {
@@ -2414,7 +2401,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--color-text-inverted, #fff);
   flex-shrink: 0;
 }
 
@@ -2481,12 +2468,12 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
 .wi-section-icon svg {
   width: 13px;
   height: 13px;
-  fill: white;
+  fill: var(--color-text-inverted, #fff);
 }
 
-.wi-section-icon.description { background: #3b82f6; }
-.wi-section-icon.checklist   { background: #22c55e; }
-.wi-section-icon.notes       { background: #f59e0b; }
+.wi-section-icon.description { background: var(--color-info,    #3b82f6); }
+.wi-section-icon.checklist   { background: var(--color-success, #22c55e); }
+.wi-section-icon.notes       { background: var(--color-warning, #f59e0b); }
 
 .wi-section-title {
   font-size: var(--_font-xs);
@@ -2597,7 +2584,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
 }
 
 .state-msg        { padding: var(--_space-m); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-.state-msg--error { color: #dc2626; }
+.state-msg--error { color: var(--color-error-text, var(--color-error, #dc2626)); }
 `;var It={task:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 12 2 2 4-4"/>',bug:'<path d="m8 2 1.88 1.88"/><path d="M14.12 3.88 16 2"/><path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6"/><path d="M12 20v-9"/><path d="M6.53 9C4.6 8.8 3 7.1 3 5"/><path d="M6 13H2"/><path d="M3 21c0-2.1 1.7-3.9 3.8-4"/><path d="M20.97 5c0 2.1-1.6 3.8-3.5 4"/><path d="M22 13h-4"/><path d="M17.2 17c2.1.1 3.8 1.9 3.8 4"/>',chore:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/>',spike:'<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',feature:'<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>'},mt={critical:{label:"Critical",color:"#dc2626",bg:"rgba(220, 38, 38, 0.1)"},high:{label:"High",color:"#ea580c",bg:"rgba(234, 88, 12, 0.1)"},medium:{label:"Medium",color:"#ca8a04",bg:"rgba(202, 138, 4, 0.1)"},low:{label:"Low",color:"#16a34a",bg:"rgba(22, 163, 74, 0.1)"}},ft={backlog:{label:"Backlog",color:"#6b7280",bg:"rgba(107, 114, 128, 0.1)"},"to-do":{label:"To Do",color:"#3b82f6",bg:"rgba(59, 130, 246, 0.1)"},"in-progress":{label:"In Progress",color:"#8b5cf6",bg:"rgba(139, 92, 246, 0.1)"},review:{label:"Review",color:"#f59e0b",bg:"rgba(245, 158, 11, 0.1)"},done:{label:"Done",color:"#22c55e",bg:"rgba(34, 197, 94, 0.1)"},blocked:{label:"Blocked",color:"#dc2626",bg:"rgba(220, 38, 38, 0.1)"}},bt=class extends HTMLElement{static get observedAttributes(){return["item-id","type","priority","status","estimate","assignee","story-ids","detail","compact","src"]}#t=new Map;constructor(){super(),this.attachShadow({mode:"open"})}#e(){for(let t of[...this.children]){let e=t.getAttribute("slot");e&&this.#t.set(e,t.textContent.trim())}}_resolve(t){return this.getAttribute(t)||this.#t.get(t)||""}connectedCallback(){this.#e(),this.itemId&&!this.id&&(this.id=this.itemId),this.hasAttribute("src")&&this._loadSrc(this.getAttribute("src")),this.#s(),this.setAttribute("data-upgraded","")}disconnectedCallback(){this.removeAttribute("data-upgraded")}attributeChangedCallback(t,e,s){e!==s&&this.shadowRoot&&(t==="src"&&this.isConnected?this._loadSrc(s):this.#s())}get itemId(){return this.getAttribute("item-id")||""}get itemTitle(){return this.querySelector('[slot="title"]')?.textContent?.trim()||this.#t.get("title")||""}get itemType(){return this.getAttribute("type")||"task"}get priority(){return this.getAttribute("priority")||"medium"}get status(){return this.getAttribute("status")||"backlog"}get estimate(){return this.getAttribute("estimate")||""}get assignee(){return this.getAttribute("assignee")||""}get storyIds(){let t=this.getAttribute("story-ids")||"";return t?t.split(",").map(e=>e.trim()).filter(Boolean):[]}get _detailLevel(){return this.getAttribute("detail")?this.getAttribute("detail"):this.hasAttribute("compact")?"compact":"full"}get _minimalLabel(){return this.itemTitle||this.itemId||"Work item"}updateStatus(t){ft[t]&&(this.setAttribute("status",t),this.dispatchEvent(new CustomEvent("work-item:status",{detail:{status:t,itemId:this.itemId},bubbles:!0,composed:!0})))}updatePriority(t){mt[t]&&(this.setAttribute("priority",t),this.dispatchEvent(new CustomEvent("work-item:priority",{detail:{priority:t,itemId:this.itemId},bubbles:!0,composed:!0})))}get data(){return{itemId:this.itemId||void 0,type:this.itemType,priority:this.priority,status:this.status,estimate:this.estimate||void 0,assignee:this.assignee||void 0,storyIds:this.storyIds.length?this.storyIds:void 0,detail:this.getAttribute("detail")||void 0,title:this.itemTitle||void 0}}set data(t){!t||typeof t!="object"||(this._applyData(t),this.shadowRoot&&this.#s(),this.dispatchEvent(new CustomEvent("work-item:data-changed",{detail:{data:this.data,source:"property"},bubbles:!0,composed:!0})))}_applyData(t){for(let[e,s]of[["itemId","item-id"],["type","type"],["priority","priority"],["status","status"],["estimate","estimate"],["assignee","assignee"],["detail","detail"]])t[e]!=null&&this.setAttribute(s,String(t[e]));if(t.storyIds&&this.setAttribute("story-ids",Array.isArray(t.storyIds)?t.storyIds.join(","):t.storyIds),t.title&&!this.querySelector('[slot="title"]')){let e=document.createElement("h3");e.slot="title",e.textContent=t.title,this.appendChild(e)}for(let e of["description","notes"])if(t[e]&&!this.querySelector(`[slot="${e}"]`)){let s=document.createElement("p");s.slot=e,s.textContent=t[e],this.appendChild(s)}if(t.checklist&&!this.querySelector('[slot="checklist"]')){let e=document.createElement("ul");e.slot="checklist";let s=Array.isArray(t.checklist)?t.checklist:[t.checklist];for(let r of s){let i=document.createElement("li");i.textContent=r,e.appendChild(i)}this.appendChild(e)}}async _loadSrc(t){if(t){this.shadowRoot.innerHTML=`<style>${R}</style><div class="state-msg">Loading\u2026</div>`;try{let e=await fetch(t);if(!e.ok)throw new Error(`HTTP ${e.status}`);let s=await e.json();this._applyData(s),this.#s()}catch(e){this.shadowRoot.innerHTML=`<style>${R}</style><div class="state-msg state-msg--error">Could not load: ${m(e.message)}</div>`}}}#s(){let t=mt[this.priority]||mt.medium,e=ft[this.status]||ft.backlog,s=this.itemType,r=It[s]||It.task,i=this._detailLevel,a=this.itemId?`Work item: ${m(this.itemId)}`:"Work item";if(i==="minimal"){this.shadowRoot.innerHTML=`<style>${R}</style>
         <article class="wi-card wi-card--minimal" role="article" aria-label="${a}"
           tabindex="0">
@@ -2889,12 +2876,12 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
 .adr-section-icon svg {
   width: 13px;
   height: 13px;
-  fill: white;
+  fill: var(--color-text-inverted, #fff);
 }
 
-.adr-section-icon.context      { background: #8b5cf6; }
-.adr-section-icon.decision     { background: #22c55e; }
-.adr-section-icon.consequences { background: #f59e0b; }
+.adr-section-icon.context      { background: var(--color-accent,  #8b5cf6); }
+.adr-section-icon.decision     { background: var(--color-success, #22c55e); }
+.adr-section-icon.consequences { background: var(--color-warning, #f59e0b); }
 
 .adr-section-title {
   font-size: var(--_font-xs);
@@ -3005,7 +2992,7 @@ var Zt=window.matchMedia("(prefers-reduced-motion: reduce)");var wt=new Map;func
 }
 
 .state-msg        { padding: var(--_space-m); font-size: var(--_font-sm); color: var(--_muted); font-style: italic; }
-.state-msg--error { color: #dc2626; }
+.state-msg--error { color: var(--color-error-text, var(--color-error, #dc2626)); }
 `;var Tt={proposed:{label:"Proposed",color:"#3b82f6",bg:"rgba(59, 130, 246, 0.1)"},accepted:{label:"Accepted",color:"#22c55e",bg:"rgba(34, 197, 94, 0.1)"},deprecated:{label:"Deprecated",color:"#f59e0b",bg:"rgba(245, 158, 11, 0.1)"},superseded:{label:"Superseded",color:"#6b7280",bg:"rgba(107, 114, 128, 0.1)"}},N={calendar:'<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>',context:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/>',decision:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>',consequences:'<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',arrowRight:'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>'},vt=class extends HTMLElement{static get observedAttributes(){return["adr-id","status","supersedes","superseded-by","detail","compact","src"]}#t=new Map;constructor(){super(),this.attachShadow({mode:"open"})}#e(){for(let t of[...this.children]){let e=t.getAttribute("slot");e&&this.#t.set(e,t.textContent.trim())}}connectedCallback(){this.#e(),this.adrId&&!this.id&&(this.id=this.adrId),this.hasAttribute("src")&&this._loadSrc(this.getAttribute("src")),this.#s(),this.setAttribute("data-upgraded","")}disconnectedCallback(){this.removeAttribute("data-upgraded")}attributeChangedCallback(t,e,s){e!==s&&this.shadowRoot&&(t==="src"&&this.isConnected?this._loadSrc(s):this.#s())}get adrId(){return this.getAttribute("adr-id")||""}get status(){return this.getAttribute("status")||"proposed"}get adrTitle(){return this.querySelector('[slot="title"]')?.textContent?.trim()||this.#t.get("title")||""}get adrDate(){let t=this.querySelector('[slot="date"]');return t?.getAttribute("datetime")||t?.textContent?.trim()||this.#t.get("date")||""}get supersedes(){let t=this.getAttribute("supersedes")||"";return t?t.split(",").map(e=>e.trim()).filter(Boolean):[]}get supersededBy(){let t=this.getAttribute("superseded-by")||"";return t?t.split(",").map(e=>e.trim()).filter(Boolean):[]}get _detailLevel(){return this.getAttribute("detail")?this.getAttribute("detail"):this.hasAttribute("compact")?"compact":"full"}get _minimalLabel(){return this.adrTitle||this.adrId||"ADR"}get data(){return{adrId:this.adrId||void 0,status:this.status,detail:this.getAttribute("detail")||void 0,supersedes:this.supersedes.length?this.supersedes:void 0,supersededBy:this.supersededBy.length?this.supersededBy:void 0,title:this.adrTitle||void 0,date:this.adrDate||void 0}}set data(t){!t||typeof t!="object"||(this._applyData(t),this.#e(),this.shadowRoot&&this.#s(),this.dispatchEvent(new CustomEvent("adr-wc:data-changed",{detail:{data:this.data,source:"property"},bubbles:!0,composed:!0})))}_applyData(t){if(t.adrId!=null&&this.setAttribute("adr-id",String(t.adrId)),t.status!=null&&this.setAttribute("status",String(t.status)),t.detail!=null&&this.setAttribute("detail",String(t.detail)),t.supersedes&&this.setAttribute("supersedes",Array.isArray(t.supersedes)?t.supersedes.join(","):t.supersedes),t.supersededBy&&this.setAttribute("superseded-by",Array.isArray(t.supersededBy)?t.supersededBy.join(","):t.supersededBy),t.title&&!this.querySelector('[slot="title"]')){let e=document.createElement("h3");e.slot="title",e.textContent=t.title,this.appendChild(e)}if(t.date&&!this.querySelector('[slot="date"]')){let e=document.createElement("time");e.slot="date",e.setAttribute("datetime",t.date),e.textContent=new Date(t.date).toLocaleDateString(void 0,{year:"numeric",month:"long",day:"numeric"}),this.appendChild(e)}for(let e of["context","decision"])if(t[e]&&!this.querySelector(`[slot="${e}"]`)){let s=document.createElement("p");s.slot=e,s.textContent=t[e],this.appendChild(s)}if(t.consequences&&!this.querySelector('[slot="consequences"]')){let e=document.createElement("ul");e.slot="consequences";let s=Array.isArray(t.consequences)?t.consequences:[t.consequences];for(let r of s){let i=document.createElement("li");i.textContent=r,e.appendChild(i)}this.appendChild(e)}}async _loadSrc(t){if(t){this.shadowRoot.innerHTML=`<style>${P}</style><div class="state-msg">Loading\u2026</div>`;try{let e=await fetch(t);if(!e.ok)throw new Error(`HTTP ${e.status}`);let s=await e.json();this._applyData(s),this.#e(),this.#s()}catch(e){this.shadowRoot.innerHTML=`<style>${P}</style><div class="state-msg state-msg--error">Could not load: ${m(e.message)}</div>`}}}#s(){let t=Tt[this.status]||Tt.proposed,e=this._detailLevel,s=this.adrId?`ADR: ${m(this.adrId)}`:"Architectural Decision Record",r=!!this.querySelector('[slot="date"]')||this.#t.has("date");if(e==="minimal"){this.shadowRoot.innerHTML=`<style>${P}</style>
         <article class="adr-card adr-card--minimal" role="article" aria-label="${s}"
           tabindex="0">
