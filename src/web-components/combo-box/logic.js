@@ -87,19 +87,32 @@ class ComboBox extends VBElement {
       this.#listbox.setAttribute('popover', 'manual');
     }
 
-    // Multi mode: wrap input in tags-input-area
+    // Multi mode: wrap input in tags-input-area.
+    // Idempotent: if a previous upgrade already created the wrapper (e.g. the
+    // element disconnected and reconnected), reuse it instead of creating a
+    // duplicate. Same goes for the live region. Without this guard, every
+    // reconnect appends another empty .tags-input-area + live region to the
+    // DOM and the popup anchor logic ends up pointing at a stale node.
     if (this.#isMultiple) {
-      this.#inputArea = document.createElement('div');
-      this.#inputArea.className = 'tags-input-area';
-      this.insertBefore(this.#inputArea, this.#listbox);
-      this.#inputArea.appendChild(this.#input);
+      this.#inputArea = this.querySelector(':scope > .tags-input-area');
+      if (!this.#inputArea) {
+        this.#inputArea = document.createElement('div');
+        this.#inputArea.className = 'tags-input-area';
+        this.insertBefore(this.#inputArea, this.#listbox);
+      }
+      if (this.#input.parentNode !== this.#inputArea) {
+        this.#inputArea.appendChild(this.#input);
+      }
 
-      // Live region for announcements
-      this.#liveRegion = document.createElement('div');
-      this.#liveRegion.setAttribute('aria-live', 'polite');
-      this.#liveRegion.setAttribute('aria-atomic', 'true');
-      this.#liveRegion.className = 'visually-hidden';
-      this.appendChild(this.#liveRegion);
+      this.#liveRegion = this.querySelector(':scope > [data-combobox-live]');
+      if (!this.#liveRegion) {
+        this.#liveRegion = document.createElement('div');
+        this.#liveRegion.setAttribute('aria-live', 'polite');
+        this.#liveRegion.setAttribute('aria-atomic', 'true');
+        this.#liveRegion.setAttribute('data-combobox-live', '');
+        this.#liveRegion.className = 'visually-hidden';
+        this.appendChild(this.#liveRegion);
+      }
     }
 
     // Apply placeholder from attribute
