@@ -403,7 +403,8 @@ module.exports = {
       "autocomplete": {},
       "aria-valuetext": {},
       "aria-valuenow": {},
-      "open": {}
+      "open": {},
+      "format": { enum: ["hex", "rgb", "hsl", "oklch"] }
     }
   },
 

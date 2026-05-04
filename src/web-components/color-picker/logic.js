@@ -26,7 +26,13 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { supportsPopover } from '../../utils/popover-support.js';
-import { hexToHsl, hslToHex, hslToRgb, hexToRgb, rgbToHex, rgbToHsl, clamp } from './_color-utils.js';
+import {
+  hexToHsl, hslToHex, hslToRgb, hexToRgb, rgbToHex, rgbToHsl, clamp,
+  hslToOklch, oklchToHsl, formatColor,
+} from './_color-utils.js';
+
+const FORMATS = ['hex', 'rgb', 'hsl', 'oklch'];
+const DEFAULT_FORMAT = 'hex';
 
 class ColorPicker extends VBElement {
   static formAssociated = true;
@@ -41,10 +47,9 @@ class ColorPicker extends VBElement {
   #colorAreaThumb;
   #hueStrip;
   #hueThumb;
-  #hexInput;
-  #rInput;
-  #gInput;
-  #bInput;
+  #formatSelect;
+  #inputGroups = {};   // { hex: {wrapper, inputs:[{el, channel}]}, rgb: {...}, ... }
+  #activeFormat = DEFAULT_FORMAT;
   #swatchBar;
   #eyedropperBtn;
   #copyBtn;
@@ -66,6 +71,11 @@ class ColorPicker extends VBElement {
   setup() {
     this.#input = this.querySelector(':scope > input[type="color"]');
     if (!this.#input) return false;
+
+    // Initial format (default hex). Reflected from the format attribute so
+    // authors can land users in HSL or OkLCH directly.
+    const fmtAttr = this.getAttribute('format');
+    if (fmtAttr && FORMATS.includes(fmtAttr)) this.#activeFormat = fmtAttr;
 
     // Parse initial value
     const initHex = this.#input.value || '#000000';
@@ -162,20 +172,50 @@ class ColorPicker extends VBElement {
     hueWrap.appendChild(this.#hueStrip);
     this.#panel.appendChild(hueWrap);
 
-    // Text inputs row
-    const inputs = document.createElement('div');
-    inputs.className = 'color-inputs';
+    // Format selector — controls which inputs are visible AND what Copy writes
+    const formatRow = document.createElement('div');
+    formatRow.className = 'color-format-row';
 
-    this.#hexInput = this.#createTextInput('Hex', 'hex', 7);
-    this.#rInput = this.#createNumInput('R', 'r', 0, 255);
-    this.#gInput = this.#createNumInput('G', 'g', 0, 255);
-    this.#bInput = this.#createNumInput('B', 'b', 0, 255);
+    const formatLabel = document.createElement('label');
+    formatLabel.className = 'color-format-label';
+    const formatLabelText = document.createElement('span');
+    formatLabelText.textContent = 'Format';
+    this.#formatSelect = document.createElement('select');
+    this.#formatSelect.className = 'color-format-select';
+    for (const f of FORMATS) {
+      const opt = document.createElement('option');
+      opt.value = f;
+      opt.textContent = f.toUpperCase();
+      this.#formatSelect.appendChild(opt);
+    }
+    this.#formatSelect.value = this.#activeFormat;
+    formatLabel.appendChild(formatLabelText);
+    formatLabel.appendChild(this.#formatSelect);
+    formatRow.appendChild(formatLabel);
+    this.#panel.appendChild(formatRow);
+    this.listen(this.#formatSelect, 'change', this.#handleFormatChange);
 
-    inputs.appendChild(this.#hexInput.wrapper);
-    inputs.appendChild(this.#rInput.wrapper);
-    inputs.appendChild(this.#gInput.wrapper);
-    inputs.appendChild(this.#bInput.wrapper);
-    this.#panel.appendChild(inputs);
+    // Text inputs — one group per format, only the active one is visible.
+    this.#inputGroups.hex = this.#buildInputGroup('hex', [
+      { label: 'Hex', channel: 'hex', kind: 'text', maxLength: 7 },
+    ]);
+    this.#inputGroups.rgb = this.#buildInputGroup('rgb', [
+      { label: 'R', channel: 'r', kind: 'number', min: 0, max: 255, step: 1 },
+      { label: 'G', channel: 'g', kind: 'number', min: 0, max: 255, step: 1 },
+      { label: 'B', channel: 'b', kind: 'number', min: 0, max: 255, step: 1 },
+    ]);
+    this.#inputGroups.hsl = this.#buildInputGroup('hsl', [
+      { label: 'H', channel: 'h', kind: 'number', min: 0, max: 360, step: 1 },
+      { label: 'S', channel: 's', kind: 'number', min: 0, max: 100, step: 1 },
+      { label: 'L', channel: 'l', kind: 'number', min: 0, max: 100, step: 1 },
+    ]);
+    this.#inputGroups.oklch = this.#buildInputGroup('oklch', [
+      { label: 'L%', channel: 'oL', kind: 'number', min: 0, max: 100, step: 0.1 },
+      { label: 'C',  channel: 'oC', kind: 'number', min: 0, max: 0.4, step: 0.001 },
+      { label: 'H°', channel: 'oH', kind: 'number', min: 0, max: 360, step: 0.1 },
+    ]);
+    for (const f of FORMATS) this.#panel.appendChild(this.#inputGroups[f].wrapper);
+    this.#applyFormatVisibility();
 
     // Swatches from datalist
     const datalist = this.querySelector(':scope > datalist');
@@ -231,43 +271,63 @@ class ColorPicker extends VBElement {
     this.listen(this.#hueStrip, 'pointerdown', this.#handleHuePointerDown);
     this.listen(this.#hueStrip, 'keydown', this.#handleHueKeydown);
 
-    // Text input handlers
-    this.listen(this.#hexInput.input, 'change', this.#handleHexChange);
-    this.listen(this.#rInput.input, 'change', this.#handleRgbChange);
-    this.listen(this.#gInput.input, 'change', this.#handleRgbChange);
-    this.listen(this.#bInput.input, 'change', this.#handleRgbChange);
+    // Text input change handlers wired per group
+    for (const f of FORMATS) {
+      const handler = f === 'hex' ? this.#handleHexChange
+                    : f === 'rgb' ? this.#handleRgbChange
+                    : f === 'hsl' ? this.#handleHslChange
+                    :               this.#handleOklchChange;
+      for (const { el } of this.#inputGroups[f].inputs) {
+        this.listen(el, 'change', handler);
+      }
+    }
   }
 
-  #createTextInput(label, name, maxLength) {
-    const wrapper = document.createElement('label');
-    wrapper.className = 'color-input-label';
-    const span = document.createElement('span');
-    span.textContent = label;
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.setAttribute('data-channel', name);
-    input.setAttribute('maxlength', String(maxLength));
-    input.setAttribute('spellcheck', 'false');
-    input.setAttribute('autocomplete', 'off');
-    wrapper.appendChild(span);
-    wrapper.appendChild(input);
-    return { wrapper, input };
+  #buildInputGroup(format, fields) {
+    const wrapper = document.createElement('div');
+    wrapper.className = `color-inputs color-inputs-${format}`;
+    wrapper.setAttribute('data-format', format);
+    const inputs = [];
+    for (const f of fields) {
+      const label = document.createElement('label');
+      label.className = 'color-input-label';
+      const span = document.createElement('span');
+      span.textContent = f.label;
+      const input = document.createElement('input');
+      input.type = f.kind;
+      input.setAttribute('data-channel', f.channel);
+      input.setAttribute('autocomplete', 'off');
+      input.setAttribute('spellcheck', 'false');
+      if (f.kind === 'text' && f.maxLength) input.setAttribute('maxlength', String(f.maxLength));
+      if (f.kind === 'number') {
+        input.min = String(f.min);
+        input.max = String(f.max);
+        if (f.step != null) input.step = String(f.step);
+      }
+      label.appendChild(span);
+      label.appendChild(input);
+      wrapper.appendChild(label);
+      inputs.push({ el: input, channel: f.channel });
+    }
+    return { wrapper, inputs };
   }
 
-  #createNumInput(label, name, min, max) {
-    const wrapper = document.createElement('label');
-    wrapper.className = 'color-input-label';
-    const span = document.createElement('span');
-    span.textContent = label;
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.setAttribute('data-channel', name);
-    input.min = String(min);
-    input.max = String(max);
-    wrapper.appendChild(span);
-    wrapper.appendChild(input);
-    return { wrapper, input };
+  #applyFormatVisibility() {
+    for (const f of FORMATS) {
+      this.#inputGroups[f].wrapper.hidden = (f !== this.#activeFormat);
+    }
+    if (this.#copyBtn) {
+      this.#copyBtn.setAttribute('aria-label', `Copy ${this.#activeFormat.toUpperCase()} value`);
+    }
   }
+
+  #handleFormatChange = () => {
+    const next = this.#formatSelect.value;
+    if (!FORMATS.includes(next)) return;
+    this.#activeFormat = next;
+    this.#applyFormatVisibility();
+    this.#updateAll();
+  };
 
   // --- Color Area (Saturation/Lightness) ---
 
@@ -351,8 +411,14 @@ class ColorPicker extends VBElement {
 
   // --- Text Input Handlers ---
 
+  #channelInput(format, channel) {
+    return this.#inputGroups[format].inputs.find(i => i.channel === channel)?.el;
+  }
+
   #handleHexChange = () => {
-    let val = this.#hexInput.input.value.trim();
+    const inp = this.#channelInput('hex', 'hex');
+    if (!inp) return;
+    let val = inp.value.trim();
     if (!val.startsWith('#')) val = '#' + val;
     if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val)) {
       const hsl = hexToHsl(val);
@@ -364,10 +430,31 @@ class ColorPicker extends VBElement {
   };
 
   #handleRgbChange = () => {
-    const r = clamp(Number(this.#rInput.input.value) || 0, 0, 255);
-    const g = clamp(Number(this.#gInput.input.value) || 0, 0, 255);
-    const b = clamp(Number(this.#bInput.input.value) || 0, 0, 255);
+    const r = clamp(Number(this.#channelInput('rgb', 'r').value) || 0, 0, 255);
+    const g = clamp(Number(this.#channelInput('rgb', 'g').value) || 0, 0, 255);
+    const b = clamp(Number(this.#channelInput('rgb', 'b').value) || 0, 0, 255);
     const hsl = rgbToHsl(r, g, b);
+    this.#h = hsl.h;
+    this.#s = hsl.s;
+    this.#l = hsl.l;
+    this.#commit();
+  };
+
+  #handleHslChange = () => {
+    const h = clamp(Number(this.#channelInput('hsl', 'h').value) || 0, 0, 360) % 361;
+    const s = clamp(Number(this.#channelInput('hsl', 's').value) || 0, 0, 100);
+    const l = clamp(Number(this.#channelInput('hsl', 'l').value) || 0, 0, 100);
+    this.#h = h;
+    this.#s = s;
+    this.#l = l;
+    this.#commit();
+  };
+
+  #handleOklchChange = () => {
+    const L = clamp(Number(this.#channelInput('oklch', 'oL').value) || 0, 0, 100) / 100;
+    const C = clamp(Number(this.#channelInput('oklch', 'oC').value) || 0, 0, 0.4);
+    const H = clamp(Number(this.#channelInput('oklch', 'oH').value) || 0, 0, 360);
+    const hsl = oklchToHsl(L, C, H);
     this.#h = hsl.h;
     this.#s = hsl.s;
     this.#l = hsl.l;
@@ -404,9 +491,9 @@ class ColorPicker extends VBElement {
   // --- Copy ---
 
   #handleCopy = async () => {
-    const hex = hslToHex(this.#h, this.#s, this.#l);
+    const value = formatColor(this.#activeFormat, this.#h, this.#s, this.#l);
     try {
-      await navigator.clipboard.writeText(hex);
+      await navigator.clipboard.writeText(value);
       this.#copyBtn.textContent = 'Copied!';
       setTimeout(() => { this.#copyBtn.textContent = 'Copy'; }, 1500);
     } catch { /* clipboard not available */ }
@@ -463,11 +550,23 @@ class ColorPicker extends VBElement {
     this.#hueStrip.setAttribute('aria-valuenow', String(this.#h));
     this.#hueStrip.setAttribute('aria-valuetext', `Hue ${this.#h}°`);
 
-    // Text inputs
-    this.#hexInput.input.value = hex;
-    this.#rInput.input.value = String(rgb.r);
-    this.#gInput.input.value = String(rgb.g);
-    this.#bInput.input.value = String(rgb.b);
+    // Text inputs — populate every format group so switching formats
+    // immediately shows the right channel values for the current color.
+    const setVal = (format, channel, v) => {
+      const el = this.#channelInput(format, channel);
+      if (el) el.value = String(v);
+    };
+    setVal('hex', 'hex', hex);
+    setVal('rgb', 'r', rgb.r);
+    setVal('rgb', 'g', rgb.g);
+    setVal('rgb', 'b', rgb.b);
+    setVal('hsl', 'h', this.#h);
+    setVal('hsl', 's', this.#s);
+    setVal('hsl', 'l', this.#l);
+    const oklch = hslToOklch(this.#h, this.#s, this.#l);
+    setVal('oklch', 'oL', (oklch.L * 100).toFixed(1));
+    setVal('oklch', 'oC', oklch.C.toFixed(3));
+    setVal('oklch', 'oH', oklch.H.toFixed(1));
   }
 
   // --- Open/Close ---

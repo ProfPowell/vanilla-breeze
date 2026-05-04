@@ -2052,6 +2052,20 @@ export default {
         "name": "open",
         "kind": "native",
         "purpose": "config"
+      },
+      {
+        "name": "format",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "hex",
+          "rgb",
+          "hsl",
+          "oklch"
+        ],
+        "default": "hex",
+        "description": "Initial input/copy format. Selector inside the picker lets users switch at runtime."
       }
     ],
     "events": [
