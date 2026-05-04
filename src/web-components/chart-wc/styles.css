@@ -39,9 +39,30 @@ chart-wc [data-chart-svg] svg {
 }
 
 /* Source-table hiding: chart-wc's logic.js applies class="visually-hidden"
-   to the data table when chart mode is "replace". The hiding rule itself
-   lives in src/utils/visually-hidden.css (loaded site-wide via main.css's
-   utils layer). No chart-wc-scoped duplicate. */
+   to the data table when chart mode is "replace". The site-wide
+   .visually-hidden utility (src/utils/visually-hidden.css) sets
+   `block-size: 1px`, but <table> elements ignore explicit heights —
+   they size to their content row count. With dense timeseries data
+   (e.g. 5-min buckets over 24h = ~280 rows) the "hidden" table can be
+   8000px+ tall, blowing out document scroll height even though it's
+   visually clipped.
+
+   Fix: switch the hidden table to `display: block` so it respects
+   block-size, then re-apply the visually-hidden box dimensions to the
+   tbody/thead too in case anything inside resists. Unlayered + scoped
+   to chart-wc so it wins the cascade against the @utils-layer rule.
+   This rule is intentionally narrow: only fires when the table is
+   already marked visually-hidden by chart-wc's replace mode. */
+chart-wc > table.visually-hidden {
+  display: block;
+  block-size: 1px !important;
+  inline-size: 1px !important;
+  overflow: hidden;
+  contain: size;
+}
+chart-wc > table.visually-hidden > * {
+  display: none;
+}
 
 /* Print: show the data table, hide the SVG. The print override is
    unlayered and chart-wc-scoped, so it wins over the layered utility. */
