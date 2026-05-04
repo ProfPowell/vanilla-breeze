@@ -176,8 +176,17 @@ currentPath: /stats/
 
   .stats-panel code { font-size: .75rem; color: var(--text-2, #71717a); }
 
-  /* Give chart-wc some breathing room */
-  .stats-panel chart-wc { display: block; min-height: 20rem; }
+  /* Give chart-wc some breathing room when populated */
+  .stats-panel chart-wc { display: block; min-height: 16rem; }
+
+  .stats-empty-note {
+    margin-block: var(--size-l, 1.5rem) 0;
+    padding: var(--size-s, .75rem) var(--size-m, 1rem);
+    border: 1px dashed var(--surface-4, #d4d4d8);
+    border-radius: var(--radius-s, .25rem);
+    background: var(--surface-2, #f4f4f5);
+    color: var(--text-2, #71717a);
+  }
 
   /* Clickable top-events rows for drill-in */
   .stats-events-panel tbody tr {
@@ -280,18 +289,39 @@ currentPath: /stats/
       </div>
 
       <div class="stats-grid">
-        ${timeseriesPanel(d.timeseries ?? [], d.bucketMs)}
-        ${topEventsPanel(d.topEvents ?? [])}
-        ${topPagesPanel(d.topPages ?? [])}
-        ${topReferrersPanel(d.topReferrers ?? [])}
-        ${topCountriesPanel(d.topCountries ?? [])}
-        ${topClicksPanel(d.topClicks ?? [])}
-        ${vitalsPanel(d.vitals ?? [])}
-        ${engagementPanel(d.engagement ?? [])}
-        ${errorsPanel(d.errors ?? [])}
-        ${recentPanel(d.recent ?? [])}
+        ${[
+          ['Activity over time', d.timeseries, () => timeseriesPanel(d.timeseries, d.bucketMs)],
+          ['Top events',         d.topEvents,  () => topEventsPanel(d.topEvents)],
+          ['Top pages',          d.topPages,   () => topPagesPanel(d.topPages)],
+          ['Top referrers',      d.topReferrers, () => topReferrersPanel(d.topReferrers)],
+          ['Top countries',      d.topCountries, () => topCountriesPanel(d.topCountries)],
+          ['Outbound clicks',    d.topClicks,  () => topClicksPanel(d.topClicks)],
+          ['Web Vitals',         d.vitals,     () => vitalsPanel(d.vitals)],
+          ['Engagement',         d.engagement, () => engagementPanel(d.engagement)],
+          ['Recent errors',      d.errors,     () => errorsPanel(d.errors)],
+          ['Recent events',      d.recent,     () => recentPanel(d.recent)],
+        ].filter(([, rows]) => rows && rows.length).map(([, , build]) => build()).join('')}
       </div>
+
+      ${emptyPanelsNote(d)}
     `;
+  }
+
+  function emptyPanelsNote(d) {
+    const empties = [
+      ['Activity over time', d.timeseries],
+      ['Top events',         d.topEvents],
+      ['Top pages',          d.topPages],
+      ['Top referrers',      d.topReferrers],
+      ['Top countries',      d.topCountries],
+      ['Outbound clicks',    d.topClicks],
+      ['Web Vitals',         d.vitals],
+      ['Engagement',         d.engagement],
+      ['Recent errors',      d.errors],
+      ['Recent events',      d.recent],
+    ].filter(([, rows]) => !rows || !rows.length).map(([label]) => label);
+    if (!empties.length) return '';
+    return `<p class="stats-empty-note"><small>No data in this window for: ${empties.map(escape).join(', ')}.</small></p>`;
   }
 
   // ── Panel builders ─────────────────────────────────────────────────
