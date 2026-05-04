@@ -1037,6 +1037,17 @@ module.exports = {
     }
   },
 
+  "score-card": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "trend": { enum: ["up", "down", "flat"] },
+      "tone": { enum: ["default", "success", "warning", "error", "info"] },
+      "layout": { enum: ["stack", "cluster", "compact"] },
+      "loading": { boolean: true }
+    }
+  },
+
   "selection-menu": {
     flow: true,
     permittedContent: ["@flow"],

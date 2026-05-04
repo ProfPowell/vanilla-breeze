@@ -5892,6 +5892,121 @@ export default {
       }
     ]
   },
+  "score-card": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "score-card",
+    "type": "web-component",
+    "description": "Single KPI tile for dashboards: title, headline value, optional change indicator, sparkline (composed with <chart-wc>), description, and icon. Wrap in <a href> for drill-down.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "trend",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "up",
+          "down",
+          "flat"
+        ],
+        "description": "Drives change-indicator color and exposes :state(trend-up|trend-down|trend-flat)"
+      },
+      {
+        "name": "tone",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "default",
+          "success",
+          "warning",
+          "error",
+          "info"
+        ],
+        "description": "Optional accent color applied to the icon slot"
+      },
+      {
+        "name": "layout",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "stack",
+          "cluster",
+          "compact"
+        ],
+        "description": "Grid template variant: vertical stack, icon-cluster row, or dense compact"
+      },
+      {
+        "name": "loading",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Skeleton placeholder state via :state(loading)"
+      }
+    ],
+    "slots": [
+      {
+        "name": "title",
+        "description": "Metric label"
+      },
+      {
+        "name": "value",
+        "description": "Headline number — use <data value=\"...\"> for machine-readable values"
+      },
+      {
+        "name": "change",
+        "description": "Delta indicator — recommend nested <data> for the change value"
+      },
+      {
+        "name": "sparkline",
+        "description": "Trend visualisation — compose with <chart-wc data-type=\"line|area\"> or any sized element"
+      },
+      {
+        "name": "description",
+        "description": "Supporting context line below the metric"
+      },
+      {
+        "name": "icon",
+        "description": "Brand or category icon (recommend <icon-wc>)"
+      }
+    ],
+    "parts": [
+      {
+        "name": "card",
+        "description": "Outer grid container"
+      },
+      {
+        "name": "title",
+        "description": "Title slot wrapper"
+      },
+      {
+        "name": "value",
+        "description": "Value slot wrapper"
+      },
+      {
+        "name": "change",
+        "description": "Change slot wrapper"
+      },
+      {
+        "name": "sparkline",
+        "description": "Sparkline slot wrapper"
+      },
+      {
+        "name": "description",
+        "description": "Description slot wrapper"
+      },
+      {
+        "name": "icon",
+        "description": "Icon slot wrapper"
+      }
+    ]
+  },
   "selection-menu": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "selection-menu",
