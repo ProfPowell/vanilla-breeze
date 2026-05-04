@@ -1,27 +1,27 @@
 /**
  * fab-stack — Fixed action button stack
  *
- * Positions a vertical stack of floating action buttons in the
- * bottom-right corner. Uses column-reverse so the first child
- * (primary action) is at the bottom and secondary actions stack above.
+ * A flex container that pins itself to a screen position via the shared
+ * `[data-float]` system and stacks its children vertically with a gap.
+ * Children keep `position: static` so their own layout rules don't fight
+ * the stack.
+ *
+ * Default position is `bottom-right` for back-compat with existing pages
+ * that wrote `<fab-stack>` without a position attribute. Set
+ * `data-float="..."` on the host to change it.
  *
  * Usage:
- *   <fab-stack>
+ *   <fab-stack data-float="bottom-right">
  *     <settings-panel></settings-panel>
  *     <a href="#" data-back-to-top aria-label="Back to top">&uarr;</a>
  *   </fab-stack>
  *
- * Theming:
- *   --fab-stack-bottom: Bottom offset (default: var(--size-l))
- *   --fab-stack-end:    Inline-end offset (default: var(--size-l))
- *   --fab-stack-gap:    Gap between stacked buttons (default: var(--size-s))
+ * Tokens:
+ *   --fab-stack-gap   gap between children (default: var(--size-s))
+ *   --float-offset    forwarded to data-float (default: var(--size-l))
  */
 
 fab-stack {
-  position: fixed;
-  inset-block-end: calc(var(--fab-stack-bottom, var(--size-l)) + var(--safe-bottom, 0px));
-  inset-inline-end: var(--fab-stack-end, var(--size-l));
-  z-index: var(--z-sticky, 100);
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
@@ -34,9 +34,21 @@ fab-stack > * {
   pointer-events: auto;
 }
 
-/* Back-to-top inside fab-stack: override its own fixed positioning */
-fab-stack [data-back-to-top] {
+/* Children stay in flow — don't let their own fixed positioning escape */
+fab-stack > *,
+fab-stack [data-back-to-top],
+fab-stack [data-float] {
   position: static !important;
   inset: unset !important;
   margin: 0 !important;
+}
+
+/* Back-compat: bare fab-stack without data-float pins to bottom-right.
+ * Same logic as data-float="bottom-right" but inlined so the host
+ * doesn't need the attribute. */
+fab-stack:not([data-float]) {
+  position: fixed;
+  inset-block-end: calc(var(--float-offset, var(--size-l)) + var(--safe-bottom, 0px) + var(--nav-bottom-height, 0px));
+  inset-inline-end: calc(var(--float-offset, var(--size-l)) + var(--safe-right, 0px));
+  z-index: var(--z-float, 200);
 }

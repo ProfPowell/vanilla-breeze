@@ -2,22 +2,24 @@
  * Back-to-top — scroll-driven show/hide
  *
  * Usage:
- *   <a href="#" data-back-to-top aria-label="Back to top">↑</a>
+ *   <a href="#" data-back-to-top data-float="bottom-right" aria-label="Back to top">↑</a>
+ *
+ * Positioning is delegated to the shared `[data-float]` system in
+ * src/utils/float.css. This file owns appearance and the scroll-driven
+ * show/hide animation only.
  *
  * Hidden at top of page, fades in after scrolling past first viewport.
  * Uses scroll-driven animation where supported, falls back to always-visible.
  *
  * Styles are hardened against theme interference — uses !important on
  * properties that themes commonly override on <a> elements.
+ *
+ * Back-compat: a bare <a data-back-to-top> without data-float still
+ * positions itself at bottom-right via the fallback rule below, so
+ * existing pages don't break during migration.
  */
 
 [data-back-to-top] {
-  /* Position: use physical properties to prevent RTL/theme flipping */
-  position: fixed !important;
-  bottom: var(--size-l);
-  right: var(--size-l);
-  z-index: var(--z-sticky, 100);
-
   /* Sizing */
   display: inline-flex !important;
   align-items: center;
@@ -52,6 +54,16 @@
     content: none !important;
     display: none !important;
   }
+}
+
+/* Back-compat: bare data-back-to-top without data-float gets default
+ * bottom-right placement so existing pages keep working. New code
+ * should write `data-back-to-top data-float="bottom-right"`. */
+[data-back-to-top]:not([data-float]) {
+  position: fixed !important;
+  inset-block-end: calc(var(--float-offset, var(--size-l)) + var(--safe-bottom, 0px));
+  inset-inline-end: calc(var(--float-offset, var(--size-l)) + var(--safe-right, 0px));
+  z-index: var(--z-float, 200);
 }
 
 /* Scroll-driven animation: hidden at top, visible after scrolling */

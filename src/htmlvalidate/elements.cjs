@@ -136,7 +136,10 @@ module.exports = {
 
   "fab-stack": {
     flow: true,
-    permittedContent: ["@flow"]
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-float": { enum: ["top-left", "top-center", "top-right", "center-left", "center-right", "bottom-left", "bottom-center", "bottom-right"] }
+    }
   },
 
   "loading-spinner": {

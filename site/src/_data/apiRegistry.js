@@ -615,14 +615,33 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "fab-stack",
     "type": "custom-element",
-    "description": "Fixed action button stack positioned in the bottom-right corner. Stacks multiple floating buttons vertically.",
+    "description": "Fixed action button stack. Pins to one of 8 screen positions via the shared data-float system; stacks children vertically with a gap. Default position is bottom-right.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
         "@flow"
       ]
     },
-    "attributes": [],
+    "attributes": [
+      {
+        "name": "data-float",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "top-left",
+          "top-center",
+          "top-right",
+          "center-left",
+          "center-right",
+          "bottom-left",
+          "bottom-center",
+          "bottom-right"
+        ],
+        "default": "bottom-right",
+        "description": "Screen position via the shared [data-float] system. Mirrors in RTL (left/right are logical inline-start/end)."
+      }
+    ],
     "structure": [
       {
         "element": "<settings-panel>",
@@ -636,12 +655,8 @@ export default {
     "css": {
       "tokens": [
         {
-          "name": "--fab-stack-bottom",
-          "description": "Bottom offset (default: var(--size-l))"
-        },
-        {
-          "name": "--fab-stack-end",
-          "description": "Inline-end offset (default: var(--size-l))"
+          "name": "--float-offset",
+          "description": "Distance from the edge (default: var(--size-l))"
         },
         {
           "name": "--fab-stack-gap",

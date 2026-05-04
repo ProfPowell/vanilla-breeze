@@ -1,0 +1,85 @@
+/**
+ * data-float — General-purpose floating-element positioning system
+ *
+ * Pins an element to one of 8 standard screen positions. Replaces the
+ * scattered ad-hoc `position: fixed` blocks across the codebase
+ * (corporate-cta `.fab`, back-to-top, page-tools fixed mode, etc.) with
+ * a single hardened contract.
+ *
+ * Usage
+ * -----
+ *   <button data-float="bottom-right">…</button>
+ *   <a href="#top" data-float="bottom-right" data-back-to-top>↑</a>
+ *
+ * Stacking multiple items in the same position
+ * --------------------------------------------
+ * Wrap them in <fab-stack data-float="bottom-right"> — the children
+ * keep `position: static` and the stack handles gap. A bare
+ * `data-float` is for singletons.
+ *
+ * Tokens
+ * ------
+ *   --z-float         z-index (default 200, above --z-sticky)
+ *   --float-offset    distance from the screen edge (default --size-l)
+ *   --nav-bottom-height  optional offset added to bottom positions
+ *                        when a fixed bottom nav is present. Set to
+ *                        the nav's height on :root or a parent.
+ *
+ * Per-instance override
+ *   <button data-float="bottom-right" style="--float-offset: 2rem">
+ *
+ * Logical-property positioning
+ * ----------------------------
+ * `left` and `right` map to inset-inline-start / inset-inline-end so
+ * the float mirrors in RTL — Material's behavior. If you need physical
+ * positions, use plain CSS instead of data-float.
+ *
+ * Safe-area awareness
+ * -------------------
+ * Edge positions add the corresponding env(safe-area-inset-*) so floats
+ * don't hide under the iPhone home indicator or the notch.
+ */
+
+/* Base — applies to every floated element */
+[data-float] {
+  position: fixed;
+  z-index: var(--z-float, 200);
+  margin: 0;
+}
+
+/* ── Vertical anchor ──────────────────────────────────────────────── */
+[data-float^="top-"]    { inset-block-start: calc(var(--float-offset, var(--size-l, 1.5rem)) + var(--safe-top, 0px)); }
+[data-float^="bottom-"] { inset-block-end:   calc(var(--float-offset, var(--size-l, 1.5rem)) + var(--safe-bottom, 0px) + var(--nav-bottom-height, 0px)); }
+[data-float^="center-"] {
+  inset-block-start: 50%;
+  translate: 0 -50%;
+}
+
+/* ── Horizontal anchor ───────────────────────────────────────────── */
+[data-float$="-left"]  { inset-inline-start: calc(var(--float-offset, var(--size-l, 1.5rem)) + var(--safe-left, 0px)); }
+[data-float$="-right"] { inset-inline-end:   calc(var(--float-offset, var(--size-l, 1.5rem)) + var(--safe-right, 0px)); }
+[data-float$="-center"] {
+  inset-inline-start: 50%;
+  /* Combine center-X with center-Y translate when present */
+  translate: -50% var(--float-translate-y, 0%);
+}
+
+/* center-* + *-center need both translate components */
+[data-float^="center-"] {
+  --float-translate-y: -50%;
+}
+[data-float="center-center"] {
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  translate: -50% -50%;
+}
+
+/* ── Reduced-motion: kill any consumer-defined entrance transitions
+ *    when the user prefers reduced motion. The base system itself does
+ *    not animate. */
+@media (prefers-reduced-motion: reduce) {
+  [data-float] {
+    transition: none !important;
+    animation: none !important;
+  }
+}

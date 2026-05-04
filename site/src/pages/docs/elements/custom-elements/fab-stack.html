@@ -12,18 +12,56 @@ crumbLabel: Custom Elements
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;fab-stack&gt;</code> element positions a vertical stack of floating action buttons in the bottom-right corner. Uses <code>column-reverse</code> so the first child (primary action) sits at the bottom and secondary actions stack above it.</p>
-  <p>Handles mobile safe-area insets for devices with notches or home indicators.</p>
+  <p>The <code>&lt;fab-stack&gt;</code> element pins itself to one of 8 screen positions and stacks its children vertically with a gap. Position is delegated to the shared <a href="#data-float">data-float</a> system, so the stack can live in any corner or edge — not just bottom-right.</p>
+  <p>Uses <code>column-reverse</code> so the first child (primary action) sits at the bottom and secondary actions stack above it. Children get <code>position: static</code> so their own positioning rules don't fight the stack. Default position is <code>bottom-right</code>.</p>
 </section>
 
 <section>
   <h2>Usage</h2>
-<code-block language="html" label="Settings + back-to-top" data-escape><fab-stack>
+<code-block language="html" label="Default — bottom-right" data-escape><fab-stack>
   <settings-panel></settings-panel>
   <a href="#" data-back-to-top aria-label="Back to top">&uarr;</a>
 </fab-stack></code-block>
 
+<code-block language="html" label="Bottom-left for chat-style triggers" data-escape><fab-stack data-float="bottom-left">
+  <button class="fab" aria-label="Chat">💬</button>
+  <button class="fab" aria-label="Help">?</button>
+</fab-stack></code-block>
+
   <p>Place at the end of the page body, after the footer. The Vanilla Breeze doc site uses this pattern for the settings gear and back-to-top arrow.</p>
+</section>
+
+<section id="data-float">
+  <h2>data-float positioning system</h2>
+  <p>Underneath, <code>&lt;fab-stack&gt;</code> uses the same <code>[data-float]</code> contract any element can opt into. Eight standard positions, safe-area aware, mirrors in RTL.</p>
+  <p>Position values: <code>top-left</code>, <code>top-center</code>, <code>top-right</code>, <code>center-left</code>, <code>center-right</code>, <code>bottom-left</code>, <code>bottom-center</code>, <code>bottom-right</code>.</p>
+
+  <browser-window
+    src="/docs/examples/demos/data-float-positions.html"
+    url="https://vanilla-breeze.dev/data-float"
+    title="data-float — All 8 positions"
+    shadow>
+  </browser-window>
+
+<code-block language="html" label="Singleton float" data-escape><button class="fab" data-float="bottom-right" aria-label="Compose">+</button>
+
+<a href="#top" data-back-to-top data-float="bottom-right" aria-label="Back to top">↑</a></code-block>
+
+  <p>For multiple items in the same corner, wrap in <code>&lt;fab-stack data-float="…"&gt;</code> rather than placing two bare floats — the stack handles gap and prevents overlap.</p>
+
+  <h3>Tokens</h3>
+  <table class="props-table">
+    <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>--z-float</code></td>          <td><code>200</code></td>             <td>z-index for floating elements (above <code>--z-sticky</code> 100)</td></tr>
+      <tr><td><code>--float-offset</code></td>     <td><code>var(--size-l)</code></td>   <td>Distance from the screen edge. Override per-instance with inline <code>style="--float-offset: 2rem"</code>.</td></tr>
+      <tr><td><code>--nav-bottom-height</code></td><td><code>0px</code></td>             <td>Set on <code>:root</code> when a fixed bottom nav is present; bottom-* positions add this offset automatically so floats sit above the nav.</td></tr>
+      <tr><td><code>--safe-top</code> / <code>--safe-bottom</code> / <code>--safe-left</code> / <code>--safe-right</code></td><td>safe-area-inset-*</td><td>Mobile notch / home-indicator awareness — already added to edge positions; you don't manage these directly.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Migration from custom <code>position: fixed</code></h3>
+  <p>Replace ad-hoc fixed positioning with <code>data-float</code> to pick up safe-area insets, the shared z-index, and consistent edge offsets. The previous five places that hardcoded their own corner positioning (corporate-cta <code>.fab</code>, back-to-top, page-tools fixed mode, fab-stack itself) all now route through this contract.</p>
 </section>
 
 <section>
