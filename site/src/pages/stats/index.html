@@ -139,12 +139,26 @@ currentPath: /stats/
   .stats-panel {
     padding: 1rem; border: 1px solid var(--surface-4, #d4d4d8);
     border-radius: .5rem; background: var(--surface-1, #fff); display: block;
+    /* Allow the panel to shrink below its content's intrinsic size when the
+       grid track narrows. Without this, long URLs in the table push the
+       panel wider than its allotted column. */
+    min-inline-size: 0;
   }
   .stats-panel > h2 { margin: 0 0 .75rem; font-size: 1rem; }
   .stats-panel .empty { color: var(--text-2, #71717a); font-style: italic; font-size: .875rem; }
-  .stats-panel table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+  /* The native <table> is intrinsically sized by its content. Wrap it in a
+     scroll container so a wide table scrolls inside the panel instead of
+     visually punching through the right border. */
+  .stats-panel data-table,
+  .stats-panel .table-wrap {
+    display: block; max-inline-size: 100%; overflow-x: auto;
+  }
+  .stats-panel table { inline-size: 100%; border-collapse: collapse; font-size: .875rem; }
   .stats-panel th, .stats-panel td { padding: .375rem .5rem; text-align: left; border-bottom: 1px solid var(--surface-3, #e4e4e7); }
-  .stats-panel td[data-numeric], .stats-panel th[data-numeric] { text-align: right; font-variant-numeric: tabular-nums; }
+  .stats-panel th { white-space: nowrap; }
+  .stats-panel td[data-numeric], .stats-panel th[data-numeric] { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  /* Long URL cells: wrap at slashes so a long path doesn't dominate column width */
+  .stats-panel td:first-child { word-break: break-word; overflow-wrap: anywhere; }
 
   .stats-wide { grid-column: 1 / -1; }
 
