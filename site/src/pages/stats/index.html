@@ -44,7 +44,10 @@ currentPath: /stats/
           <option value="30d">Last 30 days</option>
         </select>
       </label>
-      <button type="submit">Refresh</button>
+      <button type="submit">
+        <icon-wc name="refresh-cw" size="sm"></icon-wc>
+        Refresh
+      </button>
     </form>
   </header>
 
@@ -71,38 +74,48 @@ currentPath: /stats/
     .stats-title-row { grid-template-columns: 1fr; }
   }
   .stats-controls {
-    display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;
-    margin-block: 0 2rem;
-    padding: 1rem; border: 1px solid var(--surface-4, #d4d4d8); border-radius: .5rem;
-    background: var(--surface-2, #f4f4f5);
+    display: flex; gap: var(--size-m, 1rem); align-items: end; flex-wrap: wrap;
+    margin-block: 0 var(--size-xl, 2rem);
+    padding: var(--size-m, 1rem); border: 1px solid var(--color-border, #d4d4d8);
+    border-radius: var(--radius-m, .5rem);
+    background: var(--color-surface-raised, var(--surface-2, #f4f4f5));
   }
-  .stats-controls label { display: grid; gap: .25rem; font-size: .9rem; }
-  .stats-controls input, .stats-controls select {
-    padding: .375rem .625rem; border: 1px solid var(--surface-4, #d4d4d8);
-    border-radius: .25rem; background: var(--surface-1, #fff);
+  .stats-controls label {
+    display: grid; gap: var(--size-2xs, .25rem);
+    font-size: var(--font-size-sm, .875rem);
+    color: var(--color-text-muted, var(--text-2, #71717a));
   }
-  .stats-controls button {
-    padding: .5rem 1rem; border-radius: .25rem; cursor: pointer;
-    border: 1px solid var(--surface-4, #d4d4d8); background: var(--surface-1, #fff);
+  .stats-controls input,
+  .stats-controls select {
+    block-size: 2.25rem;
+    padding-inline: var(--size-s, .625rem);
+    border: 1px solid var(--color-border, #d4d4d8);
+    border-radius: var(--radius-s, .25rem);
+    background: var(--color-surface, var(--surface-1, #fff));
+    font: inherit;
+    color: inherit;
+  }
+  .stats-controls button[type="submit"] {
+    block-size: 2.25rem;
+    padding-inline: var(--size-l, 1rem);
+    border-radius: var(--radius-s, .25rem);
+    border: 1px solid var(--color-interactive, #2f6f5e);
+    background: var(--color-interactive, #2f6f5e);
+    color: var(--color-text-inverted, #fff);
+    font: inherit; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: var(--size-2xs, .25rem);
+  }
+  .stats-controls button[type="submit"]:hover { filter: brightness(1.05); }
+  .stats-controls button[type="submit"]:focus-visible {
+    outline: 2px solid var(--color-focus-ring, var(--color-interactive));
+    outline-offset: 2px;
   }
 
   .stats-output { display: block; width: 100%; }
 
   .stats-totals {
-    display: grid; gap: 1rem; margin-block-end: 2rem; width: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
-  }
-  .stat-card {
-    display: flex; flex-direction: column; gap: .25rem;
-    padding: 1rem 1.25rem; border: 1px solid var(--surface-4, #d4d4d8);
-    border-radius: .5rem; background: var(--surface-1, #fff);
-  }
-  .stat-card__label {
-    font-size: .8rem; color: var(--text-2, #71717a);
-    text-transform: uppercase; letter-spacing: .05em;
-  }
-  .stat-card__value {
-    font-size: 2rem; font-weight: 600; font-variant-numeric: tabular-nums;
+    display: grid; gap: var(--size-m, 1rem); margin-block-end: var(--size-xl, 2rem); width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
   }
 
   .stats-grid {
@@ -192,8 +205,16 @@ currentPath: /stats/
     let data;
     try {
       const res = await fetch(`/api/analytics/stats?${params}`, { headers: { 'accept': 'application/json' } });
-      data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      const body = await res.text();
+      if (!res.ok) {
+        const reason = body.trim()
+          ? (tryParseJson(body)?.error ?? body.slice(0, 200))
+          : `HTTP ${res.status}${res.status === 404 ? ' — analytics endpoint not deployed locally' : ''}`;
+        throw new Error(reason);
+      }
+      data = tryParseJson(body);
+      if (!data) throw new Error('Response was not valid JSON');
+      if (!data.ok) throw new Error(data.error ?? 'Server reported an error');
     } catch (err) {
       output.innerHTML = `
         <div class="stats-error">
@@ -214,10 +235,26 @@ currentPath: /stats/
       <p><small>Site <code>${escape(d.site)}</code> · window ${escape(d.window)} · since ${escape(when)}${sampleRateNote()}</small></p>
 
       <div class="stats-totals">
-        <div class="stat-card"><span class="stat-card__label">Page views</span><span class="stat-card__value">${t.pageViews}</span></div>
-        <div class="stat-card"><span class="stat-card__label">Events</span><span class="stat-card__value">${t.events}</span></div>
-        <div class="stat-card"><span class="stat-card__label">Unique visitors</span><span class="stat-card__value">${t.uniques}</span></div>
-        <div class="stat-card"><span class="stat-card__label">Total hits</span><span class="stat-card__value">${t.hits}</span></div>
+        <score-card>
+          <span slot="title">Page views</span>
+          <data slot="value" value="${t.pageViews}">${formatNum(t.pageViews)}</data>
+          <icon-wc slot="icon" name="eye" size="md"></icon-wc>
+        </score-card>
+        <score-card>
+          <span slot="title">Events</span>
+          <data slot="value" value="${t.events}">${formatNum(t.events)}</data>
+          <icon-wc slot="icon" name="zap" size="md"></icon-wc>
+        </score-card>
+        <score-card>
+          <span slot="title">Unique visitors</span>
+          <data slot="value" value="${t.uniques}">${formatNum(t.uniques)}</data>
+          <icon-wc slot="icon" name="users" size="md"></icon-wc>
+        </score-card>
+        <score-card>
+          <span slot="title">Total hits</span>
+          <data slot="value" value="${t.hits}">${formatNum(t.hits)}</data>
+          <icon-wc slot="icon" name="activity" size="md"></icon-wc>
+        </score-card>
       </div>
 
       <div class="stats-grid">
@@ -568,6 +605,14 @@ currentPath: /stats/
 
   function escape(s) {
     return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function tryParseJson(s) {
+    try { return JSON.parse(s); } catch { return null; }
+  }
+
+  function formatNum(n) {
+    return Number(n ?? 0).toLocaleString();
   }
 
   // If analytics is sampling, surface the factor so counts can be extrapolated.
