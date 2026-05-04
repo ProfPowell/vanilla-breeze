@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Score Card — Dashboard with drill-down</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface-alt); }
+    .dashboard-header { margin-block-end: var(--size-xl); }
+
+    /* Drill-down affordance — partner light-DOM rule for the wrapping anchor.
+       Shadow CSS can't reach the anchor, so consumers add this once. */
+    a:has(score-card) {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      border-radius: var(--radius-m);
+    }
+    a:has(score-card):hover score-card {
+      transform: translateY(-2px);
+      border-color: var(--color-interactive);
+    }
+    a:has(score-card):focus-visible {
+      outline: 2px solid var(--color-focus-ring, var(--color-interactive));
+      outline-offset: 2px;
+    }
+
+    /* 40px sparklines via inline SVG, themed by the trend color */
+    .spark { display: block; inline-size: 100%; block-size: 100%; }
+    .spark .line     { fill: none; stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .spark .area     { fill: currentColor; opacity: 0.18; }
+    .spark .endpoint { fill: currentColor; }
+    score-card[trend="up"]   [slot="sparkline"] { color: var(--color-success); }
+    score-card[trend="down"] [slot="sparkline"] { color: var(--color-error); }
+    score-card[trend="flat"] [slot="sparkline"] { color: var(--color-text-muted); }
+    .lede { color: var(--color-text-muted); }
+    .section-gap { margin-block-start: var(--size-2xl); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="wide" data-layout-gap="xl">
+    <header class="dashboard-header" data-layout="cluster" data-layout-justify="between" data-layout-align="center">
+      <layout-stack data-layout-gap="xs">
+        <h1>Dashboard</h1>
+        <p class="lede">Drill into any tile for detail.</p>
+      </layout-stack>
+      <layout-cluster data-layout-gap="s">
+        <button type="button" class="secondary">
+          <icon-wc name="calendar" size="sm"></icon-wc> Last 30 days
+        </button>
+        <button type="button">
+          <icon-wc name="download" size="sm"></icon-wc> Export
+        </button>
+      </layout-cluster>
+    </header>
+
+    <h2>KPI tiles (click any tile to drill in)</h2>
+    <layout-grid data-layout-min="240px" data-layout-gap="m">
+      <a href="#revenue">
+        <score-card trend="up" tone="success">
+          <span slot="title">Revenue</span>
+          <data slot="value" value="48352">$48,352</data>
+          <small slot="change"><data value="0.082">+8.2%</data> vs last month</small>
+          <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Revenue trend, increasing">
+            <path class="line" d="M 0 22 L 20 19 L 40 17 L 60 12 L 80 8 L 100 4"/>
+            <circle class="endpoint" cx="100" cy="4" r="2"/>
+          </svg>
+          <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+        </score-card>
+      </a>
+
+      <a href="#users">
+        <score-card trend="up" tone="info">
+          <span slot="title">Active Users</span>
+          <data slot="value" value="2350">2,350</data>
+          <small slot="change"><data value="0.18">+18%</data> vs last month</small>
+          <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Active users trend, increasing">
+            <path class="line" d="M 0 24 L 20 20 L 40 17 L 60 14 L 80 10 L 100 6"/>
+            <circle class="endpoint" cx="100" cy="6" r="2"/>
+          </svg>
+          <icon-wc slot="icon" name="users" size="md"></icon-wc>
+        </score-card>
+      </a>
+
+      <a href="#orders">
+        <score-card trend="up" tone="default">
+          <span slot="title">Orders</span>
+          <data slot="value" value="1429">1,429</data>
+          <small slot="change"><data value="0.034">+3.4%</data> vs last month</small>
+          <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Orders trend, increasing">
+            <path class="area" d="M 0 22 L 20 21 L 40 19 L 60 16 L 80 14 L 100 11 L 100 30 L 0 30 Z"/>
+            <path class="line" d="M 0 22 L 20 21 L 40 19 L 60 16 L 80 14 L 100 11"/>
+          </svg>
+          <icon-wc slot="icon" name="shopping-bag" size="md"></icon-wc>
+        </score-card>
+      </a>
+
+      <a href="#bounce">
+        <score-card trend="down" tone="warning">
+          <span slot="title">Bounce Rate</span>
+          <data slot="value" value="0.423">42.3%</data>
+          <small slot="change"><data value="-0.031">-3.1%</data> vs last month</small>
+          <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Bounce rate trend, decreasing">
+            <path class="line" d="M 0 6 L 20 9 L 40 11 L 60 13 L 80 15 L 100 18"/>
+            <circle class="endpoint" cx="100" cy="18" r="2"/>
+          </svg>
+          <icon-wc slot="icon" name="alert-circle" size="md"></icon-wc>
+        </score-card>
+      </a>
+    </layout-grid>
+
+    <h2 class="section-gap">Loading skeleton</h2>
+    <p>Set <code>loading</code> while data is in flight. Slotted content stays in the DOM (so it doesn't reflow on completion) but is visually replaced by a shimmer that respects <code>prefers-reduced-motion</code>.</p>
+    <layout-grid data-layout-min="240px" data-layout-gap="m">
+      <score-card loading>
+        <span slot="title">Total Users</span>
+        <data slot="value" value="0">000</data>
+        <small slot="change">000</small>
+      </score-card>
+
+      <score-card loading tone="info">
+        <span slot="title">Active Users</span>
+        <data slot="value" value="0">000</data>
+        <small slot="change">000</small>
+        <icon-wc slot="icon" name="users" size="md"></icon-wc>
+      </score-card>
+
+      <score-card loading tone="success">
+        <span slot="title">Revenue</span>
+        <data slot="value" value="0">$000</data>
+        <small slot="change">000</small>
+        <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Loading"><path class="line" d="M 0 15 L 100 15"/></svg>
+        <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+      </score-card>
+    </layout-grid>
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

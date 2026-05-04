@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Score Card — Basic Examples</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface-alt); }
+    h2 { margin-block-start: var(--size-xl); margin-block-end: var(--size-m); }
+    layout-grid + h2 { margin-block-start: var(--size-2xl); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="wide" data-layout-gap="xl">
+    <h1>Score Card — Basics</h1>
+    <p>The atom of dashboards. Slot in title and value at minimum; everything else is optional.</p>
+
+    <h2>Minimal</h2>
+    <layout-grid data-layout-min="220px" data-layout-gap="m">
+      <score-card>
+        <span slot="title">Total Users</span>
+        <data slot="value" value="24521">24,521</data>
+      </score-card>
+
+      <score-card>
+        <span slot="title">Orders</span>
+        <data slot="value" value="1429">1,429</data>
+      </score-card>
+
+      <score-card>
+        <span slot="title">Conversion</span>
+        <data slot="value" value="0.032">3.2%</data>
+      </score-card>
+    </layout-grid>
+
+    <h2>With change indicator</h2>
+    <layout-grid data-layout-min="240px" data-layout-gap="m">
+      <score-card trend="up">
+        <span slot="title">Total Users</span>
+        <data slot="value" value="24521">24,521</data>
+        <small slot="change">
+          <icon-wc name="trending-up" size="sm"></icon-wc>
+          <data value="0.125">+12.5%</data> vs last month
+        </small>
+      </score-card>
+
+      <score-card trend="down">
+        <span slot="title">Bounce Rate</span>
+        <data slot="value" value="0.423">42.3%</data>
+        <small slot="change">
+          <icon-wc name="trending-down" size="sm"></icon-wc>
+          <data value="-0.031">-3.1%</data> vs last month
+        </small>
+      </score-card>
+
+      <score-card trend="flat">
+        <span slot="title">Avg Session</span>
+        <data slot="value" value="248">4m 8s</data>
+        <small slot="change">
+          <icon-wc name="minus" size="sm"></icon-wc>
+          <data value="0">no change</data> vs last month
+        </small>
+      </score-card>
+    </layout-grid>
+
+    <h2>With icon and tone</h2>
+    <layout-grid data-layout-min="240px" data-layout-gap="m">
+      <score-card trend="up" tone="success">
+        <span slot="title">Revenue</span>
+        <data slot="value" value="48352">$48,352</data>
+        <small slot="change"><data value="0.082">+8.2%</data> from last month</small>
+        <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+      </score-card>
+
+      <score-card trend="up" tone="info">
+        <span slot="title">Active Users</span>
+        <data slot="value" value="2350">2,350</data>
+        <small slot="change"><data value="0.18">+18%</data> from last month</small>
+        <icon-wc slot="icon" name="users" size="md"></icon-wc>
+      </score-card>
+
+      <score-card trend="down" tone="warning">
+        <span slot="title">Cart Abandonment</span>
+        <data slot="value" value="0.682">68.2%</data>
+        <small slot="change"><data value="0.04">+4%</data> from last month</small>
+        <icon-wc slot="icon" name="shopping-cart" size="md"></icon-wc>
+      </score-card>
+
+      <score-card trend="down" tone="error">
+        <span slot="title">Errors / hr</span>
+        <data slot="value" value="142">142</data>
+        <small slot="change"><data value="2.4">+240%</data> from last hour</small>
+        <icon-wc slot="icon" name="alert-triangle" size="md"></icon-wc>
+      </score-card>
+    </layout-grid>
+
+    <h2>Layout variants</h2>
+    <p>Use <code>layout="cluster"</code> to keep the icon column tall, or <code>layout="compact"</code> for dense dashboards.</p>
+    <layout-grid data-layout-min="240px" data-layout-gap="m">
+      <score-card trend="up" layout="stack">
+        <span slot="title">Stack (default)</span>
+        <data slot="value" value="48352">$48,352</data>
+        <small slot="change"><data value="0.082">+8.2%</data></small>
+        <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+      </score-card>
+
+      <score-card trend="up" layout="cluster">
+        <span slot="title">Cluster</span>
+        <data slot="value" value="48352">$48,352</data>
+        <small slot="change"><data value="0.082">+8.2%</data></small>
+        <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+      </score-card>
+
+      <score-card trend="up" layout="compact">
+        <span slot="title">Compact</span>
+        <data slot="value" value="48352">$48,352</data>
+        <small slot="change"><data value="0.082">+8.2%</data></small>
+      </score-card>
+    </layout-grid>
+
+    <h2>With description</h2>
+    <layout-grid data-layout-min="260px" data-layout-gap="m">
+      <score-card trend="up" tone="success">
+        <span slot="title">MRR</span>
+        <data slot="value" value="86420">$86,420</data>
+        <small slot="change"><data value="0.057">+5.7%</data> vs last month</small>
+        <span slot="description">Active subscriptions, prorated</span>
+        <icon-wc slot="icon" name="trending-up" size="md"></icon-wc>
+      </score-card>
+
+      <score-card trend="up" tone="info">
+        <span slot="title">Page Views</span>
+        <data slot="value" value="184320">184K</data>
+        <small slot="change"><data value="0.12">+12%</data> vs last week</small>
+        <span slot="description">All sources, last 7 days</span>
+        <icon-wc slot="icon" name="eye" size="md"></icon-wc>
+      </score-card>
+    </layout-grid>
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

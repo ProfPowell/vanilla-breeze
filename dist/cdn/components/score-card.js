@@ -109,14 +109,19 @@ var c=`
     margin: 0;
   }
 
-  /* sparkline gets a reserved height so layout doesn't shift on render */
-  .sparkline {
-    min-block-size: var(--_sparkline-h);
-  }
+  /* Empty optional slots collapse to zero so they don't reserve grid rows.
+     :state(has-*) is set by JS when slotchange fires with assigned nodes. */
+  .change, .sparkline, .description, .icon { display: none; }
+  :host(:state(has-change))      .change      { display: block; }
+  :host(:state(has-sparkline))   .sparkline   { display: block; min-block-size: var(--_sparkline-h); overflow: hidden; }
+  :host(:state(has-description)) .description { display: block; }
+  :host(:state(has-icon))        .icon        { display: inline-flex; align-items: center; justify-content: center; }
+
   .sparkline ::slotted(*) {
     display: block;
     inline-size: 100%;
     block-size: var(--_sparkline-h);
+    max-block-size: var(--_sparkline-h);
   }
 
   /* icon region \u2014 accent color from tone */
@@ -178,15 +183,15 @@ var c=`
       background: color-mix(in oklch, var(--_muted) 18%, transparent);
     }
   }
-`;var n=class extends HTMLElement{#t=[];#e;connectedCallback(){this.hasAttribute("data-upgraded")||this.setup()!==!1&&(this.setAttribute("data-upgraded",""),queueMicrotask(()=>{this.dispatchEvent(new CustomEvent(`${this.localName}:upgraded`,{bubbles:!0}))}))}disconnectedCallback(){for(let e of this.#t)e();this.#t=[],this.removeAttribute("data-upgraded"),this.teardown()}listen(e,t,r,s){e.addEventListener(t,r,s),this.#t.push(()=>e.removeEventListener(t,r,s))}setup(){}teardown(){}setState(e,t){this.#e||(this.#e=this.attachInternals());let r=this.#e.states;try{t?r.add(e):r.delete(e)}catch{let s=`--${e}`;t?r.add(s):r.delete(s)}}_adoptInternals(e){this.#e||(this.#e=e)}};var f=window.matchMedia("(prefers-reduced-motion: reduce)");var l=new Map;function d(o,e,t={}){let r=t.priority??10,s={impl:e,bundle:t.bundle,contract:t.contract,priority:r},a=l.get(o);if(customElements.get(o)){if(!a||a.priority>=r){a&&a.priority===r&&a.impl!==e&&console.warn(`[VB Bundle] Tag <${o}> already registered by "${a.bundle}" (priority ${a.priority}). Skipping "${t.bundle}".`);return}console.warn(`[VB Bundle] Tag <${o}> defined by "${a.bundle}" cannot be replaced (customElements.define is permanent). "${t.bundle}" has higher priority but arrived late.`);return}if(a&&a.priority>=r){a.priority===r&&console.warn(`[VB Bundle] Tag <${o}> already registered by "${a.bundle}". Skipping "${t.bundle}" (first wins at equal priority).`);return}l.set(o,s),customElements.define(o,e)}var u=new Set(["up","down","flat"]),h=`
+`;var n=class extends HTMLElement{#t=[];#e;connectedCallback(){this.hasAttribute("data-upgraded")||this.setup()!==!1&&(this.setAttribute("data-upgraded",""),queueMicrotask(()=>{this.dispatchEvent(new CustomEvent(`${this.localName}:upgraded`,{bubbles:!0}))}))}disconnectedCallback(){for(let e of this.#t)e();this.#t=[],this.removeAttribute("data-upgraded"),this.teardown()}listen(e,t,r,o){e.addEventListener(t,r,o),this.#t.push(()=>e.removeEventListener(t,r,o))}setup(){}teardown(){}setState(e,t){this.#e||(this.#e=this.attachInternals());let r=this.#e.states;try{t?r.add(e):r.delete(e)}catch{let o=`--${e}`;t?r.add(o):r.delete(o)}}_adoptInternals(e){this.#e||(this.#e=e)}};var m=window.matchMedia("(prefers-reduced-motion: reduce)");var l=new Map;function d(s,e,t={}){let r=t.priority??10,o={impl:e,bundle:t.bundle,contract:t.contract,priority:r},a=l.get(s);if(customElements.get(s)){if(!a||a.priority>=r){a&&a.priority===r&&a.impl!==e&&console.warn(`[VB Bundle] Tag <${s}> already registered by "${a.bundle}" (priority ${a.priority}). Skipping "${t.bundle}".`);return}console.warn(`[VB Bundle] Tag <${s}> defined by "${a.bundle}" cannot be replaced (customElements.define is permanent). "${t.bundle}" has higher priority but arrived late.`);return}if(a&&a.priority>=r){a.priority===r&&console.warn(`[VB Bundle] Tag <${s}> already registered by "${a.bundle}". Skipping "${t.bundle}" (first wins at equal priority).`);return}l.set(s,o),customElements.define(s,e)}var u=new Set(["up","down","flat"]),h=["change","sparkline","description","icon"],p=`
   <style>${c}</style>
   <div class="card" part="card">
     <span class="title"       part="title"><slot name="title"></slot></span>
     <span class="value"       part="value"><slot name="value"><slot></slot></slot></span>
-    <span class="change"      part="change"><slot name="change"></slot></span>
-    <span class="sparkline"   part="sparkline"><slot name="sparkline"></slot></span>
-    <span class="description" part="description"><slot name="description"></slot></span>
-    <span class="icon"        part="icon"><slot name="icon"></slot></span>
+    <span class="change"      part="change"><slot name="change"      data-slot="change"></slot></span>
+    <span class="sparkline"   part="sparkline"><slot name="sparkline"   data-slot="sparkline"></slot></span>
+    <span class="description" part="description"><slot name="description" data-slot="description"></slot></span>
+    <span class="icon"        part="icon"><slot name="icon"        data-slot="icon"></slot></span>
   </div>
-`,i=class extends n{static get observedAttributes(){return["trend","loading"]}setup(){if(!this.shadowRoot){let e=this.attachShadow({mode:"open"});e.innerHTML=h}this.#t(),this.#e(),this.#r()}attributeChangedCallback(e){this.isConnected&&(e==="trend"?this.#t():e==="loading"&&this.#e())}#t(){let e=(this.getAttribute("trend")||"").toLowerCase();for(let t of u)this.setState(`trend-${t}`,t===e)}#e(){this.setState("loading",this.hasAttribute("loading"))}#r(){let e=this.closest("a[href]");this.setState("interactive",!!e)}};d("score-card",i);export{i as ScoreCard};
+`,i=class extends n{static get observedAttributes(){return["trend","loading"]}setup(){if(this.shadowRoot)for(let e of h){let t=this.shadowRoot.querySelector(`slot[name="${e}"]`);this.#t(e,t)}else{let e=this.attachShadow({mode:"open"});e.innerHTML=p;for(let t of h){let r=e.querySelector(`slot[name="${t}"]`);r?.addEventListener("slotchange",()=>this.#t(t,r)),this.#t(t,r)}}this.#e(),this.#r(),this.#a()}attributeChangedCallback(e){this.isConnected&&(e==="trend"?this.#e():e==="loading"&&this.#r())}#t(e,t){let r=!!t&&t.assignedNodes({flatten:!0}).some(o=>o.nodeType===Node.ELEMENT_NODE||o.nodeType===Node.TEXT_NODE&&o.textContent.trim().length>0);this.setState(`has-${e}`,r)}#e(){let e=(this.getAttribute("trend")||"").toLowerCase();for(let t of u)this.setState(`trend-${t}`,t===e)}#r(){this.setState("loading",this.hasAttribute("loading"))}#a(){let e=this.closest("a[href]");this.setState("interactive",!!e)}};d("score-card",i);export{i as ScoreCard};
 //# sourceMappingURL=score-card.js.map

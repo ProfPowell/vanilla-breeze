@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Score Card — Sparkline composition</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze-charts.css"/>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface-alt); }
+    h2 { margin-block-start: var(--size-xl); margin-block-end: var(--size-m); }
+
+    /* A small inline-SVG sparkline pattern. Sized by score-card's slot rules. */
+    .sparkline-svg { display: block; inline-size: 100%; block-size: 100%; }
+    .sparkline-svg path.line   { fill: none; stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .sparkline-svg path.area   { fill: currentColor; opacity: 0.18; }
+    .sparkline-svg .endpoint   { fill: currentColor; }
+    score-card[trend="up"]   [slot="sparkline"] { color: var(--color-success); }
+    score-card[trend="down"] [slot="sparkline"] { color: var(--color-error); }
+    score-card[trend="flat"] [slot="sparkline"] { color: var(--color-text-muted); }
+    .trend-chart-tall { --score-card-sparkline-height: 160px; }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="wide" data-layout-gap="xl">
+    <h1>Score Card — Sparkline composition</h1>
+    <p>The <code>sparkline</code> slot accepts any sized element. For a true 40-pixel sparkline, an inline <code>&lt;svg&gt;</code> is the lightest, most reliable option — themed via <code>currentColor</code> so it inherits the trend tone. For taller trend visualisations (80px+) compose with <code>&lt;chart-wc&gt;</code>, which gives you axes, tooltips, and a screen-reader-accessible table fallback.</p>
+
+    <h2>Inline-SVG line sparklines (40px)</h2>
+    <layout-grid data-layout-min="260px" data-layout-gap="m">
+      <score-card trend="up" tone="success">
+        <span slot="title">Revenue</span>
+        <data slot="value" value="48352">$48,352</data>
+        <small slot="change"><data value="0.082">+8.2%</data> vs last month</small>
+        <svg slot="sparkline" class="sparkline-svg" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Revenue trend, increasing">
+          <path class="line" d="M 0 22 L 20 19 L 40 17 L 60 12 L 80 8 L 100 4"/>
+          <circle class="endpoint" cx="100" cy="4" r="2"/>
+        </svg>
+        <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+      </score-card>
+
+      <score-card trend="up" tone="info">
+        <span slot="title">Active Users</span>
+        <data slot="value" value="2350">2,350</data>
+        <small slot="change"><data value="0.18">+18%</data> vs last month</small>
+        <svg slot="sparkline" class="sparkline-svg" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Active users trend, increasing">
+          <path class="line" d="M 0 24 L 20 20 L 40 17 L 60 14 L 80 10 L 100 6"/>
+          <circle class="endpoint" cx="100" cy="6" r="2"/>
+        </svg>
+        <icon-wc slot="icon" name="users" size="md"></icon-wc>
+      </score-card>
+
+      <score-card trend="down" tone="warning">
+        <span slot="title">Bounce Rate</span>
+        <data slot="value" value="0.423">42.3%</data>
+        <small slot="change"><data value="-0.031">-3.1%</data> vs last month</small>
+        <svg slot="sparkline" class="sparkline-svg" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Bounce rate trend, decreasing">
+          <path class="line" d="M 0 6 L 20 9 L 40 11 L 60 13 L 80 15 L 100 18"/>
+          <circle class="endpoint" cx="100" cy="18" r="2"/>
+        </svg>
+        <icon-wc slot="icon" name="trending-down" size="md"></icon-wc>
+      </score-card>
+    </layout-grid>
+
+    <h2>Inline-SVG area sparklines (40px)</h2>
+    <layout-grid data-layout-min="260px" data-layout-gap="m">
+      <score-card trend="up" tone="success">
+        <span slot="title">Page Views</span>
+        <data slot="value" value="184320">184K</data>
+        <small slot="change"><data value="0.12">+12%</data> vs last week</small>
+        <svg slot="sparkline" class="sparkline-svg" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Page views trend, increasing">
+          <path class="area" d="M 0 22 L 20 19 L 40 20 L 60 14 L 80 10 L 100 5 L 100 30 L 0 30 Z"/>
+          <path class="line" d="M 0 22 L 20 19 L 40 20 L 60 14 L 80 10 L 100 5"/>
+        </svg>
+      </score-card>
+
+      <score-card trend="up" tone="info">
+        <span slot="title">Sign-ups</span>
+        <data slot="value" value="412">412</data>
+        <small slot="change"><data value="0.064">+6.4%</data> vs last week</small>
+        <svg slot="sparkline" class="sparkline-svg" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Sign-ups trend, increasing">
+          <path class="area" d="M 0 24 L 20 22 L 40 18 L 60 16 L 80 12 L 100 14 L 100 30 L 0 30 Z"/>
+          <path class="line" d="M 0 24 L 20 22 L 40 18 L 60 16 L 80 12 L 100 14"/>
+        </svg>
+      </score-card>
+    </layout-grid>
+
+    <h2>Tall trend chart with chart-wc (160px)</h2>
+    <p>For richer trend visualisation — axes, tooltips, screen-reader table — compose with <code>&lt;chart-wc&gt;</code> at a taller height. Override <code>--score-card-sparkline-height</code> to give it room.</p>
+    <layout-grid data-layout-min="320px" data-layout-gap="m">
+      <score-card trend="up" tone="success" class="trend-chart-tall">
+        <span slot="title">Revenue (90-day)</span>
+        <data slot="value" value="186420">$186,420</data>
+        <small slot="change"><data value="0.142">+14.2%</data> vs prior period</small>
+        <chart-wc slot="sparkline"
+                  data-type="area"
+                  data-values='[{"name":"Revenue","values":{"M1":140000,"M2":148000,"M3":152000,"M4":162000,"M5":174000,"M6":186420}}]'></chart-wc>
+      </score-card>
+    </layout-grid>
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

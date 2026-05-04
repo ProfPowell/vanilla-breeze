@@ -119,14 +119,19 @@ const styles = `
     margin: 0;
   }
 
-  /* sparkline gets a reserved height so layout doesn't shift on render */
-  .sparkline {
-    min-block-size: var(--_sparkline-h);
-  }
+  /* Empty optional slots collapse to zero so they don't reserve grid rows.
+     :state(has-*) is set by JS when slotchange fires with assigned nodes. */
+  .change, .sparkline, .description, .icon { display: none; }
+  :host(:state(has-change))      .change      { display: block; }
+  :host(:state(has-sparkline))   .sparkline   { display: block; min-block-size: var(--_sparkline-h); overflow: hidden; }
+  :host(:state(has-description)) .description { display: block; }
+  :host(:state(has-icon))        .icon        { display: inline-flex; align-items: center; justify-content: center; }
+
   .sparkline ::slotted(*) {
     display: block;
     inline-size: 100%;
     block-size: var(--_sparkline-h);
+    max-block-size: var(--_sparkline-h);
   }
 
   /* icon region — accent color from tone */

@@ -1,0 +1,291 @@
+---
+layout: element
+title: "score-card"
+description: "Single KPI tile for dashboards and analytics — title, headline value, optional change indicator, sparkline (composed with chart-wc), description, and icon. Wrap in an anchor for drill-down."
+elementName: score-card
+category: component
+currentPath: /docs/elements/web-components/score-card/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;score-card&gt;</code> component is the atom of dashboards. It packages a metric tile — title, headline number, optional change indicator, sparkline, description, and icon — into a single composable element that degrades gracefully without JS or CSS.</p>
+  <p>Score-card is the enhanced form of the semantic stat figure documented at <a href="/docs/patterns/data/stats/">/docs/patterns/data/stats/</a>. Use the pattern when you need a no-JS recipe; use the component when you want consistent layout, theme-driven trend coloring, drill-down affordance, and skeleton loading.</p>
+</section>
+
+<section>
+  <h2>Basic Examples</h2>
+  <p>Minimal use only requires <code>title</code> and <code>value</code> slots. Add <code>change</code>, <code>icon</code>, and a <code>tone</code> attribute to grow the tile into a full KPI card.</p>
+
+  <browser-window
+    src="/docs/examples/demos/score-card-basic.html"
+    url="https://vanilla-breeze.dev/score-card"
+    title="Score Card Basics"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" label="Minimal" data-escape><score-card>
+  <span slot="title">Orders</span>
+  <data slot="value" value="1429">1,429</data>
+</score-card></code-block>
+
+  <code-block language="html" label="With change indicator" data-escape><score-card trend="up">
+  <span slot="title">Total Users</span>
+  <data slot="value" value="24521">24,521</data>
+  <small slot="change">
+    <icon-wc name="trending-up" size="sm"></icon-wc>
+    <data value="0.125">+12.5%</data> vs last month
+  </small>
+</score-card></code-block>
+
+  <code-block language="html" label="With icon and tone" data-escape><score-card trend="up" tone="success">
+  <span slot="title">Revenue</span>
+  <data slot="value" value="48352">$48,352</data>
+  <small slot="change"><data value="0.082">+8.2%</data> from last month</small>
+  <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+</score-card></code-block>
+</section>
+
+<section>
+  <h2>Sparkline composition</h2>
+  <p>The <code>sparkline</code> slot accepts any sized element. The slot reserves a fixed height via <code>--score-card-sparkline-height</code> (default <code>40px</code>) and clips overflow, so the chosen renderer is sized predictably regardless of internal content.</p>
+
+  <browser-window
+    src="/docs/examples/demos/score-card-sparkline.html"
+    url="https://vanilla-breeze.dev/score-card/sparkline"
+    title="Score Card with Sparkline"
+    shadow>
+  </browser-window>
+
+  <h3>Inline SVG (recommended for true 40px sparklines)</h3>
+  <p>An inline <code>&lt;svg&gt;</code> is the lightest, most reliable option for the default 40px height. Style with <code>currentColor</code> so it inherits the trend tone via the parent score-card.</p>
+
+  <code-block language="html" label="Inline-SVG sparkline" data-escape><score-card trend="up" tone="success">
+  <span slot="title">Revenue</span>
+  <data slot="value" value="48352">$48,352</data>
+  <small slot="change"><data value="0.082">+8.2%</data> vs last month</small>
+  <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+    <path class="line" d="M 0 22 L 20 19 L 40 17 L 60 12 L 80 8 L 100 4"/>
+    <circle class="endpoint" cx="100" cy="4" r="2"/>
+  </svg>
+  <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+</score-card></code-block>
+
+  <code-block language="css" label="Trend-themed SVG sparklines" data-escape>.spark { display: block; inline-size: 100%; block-size: 100%; }
+.spark .line     { fill: none; stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.spark .area     { fill: currentColor; opacity: 0.18; }
+.spark .endpoint { fill: currentColor; }
+score-card[trend="up"]   [slot="sparkline"] { color: var(--color-success); }
+score-card[trend="down"] [slot="sparkline"] { color: var(--color-error); }
+score-card[trend="flat"] [slot="sparkline"] { color: var(--color-text-muted); }</code-block>
+
+  <h3>chart-wc (for taller trend cards, 120px+)</h3>
+  <p>For richer trend visualisation — axes, tooltips, legend, and a screen-reader-accessible <code>&lt;table&gt;</code> fallback — compose with <code>&lt;<a href="/docs/elements/web-components/chart-wc/">chart-wc</a>&gt;</code> at a taller height. Score-card does not wrap or configure chart-wc — consumers pass it directly so the full chart-wc API stays available.</p>
+
+  <code-block language="html" label="chart-wc trend chart at 160px" data-escape><score-card trend="up" tone="success" style="--score-card-sparkline-height: 160px;">
+  <span slot="title">Revenue (90-day)</span>
+  <data slot="value" value="186420">$186,420</data>
+  <small slot="change"><data value="0.142">+14.2%</data> vs prior period</small>
+  <chart-wc slot="sparkline"
+            data-type="area"
+            data-values='[{"name":"Revenue","values":{"M1":140000,"M2":148000,"M3":152000,"M4":162000,"M5":174000,"M6":186420}}]'></chart-wc>
+</score-card></code-block>
+
+  <p><strong>Note:</strong> chart-wc currently always renders axes and labels. A dedicated minimal/sparkline mode is planned (see <code>vanilla-breeze-rfsl</code>); until it ships, prefer inline SVG for short sparkline tiles.</p>
+</section>
+
+<section>
+  <h2>Drill-down (link-wrapping)</h2>
+  <p>To make a tile clickable, wrap it in an anchor. The wrapping <code>&lt;a&gt;</code> receives keyboard focus and click — no synthetic key handling, no <code>role</code> override, no <code>tabindex</code> juggling. The whole tile becomes a single accessible link.</p>
+  <p>When score-card upgrades, it walks ancestors looking for the nearest <code>&lt;a href&gt;</code>. If found, it sets the <code>:state(interactive)</code> hook so component CSS can apply hover and active affordances.</p>
+
+  <browser-window
+    src="/docs/examples/demos/score-card-dashboard.html"
+    url="https://vanilla-breeze.dev/dashboard"
+    title="Dashboard with drill-down"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" label="Drill-down anchor" data-escape><a href="/dashboard/users">
+  <score-card trend="up" tone="info">
+    <span slot="title">Active Users</span>
+    <data slot="value" value="2350">2,350</data>
+    <small slot="change"><data value="0.18">+18%</data> vs last month</small>
+    <icon-wc slot="icon" name="users" size="md"></icon-wc>
+  </score-card>
+</a></code-block>
+
+  <p>Shadow CSS can't reach the wrapping anchor, so add this partner light-DOM rule once in your stylesheet to apply hover and focus affordances to the tile:</p>
+
+  <code-block language="css" label="Drill-down hover/focus styles" data-escape>a:has(score-card) {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-m);
+}
+a:has(score-card):hover score-card {
+  transform: translateY(-2px);
+  border-color: var(--color-interactive);
+}
+a:has(score-card):focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}</code-block>
+
+  <p><strong>Note:</strong> the <code>:state(interactive)</code> hook is set once on upgrade. If you move a score-card into or out of an anchor at runtime, the state won't re-sync — wrap or unwrap before the element connects.</p>
+</section>
+
+<section>
+  <h2>Loading skeleton</h2>
+  <p>Set the <code>loading</code> attribute while data is in flight. Slotted content stays in the DOM so it doesn't reflow on completion; the value, change, and sparkline regions are visually replaced by a shimmer. The animation respects <code>prefers-reduced-motion</code> and falls back to a flat muted background.</p>
+
+  <code-block language="html" label="Loading skeleton" data-escape><score-card loading tone="success">
+  <span slot="title">Revenue</span>
+  <data slot="value" value="0">$000</data>
+  <small slot="change">000</small>
+  <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+</score-card></code-block>
+
+  <code-block language="js" label="Toggle loading on fetch" data-escape>const card = document.querySelector('#revenue-card');
+card.toggleAttribute('loading', true);
+const data = await fetch('/api/revenue').then(r => r.json());
+card.querySelector('[slot="value"]').textContent = data.formatted;
+card.querySelector('[slot="value"]').setAttribute('value', data.raw);
+card.toggleAttribute('loading', false);</code-block>
+</section>
+
+<section>
+  <h2>Slots</h2>
+  <table>
+    <thead>
+      <tr><th>Slot</th><th>Purpose</th><th>Required</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>title</code></td>       <td>Metric label</td>                                                          <td>yes</td></tr>
+      <tr><td><code>value</code></td>       <td>Headline number — use <code>&lt;data value=&quot;…&quot;&gt;</code> for machine-readable values</td><td>yes</td></tr>
+      <tr><td><code>change</code></td>      <td>Delta indicator — recommend nested <code>&lt;data&gt;</code> for the change value</td><td>no</td></tr>
+      <tr><td><code>sparkline</code></td>   <td>Trend visualisation — compose with <code>&lt;chart-wc&gt;</code> or any sized element</td><td>no</td></tr>
+      <tr><td><code>description</code></td> <td>Supporting context line below the metric</td>                            <td>no</td></tr>
+      <tr><td><code>icon</code></td>        <td>Brand or category icon (recommend <code>&lt;icon-wc&gt;</code>)</td>     <td>no</td></tr>
+    </tbody>
+  </table>
+  <p>Per VB convention, <strong>content goes in slots and state goes in attributes</strong>. The component is intentionally unopinionated about what fills each slot — pass an SVG, canvas, or chart-wc into the sparkline slot; pass any inline element into value when <code>&lt;data&gt;</code> doesn't fit.</p>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>trend</code></td>
+        <td><code>up</code>, <code>down</code>, <code>flat</code></td>
+        <td>—</td>
+        <td>Drives change-indicator color and exposes <code>:state(trend-up|trend-down|trend-flat)</code></td>
+      </tr>
+      <tr>
+        <td><code>tone</code></td>
+        <td><code>default</code>, <code>success</code>, <code>warning</code>, <code>error</code>, <code>info</code></td>
+        <td><code>default</code></td>
+        <td>Optional accent color applied to the icon slot</td>
+      </tr>
+      <tr>
+        <td><code>layout</code></td>
+        <td><code>stack</code>, <code>cluster</code>, <code>compact</code></td>
+        <td><code>stack</code></td>
+        <td>Grid template variant: vertical stack, icon-cluster row, or dense compact</td>
+      </tr>
+      <tr>
+        <td><code>loading</code></td>
+        <td>boolean</td>
+        <td>absent</td>
+        <td>Skeleton placeholder state via <code>:state(loading)</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Internal state hooks</h2>
+  <p>Score-card exposes <a href="https://developer.mozilla.org/docs/Web/API/CustomStateSet">CustomStateSet</a> entries for CSS targeting via <code>:state()</code>:</p>
+  <table>
+    <thead><tr><th>State</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>:state(trend-up)</code></td>   <td><code>trend="up"</code></td></tr>
+      <tr><td><code>:state(trend-down)</code></td> <td><code>trend="down"</code></td></tr>
+      <tr><td><code>:state(trend-flat)</code></td> <td><code>trend="flat"</code></td></tr>
+      <tr><td><code>:state(loading)</code></td>    <td><code>loading</code> attribute present</td></tr>
+      <tr><td><code>:state(interactive)</code></td><td>Element is wrapped in an <code>&lt;a href&gt;</code> ancestor</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>CSS Tokens</h2>
+  <table class="props-table">
+    <thead><tr><th>Token</th><th>Default</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>--score-card-padding</code></td>          <td><code>var(--size-l)</code></td>          <td>Tile internal padding</td></tr>
+      <tr><td><code>--score-card-radius</code></td>           <td><code>var(--radius-m)</code></td>        <td>Corner radius</td></tr>
+      <tr><td><code>--score-card-gap</code></td>              <td><code>var(--size-s)</code></td>          <td>Gap between rows</td></tr>
+      <tr><td><code>--score-card-value-size</code></td>       <td><code>var(--font-size-3xl)</code></td>   <td>Headline number size</td></tr>
+      <tr><td><code>--score-card-value-weight</code></td>     <td><code>var(--font-weight-bold)</code></td><td>Headline number weight</td></tr>
+      <tr><td><code>--score-card-sparkline-height</code></td> <td><code>40px</code></td>                   <td>Reserved height for sparkline slot</td></tr>
+      <tr><td><code>--score-card-surface</code></td>          <td><code>var(--color-surface)</code></td>   <td>Tile background</td></tr>
+      <tr><td><code>--score-card-border</code></td>           <td><code>1px solid var(--color-border-subtle)</code></td><td>Tile border</td></tr>
+      <tr><td><code>--score-card-tone-accent</code></td>      <td>resolved from <code>tone</code></td>     <td>Accent color (icon, optional border)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Static fallback</h2>
+  <p>Before upgrade — and when JS is unavailable — score-card renders its slotted children inline. The recommended fallback structure is the same semantic figure pattern documented at <a href="/docs/patterns/data/stats/">/docs/patterns/data/stats/</a>, so consumers get a fully readable metric without the tile chrome:</p>
+
+  <code-block language="html" label="No-JS fallback" data-escape><score-card trend="up">
+  <figure>
+    <figcaption slot="title">Total Users</figcaption>
+    <data slot="value" value="24521">24,521</data>
+    <small slot="change" data-trend="up">
+      <data value="0.125">+12.5%</data> vs last month
+    </small>
+  </figure>
+</score-card></code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Semantic native elements throughout.</strong> Score-card adds no ARIA roles — meaning comes from the slotted <code>&lt;figure&gt;</code>, <code>&lt;figcaption&gt;</code>, <code>&lt;data&gt;</code>, and <code>&lt;small&gt;</code> structure.</li>
+    <li><strong>Trend is never carried by color alone.</strong> Change indicators include the <code>+</code> or <code>−</code> sign and a direction word in the copy.</li>
+    <li><strong>Drill-down uses a real anchor.</strong> Focus, click activation, right-click menus, and middle-click "open in new tab" all work natively.</li>
+    <li><strong>Reduced motion respected.</strong> The loading skeleton's shimmer animation falls back to a static muted background under <code>prefers-reduced-motion</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <layout-grid data-layout-min="200px" data-layout-gap="m">
+    <a href="/docs/patterns/data/stats/" class="section-card">
+      <h3>Stats Pattern</h3>
+      <p>Semantic figure recipe — score-card's no-JS fallback</p>
+    </a>
+    <a href="/docs/elements/web-components/chart-wc/" class="section-card">
+      <h3>chart-wc</h3>
+      <p>Recommended sparkline composition partner</p>
+    </a>
+    <a href="/docs/elements/native/data/" class="section-card">
+      <h3>data Element</h3>
+      <p>Machine-readable values for value and change slots</p>
+    </a>
+    <a href="/docs/patterns/application/dashboard/" class="section-card">
+      <h3>Dashboard</h3>
+      <p>Full dashboard layouts using score-card</p>
+    </a>
+  </layout-grid>
+</section>

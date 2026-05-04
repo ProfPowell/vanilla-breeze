@@ -30,16 +30,17 @@ import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 
 const TREND_VALUES = new Set(['up', 'down', 'flat']);
+const OPTIONAL_SLOTS = ['change', 'sparkline', 'description', 'icon'];
 
 const TEMPLATE = `
   <style>${styles}</style>
   <div class="card" part="card">
     <span class="title"       part="title"><slot name="title"></slot></span>
     <span class="value"       part="value"><slot name="value"><slot></slot></slot></span>
-    <span class="change"      part="change"><slot name="change"></slot></span>
-    <span class="sparkline"   part="sparkline"><slot name="sparkline"></slot></span>
-    <span class="description" part="description"><slot name="description"></slot></span>
-    <span class="icon"        part="icon"><slot name="icon"></slot></span>
+    <span class="change"      part="change"><slot name="change"      data-slot="change"></slot></span>
+    <span class="sparkline"   part="sparkline"><slot name="sparkline"   data-slot="sparkline"></slot></span>
+    <span class="description" part="description"><slot name="description" data-slot="description"></slot></span>
+    <span class="icon"        part="icon"><slot name="icon"        data-slot="icon"></slot></span>
   </div>
 `;
 
@@ -52,6 +53,16 @@ class ScoreCard extends VBElement {
     if (!this.shadowRoot) {
       const root = this.attachShadow({ mode: 'open' });
       root.innerHTML = TEMPLATE;
+      for (const name of OPTIONAL_SLOTS) {
+        const slot = root.querySelector(`slot[name="${name}"]`);
+        slot?.addEventListener('slotchange', () => this.#syncSlot(name, slot));
+        this.#syncSlot(name, slot);
+      }
+    } else {
+      for (const name of OPTIONAL_SLOTS) {
+        const slot = this.shadowRoot.querySelector(`slot[name="${name}"]`);
+        this.#syncSlot(name, slot);
+      }
     }
     this.#syncTrend();
     this.#syncLoading();
@@ -62,6 +73,14 @@ class ScoreCard extends VBElement {
     if (!this.isConnected) return;
     if (name === 'trend') this.#syncTrend();
     else if (name === 'loading') this.#syncLoading();
+  }
+
+  #syncSlot(name, slot) {
+    const hasContent = !!slot && slot.assignedNodes({ flatten: true }).some(n =>
+      n.nodeType === Node.ELEMENT_NODE ||
+      (n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0)
+    );
+    this.setState(`has-${name}`, hasContent);
   }
 
   #syncTrend() {
