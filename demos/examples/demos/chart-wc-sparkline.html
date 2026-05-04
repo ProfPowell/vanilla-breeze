@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Chart WC — Sparkline Mode</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <link rel="stylesheet" href="/cdn/vanilla-breeze-charts.css"/>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h2 { margin-block-start: var(--size-xl); }
+
+    /* Sparkline tiles — fixed 40px height, full container width. */
+    .spark-row {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: var(--size-m);
+      align-items: center;
+      padding-block: var(--size-s);
+      border-block-end: 1px solid var(--color-border, #eee);
+    }
+    .spark-row chart-wc { block-size: 40px; }
+    .spark-row .label { font-weight: 500; }
+    .spark-row .value {
+      font-variant-numeric: tabular-nums;
+      text-align: end;
+      color: var(--color-text-muted, #666);
+    }
+
+    /* Tone-coloured trend lines via the chart palette. */
+    .trend-up   { --chart-series-1: var(--color-success, #16a34a); }
+    .trend-down { --chart-series-1: var(--color-error, #dc2626); }
+    .trend-flat { --chart-series-1: var(--color-text-muted, #6b7280); }
+
+    .tall-spark {
+      block-size: 120px;
+      max-inline-size: 600px;
+      margin-block-start: var(--size-m);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="wide">
+    <h1>Chart WC — Sparkline Mode</h1>
+    <p>Adding <code>data-size="sparkline"</code> strips axes, gridlines, labels, title, legend, and tooltip. The chart renders as a pure trend shape sized by its container. Pair with <code>&lt;score-card&gt;</code> or use inline as a table-cell trend indicator.</p>
+
+    <h2>Line sparklines (40px)</h2>
+    <section aria-label="Inline trend lines">
+      <article class="spark-row trend-up">
+        <span class="label">Revenue</span>
+        <chart-wc data-type="line" data-size="sparkline"
+          data-values='[{"name":"r","values":{"1":120,"2":135,"3":128,"4":150,"5":162,"6":174,"7":190}}]'></chart-wc>
+        <span class="value">$190K</span>
+      </article>
+      <article class="spark-row trend-down">
+        <span class="label">Bounce rate</span>
+        <chart-wc data-type="line" data-size="sparkline"
+          data-values='[{"name":"b","values":{"1":58,"2":56,"3":59,"4":52,"5":48,"6":44,"7":40}}]'></chart-wc>
+        <span class="value">40%</span>
+      </article>
+      <article class="spark-row trend-flat">
+        <span class="label">Active sessions</span>
+        <chart-wc data-type="line" data-size="sparkline"
+          data-values='[{"name":"s","values":{"1":210,"2":205,"3":215,"4":208,"5":212,"6":210,"7":214}}]'></chart-wc>
+        <span class="value">214</span>
+      </article>
+    </section>
+
+    <h2>Area sparklines (40px)</h2>
+    <section aria-label="Area trend tiles">
+      <article class="spark-row trend-up">
+        <span class="label">Signups (7d)</span>
+        <chart-wc data-type="area" data-size="sparkline"
+          data-values='[{"name":"s","values":{"M":12,"T":18,"W":15,"Th":24,"F":28,"Sa":32,"Su":40}}]'></chart-wc>
+        <span class="value">40 / day</span>
+      </article>
+      <article class="spark-row trend-down">
+        <span class="label">Server errors</span>
+        <chart-wc data-type="area" data-size="sparkline"
+          data-values='[{"name":"e","values":{"M":42,"T":35,"W":28,"Th":22,"F":18,"Sa":12,"Su":8}}]'></chart-wc>
+        <span class="value">8 / hr</span>
+      </article>
+    </section>
+
+    <h2>Bar sparklines (40px)</h2>
+    <section aria-label="Bar trend tiles">
+      <article class="spark-row trend-up">
+        <span class="label">Daily orders</span>
+        <chart-wc data-type="column" data-size="sparkline"
+          data-values='[{"name":"o","values":{"M":24,"T":31,"W":28,"Th":42,"F":56,"Sa":48,"Su":62}}]'></chart-wc>
+        <span class="value">62</span>
+      </article>
+      <article class="spark-row trend-flat">
+        <span class="label">Tickets resolved</span>
+        <chart-wc data-type="column" data-size="sparkline"
+          data-values='[{"name":"t","values":{"M":12,"T":15,"W":11,"Th":14,"F":13,"Sa":10,"Su":12}}]'></chart-wc>
+        <span class="value">12</span>
+      </article>
+    </section>
+
+    <h2>Tall sparkline (120px) — same component, more breathing room</h2>
+    <chart-wc data-type="area" data-size="sparkline" class="tall-spark"
+      data-values='[{"name":"v","values":{"Jan":3200,"Feb":4100,"Mar":3800,"Apr":5200,"May":4700,"Jun":6100,"Jul":5800,"Aug":6900,"Sep":7400,"Oct":8100}}]'></chart-wc>
+
+  </layout-center>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/vanilla-breeze-charts.js"></script>
+</body>
+</html>

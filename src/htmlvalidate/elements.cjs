@@ -345,7 +345,8 @@ module.exports = {
       "data-legend": { boolean: true },
       "data-tooltip": { boolean: true },
       "data-palette": {},
-      "data-chart": { enum: ["replace", "enhance"] }
+      "data-chart": { enum: ["replace", "enhance"] },
+      "data-size": { enum: ["sparkline"] }
     }
   },
 

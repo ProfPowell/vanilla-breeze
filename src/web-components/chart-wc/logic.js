@@ -73,6 +73,7 @@ class ChartWc extends VBElement {
       'data-palette',
       'data-label-x',
       'data-label-y',
+      'data-size',
     ];
   }
 
@@ -278,6 +279,28 @@ class ChartWc extends VBElement {
       if (palette) config.palette = palette;
     }
 
+    // Sparkline mode: strip all chrome regardless of other config.
+    // Forces axes, ticks, gridlines, axis labels, title, legend, and
+    // tooltip off so the chart renders as a pure inline trend shape
+    // sized by its container. Opt in via data-size="sparkline".
+    if (this.dataset.size === 'sparkline') {
+      config.axis = config.axis || {};
+      config.axis.x = {...(config.axis.x || {}), enabled: false};
+      config.axis.y = {...(config.axis.y || {}), enabled: false};
+      config.axis.label = config.axis.label || {};
+      config.axis.label.x = {...(config.axis.label.x || {}), enabled: false};
+      config.axis.label.y = {...(config.axis.label.y || {}), enabled: false};
+      config.ticks = config.ticks || {};
+      config.ticks.x = {...(config.ticks.x || {}), enabled: false};
+      config.ticks.y = {...(config.ticks.y || {}), enabled: false};
+      config.guides = config.guides || {};
+      config.guides.x = {...(config.guides.x || {}), enabled: false};
+      config.guides.y = {...(config.guides.y || {}), enabled: false};
+      config.title = {enabled: false};
+      config.legend = {enabled: false};
+      config.tooltip = {enabled: false};
+    }
+
     // Register VB theme plugin for SVC hook system
     config.plugins = config.plugins || [];
     config.plugins.push(createThemePlugin(this));
@@ -299,6 +322,40 @@ class ChartWc extends VBElement {
     this.appendChild(this.#shadowWrapper);
 
     const shadow = this.#shadowWrapper.attachShadow({mode: 'open'});
+
+    // Sparkline overrides — scoped to a `.sparkline` class on the
+    // container so the rules only fire when sparkline mode is active.
+    // The chart engine still emits its own CSS for axes/labels/title/
+    // legend/tooltip; this layer hides the residual scale labels (which
+    // are always rendered regardless of the enabled flags) and strips
+    // the figure padding so the trend shape fills its container edge to
+    // edge. :host-context() is avoided for cross-browser portability.
+    const sparkStyle = document.createElement('style');
+    sparkStyle.textContent = `
+      .sparkline figure[data-chart-id] {
+        padding: 0;
+        background: transparent;
+      }
+      .sparkline chart-canvas {
+        padding: 0;
+        grid-template-columns: 0 0 0 1fr;
+        grid-template-rows: 1fr 0 0 0;
+      }
+      .sparkline chart-title,
+      .sparkline chart-legend,
+      .sparkline chart-axis,
+      .sparkline chart-label,
+      .sparkline .svc-scale-label-x,
+      .sparkline .svc-scale-label-y,
+      .sparkline .svc-origin-label,
+      .sparkline .svc-axis-y-label-dummy,
+      .sparkline .svc-ticks-x,
+      .sparkline .svc-ticks-y {
+        display: none !important;
+      }
+    `;
+    shadow.appendChild(sparkStyle);
+
     this.#svgContainer = document.createElement('div');
     this.#svgContainer.style.cssText = 'width:100%;height:100%;overflow:visible;';
     shadow.appendChild(this.#svgContainer);
@@ -348,6 +405,14 @@ class ChartWc extends VBElement {
 
     // Create SVG container
     this.#ensureSvgContainer();
+
+    // Toggle sparkline class on the shadow container so the
+    // sparkline-scoped CSS in the shadow root applies/clears.
+    if (this.#svgContainer) {
+      this.#svgContainer.classList.toggle(
+        'sparkline', this.dataset.size === 'sparkline',
+      );
+    }
 
     try {
       this.dispatchEvent(new CustomEvent('chart-wc:config-resolved', {

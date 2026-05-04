@@ -14,33 +14,32 @@
     .page-header {
       margin-block-end: var(--size-xl);
     }
-    layout-card dl, layout-card dd {
-      margin: 0;
-    }
-    .stat-value {
-      font-size: var(--font-size-3xl);
-      font-weight: var(--font-weight-bold);
-    }
-    .stat-change {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--size-2xs);
-      font-size: var(--font-size-sm);
-    }
-    .stat-change.positive {
-      color: var(--color-success);
-    }
-    .stat-change.negative {
-      color: var(--color-error);
-    }
-    .stat-icon {
-      padding: var(--size-s);
-      background: var(--color-surface-alt);
+
+    /* Drill-down affordance — partner light-DOM rule for the wrapping anchor.
+       Shadow CSS can't reach the anchor, so consumers add this once. */
+    a:has(score-card) {
+      display: block;
+      text-decoration: none;
+      color: inherit;
       border-radius: var(--radius-m);
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
+    a:has(score-card):hover score-card {
+      transform: translateY(-2px);
+      border-color: var(--color-interactive);
+    }
+    a:has(score-card):focus-visible {
+      outline: 2px solid var(--color-focus-ring, var(--color-interactive));
+      outline-offset: 2px;
+    }
+
+    /* Sparkline themed by trend color */
+    .spark { display: block; inline-size: 100%; block-size: 100%; }
+    .spark .line     { fill: none; stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .spark .area     { fill: currentColor; opacity: 0.18; }
+    .spark .endpoint { fill: currentColor; }
+    score-card[trend="up"]   [slot="sparkline"] { color: var(--color-success); }
+    score-card[trend="down"] [slot="sparkline"] { color: var(--color-error); }
+    score-card[trend="flat"] [slot="sparkline"] { color: var(--color-text-muted); }
   </style>
 </head>
 <body>
@@ -65,67 +64,57 @@
 
     <!-- Stats Grid -->
     <div data-layout="grid" data-layout-gap="l" data-layout-min="200px">
-      <layout-card>
-        <div data-layout="cluster" data-layout-justify="between" data-layout-align="start">
-          <dl data-layout="stack" data-layout-gap="xs">
-            <dt class="text-sm text-muted">Total Revenue</dt>
-            <dd class="stat-value">$45,231</dd>
-            <dd class="stat-change positive">
-              <icon-wc name="trending-up" size="sm"></icon-wc>
-              +12% from last month
-            </dd>
-          </dl>
-          <span class="stat-icon">
-            <icon-wc name="dollar-sign" size="md"></icon-wc>
-          </span>
-        </div>
-      </layout-card>
+      <a href="#revenue">
+        <score-card trend="up" tone="success">
+          <span slot="title">Total Revenue</span>
+          <data slot="value" value="45231">$45,231</data>
+          <small slot="change"><data value="0.12">+12%</data> from last month</small>
+          <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Revenue trend, increasing">
+            <path class="line" d="M 0 22 L 20 19 L 40 17 L 60 12 L 80 8 L 100 4"/>
+            <circle class="endpoint" cx="100" cy="4" r="2"/>
+          </svg>
+          <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+        </score-card>
+      </a>
 
-      <layout-card>
-        <div data-layout="cluster" data-layout-justify="between" data-layout-align="start">
-          <dl data-layout="stack" data-layout-gap="xs">
-            <dt class="text-sm text-muted">New Users</dt>
-            <dd class="stat-value">2,350</dd>
-            <dd class="stat-change positive">
-              <icon-wc name="trending-up" size="sm"></icon-wc>
-              +18% from last month
-            </dd>
-          </dl>
-          <span class="stat-icon">
-            <icon-wc name="users" size="md"></icon-wc>
-          </span>
-        </div>
-      </layout-card>
+      <a href="#users">
+        <score-card trend="up" tone="info">
+          <span slot="title">New Users</span>
+          <data slot="value" value="2350">2,350</data>
+          <small slot="change"><data value="0.18">+18%</data> from last month</small>
+          <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="New users trend, increasing">
+            <path class="line" d="M 0 24 L 20 20 L 40 17 L 60 14 L 80 10 L 100 6"/>
+            <circle class="endpoint" cx="100" cy="6" r="2"/>
+          </svg>
+          <icon-wc slot="icon" name="users" size="md"></icon-wc>
+        </score-card>
+      </a>
 
-      <layout-card>
-        <div data-layout="cluster" data-layout-justify="between" data-layout-align="start">
-          <dl data-layout="stack" data-layout-gap="xs">
-            <dt class="text-sm text-muted">Active Projects</dt>
-            <dd class="stat-value">12</dd>
-            <dd class="stat-change positive">
-              <icon-wc name="trending-up" size="sm"></icon-wc>
-              +2 from last month
-            </dd>
-          </dl>
-          <span class="stat-icon">
-            <icon-wc name="folder" size="md"></icon-wc>
-          </span>
-        </div>
-      </layout-card>
+      <a href="#projects">
+        <score-card trend="up" tone="default">
+          <span slot="title">Active Projects</span>
+          <data slot="value" value="12">12</data>
+          <small slot="change"><data value="2">+2</data> from last month</small>
+          <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Active projects trend, increasing">
+            <path class="line" d="M 0 20 L 20 18 L 40 18 L 60 15 L 80 12 L 100 10"/>
+            <circle class="endpoint" cx="100" cy="10" r="2"/>
+          </svg>
+          <icon-wc slot="icon" name="folder" size="md"></icon-wc>
+        </score-card>
+      </a>
 
-      <layout-card>
-        <div data-layout="cluster" data-layout-justify="between" data-layout-align="start">
-          <dl data-layout="stack" data-layout-gap="xs">
-            <dt class="text-sm text-muted">Tasks Completed</dt>
-            <dd class="stat-value">89%</dd>
-            <dd class="stat-change negative">
-              <icon-wc name="trending-down" size="sm"></icon-wc>
-              -4% from last month
-            </dd>
-          </dl>
-          <progress data-type="ring" data-size="s" class="success" value="89" max="100">89%</progress>
-        </div>
-      </layout-card>
+      <a href="#tasks">
+        <score-card trend="down" tone="warning">
+          <span slot="title">Tasks Completed</span>
+          <data slot="value" value="0.89">89%</data>
+          <small slot="change"><data value="-0.04">-4%</data> from last month</small>
+          <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Tasks completed trend, decreasing">
+            <path class="line" d="M 0 8 L 20 10 L 40 11 L 60 13 L 80 15 L 100 18"/>
+            <circle class="endpoint" cx="100" cy="18" r="2"/>
+          </svg>
+          <icon-wc slot="icon" name="check-circle" size="md"></icon-wc>
+        </score-card>
+      </a>
     </div>
   </div>
 

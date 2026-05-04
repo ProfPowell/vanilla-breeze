@@ -1687,6 +1687,16 @@ export default {
           "enhance"
         ],
         "description": "How to handle source table: replace hides table, enhance keeps both"
+      },
+      {
+        "name": "data-size",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "sparkline"
+        ],
+        "description": "Render mode. sparkline strips all chrome (axes, ticks, gridlines, labels, title, legend, tooltip) for use as an inline trend chart sized by its container."
       }
     ],
     "structure": [

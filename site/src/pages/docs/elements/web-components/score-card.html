@@ -60,8 +60,28 @@ crumbLabel: Web Components
     shadow>
   </browser-window>
 
-  <h3>Inline SVG (recommended for true 40px sparklines)</h3>
-  <p>An inline <code>&lt;svg&gt;</code> is the lightest, most reliable option for the default 40px height. Style with <code>currentColor</code> so it inherits the trend tone via the parent score-card.</p>
+  <h3>chart-wc with <code>data-size="sparkline"</code> (recommended)</h3>
+  <p>For data-driven trend tiles, compose with <code>&lt;<a href="/docs/elements/web-components/chart-wc/">chart-wc</a>&gt;</code> in <a href="/docs/elements/web-components/chart-wc/#sparkline-mode">sparkline mode</a>. The chart strips axes, gridlines, labels, title, legend, and tooltip and fits the slot's reserved height (default 40px). Same component, same data API, no extra wrapper &mdash; and the underlying <code>&lt;table&gt;</code> data source still ships an accessible fallback.</p>
+
+  <code-block language="html" label="chart-wc sparkline (40px)" data-escape><score-card trend="up" tone="success">
+  <span slot="title">Revenue</span>
+  <data slot="value" value="48352">$48,352</data>
+  <small slot="change"><data value="0.082">+8.2%</data> vs last month</small>
+  <chart-wc slot="sparkline"
+            data-type="line"
+            data-size="sparkline"
+            data-values='[{"name":"r","values":{"1":42000,"2":43500,"3":44100,"4":45800,"5":47200,"6":48352}}]'></chart-wc>
+  <icon-wc slot="icon" name="dollar-sign" size="md"></icon-wc>
+</score-card></code-block>
+
+  <p>Style the trend by overriding <code>--chart-series-1</code> per trend value &mdash; the sparkline shape inherits the colour automatically:</p>
+
+  <code-block language="css" label="Trend-themed sparkline color" data-escape>score-card[trend="up"]   chart-wc[data-size="sparkline"] { --chart-series-1: var(--color-success); }
+score-card[trend="down"] chart-wc[data-size="sparkline"] { --chart-series-1: var(--color-error); }
+score-card[trend="flat"] chart-wc[data-size="sparkline"] { --chart-series-1: var(--color-text-muted); }</code-block>
+
+  <h3>Inline SVG (lightest option, no chart bundle)</h3>
+  <p>If you don't want to ship the optional charts bundle just for tiles, an inline <code>&lt;svg&gt;</code> works the same way. Style with <code>currentColor</code> so it inherits the trend tone via the parent score-card.</p>
 
   <code-block language="html" label="Inline-SVG sparkline" data-escape><score-card trend="up" tone="success">
   <span slot="title">Revenue</span>
@@ -82,19 +102,18 @@ score-card[trend="up"]   [slot="sparkline"] { color: var(--color-success); }
 score-card[trend="down"] [slot="sparkline"] { color: var(--color-error); }
 score-card[trend="flat"] [slot="sparkline"] { color: var(--color-text-muted); }</code-block>
 
-  <h3>chart-wc (for taller trend cards, 120px+)</h3>
-  <p>For richer trend visualisation — axes, tooltips, legend, and a screen-reader-accessible <code>&lt;table&gt;</code> fallback — compose with <code>&lt;<a href="/docs/elements/web-components/chart-wc/">chart-wc</a>&gt;</code> at a taller height. Score-card does not wrap or configure chart-wc — consumers pass it directly so the full chart-wc API stays available.</p>
+  <h3>chart-wc full chart (for taller trend cards, 120px+)</h3>
+  <p>Drop the <code>data-size="sparkline"</code> attribute and bump the slot height to render a full chart with axes, tooltip, and legend.</p>
 
-  <code-block language="html" label="chart-wc trend chart at 160px" data-escape><score-card trend="up" tone="success" style="--score-card-sparkline-height: 160px;">
+  <code-block language="html" label="chart-wc full chart at 160px" data-escape><score-card trend="up" tone="success" style="--score-card-sparkline-height: 160px;">
   <span slot="title">Revenue (90-day)</span>
   <data slot="value" value="186420">$186,420</data>
   <small slot="change"><data value="0.142">+14.2%</data> vs prior period</small>
   <chart-wc slot="sparkline"
             data-type="area"
+            data-tooltip
             data-values='[{"name":"Revenue","values":{"M1":140000,"M2":148000,"M3":152000,"M4":162000,"M5":174000,"M6":186420}}]'></chart-wc>
 </score-card></code-block>
-
-  <p><strong>Note:</strong> chart-wc currently always renders axes and labels. A dedicated minimal/sparkline mode is planned (see <code>vanilla-breeze-rfsl</code>); until it ships, prefer inline SVG for short sparkline tiles.</p>
 </section>
 
 <section>

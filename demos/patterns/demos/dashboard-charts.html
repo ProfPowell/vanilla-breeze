@@ -14,25 +14,15 @@
     [data-layout="cluster"] select {
       inline-size: auto;
     }
-    layout-card dl, layout-card dd {
-      margin: 0;
-    }
-    .stat-value {
-      font-size: var(--font-size-2xl);
-      font-weight: var(--font-weight-bold);
-    }
-    .stat-change {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--size-2xs);
-      font-size: var(--font-size-sm);
-    }
-    .stat-change.positive {
-      color: var(--color-success);
-    }
-    .stat-change.negative {
-      color: var(--color-error);
-    }
+
+    /* Sparkline themed by trend color */
+    .spark { display: block; inline-size: 100%; block-size: 100%; }
+    .spark .line     { fill: none; stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .spark .endpoint { fill: currentColor; }
+    score-card[trend="up"]   [slot="sparkline"] { color: var(--color-success); }
+    score-card[trend="down"] [slot="sparkline"] { color: var(--color-error); }
+    score-card[trend="flat"] [slot="sparkline"] { color: var(--color-text-muted); }
+
     .chart-placeholder {
       display: flex;
       align-items: center;
@@ -74,57 +64,49 @@
 
     <!-- Top Stats Row -->
     <div data-layout="grid" data-layout-gap="l" data-layout-min="250px">
-      <layout-card>
-        <dl data-layout="stack" data-layout-gap="s">
-          <dt class="text-sm text-muted">Total Visitors</dt>
-          <dd data-layout="cluster" data-layout-justify="between" data-layout-align="end">
-            <span class="stat-value">24,521</span>
-            <span class="stat-change positive">
-              <icon-wc name="trending-up" size="sm"></icon-wc>
-              +12.5%
-            </span>
-          </dd>
-        </dl>
-      </layout-card>
+      <score-card trend="up" tone="info">
+        <span slot="title">Total Visitors</span>
+        <data slot="value" value="24521">24,521</data>
+        <small slot="change"><data value="0.125">+12.5%</data></small>
+        <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Visitors trend, increasing">
+          <path class="line" d="M 0 22 L 20 19 L 40 17 L 60 12 L 80 8 L 100 4"/>
+          <circle class="endpoint" cx="100" cy="4" r="2"/>
+        </svg>
+        <icon-wc slot="icon" name="users" size="md"></icon-wc>
+      </score-card>
 
-      <layout-card>
-        <dl data-layout="stack" data-layout-gap="s">
-          <dt class="text-sm text-muted">Page Views</dt>
-          <dd data-layout="cluster" data-layout-justify="between" data-layout-align="end">
-            <span class="stat-value">89,432</span>
-            <span class="stat-change positive">
-              <icon-wc name="trending-up" size="sm"></icon-wc>
-              +8.3%
-            </span>
-          </dd>
-        </dl>
-      </layout-card>
+      <score-card trend="up" tone="info">
+        <span slot="title">Page Views</span>
+        <data slot="value" value="89432">89,432</data>
+        <small slot="change"><data value="0.083">+8.3%</data></small>
+        <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Page views trend, increasing">
+          <path class="line" d="M 0 20 L 20 18 L 40 15 L 60 13 L 80 10 L 100 7"/>
+          <circle class="endpoint" cx="100" cy="7" r="2"/>
+        </svg>
+        <icon-wc slot="icon" name="eye" size="md"></icon-wc>
+      </score-card>
 
-      <layout-card>
-        <dl data-layout="stack" data-layout-gap="s">
-          <dt class="text-sm text-muted">Bounce Rate</dt>
-          <dd data-layout="cluster" data-layout-justify="between" data-layout-align="end">
-            <span class="stat-value">42.3%</span>
-            <span class="stat-change negative">
-              <icon-wc name="trending-down" size="sm"></icon-wc>
-              -2.1%
-            </span>
-          </dd>
-        </dl>
-      </layout-card>
+      <score-card trend="down" tone="warning">
+        <span slot="title">Bounce Rate</span>
+        <data slot="value" value="0.423">42.3%</data>
+        <small slot="change"><data value="-0.021">-2.1%</data></small>
+        <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Bounce rate trend, decreasing">
+          <path class="line" d="M 0 8 L 20 10 L 40 11 L 60 13 L 80 15 L 100 18"/>
+          <circle class="endpoint" cx="100" cy="18" r="2"/>
+        </svg>
+        <icon-wc slot="icon" name="alert-circle" size="md"></icon-wc>
+      </score-card>
 
-      <layout-card>
-        <dl data-layout="stack" data-layout-gap="s">
-          <dt class="text-sm text-muted">Avg. Session</dt>
-          <dd data-layout="cluster" data-layout-justify="between" data-layout-align="end">
-            <span class="stat-value">4m 32s</span>
-            <span class="stat-change positive">
-              <icon-wc name="trending-up" size="sm"></icon-wc>
-              +18.7%
-            </span>
-          </dd>
-        </dl>
-      </layout-card>
+      <score-card trend="up" tone="success">
+        <span slot="title">Avg. Session</span>
+        <data slot="value" value="272">4m 32s</data>
+        <small slot="change"><data value="0.187">+18.7%</data></small>
+        <svg slot="sparkline" class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="Avg session trend, increasing">
+          <path class="line" d="M 0 24 L 20 20 L 40 17 L 60 14 L 80 10 L 100 6"/>
+          <circle class="endpoint" cx="100" cy="6" r="2"/>
+        </svg>
+        <icon-wc slot="icon" name="clock" size="md"></icon-wc>
+      </score-card>
     </div>
 
     <!-- Charts Row -->

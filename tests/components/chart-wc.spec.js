@@ -10,6 +10,7 @@ import {test, expect} from 'playwright/test';
 const basicPage = '/docs/examples/demos/chart-wc-basic.html';
 const tablePage = '/docs/examples/demos/chart-wc-table.html';
 const dynamicPage = '/docs/examples/demos/chart-wc-dynamic.html';
+const sparklinePage = '/docs/examples/demos/chart-wc-sparkline.html';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -224,6 +225,78 @@ test.describe('chart-wc — dynamic property', () => {
     await expect(
       page.locator('#dynamic-chart [data-chart-svg]'),
     ).toBeVisible();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sparkline mode
+// ---------------------------------------------------------------------------
+
+test.describe('chart-wc — sparkline mode', () => {
+
+  test('sparkline charts upgrade and render SVG', async ({page}) => {
+    await page.goto(sparklinePage);
+    await waitForAllCharts(page);
+
+    const charts = page.locator('chart-wc[data-size="sparkline"]');
+    const count = await charts.count();
+    expect(count).toBeGreaterThan(0);
+
+    for (let i = 0; i < count; i++) {
+      await expect(charts.nth(i).locator('[data-chart-svg]')).toBeVisible();
+    }
+  });
+
+  test('sparkline mode hides chrome (computed display none)', async ({page}) => {
+    await page.goto(sparklinePage);
+    await waitForAllCharts(page);
+
+    // Chrome elements (chart-title, chart-legend, chart-axis, chart-label,
+    // and .svc-scale-label-*) live inside the shadow root. The sparkline
+    // engine config skips emitting most of them; the shadow stylesheet
+    // additionally hides any leftovers via display:none. Verify computed
+    // styles directly to catch both paths.
+    const computed = await page.evaluate(() => {
+      const chart = document.querySelector('chart-wc[data-size="sparkline"]');
+      const wrapper = chart?.querySelector('[data-chart-svg]');
+      const shadow = wrapper?.shadowRoot;
+      const targets = [
+        ...shadow.querySelectorAll(
+          'chart-title, chart-legend, chart-axis, chart-label,' +
+          ' .svc-scale-label-x, .svc-scale-label-y',
+        ),
+      ];
+      // No chrome element should be visible. (Some may be omitted entirely;
+      // the rest are hidden via the shadow stylesheet.)
+      return targets.every((el) => getComputedStyle(el).display === 'none');
+    });
+
+    expect(computed).toBe(true);
+  });
+
+  test('sparkline class is applied to shadow container', async ({page}) => {
+    await page.goto(sparklinePage);
+    await waitForAllCharts(page);
+
+    const sparkClassPresent = await page.evaluate(() => {
+      const chart = document.querySelector('chart-wc[data-size="sparkline"]');
+      const wrapper = chart?.querySelector('[data-chart-svg]');
+      const shadow = wrapper?.shadowRoot;
+      const inner = shadow?.querySelector('div.sparkline');
+      return !!inner;
+    });
+
+    expect(sparkClassPresent).toBe(true);
+  });
+
+  test('non-sparkline charts retain default chrome', async ({page}) => {
+    await page.goto(basicPage);
+    await waitForAllCharts(page);
+
+    // The line chart on basic-page has data-legend + data-tooltip set,
+    // so it should render chart-legend.
+    const lineChart = page.locator('chart-wc[data-type="line"]').first();
+    await expect(lineChart.locator('chart-legend')).toHaveCount(1);
   });
 });
 
