@@ -4,69 +4,83 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Combo-Box — Static Fallback</title>
+  <link rel="stylesheet" href="/src/main.css">
 </head>
 <body>
   <!--
     Static fallback for <combo-box>.
 
-    Upgrade relationship:
-    - Without JS: A native <input> with a <datalist> provides built-in
-      autocomplete. The browser renders a suggestion dropdown as the
-      user types, filtered automatically. The input participates in
-      form submission natively. No ARIA attributes or keyboard handling
-      are needed — the browser manages the combobox pattern entirely.
-    - With JS: <combo-box> replaces the datalist with a custom listbox
-      (role="listbox") using the Popover API for positioning. It adds
-      form association via ElementInternals, aria-expanded,
-      aria-autocomplete="list", aria-activedescendant for active option
-      tracking, configurable filter modes (contains/startsWith),
-      multi-select tag mode (multiple) with tag creation/removal,
-      custom entry support (custom), and validation via
-      the Constraint Validation API.
+    The markup below IS the component — same structure, just before the
+    JS upgrade has happened. Authors should copy this shape verbatim.
 
-    The static form gives users type-ahead autocomplete in every modern
-    browser. The component adds richer filtering, multi-select, and
-    form integration.
+    Upgrade relationship:
+    - No JS, no CSS:  A plain <input> followed by a list of <li> options.
+                      Submitting the form sends whatever the user typed.
+                      Usable but unstyled.
+    - No JS, with VB CSS:  styles.css renders the <ul>/<ol> as a styled
+                      menu beneath the input. Still no filtering or
+                      keyboard navigation, but visually consistent with
+                      the upgraded component.
+    - With JS:  <combo-box> wires up the listbox (role="listbox") with
+                Popover-API positioning, filtering (contains | startsWith),
+                keyboard navigation (Arrow/Enter/Escape), aria-expanded,
+                aria-autocomplete="list", aria-activedescendant, optional
+                multi-select tag mode (multiple), custom typed entries
+                (custom), and form association via ElementInternals.
+
+    The required structure is:
+      <combo-box>
+        <input type="text">
+        <ul> or <ol>
+          <li data-value="...">Option label</li>
+          ...
+      </combo-box>
   -->
 
   <main>
     <h1>Combo-Box Examples</h1>
 
-    <!-- Single-select autocomplete -->
+    <!-- Single-select -->
     <h2>Country Selector</h2>
     <form action="/submit" method="post">
       <p>
         <label for="country">Country</label>
-        <input type="text" id="country" name="country" list="country-list"
-               placeholder="Search countries..." autocomplete="off" required>
-        <datalist id="country-list">
-          <option value="United States">
-          <option value="United Kingdom">
-          <option value="Canada">
-          <option value="Australia">
-          <option value="Germany">
-          <option value="France">
-          <option value="Japan">
-          <option value="Brazil">
-        </datalist>
+        <combo-box name="country" filter="contains">
+          <input id="country" type="text" placeholder="Search countries…" autocomplete="off" required>
+          <ul>
+            <li data-value="us">United States</li>
+            <li data-value="gb">United Kingdom</li>
+            <li data-value="ca">Canada</li>
+            <li data-value="au">Australia</li>
+            <li data-value="de">Germany</li>
+            <li data-value="fr">France</li>
+            <li data-value="jp">Japan</li>
+            <li data-value="br">Brazil</li>
+          </ul>
+        </combo-box>
       </p>
 
-      <!-- Multi-select fallback: a standard <select multiple> -->
+      <!-- Multi-select tag mode -->
       <h2>Topic Tags</h2>
       <p>
-        <label for="topics">Topics (select multiple)</label>
-        <select id="topics" name="topics" multiple>
-          <option value="js">JavaScript</option>
-          <option value="css">CSS</option>
-          <option value="html">HTML</option>
-          <option value="a11y">Accessibility</option>
-          <option value="perf">Performance</option>
-          <option value="testing">Testing</option>
-        </select>
+        <label for="topics">Topics</label>
+        <combo-box name="topics" multiple max="5">
+          <input id="topics" type="text" placeholder="Add topics…" autocomplete="off">
+          <ul>
+            <li data-value="js">JavaScript</li>
+            <li data-value="css">CSS</li>
+            <li data-value="html">HTML</li>
+            <li data-value="a11y">Accessibility</li>
+            <li data-value="perf">Performance</li>
+            <li data-value="testing">Testing</li>
+          </ul>
+        </combo-box>
       </p>
 
       <p><button type="submit">Submit</button></p>
     </form>
   </main>
+
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>
