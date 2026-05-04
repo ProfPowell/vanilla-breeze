@@ -42,6 +42,7 @@ import '../custom-elements/mobile-menu/logic.js';
 // Core utility inits
 import '../utils/interest-polyfill.js';
 import '../utils/copy-init.js';
+import '../utils/back-to-top-init.js';
 import '../utils/hotkey-init.js';
 import '../utils/format-number-init.js';
 import '../utils/format-date-init.js';

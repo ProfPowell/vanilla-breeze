@@ -26,6 +26,7 @@ import './command-palette/logic.js';
 import './short-cuts/logic.js';
 import '../utils/interest-polyfill.js';
 import '../utils/copy-init.js';
+import '../utils/back-to-top-init.js';
 import '../utils/hotkey-init.js';
 import '../utils/command-init.js';
 import '../utils/format-number-init.js';

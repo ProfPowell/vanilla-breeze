@@ -59,6 +59,7 @@ if (document.querySelector('textarea[data-count]')) import('./utils/textarea-cou
 if (document.querySelector('input[data-accept]')) import('./utils/accept-init.js');
 if (document.querySelector('[data-highlights]')) import('./utils/highlights-init.js');
 if (document.querySelector('[data-copy], [data-copy-target]')) import('./utils/copy-init.js');
+if (document.querySelector('[data-back-to-top]')) import('./utils/back-to-top-init.js');
 if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-action-init.js');
 if (document.querySelector('[data-watch-page], watch-wc')) import('./utils/page-watch-init.js');
 if (document.querySelector('form[data-vb-email-form]')) import('./utils/email-form-init.js');

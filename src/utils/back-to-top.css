@@ -66,24 +66,27 @@
   z-index: var(--z-float, 200);
 }
 
-/* Scroll-driven animation: hidden at top, visible after scrolling */
-@supports (animation-timeline: scroll()) {
-  @keyframes back-to-top-show {
-    0%, 5% { opacity: 0; pointer-events: none; }
-    15%, 100% { opacity: 1; pointer-events: auto; }
-  }
-
-  [data-back-to-top] {
-    animation: back-to-top-show linear both;
-    animation-timeline: scroll();
-  }
+/* Visibility is JS-driven via [data-visible]. The init script
+ * (src/utils/back-to-top-init.js) toggles the attribute when the user
+ * scrolls past one viewport, and removes it again near the top of the
+ * page so the button doesn't sit over hero content. */
+[data-back-to-top] {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-enter-duration, 200ms) var(--ease-out, ease) !important;
 }
 
-/* Fallback for browsers without scroll-driven animation */
-@supports not (animation-timeline: scroll()) {
-  [data-back-to-top] {
-    opacity: 1;
-  }
+[data-back-to-top][data-visible] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Pre-init fallback: until the init script has tagged an element, leave
+ * it visible so it works on no-JS pages and during the brief boot window.
+ * Once data-back-to-top-init is set the rule above takes over. */
+[data-back-to-top]:not([data-back-to-top-init]) {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Hover state */
@@ -95,11 +98,10 @@
   transform: none !important;
 }
 
-/* Reduced motion */
+/* Reduced motion: instant show/hide, no fade */
 @media (prefers-reduced-motion: reduce) {
   [data-back-to-top] {
-    transition: none;
-    animation: none;
-    opacity: 1;
+    transition: none !important;
+    animation: none !important;
   }
 }
