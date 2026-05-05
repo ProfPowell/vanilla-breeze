@@ -1,0 +1,158 @@
+---
+layout: guide
+title: "Highlights & Annotations"
+description: "Medium-style text highlighting with private notes — engine, selection toolbar, action components, and persistence layer."
+guideGroup: Concepts
+currentPath: /docs/concepts/highlights/
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Highlights &amp; Annotations</span></li>
+  </ol>
+</nav>
+</template>
+
+<section>
+  <h2>Overview</h2>
+  <p>Vanilla Breeze ships a Medium-style highlighting system: select text, pick a color, optionally add a private note. Highlights persist in <code>localStorage</code> per page. Notes live in a panel that opens when you click the margin annotation, and the storage layer is a single private object behind a controller — easy to export, import, or wire to a sync backend later.</p>
+  <p>The system is layered. Each layer has one job and you opt into the layers you want.</p>
+</section>
+
+<section>
+  <h2>The four layers</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Layer</th><th>What it does</th><th>How you use it</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Engine</strong><br><code>data-highlights</code> attribute<br><code>src/utils/highlights-init.js</code></td>
+        <td>Range serialization, persistence, CSS Custom Highlight API rendering (with <code>&lt;mark&gt;</code> fallback), margin annotations, public mutation API. Emits <code>highlights:added</code>, <code>highlights:removed</code>, <code>highlights:clicked</code>, <code>highlights:request-note</code>, <code>highlights:selected</code>.</td>
+        <td><code>&lt;article data-highlights&gt;</code> on any container. Without other layers it renders read-only stored highlights and exposes the controller API.</td>
+      </tr>
+      <tr>
+        <td><strong>Selection toolbar</strong><br><code>&lt;<a href="/docs/elements/web-components/selection-menu/">selection-menu</a>&gt;</code></td>
+        <td>Floating toolbar that appears when a user selects text in a target element. Composes action children. Detects selection, positions itself, dismisses on outside click / Escape.</td>
+        <td><code>&lt;selection-menu for="article-id"&gt;…&lt;/selection-menu&gt;</code> with action children inside.</td>
+      </tr>
+      <tr>
+        <td><strong>Highlight action</strong><br><code>&lt;<a href="/docs/elements/web-components/highlight-wc/">highlight-wc</a>&gt;</code></td>
+        <td>Inside <code>&lt;selection-menu&gt;</code>: icon button + color palette dropdown that commits a highlight via the engine. Standalone: HTML-first sugar that turns a target into a <code>data-highlights</code> container.</td>
+        <td>Inside selection-menu: <code>&lt;highlight-wc colors="red,green"&gt;&lt;/highlight-wc&gt;</code>. Standalone: <code>&lt;highlight-wc for="article-id"&gt;&lt;/highlight-wc&gt;</code>.</td>
+      </tr>
+      <tr>
+        <td><strong>Note action + panel host</strong><br><code>&lt;<a href="/docs/elements/web-components/note-wc/">note-wc</a>&gt;</code></td>
+        <td>Inside <code>&lt;selection-menu&gt;</code>: highlight + open note panel in one click. Anywhere on the page: hosts the note panel UI for any highlight that requests one (margin-annotation clicks, programmatic <code>openFor()</code>).</td>
+        <td><code>&lt;note-wc&gt;&lt;/note-wc&gt;</code> as a selection-menu child, OR placed once on the page so margin annotations have a panel to open.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Recipes</h2>
+
+  <h3>Read-only display of stored highlights</h3>
+  <p>Just the engine, no UI. Renders highlights persisted under the page's pathname; new selections do nothing.</p>
+<code-block language="html" label="Read-only" data-escape><article data-highlights data-highlights-readonly>
+  <p>Existing highlights from localStorage paint here.</p>
+</article></code-block>
+
+  <h3>Full interactive (highlight + notes)</h3>
+  <p>Engine + selection-menu + highlight-wc + note-wc. The 4-line vanilla recipe.</p>
+<code-block language="html" label="Full system" data-escape><article id="post" data-highlights>
+  <p>Select text to highlight. Click a margin annotation to add a note.</p>
+</article>
+
+<selection-menu for="post">
+  <highlight-wc></highlight-wc>
+  <note-wc></note-wc>
+</selection-menu></code-block>
+
+  <h3>Custom colors</h3>
+  <p>Define <code>--highlight-{name}</code> CSS tokens, then list the names on both <code>data-highlights-colors</code> (engine) and <code>colors</code> (highlight-wc swatches).</p>
+<code-block language="html" label="Brand palette" data-escape><style>
+  .brand-article {
+    --highlight-brand: #fce7f3;
+    --highlight-accent: #ddd6fe;
+  }
+</style>
+<article id="post" class="brand-article"
+         data-highlights data-highlights-colors="brand,accent,yellow">
+  <p>Custom palette per article.</p>
+</article>
+<selection-menu for="post">
+  <highlight-wc colors="brand,accent,yellow"></highlight-wc>
+  <note-wc></note-wc>
+</selection-menu></code-block>
+
+  <h3>Page-tools toggle for notes</h3>
+  <p>Drop a note-wc with <code>for=</code> into the page-tools rail; clicking it opens the note panel for the first highlight on that article.</p>
+<code-block language="html" label="Notes from page-tools" data-escape><page-tools>
+  <print-page></print-page>
+  <share-wc></share-wc>
+  <note-wc for="post"></note-wc>
+</page-tools></code-block>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table>
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>highlights:added</code></td><td><code>{ id, color, text }</code></td><td>A highlight is created via the controller</td></tr>
+      <tr><td><code>highlights:removed</code></td><td><code>{ id }</code></td><td>A highlight is deleted</td></tr>
+      <tr><td><code>highlights:clicked</code></td><td><code>{ id, highlight }</code></td><td>The user clicks an existing highlight (Custom Highlight API hit-test, <code>&lt;mark&gt;</code> fallback, or margin annotation)</td></tr>
+      <tr><td><code>highlights:request-note</code></td><td><code>{ id, highlight, controller }</code></td><td>Margin-annotation click — the convention for opening a note. <code>&lt;note-wc&gt;</code> listens at document level and opens its panel.</td></tr>
+      <tr><td><code>highlights:selected</code></td><td><code>{ text, rect }</code></td><td>User finishes a selection inside a target. Ignored by <code>&lt;selection-menu&gt;</code> (it has its own listener); useful for power users without selection-menu.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Engine API</h2>
+  <p>The <code>HighlightController</code> instance is returned from <code>initHighlights(element)</code>. Each <code>[data-highlights]</code> element has exactly one controller (cached).</p>
+  <table class="props-table">
+    <thead><tr><th>Method / property</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>getHighlights()</code></td><td>Snapshot of all highlights (array of <code>{ id, color, text, startOffset, endOffset, note }</code>)</td></tr>
+      <tr><td><code>removeHighlight(id)</code></td><td>Delete one</td></tr>
+      <tr><td><code>clearAll()</code></td><td>Wipe all highlights for this element</td></tr>
+      <tr><td><code>exportHighlights()</code></td><td>JSON string for backup / sync</td></tr>
+      <tr><td><code>importHighlights(json)</code></td><td>Replace highlights from JSON</td></tr>
+      <tr><td><code>findHighlightRect(id)</code></td><td>First viewport rect of a highlight (used by note-wc to align its panel)</td></tr>
+      <tr><td><code>colors</code></td><td>Active color names</td></tr>
+      <tr><td><code>element</code></td><td>The owning DOM element</td></tr>
+    </tbody>
+  </table>
+  <p>Internal mutation methods <code>_createFromSelection(color)</code>, <code>_changeColor(id, color)</code>, and <code>_updateNote(id, text)</code> are for action components (<code>highlight-wc</code>, <code>note-wc</code>) and are not part of the documented public API.</p>
+</section>
+
+<section>
+  <h2>Storage</h2>
+  <p>Highlights are written to <code>localStorage</code> under the namespace <code>vb-highlights</code> with a key derived from <code>data-highlights</code> (or the page's pathname when the attribute has no value). Multiple articles on the same page can share a key by setting the same value.</p>
+<code-block language="html" label="Storage key control" data-escape><!-- Default: storage key = location.pathname -->
+<article data-highlights>…</article>
+
+<!-- Explicit key: storage key = "blog-post-42" -->
+<article data-highlights="blog-post-42">…</article>
+
+<!-- Two articles share one set of highlights -->
+<article data-highlights="shared">…</article>
+<article data-highlights="shared">…</article></code-block>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-highlights/">data-highlights attribute reference</a></li>
+    <li><a href="/docs/elements/web-components/selection-menu/">&lt;selection-menu&gt; element</a></li>
+    <li><a href="/docs/elements/web-components/highlight-wc/">&lt;highlight-wc&gt; element</a></li>
+    <li><a href="/docs/elements/web-components/note-wc/">&lt;note-wc&gt; element</a></li>
+    <li><a href="/docs/elements/web-components/page-tools/">&lt;page-tools&gt; element</a> — host for page-level note-wc trigger</li>
+  </ul>
+</section>

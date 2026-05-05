@@ -86,282 +86,13 @@ function removeSharedSheet() {
   }
 }
 
-// ---------- Toolbar DOM ----------
-
-let toolbar = null;
-let toolbarOwner = null;
-
-function getOrCreateToolbar() {
-  if (toolbar) return toolbar;
-
-  toolbar = document.createElement('div');
-  toolbar.className = 'hn-toolbar';
-  toolbar.setAttribute('role', 'toolbar');
-  toolbar.setAttribute('aria-label', 'Highlight tools');
-  toolbar.setAttribute('popover', 'auto');
-  toolbar.hidden = true;
-
-  document.body.appendChild(toolbar);
-
-  toolbar.addEventListener('toggle', (e) => {
-    if (e.newState === 'closed') {
-      toolbar.hidden = true;
-      toolbarOwner = null;
-    }
-  });
-
-  return toolbar;
-}
-
-function showToolbar(rect, controller, existingHighlight) {
-  const tb = getOrCreateToolbar();
-  tb.innerHTML = '';
-  toolbarOwner = controller;
-
-  const colors = controller.colors;
-  const element = controller.element;
-  const activeColor = existingHighlight?.color;
-
-  // Color swatches
-  const swatchGroup = document.createElement('div');
-  swatchGroup.className = 'hn-swatches';
-  swatchGroup.setAttribute('role', 'group');
-  swatchGroup.setAttribute('aria-label', 'Highlight colors');
-
-  colors.forEach((color, i) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'hn-swatch';
-    btn.dataset.color = color;
-    btn.setAttribute('aria-label', `Highlight ${color}${activeColor === color ? ' (current)' : ''}`);
-    btn.setAttribute('tabindex', i === 0 ? '0' : '-1');
-    // Resolve actual color from the article element's computed styles
-    const resolved = resolveColor(element, color);
-    if (resolved) {
-      btn.style.backgroundColor = resolved;
-    }
-    if (activeColor === color) btn.setAttribute('aria-pressed', 'true');
-
-    btn.addEventListener('click', () => {
-      if (existingHighlight) {
-        controller._changeColor(existingHighlight.id, color);
-      } else {
-        controller._createFromSelection(color);
-      }
-      hideToolbar();
-    });
-    swatchGroup.appendChild(btn);
-  });
-
-  tb.appendChild(swatchGroup);
-
-  // Existing highlight actions
-  if (existingHighlight) {
-    const sep = document.createElement('span');
-    sep.className = 'hn-separator';
-    sep.setAttribute('aria-hidden', 'true');
-    tb.appendChild(sep);
-
-    const noteBtn = document.createElement('button');
-    noteBtn.type = 'button';
-    noteBtn.className = 'hn-action';
-    noteBtn.textContent = existingHighlight.note ? 'Edit Note' : 'Add Note';
-    noteBtn.addEventListener('click', () => {
-      showNotePanel(controller, existingHighlight);
-      hideToolbar();
-    });
-    tb.appendChild(noteBtn);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'hn-action hn-action-remove';
-    removeBtn.textContent = 'Remove';
-    removeBtn.addEventListener('click', () => {
-      controller.removeHighlight(existingHighlight.id);
-      hideToolbar();
-    });
-    tb.appendChild(removeBtn);
-  }
-
-  // Keyboard navigation for swatches
-  swatchGroup.addEventListener('keydown', (e) => {
-    const btns = /** @type {HTMLButtonElement[]} */ ([...swatchGroup.querySelectorAll('button')]);
-    const idx = btns.indexOf(/** @type {HTMLButtonElement} */ (document.activeElement));
-    if (idx < 0) return;
-
-    let next = -1;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      next = (idx + 1) % btns.length;
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      next = (idx - 1 + btns.length) % btns.length;
-    } else if (e.key === 'Escape') {
-      hideToolbar();
-      return;
-    }
-    if (next >= 0) {
-      btns[idx].setAttribute('tabindex', '-1');
-      btns[next].setAttribute('tabindex', '0');
-      btns[next].focus();
-    }
-  });
-
-  // Position and show
-  tb.hidden = false;
-  try { tb.showPopover(); } catch { /* already open */ }
-
-  positionToolbar(rect);
-
-  // Focus first swatch
-  requestAnimationFrame(() => {
-    const first = tb.querySelector('.hn-swatch');
-    if (first) first.focus();
-  });
-}
-
-// ---------- Note panel (appears beside the article, Medium-style) ----------
-
-let notePanel = null;
-
-function showNotePanel(controller, highlight) {
-  hideNotePanel();
-
-  const element = controller.element;
-  const range = findRangeFromOffsets(element, highlight.startOffset, highlight.endOffset);
-  if (!range) return;
-
-  notePanel = document.createElement('div');
-  notePanel.className = 'hn-note-panel';
-  notePanel.setAttribute('role', 'dialog');
-  notePanel.setAttribute('aria-label', 'Private note');
-
-  // Header
-  const header = document.createElement('header');
-  header.className = 'hn-note-header';
-  header.innerHTML = '<small>PRIVATE NOTE</small>';
-  notePanel.appendChild(header);
-
-  // Quoted text
-  const quote = document.createElement('blockquote');
-  quote.className = 'hn-note-quote';
-  quote.textContent = highlight.text.length > 80
-    ? highlight.text.slice(0, 80) + '\u2026'
-    : highlight.text;
-  notePanel.appendChild(quote);
-
-  // Textarea
-  const textarea = document.createElement('textarea');
-  textarea.className = 'hn-note-textarea';
-  textarea.placeholder = 'Add a note\u2026';
-  textarea.value = highlight.note || '';
-  textarea.rows = 3;
-  textarea.setAttribute('aria-label', 'Note for highlighted text');
-  notePanel.appendChild(textarea);
-
-  // Actions
-  const actions = document.createElement('footer');
-  actions.className = 'hn-note-actions';
-
-  const saveBtn = document.createElement('button');
-  saveBtn.type = 'button';
-  saveBtn.className = 'hn-action hn-action-save';
-  saveBtn.textContent = 'Save';
-  saveBtn.addEventListener('click', () => {
-    controller._updateNote(highlight.id, textarea.value.trim());
-    hideNotePanel();
-  });
-
-  const cancelBtn = document.createElement('button');
-  cancelBtn.type = 'button';
-  cancelBtn.className = 'hn-action';
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.addEventListener('click', () => hideNotePanel());
-
-  actions.append(saveBtn, cancelBtn);
-  notePanel.appendChild(actions);
-
-  // Keyboard
-  textarea.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      hideNotePanel();
-    }
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      controller._updateNote(highlight.id, textarea.value.trim());
-      hideNotePanel();
-    }
-  });
-
-  // Position: place it to the right of the article if space, otherwise below the highlight
-  element.style.position = 'relative';
-  element.appendChild(notePanel);
-
-  // Get the highlight's first rect to align vertically
-  const firstRect = range.getClientRects()[0];
-  const elementRect = element.getBoundingClientRect();
-
-  if (firstRect) {
-    const topInElement = firstRect.top - elementRect.top;
-    notePanel.style.top = `${topInElement}px`;
-  }
-
-  // Outside-click handler
-  requestAnimationFrame(() => {
-    textarea.focus();
-    document.addEventListener('pointerdown', notePanelOutsideClick);
-  });
-}
-
-function notePanelOutsideClick(e) {
-  if (notePanel && !notePanel.contains(e.target)) {
-    hideNotePanel();
-  }
-}
-
-function hideNotePanel() {
-  if (!notePanel) return;
-  document.removeEventListener('pointerdown', notePanelOutsideClick);
-  notePanel.remove();
-  notePanel = null;
-}
-
-// ---------- Toolbar positioning ----------
-
-function positionToolbar(anchorRect) {
-  if (!toolbar) return;
-
-  // Force layout so we get accurate dimensions
-  requestAnimationFrame(() => {
-    const tbRect = toolbar.getBoundingClientRect();
-    const tbW = tbRect.width || 200;
-    const tbH = tbRect.height || 40;
-
-    // Popover is position:fixed (viewport coords) — do NOT add scrollY
-    let top = anchorRect.top - tbH - TOOLBAR_GAP;
-    let left = anchorRect.left + (anchorRect.width / 2) - (tbW / 2);
-
-    // Flip below if too close to top
-    if (top < TOOLBAR_EDGE_PADDING) {
-      top = anchorRect.bottom + TOOLBAR_GAP;
-    }
-
-    // Clamp horizontal to viewport
-    const maxLeft = window.innerWidth - tbW - TOOLBAR_EDGE_PADDING;
-    left = Math.max(TOOLBAR_EDGE_PADDING, Math.min(left, maxLeft));
-
-    toolbar.style.top = `${top}px`;
-    toolbar.style.left = `${left}px`;
-  });
-}
-
-function hideToolbar() {
-  if (!toolbar) return;
-  try { toolbar.hidePopover(); } catch { /* already closed */ }
-  toolbar.hidden = true;
-  toolbarOwner = null;
-}
+// ---------- Toolbar / note-panel UI removed --------------------------
+//
+// The selection toolbar UI is owned by <selection-menu>; the note-panel UI
+// is owned by <note-wc>; click-on-highlight handling is exposed as the
+// `highlights:clicked` and `highlights:request-note` events for consumers.
+// This file is the engine: data, persistence, range (de)serialization,
+// and CSS Custom Highlight API rendering.
 
 // ---------- Live region for screen readers ----------
 
@@ -557,73 +288,79 @@ class HighlightController {
 
     this.#clearMarginAnnotations();
     this.#element.removeAttribute('data-highlights-init');
-    if (toolbarOwner === this) hideToolbar();
-    hideNotePanel();
   }
 
-  // ---------- Selection handling ----------
+  // ---------- Selection / click handling ----------
+  //
+  // The engine no longer renders any UI on selection. <selection-menu>
+  // owns selection toolbars and uses controller._createFromSelection()
+  // to commit highlights. The pointer-up listener stays only to emit a
+  // `highlights:selected` event so consumers without selection-menu can
+  // wire their own UI.
 
   #onPointerUp() {
-    // Delay to let selection finalize
     requestAnimationFrame(() => {
       if (this.#destroyed) return;
-
-      // Skip own toolbar if a selection-menu manages this element
-      if (this.#element.hasAttribute('data-selection-menu')) return;
-
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
 
-      // Ensure selection is within our element
       const range = sel.getRangeAt(0);
       if (!this.#element.contains(range.commonAncestorContainer)) return;
 
-      const rect = range.getBoundingClientRect();
-      showToolbar(rect, this, null);
+      this.#emit('highlights:selected', {
+        text: sel.toString().trim(),
+        rect: range.getBoundingClientRect(),
+      });
     });
   }
 
   #onClick(e) {
-    // Skip own toolbar if a selection-menu manages this element
-    if (this.#element.hasAttribute('data-selection-menu')) return;
-
-    // Check if click is on a margin annotation
+    // Margin annotation click → request a note (note-wc handles the panel)
     const annot = e.target.closest?.('.hn-margin-annotation');
     if (annot) {
       const id = annot.dataset.hnId;
       const hl = this.#highlights.find(h => h.id === id);
       if (hl) {
-        showNotePanel(this, hl);
+        this.#emit('highlights:clicked', { id, highlight: { ...hl } });
+        this.#emit('highlights:request-note', { id, highlight: { ...hl }, controller: this });
         return;
       }
     }
 
-    // Check if click is on a <mark> fallback
+    // <mark> fallback click → emit clicked event for consumers
     const mark = e.target.closest?.('mark[data-hn-id]');
     if (mark) {
       const id = mark.dataset.hnId;
       const hl = this.#highlights.find(h => h.id === id);
       if (hl) {
-        this.#emit('highlights:clicked', { id });
-        const rect = mark.getBoundingClientRect();
-        showToolbar(rect, this, hl);
+        this.#emit('highlights:clicked', { id, highlight: { ...hl } });
         return;
       }
     }
 
-    // For Highlight API: check if click is within any highlight range
+    // Highlight API hit-test → emit clicked event for consumers
     if (!this.#useFallback) {
       const clickedHighlight = this.#findHighlightAtPoint(e.clientX, e.clientY);
       if (clickedHighlight) {
-        this.#emit('highlights:clicked', { id: clickedHighlight.id });
-        const range = findRangeFromOffsets(
-          this.#element, clickedHighlight.startOffset, clickedHighlight.endOffset
-        );
-        if (range) {
-          showToolbar(range.getBoundingClientRect(), this, clickedHighlight);
-        }
+        this.#emit('highlights:clicked', {
+          id: clickedHighlight.id,
+          highlight: { ...clickedHighlight },
+        });
       }
     }
+  }
+
+  /**
+   * Resolve the first viewport rect for a highlight by id. Used by
+   * <note-wc> to align its panel with the highlighted text.
+   */
+  findHighlightRect(id) {
+    const hl = this.#highlights.find(h => h.id === id);
+    if (!hl) return null;
+    const range = findRangeFromOffsets(this.#element, hl.startOffset, hl.endOffset);
+    if (!range) return null;
+    const rects = range.getClientRects();
+    return rects.length ? rects[0] : null;
   }
 
   #findHighlightAtPoint(x, y) {
@@ -895,4 +632,4 @@ const observer = new MutationObserver((mutations) => {
 
 observer.observe(document.documentElement, { childList: true, subtree: true });
 
-export { initHighlights, HighlightController, showNotePanel, hideNotePanel, fnv1a };
+export { initHighlights, HighlightController, fnv1a, findRangeFromOffsets };
