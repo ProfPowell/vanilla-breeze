@@ -120,5 +120,6 @@ import './kanban-board/logic.js';
 import './site-map-wc/logic.js';
 import './adr-wc/logic.js';
 import './iron-triangle/logic.js';
+import './nfr-compass/logic.js';
 import './flow-diagram/logic.js';
 import './diagram-wc/logic.js';

@@ -827,6 +827,19 @@ module.exports = {
     }
   },
 
+  "iron-triangle": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "name": {},
+      "data-focus-factor": {},
+      "data-min-capacity": {},
+      "data-capacity-formula": {},
+      "disabled": { boolean: true },
+      "locked": { boolean: true }
+    }
+  },
+
   "kanban-board": {
     flow: true,
     permittedContent: ["section"],
@@ -877,6 +890,23 @@ module.exports = {
     attributes: {
       "aria-label": {},
       "data-match": { enum: ["exact"] }
+    }
+  },
+
+  "nfr-compass": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "name": {},
+      "data-bind-to": {},
+      "data-capacity-points": {},
+      "data-cost-weights": {},
+      "data-min-rationale": {},
+      "data-max-rationale": {},
+      "data-min-overrun-rationale": {},
+      "data-max-overrun-rationale": {},
+      "disabled": { boolean: true },
+      "locked": { boolean: true }
     }
   },
 

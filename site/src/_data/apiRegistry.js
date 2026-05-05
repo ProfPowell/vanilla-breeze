@@ -4562,6 +4562,108 @@ export default {
       }
     ]
   },
+  "iron-triangle": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "iron-triangle",
+    "type": "web-component",
+    "description": "Project-shape constraint surface — captures Time × Cost × Scope and computes a single integer capacityPoints budget that downstream Planning Pack components (notably <nfr-compass>) read.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "name",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "default": "triangle",
+        "description": "Form-association field name"
+      },
+      {
+        "name": "data-focus-factor",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "0.6",
+        "description": "Multiplier in the default capacity formula (0–1; the share of FTE available for engineering quality work)"
+      },
+      {
+        "name": "data-min-capacity",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "1",
+        "description": "Floor for capacityPoints"
+      },
+      {
+        "name": "data-capacity-formula",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Custom formula string (out of scope v1)"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "All inputs disabled"
+      },
+      {
+        "name": "locked",
+        "kind": "host-api",
+        "purpose": "semantic-state",
+        "type": "boolean",
+        "description": "Read-only mode for shipped vectors"
+      }
+    ],
+    "slots": [
+      {
+        "name": "title",
+        "description": "Heading text shown above the form"
+      },
+      {
+        "name": "time-controls",
+        "description": "Override the default Time inputs"
+      },
+      {
+        "name": "cost-controls",
+        "description": "Override the default Cost inputs"
+      },
+      {
+        "name": "scope-controls",
+        "description": "Override the default Scope inputs"
+      },
+      {
+        "name": "capacity-readout",
+        "description": "Override the readout block (advanced)"
+      },
+      {
+        "name": "footer",
+        "description": "Save/Submit area"
+      }
+    ],
+    "events": [
+      {
+        "name": "iron-triangle:change",
+        "detail": "{ time, cost, scope, capacityPoints, capacitySource, hash, source }",
+        "description": "Any input or property change"
+      },
+      {
+        "name": "iron-triangle:revise",
+        "detail": "{ field, from, to, reason }",
+        "description": "A revision is committed via revise()"
+      },
+      {
+        "name": "iron-triangle:mode",
+        "detail": "{ from, to }",
+        "description": "Capacity source flips between formula and manual"
+      }
+    ]
+  },
   "kanban-board": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "kanban-board",
@@ -4977,6 +5079,134 @@ export default {
       }
     ],
     "structure": []
+  },
+  "nfr-compass": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "nfr-compass",
+    "type": "web-component",
+    "description": "11-ility prioritization compass that spends a numeric capacity budget supplied by <iron-triangle>. Outputs a quality vector with required rationales for every Critical pick.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "name",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "default": "nfr-vector",
+        "description": "Form-association field name"
+      },
+      {
+        "name": "data-bind-to",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of a sibling <iron-triangle> to read capacity from"
+      },
+      {
+        "name": "data-capacity-points",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "description": "Literal capacity fallback when no triangle is bound"
+      },
+      {
+        "name": "data-cost-weights",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "JSON object overriding default per-ility cost weights"
+      },
+      {
+        "name": "data-min-rationale",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "10",
+        "description": "Min characters for a Critical row's rationale"
+      },
+      {
+        "name": "data-max-rationale",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "200",
+        "description": "Max characters for the rationale textarea"
+      },
+      {
+        "name": "data-min-overrun-rationale",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "10",
+        "description": "Min characters for overrunRationale"
+      },
+      {
+        "name": "data-max-overrun-rationale",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "400",
+        "description": "Max characters for overrunRationale"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "All inputs disabled"
+      },
+      {
+        "name": "locked",
+        "kind": "host-api",
+        "purpose": "semantic-state",
+        "type": "boolean",
+        "description": "Read-only mode for shipped vectors"
+      }
+    ],
+    "slots": [
+      {
+        "name": "title",
+        "description": "Heading text shown above the rows"
+      },
+      {
+        "name": "(default)",
+        "description": "<fieldset> rows; omit to get the default 11 ilities"
+      },
+      {
+        "name": "notes",
+        "description": "Project-supplied advisory notes"
+      },
+      {
+        "name": "overrun-rationale",
+        "description": "Pre-existing <textarea name=\"overrunRationale\">; one is created when missing"
+      },
+      {
+        "name": "footer",
+        "description": "Save / Submit area"
+      }
+    ],
+    "events": [
+      {
+        "name": "nfr-compass:change",
+        "detail": "{ vector, rationales, costWeights, capacityPoints, criticalSum, overrunRationale, source }",
+        "description": "Any pick or rationale changes"
+      },
+      {
+        "name": "nfr-compass:over-budget",
+        "detail": "{ delta, criticalSum, capacityPoints }",
+        "description": "The selection just crossed into over-budget"
+      },
+      {
+        "name": "nfr-compass:under-budget",
+        "detail": "{ slack, criticalSum, capacityPoints }",
+        "description": "The selection just returned within budget"
+      }
+    ]
   },
   "note-wc": {
     "$schema": "../../../schemas/api.schema.json",
