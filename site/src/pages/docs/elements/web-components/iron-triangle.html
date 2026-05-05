@@ -27,44 +27,72 @@ crumbLabel: Web Components
     shadow>
   </browser-window>
 
-  <code-block language="html" label="Basic usage" data-escape><iron-triangle name="triangle" data-focus-factor="0.6">
-  <span slot="title">Project shape — v1.0</span>
+  <code-block language="html" label="Basic usage" data-escape><!-- Layout, fieldset chrome, and input sizing all come from VB
+     primitives. The only iron-triangle-specific markup is the
+     <figure data-iron-triangle-viz> placeholder where the SVG is
+     swapped in on every input change. -->
+<iron-triangle name="triangle" data-focus-factor="0.6">
+  <form data-layout="split" data-layout-ratio="2:1" data-layout-gap="l">
+    <section data-layout="stack" data-layout-gap="m">
 
-  <fieldset name="time">
-    <legend>Time</legend>
-    <label>Sprint weeks <input name="time.sprintWeeks" type="number" min="1" value="2"></label>
-    <label>Sprint count <input name="time.sprintCount" type="number" min="1" value="3"></label>
-    <label>Hours / week <input name="time.hoursPerWeek" type="number" min="1" max="168" value="40"></label>
-    <label>Deadline     <input name="time.deadline" type="date"></label>
-  </fieldset>
+      <fieldset data-layout="stack" data-layout-gap="m">
+        <legend>Time</legend>
+        <form-field>
+          <label for="sprint-weeks">Sprint length (weeks)</label>
+          <input id="sprint-weeks" name="time.sprintWeeks"
+                 type="number" min="1" value="2" style="inline-size: 6rem">
+        </form-field>
+        <form-field>
+          <label for="sprint-count">Number of sprints</label>
+          <input id="sprint-count" name="time.sprintCount"
+                 type="number" min="1" value="3" style="inline-size: 6rem">
+        </form-field>
+        <!-- … hours/week, deadline … -->
+      </fieldset>
 
-  <fieldset name="cost">
-    <legend>Cost</legend>
-    <label>Team FTE <input name="cost.teamFTE" type="number" min="0" step="0.5" value="1"></label>
-    <label>Budget tier
-      <select name="cost.budgetTier">
-        <option value="solo" selected>Solo</option>
-        <option value="small">Small</option>
-        <option value="medium">Medium</option>
-        <option value="large">Large</option>
-      </select>
-    </label>
-    <label>Contractor budget <input name="cost.contractorBudget" type="number" min="0"></label>
-  </fieldset>
+      <fieldset data-layout="stack" data-layout-gap="m">
+        <legend>Cost</legend>
+        <form-field>
+          <label for="fte">Team size (FTE)</label>
+          <input id="fte" name="cost.teamFTE"
+                 type="number" min="0" step="0.5" value="1" style="inline-size: 6rem">
+        </form-field>
+      </fieldset>
 
-  <fieldset name="scope">
-    <legend>Scope</legend>
-    <label>Must-have count   <input name="scope.mustHaveCount" type="number" min="0"></label>
-    <label>Should-have count <input name="scope.shouldHaveCount" type="number" min="0"></label>
-    <label>Notes <textarea name="scope.scopeNotes" rows="3" maxlength="2000"></textarea></label>
-  </fieldset>
+      <fieldset data-layout="stack" data-layout-gap="m">
+        <legend>Scope</legend>
+        <form-field>
+          <label for="must-have">Must-have count</label>
+          <input id="must-have" name="scope.mustHaveCount"
+                 type="number" min="0" style="inline-size: 6rem">
+        </form-field>
+      </fieldset>
+    </section>
 
-  <fieldset name="capacity">
-    <legend>Capacity</legend>
-    <output name="capacityPoints">—</output>
-    <small name="capacityFormula">— (formula will appear after upgrade)</small>
+    <!-- The component injects/replaces the inline SVG inside this
+         figure on every input change. The <output>/<small> below
+         stay as a no-JS fallback and SR-only after upgrade. -->
+    <figure data-iron-triangle-viz aria-live="polite">
+      <output name="capacityPoints">—</output>
+      <small name="capacityFormula">Set inputs to compute capacity.</small>
+    </figure>
+  </form>
+
+  <fieldset data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+    <legend class="visually-hidden">Capacity mode</legend>
+    <button type="button" data-iron-triangle-mode-toggle aria-pressed="false">Use manual capacity</button>
+    <form-field hidden data-iron-triangle-manual-input-field>
+      <label for="manual-points">Manual points</label>
+      <input id="manual-points" type="number" min="1" step="1" data-iron-triangle-manual-input>
+    </form-field>
   </fieldset>
 </iron-triangle></code-block>
+</section>
+
+<section>
+  <h2>The deformable triangle</h2>
+  <p>The component renders an inline SVG triangle into the <code>[data-iron-triangle-viz]</code> figure. Each vertex sits on an equilateral baseline ray and stretches outward by a factor in <code>[0.55, 1.45]</code> based on its constraint's relative magnitude (time = total weeks, cost = FTE × hours/week, scope = weighted feature counts). A balanced project stays close to equilateral; a long-deadline project pushes the TIME vertex up; a tiny team pulls the COST vertex toward center.</p>
+  <p>The capacity number anchors at the centroid (origin), so the integer never moves when the shape changes.</p>
 </section>
 
 <section>
@@ -120,9 +148,10 @@ triangle.addEventListener('iron-triangle:change', (e) =&gt; {
   <h2>Revisions with reasons</h2>
   <p>Edits made via the <code>revise()</code> method append to <code>revisionLog</code> and emit <code>iron-triangle:revise</code>. The reason is required (≥ 10 characters) so the constraint surface accumulates institutional memory rather than vanishing into Slack threads.</p>
 
-  <code-block language="javascript" label="Programmatic revision" data-escape>triangle.revise('cost.teamFTE', 1, 2,
+  <code-block language="javascript" label="Programmatic revision" data-escape>triangle.revise('cost.teamFTE', 2,
   'Hired a backend contractor for sprints 3–5; doubles capacity.');
-// Appends to revisionLog; emits iron-triangle:revise.</code-block>
+// Updates the input + value, appends to revisionLog,
+// emits iron-triangle:revise. Reason must be >= 10 chars.</code-block>
 </section>
 
 <section>

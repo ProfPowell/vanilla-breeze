@@ -1,0 +1,64 @@
+/* nfr-radar — light-DOM SVG viz for the NFR vector.
+
+   Pairs visually with <nfr-compass>; binds to it via data-bind-to.
+   Pure SVG; theme tokens drive every color so the radar adapts to
+   light/dark and brand themes automatically. */
+
+nfr-radar {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: var(--nfr-radar-max, 24rem);
+  margin-inline: auto;
+}
+
+nfr-radar svg {
+  inline-size: 100%;
+  block-size: auto;
+}
+
+nfr-radar svg .spoke {
+  stroke: var(--color-border, #e5e7eb);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+nfr-radar svg .envelope {
+  fill: var(--nfr-radar-envelope-fill, color-mix(in oklab, var(--color-success) 14%, transparent));
+  stroke: var(--nfr-radar-envelope-stroke, color-mix(in oklab, var(--color-success) 60%, transparent));
+  stroke-width: 1;
+}
+
+nfr-radar svg .vector {
+  fill: var(--nfr-radar-vector-fill, color-mix(in oklab, var(--color-interactive) 28%, transparent));
+  stroke: var(--nfr-radar-vector-stroke, var(--color-interactive));
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+nfr-radar svg .marker circle {
+  fill: var(--color-interactive);
+  stroke: var(--color-surface);
+  stroke-width: 1;
+  cursor: help;
+}
+
+nfr-radar svg .marker[data-level="critical"] circle {
+  fill: var(--color-error, #dc2626);
+}
+nfr-radar svg .marker[data-level="important"] circle {
+  fill: var(--color-warning, #b45309);
+}
+nfr-radar svg .marker[data-level="acceptable"] circle {
+  fill: var(--color-success, #16a34a);
+}
+nfr-radar svg .marker[data-level="not-relevant"] circle {
+  fill: var(--color-text-muted, #6b7280);
+  opacity: 0.5;
+}
+
+nfr-radar svg .axis-label {
+  font-size: var(--font-size-xs, 0.75rem);
+  fill: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

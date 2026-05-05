@@ -1,0 +1,178 @@
+---
+layout: element
+title: "nfr-radar"
+description: "11-axis radar viz for an NFR vector vs the project's capacity envelope. Pairs with <nfr-compass> via data-bind-to and re-renders an inline <svg> on every selection change."
+elementName: nfr-radar
+category: component
+pack: ux-planning
+currentPath: /docs/elements/web-components/nfr-radar/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;nfr-radar&gt;</code> component is the visual companion to <code>&lt;<a href="/docs/elements/web-components/nfr-compass/">nfr-compass</a>&gt;</code>. Where the compass owns the <em>decision</em> (which ilities are critical, where the rationales live, what the budget is), the radar owns the <em>read</em> — one glance and you can see how the team's quality vector compares to the capacity envelope. Reach for it on status dashboards, ADR appendices, the home page of an internal product wiki, anywhere a stakeholder wants to know "how's the shape of our quality bet?" without opening the picker.</p>
+  <p>Light DOM, theme-token driven, no external dependency. The component listens for <code>nfr-compass:change</code> events from a bound compass and rewrites a fresh inline <code>&lt;svg&gt;</code> on each update.</p>
+</section>
+
+<section>
+  <h2>Live demo</h2>
+  <p>Pick priorities in the compass — the radar polygon updates live. Hover a vector dot to see the ility's name, level, and cost weight in a native tooltip.</p>
+
+  <browser-window
+    src="/docs/examples/demos/nfr-radar-basic.html"
+    url="https://vanilla-breeze.dev/nfr-radar"
+    title="NFR Radar"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" label="Pair the radar with a compass" data-escape><iron-triangle id="shape">…</iron-triangle>
+<nfr-compass id="picker" data-bind-to="shape">…</nfr-compass>
+
+<figure data-layout="stack" data-layout-gap="s">
+  <figcaption>Quality envelope vs vector</figcaption>
+  <nfr-radar data-bind-to="picker"></nfr-radar>
+</figure></code-block>
+</section>
+
+<section>
+  <h2>What the SVG shows</h2>
+  <p>The radar has two layers and a thin grid:</p>
+  <ul>
+    <li><strong>Capacity envelope</strong> (background polygon, soft success-tinted fill) — the ring at <code>radius × min(1, capacityPoints / sum(costWeights))</code>. Tells you how much of the radius the budget would fill if costs were spread uniformly.</li>
+    <li><strong>Vector overlay</strong> (foreground polygon + per-axis dots) — places each ility at <code>radius ×</code> level ratio: <code>critical = 1.0</code>, <code>important = 0.6</code>, <code>acceptable = 0.3</code>, <code>not-relevant = 0</code>. The dots colorize by level.</li>
+    <li><strong>Spokes</strong> — dashed lines from origin to each axis tip; pure orientation aid.</li>
+  </ul>
+  <p>When <code>capacityPoints</code> is <code>Infinity</code> (no triangle bound, no fallback), the envelope hides — the radar becomes informational.</p>
+</section>
+
+<section>
+  <h2>Driving without a compass</h2>
+  <p>You don't need the compass. Set <code>radar.value</code> directly from anywhere — a saved vector loaded from disk, a server-rendered snapshot, an ADR appendix.</p>
+
+  <code-block language="javascript" label="Programmatic value" data-escape>const radar = document.querySelector('nfr-radar');
+radar.value = {
+  vector: { performance: 'critical', security: 'critical', accessibility: 'important' },
+  costWeights: { performance: 5, security: 5, accessibility: 3 },
+  capacityPoints: 12,
+};</code-block>
+
+  <p>You can also customize the ility list — the radar's axis count follows it.</p>
+
+  <code-block language="javascript" label="Custom ility set (e.g. a docs site)" data-escape>radar.ilities = ['accessibility', 'performance', 'seo', 'i18n', 'maintainability'];
+radar.value = { vector: { performance: 'critical', accessibility: 'critical' }, costWeights: {}, capacityPoints: 8 };</code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-bind-to</code></td>
+        <td>string</td>
+        <td>&mdash;</td>
+        <td>ID of a sibling <code>&lt;nfr-compass&gt;</code> whose <code>nfr-compass:change</code> drives the radar.</td>
+      </tr>
+      <tr>
+        <td><code>data-radius</code></td>
+        <td>number</td>
+        <td><code>90</code></td>
+        <td>Base radius in SVG units. Clamped to <code>[30, 400]</code>.</td>
+      </tr>
+      <tr>
+        <td><code>data-show-envelope</code></td>
+        <td>boolean</td>
+        <td>present</td>
+        <td>Show the capacity envelope polygon. Set <code>data-show-envelope="false"</code> to hide.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Properties</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>value</code></td>
+        <td><code>{ vector, costWeights, capacityPoints }</code></td>
+        <td>Read or write the radar's data snapshot. Setter triggers a re-render and a <code>nfr-radar:change</code> event.</td>
+      </tr>
+      <tr>
+        <td><code>ilities</code></td>
+        <td><code>string[]</code></td>
+        <td>Defaults to the same 11 the compass ships. Re-assigning rewrites the radar's axes.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Event</th><th>Detail</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>nfr-radar:change</code></td>
+        <td><code>{ value, source }</code></td>
+        <td>Fires after every re-render — bound compass change or property write. <code>source</code> is <code>'iron-compass'</code> or <code>'property'</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Theme tokens</h2>
+  <p>Every color comes from a VB theme token. Override per-instance with the <code>--nfr-radar-*</code> hooks below or globally via theme tokens.</p>
+
+  <table class="props-table">
+    <thead>
+      <tr><th>Token</th><th>Default</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>--nfr-radar-max</code></td>
+        <td><code>24rem</code></td>
+        <td>Max inline size of the SVG container.</td>
+      </tr>
+      <tr>
+        <td><code>--nfr-radar-envelope-fill</code></td>
+        <td>14% mix of <code>--color-success</code></td>
+        <td>Capacity envelope fill.</td>
+      </tr>
+      <tr>
+        <td><code>--nfr-radar-envelope-stroke</code></td>
+        <td>60% mix of <code>--color-success</code></td>
+        <td>Capacity envelope stroke.</td>
+      </tr>
+      <tr>
+        <td><code>--nfr-radar-vector-fill</code></td>
+        <td>28% mix of <code>--color-interactive</code></td>
+        <td>Vector polygon fill.</td>
+      </tr>
+      <tr>
+        <td><code>--nfr-radar-vector-stroke</code></td>
+        <td><code>--color-interactive</code></td>
+        <td>Vector polygon stroke.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Relationship to other planning components</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/iron-triangle/"><code>&lt;iron-triangle&gt;</code></a> &mdash; supplies <code>capacityPoints</code> to the compass, which the radar reads via the bound compass.</li>
+    <li><a href="/docs/elements/web-components/nfr-compass/"><code>&lt;nfr-compass&gt;</code></a> &mdash; owns the prioritization decision; the radar mirrors its <code>value</code>.</li>
+    <li><a href="/docs/elements/web-components/requirement-card/"><code>&lt;requirement-card&gt;</code></a> &mdash; renders <em>one</em> ility's row outside the compass; pair on a status dashboard alongside the radar for both the headline and the detail.</li>
+  </ul>
+</section>

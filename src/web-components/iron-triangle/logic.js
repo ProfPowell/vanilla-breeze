@@ -1,27 +1,25 @@
 /**
- * <iron-triangle> — Project-shape constraint surface.
+ * <iron-triangle> — Project-shape constraint surface with deformable
+ * SVG visualization.
  *
- * Captures Time × Cost × Scope, computes a single integer
- * `capacityPoints` budget, and exposes it to other Planning Pack
- * components (notably <nfr-compass>) via property, attribute mirror
- * (`data-capacity-points`), and the `iron-triangle:change` event.
+ * Light-DOM, form-associated. Reads named inputs the author writes
+ * (matching VB conventions: <fieldset> + <form-field> + <label>/<input>),
+ * computes capacityPoints from the default formula
+ *   ceil(sprintWeeks × sprintCount × teamFTE × focusFactor)
+ * and renders an inline <svg> triangle into a `[data-iron-triangle-viz]`
+ * child whose vertices stretch from the centroid based on each
+ * constraint's relative magnitude. Capacity number anchors at the
+ * centroid; the triangle itself communicates project shape balance.
  *
- * Default capacity formula:
- *   capacityPoints = ceil(sprintWeeks × sprintCount × teamFTE × focusFactor)
- * Default focusFactor = 0.6 (override via `data-focus-factor`).
+ * Authoring shape — see static.html. The component owns no chrome it
+ * doesn't have to: layout comes from data-layout, controls come from
+ * <form-field>, sections come from <fieldset>. The component only:
+ *   - Reads input values by `name="time.*"` / `cost.*"` / `scope.*"`
+ *   - Computes capacity + the JSON snapshot (form-associated value)
+ *   - Renders the SVG into [data-iron-triangle-viz] (site-map-wc pattern)
+ *   - Emits iron-triangle:change / :revise / :mode
  *
- * Two operator paths:
- *   1. Formula (default) — capacity computes from T/C/S inputs.
- *   2. Manual — toggle reveals an integer input; T/C/S still saved.
- *
- * Light DOM: the user's fieldsets/inputs live directly inside the
- * element. The component reads them by `name="time.sprintWeeks"`-style
- * dotted attributes, computes capacity, writes the live readout into
- * the `<output name="capacityPoints">` and `<small name="capacityFormula">`
- * placeholders, and exposes the JSON value to the surrounding form via
- * ElementInternals.setFormValue().
- *
- * See spec.md for the full API surface and pedagogy.
+ * See spec.md for the full API surface.
  */
 
 import { VBElement } from '../../lib/vb-element.js';
@@ -31,6 +29,10 @@ import {
   defaultFormulaText,
   triangleHash,
 } from './_capacity.js';
+import {
+  triangleVertices,
+  buildTriangleSvg,
+} from './_triangle-geometry.js';
 
 const SECTIONS = ['time', 'cost', 'scope'];
 const NUMERIC_FIELDS = new Set([
@@ -47,7 +49,6 @@ class IronTriangle extends VBElement {
 
   /** @type {ElementInternals} */
   #internals;
-  /** @type {{ time: object, cost: object, scope: object, capacityPoints: number, capacitySource: 'formula' | 'manual', hash: string }} */
   #value = {
     time: {}, cost: {}, scope: {},
     capacityPoints: 0,
@@ -66,12 +67,13 @@ class IronTriangle extends VBElement {
   }
 
   setup() {
-    this.#ensureModeRow();
     this.#readAllInputs();
+    this.#syncManualVisibilityFromMarkup();
     this.#recompute({ source: 'init' });
 
     this.listen(this, 'input',  (e) => this.#onInput(e));
     this.listen(this, 'change', (e) => this.#onInput(e));
+    this.listen(this, 'click',  (e) => this.#onClick(e));
   }
 
   attributeChangedCallback(name) {
@@ -86,20 +88,14 @@ class IronTriangle extends VBElement {
 
   // ── Public API ────────────────────────────────────────────────────
 
-  /** Snapshot of the current triangle value (read-only copy). */
   get value() {
     return JSON.parse(JSON.stringify({ ...this.#value, revisionLog: this.#revisionLog }));
   }
-
   get capacityPoints()  { return this.#value.capacityPoints; }
   get capacitySource()  { return this.#value.capacitySource; }
   get hash()            { return this.#value.hash; }
   get revisionLog()     { return JSON.parse(JSON.stringify(this.#revisionLog)); }
 
-  /**
-   * Apply a single revision. `field` is a dotted path (e.g. "cost.teamFTE")
-   * or "capacityPoints". `reason` must be ≥ 10 chars (matches schema).
-   */
   revise(field, newValue, reason) {
     if (!field || typeof reason !== 'string' || reason.length < 10) {
       throw new Error('iron-triangle: revise() requires field and a reason of at least 10 characters');
@@ -107,17 +103,13 @@ class IronTriangle extends VBElement {
     const from = this.#getField(field);
     this.#setField(field, newValue);
     const change = { field, from, to: newValue, reason };
-    this.#revisionLog.push({
-      revisedAt: new Date().toISOString(),
-      changes: [change],
-    });
+    this.#revisionLog.push({ revisedAt: new Date().toISOString(), changes: [change] });
     this.dispatchEvent(new CustomEvent('iron-triangle:revise', {
       bubbles: true, composed: true, detail: change,
     }));
     this.#recompute({ source: 'revise' });
   }
 
-  /** Switch to manual capacity mode with a fixed integer value. */
   setManual(integer) {
     const n = Math.max(1, Math.floor(Number(integer) || 0));
     this.#manualPoints = n;
@@ -130,10 +122,10 @@ class IronTriangle extends VBElement {
     }
     this.setState('manual', true);
     this.setState('formula', false);
+    this.#syncModeUi();
     this.#recompute({ source: 'manual' });
   }
 
-  /** Switch back to formula mode. (Custom formula strings are out of scope v1.) */
   setFormula(/* formulaString */) {
     this.#manualPoints = null;
     const previous = this.#value.capacitySource;
@@ -145,10 +137,10 @@ class IronTriangle extends VBElement {
     }
     this.setState('manual', false);
     this.setState('formula', true);
+    this.#syncModeUi();
     this.#recompute({ source: 'formula' });
   }
 
-  /** Recompute capacity and re-emit; useful after externally mutating inputs. */
   recalc() {
     this.#readAllInputs();
     this.#recompute({ source: 'recalc' });
@@ -168,6 +160,20 @@ class IronTriangle extends VBElement {
     this.#recompute({ source: 'input', field: target.name });
   }
 
+  #onClick(event) {
+    const toggle = event.target.closest?.('[data-iron-triangle-mode-toggle]');
+    if (!toggle || !this.contains(toggle)) return;
+    event.preventDefault();
+    if (this.#value.capacitySource === 'manual') {
+      this.setFormula();
+    } else {
+      const seed = Math.max(1, this.#value.capacityPoints || 1);
+      const input = this.querySelector('[data-iron-triangle-manual-input]');
+      if (input) input.value = String(seed);
+      this.setManual(seed);
+    }
+  }
+
   #hasOwnedField(name) {
     return SECTIONS.some(section => name.startsWith(`${section}.`));
   }
@@ -177,9 +183,6 @@ class IronTriangle extends VBElement {
     if (!section || !key) return;
     if (!this.#value[section]) this.#value[section] = {};
     const raw = input.value;
-    // Empty string means "not set"; drop the key so the snapshot
-    // doesn't carry empties that downstream JSON-Schema validators
-    // (rightly) reject for typed fields like number/integer/date.
     if (input.type !== 'checkbox' && (raw === '' || raw == null)) {
       delete this.#value[section][key];
       return;
@@ -209,6 +212,18 @@ class IronTriangle extends VBElement {
     }
   }
 
+  #syncManualVisibilityFromMarkup() {
+    // The author's static markup may flip the toggle button's pressed
+    // state for read-only / locked review pages. Honor it.
+    const toggle = this.querySelector('[data-iron-triangle-mode-toggle]');
+    if (toggle?.getAttribute('aria-pressed') === 'true') {
+      const seed = Number(this.querySelector('[data-iron-triangle-manual-input]')?.value) || 1;
+      this.setManual(seed);
+    } else {
+      this.setState('formula', true);
+    }
+  }
+
   // ── Internal: capacity ────────────────────────────────────────────
 
   #recompute({ source, field } = {}) {
@@ -224,7 +239,6 @@ class IronTriangle extends VBElement {
       points = defaultFormula(this.#value.time, this.#value.cost, focusFactor);
       formulaText = defaultFormulaText(this.#value.time, this.#value.cost, focusFactor);
     }
-
     if (Number.isFinite(minCapacity) && points > 0 && points < minCapacity) {
       points = minCapacity;
     }
@@ -232,7 +246,8 @@ class IronTriangle extends VBElement {
     this.#value.capacityPoints = points;
     this.#value.hash = triangleHash(this.#value);
 
-    this.#renderReadout(points, formulaText);
+    this.#renderViz();
+    this.#renderReadoutFallback(points, formulaText);
     this.#syncStateFlags();
     this.#publishFormValue();
 
@@ -242,7 +257,23 @@ class IronTriangle extends VBElement {
     }));
   }
 
-  #renderReadout(points, formulaText) {
+  #renderViz() {
+    const host = this.querySelector('[data-iron-triangle-viz]');
+    if (!host) return;
+    const vertices = triangleVertices(this.#value);
+    const svg = buildTriangleSvg({
+      vertices,
+      capacityPoints: this.#value.capacityPoints,
+      capacitySource: this.#value.capacitySource,
+    });
+    const existing = host.querySelector('svg');
+    if (existing) existing.replaceWith(svg);
+    else host.prepend(svg);
+  }
+
+  #renderReadoutFallback(points, formulaText) {
+    // The <output>/<small> in the figcaption are pre-upgrade fallbacks
+    // and screen-reader anchors. Keep them in sync with the visual.
     const out = this.querySelector('output[name="capacityPoints"]');
     if (out) out.textContent = points > 0 ? String(points) : '—';
     const small = this.querySelector('small[name="capacityFormula"]');
@@ -255,7 +286,6 @@ class IronTriangle extends VBElement {
     this.setState('formula', this.#value.capacitySource === 'formula');
     this.setState('manual',  this.#value.capacitySource === 'manual');
     this.setState('unbudgeted', !(this.#value.capacityPoints > 0));
-
     const deadline = this.#value.time?.deadline;
     let overDeadline = false;
     if (deadline) {
@@ -265,49 +295,23 @@ class IronTriangle extends VBElement {
     this.setState('over-deadline', overDeadline);
   }
 
+  #syncModeUi() {
+    const toggle = this.querySelector('[data-iron-triangle-mode-toggle]');
+    const field = this.querySelector('[data-iron-triangle-manual-input-field]');
+    const isManual = this.#value.capacitySource === 'manual';
+    if (toggle) toggle.setAttribute('aria-pressed', String(isManual));
+    if (field) {
+      if (isManual) field.removeAttribute('hidden');
+      else field.setAttribute('hidden', '');
+    }
+  }
+
   #publishFormValue() {
     try {
       this.#internals.setFormValue(JSON.stringify(this.value));
     } catch {
       // Older Safari may not support JSON-string form values; ignore.
     }
-  }
-
-  // ── Internal: mode toggle UI ──────────────────────────────────────
-
-  #ensureModeRow() {
-    if (this.querySelector('.iron-triangle-mode-row')) return;
-    const capacityField = this.querySelector('fieldset[name="capacity"]');
-    if (!capacityField) return;
-
-    const row = document.createElement('div');
-    row.className = 'iron-triangle-mode-row';
-    row.innerHTML = `
-      <button type="button" class="iron-triangle-mode-toggle" aria-pressed="false"
-              data-iron-triangle-mode-toggle>Use manual capacity</button>
-      <label class="iron-triangle-manual-input">
-        <span>Manual points</span>
-        <input type="number" min="1" step="1" data-iron-triangle-manual-input>
-      </label>
-    `;
-    capacityField.append(row);
-
-    const button = row.querySelector('[data-iron-triangle-mode-toggle]');
-    this.listen(button, 'click', () => {
-      const next = this.#value.capacitySource === 'manual' ? 'formula' : 'manual';
-      if (next === 'manual') {
-        const input = row.querySelector('[data-iron-triangle-manual-input]');
-        const seed = Math.max(1, this.#value.capacityPoints || 1);
-        input.value = String(seed);
-        this.setManual(seed);
-        button.setAttribute('aria-pressed', 'true');
-      } else {
-        this.setFormula();
-        button.setAttribute('aria-pressed', 'false');
-      }
-    });
-
-    this.setState('formula', true);
   }
 
   #syncDisabledLocked() {

@@ -8,6 +8,11 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  relativeMagnitudes,
+  stretchFactors,
+  triangleVertices,
+} from '../../src/web-components/iron-triangle/_triangle-geometry.js';
+import {
   defaultFormula,
   defaultFormulaText,
   fnv1a,
@@ -90,5 +95,117 @@ describe('fnv1a + triangleHash', () => {
     const a = triangleHash({ time: { sprintWeeks: 2 }, cost: { teamFTE: 1 }, scope: {} });
     const b = triangleHash({ time: { sprintWeeks: 3 }, cost: { teamFTE: 1 }, scope: {} });
     assert.notEqual(a, b);
+  });
+});
+
+// ── Triangle viz geometry ──────────────────────────────────────────
+
+describe('relativeMagnitudes', () => {
+  it('reduces each constraint to a comparable scalar', () => {
+    const m = relativeMagnitudes({
+      time: { sprintWeeks: 2, sprintCount: 3 },
+      cost: { teamFTE: 1, hoursPerWeek: 40 },
+      scope: { mustHaveCount: 4, shouldHaveCount: 2 },
+    });
+    assert.equal(m.t, 6);   // 3 * 2 weeks
+    assert.equal(m.c, 40);  // 1 FTE * 40 hr/wk
+    assert.equal(m.s, 5);   // 4 + 0.5*2
+  });
+
+  it('treats blanks as defaults (sprint counts default to 1, FTE to 0)', () => {
+    const m = relativeMagnitudes({});
+    assert.equal(m.t, 1);
+    assert.equal(m.c, 0);
+    assert.equal(m.s, 0);
+  });
+});
+
+describe('stretchFactors', () => {
+  it('returns equilateral 1.0 for all-zero magnitudes', () => {
+    const fs = stretchFactors({ t: 0, c: 0, s: 0 });
+    assert.deepEqual(fs, { time: 1, cost: 1, scope: 1 });
+  });
+
+  it('caps stretch at 1.45 for the largest magnitude', () => {
+    const fs = stretchFactors({ t: 100, c: 1, s: 1 });
+    assert.ok(fs.time <= 1.45 + 1e-6);
+    assert.ok(fs.time >= 1.45 - 1e-6);
+  });
+
+  it('floors at 0.55 for non-positive magnitudes when others are positive', () => {
+    const fs = stretchFactors({ t: 100, c: 100, s: 0 });
+    assert.ok(fs.scope <= 0.55 + 1e-6 && fs.scope >= 0.55 - 1e-6);
+  });
+
+  it('produces equal factors when magnitudes are equal', () => {
+    const fs = stretchFactors({ t: 10, c: 10, s: 10 });
+    assert.equal(fs.time, fs.cost);
+    assert.equal(fs.cost, fs.scope);
+  });
+});
+
+describe('triangleVertices', () => {
+  it('places TIME at top, COST bottom-left, SCOPE bottom-right', () => {
+    const v = triangleVertices({
+      time:  { sprintWeeks: 1, sprintCount: 1 },
+      cost:  { teamFTE: 1 },
+      scope: { mustHaveCount: 1 },
+    }, 100);
+    assert.ok(v.time.y < 0,  'TIME should be above origin (negative y in SVG)');
+    assert.ok(v.cost.x < 0,  'COST should be left of origin');
+    assert.ok(v.scope.x > 0, 'SCOPE should be right of origin');
+    assert.ok(v.cost.y > 0,  'COST should be below origin');
+    assert.ok(v.scope.y > 0, 'SCOPE should be below origin');
+  });
+
+  it('produces a symmetric equilateral when magnitudes are equal', () => {
+    // Equal magnitudes → equal stretch factors → bottom corners share y
+    const v = triangleVertices({
+      time:  { sprintWeeks: 1, sprintCount: 10 },           // t = 10
+      cost:  { teamFTE: 0.25, hoursPerWeek: 40 },           // c = 10
+      scope: { mustHaveCount: 10 },                         // s = 10
+    }, 100);
+    assert.ok(Math.abs(v.cost.y - v.scope.y) < 1e-6);
+    assert.ok(Math.abs(Math.abs(v.cost.x) - v.scope.x) < 1e-6);
+  });
+
+  it('stretches a vertex outward when its constraint grows in isolation', () => {
+    // Hold time + scope at the largest equal magnitude; COST starts
+    // small (small stretch factor) and grows toward the cap (1.45).
+    const small = triangleVertices({
+      time:  { sprintWeeks: 1, sprintCount: 100 },     // t = 100 (max)
+      cost:  { teamFTE: 0.1, hoursPerWeek: 40 },       // c = 4
+      scope: { mustHaveCount: 100 },                   // s = 100
+    }, 100);
+    const large = triangleVertices({
+      time:  { sprintWeeks: 1, sprintCount: 100 },     // t = 100
+      cost:  { teamFTE: 2.5, hoursPerWeek: 40 },       // c = 100
+      scope: { mustHaveCount: 100 },                   // s = 100
+    }, 100);
+    const dist = ({ x, y }) => Math.hypot(x, y);
+    assert.ok(dist(large.cost) > dist(small.cost),
+      'COST vertex should stretch outward as cost magnitude grows');
+  });
+
+  it('keeps every vertex within [0.55*radius, 1.45*radius] of origin', () => {
+    const v = triangleVertices({
+      time: { sprintWeeks: 100, sprintCount: 100 },
+      cost: { teamFTE: 0 },
+      scope: { mustHaveCount: 100 },
+    }, 100);
+    for (const k of ['time', 'cost', 'scope']) {
+      const d = Math.hypot(v[k].x, v[k].y);
+      assert.ok(d >= 55  - 1e-6, `${k} below floor: ${d}`);
+      assert.ok(d <= 145 + 1e-6, `${k} above ceiling: ${d}`);
+    }
+  });
+
+  it('returns a non-degenerate triangle for any input', () => {
+    const v = triangleVertices({}, 100);
+    // Three distinct vertices — pairwise distance > 0
+    const d = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+    assert.ok(d(v.time, v.cost)  > 10);
+    assert.ok(d(v.cost, v.scope) > 10);
+    assert.ok(d(v.scope, v.time) > 10);
   });
 });

@@ -121,6 +121,7 @@ import './site-map-wc/logic.js';
 import './adr-wc/logic.js';
 import './iron-triangle/logic.js';
 import './nfr-compass/logic.js';
+import './nfr-radar/logic.js';
 import './requirement-card/logic.js';
 import './flow-diagram/logic.js';
 import './diagram-wc/logic.js';

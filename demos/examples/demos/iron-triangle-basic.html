@@ -14,44 +14,70 @@
 <body>
   <layout-center data-layout-max="wide" data-layout-gap="l">
     <h1>Iron Triangle</h1>
-    <p>Three corners — Time, Cost, Scope — and one capacity readout. Capacity is computed live as <code>ceil(sprintWeeks &times; sprintCount &times; teamFTE &times; focusFactor)</code>. Tweak any input to watch the budget update.</p>
+    <p>Three corners — Time, Cost, Scope — drawn as a deformable SVG triangle whose vertices stretch with each constraint's relative magnitude. Capacity is computed live as <code>ceil(sprintWeeks &times; sprintCount &times; teamFTE &times; focusFactor)</code>. Tweak any input to watch the triangle reshape and the budget update.</p>
 
     <iron-triangle name="triangle" data-focus-factor="0.6">
-      <span slot="title">Project shape — v1.0</span>
+      <form data-layout="split" data-layout-ratio="2:1" data-layout-gap="l">
+        <section data-layout="stack" data-layout-gap="m">
+          <fieldset data-layout="stack" data-layout-gap="m">
+            <legend>Time</legend>
+            <form-field>
+              <label for="ex-sprint-weeks">Sprint length (weeks)</label>
+              <input id="ex-sprint-weeks" name="time.sprintWeeks" type="number" min="1" value="2" style="inline-size: 6rem">
+            </form-field>
+            <form-field>
+              <label for="ex-sprint-count">Number of sprints</label>
+              <input id="ex-sprint-count" name="time.sprintCount" type="number" min="1" value="3" style="inline-size: 6rem">
+            </form-field>
+            <form-field>
+              <label for="ex-hours">Hours per week</label>
+              <input id="ex-hours" name="time.hoursPerWeek" type="number" min="1" max="168" value="40" style="inline-size: 6rem">
+            </form-field>
+          </fieldset>
 
-      <fieldset name="time">
-        <legend>Time</legend>
-        <label>Sprint weeks <input name="time.sprintWeeks" type="number" min="1" value="2"></label>
-        <label>Sprint count <input name="time.sprintCount" type="number" min="1" value="3"></label>
-        <label>Hours / week <input name="time.hoursPerWeek" type="number" min="1" max="168" value="40"></label>
-        <label>Deadline     <input name="time.deadline" type="date"></label>
-      </fieldset>
+          <fieldset data-layout="stack" data-layout-gap="m">
+            <legend>Cost</legend>
+            <form-field>
+              <label for="ex-fte">Team size (FTE)</label>
+              <input id="ex-fte" name="cost.teamFTE" type="number" min="0" step="0.5" value="1" style="inline-size: 6rem">
+            </form-field>
+            <form-field>
+              <label for="ex-tier">Budget tier</label>
+              <select id="ex-tier" name="cost.budgetTier" style="inline-size: 12rem">
+                <option value="solo" selected>Solo</option>
+                <option value="small">Small (2-5)</option>
+                <option value="medium">Medium (6-15)</option>
+                <option value="large">Large (16+)</option>
+              </select>
+            </form-field>
+          </fieldset>
 
-      <fieldset name="cost">
-        <legend>Cost</legend>
-        <label>Team FTE <input name="cost.teamFTE" type="number" min="0" step="0.5" value="1"></label>
-        <label>Budget tier
-          <select name="cost.budgetTier">
-            <option value="solo" selected>Solo</option>
-            <option value="small">Small</option>
-            <option value="medium">Medium</option>
-            <option value="large">Large</option>
-          </select>
-        </label>
-        <label>Contractor budget <input name="cost.contractorBudget" type="number" min="0"></label>
-      </fieldset>
+          <fieldset data-layout="stack" data-layout-gap="m">
+            <legend>Scope</legend>
+            <form-field>
+              <label for="ex-must">Must-have count</label>
+              <input id="ex-must" name="scope.mustHaveCount" type="number" min="0" value="6" style="inline-size: 6rem">
+            </form-field>
+            <form-field>
+              <label for="ex-should">Should-have count</label>
+              <input id="ex-should" name="scope.shouldHaveCount" type="number" min="0" value="4" style="inline-size: 6rem">
+            </form-field>
+          </fieldset>
+        </section>
 
-      <fieldset name="scope">
-        <legend>Scope</legend>
-        <label>Must-have count   <input name="scope.mustHaveCount" type="number" min="0" value="6"></label>
-        <label>Should-have count <input name="scope.shouldHaveCount" type="number" min="0" value="4"></label>
-        <label>Notes <textarea name="scope.scopeNotes" rows="2" maxlength="2000"></textarea></label>
-      </fieldset>
+        <figure data-iron-triangle-viz aria-live="polite">
+          <output name="capacityPoints">&mdash;</output>
+          <small name="capacityFormula">Set sprint length, team size, and focus factor to compute capacity.</small>
+        </figure>
+      </form>
 
-      <fieldset name="capacity">
-        <legend>Capacity</legend>
-        <output name="capacityPoints">&mdash;</output>
-        <small name="capacityFormula">&mdash; (formula appears after upgrade)</small>
+      <fieldset data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+        <legend class="visually-hidden">Capacity mode</legend>
+        <button type="button" data-iron-triangle-mode-toggle aria-pressed="false">Use manual capacity</button>
+        <form-field hidden data-iron-triangle-manual-input-field>
+          <label for="ex-manual">Manual points</label>
+          <input id="ex-manual" type="number" min="1" step="1" data-iron-triangle-manual-input style="inline-size: 6rem">
+        </form-field>
       </fieldset>
     </iron-triangle>
   </layout-center>

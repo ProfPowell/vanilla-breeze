@@ -910,6 +910,16 @@ module.exports = {
     }
   },
 
+  "nfr-radar": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-bind-to": {},
+      "data-radius": {},
+      "data-show-envelope": { boolean: true }
+    }
+  },
+
   "note-wc": {
     flow: true,
     permittedContent: ["@flow"]
