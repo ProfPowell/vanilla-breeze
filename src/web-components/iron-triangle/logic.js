@@ -176,14 +176,26 @@ class IronTriangle extends VBElement {
     const [section, key] = input.name.split('.');
     if (!section || !key) return;
     if (!this.#value[section]) this.#value[section] = {};
+    const raw = input.value;
+    // Empty string means "not set"; drop the key so the snapshot
+    // doesn't carry empties that downstream JSON-Schema validators
+    // (rightly) reject for typed fields like number/integer/date.
+    if (input.type !== 'checkbox' && (raw === '' || raw == null)) {
+      delete this.#value[section][key];
+      return;
+    }
     let value;
     if (input.type === 'checkbox') {
       value = input.checked;
     } else if (NUMERIC_FIELDS.has(input.name)) {
-      value = input.value === '' ? '' : Number(input.value);
-      if (typeof value === 'number' && !Number.isFinite(value)) value = '';
+      const n = Number(raw);
+      if (!Number.isFinite(n)) {
+        delete this.#value[section][key];
+        return;
+      }
+      value = n;
     } else {
-      value = input.value;
+      value = raw;
     }
     this.#value[section][key] = value;
   }
