@@ -96,6 +96,15 @@ function initSwapBehavior(el) {
     });
   }
 
+  // Optional swipe/flick to toggle. Author opts in with data-gesture="flick"
+  // (or "swipe") on the host; the global gesture init wires the recognizer
+  // and dispatches `swipe-left`/`swipe-right` events that we toggle on.
+  // Works for both whole-element and explicit-trigger configurations.
+  if (el.matches('[data-gesture="flick"], [data-gesture="swipe"]')) {
+    listen(el, 'swipe-left', () => toggleSwap(el, 'pointer'));
+    listen(el, 'swipe-right', () => toggleSwap(el, 'pointer'));
+  }
+
   syncState(el, front, back);
 
   return () => {

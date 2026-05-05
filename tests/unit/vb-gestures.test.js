@@ -250,10 +250,12 @@ describe('vb-gestures', () => {
       cleanup();
     });
 
-    it('does not fire on short swipe', async () => {
+    it('does not fire on short swipe (distance-only mode)', async () => {
       const { addSwipeListener } = await import(`../../src/lib/vb-gestures.js?t=${Date.now()}_short`);
       const el = new MockElement();
-      const cleanup = addSwipeListener(el, { threshold: 50, timeout: 1000 });
+      // velocity: Infinity disables the flick augmentation so this test
+      // exercises the legacy distance-only behavior.
+      const cleanup = addSwipeListener(el, { threshold: 50, timeout: 1000, velocity: Infinity });
 
       let fired = false;
       el.addEventListener('swipe-left', () => { fired = true; });
@@ -604,6 +606,131 @@ describe('vb-gestures', () => {
       child.emit('pointerup', createPointerEvent('pointerup', { clientX: 100, clientY: 55 }));
 
       assert.equal(swiped, false);
+    });
+  });
+
+  describe('addFlickListener', () => {
+    beforeEach(setupGlobals);
+    afterEach(clearGlobals);
+
+    // The flick recognizer relies on Date.now() — force a deterministic
+    // elapsed time by stubbing the clock between pointerdown/up.
+    function withFakeClock(fn) {
+      const realNow = Date.now;
+      let t = 1000;
+      Date.now = () => t;
+      try {
+        return fn((advance) => { t += advance; });
+      } finally {
+        Date.now = realNow;
+      }
+    }
+
+    it('fires swipe-right on a fast 30px flick', async () => {
+      const { addFlickListener } = await import(`../../src/lib/vb-gestures.js?t=${Date.now()}_flickR`);
+      const el = new MockElement();
+      const cleanup = addFlickListener(el, { velocity: 0.5 });
+
+      let detail = null;
+      el.addEventListener('swipe-right', (e) => { detail = e.detail; });
+
+      withFakeClock((advance) => {
+        el.emit('pointerdown', createPointerEvent('pointerdown', { clientX: 10, clientY: 50 }));
+        advance(50); // 50ms elapsed → 30/50 = 0.6 px/ms (above 0.5 cutoff)
+        el.emit('pointerup', createPointerEvent('pointerup', { clientX: 40, clientY: 55 }));
+      });
+
+      assert.notEqual(detail, null);
+      assert.equal(detail.flick, true);
+      assert.equal(detail.distance, 30);
+      assert.ok(detail.velocity > 0.5);
+      cleanup();
+    });
+
+    it('does not fire on slow 30px drag', async () => {
+      const { addFlickListener } = await import(`../../src/lib/vb-gestures.js?t=${Date.now()}_flickSlow`);
+      const el = new MockElement();
+      const cleanup = addFlickListener(el, { velocity: 0.6 });
+
+      let fired = false;
+      el.addEventListener('swipe-right', () => { fired = true; });
+      el.addEventListener('swipe-left', () => { fired = true; });
+
+      withFakeClock((advance) => {
+        el.emit('pointerdown', createPointerEvent('pointerdown', { clientX: 10, clientY: 50 }));
+        advance(200); // 30/200 = 0.15 px/ms (below cutoff)
+        el.emit('pointerup', createPointerEvent('pointerup', { clientX: 40, clientY: 55 }));
+      });
+
+      assert.equal(fired, false);
+      cleanup();
+    });
+
+    it('does not fire when below minDistance', async () => {
+      const { addFlickListener } = await import(`../../src/lib/vb-gestures.js?t=${Date.now()}_flickMin`);
+      const el = new MockElement();
+      const cleanup = addFlickListener(el, { minDistance: 10 });
+
+      let fired = false;
+      el.addEventListener('swipe-right', () => { fired = true; });
+
+      withFakeClock((advance) => {
+        el.emit('pointerdown', createPointerEvent('pointerdown', { clientX: 50, clientY: 50 }));
+        advance(10);
+        el.emit('pointerup', createPointerEvent('pointerup', { clientX: 56, clientY: 50 }));
+      });
+
+      assert.equal(fired, false);
+      cleanup();
+    });
+
+    it('does not fire when over timeout', async () => {
+      const { addFlickListener } = await import(`../../src/lib/vb-gestures.js?t=${Date.now()}_flickTo`);
+      const el = new MockElement();
+      const cleanup = addFlickListener(el, { timeout: 100 });
+
+      let fired = false;
+      el.addEventListener('swipe-right', () => { fired = true; });
+
+      withFakeClock((advance) => {
+        el.emit('pointerdown', createPointerEvent('pointerdown', { clientX: 10, clientY: 50 }));
+        advance(500); // exceeds 100ms timeout
+        el.emit('pointerup', createPointerEvent('pointerup', { clientX: 100, clientY: 55 }));
+      });
+
+      assert.equal(fired, false);
+      cleanup();
+    });
+  });
+
+  describe('addSwipeListener — velocity augmentation', () => {
+    beforeEach(setupGlobals);
+    afterEach(clearGlobals);
+
+    function withFakeClock(fn) {
+      const realNow = Date.now;
+      let t = 1000;
+      Date.now = () => t;
+      try { return fn((advance) => { t += advance; }); }
+      finally { Date.now = realNow; }
+    }
+
+    it('fires for a fast 20px flick even when threshold is 50', async () => {
+      const { addSwipeListener } = await import(`../../src/lib/vb-gestures.js?t=${Date.now()}_velAug`);
+      const el = new MockElement();
+      const cleanup = addSwipeListener(el, { threshold: 50, timeout: 1000, velocity: 0.5 });
+
+      let fired = false;
+      el.addEventListener('swipe-right', (e) => { fired = e.detail.flick === true; });
+
+      withFakeClock((advance) => {
+        el.emit('pointerdown', createPointerEvent('pointerdown', { clientX: 10, clientY: 50 }));
+        advance(20); // 20px / 20ms = 1.0 px/ms (well above 0.5)
+        el.emit('pointerup', createPointerEvent('pointerup', { clientX: 30, clientY: 55 }));
+      });
+
+      assert.equal(fired, true);
+      cleanup();
     });
   });
 });

@@ -29,19 +29,32 @@ export const haptic = {
  * Detect swipe gestures on an element
  *
  * Listens for pointerdown → pointerup and computes swipe direction.
- * Dispatches swipe-left, swipe-right, swipe-up, swipe-down events.
+ * Dispatches swipe-left, swipe-right, swipe-up, swipe-down events with
+ * `{ distance, duration, velocity }` in detail. `velocity` is in px/ms;
+ * a quick wrist flick on a touchscreen typically produces 0.5+ px/ms,
+ * a deliberate drag is well below 0.2 px/ms.
+ *
+ * The recognizer accepts the gesture when EITHER the absolute distance
+ * passes `threshold` OR the velocity passes `velocity` (so a fast flick
+ * over only 12px is treated the same as a slow drag over 50px).
  *
  * @param {HTMLElement} element   - Element to listen on
  * @param {object}      [options] - Configuration
- * @param {number}      [options.threshold=50]  - Min distance in px
- * @param {number}      [options.restraint=100]  - Max perpendicular distance
- * @param {number}      [options.timeout=300]    - Max duration in ms
+ * @param {number}      [options.threshold=50]    - Min distance in px
+ * @param {number}      [options.restraint=100]   - Max perpendicular distance
+ * @param {number}      [options.timeout=300]     - Max duration in ms
+ * @param {number}      [options.velocity=0.5]    - Min px/ms to qualify as a flick when distance < threshold
  * @returns {Function} cleanup
  */
 export function addSwipeListener(element, options = {}) {
   const threshold = options.threshold ?? 50;
   const restraint = options.restraint ?? 100;
   const timeout = options.timeout ?? 300;
+  const velocityCutoff = options.velocity ?? 0.5;
+  // A flick still needs SOME movement — guard against a pure tap dispatching
+  // a swipe event when the user just rapidly clicks and the pointer drifts
+  // a single pixel.
+  const minFlickDistance = options.minFlickDistance ?? 10;
 
   let startX, startY, startTime;
 
@@ -62,19 +75,98 @@ export function addSwipeListener(element, options = {}) {
 
     const absDx = Math.abs(dx);
     const absDy = Math.abs(dy);
+    const distance = Math.max(absDx, absDy);
+    const velocity = elapsed > 0 ? distance / elapsed : 0;
+    const isFlick = velocity >= velocityCutoff && distance >= minFlickDistance;
 
     let direction;
-    if (absDx >= threshold && absDy <= restraint) {
+    // Distance-driven (slow drag past threshold) OR velocity-driven (flick)
+    if ((absDx >= threshold || (isFlick && absDx > absDy)) && absDy <= restraint) {
       direction = dx < 0 ? 'left' : 'right';
-    } else if (absDy >= threshold && absDx <= restraint) {
+    } else if ((absDy >= threshold || (isFlick && absDy > absDx)) && absDx <= restraint) {
       direction = dy < 0 ? 'up' : 'down';
     }
 
     if (direction) {
-      const distance = direction === 'left' || direction === 'right' ? absDx : absDy;
+      const axisDistance = direction === 'left' || direction === 'right' ? absDx : absDy;
       element.dispatchEvent(new CustomEvent(`swipe-${direction}`, {
         bubbles: true,
-        detail: { distance, duration: elapsed },
+        detail: { distance: axisDistance, duration: elapsed, velocity, flick: isFlick },
+      }));
+    }
+  }
+
+  element.addEventListener('pointerdown', onDown, { passive: true });
+  element.addEventListener('pointerup', onUp, { passive: true });
+
+  return () => {
+    element.removeEventListener('pointerdown', onDown);
+    element.removeEventListener('pointerup', onUp);
+  };
+}
+
+/**
+ * Detect a quick flick gesture (low distance, high velocity).
+ *
+ * Stricter, snappier sibling of `addSwipeListener` — fires on any
+ * pointer release where velocity exceeds the cutoff and the gesture
+ * stayed within `timeout`. Useful when you want a wrist-flick to act
+ * (e.g. dismiss a card, advance a carousel) without requiring the user
+ * to drag the pointer 50+ pixels.
+ *
+ * Dispatches the same `swipe-{direction}` events as `addSwipeListener`
+ * with `flick: true` always set in detail.
+ *
+ * @param {HTMLElement} element   - Element to listen on
+ * @param {object}      [options] - Configuration
+ * @param {number}      [options.minDistance=10]  - Min movement in px to count
+ * @param {number}      [options.velocity=0.6]    - Min px/ms (a relaxed flick is ~0.4, decisive ~0.8+)
+ * @param {number}      [options.timeout=250]     - Max duration in ms
+ * @param {number}      [options.restraint=80]    - Max perpendicular distance
+ * @returns {Function} cleanup
+ */
+export function addFlickListener(element, options = {}) {
+  const minDistance = options.minDistance ?? 10;
+  const velocityCutoff = options.velocity ?? 0.6;
+  const timeout = options.timeout ?? 250;
+  const restraint = options.restraint ?? 80;
+
+  let startX, startY, startTime;
+
+  function onDown(e) {
+    if (!e.isPrimary) return;
+    startX = e.clientX;
+    startY = e.clientY;
+    startTime = Date.now();
+  }
+
+  function onUp(e) {
+    if (!e.isPrimary) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const elapsed = Date.now() - startTime;
+    if (elapsed === 0 || elapsed > timeout) return;
+
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    const distance = Math.max(absDx, absDy);
+    if (distance < minDistance) return;
+
+    const velocity = distance / elapsed;
+    if (velocity < velocityCutoff) return;
+
+    let direction;
+    if (absDx > absDy && absDy <= restraint) {
+      direction = dx < 0 ? 'left' : 'right';
+    } else if (absDy > absDx && absDx <= restraint) {
+      direction = dy < 0 ? 'up' : 'down';
+    }
+
+    if (direction) {
+      const axisDistance = direction === 'left' || direction === 'right' ? absDx : absDy;
+      element.dispatchEvent(new CustomEvent(`swipe-${direction}`, {
+        bubbles: true,
+        detail: { distance: axisDistance, duration: elapsed, velocity, flick: true },
       }));
     }
   }
@@ -484,6 +576,11 @@ export function initGestures(root = document) {
   // data-gesture="swipe"
   for (const el of root.querySelectorAll('[data-gesture="swipe"]')) {
     cleanups.push(addSwipeListener(/** @type {HTMLElement} */ (el)));
+  }
+
+  // data-gesture="flick" — quick wrist-flick recognizer
+  for (const el of root.querySelectorAll('[data-gesture="flick"]')) {
+    cleanups.push(addFlickListener(/** @type {HTMLElement} */ (el)));
   }
 
   // data-gesture="dismiss"
