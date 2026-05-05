@@ -1056,6 +1056,16 @@ module.exports = {
     }
   },
 
+  "requirement-card": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-priority": { enum: ["critical", "important", "acceptable", "not-relevant"] },
+      "data-conflict": { boolean: true },
+      "tabindex": {}
+    }
+  },
+
   "review-surface": {
     flow: true,
     permittedContent: ["@flow"],
