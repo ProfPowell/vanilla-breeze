@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iron Triangle (Static Fallback)</title>
+</head>
+<body>
+  <!--
+    Pre-upgrade markup IS the component shape. Three fieldsets for
+    Time / Cost / Scope plus a capacity readout. Without JS the form
+    submits raw values to its action; the server can compute capacity.
+    With JS, <iron-triangle> upgrades, computes capacity live from
+    the formula sprintWeeks × teamFTE × focusFactor (default 0.6),
+    and emits iron-triangle:change events.
+  -->
+  <iron-triangle name="triangle" data-focus-factor="0.6">
+    <fieldset name="time">
+      <legend>Time</legend>
+      <label>Sprint weeks      <input name="time.sprintWeeks"  type="number" min="1" value="2"></label>
+      <label>Sprint count      <input name="time.sprintCount"  type="number" min="1" value="3"></label>
+      <label>Hours / week      <input name="time.hoursPerWeek" type="number" min="1" max="168" value="40"></label>
+      <label>Deadline          <input name="time.deadline"     type="date"></label>
+    </fieldset>
+
+    <fieldset name="cost">
+      <legend>Cost</legend>
+      <label>Team FTE          <input name="cost.teamFTE"          type="number" min="0" step="0.5" value="1"></label>
+      <label>Budget tier
+        <select name="cost.budgetTier">
+          <option value="solo" selected>Solo</option>
+          <option value="small">Small</option>
+          <option value="medium">Medium</option>
+          <option value="large">Large</option>
+        </select>
+      </label>
+      <label>Contractor budget <input name="cost.contractorBudget" type="number" min="0"></label>
+    </fieldset>
+
+    <fieldset name="scope">
+      <legend>Scope</legend>
+      <label>Must-have count   <input name="scope.mustHaveCount"   type="number" min="0"></label>
+      <label>Should-have count <input name="scope.shouldHaveCount" type="number" min="0"></label>
+      <label>Notes             <textarea name="scope.scopeNotes" rows="3" maxlength="2000"></textarea></label>
+    </fieldset>
+
+    <fieldset name="capacity">
+      <legend>Capacity</legend>
+      <output name="capacityPoints">—</output>
+      <small name="capacityFormula">— (formula will appear after upgrade)</small>
+    </fieldset>
+  </iron-triangle>
+</body>
+</html>

@@ -1,0 +1,136 @@
+/* iron-triangle — light-DOM enhancement of a Time/Cost/Scope form */
+
+iron-triangle {
+  display: block;
+  padding: var(--iron-triangle-padding, var(--size-l, 1.5rem));
+  background: var(--color-surface);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  container-type: inline-size;
+}
+
+iron-triangle > fieldset {
+  border: 1px solid var(--color-border-muted, var(--color-border));
+  border-radius: var(--radius-s);
+  padding: var(--size-m, 1rem);
+  margin-block-end: var(--iron-triangle-section-gap, var(--size-l, 1.5rem));
+}
+
+iron-triangle > fieldset > legend {
+  font-weight: var(--font-weight-semibold, 600);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  padding-inline: var(--size-2xs);
+}
+
+iron-triangle label {
+  display: grid;
+  gap: var(--size-2xs, 0.25rem);
+  margin-block-end: var(--size-s, 0.75rem);
+  font-size: var(--font-size-sm);
+}
+
+iron-triangle label:last-child { margin-block-end: 0; }
+
+iron-triangle input[type="number"],
+iron-triangle input[type="date"],
+iron-triangle input[type="text"],
+iron-triangle select,
+iron-triangle textarea {
+  inline-size: 100%;
+  min-inline-size: var(--iron-triangle-input-min, 8rem);
+  padding: var(--size-2xs, 0.25rem) var(--size-s, 0.625rem);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-s);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+iron-triangle textarea { resize: vertical; min-block-size: 3.5em; }
+
+/* Capacity readout — distinct surface, large number */
+iron-triangle > fieldset[name="capacity"] {
+  background: var(--iron-triangle-readout-bg, var(--color-surface-raised, var(--color-surface)));
+  border-style: dashed;
+}
+
+iron-triangle output[name="capacityPoints"] {
+  display: block;
+  font-size: var(--iron-triangle-readout-size, var(--font-size-3xl, 2rem));
+  font-weight: var(--font-weight-bold, 700);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-block: var(--size-2xs) var(--size-xs);
+}
+
+iron-triangle small[name="capacityFormula"] {
+  display: block;
+  color: var(--iron-triangle-formula-color, var(--color-text-muted));
+  font-size: var(--font-size-xs);
+}
+
+/* Mode toggle row */
+iron-triangle .iron-triangle-mode-row {
+  display: flex;
+  align-items: center;
+  gap: var(--size-s);
+  margin-block-start: var(--size-m, 1rem);
+}
+
+iron-triangle .iron-triangle-mode-toggle {
+  padding: var(--size-2xs) var(--size-s);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+}
+
+iron-triangle .iron-triangle-mode-toggle[aria-pressed="true"] {
+  background: var(--color-interactive);
+  color: var(--color-text-inverted, white);
+  border-color: var(--color-interactive);
+}
+
+iron-triangle .iron-triangle-manual-input { display: none; align-items: center; gap: var(--size-2xs); }
+iron-triangle:state(manual) .iron-triangle-manual-input { display: inline-flex; }
+iron-triangle:state(manual) small[name="capacityFormula"] { font-style: italic; }
+
+iron-triangle:state(over-deadline) > fieldset[name="time"] {
+  border-color: var(--iron-triangle-warning-color, var(--color-warning));
+}
+
+iron-triangle:state(unbudgeted) output[name="capacityPoints"] {
+  color: var(--iron-triangle-warning-color, var(--color-warning));
+}
+
+iron-triangle[disabled],
+iron-triangle[locked] {
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+/* Two-column layout when there's room */
+@container (inline-size > 56rem) {
+  iron-triangle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "title    title"
+      "time     cost"
+      "scope    capacity"
+      "footer   footer";
+    gap: var(--iron-triangle-section-gap, var(--size-l, 1.5rem));
+  }
+  iron-triangle > [slot="title"]    { grid-area: title; }
+  iron-triangle > fieldset[name="time"]     { grid-area: time;     margin-block-end: 0; }
+  iron-triangle > fieldset[name="cost"]     { grid-area: cost;     margin-block-end: 0; }
+  iron-triangle > fieldset[name="scope"]    { grid-area: scope;    margin-block-end: 0; }
+  iron-triangle > fieldset[name="capacity"] { grid-area: capacity; margin-block-end: 0; }
+  iron-triangle > [slot="footer"]   { grid-area: footer; }
+}
