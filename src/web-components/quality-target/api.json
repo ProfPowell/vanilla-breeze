@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "quality-target",
+  "type": "web-component",
+  "description": "Polygon-as-UI quality prioritization surface. The radar IS the picker: each axis is a clickable hit-target that opens a per-ility dialog (level + rationale). Pairs with <iron-triangle> via data-bind-to to read capacity. Form-associated; serializes the quality-vector schema.",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": ["@flow"]
+  },
+  "attributes": [
+    { "name": "name",                       "kind": "native",   "purpose": "config",         "type": "string",  "default": "quality", "description": "Form-association field name" },
+    { "name": "data-bind-to",               "kind": "data",     "purpose": "config",         "type": "string",  "description": "ID of a sibling <iron-triangle> to read capacityPoints from" },
+    { "name": "data-capacity-points",       "kind": "data",     "purpose": "config",         "type": "number",  "description": "Literal capacity fallback when no triangle is bound" },
+    { "name": "data-cost-weights",          "kind": "data",     "purpose": "config",         "type": "string",  "description": "JSON object overriding default per-ility cost weights" },
+    { "name": "data-radius",                "kind": "data",     "purpose": "config",         "type": "number",  "default": "100", "description": "Base radius in SVG units" },
+    { "name": "data-show-envelope",         "kind": "data",     "purpose": "visual-variant", "type": "boolean", "description": "Show the capacity envelope polygon (default true; set to \"false\" to hide)" },
+    { "name": "data-min-rationale",         "kind": "data",     "purpose": "config",         "type": "number",  "default": "10",  "description": "Min characters for a Critical row's rationale" },
+    { "name": "data-max-rationale",         "kind": "data",     "purpose": "config",         "type": "number",  "default": "200", "description": "Max characters for the rationale textarea" },
+    { "name": "data-min-overrun-rationale", "kind": "data",     "purpose": "config",         "type": "number",  "default": "10",  "description": "Min characters for overrunRationale" },
+    { "name": "data-max-overrun-rationale", "kind": "data",     "purpose": "config",         "type": "number",  "default": "400", "description": "Max characters for overrunRationale" },
+    { "name": "disabled",                   "kind": "native",   "purpose": "config",         "type": "boolean", "description": "All inputs disabled" },
+    { "name": "locked",                     "kind": "host-api", "purpose": "semantic-state", "type": "boolean", "description": "Read-only mode for shipped vectors" }
+  ],
+  "slots": [],
+  "events": [
+    { "name": "quality-target:change",       "detail": "{ vector, rationales, costWeights, capacityPoints, criticalSum, overrunRationale, ironTriangleHash, source, field }", "description": "Any pick or rationale changes" },
+    { "name": "quality-target:over-budget",  "detail": "{ delta, criticalSum, capacityPoints }", "description": "The selection just crossed into over-budget" },
+    { "name": "quality-target:under-budget", "detail": "{ slack, criticalSum, capacityPoints }", "description": "The selection just returned within budget" }
+  ]
+}

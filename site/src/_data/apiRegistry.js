@@ -1420,6 +1420,47 @@ export default {
     "childAttributes": [],
     "structure": []
   },
+  "capacity-plan": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "capacity-plan",
+    "type": "web-component",
+    "description": "Compact ledger that ties iron-triangle capacity, quality-target spend, and slotted work-item costs into a stacked-bar plan view. Auto-binds via data-bind-triangle and data-bind-quality.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-bind-triangle",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of a sibling <iron-triangle> to read capacityPoints from"
+      },
+      {
+        "name": "data-bind-quality",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of a sibling <quality-target> to read criticalSum from"
+      }
+    ],
+    "slots": [
+      {
+        "name": "(default)",
+        "description": "Slot any elements with data-capacity-cost (notably <work-item>) and the plan sums them as the feature spend"
+      }
+    ],
+    "events": [
+      {
+        "name": "capacity-plan:overdrawn",
+        "detail": "{ ledger, source }",
+        "description": "Fires when the slack crosses zero in either direction (edge-triggered)"
+      }
+    ]
+  },
   "card-list": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "card-list",
@@ -5067,178 +5108,6 @@ export default {
     ],
     "structure": []
   },
-  "nfr-compass": {
-    "$schema": "../../../schemas/api.schema.json",
-    "element": "nfr-compass",
-    "type": "web-component",
-    "description": "11-ility prioritization compass that spends a numeric capacity budget supplied by <iron-triangle>. Outputs a quality vector with required rationales for every Critical pick.",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "name",
-        "kind": "native",
-        "purpose": "config",
-        "type": "string",
-        "default": "nfr-vector",
-        "description": "Form-association field name"
-      },
-      {
-        "name": "data-bind-to",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "description": "ID of a sibling <iron-triangle> to read capacity from"
-      },
-      {
-        "name": "data-capacity-points",
-        "kind": "data",
-        "purpose": "config",
-        "type": "number",
-        "description": "Literal capacity fallback when no triangle is bound"
-      },
-      {
-        "name": "data-cost-weights",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "description": "JSON object overriding default per-ility cost weights"
-      },
-      {
-        "name": "data-min-rationale",
-        "kind": "data",
-        "purpose": "config",
-        "type": "number",
-        "default": "10",
-        "description": "Min characters for a Critical row's rationale"
-      },
-      {
-        "name": "data-max-rationale",
-        "kind": "data",
-        "purpose": "config",
-        "type": "number",
-        "default": "200",
-        "description": "Max characters for the rationale textarea"
-      },
-      {
-        "name": "data-min-overrun-rationale",
-        "kind": "data",
-        "purpose": "config",
-        "type": "number",
-        "default": "10",
-        "description": "Min characters for overrunRationale"
-      },
-      {
-        "name": "data-max-overrun-rationale",
-        "kind": "data",
-        "purpose": "config",
-        "type": "number",
-        "default": "400",
-        "description": "Max characters for overrunRationale"
-      },
-      {
-        "name": "disabled",
-        "kind": "native",
-        "purpose": "config",
-        "type": "boolean",
-        "description": "All inputs disabled"
-      },
-      {
-        "name": "locked",
-        "kind": "host-api",
-        "purpose": "semantic-state",
-        "type": "boolean",
-        "description": "Read-only mode for shipped vectors"
-      }
-    ],
-    "slots": [
-      {
-        "name": "title",
-        "description": "Heading text shown above the rows"
-      },
-      {
-        "name": "(default)",
-        "description": "<fieldset> rows; omit to get the default 11 ilities"
-      },
-      {
-        "name": "notes",
-        "description": "Project-supplied advisory notes"
-      },
-      {
-        "name": "overrun-rationale",
-        "description": "Pre-existing <textarea name=\"overrunRationale\">; one is created when missing"
-      },
-      {
-        "name": "footer",
-        "description": "Save / Submit area"
-      }
-    ],
-    "events": [
-      {
-        "name": "nfr-compass:change",
-        "detail": "{ vector, rationales, costWeights, capacityPoints, criticalSum, overrunRationale, source }",
-        "description": "Any pick or rationale changes"
-      },
-      {
-        "name": "nfr-compass:over-budget",
-        "detail": "{ delta, criticalSum, capacityPoints }",
-        "description": "The selection just crossed into over-budget"
-      },
-      {
-        "name": "nfr-compass:under-budget",
-        "detail": "{ slack, criticalSum, capacityPoints }",
-        "description": "The selection just returned within budget"
-      }
-    ]
-  },
-  "nfr-radar": {
-    "$schema": "../../../schemas/api.schema.json",
-    "element": "nfr-radar",
-    "type": "web-component",
-    "description": "11-axis radar viz for an NFR vector vs the project's capacity envelope. Pairs with a sibling <nfr-compass> via data-bind-to; listens for nfr-compass:change and re-renders an inline <svg>.",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "data-bind-to",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "description": "ID of a sibling <nfr-compass> to read value from"
-      },
-      {
-        "name": "data-radius",
-        "kind": "data",
-        "purpose": "config",
-        "type": "number",
-        "default": "90",
-        "description": "Base radius in SVG units"
-      },
-      {
-        "name": "data-show-envelope",
-        "kind": "data",
-        "purpose": "visual-variant",
-        "type": "boolean",
-        "description": "Show the capacity envelope polygon (default true; set to \"false\" to hide)"
-      }
-    ],
-    "slots": [],
-    "events": [
-      {
-        "name": "nfr-radar:change",
-        "detail": "{ value, source }",
-        "description": "Fires when the radar re-renders due to a bound compass change or a property write"
-      }
-    ]
-  },
   "note-wc": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "note-wc",
@@ -5966,6 +5835,128 @@ export default {
     ],
     "childAttributes": [],
     "structure": []
+  },
+  "quality-target": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "quality-target",
+    "type": "web-component",
+    "description": "Polygon-as-UI quality prioritization surface. The radar IS the picker: each axis is a clickable hit-target that opens a per-ility dialog (level + rationale). Pairs with <iron-triangle> via data-bind-to to read capacity. Form-associated; serializes the quality-vector schema.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "name",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "default": "quality",
+        "description": "Form-association field name"
+      },
+      {
+        "name": "data-bind-to",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of a sibling <iron-triangle> to read capacityPoints from"
+      },
+      {
+        "name": "data-capacity-points",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "description": "Literal capacity fallback when no triangle is bound"
+      },
+      {
+        "name": "data-cost-weights",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "JSON object overriding default per-ility cost weights"
+      },
+      {
+        "name": "data-radius",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "100",
+        "description": "Base radius in SVG units"
+      },
+      {
+        "name": "data-show-envelope",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Show the capacity envelope polygon (default true; set to \"false\" to hide)"
+      },
+      {
+        "name": "data-min-rationale",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "10",
+        "description": "Min characters for a Critical row's rationale"
+      },
+      {
+        "name": "data-max-rationale",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "200",
+        "description": "Max characters for the rationale textarea"
+      },
+      {
+        "name": "data-min-overrun-rationale",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "10",
+        "description": "Min characters for overrunRationale"
+      },
+      {
+        "name": "data-max-overrun-rationale",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "400",
+        "description": "Max characters for overrunRationale"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "All inputs disabled"
+      },
+      {
+        "name": "locked",
+        "kind": "host-api",
+        "purpose": "semantic-state",
+        "type": "boolean",
+        "description": "Read-only mode for shipped vectors"
+      }
+    ],
+    "slots": [],
+    "events": [
+      {
+        "name": "quality-target:change",
+        "detail": "{ vector, rationales, costWeights, capacityPoints, criticalSum, overrunRationale, ironTriangleHash, source, field }",
+        "description": "Any pick or rationale changes"
+      },
+      {
+        "name": "quality-target:over-budget",
+        "detail": "{ delta, criticalSum, capacityPoints }",
+        "description": "The selection just crossed into over-budget"
+      },
+      {
+        "name": "quality-target:under-budget",
+        "detail": "{ slack, criticalSum, capacityPoints }",
+        "description": "The selection just returned within budget"
+      }
+    ]
   },
   "reader-view": {
     "$schema": "../../../schemas/api.schema.json",

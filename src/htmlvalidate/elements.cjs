@@ -297,6 +297,15 @@ module.exports = {
     }
   },
 
+  "capacity-plan": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-bind-triangle": {},
+      "data-bind-quality": {}
+    }
+  },
+
   "card-list": {
     attributes: {
       "src": {},
@@ -894,33 +903,6 @@ module.exports = {
     }
   },
 
-  "nfr-compass": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "name": {},
-      "data-bind-to": {},
-      "data-capacity-points": {},
-      "data-cost-weights": {},
-      "data-min-rationale": {},
-      "data-max-rationale": {},
-      "data-min-overrun-rationale": {},
-      "data-max-overrun-rationale": {},
-      "disabled": { boolean: true },
-      "locked": { boolean: true }
-    }
-  },
-
-  "nfr-radar": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-bind-to": {},
-      "data-radius": {},
-      "data-show-envelope": { boolean: true }
-    }
-  },
-
   "note-wc": {
     flow: true,
     permittedContent: ["@flow"]
@@ -1039,6 +1021,25 @@ module.exports = {
       "background": {},
       "error-correction": {},
       "role": {}
+    }
+  },
+
+  "quality-target": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "name": {},
+      "data-bind-to": {},
+      "data-capacity-points": {},
+      "data-cost-weights": {},
+      "data-radius": {},
+      "data-show-envelope": { boolean: true },
+      "data-min-rationale": {},
+      "data-max-rationale": {},
+      "data-min-overrun-rationale": {},
+      "data-max-overrun-rationale": {},
+      "disabled": { boolean: true },
+      "locked": { boolean: true }
     }
   },
 

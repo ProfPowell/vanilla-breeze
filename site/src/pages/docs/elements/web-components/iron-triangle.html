@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "iron-triangle"
-description: "Project-shape constraint surface — captures Time × Cost × Scope on one form and computes a single integer capacityPoints budget that downstream Planning Pack components (notably <nfr-compass>) can spend on quality decisions."
+description: "Project-shape constraint surface — captures Time × Cost × Scope on one form and computes a single integer capacityPoints budget that downstream Planning Pack components (notably <quality-target>) can spend on quality decisions."
 elementName: iron-triangle
 category: component
 pack: ux-planning
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;iron-triangle&gt;</code> component is the Planning Pack's <em>constraint surface</em>, and it <em>is</em> the UI. Three vertex hit-targets — Scope (top), Time (bottom-left), Cost (bottom-right) — open native <code>&lt;dialog&gt;</code> editors on click. The center "Quality" target shows the live <code>capacityPoints</code> integer and routes to the NFR compass when activated. Hover any target for a native tooltip preview of its current value.</p>
+  <p>The <code>&lt;iron-triangle&gt;</code> component is the Planning Pack's <em>constraint surface</em>, and it <em>is</em> the UI. Three vertex hit-targets — Scope (top), Time (bottom-left), Cost (bottom-right) — open native <code>&lt;dialog&gt;</code> editors on click. The center "Quality" target shows the live <code>capacityPoints</code> integer and routes to the Quality target when activated. Hover any target for a native tooltip preview of its current value.</p>
   <p>The author writes a single empty element. The component generates the SVG and the per-vertex dialogs from a fixed schema; inputs inside the dialogs use VB primitives (<code>&lt;form-field&gt;</code>, <code>&lt;fieldset&gt;</code>, <code>data-layout</code>). The component is form-associated; <code>capacityPoints</code> + the full T/C/S snapshot serialize as JSON for a containing <code>&lt;form&gt;</code>.</p>
 </section>
 
@@ -59,7 +59,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>The center "Quality" target</h2>
-  <p>The capacity number is the headline; clicking it opens the NFR compass. Two paths combine:</p>
+  <p>The capacity number is the headline; clicking it opens the Quality target. Two paths combine:</p>
   <ul>
     <li>The component dispatches a cancelable <code>iron-triangle:open-quality</code> event with <code>{ qualitySummary, capacityPoints }</code>.</li>
     <li>If the event isn't <code>preventDefault()</code>'d AND <code>data-quality-href</code> is set, the page navigates to that URL.</li>
@@ -105,9 +105,9 @@ triangle.setFormula();                 // back to the default formula</code-bloc
 
 <section>
   <h2>Drift detection</h2>
-  <p>Every change recomputes a stable FNV-1a hash of the T/C/S object — exposed via <code>.hash</code> and emitted in <code>iron-triangle:change</code>. Downstream consumers (notably <code>&lt;nfr-compass&gt;</code>) stamp this hash into their saved vector so a CI guard can detect when a quality vector was decided against a since-changed project shape.</p>
+  <p>Every change recomputes a stable FNV-1a hash of the T/C/S object — exposed via <code>.hash</code> and emitted in <code>iron-triangle:change</code>. Downstream consumers (notably <code>&lt;quality-target&gt;</code>) stamp this hash into their saved vector so a CI guard can detect when a quality vector was decided against a since-changed project shape.</p>
 
-  <code-block language="javascript" label="Wire iron-triangle to nfr-compass" data-escape>const triangle = document.getElementById('project-shape');
+  <code-block language="javascript" label="Wire iron-triangle to quality-target" data-escape>const triangle = document.getElementById('project-shape');
 const compass  = document.getElementById('priorities');
 
 // Push the initial capacity
@@ -123,7 +123,7 @@ triangle.addEventListener('iron-triangle:change', (e) =&gt; {
   <p>If you'd rather not wire it manually, point the compass at the triangle by id and the binding happens for you:</p>
 
   <code-block language="html" label="Implicit binding via data-bind-to" data-escape><iron-triangle id="shape"></iron-triangle>
-<nfr-compass data-bind-to="shape"></nfr-compass></code-block>
+<quality-target data-bind-to="shape"></quality-target></code-block>
 </section>
 
 <section>
@@ -302,8 +302,8 @@ triangle.addEventListener('iron-triangle:change', (e) =&gt; {
 <section>
   <h2>Related</h2>
   <ul>
-    <li><a href="/docs/elements/web-components/nfr-compass/"><code>&lt;nfr-compass&gt;</code></a> &mdash; primary consumer; spends <code>capacityPoints</code> on quality picks and stamps the triangle's hash for drift detection.</li>
+    <li><a href="/docs/elements/web-components/quality-target/"><code>&lt;quality-target&gt;</code></a> &mdash; primary consumer; spends <code>capacityPoints</code> on quality picks and stamps the triangle's hash for drift detection.</li>
     <li><a href="/docs/elements/web-components/adr-wc/"><code>&lt;adr-wc&gt;</code></a> &mdash; record the Iron Triangle decision itself as an ADR.</li>
-    <li><a href="/docs/packs/ux-planning/">UX Planning Pack</a> &mdash; loads iron-triangle, nfr-compass, and the rest of the planning surface together.</li>
+    <li><a href="/docs/packs/ux-planning/">UX Planning Pack</a> &mdash; loads iron-triangle, quality-target, and the rest of the planning surface together.</li>
   </ul>
 </section>

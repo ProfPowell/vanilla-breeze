@@ -1,0 +1,171 @@
+/* quality-target — polygon-as-UI quality picker + viz.
+
+   The SVG IS the picker. Each axis hit-target opens a per-ility
+   dialog (level + rationale). The footer shows over-budget state +
+   inline overrun rationale. */
+
+quality-target {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: var(--quality-target-max, 28rem);
+  margin-inline: auto;
+  container-type: inline-size;
+}
+
+quality-target > svg {
+  inline-size: 100%;
+  block-size: auto;
+  display: block;
+}
+
+/* ── Spokes / envelope / vector polygon ──────────────────────── */
+
+quality-target svg .spoke {
+  stroke: var(--color-border, #e5e7eb);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  pointer-events: none;
+}
+
+quality-target svg .envelope {
+  fill: var(--quality-target-envelope-fill, color-mix(in oklab, var(--color-success) 14%, transparent));
+  stroke: var(--quality-target-envelope-stroke, color-mix(in oklab, var(--color-success) 60%, transparent));
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+quality-target svg .vector {
+  fill: var(--quality-target-vector-fill, color-mix(in oklab, var(--color-interactive) 28%, transparent));
+  stroke: var(--quality-target-vector-stroke, var(--color-interactive));
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+quality-target svg .vector-spoke {
+  stroke: var(--quality-target-vector-stroke, var(--color-interactive));
+  stroke-width: 2;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+/* ── Axis hit targets ──────────────────────────────────────── */
+
+quality-target svg .axis {
+  cursor: pointer;
+  outline: none;
+}
+
+quality-target svg .axis .hit {
+  fill: transparent;
+  stroke: transparent;
+  transition: fill 120ms ease, stroke 120ms ease;
+}
+
+quality-target svg .axis:hover .hit,
+quality-target svg .axis:focus-visible .hit {
+  fill: color-mix(in oklab, var(--color-interactive) 8%, transparent);
+  stroke: var(--color-interactive);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+quality-target svg .axis-label {
+  font-size: var(--font-size-xs, 0.75rem);
+  fill: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  font-weight: var(--font-weight-medium, 500);
+}
+
+quality-target svg .axis .marker {
+  fill: var(--color-interactive);
+  stroke: var(--color-surface);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+quality-target svg .axis[data-level="critical"]     .marker { fill: var(--color-error,   #dc2626); }
+quality-target svg .axis[data-level="important"]    .marker { fill: var(--color-warning, #b45309); }
+quality-target svg .axis[data-level="acceptable"]   .marker { fill: var(--color-success, #16a34a); }
+quality-target svg .axis[data-level="not-relevant"] .marker { fill: var(--color-text-muted, #6b7280); opacity: 0.5; }
+
+/* ── Center capacity readout ──────────────────────────────── */
+
+quality-target svg .capacity-sum {
+  font-size: var(--quality-target-capacity-size, 1.75rem);
+  font-weight: var(--font-weight-bold, 700);
+  fill: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+quality-target svg .capacity-label {
+  font-size: var(--font-size-xs, 0.75rem);
+  fill: var(--color-text-muted);
+  pointer-events: none;
+}
+
+quality-target svg .center[data-over] .capacity-sum {
+  fill: var(--color-error);
+}
+quality-target:state(over-budget) svg .vector {
+  stroke: var(--color-warning);
+}
+
+/* ── Footer (overrun rationale + errors) ──────────────────── */
+
+quality-target .quality-footer {
+  margin-block-start: var(--size-m, 1rem);
+}
+
+quality-target [data-quality-overrun] {
+  padding: var(--size-m, 1rem);
+  border: var(--border-width-thin, 1px) solid var(--color-error);
+  border-radius: var(--radius-m);
+  background: var(--color-error-subtle, oklch(95% 0.05 27));
+  display: grid;
+  gap: var(--size-2xs, 0.25rem);
+}
+
+quality-target [data-quality-overrun][hidden] {
+  display: none;
+}
+
+quality-target [data-quality-errors] {
+  display: none;
+}
+quality-target:state(missing-rationale) [data-quality-errors] {
+  display: block;
+}
+
+/* ── Per-ility dialogs ──────────────────────────────────── */
+
+quality-target > dialog.quality-dialog {
+  inline-size: min(28rem, 92vw);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-l, 0.75rem);
+  padding: var(--size-l, 1.5rem);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+quality-target > dialog.quality-dialog::backdrop {
+  background: oklch(from var(--color-surface) l c h / 0.5);
+  backdrop-filter: blur(2px);
+}
+
+quality-target > dialog.quality-dialog h3 {
+  margin: 0 0 var(--size-m) 0;
+  font-size: var(--font-size-l, 1.125rem);
+}
+
+quality-target > dialog.quality-dialog fieldset {
+  border: 1px solid var(--color-border-muted, var(--color-border));
+}
+
+quality-target[disabled],
+quality-target[locked] {
+  opacity: 0.85;
+  pointer-events: none;
+}
