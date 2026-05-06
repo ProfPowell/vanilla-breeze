@@ -4566,7 +4566,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "iron-triangle",
     "type": "web-component",
-    "description": "Project-shape constraint surface — captures Time × Cost × Scope and computes a single integer capacityPoints budget that downstream Planning Pack components (notably <nfr-compass>) read.",
+    "description": "Triangle-as-UI project-shape constraint surface. Three vertex hit-targets (Scope/Time/Cost) open native <dialog> editors; the center 'Quality' target fires iron-triangle:open-quality with a data-quality-href fallback. Computes capacityPoints from sprintWeeks × sprintCount × teamFTE × focusFactor. Form-associated.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -4588,7 +4588,7 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": "0.6",
-        "description": "Multiplier in the default capacity formula (0–1; the share of FTE available for engineering quality work)"
+        "description": "Multiplier in the default capacity formula"
       },
       {
         "name": "data-min-capacity",
@@ -4599,11 +4599,18 @@ export default {
         "description": "Floor for capacityPoints"
       },
       {
-        "name": "data-capacity-formula",
+        "name": "data-quality-href",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Custom formula string (out of scope v1)"
+        "description": "Navigation fallback when iron-triangle:open-quality isn't preventDefault-ed"
+      },
+      {
+        "name": "data-quality-summary",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Short summary text shown in the center's native tooltip + aria-label (e.g. '3 critical: perf, sec, a11y')"
       },
       {
         "name": "disabled",
@@ -4620,36 +4627,11 @@ export default {
         "description": "Read-only mode for shipped vectors"
       }
     ],
-    "slots": [
-      {
-        "name": "title",
-        "description": "Heading text shown above the form"
-      },
-      {
-        "name": "time-controls",
-        "description": "Override the default Time inputs"
-      },
-      {
-        "name": "cost-controls",
-        "description": "Override the default Cost inputs"
-      },
-      {
-        "name": "scope-controls",
-        "description": "Override the default Scope inputs"
-      },
-      {
-        "name": "capacity-readout",
-        "description": "Override the readout block (advanced)"
-      },
-      {
-        "name": "footer",
-        "description": "Save/Submit area"
-      }
-    ],
+    "slots": [],
     "events": [
       {
         "name": "iron-triangle:change",
-        "detail": "{ time, cost, scope, capacityPoints, capacitySource, hash, source }",
+        "detail": "{ time, cost, scope, capacityPoints, capacitySource, hash, source, field }",
         "description": "Any input or property change"
       },
       {
@@ -4661,6 +4643,11 @@ export default {
         "name": "iron-triangle:mode",
         "detail": "{ from, to }",
         "description": "Capacity source flips between formula and manual"
+      },
+      {
+        "name": "iron-triangle:open-quality",
+        "detail": "{ qualitySummary, capacityPoints }",
+        "description": "Center 'Quality' target activated; cancelable. If not prevented and data-quality-href is set, navigates to that URL."
       }
     ]
   },

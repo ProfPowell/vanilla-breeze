@@ -1,77 +1,125 @@
-/* iron-triangle — light-DOM enhancement of a Time/Cost/Scope form.
+/* iron-triangle — triangle-as-UI for project-shape constraints.
 
-   Layout, fieldset chrome, and form-field sizing all come from VB
-   primitives (data-layout, <fieldset>, <form-field>). This stylesheet
-   only owns the SVG viz container + a few :state(...) hooks. */
+   The component renders a single SVG with three clickable vertex
+   targets (Scope / Time / Cost) and a center "Quality" target. Each
+   target opens a native <dialog> editor (vertices) or fires the
+   open-quality event (center). Editor chrome inside the dialogs uses
+   VB primitives — <form-field>, <fieldset>, data-layout. */
 
-iron-triangle { display: block; container-type: inline-size; }
-
-iron-triangle [data-iron-triangle-viz] {
-  margin: 0;
-  display: grid;
-  place-items: center;
-  gap: var(--size-xs, 0.5rem);
+iron-triangle {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: var(--iron-triangle-max, 26rem);
+  margin-inline: auto;
+  container-type: inline-size;
 }
 
-iron-triangle [data-iron-triangle-viz] svg {
+iron-triangle > svg {
   inline-size: 100%;
   block-size: auto;
-  max-inline-size: var(--iron-triangle-viz-max, 22rem);
+  display: block;
 }
 
-/* Once the SVG is rendered, hide the no-JS text fallbacks — the SVG
-   already shows capacity + formula. They remain in the DOM as the
-   pre-upgrade path and as screen-reader-friendly anchors. */
-iron-triangle[data-upgraded] [data-iron-triangle-viz] output[name="capacityPoints"],
-iron-triangle[data-upgraded] [data-iron-triangle-viz] small[name="capacityFormula"] {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
+/* ── Triangle outline ─────────────────────────────────────────── */
 
-iron-triangle [data-iron-triangle-viz] svg .vertex-label {
-  font-size: var(--font-size-xs, 0.75rem);
-  fill: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-iron-triangle [data-iron-triangle-viz] svg .capacity {
-  font-size: var(--font-size-3xl, 2rem);
-  font-weight: var(--font-weight-bold, 700);
-  fill: var(--color-text);
-  font-variant-numeric: tabular-nums;
-}
-
-iron-triangle [data-iron-triangle-viz] svg .capacity-unit {
-  font-size: var(--font-size-xs, 0.75rem);
-  fill: var(--color-text-muted);
-}
-
-iron-triangle [data-iron-triangle-viz] svg .triangle {
-  fill: var(--iron-triangle-fill, color-mix(in oklab, var(--color-interactive) 12%, transparent));
+iron-triangle svg .triangle {
+  fill: var(--iron-triangle-fill, color-mix(in oklab, var(--color-interactive) 8%, transparent));
   stroke: var(--iron-triangle-stroke, var(--color-interactive));
   stroke-width: var(--iron-triangle-stroke-width, 1.5);
   stroke-linejoin: round;
-  transition: d 200ms ease, points 200ms ease;
+  pointer-events: none;
 }
 
-iron-triangle:state(over-deadline) [data-iron-triangle-viz] svg .triangle {
-  stroke: var(--color-warning);
-}
-iron-triangle:state(unbudgeted) [data-iron-triangle-viz] svg .capacity {
-  fill: var(--color-warning);
+/* ── Vertex hit targets ───────────────────────────────────────── */
+
+iron-triangle svg .vertex,
+iron-triangle svg .center {
+  cursor: pointer;
+  outline: none;
 }
 
-iron-triangle [data-iron-triangle-manual-input-field][hidden] { display: none; }
+iron-triangle svg .vertex .hit,
+iron-triangle svg .center .hit {
+  fill: transparent;
+  stroke: transparent;
+  transition: fill 120ms ease, stroke 120ms ease;
+}
+
+iron-triangle svg .vertex:hover .hit,
+iron-triangle svg .vertex:focus-visible .hit,
+iron-triangle svg .center:hover .hit,
+iron-triangle svg .center:focus-visible .hit {
+  fill: color-mix(in oklab, var(--color-interactive) 8%, transparent);
+  stroke: var(--color-interactive);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+iron-triangle svg .vertex-name {
+  font-size: var(--font-size-md, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
+  fill: var(--color-text);
+  pointer-events: none;
+}
+
+iron-triangle svg .vertex-summary {
+  font-size: var(--font-size-xs, 0.75rem);
+  fill: var(--color-text-muted);
+  pointer-events: none;
+}
+
+/* ── Center "Quality" target ──────────────────────────────────── */
+
+iron-triangle svg .capacity {
+  font-size: var(--iron-triangle-capacity-size, 2.25rem);
+  font-weight: var(--font-weight-bold, 700);
+  fill: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+iron-triangle svg .quality-label {
+  font-size: var(--font-size-md, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
+  fill: var(--color-interactive);
+  pointer-events: none;
+}
+
+iron-triangle svg .capacity-unit {
+  font-size: var(--font-size-xs, 0.75rem);
+  fill: var(--color-text-muted);
+  pointer-events: none;
+}
+
+/* ── State hooks ──────────────────────────────────────────────── */
+
+iron-triangle:state(over-deadline) svg .triangle { stroke: var(--color-warning); }
+iron-triangle:state(unbudgeted)    svg .capacity { fill: var(--color-warning); }
+iron-triangle:state(manual)        svg .quality-label::after { content: " (manual)"; }
 
 iron-triangle[disabled],
 iron-triangle[locked] {
   opacity: 0.85;
   pointer-events: none;
+}
+
+/* ── Dialog chrome ────────────────────────────────────────────── */
+
+iron-triangle > dialog.iron-triangle-dialog {
+  inline-size: min(28rem, 92vw);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-l, 0.75rem);
+  padding: var(--size-l, 1.5rem);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+iron-triangle > dialog.iron-triangle-dialog::backdrop {
+  background: oklch(from var(--color-surface) l c h / 0.5);
+  backdrop-filter: blur(2px);
+}
+
+iron-triangle > dialog.iron-triangle-dialog h3 {
+  margin: 0 0 var(--size-m) 0;
+  font-size: var(--font-size-l, 1.125rem);
 }

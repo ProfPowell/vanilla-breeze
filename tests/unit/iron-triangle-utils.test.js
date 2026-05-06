@@ -11,6 +11,10 @@ import {
   relativeMagnitudes,
   stretchFactors,
   triangleVertices,
+  formatTimeSummary,
+  formatCostSummary,
+  formatScopeSummary,
+  formatQualitySummary,
 } from '../../src/web-components/iron-triangle/_triangle-geometry.js';
 import {
   defaultFormula,
@@ -145,17 +149,17 @@ describe('stretchFactors', () => {
 });
 
 describe('triangleVertices', () => {
-  it('places TIME at top, COST bottom-left, SCOPE bottom-right', () => {
+  it('places SCOPE at top, TIME bottom-left, COST bottom-right', () => {
     const v = triangleVertices({
       time:  { sprintWeeks: 1, sprintCount: 1 },
       cost:  { teamFTE: 1 },
       scope: { mustHaveCount: 1 },
     }, 100);
-    assert.ok(v.time.y < 0,  'TIME should be above origin (negative y in SVG)');
-    assert.ok(v.cost.x < 0,  'COST should be left of origin');
-    assert.ok(v.scope.x > 0, 'SCOPE should be right of origin');
+    assert.ok(v.scope.y < 0, 'SCOPE should be above origin (negative y in SVG)');
+    assert.ok(v.time.x < 0,  'TIME should be left of origin');
+    assert.ok(v.cost.x > 0,  'COST should be right of origin');
+    assert.ok(v.time.y > 0,  'TIME should be below origin');
     assert.ok(v.cost.y > 0,  'COST should be below origin');
-    assert.ok(v.scope.y > 0, 'SCOPE should be below origin');
   });
 
   it('produces a symmetric equilateral when magnitudes are equal', () => {
@@ -165,8 +169,8 @@ describe('triangleVertices', () => {
       cost:  { teamFTE: 0.25, hoursPerWeek: 40 },           // c = 10
       scope: { mustHaveCount: 10 },                         // s = 10
     }, 100);
-    assert.ok(Math.abs(v.cost.y - v.scope.y) < 1e-6);
-    assert.ok(Math.abs(Math.abs(v.cost.x) - v.scope.x) < 1e-6);
+    assert.ok(Math.abs(v.time.y - v.cost.y) < 1e-6);
+    assert.ok(Math.abs(Math.abs(v.time.x) - v.cost.x) < 1e-6);
   });
 
   it('stretches a vertex outward when its constraint grows in isolation', () => {
@@ -207,5 +211,67 @@ describe('triangleVertices', () => {
     assert.ok(d(v.time, v.cost)  > 10);
     assert.ok(d(v.cost, v.scope) > 10);
     assert.ok(d(v.scope, v.time) > 10);
+  });
+});
+
+// ── Vertex summary formatters ──────────────────────────────────────
+
+describe('formatTimeSummary', () => {
+  it('combines sprintCount × sprintWeeks into total weeks', () => {
+    assert.equal(formatTimeSummary({ sprintCount: 3, sprintWeeks: 2 }), '6 weeks (3 × 2wk)');
+  });
+
+  it('uses singular when only one sprint of one week', () => {
+    assert.equal(formatTimeSummary({ sprintCount: 1, sprintWeeks: 1 }), '1 week');
+  });
+
+  it('falls back to deadline when sprints are unset', () => {
+    assert.equal(formatTimeSummary({ deadline: '2026-12-31' }), 'until 2026-12-31');
+  });
+
+  it('returns "TBD" when nothing is set', () => {
+    assert.equal(formatTimeSummary({}), 'TBD');
+  });
+});
+
+describe('formatCostSummary', () => {
+  it('combines FTE and budget tier with a separator', () => {
+    assert.equal(formatCostSummary({ teamFTE: 2, budgetTier: 'small' }), '2 FTE · small');
+  });
+
+  it('drops missing fields gracefully', () => {
+    assert.equal(formatCostSummary({ teamFTE: 1 }), '1 FTE');
+    assert.equal(formatCostSummary({ budgetTier: 'medium' }), 'medium');
+  });
+
+  it('returns "TBD" when nothing is set', () => {
+    assert.equal(formatCostSummary({}), 'TBD');
+  });
+});
+
+describe('formatScopeSummary', () => {
+  it('combines must and should counts', () => {
+    assert.equal(formatScopeSummary({ mustHaveCount: 5, shouldHaveCount: 3 }), '5 must · 3 should');
+  });
+
+  it('handles a single category', () => {
+    assert.equal(formatScopeSummary({ mustHaveCount: 5 }), '5 must-have');
+    assert.equal(formatScopeSummary({ shouldHaveCount: 3 }), '3 should-have');
+  });
+
+  it('returns "TBD" when nothing is set', () => {
+    assert.equal(formatScopeSummary({}), 'TBD');
+  });
+});
+
+describe('formatQualitySummary', () => {
+  it('returns the trimmed input when present', () => {
+    assert.equal(formatQualitySummary('3 critical: perf, sec, a11y'), '3 critical: perf, sec, a11y');
+  });
+
+  it('returns the TBD fallback for empty / nullish', () => {
+    assert.equal(formatQualitySummary(''), 'TBD — click to set');
+    assert.equal(formatQualitySummary(null), 'TBD — click to set');
+    assert.equal(formatQualitySummary('   '), 'TBD — click to set');
   });
 });

@@ -834,7 +834,8 @@ module.exports = {
       "name": {},
       "data-focus-factor": {},
       "data-min-capacity": {},
-      "data-capacity-formula": {},
+      "data-quality-href": {},
+      "data-quality-summary": {},
       "disabled": { boolean: true },
       "locked": { boolean: true }
     }

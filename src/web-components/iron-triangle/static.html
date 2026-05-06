@@ -8,98 +8,21 @@
 </head>
 <body>
   <!--
-    The component reads native inputs by name (time.* / cost.* / scope.*)
-    and renders an inline <svg> deformable triangle into the [data-iron-
-    triangle-viz] figure. Layout, fieldset chrome, and input sizing all
-    come from VB primitives (data-layout, <fieldset>, <form-field>).
-    Pre-upgrade fallback: the <output>/<small> readouts inside the figure
-    still render; the form still submits.
+    Triangle-as-UI: the component IS the surface. Three vertex
+    targets (Scope / Time / Cost) open native <dialog> editors on
+    click; the center "Quality" target fires
+    `iron-triangle:open-quality` and falls back to navigating
+    `data-quality-href`. Hover any target for a tooltip.
+
+    Pre-upgrade fallback: the component renders no UI without JS —
+    the meaningful interaction is dialog-driven and JS-only. For a
+    no-JS path, expose a server-rendered form on the same page and
+    flip with a feature flag. UUCD pre-fills `data-quality-summary`
+    so hover on the center previews the saved compass picks.
   -->
-  <iron-triangle name="triangle" data-focus-factor="0.6">
-    <form data-layout="split" data-layout-ratio="2:1" data-layout-gap="l">
-
-      <section data-layout="stack" data-layout-gap="m">
-        <fieldset data-layout="stack" data-layout-gap="m">
-          <legend>Time</legend>
-        <form-field>
-          <label for="sprint-weeks">Sprint length (weeks)</label>
-          <input id="sprint-weeks" name="time.sprintWeeks" type="number" min="1" value="2"
-                 style="inline-size: 6rem">
-        </form-field>
-        <form-field>
-          <label for="sprint-count">Number of sprints</label>
-          <input id="sprint-count" name="time.sprintCount" type="number" min="1" value="3"
-                 style="inline-size: 6rem">
-        </form-field>
-        <form-field>
-          <label for="hours-per-week">Hours per week (per FTE)</label>
-          <input id="hours-per-week" name="time.hoursPerWeek" type="number" min="1" max="168" value="40"
-                 style="inline-size: 6rem">
-        </form-field>
-        <form-field>
-          <label for="deadline">Deadline</label>
-          <input id="deadline" name="time.deadline" type="date" style="inline-size: 12rem">
-        </form-field>
-      </fieldset>
-
-      <fieldset data-layout="stack" data-layout-gap="m">
-        <legend>Cost</legend>
-        <form-field>
-          <label for="team-fte">Team size (FTE)</label>
-          <input id="team-fte" name="cost.teamFTE" type="number" min="0" step="0.5" value="1"
-                 style="inline-size: 6rem">
-        </form-field>
-        <form-field>
-          <label for="budget-tier">Budget tier</label>
-          <select id="budget-tier" name="cost.budgetTier" style="inline-size: 12rem">
-            <option value="solo" selected>Solo</option>
-            <option value="small">Small (2-5)</option>
-            <option value="medium">Medium (6-15)</option>
-            <option value="large">Large (16+)</option>
-          </select>
-        </form-field>
-        <form-field>
-          <label for="contractor-budget">Contractor budget (optional)</label>
-          <input id="contractor-budget" name="cost.contractorBudget" type="number" min="0"
-                 style="inline-size: 8rem">
-        </form-field>
-      </fieldset>
-
-        <fieldset data-layout="stack" data-layout-gap="m">
-          <legend>Scope</legend>
-          <form-field>
-            <label for="must-have">Must-have feature count</label>
-            <input id="must-have" name="scope.mustHaveCount" type="number" min="0"
-                   style="inline-size: 6rem">
-          </form-field>
-          <form-field>
-            <label for="should-have">Should-have feature count</label>
-            <input id="should-have" name="scope.shouldHaveCount" type="number" min="0"
-                   style="inline-size: 6rem">
-          </form-field>
-          <form-field>
-            <label for="scope-notes">Notes</label>
-            <textarea id="scope-notes" name="scope.scopeNotes" rows="3" maxlength="2000"></textarea>
-          </form-field>
-        </fieldset>
-      </section>
-
-      <figure data-iron-triangle-viz aria-live="polite">
-        <output name="capacityPoints">—</output>
-        <small name="capacityFormula">Set sprint length, team size, and focus factor to compute capacity.</small>
-      </figure>
-    </form>
-
-    <fieldset data-layout="cluster" data-layout-gap="s" data-layout-align="center">
-      <legend class="visually-hidden">Capacity mode</legend>
-      <button type="button" data-iron-triangle-mode-toggle aria-pressed="false">
-        Use manual capacity
-      </button>
-      <form-field hidden data-iron-triangle-manual-input-field>
-        <label for="manual-points">Manual points</label>
-        <input id="manual-points" type="number" min="1" step="1" data-iron-triangle-manual-input>
-      </form-field>
-    </fieldset>
-  </iron-triangle>
+  <iron-triangle name="triangle"
+                 data-focus-factor="0.6"
+                 data-quality-href="/requirements"
+                 data-quality-summary="3 critical: perf, sec, a11y"></iron-triangle>
 </body>
 </html>

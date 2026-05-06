@@ -12,13 +12,13 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;iron-triangle&gt;</code> component is the Planning Pack's <em>constraint surface</em>. It captures Time, Cost, and Scope as one decision and computes a single integer <code>capacityPoints</code> budget that downstream tools — first and foremost <code>&lt;<a href="/docs/elements/web-components/nfr-compass/">nfr-compass</a>&gt;</code> — spend against quality choices. Reach for it whenever a project's shape is currently scattered across <code>targetLaunch</code> fields, MoSCoW spreadsheets, and informal "team-size" guesswork; one surface, one decision moment, one number the rest of the planning artifacts can read.</p>
-  <p>Pre-upgrade the markup is a plain <code>&lt;form&gt;</code> with three <code>&lt;fieldset&gt;</code>s, so a server can persist values and even compute capacity without the bundle. After upgrade the component computes capacity live, exposes a stable hash for drift detection, and records every revision with a required reason.</p>
+  <p>The <code>&lt;iron-triangle&gt;</code> component is the Planning Pack's <em>constraint surface</em>, and it <em>is</em> the UI. Three vertex hit-targets — Scope (top), Time (bottom-left), Cost (bottom-right) — open native <code>&lt;dialog&gt;</code> editors on click. The center "Quality" target shows the live <code>capacityPoints</code> integer and routes to the NFR compass when activated. Hover any target for a native tooltip preview of its current value.</p>
+  <p>The author writes a single empty element. The component generates the SVG and the per-vertex dialogs from a fixed schema; inputs inside the dialogs use VB primitives (<code>&lt;form-field&gt;</code>, <code>&lt;fieldset&gt;</code>, <code>data-layout</code>). The component is form-associated; <code>capacityPoints</code> + the full T/C/S snapshot serialize as JSON for a containing <code>&lt;form&gt;</code>.</p>
 </section>
 
 <section>
   <h2>Live demo</h2>
-  <p>Edit any input — the capacity readout and formula text below the inputs update in real time.</p>
+  <p>Click any vertex to open its editor. Click the center to fire the open-quality event. Hover for tooltips.</p>
 
   <browser-window
     src="/docs/examples/demos/iron-triangle-basic.html"
@@ -27,72 +27,54 @@ crumbLabel: Web Components
     shadow>
   </browser-window>
 
-  <code-block language="html" label="Basic usage" data-escape><!-- Layout, fieldset chrome, and input sizing all come from VB
-     primitives. The only iron-triangle-specific markup is the
-     <figure data-iron-triangle-viz> placeholder where the SVG is
-     swapped in on every input change. -->
-<iron-triangle name="triangle" data-focus-factor="0.6">
-  <form data-layout="split" data-layout-ratio="2:1" data-layout-gap="l">
-    <section data-layout="stack" data-layout-gap="m">
-
-      <fieldset data-layout="stack" data-layout-gap="m">
-        <legend>Time</legend>
-        <form-field>
-          <label for="sprint-weeks">Sprint length (weeks)</label>
-          <input id="sprint-weeks" name="time.sprintWeeks"
-                 type="number" min="1" value="2" style="inline-size: 6rem">
-        </form-field>
-        <form-field>
-          <label for="sprint-count">Number of sprints</label>
-          <input id="sprint-count" name="time.sprintCount"
-                 type="number" min="1" value="3" style="inline-size: 6rem">
-        </form-field>
-        <!-- … hours/week, deadline … -->
-      </fieldset>
-
-      <fieldset data-layout="stack" data-layout-gap="m">
-        <legend>Cost</legend>
-        <form-field>
-          <label for="fte">Team size (FTE)</label>
-          <input id="fte" name="cost.teamFTE"
-                 type="number" min="0" step="0.5" value="1" style="inline-size: 6rem">
-        </form-field>
-      </fieldset>
-
-      <fieldset data-layout="stack" data-layout-gap="m">
-        <legend>Scope</legend>
-        <form-field>
-          <label for="must-have">Must-have count</label>
-          <input id="must-have" name="scope.mustHaveCount"
-                 type="number" min="0" style="inline-size: 6rem">
-        </form-field>
-      </fieldset>
-    </section>
-
-    <!-- The component injects/replaces the inline SVG inside this
-         figure on every input change. The <output>/<small> below
-         stay as a no-JS fallback and SR-only after upgrade. -->
-    <figure data-iron-triangle-viz aria-live="polite">
-      <output name="capacityPoints">—</output>
-      <small name="capacityFormula">Set inputs to compute capacity.</small>
-    </figure>
-  </form>
-
-  <fieldset data-layout="cluster" data-layout-gap="s" data-layout-align="center">
-    <legend class="visually-hidden">Capacity mode</legend>
-    <button type="button" data-iron-triangle-mode-toggle aria-pressed="false">Use manual capacity</button>
-    <form-field hidden data-iron-triangle-manual-input-field>
-      <label for="manual-points">Manual points</label>
-      <input id="manual-points" type="number" min="1" step="1" data-iron-triangle-manual-input>
-    </form-field>
-  </fieldset>
-</iron-triangle></code-block>
+  <code-block language="html" label="Basic usage" data-escape><!-- One element. The component generates everything else. -->
+<iron-triangle
+  name="triangle"
+  data-focus-factor="0.6"
+  data-quality-href="/requirements"
+  data-quality-summary="3 critical: perf, sec, a11y"></iron-triangle></code-block>
 </section>
 
 <section>
-  <h2>The deformable triangle</h2>
-  <p>The component renders an inline SVG triangle into the <code>[data-iron-triangle-viz]</code> figure. Each vertex sits on an equilateral baseline ray and stretches outward by a factor in <code>[0.55, 1.45]</code> based on its constraint's relative magnitude (time = total weeks, cost = FTE × hours/week, scope = weighted feature counts). A balanced project stays close to equilateral; a long-deadline project pushes the TIME vertex up; a tiny team pulls the COST vertex toward center.</p>
-  <p>The capacity number anchors at the centroid (origin), so the integer never moves when the shape changes.</p>
+  <h2>The triangle deforms with project shape</h2>
+  <p>Each vertex sits on an equilateral baseline ray and stretches outward by a factor in <code>[0.55, 1.45]</code> derived from that constraint's magnitude relative to the other two (time = total weeks, cost = FTE × hours/week, scope = weighted feature counts). A balanced project stays close to equilateral; a long-deadline project pushes Scope up; a tiny team pulls Cost toward the centroid.</p>
+  <p>The capacity number anchors at the centroid, so the integer never moves when the shape changes.</p>
+</section>
+
+<section>
+  <h2>Per-vertex editors</h2>
+  <p>Click a vertex to open its dialog. Each editor is built from VB <code>&lt;form-field&gt;</code> rows — labels above controls, native validation, no inline width hacks. The dialog's <code>method="dialog"</code> means submitting closes it automatically.</p>
+
+  <table class="props-table">
+    <thead><tr><th>Vertex</th><th>Inputs</th><th>Drives capacity?</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Scope</strong></td><td>must-have count, should-have count, notes</td><td>no — informational</td></tr>
+      <tr><td><strong>Time</strong></td><td>sprint length, number of sprints, hours/week, deadline</td><td>yes (sprintWeeks × sprintCount)</td></tr>
+      <tr><td><strong>Cost</strong></td><td>team FTE, budget tier, contractor budget</td><td>yes (teamFTE drives the formula)</td></tr>
+    </tbody>
+  </table>
+
+  <p>The cost dialog mixes inputs that drive the formula (team FTE) with inputs that record the shape but don't (budget tier, contractor budget). The latter are metadata — they answer "why does the team look this way?" without polluting the math.</p>
+</section>
+
+<section>
+  <h2>The center "Quality" target</h2>
+  <p>The capacity number is the headline; clicking it opens the NFR compass. Two paths combine:</p>
+  <ul>
+    <li>The component dispatches a cancelable <code>iron-triangle:open-quality</code> event with <code>{ qualitySummary, capacityPoints }</code>.</li>
+    <li>If the event isn't <code>preventDefault()</code>'d AND <code>data-quality-href</code> is set, the page navigates to that URL.</li>
+  </ul>
+  <p>SPAs intercept the event and route in-app; static pages just set <code>data-quality-href</code> and let the fallback navigate. Set <code>data-quality-summary</code> (or the <code>qualitySummary</code> property) to a short string and the center's native tooltip + <code>aria-label</code> surface it on hover.</p>
+
+  <code-block language="javascript" label="Wire the open-quality event" data-escape>const triangle = document.querySelector('iron-triangle');
+
+triangle.addEventListener('iron-triangle:open-quality', (e) => {
+  e.preventDefault();   // intercept the href fallback
+  router.navigate('/requirements', { compassFocus: true });
+});
+
+// Optional: surface the saved compass picks on hover
+triangle.qualitySummary = '3 critical: perf, sec, a11y';</code-block>
 </section>
 
 <section>
@@ -180,10 +162,16 @@ triangle.addEventListener('iron-triangle:change', (e) =&gt; {
         <td>Floor for <code>capacityPoints</code>. Below this, <code>:state(unbudgeted)</code> is set.</td>
       </tr>
       <tr>
-        <td><code>data-capacity-formula</code></td>
-        <td>string</td>
+        <td><code>data-quality-href</code></td>
+        <td>string (URL)</td>
         <td>&mdash;</td>
-        <td>Custom formula expression (extension point; out of scope for v1).</td>
+        <td>Fallback navigation target when the center "Quality" hit-target is activated and <code>iron-triangle:open-quality</code> is not <code>preventDefault</code>-ed.</td>
+      </tr>
+      <tr>
+        <td><code>data-quality-summary</code></td>
+        <td>string</td>
+        <td><code>"TBD — click to set"</code></td>
+        <td>Short summary surfaced via the center target's native tooltip + <code>aria-label</code> (e.g. "3 critical: perf, sec, a11y"). Mirrors the <code>qualitySummary</code> property.</td>
       </tr>
       <tr>
         <td><code>disabled</code></td>
