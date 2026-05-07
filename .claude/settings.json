@@ -2,50 +2,72 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
         "hooks": [
           {
-            "type": "command",
-            "command": "node scripts/quality/skill-injector.js 2>/dev/null || true"
+            "command": "node scripts/quality/skill-injector.js 2\u003e/dev/null || true",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.(html|xhtml|htm)$'; then (echo '=== html-validate ===' ; npx html-validate \"$file_path\" 2>&1 ; echo '=== htmlhint ===' ; npx htmlhint \"$file_path\" 2>&1 ; echo '=== pa11y (WCAG2AA) ===' ; npx pa11y \"$file_path\" 2>&1 ; node scripts/quality/semantic-check.js \"$file_path\" 2>&1 ; node scripts/quality/vb-conformance.js \"$file_path\" 2>&1) | node scripts/quality/fix-suggestions.js --type=html ; fi"
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2\u003e/dev/null); if [ -n \"$file_path\" ] \u0026\u0026 echo \"$file_path\" | grep -qE '\\.(html|xhtml|htm)$'; then (echo '=== html-validate ===' ; npx html-validate \"$file_path\" 2\u003e\u00261 ; echo '=== htmlhint ===' ; npx htmlhint \"$file_path\" 2\u003e\u00261 ; echo '=== pa11y (WCAG2AA) ===' ; npx pa11y \"$file_path\" 2\u003e\u00261 ; node scripts/quality/semantic-check.js \"$file_path\" 2\u003e\u00261 ; node scripts/quality/vb-conformance.js \"$file_path\" 2\u003e\u00261) | node scripts/quality/fix-suggestions.js --type=html ; fi",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.css$'; then (echo '=== stylelint ===' ; npx stylelint \"$file_path\" 2>&1) | node scripts/quality/fix-suggestions.js --type=css ; fi"
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2\u003e/dev/null); if [ -n \"$file_path\" ] \u0026\u0026 echo \"$file_path\" | grep -qE '\\.css$'; then (echo '=== stylelint ===' ; npx stylelint \"$file_path\" 2\u003e\u00261) | node scripts/quality/fix-suggestions.js --type=css ; fi",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.js$'; then (echo '=== eslint ===' ; npx eslint \"$file_path\" 2>&1) | node scripts/quality/fix-suggestions.js --type=js; if echo \"$file_path\" | grep -qE '^scripts/quality/[^/]+\\.js$'; then base=$(basename \"$file_path\" .js); test_file=\"tests/unit/validators/${base}.test.js\"; if [ ! -f \"$test_file\" ]; then echo ''; echo '=== test coverage ==='; echo \"Missing test file: $test_file\"; echo 'Create tests using: /skill unit-testing'; fi; fi; if echo \"$file_path\" | grep -qE '^src/(api|routes|server)/'; then echo ''; echo '=== api-check ===' ; node scripts/quality/api-check.js \"$file_path\" 2>&1 ; fi; fi"
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2\u003e/dev/null); if [ -n \"$file_path\" ] \u0026\u0026 echo \"$file_path\" | grep -qE '\\.js$'; then (echo '=== eslint ===' ; npx eslint \"$file_path\" 2\u003e\u00261) | node scripts/quality/fix-suggestions.js --type=js; if echo \"$file_path\" | grep -qE '^scripts/quality/[^/]+\\.js$'; then base=$(basename \"$file_path\" .js); test_file=\"tests/unit/validators/${base}.test.js\"; if [ ! -f \"$test_file\" ]; then echo ''; echo '=== test coverage ==='; echo \"Missing test file: $test_file\"; echo 'Create tests using: /skill unit-testing'; fi; fi; if echo \"$file_path\" | grep -qE '^src/(api|routes|server)/'; then echo ''; echo '=== api-check ===' ; node scripts/quality/api-check.js \"$file_path\" 2\u003e\u00261 ; fi; fi",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.js$' && (echo \"$file_path\" | grep -qE '/src/' || echo \"$file_path\" | grep -qE '^scripts/quality/'); then node scripts/quality/type-check.js \"$file_path\" 2>&1 | head -20; fi"
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2\u003e/dev/null); if [ -n \"$file_path\" ] \u0026\u0026 echo \"$file_path\" | grep -qE '\\.js$' \u0026\u0026 (echo \"$file_path\" | grep -qE '/src/' || echo \"$file_path\" | grep -qE '^scripts/quality/'); then node scripts/quality/type-check.js \"$file_path\" 2\u003e\u00261 | head -20; fi",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.md$' && ! echo \"$file_path\" | grep -qE '(\\.worklog|node_modules)/'; then (echo '=== markdownlint ===' ; npx markdownlint \"$file_path\" 2>&1 ; echo '=== cspell ===' ; npx cspell \"$file_path\" --no-progress 2>&1) | node scripts/quality/fix-suggestions.js --type=md ; fi"
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2\u003e/dev/null); if [ -n \"$file_path\" ] \u0026\u0026 echo \"$file_path\" | grep -qE '\\.md$' \u0026\u0026 ! echo \"$file_path\" | grep -qE '(\\.worklog|node_modules)/'; then (echo '=== markdownlint ===' ; npx markdownlint \"$file_path\" 2\u003e\u00261 ; echo '=== cspell ===' ; npx cspell \"$file_path\" --no-progress 2\u003e\u00261) | node scripts/quality/fix-suggestions.js --type=md ; fi",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qE '\\.(json|yaml|yml)$' && ! echo \"$file_path\" | grep -qE '(node_modules|package-lock\\.json)'; then node scripts/quality/config-validator.js \"$file_path\" 2>&1 | node scripts/quality/fix-suggestions.js --type=config ; fi"
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2\u003e/dev/null); if [ -n \"$file_path\" ] \u0026\u0026 echo \"$file_path\" | grep -qE '\\.(json|yaml|yml)$' \u0026\u0026 ! echo \"$file_path\" | grep -qE '(node_modules|package-lock\\.json)'; then node scripts/quality/config-validator.js \"$file_path\" 2\u003e\u00261 | node scripts/quality/fix-suggestions.js --type=config ; fi",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -qiE '\\.(jpe?g|png)$' && ! echo \"$file_path\" | grep -qE 'node_modules'; then node scripts/quality/auto-optimize-image.js \"$file_path\" 2>&1 | head -10; fi"
+            "command": "file_path=$(jq -r '.tool_input.file_path // empty' 2\u003e/dev/null); if [ -n \"$file_path\" ] \u0026\u0026 echo \"$file_path\" | grep -qiE '\\.(jpe?g|png)$' \u0026\u0026 ! echo \"$file_path\" | grep -qE 'node_modules'; then node scripts/quality/auto-optimize-image.js \"$file_path\" 2\u003e\u00261 | head -10; fi",
+            "type": "command"
           }
-        ]
+        ],
+        "matcher": "Edit|Write"
       },
       {
-        "matcher": "Bash",
         "hooks": [
           {
-            "type": "command",
-            "command": "cmd=$(jq -r '.tool_input.command // empty' 2>/dev/null); if echo \"$cmd\" | grep -qE 'git commit'; then node scripts/quality/uat-reminder.js 2>/dev/null || true; fi"
+            "command": "cmd=$(jq -r '.tool_input.command // empty' 2\u003e/dev/null); if echo \"$cmd\" | grep -qE 'git commit'; then node scripts/quality/uat-reminder.js 2\u003e/dev/null || true; fi",
+            "type": "command"
           }
-        ]
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "command": "bd prime",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bd prime",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
       }
     ]
   }
