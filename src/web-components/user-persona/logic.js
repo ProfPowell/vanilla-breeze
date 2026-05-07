@@ -84,14 +84,28 @@ const MOCK_BEHAVIORS = [
 
 class UserPersona extends HTMLElement {
   static get observedAttributes() {
-    return ['role', 'age', 'location', 'avatar', 'compact', 'src'];
+    return ['role', 'age', 'location', 'avatar', 'compact', 'src', 'data-list-stories', 'id'];
   }
 
   #slotCache = new Map();
+  /** @type {MutationObserver | null} */
+  #storyObserver = null;
 
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+  }
+
+  /**
+   * Find every <user-story> in the document whose `persona-id` matches
+   * this persona's id. Returns elements in document order.
+   * @returns {Element[]}
+   */
+  relatedStories() {
+    if (!this.id) return [];
+    const root = this.getRootNode();
+    const scope = root.querySelectorAll ? root : document;
+    return Array.from(scope.querySelectorAll(`user-story[persona-id="${cssEscape(this.id)}"]`));
   }
 
   #cacheSlotValues() {
@@ -189,6 +203,7 @@ class UserPersona extends HTMLElement {
       this._loadSrc(this.getAttribute('src'));
     }
     this.#render();
+    this.#syncStoryObserver();
     this.setAttribute('data-upgraded', '');
     this.dispatchEvent(new CustomEvent('persona-ready', {
       bubbles: true,
@@ -199,16 +214,87 @@ class UserPersona extends HTMLElement {
 
   disconnectedCallback() {
     this.removeAttribute('data-upgraded');
+    this.#storyObserver?.disconnect();
+    this.#storyObserver = null;
+  }
+
+  /**
+   * Watch the document for added/removed/relabeled <user-story> elements
+   * so the auto-rendered Stories section stays current. Only runs when
+   * data-list-stories is present.
+   */
+  #syncStoryObserver() {
+    if (!this.hasAttribute('data-list-stories') || !this.id) {
+      this.#storyObserver?.disconnect();
+      this.#storyObserver = null;
+      return;
+    }
+    if (this.#storyObserver) return;
+    this.#storyObserver = new MutationObserver(() => this.#renderStoriesSection());
+    this.#storyObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['persona-id'],
+    });
+  }
+
+  /**
+   * Re-render only the Stories section in-place so MutationObserver
+   * callbacks don't have to rebuild the whole shadow tree.
+   */
+  #renderStoriesSection() {
+    if (!this.shadowRoot) return;
+    const slot = this.shadowRoot.querySelector('[data-stories-section]');
+    if (!slot) return;
+    slot.outerHTML = this.#storiesSectionHtml();
+  }
+
+  /** Markup for the optional Stories section. */
+  #storiesSectionHtml() {
+    if (!this.hasAttribute('data-list-stories') || !this.id) return '';
+    const stories = this.relatedStories();
+    return `
+      <section class="section" part="section-stories" data-stories-section>
+        <div class="section-header">
+          <div class="section-icon stories" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+          </div>
+          <span class="section-title">Stories <span class="section-count">${stories.length}</span></span>
+        </div>
+        <div class="section-content">
+          ${stories.length === 0
+            ? '<p class="empty-stories">No user stories reference this persona yet.</p>'
+            : `<ul class="story-list">${
+                stories.map(s => {
+                  const id = s.id || s.getAttribute('story-id') || '';
+                  const action = s.querySelector('[slot="action"]')?.textContent?.trim()
+                    || s.getAttribute('action')
+                    || (s.id || 'untitled');
+                  const priority = s.getAttribute('priority') || '';
+                  const status = s.getAttribute('status') || '';
+                  return `<li class="story-item" data-priority="${esc(priority)}" data-status="${esc(status)}">${
+                    id
+                      ? `<a href="#${esc(id)}">${esc(action)}</a>`
+                      : `<span>${esc(action)}</span>`
+                  }${priority ? `<span class="story-meta">${esc(priority)}</span>` : ''}${status ? `<span class="story-meta">${esc(status)}</span>` : ''}</li>`;
+                }).join('')
+              }</ul>`}
+        </div>
+      </section>
+    `;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue !== newValue && this.shadowRoot) {
-      if (name === 'src' && this.isConnected) {
-        this._loadSrc(newValue);
-      } else {
-        this.#render();
-      }
+    if (oldValue === newValue || !this.shadowRoot) return;
+    if (name === 'src' && this.isConnected) {
+      this._loadSrc(newValue);
+      return;
     }
+    if (name === 'data-list-stories' || name === 'id') {
+      this.#syncStoryObserver();
+    }
+    this.#render();
   }
 
   // ── Attribute getters ──────────────────────────────────────────────
@@ -399,10 +485,16 @@ class UserPersona extends HTMLElement {
               <slot name="behaviors">No behaviors documented.</slot>
             </div>
           </div>
+
+          ${this.#storiesSectionHtml()}
         </div>
       </article>
     `;
   }
+}
+
+function cssEscape(s) {
+  return typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(String(s)) : String(s).replace(/["\\]/g, '\\$&');
 }
 
 registerComponent('user-persona', UserPersona);

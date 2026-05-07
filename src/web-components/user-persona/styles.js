@@ -13,6 +13,7 @@ const styles = `
     --_goals:       var(--user-persona-goals, #22c55e);
     --_frustrations: var(--user-persona-frustrations, #ef4444);
     --_behaviors:   var(--user-persona-behaviors, #8b5cf6);
+    --_stories:     var(--user-persona-stories, #3b82f6);
     --_shadow:    var(--user-persona-shadow, var(--shadow-md));
     --_space-2xs: var(--user-persona-space-2xs, var(--size-2xs, 0.25rem));
     --_space-xs:  var(--user-persona-space-xs, var(--size-xs, 0.5rem));
@@ -197,6 +198,53 @@ const styles = `
   .section-icon.goals { background: var(--_goals); }
   .section-icon.frustrations { background: var(--_frustrations); }
   .section-icon.behaviors { background: var(--_behaviors); }
+  .section-icon.stories { background: var(--_stories); }
+
+  /* Stories section — auto-rendered list of related <user-story> elements */
+  .section-count {
+    margin-inline-start: var(--_space-2xs);
+    padding: 0.05em 0.5ch;
+    border-radius: 999px;
+    background: var(--color-surface-raised, oklch(95% 0 0));
+    color: var(--color-text-muted);
+    font-size: 0.75em;
+    font-weight: 600;
+  }
+  .story-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--_space-2xs);
+  }
+  .story-item {
+    display: flex;
+    align-items: center;
+    gap: var(--_space-s);
+    padding-block: var(--_space-2xs);
+    border-block-end: 1px solid var(--color-border-muted, var(--color-border, #e5e7eb));
+  }
+  .story-item:last-child { border-block-end: none; }
+  .story-item a {
+    color: var(--color-interactive, currentColor);
+    text-decoration: none;
+    flex: 1;
+  }
+  .story-item a:hover { text-decoration: underline; }
+  .story-meta {
+    font-size: var(--_font-xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 0.5ch;
+    border: 1px solid var(--color-border-muted, var(--color-border, #e5e7eb));
+    border-radius: var(--_radius-m);
+  }
+  .empty-stories {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
 
   .section-title {
     font-size: var(--_font-sm);
