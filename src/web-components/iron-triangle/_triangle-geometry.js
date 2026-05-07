@@ -137,9 +137,11 @@ export function buildTriangleSvg({
 } = {}) {
   const v = vertices || triangleVertices(value);
   const svg = document.createElementNS(SVG_NS, 'svg');
-  // viewBox padded for labels + summaries that extend ~70px beyond
-  // the maxed (1.45 × 80 = 116) vertex distance.
-  svg.setAttribute('viewBox', '-185 -160 370 320');
+  // viewBox padded generously so even the longest summary
+  // ("6 weeks (3 × 2wk)") rendered at TIME's bottom-left vertex
+  // (max stretched to x ≈ -116) plus its ~80px text width never
+  // clips the left edge.
+  svg.setAttribute('viewBox', '-220 -170 440 340');
   svg.setAttribute('role', 'group');
   svg.setAttribute('aria-label',
     `Project shape: ${capacityPoints || 0} capacity points. Click each corner to edit, or the center to open the quality compass.`);
@@ -154,7 +156,9 @@ export function buildTriangleSvg({
   ].join(' '));
   svg.append(tri);
 
-  // 2. Center "Quality" hit target.
+  // 2. Center "Quality" hit target. Order top→bottom:
+  //    "Quality" header (small) → big capacity number → "pts" subtitle.
+  //    A backdrop circle keeps the polygon stroke out of the text area.
   const center = document.createElementNS(SVG_NS, 'g');
   center.setAttribute('class', 'center');
   center.setAttribute('data-target', 'quality');
@@ -164,40 +168,53 @@ export function buildTriangleSvg({
     'aria-label',
     `Quality — ${formatQualitySummary(qualitySummary)}. Activate to open the NFR compass.`,
   );
-  // Invisible hit-rect so the whole capacity area is clickable.
+
+  // Backdrop circle — sits behind the text, masks the polygon stroke.
+  const backdrop = document.createElementNS(SVG_NS, 'circle');
+  backdrop.setAttribute('class', 'capacity-backdrop');
+  backdrop.setAttribute('cx', '0');
+  backdrop.setAttribute('cy', '4');
+  backdrop.setAttribute('r', '32');
+  center.append(backdrop);
+
+  // Hit-rect overlays the backdrop so the entire center is clickable.
   const centerHit = document.createElementNS(SVG_NS, 'rect');
   centerHit.setAttribute('class', 'hit');
-  centerHit.setAttribute('x', '-44');
+  centerHit.setAttribute('x', '-36');
   centerHit.setAttribute('y', '-30');
-  centerHit.setAttribute('width', '88');
-  centerHit.setAttribute('height', '64');
-  centerHit.setAttribute('rx', '8');
+  centerHit.setAttribute('width', '72');
+  centerHit.setAttribute('height', '68');
+  centerHit.setAttribute('rx', '34');
   center.append(centerHit);
-  // Capacity number (the central hero).
+
+  // "Quality" header (small, top of stack).
+  const quality = document.createElementNS(SVG_NS, 'text');
+  quality.setAttribute('class', 'quality-label');
+  quality.setAttribute('x', '0');
+  quality.setAttribute('y', '-15');
+  quality.setAttribute('text-anchor', 'middle');
+  quality.textContent = 'Quality';
+  center.append(quality);
+
+  // Capacity number (hero).
   const cap = document.createElementNS(SVG_NS, 'text');
   cap.setAttribute('class', 'capacity');
   cap.setAttribute('x', '0');
-  cap.setAttribute('y', '-2');
+  cap.setAttribute('y', '7');
   cap.setAttribute('text-anchor', 'middle');
   cap.setAttribute('dominant-baseline', 'middle');
   cap.textContent = capacityPoints > 0 ? String(capacityPoints) : '—';
   center.append(cap);
-  // "Quality" word below capacity.
-  const quality = document.createElementNS(SVG_NS, 'text');
-  quality.setAttribute('class', 'quality-label');
-  quality.setAttribute('x', '0');
-  quality.setAttribute('y', '14');
-  quality.setAttribute('text-anchor', 'middle');
-  quality.textContent = 'Quality';
-  center.append(quality);
-  // Small unit/source line.
+
+  // "pts" subtitle.
   const unit = document.createElementNS(SVG_NS, 'text');
   unit.setAttribute('class', 'capacity-unit');
   unit.setAttribute('x', '0');
-  unit.setAttribute('y', '28');
+  unit.setAttribute('y', '26');
   unit.setAttribute('text-anchor', 'middle');
   unit.textContent = capacitySource === 'manual' ? 'pts (manual)' : 'pts';
   center.append(unit);
+
   // Native <title> tooltip — the quality summary.
   const centerTitle = document.createElementNS(SVG_NS, 'title');
   centerTitle.textContent = formatQualitySummary(qualitySummary);
@@ -230,14 +247,31 @@ function buildVertex(axis, vertex, value) {
   g.setAttribute('role', 'button');
   g.setAttribute('aria-label', `${labels.name} — ${summary}. Activate to edit.`);
 
-  // Invisible hit area: a small rect anchored at the vertex.
+  // Invisible hit area: a roomy rect that fully contains the
+  // {label, summary} text cluster. The longest summary
+  // ("6 weeks (3 × 2wk)") needs ≈ 130px at 0.7rem.
   const hit = document.createElementNS(SVG_NS, 'rect');
   hit.setAttribute('class', 'hit');
-  // Center the hit rect over the label cluster (label + summary).
-  const hitW = 110;
-  const hitH = 44;
-  const hitX = vertex.x + (labelMeta.anchor === 'end' ? -hitW : labelMeta.anchor === 'start' ? 0 : -hitW / 2);
-  const hitY = vertex.y + (axis === 'scope' ? -36 : -4);
+  const hitW = 160;
+  const hitH = 50;
+  // Position the hit rect by aligning its inner edge with the vertex
+  // and accounting for each label's anchor offset.
+  let hitX;
+  if (labelMeta.anchor === 'end') {
+    // Right edge of hit aligns with vertex (text grows leftward).
+    hitX = vertex.x - hitW + 6;
+  } else if (labelMeta.anchor === 'start') {
+    // Left edge of hit aligns with vertex (text grows rightward).
+    hitX = vertex.x - 6;
+  } else {
+    // Centered on vertex for the SCOPE corner.
+    hitX = vertex.x - hitW / 2;
+  }
+  // Vertical position depends on whether the labels render above
+  // (scope, top corner) or below (time/cost, bottom corners) the vertex.
+  const hitY = axis === 'scope'
+    ? vertex.y - hitH + 6
+    : vertex.y - 6;
   hit.setAttribute('x', String(round(hitX)));
   hit.setAttribute('y', String(round(hitY)));
   hit.setAttribute('width', String(hitW));
