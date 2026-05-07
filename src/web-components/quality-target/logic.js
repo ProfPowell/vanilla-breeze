@@ -446,16 +446,13 @@ class QualityTarget extends VBElement {
 
   #renderViz() {
     const radius = clamp(Number(this.dataset.radius ?? 100), 30, 400);
-    const showEnvelope = !this.dataset.showEnvelope || this.dataset.showEnvelope !== 'false';
     const cap = this.#resolveCapacity();
     const svg = buildTargetSvg({
       ilities: this.#ilities,
       vector: this.#vector,
-      rationales: this.#rationales,
       costWeights: this.#costWeights,
       capacityPoints: cap,
       radius,
-      showEnvelope,
     });
     const existing = this.querySelector(':scope > svg');
     if (existing) existing.replaceWith(svg);

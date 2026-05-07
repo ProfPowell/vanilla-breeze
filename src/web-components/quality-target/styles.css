@@ -1,13 +1,14 @@
 /* quality-target — polygon-as-UI quality picker + viz.
 
-   The SVG IS the picker. Each axis hit-target opens a per-ility
-   dialog (level + rationale). The footer shows over-budget state +
-   inline overrun rationale. */
+   Three concentric reference rings (Critical 1.0 / Important 0.6 /
+   Acceptable 0.3) replace the old envelope polygon. Each axis
+   labels with the full ility name; set/unset states tint the label.
+   Capacity readout sits in a reserved hollow center. */
 
 quality-target {
   display: block;
   inline-size: 100%;
-  max-inline-size: var(--quality-target-max, 28rem);
+  max-inline-size: var(--quality-target-max, 36rem);
   margin-inline: auto;
   container-type: inline-size;
 }
@@ -18,24 +19,33 @@ quality-target > svg {
   display: block;
 }
 
-/* ── Spokes / envelope / vector polygon ──────────────────────── */
+/* ── Reference rings (Critical / Important / Acceptable) ──────── */
+
+quality-target svg .ring {
+  fill: none;
+  stroke: var(--color-border-muted, var(--color-border, #e5e7eb));
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  pointer-events: none;
+}
+
+quality-target svg .ring-critical   { stroke: color-mix(in oklab, var(--color-error)   60%, transparent); }
+quality-target svg .ring-important  { stroke: color-mix(in oklab, var(--color-warning) 50%, transparent); }
+quality-target svg .ring-acceptable { stroke: color-mix(in oklab, var(--color-success) 50%, transparent); }
+
+/* ── Spokes ────────────────────────────────────────────────── */
 
 quality-target svg .spoke {
   stroke: var(--color-border, #e5e7eb);
-  stroke-width: 1;
-  stroke-dasharray: 2 3;
+  stroke-width: 0.75;
+  stroke-dasharray: 1 4;
   pointer-events: none;
 }
 
-quality-target svg .envelope {
-  fill: var(--quality-target-envelope-fill, color-mix(in oklab, var(--color-success) 14%, transparent));
-  stroke: var(--quality-target-envelope-stroke, color-mix(in oklab, var(--color-success) 60%, transparent));
-  stroke-width: 1;
-  pointer-events: none;
-}
+/* ── Vector polygon ───────────────────────────────────────── */
 
 quality-target svg .vector {
-  fill: var(--quality-target-vector-fill, color-mix(in oklab, var(--color-interactive) 28%, transparent));
+  fill: var(--quality-target-vector-fill, color-mix(in oklab, var(--color-interactive) 22%, transparent));
   stroke: var(--quality-target-vector-stroke, var(--color-interactive));
   stroke-width: 1.5;
   stroke-linejoin: round;
@@ -66,26 +76,40 @@ quality-target svg .axis:hover .hit,
 quality-target svg .axis:focus-visible .hit {
   fill: color-mix(in oklab, var(--color-interactive) 8%, transparent);
   stroke: var(--color-interactive);
-  stroke-width: 1.5;
-  stroke-dasharray: 3 3;
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
 }
 
 quality-target svg .axis-label {
-  font-size: var(--font-size-xs, 0.75rem);
+  font-size: var(--quality-target-label-size, 0.625rem);
   fill: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   pointer-events: none;
-  font-weight: var(--font-weight-medium, 500);
+  font-weight: var(--font-weight-regular, 400);
 }
 
+/* Set/unset label styling — set axes get a colored, bolder label;
+   unset axes stay muted gray. */
+quality-target svg .axis[data-level] .axis-label {
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+quality-target svg .axis[data-level="critical"]     .axis-label { fill: var(--color-error,   #dc2626); }
+quality-target svg .axis[data-level="important"]    .axis-label { fill: var(--color-warning, #b45309); }
+quality-target svg .axis[data-level="acceptable"]   .axis-label { fill: var(--color-success, #15803d); }
+quality-target svg .axis[data-level="not-relevant"] .axis-label {
+  fill: var(--color-text-muted, #6b7280);
+  text-decoration: line-through;
+  font-weight: var(--font-weight-regular, 400);
+}
+
+/* Markers — only render on set axes (component side); color-coded. */
 quality-target svg .axis .marker {
   fill: var(--color-interactive);
   stroke: var(--color-surface);
   stroke-width: 1;
   pointer-events: none;
 }
-
 quality-target svg .axis[data-level="critical"]     .marker { fill: var(--color-error,   #dc2626); }
 quality-target svg .axis[data-level="important"]    .marker { fill: var(--color-warning, #b45309); }
 quality-target svg .axis[data-level="acceptable"]   .marker { fill: var(--color-success, #16a34a); }
@@ -93,16 +117,24 @@ quality-target svg .axis[data-level="not-relevant"] .marker { fill: var(--color-
 
 /* ── Center capacity readout ──────────────────────────────── */
 
+quality-target svg .capacity-backdrop {
+  fill: var(--color-surface);
+  stroke: var(--color-border-muted, var(--color-border, #e5e7eb));
+  stroke-width: 1;
+  pointer-events: none;
+}
+
 quality-target svg .capacity-sum {
-  font-size: var(--quality-target-capacity-size, 1.75rem);
+  font-size: var(--quality-target-capacity-size, 1.25rem);
   font-weight: var(--font-weight-bold, 700);
   fill: var(--color-text);
   font-variant-numeric: tabular-nums;
   pointer-events: none;
 }
-quality-target svg .capacity-label {
-  font-size: var(--font-size-xs, 0.75rem);
+quality-target svg .capacity-denom {
+  font-size: 0.55rem;
   fill: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
   pointer-events: none;
 }
 

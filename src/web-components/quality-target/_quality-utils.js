@@ -274,30 +274,50 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
  * wires to a per-axis editor dialog.
  *
  * Layers (back to front):
- *   1. spokes (orientation grid)
- *   2. envelope polygon (capacity ring)
- *   3. vector polygon (chosen levels)
- *   4. axis hit groups: invisible hit-rect + label + dot marker + <title>
- *   5. center capacity readout
+ *   1. three reference rings (Critical 1.0 / Important 0.6 / Acceptable 0.3
+ *      level radii) — the ONLY background; no envelope polygon.
+ *   2. spokes from origin to outer ring
+ *   3. vector polygon (picked axes only)
+ *   4. axis hit groups: invisible hit-rect + dot marker + label + <title>
+ *   5. center capacity readout in a small reserved hole
  */
+const LEVEL_RING_RATIOS = Object.freeze([
+  { ratio: 1.00, label: 'Critical',   className: 'ring-critical' },
+  { ratio: 0.60, label: 'Important',  className: 'ring-important' },
+  { ratio: 0.30, label: 'Acceptable', className: 'ring-acceptable' },
+]);
+
+const CENTER_HOLE_RADIUS_RATIO = 0.22;   // fraction of `radius` reserved for capacity readout
+
 export function buildTargetSvg({
   ilities,
   vector,
-  rationales,
   costWeights,
   capacityPoints,
   radius = 100,
-  showEnvelope = true,
 } = {}) {
   const svg = document.createElementNS(SVG_NS, 'svg');
-  const labelRadius = radius + 18;
-  const pad = labelRadius + 26;
-  svg.setAttribute('viewBox', `${-pad} ${-pad} ${pad * 2} ${pad * 2}`);
+  // Generous viewBox padding so full ility names ("Internationalization"
+  // is the longest at 20 chars) never clip. Labels render at radius + 14;
+  // longest label ≈ 130px wide at the 0.625rem default font.
+  const labelRadius = radius + 14;
+  const padX = labelRadius + 140;
+  const padY = labelRadius + 30;
+  svg.setAttribute('viewBox', `${-padX} ${-padY} ${padX * 2} ${padY * 2}`);
   svg.setAttribute('role', 'group');
   svg.setAttribute('aria-label',
     `Quality target. ${criticalKeys(vector || {}).length} critical of ${ilities.length} ilities. Click any axis to edit.`);
 
-  // 1. Spokes.
+  // 1. Three concentric reference rings (level ratios).
+  for (const r of LEVEL_RING_RATIOS) {
+    const ring = document.createElementNS(SVG_NS, 'polygon');
+    ring.setAttribute('class', `ring ${r.className}`);
+    const points = axisOuterPoints({ ilities, radius: radius * r.ratio });
+    ring.setAttribute('points', points.map(p => `${p.x},${p.y}`).join(' '));
+    svg.append(ring);
+  }
+
+  // 2. Spokes from origin to outer ring.
   const outer = axisOuterPoints({ ilities, radius });
   for (const p of outer) {
     const line = document.createElementNS(SVG_NS, 'line');
@@ -307,20 +327,8 @@ export function buildTargetSvg({
     svg.append(line);
   }
 
-  // 2. Envelope.
-  if (showEnvelope) {
-    const env = envelopePoints({ ilities, costWeights, capacityPoints, radius });
-    if (env) {
-      const env_poly = document.createElementNS(SVG_NS, 'polygon');
-      env_poly.setAttribute('class', 'envelope');
-      env_poly.setAttribute('points', env.map(p => `${p.x},${p.y}`).join(' '));
-      svg.append(env_poly);
-    }
-  }
-
-  // 3. Vector polygon — only when at least 3 non-origin points exist.
-  // Build from only the picked axes so unset ilities don't drag the
-  // shape through the centroid.
+  // 3. Vector polygon — built from picked axes only so unset ilities
+  // don't drag the shape through the centroid.
   const vec = vectorPoints({ ilities, vector, radius });
   const nonZero = vec.filter(p => Math.hypot(p.x, p.y) > 0.5);
   if (nonZero.length >= 3) {
@@ -329,7 +337,6 @@ export function buildTargetSvg({
     poly.setAttribute('points', nonZero.map(p => `${p.x},${p.y}`).join(' '));
     svg.append(poly);
   } else if (nonZero.length > 0) {
-    // 1–2 picks: draw a small line/dot accent without the closed polygon.
     for (const p of nonZero) {
       const line = document.createElementNS(SVG_NS, 'line');
       line.setAttribute('class', 'vector-spoke');
@@ -339,7 +346,7 @@ export function buildTargetSvg({
     }
   }
 
-  // 4. Axis hit groups.
+  // 4. Axis hit groups (markers + full labels).
   const labels = axisOuterPoints({ ilities, radius: labelRadius });
   for (let i = 0; i < ilities.length; i++) {
     const ility = ilities[i];
@@ -357,37 +364,40 @@ export function buildTargetSvg({
     g.setAttribute('aria-label',
       `${formatAxisTooltip({ ility, level, costWeight: cost })}. Activate to edit.`);
 
-    // Invisible hit area centered on the label.
+    // Invisible hit area sized to the label width.
     const hit = document.createElementNS(SVG_NS, 'rect');
     hit.setAttribute('class', 'hit');
     const anchor = anchorFor(label);
-    const hitW = 64;
-    const hitH = 26;
+    const hitW = 100;
+    const hitH = 22;
     const hitX = label.x + (anchor === 'end' ? -hitW : anchor === 'start' ? 0 : -hitW / 2);
     const hitY = label.y - hitH / 2;
     hit.setAttribute('x', String(round(hitX)));
     hit.setAttribute('y', String(round(hitY)));
     hit.setAttribute('width', String(hitW));
     hit.setAttribute('height', String(hitH));
-    hit.setAttribute('rx', '6');
+    hit.setAttribute('rx', '4');
     g.append(hit);
 
-    // Marker dot at the level point.
-    const marker = document.createElementNS(SVG_NS, 'circle');
-    marker.setAttribute('class', 'marker');
-    marker.setAttribute('cx', String(dot.x));
-    marker.setAttribute('cy', String(dot.y));
-    marker.setAttribute('r', '4');
-    g.append(marker);
+    // Marker dot at the level point (only when the axis is set —
+    // otherwise it sits at origin and would obscure the capacity readout).
+    if (level) {
+      const marker = document.createElementNS(SVG_NS, 'circle');
+      marker.setAttribute('class', 'marker');
+      marker.setAttribute('cx', String(dot.x));
+      marker.setAttribute('cy', String(dot.y));
+      marker.setAttribute('r', '4');
+      g.append(marker);
+    }
 
-    // Label outside the polygon.
+    // Full ility label.
     const text = document.createElementNS(SVG_NS, 'text');
     text.setAttribute('class', 'axis-label');
     text.setAttribute('x', String(label.x));
     text.setAttribute('y', String(label.y));
     text.setAttribute('text-anchor', anchor);
     text.setAttribute('dominant-baseline', 'middle');
-    text.textContent = ilityAbbr(ility);
+    text.textContent = ilityLabel(ility);
     g.append(text);
 
     // Tooltip.
@@ -398,29 +408,39 @@ export function buildTargetSvg({
     svg.append(g);
   }
 
-  // 5. Center capacity readout.
+  // 5. Center capacity readout — sits in a reserved hole the polygon
+  // visually clears.
   const center = document.createElementNS(SVG_NS, 'g');
   center.setAttribute('class', 'center');
   const sum = criticalSum(vector, costWeights);
   const overBudget = Number.isFinite(capacityPoints) && sum > capacityPoints;
   if (overBudget) center.setAttribute('data-over', '');
+  const holeRadius = radius * CENTER_HOLE_RADIUS_RATIO;
+
+  // Backdrop circle so the polygon stroke under the number doesn't bleed in.
+  const backdrop = document.createElementNS(SVG_NS, 'circle');
+  backdrop.setAttribute('class', 'capacity-backdrop');
+  backdrop.setAttribute('cx', '0');
+  backdrop.setAttribute('cy', '0');
+  backdrop.setAttribute('r', String(round(holeRadius)));
+  center.append(backdrop);
 
   const sumText = document.createElementNS(SVG_NS, 'text');
   sumText.setAttribute('class', 'capacity-sum');
   sumText.setAttribute('x', '0');
-  sumText.setAttribute('y', '-2');
+  sumText.setAttribute('y', '-3');
   sumText.setAttribute('text-anchor', 'middle');
   sumText.setAttribute('dominant-baseline', 'middle');
-  sumText.textContent = `${sum}${Number.isFinite(capacityPoints) ? ` / ${capacityPoints}` : ''}`;
+  sumText.textContent = String(sum);
   center.append(sumText);
 
-  const label = document.createElementNS(SVG_NS, 'text');
-  label.setAttribute('class', 'capacity-label');
-  label.setAttribute('x', '0');
-  label.setAttribute('y', '14');
-  label.setAttribute('text-anchor', 'middle');
-  label.textContent = 'pts spent';
-  center.append(label);
+  const denom = document.createElementNS(SVG_NS, 'text');
+  denom.setAttribute('class', 'capacity-denom');
+  denom.setAttribute('x', '0');
+  denom.setAttribute('y', '11');
+  denom.setAttribute('text-anchor', 'middle');
+  denom.textContent = Number.isFinite(capacityPoints) ? `of ${capacityPoints}` : 'unbounded';
+  center.append(denom);
 
   svg.append(center);
 
