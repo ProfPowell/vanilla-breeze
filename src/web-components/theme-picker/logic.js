@@ -753,23 +753,36 @@ class ThemePicker extends VBElement {
       delete this.#panel.dataset.position;
     }
 
-    // Horizontal position - shift to stay within viewport with margin
-    let left = 0;
-    const panelRightEdge = triggerRect.left + panelRect.width + edgeMargin;
-    const panelLeftEdge = triggerRect.left + left;
-
-    if (panelRightEdge > viewportWidth) {
-      // Shift left to stay in viewport with margin
-      left = viewportWidth - panelRightEdge;
-    }
-
-    // Also check if it overflows left edge
-    if (panelLeftEdge + left < edgeMargin) {
-      left = edgeMargin - triggerRect.left;
-    }
+    // Horizontal position — default anchor is right: 0 (panel grows
+    // leftward from the trigger's right edge). Re-anchor to a left
+    // offset only if right-anchoring would push the panel off the
+    // LEFT viewport edge (i.e. the trigger is near the left edge and
+    // the panel is wider than the trigger's left position).
+    const triggerRightFromViewport = viewportWidth - triggerRect.right;
+    const panelLeftIfRightAnchored = triggerRect.right - panelRect.width;
 
     this.#panel.style.setProperty('--panel-top', `${top}px`);
-    this.#panel.style.setProperty('--panel-left', `${left}px`);
+
+    if (panelLeftIfRightAnchored < edgeMargin) {
+      // Right-anchor would clip the left edge — flip to left-anchor and
+      // compute the offset that keeps the panel inside the viewport.
+      let left = 0;
+      const panelRightEdge = triggerRect.left + panelRect.width + edgeMargin;
+      if (panelRightEdge > viewportWidth) {
+        left = viewportWidth - panelRightEdge;
+      }
+      if (triggerRect.left + left < edgeMargin) {
+        left = edgeMargin - triggerRect.left;
+      }
+      this.#panel.style.setProperty('--panel-left', `${left}px`);
+      this.#panel.style.setProperty('--panel-right', 'auto');
+    } else {
+      // Default — anchor to trigger's right edge. Pull inward when the
+      // trigger sits past the right edge with edge-margin clearance.
+      const rightOffset = Math.max(0, edgeMargin - triggerRightFromViewport);
+      this.#panel.style.setProperty('--panel-left', 'auto');
+      this.#panel.style.setProperty('--panel-right', `${rightOffset}px`);
+    }
   }
 
   close() {

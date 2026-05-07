@@ -41,13 +41,22 @@ theme-picker {
 @scope (theme-picker) {
   /* --- Panel --- */
   .panel {
-    /* Intentional physical: JS-computed positioning via custom properties */
+    /* Intentional physical: JS-computed positioning via custom properties.
+       Anchor to the trigger's right edge by default so the panel grows
+       leftward into the viewport (theme-picker typically sits in the
+       top-right of a header/toolbar — left-anchoring would extend the
+       panel past the right viewport edge and cause body overflow even
+       while hidden, since position: absolute participates in scrollWidth).
+       The JS reposition logic overrides --panel-left when the panel needs
+       to flip the other way. */
     --panel-top: calc(100% + var(--size-xs));
-    --panel-left: 0px;
+    --panel-left: auto;
+    --panel-right: 0px;
 
     position: absolute;
     top: var(--panel-top);
     left: var(--panel-left);
+    right: var(--panel-right);
     z-index: 1000;
 
     /* Appearance */
