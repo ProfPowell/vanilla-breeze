@@ -40,7 +40,7 @@ Current surface: **67 web components** across 7 categories.
 | `diff-viewer` | New | Side-by-side or unified diff display. Extends `change-set` concept. |
 | `comment-thread` | New | Inline commenting system with replies. |
 | `annotation-layer` | New | Overlay annotations on any content block. |
-| `reading-progress` | New | Scroll progress indicator bar. Pairs with `page-stats`. |
+| `reading-progress` | New | Scroll progress indicator bar. Pairs with `page-stats`. Bead: `vanilla-breeze-13rv`. |
 | `content-feed` | New | Paginated/infinite-scroll content feed. |
 | `search-results` | New | Structured search results display with highlighting. Pairs with `site-search`. |
 | `bread-crumb` | New | Auto-generated breadcrumb from URL structure. |
@@ -52,7 +52,7 @@ Current surface: **67 web components** across 7 categories.
 |-----------|------|-------|
 | `reaction-bar` | New | Emoji reaction picker (GitHub-style). |
 | `comment-box` | New | Standalone comment form with markdown preview. |
-| `avatar-group` | New | Overlapping avatar stack for showing participants. |
+| `avatar-group` | New | Overlapping avatar stack for showing participants. Bead: `vanilla-breeze-pahv`. |
 | `activity-feed` | New | Timeline of user actions with relative timestamps. |
 | `poll-wc` | New | Simple poll/survey with live results. |
 | `live-indicator` | New | Pulsing live/online status badge. |
@@ -64,14 +64,14 @@ Current surface: **67 web components** across 7 categories.
 | `layout-specimen` | New | Visual layout pattern specimen. Complements spacing/type/token specimens. |
 | `accessibility-specimen` | New | A11y checklist and contrast ratio specimen for design system docs. |
 | `animation-specimen` | New | Motion/easing specimen display. |
-| `breakpoint-specimen` | New | Responsive breakpoint visualization. |
+| `breakpoint-specimen` | New | Responsive breakpoint visualization. Bead: `vanilla-breeze-a7a7`. |
 
 
 ## Planning
 
 | Component | Type | Notes |
 |-----------|------|-------|
-| `gantt-chart` | New | Timeline-based project schedule visualization. |
+| ~~`gantt-chart`~~ | **Shipped** as `gantt-chart` (`src/web-components/gantt-chart/`) | |
 | `decision-matrix` | New | Weighted scoring matrix. Extends `impact-effort` concept. |
 | `swot-analysis` | New | 2x2 SWOT grid with editable quadrants. |
 | `stakeholder-map` | New | Power/interest grid for stakeholder analysis. |
