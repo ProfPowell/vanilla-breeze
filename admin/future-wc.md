@@ -69,14 +69,19 @@ Current surface: **67 web components** across 7 categories.
 
 ## Planning
 
+Consolidation outcome (May 2026): five proposed components reduced to **1 primitive + 1 preset + an attribute extension on `<data-table>` + 3 recipe doc pages**. See [`/Users/tpowell/.claude/plans/review-admin-future-wc-md-and-the-sorted-eagle.md`](../).
+
 | Component | Type | Notes |
 |-----------|------|-------|
 | ~~`gantt-chart`~~ | **Shipped** as `gantt-chart` (`src/web-components/gantt-chart/`) | |
-| `decision-matrix` | New | Weighted scoring matrix. Extends `impact-effort` concept. |
-| `swot-analysis` | New | 2x2 SWOT grid with editable quadrants. |
-| `stakeholder-map` | New | Power/interest grid for stakeholder analysis. |
-| `risk-register` | New | Risk log with likelihood/impact scoring. |
-| `retrospective-board` | New | Start/stop/continue retro board. |
+| ~~`quadrant-grid`~~ | **Shipped** as `quadrant-grid` (`src/web-components/quadrant-grid/`). Bead: `vanilla-breeze-5zyk`. Generic 2x2 primitive backing SWOT, stakeholder-map, custom 2x2s. | |
+| ~~`risk-register`~~ | **Shipped** as `risk-register` (`src/web-components/risk-register/`). Bead: `vanilla-breeze-vs0y`. Composes `data-table` + `quadrant-grid` from one source. | |
+| ~~`decision-matrix`~~ | **Recipe**: use `<data-table>` with `data-weight` + `data-rollup="weighted-sum"` + `data-heatmap="high-good"` (shipped, bead `vanilla-breeze-7ygu`). See data-table doc page. | |
+| ~~`swot-analysis`~~ | **Recipe**: use `<quadrant-grid>` with SWOT axis/quadrant labels. See quadrant-grid doc page. | |
+| ~~`stakeholder-map`~~ | **Recipe**: use `<quadrant-grid>` with Power/Interest labels and `data-x`/`data-y` for labelled-dot positioning. | |
+| ~~`retrospective-board`~~ | **Recipe**: use `<kanban-board>` with three `data-column` children (Start/Stop/Continue). Bead: `vanilla-breeze-68af`. | |
+| `decision-matrix` (continued ideas) | Backlog | Multi-evaluator scoring + per-cell rationale notes. Defer until requested. |
+| `risk-register` (continued ideas) | Backlog | Bidirectional editing (table edit → quadrant move → table refresh). Currently one-way render. |
 
 ## AI
 
