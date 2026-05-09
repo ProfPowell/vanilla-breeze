@@ -12,17 +12,16 @@ crumbLabel: Web Components
 
   <section>
     <h2>Overview</h2>
-    <p>An on-device chat component. Without a <code>context</code> attribute, behaves as a general assistant. With <code>context="<selector>"</code>, the targeted region's text is folded into the system prompt so the model can answer questions about the surrounding article — no retrieval plumbing required.</p>
-    <p>Provider resolution per session: <strong>local Chrome LanguageModel → inline endpoint → external deep-link → unavailable</strong>. See <a href="/admin/specs/ai-page-tools-v1/">AI page-tools v1</a> for the full contract.</p>
+    <p>An on-device chat component built on <a href="/docs/elements/web-components/chat-window/"><code>&lt;chat-window&gt;</code></a> + <a href="/docs/elements/web-components/chat-input/"><code>&lt;chat-input&gt;</code></a>. Without a <code>context</code> attribute, behaves as a general assistant. With <code>context="<selector>"</code>, the targeted region's text is folded into the system prompt so the model can answer questions about the surrounding article — no retrieval plumbing required.</p>
+    <p>The configured providers (local Chrome <code>LanguageModel</code>, your <code>endpoint</code>, your <code>fallback-url</code>) are surfaced as options in the <code>chat-window</code> header's model select. Users can see what's running and switch on the fly. Auto-selection prefers <strong>local → endpoint → deep-link</strong>; unavailable options stay disabled.</p>
 
-    <p>
-      <a href="/docs/examples/demos/ai-chat-basic.html" target="_blank" rel="noopener" class="button">
-        Open the general-chat demo
-      </a>
-    </p>
-    <p class="callout" data-kind="note">
-      <strong>Why a link, not an iframe?</strong> Chrome's built-in AI APIs are gated by Permissions Policy and require a top-level browsing context. Embedding the demo in an iframe results in <em>"Unable to create a text session because the service is not running."</em>
-    </p>
+    <browser-window
+      src="/docs/examples/demos/ai-chat-basic.html"
+      url="https://vanilla-breeze.dev/ai-chat"
+      title="ai-chat &mdash; General"
+      allow="language-model; summarizer"
+      shadow>
+    </browser-window>
   </section>
 
   <section>
@@ -43,11 +42,13 @@ crumbLabel: Web Components
   </template>
 </ai-chat></code-block>
 
-    <p>
-      <a href="/docs/examples/demos/ai-chat-page-aware.html" target="_blank" rel="noopener" class="button">
-        Open the page-aware demo
-      </a>
-    </p>
+    <browser-window
+      src="/docs/examples/demos/ai-chat-page-aware.html"
+      url="https://vanilla-breeze.dev/ai-chat-page-aware"
+      title="ai-chat &mdash; Page-aware"
+      allow="language-model; summarizer"
+      shadow>
+    </browser-window>
   </section>
 
   <section>
@@ -81,7 +82,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>State and events</h2>
-    <p>Lifecycle on <code>data-state</code>: <code>checking</code>, <code>ready</code>, <code>thinking</code>, <code>streaming</code>, <code>downloading</code>, <code>error</code>, <code>unavailable</code>, <code>deep-link</code>. Per-message role on each <code>.ai-chat-msg</code>: <code>data-role="user|assistant|error"</code>.</p>
+    <p>Lifecycle on <code>data-state</code>: <code>checking</code>, <code>ready</code>, <code>downloading</code>, <code>streaming</code>, <code>error</code>, <code>unavailable</code>. Provider switching emits <code>chat-window:model-change</code> from the inner chat-window — listen there to react to in-page provider swaps.</p>
 
     <code-block language="js" show-lines label="Listen for events"><script type="module">
 const chat = document.querySelector('ai-chat');

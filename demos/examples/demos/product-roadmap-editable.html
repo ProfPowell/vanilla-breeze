@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roadmap — Editable Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/cdn/packs/ux-planning.full.css">
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); max-inline-size: 78rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--size-m); }
+    h1 { font-size: var(--font-size-l); margin: 0; }
+    p  { color: var(--color-text-muted); margin: 0; }
+    output {
+      display: block;
+      padding: var(--size-s);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-s);
+      font-family: var(--font-mono, ui-monospace, monospace);
+      font-size: var(--font-size-sm);
+      max-block-size: 12rem;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Editable FY27 roadmap</h1>
+  <p>Drag a bar body to reschedule (snaps to quarter). Drag the right edge to extend the end date. Drag a bar to a different lane to move it. Click to inspect.</p>
+
+  <product-roadmap start="2026-Q3" end="2027-Q2" editable today-marker>
+    <section data-lane="Platform">
+      <article data-start="2026-Q3" data-end="2026-Q4" data-status="in-progress">
+        <h3>Multi-tenant database</h3>
+      </article>
+    </section>
+    <section data-lane="Growth">
+      <article data-start="2026-Q4" data-end="2027-Q1" data-status="planned">
+        <h3>Onboarding rewrite</h3>
+      </article>
+    </section>
+    <section data-lane="Mobile">
+      <article data-start="2026-Q3" data-end="2027-Q1" data-status="at-risk">
+        <h3>iOS rewrite</h3>
+      </article>
+    </section>
+  </product-roadmap>
+
+  <h2 style="margin: 0; font-size: var(--font-size-m)">Event log</h2>
+  <output id="log">(drag a bar to see events)</output>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/packs/ux-planning.full.js"></script>
+  <script type="module">
+    const log = document.getElementById('log');
+    const append = (label, detail) => {
+      log.textContent = `${label}: ${JSON.stringify(detail, (k, v) => k === 'initiative' ? v?.querySelector?.('h3')?.textContent : v)}\n` + log.textContent;
+    };
+    document.addEventListener('product-roadmap:select',     (e) => append('select', e.detail));
+    document.addEventListener('product-roadmap:reschedule', (e) => append('reschedule', e.detail));
+    document.addEventListener('product-roadmap:resize',     (e) => append('resize', e.detail));
+    document.addEventListener('product-roadmap:move',       (e) => append('move', e.detail));
+  </script>
+</body>
+</html>

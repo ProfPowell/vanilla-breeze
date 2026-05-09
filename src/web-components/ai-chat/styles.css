@@ -2,74 +2,32 @@
 ai-chat:not(:defined) { display: block; }
 
 /*
- * ai-chat — adds a state badge, page-context ribbon, starter chips, and a
- * Stop button on top of <chat-window> + <chat-input>. The chat scaffolding
- * comes from those primitives; styles below only handle the AI-specific
- * additions.
+ * ai-chat — composes <chat-window> + <chat-input> + <chat-thread>. The chat
+ * scaffolding owns layout, theming, message rendering, and the typing
+ * indicator. ai-chat adds an above-window stack: page-context ribbon,
+ * notice strip, and starter chips.
+ *
+ * The host is a 4-row grid so chat-window gets the 1fr middle row to expand
+ * into; aux elements above it stay auto-sized and collapse to zero when
+ * hidden.
  */
 
 ai-chat {
-  display: block;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+  block-size: clamp(28rem, 60vh, 44rem);
   margin-block: var(--size-l);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  background: var(--color-surface);
 }
 
-/* The chat-window child fills its container. Give it a sensible default
-   height; consumers can override by sizing the ai-chat host. */
+/* The chat-window child fills the remaining grid row. */
 ai-chat > chat-window {
   block-size: 100%;
-  min-block-size: 32rem;
+  min-block-size: 0;
 }
-
-/* Header — state badge on the left, Stop button on the right. */
-ai-chat > chat-window > header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--size-s);
-}
-
-ai-chat .ai-chat-state {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--size-2xs);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  font-variant-numeric: tabular-nums;
-}
-ai-chat .ai-chat-state::before {
-  content: "";
-  inline-size: .55rem;
-  block-size: .55rem;
-  border-radius: 50%;
-  background: currentColor;
-  flex: none;
-}
-
-ai-chat[data-state="checking"]    .ai-chat-state { color: var(--color-text-muted); }
-ai-chat[data-state="downloadable"] .ai-chat-state { color: var(--color-warning); }
-ai-chat[data-state="downloading"] .ai-chat-state { color: var(--color-warning); }
-ai-chat[data-state="ready"]       .ai-chat-state { color: var(--color-success); }
-ai-chat[data-state="streaming"]   .ai-chat-state { color: var(--color-accent); }
-ai-chat[data-state="thinking"]    .ai-chat-state { color: var(--color-accent); }
-ai-chat[data-state="unavailable"] .ai-chat-state,
-ai-chat[data-state="error"]       .ai-chat-state { color: var(--color-error); }
-ai-chat[data-state="deep-link"]   .ai-chat-state { color: var(--color-warning); }
-
-ai-chat[data-state="checking"]    .ai-chat-state::before,
-ai-chat[data-state="downloading"] .ai-chat-state::before,
-ai-chat[data-state="streaming"]   .ai-chat-state::before,
-ai-chat[data-state="thinking"]    .ai-chat-state::before {
-  animation: ai-chat-pulse 1.4s infinite;
-}
-
-@keyframes ai-chat-pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: .35; }
-}
-
-/* Stop button is only visible while streaming. */
-ai-chat .ai-chat-stop { display: none; }
-ai-chat[data-state="streaming"] .ai-chat-stop { display: inline-flex; }
 
 /* Page-context ribbon */
 ai-chat .ai-chat-ribbon {
@@ -90,14 +48,20 @@ ai-chat .ai-chat-ribbon-warn {
   margin-inline-start: auto;
 }
 
-/* Notice (errors / unavailable explanations) */
+/* Notice strip — availability copy, download progress, deep-link hint */
 ai-chat .ai-chat-notice {
   margin: 0;
-  padding: var(--size-s);
+  padding: var(--size-2xs) var(--size-s);
   font-size: var(--font-size-sm);
-  color: var(--color-error);
-  background: color-mix(in srgb, var(--color-error) 10%, transparent);
-  border-block-end: var(--border-width-thin) solid color-mix(in srgb, var(--color-error) 25%, transparent);
+  color: var(--color-warning-text, var(--color-warning));
+  background: var(--color-warning-subtle, color-mix(in srgb, var(--color-warning) 12%, transparent));
+  border-block-end: var(--border-width-thin) solid color-mix(in srgb, var(--color-warning) 25%, transparent);
+}
+ai-chat[data-state="error"] .ai-chat-notice,
+ai-chat[data-state="unavailable"] .ai-chat-notice {
+  color: var(--color-error-text, var(--color-error));
+  background: var(--color-error-subtle, color-mix(in srgb, var(--color-error) 10%, transparent));
+  border-block-end-color: color-mix(in srgb, var(--color-error) 25%, transparent);
 }
 ai-chat .ai-chat-notice[hidden] { display: none; }
 
@@ -115,13 +79,14 @@ ai-chat .ai-chat-starter {
   font-size: var(--font-size-sm);
 }
 
-/* Hide starters once the conversation has any messages. chat-window keeps
-   <chat-message> elements as children of <chat-thread>. */
+/* Hide starters once the conversation has any messages. */
 ai-chat:has(chat-thread chat-message) .ai-chat-starters { display: none; }
 
-/* Hide input affordances when the component is unavailable. */
+/* When unavailable, dim the inputs (chat-window doesn't know about it). */
 ai-chat[data-state="unavailable"] chat-input,
 ai-chat[data-state="unavailable"] .ai-chat-starters {
   opacity: .55;
   pointer-events: none;
 }
+
+/* Stop button uses [hidden] toggling from logic.js — no CSS state gating. */

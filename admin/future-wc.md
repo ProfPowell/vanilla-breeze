@@ -80,8 +80,11 @@ Consolidation outcome (May 2026): five proposed components reduced to **1 primit
 | ~~`swot-analysis`~~ | **Recipe**: use `<quadrant-grid>` with SWOT axis/quadrant labels. See quadrant-grid doc page. | |
 | ~~`stakeholder-map`~~ | **Recipe**: use `<quadrant-grid>` with Power/Interest labels and `data-x`/`data-y` for labelled-dot positioning. | |
 | ~~`retrospective-board`~~ | **Recipe**: use `<kanban-board>` with three `data-column` children (Start/Stop/Continue). Bead: `vanilla-breeze-68af`. | |
+| ~~`burndown-chart`~~ | **Shipped** as `burndown-chart` (`src/web-components/burndown-chart/`). Bead: `vanilla-breeze-ylh2`. Wraps `<chart-wc>` with auto-computed ideal line + scope-change annotations. | |
+| ~~`product-roadmap`~~ | **Shipped** as `product-roadmap` (`src/web-components/product-roadmap/`). Bead: `vanilla-breeze-epvt`. Interactive themes × quarters with drag-to-reschedule. | |
 | `decision-matrix` (continued ideas) | Backlog | Multi-evaluator scoring + per-cell rationale notes. Defer until requested. |
 | `risk-register` (continued ideas) | Backlog | Bidirectional editing (table edit → quadrant move → table refresh). Currently one-way render. |
+| `time-axis-utility` | Backlog | Extract shared quarter/month axis math from gantt-chart + roadmap once a 3rd consumer appears. Bead: `vanilla-breeze-l0my`. |
 
 ## AI
 

@@ -239,7 +239,7 @@ module.exports = {
       "fallback-url": {},
       "fallback-label": {},
       "fallback-prompt": {},
-      "data-state": { enum: ["checking", "ready", "downloading", "thinking", "streaming", "error", "unavailable", "deep-link"] }
+      "data-state": { enum: ["checking", "ready", "downloading", "streaming", "error", "unavailable"] }
     }
   },
 
@@ -1062,6 +1062,16 @@ module.exports = {
       "label": {},
       "role": {},
       "data-print-raw": {}
+    }
+  },
+
+  "product-roadmap": {
+    attributes: {
+      "start": {},
+      "end": {},
+      "view": { enum: ["quarter", "month"] },
+      "editable": { boolean: true },
+      "today-marker": { boolean: true }
     }
   },
 

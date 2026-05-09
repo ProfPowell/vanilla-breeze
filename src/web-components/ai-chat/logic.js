@@ -2,10 +2,10 @@
  * ai-chat: On-device chat via Chrome's LanguageModel API
  *
  * Composes <chat-window> + <chat-input> + <chat-thread> + <chat-bubble> for
- * the UI shell — those components own theme integration, layout, the typing
- * indicator, message rendering, and form-association. <ai-chat> owns the
- * provider resolution (local Chrome LanguageModel → endpoint → deep-link)
- * and streams responses into the typing bubble dispatched by chat-window.
+ * the UI shell. ai-chat owns provider resolution (local Chrome LanguageModel
+ * → endpoint → fallback-url deep-link) and surfaces the choice as a
+ * <select data-model-select> in chat-window's header so users can see and
+ * switch providers transparently.
  *
  * Without a `context` attribute, behaves as a general assistant. With
  * `context="<selector>"`, the targeted region's text is folded into the
@@ -21,11 +21,11 @@
  * @attr {string} placeholder    - Textarea placeholder. Default 'Type a message…'.
  * @attr {string} endpoint       - Inline-fallback HTTP URL.
  * @attr {string} fallback-url   - Deep-link URL template ({prompt}/{url}/{title}/{content} tokens).
- * @attr {string} fallback-label - Override Send label when in deep-link mode.
+ * @attr {string} fallback-label - Override the deep-link option label in the model select.
  * @attr {string} fallback-prompt - Override the default {prompt} text.
  *
  * State attributes:
- * @attr {string} data-state - One of: checking, ready, downloading, thinking, streaming, error, unavailable, deep-link
+ * @attr {string} data-state - One of: checking, ready, downloading, streaming, error, unavailable
  *
  * @fires ai-chat:state            - Detail: { state, provider }
  * @fires ai-chat:message          - Detail: { role, text }
@@ -36,7 +36,10 @@
  *   <ai-chat
  *     context="#article"
  *     context-label="this article"
- *     placeholder="Ask about this page…">
+ *     placeholder="Ask about this page…"
+ *     endpoint="/api/ai/chat"
+ *     fallback-url="https://claude.ai/new?q={prompt}"
+ *     fallback-label="Ask Claude">
  *     <template data-role="starters">
  *       Summarize the article in 3 bullets.
  *       What problem did the author identify?
@@ -59,15 +62,23 @@ const PARTICIPANTS = {
   assistant: { name: 'Assistant', role: 'agent' },
 };
 
+const PROVIDER_LABELS = {
+  local:       'Gemini Nano (on-device)',
+  endpoint:    'Server endpoint',
+  'deep-link': 'Open in external tool',
+};
+
 class AIChat extends VBElement {
   /** @type {HTMLElement|null} */ #window = null;
-  /** @type {HTMLElement|null} */ #stateLabel = null;
+  /** @type {HTMLSelectElement|null} */ #select = null;
   /** @type {HTMLButtonElement|null} */ #stopBtn = null;
   /** @type {HTMLElement|null} */ #ribbon = null;
   /** @type {HTMLElement|null} */ #notice = null;
   /** @type {HTMLElement|null} */ #starters = null;
   /** @type {any} */ #session = null;
   /** @type {AbortController|null} */ #abortCtl = null;
+  /** @type {'available'|'downloadable'|'downloading'|'unavailable'|'unsupported'} */
+  #localState = 'unsupported';
   /** @type {'local'|'endpoint'|'deep-link'|'unavailable'} */ #provider = 'unavailable';
 
   static get observedAttributes() { return ['placeholder']; }
@@ -87,8 +98,8 @@ class AIChat extends VBElement {
   }
 
   attributeChangedCallback(name, _old, value) {
-    if (name === 'placeholder' && this.#window) {
-      const ta = this.#window.querySelector('chat-input textarea');
+    if (name === 'placeholder') {
+      const ta = this.querySelector('chat-input textarea');
       if (ta) /** @type {HTMLTextAreaElement} */ (ta).placeholder = value ?? '';
     }
   }
@@ -108,10 +119,6 @@ class AIChat extends VBElement {
 
   #renderShell() {
     const placeholder = this.getAttribute('placeholder') || 'Type a message…';
-    // Aux elements (ribbon / notice / starters) live OUTSIDE chat-window so
-    // they don't disrupt its `grid-template-rows: auto 1fr auto` layout.
-    // Chat-window's expected children are: <script[data-participants]>,
-    // <header>, <chat-thread>, <chat-input>.
     const tpl = document.createElement('template');
     tpl.innerHTML = `
       <p class="ai-chat-ribbon" hidden></p>
@@ -120,8 +127,8 @@ class AIChat extends VBElement {
       <chat-window empty-message="Send a message to start a session.">
         <script type="application/json" data-participants>${JSON.stringify(PARTICIPANTS)}</script>
         <header>
-          <span class="ai-chat-state" role="status" aria-live="polite">Checking…</span>
-          <button type="button" class="ai-chat-stop small" data-action="stop">Stop</button>
+          <select class="ai-chat-provider small" data-model-select aria-label="AI provider"></select>
+          <button type="button" class="ai-chat-stop small" hidden>Stop</button>
         </header>
         <chat-thread role="log" aria-label="Chat" aria-live="polite"></chat-thread>
         <chat-input name="message">
@@ -136,12 +143,12 @@ class AIChat extends VBElement {
     `;
     this.appendChild(tpl.content.cloneNode(true));
 
-    this.#window     = /** @type {HTMLElement} */       (this.querySelector(':scope > chat-window'));
-    this.#stateLabel = /** @type {HTMLElement} */       (this.querySelector('.ai-chat-state'));
-    this.#stopBtn    = /** @type {HTMLButtonElement} */ (this.querySelector('.ai-chat-stop'));
-    this.#ribbon     = /** @type {HTMLElement} */       (this.querySelector(':scope > .ai-chat-ribbon'));
-    this.#notice     = /** @type {HTMLElement} */       (this.querySelector(':scope > .ai-chat-notice'));
-    this.#starters   = /** @type {HTMLElement} */       (this.querySelector(':scope > .ai-chat-starters'));
+    this.#window   = /** @type {HTMLElement}        */ (this.querySelector(':scope > chat-window'));
+    this.#select   = /** @type {HTMLSelectElement} */  (this.querySelector('.ai-chat-provider'));
+    this.#stopBtn  = /** @type {HTMLButtonElement} */  (this.querySelector('.ai-chat-stop'));
+    this.#ribbon   = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-ribbon'));
+    this.#notice   = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-notice'));
+    this.#starters = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-starters'));
 
     const ta = this.querySelector('chat-input textarea');
     if (ta) /** @type {HTMLTextAreaElement} */ (ta).placeholder = placeholder;
@@ -171,10 +178,19 @@ class AIChat extends VBElement {
 
   #wireEvents() {
     if (!this.#window) return;
-    // chat-window dispatches this when no endpoint is set on it.
     this.listen(this.#window, 'chat-window:send', (/** @type {any} */ e) => {
       e.stopPropagation();
       this.#handleSend(e.detail.message, e.detail.typingElement);
+    });
+    this.listen(this.#window, 'chat-window:model-change', (/** @type {any} */ e) => {
+      const next = /** @type {'local'|'endpoint'|'deep-link'|'unavailable'} */ (e.detail.model);
+      if (next && next !== this.#provider) {
+        this.#provider = next;
+        // Provider switch invalidates any local LanguageModel session.
+        this.#session?.destroy?.();
+        this.#session = null;
+        this.#syncNoticeForProvider();
+      }
     });
     if (this.#stopBtn) {
       this.listen(this.#stopBtn, 'click', () => this.#abortCtl?.abort());
@@ -183,10 +199,9 @@ class AIChat extends VBElement {
 
   /** @param {string} line */
   #sendStarter(line) {
-    const input = /** @type {any} */ (this.#window?.querySelector('chat-input'));
+    const input = /** @type {any} */ (this.querySelector('chat-input'));
     if (!input) return;
     input.value = line;
-    // chat-input.value=… emits chat-input:change but doesn't auto-send. Trigger send.
     const ta = input.querySelector('textarea');
     if (ta) ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
   }
@@ -249,35 +264,73 @@ class AIChat extends VBElement {
     return base ? base + block : `Use the following page content to answer the user.${block}`;
   }
 
-  /* ---------- availability ---------- */
+  /* ---------- availability + provider menu ---------- */
 
   async #refreshAvailability() {
     this.#setState('checking');
     const { state } = await checkAvailability('LanguageModel');
-    this.#provider = resolveProvider({
-      availability: state,
-      endpoint: this.getAttribute('endpoint') || undefined,
-      fallbackURL: this.getAttribute('fallback-url') || undefined,
-    });
+    this.#localState = state;
 
+    /** @type {Array<{ value: 'local'|'endpoint'|'deep-link'|'unavailable', label: string, disabled?: boolean }>} */
+    const opts = [];
+    if (state === 'available' || state === 'downloadable' || state === 'downloading') {
+      opts.push({ value: 'local', label: PROVIDER_LABELS.local });
+    } else {
+      opts.push({ value: 'local', label: `${PROVIDER_LABELS.local} — unavailable`, disabled: true });
+    }
+    if (this.getAttribute('endpoint'))     opts.push({ value: 'endpoint',  label: PROVIDER_LABELS.endpoint });
+    if (this.getAttribute('fallback-url')) opts.push({ value: 'deep-link', label: this.getAttribute('fallback-label') || PROVIDER_LABELS['deep-link'] });
+
+    this.#populateSelect(opts);
+
+    // Pick the first non-disabled option as the active provider.
+    const initial = opts.find(o => !o.disabled);
+    this.#provider = /** @type {'local'|'endpoint'|'deep-link'|'unavailable'} */ (initial?.value ?? 'unavailable');
+    if (this.#select && initial) this.#select.value = initial.value;
+    if (this.#window) /** @type {any} */ (this.#window).model = this.#provider;
+
+    this.#syncNoticeForProvider();
+    this.#setState(this.#provider === 'unavailable' ? 'unavailable' : 'ready');
+  }
+
+  /** @param {Array<{ value: string, label: string, disabled?: boolean }>} opts */
+  #populateSelect(opts) {
+    if (!this.#select) return;
+    this.#select.replaceChildren();
+    if (opts.length === 0) {
+      const o = document.createElement('option');
+      o.textContent = 'Unavailable';
+      o.disabled = true;
+      this.#select.appendChild(o);
+      this.#select.disabled = true;
+      return;
+    }
+    for (const opt of opts) {
+      const el = document.createElement('option');
+      el.value = opt.value;
+      el.textContent = opt.label;
+      if (opt.disabled) el.disabled = true;
+      this.#select.appendChild(el);
+    }
+    this.#select.disabled = opts.every(o => o.disabled);
+  }
+
+  #syncNoticeForProvider() {
     if (this.#provider === 'unavailable') {
-      this.#setState('unavailable');
-      this.#showNotice('On-device AI is unavailable on this browser. Configure endpoint= or fallback-url= to enable a fallback.');
-      return;
+      this.#showNotice('On-device AI unavailable and no fallback configured. Set endpoint= or fallback-url= to enable a fallback.');
+    } else if (this.#provider === 'deep-link') {
+      this.#showNotice('Send opens the external tool in a new tab. Choose another provider above to chat in-page.');
+    } else if (this.#localState === 'downloadable' && this.#provider === 'local') {
+      this.#showNotice('First message will download the on-device model (~1.6 GB).');
+    } else {
+      this.#hideNotice();
     }
-    if (this.#provider === 'deep-link') {
-      this.#setState('deep-link');
-      this.#showNotice('On-device AI unavailable. Send opens the configured fallback in a new tab.');
-      return;
-    }
-    this.#setState('ready');
   }
 
   /* ---------- session lifecycle ---------- */
 
   async #ensureSession() {
     if (this.#session) return this.#session;
-    this.#setState('thinking');
     const systemPrompt = this.#composeSystemPrompt();
     const initialPrompts = systemPrompt ? [{ role: 'system', content: systemPrompt }] : undefined;
 
@@ -289,9 +342,7 @@ class AIChat extends VBElement {
       monitor: (m) => {
         m.addEventListener('downloadprogress', (/** @type {any} */ e) => {
           this.#setState('downloading');
-          if (this.#stateLabel) {
-            this.#stateLabel.textContent = `Downloading model: ${Math.round(e.loaded * 100)}%`;
-          }
+          this.#showNotice(`Downloading on-device model: ${Math.round(e.loaded * 100)}%`);
         });
       },
     });
@@ -305,7 +356,6 @@ class AIChat extends VBElement {
   /* ---------- send ---------- */
 
   /**
-   * Handles a chat-window:send by routing through the resolved provider.
    * @param {string} message
    * @param {HTMLElement} typingElement
    */
@@ -323,6 +373,7 @@ class AIChat extends VBElement {
     }
 
     this.#setState('streaming');
+    if (this.#stopBtn) this.#stopBtn.hidden = false;
     this.#abortCtl = new AbortController();
 
     const bubble = typingElement.querySelector('chat-bubble');
@@ -358,6 +409,7 @@ class AIChat extends VBElement {
       this.dispatchEvent(new CustomEvent('ai-chat:error', { detail: { error: err }, bubbles: true }));
     } finally {
       this.#abortCtl = null;
+      if (this.#stopBtn) this.#stopBtn.hidden = true;
     }
   }
 
@@ -400,20 +452,6 @@ class AIChat extends VBElement {
   /** @param {string} state */
   #setState(state) {
     this.setAttribute('data-state', state);
-    if (this.#stateLabel) {
-      const labels = {
-        checking: 'Checking availability…',
-        unavailable: 'Unavailable',
-        downloadable: 'Ready',
-        downloading: 'Downloading model…',
-        ready: 'Ready',
-        thinking: 'Preparing session…',
-        streaming: 'Generating…',
-        error: 'Error',
-        'deep-link': 'Ready (deep-link)',
-      };
-      this.#stateLabel.textContent = labels[state] ?? state;
-    }
     this.dispatchEvent(new CustomEvent('ai-chat:state', {
       detail: { state, provider: this.#provider },
       bubbles: true,
@@ -425,6 +463,12 @@ class AIChat extends VBElement {
     if (!this.#notice) return;
     this.#notice.hidden = false;
     this.#notice.textContent = text;
+  }
+
+  #hideNotice() {
+    if (!this.#notice) return;
+    this.#notice.hidden = true;
+    this.#notice.textContent = '';
   }
 
   /**

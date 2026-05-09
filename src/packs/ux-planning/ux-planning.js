@@ -18,6 +18,7 @@ import '../../web-components/quadrant-grid/logic.js';
 import '../../web-components/risk-register/logic.js';
 import '../../web-components/traceability-matrix/logic.js';
 import '../../web-components/burndown-chart/logic.js';
+import '../../web-components/product-roadmap/logic.js';
 import '../../web-components/kanban-board/logic.js';
 import '../../web-components/story-map/logic.js';
 import '../../web-components/review-surface/logic.js';

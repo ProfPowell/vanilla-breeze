@@ -1127,7 +1127,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Override the trigger label when in deep-link mode."
+        "description": "Override the deep-link option label in the chat-window provider select."
       },
       {
         "name": "fallback-prompt",
@@ -1146,11 +1146,9 @@ export default {
           "checking",
           "ready",
           "downloading",
-          "thinking",
           "streaming",
           "error",
-          "unavailable",
-          "deep-link"
+          "unavailable"
         ],
         "direction": "output",
         "public": true,
@@ -6184,6 +6182,118 @@ export default {
     ],
     "childAttributes": [],
     "structure": []
+  },
+  "product-roadmap": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "product-roadmap",
+    "type": "web-component",
+    "description": "Interactive themes × quarters product roadmap. Auto-discovers lane sections + initiative articles; editable mode wires drag-to-reschedule, drag-to-resize, and drop-on-lane.",
+    "attributes": [
+      {
+        "name": "start",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "First date in the range (ISO 8601 or \"YYYY-Qn\"; required)"
+      },
+      {
+        "name": "end",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Last date in the range (ISO 8601 or \"YYYY-Qn\"; required, inclusive)"
+      },
+      {
+        "name": "view",
+        "kind": "host-api",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "quarter",
+          "month"
+        ],
+        "description": "Time-axis granularity (default: quarter)"
+      },
+      {
+        "name": "editable",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Wire drag-to-reschedule, drag-to-resize, and lane drop"
+      },
+      {
+        "name": "today-marker",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Render a vertical line at today's date if it falls within the range"
+      }
+    ],
+    "structure": [
+      {
+        "element": "<section data-lane=\"…\">",
+        "description": "One per swimlane row"
+      },
+      {
+        "element": "<article data-start=\"…\" data-end=\"…\">",
+        "description": "One per initiative bar inside a lane (data-status sets the bar color)"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-lane",
+        "on": "section",
+        "type": "string",
+        "description": "Lane name (used as the row label)"
+      },
+      {
+        "name": "data-start",
+        "on": "article",
+        "type": "string",
+        "description": "Initiative start date (ISO 8601 or YYYY-Qn)"
+      },
+      {
+        "name": "data-end",
+        "on": "article",
+        "type": "string",
+        "description": "Initiative end date (ISO 8601 or YYYY-Qn)"
+      },
+      {
+        "name": "data-status",
+        "on": "article",
+        "type": "enum",
+        "values": [
+          "planned",
+          "in-progress",
+          "at-risk",
+          "shipped",
+          "blocked"
+        ],
+        "description": "Status enum; drives bar color"
+      }
+    ],
+    "events": [
+      {
+        "name": "product-roadmap:select",
+        "detail": "{ initiative, lane, start, end, status }",
+        "description": "Fired on bar click"
+      },
+      {
+        "name": "product-roadmap:reschedule",
+        "detail": "{ initiative, lane, start, end }",
+        "description": "Fired after drag-to-move snaps to grid"
+      },
+      {
+        "name": "product-roadmap:resize",
+        "detail": "{ initiative, lane, start, end }",
+        "description": "Fired after drag-to-resize snaps to grid"
+      },
+      {
+        "name": "product-roadmap:move",
+        "detail": "{ initiative, fromLane, toLane, start, end }",
+        "description": "Fired after a bar drops on a different lane"
+      }
+    ]
   },
   "qr-code": {
     "$schema": "../../../schemas/api.schema.json",

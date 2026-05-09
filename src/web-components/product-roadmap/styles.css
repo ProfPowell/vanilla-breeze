@@ -1,0 +1,158 @@
+/* roadmap: Interactive themes × quarters product roadmap */
+
+product-roadmap:not(:defined) {
+  display: block;
+}
+
+product-roadmap {
+  display: block;
+  font-family: var(--font-sans, system-ui);
+  color: var(--color-text, #1a1a1a);
+}
+
+/* Hide author-supplied source lanes — the component reads them at
+   upgrade and renders its own visual structure. Without this rule
+   the raw <article> headings flash before upgrade. */
+product-roadmap > section[data-lane] {
+  display: none;
+}
+
+@scope (product-roadmap) {
+  .rm-wrapper {
+    display: grid;
+    grid-template-columns: minmax(8rem, max-content) 1fr;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .rm-axis {
+    grid-column: 2;
+    position: relative;
+    block-size: var(--size-l, 1.5rem);
+    border-block-end: var(--border-width-thin, 1px) solid var(--color-border, oklch(85% 0 0));
+    margin-block-end: var(--size-2xs, 0.25rem);
+  }
+
+  .rm-tick {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(var(--rm-x) * 100%);
+    inline-size: calc(var(--rm-w) * 100%);
+    border-inline-end: var(--border-width-thin, 1px) dashed var(--color-border, oklch(85% 0 0));
+    padding-inline: var(--size-2xs, 0.25rem);
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted, #666);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .rm-lanes {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    gap: var(--size-2xs, 0.25rem);
+    position: relative;
+  }
+
+  .rm-lane {
+    display: contents;
+  }
+
+  .rm-lane-label {
+    grid-column: 1;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 600;
+    color: var(--color-text, currentColor);
+    padding: var(--size-xs, 0.5rem) var(--size-s, 0.75rem);
+    background: var(--color-surface-raised, oklch(96% 0 0));
+    border-radius: var(--radius-s, 0.25rem);
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+  }
+
+  .rm-track {
+    grid-column: 2;
+    position: relative;
+    min-block-size: var(--size-2xl, 3rem);
+    background:
+      repeating-linear-gradient(
+        to right,
+        var(--color-surface, transparent),
+        var(--color-surface, transparent) calc(var(--rm-tick-w, 25%) - 1px),
+        var(--color-border, oklch(85% 0 0 / 0.4)) calc(var(--rm-tick-w, 25%) - 1px),
+        var(--color-border, oklch(85% 0 0 / 0.4)) var(--rm-tick-w, 25%)
+      );
+    border-radius: var(--radius-s, 0.25rem);
+  }
+
+  .rm-bar {
+    position: absolute;
+    inset-block: var(--size-2xs, 0.25rem);
+    inset-inline-start: calc(var(--rm-x) * 100%);
+    inline-size: calc(var(--rm-w) * 100%);
+    background: var(--color-accent, oklch(45% 0.18 260));
+    color: var(--color-text-on-primary, #fff);
+    border-radius: var(--radius-s, 0.25rem);
+    padding: var(--size-2xs, 0.25rem) var(--size-s, 0.75rem);
+    font-size: var(--font-size-sm, 0.875rem);
+    line-height: 1.2;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    cursor: grab;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: var(--size-2xs, 0.25rem);
+  }
+
+  .rm-bar:active { cursor: grabbing; }
+
+  .rm-bar-title {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .rm-bar-handle {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    inline-size: var(--size-xs, 0.5rem);
+    background: rgba(255, 255, 255, 0.25);
+    cursor: ew-resize;
+    border-start-end-radius: var(--radius-s, 0.25rem);
+    border-end-end-radius: var(--radius-s, 0.25rem);
+  }
+
+  .rm-bar[data-status="planned"]      { background: var(--color-info, oklch(60% 0.12 240)); }
+  .rm-bar[data-status="in-progress"]  { background: var(--color-accent, oklch(50% 0.16 260)); }
+  .rm-bar[data-status="at-risk"]      { background: var(--color-warning, oklch(65% 0.16 60)); color: var(--color-text, #1a1a1a); }
+  .rm-bar[data-status="shipped"]      { background: var(--color-success, oklch(55% 0.14 145)); }
+  .rm-bar[data-status="blocked"]      { background: var(--color-danger, oklch(55% 0.18 25)); }
+
+  .rm-today {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(var(--rm-x) * 100%);
+    inline-size: 0;
+    border-inline-start: var(--border-width-medium, 2px) solid var(--color-warning, oklch(60% 0.18 60));
+    pointer-events: none;
+    z-index: 2;
+    /* Position the today line within the track column. The lanes use
+       subgrid, so we offset by the label column width. */
+    transform: translateX(0);
+  }
+}
+
+/* Read-only roadmap: bars don't show grab cursor or resize handle. */
+product-roadmap:not([editable]) .rm-bar { cursor: default; }
+product-roadmap:not([editable]) .rm-bar-handle { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  product-roadmap .rm-bar { transition: none; }
+}
