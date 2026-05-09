@@ -1,0 +1,94 @@
+/* traceability-matrix: 2D cross-reference grid */
+
+traceability-matrix:not(:defined) {
+  display: block;
+}
+
+traceability-matrix {
+  display: block;
+  font-family: var(--font-sans, system-ui);
+  color: var(--color-text, #1a1a1a);
+}
+
+@scope (traceability-matrix) {
+  .tm-label {
+    display: block;
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted, #666);
+    margin-block-end: var(--size-s, 0.75rem);
+  }
+
+  .tm-empty {
+    color: var(--color-text-muted, #666);
+    font-style: italic;
+  }
+
+  /* Linked cells get a subtle accent background */
+  td[data-linked] {
+    background: oklch(94% 0.05 145 / 0.55);
+    text-align: center;
+    font-weight: 600;
+    color: var(--color-accent, oklch(45% 0.18 260));
+  }
+
+  /* Empty cells stay plain — easier to scan for orphans */
+  td:not([data-linked]) {
+    color: var(--color-text-muted, #666);
+    text-align: center;
+  }
+
+  /* Row label header cell */
+  th[scope="row"] {
+    text-align: start;
+    font-weight: 600;
+    background: var(--color-surface-raised, oklch(96% 0 0));
+    white-space: nowrap;
+  }
+
+  /* Highlighted chain — both the row in the matrix and the source elements */
+  tr[data-state-highlighted] {
+    outline: 2px solid var(--color-accent, oklch(45% 0.18 260));
+    outline-offset: -2px;
+  }
+
+  td[data-state-highlighted],
+  th[data-state-highlighted] {
+    background: oklch(85% 0.12 145 / 0.7);
+  }
+
+  /* Orphan flagging (when host has flag-orphans) */
+  tr[data-orphan] th[scope="row"]::after,
+  th[data-orphan]::after {
+    content: " ⚠";
+    color: var(--color-warning, oklch(60% 0.15 60));
+    font-weight: 700;
+  }
+
+  td, th {
+    padding: var(--size-2xs, 0.25rem) var(--size-s, 0.75rem);
+    border-block-end: var(--border-width-thin, 1px) solid var(--color-border, oklch(85% 0 0));
+    cursor: default;
+  }
+
+  td[data-linked] {
+    cursor: pointer;
+  }
+}
+
+/* Source-element highlight when the matrix triggers a chain */
+[data-state-highlighted]:not(traceability-matrix *) {
+  outline: 2px solid var(--color-accent, oklch(45% 0.18 260));
+  outline-offset: 2px;
+  scroll-margin-block: var(--size-l, 1.5rem);
+}
+
+@media print {
+  traceability-matrix td[data-state-highlighted],
+  traceability-matrix tr[data-state-highlighted] {
+    outline: none;
+    background: none;
+  }
+}

@@ -1483,6 +1483,18 @@ module.exports = {
     }
   },
 
+  "traceability-matrix": {
+    attributes: {
+      "rows": {},
+      "cols": {},
+      "link-attr": {},
+      "label": {},
+      "row-label": {},
+      "cell-mark": {},
+      "flag-orphans": { boolean: true }
+    }
+  },
+
   "trust-filter": {
     attributes: {
       "data-lens-src": {},

@@ -3113,6 +3113,7 @@ export default {
         "values": [
           "sum",
           "weighted-sum",
+          "product",
           "avg",
           "max"
         ],
@@ -8494,6 +8495,84 @@ export default {
         "description": "Rendered when either data source fails to load."
       }
     ]
+  },
+  "traceability-matrix": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "traceability-matrix",
+    "type": "web-component",
+    "description": "Auto-discovers a 2D cross-reference grid from page elements (RTM); composes <data-table> for sortable + heatmap-able presentation",
+    "attributes": [
+      {
+        "name": "rows",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS selector for row source elements"
+      },
+      {
+        "name": "cols",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS selector for column source elements"
+      },
+      {
+        "name": "link-attr",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Attribute on the row element whose value(s) reference column ids; comma-separated values supported"
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional heading shown above the matrix"
+      },
+      {
+        "name": "row-label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Header cell text for the row axis"
+      },
+      {
+        "name": "cell-mark",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Glyph shown in linked cells (default: ✓)"
+      },
+      {
+        "name": "flag-orphans",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Mark empty rows/columns with data-orphan for CSS targeting"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-matrix-label",
+        "on": "*",
+        "type": "string",
+        "description": "Override the label rendered for this element in matrices that include it"
+      }
+    ],
+    "events": [
+      {
+        "name": "traceability-matrix:ready",
+        "detail": "{ rowCount, colCount, linkCount }",
+        "description": "Fired after the matrix renders"
+      },
+      {
+        "name": "traceability-matrix:highlight",
+        "detail": "{ rowEl, colEl, on }",
+        "description": "Fired when a cell toggles chain highlight"
+      }
+    ],
+    "structure": []
   },
   "trust-filter": {
     "$schema": "../../../schemas/api.schema.json",

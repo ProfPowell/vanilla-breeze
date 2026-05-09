@@ -1,0 +1,113 @@
+---
+layout: element
+title: "traceability-matrix"
+description: "Auto-discovers a 2D cross-reference grid (RTM) from page elements; composes data-table for sortable + heatmap-able presentation, adds chain highlight."
+elementName: traceability-matrix
+category: component
+currentPath: /docs/elements/web-components/traceability-matrix/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;traceability-matrix&gt;</code> component renders the canonical Requirements Traceability Matrix (RTM) shape — rows × columns at-a-glance — by auto-discovering source elements on the page. Use it to verify coverage between personas and stories, stories and work items, requirements and tests, or any other cross-cutting relationship in a planning artifact graph.</p>
+
+  <p>It composes <code>&lt;data-table&gt;</code> so the rendered grid is sortable and styleable, and adds two things data-table can't: <strong>auto-discovery</strong> (you give it CSS selectors, not hand-built rows) and <strong>chain highlight</strong> (clicking a cell marks the row and column source elements page-wide so authors can see the connection in surrounding components).</p>
+
+  <browser-window url="traceability-matrix" src="/docs/examples/demos/traceability-matrix-basic.html"></browser-window>
+</section>
+
+<section>
+  <h2>How it works</h2>
+  <ol>
+    <li><strong>Author CSS selectors</strong> for the row and column source elements (e.g. <code>rows='[data-row-kind="story"]'</code>, <code>cols='[data-row-kind="persona"]'</code>).</li>
+    <li><strong>Name the link attribute</strong> with <code>link-attr</code>. The component reads each row element's value(s) and matches against the column elements' <code>id</code>.</li>
+    <li><strong>Comma-separated values</strong> are supported out of the box — <code>data-persona-id="p-sarah,p-jordan"</code> renders two checkmarks.</li>
+    <li><strong>Orphan flagging</strong> — set <code>flag-orphans</code> to mark empty rows and columns with <code>data-orphan</code> so CSS can call them out (the default style adds a ⚠ glyph).</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  {{ attributeTable("traceability-matrix", apiRegistry) }}
+
+  <h3>Child attributes</h3>
+  {{ childAttributeTable("traceability-matrix", apiRegistry) }}
+</section>
+
+<section>
+  <h2>Persona × Story example</h2>
+  <code-block language="html" data-escape>
+<traceability-matrix
+  rows='[data-row-kind="story"]'
+  cols='[data-row-kind="persona"]'
+  link-attr="data-persona-id"
+  label="Story coverage"
+  row-label="Story"
+  flag-orphans>
+</traceability-matrix>
+
+<!-- elsewhere on the page -->
+<article data-row-kind="persona" id="p-sarah" data-matrix-label="Sarah Chen">…</article>
+<article data-row-kind="persona" id="p-alex"  data-matrix-label="Alex Rivera">…</article>
+
+<article data-row-kind="story" id="s-1" data-persona-id="p-sarah" data-matrix-label="Weekly digest">…</article>
+<article data-row-kind="story" id="s-2" data-persona-id="p-alex"  data-matrix-label="Sprint retro">…</article>
+<article data-row-kind="story" id="s-3" data-persona-id="p-sarah,p-jordan" data-matrix-label="Layout review">…</article>
+  </code-block>
+</section>
+
+<section>
+  <h2>Story × Work-item example</h2>
+  <p>Native VB elements work too — point at <code>&lt;user-story&gt;</code> / <code>&lt;work-item&gt;</code> directly:</p>
+  <code-block language="html" data-escape>
+<traceability-matrix
+  rows="work-item"
+  cols="user-story"
+  link-attr="story-ids"
+  label="Work item ↔ story"
+  row-label="Work item">
+</traceability-matrix>
+  </code-block>
+  <p>The matrix uses <code>data-matrix-label</code> on each source if present, else its <code>id</code>, else its trimmed text content.</p>
+</section>
+
+<section>
+  <h2>Chain highlight</h2>
+  <p>Clicking any cell in the matrix toggles <code>data-state-highlighted</code> on:</p>
+  <ul>
+    <li>the cell itself,</li>
+    <li>the matrix row,</li>
+    <li>the row source element page-wide,</li>
+    <li>the column source element page-wide.</li>
+  </ul>
+  <p>The default stylesheet adds an outline to highlighted source elements so authors can scan the page and see the connection. Listen for <code>traceability-matrix:highlight</code> to wire additional behaviour (auto-scroll, side panel, etc.).</p>
+
+  <code-block language="js">
+document.querySelector('traceability-matrix')
+  .addEventListener('traceability-matrix:highlight', (e) => {
+    const { rowEl, colEl, on } = e.detail;
+    if (on && rowEl) rowEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+  </code-block>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <ol>
+    <li><strong>HTML.</strong> Without JS, the matrix host is empty — auto-discovery is inherently runtime. For no-JS RTMs, render a <code>&lt;data-table&gt;</code> directly with hand-built intersection rows. The matrix component is purely additive.</li>
+    <li><strong>CSS.</strong> The :not(:defined) selector keeps the host visible pre-upgrade.</li>
+    <li><strong>JS.</strong> Auto-discovers rows/cols, builds the table, wires chain-highlight clicks, fires <code>traceability-matrix:ready</code>.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> — Provides the rendered table; inherits all of its sortable/heatmap behaviour.</li>
+    <li><a href="/docs/elements/web-components/quadrant-grid/"><code>&lt;quadrant-grid&gt;</code></a> — 2D primitive for 2x2 categorical layouts (different shape than RTM's intersection grid).</li>
+    <li><a href="/docs/elements/web-components/user-persona/"><code>&lt;user-persona&gt;</code></a>, <a href="/docs/elements/web-components/user-story/"><code>&lt;user-story&gt;</code></a>, <a href="/docs/elements/web-components/work-item/"><code>&lt;work-item&gt;</code></a> — common source elements for the matrix.</li>
+  </ul>
+</section>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traceability Matrix — Basic Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="/cdn/packs/ux-planning.full.css">
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); max-inline-size: 70rem; margin-inline: auto; }
+    h1 { font-size: var(--font-size-l); }
+    p  { color: var(--color-text-muted); margin-block-end: var(--size-l); }
+    table { border-collapse: collapse; inline-size: 100%; font-size: var(--font-size-sm); }
+    section.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--size-s); margin-block-start: var(--size-l); }
+    .card {
+      background: var(--color-surface-raised);
+      padding: var(--size-s);
+      border-radius: var(--radius-m);
+      border: var(--border-width-thin) solid var(--color-border);
+      transition: outline 0.15s ease;
+    }
+    .card h3 { margin: 0 0 var(--size-2xs); font-size: var(--font-size-sm); }
+    .card p  { margin: 0; color: var(--color-text-muted); font-size: var(--font-size-xs); }
+  </style>
+</head>
+<body>
+  <h1>Story coverage by persona</h1>
+  <p>Auto-discovers <code>&lt;article class="card" data-row-kind="story"&gt;</code> rows and <code>&lt;article class="card" data-row-kind="persona"&gt;</code> columns from the page below. Click any cell to highlight the row + column source elements (chain highlight).</p>
+
+  <traceability-matrix
+    rows='[data-row-kind="story"]'
+    cols='[data-row-kind="persona"]'
+    link-attr="data-persona-id"
+    label="Story → Persona"
+    row-label="Story"
+    flag-orphans>
+  </traceability-matrix>
+
+  <h2 style="margin-block-start: var(--size-xl)">Personas</h2>
+  <section class="cards">
+    <article class="card" data-row-kind="persona" id="p-sarah" data-matrix-label="Sarah Chen">
+      <h3>Sarah Chen</h3><p>Product Manager — wants weekly digest emails</p>
+    </article>
+    <article class="card" data-row-kind="persona" id="p-alex" data-matrix-label="Alex Rivera">
+      <h3>Alex Rivera</h3><p>Engineering Manager — needs sprint retros to drive retention</p>
+    </article>
+    <article class="card" data-row-kind="persona" id="p-jordan" data-matrix-label="Jordan Park">
+      <h3>Jordan Park</h3><p>Designer — uses the system for layout reviews</p>
+    </article>
+  </section>
+
+  <h2 style="margin-block-start: var(--size-xl)">Stories</h2>
+  <section class="cards">
+    <article class="card" data-row-kind="story" id="s-1" data-persona-id="p-sarah" data-matrix-label="Weekly digest">
+      <h3>Weekly digest</h3><p>As Sarah I want a weekly summary email of project changes.</p>
+    </article>
+    <article class="card" data-row-kind="story" id="s-2" data-persona-id="p-alex" data-matrix-label="Sprint retro">
+      <h3>Sprint retro</h3><p>As Alex I want a digital retro board.</p>
+    </article>
+    <article class="card" data-row-kind="story" id="s-3" data-persona-id="p-sarah,p-jordan" data-matrix-label="Layout review">
+      <h3>Layout review</h3><p>As Sarah and Jordan we want to comment inline on layout changes.</p>
+    </article>
+    <article class="card" data-row-kind="story" id="s-4" data-persona-id="" data-matrix-label="Login redirect">
+      <h3>Login redirect</h3><p>(orphan — no persona assigned)</p>
+    </article>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/cdn/packs/ux-planning.full.js"></script>
+</body>
+</html>

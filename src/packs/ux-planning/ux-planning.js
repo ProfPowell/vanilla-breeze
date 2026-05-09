@@ -16,6 +16,7 @@ import '../../web-components/empathy-map/logic.js';
 import '../../web-components/impact-effort/logic.js';
 import '../../web-components/quadrant-grid/logic.js';
 import '../../web-components/risk-register/logic.js';
+import '../../web-components/traceability-matrix/logic.js';
 import '../../web-components/kanban-board/logic.js';
 import '../../web-components/story-map/logic.js';
 import '../../web-components/review-surface/logic.js';
