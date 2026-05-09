@@ -1,0 +1,99 @@
+---
+layout: element
+title: "ai-summary"
+description: "Summarise wrapped content via Chrome's Summarizer API, with provider-neutral inline endpoint and external deep-link fallbacks."
+elementName: ai-summary
+category: component
+currentPath: /docs/elements/web-components/ai-summary/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+  <section>
+    <h2>Overview</h2>
+    <p>Wrap a block of content (typically an <code>&lt;article&gt;</code>) and ai-summary prepends a Summarize trigger that produces a streamed summary inline. The component is light DOM and progressively enhances — the wrapped article reads normally without JavaScript.</p>
+    <p>Provider resolution order on every click: <strong>local Chrome Summarizer API → inline endpoint → external deep-link → unavailable</strong>. See <a href="/admin/specs/ai-page-tools-v1/">AI page-tools v1</a> for the full contract.</p>
+
+    <browser-window
+      src="/docs/examples/demos/ai-summary-basic.html"
+      url="https://vanilla-breeze.dev/ai-summary"
+      title="ai-summary &mdash; Basic"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Local Chrome Summarizer</h2>
+    <p>In Chrome 138+ on a supported desktop, the component summarises on-device using <code>Summarizer.summarizeStreaming()</code>. The pass-through attributes <code>type</code>, <code>length</code>, and <code>format</code> map 1:1 to <code>Summarizer.create()</code> options.</p>
+
+    <code-block language="html" show-lines label="Local-only" data-escape><ai-summary type="key-points" length="medium" format="markdown">
+  <article>
+    <h2>Headline</h2>
+    <p>Body content…</p>
+  </article>
+</ai-summary></code-block>
+  </section>
+
+  <section>
+    <h2>Inline endpoint fallback</h2>
+    <p>Configure <code>endpoint="…"</code> to POST to a server you control when on-device AI isn't available. The component sends <code>{ prompt, content, mode: "summarize" }</code> as JSON; the server streams back <code>text/plain</code> chunks (or returns one-shot <code>application/json</code>). Stream output appears inline in the same UI.</p>
+
+    <code-block language="html" show-lines label="With inline endpoint" data-escape><ai-summary endpoint="/api/ai/summarize">
+  <article>
+    <h2>Headline</h2>
+    <p>Body content…</p>
+  </article>
+</ai-summary></code-block>
+
+    <p>The wire format is documented in <a href="/admin/specs/ai-page-tools-v1/">AI page-tools v1, §C</a>. Implementations on the server side are unconstrained — wrap any AI provider that can produce text from a prompt.</p>
+  </section>
+
+  <section>
+    <h2>External deep-link fallback</h2>
+    <p>Configure <code>fallback-url="…"</code> with a URL template to send users to an external tool when neither on-device AI nor an inline endpoint is configured. Provider-neutral by design.</p>
+
+    <code-block language="html" show-lines label="Claude" data-escape><ai-summary
+    fallback-url="https://claude.ai/new?q={prompt}"
+    fallback-label="Read with Claude">
+  <article>…</article>
+</ai-summary></code-block>
+
+    <code-block language="html" show-lines label="ChatGPT" data-escape><ai-summary
+    fallback-url="https://chatgpt.com/?q={prompt}"
+    fallback-label="Read with ChatGPT">
+  <article>…</article>
+</ai-summary></code-block>
+
+    <code-block language="html" show-lines label="mailto: share" data-escape><ai-summary
+    fallback-url="mailto:?subject={title}&amp;body={prompt}"
+    fallback-label="Email this">
+  <article>…</article>
+</ai-summary></code-block>
+
+    <p>Template tokens (URL-encoded on substitution): <code>{prompt}</code>, <code>{url}</code>, <code>{title}</code>, <code>{content}</code>. Override the default prompt with <code>fallback-prompt="…"</code>:</p>
+
+    <code-block language="html" show-lines label="Custom prompt" data-escape><ai-summary
+    fallback-url="https://claude.ai/new?q={prompt}"
+    fallback-prompt="Give me a one-paragraph summary of {url}"
+    fallback-label="Read with Claude">
+  <article>…</article>
+</ai-summary></code-block>
+  </section>
+
+  <section>
+    <h2>State and events</h2>
+    <p>The host element reflects lifecycle on <code>data-state</code>: <code>checking</code> → <code>ready</code> → <code>streaming</code> → <code>complete</code>, plus <code>downloading</code>, <code>error</code>, <code>unavailable</code>, and <code>deep-link</code>. Theme via CSS attribute selectors.</p>
+
+    <code-block language="js" show-lines label="Listen for events"><script type="module">
+const summary = document.querySelector('ai-summary');
+summary.addEventListener('ai-summary:state',  e => console.log(e.detail.state, e.detail.provider));
+summary.addEventListener('ai-summary:result', e => console.log(e.detail.text.length, 'chars'));
+summary.addEventListener('ai-summary:error',  e => console.error(e.detail.error));
+</script></code-block>
+  </section>
+
+  <section>
+    <h2>Composing with other VB components</h2>
+    <p>ai-summary drops into <code>&lt;page-tools&gt;</code> as just another child — the toolbar's responsive collapse and FAB-into-popover behaviour come for free. Streamed output renders through <code>&lt;markdown-viewer&gt;</code> on completion so VB themes and code highlighting apply automatically.</p>
+  </section>

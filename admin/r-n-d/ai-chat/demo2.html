@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>&lt;ai-chat&gt; — page-aware variant</title>
+	<style>
+		:root {
+			color-scheme: light dark;
+			--bg: #ffffff;
+			--surface: #fafafa;
+			--fg: #1a1a1a;
+			--muted: #6b6b6b;
+			--border: #e5e5e5;
+			--accent: #6b46c1;
+			--accent-fg: #ffffff;
+			--accent-bg: #f5f0ff;
+			--user-bg: #eef2ff;
+			--user-fg: #1e3a8a;
+			--code-bg: #f6f6f6;
+			--ok: #15803d;
+			--warn: #b45309;
+			--err: #b91c1c;
+			--max-width: 72ch;
+			--radius: 10px;
+		}
+
+		@media (prefers-color-scheme: dark) {
+			:root {
+				--bg: #1a1a1a;
+				--surface: #232323;
+				--fg: #e8e8e8;
+				--muted: #a0a0a0;
+				--border: #333333;
+				--accent: #a78bfa;
+				--accent-bg: #2a1f3d;
+				--user-bg: #1e293b;
+				--user-fg: #c7d2fe;
+				--code-bg: #2a2a2a;
+				--ok: #4ade80;
+				--warn: #fbbf24;
+				--err: #f87171;
+			}
+		}
+
+		* { box-sizing: border-box; }
+		html, body { margin: 0; }
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+			line-height: 1.6;
+			color: var(--fg);
+			background: var(--bg);
+			padding: 2rem 1.5rem 4rem;
+		}
+
+		main { max-width: var(--max-width); margin-inline: auto; }
+
+		h1 { font-size: 1.9rem; margin: 0 0 .5rem; line-height: 1.2; }
+		h2 { font-size: 1.25rem; margin: 2rem 0 .75rem; line-height: 1.3; }
+		h3 { font-size: 1.05rem; margin: 1.5rem 0 .5rem; color: var(--muted); font-weight: 600; }
+		p { margin: 0 0 1rem; }
+
+		.lede {
+			color: var(--muted);
+			font-size: 1.05rem;
+			margin: 0 0 2rem;
+		}
+
+		code, kbd {
+			font-family: ui-monospace, "SF Mono", Menlo, monospace;
+			font-size: .9em;
+			background: var(--code-bg);
+			padding: .1em .35em;
+			border-radius: 4px;
+		}
+
+		pre {
+			background: var(--code-bg);
+			padding: .75rem;
+			border-radius: 6px;
+			overflow-x: auto;
+			margin: .5rem 0;
+		}
+		pre code {
+			background: transparent;
+			padding: 0;
+			font-size: .85em;
+		}
+
+		hr {
+			border: none;
+			border-top: 1px solid var(--border);
+			margin: 2.5rem 0;
+		}
+
+		ul { padding-inline-start: 1.25rem; }
+		li { margin-bottom: .35rem; }
+
+		article > h2:first-child { margin-top: 0; }
+
+		/* Demo controls panel */
+		.demo-controls {
+			display: grid;
+			gap: .75rem;
+			padding: 1rem;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			margin: 1.5rem 0;
+		}
+		.demo-controls .row {
+			display: flex;
+			gap: .75rem;
+			align-items: end;
+			flex-wrap: wrap;
+		}
+		.demo-controls label {
+			display: flex;
+			flex-direction: column;
+			gap: .25rem;
+			font-size: .8rem;
+			color: var(--muted);
+			text-transform: uppercase;
+			letter-spacing: .03em;
+			flex: 1;
+			min-width: 12rem;
+		}
+		.demo-controls select,
+		.demo-controls input[type="text"],
+		.demo-controls textarea {
+			font: inherit;
+			font-size: .95rem;
+			padding: .5rem;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			background: var(--bg);
+			color: var(--fg);
+			text-transform: none;
+			letter-spacing: 0;
+		}
+		.demo-controls textarea {
+			resize: vertical;
+			min-height: 4.5rem;
+			font-family: ui-monospace, "SF Mono", Menlo, monospace;
+			font-size: .85rem;
+		}
+		.demo-controls button {
+			font: inherit;
+			padding: .5rem 1rem;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			background: var(--bg);
+			color: var(--fg);
+			cursor: pointer;
+			align-self: end;
+		}
+		.demo-controls button:hover { background: var(--surface); }
+
+		/* ==========================================
+		   <ai-chat> page-aware variant
+		   Same shell as demo.html, plus a context
+		   ribbon and starter-prompt chips.
+		   ========================================== */
+
+		ai-chat {
+			display: block;
+			margin: 1.5rem 0;
+		}
+
+		.ai-chat-shell {
+			display: grid;
+			grid-template-rows: auto auto auto 1fr auto auto;
+			height: 620px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			overflow: hidden;
+		}
+
+		.ai-chat-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: .65rem 1rem;
+			background: var(--bg);
+			border-bottom: 1px solid var(--border);
+			font-size: .85rem;
+		}
+
+		.ai-chat-state {
+			display: inline-flex;
+			align-items: center;
+			gap: .4rem;
+			color: var(--muted);
+			font-variant-numeric: tabular-nums;
+		}
+		.ai-chat-state::before {
+			content: "";
+			display: inline-block;
+			width: .55rem; height: .55rem;
+			border-radius: 50%;
+			background: var(--muted);
+		}
+
+		ai-chat[data-state="checking"]    .ai-chat-state::before { background: var(--muted); animation: pulse 1.4s infinite; }
+		ai-chat[data-state="downloadable"] .ai-chat-state::before { background: var(--warn); }
+		ai-chat[data-state="downloading"] .ai-chat-state::before { background: var(--warn); animation: pulse 1.4s infinite; }
+		ai-chat[data-state="available"]   .ai-chat-state::before,
+		ai-chat[data-state="ready"]       .ai-chat-state::before { background: var(--ok); }
+		ai-chat[data-state="streaming"]   .ai-chat-state::before { background: var(--accent); animation: pulse 1.4s infinite; }
+		ai-chat[data-state="thinking"]    .ai-chat-state::before { background: var(--accent); animation: pulse 1.4s infinite; }
+		ai-chat[data-state="unavailable"] .ai-chat-state::before,
+		ai-chat[data-state="error"]       .ai-chat-state::before { background: var(--err); }
+
+		@keyframes pulse {
+			0%, 100% { opacity: 1; }
+			50% { opacity: .35; }
+		}
+
+		.ai-chat-context { color: var(--muted); font-variant-numeric: tabular-nums; }
+		.ai-chat-context[hidden] { display: none; }
+
+		/* Page-context ribbon */
+		.ai-chat-ribbon {
+			display: flex;
+			align-items: center;
+			gap: .5rem;
+			padding: .5rem 1rem;
+			background: var(--accent-bg);
+			border-bottom: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+			font-size: .8rem;
+			color: var(--fg);
+		}
+		.ai-chat-ribbon[hidden] { display: none; }
+		.ai-chat-ribbon::before {
+			content: "📄";
+			font-size: 1rem;
+		}
+		.ai-chat-ribbon code {
+			background: color-mix(in srgb, var(--accent) 12%, transparent);
+			color: inherit;
+		}
+		.ai-chat-ribbon .warn { color: var(--warn); font-weight: 500; margin-left: auto; }
+
+		/* Starter prompt chips (shown only when log is empty) */
+		.ai-chat-starters {
+			display: flex;
+			flex-wrap: wrap;
+			gap: .4rem;
+			padding: .65rem 1rem;
+			border-bottom: 1px solid var(--border);
+			background: var(--bg);
+		}
+		.ai-chat-starters[hidden] { display: none; }
+		.ai-chat-starter {
+			font: inherit;
+			font-size: .8rem;
+			padding: .3rem .65rem;
+			border: 1px solid var(--border);
+			border-radius: 999px;
+			background: var(--surface);
+			color: var(--fg);
+			cursor: pointer;
+			transition: background 120ms, border-color 120ms;
+		}
+		.ai-chat-starter:hover {
+			background: var(--accent-bg);
+			border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+		}
+		ai-chat[data-state="unavailable"] .ai-chat-starter { opacity: .5; pointer-events: none; }
+
+		/* hide starters once a message exists */
+		ai-chat:has(.ai-chat-msg) .ai-chat-starters { display: none; }
+
+		.ai-chat-log {
+			overflow-y: auto;
+			padding: 1rem;
+			display: flex;
+			flex-direction: column;
+			gap: .85rem;
+			scroll-behavior: smooth;
+		}
+
+		.ai-chat-empty {
+			color: var(--muted);
+			font-size: .9rem;
+			text-align: center;
+			margin: auto;
+			max-width: 38ch;
+		}
+		.ai-chat-log:has(.ai-chat-msg) .ai-chat-empty { display: none; }
+
+		.ai-chat-msg {
+			display: flex;
+			flex-direction: column;
+			max-width: 88%;
+		}
+		.ai-chat-msg[data-role="user"]      { align-self: flex-end; }
+		.ai-chat-msg[data-role="assistant"] { align-self: flex-start; }
+		.ai-chat-msg[data-role="error"]     { align-self: stretch; max-width: 100%; }
+
+		.ai-chat-msg-role {
+			font-size: .7rem;
+			text-transform: uppercase;
+			letter-spacing: .05em;
+			color: var(--muted);
+			margin-bottom: .2rem;
+			padding-inline: .25rem;
+		}
+
+		.ai-chat-msg-body {
+			padding: .65rem .9rem;
+			border-radius: 14px;
+			background: var(--bg);
+			border: 1px solid var(--border);
+			white-space: pre-wrap;
+			word-wrap: break-word;
+			font-size: .95rem;
+			line-height: 1.5;
+		}
+		.ai-chat-msg[data-role="user"] .ai-chat-msg-body {
+			background: var(--user-bg);
+			color: var(--user-fg);
+			border-color: transparent;
+		}
+		.ai-chat-msg[data-role="assistant"] .ai-chat-msg-body {
+			background: var(--bg);
+		}
+		.ai-chat-msg[data-role="error"] .ai-chat-msg-body {
+			background: color-mix(in srgb, var(--err) 12%, transparent);
+			border-color: color-mix(in srgb, var(--err) 30%, transparent);
+			color: var(--err);
+			font-size: .9rem;
+		}
+
+		.ai-chat-msg[data-streaming] .ai-chat-msg-body::after {
+			content: "▍";
+			display: inline-block;
+			animation: blink 1s steps(2, start) infinite;
+			color: var(--accent);
+			margin-left: 1px;
+		}
+		@keyframes blink { to { visibility: hidden; } }
+
+		.ai-chat-msg-body p:first-child  { margin-top: 0; }
+		.ai-chat-msg-body p:last-child   { margin-bottom: 0; }
+
+		.ai-chat-form {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: .5rem;
+			padding: .75rem 1rem;
+			border-top: 1px solid var(--border);
+			background: var(--bg);
+		}
+
+		.ai-chat-input {
+			font: inherit;
+			font-size: .95rem;
+			padding: .55rem .75rem;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			resize: none;
+			background: var(--surface);
+			color: var(--fg);
+			min-height: 2.5rem;
+			max-height: 8rem;
+			line-height: 1.45;
+			field-sizing: content;
+		}
+		.ai-chat-input:focus {
+			outline: 2px solid var(--accent);
+			outline-offset: 1px;
+		}
+
+		.ai-chat-actions {
+			display: flex;
+			gap: .35rem;
+			align-items: end;
+		}
+
+		.ai-chat-btn {
+			font: inherit;
+			font-weight: 500;
+			padding: .55rem .9rem;
+			border: 1px solid var(--accent);
+			background: var(--accent);
+			color: var(--accent-fg);
+			border-radius: 8px;
+			cursor: pointer;
+			transition: background 120ms;
+			min-height: 2.5rem;
+		}
+		.ai-chat-btn:hover:not(:disabled) {
+			background: color-mix(in srgb, var(--accent) 85%, black);
+		}
+		.ai-chat-btn:disabled {
+			opacity: .45;
+			cursor: not-allowed;
+		}
+		.ai-chat-btn[data-variant="ghost"] {
+			background: transparent;
+			color: var(--muted);
+			border-color: var(--border);
+		}
+		.ai-chat-btn[data-variant="ghost"]:hover:not(:disabled) {
+			background: var(--surface);
+			color: var(--fg);
+		}
+
+		ai-chat:not([data-state="streaming"]) .ai-chat-btn[data-action="stop"]   { display: none; }
+		ai-chat[data-state="streaming"]       .ai-chat-btn[data-action="send"]   { display: none; }
+		ai-chat[data-state="unavailable"]     .ai-chat-input,
+		ai-chat[data-state="unavailable"]     .ai-chat-btn[data-action="send"],
+		ai-chat[data-state="unavailable"]     .ai-chat-btn[data-action="reset"]  { opacity: .45; pointer-events: none; }
+
+		.ai-chat-notice {
+			margin: 0;
+			padding: .85rem 1rem;
+			background: color-mix(in srgb, var(--err) 10%, transparent);
+			border-bottom: 1px solid color-mix(in srgb, var(--err) 25%, transparent);
+			color: var(--err);
+			font-size: .9rem;
+		}
+		.ai-chat-notice a { color: inherit; }
+		.ai-chat-notice[hidden] { display: none; }
+
+		.ai-chat-msg-body code {
+			background: color-mix(in srgb, var(--accent) 10%, transparent);
+		}
+		.ai-chat-msg-body pre {
+			margin: .4rem 0;
+			background: var(--code-bg);
+			white-space: pre;
+		}
+	</style>
+</head>
+<body>
+<main>
+
+	<h1>&lt;ai-chat&gt; — page-aware</h1>
+	<p class="lede">Same on-device chat component as <a href="./demo.html">demo.html</a>, but with a <code>context</code> attribute pointing at a page region. Its text is folded into the session's system prompt at session creation, so the model can answer questions about the surrounding article without any retrieval plumbing. Inspired by the text-extraction trick in <a href="../ai-summary/demo.html"><code>&lt;ai-summary&gt;</code></a>.</p>
+
+	<h2>Usage</h2>
+	<pre><code>&lt;ai-chat
+  context="#page-content"
+  context-label="the article above"
+  system="Answer questions using only the page content provided."
+  placeholder="Ask about this page…"&gt;
+&lt;/ai-chat&gt;</code></pre>
+
+	<p>The <code>context</code> attribute is a CSS selector. On session creation, the component clones the matching element, strips its own UI, normalizes whitespace, and prepends the result to the system prompt under a clear delimiter. If the selected text is large, a warning appears on the context ribbon — Gemini Nano's window is small (~4–6k tokens), so very long pages should be summarized first or chunked.</p>
+
+	<h2>The article</h2>
+	<p>This is the source content the chat below will be answering questions about. (Same piece used in <code>&lt;ai-summary&gt;</code>'s demo.)</p>
+
+	<article id="page-content">
+		<h2>Why Standardized Time Took So Long to Invent</h2>
+
+		<p>Before 1883, time in the United States was a local affair. Every city of any size kept its own time, calibrated to when the sun was directly overhead at noon. Pittsburgh ran six minutes behind Philadelphia. Chicago ran twenty-eight minutes ahead of Omaha. There were over three hundred distinct local times in North America alone, and almost nobody thought this was strange. Time was where you stood.</p>
+
+		<h3>The railway problem</h3>
+
+		<p>What broke the system wasn't astronomy or science. It was railroads.</p>
+
+		<p>A train leaving Boston at 9:00 a.m. local time would arrive in Albany running on Albany time, which differed by several minutes. A traveler buying a connecting ticket in Albany faced a printed schedule based on whose time? The originating city? The destination? The railroad's headquarters?</p>
+
+		<p>Different railroads handled this differently. By the 1870s, some major railway terminals displayed multiple clocks — one for each line operating from the station. Passengers carried small printed conversion tables. Conductors compared pocket watches with each other and with the schedule. The system worked, in the sense that trains generally arrived, but it was a tax on every transaction.</p>
+
+		<p>Worse, when trains collided — and they did — investigators frequently discovered the trains had been operating on different times entirely, separated by an unmarked transition somewhere along the track.</p>
+
+		<h3>A meeting of railroads</h3>
+
+		<p>In 1883, the General Time Convention — an industry body of competing railroads — simply imposed a solution on the country. They divided North America into four time zones, drew the lines themselves, and announced that on November 18th every railroad clock would jump to the new system.</p>
+
+		<p>The federal government had nothing to do with this. Congress would not formalize standard time for another thirty-five years, in 1918. The change was implemented entirely by private commercial agreement.</p>
+
+		<p>Cities resisted. Boston refused for several years to align city hall with railway time. Detroit kept local solar time until 1900. Religious leaders in some communities argued that "noon" was an act of God determined by the sun, not by industrialists in Chicago. A Cincinnati newspaper editorialized that the sun was no longer to boss the job.</p>
+
+		<p>But the railroads kept publishing their schedules in railway time, and gradually everyone else surrendered.</p>
+
+		<h3>The international version</h3>
+
+		<p>Around the same time, the British were trying to solve the same problem at a global scale. In 1884, the International Meridian Conference in Washington designated Greenwich as the prime meridian and divided the world into twenty-four hourly time zones. France abstained for twenty-seven years; they preferred the meridian to run through Paris.</p>
+
+		<p>What's striking is how recent all this is. People who lived through the Civil War saw America before standard time. People who saw the Wright Brothers fly remembered when their town kept its own clock.</p>
+
+		<h3>Why the delay?</h3>
+
+		<p>The interesting question isn't why standard time was invented. It's why it took so long.</p>
+
+		<p>The math had been understood since at least the seventeenth century. The technology — reliable mechanical clocks, telegraph synchronization — was widely available decades before 1883. What was missing was sufficient pain. Local time worked fine for local life. It only became intolerable when steam-powered transit collapsed distances faster than coordination could keep up.</p>
+
+		<p>The pattern repeats. Standard rail gauges emerged the same way. Standardized screw threads. Shipping containers. Each time the underlying need had existed for generations, but the cost of fragmentation only became unbearable when something else — usually a technology of speed or scale — made the fragmentation expensive in a new way.</p>
+
+		<p>We are probably living through several such moments right now and don't recognize them. Some current piece of infrastructure that everyone considers natural and permanent will, fifty years from now, look as quaint as a Pittsburgh businessman setting his watch by the cathedral bell.</p>
+	</article>
+
+	<h2>Chat with the article</h2>
+	<p>The chips below the ribbon are starter prompts. Picking one sends it immediately. Changing the <em>context selector</em> below resets the session so the new context takes effect.</p>
+
+	<div class="demo-controls">
+		<div class="row">
+			<label>Context selector
+				<input id="ctl-context" type="text" value="#page-content">
+			</label>
+			<label>Context label
+				<input id="ctl-context-label" type="text" value="the article above">
+			</label>
+		</div>
+		<label>System prompt (page text is appended automatically)
+			<textarea id="ctl-system">You are a careful reading assistant. Answer questions using only the page content provided in the [PAGE CONTENT] block below. If the answer is not in the content, say so plainly. Be concise. Use markdown formatting (bold, lists, code) when helpful.</textarea>
+		</label>
+		<div class="row" style="justify-content: flex-end;">
+			<button id="ctl-apply" type="button">Apply &amp; reset session</button>
+		</div>
+	</div>
+
+	<ai-chat
+			id="chat"
+			context="#page-content"
+			context-label="the article above"
+			system="You are a careful reading assistant. Answer questions using only the page content provided in the [PAGE CONTENT] block below. If the answer is not in the content, say so plainly. Be concise. Use markdown formatting (bold, lists, code) when helpful."
+			placeholder="Ask about this page…">
+		<template data-role="starters">
+			Summarize the article in 3 bullet points.
+			What problem did railroads create?
+			Why did standard time take so long to arrive?
+			Who actually imposed time zones in 1883?
+			What pattern does the author say repeats elsewhere?
+		</template>
+	</ai-chat>
+
+	<hr>
+
+	<h2>What changed vs. <code>demo.html</code></h2>
+	<ul>
+		<li><strong>New attribute <code>context</code>.</strong> A CSS selector. On <code>connectedCallback</code>, the component resolves it relative to <code>document</code> (so it can point at a sibling or ancestor element), then re-resolves it on every <code>reset()</code> in case the page mutated.</li>
+		<li><strong>Text extraction.</strong> Same trick as <code>&lt;ai-summary&gt;</code>: clone the target, drop any nested <code>ai-chat</code> shell, take <code>textContent</code>, collapse whitespace.</li>
+		<li><strong>System-prompt fold.</strong> The extracted text is appended to the configured system prompt under a fenced <code>[PAGE CONTENT]</code> delimiter. The model sees a single coherent system message; the user-visible system prompt stays editable in the demo controls.</li>
+		<li><strong>Context ribbon.</strong> Shows the selector, character count, and a soft warning when the body is large enough that conversation room is at risk. Driven by a single <code>data-context-state</code> attribute.</li>
+		<li><strong>Starter chips.</strong> Five canned questions, declared via a child <code>&lt;template data-role="starters"&gt;</code> (one per line). They auto-hide once a message exists, courtesy of <code>:has()</code>.</li>
+	</ul>
+
+	<h2>Design notes</h2>
+	<ul>
+		<li><strong>Single round of context.</strong> Page content is included once, in the system prompt. No per-turn injection. That's enough for "summarize / Q&amp;A about a page" — anything more (RAG, multi-doc) belongs in a different component.</li>
+		<li><strong>Lazy.</strong> Text extraction runs when the session is created, not on connect. Pages that mutate before the first send are read at the right moment.</li>
+		<li><strong>Token budget honesty.</strong> Roughly 1 token ≈ 4 chars. The ribbon warns above ~6000 chars (≈1500 tokens) because Nano's window is small and the user still needs room for chat turns.</li>
+		<li><strong>Same data-attribute discipline.</strong> All new state surfaces as <code>data-context-state</code> on the host. CSS handles the visual differences; no <code>.classList</code> juggling.</li>
+	</ul>
+
+</main>
+
+<script>
+	/* =========================================================================
+	   <ai-chat> page-aware variant
+	   Forked from r-n-d/ai-chat/demo.html. Diff is small:
+	     - reads `context` selector, extracts page text on session create
+	     - folds text into the system prompt
+	     - shows a context ribbon + starter chips
+	   ========================================================================= */
+	class AIChat extends HTMLElement {
+		#log;
+		#form;
+		#input;
+		#stateLabel;
+		#contextLabel;
+		#notice;
+		#ribbon;
+		#starters;
+		#session = null;
+		#abortCtl = null;
+		#initialized = false;
+
+		// soft cap before we warn the user. Nano's window is ~4–6k tokens;
+		// 6000 chars ≈ 1500 tokens leaves real room for the conversation.
+		static CONTEXT_WARN_CHARS = 6000;
+
+		static get observedAttributes() { return ['placeholder']; }
+
+		connectedCallback() {
+			if (this.#initialized) return;
+			this.#initialized = true;
+			this.#renderShell();
+			this.#wireEvents();
+			this.#refreshContextRibbon();
+			this.#checkAvailability();
+		}
+
+		disconnectedCallback() {
+			this.#abortCtl?.abort();
+			this.#session?.destroy?.();
+			this.#session = null;
+		}
+
+		attributeChangedCallback(name, _old, value) {
+			if (name === 'placeholder' && this.#input) {
+				this.#input.placeholder = value ?? '';
+			}
+		}
+
+		/* ---------- public API ---------- */
+
+		async reset() {
+			this.#abortCtl?.abort();
+			this.#session?.destroy?.();
+			this.#session = null;
+			this.#log.querySelectorAll('.ai-chat-msg').forEach(el => el.remove());
+			this.#refreshContextRibbon();
+			this.#setState('ready');
+			this.#updateContext();
+		}
+
+		/* ---------- rendering ---------- */
+
+		#renderShell() {
+			const placeholder = this.getAttribute('placeholder') || 'Type a message…';
+			const shell = document.createElement('div');
+			shell.className = 'ai-chat-shell';
+			shell.innerHTML = `
+        <header class="ai-chat-header">
+          <span class="ai-chat-state" role="status">Checking…</span>
+          <span class="ai-chat-context" hidden></span>
+        </header>
+        <p class="ai-chat-ribbon" hidden></p>
+        <p class="ai-chat-notice" hidden></p>
+        <div class="ai-chat-log" role="log" aria-live="polite" aria-relevant="additions">
+          <p class="ai-chat-empty">Pick a starter or ask anything about the page above.<br><small>The model loads on first send (Gemini Nano, on-device).</small></p>
+        </div>
+        <div class="ai-chat-starters" role="group" aria-label="Starter prompts"></div>
+        <form class="ai-chat-form">
+          <textarea
+            class="ai-chat-input"
+            name="prompt"
+            placeholder="${placeholder}"
+            rows="1"
+            required></textarea>
+          <div class="ai-chat-actions">
+            <button class="ai-chat-btn" data-action="reset" data-variant="ghost" type="button" title="New session">↻</button>
+            <button class="ai-chat-btn" data-action="stop" type="button">Stop</button>
+            <button class="ai-chat-btn" data-action="send" type="submit">Send</button>
+          </div>
+        </form>
+      `;
+			this.appendChild(shell);
+
+			this.#log          = shell.querySelector('.ai-chat-log');
+			this.#form         = shell.querySelector('.ai-chat-form');
+			this.#input        = shell.querySelector('.ai-chat-input');
+			this.#stateLabel   = shell.querySelector('.ai-chat-state');
+			this.#contextLabel = shell.querySelector('.ai-chat-context');
+			this.#notice       = shell.querySelector('.ai-chat-notice');
+			this.#ribbon       = shell.querySelector('.ai-chat-ribbon');
+			this.#starters     = shell.querySelector('.ai-chat-starters');
+
+			this.#renderStarters();
+		}
+
+		#renderStarters() {
+			const tpl = this.querySelector('template[data-role="starters"]');
+			const lines = (tpl?.content?.textContent || '')
+				.split('\n')
+				.map(s => s.trim())
+				.filter(Boolean);
+
+			this.#starters.replaceChildren();
+			if (!lines.length) {
+				this.#starters.hidden = true;
+				return;
+			}
+			this.#starters.hidden = false;
+			for (const line of lines) {
+				const btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'ai-chat-starter';
+				btn.textContent = line;
+				btn.addEventListener('click', () => {
+					this.#input.value = line;
+					this.#send();
+				});
+				this.#starters.appendChild(btn);
+			}
+		}
+
+		#wireEvents() {
+			this.#form.addEventListener('submit', (e) => {
+				e.preventDefault();
+				this.#send();
+			});
+
+			this.#input.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter' && !e.shiftKey) {
+					e.preventDefault();
+					this.#send();
+				}
+				if (e.key === 'Escape' && this.dataset.state === 'streaming') {
+					this.#abortCtl?.abort();
+				}
+			});
+
+			this.#form.querySelector('[data-action="stop"]').addEventListener('click', () => {
+				this.#abortCtl?.abort();
+			});
+			this.#form.querySelector('[data-action="reset"]').addEventListener('click', () => {
+				this.reset();
+			});
+		}
+
+		/* ---------- page-context plumbing ---------- */
+
+		#contextSelector() {
+			return this.getAttribute('context')?.trim() || '';
+		}
+
+		#contextElement() {
+			const sel = this.#contextSelector();
+			if (!sel) return null;
+			try {
+				const el = document.querySelector(sel);
+				// guard: don't read ourselves
+				return el && !el.contains(this) ? el : null;
+			} catch {
+				return null;
+			}
+		}
+
+		#extractContextText() {
+			const el = this.#contextElement();
+			if (!el) return '';
+			const clone = el.cloneNode(true);
+			// strip any embedded chat shells (our own UI, if context wraps us)
+			clone.querySelectorAll('ai-chat, .ai-chat-shell').forEach(n => n.remove());
+			return clone.textContent.trim().replace(/\s+/g, ' ');
+		}
+
+		#refreshContextRibbon() {
+			if (!this.#ribbon) return;
+			const sel = this.#contextSelector();
+			if (!sel) {
+				this.#ribbon.hidden = true;
+				this.dataset.contextState = 'none';
+				return;
+			}
+
+			const text = this.#extractContextText();
+			if (!text) {
+				this.#ribbon.hidden = false;
+				this.#ribbon.innerHTML = `Context selector <code>${this.#escape(sel)}</code> matched no readable content.`;
+				this.dataset.contextState = 'missing';
+				return;
+			}
+
+			const chars = text.length;
+			const tokens = Math.ceil(chars / 4);
+			const warn = chars > AIChat.CONTEXT_WARN_CHARS;
+			const label = this.getAttribute('context-label') || sel;
+			this.#ribbon.hidden = false;
+			this.#ribbon.innerHTML = `
+        Page context: <code>${this.#escape(label)}</code> &middot; ${chars.toLocaleString()} chars (~${tokens.toLocaleString()} tokens)
+        ${warn ? `<span class="warn">large — may crowd the conversation</span>` : ''}
+      `;
+			this.dataset.contextState = warn ? 'large' : 'ok';
+		}
+
+		#composeSystemPrompt() {
+			const base = (
+				this.getAttribute('system')?.trim() ||
+				this.querySelector('template[data-role="system"]')?.content?.textContent?.trim() ||
+				''
+			);
+			const ctx = this.#extractContextText();
+			if (!ctx) return base || undefined;
+
+			const label = this.getAttribute('context-label') || 'page';
+			const block = `\n\n[PAGE CONTENT — ${label}]\n${ctx}\n[END PAGE CONTENT]`;
+			return (base ? base + block : `Use the following page content to answer the user.${block}`);
+		}
+
+		/* ---------- session lifecycle ---------- */
+
+		async #checkAvailability() {
+			this.#setState('checking');
+
+			if (!('LanguageModel' in self)) {
+				this.#setState('unavailable');
+				this.#showNotice(`Prompt API not in this browser. Requires <a href="https://developer.chrome.com/docs/ai/prompt-api">Chrome 148+</a> on a supported desktop OS with ≥22 GB free disk.`);
+				return;
+			}
+
+			try {
+				const availability = await LanguageModel.availability();
+				if (availability === 'unavailable') {
+					this.#setState('unavailable');
+					this.#showNotice(`Model unavailable on this device. Check <code>chrome://on-device-internals</code> for diagnostics.`);
+					return;
+				}
+				this.#setState(availability === 'available' ? 'ready' : availability);
+			} catch (err) {
+				this.#setState('error');
+				this.#showNotice(`Availability check failed: ${err.message}`);
+			}
+		}
+
+		async #ensureSession() {
+			if (this.#session) return this.#session;
+
+			const systemPrompt = this.#composeSystemPrompt();
+			const initialPrompts = systemPrompt
+				? [{ role: 'system', content: systemPrompt }]
+				: undefined;
+
+			this.#setState('thinking');
+
+			this.#session = await LanguageModel.create({
+				initialPrompts,
+				monitor: (m) => {
+					m.addEventListener('downloadprogress', (e) => {
+						this.#setState('downloading');
+						this.#stateLabel.textContent =
+							`Downloading model: ${Math.round(e.loaded * 100)}%`;
+					});
+				},
+			});
+
+			this.#session.addEventListener?.('contextoverflow', () => {
+				this.dispatchEvent(new CustomEvent('ai-context-overflow', { bubbles: true }));
+			});
+
+			this.#updateContext();
+			return this.#session;
+		}
+
+		/* ---------- message flow ---------- */
+
+		async #send() {
+			if (this.dataset.state === 'streaming') return;
+			if (this.dataset.state === 'unavailable') return;
+
+			const text = this.#input.value.trim();
+			if (!text) return;
+
+			this.#input.value = '';
+			this.#renderMessage('user', text);
+			this.#emit('ai-message', { role: 'user', text });
+
+			let session;
+			try {
+				session = await this.#ensureSession();
+			} catch (err) {
+				this.#renderMessage('error', `Failed to create session: ${err.message}`);
+				this.#setState('error');
+				this.#emit('ai-error', { error: err });
+				return;
+			}
+
+			const assistantMsg = this.#renderMessage('assistant', '');
+			assistantMsg.dataset.streaming = '';
+			const body = assistantMsg.querySelector('.ai-chat-msg-body');
+
+			this.#setState('streaming');
+			this.#abortCtl = new AbortController();
+
+			let acc = '';
+			try {
+				const stream = session.promptStreaming(text, { signal: this.#abortCtl.signal });
+				for await (const chunk of stream) {
+					acc += chunk;
+					body.innerHTML = this.#format(acc);
+					this.#scrollToBottom();
+				}
+				delete assistantMsg.dataset.streaming;
+				this.#emit('ai-message', { role: 'assistant', text: acc });
+				this.#setState('ready');
+				this.#updateContext();
+			} catch (err) {
+				delete assistantMsg.dataset.streaming;
+				if (err.name === 'AbortError') {
+					if (acc) body.innerHTML = this.#format(acc) + ' <small style="opacity:.6">(stopped)</small>';
+					else assistantMsg.remove();
+					this.#setState('ready');
+					return;
+				}
+				body.innerHTML = `<em style="color:var(--err)">${this.#escape(err.message)}</em>`;
+				this.#setState('error');
+				this.#emit('ai-error', { error: err });
+			} finally {
+				this.#abortCtl = null;
+			}
+		}
+
+		#renderMessage(role, text) {
+			const msg = document.createElement('div');
+			msg.className = 'ai-chat-msg';
+			msg.dataset.role = role;
+			msg.innerHTML = `
+        <div class="ai-chat-msg-role">${role}</div>
+        <div class="ai-chat-msg-body">${this.#format(text)}</div>
+      `;
+			this.#log.appendChild(msg);
+			this.#scrollToBottom();
+			return msg;
+		}
+
+		/* ---------- helpers ---------- */
+
+		#setState(state) {
+			this.dataset.state = state;
+			const labels = {
+				'checking':     'Checking availability…',
+				'unavailable':  'Unavailable',
+				'downloadable': 'Ready (model not yet downloaded)',
+				'downloading':  'Downloading model…',
+				'available':    'Ready',
+				'ready':        'Ready',
+				'thinking':     'Preparing session…',
+				'streaming':    'Generating…',
+				'error':        'Error',
+			};
+			if (this.#stateLabel) this.#stateLabel.textContent = labels[state] ?? state;
+			this.#emit('ai-state', { state });
+		}
+
+		#updateContext() {
+			if (!this.#session || !('contextUsage' in this.#session)) {
+				this.#contextLabel.hidden = true;
+				return;
+			}
+			const used = this.#session.contextUsage;
+			const max = this.#session.contextWindow;
+			const pct = Math.round((used / max) * 100);
+			this.#contextLabel.hidden = false;
+			this.#contextLabel.textContent = `${used} / ${max} tokens (${pct}%)`;
+			this.dataset.contextUsage = String(pct);
+		}
+
+		#showNotice(html) {
+			this.#notice.hidden = false;
+			this.#notice.innerHTML = html;
+		}
+
+		#scrollToBottom() {
+			this.#log.scrollTop = this.#log.scrollHeight;
+		}
+
+		#emit(name, detail) {
+			this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true }));
+		}
+
+		/* ---------- minimal markdown ---------- */
+
+		#escape(s) {
+			return String(s).replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;');
+		}
+
+		#format(text) {
+			if (!text) return '';
+			let html = this.#escape(text);
+			html = html.replace(/```(\w*)\n?([\s\S]*?)```/g,
+				(_, _lang, code) => `<pre><code>${code.replace(/\n$/, '')}</code></pre>`);
+			html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+			html = html.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+			return html;
+		}
+	}
+
+	customElements.define('ai-chat', AIChat);
+
+	/* =========================================================================
+	   Demo wiring
+	   ========================================================================= */
+	const chat       = document.getElementById('chat');
+	const ctxInput   = document.getElementById('ctl-context');
+	const ctxLabel   = document.getElementById('ctl-context-label');
+	const sysTa      = document.getElementById('ctl-system');
+	const apply      = document.getElementById('ctl-apply');
+
+	apply.addEventListener('click', () => {
+		chat.setAttribute('context', ctxInput.value.trim());
+		chat.setAttribute('context-label', ctxLabel.value.trim());
+		chat.setAttribute('system', sysTa.value.trim());
+		chat.reset();
+	});
+
+	for (const ev of ['ai-state', 'ai-message', 'ai-error', 'ai-context-overflow']) {
+		chat.addEventListener(ev, (e) => console.log(`[${ev}]`, e.detail ?? ''));
+	}
+</script>
+</body>
+</html>

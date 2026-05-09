@@ -227,6 +227,38 @@ module.exports = {
     }
   },
 
+  "ai-chat": {
+    flow: true,
+    permittedContent: ["template", "@flow"],
+    attributes: {
+      "context": {},
+      "context-label": {},
+      "system": {},
+      "placeholder": {},
+      "endpoint": {},
+      "fallback-url": {},
+      "fallback-label": {},
+      "fallback-prompt": {},
+      "data-state": { enum: ["checking", "ready", "downloading", "thinking", "streaming", "error", "unavailable", "deep-link"] }
+    }
+  },
+
+  "ai-summary": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "type": { enum: ["key-points", "tldr", "teaser", "headline"] },
+      "length": { enum: ["short", "medium", "long"] },
+      "format": { enum: ["markdown", "plain-text"] },
+      "shared-context": {},
+      "endpoint": {},
+      "fallback-url": {},
+      "fallback-label": {},
+      "fallback-prompt": {},
+      "data-state": { enum: ["checking", "ready", "downloading", "streaming", "complete", "error", "unavailable", "deep-link"] }
+    }
+  },
+
   "analytics-panel": {
     flow: true,
     permittedContent: ["@flow"],

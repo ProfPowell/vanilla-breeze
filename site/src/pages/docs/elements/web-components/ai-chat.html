@@ -1,0 +1,92 @@
+---
+layout: element
+title: "ai-chat"
+description: "On-device chat via Chrome's LanguageModel API. Optionally page-aware via a context selector. Provider-neutral inline endpoint and external deep-link fallbacks."
+elementName: ai-chat
+category: component
+currentPath: /docs/elements/web-components/ai-chat/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+  <section>
+    <h2>Overview</h2>
+    <p>An on-device chat component. Without a <code>context</code> attribute, behaves as a general assistant. With <code>context="<selector>"</code>, the targeted region's text is folded into the system prompt so the model can answer questions about the surrounding article — no retrieval plumbing required.</p>
+    <p>Provider resolution per session: <strong>local Chrome LanguageModel → inline endpoint → external deep-link → unavailable</strong>. See <a href="/admin/specs/ai-page-tools-v1/">AI page-tools v1</a> for the full contract.</p>
+
+    <browser-window
+      src="/docs/examples/demos/ai-chat-basic.html"
+      url="https://vanilla-breeze.dev/ai-chat"
+      title="ai-chat &mdash; General"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>Page-aware mode</h2>
+    <p>Add <code>context="#some-selector"</code> and the component reads that region's text on session creation, prepending it to the system prompt under a clear <code>[PAGE CONTENT]</code> delimiter. A ribbon shows character / token counts and warns if the selection exceeds Gemini Nano's window.</p>
+
+    <code-block language="html" show-lines label="Page-aware chat" data-escape><ai-chat
+    context="#article"
+    context-label="this article"
+    placeholder="Ask about this page…">
+  <template data-role="system">
+    Answer using only the page content provided.
+    If the answer isn't there, say so plainly.
+  </template>
+  <template data-role="starters">
+    Summarize the article in 3 bullets.
+    What problem does the author identify?
+  </template>
+</ai-chat></code-block>
+
+    <browser-window
+      src="/docs/examples/demos/ai-chat-page-aware.html"
+      url="https://vanilla-breeze.dev/ai-chat-page-aware"
+      title="ai-chat &mdash; Page-aware"
+      shadow>
+    </browser-window>
+  </section>
+
+  <section>
+    <h2>System prompt and starters</h2>
+    <p>Long system prompts go in <code>&lt;template data-role="system"&gt;</code>. The <code>system</code> attribute wins if both are set.</p>
+    <p>Starter chips come from <code>&lt;template data-role="starters"&gt;</code>, one prompt per line. They render as a chip row under the ribbon and disappear once the conversation has any messages (CSS <code>:has()</code> handles the toggle).</p>
+  </section>
+
+  <section>
+    <h2>Inline endpoint fallback</h2>
+    <p>Configure <code>endpoint="…"</code> to route through a server you control when on-device AI isn't available. The component sends <code>{ prompt, content, mode: "chat" }</code> as JSON; the server streams <code>text/plain</code> chunks back (or returns one-shot <code>application/json</code>). The chat UI is identical regardless of provider.</p>
+
+    <code-block language="html" show-lines label="With inline endpoint" data-escape><ai-chat
+    context="#article"
+    endpoint="/api/ai/chat"
+    placeholder="Ask about this page…">
+</ai-chat></code-block>
+
+    <p>Wire format documented in <a href="/admin/specs/ai-page-tools-v1/">AI page-tools v1, §C</a>.</p>
+  </section>
+
+  <section>
+    <h2>External deep-link fallback</h2>
+    <p>Configure <code>fallback-url="…"</code> and the Send button opens the configured URL in a new tab when neither on-device AI nor an inline endpoint is configured. The current draft message is folded into the deep-link <code>{prompt}</code> so the external tool picks up where the user left off.</p>
+
+    <code-block language="html" show-lines label="Deep-link only" data-escape><ai-chat
+    fallback-url="https://claude.ai/new?q={prompt}"
+    fallback-label="Continue with Claude">
+</ai-chat></code-block>
+  </section>
+
+  <section>
+    <h2>State and events</h2>
+    <p>Lifecycle on <code>data-state</code>: <code>checking</code>, <code>ready</code>, <code>thinking</code>, <code>streaming</code>, <code>downloading</code>, <code>error</code>, <code>unavailable</code>, <code>deep-link</code>. Per-message role on each <code>.ai-chat-msg</code>: <code>data-role="user|assistant|error"</code>.</p>
+
+    <code-block language="js" show-lines label="Listen for events"><script type="module">
+const chat = document.querySelector('ai-chat');
+chat.addEventListener('ai-chat:state',            e => console.log(e.detail.state, e.detail.provider));
+chat.addEventListener('ai-chat:message',          e => console.log(e.detail.role, e.detail.text.length));
+chat.addEventListener('ai-chat:context-overflow', () => console.warn('context overflow'));
+chat.addEventListener('ai-chat:error',            e => console.error(e.detail.error));
+</script></code-block>
+  </section>

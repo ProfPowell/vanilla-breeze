@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>&lt;ai-summary&gt; — proof of concept</title>
+	<style>
+		:root {
+			color-scheme: light dark;
+			--bg: #ffffff;
+			--fg: #1a1a1a;
+			--muted: #6b6b6b;
+			--border: #e5e5e5;
+			--accent: #6b46c1;
+			--accent-fg: #ffffff;
+			--accent-bg: #f5f0ff;
+			--code-bg: #f6f6f6;
+			--ok: #15803d;
+			--warn: #b45309;
+			--err: #b91c1c;
+			--max-width: 68ch;
+		}
+
+		@media (prefers-color-scheme: dark) {
+			:root {
+				--bg: #1a1a1a;
+				--fg: #e8e8e8;
+				--muted: #a0a0a0;
+				--border: #333333;
+				--accent: #a78bfa;
+				--accent-bg: #2a1f3d;
+				--code-bg: #252525;
+				--ok: #4ade80;
+				--warn: #fbbf24;
+				--err: #f87171;
+			}
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+			line-height: 1.6;
+			color: var(--fg);
+			background: var(--bg);
+			margin: 0;
+			padding: 2rem 1.5rem 4rem;
+		}
+
+		main { max-width: var(--max-width); margin-inline: auto; }
+
+		h1, h2, h3 { line-height: 1.25; }
+		h1 { font-size: 2rem; margin: 0 0 .5rem; }
+		h2 { font-size: 1.35rem; margin: 2rem 0 .75rem; }
+		h3 { font-size: 1.1rem; margin: 1.5rem 0 .5rem; }
+
+		p { margin: 0 0 1rem; }
+
+		.lede {
+			color: var(--muted);
+			font-size: 1.05rem;
+			margin: 0 0 2rem;
+		}
+
+		code, kbd {
+			font-family: ui-monospace, "SF Mono", Menlo, monospace;
+			font-size: .9em;
+			background: var(--code-bg);
+			padding: .1em .35em;
+			border-radius: 4px;
+		}
+
+		hr {
+			border: none;
+			border-top: 1px solid var(--border);
+			margin: 2.5rem 0;
+		}
+
+		ul { padding-inline-start: 1.25rem; }
+		li { margin-bottom: .35rem; }
+
+		/* Demo controls */
+		.demo-controls {
+			display: flex;
+			flex-wrap: wrap;
+			gap: .75rem;
+			padding: 1rem;
+			background: var(--code-bg);
+			border-radius: 8px;
+			margin: 1.5rem 0;
+		}
+		.demo-controls label {
+			display: flex;
+			flex-direction: column;
+			gap: .25rem;
+			font-size: .8rem;
+			color: var(--muted);
+			text-transform: uppercase;
+			letter-spacing: .03em;
+		}
+		.demo-controls select {
+			font: inherit;
+			font-size: .95rem;
+			padding: .4rem .5rem;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			background: var(--bg);
+			color: var(--fg);
+			text-transform: none;
+			letter-spacing: 0;
+		}
+
+		/* The component */
+		ai-summary {
+			display: block;
+			margin: 2rem 0;
+		}
+
+		.ais-ui {
+			background: var(--accent-bg);
+			border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+			border-radius: 10px;
+			padding: 1rem 1.25rem;
+			margin-bottom: 1.5rem;
+		}
+
+		.ais-controls {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+			flex-wrap: wrap;
+		}
+
+		.ais-trigger {
+			font: inherit;
+			font-weight: 500;
+			display: inline-flex;
+			align-items: center;
+			gap: .4rem;
+			padding: .5rem 1rem;
+			border: 1px solid var(--accent);
+			background: var(--bg);
+			color: var(--accent);
+			border-radius: 6px;
+			cursor: pointer;
+			transition: background 150ms, color 150ms;
+		}
+		.ais-trigger:hover:not(:disabled) {
+			background: var(--accent);
+			color: var(--accent-fg);
+		}
+		.ais-trigger:disabled { opacity: .5; cursor: wait; }
+		.ais-trigger[data-fallback="true"] { border-style: dashed; }
+
+		.ais-status {
+			font-size: .85rem;
+			color: var(--muted);
+			font-variant-numeric: tabular-nums;
+		}
+		.ais-status[data-state="available"]   { color: var(--ok); }
+		.ais-status[data-state="unavailable"] { color: var(--err); }
+		.ais-status[data-state="downloadable"],
+		.ais-status[data-state="downloading"] { color: var(--warn); }
+
+		.ais-output {
+			margin-top: 1rem;
+			padding-top: 1rem;
+			border-top: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+			font-size: .95rem;
+			white-space: pre-wrap;
+		}
+		.ais-output[hidden] { display: none; }
+		.ais-output > :first-child { margin-top: 0; }
+		.ais-output > :last-child  { margin-bottom: 0; }
+
+		.ais-fallback, .ais-error { margin: 0; color: var(--muted); }
+		.ais-fallback a { color: var(--accent); font-weight: 500; }
+
+		/* Article body */
+		article > h2:first-child { margin-top: 0; }
+		article h3 { color: var(--muted); font-weight: 600; }
+	</style>
+</head>
+<body>
+<main>
+
+	<h1>&lt;ai-summary&gt;</h1>
+	<p class="lede">A web component that summarizes its own contents — using Chrome's on-device <a href="https://developer.chrome.com/docs/ai/summarizer-api"><code>Summarizer</code> API</a> when available, with a "Read with Claude" deep-link as fallback.</p>
+
+	<h2>How it works</h2>
+	<p>The component wraps any block of content. Without JS or the API, you just see the article — pure progressive enhancement. With JS, it injects a summarize control, calls <code>Summarizer.availability()</code>, and either streams a summary on-device or hands off to <code>claude.ai/new</code> with a prompt pre-filled.</p>
+
+	<p>Try the demo below. The selectors map directly to <code>Summarizer.create()</code> options and take effect on the next click.</p>
+
+	<div class="demo-controls">
+		<label>Type
+			<select id="ctl-type">
+				<option value="key-points" selected>key-points</option>
+				<option value="tldr">tldr</option>
+				<option value="teaser">teaser</option>
+				<option value="headline">headline</option>
+			</select>
+		</label>
+		<label>Length
+			<select id="ctl-length">
+				<option value="short">short</option>
+				<option value="medium" selected>medium</option>
+				<option value="long">long</option>
+			</select>
+		</label>
+		<label>Format
+			<select id="ctl-format">
+				<option value="markdown" selected>markdown</option>
+				<option value="plain-text">plain-text</option>
+			</select>
+		</label>
+	</div>
+
+	<hr>
+
+	<ai-summary type="key-points" length="medium" format="markdown">
+		<article>
+			<h2>Why Standardized Time Took So Long to Invent</h2>
+
+			<p>Before 1883, time in the United States was a local affair. Every city of any size kept its own time, calibrated to when the sun was directly overhead at noon. Pittsburgh ran six minutes behind Philadelphia. Chicago ran twenty-eight minutes ahead of Omaha. There were over three hundred distinct local times in North America alone, and almost nobody thought this was strange. Time was where you stood.</p>
+
+			<h3>The railway problem</h3>
+
+			<p>What broke the system wasn't astronomy or science. It was railroads.</p>
+
+			<p>A train leaving Boston at 9:00 a.m. local time would arrive in Albany running on Albany time, which differed by several minutes. A traveler buying a connecting ticket in Albany faced a printed schedule based on whose time? The originating city? The destination? The railroad's headquarters?</p>
+
+			<p>Different railroads handled this differently. By the 1870s, some major railway terminals displayed multiple clocks — one for each line operating from the station. Passengers carried small printed conversion tables. Conductors compared pocket watches with each other and with the schedule. The system worked, in the sense that trains generally arrived, but it was a tax on every transaction.</p>
+
+			<p>Worse, when trains collided — and they did — investigators frequently discovered the trains had been operating on different times entirely, separated by an unmarked transition somewhere along the track.</p>
+
+			<h3>A meeting of railroads</h3>
+
+			<p>In 1883, the General Time Convention — an industry body of competing railroads — simply imposed a solution on the country. They divided North America into four time zones, drew the lines themselves, and announced that on November 18th every railroad clock would jump to the new system.</p>
+
+			<p>The federal government had nothing to do with this. Congress would not formalize standard time for another thirty-five years, in 1918. The change was implemented entirely by private commercial agreement.</p>
+
+			<p>Cities resisted. Boston refused for several years to align city hall with railway time. Detroit kept local solar time until 1900. Religious leaders in some communities argued that "noon" was an act of God determined by the sun, not by industrialists in Chicago. A Cincinnati newspaper editorialized that the sun was no longer to boss the job.</p>
+
+			<p>But the railroads kept publishing their schedules in railway time, and gradually everyone else surrendered.</p>
+
+			<h3>The international version</h3>
+
+			<p>Around the same time, the British were trying to solve the same problem at a global scale. In 1884, the International Meridian Conference in Washington designated Greenwich as the prime meridian and divided the world into twenty-four hourly time zones. France abstained for twenty-seven years; they preferred the meridian to run through Paris.</p>
+
+			<p>What's striking is how recent all this is. People who lived through the Civil War saw America before standard time. People who saw the Wright Brothers fly remembered when their town kept its own clock.</p>
+
+			<h3>Why the delay?</h3>
+
+			<p>The interesting question isn't why standard time was invented. It's why it took so long.</p>
+
+			<p>The math had been understood since at least the seventeenth century. The technology — reliable mechanical clocks, telegraph synchronization — was widely available decades before 1883. What was missing was sufficient pain. Local time worked fine for local life. It only became intolerable when steam-powered transit collapsed distances faster than coordination could keep up.</p>
+
+			<p>The pattern repeats. Standard rail gauges emerged the same way. Standardized screw threads. Shipping containers. Each time the underlying need had existed for generations, but the cost of fragmentation only became unbearable when something else — usually a technology of speed or scale — made the fragmentation expensive in a new way.</p>
+
+			<p>We are probably living through several such moments right now and don't recognize them. Some current piece of infrastructure that everyone considers natural and permanent will, fifty years from now, look as quaint as a Pittsburgh businessman setting his watch by the cathedral bell.</p>
+		</article>
+	</ai-summary>
+
+	<hr>
+
+	<h2>Design notes</h2>
+	<ul>
+		<li><strong>Light DOM.</strong> No shadow root — the article stays in the page's normal cascade and is fully styleable. The component only <em>augments</em>.</li>
+		<li><strong>Progressive enhancement.</strong> Without JS the article reads fine. Without the API, the button still works but routes to a Claude deep-link.</li>
+		<li><strong>Streaming output.</strong> Uses <code>summarizeStreaming()</code> when available so summary tokens appear progressively rather than after a long pause.</li>
+		<li><strong>Status badge.</strong> The <code>data-state</code> attribute on <code>.ais-status</code> reflects <code>Summarizer.availability()</code> directly: <code>available</code>, <code>downloadable</code>, <code>downloading</code>, <code>unavailable</code>. CSS handles the colors.</li>
+		<li><strong>Configuration via attributes.</strong> <code>type</code>, <code>length</code>, <code>format</code>, and <code>shared-context</code> map 1:1 to <code>Summarizer.create()</code>. Attributes are read at call time, so you can change them without rebuilding the element.</li>
+		<li><strong>Fallback prompt.</strong> Built from <code>document.title</code> + <code>location.href</code> following the same pattern Anton's site uses (<code>https://claude.ai/new?q=...</code>).</li>
+		<li><strong>Custom event.</strong> Dispatches a <code>summary</code> CustomEvent with the result so other code can react (analytics, save-to-disk, share, etc.).</li>
+	</ul>
+
+	<h3>What's missing for production</h3>
+	<ul>
+		<li>The Summarizer API requires Chrome 138+, sufficient disk space (~22GB free for Gemini Nano), and may need an origin trial token depending on the page. None of that is shown in this POC.</li>
+		<li>Token-limit handling. Long articles may exceed the input window — production would chunk and recombine, or summarize-of-summaries.</li>
+		<li>Caching. Re-summarizing the same content on every click is wasteful; <code>sessionStorage</code> keyed on a content hash would be ~10 lines.</li>
+		<li>An attribute like <code>auto</code> to summarize on connect, or <code>visible-when</code> to summarize only when scrolled into view.</li>
+	</ul>
+
+</main>
+
+<script>
+	class AISummary extends HTMLElement {
+		#button;
+		#output;
+		#status;
+		#initialized = false;
+
+		connectedCallback() {
+			if (this.#initialized) return;
+			this.#initialized = true;
+			this.#renderUI();
+			this.#checkAvailability();
+		}
+
+		#renderUI() {
+			const ui = document.createElement('div');
+			ui.className = 'ais-ui';
+			ui.innerHTML = `
+        <div class="ais-controls">
+          <button type="button" class="ais-trigger" disabled>
+            <span aria-hidden="true">✨</span>
+            <span class="ais-label">Summarize</span>
+          </button>
+          <span class="ais-status" data-state="checking" role="status">
+            Checking availability…
+          </span>
+        </div>
+        <div class="ais-output" hidden aria-live="polite"></div>
+      `;
+			this.prepend(ui);
+
+			this.#button = ui.querySelector('.ais-trigger');
+			this.#output = ui.querySelector('.ais-output');
+			this.#status = ui.querySelector('.ais-status');
+
+			this.#button.addEventListener('click', () => this.#run());
+		}
+
+		async #checkAvailability() {
+			if (!('Summarizer' in self)) {
+				this.#setFallbackMode('Summarizer API not in this browser');
+				return;
+			}
+			try {
+				const availability = await Summarizer.availability();
+				this.#status.dataset.state = availability;
+				this.#status.textContent = ({
+					'available':    'Ready (on-device)',
+					'downloadable': 'Model available — first run will download',
+					'downloading':  'Model downloading…',
+					'unavailable':  'Not available on this device',
+				})[availability] ?? availability;
+
+				if (availability === 'unavailable') {
+					this.#setFallbackMode();
+				} else {
+					this.#button.disabled = false;
+				}
+			} catch (err) {
+				this.#setFallbackMode(err.message);
+			}
+		}
+
+		#setFallbackMode(reason) {
+			this.#status.dataset.state = 'unavailable';
+			this.#status.textContent = reason
+				? `${reason} — using Claude fallback`
+				: 'Using Claude fallback';
+			this.#button.disabled = false;
+			this.#button.dataset.fallback = 'true';
+			this.#button.querySelector('.ais-label').textContent = 'Read with Claude';
+		}
+
+		async #run() {
+			if (this.#button.dataset.fallback === 'true') {
+				window.open(this.#claudeURL(), '_blank', 'noopener,noreferrer');
+				return;
+			}
+
+			this.#output.hidden = false;
+			this.#output.textContent = '';
+			this.#button.disabled = true;
+			const text = this.#extractText();
+
+			try {
+				const summarizer = await Summarizer.create({
+					type:          this.getAttribute('type')   || 'key-points',
+					format:        this.getAttribute('format') || 'markdown',
+					length:        this.getAttribute('length') || 'medium',
+					sharedContext: this.getAttribute('shared-context') || undefined,
+					monitor: (m) => {
+						m.addEventListener('downloadprogress', (e) => {
+							this.#output.textContent =
+								`Downloading model: ${Math.round(e.loaded * 100)}%`;
+						});
+					},
+				});
+
+				this.#output.textContent = '';
+				let result = '';
+
+				if (typeof summarizer.summarizeStreaming === 'function') {
+					const stream = summarizer.summarizeStreaming(text);
+					for await (const chunk of stream) {
+						result += chunk;
+						this.#output.textContent = result;
+					}
+				} else {
+					result = await summarizer.summarize(text);
+					this.#output.textContent = result;
+				}
+
+				summarizer.destroy?.();
+
+				this.dispatchEvent(new CustomEvent('summary', {
+					detail: { text: result },
+					bubbles: true,
+				}));
+			} catch (err) {
+				console.error('[ai-summary]', err);
+				this.#output.innerHTML = `
+          <p class="ais-error">Summarization failed: ${err.message}</p>
+          <p class="ais-fallback">
+            You can <a href="${this.#claudeURL()}" target="_blank" rel="noopener noreferrer">read with Claude</a> instead.
+          </p>
+        `;
+			} finally {
+				this.#button.disabled = false;
+			}
+		}
+
+		#extractText() {
+			const clone = this.cloneNode(true);
+			clone.querySelector('.ais-ui')?.remove();
+			return clone.textContent.trim().replace(/\s+/g, ' ');
+		}
+
+		#claudeURL() {
+			const url = location.href;
+			const title = document.title || 'this article';
+			const prompt = `I just came across this article ${url} (${title}). Can you summarize it for me?`;
+			return `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
+		}
+	}
+
+	customElements.define('ai-summary', AISummary);
+
+	// Wire demo controls to the live element
+	const summary = document.querySelector('ai-summary');
+	for (const attr of ['type', 'length', 'format']) {
+		document.getElementById(`ctl-${attr}`)
+			.addEventListener('change', (e) => summary.setAttribute(attr, e.target.value));
+	}
+
+	// Optional: log the custom event so you can see it firing
+	summary.addEventListener('summary', (e) => {
+		console.log('[ai-summary] event fired, length:', e.detail.text.length);
+	});
+</script>
+</body>
+</html>

@@ -97,6 +97,7 @@ import './page-stats/logic.js';
 import './reading-progress/logic.js';
 import './page-tools/logic.js';
 import './ai-summary/logic.js';
+import './ai-chat/logic.js';
 import './glossary-index/logic.js';
 import './site-index/logic.js';
 import './time-index/logic.js';

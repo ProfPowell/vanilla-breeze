@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ai-chat — Page-aware Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/ai-chat/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    article { border: 1px solid var(--color-border); padding: var(--size-m); border-radius: var(--radius-m); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="l">
+
+      <h1>ai-chat — page-aware</h1>
+      <p>Set <code>context</code> to a CSS selector and ai-chat folds the targeted region's
+         text into the system prompt. The model can then answer questions about the
+         surrounding article without any retrieval plumbing.</p>
+
+      <article id="article">
+        <h2>Why Standardized Time Took So Long to Invent</h2>
+        <p>Before 1883, time in the United States was a local affair. Every city of any
+           size kept its own time, calibrated to when the sun was directly overhead at noon.
+           Pittsburgh ran six minutes behind Philadelphia. Chicago ran twenty-eight minutes
+           ahead of Omaha.</p>
+        <p>What broke the system wasn't astronomy — it was railroads. A train leaving Boston
+           at 9:00 a.m. local time would arrive in Albany running on Albany time, which
+           differed by several minutes. Travelers carried small printed conversion tables.</p>
+        <p>In 1883, the General Time Convention — an industry body of competing railroads —
+           imposed four time zones on the country by private commercial agreement. Congress
+           would not formalize standard time for another thirty-five years.</p>
+      </article>
+
+      <ai-chat
+          context="#article"
+          context-label="the article above"
+          placeholder="Ask about this page…"
+          fallback-url="https://claude.ai/new?q={prompt}"
+          fallback-label="Continue with Claude">
+        <template data-role="system">
+          Answer using only the page content provided. If the answer is not in the content, say so plainly. Be concise.
+        </template>
+        <template data-role="starters">
+          Summarize the article in 3 bullet points.
+          What problem did railroads create?
+          Who actually imposed time zones in 1883?
+        </template>
+      </ai-chat>
+
+    </layout-stack>
+  </layout-center>
+</body>
+</html>

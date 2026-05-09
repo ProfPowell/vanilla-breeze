@@ -1,0 +1,95 @@
+/* --- Progressive enhancement: pre-upgrade fallback --- */
+ai-summary:not(:defined) {
+  display: block;
+}
+
+/* ai-summary: Summarise wrapped content via Chrome Summarizer + fallbacks */
+
+ai-summary {
+  display: block;
+  margin-block: var(--space-4, 1.5rem);
+}
+
+/* Trigger panel sits above wrapped content */
+ai-summary .ais-ui {
+  background: var(--color-surface-2, color-mix(in srgb, var(--color-accent, #6b46c1) 8%, transparent));
+  border: 1px solid color-mix(in srgb, var(--color-accent, #6b46c1) 30%, transparent);
+  border-radius: var(--radius-md, 10px);
+  padding: 1rem 1.25rem;
+  margin-block-end: 1.5rem;
+}
+
+ai-summary .ais-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+ai-summary .ais-trigger {
+  font: inherit;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .5rem 1rem;
+  border: 1px solid var(--color-accent, #6b46c1);
+  background: var(--color-surface, #fff);
+  color: var(--color-accent, #6b46c1);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+ai-summary .ais-trigger:hover:not(:disabled) {
+  background: var(--color-accent, #6b46c1);
+  color: var(--color-accent-fg, #fff);
+}
+
+ai-summary .ais-trigger:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+ai-summary .ais-trigger[data-provider="deep-link"] {
+  border-style: dashed;
+}
+
+ai-summary .ais-status {
+  font-size: .85rem;
+  color: var(--color-text-muted, #6b6b6b);
+  font-variant-numeric: tabular-nums;
+}
+
+ai-summary .ais-status[data-state="available"]    { color: var(--color-success, #15803d); }
+ai-summary .ais-status[data-state="unavailable"]  { color: var(--color-error,   #b91c1c); }
+ai-summary .ais-status[data-state="downloadable"],
+ai-summary .ais-status[data-state="downloading"]  { color: var(--color-warning, #b45309); }
+
+/* Output region */
+ai-summary .ais-output {
+  margin-block-start: 1rem;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid color-mix(in srgb, var(--color-accent, #6b46c1) 20%, transparent);
+  font-size: .95rem;
+  white-space: pre-wrap;     /* live streaming text */
+}
+
+ai-summary[data-state="complete"] .ais-output,
+ai-summary .ais-output:has(markdown-viewer) {
+  white-space: normal;       /* markdown-viewer handles its own wrapping */
+}
+
+ai-summary .ais-output[hidden] { display: none; }
+ai-summary .ais-output > :first-child { margin-block-start: 0; }
+ai-summary .ais-output > :last-child  { margin-block-end:   0; }
+
+ai-summary .ais-fallback,
+ai-summary .ais-error {
+  margin: 0;
+  color: var(--color-text-muted, #6b6b6b);
+}
+ai-summary .ais-fallback a {
+  color: var(--color-accent, #6b46c1);
+  font-weight: 500;
+}

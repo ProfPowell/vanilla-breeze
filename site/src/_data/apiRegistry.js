@@ -1066,6 +1066,269 @@ export default {
       }
     ]
   },
+  "ai-chat": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "ai-chat",
+    "type": "web-component",
+    "description": "On-device chat via Chrome's LanguageModel API. Optionally page-aware via context selector. Inline endpoint and external deep-link fallbacks. Conforms to admin/specs/ai-page-tools-v1.md.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "template",
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "context",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS selector of a page region whose text is folded into the system prompt. Empty = general chat."
+      },
+      {
+        "name": "context-label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Human-friendly label for the context region (shown in the ribbon and used in the system prompt header)."
+      },
+      {
+        "name": "system",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "System-prompt prefix. May also be supplied via <template data-role='system'>; attribute wins."
+      },
+      {
+        "name": "placeholder",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Type a message…",
+        "description": "Textarea placeholder text. Reactive via attributeChangedCallback."
+      },
+      {
+        "name": "endpoint",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Inline-fallback HTTP URL (POST JSON, streamed text/plain or one-shot application/json)."
+      },
+      {
+        "name": "fallback-url",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Deep-link URL template. Tokens: {prompt} {url} {title} {content}. Provider-neutral."
+      },
+      {
+        "name": "fallback-label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Override the trigger label when in deep-link mode."
+      },
+      {
+        "name": "fallback-prompt",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Help me explore this article: {title} ({url})",
+        "description": "Override the {prompt} string substituted into fallback-url."
+      },
+      {
+        "name": "data-state",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "enum",
+        "values": [
+          "checking",
+          "ready",
+          "downloading",
+          "thinking",
+          "streaming",
+          "error",
+          "unavailable",
+          "deep-link"
+        ],
+        "direction": "output",
+        "public": true,
+        "description": "Lifecycle state. Per admin/specs/ai-page-tools-v1.md."
+      },
+      {
+        "name": "data-context-state",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "enum",
+        "values": [
+          "ok",
+          "large",
+          "missing"
+        ],
+        "direction": "output",
+        "public": false,
+        "description": "Reflects extracted page context size against the Nano budget."
+      }
+    ],
+    "events": [
+      {
+        "name": "ai-chat:state",
+        "detail": "{ state, provider }",
+        "description": "Fires on every data-state transition."
+      },
+      {
+        "name": "ai-chat:message",
+        "detail": "{ role, text }",
+        "description": "Fires once per completed message (user or assistant)."
+      },
+      {
+        "name": "ai-chat:context-overflow",
+        "detail": "{}",
+        "description": "Bubbled from the underlying session's contextoverflow event."
+      },
+      {
+        "name": "ai-chat:error",
+        "detail": "{ error }",
+        "description": "Fires when generation fails."
+      }
+    ],
+    "properties": [],
+    "methods": [
+      {
+        "name": "reset()",
+        "returns": "Promise<void>",
+        "description": "Destroy the current session and clear the log."
+      }
+    ]
+  },
+  "ai-summary": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "ai-summary",
+    "type": "web-component",
+    "description": "Summarise wrapped content via Chrome's Summarizer API, with optional inline endpoint fallback and external deep-link fallback. Conforms to admin/specs/ai-page-tools-v1.md.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "type",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "key-points",
+          "tldr",
+          "teaser",
+          "headline"
+        ],
+        "default": "key-points",
+        "description": "Summarizer type — passed through to Summarizer.create()."
+      },
+      {
+        "name": "length",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "short",
+          "medium",
+          "long"
+        ],
+        "default": "medium",
+        "description": "Summary length hint."
+      },
+      {
+        "name": "format",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "markdown",
+          "plain-text"
+        ],
+        "default": "markdown",
+        "description": "Output format."
+      },
+      {
+        "name": "shared-context",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional shared context passed to Summarizer.create()."
+      },
+      {
+        "name": "endpoint",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Inline-fallback HTTP URL (POST JSON, streamed text/plain or one-shot application/json). Wire format: admin/specs/ai-page-tools-v1.md §C."
+      },
+      {
+        "name": "fallback-url",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Deep-link URL template. Tokens: {prompt} {url} {title} {content}. Provider-neutral."
+      },
+      {
+        "name": "fallback-label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Override the trigger label when in deep-link mode."
+      },
+      {
+        "name": "fallback-prompt",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Summarize this article: {url}",
+        "description": "Override the {prompt} string substituted into fallback-url."
+      },
+      {
+        "name": "data-state",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "enum",
+        "values": [
+          "checking",
+          "ready",
+          "downloading",
+          "streaming",
+          "complete",
+          "error",
+          "unavailable",
+          "deep-link"
+        ],
+        "direction": "output",
+        "public": true,
+        "description": "Lifecycle state. Per admin/specs/ai-page-tools-v1.md."
+      }
+    ],
+    "events": [
+      {
+        "name": "ai-summary:state",
+        "detail": "{ state, provider }",
+        "description": "Fires on every data-state transition. Provider is one of 'local'|'endpoint'|'deep-link'|'unavailable'."
+      },
+      {
+        "name": "ai-summary:result",
+        "detail": "{ text, provider }",
+        "description": "Fires once with the full summary on stream completion."
+      },
+      {
+        "name": "ai-summary:error",
+        "detail": "{ error }",
+        "description": "Fires on any failure path (network, AI API, parsing)."
+      }
+    ],
+    "properties": [],
+    "methods": []
+  },
   "analytics-panel": {
     "$schema": "../../schemas/api.schema.json",
     "element": "analytics-panel",

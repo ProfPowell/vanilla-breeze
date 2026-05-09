@@ -78,6 +78,15 @@ Current surface: **67 web components** across 7 categories.
 | `risk-register` | New | Risk log with likelihood/impact scoring. |
 | `retrospective-board` | New | Start/stop/continue retro board. |
 
+## AI
+
+Page-tools that wrap browser-native AI APIs (Chrome Summarizer, LanguageModel, etc.) with provider-neutral inline-endpoint and external deep-link fallbacks. Conventions: [`admin/specs/ai-page-tools-v1.md`](specs/ai-page-tools-v1.md). Epic: `vanilla-breeze-ddm0`.
+
+| Component | Type | Notes |
+|-----------|------|-------|
+| ~~`ai-summary`~~ | **Shipped** as `ai-summary` (`src/web-components/ai-summary/`). Bead: `vanilla-breeze-q5cv`. | |
+| ~~`ai-chat`~~ | **Shipped** as `ai-chat` (`src/web-components/ai-chat/`). Bead: `vanilla-breeze-vd3s`. | |
+
 ---
 
 ## Upscale Attributes (not components)
