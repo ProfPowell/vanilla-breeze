@@ -121,6 +121,7 @@ import './glossary-wc/logic.js';
 import './work-item/logic.js';
 import './user-story/logic.js';
 import './kanban-board/logic.js';
+import './quadrant-grid/logic.js';
 import './site-map-wc/logic.js';
 import './adr-wc/logic.js';
 import './iron-triangle/logic.js';

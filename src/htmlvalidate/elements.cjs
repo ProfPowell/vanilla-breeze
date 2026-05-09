@@ -1065,6 +1065,22 @@ module.exports = {
     }
   },
 
+  "quadrant-grid": {
+    attributes: {
+      "x-label": {},
+      "y-label": {},
+      "x-low": {},
+      "x-high": {},
+      "y-low": {},
+      "y-high": {},
+      "q1-label": {},
+      "q2-label": {},
+      "q3-label": {},
+      "q4-label": {},
+      "draggable": { boolean: true }
+    }
+  },
+
   "quality-target": {
     flow: true,
     permittedContent: ["@flow"],
