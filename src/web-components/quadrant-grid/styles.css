@@ -16,7 +16,7 @@ quadrant-grid {
     grid-template-columns: max-content max-content 1fr;
     grid-template-rows: max-content 1fr max-content max-content;
     grid-template-areas:
-      ". . y-label"
+      "y-label . ."
       "y-scale grid grid"
       ". x-scale x-scale"
       ". x-label x-label";
@@ -31,7 +31,8 @@ quadrant-grid {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--color-text-muted, #666);
-    text-align: end;
+    text-align: start;
+    padding-inline-end: var(--size-xs, 0.5rem);
   }
 
   .qg-x-label {
@@ -123,18 +124,21 @@ quadrant-grid {
 
   /* Coordinate-pinned children get absolute placement.
      Section-local coords (0..1) are computed by JS and stored as
-     --qg-local-x / --qg-local-y. */
+     --qg-local-x / --qg-local-y. The component also measures each pin
+     after layout and writes --qg-pin-half-w / --qg-pin-half-h so the
+     center-anchored position is clamped by the pin's actual half-size,
+     keeping the bounding box inside the quadrant at any coordinate. */
   .qg-pinned {
     position: absolute;
     inline-size: max-content;
-    max-inline-size: 80%;
+    max-inline-size: calc(100% - var(--size-xs, 0.5rem));
     padding: var(--size-3xs, 0.125rem) var(--size-xs, 0.5rem);
     background: var(--color-accent, oklch(45% 0.18 260));
     color: var(--color-text-on-primary, #fff);
     border-radius: var(--radius-s, 0.25rem);
     font-size: var(--font-size-xs, 0.75rem);
-    inset-inline-start: calc(var(--qg-local-x, 0.5) * 100%);
-    inset-block-end: calc(var(--qg-local-y, 0.5) * 100%);
+    inset-inline-start: clamp(var(--qg-pin-half-w, 1.5rem), calc(var(--qg-local-x, 0.5) * 100%), calc(100% - var(--qg-pin-half-w, 1.5rem)));
+    inset-block-end: clamp(var(--qg-pin-half-h, 0.75rem), calc(var(--qg-local-y, 0.5) * 100%), calc(100% - var(--qg-pin-half-h, 0.75rem)));
     transform: translate(-50%, 50%);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }

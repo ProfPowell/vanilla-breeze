@@ -191,6 +191,34 @@ class QuadrantGrid extends VBElement {
     if (draggable) {
       this.listen(this, 'drag-surface:transfer', this.#onTransfer);
     }
+
+    /* Measure pinned tokens so CSS can clamp their center position by
+       half-width / half-height, keeping the bounding box inside the
+       quadrant at extreme coordinates. ResizeObserver keeps the
+       measurement live across font load, container resize, and content
+       changes. */
+    this.#observePins();
+  }
+
+  #observePins() {
+    if (typeof ResizeObserver === 'undefined') return;
+    const measure = (el) => {
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      if (w > 0) el.style.setProperty('--qg-pin-half-w', `${w / 2}px`);
+      if (h > 0) el.style.setProperty('--qg-pin-half-h', `${h / 2}px`);
+    };
+    this.#pinObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) measure(entry.target);
+    });
+    for (const pin of this.querySelectorAll('.qg-pinned')) {
+      this.#pinObserver.observe(pin);
+    }
+  }
+
+  teardown() {
+    this.#pinObserver?.disconnect();
+    this.#pinObserver = null;
   }
 
   #onTransfer = (e) => {
@@ -266,6 +294,8 @@ class QuadrantGrid extends VBElement {
   #liveRegion = null;
   /** @type {string[]} */
   #qLabels = [];
+  /** @type {ResizeObserver | null} */
+  #pinObserver = null;
 }
 
 registerComponent('quadrant-grid', QuadrantGrid);
