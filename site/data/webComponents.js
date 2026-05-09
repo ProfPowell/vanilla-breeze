@@ -35,6 +35,7 @@ export default {
     { name: 'nav-bar', href: '/docs/elements/web-components/nav-bar/', desc: 'Top-level site/app nav primitive with auto aria-current sync (HTML-first or .items setter)' },
     { name: 'page-toc', href: '/docs/elements/web-components/page-toc/', desc: 'Table of contents generator' },
     { name: 'page-tour', href: '/docs/elements/web-components/page-tour/', desc: 'Progressive-enhancement guided tour with spotlight overlay and action gating' },
+    { name: 'pop-over', href: '/docs/elements/web-components/pop-over/', desc: 'General-purpose anchored popover container with CSS Anchor Positioning + JS fallback' },
     { name: 'short-cuts', href: '/docs/elements/web-components/shortcuts/', desc: 'Keyboard shortcuts help overlay' },
     { name: 'site-search', href: '/docs/elements/web-components/site-search/', desc: 'Search dialog component' },
   ],

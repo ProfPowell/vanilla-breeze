@@ -1,0 +1,97 @@
+---
+layout: element
+title: "pop-over"
+description: "General-purpose anchored popover container. Wraps the native Popover API with CSS Anchor Positioning, JS fallback, and cascade-layer-aware hiding."
+elementName: pop-over
+category: component
+currentPath: /docs/elements/web-components/pop-over/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;pop-over&gt;</code> component is a thin primitive over the native Popover API. It applies the <code>popover</code> attribute, wires CSS Anchor Positioning when supported, falls back to JS-driven fixed positioning otherwise, and re-asserts <code>display: none</code> under VB's authored cascade layers (where the UA hiding rule loses to authored styles).</p>
+  <p>It's the consolidation target for the anchored-positioning machinery currently special-cased in <code>&lt;tool-tip&gt;</code> and intended to underpin <code>&lt;context-menu&gt;</code>, <code>&lt;drop-down&gt;</code>, <code>&lt;selection-menu&gt;</code>, and <code>&lt;combo-box&gt;</code>.</p>
+
+  <browser-window url="pop-over" src="/docs/examples/demos/pop-over-basic.html"></browser-window>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>data-mode</code></td>
+        <td>enum</td>
+        <td><code>auto</code></td>
+        <td>Popover dismissal: <code>auto</code> (light-dismiss + ESC), <code>manual</code> (script-only), <code>hint</code> (auto + hint stack).</td>
+      </tr>
+      <tr>
+        <td><code>data-anchor</code></td>
+        <td>string</td>
+        <td>—</td>
+        <td>ID or selector of the anchor element. If omitted, the component finds the first element with <code>popovertarget</code> pointing at this pop-over.</td>
+      </tr>
+      <tr>
+        <td><code>data-position</code></td>
+        <td>enum</td>
+        <td><code>bottom</code></td>
+        <td>Placement relative to anchor: <code>top</code> | <code>bottom</code> | <code>left</code> | <code>right</code>, each with optional <code>-start</code>/<code>-end</code> alignment.</td>
+      </tr>
+      <tr>
+        <td><code>data-offset</code></td>
+        <td>enum</td>
+        <td><code>xs</code></td>
+        <td>Gap between popover and anchor: <code>none</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code> (mapped to <code>--size-*</code> tokens).</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Imperative API</h2>
+  <ul>
+    <li><code>.show()</code> / <code>.hide()</code> / <code>.toggle()</code> — proxy to the native Popover API.</li>
+    <li><code>.open</code> (getter) — true while the popover is open.</li>
+    <li>Events: <code>pop-over:show</code> and <code>pop-over:hide</code> bubble on toggle.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Usage</h2>
+
+  <h3>Standard trigger via <code>popovertarget</code></h3>
+  <code-block language="html" data-escape>
+<button popovertarget="prefs">Preferences</button>
+<pop-over id="prefs" data-position="bottom-start">
+  <p>Pop content here.</p>
+</pop-over>
+  </code-block>
+
+  <h3>Manual mode (script controls)</h3>
+  <code-block language="html" data-escape>
+<pop-over id="dialog" data-mode="manual" data-position="top">…</pop-over>
+<script>
+  const p = document.getElementById('dialog');
+  p.show();
+  p.addEventListener('pop-over:hide', () => console.log('closed'));
+</script>
+  </code-block>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <ol>
+    <li><strong>HTML.</strong> The host has the <code>popover</code> attribute when authored explicitly, so even without script the browser hides it by default and shows it via <code>popovertarget</code> buttons.</li>
+    <li><strong>CSS.</strong> When the browser supports CSS Anchor Positioning (Chromium 125+, Safari TP), positioning is fully declarative — no script runs on resize/scroll.</li>
+    <li><strong>JS.</strong> The component manages mode, anchor wiring, and a fixed-position fallback for browsers without anchor positioning.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Why a primitive</h2>
+  <p>VB had popover-API logic special-cased inside <code>tool-tip</code> only. As <code>context-menu</code>, <code>drop-down</code>, <code>selection-menu</code>, and <code>combo-box</code> all need the same behavior — including the cascade-layer <code>display: none</code> re-assertion — having one primitive avoids re-implementing positioning, light-dismiss, and the cascade gotcha in five places.</p>
+</section>

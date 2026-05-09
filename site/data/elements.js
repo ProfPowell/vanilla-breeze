@@ -195,6 +195,7 @@ const elementsByLetter = {
     { name: 'page-tour', type: 'component', href: '/docs/elements/web-components/page-tour/' },
     { name: 'palette-generator', type: 'component', href: '/docs/elements/web-components/palette-generator/' },
     { name: 'picture', type: 'native', href: '/docs/elements/native/picture/' },
+    { name: 'pop-over', type: 'component', href: '/docs/elements/web-components/pop-over/' },
     { name: 'popularity-index', type: 'component', href: '/docs/elements/web-components/popularity-index/' },
     { name: 'pre', type: 'native', href: '/docs/elements/native/pre/' },
     { name: 'print-page', type: 'component', href: '/docs/elements/web-components/print-page/' },

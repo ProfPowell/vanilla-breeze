@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pop Over — Basic Demo</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <script type="module" src="/src/main.js"></script>
+  <style>
+    body {
+      padding: var(--size-l) var(--size-m);
+      background: var(--color-surface);
+      max-inline-size: 70ch;
+      margin-inline: auto;
+      font-family: var(--font-body);
+      color: var(--color-text);
+    }
+    section + section { margin-block-start: var(--size-2xl); }
+    h2 { font-size: var(--font-size-base); color: var(--color-text-muted); }
+    .row { display: flex; gap: var(--size-s); flex-wrap: wrap; }
+    button {
+      padding: var(--size-2xs) var(--size-s);
+      border: var(--border-width-thin) solid var(--color-border);
+      background: var(--color-surface-raised);
+      color: var(--color-text);
+      border-radius: var(--radius-m);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <section>
+    <h2>Bottom-start (default placement)</h2>
+    <button popovertarget="pop-bottom">Open below</button>
+    <pop-over id="pop-bottom" data-position="bottom-start">
+      <strong>Hello.</strong>
+      <p>This is anchored to the trigger button.</p>
+    </pop-over>
+  </section>
+
+  <section>
+    <h2>Top placement, larger offset</h2>
+    <button popovertarget="pop-top">Open above</button>
+    <pop-over id="pop-top" data-position="top" data-offset="m">
+      <p>Floats above the trigger with an <code>--size-m</code> gap.</p>
+    </pop-over>
+  </section>
+
+  <section>
+    <h2>Right-start, manual mode (script-controlled)</h2>
+    <nav class="row" aria-label="Manual controls">
+      <button id="pop-show">Show</button>
+      <button id="pop-hide">Hide</button>
+    </nav>
+    <pop-over id="pop-manual" data-mode="manual" data-anchor="pop-show" data-position="right-start">
+      <p>Manual mode — light-dismiss is off; only <code>.show()</code>/<code>.hide()</code> work.</p>
+    </pop-over>
+    <script type="module">
+      const popover = document.getElementById('pop-manual');
+      document.getElementById('pop-show').addEventListener('click', () => popover.show());
+      document.getElementById('pop-hide').addEventListener('click', () => popover.hide());
+    </script>
+  </section>
+
+  <section>
+    <h2>Hint mode (auto-dismiss when next hint opens)</h2>
+    <nav class="row" aria-label="Hint controls">
+      <button popovertarget="pop-hint-1">Hint 1</button>
+      <button popovertarget="pop-hint-2">Hint 2</button>
+    </nav>
+    <pop-over id="pop-hint-1" data-mode="hint" data-position="bottom">
+      <p>Opening Hint 2 dismisses this.</p>
+    </pop-over>
+    <pop-over id="pop-hint-2" data-mode="hint" data-position="bottom">
+      <p>I replaced Hint 1 in the hint stack.</p>
+    </pop-over>
+  </section>
+</body>
+</html>

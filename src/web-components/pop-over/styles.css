@@ -1,0 +1,60 @@
+/* pop-over: general-purpose anchored popover container.
+   Re-asserts display:none under VB's cascade layers (UA rule loses
+   to author rules — see popover_display_gotcha memory). */
+
+pop-over:not(:defined) {
+  display: none;
+}
+
+/* Critical: re-assert UA hiding under our authored layer. */
+pop-over[popover]:not(:popover-open) {
+  display: none;
+}
+
+pop-over[popover] {
+  /* Reset popover defaults so VB tokens own the surface. */
+  margin: 0;
+  border: var(--border-width-thin) solid var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  padding: var(--size-s);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-l, 0 6px 16px rgb(0 0 0 / 0.18));
+  inline-size: max-content;
+  max-inline-size: min(40ch, 90vw);
+}
+
+/* Anchor positioning (Chromium, Safari TP) */
+@supports (anchor-name: --x) {
+  pop-over[popover][data-anchor-name] {
+    /* The host JS sets --pop-over-anchor inline on the anchor element
+       and position-anchor here; we only own placement defaults. */
+    position: fixed;
+    inset: auto;
+    margin: var(--_pop-over-offset, var(--size-xs));
+  }
+
+  /* Edge placement helpers — author-friendly position-area names map
+     to the standard `position-area` (Chromium 125+) when supported. */
+  @supports (position-area: bottom) {
+    pop-over[popover][data-position="top"]          { position-area: top; }
+    pop-over[popover][data-position="bottom"]       { position-area: bottom; }
+    pop-over[popover][data-position="left"]         { position-area: left; }
+    pop-over[popover][data-position="right"]        { position-area: right; }
+    pop-over[popover][data-position="top-start"]    { position-area: top span-right; }
+    pop-over[popover][data-position="top-end"]      { position-area: top span-left; }
+    pop-over[popover][data-position="bottom-start"] { position-area: bottom span-right; }
+    pop-over[popover][data-position="bottom-end"]   { position-area: bottom span-left; }
+    pop-over[popover][data-position="left-start"]   { position-area: left span-bottom; }
+    pop-over[popover][data-position="left-end"]     { position-area: left span-top; }
+    pop-over[popover][data-position="right-start"]  { position-area: right span-bottom; }
+    pop-over[popover][data-position="right-end"]    { position-area: right span-top; }
+  }
+}
+
+/* Offset token mapping (CSS var consumed by anchor + JS fallback). */
+pop-over[popover][data-offset="none"] { --_pop-over-offset: 0; }
+pop-over[popover][data-offset="xs"]   { --_pop-over-offset: var(--size-xs); }
+pop-over[popover][data-offset="s"]    { --_pop-over-offset: var(--size-s); }
+pop-over[popover][data-offset="m"]    { --_pop-over-offset: var(--size-m); }
+pop-over[popover][data-offset="l"]    { --_pop-over-offset: var(--size-l); }

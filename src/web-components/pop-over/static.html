@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pop-over — Static Fallback</title>
+</head>
+<body>
+  <!--
+    Static fallback for <pop-over>.
+
+    Upgrade relationship:
+    - Without JS: the host has the [popover] attribute when authored
+      explicitly. Native browser behavior shows/hides via popovertarget
+      buttons, but no anchor positioning is wired. Content remains in
+      the DOM and is hidden by the UA stylesheet.
+    - With JS: the component upgrades, sets the popover attribute from
+      data-mode, wires CSS anchor-name + position-anchor on the trigger
+      (when supported), and falls back to JS-driven fixed positioning
+      otherwise. Re-asserts display:none under VB's authored cascade
+      layers (UA hiding loses to author rules without an explicit reset).
+
+    Tip: prefer [popovertarget] on the trigger button — it's the
+    standard imperative-free wiring and the component will auto-detect
+    the trigger as the anchor when data-anchor isn't set.
+  -->
+
+  <button popovertarget="pop-demo">Open</button>
+
+  <pop-over id="pop-demo" data-position="bottom-start">
+    <p>Pop content here.</p>
+  </pop-over>
+</body>
+</html>

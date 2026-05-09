@@ -1057,6 +1057,15 @@ module.exports = {
     }
   },
 
+  "pop-over": {
+    attributes: {
+      "data-mode": { enum: ["auto", "manual", "hint"] },
+      "data-anchor": {},
+      "data-position": { enum: ["top", "bottom", "left", "right", "top-start", "top-end", "bottom-start", "bottom-end", "left-start", "left-end", "right-start", "right-end"] },
+      "data-offset": { enum: ["none", "xs", "s", "m", "l"] }
+    }
+  },
+
   "popularity-index": {
     attributes: {
       "data-lens-src": {},
