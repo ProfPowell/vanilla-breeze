@@ -1,12 +1,18 @@
 /**
  * ai-chat: On-device chat via Chrome's LanguageModel API
  *
- * A page-aware chat component. Without a `context` attribute, behaves as a
- * general assistant. With `context="<selector>"`, the targeted region's
- * text is folded into the system prompt so the model can answer questions
- * about the surrounding article.
+ * Composes <chat-window> + <chat-input> + <chat-thread> + <chat-bubble> for
+ * the UI shell — those components own theme integration, layout, the typing
+ * indicator, message rendering, and form-association. <ai-chat> owns the
+ * provider resolution (local Chrome LanguageModel → endpoint → deep-link)
+ * and streams responses into the typing bubble dispatched by chat-window.
  *
- * Provider resolution order (per session):
+ * Without a `context` attribute, behaves as a general assistant. With
+ * `context="<selector>"`, the targeted region's text is folded into the
+ * system prompt so the model can answer questions about a surrounding
+ * article without retrieval plumbing.
+ *
+ * Per AI page-tools v1 (admin/specs/ai-page-tools-v1.md):
  *   local Chrome LanguageModel API → endpoint → fallback-url deep-link → unavailable
  *
  * @attr {string} context        - CSS selector of a region whose text becomes part of the system prompt.
@@ -15,7 +21,7 @@
  * @attr {string} placeholder    - Textarea placeholder. Default 'Type a message…'.
  * @attr {string} endpoint       - Inline-fallback HTTP URL.
  * @attr {string} fallback-url   - Deep-link URL template ({prompt}/{url}/{title}/{content} tokens).
- * @attr {string} fallback-label - Override trigger label when in deep-link mode.
+ * @attr {string} fallback-label - Override Send label when in deep-link mode.
  * @attr {string} fallback-prompt - Override the default {prompt} text.
  *
  * State attributes:
@@ -48,11 +54,15 @@ import { NANO_CONTEXT_BUDGET, estimateTokens } from '../../lib/ai/budget.js';
 
 const DEFAULT_FALLBACK_PROMPT = 'Help me explore this article: {title} ({url})';
 
+const PARTICIPANTS = {
+  user:      { name: 'You',       role: 'user'  },
+  assistant: { name: 'Assistant', role: 'agent' },
+};
+
 class AIChat extends VBElement {
-  /** @type {HTMLElement|null} */ #log = null;
-  /** @type {HTMLFormElement|null} */ #form = null;
-  /** @type {HTMLTextAreaElement|null} */ #input = null;
+  /** @type {HTMLElement|null} */ #window = null;
   /** @type {HTMLElement|null} */ #stateLabel = null;
+  /** @type {HTMLButtonElement|null} */ #stopBtn = null;
   /** @type {HTMLElement|null} */ #ribbon = null;
   /** @type {HTMLElement|null} */ #notice = null;
   /** @type {HTMLElement|null} */ #starters = null;
@@ -77,8 +87,9 @@ class AIChat extends VBElement {
   }
 
   attributeChangedCallback(name, _old, value) {
-    if (name === 'placeholder' && this.#input) {
-      this.#input.placeholder = value ?? '';
+    if (name === 'placeholder' && this.#window) {
+      const ta = this.#window.querySelector('chat-input textarea');
+      if (ta) /** @type {HTMLTextAreaElement} */ (ta).placeholder = value ?? '';
     }
   }
 
@@ -88,7 +99,7 @@ class AIChat extends VBElement {
     this.#abortCtl?.abort();
     this.#session?.destroy?.();
     this.#session = null;
-    this.#log?.querySelectorAll('.ai-chat-msg').forEach(el => el.remove());
+    /** @type {any} */ (this.#window)?.clearThread?.();
     this.#refreshContextRibbon();
     this.#setState('ready');
   }
@@ -97,43 +108,44 @@ class AIChat extends VBElement {
 
   #renderShell() {
     const placeholder = this.getAttribute('placeholder') || 'Type a message…';
-    const shell = document.createElement('div');
-    shell.className = 'ai-chat-shell';
-    shell.innerHTML = `
-      <header class="ai-chat-header">
-        <span class="ai-chat-state" role="status">Checking…</span>
-      </header>
-      <p class="ai-chat-ribbon" hidden></p>
-      <p class="ai-chat-notice" hidden></p>
-      <div class="ai-chat-log" role="log" aria-live="polite" aria-relevant="additions">
-        <p class="ai-chat-empty">Send a message to start a session.</p>
-      </div>
-      <div class="ai-chat-starters" role="group" aria-label="Starter prompts" hidden></div>
-      <form class="ai-chat-form">
-        <textarea class="ai-chat-input" name="prompt" rows="1" required></textarea>
-        <div class="ai-chat-actions">
-          <button class="ai-chat-btn" data-action="reset" data-variant="ghost" type="button" title="New session">↻</button>
-          <button class="ai-chat-btn" data-action="stop" type="button">Stop</button>
-          <button class="ai-chat-btn" data-action="send" type="submit">Send</button>
-        </div>
-      </form>
+    const tpl = document.createElement('template');
+    tpl.innerHTML = `
+      <chat-window empty-message="Send a message to start a session.">
+        <script type="application/json" data-participants>${JSON.stringify(PARTICIPANTS)}</script>
+        <header>
+          <span class="ai-chat-state" role="status" aria-live="polite">Checking…</span>
+          <button type="button" class="ai-chat-stop small" data-action="stop">Stop</button>
+        </header>
+        <p class="ai-chat-ribbon" hidden></p>
+        <p class="ai-chat-notice" hidden></p>
+        <div class="ai-chat-starters" role="group" aria-label="Starter prompts" hidden></div>
+        <chat-thread role="log" aria-label="Chat" aria-live="polite"></chat-thread>
+        <chat-input name="message">
+          <textarea data-grow rows="1" data-max-rows="8" required></textarea>
+          <footer>
+            <button type="submit" class="small" data-send aria-label="Send">
+              <icon-wc name="send"></icon-wc>
+            </button>
+          </footer>
+        </chat-input>
+      </chat-window>
     `;
-    this.appendChild(shell);
+    this.appendChild(tpl.content.cloneNode(true));
 
-    this.#log        = /** @type {HTMLElement} */        (shell.querySelector('.ai-chat-log'));
-    this.#form       = /** @type {HTMLFormElement} */    (shell.querySelector('.ai-chat-form'));
-    this.#input      = /** @type {HTMLTextAreaElement} */(shell.querySelector('.ai-chat-input'));
-    this.#stateLabel = /** @type {HTMLElement} */        (shell.querySelector('.ai-chat-state'));
-    this.#ribbon     = /** @type {HTMLElement} */        (shell.querySelector('.ai-chat-ribbon'));
-    this.#notice     = /** @type {HTMLElement} */        (shell.querySelector('.ai-chat-notice'));
-    this.#starters   = /** @type {HTMLElement} */        (shell.querySelector('.ai-chat-starters'));
+    this.#window     = /** @type {HTMLElement} */       (this.querySelector(':scope > chat-window'));
+    this.#stateLabel = /** @type {HTMLElement} */       (this.querySelector('.ai-chat-state'));
+    this.#stopBtn    = /** @type {HTMLButtonElement} */ (this.querySelector('.ai-chat-stop'));
+    this.#ribbon     = /** @type {HTMLElement} */       (this.querySelector('.ai-chat-ribbon'));
+    this.#notice     = /** @type {HTMLElement} */       (this.querySelector('.ai-chat-notice'));
+    this.#starters   = /** @type {HTMLElement} */       (this.querySelector('.ai-chat-starters'));
 
-    if (this.#input) this.#input.placeholder = placeholder;
+    const ta = this.querySelector('chat-input textarea');
+    if (ta) /** @type {HTMLTextAreaElement} */ (ta).placeholder = placeholder;
   }
 
   #renderStarters() {
-    if (!this.#starters || !this.#input) return;
-    const tpl = this.querySelector('template[data-role="starters"]');
+    if (!this.#starters) return;
+    const tpl = this.querySelector(':scope > template[data-role="starters"]');
     const lines = ((tpl && /** @type {HTMLTemplateElement} */ (tpl).content?.textContent) || '')
       .split('\n').map(s => s.trim()).filter(Boolean);
 
@@ -146,35 +158,33 @@ class AIChat extends VBElement {
     for (const line of lines) {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'ai-chat-starter';
+      btn.className = 'ai-chat-starter small';
       btn.textContent = line;
-      this.listen(btn, 'click', () => {
-        if (this.#input) this.#input.value = line;
-        this.#send();
-      });
+      this.listen(btn, 'click', () => this.#sendStarter(line));
       this.#starters.appendChild(btn);
     }
   }
 
   #wireEvents() {
-    if (!this.#form || !this.#input) return;
-    this.listen(this.#form, 'submit', (e) => {
-      e.preventDefault();
-      this.#send();
+    if (!this.#window) return;
+    // chat-window dispatches this when no endpoint is set on it.
+    this.listen(this.#window, 'chat-window:send', (/** @type {any} */ e) => {
+      e.stopPropagation();
+      this.#handleSend(e.detail.message, e.detail.typingElement);
     });
-    this.listen(this.#input, 'keydown', (/** @type {KeyboardEvent} */ e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        this.#send();
-      }
-      if (e.key === 'Escape' && this.dataset.state === 'streaming') {
-        this.#abortCtl?.abort();
-      }
-    });
-    const stop = this.#form.querySelector('[data-action="stop"]');
-    const reset = this.#form.querySelector('[data-action="reset"]');
-    if (stop) this.listen(stop, 'click', () => this.#abortCtl?.abort());
-    if (reset) this.listen(reset, 'click', () => this.reset());
+    if (this.#stopBtn) {
+      this.listen(this.#stopBtn, 'click', () => this.#abortCtl?.abort());
+    }
+  }
+
+  /** @param {string} line */
+  #sendStarter(line) {
+    const input = /** @type {any} */ (this.#window?.querySelector('chat-input'));
+    if (!input) return;
+    input.value = line;
+    // chat-input.value=… emits chat-input:change but doesn't auto-send. Trigger send.
+    const ta = input.querySelector('textarea');
+    if (ta) ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
   }
 
   /* ---------- context ---------- */
@@ -186,7 +196,7 @@ class AIChat extends VBElement {
   #extractContext() {
     const sel = this.#contextSelector();
     if (!sel) return '';
-    return extractContextText(sel, { stripSelectors: 'ai-chat, ai-summary, .ai-chat-shell, .ais-ui' });
+    return extractContextText(sel, { stripSelectors: 'ai-chat, ai-summary, .ais-ui' });
   }
 
   #refreshContextRibbon() {
@@ -225,7 +235,7 @@ class AIChat extends VBElement {
   #composeSystemPrompt() {
     const base = (
       this.getAttribute('system')?.trim()
-      || /** @type {HTMLTemplateElement|null} */ (this.querySelector('template[data-role="system"]'))?.content?.textContent?.trim()
+      || /** @type {HTMLTemplateElement|null} */ (this.querySelector(':scope > template[data-role="system"]'))?.content?.textContent?.trim()
       || ''
     );
     const ctx = this.#extractContext();
@@ -288,35 +298,36 @@ class AIChat extends VBElement {
 
   /* ---------- send ---------- */
 
-  async #send() {
-    if (!this.#input) return;
-    const text = this.#input.value.trim();
-    if (!text) return;
+  /**
+   * Handles a chat-window:send by routing through the resolved provider.
+   * @param {string} message
+   * @param {HTMLElement} typingElement
+   */
+  async #handleSend(message, typingElement) {
+    this.dispatchEvent(new CustomEvent('ai-chat:message', { detail: { role: 'user', text: message }, bubbles: true }));
 
     if (this.#provider === 'deep-link') {
-      window.open(this.#composeDeepLinkURL(text), '_blank', 'noopener,noreferrer');
+      typingElement.remove();
+      window.open(this.#composeDeepLinkURL(message), '_blank', 'noopener,noreferrer');
       return;
     }
-    if (this.#provider === 'unavailable') return;
-    if (this.dataset.state === 'streaming') return;
-
-    this.#input.value = '';
-    this.#renderMessage('user', text);
-    this.dispatchEvent(new CustomEvent('ai-chat:message', { detail: { role: 'user', text }, bubbles: true }));
-
-    const assistantMsg = this.#renderMessage('assistant', '');
-    assistantMsg.dataset.streaming = '';
-    const body = /** @type {HTMLElement} */ (assistantMsg.querySelector('.ai-chat-msg-body'));
+    if (this.#provider === 'unavailable') {
+      this.#populateBubble(typingElement, 'Chat is unavailable in this browser.', { error: true });
+      return;
+    }
 
     this.#setState('streaming');
     this.#abortCtl = new AbortController();
 
+    const bubble = typingElement.querySelector('chat-bubble');
+    if (!bubble) return;
+
     let acc = '';
     try {
       const stream = this.#provider === 'local'
-        ? await this.#localStream(text)
+        ? await this.#localStream(message)
         : callEndpoint(this.getAttribute('endpoint') || '', {
-            prompt: text,
+            prompt: message,
             content: this.#extractContext() || undefined,
             mode: 'chat',
             signal: this.#abortCtl.signal,
@@ -324,23 +335,19 @@ class AIChat extends VBElement {
 
       for await (const chunk of stream) {
         acc += chunk;
-        body.textContent = acc;
-        this.#scrollToBottom();
+        bubble.textContent = acc;
       }
-      delete assistantMsg.dataset.streaming;
+      this.#finishTyping(typingElement, acc || ' ');
       this.dispatchEvent(new CustomEvent('ai-chat:message', { detail: { role: 'assistant', text: acc }, bubbles: true }));
       this.#setState('ready');
     } catch (err) {
-      delete assistantMsg.dataset.streaming;
       const e = /** @type {Error} */ (err);
       if (e?.name === 'AbortError') {
-        if (acc) body.textContent = acc + ' (stopped)';
-        else assistantMsg.remove();
+        this.#finishTyping(typingElement, acc ? `${acc} (stopped)` : '(stopped)');
         this.#setState('ready');
         return;
       }
-      body.textContent = e?.message || 'Generation failed';
-      body.dataset.error = '';
+      this.#populateBubble(typingElement, e?.message || 'Generation failed', { error: true });
       this.#setState('error');
       this.dispatchEvent(new CustomEvent('ai-chat:error', { detail: { error: err }, bubbles: true }));
     } finally {
@@ -361,32 +368,28 @@ class AIChat extends VBElement {
     })();
   }
 
-  /* ---------- render helpers ---------- */
+  /**
+   * @param {HTMLElement} typingElement
+   * @param {string} text
+   */
+  #finishTyping(typingElement, text) {
+    const bubble = typingElement.querySelector('chat-bubble');
+    if (bubble) bubble.textContent = text;
+    typingElement.removeAttribute('data-status');
+    typingElement.removeAttribute('aria-label');
+  }
 
   /**
-   * @param {'user'|'assistant'|'error'} role
+   * @param {HTMLElement} typingElement
    * @param {string} text
-   * @returns {HTMLElement}
+   * @param {{ error?: boolean }} [opts]
    */
-  #renderMessage(role, text) {
-    const msg = document.createElement('div');
-    msg.className = 'ai-chat-msg';
-    msg.dataset.role = role;
-    const r = document.createElement('div');
-    r.className = 'ai-chat-msg-role';
-    r.textContent = role;
-    const b = document.createElement('div');
-    b.className = 'ai-chat-msg-body';
-    b.textContent = text;
-    msg.append(r, b);
-    this.#log?.appendChild(msg);
-    this.#scrollToBottom();
-    return msg;
+  #populateBubble(typingElement, text, opts = {}) {
+    this.#finishTyping(typingElement, text);
+    if (opts.error) typingElement.setAttribute('data-status', 'error');
   }
 
-  #scrollToBottom() {
-    if (this.#log) this.#log.scrollTop = this.#log.scrollHeight;
-  }
+  /* ---------- helpers ---------- */
 
   /** @param {string} state */
   #setState(state) {
@@ -395,7 +398,7 @@ class AIChat extends VBElement {
       const labels = {
         checking: 'Checking availability…',
         unavailable: 'Unavailable',
-        downloadable: 'Ready (model not yet downloaded)',
+        downloadable: 'Ready',
         downloading: 'Downloading model…',
         ready: 'Ready',
         thinking: 'Preparing session…',

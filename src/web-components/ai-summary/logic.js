@@ -68,8 +68,7 @@ class AISummary extends VBElement {
     ui.className = 'ais-ui';
     ui.innerHTML = `
       <div class="ais-controls">
-        <button type="button" class="ais-trigger" disabled>
-          <span aria-hidden="true">✨</span>
+        <button type="button" class="ais-trigger small" disabled>
           <span class="ais-label">Summarize</span>
         </button>
         <span class="ais-status" data-state="checking" role="status">Checking availability…</span>
