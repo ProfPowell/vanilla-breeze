@@ -1,0 +1,180 @@
+/* breakpoint-specimen: Responsive breakpoint visualization */
+
+breakpoint-specimen:not(:defined) {
+  display: block;
+}
+
+breakpoint-specimen {
+  display: block;
+  font-family: var(--font-sans, system-ui);
+  color: var(--color-text, #1a1a1a);
+}
+
+@scope (breakpoint-specimen) {
+  .bps-label {
+    display: block;
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted, #666);
+    margin-block-end: var(--size-s, 0.75rem);
+  }
+
+  .bps-readout {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--size-s, 0.75rem);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-variant-numeric: tabular-nums;
+    margin-block-end: var(--size-m, 1rem);
+  }
+
+  .bps-width {
+    font-size: var(--font-size-l, 1.25rem);
+    font-weight: 600;
+  }
+
+  .bps-active {
+    font-size: var(--font-size-sm, 0.875rem);
+    padding: var(--size-3xs, 0.125rem) var(--size-xs, 0.5rem);
+    border-radius: var(--radius-s, 0.25rem);
+    background: var(--color-surface-raised, oklch(96% 0 0));
+    color: var(--color-text-muted, #666);
+    border: 1px solid var(--color-border, oklch(85% 0 0));
+  }
+
+  .bps-active[data-active]:not([data-active=""]) {
+    background: var(--color-accent-soft, oklch(94% 0.04 260));
+    color: var(--color-accent, oklch(45% 0.18 260));
+    border-color: currentColor;
+  }
+
+  .bps-ruler {
+    position: relative;
+    block-size: var(--size-xl, 2.5rem);
+    margin: var(--size-s, 0.75rem) 0 var(--size-l, 1.5rem);
+    border-block-start: 2px solid var(--color-border, oklch(85% 0 0));
+  }
+
+  .bps-cursor {
+    position: absolute;
+    inset-block: -0.5rem auto;
+    inline-size: 2px;
+    block-size: calc(100% + 1rem);
+    background: var(--color-accent, oklch(45% 0.18 260));
+    inset-inline-start: var(--bps-pos, 0%);
+    transform: translateX(-1px);
+    transition: inset-inline-start 0.12s linear;
+    z-index: 1;
+  }
+
+  .bps-stop {
+    position: absolute;
+    inset-block-start: -2px;
+    inset-inline-start: var(--bps-pos, 0%);
+    display: block;
+  }
+
+  .bps-tick {
+    display: block;
+    inline-size: 1px;
+    block-size: var(--size-xs, 0.5rem);
+    background: var(--color-text-muted, #666);
+  }
+
+  .bps-stop-label {
+    position: absolute;
+    inset-block-start: var(--size-s, 0.75rem);
+    inset-inline-start: 0;
+    transform: translateX(-50%);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted, #666);
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+
+  .bps-stop[data-current] .bps-stop-label {
+    color: var(--color-accent, oklch(45% 0.18 260));
+    font-weight: 600;
+  }
+
+  .bps-stop[data-current] .bps-tick {
+    background: var(--color-accent, oklch(45% 0.18 260));
+    inline-size: 2px;
+  }
+
+  .bps-list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--size-2xs, 0.25rem) var(--size-m, 1rem);
+    margin: 0;
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .bps-row {
+    display: contents;
+  }
+
+  .bps-row dt {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-weight: 600;
+    color: var(--color-text-muted, #666);
+  }
+
+  .bps-row dd {
+    margin: 0;
+    color: var(--color-text-muted, #666);
+  }
+
+  .bps-row[data-current] dt,
+  .bps-row[data-current] dd {
+    color: var(--color-accent, oklch(45% 0.18 260));
+    font-weight: 600;
+  }
+}
+
+/* Pure-CSS active-row highlight (viewport mode, no JS).
+   Mirrors the canonical --bp-* values in src/tokens/breakpoints.css —
+   keep these in sync. JS layers a more precise data-current attribute
+   on top once it runs. */
+
+breakpoint-specimen:not([data-observe]) [data-bp="sm"] { font-style: italic; }
+
+@media (width >= 37.5rem) {
+  breakpoint-specimen:not([data-observe]) [data-bp="sm"] { font-style: normal; }
+  breakpoint-specimen:not([data-observe]) .bps-row[data-bp="sm"] dt,
+  breakpoint-specimen:not([data-observe]) .bps-row[data-bp="sm"] dd {
+    color: var(--color-text, currentColor);
+  }
+}
+
+@media (width >= 48rem) {
+  breakpoint-specimen:not([data-observe]) .bps-row[data-bp="md"] dt,
+  breakpoint-specimen:not([data-observe]) .bps-row[data-bp="md"] dd {
+    color: var(--color-text, currentColor);
+  }
+}
+
+@media (width >= 64rem) {
+  breakpoint-specimen:not([data-observe]) .bps-row[data-bp="lg"] dt,
+  breakpoint-specimen:not([data-observe]) .bps-row[data-bp="lg"] dd {
+    color: var(--color-text, currentColor);
+  }
+}
+
+@media (width >= 87.5rem) {
+  breakpoint-specimen:not([data-observe]) .bps-row[data-bp="xl"] dt,
+  breakpoint-specimen:not([data-observe]) .bps-row[data-bp="xl"] dd {
+    color: var(--color-text, currentColor);
+  }
+}
+
+@media print {
+  breakpoint-specimen .bps-readout,
+  breakpoint-specimen .bps-ruler {
+    display: none;
+  }
+}

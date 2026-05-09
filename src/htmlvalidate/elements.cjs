@@ -298,6 +298,15 @@ module.exports = {
     }
   },
 
+  "breakpoint-specimen": {
+    attributes: {
+      "tokens": {},
+      "prefix": {},
+      "label": {},
+      "data-observe": {}
+    }
+  },
+
   "calendar-wc": {
     attributes: {
       "data-month": {},

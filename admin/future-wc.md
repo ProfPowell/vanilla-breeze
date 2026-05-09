@@ -64,7 +64,7 @@ Current surface: **67 web components** across 7 categories.
 | `layout-specimen` | New | Visual layout pattern specimen. Complements spacing/type/token specimens. |
 | `accessibility-specimen` | New | A11y checklist and contrast ratio specimen for design system docs. |
 | `animation-specimen` | New | Motion/easing specimen display. |
-| `breakpoint-specimen` | New | Responsive breakpoint visualization. Bead: `vanilla-breeze-a7a7`. |
+| ~~`breakpoint-specimen`~~ | **Shipped** as `breakpoint-specimen` (`src/web-components/breakpoint-specimen/`). Bead: `vanilla-breeze-a7a7`. | |
 
 
 ## Planning

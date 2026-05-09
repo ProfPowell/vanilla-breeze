@@ -61,6 +61,7 @@ import './font-pairer/logic.js';
 import './type-specimen/logic.js';
 import './spacing-specimen/logic.js';
 import './motion-specimen/logic.js';
+import './breakpoint-specimen/logic.js';
 import './theme-export/logic.js';
 import './emoji-picker/logic.js';
 import './settings-panel/logic.js';
