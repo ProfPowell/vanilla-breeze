@@ -307,6 +307,17 @@ module.exports = {
     }
   },
 
+  "burndown-chart": {
+    attributes: {
+      "start": {},
+      "end": {},
+      "total": {},
+      "unit": {},
+      "label": {},
+      "weekends": { enum: ["include", "exclude"] }
+    }
+  },
+
   "calendar-wc": {
     attributes: {
       "data-month": {},

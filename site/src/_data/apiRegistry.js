@@ -1548,6 +1548,74 @@ export default {
     "childAttributes": [],
     "structure": []
   },
+  "burndown-chart": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "burndown-chart",
+    "type": "web-component",
+    "description": "Sprint burndown plot. Wraps <chart-wc> with auto-computed ideal line and scope-change annotations.",
+    "attributes": [
+      {
+        "name": "start",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Sprint start date (ISO 8601, required)"
+      },
+      {
+        "name": "end",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Sprint end date (ISO 8601, inclusive, required)"
+      },
+      {
+        "name": "total",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Total points/items at sprint start (required)"
+      },
+      {
+        "name": "unit",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Display unit, default \"points\""
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional heading text (e.g. \"Sprint 14\")"
+      },
+      {
+        "name": "weekends",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "include",
+          "exclude"
+        ],
+        "description": "Whether weekends count toward the ideal-line slope"
+      }
+    ],
+    "structure": [
+      {
+        "element": "<template>",
+        "description": "Inline data source: <tr> rows with cells [date YYYY-MM-DD, remaining, optional ±delta scope-change]"
+      }
+    ],
+    "childAttributes": [],
+    "events": [
+      {
+        "name": "burndown-chart:ready",
+        "detail": "{ dayCount, total, scopeChanges }",
+        "description": "Fired after the chart renders"
+      }
+    ]
+  },
   "calendar-wc": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "calendar-wc",
