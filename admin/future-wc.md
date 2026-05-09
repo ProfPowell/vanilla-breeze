@@ -52,7 +52,7 @@ Current surface: **67 web components** across 7 categories.
 |-----------|------|-------|
 | `reaction-bar` | New | Emoji reaction picker (GitHub-style). |
 | `comment-box` | New | Standalone comment form with markdown preview. |
-| `avatar-group` | New | Overlapping avatar stack for showing participants. Bead: `vanilla-breeze-pahv`. |
+| ~~`avatar-group`~~ | **Superseded** by `<user-avatar>` + `<layout-cluster data-layout-overlap>`. See [user-avatar docs](https://vanilla-breeze.com/docs/elements/custom-elements/user-avatar/#avatar-group). Bead closed: `vanilla-breeze-pahv`. | |
 | `activity-feed` | New | Timeline of user actions with relative timestamps. |
 | `poll-wc` | New | Simple poll/survey with live results. |
 | `live-indicator` | New | Pulsing live/online status badge. |
