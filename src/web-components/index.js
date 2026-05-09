@@ -122,6 +122,7 @@ import './work-item/logic.js';
 import './user-story/logic.js';
 import './kanban-board/logic.js';
 import './quadrant-grid/logic.js';
+import './risk-register/logic.js';
 import './site-map-wc/logic.js';
 import './adr-wc/logic.js';
 import './iron-triangle/logic.js';

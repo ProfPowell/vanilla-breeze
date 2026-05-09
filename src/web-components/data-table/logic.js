@@ -10,7 +10,7 @@
  * Table header attributes:
  * @attr {string} data-sort    - Column sort type: "string", "number", "date"
  * @attr {number} data-weight  - Column weight (multiplier for weighted-sum rollups)
- * @attr {string} data-rollup  - Compute this column from siblings: "sum" | "weighted-sum" | "avg" | "max"
+ * @attr {string} data-rollup  - Compute this column from siblings: "sum" | "weighted-sum" | "product" | "avg" | "max"
  * @attr {string} data-heatmap - Tint this column's cells by relative value: "auto" | "low-good" | "high-good"
  *
  * Cell attributes:
@@ -274,6 +274,8 @@ class DataTable extends VBElement {
     let count = 0;
     let max = -Infinity;
     let weightedSum = 0;
+    let product = 1;
+    let productHadValue = false;
     for (let i = 0; i < cells.length; i++) {
       if (i === skipCol) continue;
       if (this.#rollups[i]) continue;
@@ -283,6 +285,8 @@ class DataTable extends VBElement {
       sum += v;
       count++;
       if (v > max) max = v;
+      product *= v;
+      productHadValue = true;
       const w = this.#weights[i];
       if (w !== null) weightedSum += v * w;
     }
@@ -291,6 +295,7 @@ class DataTable extends VBElement {
       case 'avg':           return count ? sum / count : 0;
       case 'max':           return max === -Infinity ? 0 : max;
       case 'weighted-sum':  return weightedSum;
+      case 'product':       return productHadValue ? product : 0;
       default:              return sum;
     }
   }

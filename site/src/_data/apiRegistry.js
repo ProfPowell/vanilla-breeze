@@ -6726,6 +6726,47 @@ export default {
       }
     ]
   },
+  "risk-register": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "risk-register",
+    "type": "web-component",
+    "description": "Composing preset that renders a sortable risk table + a likelihood × impact quadrant grid from one source",
+    "attributes": [
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to JSON [{ id, title, likelihood, impact, owner, mitigation }]"
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional heading shown above the layout"
+      }
+    ],
+    "structure": [
+      {
+        "element": "<template>",
+        "description": "Inline data source: <tr> rows with cells [Title, Likelihood, Impact, Owner, Mitigation]"
+      }
+    ],
+    "childAttributes": [],
+    "events": [
+      {
+        "name": "risk-register:ready",
+        "detail": "{ count }",
+        "description": "Fired after the table + grid render"
+      },
+      {
+        "name": "risk-register:change",
+        "detail": "{ row, field, value }",
+        "description": "Reserved: emitted on inline edits (future)"
+      }
+    ]
+  },
   "score-card": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "score-card",

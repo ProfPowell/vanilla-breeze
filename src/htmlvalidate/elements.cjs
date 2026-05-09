@@ -1158,6 +1158,13 @@ module.exports = {
     }
   },
 
+  "risk-register": {
+    attributes: {
+      "src": {},
+      "label": {}
+    }
+  },
+
   "score-card": {
     flow: true,
     permittedContent: ["@flow"],
