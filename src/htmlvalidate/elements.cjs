@@ -1060,6 +1060,13 @@ module.exports = {
     }
   },
 
+  "reading-progress": {
+    attributes: {
+      "data-for": {},
+      "data-position": {}
+    }
+  },
+
   "recently-visited": {
     attributes: {
       "limit": {},
@@ -1459,7 +1466,8 @@ module.exports = {
       "avatar": {},
       "quote": {},
       "compact": { boolean: true },
-      "src": {}
+      "src": {},
+      "data-list-stories": { boolean: true }
     }
   },
 

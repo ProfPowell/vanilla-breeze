@@ -6028,6 +6028,30 @@ export default {
     "childAttributes": [],
     "structure": []
   },
+  "reading-progress": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "reading-progress",
+    "type": "web-component",
+    "description": "Fixed-position scroll progress indicator bar",
+    "attributes": [
+      {
+        "name": "data-for",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of the target element to bound progress against. Without it, tracks document scroll."
+      },
+      {
+        "name": "data-position",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "string",
+        "description": "Where to anchor the bar: 'top' (default) or 'bottom'"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
   "recently-visited": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "recently-visited",
@@ -8244,6 +8268,13 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "URL to JSON file containing persona data"
+      },
+      {
+        "name": "data-list-stories",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Render a Stories section that auto-lists every <user-story persona-id=\"…\"> matching this persona's id. Updates live when stories are added, removed, or relabeled."
       }
     ],
     "slots": [

@@ -40,7 +40,7 @@ Current surface: **67 web components** across 7 categories.
 | `diff-viewer` | New | Side-by-side or unified diff display. Extends `change-set` concept. |
 | `comment-thread` | New | Inline commenting system with replies. |
 | `annotation-layer` | New | Overlay annotations on any content block. |
-| `reading-progress` | New | Scroll progress indicator bar. Pairs with `page-stats`. Bead: `vanilla-breeze-13rv`. |
+| ~~`reading-progress`~~ | **Shipped** as `reading-progress` (`src/web-components/reading-progress/`). Bead: `vanilla-breeze-13rv`. | |
 | `content-feed` | New | Paginated/infinite-scroll content feed. |
 | `search-results` | New | Structured search results display with highlighting. Pairs with `site-search`. |
 | `bread-crumb` | New | Auto-generated breadcrumb from URL structure. |

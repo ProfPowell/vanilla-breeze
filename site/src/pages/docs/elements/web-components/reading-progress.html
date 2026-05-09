@@ -1,0 +1,107 @@
+---
+layout: element
+title: "reading-progress"
+description: "Fixed-position scroll progress indicator bar. CSS-driven on modern browsers; passive scroll listener as fallback."
+elementName: reading-progress
+category: component
+currentPath: /docs/elements/web-components/reading-progress/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;reading-progress&gt;</code> component shows a thin bar fixed to the top or bottom of the viewport that fills as the reader scrolls. It joins the doc-side family alongside <code>&lt;page-stats&gt;</code>, <code>&lt;page-toc&gt;</code>, and <code>&lt;page-info&gt;</code>.</p>
+  <p>The bar is driven by CSS <code>animation-timeline: scroll(root block)</code> when supported, so modern browsers update the visual without running a scroll listener. JavaScript only takes over when the browser lacks support, or when <code>data-for</code> bounds progress against a specific element.</p>
+
+  <browser-window url="reading-progress" src="/docs/examples/demos/reading-progress-basic.html"></browser-window>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-for</code></td>
+        <td>string</td>
+        <td>—</td>
+        <td>ID of the element whose top/bottom bound the progress range. Without it, tracks document scroll.</td>
+      </tr>
+      <tr>
+        <td><code>data-position</code></td>
+        <td>string</td>
+        <td><code>top</code></td>
+        <td>Which viewport edge anchors the bar: <code>top</code> or <code>bottom</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>CSS Custom Properties</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>--reading-progress-color</code></td>
+        <td><code>var(--color-accent)</code></td>
+        <td>Fill color of the bar.</td>
+      </tr>
+      <tr>
+        <td><code>--reading-progress-height</code></td>
+        <td><code>3px</code></td>
+        <td>Thickness of the bar.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Usage</h2>
+
+  <h3>Track document scroll</h3>
+  <p>With no <code>data-for</code>, the bar fills as the user scrolls the page. Modern browsers run this entirely in CSS — no scroll listener:</p>
+  <code-block language="html" data-escape>
+<reading-progress></reading-progress>
+  </code-block>
+
+  <h3>Bound to a specific article</h3>
+  <p>Point <code>data-for</code> at a content element and the bar fills as that element scrolls through the viewport. This path requires JS:</p>
+  <code-block language="html" data-escape>
+<reading-progress data-for="article-content" data-position="top">
+  <progress max="100" value="0" aria-label="Reading progress"></progress>
+</reading-progress>
+  </code-block>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>The component layers cleanly:</p>
+  <ol>
+    <li><strong>HTML.</strong> A child <code>&lt;progress&gt;</code> with <code>aria-label</code> is the semantic anchor — meaningful before any script or CSS runs.</li>
+    <li><strong>CSS.</strong> Modern browsers animate the bar via <code>animation-timeline: scroll(root block)</code>. No JavaScript is needed when tracking the document.</li>
+    <li><strong>JS.</strong> When <code>data-for</code> is set or <code>animation-timeline</code> is unsupported, a passive, <code>requestAnimationFrame</code>-throttled scroll listener updates the bar.</li>
+  </ol>
+  <p>The pure-CSS path always tracks document scroll. Use <code>data-for</code> only when the bar must reflect a specific article's reading position.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <p>The inner <code>&lt;progress&gt;</code> element exposes the bar to assistive technology with a clear <code>aria-label</code>. The CSS-driven path keeps the bar visual; JS-driven path additionally updates the <code>value</code> attribute on each frame so screen readers can report the current percentage.</p>
+  <p>The bar is hidden in print (<code>@media print</code>) and respects <code>prefers-reduced-motion</code> by suppressing animation transitions.</p>
+</section>

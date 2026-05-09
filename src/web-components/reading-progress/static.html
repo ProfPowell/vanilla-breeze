@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reading Progress — Static Fallback</title>
+</head>
+<body>
+  <!--
+    Static fallback for <reading-progress>.
+
+    Upgrade relationship:
+    - Without JS, modern browsers: CSS scroll-timeline drives the bar
+      via animation-timeline: scroll(root block). No script needed when
+      tracking the whole document.
+    - Without JS, older browsers: the inner <progress> remains semantic
+      and announceable; the visual bar simply stays at 0%.
+    - With JS: the component upgrades, and falls back to a passive
+      scroll listener when scroll-timeline is unsupported OR when
+      data-for binds progress to a specific element's bounds.
+
+    The <progress> child is the AT anchor — keep it in markup so the
+    component is meaningful before any script runs.
+  -->
+
+  <reading-progress data-for="article-content" data-position="top">
+    <progress max="100" value="0" aria-label="Reading progress"></progress>
+  </reading-progress>
+
+  <main>
+    <article id="article-content">
+      <h1>Walking</h1>
+      <p>
+        Walking is one of the simplest forms of exercise available. It
+        requires no equipment and can be done almost anywhere.
+      </p>
+    </article>
+  </main>
+</body>
+</html>

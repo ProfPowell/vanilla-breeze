@@ -1,0 +1,74 @@
+/* reading-progress: Scroll progress indicator bar */
+
+@property --vb-reading-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+reading-progress:not(:defined) {
+  display: none;
+}
+
+reading-progress {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: var(--reading-progress-height, 3px);
+  background: transparent;
+  z-index: 100;
+  pointer-events: none;
+}
+
+reading-progress[data-position="bottom"] {
+  inset-block-start: auto;
+  inset-block-end: 0;
+}
+
+@scope (reading-progress) {
+  /* Native <progress> kept for AT semantics, visually replaced by ::after */
+  progress {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    appearance: none;
+    border: 0;
+    background: transparent;
+    opacity: 0;
+  }
+}
+
+reading-progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--reading-progress-color, var(--color-accent, currentColor));
+  transform: scaleX(var(--vb-reading-progress));
+  transform-origin: left center;
+  will-change: transform;
+}
+
+/* CSS-driven path: full document scroll, when no target is bound. */
+@supports (animation-timeline: scroll()) {
+  @keyframes vb-reading-progress-fill {
+    to { --vb-reading-progress: 1; }
+  }
+  reading-progress:not([data-for])::after {
+    animation: vb-reading-progress-fill linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  reading-progress::after {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media print {
+  reading-progress {
+    display: none !important;
+  }
+}
