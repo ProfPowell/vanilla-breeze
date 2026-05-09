@@ -13,23 +13,23 @@ Current surface: **67 web components** across 7 categories.
 | `rich-editor` | New | Rich text editor. ProseMirror AST-based, on hold until VB stabilizes. See `admin/r-n-d/editor-plan.md`. Upscale of `contenteditable`. |
 | `stepper-wc` | New | Numeric stepper with +/- buttons. Complements `data-stepper` attribute with richer UI. |
 | ~~`notification-center`~~ | **Shipped as `notification-wc`** (banner + panel modes; see `admin/r-n-d/april13-plan/notification-wc.md`) | |
-| `pop-over` | New | General-purpose popover content container beyond tooltips. Anchored positioning. |
+| `pop-over` | New | General-purpose popover content container beyond tooltips. Anchored positioning. **Consolidation target**: extract shared Popover-API + anchored-positioning core currently special-cased in `tool-tip`; intended to underpin `context-menu`, `drop-down`, `selection-menu`, `combo-box`. See `popover_display_gotcha` memory. Bead: `vanilla-breeze-mz0p`. |
 
 ## Data & Charts
 
 | Component | Type | Notes |
 |-----------|------|-------|
-| `sparkline-wc` | New | Inline sparkline chart. Bead exists: `vanilla-breeze-i22l`. |
-| `data-grid` | New | Virtualized grid for large datasets. Beyond `data-table` — cell editing, virtual scroll. |
-| `pivot-table` | New | Cross-tabulation table with drag-to-pivot dimensions. |
-| `stat-card` | New | Single metric display with trend indicator. Common dashboard primitive. |
-| `progress-tracker` | New | Multi-step progress bar. Complements wizard forms. |
+| ~~`sparkline-wc`~~ | **Shipped** as `<chart-wc data-size="sparkline">` — inline mode strips axes/legend/tooltip. Bead `vanilla-breeze-3qdj` (closed). Original `vanilla-breeze-i22l` closed in favor of extending `chart-wc`. | |
+| `data-grid` | **Prefer attributes on `data-table`** | Cell editing / virtual scroll should be added as `data-table` attributes (following the `decision-matrix` precedent — `data-weight`, `data-rollup`, `data-heatmap`). Don't ship a parallel grid component. |
+| `pivot-table` | **Prefer attribute extension** | Same: explore as `data-table` pivot attributes before scaffolding a separate component. |
+| ~~`stat-card`~~ | **Shipped** as `score-card` (`src/web-components/score-card/`). KPI tile with title/value/change indicator/sparkline (composed with `chart-wc`)/icon. Wrap in `<a href>` for drill-down. | |
+| `progress-tracker` | New | Multi-step progress bar. Complements wizard forms. **Overlap check**: `slide-accept` already handles multi-step accept flows; scope this to non-accept progress (forms, onboarding) or fold in. |
 
 ## Media
 
 | Component | Type | Notes |
 |-----------|------|-------|
-| `pdf-viewer` | New | Embedded PDF viewer with page nav. |
+| `pdf-viewer` | In progress (external) | Standalone build at https://profpowell.github.io/pdf-viewer/. **Integration task**: ensure VB design-token compatibility (colors, spacing, typography, focus rings) before importing. Theme-pack tokens should drive UI chrome — no hardcoded values. Bead: `vanilla-breeze-3xwu`. |
 | `model-viewer` | New | 3D model viewer. Wraps `<model-viewer>` or Three.js. |
 | `map-viewer` | New | Interactive map beyond static tiles. Zoom, pan, markers. Extends `geo-map`. |
 
@@ -37,13 +37,13 @@ Current surface: **67 web components** across 7 categories.
 
 | Component | Type | Notes |
 |-----------|------|-------|
-| `diff-viewer` | New | Side-by-side or unified diff display. Extends `change-set` concept. |
-| `comment-thread` | New | Inline commenting system with replies. |
+| `diff-viewer` | New | Side-by-side or unified diff display. **Overlap check**: VB already has `change-set`, `compare-surface`, and `review-surface` in this neighborhood. Decide whether `diff-viewer` is a 4th component or a recipe/preset on top of one of those before scaffolding — risk of repeating the pre-May-2026 Planning sprawl. |
+| `comment-thread` | Expand existing | Inline commenting system with replies. **Note**: `comment-wc` exists as a stub today (inline action button for `selection-menu`). This entry should be framed as expanding/replacing the stub, not a net-new component. |
 | `annotation-layer` | New | Overlay annotations on any content block. |
 | ~~`reading-progress`~~ | **Shipped** as `reading-progress` (`src/web-components/reading-progress/`). Bead: `vanilla-breeze-13rv`. | |
 | `content-feed` | New | Paginated/infinite-scroll content feed. |
-| `search-results` | New | Structured search results display with highlighting. Pairs with `site-search`. |
-| `bread-crumb` | New | Auto-generated breadcrumb from URL structure. |
+| `search-results` | New | Structured search results display with highlighting. **Overlap check**: `site-search` already does result highlighting per its own api.json. Either fold this into `site-search` slots/recipe, or scope `search-results` narrowly to standalone (non-dialog) result lists. |
+| `bread-crumb` | New | Auto-generated breadcrumb from URL structure. **Already used as a pattern**: `<nav class="breadcrumb">` appears across `site/src/layouts/{element,pattern,attribute}.html` and snippet pages. Component would formalize the existing pattern with auto-generation from `pathname` + structured-data hooks. Bead: `vanilla-breeze-yr9r`. |
 | `version-switcher` | New | Documentation version selector. |
 
 ## Social
@@ -63,7 +63,7 @@ Current surface: **67 web components** across 7 categories.
 |-----------|------|-------|
 | `layout-specimen` | New | Visual layout pattern specimen. Complements spacing/type/token specimens. |
 | `accessibility-specimen` | New | A11y checklist and contrast ratio specimen for design system docs. |
-| `animation-specimen` | New | Motion/easing specimen display. |
+| ~~`animation-specimen`~~ | **Shipped** as `motion-specimen` (`src/web-components/motion-specimen/`) — easing curves with animated preview dots and durations as bars. Same component, different name. | |
 | ~~`breakpoint-specimen`~~ | **Shipped** as `breakpoint-specimen` (`src/web-components/breakpoint-specimen/`). Bead: `vanilla-breeze-a7a7`. | |
 
 
