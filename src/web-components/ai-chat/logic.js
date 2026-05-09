@@ -108,17 +108,21 @@ class AIChat extends VBElement {
 
   #renderShell() {
     const placeholder = this.getAttribute('placeholder') || 'Type a message…';
+    // Aux elements (ribbon / notice / starters) live OUTSIDE chat-window so
+    // they don't disrupt its `grid-template-rows: auto 1fr auto` layout.
+    // Chat-window's expected children are: <script[data-participants]>,
+    // <header>, <chat-thread>, <chat-input>.
     const tpl = document.createElement('template');
     tpl.innerHTML = `
+      <p class="ai-chat-ribbon" hidden></p>
+      <p class="ai-chat-notice" hidden></p>
+      <div class="ai-chat-starters" role="group" aria-label="Starter prompts" hidden></div>
       <chat-window empty-message="Send a message to start a session.">
         <script type="application/json" data-participants>${JSON.stringify(PARTICIPANTS)}</script>
         <header>
           <span class="ai-chat-state" role="status" aria-live="polite">Checking…</span>
           <button type="button" class="ai-chat-stop small" data-action="stop">Stop</button>
         </header>
-        <p class="ai-chat-ribbon" hidden></p>
-        <p class="ai-chat-notice" hidden></p>
-        <div class="ai-chat-starters" role="group" aria-label="Starter prompts" hidden></div>
         <chat-thread role="log" aria-label="Chat" aria-live="polite"></chat-thread>
         <chat-input name="message">
           <textarea data-grow rows="1" data-max-rows="8" required></textarea>
@@ -135,9 +139,9 @@ class AIChat extends VBElement {
     this.#window     = /** @type {HTMLElement} */       (this.querySelector(':scope > chat-window'));
     this.#stateLabel = /** @type {HTMLElement} */       (this.querySelector('.ai-chat-state'));
     this.#stopBtn    = /** @type {HTMLButtonElement} */ (this.querySelector('.ai-chat-stop'));
-    this.#ribbon     = /** @type {HTMLElement} */       (this.querySelector('.ai-chat-ribbon'));
-    this.#notice     = /** @type {HTMLElement} */       (this.querySelector('.ai-chat-notice'));
-    this.#starters   = /** @type {HTMLElement} */       (this.querySelector('.ai-chat-starters'));
+    this.#ribbon     = /** @type {HTMLElement} */       (this.querySelector(':scope > .ai-chat-ribbon'));
+    this.#notice     = /** @type {HTMLElement} */       (this.querySelector(':scope > .ai-chat-notice'));
+    this.#starters   = /** @type {HTMLElement} */       (this.querySelector(':scope > .ai-chat-starters'));
 
     const ta = this.querySelector('chat-input textarea');
     if (ta) /** @type {HTMLTextAreaElement} */ (ta).placeholder = placeholder;
@@ -280,6 +284,8 @@ class AIChat extends VBElement {
     // @ts-expect-error — LanguageModel is a Chrome built-in not in the TS lib.
     this.#session = await LanguageModel.create({
       initialPrompts,
+      expectedInputs:  [{ type: 'text', languages: ['en'] }],
+      expectedOutputs: [{ type: 'text', languages: ['en'] }],
       monitor: (m) => {
         m.addEventListener('downloadprogress', (/** @type {any} */ e) => {
           this.#setState('downloading');

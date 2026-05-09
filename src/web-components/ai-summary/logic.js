@@ -204,10 +204,12 @@ class AISummary extends VBElement {
   async #localStream(text) {
     // @ts-expect-error — Summarizer is a Chrome built-in not in the TS lib.
     const summarizer = await Summarizer.create({
-      type:          this.getAttribute('type')           || 'key-points',
-      format:        this.getAttribute('format')         || 'markdown',
-      length:        this.getAttribute('length')         || 'medium',
-      sharedContext: this.getAttribute('shared-context') || undefined,
+      type:           this.getAttribute('type')           || 'key-points',
+      format:         this.getAttribute('format')         || 'markdown',
+      length:         this.getAttribute('length')         || 'medium',
+      sharedContext:  this.getAttribute('shared-context') || undefined,
+      expectedInputLanguages:  ['en'],
+      outputLanguage:          'en',
       monitor: (m) => {
         m.addEventListener('downloadprogress', (/** @type {any} */ e) => {
           this.#setState('downloading');
