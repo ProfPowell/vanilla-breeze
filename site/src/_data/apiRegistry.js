@@ -3101,6 +3101,35 @@ export default {
         "description": "Enable sorting on this column with the specified comparator"
       },
       {
+        "name": "data-weight",
+        "on": "th",
+        "type": "number",
+        "description": "Column weight; multiplier applied to cell values for weighted-sum rollups"
+      },
+      {
+        "name": "data-rollup",
+        "on": "th",
+        "type": "enum",
+        "values": [
+          "sum",
+          "weighted-sum",
+          "avg",
+          "max"
+        ],
+        "description": "Compute this column's cells from sibling cells in the same row"
+      },
+      {
+        "name": "data-heatmap",
+        "on": "th",
+        "type": "enum",
+        "values": [
+          "auto",
+          "low-good",
+          "high-good"
+        ],
+        "description": "Tint this column's cells by relative value bucket (low/mid/high)"
+      },
+      {
         "name": "data-sort-value",
         "on": "td",
         "type": "string",

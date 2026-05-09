@@ -479,6 +479,52 @@ table.renderRow = (row, cols) =&gt; {
 
   {% from "partials/attribute-table.njk" import attributeTable, structureTable, childAttributeTable, eventsTable %}
   <section>
+    <h2>Decision Matrix recipe</h2>
+    <p>Set <code>data-weight="N"</code> on each criterion column header, <code>data-rollup="weighted-sum"</code> on a Score column, and <code>data-heatmap</code> for visual scanning. The component computes the score per row from the weighted criteria, sets <code>data-sort-value</code> so the Score column remains sortable, and tints cells low/mid/high based on relative value within the column.</p>
+
+    <browser-window
+      url="data-table-decision-matrix"
+      src="/docs/examples/demos/data-table-decision-matrix.html">
+    </browser-window>
+
+    <code-block language="html" data-escape>
+<data-table>
+  <table>
+    <thead>
+      <tr>
+        <th data-sort="string">Option</th>
+        <th data-sort="number" data-weight="3" data-heatmap="high-good">Performance (×3)</th>
+        <th data-sort="number" data-weight="2" data-heatmap="high-good">Maintainability (×2)</th>
+        <th data-sort="number" data-weight="1" data-heatmap="high-good">Ecosystem (×1)</th>
+        <th data-sort="number" data-rollup="weighted-sum" data-heatmap="high-good">Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Library A</td><td>5</td><td>4</td><td>3</td><td></td></tr>
+      <tr><td>Library B</td><td>3</td><td>5</td><td>5</td><td></td></tr>
+    </tbody>
+  </table>
+</data-table>
+    </code-block>
+
+    <p>This recipe replaces a dedicated <code>decision-matrix</code> component — there's no new element needed; the rule is "behaviour on existing element → <code>data-*</code> attribute".</p>
+
+    <h3>Rollup kinds</h3>
+    <ul>
+      <li><code>sum</code> — sum of all sibling numeric cells.</li>
+      <li><code>weighted-sum</code> — each sibling cell × the <code>data-weight</code> on its column header.</li>
+      <li><code>avg</code> — average of all sibling numeric cells.</li>
+      <li><code>max</code> — largest sibling numeric value.</li>
+    </ul>
+
+    <h3>Heatmap modes</h3>
+    <ul>
+      <li><code>high-good</code> (also <code>auto</code>) — large values tinted green, small values red.</li>
+      <li><code>low-good</code> — inverted; small values green (e.g. risk severity, defect count).</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Attributes Reference</h2>
 
     <h3>Host Attributes</h3>

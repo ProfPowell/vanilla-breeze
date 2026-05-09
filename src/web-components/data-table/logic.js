@@ -8,7 +8,10 @@
  * @attr {number} data-paginate - Enable pagination with N rows per page
  *
  * Table header attributes:
- * @attr {string} data-sort - Column sort type: "string", "number", "date"
+ * @attr {string} data-sort    - Column sort type: "string", "number", "date"
+ * @attr {number} data-weight  - Column weight (multiplier for weighted-sum rollups)
+ * @attr {string} data-rollup  - Compute this column from siblings: "sum" | "weighted-sum" | "avg" | "max"
+ * @attr {string} data-heatmap - Tint this column's cells by relative value: "auto" | "low-good" | "high-good"
  *
  * Cell attributes:
  * @attr {string} data-sort-value - Custom value for sorting
@@ -17,6 +20,7 @@
  * State attributes (set by component):
  * @attr {string} aria-sort - Sort direction on <th>: "none", "ascending", "descending"
  * @attr {boolean} data-state-hidden - Row is hidden (filtered or paginated)
+ * @attr {string} data-heat-level - Heatmap bucket on <td>: "low", "mid", "high"
  *
  * @fires data-table:sort - When a column is sorted { column, direction, columnName }
  * @fires data-table:filter - When filter query changes { query, count }
@@ -125,6 +129,13 @@ class DataTable extends VBElement {
       this.#rows.push({ id });
     }
 
+    // Read column-derived metadata (weights, rollups, heatmaps) once.
+    this.#readHeaderMetadata();
+
+    // Apply rollups before sorting/filtering so computed cells participate.
+    this.#applyRollups();
+    this.#applyHeatmaps();
+
     // Set up sorting
     this.#setupSorting();
 
@@ -179,6 +190,8 @@ class DataTable extends VBElement {
     });
     this.#rows = next;
     this.#allRows = [...this.#tbody.querySelectorAll(':scope > tr:not([data-expand-content])')];
+    this.#applyRollups();
+    this.#applyHeatmaps();
     this.#applyFilter(this.#filterQuery);
     this.dispatchEvent(new CustomEvent('data-table:rows-changed', {
       detail: { rows: next, added: result.added, moved: result.moved, removed: result.removed, source: 'api' },
@@ -215,6 +228,113 @@ class DataTable extends VBElement {
       tr.appendChild(td);
     }
     return tr;
+  }
+
+  // ── Rollups & heatmaps ──────────────────────────────────────────
+
+  /** @type {Array<number|null>} */
+  #weights = [];
+  /** @type {Array<string|null>} */
+  #rollups = [];
+  /** @type {Array<string|null>} */
+  #heatmaps = [];
+
+  #readHeaderMetadata() {
+    const headers = [...(this.#table.tHead?.rows[0]?.cells || [])];
+    this.#weights = headers.map((th) => {
+      const w = parseFloat(th.getAttribute('data-weight'));
+      return Number.isFinite(w) ? w : null;
+    });
+    this.#rollups = headers.map((th) => th.getAttribute('data-rollup') || null);
+    this.#heatmaps = headers.map((th) => th.getAttribute('data-heatmap') || null);
+  }
+
+  #applyRollups() {
+    if (!this.#rollups.some(Boolean)) return;
+    for (let colIdx = 0; colIdx < this.#rollups.length; colIdx++) {
+      const kind = this.#rollups[colIdx];
+      if (!kind) continue;
+      for (const row of this.#allRows) {
+        const cell = row.children[colIdx];
+        if (!cell) continue;
+        const value = this.#computeRollup(row, colIdx, kind);
+        const formatted = DataTable.#formatRollup(value);
+        cell.textContent = formatted;
+        cell.setAttribute('data-rollup-value', String(value));
+        if (!cell.hasAttribute('data-sort-value')) {
+          cell.setAttribute('data-sort-value', String(value));
+        }
+      }
+    }
+  }
+
+  #computeRollup(row, skipCol, kind) {
+    const cells = [...row.children];
+    let sum = 0;
+    let count = 0;
+    let max = -Infinity;
+    let weightedSum = 0;
+    for (let i = 0; i < cells.length; i++) {
+      if (i === skipCol) continue;
+      if (this.#rollups[i]) continue;
+      const raw = cells[i].getAttribute('data-sort-value') ?? cells[i].textContent ?? '';
+      const v = parseFloat(raw);
+      if (!Number.isFinite(v)) continue;
+      sum += v;
+      count++;
+      if (v > max) max = v;
+      const w = this.#weights[i];
+      if (w !== null) weightedSum += v * w;
+    }
+    switch (kind) {
+      case 'sum':           return sum;
+      case 'avg':           return count ? sum / count : 0;
+      case 'max':           return max === -Infinity ? 0 : max;
+      case 'weighted-sum':  return weightedSum;
+      default:              return sum;
+    }
+  }
+
+  static #formatRollup(value) {
+    if (!Number.isFinite(value)) return '';
+    if (Number.isInteger(value)) return String(value);
+    return (Math.round(value * 100) / 100).toString();
+  }
+
+  #applyHeatmaps() {
+    if (!this.#heatmaps.some(Boolean)) return;
+    for (let colIdx = 0; colIdx < this.#heatmaps.length; colIdx++) {
+      const kind = this.#heatmaps[colIdx];
+      if (!kind) continue;
+      const values = this.#allRows.map((row) => {
+        const cell = row.children[colIdx];
+        if (!cell) return null;
+        const raw =
+          cell.getAttribute('data-rollup-value') ??
+          cell.getAttribute('data-sort-value') ??
+          cell.textContent ?? '';
+        const v = parseFloat(raw);
+        return Number.isFinite(v) ? v : null;
+      });
+      const valid = values.filter((v) => v !== null);
+      if (!valid.length) continue;
+      const min = Math.min(...valid);
+      const max = Math.max(...valid);
+      const range = max - min || 1;
+      for (let i = 0; i < this.#allRows.length; i++) {
+        const cell = this.#allRows[i].children[colIdx];
+        if (!cell) continue;
+        const v = values[i];
+        if (v === null) {
+          cell.removeAttribute('data-heat-level');
+          continue;
+        }
+        let normalized = (v - min) / range;
+        if (kind === 'low-good') normalized = 1 - normalized;
+        const level = normalized < 0.34 ? 'low' : normalized < 0.67 ? 'mid' : 'high';
+        cell.setAttribute('data-heat-level', level);
+      }
+    }
   }
 
   #cleanup() {
