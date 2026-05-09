@@ -29,6 +29,7 @@ export default {
   ],
 
   'Navigation & Menus': [
+    { name: 'bread-crumb', href: '/docs/elements/web-components/bread-crumb/', desc: 'Hierarchical navigation trail. HTML-first <ol> wrap or auto-from-pathname; emits BreadcrumbList JSON-LD' },
     { name: 'command-palette', href: '/docs/elements/web-components/command-palette/', desc: 'Cmd+K command palette with search and actions' },
     { name: 'context-menu', href: '/docs/elements/web-components/context-menu/', desc: 'Right-click context menu with keyboard navigation' },
     { name: 'nav-bar', href: '/docs/elements/web-components/nav-bar/', desc: 'Top-level site/app nav primitive with auto aria-current sync (HTML-first or .items setter)' },

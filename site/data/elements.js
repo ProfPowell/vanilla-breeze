@@ -29,6 +29,7 @@ const elementsByLetter = {
     { name: 'body', type: 'native', href: '/docs/elements/native/body/' },
     { name: 'br', type: 'native', href: '/docs/elements/native/br/' },
     { name: 'brand-mark', type: 'component', href: '/docs/elements/web-components/brand-mark/' },
+    { name: 'bread-crumb', type: 'component', href: '/docs/elements/web-components/bread-crumb/' },
     { name: 'button', type: 'native', href: '/docs/elements/native/button/' },
   ],
   C: [

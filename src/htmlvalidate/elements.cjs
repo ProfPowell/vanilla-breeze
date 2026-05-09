@@ -298,6 +298,16 @@ module.exports = {
     }
   },
 
+  "bread-crumb": {
+    attributes: {
+      "data-from-pathname": { boolean: true },
+      "data-current-label": {},
+      "data-separator": {},
+      "data-collapsed": { boolean: true },
+      "data-jsonld": {}
+    }
+  },
+
   "breakpoint-specimen": {
     attributes: {
       "tokens": {},

@@ -96,6 +96,7 @@ import './change-set/logic.js';
 import './page-info/logic.js';
 import './page-stats/logic.js';
 import './reading-progress/logic.js';
+import './bread-crumb/logic.js';
 import './page-tools/logic.js';
 import './ai-summary/logic.js';
 import './ai-chat/logic.js';

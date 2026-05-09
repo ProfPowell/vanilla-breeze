@@ -1,0 +1,79 @@
+/* bread-crumb: hierarchical navigation trail.
+   Mirrors nav.breadcrumb token semantics so themes apply identically. */
+
+bread-crumb:not(:defined) {
+  display: block;
+}
+
+bread-crumb {
+  display: block;
+}
+
+@scope (bread-crumb) {
+  > ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--size-2xs);
+    font-size: var(--font-size-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  > ol > li {
+    display: flex;
+    align-items: center;
+    gap: var(--size-2xs);
+  }
+
+  > ol > li:not(:last-child)::after {
+    content: var(--_separator, var(--sep-breadcrumb, "/"));
+    margin-inline-start: var(--size-2xs);
+    color: var(--color-text-muted);
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
+
+  > ol a,
+  > ol span {
+    padding: var(--size-xs);
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  > ol a:hover {
+    color: var(--color-text);
+    text-decoration: underline;
+  }
+
+  > ol [aria-current="page"] {
+    color: var(--color-text);
+    font-weight: var(--font-weight-medium);
+  }
+
+  > ol [data-truncated] {
+    max-width: 10rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+bread-crumb[data-separator="chevron"] { --_separator: "\203A"; }
+bread-crumb[data-separator="arrow"]   { --_separator: "\2192"; }
+bread-crumb[data-separator="dot"]     { --_separator: "\00B7"; }
+bread-crumb[data-separator="pipe"]    { --_separator: "|"; }
+
+@scope (bread-crumb[data-collapsed]) {
+  > ol > li:not(:first-child):not(:last-child):not(:nth-last-child(2)) {
+    display: none;
+  }
+
+  > ol > li:nth-last-child(2)::before {
+    content: "...";
+    margin-inline-end: var(--size-2xs);
+    color: var(--color-text-muted);
+  }
+}
