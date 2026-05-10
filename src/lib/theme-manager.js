@@ -81,10 +81,60 @@ export const ThemeManager = {
       this.apply(_state);
       this._watchSystemPreference();
       this._watchRootAttributes();
+      this._watchCrossDocumentStorage();
       return _state;
     })();
 
     return this._initPromise;
+  },
+
+  /**
+   * Cross-document theme sync via the localStorage `storage` event.
+   *
+   * When a parent page changes the theme, VBStore writes to localStorage
+   * under `vb:theme:current`. Same-origin sibling documents (notably
+   * iframes inside <browser-window> demos) receive a `storage` event for
+   * that key. Without this listener, those iframes keep rendering the
+   * stale theme until a manual reload — the bug the user reports as
+   * "browser-window content doesn't follow the parent's theme switch."
+   *
+   * The writer's own window does NOT receive this event, so this never
+   * loops back on the page that initiated the change.
+   *
+   * @private
+   */
+  _watchCrossDocumentStorage() {
+    if (typeof window === 'undefined') return;
+
+    window.addEventListener('storage', async (e) => {
+      if (e.key !== `vb:${NS}:${KEY}` || !e.newValue) return;
+
+      let next;
+      try {
+        const envelope = JSON.parse(e.newValue);
+        next = envelope?.data;
+      } catch {
+        return;
+      }
+      if (!next || typeof next !== 'object') return;
+
+      const merged = { ...DEFAULTS, ..._state, ...next };
+
+      /* Brand CSS pack may not be loaded in this document yet — fetch
+         before applying so the new tokens land before the data-theme
+         attribute swap. Failures fall back to default to avoid leaving
+         the document in a half-themed state. */
+      if (merged.brand && merged.brand !== _state?.brand) {
+        try {
+          await ensureThemeLoaded(merged.brand);
+        } catch {
+          merged.brand = 'default';
+        }
+      }
+
+      _state = merged;
+      this.apply(_state);
+    });
   },
 
   /**
