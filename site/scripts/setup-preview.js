@@ -68,6 +68,10 @@ link(demoSource('examples/demos'), resolve(dist, 'docs/examples/demos'));
 // Alpenglow brand demo
 link(demoSource('alpenglow'), resolve(dist, 'docs/alpenglow'));
 
+// Web component integration demos
+mkdirSync(resolve(dist, 'docs/integrations/web-components'), { recursive: true });
+link(demoSource('integrations/web-components'), resolve(dist, 'docs/integrations/web-components/demos'));
+
 // Docs CSS — prefer built copies
 function demoCss(file) {
   const built = resolve(builtDemos, file);

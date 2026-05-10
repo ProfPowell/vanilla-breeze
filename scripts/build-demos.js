@@ -27,6 +27,7 @@ const DEMO_DIRS = [
   'snippets/demos',
   'tools/theme-lab/surfaces',
   'alpenglow',
+  'integrations/web-components',
 ];
 
 /** Top-level files to copy verbatim */
@@ -39,6 +40,7 @@ const TOP_FILES = [
 const REPLACEMENTS = [
   ['href="/src/main.css"',               'href="/cdn/vanilla-breeze.css"'],
   ['src="/src/main.js"',                 'src="/cdn/vanilla-breeze-autoload.js"'],
+  ['src="/src/doc-extras.js"',            'src="/cdn/doc-extras.js"'],
   ['href="/src/charts-standalone.css"',   'href="/cdn/vanilla-breeze-charts.css"'],
   ['src="/src/charts-standalone.js"',     'src="/cdn/vanilla-breeze-charts.js"'],
 ];
