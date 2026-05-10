@@ -149,4 +149,15 @@ copyDir('dist/demos/examples', join(pagesDir, 'docs', 'examples'), { optional: t
 // routes (the bug the audit script surfaced).
 copyDir('dist/demos/alpenglow', join(pagesDir, 'docs', 'alpenglow'), { optional: true });
 
+// Web component integration demos (pdf-viewer, image-editor, code-block,
+// browser-window, code-playground). Same symlink-vs-real-copy reason as
+// alpenglow above. Without this, the <browser-window src> targets in
+// /docs/integrations/web-components/{name}/ 200 with the docs catch-all
+// HTML instead of the demo, and embedded PDFs/images don't render.
+copyDir(
+  'dist/demos/integrations/web-components',
+  join(pagesDir, 'docs', 'integrations', 'web-components', 'demos'),
+  { optional: true }
+);
+
 console.log('✓ Site assembly complete');
