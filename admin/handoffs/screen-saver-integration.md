@@ -84,7 +84,6 @@ For users replicating the contract outside VB:
 | `--color-error`             | `ascii-glitch`                                                   |
 | `--color-text`              | `ascii-glitch`, `starfield`, `snow`, `slideshow`, `brutalist`, `kawaii` text |
 | `--color-background`        | all themed effects                                               |
-| `--color-surface`           | `pipes`                                                          |
 | `--color-primary-subtle`    | `kawaii`                                                         |
 | `--color-accent-subtle`     | `kawaii`                                                         |
 | `--color-success-subtle`    | `kawaii`                                                         |
