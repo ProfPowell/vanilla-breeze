@@ -1508,6 +1508,58 @@ export default {
       }
     ]
   },
+  "bread-crumb": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "bread-crumb",
+    "type": "web-component",
+    "description": "Hierarchical navigation trail. Wraps existing <ol> markup HTML-first, or auto-generates from window.location.pathname. Emits BreadcrumbList JSON-LD for SEO.",
+    "attributes": [
+      {
+        "name": "data-from-pathname",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "When present, auto-generates the trail from window.location.pathname. Each path segment becomes a crumb (Title-Cased by default; override per segment via the .labels property)."
+      },
+      {
+        "name": "data-current-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Label for the final (current page) crumb when auto-generating. If omitted, the document title or last path segment is used."
+      },
+      {
+        "name": "data-separator",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "string",
+        "description": "Separator glyph variant: 'chevron' (default), 'arrow', 'dot', 'pipe'. Drives the --_separator CSS var."
+      },
+      {
+        "name": "data-collapsed",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Hide middle items, showing only first and last with an ellipsis in between."
+      },
+      {
+        "name": "data-jsonld",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "BreadcrumbList JSON-LD emission: 'on' (default) or 'off'."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-truncated",
+        "on": "li",
+        "type": "boolean",
+        "description": "Apply to a crumb <li> to truncate long labels with an ellipsis (max-width 10rem)."
+      }
+    ],
+    "structure": []
+  },
   "breakpoint-specimen": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "breakpoint-specimen",
@@ -6108,6 +6160,70 @@ export default {
       },
       {
         "name": "palette-generator:generate"
+      }
+    ],
+    "childAttributes": [],
+    "structure": []
+  },
+  "pop-over": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "pop-over",
+    "type": "web-component",
+    "description": "General-purpose popover container with CSS Anchor Positioning. Wraps the native Popover API, binds an anchor element, and re-asserts display:none under VB's cascade layers. Trigger via standard popovertarget attribute.",
+    "attributes": [
+      {
+        "name": "data-mode",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "auto",
+          "manual",
+          "hint"
+        ],
+        "description": "Popover dismissal mode: 'auto' (default, light-dismiss + ESC), 'manual' (script-only), 'hint' (auto with hint-stack semantics)."
+      },
+      {
+        "name": "data-anchor",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID (or CSS selector) of the anchor element to position against. If omitted, the component finds the first element with popovertarget pointing at this pop-over."
+      },
+      {
+        "name": "data-position",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "top",
+          "bottom",
+          "left",
+          "right",
+          "top-start",
+          "top-end",
+          "bottom-start",
+          "bottom-end",
+          "left-start",
+          "left-end",
+          "right-start",
+          "right-end"
+        ],
+        "description": "Where to place the popover relative to the anchor. Default: 'bottom'."
+      },
+      {
+        "name": "data-offset",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "none",
+          "xs",
+          "s",
+          "m",
+          "l"
+        ],
+        "description": "Gap between popover and anchor, mapped to --size-* tokens. Default: 'xs'."
       }
     ],
     "childAttributes": [],
