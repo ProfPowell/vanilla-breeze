@@ -51,6 +51,10 @@ See `.claude/AGENTS.md` for the full workflow.
 
 Each system has one owner. Do not duplicate across systems.
 
+### Memory ownership (overrides bd guidance below)
+
+The auto-memory directory at `~/.claude/projects/.../memory/` is the canonical persistent-knowledge store for this project. The Beads block below (auto-managed by `bd`) suggests `bd remember` instead — **ignore that line**. Do not write `MEMORY.md` content into beads, and do not call `bd remember` for project knowledge. The `claude-mem` plugin is intentionally uninstalled to avoid a third memory system.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 
