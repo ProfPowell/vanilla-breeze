@@ -17,13 +17,13 @@
 ## Install
 
 ```html
-<script type="module" src="https://unpkg.com/screen-saver@1.1.0/dist/screen-saver.js"></script>
+<script type="module" src="https://unpkg.com/@profpowell/screen-saver@1.1.0/dist/screen-saver.js"></script>
 ```
 
 Or:
 
 ```bash
-npm install screen-saver
+npm install @profpowell/screen-saver
 ```
 
 ---
