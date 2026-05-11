@@ -6,8 +6,11 @@ notification-wc { display: inline-block; }
 
 /* The component sets `this.hidden = true` to dismiss the banner. The UA
    `[hidden] { display: none }` rule loses to our element-level `display`
-   rules below, so re-assert it explicitly. Same gotcha as pop-over. */
-notification-wc[hidden] { display: none; }
+   rules below — including same-specificity `[data-mode]` rules that come
+   later, and higher-specificity `[data-mode][data-position]` rules. The
+   `[hidden]` attribute semantically means "do not render," so !important
+   is the right tool. Same gotcha as pop-over. */
+notification-wc[hidden] { display: none !important; }
 
 /* ══ Banner mode ══════════════════════════════════════════════════ */
 
