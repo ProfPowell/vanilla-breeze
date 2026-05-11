@@ -6,27 +6,98 @@
   <title>notification-wc: Banner</title>
   <link rel="stylesheet" href="/src/main.css"/>
   <style>
-    body { margin: 0; }
-    main { padding: var(--size-l); max-inline-size: 40rem; margin-inline: auto; }
+    body { margin: 0; min-block-size: 100vh; }
+    main { padding: var(--size-l); max-inline-size: 44rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--size-m); }
+    fieldset { display: flex; flex-wrap: wrap; align-items: center; gap: var(--size-xs); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); padding: var(--size-s) var(--size-m); }
+    fieldset legend { padding-inline: var(--size-xs); font-weight: var(--font-weight-medium); }
+    fieldset button { padding: var(--size-2xs) var(--size-s); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s); background: var(--color-surface); color: var(--color-text); cursor: pointer; font: inherit; }
+    fieldset button[aria-pressed="true"] { background: var(--color-interactive); color: var(--color-on-interactive, white); border-color: var(--color-interactive); }
+
+    /* Banner content layout: centered text, dismiss tucked into the right edge */
+    notification-wc[mode="banner"] { text-align: center; padding-inline: 3rem; }
+    .banner-close {
+      all: unset;
+      position: absolute;
+      inset-inline-end: var(--size-s);
+      inset-block-start: 50%;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 1.75rem;
+      block-size: 1.75rem;
+      border-radius: var(--radius-s);
+      cursor: pointer;
+      color: inherit;
+    }
+    .banner-close:hover { background: oklch(from currentColor l c h / 0.12); }
+    .banner-close:focus-visible {
+      outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
-  <notification-wc mode="banner" persist="demo-banner-v1" variant="info" position="top">
-    <layout-cluster data-layout-justify="space-between" data-layout-gap="m" data-layout-align="center">
-      <span>
-        <strong>v3.0 is out.</strong>
-        <a href="#changelog">See what&rsquo;s new</a>
-      </span>
-      <button type="button" value="dismiss">Dismiss</button>
-    </layout-cluster>
+  <notification-wc id="live-banner" mode="banner" variant="info" position="top">
+    <strong>v3.0 is out.</strong> <a href="#changelog">See what&rsquo;s new</a>
+    <button type="button" value="dismiss" class="banner-close" aria-label="Dismiss">
+      <icon-wc name="x" size="sm"></icon-wc>
+    </button>
   </notification-wc>
 
   <main>
     <h1>Banner mode</h1>
-    <p>The banner above stays dismissed across reloads via VBStore. Change <code>persist</code> to test a fresh key, or set <code>expires</code> to re-show after N days.</p>
-    <p>Variants: <code>info</code>, <code>success</code>, <code>warning</code>, <code>error</code>. Position: <code>top</code> or <code>bottom</code>.</p>
+    <p>Pick a <code>variant</code> and <code>position</code> to re-render the banner above. Each variant tints the strip with its semantic color. <code>top</code> sticks to the viewport top; <code>bottom</code> pins it to the viewport bottom.</p>
+
+    <fieldset>
+      <legend>Variant</legend>
+      <button type="button" data-variant="info" aria-pressed="true">info</button>
+      <button type="button" data-variant="success">success</button>
+      <button type="button" data-variant="warning">warning</button>
+      <button type="button" data-variant="error">error</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Position</legend>
+      <button type="button" data-position="top" aria-pressed="true">top</button>
+      <button type="button" data-position="bottom" aria-pressed="false">bottom</button>
+    </fieldset>
+
+    <p>The close button hides the banner for this session. In production, set <code>persist="some-key"</code> to record dismissal in VBStore so the banner stays hidden across reloads, and <code>expires="N"</code> to re-show after N days.</p>
+
+    <p style="block-size: 6rem;"></p>
+    <p><em>End of demo content.</em></p>
   </main>
 
   <script type="module" src="/src/main.js"></script>
+  <script>
+    const banner = document.getElementById('live-banner');
+
+    function setPressed(group, value) {
+      for (const b of document.querySelectorAll(`[data-${group}]`)) {
+        b.setAttribute('aria-pressed', b.dataset[group] === value ? 'true' : 'false');
+      }
+    }
+
+    for (const btn of document.querySelectorAll('[data-variant]')) {
+      btn.addEventListener('click', () => {
+        const v = btn.dataset.variant;
+        banner.setAttribute('variant', v);
+        banner.dataset.variant = v;
+        banner.hidden = false;
+        setPressed('variant', v);
+      });
+    }
+
+    for (const btn of document.querySelectorAll('[data-position]')) {
+      btn.addEventListener('click', () => {
+        const p = btn.dataset.position;
+        banner.setAttribute('position', p);
+        banner.dataset.position = p;
+        banner.hidden = false;
+        setPressed('position', p);
+      });
+    }
+  </script>
 </body>
 </html>
