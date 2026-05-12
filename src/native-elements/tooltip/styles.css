@@ -128,11 +128,16 @@
 /* --- Content inside tooltips --- */
 
 [role="tooltip"][popover] {
-  /* kbd styling for dark tooltip background */
+  /* The tooltip surface is always dark (in light mode) / always light
+     (in dark mode) regardless of theme, so kbd / code overlays can't
+     use the light-dark() overlay tokens — those flip with the page mode,
+     not the tooltip mode. Use translucent currentColor instead so the
+     overlay is always a few steps off from whatever color the tooltip
+     text sits at. */
   & kbd {
-    background: var(--color-overlay-subtle);
-    border-color: var(--color-overlay-medium);
-    box-shadow: 0 1px 0 var(--color-overlay-subtle);
+    background: color-mix(in oklab, currentColor 18%, transparent);
+    border-color: color-mix(in oklab, currentColor 35%, transparent);
+    box-shadow: 0 1px 0 color-mix(in oklab, currentColor 12%, transparent);
     color: inherit;
   }
 
@@ -143,7 +148,7 @@
 
   /* code styling */
   & code {
-    background: var(--color-overlay-subtle);
+    background: color-mix(in oklab, currentColor 18%, transparent);
     color: inherit;
   }
 }
