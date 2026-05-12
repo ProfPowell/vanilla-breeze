@@ -1691,7 +1691,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "JSON: events keyed by ISO date. Values can be:"
+        "description": "JSON: events keyed by start ISO date. Values may be a string, an object, or an array of events. Each event accepts optional `end` (ISO date, inclusive) or `days` (count) to span multiple days; spans render as continuous bars in data-size=\"large\"."
       },
       {
         "name": "data-selection",
