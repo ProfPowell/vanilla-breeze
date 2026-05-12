@@ -1,0 +1,95 @@
+---
+layout: docs
+title: epub-reader integration
+description: "Drop an epub-reader element into a Vanilla Breeze page — a dependency-free EPUB 3 viewer with TOC sidebar, toolbar, and keyboard navigation that reads VB tokens automatically."
+currentSection: explore
+currentPath: /docs/integrations/web-components/epub-reader/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><a href="/docs/integrations/web-components/">Web Components</a></li>
+    <li><span aria-current="page">epub-reader</span></li>
+  </ol>
+</nav>
+
+<h1>epub-reader</h1>
+<p class="lead">A dependency-free EPUB 3 reader built from vanilla web platform primitives. Drop <code>&lt;epub-reader src="book.epub"&gt;</code> into any page for a Shadow-DOM viewer with TOC sidebar, toolbar, progress bar, and keyboard navigation. It reads Vanilla Breeze design tokens directly, so it inherits the active theme with zero extra wiring.</p>
+
+<section>
+  <h2>Where to find it</h2>
+  <ul>
+    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/epub-reader"><code>@profpowell/epub-reader</code></a></li>
+    <li>GitHub: <a href="https://github.com/ProfPowell/epub-reader">ProfPowell/epub-reader</a></li>
+    <li>Live demos: <a href="https://profpowell.github.io/epub-reader/">profpowell.github.io/epub-reader</a></li>
+    <li>License: MIT</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Install</h2>
+  <p>Via CDN:</p>
+  <code-block language="html" data-escape><script type="module" src="https://unpkg.com/@profpowell/epub-reader@0.1.0/src/epub-reader.js"></script></code-block>
+  <p>Or via npm:</p>
+  <code-block language="bash" data-escape>npm install @profpowell/epub-reader</code-block>
+  <code-block language="javascript" data-escape>import '@profpowell/epub-reader';</code-block>
+  <p>Not currently bundled into Vanilla Breeze — wire it in yourself. There is no build coupling between the two repos; the interface is purely CSS custom properties.</p>
+</section>
+
+<section>
+  <h2>Demo</h2>
+  <p>A live <code>&lt;epub-reader&gt;</code> loading a small sample EPUB. The toolbar, sidebar, progress bar, and content area all pick up VB tokens (surface, text, border, interactive, font-mono). Switch the site theme to see the reader chrome re-skin.</p>
+  <browser-window url="epub-reader-basic" src="/docs/integrations/web-components/demos/epub-reader-basic.html"></browser-window>
+</section>
+
+<section>
+  <h2>Quick reference</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute / API</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>src</code></td><td>URL of an EPUB to auto-load.</td></tr>
+      <tr><td><code>start</code></td><td>Spine index to open first (default <code>0</code>).</td></tr>
+      <tr><td><code>hide-toc</code></td><td>Boolean — start with the TOC sidebar collapsed.</td></tr>
+      <tr><td><code>allow-scripts</code></td><td>Boolean — adds <code>allow-scripts</code> to the chapter iframe sandbox. Off by default for security.</td></tr>
+      <tr><td><code>.open(source)</code></td><td>Programmatic open. Accepts a URL or <code>ArrayBuffer</code>.</td></tr>
+      <tr><td><code>.next() / .prev()</code></td><td>Navigate spine.</td></tr>
+      <tr><td><code>.goToIndex(i, fragment?)</code></td><td>Jump to a specific spine entry.</td></tr>
+      <tr><td><code>epub-loaded / epub-navigate / epub-error</code></td><td>Bubbling, composed CustomEvents.</td></tr>
+    </tbody>
+  </table>
+  <p>See the <a href="https://github.com/ProfPowell/epub-reader/blob/main/README.md">README</a> for the full reference.</p>
+</section>
+
+<section>
+  <h2>VB tokens consumed</h2>
+  <p>The component reads VB tokens directly through shadow-DOM inheritance — no bridge file needed.</p>
+  <table class="props-table">
+    <thead><tr><th>Token group</th><th>Tokens</th></tr></thead>
+    <tbody>
+      <tr><td>Surfaces</td><td><code>--color-background</code>, <code>--color-surface</code>, <code>--color-surface-raised</code></td></tr>
+      <tr><td>Text</td><td><code>--color-text</code>, <code>--color-text-muted</code></td></tr>
+      <tr><td>Interactive</td><td><code>--color-interactive</code>, <code>--color-interactive-text</code>, <code>--color-danger</code></td></tr>
+      <tr><td>Chrome</td><td><code>--color-border</code>, <code>--border-width-thin</code>, <code>--radius-s</code>, <code>--radius-m</code>, <code>--radius-full</code>, <code>--shadow-l</code></td></tr>
+      <tr><td>Typography</td><td><code>--font-mono</code>, <code>--font-size-2xs</code>, <code>--font-size-xs</code>, <code>--font-size-s</code>, <code>--font-size-m</code>, <code>--font-weight-semibold</code></td></tr>
+      <tr><td>Spacing</td><td><code>--size-3xs</code>, <code>--size-2xs</code>, <code>--size-s</code>, <code>--size-m</code></td></tr>
+    </tbody>
+  </table>
+  <p>The single component-specific override is <code>--reader-hl-color</code> (selection / highlight color).</p>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" data-escape>
+<!-- Auto-load a remote EPUB -->
+<epub-reader src="https://example.com/book.epub"></epub-reader>
+
+<!-- Or open programmatically -->
+<epub-reader id="reader" hide-toc></epub-reader>
+<script type="module">
+  const reader = document.getElementById('reader');
+  document.querySelector('input[type=file]')
+    .addEventListener('change', e => reader.open(e.target.files[0]));
+</script></code-block>
+  <p>Give the element a definite block size (via CSS) — it does not auto-expand. <code>block-size: 100vh</code> for a full-page reader, or any other fixed/percent height that fits your layout.</p>
+</section>
