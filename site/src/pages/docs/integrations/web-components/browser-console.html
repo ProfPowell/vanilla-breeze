@@ -1,0 +1,89 @@
+---
+layout: docs
+title: browser-console integration
+description: "Drop a browser-console element into a Vanilla Breeze page — a zero-dependency in-page console that captures global console.* calls and renders them in the active VB theme."
+currentSection: explore
+currentPath: /docs/integrations/web-components/browser-console/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><a href="/docs/integrations/web-components/">Web Components</a></li>
+    <li><span aria-current="page">browser-console</span></li>
+  </ol>
+</nav>
+
+<h1>browser-console</h1>
+<p class="lead">A zero-dependency web component that captures global <code>console.*</code> calls and renders them as a styled, filterable, themable in-page console — with syntax-highlighted values, <code>console.table</code> rendering, timers, groups, and stack traces. VB ships a <code>--bc-*</code> token bridge so the console picks up the active theme automatically (surface, text, border, plus dedicated severity and value-type colors).</p>
+
+<section>
+  <h2>Where to find it</h2>
+  <ul>
+    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/browser-console"><code>@profpowell/browser-console</code></a></li>
+    <li>GitHub: <a href="https://github.com/ProfPowell/browser-console">ProfPowell/browser-console</a></li>
+    <li>Live demos: <a href="https://profpowell.github.io/browser-console/">profpowell.github.io/browser-console</a></li>
+    <li>License: MIT</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Install</h2>
+  <p>Via CDN:</p>
+  <code-block language="html" data-escape><script type="module" src="https://unpkg.com/@profpowell/browser-console@1.1.1/dist/browser-console.js"></script></code-block>
+  <p>Or via npm:</p>
+  <code-block language="bash" data-escape>npm install @profpowell/browser-console</code-block>
+  <code-block language="javascript" data-escape>import '@profpowell/browser-console';</code-block>
+  <p>Not currently bundled into Vanilla Breeze. VB does ship a <code>--bc-*</code> bridge in <code>src/utils/external-components.css</code> mapping all <code>--bc-*</code> tokens onto the active VB theme — so the moment you add the script, theming is automatic.</p>
+</section>
+
+<section>
+  <h2>Demo</h2>
+  <p>A live <code>&lt;browser-console&gt;</code> with buttons that emit <code>console.log</code>, <code>info</code>, <code>warn</code>, <code>error</code>, <code>table</code>, and a mixed-value object. Severity colors (log/info/warn/error) and value-type accents (string/number/boolean/regex/element) all resolve from VB tokens. Switch the site theme to see the console re-skin.</p>
+  <browser-window url="browser-console-basic" src="/docs/integrations/web-components/demos/browser-console-basic.html"></browser-window>
+</section>
+
+<section>
+  <h2>Quick reference</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute / API</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>auto-hook</code></td><td>Boolean, default <code>true</code>. Patches global <code>console.*</code> on mount; set to <code>"false"</code> to opt out and feed logs manually.</td></tr>
+      <tr><td><code>theme</code></td><td><code>"dark"</code> or <code>"light"</code>. Default <code>"dark"</code>. With the VB bridge active, theming follows VB anyway — set this only when you want to pin one mode.</td></tr>
+      <tr><td><code>.maxLogs</code></td><td>Property — scrollback cap (default 1000).</td></tr>
+      <tr><td><code>.setFilter("log" | "info" | "warn" | "error" | null)</code></td><td>Show only one severity (or all when <code>null</code>).</td></tr>
+      <tr><td><code>.setSearchQuery(str)</code></td><td>Substring filter across log messages.</td></tr>
+      <tr><td><code>.clearLogs()</code></td><td>Wipe the visible output.</td></tr>
+      <tr><td><code>.hookConsole() / .unhookConsole()</code></td><td>Manually patch / unpatch the global console.</td></tr>
+      <tr><td><code>.feed.addLog({method, data, timestamp})</code></td><td>Push a log without going through <code>window.console</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>Captures the full <code>console.*</code> surface: <code>log/info/warn/error/debug/table/time/timeEnd/timeLog/group/groupEnd/groupCollapsed/trace/count/countReset/dir/clear/assert</code>.</p>
+</section>
+
+<section>
+  <h2>VB integration</h2>
+  <p>browser-console exposes a <code>--bc-*</code> custom property surface — backgrounds, severity colors, value-type accents, scrollbars, table chrome — but it does not read VB tokens directly. The bridge in <code>src/utils/external-components.css</code> maps:</p>
+  <ul>
+    <li>Surfaces &amp; chrome → <code>--color-surface</code>, <code>--color-surface-raised</code>, <code>--color-border</code>, <code>--color-text</code>, <code>--color-text-muted</code></li>
+    <li>Severity → <code>--color-text</code> (log), <code>--color-info</code>, <code>--color-warning</code>, <code>--color-danger</code></li>
+    <li>Warn / error row tints → <code>color-mix()</code> with <code>--color-warning</code> / <code>--color-danger</code></li>
+    <li>Value-type accents → <code>--color-success</code> (strings), <code>--color-info</code> (numbers/dates), <code>--color-warning</code> (booleans), <code>--color-accent</code> (functions), <code>--color-danger</code> (regex), <code>--color-primary</code> (DOM elements)</li>
+  </ul>
+  <p>Override any individual <code>--bc-*</code> token on the element or in a theme block to customize a single console instance.</p>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" data-escape>
+<!-- Auto-capture every console.* call site-wide -->
+<browser-console></browser-console>
+
+<!-- Or feed logs manually -->
+<browser-console id="log" auto-hook="false"></browser-console>
+<script type="module">
+  const c = document.getElementById('log');
+  c.feed.addLog({ method: 'info', data: ['Hello from the app boot sequence.'], timestamp: Date.now() });
+</script></code-block>
+  <p>Give the element a definite block size (e.g. <code>block-size: 60vh</code>) — it does not auto-expand.</p>
+</section>

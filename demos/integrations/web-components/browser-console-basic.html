@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>browser-console + Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="https://unpkg.com/@profpowell/browser-console@1.1.1/dist/browser-console.js"></script>
+  <style>
+    html, body { margin: 0; padding: var(--size-l) var(--size-m); background: var(--color-background); }
+    browser-console { display: block; max-inline-size: 80ch; margin-inline: auto; block-size: 60vh; }
+    .ctrls { max-inline-size: 80ch; margin: 0 auto var(--size-m); display: flex; gap: var(--size-s); flex-wrap: wrap; }
+    button { font: inherit; padding: var(--size-2xs) var(--size-s); background: var(--color-surface-raised); color: var(--color-text); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-s); cursor: pointer; }
+    button:hover { background: var(--color-hover-bg, var(--color-surface-raised)); }
+  </style>
+</head>
+<body>
+  <nav class="ctrls">
+    <button id="log">console.log</button>
+    <button id="info">console.info</button>
+    <button id="warn">console.warn</button>
+    <button id="error">console.error</button>
+    <button id="table">console.table</button>
+    <button id="object">log object</button>
+  </nav>
+
+  <browser-console></browser-console>
+
+  <script type="module">
+    document.getElementById('log').onclick = () => console.log('Hello from VB.', { ts: Date.now() });
+    document.getElementById('info').onclick = () => console.info('FYI:', 42, true, null);
+    document.getElementById('warn').onclick = () => console.warn('Cache miss — recomputing');
+    document.getElementById('error').onclick = () => console.error(new Error('Demo error: nothing to worry about'));
+    document.getElementById('table').onclick = () => console.table([
+      { theme: 'rough', surface: 'cream', text: 'ink' },
+      { theme: 'cyber', surface: 'midnight', text: 'neon' },
+      { theme: 'bauhaus', surface: 'off-white', text: 'black' },
+    ]);
+    document.getElementById('object').onclick = () => console.log({ str: 'hello', num: 3.14, bool: false, arr: [1,2,3], date: new Date(), regex: /vb-\w+/ });
+
+    // Auto-fire one of each so the demo isn't empty on first paint
+    requestAnimationFrame(() => {
+      console.log('browser-console mounted — try the buttons above.');
+      console.info('Severity color: info');
+      console.warn('Severity color: warn');
+      console.error('Severity color: error');
+    });
+  </script>
+</body>
+</html>
