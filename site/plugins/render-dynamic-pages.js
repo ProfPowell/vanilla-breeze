@@ -12,6 +12,16 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+/* JSON-encode a value for safe embedding in an inline <script>: escape
+   < > & so the body can never close the surrounding script tag or be
+   mistaken for HTML. */
+function stringifyForScript(value) {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/&/g, '\\u0026');
+}
+
 function formatKb(value) {
   return `${(Number(value || 0) / 1024).toFixed(1)} KB`;
 }
@@ -421,7 +431,9 @@ export class RenderDynamicPages {
     }
 
     if (path.includes('docs/tools/theme-lab/index')) {
+      const themeRegistryJson = stringifyForScript(this.data.themeRegistry || []);
       this.file.src = this.file.src
+        .replaceAll('{{ themeRegistry | dump | safe }}', themeRegistryJson)
         .replace(
           /(<optgroup label="Extreme">)[\s\S]*?(<\/optgroup>)/,
           `$1\n${renderThemeLabExtremeOptions(this.data.themeRegistry)}\n      $2`,
