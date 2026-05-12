@@ -1,18 +1,26 @@
 import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+// Ensure <pop-over> is registered — tool-tip composes it for its popover surface.
+import '../pop-over/logic.js';
 
 /**
  * tool-tip: Enhanced tooltip with Popover API + interestfor
  *
- * Wraps a trigger element and provides a tooltip on hover/focus.
- * Primary mechanism: sets `interestfor` attribute on trigger, letting
- * the browser (or polyfill) handle hover/focus timing and show/hide.
- * Falls back to JS event listeners when interestfor is unavailable.
+ * Composes <pop-over> for the popover surface (popover attribute, anchor
+ * positioning, light-dismiss, display:none cascade re-assertion) and
+ * layers tooltip-specific behavior on top: interestfor wiring, hover/focus
+ * delay, ARIA describedby, title attribute hand-off, and centered
+ * anchor positioning via the [role="tooltip"][popover] cascade.
+ *
+ * Variants:
+ *   - default: classic text tooltip (popover="hint", center-aligned).
+ *   - card:    rich hover card (popover="manual", corner-aligned via
+ *              <pop-over data-position>).
  *
  * @attr {string} content - Simple text tooltip content
- * @attr {string} position - Position: 'top' (default), 'bottom', 'left', 'right'
+ * @attr {string} position - 'top' (default), 'bottom', 'left', 'right'
  * @attr {number} delay - Show delay in ms (default: 200)
- * @attr {string} variant - Variant: omit for tooltip (default), 'card' for hover card
+ * @attr {string} variant - omit for tooltip (default), 'card' for hover card
  *
  * @example Simple text tooltip
  * <tool-tip content="Save your changes">
@@ -37,9 +45,6 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * </tool-tip>
  */
 
-// Check CSS Anchor Positioning support once
-const supportsAnchor = CSS.supports('anchor-name', '--test');
-
 // Elements that support native interestfor (spec-defined)
 const INTERESTFOR_TAGS = new Set(['BUTTON', 'A', 'AREA']);
 
@@ -55,24 +60,21 @@ function canUseInterestFor(trigger) {
   return false;
 }
 
+let toolTipSeq = 0;
+
 class ToolTip extends VBElement {
-  #trigger;
-  #tooltip;
+  /** @type {HTMLElement} */ #trigger;
+  /** @type {HTMLElement} */ #popover;
   #showTimer;
   #hideTimer;
-  #useJsPositioning = !supportsAnchor;
   #isCard = false;
   #useInterestFor = false;
-  #savedTitle;
+  /** @type {string | undefined} */ #savedTitle;
 
   setup() {
     this.#isCard = this.getAttribute('variant') === 'card';
-
-    if (this.#isCard) {
-      this.#setupCard();
-    } else {
-      this.#setupTooltip();
-    }
+    if (this.#isCard) this.#setupCard();
+    else this.#setupTooltip();
   }
 
   // --- Regular tooltip setup ---
@@ -90,71 +92,68 @@ class ToolTip extends VBElement {
 
     if (!template && !dataContent && !titleContent) return;
 
-    // Remove title to prevent native double-tooltip
+    // Remove title to prevent native double-tooltip; restore on teardown.
     if (titleContent) {
       this.#savedTitle = titleContent;
       this.#trigger.removeAttribute('title');
     }
 
-    // Create tooltip element with Popover API
-    this.#tooltip = document.createElement('div');
-    this.#tooltip.className = 'tooltip';
-    this.#tooltip.setAttribute('role', 'tooltip');
-    this.#tooltip.setAttribute('popover', 'hint');
-
-    // Use content in priority order
-    if (template) {
-      this.#tooltip.innerHTML = template.innerHTML;
-    } else {
-      this.#tooltip.textContent = dataContent || titleContent;
-    }
-
-    this.#tooltip.id = `tooltip-${crypto.randomUUID().slice(0, 8)}`;
-
-    // Position
     const position = this.getAttribute('position') || 'top';
-    this.#tooltip.dataset.tooltipPosition = position;
+    if (!this.#trigger.id) this.#trigger.id = `tooltip-trigger-${++toolTipSeq}`;
 
-    // Add arrow
+    /* Compose <pop-over> as the popover surface. pop-over owns:
+       - popover attribute (mode=hint)
+       - anchor-name wiring on the trigger
+       - display:none cascade re-assertion (popover_display_gotcha)
+       - JS-driven positioning fallback when anchor-positioning is unavailable
+       tool-tip's responsibility: tooltip-specific role/visual classes and
+       the data-tooltip-position hook the native tooltip cascade uses for
+       center alignment. */
+    const tip = document.createElement('pop-over');
+    tip.className = 'tooltip';
+    tip.setAttribute('role', 'tooltip');
+    tip.dataset.mode = 'hint';
+    tip.dataset.anchor = this.#trigger.id;
+    tip.dataset.tooltipPosition = position;
+    tip.id = `tooltip-${++toolTipSeq}`;
+
+    // Content
+    if (template) tip.innerHTML = template.innerHTML;
+    else tip.textContent = dataContent || titleContent;
+
+    // Arrow
     const arrow = document.createElement('span');
     arrow.className = 'tooltip-arrow';
     arrow.setAttribute('aria-hidden', 'true');
-    this.#tooltip.appendChild(arrow);
+    tip.appendChild(arrow);
 
-    // Append tooltip to this element
-    this.appendChild(this.#tooltip);
+    this.appendChild(tip);
+    this.#popover = tip;
 
-    // Set up CSS Anchor Positioning if supported
-    if (supportsAnchor) {
-      const anchorName = `--tooltip-anchor-${this.#tooltip.id}`;
-      this.#trigger.style.anchorName = anchorName;
-      this.#tooltip.style.positionAnchor = anchorName;
-      this.#tooltip.setAttribute('data-anchor', '');
-    }
-
-    // Primary path: use interestfor attribute
     if (this.#useInterestFor) {
-      this.#trigger.setAttribute('interestfor', this.#tooltip.id);
-      // ARIA is handled by the polyfill/browser, but we still set describedby
-      // for screen readers since polyfill only sets it on setup
+      this.#trigger.setAttribute('interestfor', tip.id);
+      // ARIA — polyfill only sets describedby at setup; assert it ourselves
       if (!this.#trigger.hasAttribute('aria-describedby')) {
-        this.#trigger.setAttribute('aria-describedby', this.#tooltip.id);
-      }
-
-      // Position on show for JS fallback positioning
-      if (this.#useJsPositioning) {
-        this.listen(this.#tooltip, 'toggle', this.#handleToggle);
+        this.#trigger.setAttribute('aria-describedby', tip.id);
       }
     } else {
-      // Fallback: JS event listeners
-      this.#trigger.setAttribute('aria-describedby', this.#tooltip.id);
+      // JS-fallback hover/focus listeners
+      this.#trigger.setAttribute('aria-describedby', tip.id);
       this.listen(this.#trigger, 'mouseenter', this.#scheduleShow);
       this.listen(this.#trigger, 'mouseleave', this.#scheduleHide);
       this.listen(this.#trigger, 'focus', this.#showImmediate);
       this.listen(this.#trigger, 'blur', this.#hideImmediate);
-      this.listen(this.#tooltip, 'mouseenter', this.#cancelHide);
-      this.listen(this.#tooltip, 'mouseleave', this.#scheduleHide);
+      this.listen(tip, 'mouseenter', this.#cancelHide);
+      this.listen(tip, 'mouseleave', this.#scheduleHide);
     }
+
+    // Re-emit pop-over's show/hide under tool-tip's namespace
+    this.listen(tip, 'pop-over:show', () => {
+      this.dispatchEvent(new CustomEvent('tool-tip:show', { bubbles: true }));
+    });
+    this.listen(tip, 'pop-over:hide', () => {
+      this.dispatchEvent(new CustomEvent('tool-tip:hide', { bubbles: true }));
+    });
   }
 
   // --- Card variant setup ---
@@ -164,70 +163,60 @@ class ToolTip extends VBElement {
     if (!this.#trigger || !content) return;
 
     this.#useInterestFor = canUseInterestFor(this.#trigger);
+    if (!this.#trigger.id) this.#trigger.id = `tooltip-trigger-${++toolTipSeq}`;
 
-    // Create card popover (manual — cards may contain interactive content)
-    this.#tooltip = document.createElement('div');
-    this.#tooltip.className = 'hover-card';
-    this.#tooltip.setAttribute('popover', 'manual');
-    this.#tooltip.id = `hc-${crypto.randomUUID().slice(0, 8)}`;
+    /* Cards need explicit show/hide (interactive content), so mode=manual.
+       Corner-aligned via pop-over's data-position (defaults to bottom). */
+    const card = document.createElement('pop-over');
+    card.className = 'hover-card';
+    card.dataset.mode = 'manual';
+    card.dataset.anchor = this.#trigger.id;
+    card.dataset.position = this.getAttribute('position') || 'bottom';
+    card.id = `hc-${++toolTipSeq}`;
 
     // Move content into the card
-    this.#tooltip.appendChild(content);
+    card.appendChild(content);
     content.removeAttribute('data-content');
     /** @type {HTMLElement} */ (content).hidden = false;
 
-    this.appendChild(this.#tooltip);
+    this.appendChild(card);
+    this.#popover = card;
 
-    // Primary path: use interestfor (polyfill supports manual popovers)
     if (this.#useInterestFor) {
-      this.#trigger.setAttribute('interestfor', this.#tooltip.id);
-
-      // Position card on show
-      this.listen(this.#tooltip, 'toggle', this.#handleToggle);
+      this.#trigger.setAttribute('interestfor', card.id);
     } else {
-      // Fallback: JS event listeners
       this.listen(this.#trigger, 'mouseenter', this.#scheduleShow);
       this.listen(this.#trigger, 'mouseleave', this.#scheduleHide);
       this.listen(this.#trigger, 'focus', this.#showImmediate);
       this.listen(this.#trigger, 'blur', this.#scheduleHide);
-      this.listen(this.#tooltip, 'mouseenter', this.#cancelHide);
-      this.listen(this.#tooltip, 'mouseleave', this.#scheduleHide);
+      this.listen(card, 'mouseenter', this.#cancelHide);
+      this.listen(card, 'mouseleave', this.#scheduleHide);
       this.listen(document, 'keydown', this.#handleEscape);
     }
+
+    this.listen(card, 'pop-over:show', () => {
+      this.dispatchEvent(new CustomEvent('tool-tip:show', { bubbles: true }));
+    });
+    this.listen(card, 'pop-over:hide', () => {
+      this.dispatchEvent(new CustomEvent('tool-tip:hide', { bubbles: true }));
+    });
   }
 
   teardown() {
     if (this.#trigger) {
-      if (this.#useInterestFor) {
-        this.#trigger.removeAttribute('interestfor');
-      }
-      // Restore saved title on trigger
+      if (this.#useInterestFor) this.#trigger.removeAttribute('interestfor');
       if (this.#savedTitle) {
         this.#trigger.setAttribute('title', this.#savedTitle);
         this.#savedTitle = undefined;
       }
     }
-    if (this.#tooltip) {
-      // Remove generated popover to prevent duplication on reconnect
-      this.#tooltip.remove();
-      this.#tooltip = null;
+    if (this.#popover) {
+      this.#popover.remove();
+      this.#popover = null;
     }
     clearTimeout(this.#showTimer);
     clearTimeout(this.#hideTimer);
   }
-
-  #handleToggle = (e) => {
-    if (e.newState === 'open') {
-      if (this.#isCard) {
-        this.#positionCard();
-      } else if (this.#useJsPositioning) {
-        this.#updatePosition();
-      }
-      this.dispatchEvent(new CustomEvent('tool-tip:show', { bubbles: true }));
-    } else {
-      this.dispatchEvent(new CustomEvent('tool-tip:hide', { bubbles: true }));
-    }
-  };
 
   #scheduleShow = () => {
     clearTimeout(this.#hideTimer);
@@ -263,115 +252,30 @@ class ToolTip extends VBElement {
   };
 
   #handleEscape = (e) => {
-    if (e.key === 'Escape' && this.isVisible) {
-      this.hide();
-    }
+    if (e.key === 'Escape' && this.isVisible) this.hide();
   };
 
   show() {
-    if (!this.#tooltip || this.isVisible) return;
-
-    this.#tooltip.showPopover();
-
-    if (this.#isCard) {
-      this.#positionCard();
-    } else if (this.#useJsPositioning) {
-      this.#updatePosition();
+    if (!this.#popover || this.isVisible) return;
+    // Prefer pop-over's imperative API; falls back to showPopover().
+    if (typeof /** @type {any} */ (this.#popover).show === 'function') {
+      /** @type {any} */ (this.#popover).show();
+    } else {
+      /** @type {any} */ (this.#popover).showPopover();
     }
-
-    this.dispatchEvent(new CustomEvent('tool-tip:show', { bubbles: true }));
   }
 
   hide() {
-    if (!this.#tooltip || !this.isVisible) return;
-
-    this.#tooltip.hidePopover();
-
-    this.dispatchEvent(new CustomEvent('tool-tip:hide', { bubbles: true }));
-  }
-
-  /**
-   * Position the tooltip relative to the trigger using JavaScript.
-   * Uses fixed positioning to work correctly with top-layer popovers.
-   */
-  #updatePosition() {
-    if (!this.#trigger || !this.#tooltip) return;
-
-    const triggerRect = this.#trigger.getBoundingClientRect();
-    const tooltipRect = this.#tooltip.getBoundingClientRect();
-    const position = this.getAttribute('position') || 'top';
-    const gap = 8;
-
-    let top, left;
-
-    switch (position) {
-      case 'bottom':
-        top = triggerRect.bottom + gap;
-        left = triggerRect.left + (triggerRect.width - tooltipRect.width) / 2;
-        break;
-      case 'left':
-        top = triggerRect.top + (triggerRect.height - tooltipRect.height) / 2;
-        left = triggerRect.left - tooltipRect.width - gap;
-        break;
-      case 'right':
-        top = triggerRect.top + (triggerRect.height - tooltipRect.height) / 2;
-        left = triggerRect.right + gap;
-        break;
-      case 'top':
-      default:
-        top = triggerRect.top - tooltipRect.height - gap;
-        left = triggerRect.left + (triggerRect.width - tooltipRect.width) / 2;
-        break;
-    }
-
-    // Keep within viewport
-    const padding = 8;
-    left = Math.max(padding, Math.min(left, window.innerWidth - tooltipRect.width - padding));
-    top = Math.max(padding, Math.min(top, window.innerHeight - tooltipRect.height - padding));
-
-    this.#tooltip.style.top = `${top}px`;
-    this.#tooltip.style.left = `${left}px`;
-  }
-
-  /**
-   * Position the card variant relative to the trigger.
-   * Center-aligned horizontally with top/bottom viewport flip.
-   */
-  #positionCard() {
-    if (!this.#trigger || !this.#tooltip) return;
-
-    const triggerRect = this.#trigger.getBoundingClientRect();
-    const cardRect = this.#tooltip.getBoundingClientRect();
-    const preferred = this.getAttribute('position') || 'bottom';
-    const gap = 8;
-    const padding = 8;
-
-    let top, left;
-
-    // Horizontal: center-align with trigger
-    left = triggerRect.left + (triggerRect.width - cardRect.width) / 2;
-    left = Math.max(padding, Math.min(left, window.innerWidth - cardRect.width - padding));
-
-    // Vertical: preferred position with flip
-    if (preferred === 'top') {
-      top = triggerRect.top - cardRect.height - gap;
-      if (top < padding) {
-        top = triggerRect.bottom + gap;
-      }
+    if (!this.#popover || !this.isVisible) return;
+    if (typeof /** @type {any} */ (this.#popover).hide === 'function') {
+      /** @type {any} */ (this.#popover).hide();
     } else {
-      top = triggerRect.bottom + gap;
-      if (top + cardRect.height > window.innerHeight - padding) {
-        top = triggerRect.top - cardRect.height - gap;
-      }
+      /** @type {any} */ (this.#popover).hidePopover();
     }
-
-    this.#tooltip.style.position = 'fixed';
-    this.#tooltip.style.top = `${top}px`;
-    this.#tooltip.style.left = `${left}px`;
   }
 
   get isVisible() {
-    return this.#tooltip?.matches(':popover-open') ?? false;
+    return this.#popover?.matches(':popover-open') ?? false;
   }
 }
 

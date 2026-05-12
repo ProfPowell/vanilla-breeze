@@ -1,6 +1,12 @@
-/* tool-tip: Web component wrapper for tooltips */
+/* tool-tip: composes <pop-over> for the popover surface and layers
+   tooltip-specific positioning + visuals on top.
 
-/* --- Progressive enhancement: no-JS fallback --- */
+   pop-over's default chrome (border / shadow / surface-raised) and its
+   data-anchor-name positioning block both live in the same cascade
+   layer as this file, so the rules below need higher specificity to
+   override them. The visual layer is otherwise owned by
+   src/native-elements/tooltip/styles.css via [role="tooltip"][popover]. */
+
 tool-tip:not(:defined) {
   display: contents;
 }
@@ -8,77 +14,85 @@ tool-tip:not(:defined) {
 tool-tip {
   display: inline-block;
   position: relative;
-
-  /*
-   * The tool-tip creates a .tooltip element with popover="hint".
-   * Core tooltip styling comes from native-elements/tooltip/styles.css
-   * via the [role="tooltip"][popover] selector.
-   *
-   * Positioning strategy:
-   * - CSS Anchor Positioning for modern browsers (Chrome 125+, Safari 18+)
-   * - JavaScript fallback for older browsers
-   */
 }
 
-/* --- CSS Anchor Positioning (modern browsers) --- */
+/* --- Tooltip variant (role="tooltip") ----------------------------- */
 
-tool-tip > .tooltip[data-anchor] {
-  /* Use anchor positioning instead of JS */
-  position: fixed;
-  inset: auto;
+/* Reset pop-over's container chrome and re-apply the tooltip surface.
+   Native-elements/tooltip declares the same properties under [role=
+   "tooltip"][popover] but lives in the native-elements cascade layer,
+   which loses to pop-over's web-components rules. Re-declare the
+   tooltip visuals here so they always win against the pop-over base. */
+tool-tip > pop-over.tooltip {
+  border: none;
+  margin: 0;
+  box-shadow: none;
+  overflow: visible;
+
+  background: var(--color-text);
+  color: var(--color-text-inverted);
+  padding: var(--size-xs) var(--size-s);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  border-radius: var(--radius-s);
+  inline-size: auto;
+  max-inline-size: 20rem;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
-/* Intentional physical: CSS Anchor Positioning uses physical inset properties
-   with anchor() functions; logical equivalents not yet available */
+/* CSS anchor positioning: re-apply the centered placements that pop-over's
+   data-anchor-name block clobbers. position-anchor is already set on the
+   element by pop-over's JS, so anchor() reads from that anchor. */
+@supports (anchor-name: --x) {
+  tool-tip > pop-over.tooltip[data-anchor-name]:not([data-tooltip-position]),
+  tool-tip > pop-over.tooltip[data-anchor-name][data-tooltip-position="top"] {
+    position: fixed;
+    inset: auto;
+    bottom: anchor(top);
+    left: anchor(center);
+    translate: -50% calc(-1 * var(--size-xs));
+  }
 
-/* Top position (default) */
-tool-tip > .tooltip[data-anchor]:not([data-tooltip-position]),
-tool-tip > .tooltip[data-anchor][data-tooltip-position="top"] {
-  bottom: anchor(top);
-  left: anchor(center);
-  translate: -50% calc(-1 * var(--size-xs));
+  tool-tip > pop-over.tooltip[data-anchor-name][data-tooltip-position="bottom"] {
+    position: fixed;
+    inset: auto;
+    top: anchor(bottom);
+    left: anchor(center);
+    translate: -50% var(--size-xs);
+  }
+
+  tool-tip > pop-over.tooltip[data-anchor-name][data-tooltip-position="left"] {
+    position: fixed;
+    inset: auto;
+    right: anchor(left);
+    top: anchor(center);
+    translate: calc(-1 * var(--size-xs)) -50%;
+  }
+
+  tool-tip > pop-over.tooltip[data-anchor-name][data-tooltip-position="right"] {
+    position: fixed;
+    inset: auto;
+    left: anchor(right);
+    top: anchor(center);
+    translate: var(--size-xs) -50%;
+  }
 }
 
-/* Bottom position */
-tool-tip > .tooltip[data-anchor][data-tooltip-position="bottom"] {
-  top: anchor(bottom);
-  left: anchor(center);
-  translate: -50% var(--size-xs);
-}
+/* --- Card variant (variant="card") -------------------------------- */
 
-/* Left position */
-tool-tip > .tooltip[data-anchor][data-tooltip-position="left"] {
-  right: anchor(left);
-  top: anchor(center);
-  translate: calc(-1 * var(--size-xs)) -50%;
-}
-
-/* Right position */
-tool-tip > .tooltip[data-anchor][data-tooltip-position="right"] {
-  left: anchor(right);
-  top: anchor(center);
-  translate: var(--size-xs) -50%;
-}
-
-/* --- JavaScript Positioning Fallback (older browsers) --- */
-
-tool-tip > .tooltip[popover]:not([data-anchor]) {
-  position: fixed;
-  /* top and left are set by JavaScript */
-  inset: auto;
-  /* Reset anchor-center from native tooltip CSS */
-  justify-self: auto;
-}
-
-/* --- Card variant (variant="card") --- */
-
-tool-tip > .hover-card {
-  /* Reset popover defaults */
+/* Cards keep pop-over's corner-aligned positioning via data-position;
+   we just override the visual chrome since the card content carries its
+   own surface treatment. */
+tool-tip > pop-over.hover-card {
   border: none;
   padding: 0;
   margin: 0;
-  overflow: visible;
   background: transparent;
+  inline-size: auto;
+  max-inline-size: none;
+  overflow: visible;
+  box-shadow: none;
 
   /* Entry animation */
   opacity: 0;
@@ -88,7 +102,7 @@ tool-tip > .hover-card {
     transform var(--motion-enter-duration) var(--ease-out);
 }
 
-tool-tip > .hover-card > * {
+tool-tip > pop-over.hover-card > * {
   background: var(--color-surface-overlay);
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-m);
@@ -98,25 +112,25 @@ tool-tip > .hover-card > * {
   max-inline-size: 22rem;
 }
 
-tool-tip > .hover-card:popover-open {
+tool-tip > pop-over.hover-card:popover-open {
   opacity: 1;
   transform: translateY(0);
 }
 
-tool-tip > .hover-card img {
+tool-tip > pop-over.hover-card img {
   border-radius: 50%;
   inline-size: 3rem;
   block-size: 3rem;
   object-fit: cover;
 }
 
-tool-tip > .hover-card .text-muted {
+tool-tip > pop-over.hover-card .text-muted {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  tool-tip > .hover-card {
+  tool-tip > pop-over.hover-card {
     transition: none;
     transform: none;
   }
