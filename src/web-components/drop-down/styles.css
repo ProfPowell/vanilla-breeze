@@ -1,3 +1,8 @@
+/* drop-down: composes <pop-over> for the popover surface and layers
+   menu/menuitem styling on top. pop-over owns the popover attribute,
+   anchor positioning, light-dismiss, and the display:none cascade
+   re-assertion (popover_display_gotcha). */
+
 /* --- Progressive enhancement: no-JS fallback --- */
 drop-down:not(:defined) {
   display: inline-block;
@@ -7,62 +12,70 @@ drop-down:not(:defined) > ul[role="menu"] {
   display: none;
 }
 
-/* drop-down: Accessible dropdown menu component */
-
 drop-down {
   display: inline-block;
   position: relative;
+}
 
-  /* Open state */
-  &[open] > menu,
-  &[open] > ul[role="menu"] {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    transition:
-      opacity var(--motion-enter-duration) var(--ease-out),
-      visibility var(--motion-enter-duration) var(--ease-out),
-      transform var(--motion-enter-duration) var(--ease-out);
+/* --- pop-over surface: tighten chrome for dropdown use ------------- */
+
+/* Override pop-over's default container chrome with dropdown-specific
+   tokens. The selector hits the pop-over child that drop-down created
+   via [data-dropdown-host], so other pop-over consumers in the same
+   subtree are unaffected. */
+drop-down > pop-over[data-dropdown-host] {
+  padding: var(--size-2xs) 0;
+  background: var(--color-surface-overlay);
+  box-shadow: var(--shadow-md, 0 4px 6px oklch(0% 0 0 / 0.3));
+  inline-size: max-content;
+  max-inline-size: none;
+  overflow: hidden;
+
+  /* Entry animation — pop-over leaves transitions to the host. */
+  opacity: 0;
+  transform: translateY(-0.25rem);
+  transition:
+    opacity var(--motion-exit-duration) var(--ease-out),
+    transform var(--motion-exit-duration) var(--ease-out),
+    display var(--motion-exit-duration) allow-discrete,
+    overlay var(--motion-exit-duration) allow-discrete;
+}
+
+drop-down > pop-over[data-dropdown-host]:popover-open {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--motion-enter-duration) var(--ease-out),
+    transform var(--motion-enter-duration) var(--ease-out),
+    display var(--motion-enter-duration) allow-discrete,
+    overlay var(--motion-enter-duration) allow-discrete;
+}
+
+@starting-style {
+  drop-down > pop-over[data-dropdown-host]:popover-open {
+    opacity: 0;
+    transform: translateY(-0.25rem);
   }
 }
 
+/* --- Menu list inside the pop-over surface ------------------------- */
+
 @scope (drop-down) {
-  /* Menu container */
+  /* The menu is now a passthrough inside pop-over — strip its own
+     chrome so pop-over's surface treatment shows through. */
   menu,
   ul[role="menu"] {
-    position: absolute;
-    /* Intentional physical: JS-computed positioning via custom properties */
-    top: var(--dropdown-top, 100%);
-    left: var(--dropdown-left, 0);
-    z-index: 100;
-
-    /* Override native menu flex-row layout */
     display: flex;
     flex-direction: column;
-
-    /* Reset list styles */
     margin: 0;
-    padding: var(--size-2xs) 0;
+    padding: 0;
     list-style: none;
-
-    /* Appearance */
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
     min-inline-size: 10rem;
-    background: var(--color-surface-overlay);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-m);
-    box-shadow: var(--shadow-m);
-    overflow: hidden;
 
-    /* Hidden by default */
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-0.25rem);
-    transition:
-      opacity var(--motion-exit-duration) var(--ease-out),
-      visibility var(--motion-exit-duration) var(--ease-out),
-      transform var(--motion-exit-duration) var(--ease-out);
-
-    /* Menu items */
     & > li {
       margin: 0;
       padding: 0;
@@ -168,54 +181,10 @@ drop-down {
   }
 }
 
-/* --- Popover mode (progressive enhancement) --- */
-
-drop-down > [popover] {
-  /* Reset browser popover defaults, keep component visual styles */
-  padding: var(--size-2xs) 0;
-  margin: 0;
-  background: var(--color-surface-overlay);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-m);
-  box-shadow: var(--shadow-m);
-  overflow: visible;
-
-  /* Intentional physical: JS-computed viewport coordinates via custom properties */
-  position: fixed;
-  inset: unset;
-  top: var(--dropdown-top, 0);
-  left: var(--dropdown-left, 0);
-}
-
-drop-down > [popover]:popover-open {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  transition:
-    opacity var(--motion-enter-duration) var(--ease-out),
-    transform var(--motion-enter-duration) var(--ease-out),
-    display var(--motion-enter-duration) allow-discrete,
-    overlay var(--motion-enter-duration) allow-discrete;
-}
-
-@starting-style {
-  drop-down > [popover]:popover-open {
-    opacity: 0;
-    transform: translateY(-0.25rem);
-  }
-}
-
-/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  @scope (drop-down) {
-    menu,
-    ul[role="menu"] {
-      transition: none;
-      transform: none;
-    }
-  }
-
-  drop-down > [popover]:popover-open {
+  drop-down > pop-over[data-dropdown-host],
+  drop-down > pop-over[data-dropdown-host]:popover-open {
     transition: none;
+    transform: none;
   }
 }

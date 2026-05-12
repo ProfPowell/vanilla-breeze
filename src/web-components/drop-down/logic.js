@@ -1,15 +1,15 @@
 /**
  * drop-down: Accessible dropdown menu component
  *
- * Provides a trigger button with a dropdown menu. Handles keyboard
- * navigation, focus management, and click-outside-to-close.
+ * Composes <pop-over> for the popover surface: pop-over owns the popover
+ * attribute, anchor-name wiring, light-dismiss, position-area/inset
+ * fallback, and the display:none cascade re-assertion. drop-down layers
+ * keyboard navigation, focus management, hover-grace, ARIA, and the
+ * items[] data API on top.
  *
- * Progressive enhancement: uses Popover API when available for native
- * top-layer positioning and light-dismiss. Falls back to visibility/z-index.
- *
- * @attr {string} position - Menu position: 'bottom-start' (default), 'bottom-end', 'top-start', 'top-end'
- * @attr {boolean} open - Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup
- * @attr {boolean} no-flip - Disable automatic flip when menu doesn't fit
+ * @attr {string} position - 'bottom-start' (default) | 'bottom-end' | 'top-start' | 'top-end'
+ * @attr {boolean} open - Reflected state — set via open()/close()/toggle(), not initial markup
+ * @attr {boolean} no-flip - (reserved — pop-over handles flipping via position-try when supported)
  * @attr {boolean} hover - Open on hover/focus instead of click (useful for nav menus)
  *
  * @example
@@ -33,92 +33,109 @@
  * </drop-down>
  */
 
-import { supportsPopover } from '../../utils/popover-support.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+// Ensure <pop-over> is registered — drop-down composes it for its popover surface.
+import '../pop-over/logic.js';
+
+let dropDownSeq = 0;
 
 class DropDown extends VBElement {
-  #trigger;
-  #menu;
-  #items = [];
+  /** @type {HTMLElement} */ #trigger;
+  /** @type {HTMLElement} */ #menu;
+  /** @type {HTMLElement} */ #popover;
+  /** @type {HTMLElement[]} */ #items = [];
   #activeIndex = -1;
   #isOpen = false;
   #hoverMode = false;
   /** @type {ReturnType<typeof setTimeout> | null} */
   #closeTimeout = null;
-  #usePopover = false;
 
   setup() {
     // Find trigger
-    this.#trigger = this.querySelector(':scope > [data-trigger]');
-    if (!this.#trigger) {
-      this.#trigger = this.querySelector(':scope > button');
-    }
+    this.#trigger = this.querySelector(':scope > [data-trigger]')
+      || this.querySelector(':scope > button');
     if (!this.#trigger) return false;
 
-    // Find menu
-    this.#menu = this.querySelector(':scope > menu, :scope > ul[role="menu"]');
+    // Find the slotted menu (may already be inside a pop-over from a previous
+    // mount; querySelector reaches deeper).
+    this.#menu = this.querySelector('menu, ul[role="menu"]');
     if (!this.#menu) return false;
 
-    // Check for hover mode
     this.#hoverMode = this.hasAttribute('hover');
 
-    // Progressive enhancement: use Popover API when available (not for hover mode)
-    this.#usePopover = supportsPopover && !this.#hoverMode;
-    if (this.#usePopover) {
-      this.#menu.setAttribute('popover', 'auto');
+    // Compose pop-over: wrap the menu in a <pop-over> that owns popover
+    // attribute, anchor positioning, and light-dismiss.
+    if (!this.#trigger.id) this.#trigger.id = `dropdown-trigger-${++dropDownSeq}`;
+    const existing = /** @type {HTMLElement | null} */ (
+      this.querySelector(':scope > pop-over[data-dropdown-host]'));
+    if (existing) {
+      this.#popover = existing;
+    } else {
+      /* Configure attributes BEFORE appending — pop-over's setup() runs
+         in connectedCallback and reads data-anchor/data-mode/data-position
+         eagerly. Setting them post-append would race the upgrade. */
+      this.#popover = document.createElement('pop-over');
+      this.#popover.setAttribute('data-dropdown-host', '');
+      this.#popover.id = `dropdown-${++dropDownSeq}`;
+      this.#popover.dataset.mode = this.#hoverMode ? 'manual' : 'auto';
+      this.#popover.dataset.position = this.getAttribute('position') || 'bottom-start';
+      this.#popover.dataset.anchor = this.#trigger.id;
+      // Move the menu into the pop-over before connecting, so it's a
+      // single mount rather than menu → orphan → pop-over → reparent.
+      this.#popover.appendChild(this.#menu);
+      this.appendChild(this.#popover);
+    }
+    // Reconfigure on re-setup (items setter re-runs setup) — these are
+    // idempotent and just reflect possibly-changed host attributes.
+    this.#popover.dataset.mode = this.#hoverMode ? 'manual' : 'auto';
+    this.#popover.dataset.position = this.getAttribute('position') || 'bottom-start';
+    this.#popover.dataset.anchor = this.#trigger.id;
+    if (this.#menu.parentElement !== this.#popover) {
+      this.#popover.appendChild(this.#menu);
     }
 
-    // Set up ARIA
+    // ARIA
     this.#trigger.setAttribute('aria-haspopup', 'menu');
     this.#trigger.setAttribute('aria-expanded', 'false');
-
-    if (!this.#menu.id) {
-      this.#menu.id = `dropdown-menu-${crypto.randomUUID().slice(0, 8)}`;
-    }
+    if (!this.#menu.id) this.#menu.id = `dropdown-menu-${++dropDownSeq}`;
     this.#trigger.setAttribute('aria-controls', this.#menu.id);
     this.#menu.setAttribute('role', 'menu');
 
-    // Collect menu items (buttons or links, not separators)
     this.#collectItems();
 
-    // Event listeners
     if (this.#hoverMode) {
-      // Hover mode: open on hover/focus, click navigates (for link triggers)
       this.listen(this, 'mouseenter', this.#handleMouseEnter);
       this.listen(this, 'mouseleave', this.#handleMouseLeave);
       this.listen(this.#trigger, 'focus', this.#handleTriggerFocus);
       this.listen(this.#trigger, 'blur', this.#handleTriggerBlur);
     } else {
-      // Click mode: toggle on click
       this.listen(this.#trigger, 'click', this.#handleTriggerClick);
     }
     this.listen(this.#trigger, 'keydown', this.#handleTriggerKeyDown);
     this.listen(this.#menu, 'keydown', this.#handleMenuKeyDown);
 
-    if (this.#usePopover) {
-      // Sync internal state when popover is dismissed natively (light-dismiss, Escape)
-      this.listen(this.#menu, 'toggle', this.#handlePopoverToggle);
-    } else {
-      // Legacy: manual outside-click and Escape handling
-      this.listen(document, 'click', this.#handleOutsideClick);
+    // Sync internal state whenever pop-over actually opens/closes — covers
+    // light-dismiss and Escape from the native popover layer in click mode.
+    this.listen(this.#popover, 'pop-over:hide', this.#handlePopoverHide);
+    this.listen(this.#popover, 'pop-over:show', this.#handlePopoverShow);
+
+    if (this.#hoverMode) {
+      // Manual mode has no native light-dismiss — keep Escape handling.
       this.listen(document, 'keydown', this.#handleEscape);
     }
   }
 
   teardown() {
-    if (this.#closeTimeout) {
-      clearTimeout(this.#closeTimeout);
-    }
+    if (this.#closeTimeout) clearTimeout(this.#closeTimeout);
   }
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
 
   /**
-   * The current menu items as a plain data array. Each entry is one of:
+   * The current menu items as a plain data array.
    *   { label, value?, href?, disabled? }   — action item
    *   { separator: true }                    — divider
-   * Reads from the live <menu>/<ul> children.
    */
   get items() {
     if (!this.#menu) return [];
@@ -140,17 +157,9 @@ class DropDown extends VBElement {
     return result;
   }
 
-  /**
-   * Replace the menu items and re-render. Each entry can be an action
-   * (`{ label, value?, href?, disabled? }`) or a separator
-   * (`{ separator: true }`). Auto-creates the <menu> shell if none
-   * exists. The trigger button is preserved.
-   *
-   * Emits drop-down:items-changed { items, source: 'property' }.
-   */
   set items(value) {
     const next = Array.isArray(value) ? value : [];
-    let menu = this.querySelector(':scope > menu, :scope > ul[role="menu"]');
+    let menu = this.querySelector('menu, ul[role="menu"]');
     if (!menu) {
       menu = document.createElement('menu');
       this.appendChild(menu);
@@ -192,8 +201,7 @@ class DropDown extends VBElement {
       this.#menu.querySelectorAll('button, a, [role="menuitem"]')
     ).filter(item => !item.disabled && !item.closest('[role="separator"]'));
 
-    // Set role on items
-    this.#items.forEach((item, index) => {
+    this.#items.forEach((item) => {
       item.setAttribute('role', 'menuitem');
       item.setAttribute('tabindex', '-1');
       // Reset theme button styles (border/shadow leak from unlayered theme rules)
@@ -201,7 +209,6 @@ class DropDown extends VBElement {
       item.addEventListener('click', this.#handleItemClick);
     });
 
-    // Set role on separators
     this.#menu.querySelectorAll('li:empty, [role="separator"], hr').forEach(sep => {
       sep.setAttribute('role', 'separator');
     });
@@ -223,7 +230,6 @@ class DropDown extends VBElement {
   };
 
   #handleMouseLeave = () => {
-    // Small delay to allow moving between trigger and menu
     this.setState('hover-grace-pending', true);
     this.#closeTimeout = setTimeout(() => {
       this.setState('hover-grace-pending', false);
@@ -241,17 +247,11 @@ class DropDown extends VBElement {
   };
 
   #handleTriggerBlur = (e) => {
-    // Don't close if focus moved into the menu
-    if (this.#menu?.contains(e.relatedTarget)) {
-      return;
-    }
-    // Small delay to check if focus is moving into menu
+    if (this.#menu?.contains(e.relatedTarget)) return;
     this.setState('hover-grace-pending', true);
     this.#closeTimeout = setTimeout(() => {
       this.setState('hover-grace-pending', false);
-      if (!this.contains(document.activeElement)) {
-        this.close();
-      }
+      if (!this.contains(document.activeElement)) this.close();
     }, 100);
   };
 
@@ -293,22 +293,13 @@ class DropDown extends VBElement {
         this.#focusItem(this.#items.length - 1);
         break;
       case 'Tab':
-        // Close and let focus move naturally
         this.close();
         break;
       case 'Enter':
       case ' ':
         e.preventDefault();
-        if (this.#activeIndex >= 0) {
-          this.#items[this.#activeIndex].click();
-        }
+        if (this.#activeIndex >= 0) this.#items[this.#activeIndex].click();
         break;
-    }
-  };
-
-  #handleOutsideClick = (e) => {
-    if (this.#isOpen && !this.contains(e.target)) {
-      this.close();
     }
   };
 
@@ -320,147 +311,55 @@ class DropDown extends VBElement {
     }
   };
 
-  #handlePopoverToggle = (e) => {
-    // Sync internal state when popover is dismissed natively (light-dismiss)
-    if (e.newState === 'closed' && this.#isOpen) {
-      this.#isOpen = false;
-      this.removeAttribute('open');
-      this.#trigger?.setAttribute('aria-expanded', 'false');
-      this.#activeIndex = -1;
-      this.dispatchEvent(new CustomEvent('drop-down:close', { bubbles: true }));
-    }
-  };
-
   #handleItemClick = (e) => {
-    // Close menu after item click (unless item prevents default)
     if (!e.defaultPrevented) {
       this.close();
       this.#trigger?.focus();
     }
   };
 
+  /* pop-over event handlers — sync state in BOTH directions so external
+     show()/hide() calls AND native light-dismiss converge on the same
+     [open] attribute and aria-expanded value. */
+  #handlePopoverShow = () => {
+    if (this.#isOpen) return;
+    this.#isOpen = true;
+    this.setAttribute('open', '');
+    this.#trigger?.setAttribute('aria-expanded', 'true');
+    this.#activeIndex = -1;
+    this.dispatchEvent(new CustomEvent('drop-down:open', { bubbles: true }));
+  };
+
+  #handlePopoverHide = () => {
+    if (!this.#isOpen) return;
+    this.#isOpen = false;
+    this.removeAttribute('open');
+    this.#trigger?.setAttribute('aria-expanded', 'false');
+    this.#activeIndex = -1;
+    this.dispatchEvent(new CustomEvent('drop-down:close', { bubbles: true }));
+  };
+
   #focusItem(index) {
     if (this.#items.length === 0) return;
-
-    // Wrap around
     if (index < 0) index = this.#items.length - 1;
     if (index >= this.#items.length) index = 0;
-
     this.#activeIndex = index;
     this.#items[index].focus();
   }
 
   open() {
-    if (this.#isOpen || !this.#menu) return;
-
-    this.#isOpen = true;
-    this.setAttribute('open', '');
-    this.#trigger?.setAttribute('aria-expanded', 'true');
-    this.#activeIndex = -1;
-
-    // Position menu
-    this.#positionMenu();
-
-    // Show via Popover API if available
-    if (this.#usePopover) {
-      try { this.#menu.showPopover(); } catch { /* already open */ }
-    }
-
-    this.dispatchEvent(new CustomEvent('drop-down:open', { bubbles: true }));
+    if (this.#isOpen || !this.#popover) return;
+    /** @type {any} */ (this.#popover).show();
   }
 
   close() {
-    if (!this.#isOpen || !this.#menu) return;
-
-    this.#isOpen = false;
-    this.removeAttribute('open');
-    this.#trigger?.setAttribute('aria-expanded', 'false');
-    this.#activeIndex = -1;
-
-    // Hide via Popover API if available
-    if (this.#usePopover) {
-      try { this.#menu.hidePopover(); } catch { /* already closed */ }
-    }
-
-    this.dispatchEvent(new CustomEvent('drop-down:close', { bubbles: true }));
+    if (!this.#isOpen || !this.#popover) return;
+    /** @type {any} */ (this.#popover).hide();
   }
 
   toggle() {
-    if (this.#isOpen) {
-      this.close();
-    } else {
-      this.open();
-    }
-  }
-
-  #positionMenu() {
-    if (!this.#trigger || !this.#menu) return;
-
-    const position = this.getAttribute('position') || 'bottom-start';
-    const noFlip = this.hasAttribute('no-flip');
-    const triggerRect = this.#trigger.getBoundingClientRect();
-    const menuRect = this.#menu.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-    const gap = 4;
-
-    if (this.#usePopover) {
-      // Popover: position with fixed viewport coordinates (top-layer)
-      let top, left;
-
-      if (position.startsWith('top')) {
-        top = triggerRect.top - menuRect.height - gap;
-        if (!noFlip && top < 0) {
-          top = triggerRect.bottom + gap;
-        }
-      } else {
-        top = triggerRect.bottom + gap;
-        if (!noFlip && top + menuRect.height > viewportHeight) {
-          top = triggerRect.top - menuRect.height - gap;
-        }
-      }
-
-      if (position.endsWith('end')) {
-        left = triggerRect.right - menuRect.width;
-        if (left < 0) left = triggerRect.left;
-      } else {
-        left = triggerRect.left;
-        if (left + menuRect.width > viewportWidth) {
-          left = triggerRect.right - menuRect.width;
-        }
-      }
-
-      this.#menu.style.setProperty('--dropdown-top', `${Math.max(0, top)}px`);
-      this.#menu.style.setProperty('--dropdown-left', `${Math.max(0, left)}px`);
-    } else {
-      // Legacy: position relative to trigger
-      let top, left;
-
-      if (position.startsWith('top')) {
-        top = -menuRect.height - gap;
-        if (!noFlip && triggerRect.top + top < 0) {
-          top = triggerRect.height + gap;
-        }
-      } else {
-        top = triggerRect.height + gap;
-        if (!noFlip && triggerRect.bottom + menuRect.height + gap > viewportHeight) {
-          top = -menuRect.height - gap;
-        }
-      }
-
-      if (position.endsWith('end')) {
-        left = triggerRect.width - menuRect.width;
-        if (triggerRect.left + left < 0) left = 0;
-      } else {
-        left = 0;
-        if (triggerRect.left + menuRect.width > viewportWidth) {
-          left = triggerRect.width - menuRect.width;
-        }
-      }
-
-      this.#menu.style.setProperty('--dropdown-top', `${top}px`);
-      this.#menu.style.setProperty('--dropdown-left', `${left}px`);
-    }
+    if (this.#isOpen) this.close();
+    else this.open();
   }
 
   get isOpen() {
