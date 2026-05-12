@@ -71,7 +71,6 @@ const PROVIDER_LABELS = {
 class AIChat extends VBElement {
   /** @type {HTMLElement|null} */ #window = null;
   /** @type {HTMLSelectElement|null} */ #select = null;
-  /** @type {HTMLButtonElement|null} */ #stopBtn = null;
   /** @type {HTMLElement|null} */ #ribbon = null;
   /** @type {HTMLElement|null} */ #notice = null;
   /** @type {HTMLElement|null} */ #starters = null;
@@ -128,7 +127,6 @@ class AIChat extends VBElement {
         <script type="application/json" data-participants>${JSON.stringify(PARTICIPANTS)}</script>
         <header>
           <select class="ai-chat-provider small" data-model-select aria-label="AI provider"></select>
-          <button type="button" class="ai-chat-stop small" hidden>Stop</button>
         </header>
         <chat-thread role="log" aria-label="Chat" aria-live="polite"></chat-thread>
         <chat-input name="message">
@@ -145,7 +143,6 @@ class AIChat extends VBElement {
 
     this.#window   = /** @type {HTMLElement}        */ (this.querySelector(':scope > chat-window'));
     this.#select   = /** @type {HTMLSelectElement} */  (this.querySelector('.ai-chat-provider'));
-    this.#stopBtn  = /** @type {HTMLButtonElement} */  (this.querySelector('.ai-chat-stop'));
     this.#ribbon   = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-ribbon'));
     this.#notice   = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-notice'));
     this.#starters = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-starters'));
@@ -192,9 +189,15 @@ class AIChat extends VBElement {
         this.#syncNoticeForProvider();
       }
     });
-    if (this.#stopBtn) {
-      this.listen(this.#stopBtn, 'click', () => this.#abortCtl?.abort());
-    }
+    /* Escape on the host aborts an in-flight stream. The Send button
+       and textarea are disabled while chat-window awaits a response, so
+       keyboard focus is the reliable abort path. */
+    this.listen(this, 'keydown', (/** @type {KeyboardEvent} */ e) => {
+      if (e.key === 'Escape' && this.#abortCtl) {
+        e.preventDefault();
+        this.#abortCtl.abort();
+      }
+    });
   }
 
   /** @param {string} line */
@@ -373,7 +376,6 @@ class AIChat extends VBElement {
     }
 
     this.#setState('streaming');
-    if (this.#stopBtn) this.#stopBtn.hidden = false;
     this.#abortCtl = new AbortController();
 
     const bubble = typingElement.querySelector('chat-bubble');
@@ -409,7 +411,6 @@ class AIChat extends VBElement {
       this.dispatchEvent(new CustomEvent('ai-chat:error', { detail: { error: err }, bubbles: true }));
     } finally {
       this.#abortCtl = null;
-      if (this.#stopBtn) this.#stopBtn.hidden = true;
     }
   }
 
