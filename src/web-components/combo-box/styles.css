@@ -1,20 +1,13 @@
-/* combo-box: Form-associated autocomplete combobox */
+/* combo-box: Form-associated autocomplete combobox.
+
+   Composes <pop-over data-combobox-host> as the listbox surface. pop-over
+   owns the popover attribute, anchor-name wiring, and the display:none
+   cascade re-assertion. The listbox <ul> sits inside the pop-over with
+   its own listbox styling preserved. */
 
 combo-box {
   display: inline-block;
   position: relative;
-
-  /* Open state */
-  &[open] > ul,
-  &[open] > ol {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    transition:
-      opacity var(--motion-enter-duration) var(--ease-out),
-      visibility var(--motion-enter-duration) var(--ease-out),
-      transform var(--motion-enter-duration) var(--ease-out);
-  }
 }
 
 /* Progressive enhancement: plain input + visible list before JS */
@@ -44,36 +37,24 @@ combo-box:not(:defined) {
     inline-size: 100%;
   }
 
-  /* Listbox */
+  /* Listbox — sits inside the pop-over after upgrade. Keep list/option
+     styling here; surface chrome moves to the pop-over override below. */
   ul,
   ol {
-    position: absolute;
-    z-index: 100;
-    inset-inline: 0;
     margin: 0;
-    margin-block-start: var(--size-3xs);
     padding: var(--size-2xs) 0;
     list-style: none;
-
-    /* Appearance */
-    background: var(--color-surface-overlay);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-m);
-    box-shadow: var(--shadow-m);
 
     /* Scrollable */
     max-block-size: 16rem;
     overflow-y: auto;
     overscroll-behavior: contain;
 
-    /* Hidden by default */
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-0.25rem);
-    transition:
-      opacity var(--motion-exit-duration) var(--ease-out),
-      visibility var(--motion-exit-duration) var(--ease-out),
-      transform var(--motion-exit-duration) var(--ease-out);
+    /* Strip default appearance — pop-over now owns the surface. */
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   /* Options */
@@ -145,7 +126,6 @@ combo-box:not(:defined) {
     white-space: nowrap;
     color: var(--color-text);
 
-    /* Remove button */
     & button {
       all: unset;
       display: inline-flex;
@@ -191,25 +171,40 @@ combo-box:not(:defined) {
   }
 }
 
-/* --- Popover mode (progressive enhancement) ---
- * The listbox <ul>/<ol> itself gets popover="manual" (see logic.js).
- * Only override positioning here; appearance is handled by the @scope rule
- * above, which already beats UA popover defaults. Resetting border/padding/
- * margin/background/overflow here would have higher specificity than the
- * @scope rule and strip the intended listbox styling. */
+/* --- Composed pop-over surface ----------------------------------- */
 
-combo-box > [popover] {
-  position: fixed;
-  inset: unset;
-  /* Intentional physical: JS-computed viewport coordinates via custom properties */
-  top: var(--combobox-top, 0);
-  left: var(--combobox-left, 0);
-  inline-size: var(--combobox-width, auto);
+/* Override pop-over's default container chrome with combobox-specific
+   tokens. Match the anchor's width via anchor-size() in modern browsers
+   so the listbox aligns visually with the input/tags-area. */
+combo-box > pop-over[data-combobox-host] {
+  padding: 0;
+  background: var(--color-surface-overlay);
+  border: var(--border-width-thin) solid var(--color-border);
+  box-shadow: var(--shadow-md, 0 4px 6px oklch(0% 0 0 / 0.3));
+  border-radius: var(--radius-m);
+  inline-size: max-content;
+  max-inline-size: none;
+  overflow: hidden;
+  margin: var(--size-3xs) 0 0 0;
+
+  /* Entry animation. */
+  opacity: 0;
+  transform: translateY(-0.25rem);
+  transition:
+    opacity var(--motion-exit-duration) var(--ease-out),
+    transform var(--motion-exit-duration) var(--ease-out),
+    display var(--motion-exit-duration) allow-discrete,
+    overlay var(--motion-exit-duration) allow-discrete;
 }
 
-combo-box > [popover]:popover-open {
+@supports (inline-size: anchor-size(width)) {
+  combo-box > pop-over[data-combobox-host] {
+    inline-size: anchor-size(width);
+  }
+}
+
+combo-box > pop-over[data-combobox-host]:popover-open {
   opacity: 1;
-  visibility: visible;
   transform: translateY(0);
   transition:
     opacity var(--motion-enter-duration) var(--ease-out),
@@ -219,7 +214,7 @@ combo-box > [popover]:popover-open {
 }
 
 @starting-style {
-  combo-box > [popover]:popover-open {
+  combo-box > pop-over[data-combobox-host]:popover-open {
     opacity: 0;
     transform: translateY(-0.25rem);
   }
@@ -227,15 +222,9 @@ combo-box > [popover]:popover-open {
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  @scope (combo-box) {
-    ul,
-    ol {
-      transition: none;
-      transform: none;
-    }
-  }
-
-  combo-box > [popover]:popover-open {
+  combo-box > pop-over[data-combobox-host],
+  combo-box > pop-over[data-combobox-host]:popover-open {
     transition: none;
+    transform: none;
   }
 }
