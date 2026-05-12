@@ -156,6 +156,13 @@ class QuadrantGrid extends VBElement {
           child.style.setProperty('--qg-local-x', localX.toFixed(4));
           child.style.setProperty('--qg-local-y', localY.toFixed(4));
           child.classList.add('qg-pinned');
+          // Deterministic per-pin hue so identical-style pins remain
+          // distinguishable even when stacked. Hash data-id (or text)
+          // to a 0..359 hue offset that CSS applies via hue-rotate.
+          if (!child.style.getPropertyValue('--qg-pin-hue')) {
+            const key = child.dataset.id || (child.textContent || '').trim();
+            child.style.setProperty('--qg-pin-hue', `${QuadrantGrid.#hueFromString(key)}deg`);
+          }
         }
       }
 
@@ -210,15 +217,96 @@ class QuadrantGrid extends VBElement {
     };
     this.#pinObserver = new ResizeObserver((entries) => {
       for (const entry of entries) measure(entry.target);
+      this.#scheduleClusterPass();
     });
     for (const pin of this.querySelectorAll('.qg-pinned')) {
       this.#pinObserver.observe(pin);
+    }
+    this.#scheduleClusterPass();
+  }
+
+  /* Coalesce cluster passes within a frame; ResizeObserver and font
+     loads can fire multiple times during initial layout. */
+  #scheduleClusterPass() {
+    if (this.#clusterRaf) return;
+    this.#clusterRaf = requestAnimationFrame(() => {
+      this.#clusterRaf = 0;
+      this.#detectClusters();
+    });
+  }
+
+  /* Group overlapping pins per quadrant so CSS can fan them on hover
+     or focus. Cluster pairs by bounding-rect intersection — robust to
+     pin size, padding, and inline-size differences. */
+  #detectClusters() {
+    for (const pin of this.querySelectorAll('.qg-pinned')) {
+      pin.classList.remove('qg-clustered');
+      pin.style.removeProperty('--qg-cluster-i');
+      pin.style.removeProperty('--qg-cluster-n');
+      delete pin.dataset.cluster;
+      if (pin.dataset.qgTabbed !== undefined) {
+        pin.removeAttribute('tabindex');
+        delete pin.dataset.qgTabbed;
+      }
+    }
+
+    let clusterSeq = 0;
+    for (let q = 0; q < 4; q++) {
+      const section = this.#sections[q];
+      if (!section) continue;
+      const pins = [...section.querySelectorAll('.qg-pinned')];
+      if (pins.length < 2) continue;
+      const rects = pins.map((p) => p.getBoundingClientRect());
+      const parent = Array.from({ length: pins.length }, (_, i) => i);
+      const find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+      const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent[ra] = rb; };
+      for (let i = 0; i < pins.length; i++) {
+        for (let j = i + 1; j < pins.length; j++) {
+          if (QuadrantGrid.#rectsIntersect(rects[i], rects[j])) union(i, j);
+        }
+      }
+      const groups = new Map();
+      for (let i = 0; i < pins.length; i++) {
+        const root = find(i);
+        if (!groups.has(root)) groups.set(root, []);
+        groups.get(root).push(i);
+      }
+      for (const members of groups.values()) {
+        if (members.length < 2) continue;
+        const id = `c${++clusterSeq}`;
+        members.forEach((idx, i) => {
+          const pin = pins[idx];
+          pin.classList.add('qg-clustered');
+          pin.dataset.cluster = id;
+          pin.style.setProperty('--qg-cluster-i', String(i));
+          pin.style.setProperty('--qg-cluster-n', String(members.length));
+          if (!pin.hasAttribute('tabindex') && !pin.matches('a, button, [contenteditable]')) {
+            pin.setAttribute('tabindex', '0');
+            pin.dataset.qgTabbed = '';
+          }
+        });
+      }
     }
   }
 
   teardown() {
     this.#pinObserver?.disconnect();
     this.#pinObserver = null;
+    if (this.#clusterRaf) cancelAnimationFrame(this.#clusterRaf);
+    this.#clusterRaf = 0;
+  }
+
+  static #rectsIntersect(a, b) {
+    return !(a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top);
+  }
+
+  /* Stable string hash → hue degree in [0, 360). djb2-ish; small and
+     deterministic across runs so per-pin tints don't flicker on
+     re-render. */
+  static #hueFromString(s) {
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return ((h % 360) + 360) % 360;
   }
 
   #onTransfer = (e) => {
@@ -296,6 +384,8 @@ class QuadrantGrid extends VBElement {
   #qLabels = [];
   /** @type {ResizeObserver | null} */
   #pinObserver = null;
+  /** @type {number} */
+  #clusterRaf = 0;
 }
 
 registerComponent('quadrant-grid', QuadrantGrid);

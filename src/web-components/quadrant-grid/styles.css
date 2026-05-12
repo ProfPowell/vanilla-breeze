@@ -139,8 +139,32 @@ quadrant-grid {
     font-size: var(--font-size-xs, 0.75rem);
     inset-inline-start: clamp(var(--qg-pin-half-w, 1.5rem), calc(var(--qg-local-x, 0.5) * 100%), calc(100% - var(--qg-pin-half-w, 1.5rem)));
     inset-block-end: clamp(var(--qg-pin-half-h, 0.75rem), calc(var(--qg-local-y, 0.5) * 100%), calc(100% - var(--qg-pin-half-h, 0.75rem)));
-    transform: translate(-50%, 50%);
+    /* --qg-fan-x / --qg-fan-y nudge clustered pins outward on
+       hover/focus; default to zero so non-clustered pins stay anchored. */
+    transform: translate(calc(-50% + var(--qg-fan-x, 0px)), calc(50% + var(--qg-fan-y, 0px)));
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    /* Per-pin tint: hue-rotate is cheap, leaves white text neutral,
+       and lets identical-style pins stay visually distinct at rest. */
+    filter: hue-rotate(var(--qg-pin-hue, 0deg));
+    transition: transform 180ms ease, box-shadow 180ms ease, z-index 0s;
+  }
+
+  /* Cluster fan-out: when any clustered pin in the quadrant is hovered
+     or focused, splay every member of the cluster along a circle.
+     --qg-cluster-i is each pin's position (0..n-1); --qg-cluster-n is
+     the cluster size. Radius scales with measured pin width. */
+  .qg-quadrant:hover .qg-pinned.qg-clustered,
+  .qg-quadrant:focus-within .qg-pinned.qg-clustered {
+    --qg-fan-angle: calc((var(--qg-cluster-i, 0) / var(--qg-cluster-n, 1)) * 360deg);
+    --qg-fan-radius: calc(var(--qg-pin-half-w, 1.5rem) * 1.4);
+    --qg-fan-x: calc(cos(var(--qg-fan-angle)) * var(--qg-fan-radius));
+    --qg-fan-y: calc(sin(var(--qg-fan-angle)) * var(--qg-fan-radius) * -1);
+  }
+
+  .qg-pinned.qg-clustered:hover,
+  .qg-pinned.qg-clustered:focus-visible {
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   }
 }
 
