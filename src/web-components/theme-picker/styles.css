@@ -352,17 +352,26 @@ theme-picker {
     }
   }
 
-  /* Segmented control (compact color mode) */
+  /* Segmented control (compact color mode)
+     Uses CSS grid + subgrid so the icon row and label row align across
+     every option, regardless of theme font-size/icon-rendering quirks.
+     Each option subgrids into the same two parent rows: icons line up
+     in row 1, labels in row 2. */
   .compact-segmented {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(var(--seg-count, 3), 1fr);
+    grid-template-rows: auto auto;
     border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-s);
     overflow: hidden;
   }
 
   .compact-seg {
-    flex: 1;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 2;
     cursor: pointer;
+    position: relative;
 
     & input[type="radio"] {
       position: absolute;
@@ -376,12 +385,13 @@ theme-picker {
       border: 0;
     }
 
-    & span {
-      display: flex;
-      flex-direction: column;
+    & .compact-seg-visual {
+      display: grid;
+      grid-template-rows: subgrid;
+      grid-row: span 2;
       align-items: center;
-      justify-content: center;
-      gap: 1px;
+      justify-items: center;
+      gap: var(--size-3xs, 2px);
       padding: var(--size-2xs) var(--size-xs);
       min-block-size: 2.5rem;
       text-align: center;
@@ -392,24 +402,27 @@ theme-picker {
         color var(--duration-fast) var(--ease-default);
     }
 
-    & span icon-wc {
+    & icon-wc {
       flex-shrink: 0;
+      /* Anchor icon dimensions to the label's font-size so themes that
+         scale typography scale the icon proportionally. */
+      font-size: 1em;
     }
 
-    &:not(:last-child) span {
+    &:not(:last-child) .compact-seg-visual {
       border-inline-end: var(--border-width-thin) solid var(--color-border);
     }
 
-    &:hover span {
+    &:hover .compact-seg-visual {
       background: var(--color-surface-alt);
     }
 
-    & input:checked + span {
+    & input:checked + .compact-seg-visual {
       background: var(--color-primary);
       color: white;
     }
 
-    & input:focus-visible + span {
+    & input:focus-visible + .compact-seg-visual {
       outline: var(--focus-ring-width) solid var(--focus-ring-color);
       outline-offset: var(--focus-ring-offset);
     }

@@ -328,7 +328,10 @@ class ThemePicker extends VBElement {
           ${MODES.map(m => `
             <label class="compact-seg">
               <input type="radio" name="theme-mode" value="${m.id}" ${mode === m.id ? 'checked' : ''} />
-              <span><icon-wc name="${m.icon}" size="xs"></icon-wc> ${m.name}</span>
+              <span class="compact-seg-visual">
+                <icon-wc name="${m.icon}" size="xs"></icon-wc>
+                <span class="compact-seg-label">${m.name}</span>
+              </span>
             </label>
           `).join('')}
         </div>

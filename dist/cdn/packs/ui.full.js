@@ -151,7 +151,10 @@ var me=Object.defineProperty;var pe=(e,t)=>()=>(e&&(t=e(e=0)),t);var fe=(e,t)=>{
           ${q.map(o=>`
             <label class="compact-seg">
               <input type="radio" name="theme-mode" value="${o.id}" ${t===o.id?"checked":""} />
-              <span><icon-wc name="${o.icon}" size="xs"></icon-wc> ${o.name}</span>
+              <span class="compact-seg-visual">
+                <icon-wc name="${o.icon}" size="xs"></icon-wc>
+                <span class="compact-seg-label">${o.name}</span>
+              </span>
             </label>
           `).join("")}
         </div>
