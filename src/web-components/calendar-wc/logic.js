@@ -8,10 +8,14 @@
  *
  * @attr {string}  data-month           - Initial month (1-12). Defaults to current.
  * @attr {string}  data-year            - Initial year. Defaults to current.
- * @attr {string}  data-events          - JSON: events keyed by ISO date. Values can be:
+ * @attr {string}  data-events          - JSON: events keyed by start ISO date. Values can be:
  *   - string: "Team meeting"
  *   - object: { "label": "...", "color": "...", "icon": "...", "time": "09:00" }
  *   - array:  [{ "label": "...", "time": "..." }, ...]
+ *   Add optional `end` (ISO date, inclusive) or `days` (count ≥ 1) to a
+ *   value to make it span multiple days; spans render as continuous
+ *   bars in data-size="large" and as event dots on every day they cover
+ *   in compact/default views.
  * @attr {string}  data-selection       - Selection mode: "none" (default), "single", "range", "multi"
  * @attr {string}  data-size            - Size: "compact", "default", "large"
  * @attr {string}  data-min-date        - Earliest selectable/navigable date (ISO string)
@@ -54,6 +58,33 @@ function sameDay(a, b) {
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
+}
+
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+/**
+ * Resolve an event's date range. Accepts optional `end` (ISO date) or
+ * `days` (count, days ≥ 1). `end` wins if both are present. Returns the
+ * key-ISO as both start and end for single-day events; null for invalid.
+ */
+function resolveRange(evt, keyISO) {
+  if (!keyISO) return null;
+  const start = fromISO(keyISO);
+  if (!start) return null;
+  let end = start;
+  if (typeof evt === 'object' && evt) {
+    if (typeof evt.end === 'string') {
+      const e = fromISO(evt.end);
+      if (e && e >= start) end = e;
+    } else if (typeof evt.days === 'number' && Number.isFinite(evt.days) && evt.days >= 1) {
+      end = addDays(start, Math.floor(evt.days) - 1);
+    }
+  }
+  return { start, end, startISO: keyISO, endISO: toISO(end), days: Math.round((end - start) / 86400000) + 1 };
 }
 
 function getFirstDayOfWeek() {
@@ -198,6 +229,8 @@ class CalendarWc extends VBElement {
   #prevBtn;
   #nextBtn;
   #detailOverlay = null;
+  /** @type {{dayToEvents: Map<string, any[]>, spans: any[]}} */
+  #renderData = { dayToEvents: new Map(), spans: [] };
 
   constructor() {
     super();
@@ -315,9 +348,10 @@ class CalendarWc extends VBElement {
       if (this.#selectionMode !== 'none') {
         this.#handleSelect(iso);
       } else {
-        // Display-only mode: open day detail if events exist
-        const events = normalizeEvents(this.#events[iso]);
-        if (events.length) this.#openDayDetail(iso, events);
+        // Display-only mode: open day detail if any events (including
+        // multi-day spans) cover this day.
+        const entries = this.#renderData.dayToEvents.get(iso) || [];
+        if (entries.length) this.#openDayDetail(iso, entries.map(e => e.evt));
       }
     });
 
@@ -494,8 +528,41 @@ class CalendarWc extends VBElement {
     return { year: d.getFullYear(), month: d.getMonth() };
   }
 
+  /**
+   * Resolve all events into an indexed structure used by the renderer:
+   *   - dayToEvents : Map<ISO, Array<{evt, range, isSpan, isStart, isEnd}>>
+   *   - spans       : list of multi-day events { evt, range }
+   * Events may declare `end` (ISO) or `days` (count) for multi-day spans.
+   */
+  #computeRenderData() {
+    const dayToEvents = new Map();
+    const spans = [];
+    for (const [keyISO, raw] of Object.entries(this.#events || {})) {
+      const items = normalizeEvents(raw);
+      for (const evt of items) {
+        const range = resolveRange(evt, keyISO);
+        if (!range) continue;
+        const isSpan = range.days > 1;
+        if (isSpan) spans.push({ evt, range });
+        const oneDay = 86400000;
+        for (let t = range.start.getTime(); t <= range.end.getTime(); t += oneDay) {
+          const iso = toISO(new Date(t));
+          const entry = {
+            evt, range, isSpan,
+            isStart: iso === range.startISO,
+            isEnd: iso === range.endISO,
+          };
+          if (!dayToEvents.has(iso)) dayToEvents.set(iso, []);
+          dayToEvents.get(iso).push(entry);
+        }
+      }
+    }
+    return { dayToEvents, spans };
+  }
+
   #renderMonth() {
     const n = this.#monthCount;
+    this.#renderData = this.#computeRenderData();
     const fmtMonth = new Intl.DateTimeFormat(this.#locale, { month: 'long' });
     const fmtMonthYear = new Intl.DateTimeFormat(this.#locale, { month: 'long', year: 'numeric' });
 
@@ -691,56 +758,63 @@ class CalendarWc extends VBElement {
         }
       }
 
-      // Events
-      const events = normalizeEvents(this.#events[iso]);
-      if (events.length) {
+      // Events — combines events keyed at this date plus any multi-day
+      // span events that cover it.
+      const entries = this.#renderData.dayToEvents.get(iso) || [];
+      if (entries.length) {
         td.setAttribute('data-events', '');
-        td.setAttribute('data-event-count', String(events.length));
+        td.setAttribute('data-event-count', String(entries.length));
+
+        // Large view: per-cell labels exclude spans (they render as
+        // continuous bars instead, injected per row below).
+        const cellEntries = isLarge ? entries.filter(e => !e.isSpan) : entries;
+        const allEvents = entries.map(e => e.evt);
 
         if (isLarge) {
-          // Large mode: show event labels in cell
-          const eventList = document.createElement('span');
-          eventList.className = 'event-list';
-          const maxShow = 2;
-          events.slice(0, maxShow).forEach(evt => {
-            const item = document.createElement('span');
-            item.className = 'event-item';
-            if (evt.color) item.style.setProperty('--event-color', evt.color);
-            if (evt.icon) {
-              const icon = document.createElement('icon-wc');
-              icon.setAttribute('name', evt.icon);
-              icon.setAttribute('size', 'xs');
-              item.appendChild(icon);
+          if (cellEntries.length) {
+            const eventList = document.createElement('span');
+            eventList.className = 'event-list';
+            const maxShow = 2;
+            cellEntries.slice(0, maxShow).forEach(({ evt }) => {
+              const item = document.createElement('span');
+              item.className = 'event-item';
+              if (evt.color) item.style.setProperty('--event-color', evt.color);
+              if (evt.icon) {
+                const icon = document.createElement('icon-wc');
+                icon.setAttribute('name', evt.icon);
+                icon.setAttribute('size', 'xs');
+                item.appendChild(icon);
+              }
+              const text = document.createElement('span');
+              text.textContent = evt.time ? `${evt.time} ${evt.label}` : evt.label;
+              item.appendChild(text);
+              eventList.appendChild(item);
+            });
+            if (cellEntries.length > maxShow) {
+              const more = document.createElement('span');
+              more.className = 'event-more';
+              more.textContent = `+${cellEntries.length - maxShow} more`;
+              eventList.appendChild(more);
             }
-            const text = document.createElement('span');
-            text.textContent = evt.time ? `${evt.time} ${evt.label}` : evt.label;
-            item.appendChild(text);
-            eventList.appendChild(item);
-          });
-          if (events.length > maxShow) {
-            const more = document.createElement('span');
-            more.className = 'event-more';
-            more.textContent = `+${events.length - maxShow} more`;
-            eventList.appendChild(more);
+            btn.appendChild(eventList);
           }
-          btn.appendChild(eventList);
         } else {
-          // Default/compact: dot indicators
+          // Default/compact: one dot per event covering this day.
           const dotContainer = document.createElement('span');
           dotContainer.className = 'event-dots';
           dotContainer.setAttribute('aria-hidden', 'true');
-          const dotCount = Math.min(events.length, 3);
+          const dotCount = Math.min(entries.length, 3);
           for (let d = 0; d < dotCount; d++) {
             const dot = document.createElement('span');
             dot.setAttribute('data-event-dot', '');
-            if (events[d].color) dot.style.setProperty('--event-color', events[d].color);
+            if (entries[d].evt.color) dot.style.setProperty('--event-color', entries[d].evt.color);
             dotContainer.appendChild(dot);
           }
           td.appendChild(dotContainer);
         }
 
-        // Tooltip with all event labels
-        const titles = events.map(e => e.time ? `${e.time} — ${e.label}` : e.label);
+        // Tooltip with all event labels (includes spans).
+        const titles = allEvents.map(e => e.time ? `${e.time} — ${e.label}` : e.label);
         btn.setAttribute('title', titles.join('\n'));
       }
 
@@ -781,7 +855,94 @@ class CalendarWc extends VBElement {
     }
 
     table.appendChild(tbody);
+
+    if (isLarge && this.#renderData.spans.length) {
+      this.#injectSpanBars(tbody, year, month);
+    }
+
     return table;
+  }
+
+  /**
+   * Place multi-day event bars across each week row in large view.
+   *
+   * For every row, find the spans that intersect the row's date range,
+   * compute their column extent (1..7) and continuation flags, then
+   * greedily pack them into lanes. Each bar lives inside the row's
+   * leftmost intersecting cell and uses `inline-size: calc(N * 100%)`
+   * to extend across N cells; cells are the positioning context.
+   */
+  #injectSpanBars(tbody, year, month) {
+    const rows = [...tbody.querySelectorAll('tr')];
+    const fmtDate = new Intl.DateTimeFormat(this.#locale, { month: 'short', day: 'numeric' });
+
+    for (const row of rows) {
+      const cells = [...row.querySelectorAll('td')];
+      if (!cells.length) continue;
+
+      // Resolve the date represented by each visible column (handles
+      // leading/trailing outside-month cells too).
+      const firstInMonthIdx = cells.findIndex(c => c.querySelector('button[data-date]'));
+      const colDates = cells.map((td, i) => {
+        const btn = td.querySelector('button');
+        const iso = btn?.getAttribute('data-date');
+        if (iso) return fromISO(iso);
+        const day = parseInt(btn?.getAttribute('data-day') || '0', 10);
+        const isLeading = firstInMonthIdx >= 0 && i < firstInMonthIdx;
+        return isLeading
+          ? new Date(year, month - 1, day)
+          : new Date(year, month + 1, day);
+      });
+
+      const rowStart = colDates[0];
+      const rowEnd = colDates[colDates.length - 1];
+
+      // Spans that intersect this row, with column extents within it.
+      const items = [];
+      for (const { evt, range } of this.#renderData.spans) {
+        if (range.end < rowStart || range.start > rowEnd) continue;
+        const lo = range.start < rowStart ? 0 : colDates.findIndex(d => sameDay(d, range.start));
+        const hi = range.end > rowEnd ? colDates.length - 1 : colDates.findIndex(d => sameDay(d, range.end));
+        if (lo < 0 || hi < 0) continue;
+        items.push({
+          evt, range,
+          startCol: lo, endCol: hi,
+          continuesLeft: range.start < rowStart,
+          continuesRight: range.end > rowEnd,
+        });
+      }
+      if (!items.length) continue;
+
+      // Greedy lane packing: longer spans first, earlier starts first.
+      items.sort((a, b) =>
+        (a.startCol - b.startCol) || ((b.endCol - b.startCol) - (a.endCol - a.startCol)));
+      const lanes = []; // lanes[laneIdx] = endCol of last placed
+      for (const item of items) {
+        let lane = 0;
+        while (lane < lanes.length && lanes[lane] >= item.startCol) lane++;
+        item.lane = lane;
+        lanes[lane] = item.endCol;
+      }
+      const laneCount = lanes.length;
+      row.style.setProperty('--cal-row-lanes', String(laneCount));
+      row.setAttribute('data-row-lanes', String(laneCount));
+
+      for (const item of items) {
+        const host = cells[item.startCol];
+        const span = item.endCol - item.startCol + 1;
+        const bar = document.createElement('span');
+        bar.className = 'event-span';
+        bar.style.setProperty('--span-cells', String(span));
+        bar.style.setProperty('--span-lane', String(item.lane));
+        if (item.evt.color) bar.style.setProperty('--event-color', item.evt.color);
+        if (item.continuesLeft) bar.setAttribute('data-continues-start', '');
+        if (item.continuesRight) bar.setAttribute('data-continues-end', '');
+        bar.textContent = item.evt.label || '';
+        bar.setAttribute('title',
+          `${item.evt.label} — ${fmtDate.format(item.range.start)} to ${fmtDate.format(item.range.end)}`);
+        host.appendChild(bar);
+      }
+    }
   }
 
   // ── Day detail overlay ────────────────────────────────────────────
