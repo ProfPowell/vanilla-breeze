@@ -1,0 +1,91 @@
+---
+layout: docs
+title: terminal-window integration
+description: "Drop a terminal-window element into a Vanilla Breeze page — a zero-dependency styled terminal with prompts, typing animation, and an extensible command registry that inherits VB tokens."
+currentSection: explore
+currentPath: /docs/integrations/web-components/terminal-window/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><a href="/docs/integrations/web-components/">Web Components</a></li>
+    <li><span aria-current="page">terminal-window</span></li>
+  </ol>
+</nav>
+
+<h1>terminal-window</h1>
+<p class="lead">A zero-dependency vanilla-JS web component that renders a styled terminal with prompts, ANSI color, optional typing animation, and a registry for custom commands — ideal for documentation demos, tutorials, and interactive CLI mockups. It honors Vanilla Breeze surface, text, border, and <code>--font-mono</code> tokens via the VB external-components bridge, with a full set of <code>--terminal-window-*</code> properties for per-instance overrides.</p>
+
+<section>
+  <h2>Where to find it</h2>
+  <ul>
+    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/terminal-window"><code>@profpowell/terminal-window</code></a></li>
+    <li>GitHub: <a href="https://github.com/ProfPowell/terminal-window">ProfPowell/terminal-window</a></li>
+    <li>Live demos: <a href="https://profpowell.github.io/terminal-window/">profpowell.github.io/terminal-window</a></li>
+    <li>License: MIT</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Install</h2>
+  <p>Via CDN:</p>
+  <code-block language="html" data-escape><script type="module" src="https://unpkg.com/@profpowell/terminal-window@2.1.0/dist/terminal-window.js"></script></code-block>
+  <p>Or via npm:</p>
+  <code-block language="bash" data-escape>npm install @profpowell/terminal-window</code-block>
+  <code-block language="javascript" data-escape>import '@profpowell/terminal-window';</code-block>
+  <p>Not currently bundled into Vanilla Breeze — wire it in yourself. VB ships a <code>--terminal-window-*</code> bridge in <code>src/utils/external-components.css</code>, so theme inheritance is automatic the moment you include the script.</p>
+</section>
+
+<section>
+  <h2>Demo</h2>
+  <p>A live <code>&lt;terminal-window&gt;</code> with a welcome banner, typing animation, and the built-in <code>help</code>, <code>clear</code>, <code>echo</code>, and <code>history</code> commands. The window chrome reads VB surface and border tokens; the prompt uses <code>--color-success</code>. Switch the site theme to see the chrome re-skin.</p>
+  <browser-window url="terminal-window-basic" src="/docs/integrations/web-components/demos/terminal-window-basic.html"></browser-window>
+</section>
+
+<section>
+  <h2>Quick reference — common attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Default</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>title</code></td><td><code>"Terminal"</code></td><td>Title text in the window header.</td></tr>
+      <tr><td><code>prompt</code></td><td><code>"$ "</code></td><td>Prompt prefix shown before user input.</td></tr>
+      <tr><td><code>welcome</code></td><td>—</td><td>One-line welcome banner printed on mount.</td></tr>
+      <tr><td><code>typing-effect</code></td><td>off</td><td>Boolean — animate output characters.</td></tr>
+      <tr><td><code>typing-speed</code></td><td><code>30</code></td><td>Milliseconds per character when typing-effect is on.</td></tr>
+      <tr><td><code>cursor-style</code></td><td><code>block</code></td><td><code>block</code>, <code>underline</code>, or <code>bar</code>.</td></tr>
+      <tr><td><code>cursor-blink</code></td><td>on</td><td>Boolean — blink the input cursor.</td></tr>
+      <tr><td><code>readonly</code></td><td>off</td><td>Boolean — disable input, useful for static transcripts.</td></tr>
+      <tr><td><code>max-lines</code></td><td><code>1000</code></td><td>Scrollback buffer cap.</td></tr>
+      <tr><td><code>enable-vfs</code></td><td>off</td><td>Boolean — enable the built-in virtual filesystem commands (<code>ls</code>, <code>cd</code>, <code>pwd</code>, <code>mkdir</code>, <code>touch</code>, <code>rm</code>, <code>cat</code>).</td></tr>
+      <tr><td><code>persist-history</code></td><td>off</td><td>Boolean — store command history in <code>localStorage</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>See the <a href="https://github.com/ProfPowell/terminal-window/blob/main/README.md">README</a> for the full attribute list and JS API (<code>registerCommand</code>, <code>print</code>, <code>setTypingEffect</code>, etc.).</p>
+</section>
+
+<section>
+  <h2>VB integration</h2>
+  <p>VB's <code>src/utils/external-components.css</code> contains a <code>terminal-window {…}</code> block mapping VB tokens onto the <code>--terminal-window-*</code> surface. No per-page wiring required — drop the script in and the terminal picks up the active theme automatically. Per-instance overrides still win: set any <code>--terminal-window-*</code> token on the element itself or in a theme block to customize a single terminal.</p>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" data-escape>
+<terminal-window
+  title="my-app"
+  prompt="user@host:~$ "
+  welcome="Welcome — type 'help' to begin."
+  typing-effect
+  typing-speed="20">
+</terminal-window>
+
+<!-- Or register a custom command -->
+<script type="module">
+  const term = document.querySelector('terminal-window');
+  term.registerCommand('deploy', {
+    description: 'Deploy to production',
+    run: () => term.print('Deploying… done.'),
+  });
+</script></code-block>
+</section>
