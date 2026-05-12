@@ -1,9 +1,22 @@
-/* selection-menu: The element IS the floating toolbar */
+/* selection-menu: composes <pop-over> as the floating toolbar surface.
+   The host element coordinates selection detection but has no visual
+   role — the pop-over carries the toolbar chrome and lives in the top
+   layer for free z-index correctness. */
 
 selection-menu {
+  display: contents;
+}
+
+/* --- Toolbar surface (composed pop-over) --- */
+
+selection-menu > pop-over[data-selection-menu-host] {
+  /* Selection toolbar isn't anchored to a DOM element; JS sets inline
+     top/left after each show. Override pop-over's auto/anchor positioning
+     defaults so our inline coords win. */
   position: fixed;
-  inset: unset;
-  z-index: 9999;
+  inset: auto;
+  margin: 0;
+
   display: flex;
   align-items: center;
   gap: var(--size-2xs);
@@ -11,17 +24,16 @@ selection-menu {
   background: var(--color-surface-overlay, var(--color-surface));
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-m);
-  box-shadow: var(--shadow-m);
+  box-shadow: var(--shadow-md, 0 4px 6px oklch(0% 0 0 / 0.3));
+  inline-size: max-content;
+  max-inline-size: none;
+  overflow: visible;
   white-space: nowrap;
-}
-
-selection-menu[hidden] {
-  display: none !important;
 }
 
 /* --- Child action buttons (from highlight-wc, share-wc, note-wc, etc.) --- */
 
-selection-menu button {
+selection-menu > pop-over[data-selection-menu-host] button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -36,22 +48,22 @@ selection-menu button {
   transition: background var(--duration-fast), color var(--duration-fast);
 }
 
-selection-menu button:hover {
+selection-menu > pop-over[data-selection-menu-host] button:hover {
   background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
   color: var(--color-interactive);
 }
 
-selection-menu button:focus-visible {
+selection-menu > pop-over[data-selection-menu-host] button:focus-visible {
   outline: 2px solid var(--color-interactive);
   outline-offset: 2px;
 }
 
 /* --- Override child component button styles for uniformity --- */
 
-selection-menu share-wc button,
-selection-menu highlight-wc button,
-selection-menu note-wc button,
-selection-menu comment-wc button {
+selection-menu > pop-over[data-selection-menu-host] share-wc button,
+selection-menu > pop-over[data-selection-menu-host] highlight-wc button,
+selection-menu > pop-over[data-selection-menu-host] note-wc button,
+selection-menu > pop-over[data-selection-menu-host] comment-wc button {
   all: unset;
   display: inline-flex;
   align-items: center;
@@ -68,10 +80,10 @@ selection-menu comment-wc button {
   transition: background var(--duration-fast), color var(--duration-fast);
 }
 
-selection-menu share-wc button:hover,
-selection-menu highlight-wc button:hover,
-selection-menu note-wc button:hover,
-selection-menu comment-wc button:hover {
+selection-menu > pop-over[data-selection-menu-host] share-wc button:hover,
+selection-menu > pop-over[data-selection-menu-host] highlight-wc button:hover,
+selection-menu > pop-over[data-selection-menu-host] note-wc button:hover,
+selection-menu > pop-over[data-selection-menu-host] comment-wc button:hover {
   background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
   color: var(--color-interactive);
 }
@@ -88,7 +100,7 @@ selection-menu comment-wc button:hover {
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  selection-menu button,
+  selection-menu > pop-over[data-selection-menu-host] button,
   .selection-menu-color {
     transition: none;
   }

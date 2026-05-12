@@ -1,21 +1,29 @@
 /**
  * selection-menu — Floating toolbar on text selection
  *
- * The element itself becomes the floating toolbar — no DOM reparenting.
- * Child action components (highlight-wc, share-wc, note-wc, comment-wc)
- * render inside it directly and upgrade normally.
+ * Composes <pop-over data-mode="manual"> for the toolbar surface so the
+ * toolbar sits in the top layer (no z-index battles), inherits pop-over's
+ * display:none cascade re-assertion (popover_display_gotcha), and keeps
+ * a consistent popover lifecycle with the rest of VB's popover family.
  *
- * Hidden by default, shown when text is selected in a target element.
- * Positioned fixed above the selection with viewport clamping.
+ * Positioning is bespoke — the toolbar anchors to a text Range, not a
+ * DOM element — so selection-menu sets the pop-over's inline top/left
+ * after each show. Light-dismiss is handled by the host (pointerdown on
+ * document + Escape), since manual popovers don't dismiss themselves
+ * and we don't want pointer events during selection to close the menu.
  *
  * @attr {string} for - ID of a single target element
  * @attr {string} id  - When set, elements with data-selection-menu="id" become targets
  */
 import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+// Ensure <pop-over> is registered — selection-menu composes it for the toolbar.
+import '../pop-over/logic.js';
 
 const TOOLBAR_GAP = 8;
 const EDGE_PAD = 8;
+
+let selectionMenuSeq = 0;
 
 class SelectionMenu extends VBElement {
   /** @type {{ range: Range, text: string, target: Element } | null} */
@@ -24,24 +32,40 @@ class SelectionMenu extends VBElement {
   #targets = new Set();
   /** @type {boolean} */
   #visible = false;
+  /** @type {HTMLElement} */
+  #popover;
 
   setup() {
-    // Start hidden
-    this.hidden = true;
+    // Compose pop-over: move authored children (highlight-wc, share-wc,
+    // etc.) into a manual-mode pop-over so they render in the top layer.
+    const existing = /** @type {HTMLElement | null} */ (
+      this.querySelector(':scope > pop-over[data-selection-menu-host]'));
+    if (existing) {
+      this.#popover = existing;
+    } else {
+      this.#popover = document.createElement('pop-over');
+      this.#popover.setAttribute('data-selection-menu-host', '');
+      this.#popover.dataset.mode = 'manual';
+      this.#popover.id = `selection-menu-${++selectionMenuSeq}`;
+      /* Reparent existing children into the pop-over BEFORE the
+         pop-over is connected so it mounts once with its content in
+         place. Skip already-relocated children (e.g. on re-setup). */
+      const children = [...this.children];
+      for (const child of children) {
+        if (child !== this.#popover) this.#popover.appendChild(child);
+      }
+      this.appendChild(this.#popover);
+    }
 
-    // Collect targets
+    // The host coordinates; the pop-over is the visible toolbar.
+    this.hidden = false;
+
     this.#collectTargets();
 
-    // Listen for selections on document (delegation)
     this.listen(document, 'pointerup', this.#onPointerUp);
-
-    // Click outside to dismiss
     this.listen(document, 'pointerdown', this.#onDocumentPointerDown);
-
-    // Escape to dismiss
     this.listen(document, 'keydown', this.#onKeyDown);
 
-    // Watch for dynamic targets
     if (this.id) {
       const observer = new MutationObserver(() => this.#collectTargets());
       observer.observe(document.body, {
@@ -65,11 +89,11 @@ class SelectionMenu extends VBElement {
 
   /**
    * The current toolbar actions as a plain data array. Each entry:
-   * `{ tag, attrs?, html? }`. After upgrade reflects the authored
-   * children; after assignment reflects what was passed in.
+   * `{ tag, attrs?, html? }`.
    */
   get actions() {
-    return [...this.children].map(el => ({
+    const container = this.#popover || this;
+    return [...container.children].map(el => ({
       tag: el.tagName.toLowerCase(),
       attrs: Object.fromEntries(
         [...el.attributes].map(a => [a.name, a.value])
@@ -78,22 +102,13 @@ class SelectionMenu extends VBElement {
     }));
   }
 
-  /**
-   * Replace the toolbar actions and let them upgrade. Each entry is
-   * either a plain object describing the action component, OR an
-   * already-constructed Element (which is appended as-is).
-   *
-   * Plain object shape:
-   *   { tag: 'highlight-wc', attrs: { color: 'yellow' }, html: '...' }
-   *
-   * Emits selection-menu:actions-changed { actions, source: 'property' }.
-   */
   set actions(value) {
     const next = Array.isArray(value) ? value : [];
-    while (this.firstChild) this.firstChild.remove();
+    const container = this.#popover || this;
+    while (container.firstChild) container.firstChild.remove();
     for (const a of next) {
       if (a instanceof Element) {
-        this.appendChild(a);
+        container.appendChild(a);
         continue;
       }
       if (!a?.tag) continue;
@@ -105,7 +120,7 @@ class SelectionMenu extends VBElement {
         }
       }
       if (a.html) el.innerHTML = a.html;
-      this.appendChild(el);
+      container.appendChild(el);
     }
     this.dispatchEvent(new CustomEvent('selection-menu:actions-changed', {
       detail: { actions: this.actions, source: 'property' },
@@ -178,11 +193,12 @@ class SelectionMenu extends VBElement {
   // --- Show / hide ---
 
   #show(anchorRect) {
-    this.hidden = false;
+    if (!this.#popover) return;
+    /** @type {any} */ (this.#popover).show();
     this.#visible = true;
 
     requestAnimationFrame(() => {
-      const rect = this.getBoundingClientRect();
+      const rect = this.#popover.getBoundingClientRect();
       const pw = rect.width || 200;
       const ph = rect.height || 40;
 
@@ -196,13 +212,13 @@ class SelectionMenu extends VBElement {
       const maxLeft = window.innerWidth - pw - EDGE_PAD;
       left = Math.max(EDGE_PAD, Math.min(left, maxLeft));
 
-      this.style.top = `${top}px`;
-      this.style.left = `${left}px`;
+      this.#popover.style.top = `${top}px`;
+      this.#popover.style.left = `${left}px`;
     });
   }
 
   #hide() {
-    this.hidden = true;
+    if (this.#popover) /** @type {any} */ (this.#popover).hide();
     this.#visible = false;
     this.#selection = null;
     this.dispatchEvent(new CustomEvent('selection-menu:dismiss', { bubbles: true }));
@@ -210,6 +226,7 @@ class SelectionMenu extends VBElement {
 
   #onDocumentPointerDown = (e) => {
     if (!this.#visible) return;
+    if (this.#popover?.contains(e.target)) return;
     if (this.contains(e.target)) return;
     this.#hide();
   };
