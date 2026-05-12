@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03 — CSS Variables Driven Multi-stroke</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap"
+      rel="stylesheet">
+<style>
+  /*
+    Refactor: each layer takes a single integer --i (1..N).
+    A shared palette (--c1, --c2) and step (--base) drive the rest.
+    Swap any token at any scope to re-skin the whole word.
+  */
+
+  :root {
+    --c1:   #cc0d55;
+    --c2:   #f4e1e8;
+    --base: 3px;       /* width step per layer */
+    --fill: var(--c1); /* color of the topmost solid fill */
+  }
+
+  body {
+    margin: 0; min-height: 100vh;
+    display: grid;
+    grid-auto-flow: row;
+    place-items: center;
+    gap: 4rem;
+    padding: 3rem;
+    background: var(--c2);
+    font-family: "Bowlby One", system-ui, sans-serif;
+    transition: background 0.3s;
+  }
+
+  .multi-stroke {
+    display: inline-grid;
+    font-size: clamp(4rem, 14vmin, 10rem);
+    line-height: 1;
+  }
+  .multi-stroke > * {
+    grid-area: 1 / 1;
+    color: transparent;
+    -webkit-text-stroke:
+      calc(var(--i) * var(--base))
+      var(--c, var(--c1));                        /* default c1 */
+  }
+  .multi-stroke > :nth-child(even)        { --c: var(--c2); }
+  .multi-stroke > :last-child {
+    color: var(--fill);
+    -webkit-text-stroke: 0;
+  }
+
+  /* Re-skin one instance — only CSS vars change. */
+  .alt {
+    --c1: #003d82;
+    --c2: #ffd60a;
+    --base: 4px;
+    --fill: #ffd60a;
+    background: var(--c1);
+    padding: 1.5rem 3rem;
+    border-radius: 1rem;
+  }
+
+  /* And one more, with the same markup. */
+  .punk {
+    --c1: #00ff88;
+    --c2: #0a0a14;
+    --base: 5px;
+    --fill: #ff2d55;
+    background: var(--c2);
+    padding: 1.5rem 3rem;
+    border-radius: 1rem;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Identical markup × 3, only the parent's vars differ. -->
+  <div class="multi-stroke">
+    <span style="--i: 7">SWAP</span><span style="--i: 6">SWAP</span>
+    <span style="--i: 5">SWAP</span><span style="--i: 4">SWAP</span>
+    <span style="--i: 3">SWAP</span><span style="--i: 2">SWAP</span>
+    <span style="--i: 1">SWAP</span><span>SWAP</span>
+  </div>
+
+  <div class="multi-stroke alt">
+    <span style="--i: 7">SWAP</span><span style="--i: 6">SWAP</span>
+    <span style="--i: 5">SWAP</span><span style="--i: 4">SWAP</span>
+    <span style="--i: 3">SWAP</span><span style="--i: 2">SWAP</span>
+    <span style="--i: 1">SWAP</span><span>SWAP</span>
+  </div>
+
+  <div class="multi-stroke punk">
+    <span style="--i: 7">SWAP</span><span style="--i: 6">SWAP</span>
+    <span style="--i: 5">SWAP</span><span style="--i: 4">SWAP</span>
+    <span style="--i: 3">SWAP</span><span style="--i: 2">SWAP</span>
+    <span style="--i: 1">SWAP</span><span>SWAP</span>
+  </div>
+
+</body>
+</html>

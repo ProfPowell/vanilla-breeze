@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vanilla Breeze — Changelog (Feed Preview)</title>
+  <style>
+    /* ── Token layer ─── */
+    :root {
+      --feed-font-body: system-ui, -apple-system, sans-serif;
+      --feed-font-mono: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+      --feed-color-bg:          #ffffff;
+      --feed-color-surface:     #f8f9fa;
+      --feed-color-surface-alt: #e9ecef;
+      --feed-color-text:        #212529;
+      --feed-color-text-muted:  #6c757d;
+      --feed-color-link:        #1971c2;
+      --feed-color-link-hover:  #0c55a0;
+      --feed-color-border:      #dee2e6;
+      --feed-color-notice-bg:   #fff3bf;
+      --feed-color-notice-border: #f59f00;
+      --feed-color-badge-bg:    #e9ecef;
+      --feed-color-badge-text:  #495057;
+      --feed-size-xs: 0.25rem;
+      --feed-size-s:  0.5rem;
+      --feed-size-m:  1rem;
+      --feed-size-l:  1.5rem;
+      --feed-size-xl: 2rem;
+      --feed-radius: 0.375rem;
+      --feed-max-width: 42rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --feed-color-bg:          #1a1b1e;
+        --feed-color-surface:     #25262b;
+        --feed-color-surface-alt: #2c2e33;
+        --feed-color-text:        #e9ecef;
+        --feed-color-text-muted:  #909296;
+        --feed-color-link:        #74c0fc;
+        --feed-color-link-hover:  #a5d8ff;
+        --feed-color-border:      #373a40;
+        --feed-color-notice-bg:   #3d3000;
+        --feed-color-notice-border: #a67c00;
+        --feed-color-badge-bg:    #373a40;
+        --feed-color-badge-text:  #c1c2c5;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--feed-font-body);
+      background: var(--feed-color-bg);
+      color: var(--feed-color-text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .feed-page {
+      max-width: var(--feed-max-width);
+      margin-inline: auto;
+      padding: var(--feed-size-l);
+    }
+
+    .feed-notice {
+      background: var(--feed-color-notice-bg);
+      border: 1px solid var(--feed-color-notice-border);
+      border-radius: var(--feed-radius);
+      padding: var(--feed-size-m);
+      margin-block-end: var(--feed-size-xl);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .feed-notice a {
+      color: var(--feed-color-link);
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+
+    .feed-notice a:hover { color: var(--feed-color-link-hover); }
+
+    .feed-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin: 0 0 var(--feed-size-s);
+    }
+
+    .feed-subtitle {
+      color: var(--feed-color-text-muted);
+      font-size: 1.05rem;
+      margin: 0 0 var(--feed-size-m);
+    }
+
+    .feed-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--feed-size-m);
+      padding-block-end: var(--feed-size-xl);
+      border-block-end: 1px solid var(--feed-color-border);
+      margin-block-end: var(--feed-size-xl);
+    }
+
+    .feed-meta a {
+      color: var(--feed-color-link);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .feed-meta a:hover {
+      color: var(--feed-color-link-hover);
+      text-decoration: underline;
+    }
+
+    .feed-updated {
+      color: var(--feed-color-text-muted);
+      font-size: 0.85rem;
+    }
+
+    .feed-entries {
+      display: flex;
+      flex-direction: column;
+      gap: var(--feed-size-xl);
+    }
+
+    .feed-entry {
+      padding-block-end: var(--feed-size-xl);
+      border-block-end: 1px solid var(--feed-color-border);
+    }
+
+    .feed-entry:last-child { border-block-end: none; }
+
+    .feed-entry header { margin-block-end: var(--feed-size-m); }
+
+    .feed-entry h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.3;
+      margin: var(--feed-size-xs) 0;
+    }
+
+    .feed-entry h2 a {
+      color: var(--feed-color-text);
+      text-decoration: none;
+    }
+
+    .feed-entry h2 a:hover {
+      color: var(--feed-color-link);
+      text-decoration: underline;
+    }
+
+    .feed-entry time {
+      color: var(--feed-color-text-muted);
+      font-size: 0.85rem;
+    }
+
+    .feed-badge {
+      display: inline-block;
+      background: var(--feed-color-badge-bg);
+      color: var(--feed-color-badge-text);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      padding: 0.15em 0.6em;
+      border-radius: var(--feed-radius);
+    }
+
+    .feed-summary {
+      color: var(--feed-color-text-muted);
+      font-style: italic;
+      margin: 0 0 var(--feed-size-m);
+    }
+
+    .feed-content {
+      background: var(--feed-color-surface);
+      border-radius: var(--feed-radius);
+      padding: var(--feed-size-m);
+      font-size: 0.9rem;
+    }
+
+    .feed-content p { margin: 0 0 var(--feed-size-s); }
+    .feed-content p:last-child { margin-block-end: 0; }
+
+    .feed-content ul {
+      margin: var(--feed-size-s) 0;
+      padding-inline-start: var(--feed-size-l);
+    }
+
+    .feed-content li { margin-block-end: var(--feed-size-xs); }
+
+    .feed-content code {
+      font-family: var(--feed-font-mono);
+      font-size: 0.85em;
+      background: var(--feed-color-surface-alt);
+      padding: 0.1em 0.35em;
+      border-radius: 0.2rem;
+    }
+
+    .feed-footer {
+      margin-block-start: var(--feed-size-xl);
+      padding-block-start: var(--feed-size-l);
+      border-block-start: 1px solid var(--feed-color-border);
+      font-size: 0.85rem;
+      color: var(--feed-color-text-muted);
+    }
+
+    .feed-url {
+      font-family: var(--feed-font-mono);
+      font-size: 0.85em;
+      background: var(--feed-color-surface);
+      padding: 0.2em 0.5em;
+      border-radius: 0.2rem;
+      word-break: break-all;
+      user-select: all;
+    }
+
+    /* ── Demo label ──── */
+    .demo-banner {
+      background: var(--feed-color-surface-alt);
+      border-block-end: 1px solid var(--feed-color-border);
+      padding: var(--feed-size-s) var(--feed-size-m);
+      font-size: 0.8rem;
+      color: var(--feed-color-text-muted);
+      text-align: center;
+    }
+
+    .demo-banner code {
+      font-family: var(--feed-font-mono);
+      background: var(--feed-color-surface);
+      padding: 0.1em 0.4em;
+      border-radius: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="demo-banner">
+    Preview of what <code>feed-render.js</code> produces from <code>feed.xml</code>
+  </div>
+
+  <main class="feed-page">
+    <header class="feed-header">
+      <div class="feed-notice">
+        <strong>This is a web feed</strong> (also known as an RSS/Atom feed).
+        <strong>Subscribe</strong> by copying the URL into your feed reader.
+        <a href="https://aboutfeeds.com/" target="_blank" rel="noopener">Learn about feeds</a>
+      </div>
+      <h1>Vanilla Breeze — Changelog</h1>
+      <p class="feed-subtitle">Release notes and updates for the Vanilla Breeze framework</p>
+      <nav class="feed-meta">
+        <a href="https://vanillabreeze.dev/changelog/">Visit site →</a>
+        <span class="feed-updated">Updated 1 Apr 2026</span>
+      </nav>
+    </header>
+
+    <div class="feed-entries">
+
+      <article class="feed-entry">
+        <header>
+          <span class="feed-badge">Release</span>
+          <h2><a href="https://vanillabreeze.dev/changelog/v2-4-0/">v2.4.0 — Page Tools &amp; Tour Components</a></h2>
+          <time datetime="2026-04-01T12:00:00Z">1 Apr 2026</time>
+        </header>
+        <p class="feed-summary">New page-tools hybrid toolbar and page-tour guided walkthrough components ship with full four-layer progressive enhancement.</p>
+        <div class="feed-content">
+          <p>This release introduces two major components:</p>
+          <ul>
+            <li><strong>&lt;page-tools&gt;</strong> — A hybrid container/toolbar aggregating page-level utilities (print, share, text reader, reading stats). Sits inside the existing layout aside. Mobile collapse uses a FAB + native popover drawer.</li>
+            <li><strong>&lt;page-tour&gt;</strong> — Guided walkthrough with three modes: passive, active, and forced. Uses CSS Anchor Positioning API as the primary positioning mechanism.</li>
+          </ul>
+          <p>Both components follow the four-layer progression: native HTML → class identity → data-* configuration → web component enhancement.</p>
+        </div>
+      </article>
+
+      <article class="feed-entry">
+        <header>
+          <span class="feed-badge">Enhancement</span>
+          <h2><a href="https://vanillabreeze.dev/changelog/v2-3-1/">v2.3.1 — CSS Color Modernisation</a></h2>
+          <time datetime="2026-03-15T09:00:00Z">15 Mar 2026</time>
+        </header>
+        <p class="feed-summary">Migration from pre-computed colour tokens to color-mix() and relative colour syntax with OKLCH seed/derived architecture.</p>
+        <div class="feed-content">
+          <p>The token system now uses OKLCH colour space as the seed layer, with <code>color-mix()</code> and relative colour syntax generating derived tokens at runtime. This eliminates hundreds of pre-computed values while improving perceptual uniformity.</p>
+          <p>Key changes:</p>
+          <ul>
+            <li>Seed tokens defined in OKLCH</li>
+            <li>Derived tokens via <code>color-mix(in oklch, ...)</code></li>
+            <li>Automatic dark mode via relative colour syntax</li>
+            <li>Token layer swaps remain automatic; chrome layer is bundle-owned</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="feed-entry">
+        <header>
+          <span class="feed-badge">Release</span>
+          <h2><a href="https://vanillabreeze.dev/changelog/v2-3-0/">v2.3.0 — Customisable Select</a></h2>
+          <time datetime="2026-03-01T10:00:00Z">1 Mar 2026</time>
+        </header>
+        <p class="feed-summary">Native customisable select using @supports (appearance: base-select) — zero-risk progressive enhancement layer.</p>
+        <div class="feed-content">
+          <p>Ships the customisable <code>&lt;select&gt;</code> upgrade gated behind <code>@supports (appearance: base-select)</code>. Browsers that support the new spec get rich custom rendering; all others get the standard native select with no degradation.</p>
+          <p>This is pure progressive enhancement — the feature detection gate means zero risk of broken experiences.</p>
+        </div>
+      </article>
+
+      <article class="feed-entry">
+        <header>
+          <span class="feed-badge">Release</span>
+          <h2><a href="https://vanillabreeze.dev/changelog/v2-2-0/">v2.2.0 — Manifest System</a></h2>
+          <time datetime="2026-02-10T14:00:00Z">10 Feb 2026</time>
+        </header>
+        <p class="feed-summary">Four interconnected manifest specs ship: page manifest, site manifest, content negotiation, and delivery integrity via Resource Timing API.</p>
+        <div class="feed-content">
+          <p>The manifest system preserves build-time knowledge for runtime use. The SSG has complete site knowledge that was previously discarded — now it is captured in four interconnected specifications:</p>
+          <ul>
+            <li><strong>Page Manifest</strong> — Per-page asset inventory</li>
+            <li><strong>Site Manifest</strong> — Site-wide resource map</li>
+            <li><strong>Content Negotiation</strong> — Multi-format delivery</li>
+            <li><strong>Delivery Integrity</strong> — Verification via Resource Timing API</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="feed-entry">
+        <header>
+          <span class="feed-badge">Release</span>
+          <h2><a href="https://vanillabreeze.dev/changelog/v2-1-0/">v2.1.0 — Form Validation &amp; Bot Protection</a></h2>
+          <time datetime="2026-01-20T11:00:00Z">20 Jan 2026</time>
+        </header>
+        <p class="feed-summary">Progressive enhancement form validation with bot protection via data-* attributes directly on the form element.</p>
+        <div class="feed-content">
+          <p>The form system ships with two complete specs: <code>FORM-VALIDATION-PE.md</code> for progressive enhancement validation, and <code>FORM-BOT-STRATEGY.md</code> for bot protection.</p>
+          <p>Key architectural decision: the <code>&lt;form&gt;</code> <em>is</em> the component. Bot protection configuration lives as <code>data-*</code> attributes directly on the native element — not on a wrapper.</p>
+        </div>
+      </article>
+
+    </div>
+
+    <footer class="feed-footer">
+      <p>
+        Feed URL:
+        <code class="feed-url">https://vanillabreeze.dev/changelog/feed.xml</code>
+      </p>
+    </footer>
+  </main>
+
+</body>
+</html>

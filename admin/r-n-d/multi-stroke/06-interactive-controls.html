@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 — Interactive Multi-stroke</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Bowlby+One&family=Cherry+Bomb+One&family=Noto+Serif+JP:wght@900&family=Pacifico&display=swap"
+      rel="stylesheet">
+<style>
+  /*
+    Vanilla JS sliders/inputs write to CSS custom properties on :root.
+    The CSS technique is unchanged from demo 3; only the values move.
+    Layer count drives DOM regeneration; everything else is just var swaps.
+  */
+
+  :root {
+    --base: 4px;
+    --c1:   #cc0d55;
+    --c2:   #f4e1e8;
+    --bg:   #f4e1e8;
+    --fill: #cc0d55;
+    --size: 10rem;
+    --font: "Bowlby One";
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    background: var(--bg);
+    font-family: system-ui, sans-serif;
+    transition: background 0.3s;
+  }
+  @media (max-width: 720px) {
+    body { grid-template-columns: 1fr; }
+  }
+
+  .controls {
+    padding: 1.5rem;
+    background: white;
+    box-shadow: 0 0 20px rgba(0,0,0,.08);
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    z-index: 10;
+  }
+  .controls h1 { margin: 0 0 0.25rem; font-size: 1rem; }
+  .controls p  { margin: 0; font-size: 0.75rem; color: #666; }
+  .controls label {
+    display: grid; gap: 0.25rem;
+    font: 600 0.75rem/1.2 system-ui;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    color: #444;
+  }
+  .controls input, .controls select {
+    width: 100%; font-family: inherit;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid #ddd; border-radius: 6px;
+    background: white;
+  }
+  .controls input[type=range] { padding: 0; }
+  .controls input[type=color] { padding: 0; height: 2rem; cursor: pointer; }
+  .controls .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .controls output {
+    font: 500 0.7rem/1 ui-monospace, monospace; color: #888;
+  }
+
+  .stage {
+    display: grid; place-items: center;
+    overflow: hidden; padding: 2rem;
+  }
+
+  .multi-stroke {
+    display: inline-grid;
+    font: 900 var(--size)/1 var(--font), system-ui;
+    text-align: center;
+  }
+  .multi-stroke > * {
+    grid-area: 1 / 1;
+    color: transparent;
+    -webkit-text-stroke: calc(var(--i) * var(--base)) var(--c, var(--c1));
+  }
+  .multi-stroke > :nth-child(even) { --c: var(--c2); }
+  .multi-stroke > :last-child {
+    color: var(--fill);
+    -webkit-text-stroke: 0;
+  }
+</style>
+</head>
+<body>
+
+  <aside class="controls">
+    <h1>Multi-stroke controls</h1>
+    <p>Sliders and pickers write to CSS variables.</p>
+
+    <label>Text
+      <input id="text" type="text" value="MIX" maxlength="20">
+    </label>
+
+    <label>Layers <output id="o-layers"></output>
+      <input id="layers" type="range" min="2" max="20" value="9">
+    </label>
+
+    <label>Base step <output id="o-base"></output>
+      <input id="base" type="range" min="1" max="12" value="4" step="0.5">
+    </label>
+
+    <label>Size <output id="o-size"></output>
+      <input id="size" type="range" min="3" max="22" value="10" step="0.5">
+    </label>
+
+    <div class="row">
+      <label>C1<input id="c1" type="color" value="#cc0d55"></label>
+      <label>C2<input id="c2" type="color" value="#f4e1e8"></label>
+    </div>
+    <div class="row">
+      <label>Fill<input id="fill" type="color" value="#cc0d55"></label>
+      <label>BG<input id="bg" type="color" value="#f4e1e8"></label>
+    </div>
+
+    <label>Font
+      <select id="font">
+        <option>Bowlby One</option>
+        <option>Bangers</option>
+        <option>Cherry Bomb One</option>
+        <option>Noto Serif JP</option>
+        <option>Pacifico</option>
+        <option>Arial Black</option>
+      </select>
+    </label>
+  </aside>
+
+  <main class="stage">
+    <div class="multi-stroke" id="art"></div>
+  </main>
+
+  <script type="module">
+    const root  = document.documentElement;
+    const art   = document.getElementById('art');
+    const $     = id => document.getElementById(id);
+
+    const state = { text: 'MIX', layers: 9 };
+
+    function render() {
+      const frag = document.createDocumentFragment();
+      // outer→inner: --i descends from layers-1 to 1, then a fill span
+      for (let i = state.layers - 1; i >= 1; i--) {
+        const span = document.createElement('span');
+        span.style.setProperty('--i', i);
+        span.textContent = state.text;
+        frag.appendChild(span);
+      }
+      const fill = document.createElement('span');
+      fill.textContent = state.text;
+      frag.appendChild(fill);
+      art.replaceChildren(frag);
+    }
+
+    function bindRange(id, prop, suffix = '') {
+      const el  = $(id);
+      const out = $('o-' + id);
+      const update = () => {
+        root.style.setProperty(prop, el.value + suffix);
+        if (out) out.textContent = el.value + suffix;
+      };
+      el.addEventListener('input', update);
+      update();
+    }
+
+    function bindColor(id, prop) {
+      const el = $(id);
+      const update = () => root.style.setProperty(prop, el.value);
+      el.addEventListener('input', update);
+      update();
+    }
+
+    bindRange('base', '--base', 'px');
+    bindRange('size', '--size', 'rem');
+    bindColor('c1',   '--c1');
+    bindColor('c2',   '--c2');
+    bindColor('fill', '--fill');
+    bindColor('bg',   '--bg');
+
+    $('font').addEventListener('change', e => {
+      root.style.setProperty('--font', `"${e.target.value}"`);
+    });
+
+    $('layers').addEventListener('input', e => {
+      state.layers = +e.target.value;
+      $('o-layers').textContent = e.target.value;
+      render();
+    });
+
+    $('text').addEventListener('input', e => {
+      state.text = e.target.value || ' ';
+      render();
+    });
+
+    $('o-layers').textContent = state.layers;
+    render();
+  </script>
+</body>
+</html>

@@ -40,6 +40,7 @@ import './component-sampler/logic.js';
 import './page-tools/logic.js';
 import './print-page/logic.js';
 import './share-wc/logic.js';
+import './bread-crumb/logic.js';
 
 // Annotation & highlight
 import '../utils/highlights-init.js';

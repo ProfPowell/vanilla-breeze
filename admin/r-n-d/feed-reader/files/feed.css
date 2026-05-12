@@ -1,0 +1,259 @@
+/**
+ * feed.css
+ *
+ * Styles the rendered feed page. Uses VB-style custom properties
+ * so the feed visually matches the site it belongs to.
+ *
+ * When served alongside an Atom/RSS XML file, browsers that execute
+ * the embedded feed-render.js will apply these styles to the
+ * generated HTML. Feed readers ignore CSS entirely.
+ */
+
+/* ── Token layer (override these to match your site) ─── */
+
+:root {
+  --feed-font-body: system-ui, -apple-system, sans-serif;
+  --feed-font-mono: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+
+  --feed-color-bg:          #ffffff;
+  --feed-color-surface:     #f8f9fa;
+  --feed-color-surface-alt: #e9ecef;
+  --feed-color-text:        #212529;
+  --feed-color-text-muted:  #6c757d;
+  --feed-color-link:        #1971c2;
+  --feed-color-link-hover:  #0c55a0;
+  --feed-color-border:      #dee2e6;
+  --feed-color-accent:      #e8590c;
+  --feed-color-notice-bg:   #fff3bf;
+  --feed-color-notice-border: #f59f00;
+  --feed-color-badge-bg:    #e9ecef;
+  --feed-color-badge-text:  #495057;
+
+  --feed-size-xs: 0.25rem;
+  --feed-size-s:  0.5rem;
+  --feed-size-m:  1rem;
+  --feed-size-l:  1.5rem;
+  --feed-size-xl: 2rem;
+  --feed-size-2xl: 3rem;
+
+  --feed-radius: 0.375rem;
+  --feed-max-width: 42rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --feed-color-bg:          #1a1b1e;
+    --feed-color-surface:     #25262b;
+    --feed-color-surface-alt: #2c2e33;
+    --feed-color-text:        #e9ecef;
+    --feed-color-text-muted:  #909296;
+    --feed-color-link:        #74c0fc;
+    --feed-color-link-hover:  #a5d8ff;
+    --feed-color-border:      #373a40;
+    --feed-color-notice-bg:   #3d3000;
+    --feed-color-notice-border: #a67c00;
+    --feed-color-badge-bg:    #373a40;
+    --feed-color-badge-text:  #c1c2c5;
+  }
+}
+
+/* ── Reset (scoped to feed page) ───────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--feed-font-body);
+  background: var(--feed-color-bg);
+  color: var(--feed-color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Feed page layout ──────────────────────────────── */
+
+.feed-page {
+  max-width: var(--feed-max-width);
+  margin-inline: auto;
+  padding: var(--feed-size-l);
+}
+
+/* ── Notice banner ─────────────────────────────────── */
+
+.feed-notice {
+  background: var(--feed-color-notice-bg);
+  border: 1px solid var(--feed-color-notice-border);
+  border-radius: var(--feed-radius);
+  padding: var(--feed-size-m);
+  margin-block-end: var(--feed-size-xl);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.feed-notice a {
+  color: var(--feed-color-link);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.feed-notice a:hover {
+  color: var(--feed-color-link-hover);
+}
+
+/* ── Feed header ───────────────────────────────────── */
+
+.feed-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 var(--feed-size-s);
+}
+
+.feed-subtitle {
+  color: var(--feed-color-text-muted);
+  font-size: 1.05rem;
+  margin: 0 0 var(--feed-size-m);
+}
+
+.feed-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--feed-size-m);
+  padding-block-end: var(--feed-size-xl);
+  border-block-end: 1px solid var(--feed-color-border);
+  margin-block-end: var(--feed-size-xl);
+}
+
+.feed-meta a {
+  color: var(--feed-color-link);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.feed-meta a:hover {
+  color: var(--feed-color-link-hover);
+  text-decoration: underline;
+}
+
+.feed-updated {
+  color: var(--feed-color-text-muted);
+  font-size: 0.85rem;
+}
+
+/* ── Entries ────────────────────────────────────────── */
+
+.feed-entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--feed-size-xl);
+}
+
+.feed-entry {
+  padding-block-end: var(--feed-size-xl);
+  border-block-end: 1px solid var(--feed-color-border);
+}
+
+.feed-entry:last-child {
+  border-block-end: none;
+}
+
+.feed-entry header {
+  margin-block-end: var(--feed-size-m);
+}
+
+.feed-entry h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: var(--feed-size-xs) 0;
+}
+
+.feed-entry h2 a {
+  color: var(--feed-color-text);
+  text-decoration: none;
+}
+
+.feed-entry h2 a:hover {
+  color: var(--feed-color-link);
+  text-decoration: underline;
+}
+
+.feed-entry time {
+  color: var(--feed-color-text-muted);
+  font-size: 0.85rem;
+}
+
+/* ── Badge ─────────────────────────────────────────── */
+
+.feed-badge {
+  display: inline-block;
+  background: var(--feed-color-badge-bg);
+  color: var(--feed-color-badge-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.15em 0.6em;
+  border-radius: var(--feed-radius);
+}
+
+/* ── Entry content ─────────────────────────────────── */
+
+.feed-summary {
+  color: var(--feed-color-text-muted);
+  font-style: italic;
+  margin: 0 0 var(--feed-size-m);
+}
+
+.feed-content {
+  background: var(--feed-color-surface);
+  border-radius: var(--feed-radius);
+  padding: var(--feed-size-m);
+  font-size: 0.9rem;
+}
+
+.feed-content p {
+  margin: 0 0 var(--feed-size-s);
+}
+
+.feed-content p:last-child {
+  margin-block-end: 0;
+}
+
+.feed-content ul {
+  margin: var(--feed-size-s) 0;
+  padding-inline-start: var(--feed-size-l);
+}
+
+.feed-content li {
+  margin-block-end: var(--feed-size-xs);
+}
+
+.feed-content code {
+  font-family: var(--feed-font-mono);
+  font-size: 0.85em;
+  background: var(--feed-color-surface-alt);
+  padding: 0.1em 0.35em;
+  border-radius: 0.2rem;
+}
+
+/* ── Footer ────────────────────────────────────────── */
+
+.feed-footer {
+  margin-block-start: var(--feed-size-xl);
+  padding-block-start: var(--feed-size-l);
+  border-block-start: 1px solid var(--feed-color-border);
+  font-size: 0.85rem;
+  color: var(--feed-color-text-muted);
+}
+
+.feed-url {
+  font-family: var(--feed-font-mono);
+  font-size: 0.85em;
+  background: var(--feed-color-surface);
+  padding: 0.2em 0.5em;
+  border-radius: 0.2rem;
+  word-break: break-all;
+  user-select: all;
+}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>08 — SuperGraphics Poster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Noto+Serif+JP:wght@900&display=swap"
+      rel="stylesheet">
+<style>
+  /*
+    Showpiece. Combines: stack pattern, CSS variables, @property
+    interpolation, JS pointer input, and a SuperGraphics-era backdrop
+    (offset sun, radiating bands, halftone field). The pointer drives
+    --hue (color shift) and --base (ring spacing) via registered props
+    so transitions are smooth without per-property animation rules.
+  */
+
+  @property --base { syntax: '<length>'; inherits: true;  initial-value: 4px;   }
+  @property --hue  { syntax: '<angle>';  inherits: true;  initial-value: 340deg;}
+  @property --mx   { syntax: '<number>'; inherits: true;  initial-value: 0.5;   }
+
+  :root {
+    --base: 5px;
+    --hue:  340deg;
+    --mx:   0.5;
+    --bg:   #fff5e1;
+    transition:
+      --base 0.45s ease-out,
+      --hue  0.65s ease-out,
+      --mx   0.30s ease-out;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: var(--bg);
+    overflow: hidden;
+    font-family: system-ui;
+    cursor: crosshair;
+  }
+
+  .layer { position: fixed; inset: 0; pointer-events: none; }
+
+  /* Offset SuperGraphics "sun" disc + ring */
+  .sun {
+    background:
+      radial-gradient(circle at 50% 32%,
+        hsl(var(--hue) 90% 55%)              0    22%,
+        hsl(calc(var(--hue) + 30deg) 85% 65%) 22% 27.5%,
+        transparent                          27.5%);
+  }
+
+  /* Spinning radial bands, masked to a ring */
+  .bands {
+    background: repeating-conic-gradient(
+      from 0deg,
+      hsla(var(--hue), 90%, 55%, 0.18) 0    7deg,
+      transparent                       7deg 14deg
+    );
+    -webkit-mask: radial-gradient(circle at 50% 32%, transparent 18%, #000 24%);
+            mask: radial-gradient(circle at 50% 32%, transparent 18%, #000 24%);
+    animation: spin 60s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Halftone */
+  .dots {
+    background-image: radial-gradient(rgba(0,0,0,.13) 1.4px, transparent 1.4px);
+    background-size: 16px 16px;
+    mix-blend-mode: multiply;
+  }
+
+  /* Foreground */
+  .scene {
+    position: relative; z-index: 1;
+    height: 100vh;
+    display: grid; place-items: center;
+  }
+
+  .multi-stroke {
+    position: relative;
+    display: inline-grid;
+    font: 900 clamp(5rem, 22vmin, 18rem)/1
+          "Cherry Bomb One", "Noto Serif JP", system-ui;
+    transform: rotate(calc((var(--mx) - 0.5) * -10deg));
+    filter: drop-shadow(8px 10px 0 rgba(0,0,0,.18));
+  }
+  .multi-stroke > * {
+    grid-area: 1 / 1;
+    color: transparent;
+    /* each layer's hue rotates further around the wheel */
+    -webkit-text-stroke:
+      calc(var(--i) * var(--base))
+      hsl(calc(var(--hue) + var(--i) * 20deg) 88% 55%);
+  }
+  .multi-stroke > :last-child {
+    color: white;
+    -webkit-text-stroke: 4px black;
+  }
+
+  .toggle {
+    position: fixed; top: 1.25rem; right: 1.25rem; z-index: 2;
+    font: 600 0.8rem/1 system-ui;
+    padding: 0.6rem 1rem;
+    background: white; color: #000;
+    border: 2px solid #000;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #000;
+  }
+  .toggle:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
+
+  .credit {
+    position: fixed; bottom: 1rem; left: 1rem; z-index: 2;
+    font: 500 0.7rem/1.4 ui-monospace, monospace;
+    color: #333; opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+
+  <div class="layer sun"></div>
+  <div class="layer bands"></div>
+  <div class="layer dots"></div>
+
+  <main class="scene">
+    <div class="multi-stroke" id="art" data-mode="word">
+      <span style="--i: 9">DREAM</span>
+      <span style="--i: 8">DREAM</span>
+      <span style="--i: 7">DREAM</span>
+      <span style="--i: 6">DREAM</span>
+      <span style="--i: 5">DREAM</span>
+      <span style="--i: 4">DREAM</span>
+      <span style="--i: 3">DREAM</span>
+      <span style="--i: 2">DREAM</span>
+      <span style="--i: 1">DREAM</span>
+      <span>DREAM</span>
+    </div>
+  </main>
+
+  <button class="toggle" id="toggle">夢</button>
+  <p class="credit">08 — SuperGraphics × multi-stroke · move the mouse · click 夢 to swap</p>
+
+  <script type="module">
+    const root = document.documentElement;
+    const art  = document.getElementById('art');
+    let raf = 0, nx = 0.5, ny = 0.5;
+
+    addEventListener('pointermove', (e) => {
+      nx = e.clientX / innerWidth;
+      ny = e.clientY / innerHeight;
+      if (!raf) raf = requestAnimationFrame(apply);
+    });
+
+    function apply() {
+      raf = 0;
+      root.style.setProperty('--mx',   nx);
+      root.style.setProperty('--hue',  (nx * 360) + 'deg');
+      root.style.setProperty('--base', (1.5 + ny * 6) + 'px');
+    }
+    apply();
+
+    // Toggle between English word and kanji
+    const toggle = document.getElementById('toggle');
+    toggle.addEventListener('click', () => {
+      const isWord = art.dataset.mode === 'word';
+      const text = isWord ? '夢' : 'DREAM';
+      art.dataset.mode = isWord ? 'kanji' : 'word';
+      toggle.textContent = isWord ? 'EN' : '夢';
+      [...art.children].forEach(s => s.textContent = text);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>05 — Animated Multi-stroke</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap"
+      rel="stylesheet">
+<style>
+  /*
+    Animation requires @property registration so the browser knows the
+    custom properties' types and can interpolate between values.
+
+      --base : <length> — controls overall ring spacing (a "breath")
+      --c    : <color>  — per-layer color, cycled with a phase delay so
+                          the rings appear to ripple outward.
+  */
+
+  @property --base { syntax: '<length>'; inherits: true;  initial-value: 4px; }
+  @property --c    { syntax: '<color>';  inherits: false; initial-value: #ff2266; }
+
+  :root {
+    --base: 4px;
+    animation: breathe 4s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { --base: 2px; }
+    50%      { --base: 5px; }
+  }
+
+  body {
+    margin: 0; min-height: 100vh;
+    display: grid; place-items: center;
+    background: #0a0a14;
+    font-family: system-ui;
+  }
+
+  .multi-stroke {
+    display: inline-grid;
+    font: 900 clamp(4rem, 16vmin, 12rem)/1 "Bowlby One", system-ui;
+    letter-spacing: -0.02em;
+  }
+  .multi-stroke > * {
+    grid-area: 1 / 1;
+    color: transparent;
+    -webkit-text-stroke: calc(var(--i) * var(--base)) var(--c);
+    animation: cycle 3s linear infinite;
+    animation-delay: calc(var(--i) * -0.18s);          /* phase offset → ripple */
+  }
+  @keyframes cycle {
+    0%   { --c: #ff2266; }
+    25%  { --c: #ffe656; }
+    50%  { --c: #00d4ff; }
+    75%  { --c: #b388ff; }
+    100% { --c: #ff2266; }
+  }
+
+  .multi-stroke > :last-child {
+    color: white;
+    -webkit-text-stroke: 0;
+    animation: none;
+  }
+
+  .label {
+    position: fixed; left: 1.5rem; bottom: 1.5rem;
+    color: #888;
+    font: 500 0.75rem/1.4 ui-monospace, monospace;
+  }
+</style>
+</head>
+<body>
+
+  <div class="multi-stroke">
+    <span style="--i: 9">PULSE</span>
+    <span style="--i: 8">PULSE</span>
+    <span style="--i: 7">PULSE</span>
+    <span style="--i: 6">PULSE</span>
+    <span style="--i: 5">PULSE</span>
+    <span style="--i: 4">PULSE</span>
+    <span style="--i: 3">PULSE</span>
+    <span style="--i: 2">PULSE</span>
+    <span style="--i: 1">PULSE</span>
+    <span>PULSE</span>
+  </div>
+
+  <p class="label">05 — animated · @property + breath + chromatic ripple</p>
+</body>
+</html>

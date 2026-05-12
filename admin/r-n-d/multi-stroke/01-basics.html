@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 — Multi-stroke Basics</title>
+<style>
+  /*
+    The whole trick:
+    1. Stack N copies of the same text in the same cell (CSS grid stack).
+    2. Each layer: color: transparent + -webkit-text-stroke with a different width
+       and an *alternating* color.
+    3. Largest stroke goes first in the DOM (paints behind), smallest last.
+    4. The final layer (no stroke) is the solid fill on top.
+  */
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #f4e1e8;
+    font-family: system-ui, sans-serif;
+  }
+
+  .multi-stroke {
+    display: inline-grid;                              /* grid stack pattern */
+    font: 900 clamp(4rem, 18vmin, 14rem)/1
+          "Arial Black", system-ui, sans-serif;
+    letter-spacing: -0.04em;
+  }
+  .multi-stroke > span {
+    grid-area: 1 / 1;                                  /* every layer in same cell */
+    color: transparent;
+  }
+  .multi-stroke > span:last-child {                    /* topmost = solid fill */
+    color: #cc0d55;
+  }
+
+  .label {
+    position: fixed;
+    bottom: 1.5rem; left: 1.5rem;
+    font: 500 0.75rem/1.4 ui-monospace, "SF Mono", monospace;
+    color: #cc0d55;
+    opacity: 0.65;
+  }
+</style>
+</head>
+<body>
+  <div class="multi-stroke">
+    <!-- outer to inner: largest stroke first -->
+    <span style="-webkit-text-stroke: 21px #cc0d55">RETRO</span>
+    <span style="-webkit-text-stroke: 18px #f4e1e8">RETRO</span>
+    <span style="-webkit-text-stroke: 15px #cc0d55">RETRO</span>
+    <span style="-webkit-text-stroke: 12px #f4e1e8">RETRO</span>
+    <span style="-webkit-text-stroke:  9px #cc0d55">RETRO</span>
+    <span style="-webkit-text-stroke:  6px #f4e1e8">RETRO</span>
+    <span style="-webkit-text-stroke:  3px #cc0d55">RETRO</span>
+    <span>RETRO</span>
+  </div>
+
+  <p class="label">01 — basics · stack &amp; alternate · -webkit-text-stroke</p>
+</body>
+</html>

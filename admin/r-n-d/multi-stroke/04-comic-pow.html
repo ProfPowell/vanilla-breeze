@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>04 — Comic POW!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap"
+      rel="stylesheet">
+<style>
+  /*
+    Pop-comic burst. Halftone dot field via radial-gradient, radiating
+    "ink rays" via repeating-conic-gradient + a radial mask, multi-stroke
+    text tilted on top. SuperGraphics palette: yellow / red / black / white.
+  */
+
+  body {
+    margin: 0; min-height: 100vh;
+    background: #f8d92e;
+    background-image: radial-gradient(rgba(0,0,0,.18) 1.6px, transparent 1.6px);
+    background-size: 14px 14px;
+    display: grid; place-items: center;
+    overflow: hidden;
+    font-family: system-ui;
+  }
+
+  .scene {
+    position: relative;
+    display: grid; place-items: center;
+    width: min(85vmin, 740px);
+    aspect-ratio: 1;
+  }
+
+  /* Radiating ink rays */
+  .rays {
+    position: absolute; inset: 0;
+    background: repeating-conic-gradient(
+      from 0deg,
+      #e8262c 0 calc(360deg / 32),
+      transparent calc(360deg / 32) calc(2 * 360deg / 32)
+    );
+    -webkit-mask: radial-gradient(circle, transparent 25%, #000 30% 84%, transparent 95%);
+            mask: radial-gradient(circle, transparent 25%, #000 30% 84%, transparent 95%);
+    animation: spin 24s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Big POW! */
+  .multi-stroke {
+    position: relative;
+    display: inline-grid;
+    font: 900 clamp(5rem, 18vmin, 14rem)/1 "Bangers", system-ui;
+    transform: rotate(-8deg);
+    letter-spacing: 0.02em;
+    z-index: 1;
+    filter: drop-shadow(6px 8px 0 rgba(0,0,0,.25));
+  }
+  .multi-stroke > * {
+    grid-area: 1 / 1;
+    color: transparent;
+  }
+  .multi-stroke > :last-child {
+    color: #f8d92e;
+    -webkit-text-stroke: 0;
+  }
+</style>
+</head>
+<body>
+
+  <div class="scene">
+    <div class="rays"></div>
+    <div class="multi-stroke">
+      <span style="-webkit-text-stroke: 24px #000">POW!</span>
+      <span style="-webkit-text-stroke: 19px #fff">POW!</span>
+      <span style="-webkit-text-stroke: 14px #000">POW!</span>
+      <span style="-webkit-text-stroke: 10px #e8262c">POW!</span>
+      <span style="-webkit-text-stroke:  6px #000">POW!</span>
+      <span style="-webkit-text-stroke:  3px #fff">POW!</span>
+      <span>POW!</span>
+    </div>
+  </div>
+
+</body>
+</html>
