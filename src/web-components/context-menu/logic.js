@@ -1,8 +1,13 @@
 /**
  * context-menu: Right-click context menu with keyboard navigation
  *
- * Provides a custom right-click menu that opens at cursor position.
- * Shares keyboard navigation patterns with drop-down.
+ * Composes <pop-over data-mode="auto"> for the popover surface.
+ * pop-over owns the popover attribute, the display:none cascade
+ * re-assertion, and native light-dismiss (outside click, Escape).
+ * Anchoring is bespoke — the menu opens AT THE CURSOR, not anchored
+ * to a DOM element — so context-menu sets the pop-over's inline
+ * top/left on contextmenu and re-clamps after first layout.
+ *
  * Items with data-shortcut get real keyboard shortcut bindings.
  *
  * @example
@@ -22,36 +27,52 @@
 
 import { formatHotkey } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
-import { supportsPopover } from '../../utils/popover-support.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+// Ensure <pop-over> is registered — context-menu composes it for its menu surface.
+import '../pop-over/logic.js';
+
+let contextMenuSeq = 0;
 
 class ContextMenuWc extends VBElement {
-  #trigger;
-  #menu;
-  #items = [];
+  /** @type {HTMLElement} */ #trigger;
+  /** @type {HTMLElement} */ #menu;
+  /** @type {HTMLElement} */ #popover;
+  /** @type {HTMLElement[]} */ #items = [];
   #activeIndex = -1;
   #isOpen = false;
-  #unbindFns = [];
-  #usePopover = false;
+  /** @type {Array<() => void>} */ #unbindFns = [];
 
   setup() {
     this.#trigger = this.querySelector(':scope > [data-trigger]');
-    this.#menu = this.querySelector(':scope > menu, :scope > ul[role="menu"]');
+    this.#menu = this.querySelector('menu, ul[role="menu"]');
     if (!this.#trigger || !this.#menu) return false;
 
-    // Progressive enhancement: use Popover API when available
-    this.#usePopover = supportsPopover;
-    if (this.#usePopover) {
-      this.#menu.setAttribute('popover', 'auto');
+    /* Compose pop-over: wrap the menu in an auto-mode pop-over so the
+       browser handles outside-click / Escape dismissal in the top layer.
+       Set attributes BEFORE connecting — pop-over's setup() reads
+       data-mode eagerly in connectedCallback. */
+    const existing = /** @type {HTMLElement | null} */ (
+      this.querySelector(':scope > pop-over[data-context-menu-host]'));
+    if (existing) {
+      this.#popover = existing;
+    } else {
+      this.#popover = document.createElement('pop-over');
+      this.#popover.setAttribute('data-context-menu-host', '');
+      this.#popover.id = `ctx-menu-${++contextMenuSeq}`;
+      this.#popover.dataset.mode = 'auto';
+      // Anchor is the cursor, not a DOM element; intentionally no data-anchor.
+      this.#popover.appendChild(this.#menu);
+      this.appendChild(this.#popover);
+    }
+    if (this.#menu.parentElement !== this.#popover) {
+      this.#popover.appendChild(this.#menu);
     }
 
-    // ARIA setup
+    // ARIA
     this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#menu.setAttribute('role', 'menu');
-    if (!this.#menu.id) {
-      this.#menu.id = `ctx-menu-${crypto.randomUUID().slice(0, 8)}`;
-    }
+    if (!this.#menu.id) this.#menu.id = `ctx-menu-list-${++contextMenuSeq}`;
 
     // Group labels — mark as non-interactive
     this.#menu.querySelectorAll(':scope > li[data-group]').forEach(label => {
@@ -79,7 +100,6 @@ class ContextMenuWc extends VBElement {
         kbd.textContent = formatHotkey(shortcut);
         item.appendChild(kbd);
 
-        // Bind the real keyboard shortcut — clicking the item
         const unbind = bindHotkey(shortcut, () => item.click());
         this.#unbindFns.push(unbind);
       }
@@ -89,18 +109,12 @@ class ContextMenuWc extends VBElement {
       sep.setAttribute('role', 'separator');
     });
 
-    // Event listeners
     this.listen(this.#trigger, 'contextmenu', this.#handleContextMenu);
     this.listen(this.#menu, 'keydown', this.#handleMenuKeyDown);
     this.listen(window, 'scroll', this.#handleScroll, { capture: true });
 
-    if (this.#usePopover) {
-      this.listen(this.#menu, 'toggle', this.#handlePopoverToggle);
-    } else {
-      this.listen(document, 'click', this.#handleOutsideClick);
-      this.listen(document, 'contextmenu', this.#handleOutsideContext);
-      this.listen(document, 'keydown', this.#handleEscape);
-    }
+    // Sync state when pop-over dismisses natively (outside click / Escape).
+    this.listen(this.#popover, 'pop-over:hide', this.#handlePopoverHide);
   }
 
   teardown() {
@@ -110,13 +124,6 @@ class ContextMenuWc extends VBElement {
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
 
-  /**
-   * The current menu items as a plain data array. Each entry is one of:
-   *   { label, value?, shortcut?, href?, disabled? }   — action item
-   *   { group: 'Section name' }                         — group label
-   *   { separator: true }                               — divider
-   * After upgrade reflects the parsed <menu>/<ul> children.
-   */
   get items() {
     if (!this.#menu) return [];
     const result = [];
@@ -142,19 +149,9 @@ class ContextMenuWc extends VBElement {
     return result;
   }
 
-  /**
-   * Replace the menu items and re-render. Each entry can be an action
-   * (`{ label, value?, shortcut?, href?, disabled? }`), a group label
-   * (`{ group: 'Section' }`), or a separator (`{ separator: true }`).
-   *
-   * Auto-creates the <menu> shell if none exists (so JS-first usage
-   * doesn't require any <menu>/<ul> markup).
-   *
-   * Emits context-menu:items-changed { items, source: 'property' }.
-   */
   set items(value) {
     const next = Array.isArray(value) ? value : [];
-    let menu = this.querySelector(':scope > menu, :scope > ul[role="menu"]');
+    let menu = this.querySelector('menu, ul[role="menu"]');
     if (!menu) {
       menu = document.createElement('menu');
       this.appendChild(menu);
@@ -205,18 +202,15 @@ class ContextMenuWc extends VBElement {
     this.setAttribute('data-open', '');
     this.#trigger?.setAttribute('aria-expanded', 'true');
 
-    // Position at cursor
-    this.#menu.style.setProperty('--ctx-top', `${y}px`);
-    this.#menu.style.setProperty('--ctx-left', `${x}px`);
+    // Initial position at cursor (bottom-right of cursor by default).
+    this.#popover.style.top = `${y}px`;
+    this.#popover.style.left = `${x}px`;
 
-    // Show via Popover API if available
-    if (this.#usePopover) {
-      try { this.#menu.showPopover(); } catch { /* already open */ }
-    }
+    /** @type {any} */ (this.#popover).show();
 
-    // After render, check bounds
+    // After render, clamp to viewport edges.
     requestAnimationFrame(() => {
-      const rect = this.#menu.getBoundingClientRect();
+      const rect = this.#popover.getBoundingClientRect();
       const adjustedX = (x + rect.width > window.innerWidth)
         ? x - rect.width
         : x;
@@ -224,8 +218,8 @@ class ContextMenuWc extends VBElement {
         ? y - rect.height
         : y;
 
-      this.#menu.style.setProperty('--ctx-top', `${Math.max(0, adjustedY)}px`);
-      this.#menu.style.setProperty('--ctx-left', `${Math.max(0, adjustedX)}px`);
+      this.#popover.style.top = `${Math.max(0, adjustedY)}px`;
+      this.#popover.style.left = `${Math.max(0, adjustedX)}px`;
     });
 
     this.#activeIndex = -1;
@@ -241,9 +235,7 @@ class ContextMenuWc extends VBElement {
     this.#trigger?.setAttribute('aria-expanded', 'false');
     this.#activeIndex = -1;
 
-    if (this.#usePopover) {
-      try { this.#menu.hidePopover(); } catch { /* already closed */ }
-    }
+    /** @type {any} */ (this.#popover)?.hide();
 
     this.dispatchEvent(new CustomEvent('context-menu:close', { bubbles: true }));
   }
@@ -271,9 +263,7 @@ class ContextMenuWc extends VBElement {
       case 'Enter':
       case ' ':
         e.preventDefault();
-        if (this.#activeIndex >= 0) {
-          this.#items[this.#activeIndex].click();
-        }
+        if (this.#activeIndex >= 0) this.#items[this.#activeIndex].click();
         break;
       case 'Tab':
         this.close();
@@ -289,32 +279,13 @@ class ContextMenuWc extends VBElement {
     }));
   };
 
-  #handleOutsideClick = (e) => {
-    if (this.#isOpen && !this.#menu.contains(e.target)) {
-      this.close();
-    }
-  };
-
-  #handleOutsideContext = (e) => {
-    if (this.#isOpen && !this.#trigger.contains(e.target)) {
-      this.close();
-    }
-  };
-
-  #handleEscape = (e) => {
-    if (e.key === 'Escape' && this.#isOpen) {
-      e.preventDefault();
-      this.close();
-    }
-  };
-
-  #handlePopoverToggle = (e) => {
-    if (e.newState === 'closed' && this.#isOpen) {
-      this.#isOpen = false;
-      this.removeAttribute('data-open');
-      this.#activeIndex = -1;
-      this.dispatchEvent(new CustomEvent('context-menu:close', { bubbles: true }));
-    }
+  #handlePopoverHide = () => {
+    if (!this.#isOpen) return;
+    this.#isOpen = false;
+    this.removeAttribute('data-open');
+    this.#trigger?.setAttribute('aria-expanded', 'false');
+    this.#activeIndex = -1;
+    this.dispatchEvent(new CustomEvent('context-menu:close', { bubbles: true }));
   };
 
   #handleScroll = () => {

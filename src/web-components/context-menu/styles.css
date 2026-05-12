@@ -1,59 +1,35 @@
-/* --- Progressive enhancement: no-JS fallback --- */
+/* context-menu: composes <pop-over data-mode="auto"> as the menu
+   surface. The pop-over receives inline top/left from JS at the cursor
+   position. pop-over owns the popover attribute, light-dismiss, and
+   the display:none cascade re-assertion. */
+
 context-menu:not(:defined) {
   display: none;
 }
 
-/* context-menu: Right-click context menu */
-
 context-menu {
-  display: block;
-
-  /* Show menu when open */
-  &[data-open] > menu,
-  &[data-open] > ul[role="menu"] {
-    opacity: 1;
-    visibility: visible;
-    transform: scale(1);
-  }
+  display: contents;
 }
 
+/* --- Menu list inside the pop-over surface ----------------------- */
+
 @scope (context-menu) {
-  /* Menu container — fixed position at cursor */
+  /* The menu is a passthrough inside pop-over — strip its own chrome
+     so the pop-over's surface treatment shows through. */
   menu,
   ul[role="menu"] {
-    position: fixed;
-    /* Intentional physical: JS-computed cursor coordinates via custom properties */
-    top: var(--ctx-top, 0);
-    left: var(--ctx-left, 0);
-    z-index: 200;
-
-    /* Reset list — override native-elements menu horizontal flex */
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     gap: 0;
     margin: 0;
-    padding: var(--size-2xs) 0;
+    padding: 0;
     list-style: none;
-
-    /* Appearance */
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
     min-inline-size: 10rem;
-    background: var(--color-surface-overlay);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-m);
-    box-shadow: var(--shadow-m);
-    overflow: hidden;
-
-    /* Hidden by default */
-    opacity: 0;
-    visibility: hidden;
-    transform: scale(0.95);
-    /* Intentional physical: transform-origin doesn't support logical values */
-    transform-origin: top left;
-    transition:
-      opacity var(--motion-enter-duration) var(--ease-out),
-      visibility var(--motion-enter-duration) var(--ease-out),
-      transform var(--motion-enter-duration) var(--ease-out);
 
     /* Items */
     & > li {
@@ -154,28 +130,40 @@ context-menu {
   }
 }
 
-/* --- Popover mode (progressive enhancement) --- */
+/* --- Composed pop-over surface ----------------------------------- */
 
-context-menu > [popover] {
-  /* Reset browser popover defaults, keep component visual styles */
-  padding: var(--size-2xs) 0;
+/* Override pop-over's default chrome: context menu uses an overlay
+   surface, tight padding, and inline top/left from JS instead of
+   anchor-based positioning. */
+context-menu > pop-over[data-context-menu-host] {
+  /* Cursor-positioned via inline style; cancel pop-over's auto/anchor
+     defaults so our inline coords win. */
+  position: fixed;
+  inset: auto;
   margin: 0;
+
+  padding: var(--size-2xs) 0;
   background: var(--color-surface-overlay);
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-m);
-  box-shadow: var(--shadow-m);
-  overflow: visible;
+  box-shadow: var(--shadow-md, 0 4px 6px oklch(0% 0 0 / 0.3));
+  inline-size: max-content;
+  max-inline-size: none;
+  overflow: hidden;
 
-  /* Intentional physical: JS-computed cursor coordinates via custom properties */
-  position: fixed;
-  inset: unset;
-  top: var(--ctx-top, 0);
-  left: var(--ctx-left, 0);
+  /* Entry animation — scale + fade. */
+  opacity: 0;
+  transform: scale(0.95);
+  transform-origin: top left;
+  transition:
+    opacity var(--motion-exit-duration) var(--ease-out),
+    transform var(--motion-exit-duration) var(--ease-out),
+    display var(--motion-exit-duration) allow-discrete,
+    overlay var(--motion-exit-duration) allow-discrete;
 }
 
-context-menu > [popover]:popover-open {
+context-menu > pop-over[data-context-menu-host]:popover-open {
   opacity: 1;
-  visibility: visible;
   transform: scale(1);
   transition:
     opacity var(--motion-enter-duration) var(--ease-out),
@@ -185,7 +173,7 @@ context-menu > [popover]:popover-open {
 }
 
 @starting-style {
-  context-menu > [popover]:popover-open {
+  context-menu > pop-over[data-context-menu-host]:popover-open {
     opacity: 0;
     transform: scale(0.95);
   }
@@ -193,15 +181,9 @@ context-menu > [popover]:popover-open {
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  @scope (context-menu) {
-    menu,
-    ul[role="menu"] {
-      transition: none;
-      transform: none;
-    }
-  }
-
-  context-menu > [popover]:popover-open {
+  context-menu > pop-over[data-context-menu-host],
+  context-menu > pop-over[data-context-menu-host]:popover-open {
     transition: none;
+    transform: none;
   }
 }
