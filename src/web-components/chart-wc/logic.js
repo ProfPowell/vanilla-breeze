@@ -23,6 +23,7 @@ import {
 
 import {registerComponent} from '../../lib/bundle-registry.js';
 import {VBElement} from '../../lib/vb-element.js';
+import {viewTransitionSwap} from '../../lib/vb-view-transition.js';
 import {extractTableData, extractTableConfig} from './table-extractor.js';
 import {getVBChartConfig, createThemePlugin} from './theme-bridge.js';
 
@@ -395,46 +396,51 @@ class ChartWc extends VBElement {
 
     const {data, tableConfig} = resolved;
     const config = this.#resolveConfig(tableConfig);
-
-    // Clean up any previous chart
-    this.#destroyChart();
-
-    // Process source table
     const table = this.querySelector('table');
-    this.#processTable(table);
 
-    // Create SVG container
-    this.#ensureSvgContainer();
+    // The swap: destroy any prior chart and mount the new one. Wrapped in
+    // a View Transition on re-renders so the chart crossfades instead of
+    // flashing white between data/theme/type changes.
+    const isReRender = this.#chart != null;
+    const swap = () => {
+      this.#destroyChart();
+      this.#processTable(table);
+      this.#ensureSvgContainer();
 
-    // Toggle sparkline class on the shadow container so the
-    // sparkline-scoped CSS in the shadow root applies/clears.
-    if (this.#svgContainer) {
-      this.#svgContainer.classList.toggle(
-        'sparkline', this.dataset.size === 'sparkline',
-      );
-    }
+      if (this.#svgContainer) {
+        this.#svgContainer.classList.toggle(
+          'sparkline', this.dataset.size === 'sparkline',
+        );
+      }
 
-    try {
-      this.dispatchEvent(new CustomEvent('chart-wc:config-resolved', {
-        detail: {type: this.dataset.type || table?.dataset.type || 'bar', config},
-        bubbles: true,
-      }));
+      try {
+        this.dispatchEvent(new CustomEvent('chart-wc:config-resolved', {
+          detail: {type: this.dataset.type || table?.dataset.type || 'bar', config},
+          bubbles: true,
+        }));
 
-      this.#chart = new ChartType({config, data});
-      this.#chart.mount(this.#svgContainer);
+        this.#chart = new ChartType({config, data});
+        this.#chart.mount(this.#svgContainer);
 
-      this.dispatchEvent(new CustomEvent('chart-wc:render', {
-        detail: {
-          type: this.dataset.type || table?.dataset.type || 'bar',
-          seriesCount: Array.isArray(data) ? data.length : Object.keys(data).length,
-        },
-        bubbles: true,
-      }));
-    } catch (err) {
-      this.dispatchEvent(new CustomEvent('chart-wc:error', {
-        detail: {message: err.message},
-        bubbles: true,
-      }));
+        this.dispatchEvent(new CustomEvent('chart-wc:render', {
+          detail: {
+            type: this.dataset.type || table?.dataset.type || 'bar',
+            seriesCount: Array.isArray(data) ? data.length : Object.keys(data).length,
+          },
+          bubbles: true,
+        }));
+      } catch (err) {
+        this.dispatchEvent(new CustomEvent('chart-wc:error', {
+          detail: {message: err.message},
+          bubbles: true,
+        }));
+      }
+    };
+
+    if (isReRender) {
+      viewTransitionSwap(this, swap, 'chart-vt');
+    } else {
+      swap();
     }
   }
 

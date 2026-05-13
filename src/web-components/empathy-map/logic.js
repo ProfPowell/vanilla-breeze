@@ -28,6 +28,7 @@
 
 import { styles } from './styles.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { viewTransitionSwap } from '../../lib/vb-view-transition.js';
 import { esc, QUADRANT_META, EMOTION_META, lucideSvg, UX_ICONS } from '../_ux-base.js';
 
 const QUADRANT_KEYS = ['says', 'thinks', 'does', 'feels'];
@@ -239,7 +240,7 @@ class EmpathyMap extends HTMLElement {
     const hasGoals = this.__goals?.length || this.querySelector('[slot="goals"]');
     const hasPains = this.__painPoints?.length || this.querySelector('[slot="pain-points"]');
 
-    this.shadowRoot.innerHTML = `<style>${styles}</style>
+    const html = `<style>${styles}</style>
       <article class="empathy-map${compact ? ' empathy-map--compact' : ''}">
 
         <header class="empathy-map__header">
@@ -273,8 +274,17 @@ class EmpathyMap extends HTMLElement {
 
       </article>`;
 
-    if (editable) {
-      this._bindEditListeners();
+    /* Pin view-transition-name on the host so the browser crossfades the
+       light-DOM snapshot (which includes shadow paint) on data/theme
+       swaps. Skip on the first render — nothing to fade from. */
+    const swap = () => {
+      this.shadowRoot.innerHTML = html;
+      if (editable) this._bindEditListeners();
+    };
+    if (this.shadowRoot.querySelector('article')) {
+      viewTransitionSwap(this, swap, 'em-vt');
+    } else {
+      swap();
     }
 
     /* Dispatch ready event */

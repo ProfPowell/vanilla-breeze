@@ -111,14 +111,26 @@ test.describe('kanban-board — data API', () => {
     await page.goto(demoPage);
     await page.waitForSelector('kanban-board[data-upgraded]');
 
-    const columnIds = await page.evaluate(() => {
+    // The setter wraps the rebuild in a View Transition so the swap
+    // crossfades — that pushes the actual DOM mutation onto the next
+    // rendering opportunity. Wait for the new columns to appear before
+    // asserting.
+    await page.evaluate(() => {
       const board = document.querySelector('kanban-board');
       board.columns = [
         { id: 'a', label: 'Alpha' },
         { id: 'b', label: 'Beta' },
       ];
-      return [...board.querySelectorAll('.kb-column')].map(el => el.getAttribute('data-column-id'));
     });
+    await page.waitForFunction(() => {
+      const cols = document.querySelectorAll('kanban-board .kb-column');
+      return cols.length === 2
+        && cols[0].getAttribute('data-column-id') === 'a';
+    });
+    const columnIds = await page.evaluate(() =>
+      [...document.querySelectorAll('kanban-board .kb-column')]
+        .map(el => el.getAttribute('data-column-id'))
+    );
 
     expect(columnIds).toEqual(['a', 'b']);
   });

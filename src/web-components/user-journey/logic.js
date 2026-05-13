@@ -31,6 +31,7 @@
 
 import { styles } from './styles.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { viewTransitionSwap } from '../../lib/vb-view-transition.js';
 import { esc, EMOTION_META, lucideSvg, UX_ICONS } from '../_ux-base.js';
 
 const ROWS = [
@@ -198,7 +199,7 @@ class UserJourney extends HTMLElement {
     const title     = this.querySelector('[slot="title"]')?.textContent?.trim()
       || this.#slotCache.get('title') || '';
 
-    this.shadowRoot.innerHTML = `<style>${styles}</style>
+    const html = `<style>${styles}</style>
       <article class="journey${compact ? ' journey--compact' : ''}">
 
         <header class="journey__header">
@@ -230,6 +231,17 @@ class UserJourney extends HTMLElement {
         }
 
       </article>`;
+
+    /* Pin view-transition-name on the host so the browser crossfades the
+       light-DOM snapshot (which includes the shadow paint) when the
+       shadowRoot innerHTML swap replaces all content. Skip on the first
+       render — there's nothing to fade from. */
+    const swap = () => { this.shadowRoot.innerHTML = html; };
+    if (this.shadowRoot.querySelector('article')) {
+      viewTransitionSwap(this, swap, 'uj-vt');
+    } else {
+      swap();
+    }
 
     /* Dispatch ready event */
     this.dispatchEvent(new CustomEvent('journey-ready', {

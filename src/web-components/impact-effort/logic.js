@@ -22,6 +22,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { viewTransitionSwap } from '../../lib/vb-view-transition.js';
 import { diffByKey } from '../../lib/diff-by-key.js';
 
 class ImpactEffort extends VBElement {
@@ -292,43 +293,51 @@ class ImpactEffort extends VBElement {
 
       if (!Array.isArray(data)) return;
 
-      // Clear existing items from all surfaces
-      for (const q of ImpactEffort.QUADRANTS) {
-        const surface = this.#surfaces[q];
-        if (!surface) continue;
-        for (const child of [...surface.querySelectorAll('[draggable]')]) {
-          child.remove();
+      const swap = () => {
+        // Clear existing items from all surfaces
+        for (const q of ImpactEffort.QUADRANTS) {
+          const surface = this.#surfaces[q];
+          if (!surface) continue;
+          for (const child of [...surface.querySelectorAll('[draggable]')]) {
+            child.remove();
+          }
         }
+
+        // Create and distribute items — use <user-story> when story data present
+        data.forEach((entry, i) => {
+          const quadrant = entry.quadrant || 'quick-wins';
+          const id = entry.id || `ie-item-${i}`;
+          let el;
+
+          if (entry.persona || entry.action || entry.storyId) {
+            el = document.createElement('user-story');
+            el.setAttribute('detail', 'minimal');
+            if (entry.storyId)  el.setAttribute('story-id', entry.storyId);
+            if (entry.persona)  el.setAttribute('persona', entry.persona);
+            if (entry.action)   el.setAttribute('action', entry.action);
+            if (entry.benefit)  el.setAttribute('benefit', entry.benefit);
+            if (entry.priority) el.setAttribute('priority', entry.priority);
+            if (entry.status)   el.setAttribute('status', entry.status);
+            if (entry.points)   el.setAttribute('points', String(entry.points));
+          } else {
+            el = document.createElement('article');
+            el.textContent = entry.label || entry.text || '';
+          }
+
+          el.setAttribute('draggable', 'true');
+          el.dataset.id = id;
+          el.dataset.quadrant = quadrant;
+
+          const target = this.#surfaces[quadrant] || this.#surfaces['quick-wins'];
+          target.appendChild(el);
+        });
+      };
+
+      if (this.hasAttribute('data-upgraded') && this.#grid) {
+        viewTransitionSwap(this, swap, 'ie-vt');
+      } else {
+        swap();
       }
-
-      // Create and distribute items — use <user-story> when story data present
-      data.forEach((entry, i) => {
-        const quadrant = entry.quadrant || 'quick-wins';
-        const id = entry.id || `ie-item-${i}`;
-        let el;
-
-        if (entry.persona || entry.action || entry.storyId) {
-          el = document.createElement('user-story');
-          el.setAttribute('detail', 'minimal');
-          if (entry.storyId)  el.setAttribute('story-id', entry.storyId);
-          if (entry.persona)  el.setAttribute('persona', entry.persona);
-          if (entry.action)   el.setAttribute('action', entry.action);
-          if (entry.benefit)  el.setAttribute('benefit', entry.benefit);
-          if (entry.priority) el.setAttribute('priority', entry.priority);
-          if (entry.status)   el.setAttribute('status', entry.status);
-          if (entry.points)   el.setAttribute('points', String(entry.points));
-        } else {
-          el = document.createElement('article');
-          el.textContent = entry.label || entry.text || '';
-        }
-
-        el.setAttribute('draggable', 'true');
-        el.dataset.id = id;
-        el.dataset.quadrant = quadrant;
-
-        const target = this.#surfaces[quadrant] || this.#surfaces['quick-wins'];
-        target.appendChild(el);
-      });
 
       this.#dispatchReady();
     } catch (err) {

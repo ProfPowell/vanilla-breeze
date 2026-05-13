@@ -35,6 +35,7 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { VBCollection } from '../../lib/vb-collection.js';
+import { viewTransitionSwap } from '../../lib/vb-view-transition.js';
 
 class KanbanBoard extends VBCollection(VBElement) {
   static get observedAttributes() { return ['src', 'compact', 'title']; }
@@ -369,15 +370,26 @@ class KanbanBoard extends VBCollection(VBElement) {
       id: c.id, label: c.label || this.#titleCase(c.id),
       wip: c.wip ?? null, color: c.color ?? null, children: [],
     }));
-    // Tear down existing shell + rebuild empty columns.
-    if (this.#columnsEl) {
-      this.#columnsEl.remove();
-      this.#columnsEl = null;
-    }
+    const oldShell = this.#columnsEl;
+    // Build the new shell off-DOM and update internal refs synchronously
+    // so a chained `.items = …` lookup sees the new surfaces immediately
+    // (the diff appends into the detached shell; both come together when
+    // the View Transition callback attaches the new shell to the host).
     this.#surfaces = {};
     this.#columnEls = {};
     this.#columns = next;
-    this.#buildShell();
+    const newShell = this.#assembleShell();
+    this.#columnsEl = newShell;
+
+    const swap = () => {
+      if (oldShell) oldShell.remove();
+      this.appendChild(newShell);
+    };
+    if (this.hasAttribute('data-upgraded') && oldShell) {
+      viewTransitionSwap(this, swap, 'kb-vt');
+    } else {
+      swap();
+    }
   }
 
   /**
@@ -473,14 +485,16 @@ class KanbanBoard extends VBCollection(VBElement) {
   }
 
   /**
-   * Build the kb-columns shell from the current `#columns` metas.
-   * Used by the columns setter when entering JS-first mode.
+   * Build the kb-columns shell from the current `#columns` metas and
+   * populate `#surfaces` / `#columnEls`. Returns the detached shell so
+   * the caller decides when to attach it (sync, or inside a View
+   * Transition callback).
    */
-  #buildShell() {
-    this.#columnsEl = document.createElement('div');
-    this.#columnsEl.className = 'kb-columns';
-    this.#columnsEl.setAttribute('role', 'region');
-    this.#columnsEl.setAttribute('aria-label', 'Kanban board');
+  #assembleShell() {
+    const shell = document.createElement('div');
+    shell.className = 'kb-columns';
+    shell.setAttribute('role', 'region');
+    shell.setAttribute('aria-label', 'Kanban board');
 
     for (const col of this.#columns) {
       const column = document.createElement('section');
@@ -517,12 +531,12 @@ class KanbanBoard extends VBCollection(VBElement) {
       surface.appendChild(placeholder);
 
       column.appendChild(surface);
-      this.#columnsEl.appendChild(column);
+      shell.appendChild(column);
       this.#surfaces[col.id] = surface;
       this.#columnEls[col.id] = column;
     }
 
-    this.appendChild(this.#columnsEl);
+    return shell;
   }
 
   // ── Attribute changes ────────────────────────────────
@@ -577,10 +591,16 @@ class KanbanBoard extends VBCollection(VBElement) {
         this.appendChild(section);
       }
 
-      // Tear down old state and re-run setup
-      this.teardown();
-      this.removeAttribute('data-upgraded');
-      this.setup();
+      const swap = () => {
+        this.teardown();
+        this.removeAttribute('data-upgraded');
+        this.setup();
+      };
+      if (this.hasAttribute('data-upgraded') && this.#columnsEl) {
+        viewTransitionSwap(this, swap, 'kb-vt');
+      } else {
+        swap();
+      }
     } catch (err) {
       console.warn(`[kanban-board] Failed to load src="${url}":`, err);
     }

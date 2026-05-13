@@ -27,6 +27,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { viewTransitionSwap } from '../../lib/vb-view-transition.js';
 
 class StoryMap extends VBElement {
   static get observedAttributes() { return ['src', 'compact', 'title']; }
@@ -302,9 +303,16 @@ class StoryMap extends VBElement {
       this.appendChild(section);
     }
 
-    this.teardown();
-    this.removeAttribute('data-upgraded');
-    this.setup();
+    const swap = () => {
+      this.teardown();
+      this.removeAttribute('data-upgraded');
+      this.setup();
+    };
+    if (this.hasAttribute('data-upgraded') && this.#scroll) {
+      viewTransitionSwap(this, swap, 'sm-vt');
+    } else {
+      swap();
+    }
 
     this.dispatchEvent(new CustomEvent('story-map:activities-changed', {
       detail: { activities: next, source: 'property' },
@@ -352,10 +360,16 @@ class StoryMap extends VBElement {
         }
         this.appendChild(section);
       }
-      // Tear down old listeners/state before re-running setup
-      this.teardown();
-      this.removeAttribute('data-upgraded');
-      this.setup();
+      const swap = () => {
+        this.teardown();
+        this.removeAttribute('data-upgraded');
+        this.setup();
+      };
+      if (this.hasAttribute('data-upgraded') && this.#scroll) {
+        viewTransitionSwap(this, swap, 'sm-vt');
+      } else {
+        swap();
+      }
     } catch (err) {
       console.warn(`[story-map] Failed to load src="${url}":`, err);
     }
