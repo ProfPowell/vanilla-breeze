@@ -344,11 +344,21 @@ class AIChat extends VBElement {
       expectedOutputs: [{ type: 'text', languages: ['en'] }],
       monitor: (m) => {
         m.addEventListener('downloadprogress', (/** @type {any} */ e) => {
+          if (e.loaded >= 1) {
+            this.#localState = 'available';
+            this.#hideNotice();
+            return;
+          }
           this.#setState('downloading');
           this.#showNotice(`Downloading on-device model: ${Math.round(e.loaded * 100)}%`);
         });
       },
     });
+
+    // The terminal 1.0 progress event isn't guaranteed across browsers/builds;
+    // session resolving is the authoritative "download complete" signal.
+    this.#localState = 'available';
+    this.#hideNotice();
 
     this.#session.addEventListener?.('contextoverflow', () => {
       this.dispatchEvent(new CustomEvent('ai-chat:context-overflow', { bubbles: true }));
@@ -395,8 +405,10 @@ class AIChat extends VBElement {
       for await (const chunk of stream) {
         acc += chunk;
         bubble.textContent = acc;
+        this.#scrollWindowToBottom();
       }
       this.#finishTyping(typingElement, acc || ' ');
+      this.#scrollWindowToBottom();
       this.dispatchEvent(new CustomEvent('ai-chat:message', { detail: { role: 'assistant', text: acc }, bubbles: true }));
       this.#setState('ready');
     } catch (err) {
@@ -449,6 +461,10 @@ class AIChat extends VBElement {
   }
 
   /* ---------- helpers ---------- */
+
+  #scrollWindowToBottom() {
+    /** @type {any} */ (this.#window)?.scrollToBottom?.();
+  }
 
   /** @param {string} state */
   #setState(state) {

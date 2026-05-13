@@ -303,6 +303,15 @@ class ChatWindow extends VBElement {
     });
   }
 
+  /**
+   * Scroll the thread to the bottom. Public so consumers driving their own
+   * transport (e.g. ai-chat streaming chunks into a bubble) can keep the
+   * newest content in view without reaching into private state.
+   */
+  scrollToBottom() {
+    this.#scrollToBottom();
+  }
+
   // --- Fetch ---
 
   async #fetchResponse(endpoint, message) {
