@@ -122,7 +122,9 @@ class StepperWc extends VBElement {
 
   #value;         // canonical: number (numeric/formatted) or string (token/enum)
   #initialValue;
-  #valueEl;
+  #valueEl;       // outer .stepper-value (carries spinbutton role + aria; grid container)
+  #displayEl;     // inner .stepper-value-display (the actual visible text)
+  #reservedSet;   // Set<string> of display strings already reserved as hidden grid siblings
   #decBtn;
   #incBtn;
   #intl;          // cached Intl.NumberFormat for number/currency/percent
@@ -234,6 +236,20 @@ class StepperWc extends VBElement {
     this.#valueEl.className = 'stepper-value';
     this.#valueEl.setAttribute('role', 'spinbutton');
     this.#valueEl.setAttribute('tabindex', '0');
+
+    this.#displayEl = document.createElement('span');
+    this.#displayEl.className = 'stepper-value-display';
+
+    this.#valueEl.appendChild(this.#displayEl);
+
+    // Reserve span set: all candidate display strings live as hidden grid
+    // siblings of the display. The grid cell sizes to the widest, regardless
+    // of font metrics ('medium' can render wider than 'critical' despite
+    // being shorter — length-as-proxy is not safe).
+    this.#reservedSet = new Set();
+    for (const candidate of this.#initialCandidates()) {
+      this.#reserve(candidate);
+    }
 
     this.appendChild(this.#decBtn);
     this.appendChild(this.#valueEl);
@@ -444,22 +460,27 @@ class StepperWc extends VBElement {
   }
 
   #renderDisplay() {
-    this.#valueEl.textContent = this.#displayText();
+    const text = this.#displayText();
+    this.#displayEl.textContent = text;
+    // Grow reserve monotonically. Unbounded ranges (no data-max) start with a
+    // heuristic; if the user steps past it, we add the current display as a
+    // reserve sibling so the cell stays at the new width from then on.
+    this.#reserve(text);
   }
 
-  #displayText() {
+  #displayText(value = this.#value) {
     if (this.#mode === 'enum') {
-      const opt = this.#options.find((o) => o.value === this.#value);
-      return opt?.label ?? this.#value ?? '';
+      const opt = this.#options.find((o) => o.value === value);
+      return opt?.label ?? value ?? '';
     }
     if (this.#mode === 'token') {
       const display = this.#showLabel
-        ? String(this.#value).replace(/^--/, '')
-        : String(this.#value);
+        ? String(value).replace(/^--/, '')
+        : String(value);
       return this.#suffix ? `${display}${this.#suffix}` : display;
     }
     if (this.#mode === 'formatted') {
-      const n = Number(this.#value) || 0;
+      const n = Number(value) || 0;
       if (this.#format === 'duration') return formatDuration(n);
       if (this.#format === 'bytes') return formatBytes(n, this.#locale);
       if (this.#intl) {
@@ -471,7 +492,68 @@ class StepperWc extends VBElement {
       }
       return this.#suffix ? `${n}${this.#suffix}` : String(n);
     }
-    return String(this.#value ?? '');
+    return String(value ?? '');
+  }
+
+  /**
+   * Initial set of display candidates to reserve width for. Enum/token modes
+   * enumerate every reachable option. Formatted/numeric modes sample bounds,
+   * the current value, and digit-boundary heuristics (for unbounded ranges
+   * where authors didn't pin data-max).
+   */
+  #initialCandidates() {
+    if (this.#mode === 'enum') {
+      return this.#options.map((o) => this.#displayText(o.value));
+    }
+    if (this.#mode === 'token') {
+      return this.#values.map((v) => this.#displayText(v));
+    }
+    const seen = new Set();
+    const push = (n) => { if (Number.isFinite(n)) seen.add(n); };
+    if (this.#min !== -Infinity) push(this.#min);
+    if (this.#max !== Infinity) push(this.#max);
+    push(Number(this.getAttribute('value')) || 0);
+    // Unbounded ranges need a heuristic so the cell doesn't start narrow and
+    // grow as the user steps up past digit boundaries. The cell can still
+    // grow at runtime if it does, but seeding common magnitudes covers the
+    // 99% case (single → 4-digit values).
+    if (this.#max === Infinity) {
+      // Unbounded — seed plausible upper magnitudes so the cell doesn't
+      // visibly grow on first overflow past a digit boundary. Tuned to
+      // four orders for general numeric/currency/percent (enough for most
+      // real ranges; the growing-reserve handles outliers at runtime).
+      // Bytes is special: the formatter scales units, so we seed the
+      // unit-switch points (KB/MB/GB) explicitly to reserve their widest
+      // formatted strings up-front.
+      const seed = [10, 100, 1000, 10000];
+      for (const n of seed) push(n);
+      if (this.#format === 'bytes') {
+        // Unit-switch points minus 1: largest formatted string at each unit.
+        for (const n of [999, 999_000, 999_000_000, 999_000_000_000]) push(n);
+      }
+    }
+    return [...seen].map((n) => this.#displayText(String(n)));
+  }
+
+  /** Add a display string to the reserve set; idempotent. */
+  #reserve(text) {
+    const t = String(text ?? '');
+    if (!t || this.#reservedSet.has(t)) return;
+    this.#reservedSet.add(t);
+    const span = document.createElement('span');
+    span.className = 'stepper-value-reserve';
+    span.setAttribute('aria-hidden', 'true');
+    span.textContent = t;
+    this.#valueEl.appendChild(span);
+  }
+
+  /** Public hook for authors who mutate config attributes after upgrade. */
+  recomputeWidth() {
+    if (!this.#valueEl) return;
+    // Drop existing reserves and rebuild from current config.
+    this.#valueEl.querySelectorAll('.stepper-value-reserve').forEach((el) => el.remove());
+    this.#reservedSet = new Set();
+    for (const c of this.#initialCandidates()) this.#reserve(c);
   }
 
   #updateAria() {
@@ -545,6 +627,9 @@ class StepperWc extends VBElement {
   }
 
   // --- Public property API ---
+
+  /** The user-visible formatted string (e.g. "$5.00", "2.05 KB", "Medium"). */
+  get displayText() { return this.#displayEl?.textContent ?? ''; }
 
   get value() { return this.#value == null ? '' : String(this.#value); }
   set value(v) {

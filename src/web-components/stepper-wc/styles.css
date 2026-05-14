@@ -13,6 +13,11 @@ stepper-wc {
   transition: border-color var(--duration-fast, 150ms);
   font: inherit;
   user-select: none;
+  /* Keep the host at its natural content size even inside a shrinking flex
+     parent (a <dd> with display:flex, a tight toolbar, etc.). Without this,
+     the parent's flex layout can squeeze the host below its children's
+     natural widths, which then get clipped by overflow:hidden. */
+  min-inline-size: max-content;
 }
 
 stepper-wc:focus-within {
@@ -26,9 +31,15 @@ stepper-wc[disabled] {
 }
 
 stepper-wc .stepper-value {
-  display: inline-flex;
+  /* Grid overlay: the hidden .stepper-value-reserve sizes the cell to the
+     widest reachable string; the visible .stepper-value-display overlays
+     on top. This prevents jumping as the value moves through its range.
+     flex-shrink: 0 stops a flex parent (e.g., a <dd> with display:flex)
+     from squeezing the cell below its natural max-content. */
+  display: inline-grid;
+  grid-template-areas: "value";
   align-items: center;
-  justify-content: center;
+  justify-items: center;
   min-inline-size: 4rem;
   padding-block: var(--size-xs);
   padding-inline: var(--size-s, 0.5rem);
@@ -37,6 +48,21 @@ stepper-wc .stepper-value {
   text-align: center;
   font-variant-numeric: tabular-nums;
   cursor: default;
+  flex-shrink: 0;
+}
+
+stepper-wc .stepper-value-display,
+stepper-wc .stepper-value-reserve {
+  grid-area: value;
+  /* nowrap so the grid cell sizes to the FULL string width (max-content),
+     not the longest unbreakable token. Without this, "999.0 MB" sizes the
+     cell to "999.0" (whitespace permitted to break), defeating the reserve. */
+  white-space: nowrap;
+}
+
+stepper-wc .stepper-value-reserve {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 stepper-wc .stepper-value:focus {
@@ -56,6 +82,7 @@ stepper-wc .stepper-inc {
   background: var(--color-surface-raised);
   color: var(--color-text);
   transition: background var(--duration-fast, 150ms);
+  flex-shrink: 0;
 }
 
 stepper-wc .stepper-dec:hover:not(:disabled),
