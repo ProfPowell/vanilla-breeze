@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>reaction-bar — Comment Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/reaction-bar/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    article {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+      margin-block: var(--size-m);
+    }
+    .meta { color: var(--color-text-muted); font-size: 0.875rem; margin-block-end: var(--size-xs); }
+    pre {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      background: var(--color-surface-sunken, oklch(94% 0 0));
+      padding: var(--size-s);
+      border-radius: var(--radius-s);
+      min-block-size: 4rem;
+      max-block-size: 12rem;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="readable">
+    <layout-stack data-layout-gap="m">
+
+      <h1>reaction-bar</h1>
+      <p>GitHub-style emoji reaction picker. Click an existing chip to toggle your reaction; click the <code>😀</code> trigger to add a new one. The mocked backend log below shows the <code>reaction-bar:toggle</code> events with their detail payload.</p>
+
+      <article>
+        <p class="meta">Ada Lovelace · 2 hours ago</p>
+        <p>Looks great — ship it.</p>
+        <reaction-bar aria-label="Reactions to comment 482">
+          <button data-reaction="thumbsup" data-count="3" data-mine>👍</button>
+          <button data-reaction="rocket"   data-count="2">🚀</button>
+          <template data-palette>
+            <button data-reaction="thumbsup">👍</button>
+            <button data-reaction="thumbsdown">👎</button>
+            <button data-reaction="laugh">😄</button>
+            <button data-reaction="hooray">🎉</button>
+            <button data-reaction="confused">😕</button>
+            <button data-reaction="heart">❤️</button>
+            <button data-reaction="rocket">🚀</button>
+            <button data-reaction="eyes">👀</button>
+          </template>
+        </reaction-bar>
+      </article>
+
+      <article>
+        <p class="meta">Archived thread (read-only)</p>
+        <p>Original launch announcement.</p>
+        <reaction-bar data-disabled aria-label="Reactions to archived post">
+          <button data-reaction="thumbsup" data-count="12">👍</button>
+          <button data-reaction="heart"    data-count="3">❤️</button>
+          <button data-reaction="rocket"   data-count="7">🚀</button>
+          <template data-palette>
+            <button data-reaction="thumbsup">👍</button>
+            <button data-reaction="heart">❤️</button>
+            <button data-reaction="rocket">🚀</button>
+          </template>
+        </reaction-bar>
+      </article>
+
+      <h2>Event log</h2>
+      <p>Each click on a chip or palette option fires <code>reaction-bar:toggle</code> with the detail payload below. The demo mocks the backend by calling <code>bar.setCount(reaction, newCount, { mine })</code> after a 150ms delay.</p>
+      <pre id="log" aria-live="polite"></pre>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const log = document.getElementById('log');
+    const append = (msg) => { log.textContent = msg + '\n' + log.textContent; };
+
+    document.querySelectorAll('reaction-bar:not([data-disabled])').forEach((bar) => {
+      bar.addEventListener('reaction-bar:toggle', (e) => {
+        const { reaction, action, count, mine } = e.detail;
+        append(`toggle: ${action} "${reaction}" (count was ${count}, mine was ${mine})`);
+        // Mocked backend latency
+        setTimeout(() => {
+          const nextCount = action === 'add' ? count + 1 : count - 1;
+          const nextMine = action === 'add';
+          bar.setCount(reaction, nextCount, { mine: nextMine });
+        }, 150);
+      });
+      bar.addEventListener('reaction-bar:palette-open', () => append('palette-open'));
+      bar.addEventListener('reaction-bar:palette-close', () => append('palette-close'));
+    });
+  </script>
+</body>
+</html>

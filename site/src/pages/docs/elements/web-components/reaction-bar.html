@@ -1,0 +1,172 @@
+---
+layout: element
+title: "reaction-bar"
+description: "GitHub-style emoji reaction picker. Persistent in-flow bar of reaction chips with counts + a trigger that opens a curated palette popover."
+elementName: reaction-bar
+category: component
+currentPath: /docs/elements/web-components/reaction-bar/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;reaction-bar&gt;</code> is a persistent bar of emoji-reaction chips attached to an item (a comment, a post, a message). A single auto-rendered trigger opens a curated palette popover. The component is <strong>presentational</strong>: authors own the source of truth (counts, per-user state, persistence) and hook the <code>reaction-bar:toggle</code> event to make the backend call.</p>
+
+  <browser-window
+    src="/docs/examples/demos/reaction-bar-comment.html"
+    url="https://vanilla-breeze.dev/reaction-bar"
+    title="reaction-bar — comment thread"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>When to use which primitive</h2>
+  <p>Three adjacent VB primitives sit nearby. The trigger model is the tell &mdash; pick the one whose trigger matches your interaction.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Use this</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>&lt;reaction-bar&gt;</code></td><td>Persistent in-flow bar of curated emoji reactions with counts + own-reaction toggle, attached to an item (comment / post / message).</td></tr>
+      <tr><td><a href="/docs/elements/web-components/selection-menu/"><code>&lt;selection-menu&gt;</code></a></td><td>Contextual floating toolbar that appears on <em>text selection</em> (anchored to a <code>Range</code>).</td></tr>
+      <tr><td><a href="/docs/elements/web-components/emoji-picker/"><code>&lt;emoji-picker&gt;</code></a></td><td>The user might pick <em>any</em> emoji from the full Unicode catalog (search, categories, recent).</td></tr>
+      <tr><td><a href="/docs/elements/web-components/rating/"><code>&lt;star-rating&gt;</code></a></td><td>Single-value 1&ndash;N rating submitted with a form.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Author surface</h2>
+  <p>Two slots:</p>
+  <ol>
+    <li><strong>Existing chips</strong> &mdash; direct <code>&lt;button data-reaction data-count [data-mine]&gt;</code> children. The component decorates them with the count, <code>aria-pressed</code>, and a derived <code>aria-label</code>.</li>
+    <li><strong>Available reactions</strong> &mdash; inside a <code>&lt;template data-palette&gt;</code> child. The component clones the buttons into a <a href="/docs/elements/web-components/pop-over/"><code>&lt;pop-over&gt;</code></a> when the trigger opens.</li>
+  </ol>
+  <p>The trigger button (<code>😀+</code>) is <em>auto-rendered</em> at the end of the bar &mdash; you do not author it.</p>
+
+  <code-block language="html" show-lines label="Basic reaction-bar" data-escape><reaction-bar aria-label="Reactions to comment 482">
+  <button data-reaction="thumbsup" data-count="3" data-mine>👍</button>
+  <button data-reaction="rocket"   data-count="2">🚀</button>
+  <template data-palette>
+    <button data-reaction="thumbsup">👍</button>
+    <button data-reaction="thumbsdown">👎</button>
+    <button data-reaction="laugh">😄</button>
+    <button data-reaction="hooray">🎉</button>
+    <button data-reaction="confused">😕</button>
+    <button data-reaction="heart">❤️</button>
+    <button data-reaction="rocket">🚀</button>
+    <button data-reaction="eyes">👀</button>
+  </template>
+</reaction-bar></code-block>
+</section>
+
+<section>
+  <h2>State ownership</h2>
+  <p>The component does not track state. Authors own counts + per-user state + persistence. The flow:</p>
+  <ol>
+    <li>User clicks a chip <em>or</em> a palette option.</li>
+    <li><code>reaction-bar:toggle</code> fires with <code>{ reaction, action, count, mine }</code>.</li>
+    <li>Author makes the backend call.</li>
+    <li>Author updates the bar via <code>bar.setCount(reaction, count, { mine })</code>.</li>
+  </ol>
+
+  <code-block language="javascript" show-lines label="Wiring the backend" data-escape>bar.addEventListener('reaction-bar:toggle', async (e) => {
+  const { reaction, action, count, mine } = e.detail;
+  const res = await fetch(`/reactions/${reaction}`, {
+    method: action === 'add' ? 'POST' : 'DELETE',
+  });
+  const { count: newCount } = await res.json();
+  bar.setCount(reaction, newCount, { mine: action === 'add' });
+});</code-block>
+</section>
+
+<section>
+  <h2>Read-only mode</h2>
+  <p>Set <code>data-disabled</code> for archived threads or other read-only contexts. Chips don't toggle; the trigger is disabled.</p>
+
+  <code-block language="html" show-lines label="Read-only" data-escape><reaction-bar data-disabled aria-label="Reactions">
+  <button data-reaction="thumbsup" data-count="12">👍</button>
+  <button data-reaction="heart"    data-count="3">❤️</button>
+  <template data-palette>
+    <button data-reaction="thumbsup">👍</button>
+    <button data-reaction="heart">❤️</button>
+  </template>
+</reaction-bar></code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Bar:</strong> <code>role="toolbar"</code> with <code>aria-label="Reactions"</code> (override via <code>aria-label</code> on the host).</li>
+    <li><strong>Chips:</strong> <code>role="button"</code>, <code>aria-pressed</code> reflects <code>data-mine</code>. Each chip gets a derived <code>aria-label</code> like <q>👍, 3 reactions, you reacted</q> so AT users hear count + own-state in one announcement.</li>
+    <li><strong>Trigger:</strong> <code>aria-haspopup="dialog"</code>, <code>aria-expanded</code> tracks open state.</li>
+    <li><strong>Palette:</strong> <code>role="dialog"</code> rendered by <code>&lt;pop-over&gt;</code> in the top layer; Escape closes (handled by pop-over).</li>
+    <li><strong>Keyboard nav</strong> on the bar: Arrow Left / Right cycle between chips and trigger (roving tabindex); Home / End jump to ends; Enter / Space activate.</li>
+    <li><strong>Keyboard nav</strong> in the palette: Arrow keys cycle through options; Home / End jump to ends; Enter / Space select.</li>
+    <li><strong>Focus return:</strong> after the palette closes, focus returns to the trigger.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>aria-label</code></td><td>string</td><td><code>Reactions</code></td><td>Toolbar label.</td></tr>
+      <tr><td><code>data-trigger-icon</code></td><td>string</td><td><code>😀</code></td><td>Text/emoji content of the trigger button.</td></tr>
+      <tr><td><code>data-trigger-label</code></td><td>string</td><td><code>Add reaction</code></td><td><code>aria-label</code> for the trigger.</td></tr>
+      <tr><td><code>data-disabled</code></td><td>boolean</td><td><code>false</code></td><td>Read-only mode.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Chip attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-reaction</code></td><td>string</td><td>Stable identifier sent to the backend (e.g. <code>thumbsup</code>, <code>heart</code>).</td></tr>
+      <tr><td><code>data-count</code></td><td>number</td><td>Current count (&ge; 1 to show; 0 removes the chip).</td></tr>
+      <tr><td><code>data-mine</code></td><td>boolean</td><td>Whether the current user has this reaction.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Bubbles</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>reaction-bar:toggle</code></td><td>yes</td><td><code>{ reaction, action: 'add'|'remove', count, mine }</code></td></tr>
+      <tr><td><code>reaction-bar:palette-open</code></td><td>yes</td><td>&mdash;</td></tr>
+      <tr><td><code>reaction-bar:palette-close</code></td><td>yes</td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>setCount(reaction, count, { mine })</code></td><td>Update a chip after the server confirms. Creates the chip from the palette template if it doesn't exist yet; removes the chip when <code>count</code> drops to 0.</td></tr>
+      <tr><td><code>openPalette()</code></td><td>Open the palette popover programmatically.</td></tr>
+      <tr><td><code>closePalette()</code></td><td>Close it.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/selection-menu/"><code>&lt;selection-menu&gt;</code></a> &mdash; floating toolbar that anchors to text selection.</li>
+    <li><a href="/docs/elements/web-components/emoji-picker/"><code>&lt;emoji-picker&gt;</code></a> &mdash; full Unicode emoji browser with search + categories.</li>
+    <li><a href="/docs/elements/web-components/rating/"><code>&lt;star-rating&gt;</code></a> &mdash; single-value form-associated rating.</li>
+    <li><a href="/docs/elements/web-components/pop-over/"><code>&lt;pop-over&gt;</code></a> &mdash; the surface this component composes for the palette.</li>
+  </ul>
+</section>

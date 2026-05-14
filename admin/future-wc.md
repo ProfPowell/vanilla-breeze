@@ -50,7 +50,7 @@ Current surface: **119 web components** across 7 categories (as of 2026-05-13).
 
 | Component | Type | Notes |
 |-----------|------|-------|
-| `reaction-bar` | New | GitHub-style emoji reaction picker: persistent bar of chips with counts + a trigger that opens a curated palette popover. Composes `pop-over` for the palette (mirrors selection-menu / combo-box pattern). Distinct from `selection-menu` (text-selection anchor), `emoji-picker` (full Unicode browser), `star-rating` (single-value form input). Author-owned data; component is presentational, emits a single `reaction-bar:toggle` event. Plan: `admin/r-n-d/reaction-bar.md`. Bead: `vanilla-breeze-h29f`. |
+| ~~`reaction-bar`~~ | **Shipped** as `reaction-bar` (`src/web-components/reaction-bar/`). Persistent in-flow chip bar + auto-rendered trigger composing `pop-over` for the palette surface. Author-owned data: component is presentational, emits `reaction-bar:toggle` with `{ reaction, action, count, mine }`. `setCount(reaction, count, { mine })` updates a chip after the server confirms (creates from palette template if missing; removes at count=0). Docs: [reference](/docs/elements/web-components/reaction-bar/). Cross-links added from `selection-menu` and `emoji-picker` doc pages. Plan: `admin/r-n-d/reaction-bar.md`. Bead: `vanilla-breeze-h29f`. | |
 | `comment-box` | New | Standalone comment form with markdown preview. |
 | ~~`avatar-group`~~ | **Superseded** by `<user-avatar>` + `<layout-cluster data-layout-overlap>`. See [user-avatar docs](https://vanilla-breeze.com/docs/elements/custom-elements/user-avatar/#avatar-group). Bead closed: `vanilla-breeze-pahv`. | |
 | `activity-feed` | New | Timeline of user actions with relative timestamps. |

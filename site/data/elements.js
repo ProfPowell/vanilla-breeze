@@ -206,6 +206,7 @@ const elementsByLetter = {
     { name: 'qr-code', type: 'component', href: '/docs/elements/web-components/qr-code/' },
   ],
   R: [
+    { name: 'reaction-bar', type: 'component', href: '/docs/elements/web-components/reaction-bar/' },
     { name: 'reader-view', type: 'component', href: '/docs/elements/web-components/reader-view/' },
     { name: 'recently-visited', type: 'component', href: '/docs/elements/web-components/recently-visited/' },
     { name: 'review-surface', type: 'component', href: '/docs/elements/web-components/review-surface/' },
