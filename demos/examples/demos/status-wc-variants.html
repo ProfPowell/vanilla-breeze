@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>status-wc — Variants Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    section { margin-block: var(--size-m); }
+    h2 { font-size: 1rem; margin-block-end: var(--size-xs); color: var(--color-text-muted); }
+    .row { display: flex; flex-wrap: wrap; gap: var(--size-m); align-items: center; }
+    dl.health { display: grid; grid-template-columns: max-content auto; gap: var(--size-xs) var(--size-m); align-items: center; margin: 0; }
+    dt { margin: 0; }
+    dd { margin: 0; }
+    status-wc[data-variant="deploying"] {
+      --status-dot-color: var(--color-info);
+      --status-animation: status-pulse var(--status-pulse-duration) ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="readable">
+    <layout-stack data-layout-gap="m">
+
+      <h1>status-wc</h1>
+      <p>Visual state indicator. Variant drives color + animation. Pairs with <code>status-message</code> (textual) and <code>notification-wc</code> (action-bearing).</p>
+
+      <section>
+        <h2>Broadcast / media</h2>
+        <div class="row">
+          <status-wc data-variant="live">Live</status-wc>
+          <status-wc data-variant="recording">REC</status-wc>
+          <status-wc data-variant="streaming">Streaming</status-wc>
+        </div>
+      </section>
+
+      <section>
+        <h2>Presence</h2>
+        <div class="row">
+          <status-wc data-variant="online">Available</status-wc>
+          <status-wc data-variant="away">Away</status-wc>
+          <status-wc data-variant="busy">Do not disturb</status-wc>
+          <status-wc data-variant="offline">Offline</status-wc>
+        </div>
+      </section>
+
+      <section>
+        <h2>System / process</h2>
+        <dl class="health">
+          <dt>API</dt><dd><status-wc data-variant="running">Healthy</status-wc></dd>
+          <dt>Worker queue</dt><dd><status-wc data-variant="paused">Drained</status-wc></dd>
+          <dt>Background jobs</dt><dd><status-wc data-variant="stopped">Stopped</status-wc></dd>
+          <dt>Webhook delivery</dt><dd><status-wc data-variant="error">Failing</status-wc></dd>
+        </dl>
+      </section>
+
+      <section>
+        <h2>Sizes</h2>
+        <div class="row">
+          <status-wc data-variant="online" data-size="xs">xs</status-wc>
+          <status-wc data-variant="online" data-size="sm">sm</status-wc>
+          <status-wc data-variant="online" data-size="md">md (default)</status-wc>
+          <status-wc data-variant="online" data-size="lg">lg</status-wc>
+        </div>
+      </section>
+
+      <section>
+        <h2>Position</h2>
+        <div class="row">
+          <status-wc data-variant="live" data-position="before">before</status-wc>
+          <status-wc data-variant="live" data-position="after">after</status-wc>
+          <status-wc data-variant="online" data-position="only" aria-label="Online (bare dot)"></status-wc>
+        </div>
+      </section>
+
+      <section>
+        <h2>Pulse override</h2>
+        <div class="row">
+          <status-wc data-variant="online" data-pulse="on">Online (forced pulse)</status-wc>
+          <status-wc data-variant="live" data-pulse="off">Live (suppressed pulse)</status-wc>
+        </div>
+      </section>
+
+      <section>
+        <h2>Custom variant (CSS-only extension)</h2>
+        <p>Define <code>status-wc[data-variant="deploying"]</code> in a CSS file with <code>--status-dot-color</code> and <code>--status-animation</code>; no JS change needed.</p>
+        <div class="row">
+          <status-wc data-variant="deploying">Deploying</status-wc>
+        </div>
+      </section>
+
+    </layout-stack>
+  </layout-center>
+</body>
+</html>

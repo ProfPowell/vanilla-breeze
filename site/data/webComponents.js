@@ -87,6 +87,7 @@ export default {
 
   'Feedback & Notifications': [
     { name: 'consent-banner', href: '/docs/elements/web-components/consent-banner/', desc: 'Cookie consent banner with accept/decline' },
+    { name: 'status-wc', href: '/docs/elements/web-components/status-wc/', desc: 'Visual state indicator: live/recording (pulse), online/offline/away/busy, running/paused/stopped, error. 11 built-in variants + CSS-only extension surface.' },
     { name: 'toast-msg', href: '/docs/elements/web-components/toast/', desc: 'Non-blocking notifications' },
     { name: 'tool-tip', href: '/docs/elements/web-components/tooltip/', desc: 'Contextual tooltips' },
   ],

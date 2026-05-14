@@ -242,6 +242,7 @@ const elementsByLetter = {
     { name: 'split-surface', type: 'component', href: '/docs/elements/web-components/splitter/' },
     { name: 'star-rating', type: 'component', href: '/docs/elements/web-components/rating/', pack: 'effects' },
     { name: 'status-message', type: 'custom', href: '/docs/elements/custom-elements/status-message/' },
+    { name: 'status-wc', type: 'component', href: '/docs/elements/web-components/status-wc/' },
     { name: 'stepper-wc', type: 'component', href: '/docs/elements/web-components/stepper-wc/' },
     { name: 'story-map', type: 'component', href: '/docs/elements/web-components/story-map/', pack: 'ux-planning' },
     { name: 'strong', type: 'native', href: '/docs/elements/native/strong/' },

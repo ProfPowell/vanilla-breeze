@@ -1,0 +1,183 @@
+---
+layout: element
+title: "status-wc"
+description: "Visual state indicator: live, recording, streaming, presence (online/away/busy/offline), system state (running/paused/stopped/error). Variant drives color + animation."
+elementName: status-wc
+category: component
+currentPath: /docs/elements/web-components/status-wc/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;status-wc&gt;</code> is a presentational primitive that shows the current ongoing state of an entity &mdash; a stream, a user, a process, a service. The variant attribute drives color and animation; CSS handles all rendering; <code>prefers-reduced-motion</code> collapses pulse to a steady dot.</p>
+
+  <browser-window
+    src="/docs/examples/demos/status-wc-variants.html"
+    url="https://vanilla-breeze.dev/status-wc"
+    title="status-wc — variants"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>When to use which primitive</h2>
+  <p>Three adjacent VB primitives sit in this neighborhood. Pick the one that matches the <em>shape</em> of what you're showing.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Use this</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>&lt;status-wc&gt;</code></td><td>Steady visual indication of an <em>ongoing</em> state &mdash; live/recording/online/offline/error. A dot you'd leave on screen indefinitely.</td></tr>
+      <tr><td><a href="/docs/elements/custom-elements/status-message/"><code>&lt;status-message&gt;</code></a></td><td>One-shot prose announcement: <q>Form submitted.</q> <q>Saved.</q> Inline text, not a persistent badge.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a></td><td>Action-bearing banner or panel with stewardship, dismissal, history.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/toast/"><code>&lt;toast-msg&gt;</code></a></td><td>Transient feedback that dismisses on its own.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Built-in variants</h2>
+  <p>Eleven variants ship out of the box, grouped by intent:</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Variant</th><th>Color</th><th>Animation</th><th>Intent</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>live</code>, <code>recording</code>, <code>error</code></td><td>error / red</td><td>pulse</td><td>Active broadcast / recording / failed.</td></tr>
+      <tr><td><code>streaming</code></td><td>warning / amber</td><td>pulse</td><td>In-flight stream.</td></tr>
+      <tr><td><code>online</code></td><td>success / green</td><td>steady</td><td>Available / reachable.</td></tr>
+      <tr><td><code>running</code></td><td>success / green</td><td>pulse</td><td>Active process.</td></tr>
+      <tr><td><code>away</code>, <code>paused</code></td><td>warning / amber</td><td>steady</td><td>Idle / suspended.</td></tr>
+      <tr><td><code>busy</code></td><td>error / red</td><td>steady</td><td>Reachable, do not disturb.</td></tr>
+      <tr><td><code>offline</code>, <code>stopped</code></td><td>muted / gray</td><td>steady</td><td>Unreachable / halted.</td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" show-lines label="Built-in variants" data-escape><status-wc data-variant="live">Live</status-wc>
+<status-wc data-variant="online">Available</status-wc>
+<status-wc data-variant="paused">Drained</status-wc>
+<status-wc data-variant="error">Failing</status-wc></code-block>
+</section>
+
+<section>
+  <h2>Sizes</h2>
+  <code-block language="html" show-lines label="data-size" data-escape><status-wc data-variant="online" data-size="xs">xs</status-wc>
+<status-wc data-variant="online" data-size="sm">sm</status-wc>
+<status-wc data-variant="online" data-size="md">md (default)</status-wc>
+<status-wc data-variant="online" data-size="lg">lg</status-wc></code-block>
+</section>
+
+<section>
+  <h2>Position</h2>
+  <p><code>data-position</code> controls where the dot sits relative to the label.</p>
+  <code-block language="html" show-lines label="Position variants" data-escape><status-wc data-variant="live" data-position="before">Live</status-wc>
+<status-wc data-variant="live" data-position="after">Live</status-wc>
+<status-wc data-variant="online" data-position="only" aria-label="Online"></status-wc></code-block>
+  <p><strong>Bare dot:</strong> <code>data-position="only"</code> visually hides the label but keeps it for screen readers. Required: <code>aria-label</code> or slot text content.</p>
+</section>
+
+<section>
+  <h2>Pulse override</h2>
+  <p>Force or suppress the pulse independent of the variant's default.</p>
+  <code-block language="html" show-lines label="data-pulse" data-escape><status-wc data-variant="online" data-pulse="on">Online (forced pulse)</status-wc>
+<status-wc data-variant="live" data-pulse="off">Live (suppressed)</status-wc></code-block>
+</section>
+
+<section>
+  <h2>Custom variants (CSS-only)</h2>
+  <p>Add a CSS rule. No JS change needed &mdash; the component reflects <code>data-variant</code> to CSS and any matching rule wins.</p>
+  <code-block language="css" show-lines label="Custom variant" data-escape>status-wc[data-variant="deploying"] {
+  --status-dot-color: var(--color-info);
+  --status-animation: status-pulse var(--status-pulse-duration) ease-in-out infinite;
+}</code-block>
+
+  <code-block language="html" show-lines label="Using a custom variant" data-escape><status-wc data-variant="deploying">Deploying</status-wc></code-block>
+</section>
+
+<section>
+  <h2>Composition</h2>
+  <p>Compose with other VB primitives rather than baking layouts into the component.</p>
+
+  <code-block language="html" show-lines label="Header live badge" data-escape><header>
+  <h1>Today's keynote</h1>
+  <status-wc data-variant="live">Live</status-wc>
+</header></code-block>
+
+  <code-block language="html" show-lines label="User row" data-escape><layout-cluster>
+  <user-avatar src="/ada.jpg" name="Ada Lovelace"></user-avatar>
+  <strong>Ada Lovelace</strong>
+  <status-wc data-variant="online" data-position="only" aria-label="Online"></status-wc>
+</layout-cluster></code-block>
+
+  <code-block language="html" show-lines label="Service health" data-escape><dl>
+  <dt>API</dt>            <dd><status-wc data-variant="running">Healthy</status-wc></dd>
+  <dt>Worker queue</dt>   <dd><status-wc data-variant="paused">Drained</status-wc></dd>
+  <dt>Webhook delivery</dt><dd><status-wc data-variant="error">Failing</status-wc></dd>
+</dl></code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Default <code>role="status"</code> with <code>aria-live="polite"</code> &mdash; screen readers announce variant changes.</li>
+    <li>Set <code>data-live="off"</code> for decorative use (e.g., dashboards with many static indicators) &mdash; this removes the role and live-region.</li>
+    <li><code>prefers-reduced-motion: reduce</code> collapses pulse to a steady dot; color still conveys state.</li>
+    <li>Never color-only: every variant ships with a default text label. Use <code>data-position="only"</code> with <code>aria-label</code> for bare-dot situations.</li>
+  </ul>
+
+  <code-block language="html" show-lines label="Decorative (no announcement)" data-escape><status-wc data-variant="online" data-live="off">Online</status-wc></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-variant</code></td><td>string</td><td>&mdash;</td><td>Built-in variant name or custom (see above).</td></tr>
+      <tr><td><code>data-size</code></td><td>string</td><td><code>md</code></td><td><code>xs</code> | <code>sm</code> | <code>md</code> | <code>lg</code></td></tr>
+      <tr><td><code>data-position</code></td><td>string</td><td><code>before</code></td><td><code>before</code> | <code>after</code> | <code>only</code></td></tr>
+      <tr><td><code>data-pulse</code></td><td>string</td><td>variant default</td><td><code>on</code> | <code>off</code></td></tr>
+      <tr><td><code>data-live</code></td><td>string</td><td>polite</td><td>Set to <code>off</code> to suppress announcements.</td></tr>
+      <tr><td><code>aria-label</code></td><td>string</td><td>&mdash;</td><td>Required when slot has no text.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>CSS properties</h2>
+  <table class="props-table">
+    <thead><tr><th>Property</th><th>Default</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>--status-dot-size</code></td><td>0.625rem</td><td>Dot diameter (overrides <code>data-size</code>).</td></tr>
+      <tr><td><code>--status-dot-color</code></td><td>variant-default</td><td>Dot color (overrides variant default).</td></tr>
+      <tr><td><code>--status-pulse-duration</code></td><td>2s</td><td>Pulse cycle duration.</td></tr>
+      <tr><td><code>--status-animation</code></td><td>variant-default</td><td>Direct animation shorthand override.</td></tr>
+      <tr><td><code>--status-gap</code></td><td><code>--size-2xs</code></td><td>Gap between dot and label.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Bubbles</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>status-wc:change</code></td><td>yes</td><td><code>data-variant</code> mutates. <code>detail: { variant, previousVariant }</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/elements/custom-elements/status-message/"><code>&lt;status-message&gt;</code></a> &mdash; textual one-shot announcement.</li>
+    <li><a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> &mdash; action-bearing notification surface.</li>
+    <li><a href="/docs/elements/web-components/toast/"><code>&lt;toast-msg&gt;</code></a> &mdash; transient feedback.</li>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/status_role">MDN: ARIA <code>role="status"</code></a></li>
+  </ul>
+</section>
