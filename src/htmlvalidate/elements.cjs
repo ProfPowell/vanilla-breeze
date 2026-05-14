@@ -1091,6 +1091,16 @@ module.exports = {
     }
   },
 
+  "poll-wc": {
+    attributes: {
+      "aria-label": {},
+      "data-multi": { boolean: true },
+      "data-closed": { boolean: true },
+      "data-hide-counts": { boolean: true },
+      "disabled": { boolean: true }
+    }
+  },
+
   "pop-over": {
     attributes: {
       "data-mode": { enum: ["auto", "manual", "hint"] },
