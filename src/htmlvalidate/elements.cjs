@@ -542,6 +542,14 @@ module.exports = {
     }
   },
 
+  "comment-thread": {
+    attributes: {
+      "aria-label": {},
+      "data-disabled": { boolean: true },
+      "role": {}
+    }
+  },
+
   "comment-wc": {
     flow: true,
     permittedContent: ["@flow"]
