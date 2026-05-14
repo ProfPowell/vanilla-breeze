@@ -6702,6 +6702,90 @@ export default {
       }
     ]
   },
+  "reaction-bar": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "reaction-bar",
+    "type": "web-component",
+    "description": "GitHub-style emoji reaction picker. Persistent bar of reaction chips with counts + a trigger that opens a curated palette popover. Composes pop-over for the palette surface.",
+    "attributes": [
+      {
+        "name": "aria-label",
+        "kind": "aria",
+        "purpose": "config",
+        "type": "string",
+        "description": "Toolbar label (default \"Reactions\")"
+      },
+      {
+        "name": "data-trigger-icon",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Text/emoji content of the trigger button (default \"😀\")"
+      },
+      {
+        "name": "data-trigger-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "aria-label for the trigger (default \"Add reaction\")"
+      },
+      {
+        "name": "data-disabled",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Read-only mode — chips don't toggle, trigger is disabled"
+      },
+      {
+        "name": "role",
+        "kind": "aria",
+        "purpose": "config",
+        "description": "Set to \"toolbar\""
+      }
+    ],
+    "events": [
+      {
+        "name": "reaction-bar:toggle",
+        "description": "Fires when a chip or palette option is clicked. detail: { reaction, action: 'add'|'remove', count, mine }"
+      },
+      {
+        "name": "reaction-bar:palette-open",
+        "description": "Fires when the palette popover opens"
+      },
+      {
+        "name": "reaction-bar:palette-close",
+        "description": "Fires when the palette popover closes"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-reaction",
+        "on": "button",
+        "type": "string",
+        "required": true,
+        "description": "Stable identifier sent to the backend (e.g. thumbsup, heart)"
+      },
+      {
+        "name": "data-count",
+        "on": "button",
+        "type": "number",
+        "description": "Current count (≥ 1 to show; 0 removes the chip)"
+      },
+      {
+        "name": "data-mine",
+        "on": "button",
+        "type": "boolean",
+        "description": "Whether the current user has this reaction"
+      },
+      {
+        "name": "data-palette",
+        "on": "template",
+        "type": "boolean",
+        "description": "Marks a <template> child as the available-reactions palette"
+      }
+    ],
+    "structure": []
+  },
   "reader-view": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "reader-view",

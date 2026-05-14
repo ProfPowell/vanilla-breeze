@@ -1140,6 +1140,16 @@ module.exports = {
     }
   },
 
+  "reaction-bar": {
+    attributes: {
+      "aria-label": {},
+      "data-trigger-icon": {},
+      "data-trigger-label": {},
+      "data-disabled": { boolean: true },
+      "role": {}
+    }
+  },
+
   "reader-view": {
     attributes: {
       "upgraded": {},
