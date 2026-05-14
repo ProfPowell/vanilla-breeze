@@ -1379,6 +1379,31 @@ module.exports = {
     }
   },
 
+  "stepper-wc": {
+    attributes: {
+      "value": {},
+      "name": {},
+      "data-min": {},
+      "data-max": {},
+      "data-step": {},
+      "data-values": {},
+      "data-options": {},
+      "data-format": {},
+      "data-currency": {},
+      "data-suffix": {},
+      "data-show-label": { boolean: true },
+      "data-accelerate": { boolean: true },
+      "disabled": { boolean: true },
+      "readonly": { boolean: true },
+      "role": {},
+      "aria-valuenow": {},
+      "aria-valuemin": {},
+      "aria-valuemax": {},
+      "aria-valuetext": {},
+      "aria-disabled": {}
+    }
+  },
+
   "story-map": {
     flow: true,
     permittedContent: ["section"],

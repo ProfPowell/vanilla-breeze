@@ -8024,6 +8024,163 @@ export default {
     "childAttributes": [],
     "structure": []
   },
+  "stepper-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "stepper-wc",
+    "type": "web-component",
+    "description": "Stepper for values <input type=\"number\"> + data-stepper cannot reach: formatted units, currency, time, token-snap scales, discrete enums.",
+    "attributes": [
+      {
+        "name": "value",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Current value (string; reflected)"
+      },
+      {
+        "name": "name",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "Form field name for form participation"
+      },
+      {
+        "name": "data-min",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Numeric minimum (numeric/formatted modes only)"
+      },
+      {
+        "name": "data-max",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Numeric maximum (numeric/formatted modes only)"
+      },
+      {
+        "name": "data-step",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Step increment (default 1)"
+      },
+      {
+        "name": "data-values",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Token-snap mode: comma-separated list of values"
+      },
+      {
+        "name": "data-options",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Enum mode: JSON [{value,label}] array or csv shorthand (value==label)"
+      },
+      {
+        "name": "data-format",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Formatted mode: number | currency | percent | duration | bytes"
+      },
+      {
+        "name": "data-currency",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ISO 4217 code, used when data-format=\"currency\" (default USD)"
+      },
+      {
+        "name": "data-suffix",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Static suffix appended to display, e.g. \"px\""
+      },
+      {
+        "name": "data-show-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Token mode: display the token name (strips leading --)"
+      },
+      {
+        "name": "data-accelerate",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Enable long-press acceleration on the +/- buttons"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean"
+      },
+      {
+        "name": "readonly",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean"
+      },
+      {
+        "name": "role",
+        "kind": "aria",
+        "purpose": "config",
+        "description": "spinbutton on the inner display element"
+      },
+      {
+        "name": "aria-valuenow",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuemin",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuemax",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-valuetext",
+        "kind": "aria",
+        "purpose": "config"
+      },
+      {
+        "name": "aria-disabled",
+        "kind": "aria",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "input",
+        "description": "Fires on every value change. Bubbles."
+      },
+      {
+        "name": "change",
+        "description": "Fires when value changes. Bubbles."
+      }
+    ],
+    "childAttributes": [],
+    "structure": [],
+    "states": [
+      {
+        "name": "at-min",
+        "description": "Value is at the lower bound"
+      },
+      {
+        "name": "at-max",
+        "description": "Value is at the upper bound"
+      }
+    ]
+  },
   "story-map": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "story-map",
