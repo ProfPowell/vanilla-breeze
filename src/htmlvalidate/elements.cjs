@@ -206,6 +206,12 @@ module.exports = {
 
   // ── Web Components ──────────────────────────────────────────────
 
+  "accessibility-specimen": {
+    attributes: {
+      "type": {}
+    }
+  },
+
   "accordion-wc": {
     flow: true,
     permittedContent: ["details"],

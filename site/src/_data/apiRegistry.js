@@ -916,6 +916,51 @@ export default {
       }
     ]
   },
+  "accessibility-specimen": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "accessibility-specimen",
+    "type": "web-component",
+    "description": "WCAG contrast-ratio table + a11y checklist for design-system docs. Default mode: tabular display of color pairs with computed contrast ratio + AA/AAA badges. Checklist mode: slot-driven WCAG checklist with status icons.",
+    "attributes": [
+      {
+        "name": "type",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "\"contrast\" (default) | \"checklist\""
+      }
+    ],
+    "events": [],
+    "childAttributes": [
+      {
+        "name": "data-fg",
+        "on": "button",
+        "type": "string",
+        "required": true,
+        "description": "Foreground color (hex / rgb() / named); contrast mode"
+      },
+      {
+        "name": "data-bg",
+        "on": "button",
+        "type": "string",
+        "required": true,
+        "description": "Background color (hex / rgb() / named); contrast mode"
+      },
+      {
+        "name": "data-label",
+        "on": "button",
+        "type": "string",
+        "description": "Display label for the pair; defaults to button text content"
+      },
+      {
+        "name": "data-status",
+        "on": "li",
+        "type": "string",
+        "description": "Checklist mode: pass | fail | warn | na (default: na)"
+      }
+    ],
+    "structure": []
+  },
   "accordion-wc": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "accordion-wc",
