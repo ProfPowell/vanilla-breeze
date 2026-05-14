@@ -974,6 +974,110 @@ export default {
       }
     ]
   },
+  "activity-feed": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "activity-feed",
+    "type": "web-component",
+    "description": "WAI-ARIA Feed timeline of user actions. Author renders <article data-activity data-time=ISO> children; component decorates with relative-time badges, optional date grouping, optional infinite-scroll sentinel, and per-entry avatar / icon left-rail.",
+    "attributes": [
+      {
+        "name": "aria-label",
+        "kind": "aria",
+        "purpose": "config",
+        "type": "string",
+        "description": "Region label (default \"Recent activity\")"
+      },
+      {
+        "name": "data-group",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "none (default) | day | week — date headings between entries"
+      },
+      {
+        "name": "data-infinite",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Adds an IntersectionObserver sentinel; emits activity-feed:load-more when reached"
+      },
+      {
+        "name": "data-empty-text",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Text shown when the feed has zero entries (default \"No recent activity\")"
+      },
+      {
+        "name": "role",
+        "kind": "aria",
+        "purpose": "config",
+        "description": "Set to \"feed\" per WAI-ARIA Feed pattern"
+      },
+      {
+        "name": "aria-busy",
+        "kind": "aria",
+        "purpose": "config"
+      }
+    ],
+    "events": [
+      {
+        "name": "activity-feed:load-more",
+        "description": "Fires when the infinite-scroll sentinel enters the viewport"
+      }
+    ],
+    "properties": [
+      {
+        "name": "addEntry",
+        "type": "(data, opts?) => HTMLElement",
+        "description": "Append (or prepend) an entry from data"
+      },
+      {
+        "name": "removeEntry",
+        "type": "(entry) => void",
+        "description": "Remove a single entry element"
+      },
+      {
+        "name": "clear",
+        "type": "() => void",
+        "description": "Remove every entry"
+      },
+      {
+        "name": "entries",
+        "type": "HTMLElement[]",
+        "description": "Live list of decorated entry elements"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-activity",
+        "on": "article",
+        "type": "boolean",
+        "required": true,
+        "description": "Marks an article as a feed entry"
+      },
+      {
+        "name": "data-time",
+        "on": "article",
+        "type": "string",
+        "required": true,
+        "description": "ISO-8601 timestamp; renders as relative time"
+      },
+      {
+        "name": "data-activity-avatar",
+        "on": "article",
+        "type": "string",
+        "description": "Avatar URL — renders <user-avatar> in the left rail"
+      },
+      {
+        "name": "data-activity-icon",
+        "on": "article",
+        "type": "string",
+        "description": "icon-wc name — renders <icon-wc> in the left rail (alternative to avatar)"
+      }
+    ],
+    "structure": []
+  },
   "adr-wc": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "adr-wc",

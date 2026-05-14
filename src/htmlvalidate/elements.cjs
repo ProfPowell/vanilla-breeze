@@ -213,6 +213,17 @@ module.exports = {
     }
   },
 
+  "activity-feed": {
+    attributes: {
+      "aria-label": {},
+      "data-group": {},
+      "data-infinite": { boolean: true },
+      "data-empty-text": {},
+      "role": {},
+      "aria-busy": {}
+    }
+  },
+
   "adr-wc": {
     flow: true,
     permittedContent: ["@flow"],
