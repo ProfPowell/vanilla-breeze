@@ -1,0 +1,109 @@
+---
+layout: guide
+title: "Numeric Inputs &mdash; Decision Guide"
+description: "When to use <input type=\"number\"> vs data-stepper vs <stepper-wc> for numeric and step-through inputs."
+guideGroup: Concepts
+currentPath: /docs/concepts/numeric-inputs/
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Numeric Inputs</span></li>
+  </ol>
+</nav>
+</template>
+
+<p class="lead">Three tiers of stepper-style input. Pick the lowest tier that does the job &mdash; the higher tiers cost more JS and only earn their weight when the lower one cannot reach the use case.</p>
+
+<section>
+  <h2>The decision table</h2>
+
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Tier</th>
+        <th>What it is</th>
+        <th>Use when</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number"><code>&lt;input type="number"&gt;</code></a></td>
+        <td>Native HTML element. UA-rendered spinner buttons, arrow-key step, <code>min</code> / <code>max</code> / <code>step</code>, form validation, numeric mobile keyboard.</td>
+        <td>Plain numeric value and the default UA UI is acceptable.</td>
+      </tr>
+      <tr>
+        <td><code>&lt;input type="number" data-stepper&gt;</code></td>
+        <td>VB upscale. Wraps the native input with custom +/- buttons, hides UA spinners, decimal-aware step math, min/max clamping with disabled-at-bounds.</td>
+        <td>Plain numeric value, you want consistent VB-styled buttons across browsers.</td>
+      </tr>
+      <tr>
+        <td><a href="/docs/elements/web-components/stepper-wc/"><code>&lt;stepper-wc&gt;</code></a></td>
+        <td>Stepper for values the native number input <em>cannot</em> represent.</td>
+        <td>Formatted units, currency, percent, time, byte sizes; token-snap design-system scales; discrete enums; long-press acceleration.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Decision rule:</strong> if <code>&lt;input type="number" data-stepper&gt;</code> works,
+    use it. Reach for <code>&lt;stepper-wc&gt;</code> only when you hit a case the native input
+    cannot represent.</p>
+</section>
+
+<section>
+  <h2>Tier 1 &mdash; native <code>&lt;input type="number"&gt;</code></h2>
+  <p>The browser primitive. Smallest payload, full form participation, validation, and a numeric soft-keyboard on mobile. The downside is the UA-rendered spinner buttons, which differ across browsers and are tiny for touch.</p>
+
+  <code-block language="html" show-lines label="Native number input" data-escape><label for="qty">Quantity</label>
+<input type="number" id="qty" name="qty" min="0" max="99" step="1" value="1"></code-block>
+
+  <p>Reach for this when you do not need consistent buttons across browsers.</p>
+</section>
+
+<section>
+  <h2>Tier 2 &mdash; <code>data-stepper</code></h2>
+  <p>VB's progressive upscale of <code>&lt;input type="number"&gt;</code>. Wraps the input with VB-styled +/- buttons, hides the UA spinners, handles step math without floating-point drift, and disables the buttons at <code>min</code> / <code>max</code>. No new element &mdash; same form behaviour, same validation, same value semantics. See the <a href="/docs/syntax/#data-stepper"><code>data-stepper</code></a> attribute reference for details.</p>
+
+  <code-block language="html" show-lines label="data-stepper enhancement" data-escape><label for="qty">Quantity</label>
+<input type="number" id="qty" name="qty" min="0" max="99" step="1" value="1" data-stepper></code-block>
+
+  <p>This handles the bread-and-butter cases: cart quantity, settings inputs, scoring tools, basic numeric forms. <strong>If your value is a plain number, this is the right tier.</strong></p>
+</section>
+
+<section>
+  <h2>Tier 3 &mdash; <code>&lt;stepper-wc&gt;</code></h2>
+  <p><a href="/docs/elements/web-components/stepper-wc/"><code>&lt;stepper-wc&gt;</code></a> is for values the native number input cannot represent at all. Four cases:</p>
+
+  <ol>
+    <li><strong>Formatted units</strong> &mdash; <code>$5.00</code>, <code>12px</code>, <code>50%</code>, durations (<code>15:00</code>), byte sizes (<code>2.05 KB</code>). The native input rejects non-numeric characters, so locale-aware <code>Intl.NumberFormat</code> output and unit suffixes belong here.</li>
+    <li><strong>Token-snap scales</strong> &mdash; step through a curated list (<code>data-values="0,4,8,12,16,24"</code>) instead of arithmetic. Useful for design-system spacing or type scales.</li>
+    <li><strong>Discrete enums</strong> &mdash; step through labeled options like <code>S / M / L / XL</code> or <code>low / medium / high / critical</code>. Not a number at all.</li>
+    <li><strong>Long-press acceleration</strong> &mdash; opt in via <code>data-accelerate</code> for large ranges where multiple taps would be tedious.</li>
+  </ol>
+
+  <code-block language="html" show-lines label="Pixel suffix" data-escape><stepper-wc data-min="0" data-max="64" data-suffix="px" value="12"></stepper-wc></code-block>
+
+  <code-block language="html" show-lines label="Token-snap" data-escape><stepper-wc data-values="0,4,8,12,16,24,32" data-suffix="px" value="16"></stepper-wc></code-block>
+
+  <code-block language="html" show-lines label="Discrete enum" data-escape><stepper-wc data-options="low,medium,high,critical" value="medium"></stepper-wc></code-block>
+
+  <p>See the <a href="/docs/elements/web-components/stepper-wc/"><code>&lt;stepper-wc&gt;</code> reference</a> for the full attribute list, keyboard map, and event contract.</p>
+</section>
+
+<section>
+  <h2>What if I need vertical, large, or compact steppers?</h2>
+  <p>Those are <em>visual variants</em> of the same primitive, not different primitives. Add them to <code>data-stepper</code> first (e.g. <code>data-stepper-orient="vertical"</code>, <code>data-stepper-size="lg"</code>) so the cheaper tier benefits too. Don&rsquo;t scaffold a new component for a CSS variant.</p>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number">MDN: <code>&lt;input type="number"&gt;</code></a></li>
+    <li><a href="/docs/syntax/#data-stepper">Attribute reference: <code>data-stepper</code></a></li>
+    <li><a href="/docs/elements/web-components/stepper-wc/">Component reference: <code>&lt;stepper-wc&gt;</code></a></li>
+    <li><a href="/docs/concepts/form-association/">Form-Associated Custom Elements</a> &mdash; how the value participates in <code>&lt;form&gt;</code> submission.</li>
+  </ul>
+</section>

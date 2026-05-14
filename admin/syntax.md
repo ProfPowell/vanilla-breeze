@@ -1542,7 +1542,7 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-grow` | `<textarea>` | Auto-expanding textarea |
 | `data-count` | `<textarea>` | Character/word counter (`data-max`, `data-maxwords`) |
 | `data-range` | `<input type="range">` | Enhanced range with value bubble + markers |
-| `data-stepper` | `<input type="number">` | +/- button wrapper |
+| `data-stepper` | `<input type="number">` | +/- button wrapper. For non-numeric values (formatted units, currency, time, token-snap, enums), see [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) and the [numeric-inputs decision guide](/docs/concepts/numeric-inputs/). |
 | `data-color` | `<input type="color">` | Enhanced color picker with swatch + hex |
 | `data-upload` | `<input type="file">` | Drop zone file upload |
 | `data-mask` | `<input>` | Input masking (`data-pattern` for format) |
@@ -1824,7 +1824,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-state-selected` | Table row — selection state |
 | `data-state-sorted` | Table th — sort direction |
 | `data-status` | Avatar child — online status; content blocks, `<html>` — publication state (see §10) |
-| `data-stepper` | Number input — +/- buttons |
+| `data-stepper` | Number input — +/- buttons. See [numeric-inputs decision guide](/docs/concepts/numeric-inputs/) for when to reach for [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) instead. |
 | `data-sticky` | Table — sticky header/column |
 | `data-sticky-column` | Table — sticky N columns |
 | `data-switch` | Checkbox — toggle switch |

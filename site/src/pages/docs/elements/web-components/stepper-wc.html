@@ -1,0 +1,190 @@
+---
+layout: element
+title: "stepper-wc"
+description: "Stepper for values that <input type=\"number\"> + data-stepper cannot reach: formatted units, currency, time, token-snap scales, discrete enums."
+elementName: stepper-wc
+category: component
+currentPath: /docs/elements/web-components/stepper-wc/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <aside class="note">
+    <strong>Not a number input?</strong> If you want plain numeric stepping, use
+    <a href="/docs/elements/native/input/"><code>&lt;input type="number"&gt;</code></a>
+    with the <a href="/docs/concepts/numeric-inputs/"><code>data-stepper</code></a>
+    attribute. <code>&lt;stepper-wc&gt;</code> exists for the cases that one cannot
+    reach &mdash; see the <a href="/docs/concepts/numeric-inputs/">numeric inputs decision guide</a>.
+  </aside>
+
+  <h2>Overview</h2>
+  <p><code>&lt;stepper-wc&gt;</code> is a stepper for values that the native number input
+    cannot represent: formatted units (e.g. <code>$5.00</code>, <code>12px</code>,
+    <code>50%</code>), durations (<code>15:00</code>), byte sizes, token-snap design-system
+    scales, and discrete enums. Plus optional long-press acceleration for large ranges.</p>
+
+  <p>It participates in form submission via <code>ElementInternals</code>. The inner
+    display element carries <code>role="spinbutton"</code> with the appropriate
+    <code>aria-valuenow</code> / <code>aria-valuemin</code> / <code>aria-valuemax</code> /
+    <code>aria-valuetext</code> for assistive tech.</p>
+
+  <browser-window
+    src="/docs/examples/demos/stepper-wc-modes.html"
+    url="https://vanilla-breeze.dev/stepper-wc"
+    title="stepper-wc — modes"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Modes</h2>
+  <p>The mode is auto-detected from attributes, first match wins:</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Trigger attribute</th><th>Mode</th><th>What it does</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-options</code></td><td>enum</td><td>Step through a labeled list of options.</td></tr>
+      <tr><td><code>data-values</code></td><td>token</td><td>Step through a fixed scale (e.g. spacing tokens).</td></tr>
+      <tr><td><code>data-format</code> or <code>data-suffix</code></td><td>formatted</td><td>Numeric value with formatting (currency, percent, duration, bytes, suffix).</td></tr>
+      <tr><td><em>none</em></td><td>numeric</td><td>Plain numeric stepping. Logs a console hint pointing at <code>data-stepper</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Formatted units</h2>
+  <p>Numeric value with locale-aware formatting via <code>Intl.NumberFormat</code> for
+    <code>number</code>, <code>currency</code>, and <code>percent</code>; custom formatters
+    for <code>duration</code> (seconds &rarr; <code>M:SS</code> / <code>H:MM:SS</code>) and
+    <code>bytes</code> (decimal SI: KB, MB, GB&hellip;).</p>
+
+  <code-block language="html" show-lines label="Pixel suffix" data-escape><stepper-wc data-min="0" data-max="64" data-suffix="px" value="12"></stepper-wc></code-block>
+
+  <code-block language="html" show-lines label="Currency" data-escape><stepper-wc data-format="currency" data-currency="USD" data-min="0" data-step="0.5" value="5"></stepper-wc></code-block>
+
+  <code-block language="html" show-lines label="Duration (seconds)" data-escape><stepper-wc data-format="duration" data-min="0" data-max="3600" data-step="300" value="900"></stepper-wc></code-block>
+
+  <p>The <strong>percent</strong> formatter treats the stored value as a 0&ndash;100 percentage
+    (the displayed string divides by 100 internally for <code>Intl.NumberFormat</code>'s
+    <code>style: 'percent'</code>). So <code>value="50"</code> renders as
+    <code>50%</code>, not <code>5000%</code>.</p>
+</section>
+
+<section>
+  <h2>Token-snap</h2>
+  <p>Step through a curated list of values. Useful for design-system scales where you
+    want quantization rather than arbitrary numbers.</p>
+
+  <code-block language="html" show-lines label="Spacing token scale" data-escape><stepper-wc data-values="0,4,8,12,16,24,32,48,64" data-suffix="px" value="16"></stepper-wc></code-block>
+
+  <code-block language="html" show-lines label="Named tokens" data-escape><stepper-wc data-values="--size-0,--size-1,--size-2,--size-3,--size-4" data-show-label value="--size-2"></stepper-wc></code-block>
+
+  <p>If the current value is off-scale, the first step <em>snaps to the nearest entry</em>
+    by numeric distance (numeric values) or to index 0 (non-numeric).
+    <code>data-show-label</code> strips a leading <code>--</code> from custom-property tokens
+    for nicer display.</p>
+</section>
+
+<section>
+  <h2>Discrete enum</h2>
+  <p>Step through labeled options. <code>data-options</code> accepts JSON
+    <code>[{value, label}]</code> or a comma-separated shorthand where value equals label.</p>
+
+  <code-block language="html" show-lines label="Severity csv" data-escape><stepper-wc data-options="low,medium,high,critical" value="medium"></stepper-wc></code-block>
+
+  <code-block language="html" show-lines label="Sizes JSON" data-escape><stepper-wc value="m" data-options='[{"value":"s","label":"Small"},{"value":"m","label":"Medium"},{"value":"l","label":"Large"},{"value":"xl","label":"X-Large"}]'></stepper-wc></code-block>
+</section>
+
+<section>
+  <h2>Long-press acceleration</h2>
+  <p>Opt in with <code>data-accelerate</code>. Hold a button for 500ms to start auto-stepping
+    at 1&times; step every 100ms; another 1000ms in, the rate switches to 5&times; step every 50ms.
+    Intended for large ranges where multiple taps would be tedious.</p>
+
+  <code-block language="html" show-lines label="Accelerated stepper" data-escape><stepper-wc data-min="0" data-max="1000" data-step="1" data-accelerate value="0"></stepper-wc></code-block>
+</section>
+
+<section>
+  <h2>Form participation</h2>
+  <p>Form-associated via <code>ElementInternals</code>. Set <code>name</code>, drop it inside a
+    <code>&lt;form&gt;</code>, and the value submits like any input.</p>
+
+  <code-block language="html" show-lines label="Inside a form-field" data-escape><form>
+  <form-field>
+    <label for="qty">Quantity</label>
+    <stepper-wc id="qty" name="qty" data-min="0" data-max="99" value="1"></stepper-wc>
+  </form-field>
+</form></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>value</code></td><td>string</td><td>&mdash;</td><td>Current value. Reflected.</td></tr>
+      <tr><td><code>name</code></td><td>string</td><td>&mdash;</td><td>Form field name.</td></tr>
+      <tr><td><code>data-min</code></td><td>number</td><td>&mdash;</td><td>Numeric lower bound (numeric/formatted modes).</td></tr>
+      <tr><td><code>data-max</code></td><td>number</td><td>&mdash;</td><td>Numeric upper bound (numeric/formatted modes).</td></tr>
+      <tr><td><code>data-step</code></td><td>number</td><td><code>1</code></td><td>Step increment.</td></tr>
+      <tr><td><code>data-values</code></td><td>csv</td><td>&mdash;</td><td>Token-snap scale (comma-separated).</td></tr>
+      <tr><td><code>data-options</code></td><td>JSON or csv</td><td>&mdash;</td><td>Enum options (<code>[{value,label}]</code> or csv shorthand).</td></tr>
+      <tr><td><code>data-format</code></td><td>string</td><td>&mdash;</td><td><code>number</code> | <code>currency</code> | <code>percent</code> | <code>duration</code> | <code>bytes</code></td></tr>
+      <tr><td><code>data-currency</code></td><td>string</td><td><code>USD</code></td><td>ISO 4217 code (when <code>data-format="currency"</code>).</td></tr>
+      <tr><td><code>data-suffix</code></td><td>string</td><td>&mdash;</td><td>Static suffix appended to display.</td></tr>
+      <tr><td><code>data-show-label</code></td><td>boolean</td><td><code>false</code></td><td>Token mode: show token name (strips leading <code>--</code>).</td></tr>
+      <tr><td><code>data-accelerate</code></td><td>boolean</td><td><code>false</code></td><td>Enable long-press acceleration.</td></tr>
+      <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td><td>Disables the stepper.</td></tr>
+      <tr><td><code>readonly</code></td><td>boolean</td><td><code>false</code></td><td>Locks the value (still focusable).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Bubbles</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>input</code></td><td>yes</td><td>Every value change (button or programmatic).</td></tr>
+      <tr><td><code>change</code></td><td>yes</td><td>Every committed value change. (For now, fires alongside <code>input</code>.)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Keyboard</h2>
+  <table class="props-table">
+    <thead><tr><th>Key</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>&uarr;</kbd> / <kbd>&rarr;</kbd></td><td>Step up (1&times;).</td></tr>
+      <tr><td><kbd>&darr;</kbd> / <kbd>&larr;</kbd></td><td>Step down (1&times;).</td></tr>
+      <tr><td><kbd>Page Up</kbd></td><td>Step up (10&times;).</td></tr>
+      <tr><td><kbd>Page Down</kbd></td><td>Step down (10&times;).</td></tr>
+      <tr><td><kbd>Home</kbd></td><td>Jump to min (or first option).</td></tr>
+      <tr><td><kbd>End</kbd></td><td>Jump to max (or last option).</td></tr>
+    </tbody>
+  </table>
+  <p>The +/- buttons take <code>tabindex="-1"</code> by design &mdash; tab focus lands on
+    the spinbutton itself, matching the <code>data-stepper</code> convention.</p>
+</section>
+
+<section>
+  <h2>States</h2>
+  <p>Component-computed flags exposed via <a href="https://developer.mozilla.org/en-US/docs/Web/API/CustomStateSet">CustomStateSet</a>:</p>
+  <code-block language="css" show-lines label="State selectors" data-escape>stepper-wc:state(at-min) .stepper-dec { /* lowest bound */ }
+stepper-wc:state(at-max) .stepper-inc { /* upper bound */ }</code-block>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/concepts/numeric-inputs/">Numeric inputs &mdash; decision guide</a> &mdash; when to use <code>&lt;input type="number"&gt;</code> vs <code>data-stepper</code> vs <code>&lt;stepper-wc&gt;</code></li>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number">MDN: <code>&lt;input type="number"&gt;</code></a></li>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat">MDN: <code>Intl.NumberFormat</code></a></li>
+  </ul>
+</section>

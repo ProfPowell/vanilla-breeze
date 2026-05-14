@@ -28,6 +28,7 @@ import './combo-box/logic.js';
 import './time-picker/logic.js';
 import './date-picker/logic.js';
 import './color-picker/logic.js';
+import './stepper-wc/logic.js';
 import './context-menu/logic.js';
 import './include-file/logic.js';
 import './settings-panel/logic.js';

@@ -11,7 +11,7 @@ Current surface: **119 web components** across 7 categories (as of 2026-05-13).
 | Component | Type | Notes |
 |-----------|------|-------|
 | `rich-editor` | New | Rich text editor. ProseMirror AST-based, on hold until VB stabilizes. See `admin/r-n-d/editor-plan.md`. Upscale of `contenteditable`. |
-| `stepper-wc` | New | Stepper for values `data-stepper` can't reach: **formatted units** (`$`, `px`, `%`, time), **token-snap scales**, **discrete enums**, optional **long-press acceleration**. NOT a numeric-input replacement — `<input type="number" data-stepper>` covers plain numeric stepping. Plan: `admin/r-n-d/forms-and-interactions/stepper-wc.md`. Bead: `vanilla-breeze-xxew`. |
+| ~~`stepper-wc`~~ | **Shipped** as `stepper-wc` (`src/web-components/stepper-wc/`). Modes: formatted units / currency / percent / duration / bytes, token-snap scales, discrete enums, optional long-press acceleration. Plain numeric stepping stays on `data-stepper`. See [decision guide](/docs/concepts/numeric-inputs/) and [component reference](/docs/elements/web-components/stepper-wc/). Plan: `admin/r-n-d/forms-and-interactions/stepper-wc.md`. Bead: `vanilla-breeze-xxew`. | |
 | ~~`notification-center`~~ | **Shipped as `notification-wc`** (banner + panel modes; see `admin/r-n-d/april13-plan/notification-wc.md`) | |
 | ~~`pop-over`~~ | **Shipped** as `pop-over` (`src/web-components/pop-over/`). Consolidation complete: `tool-tip`, `drop-down`, `selection-menu`, `combo-box`, and `context-menu` now compose `pop-over` (commits `def28778`, `fb9d00b4`, `52a792d3`, `dcbbcf39`, `afa41863`). Bead `vanilla-breeze-mz0p` closed. | |
 

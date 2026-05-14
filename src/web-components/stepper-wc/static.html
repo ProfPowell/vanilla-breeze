@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>stepper-wc demos</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-inline-size: 48rem;
+      margin-inline: auto;
+      padding: 2rem 1rem;
+      line-height: 1.5;
+    }
+    section { margin-block: 2rem; }
+    h2 { margin-block-end: 0.25rem; }
+    p.hint { color: var(--color-text-muted, #555); margin-block: 0.25rem 1rem; }
+    output { font-variant-numeric: tabular-nums; margin-inline-start: 0.75rem; }
+  </style>
+</head>
+<body>
+
+  <h1>stepper-wc</h1>
+
+  <p>For plain numeric stepping, prefer <code>&lt;input type="number" data-stepper&gt;</code>.
+    Reach for <code>&lt;stepper-wc&gt;</code> when the value needs <strong>formatting,
+    a non-numeric scale, or a discrete enum</strong>.</p>
+
+  <section>
+    <h2>Formatted unit (px)</h2>
+    <p class="hint">Suffix appended to the display value.</p>
+    <stepper-wc id="px" data-min="0" data-max="64" data-step="1" data-suffix="px" value="12"></stepper-wc>
+    <output for="px">12px</output>
+  </section>
+
+  <section>
+    <h2>Currency</h2>
+    <p class="hint">Locale-aware Intl.NumberFormat formatting.</p>
+    <stepper-wc id="usd" data-format="currency" data-currency="USD" data-min="0" data-step="0.5" value="5"></stepper-wc>
+    <output for="usd">$5.00</output>
+  </section>
+
+  <section>
+    <h2>Percent</h2>
+    <stepper-wc id="pct" data-format="percent" data-min="0" data-max="100" data-step="5" value="50"></stepper-wc>
+    <output for="pct">50%</output>
+  </section>
+
+  <section>
+    <h2>Duration</h2>
+    <p class="hint">Underlying value is seconds; display is M:SS.</p>
+    <stepper-wc id="dur" data-format="duration" data-min="0" data-max="3600" data-step="300" value="900"></stepper-wc>
+    <output for="dur">15:00</output>
+  </section>
+
+  <section>
+    <h2>Bytes</h2>
+    <stepper-wc id="bytes" data-format="bytes" data-min="0" data-step="1024" value="2048"></stepper-wc>
+    <output for="bytes">2.05 KB</output>
+  </section>
+
+  <section>
+    <h2>Token-snap</h2>
+    <p class="hint">Step through a fixed list — useful for design-system spacing scales.</p>
+    <stepper-wc id="snap" data-values="0,4,8,12,16,24,32,48,64" data-suffix="px" value="16"></stepper-wc>
+    <output for="snap">16px</output>
+  </section>
+
+  <section>
+    <h2>Discrete enum</h2>
+    <p class="hint">Step through labeled options.</p>
+    <stepper-wc id="enum" data-options="low,medium,high,critical" value="medium"></stepper-wc>
+    <output for="enum">medium</output>
+  </section>
+
+  <section>
+    <h2>Long-press acceleration</h2>
+    <p class="hint">Hold + or − for 0.5s to ramp; 1.5s ramps further.</p>
+    <stepper-wc id="accel" data-min="0" data-max="1000" data-step="1" data-accelerate value="0"></stepper-wc>
+    <output for="accel">0</output>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    document.querySelectorAll('stepper-wc').forEach((s) => {
+      const out = document.querySelector(`output[for="${s.id}"]`);
+      if (!out) return;
+      const sync = () => { out.textContent = s.querySelector('.stepper-value')?.textContent ?? s.value; };
+      s.addEventListener('input', sync);
+      // Initial sync after upgrade
+      s.addEventListener('stepper-wc:upgraded', sync);
+      queueMicrotask(sync);
+    });
+  </script>
+
+</body>
+</html>

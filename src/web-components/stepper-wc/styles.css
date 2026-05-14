@@ -1,0 +1,76 @@
+/* --------------------------------------------------------------------------
+   stepper-wc: stepper for non-numeric, formatted, or token-snap values.
+   Pairs visually with .number-wrapper (data-stepper). Plain numeric
+   stepping should use `<input type="number" data-stepper>`.
+   -------------------------------------------------------------------------- */
+
+stepper-wc {
+  display: inline-flex;
+  align-items: stretch;
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  transition: border-color var(--duration-fast, 150ms);
+  font: inherit;
+  user-select: none;
+}
+
+stepper-wc:focus-within {
+  border-color: var(--color-interactive);
+  box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+}
+
+stepper-wc[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+stepper-wc .stepper-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 4rem;
+  padding-block: var(--size-xs);
+  padding-inline: var(--size-s, 0.5rem);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+
+stepper-wc .stepper-value:focus {
+  outline: none;
+}
+
+stepper-wc .stepper-dec,
+stepper-wc .stepper-inc {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 2.5rem;
+  /* Touch target: meet 44px guideline regardless of inherited font-size. */
+  min-block-size: 2.75rem;
+  cursor: pointer;
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  transition: background var(--duration-fast, 150ms);
+}
+
+stepper-wc .stepper-dec:hover:not(:disabled),
+stepper-wc .stepper-inc:hover:not(:disabled) {
+  background: var(--color-surface-sunken, oklch(92% 0 0));
+}
+
+stepper-wc .stepper-dec:disabled,
+stepper-wc .stepper-inc:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Optional CSS hooks for at-bound styling beyond the disabled buttons. */
+stepper-wc:state(at-min) .stepper-dec,
+stepper-wc:state(at-max) .stepper-inc {
+  /* reserved for theme overrides */
+}

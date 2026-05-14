@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>stepper-wc — Modes Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/stepper-wc/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    dl { display: grid; grid-template-columns: max-content auto; gap: var(--size-s) var(--size-l); align-items: center; }
+    dt { margin: 0; font-weight: 600; }
+    dd { margin: 0; display: flex; align-items: center; gap: var(--size-s); }
+    output { font-variant-numeric: tabular-nums; color: var(--color-text-muted, currentColor); min-inline-size: 6ch; }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="narrow">
+    <layout-stack data-layout-gap="l">
+
+      <h1>stepper-wc &mdash; modes</h1>
+      <p>Each row shows one operating mode. Use <code>&lt;input type="number" data-stepper&gt;</code>
+         for plain numeric stepping; reach for <code>&lt;stepper-wc&gt;</code> when you need
+         formatting, a non-numeric scale, or a discrete enum.</p>
+
+      <dl>
+        <dt>Pixels</dt>
+        <dd>
+          <stepper-wc id="px" data-min="0" data-max="64" data-suffix="px" value="12"></stepper-wc>
+          <output for="px">12px</output>
+        </dd>
+
+        <dt>Currency</dt>
+        <dd>
+          <stepper-wc id="usd" data-format="currency" data-currency="USD" data-min="0" data-step="0.5" value="5"></stepper-wc>
+          <output for="usd">$5.00</output>
+        </dd>
+
+        <dt>Percent</dt>
+        <dd>
+          <stepper-wc id="pct" data-format="percent" data-min="0" data-max="100" data-step="5" value="50"></stepper-wc>
+          <output for="pct">50%</output>
+        </dd>
+
+        <dt>Duration</dt>
+        <dd>
+          <stepper-wc id="dur" data-format="duration" data-min="0" data-max="3600" data-step="300" value="900"></stepper-wc>
+          <output for="dur">15:00</output>
+        </dd>
+
+        <dt>Bytes</dt>
+        <dd>
+          <stepper-wc id="bytes" data-format="bytes" data-min="0" data-step="1024" value="2048"></stepper-wc>
+          <output for="bytes">2.05 KB</output>
+        </dd>
+
+        <dt>Token-snap</dt>
+        <dd>
+          <stepper-wc id="snap" data-values="0,4,8,12,16,24,32,48,64" data-suffix="px" value="16"></stepper-wc>
+          <output for="snap">16px</output>
+        </dd>
+
+        <dt>Discrete enum</dt>
+        <dd>
+          <stepper-wc id="enum" data-options="low,medium,high,critical" value="medium"></stepper-wc>
+          <output for="enum">medium</output>
+        </dd>
+
+        <dt>Long-press</dt>
+        <dd>
+          <stepper-wc id="accel" data-min="0" data-max="1000" data-step="1" data-accelerate value="0"></stepper-wc>
+          <output for="accel">0</output>
+        </dd>
+      </dl>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    document.querySelectorAll('stepper-wc').forEach((s) => {
+      const out = document.querySelector(`output[for="${s.id}"]`);
+      if (!out) return;
+      const sync = () => { out.textContent = s.querySelector('.stepper-value')?.textContent ?? s.value; };
+      s.addEventListener('input', sync);
+      queueMicrotask(sync);
+    });
+  </script>
+</body>
+</html>
