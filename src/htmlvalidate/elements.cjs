@@ -1150,6 +1150,15 @@ module.exports = {
     }
   },
 
+  "progress-tracker": {
+    attributes: {
+      "data-current": {},
+      "data-clickable": { boolean: true },
+      "aria-label": {},
+      "role": {}
+    }
+  },
+
   "qr-code": {
     attributes: {
       "value": {},
