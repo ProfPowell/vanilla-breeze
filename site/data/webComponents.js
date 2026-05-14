@@ -19,6 +19,7 @@ export default {
 
   'Content & Layout': [
     { name: 'accordion-wc', href: '/docs/elements/web-components/accordion/', desc: 'Collapsible content sections' },
+    { name: 'activity-feed', href: '/docs/elements/web-components/activity-feed/', desc: 'WAI-ARIA Feed timeline of user actions with relative timestamps; optional date grouping and infinite-scroll sentinel' },
     { name: 'card-list', href: '/docs/elements/web-components/card-list/', desc: 'Template-based list rendering with safe data binding' },
     { name: 'carousel-wc', href: '/docs/elements/web-components/carousel/', desc: 'Scroll carousel with controls and autoplay' },
     { name: 'compare-surface', href: '/docs/elements/web-components/comparison/', desc: 'Before/after image comparison slider with drag handle and keyboard support' },

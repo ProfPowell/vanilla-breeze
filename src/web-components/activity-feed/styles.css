@@ -1,0 +1,112 @@
+/* --------------------------------------------------------------------------
+   activity-feed: WAI-ARIA Feed timeline of user actions.
+   Decorates author-rendered <article data-activity> children with relative
+   timestamps, optional date headings, and optional avatar / icon left rail.
+   -------------------------------------------------------------------------- */
+
+activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2xs, 0.375rem);
+  font: inherit;
+}
+
+activity-feed > article[data-activity] {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--size-2xs, 0.375rem) var(--size-s, 0.75rem);
+  padding-block: var(--size-2xs, 0.375rem);
+  padding-inline: var(--size-s, 0.5rem);
+  border-radius: var(--radius-s);
+  outline: none;
+}
+
+activity-feed > article[data-activity]:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+/* When no left-rail (no avatar/icon), the first column collapses; the body
+   then naturally spans columns 1-2. */
+activity-feed > article[data-activity]:not(:has(> .activity-rail)) {
+  grid-template-columns: 1fr auto;
+}
+
+activity-feed .activity-rail {
+  grid-column: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  flex-shrink: 0;
+}
+
+activity-feed .activity-rail user-avatar {
+  --avatar-size: 2rem;
+  inline-size: 2rem;
+  block-size: 2rem;
+}
+
+activity-feed .activity-rail icon-wc {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  color: var(--color-text-muted, currentColor);
+}
+
+activity-feed .activity-body {
+  display: inline;
+  /* Inline so the actor / verb / object children flow as one sentence. */
+}
+
+activity-feed .activity-time {
+  grid-column: -2;
+  font-size: 0.85em;
+  color: var(--color-text-muted, currentColor);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* -------- Date headings -------- */
+
+activity-feed > .activity-heading {
+  font-size: 0.85em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted, currentColor);
+  margin-block-start: var(--size-s, 0.75rem);
+  margin-block-end: var(--size-3xs, 0.125rem);
+  padding-inline: var(--size-s, 0.5rem);
+}
+
+activity-feed > .activity-heading:first-child {
+  margin-block-start: 0;
+}
+
+/* -------- Empty state -------- */
+
+activity-feed > .activity-empty {
+  margin: 0;
+  padding-block: var(--size-l, 1.5rem);
+  text-align: center;
+  color: var(--color-text-muted, currentColor);
+  font-style: italic;
+}
+
+/* -------- Sentinel (visually nothing) -------- */
+
+activity-feed > .activity-sentinel {
+  inline-size: 100%;
+  block-size: 1px;
+  pointer-events: none;
+}
+
+/* -------- Print: relative-time becomes absolute -------- */
+
+@media print {
+  activity-feed .activity-time {
+    color: inherit;
+  }
+}

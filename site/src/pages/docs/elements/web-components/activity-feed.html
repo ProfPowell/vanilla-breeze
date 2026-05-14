@@ -1,0 +1,172 @@
+---
+layout: element
+title: "activity-feed"
+description: "WAI-ARIA Feed timeline of user actions with relative timestamps. Optional date grouping, optional infinite-scroll sentinel, optional avatar / icon left-rail."
+elementName: activity-feed
+category: component
+currentPath: /docs/elements/web-components/activity-feed/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;activity-feed&gt;</code> renders a vertical timeline of user actions ("Ada commented on issue #482, 2 hours ago"). Read-only and immutable per entry. Authors render entries as <code>&lt;article data-activity data-time=ISO&gt;</code> children; the component decorates each with a relative-time badge, optional date headings, and optional avatar / icon left-rail.</p>
+
+  <browser-window
+    src="/docs/examples/demos/activity-feed-dashboard.html"
+    url="https://vanilla-breeze.dev/activity-feed"
+    title="activity-feed — dashboard"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>When to use which primitive</h2>
+  <table class="props-table">
+    <thead><tr><th>Use this</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;activity-feed&gt;</code></td><td>One-way, immutable timeline of "actor verb object" actions with relative timestamps.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a></td><td>Threaded, mutable discussion with replies + reactions + edit/delete.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/recently-visited/"><code>&lt;recently-visited&gt;</code></a></td><td>Browser navigation history, scoped per-user / per-session.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a></td><td>Changelog / version-filtered release timeline.</td></tr>
+      <tr><td><a href="/docs/elements/custom-elements/chat-thread/"><code>&lt;chat-thread&gt;</code></a></td><td>Real-time chat with sender grouping (different interaction model).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Author surface</h2>
+  <p>Each entry is a direct <code>&lt;article data-activity&gt;</code> child with a required <code>data-time</code> attribute (ISO-8601). Inside the entry, you author the content however you like &mdash; the component does not dictate the verb vocabulary or object shape.</p>
+
+  <code-block language="html" show-lines label="Plain feed" data-escape><activity-feed aria-label="Recent activity">
+  <article data-activity data-time="2026-05-14T10:00:00Z">
+    <a href="/users/ada">Ada</a> commented on <a href="/issues/482">issue #482</a>
+  </article>
+  <article data-activity data-time="2026-05-14T09:30:00Z">
+    <a href="/users/bob">Bob</a> opened <a href="/issues/485">issue #485</a>
+  </article>
+</activity-feed></code-block>
+</section>
+
+<section>
+  <h2>Date grouping</h2>
+  <p>Set <code>data-group="day"</code> or <code>data-group="week"</code> to insert date headings between entries. "Today" and "Yesterday" are localized; older days use the locale's date format.</p>
+
+  <code-block language="html" show-lines label="Day-grouped" data-escape><activity-feed data-group="day" aria-label="Recent activity">
+  <article data-activity data-time="2026-05-14T11:00:00Z">…</article>
+  <article data-activity data-time="2026-05-14T09:15:00Z">…</article>
+  <article data-activity data-time="2026-05-13T17:00:00Z">…</article>
+</activity-feed></code-block>
+</section>
+
+<section>
+  <h2>Avatar / icon left-rail</h2>
+  <p>Add <code>data-activity-avatar="URL"</code> for a circular avatar via <code>&lt;user-avatar&gt;</code>, or <code>data-activity-icon="name"</code> for a Lucide icon via <code>&lt;icon-wc&gt;</code>. Mutually exclusive &mdash; avatar wins if both are set.</p>
+
+  <code-block language="html" show-lines label="With avatars" data-escape><article data-activity data-time="..." data-activity-avatar="/users/ada.jpg">
+  <a href="/users/ada">Ada</a> commented on <a href="/issues/482">issue #482</a>
+</article>
+
+<article data-activity data-time="..." data-activity-icon="git-merge">
+  <a href="/users/bob">Bob</a> merged <a href="/pull/120">PR #120</a>
+</article></code-block>
+</section>
+
+<section>
+  <h2>Infinite scroll</h2>
+  <p>Set <code>data-infinite</code> to add an <code>IntersectionObserver</code> sentinel at the end of the feed. When the sentinel enters the viewport, <code>activity-feed:load-more</code> fires; the author appends new entries (via <code>addEntry</code> or direct DOM insertion) and the sentinel re-arms automatically.</p>
+
+  <code-block language="javascript" show-lines label="Wiring load-more" data-escape>const feed = document.querySelector('activity-feed');
+let cursor = null;
+
+feed.addEventListener('activity-feed:load-more', async () => {
+  const { entries, next } = await api.getActivity({ cursor });
+  for (const entry of entries) {
+    feed.addEntry({
+      time: entry.timestamp,
+      html: entry.bodyHtml,
+      avatar: entry.avatarUrl,
+    });
+  }
+  cursor = next;
+});</code-block>
+</section>
+
+<section>
+  <h2>Empty state</h2>
+  <p>When the feed has zero entries, the component renders <code>data-empty-text</code> (default <q>No recent activity</q>). The empty state is auto-removed when the first entry is added.</p>
+
+  <code-block language="html" show-lines label="Empty placeholder" data-escape><activity-feed data-empty-text="No activity yet — check back later."></activity-feed></code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Host:</strong> <code>role="feed"</code> per the <a href="https://www.w3.org/WAI/ARIA/apg/patterns/feed/">WAI-ARIA Feed pattern</a>.</li>
+    <li><strong>Each entry:</strong> native <code>article</code> role with <code>aria-posinset</code> / <code>aria-setsize</code> set automatically (so AT can announce "article 3 of 50").</li>
+    <li><strong>Date headings:</strong> <code>role="heading"</code> at <code>aria-level="3"</code>.</li>
+    <li><strong>Times:</strong> <code>&lt;time datetime&gt;</code> with the absolute timestamp in <code>title</code>; relative text auto-refreshes every 60s.</li>
+    <li><strong>Keyboard:</strong> ArrowDown / ArrowUp move focus between entries; PageDown / PageUp jump 5 at a time; Home / End jump to first / last.</li>
+    <li><strong>Reduced motion:</strong> no entrance animations.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>aria-label</code></td><td>string</td><td><code>Recent activity</code></td><td>Region label.</td></tr>
+      <tr><td><code>data-group</code></td><td>string</td><td><code>none</code></td><td><code>none</code> | <code>day</code> | <code>week</code> &mdash; date headings between entries.</td></tr>
+      <tr><td><code>data-infinite</code></td><td>boolean</td><td><code>false</code></td><td>Adds an IntersectionObserver sentinel; emits <code>activity-feed:load-more</code>.</td></tr>
+      <tr><td><code>data-empty-text</code></td><td>string</td><td><code>No recent activity</code></td><td>Empty-state text.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Per-entry attributes (on <code>&lt;article data-activity&gt;</code>)</h3>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-time</code></td><td>ISO-8601 timestamp; required.</td></tr>
+      <tr><td><code>data-activity-avatar</code></td><td>Avatar URL (renders <code>&lt;user-avatar&gt;</code>).</td></tr>
+      <tr><td><code>data-activity-icon</code></td><td><code>icon-wc</code> name (alternative to avatar).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Bubbles</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>activity-feed:load-more</code></td><td>yes</td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>addEntry(data, opts?)</code></td><td>Insert an entry. <code>data: { time, html, avatar?, icon? }</code>; <code>opts: { prepend? }</code>.</td></tr>
+      <tr><td><code>removeEntry(entry)</code></td><td>Remove a single entry element.</td></tr>
+      <tr><td><code>clear()</code></td><td>Remove every entry (empty-state will appear).</td></tr>
+      <tr><td><code>entries</code></td><td>Live list of decorated entry elements.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Authors who prefer can also append <code>&lt;article data-activity&gt;</code> directly to the host &mdash; the internal <code>MutationObserver</code> picks up the new entry and decorates it.</p>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a> &mdash; threaded, mutable discussion.</li>
+    <li><a href="/docs/elements/web-components/recently-visited/"><code>&lt;recently-visited&gt;</code></a> &mdash; browser navigation history.</li>
+    <li><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a> &mdash; changelog / version timeline.</li>
+    <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/feed/">WAI-ARIA Feed Pattern</a></li>
+  </ul>
+</section>

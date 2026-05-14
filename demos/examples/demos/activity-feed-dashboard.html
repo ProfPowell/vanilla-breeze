@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>activity-feed — Dashboard Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/activity-feed/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    pre { font-size: 0.8rem; color: var(--color-text-muted); background: var(--color-surface-sunken, oklch(94% 0 0)); padding: var(--size-s); border-radius: var(--radius-s); min-block-size: 4rem; max-block-size: 12rem; overflow: auto; }
+    .panel { border: 1px solid var(--color-border); border-radius: var(--radius-m); padding: var(--size-s); }
+    h2 { font-size: 1rem; color: var(--color-text-muted); margin-block: var(--size-m) var(--size-xs); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="readable">
+    <layout-stack data-layout-gap="m">
+
+      <h1>activity-feed</h1>
+      <p>WAI-ARIA Feed timeline of user actions. Each entry is an <code>&lt;article data-activity data-time=ISO&gt;</code>; the component renders the relative-time badge, optional date headings, and arms an infinite-scroll sentinel when <code>data-infinite</code> is set.</p>
+
+      <h2>Day-grouped feed with avatars</h2>
+      <div class="panel">
+        <activity-feed id="grouped" aria-label="Recent activity" data-group="day">
+          <article data-activity data-time="2026-05-14T11:00:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=1">
+            <a data-activity-actor href="/users/ada">Ada</a>
+            <span data-activity-verb>commented on</span>
+            <a data-activity-object href="/issues/482">issue #482</a>
+          </article>
+          <article data-activity data-time="2026-05-14T10:30:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=2">
+            <a data-activity-actor href="/users/bob">Bob</a>
+            <span data-activity-verb>opened</span>
+            <a data-activity-object href="/issues/485">issue #485</a>
+          </article>
+          <article data-activity data-time="2026-05-14T09:15:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=3">
+            <a data-activity-actor href="/users/carol">Carol</a>
+            <span data-activity-verb>reviewed</span>
+            <a data-activity-object href="/pull/120">PR #120</a>
+          </article>
+          <article data-activity data-time="2026-05-13T17:00:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=4">
+            <a data-activity-actor href="/users/dan">Dan</a>
+            <span data-activity-verb>merged</span>
+            <a data-activity-object href="/pull/120">PR #120</a>
+          </article>
+          <article data-activity data-time="2026-05-13T14:00:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=5">
+            <a data-activity-actor href="/users/eve">Eve</a>
+            <span data-activity-verb>closed</span>
+            <a data-activity-object href="/issues/479">issue #479</a>
+          </article>
+          <article data-activity data-time="2026-05-12T11:00:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=6">
+            <a data-activity-actor href="/users/frank">Frank</a>
+            <span data-activity-verb>opened</span>
+            <a data-activity-object href="/issues/471">issue #471</a>
+          </article>
+        </activity-feed>
+      </div>
+
+      <h2>Infinite-scroll feed (with mocked load-more)</h2>
+      <div class="panel" style="max-block-size: 18rem; overflow-y: auto;">
+        <activity-feed id="infinite" aria-label="Live activity" data-infinite>
+          <article data-activity data-time="2026-05-14T11:00:00Z">
+            <strong>Initial entry 1</strong> — wired up
+          </article>
+          <article data-activity data-time="2026-05-14T10:55:00Z">
+            <strong>Initial entry 2</strong> — wired up
+          </article>
+          <article data-activity data-time="2026-05-14T10:50:00Z">
+            <strong>Initial entry 3</strong> — wired up
+          </article>
+        </activity-feed>
+      </div>
+
+      <h2>Empty state</h2>
+      <div class="panel">
+        <activity-feed id="empty" aria-label="Nothing here" data-empty-text="No activity yet — check back later."></activity-feed>
+      </div>
+
+      <h2>Event log</h2>
+      <pre id="log" aria-live="polite"></pre>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const log = document.getElementById('log');
+    const append = (msg) => { log.textContent = msg + '\n' + log.textContent; };
+
+    const infinite = document.getElementById('infinite');
+    let next = 4;
+    let loadCount = 0;
+    infinite.addEventListener('activity-feed:load-more', () => {
+      if (loadCount++ > 3) { append('load-more: stopped (4 loads max in demo)'); return; }
+      append(`load-more: appending 3 more entries`);
+      // Mocked backend: append 3 entries after 200ms.
+      setTimeout(() => {
+        for (let i = 0; i < 3; i++) {
+          const t = new Date(Date.now() - (next * 60_000)).toISOString();
+          infinite.addEntry({
+            time: t,
+            html: `<strong>Loaded entry ${next}</strong> — appended via load-more`,
+          });
+          next++;
+        }
+      }, 200);
+    });
+  </script>
+</body>
+</html>

@@ -9,6 +9,7 @@ const elementsByLetter = {
     { name: 'a', type: 'native', href: '/docs/elements/native/a/' },
     { name: 'abbr', type: 'native', href: '/docs/elements/native/abbr/' },
     { name: 'accordion-wc', type: 'component', href: '/docs/elements/web-components/accordion/' },
+    { name: 'activity-feed', type: 'component', href: '/docs/elements/web-components/activity-feed/' },
     { name: 'address', type: 'native', href: '/docs/elements/native/address/' },
     { name: 'adr-wc', type: 'component', href: '/docs/elements/web-components/adr-wc/' },
     { name: 'analytics-panel', type: 'component', href: '/docs/elements/web-components/analytics-panel/' },
