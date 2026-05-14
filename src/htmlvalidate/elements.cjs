@@ -26,6 +26,12 @@ module.exports = {
     }
   },
 
+  "layout-specimen": {
+    attributes: {
+      "data-only": {}
+    }
+  },
+
   "layout-sidebar": {
     flow: true,
     permittedContent: ["@flow"],
