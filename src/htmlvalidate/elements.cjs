@@ -527,6 +527,21 @@ module.exports = {
     }
   },
 
+  "comment-box": {
+    attributes: {
+      "name": {},
+      "value": {},
+      "placeholder": {},
+      "submit-label": {},
+      "cancel-label": {},
+      "data-show-cancel": { boolean: true },
+      "data-min-length": {},
+      "data-max-length": {},
+      "required": { boolean: true },
+      "disabled": { boolean: true }
+    }
+  },
+
   "comment-wc": {
     flow: true,
     permittedContent: ["@flow"]
