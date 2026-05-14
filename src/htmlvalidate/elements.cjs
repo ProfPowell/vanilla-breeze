@@ -1716,6 +1716,15 @@ module.exports = {
     }
   },
 
+  "version-switcher": {
+    attributes: {
+      "data-versions": {},
+      "data-mode": {},
+      "data-action": {},
+      "aria-label": {}
+    }
+  },
+
   "video-player": {
     attributes: {
       "autoplay": { boolean: true },
