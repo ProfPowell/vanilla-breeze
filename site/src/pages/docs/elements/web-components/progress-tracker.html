@@ -1,0 +1,155 @@
+---
+layout: element
+title: "progress-tracker"
+description: "Multi-step progress bar for wizard / checkout / onboarding flows. Status per step (complete / current / upcoming / error). Distinct from <slide-accept> (slide-to-confirm)."
+elementName: progress-tracker
+category: component
+currentPath: /docs/elements/web-components/progress-tracker/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;progress-tracker&gt;</code> renders a horizontal multi-step progress indicator for wizards, checkout, onboarding, fulfillment status — anywhere a user moves through a sequence and may need to see where they are.</p>
+
+  <p>Author renders steps as <code>&lt;li data-step&gt;</code> children; the component decorates each with a numbered circle, connector line, and status (<code>complete</code> / <code>current</code> / <code>upcoming</code> / <code>error</code>). Step navigation is author-driven via the <code>data-current</code> attribute; with <code>data-clickable</code>, completed steps become clickable to navigate back.</p>
+
+  <browser-window
+    src="/docs/examples/demos/progress-tracker-wizard.html"
+    url="https://vanilla-breeze.dev/progress-tracker"
+    title="progress-tracker — wizard demo"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>When to use which primitive</h2>
+  <table class="props-table">
+    <thead><tr><th>Use this</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;progress-tracker&gt;</code></td><td>Multi-step linear progress (wizard, checkout, onboarding, order tracking).</td></tr>
+      <tr><td><a href="/docs/elements/web-components/slide-accept/"><code>&lt;slide-accept&gt;</code></a></td><td>Slide-to-confirm UX. Different shape (single action, not multi-step).</td></tr>
+      <tr><td>Native <code>&lt;progress&gt;</code></td><td>Continuous progress (download, processing). progress-tracker is for discrete labelled steps.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Author surface</h2>
+  <code-block language="html" show-lines label="4-step wizard at step 2" data-escape><progress-tracker data-current="2">
+  <li data-step="1">Account</li>
+  <li data-step="2">Profile</li>
+  <li data-step="3">Preferences</li>
+  <li data-step="4">Confirm</li>
+</progress-tracker></code-block>
+
+  <p><code>data-current</code> can be a 1-based index (<code>"2"</code>) or a step id (<code>"profile"</code>). Step ids are stable strings — useful when steps may be added or removed conditionally.</p>
+</section>
+
+<section>
+  <h2>Status states</h2>
+  <table class="props-table">
+    <thead><tr><th>Status</th><th>When</th><th>Visual</th></tr></thead>
+    <tbody>
+      <tr><td><code>complete</code></td><td>Step is before <code>data-current</code></td><td>Filled green circle with ✓; connector to next step is green.</td></tr>
+      <tr><td><code>current</code></td><td>Step matches <code>data-current</code></td><td>Outlined accent circle with the step number; emphasized via ring.</td></tr>
+      <tr><td><code>upcoming</code></td><td>Step is after <code>data-current</code></td><td>Outlined muted circle with the step number; muted connector.</td></tr>
+      <tr><td><code>error</code></td><td>Step has <code>data-error</code> regardless of position</td><td>Filled red circle with ! and red label.</td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" show-lines label="Step with error" data-escape><progress-tracker data-current="3">
+  <li data-step="1">Validate</li>
+  <li data-step="2" data-error>Upload</li>
+  <li data-step="3">Process</li>
+  <li data-step="4">Complete</li>
+</progress-tracker></code-block>
+</section>
+
+<section>
+  <h2>Clickable steps</h2>
+  <p>Set <code>data-clickable</code> to allow users to click on completed steps to navigate back. Forward navigation requires the wizard to set <code>data-current</code> after validation (the component does not let users skip ahead).</p>
+
+  <code-block language="javascript" show-lines label="Wiring step clicks" data-escape>const tracker = document.querySelector('progress-tracker');
+
+tracker.addEventListener('progress-tracker:step', (e) => {
+  const { step, previousStep, source } = e.detail;
+  // source: 'click' (user clicked a completed step) or 'attr' (programmatic)
+  if (source === 'click') {
+    showStep(step);  // restore form state for that step
+  }
+});
+
+// Programmatic forward navigation after validation
+function goToStep(stepId) {
+  if (validateCurrentStep()) {
+    tracker.setAttribute('data-current', stepId);
+  }
+}</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Host:</strong> <code>role="list"</code> with <code>aria-label="Progress"</code> (override via the host's <code>aria-label</code>).</li>
+    <li><strong>Each step:</strong> <code>role="listitem"</code>; the active step also gets <code>aria-current="step"</code>.</li>
+    <li><strong>Per-step <code>aria-label</code>:</strong> derived as <q>Step N of M: &lt;label&gt; (&lt;status&gt;)</q> so AT users hear position + status in one announcement.</li>
+    <li><strong>Clickable mode:</strong> roving tabindex — only the current step is in the tab sequence; arrow keys move the visual focus indicator to other steps. Click activation handled at the step level.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-current</code></td><td>string</td><td><code>1</code> (first step)</td><td>1-based index OR step id of the active step.</td></tr>
+      <tr><td><code>data-clickable</code></td><td>boolean</td><td><code>false</code></td><td>Allow clicks on completed steps to navigate back.</td></tr>
+      <tr><td><code>aria-label</code></td><td>string</td><td><code>Progress</code></td><td>List label.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Per-step attributes (on <code>&lt;li data-step&gt;</code>)</h3>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-step</code></td><td>Stable step id (typically a 1-based number; can be any string).</td></tr>
+      <tr><td><code>data-error</code></td><td>Marks this step as errored regardless of position.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Bubbles</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>progress-tracker:step</code></td><td>yes</td><td><code>{ step, previousStep, source: 'attr'|'click' }</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>CSS custom properties</h2>
+  <table class="props-table">
+    <thead><tr><th>Property</th><th>Default</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>--pt-circle-size</code></td><td>1.75rem</td><td>Diameter of the step circle.</td></tr>
+      <tr><td><code>--pt-line-thickness</code></td><td>2px</td><td>Connector line thickness.</td></tr>
+      <tr><td><code>--pt-color-complete</code></td><td><code>--color-success</code></td><td>Fill / connector color for completed steps.</td></tr>
+      <tr><td><code>--pt-color-current</code></td><td><code>--color-interactive</code></td><td>Outline / ring color for the active step.</td></tr>
+      <tr><td><code>--pt-color-upcoming</code></td><td><code>--color-border</code></td><td>Outline / connector color for upcoming steps.</td></tr>
+      <tr><td><code>--pt-color-error</code></td><td><code>--color-error</code></td><td>Fill color for errored steps.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/slide-accept/"><code>&lt;slide-accept&gt;</code></a> &mdash; slide-to-confirm UX (different shape).</li>
+    <li><a href="/docs/elements/native/progress/">Native <code>&lt;progress&gt;</code></a> &mdash; continuous progress.</li>
+  </ul>
+</section>

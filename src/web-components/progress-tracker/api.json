@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "progress-tracker",
+  "type": "web-component",
+  "description": "Multi-step progress bar for wizards / checkout / onboarding flows. Distinct from <slide-accept> (slide-to-confirm). Author renders <li data-step> children; component decorates each with circle + connector + status (complete | current | upcoming | error).",
+  "attributes": [
+    { "name": "data-current",   "kind": "data", "purpose": "config", "type": "string", "description": "1-based index OR step id of the active step" },
+    { "name": "data-clickable", "kind": "data", "purpose": "config", "type": "boolean", "description": "Allow clicks on completed steps to navigate back" },
+    { "name": "aria-label",     "kind": "aria", "purpose": "config", "type": "string", "description": "List label (default \"Progress\")" },
+    { "name": "role",           "kind": "aria", "purpose": "config", "description": "Set to \"list\"" }
+  ],
+  "events": [
+    { "name": "progress-tracker:step", "detail": "{ step, previousStep, source: 'attr'|'click' }", "description": "Fires when data-current changes (programmatic) or a completed step is clicked (data-clickable mode)" }
+  ],
+  "childAttributes": [
+    { "name": "data-step",  "on": "li", "type": "string",  "required": true, "description": "Stable step identifier (typically 1-based number, can be any string)" },
+    { "name": "data-error", "on": "li", "type": "boolean", "description": "Marks this step as errored regardless of position" }
+  ],
+  "structure": []
+}

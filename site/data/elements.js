@@ -206,6 +206,7 @@ const elementsByLetter = {
     { name: 'pre', type: 'native', href: '/docs/elements/native/pre/' },
     { name: 'print-page', type: 'component', href: '/docs/elements/web-components/print-page/' },
     { name: 'progress', type: 'native', href: '/docs/elements/native/progress/' },
+    { name: 'progress-tracker', type: 'component', href: '/docs/elements/web-components/progress-tracker/' },
   ],
   Q: [
     { name: 'q', type: 'native', href: '/docs/elements/native/q/' },

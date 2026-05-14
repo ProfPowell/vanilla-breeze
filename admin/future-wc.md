@@ -23,7 +23,7 @@ Current surface: **119 web components** across 7 categories (as of 2026-05-13).
 | `data-grid` | **Prefer attributes on `data-table`** | Cell editing / virtual scroll should be added as `data-table` attributes (following the `decision-matrix` precedent — `data-weight`, `data-rollup`, `data-heatmap`). Don't ship a parallel grid component. |
 | `pivot-table` | **Prefer attribute extension** | Same: explore as `data-table` pivot attributes before scaffolding a separate component. |
 | ~~`stat-card`~~ | **Shipped** as `score-card` (`src/web-components/score-card/`). KPI tile with title/value/change indicator/sparkline (composed with `chart-wc`)/icon. Wrap in `<a href>` for drill-down. | |
-| `progress-tracker` | New | Multi-step progress bar. Complements wizard forms. **Overlap check**: `slide-accept` already handles multi-step accept flows; scope this to non-accept progress (forms, onboarding) or fold in. |
+| ~~`progress-tracker`~~ | **Shipped** as `progress-tracker` (`src/web-components/progress-tracker/`). Multi-step progress bar for wizards / checkout / onboarding. Author renders `<li data-step>` children; component decorates each with circle + connector + status (`complete` / `current` / `upcoming` / `error`). `data-current` accepts 1-based index OR step id. Optional `data-clickable` lets users navigate back to completed steps. Distinct from `slide-accept` (slide-to-confirm UX). Docs: [reference](/docs/elements/web-components/progress-tracker/). Bead: `vanilla-breeze-8dqf`. | |
 
 ## Media
 

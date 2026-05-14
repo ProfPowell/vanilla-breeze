@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>progress-tracker — Wizard Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/progress-tracker/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h2 { font-size: 1rem; color: var(--color-text-muted); margin-block: var(--size-l) var(--size-xs); }
+    .wizard-controls { display: flex; gap: var(--size-s); align-items: center; margin-block-start: var(--size-s); }
+    pre { font-size: 0.8rem; color: var(--color-text-muted); background: var(--color-surface-sunken, oklch(94% 0 0)); padding: var(--size-s); border-radius: var(--radius-s); min-block-size: 4rem; max-block-size: 8rem; overflow: auto; }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="readable">
+    <layout-stack data-layout-gap="m">
+
+      <h1>progress-tracker</h1>
+      <p>Multi-step progress bar for wizard / checkout / onboarding flows. Each step gets one of four statuses (complete / current / upcoming / error). Author owns step navigation; component renders + announces.</p>
+
+      <h2>Wizard with Prev/Next controls</h2>
+      <progress-tracker id="wizard" data-current="2" data-clickable>
+        <li data-step="1">Account</li>
+        <li data-step="2">Profile</li>
+        <li data-step="3">Preferences</li>
+        <li data-step="4">Confirm</li>
+      </progress-tracker>
+      <div class="wizard-controls">
+        <button id="prev" type="button">← Previous</button>
+        <button id="next" type="button">Next →</button>
+        <span id="readout" style="margin-inline-start: auto; font-variant-numeric: tabular-nums;">Step 2 of 4</span>
+      </div>
+
+      <h2>With error mid-flow</h2>
+      <progress-tracker data-current="3">
+        <li data-step="1">Validate</li>
+        <li data-step="2" data-error>Upload</li>
+        <li data-step="3">Process</li>
+        <li data-step="4">Complete</li>
+      </progress-tracker>
+
+      <h2>Read-only progress (no clickable)</h2>
+      <progress-tracker data-current="4">
+        <li data-step="1">Order placed</li>
+        <li data-step="2">Packed</li>
+        <li data-step="3">Shipped</li>
+        <li data-step="4">Out for delivery</li>
+        <li data-step="5">Delivered</li>
+      </progress-tracker>
+
+      <h2>Event log</h2>
+      <pre id="log" aria-live="polite"></pre>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const log = document.getElementById('log');
+    const append = (msg) => { log.textContent = msg + '\n' + log.textContent; };
+
+    const wizard = document.getElementById('wizard');
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    const readout = document.getElementById('readout');
+
+    const totalSteps = wizard.querySelectorAll('li[data-step]').length;
+    const updateReadout = () => {
+      const cur = Number(wizard.getAttribute('data-current')) || 1;
+      readout.textContent = `Step ${cur} of ${totalSteps}`;
+      prev.disabled = cur <= 1;
+      next.disabled = cur >= totalSteps;
+    };
+
+    wizard.addEventListener('progress-tracker:step', (e) => {
+      append(`step → ${e.detail.step} (was ${e.detail.previousStep}, source: ${e.detail.source})`);
+      updateReadout();
+    });
+
+    prev.addEventListener('click', () => {
+      const cur = Number(wizard.getAttribute('data-current')) || 1;
+      if (cur > 1) wizard.setAttribute('data-current', String(cur - 1));
+    });
+    next.addEventListener('click', () => {
+      const cur = Number(wizard.getAttribute('data-current')) || 1;
+      if (cur < totalSteps) wizard.setAttribute('data-current', String(cur + 1));
+    });
+
+    updateReadout();
+  </script>
+</body>
+</html>
