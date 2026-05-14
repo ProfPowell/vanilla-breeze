@@ -12,6 +12,7 @@ export default {
     { name: 'emoji-picker', href: '/docs/elements/web-components/emoji-picker/', desc: 'Emoji picker with search, categories, and insertion' },
     { name: 'form-field', href: '/docs/elements/web-components/form-field/', desc: 'Accessible form field wrapper with validation, custom messages, and error summaries' },
     { name: 'slide-accept', href: '/docs/elements/web-components/slide-accept/', desc: 'Slide-to-confirm interaction with drag handle and spring-back' },
+    { name: 'poll-wc', href: '/docs/elements/web-components/poll-wc/', desc: 'Voting + live results with single/multi-choice and closed state; presentational, mirrors reaction-bar author-owned-state pattern' },
     { name: 'star-rating', href: '/docs/elements/web-components/rating/', desc: 'Star rating widget with CSS-only selection and form association' },
     { name: 'stepper-wc', href: '/docs/elements/web-components/stepper-wc/', desc: 'Stepper for formatted units, currency, time, token-snap scales, and discrete enums (use data-stepper for plain numbers)' },
     { name: 'time-picker', href: '/docs/elements/web-components/time-picker/', desc: 'Spinbutton time input with 12h/24h format and form association' },

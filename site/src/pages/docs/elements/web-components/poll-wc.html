@@ -1,0 +1,179 @@
+---
+layout: element
+title: "poll-wc"
+description: "Voting + live results with single/multi-choice and closed state. Per-option counts and own-vote flag; presentational, mirrors the reaction-bar author-owned-state pattern."
+elementName: poll-wc
+category: component
+currentPath: /docs/elements/web-components/poll-wc/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;poll-wc&gt;</code> is a voting + live-results primitive. Authors render options as <code>&lt;button data-option data-count [data-mine]&gt;</code> children with an optional <code>&lt;span slot="question"&gt;</code>. The component renders the question, the option list with result bars, and a live total-vote count.</p>
+
+  <p>Like <a href="/docs/elements/web-components/reaction-bar/"><code>&lt;reaction-bar&gt;</code></a>, the component is <strong>presentational</strong>: it emits <code>poll-wc:vote</code> and lets authors make the backend call. After the server confirms, authors call <code>setCount(option, count, { mine })</code> to update the chip.</p>
+
+  <browser-window
+    src="/docs/examples/demos/poll-wc-launch-date.html"
+    url="https://vanilla-breeze.dev/poll-wc"
+    title="poll-wc — launch date poll"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>When to use which primitive</h2>
+  <table class="props-table">
+    <thead><tr><th>Use this</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;poll-wc&gt;</code></td><td>Question + labeled voting options + live result bars + per-user vote flag.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/reaction-bar/"><code>&lt;reaction-bar&gt;</code></a></td><td>Many small emoji icons toggled per-user — no question, no result chart.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/rating/"><code>&lt;star-rating&gt;</code></a></td><td>Single 1–N rating, form-associated. Polls have arbitrary labelled options and don't submit with a form.</td></tr>
+      <tr><td><code>&lt;form&gt;</code> + <code>&lt;input type="radio"&gt;</code></td><td>Plain form input with no live results.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/chart-wc/"><code>&lt;chart-wc&gt;</code></a></td><td>Renders charts from data. <code>&lt;poll-wc&gt;</code> combines voting with result visualization in one widget.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Author surface</h2>
+  <code-block language="html" show-lines label="Single-choice poll" data-escape><poll-wc>
+  <span slot="question">When should we ship?</span>
+  <button data-option="friday"   data-count="12">Friday</button>
+  <button data-option="next-mon" data-count="33" data-mine>Next Monday</button>
+  <button data-option="next-fri" data-count="8">Next Friday</button>
+  <button data-option="never"    data-count="2">Never</button>
+</poll-wc></code-block>
+
+  <p>Each option carries a stable <code>data-option</code> id (sent in events), the current vote <code>data-count</code>, and an optional <code>data-mine</code> flag for the current user's vote. The button text is the visible label.</p>
+</section>
+
+<section>
+  <h2>Multi-choice</h2>
+  <p>Set <code>data-multi</code> to allow voting for multiple options. ARIA shifts from <code>radiogroup</code> + <code>radio</code> to <code>group</code> + <code>checkbox</code>.</p>
+
+  <code-block language="html" show-lines label="Multi-choice" data-escape><poll-wc data-multi>
+  <span slot="question">Which features matter to you? (pick any)</span>
+  <button data-option="dark"    data-count="80" data-mine>Dark mode</button>
+  <button data-option="i18n"    data-count="55">i18n</button>
+  <button data-option="offline" data-count="40" data-mine>Offline</button>
+  <button data-option="oauth"   data-count="30">OAuth</button>
+</poll-wc></code-block>
+</section>
+
+<section>
+  <h2>Closed state</h2>
+  <p>Set <code>data-closed</code> for results-only display (no voting). Use <code>poll.close()</code> / <code>poll.open()</code> to toggle programmatically when a deadline passes; the component fires <code>poll-wc:closed-change</code>.</p>
+
+  <code-block language="html" show-lines label="Closed poll" data-escape><poll-wc data-closed>
+  <span slot="question">Best win this quarter?</span>
+  <button data-option="ship"    data-count="22">Shipping VB 1.0</button>
+  <button data-option="onboard" data-count="9">Onboarding revamp</button>
+  <button data-option="docs"    data-count="14">Docs rewrite</button>
+</poll-wc></code-block>
+</section>
+
+<section>
+  <h2>Wiring the backend</h2>
+  <code-block language="javascript" show-lines label="Single-choice with optimistic update" data-escape>const poll = document.querySelector('poll-wc');
+
+poll.addEventListener('poll-wc:vote', async (e) => {
+  const { option, action, count, mine } = e.detail;
+  // Single-choice: switching to a new option emits a `remove` for the
+  // previously-selected option BEFORE the `add`. Both events route through
+  // here in order, so authors can apply both updates idempotently.
+  const res = await fetch(`/polls/123/votes/${option}`, {
+    method: action === 'add' ? 'POST' : 'DELETE',
+  });
+  const { count: newCount } = await res.json();
+  poll.setCount(option, newCount, { mine: action === 'add' });
+});</code-block>
+</section>
+
+<section>
+  <h2>Single vs multi event semantics</h2>
+  <p>Single-choice mode handles option switching atomically:</p>
+  <ul>
+    <li>Clicking your <em>current</em> selection again → <code>poll-wc:vote</code> with <code>action: "remove"</code> (un-vote).</li>
+    <li>Clicking a <em>different</em> option → first emits <code>action: "remove"</code> for your previous choice, then <code>action: "add"</code> for the new one. Two events fire in that order.</li>
+  </ul>
+  <p>Multi-choice mode treats each option independently:</p>
+  <ul>
+    <li>Clicking an option toggles its own state. No cross-option events.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Single-choice:</strong> options live in a <code>role="radiogroup"</code> with <code>role="radio"</code> + <code>aria-checked</code> on each option.</li>
+    <li><strong>Multi-choice:</strong> options live in a <code>role="group"</code> with <code>role="checkbox"</code> + <code>aria-checked</code> on each option.</li>
+    <li><strong>Question:</strong> when present, the rendered question element is <code>aria-labelledby</code> to the option group.</li>
+    <li><strong>Total readout:</strong> the total-vote count lives in an <code>&lt;output&gt;</code> with <code>aria-live="polite"</code>, so screen readers announce it on changes.</li>
+    <li><strong>Per-option label:</strong> derived <code>aria-label</code> like <q>Next Monday, 33 votes (60.0%), your choice</q>.</li>
+    <li><strong>Closed:</strong> options get <code>aria-disabled="true"</code>; focus + keyboard nav still work for browsing.</li>
+    <li><strong>Keyboard:</strong> Arrow keys move focus between options (single-choice uses roving tabindex; multi-choice keeps every option tabbable). Home / End jump to first / last. Enter / Space activates.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>aria-label</code></td><td>string</td><td>question text or <code>Poll</code></td><td>Group label.</td></tr>
+      <tr><td><code>data-multi</code></td><td>boolean</td><td><code>false</code></td><td>Allow multiple selections.</td></tr>
+      <tr><td><code>data-closed</code></td><td>boolean</td><td><code>false</code></td><td>Read-only — show results, no voting.</td></tr>
+      <tr><td><code>data-hide-counts</code></td><td>boolean</td><td><code>false</code></td><td>Suppress the numeric count beside each bar.</td></tr>
+      <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td><td>Disables the entire poll.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Per-option attributes (on <code>&lt;button data-option&gt;</code>)</h3>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-option</code></td><td>Stable identifier sent in events (required).</td></tr>
+      <tr><td><code>data-count</code></td><td>Current vote count.</td></tr>
+      <tr><td><code>data-mine</code></td><td>Current user voted for this option.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Bubbles</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>poll-wc:vote</code></td><td>yes</td><td><code>{ option, action: 'add'|'remove', count, mine }</code></td></tr>
+      <tr><td><code>poll-wc:closed-change</code></td><td>yes</td><td><code>{ closed }</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>setCount(option, count, { mine })</code></td><td>Update a single option after the server confirms.</td></tr>
+      <tr><td><code>setCounts(counts, { mine })</code></td><td>Bulk-update from a server snapshot. <code>mine</code> can be a string (single-choice) or string[] (multi).</td></tr>
+      <tr><td><code>open() / close()</code></td><td>Toggle <code>data-closed</code> programmatically.</td></tr>
+      <tr><td><code>totalVotes</code></td><td>Sum of all option counts.</td></tr>
+      <tr><td><code>myVotes</code></td><td>Array of option ids the current user voted for.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/reaction-bar/"><code>&lt;reaction-bar&gt;</code></a> &mdash; many small emoji reactions; same author-owned-state pattern.</li>
+    <li><a href="/docs/elements/web-components/rating/"><code>&lt;star-rating&gt;</code></a> &mdash; single-value form-associated rating.</li>
+    <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/radio/">WAI-ARIA Radio Group Pattern</a></li>
+    <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/">WAI-ARIA Checkbox Pattern</a></li>
+  </ul>
+</section>

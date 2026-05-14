@@ -1,0 +1,31 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "poll-wc",
+  "type": "web-component",
+  "description": "Voting + live results. Per-option counts and own-vote flag, single or multi-choice, optional closed (results-only) state. Mirrors the reaction-bar author-owned-state pattern: presentational; emits poll-wc:vote; author calls setCount after the server confirms.",
+  "attributes": [
+    { "name": "aria-label",        "kind": "aria", "purpose": "config", "type": "string", "description": "Group label (defaults to question text if a slot is provided, else \"Poll\")" },
+    { "name": "data-multi",        "kind": "data", "purpose": "config", "type": "boolean", "description": "Allow multiple selections (default: single choice)" },
+    { "name": "data-closed",       "kind": "data", "purpose": "config", "type": "boolean", "description": "Read-only — show results, no voting" },
+    { "name": "data-hide-counts",  "kind": "data", "purpose": "config", "type": "boolean", "description": "Suppress the numeric count beside each bar" },
+    { "name": "disabled",          "kind": "native", "purpose": "config", "type": "boolean" }
+  ],
+  "events": [
+    { "name": "poll-wc:vote",          "detail": "{ option, action: 'add'|'remove', count, mine }", "description": "Single-choice: switching options emits a remove for the previously-selected option BEFORE the add." },
+    { "name": "poll-wc:closed-change", "detail": "{ closed }", "description": "Fires when data-closed is toggled" }
+  ],
+  "properties": [
+    { "name": "setCount",   "type": "(option, count, opts?) => void", "description": "Update a single option after the server confirms" },
+    { "name": "setCounts",  "type": "(counts, opts?) => void",        "description": "Bulk-update counts; opts.mine accepts a string or string[]" },
+    { "name": "open",       "type": "() => void" },
+    { "name": "close",      "type": "() => void" },
+    { "name": "totalVotes", "type": "number" },
+    { "name": "myVotes",    "type": "string[]" }
+  ],
+  "childAttributes": [
+    { "name": "data-option", "on": "button", "type": "string",  "required": true, "description": "Stable identifier sent in events" },
+    { "name": "data-count",  "on": "button", "type": "number",  "description": "Current vote count" },
+    { "name": "data-mine",   "on": "button", "type": "boolean", "description": "Current user voted for this option" }
+  ],
+  "structure": []
+}

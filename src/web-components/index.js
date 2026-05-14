@@ -83,6 +83,7 @@ import './reaction-bar/logic.js';
 import './comment-box/logic.js';
 import './comment-thread/logic.js';
 import './activity-feed/logic.js';
+import './poll-wc/logic.js';
 import './audio-player/logic.js';
 import './audio-visualizer/logic.js';
 import './video-player/logic.js';

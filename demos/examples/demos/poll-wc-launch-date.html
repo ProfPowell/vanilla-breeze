@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>poll-wc — Launch Date Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/poll-wc/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    pre { font-size: 0.8rem; color: var(--color-text-muted); background: var(--color-surface-sunken, oklch(94% 0 0)); padding: var(--size-s); border-radius: var(--radius-s); min-block-size: 4rem; max-block-size: 12rem; overflow: auto; }
+    h2 { font-size: 1rem; color: var(--color-text-muted); margin-block: var(--size-m) var(--size-xs); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="readable">
+    <layout-stack data-layout-gap="m">
+
+      <h1>poll-wc</h1>
+      <p>Voting + live results. Mirrors the <a href="/docs/elements/web-components/reaction-bar/"><code>&lt;reaction-bar&gt;</code></a> author-owned-state pattern: presentational, emits <code>poll-wc:vote</code>, author calls <code>setCount</code> after the server confirms.</p>
+
+      <h2>Single-choice</h2>
+      <poll-wc id="single">
+        <span slot="question">When should we ship?</span>
+        <button data-option="friday"   data-count="12">Friday</button>
+        <button data-option="next-mon" data-count="33" data-mine>Next Monday</button>
+        <button data-option="next-fri" data-count="8">Next Friday</button>
+        <button data-option="never"    data-count="2">Never</button>
+      </poll-wc>
+
+      <h2>Multi-choice</h2>
+      <poll-wc id="multi" data-multi>
+        <span slot="question">Which features matter to you? (pick any)</span>
+        <button data-option="dark"    data-count="80" data-mine>Dark mode</button>
+        <button data-option="i18n"    data-count="55">i18n</button>
+        <button data-option="offline" data-count="40" data-mine>Offline</button>
+        <button data-option="oauth"   data-count="30">OAuth</button>
+      </poll-wc>
+
+      <h2>Closed (results-only)</h2>
+      <poll-wc id="closed" data-closed>
+        <span slot="question">Best win this quarter?</span>
+        <button data-option="ship"    data-count="22">Shipping VB 1.0</button>
+        <button data-option="onboard" data-count="9">Onboarding revamp</button>
+        <button data-option="docs"    data-count="14">Docs rewrite</button>
+      </poll-wc>
+
+      <h2>Event log</h2>
+      <pre id="log" aria-live="polite"></pre>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const log = document.getElementById('log');
+    const append = (msg) => { log.textContent = msg + '\n' + log.textContent; };
+
+    document.querySelectorAll('poll-wc:not([data-closed])').forEach((poll) => {
+      poll.addEventListener('poll-wc:vote', (e) => {
+        const { option, action, count, mine } = e.detail;
+        append(`${poll.id}: ${action} "${option}" (was count=${count}, mine=${mine})`);
+        // Mocked backend: bump count and reflect mine after a short delay.
+        setTimeout(() => {
+          const next = action === 'add' ? count + 1 : count - 1;
+          poll.setCount(option, next, { mine: action === 'add' });
+        }, 150);
+      });
+    });
+  </script>
+</body>
+</html>
