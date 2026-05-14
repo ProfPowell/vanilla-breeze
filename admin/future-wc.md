@@ -2,7 +2,7 @@
 
 Master list of components we may develop, organized by nav category. Each entry notes whether it's a new component, an upscale of a native attribute, or an expansion of an existing component. Priority is rough — actual scheduling depends on user demand and architectural readiness.
 
-Current surface: **67 web components** across 7 categories.
+Current surface: **119 web components** across 7 categories (as of 2026-05-13).
 
 ---
 
@@ -11,9 +11,9 @@ Current surface: **67 web components** across 7 categories.
 | Component | Type | Notes |
 |-----------|------|-------|
 | `rich-editor` | New | Rich text editor. ProseMirror AST-based, on hold until VB stabilizes. See `admin/r-n-d/editor-plan.md`. Upscale of `contenteditable`. |
-| `stepper-wc` | New | Numeric stepper with +/- buttons. Complements `data-stepper` attribute with richer UI. |
+| `stepper-wc` | New | Stepper for values `data-stepper` can't reach: **formatted units** (`$`, `px`, `%`, time), **token-snap scales**, **discrete enums**, optional **long-press acceleration**. NOT a numeric-input replacement — `<input type="number" data-stepper>` covers plain numeric stepping. Plan: `admin/r-n-d/forms-and-interactions/stepper-wc.md`. Bead: `vanilla-breeze-xxew`. |
 | ~~`notification-center`~~ | **Shipped as `notification-wc`** (banner + panel modes; see `admin/r-n-d/april13-plan/notification-wc.md`) | |
-| `pop-over` | New | General-purpose popover content container beyond tooltips. Anchored positioning. **Consolidation target**: extract shared Popover-API + anchored-positioning core currently special-cased in `tool-tip`; intended to underpin `context-menu`, `drop-down`, `selection-menu`, `combo-box`. See `popover_display_gotcha` memory. Bead: `vanilla-breeze-mz0p`. |
+| ~~`pop-over`~~ | **Shipped** as `pop-over` (`src/web-components/pop-over/`). Consolidation complete: `tool-tip`, `drop-down`, `selection-menu`, `combo-box`, and `context-menu` now compose `pop-over` (commits `def28778`, `fb9d00b4`, `52a792d3`, `dcbbcf39`, `afa41863`). Bead `vanilla-breeze-mz0p` closed. | |
 
 ## Data & Charts
 
@@ -43,7 +43,7 @@ Current surface: **67 web components** across 7 categories.
 | ~~`reading-progress`~~ | **Shipped** as `reading-progress` (`src/web-components/reading-progress/`). Bead: `vanilla-breeze-13rv`. | |
 | `content-feed` | New | Paginated/infinite-scroll content feed. |
 | `search-results` | New | Structured search results display with highlighting. **Overlap check**: `site-search` already does result highlighting per its own api.json. Either fold this into `site-search` slots/recipe, or scope `search-results` narrowly to standalone (non-dialog) result lists. |
-| `bread-crumb` | New | Auto-generated breadcrumb from URL structure. **Already used as a pattern**: `<nav class="breadcrumb">` appears across `site/src/layouts/{element,pattern,attribute}.html` and snippet pages. Component would formalize the existing pattern with auto-generation from `pathname` + structured-data hooks. Bead: `vanilla-breeze-yr9r`. |
+| ~~`bread-crumb`~~ | **Shipped** as `bread-crumb` (`src/web-components/bread-crumb/`, registered in `extras.js` per commit `12b475c8`). Auto-generates from `pathname` with structured-data hooks. Bead: `vanilla-breeze-yr9r`. | |
 | `version-switcher` | New | Documentation version selector. |
 
 ## Social
