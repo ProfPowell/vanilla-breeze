@@ -54,6 +54,7 @@ const elementsByLetter = {
     { name: 'color-picker', type: 'component', href: '/docs/elements/web-components/color-picker/' },
     { name: 'combo-box', type: 'component', href: '/docs/elements/web-components/combobox/' },
     { name: 'command-palette', type: 'component', href: '/docs/elements/web-components/command-palette/' },
+    { name: 'comment-box', type: 'component', href: '/docs/elements/web-components/comment-box/' },
     { name: 'comment-wc', type: 'component', href: '/docs/elements/web-components/comment-wc/' },
     { name: 'compare-surface', type: 'component', href: '/docs/elements/web-components/comparison/' },
     { name: 'component-sampler', type: 'component', href: '/docs/elements/web-components/component-sampler/', pack: 'design-system' },

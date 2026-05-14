@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>comment-box — Basic Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="importmap">{"imports": {"marked": "https://esm.sh/marked@15"}}</script>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/comment-box/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    section { margin-block: var(--size-m); }
+    h2 { font-size: 1rem; margin-block-end: var(--size-xs); color: var(--color-text-muted); }
+    pre { font-size: 0.8rem; color: var(--color-text-muted); background: var(--color-surface-sunken, oklch(94% 0 0)); padding: var(--size-s); border-radius: var(--radius-s); min-block-size: 4rem; max-block-size: 12rem; overflow: auto; }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="readable">
+    <layout-stack data-layout-gap="m">
+
+      <h1>comment-box</h1>
+      <p>Form-associated comment form composing <code>&lt;markdown-editor&gt;</code>. Submit fires <code>comment-box:submit</code> (cancellable); on success the value clears automatically.</p>
+
+      <section>
+        <h2>Default — top-level comment form</h2>
+        <comment-box id="top" name="comment" placeholder="Add a comment…"></comment-box>
+      </section>
+
+      <section>
+        <h2>Edit mode — pre-filled value, with Cancel</h2>
+        <comment-box id="edit" value="Looks great — ship it." submit-label="Save" data-show-cancel></comment-box>
+      </section>
+
+      <section>
+        <h2>Length-limited (280 chars) with toolbar slot</h2>
+        <comment-box id="limited" placeholder="Up to 280 characters…" data-max-length="280">
+          <button slot="toolbar" type="button" aria-label="Attach file">📎</button>
+          <button slot="toolbar" type="button" aria-label="Mention">@</button>
+        </comment-box>
+      </section>
+
+      <section>
+        <h2>Inside a parent &lt;form&gt; (form-associated)</h2>
+        <form id="hostForm" style="display: grid; gap: var(--size-s);">
+          <comment-box name="body" placeholder="Comment body…" data-min-length="3" required></comment-box>
+          <button type="submit">Submit form</button>
+        </form>
+      </section>
+
+      <h2>Event log</h2>
+      <pre id="log" aria-live="polite"></pre>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const log = document.getElementById('log');
+    const append = (msg) => { log.textContent = msg + '\n' + log.textContent; };
+
+    document.querySelectorAll('comment-box').forEach((box) => {
+      box.addEventListener('comment-box:submit', (e) => {
+        append(`submit (${box.id}): "${e.detail.value.slice(0, 60)}${e.detail.value.length > 60 ? '…' : ''}"`);
+      });
+      box.addEventListener('comment-box:cancel', (e) => {
+        append(`cancel (${box.id}): ${e.detail.value.length} chars`);
+      });
+    });
+
+    document.getElementById('hostForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      append(`form submit: body="${fd.get('body')?.slice(0, 50)}…"`);
+    });
+  </script>
+</body>
+</html>

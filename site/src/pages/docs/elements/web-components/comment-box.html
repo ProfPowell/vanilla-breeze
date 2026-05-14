@@ -1,0 +1,166 @@
+---
+layout: element
+title: "comment-box"
+description: "Form-associated comment form composing <markdown-editor> with Submit/Cancel buttons. Standalone or as the reply-form template inside <comment-thread>."
+elementName: comment-box
+category: component
+currentPath: /docs/elements/web-components/comment-box/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;comment-box&gt;</code> is a small form-associated primitive that wraps <a href="/docs/elements/web-components/markdown-editor/"><code>&lt;markdown-editor&gt;</code></a> with the canonical Submit / Cancel button row. It's used standalone for top-level comment forms or as the reply-form template inside a <a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a>.</p>
+
+  <p>The component is <strong>presentational with respect to persistence</strong>. The submit event is cancellable: on success the value is cleared automatically, but if the author <code>preventDefault()</code>s (e.g., the network call fails), the value is preserved.</p>
+
+  <browser-window
+    src="/docs/examples/demos/comment-box-basic.html"
+    url="https://vanilla-breeze.dev/comment-box"
+    title="comment-box — modes"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>When to use which primitive</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Use this</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>&lt;comment-box&gt;</code></td><td>You want a standalone comment / reply form with Submit + Cancel and form participation.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/markdown-editor/"><code>&lt;markdown-editor&gt;</code></a></td><td>You just want the editor &mdash; no Submit/Cancel chrome, no form participation.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a></td><td>Generic input wrapper. Doesn't know about markdown.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/chat-input/"><code>&lt;chat-input&gt;</code></a></td><td>Single-line chat input with send. Different shape from a paragraph comment.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Basic usage</h2>
+  <code-block language="html" show-lines label="Default" data-escape><comment-box name="comment" placeholder="Add a comment…"></comment-box></code-block>
+
+  <p>The component auto-creates the inner <code>&lt;markdown-editor&gt;</code> + <code>&lt;textarea&gt;</code> for you. If you need pre-existing markdown content, use the <code>value</code> attribute or provide your own <code>&lt;markdown-editor&gt;</code> child explicitly.</p>
+</section>
+
+<section>
+  <h2>Edit mode</h2>
+  <p>Pre-fill via <code>value</code> and add the Cancel button via <code>data-show-cancel</code>. Customize the Submit label.</p>
+
+  <code-block language="html" show-lines label="Edit-style form" data-escape><comment-box value="…existing comment text…" submit-label="Save" data-show-cancel></comment-box></code-block>
+</section>
+
+<section>
+  <h2>Toolbar slot</h2>
+  <p>Children with <code>slot="toolbar"</code> are moved into the toolbar row, on the left of the Submit / Cancel buttons.</p>
+
+  <code-block language="html" show-lines label="Toolbar buttons" data-escape><comment-box>
+  <button slot="toolbar" type="button" aria-label="Attach file">📎</button>
+  <button slot="toolbar" type="button" aria-label="Mention">@</button>
+</comment-box></code-block>
+
+  <p>The toolbar has <code>role="toolbar"</code>. You wire the click handlers; the comment-box doesn't interpret them.</p>
+</section>
+
+<section>
+  <h2>Length validation + counter</h2>
+  <p>Set <code>data-min-length</code> and / or <code>data-max-length</code>. When <code>data-max-length</code> is set, a live counter is rendered next to the buttons.</p>
+
+  <code-block language="html" show-lines label="280-char limit" data-escape><comment-box data-min-length="3" data-max-length="280" placeholder="Up to 280 chars…"></comment-box></code-block>
+</section>
+
+<section>
+  <h2>Form participation</h2>
+  <p>The component is form-associated via <code>ElementInternals</code>. Drop it inside any <code>&lt;form&gt;</code> with <code>name</code> set, and the markdown source submits like any other field.</p>
+
+  <code-block language="html" show-lines label="Inside a form" data-escape><form action="/comments" method="post">
+  <comment-box name="body" required placeholder="Comment…"></comment-box>
+  <button type="submit">Submit</button>
+</form></code-block>
+</section>
+
+<section>
+  <h2>Cancellable submit</h2>
+  <p>The <code>comment-box:submit</code> event is cancellable. If you call <code>preventDefault()</code>, the value is preserved (useful when your network call fails and you want the user to retry without re-typing).</p>
+
+  <code-block language="javascript" show-lines label="Wiring with retry" data-escape>box.addEventListener('comment-box:submit', async (e) => {
+  const { value } = e.detail;
+  try {
+    await api.postComment(value);
+    // Default: value clears automatically
+  } catch (err) {
+    e.preventDefault();         // keep the value so the user can retry
+    showToast('Failed — please try again');
+  }
+});</code-block>
+</section>
+
+<section>
+  <h2>Keyboard</h2>
+  <table class="props-table">
+    <thead><tr><th>Key</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Cmd/Ctrl</kbd> + <kbd>Enter</kbd></td><td>Submit (matches GitHub / Slack convention).</td></tr>
+      <tr><td><kbd>Tab</kbd></td><td>Move from editor to toolbar buttons to Submit / Cancel.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>string</td><td>&mdash;</td><td>Form field name.</td></tr>
+      <tr><td><code>value</code></td><td>string</td><td>&mdash;</td><td>Pre-filled markdown content (e.g. for edit mode).</td></tr>
+      <tr><td><code>placeholder</code></td><td>string</td><td>&mdash;</td><td>Editor placeholder text.</td></tr>
+      <tr><td><code>submit-label</code></td><td>string</td><td><code>Comment</code></td><td>Submit button label.</td></tr>
+      <tr><td><code>cancel-label</code></td><td>string</td><td><code>Cancel</code></td><td>Cancel button label.</td></tr>
+      <tr><td><code>data-show-cancel</code></td><td>boolean</td><td><code>false</code></td><td>Render the Cancel button.</td></tr>
+      <tr><td><code>data-min-length</code></td><td>number</td><td>&mdash;</td><td>Validation: minimum character length.</td></tr>
+      <tr><td><code>data-max-length</code></td><td>number</td><td>&mdash;</td><td>Validation: maximum character length; also shows a live counter.</td></tr>
+      <tr><td><code>required</code></td><td>boolean</td><td><code>false</code></td><td>Marks the field required for form validation.</td></tr>
+      <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td><td>Disables the editor and buttons.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Bubbles</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>comment-box:submit</code></td><td>yes (cancellable)</td><td><code>{ value }</code></td></tr>
+      <tr><td><code>comment-box:cancel</code></td><td>yes</td><td><code>{ value }</code></td></tr>
+      <tr><td><code>comment-box:input</code></td><td>yes</td><td><code>{ value, length }</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>value</code></td><td>Get / set the current markdown content.</td></tr>
+      <tr><td><code>clear()</code></td><td>Clear the value and emit <code>comment-box:input</code>.</td></tr>
+      <tr><td><code>focus()</code></td><td>Focus the inner editor.</td></tr>
+      <tr><td><code>form / validity / checkValidity()</code></td><td>Standard form-associated members.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/markdown-editor/"><code>&lt;markdown-editor&gt;</code></a> &mdash; the input the form composes.</li>
+    <li><a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a> &mdash; the threaded-discussion container that uses this as its reply-form template.</li>
+    <li><a href="/docs/elements/web-components/reaction-bar/"><code>&lt;reaction-bar&gt;</code></a> &mdash; per-comment emoji reactions.</li>
+    <li><a href="/docs/concepts/form-association/">Form-Associated Custom Elements</a> &mdash; how the value participates in form submission.</li>
+  </ul>
+</section>

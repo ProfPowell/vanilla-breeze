@@ -1,0 +1,119 @@
+/* --------------------------------------------------------------------------
+   comment-box: form-associated comment form composing <markdown-editor>
+   with a Submit / Cancel action row. Standalone or as <comment-thread>'s
+   reply-form template.
+   -------------------------------------------------------------------------- */
+
+comment-box {
+  display: block;
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  overflow: hidden;
+  font: inherit;
+}
+
+comment-box > markdown-editor {
+  display: block;
+  border: 0;
+  border-radius: 0;
+}
+
+comment-box .comment-box-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--size-s, 0.5rem);
+  padding-block: var(--size-2xs, 0.375rem);
+  padding-inline: var(--size-s, 0.5rem);
+  background: var(--color-surface-raised, color-mix(in oklch, var(--color-surface) 95%, var(--color-text)));
+  border-block-start: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+comment-box .comment-box-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-3xs, 0.25rem);
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+comment-box .comment-box-toolbar:empty {
+  /* Keep the row's flex layout balanced even with no toolbar children. */
+}
+
+comment-box .comment-box-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2xs, 0.375rem);
+  flex-shrink: 0;
+}
+
+comment-box .comment-box-counter {
+  margin-inline-start: var(--size-2xs, 0.375rem);
+  font-size: 0.875em;
+  color: var(--color-text-muted, currentColor);
+  font-variant-numeric: tabular-nums;
+}
+
+comment-box .comment-box-counter.is-over {
+  color: var(--color-error);
+}
+
+/* -------- Action buttons -------- */
+
+comment-box button.comment-box-submit,
+comment-box button.comment-box-cancel {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--size-2xs, 0.375rem);
+  padding-inline: var(--size-s, 0.75rem);
+  min-block-size: 2rem;
+  border-radius: var(--radius-m);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--duration-fast, 150ms), border-color var(--duration-fast, 150ms);
+}
+
+comment-box button.comment-box-submit {
+  background: var(--color-interactive);
+  color: var(--color-text-on-interactive, white);
+  border: var(--border-width-thin, 1px) solid var(--color-interactive);
+}
+
+comment-box button.comment-box-submit:hover:not(:disabled) {
+  background: var(--color-interactive-hover, oklch(from var(--color-interactive) calc(l * 0.92) c h));
+  border-color: var(--color-interactive-hover, oklch(from var(--color-interactive) calc(l * 0.92) c h));
+}
+
+comment-box button.comment-box-submit:focus-visible,
+comment-box button.comment-box-cancel:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+comment-box button.comment-box-submit:disabled,
+comment-box button.comment-box-cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+comment-box button.comment-box-cancel {
+  background: transparent;
+  color: var(--color-text);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+}
+
+comment-box button.comment-box-cancel:hover:not(:disabled) {
+  background: var(--color-surface-sunken, oklch(94% 0 0));
+  border-color: var(--color-text-muted, currentColor);
+}
+
+/* -------- Disabled host state -------- */
+
+comment-box[disabled] {
+  opacity: 0.7;
+  pointer-events: none;
+}

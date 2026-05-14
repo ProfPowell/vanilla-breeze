@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>comment-box demos</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <style>
+    body { font-family: system-ui, sans-serif; max-inline-size: 48rem; margin-inline: auto; padding: 2rem 1rem; line-height: 1.5; }
+    section { margin-block: 1.5rem; }
+    pre { font-size: 0.8rem; color: var(--color-text-muted); background: var(--color-surface-sunken, oklch(94% 0 0)); padding: 0.5rem; border-radius: 0.25rem; }
+  </style>
+</head>
+<body>
+  <h1>comment-box</h1>
+
+  <section>
+    <h2>Default (auto-creates markdown-editor)</h2>
+    <comment-box name="comment" placeholder="Add a comment…"></comment-box>
+  </section>
+
+  <section>
+    <h2>Pre-filled (edit mode)</h2>
+    <comment-box value="Looks great — ship it." submit-label="Save" data-show-cancel></comment-box>
+  </section>
+
+  <section>
+    <h2>With max length + toolbar</h2>
+    <comment-box placeholder="Up to 280 chars…" data-max-length="280">
+      <button slot="toolbar" type="button">📎</button>
+      <button slot="toolbar" type="button">@</button>
+    </comment-box>
+  </section>
+
+  <section>
+    <h2>Event log</h2>
+    <pre id="log"></pre>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const log = document.getElementById('log');
+    const append = (msg) => { log.textContent = msg + '\n' + log.textContent; };
+    document.querySelectorAll('comment-box').forEach((box) => {
+      box.addEventListener('comment-box:submit', (e) => append(`submit: ${e.detail.value.slice(0, 60)}`));
+      box.addEventListener('comment-box:cancel', (e) => append(`cancel: ${e.detail.value.slice(0, 40)}`));
+    });
+  </script>
+</body>
+</html>
