@@ -1,0 +1,165 @@
+---
+layout: element
+title: "version-switcher"
+description: "Surface and switch between versions of a page over time. Two modes (release versions / per-page history); navigate action ships in Phase 1."
+elementName: version-switcher
+category: component
+currentPath: /docs/elements/web-components/version-switcher/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;version-switcher&gt;</code> renders a small trigger button showing the current version of a page; clicking opens a picker popover listing every available version. <strong>Two modes</strong> auto-detected from the data shape:</p>
+  <ul>
+    <li><strong>Releases</strong> &mdash; entries have distinct URLs (<code>/v1/page</code>, <code>/v2/page</code>). Classic docs version selector.</li>
+    <li><strong>History</strong> &mdash; entries share one URL but differ by date / author. Per-page edit-history list.</li>
+  </ul>
+  <p>Override with <code>data-mode="releases"</code> or <code>data-mode="history"</code> if the data is ambiguous.</p>
+
+  <browser-window
+    src="/docs/examples/demos/version-switcher-modes.html"
+    url="https://vanilla-breeze.dev/version-switcher"
+    title="version-switcher — Phase 1 demo"
+    shadow>
+  </browser-window>
+</section>
+
+<aside class="note">
+  <strong>This is Phase 1.</strong> The <code>navigate</code> action ships now. Phase 2 adds <code>data-action="swap"</code> (in-place fetch + replace via View Transitions) and <code>data-action="diff"</code> (composes <code>&lt;change-set&gt;</code>). Phase 3 adds <code>data-page-info-target</code> mounting inside <code>&lt;page-info&gt;</code>, the archived-version banner, and meta-tag fallback. See <a href="https://github.com/profpowell/vanilla-breeze/blob/main/admin/r-n-d/version-switcher.md">the full plan</a>.
+</aside>
+
+<section>
+  <h2>When to use which primitive</h2>
+  <table class="props-table">
+    <thead><tr><th>Use this</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;version-switcher&gt;</code></td><td>Switch between known versions of THIS page (releases or history snapshots).</td></tr>
+      <tr><td><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a></td><td>Show the current version + provenance + authors. <strong>Complementary &mdash; not the same.</strong> page-info answers "what version is this?"; version-switcher answers "what other versions exist?".</td></tr>
+      <tr><td><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a></td><td>Site-wide changelog timeline (releases of the whole project).</td></tr>
+      <tr><td><a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a></td><td>Inline visual diff of authored markup (<code>&lt;ins&gt;</code>/<code>&lt;del&gt;</code>). version-switcher Phase 2's <code>diff</code> action will reuse this as its renderer.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Author surface</h2>
+  <p>Inline the version list as JSON, either via the <code>data-versions</code> attribute or a <code>&lt;script type="application/json" data-versions&gt;</code> child.</p>
+
+  <code-block language="html" show-lines label="Inline attribute (compact)" data-escape><version-switcher
+  data-versions='[
+    {"id":"v2.1","label":"v2.1","url":"/v2.1/api","date":"2026-05-01","summary":"Adds rate-limit headers","current":true},
+    {"id":"v2.0","label":"v2.0","url":"/v2/api","date":"2026-01-15","summary":"Breaking: auth flow renamed"},
+    {"id":"v1.4","label":"v1.4","url":"/v1.4/api","date":"2025-08-10","summary":"Last v1 release","archived":true}
+  ]'></version-switcher></code-block>
+
+  <code-block language="html" show-lines label="Script-tag (better for large lists)" data-escape><version-switcher>
+  <script type="application/json" data-versions>
+  [
+    {"id":"r-2026-05-12","label":"Latest revision","url":"/policy","date":"2026-05-12","author":"Ada","summary":"Clarified data-retention period.","current":true},
+    {"id":"r-2026-04-01","label":"April revision","url":"/policy","date":"2026-04-01","author":"Bob","summary":"Updated EU references."},
+    {"id":"r-2026-01-15","label":"Q1 baseline","url":"/policy","date":"2026-01-15","author":"Carol","summary":"Initial public version."}
+  ]
+  </script>
+</version-switcher></code-block>
+</section>
+
+<section>
+  <h2>Version entry shape</h2>
+  <table class="props-table">
+    <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>string</td><td>yes</td><td>Stable identifier (semver, commit sha, "current", etc.).</td></tr>
+      <tr><td><code>label</code></td><td>string</td><td>no</td><td>Display label (defaults to <code>id</code>).</td></tr>
+      <tr><td><code>url</code></td><td>string</td><td>recommended</td><td>URL to navigate to. Required for the <code>navigate</code> action.</td></tr>
+      <tr><td><code>date</code></td><td>string (ISO-8601)</td><td>no</td><td>Renders as relative time with absolute on hover.</td></tr>
+      <tr><td><code>author</code></td><td>string</td><td>no</td><td>Useful in history mode.</td></tr>
+      <tr><td><code>summary</code></td><td>string</td><td>no</td><td>One-line description (release-note excerpt or commit message).</td></tr>
+      <tr><td><code>archived</code></td><td>boolean</td><td>no</td><td>Renders the "archived" badge and mutes the entry.</td></tr>
+      <tr><td><code>draft</code></td><td>boolean</td><td>no</td><td>Renders the "draft" badge.</td></tr>
+      <tr><td><code>current</code></td><td>boolean</td><td>no</td><td>Marks the current entry. If absent, derived from a matching <code>&lt;meta name="vb:version"&gt;</code> or the first entry.</td></tr>
+      <tr><td><code>versionUrl</code></td><td>string</td><td>no</td><td>Optional link out to a changelog anchor (matches the <code>vb:version-url</code> meta tag semantics).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Wiring the events</h2>
+  <code-block language="javascript" show-lines label="Cancellable navigate (e.g. dirty-form guard)" data-escape>const sw = document.querySelector('version-switcher');
+
+sw.addEventListener('version-switcher:before-navigate', (e) => {
+  if (formIsDirty()) {
+    if (!confirm(`Discard changes and switch to ${e.detail.entry.label}?`)) {
+      e.preventDefault();
+    }
+  }
+});
+
+// Programmatic
+sw.switchTo('v2.0');</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Trigger:</strong> <code>aria-haspopup="dialog"</code>, <code>aria-expanded</code> tracks open state, <code>aria-label</code> describes the version (default "Version").</li>
+    <li><strong>Picker:</strong> <code>role="dialog"</code> rendered by <code>&lt;pop-over&gt;</code> in the top layer; light-dismiss via Escape and outside click.</li>
+    <li><strong>Each entry:</strong> a button with derived <code>aria-label</code> like <q>v1.4, released 9 months ago, archived</q>.</li>
+    <li><strong>Current entry:</strong> <code>aria-current="true"</code> + visual highlight; focused first when the picker opens.</li>
+    <li><strong>Keyboard inside the picker:</strong> ArrowUp / ArrowDown move between entries; Home / End jump to first / last; Enter / Space activate.</li>
+    <li><strong>Focus return:</strong> after the picker closes, focus returns to the trigger.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-versions</code></td><td>string (JSON)</td><td>&mdash;</td><td>Inline JSON array of version entries.</td></tr>
+      <tr><td><code>data-mode</code></td><td>string</td><td><em>derived</em></td><td><code>releases</code> | <code>history</code> &mdash; override the auto-detected mode.</td></tr>
+      <tr><td><code>data-action</code></td><td>string</td><td><code>navigate</code></td><td>Phase 1 only. Phase 2 adds <code>swap</code> and <code>diff</code>.</td></tr>
+      <tr><td><code>aria-label</code></td><td>string</td><td><code>Version</code></td><td>Trigger / picker label.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Bubbles</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>version-switcher:open</code></td><td>yes</td><td>&mdash;</td></tr>
+      <tr><td><code>version-switcher:close</code></td><td>yes</td><td>&mdash;</td></tr>
+      <tr><td><code>version-switcher:select</code></td><td>yes</td><td><code>{ entry }</code></td></tr>
+      <tr><td><code>version-switcher:before-navigate</code></td><td>yes (cancellable)</td><td><code>{ entry }</code></td></tr>
+      <tr><td><code>version-switcher:error</code></td><td>yes</td><td><code>{ message, entry?, error? }</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>versions</code></td><td>Resolved version entries (read-only).</td></tr>
+      <tr><td><code>currentId</code></td><td>Id of the current entry.</td></tr>
+      <tr><td><code>openPicker()</code> / <code>closePicker()</code></td><td>Programmatic picker control.</td></tr>
+      <tr><td><code>switchTo(id)</code></td><td>Programmatic selection &mdash; honors <code>data-action</code>.</td></tr>
+      <tr><td><code>refresh()</code></td><td>Re-resolve the data source and re-render.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> &mdash; current-version provenance display (Phase 3 will mount switcher inside it).</li>
+    <li><a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a> &mdash; the diff renderer Phase 2 will compose.</li>
+    <li><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a> &mdash; site-wide release timeline.</li>
+    <li><a href="/docs/elements/web-components/pop-over/"><code>&lt;pop-over&gt;</code></a> &mdash; the picker surface.</li>
+  </ul>
+</section>

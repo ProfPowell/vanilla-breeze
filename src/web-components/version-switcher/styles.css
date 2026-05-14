@@ -1,0 +1,210 @@
+/* --------------------------------------------------------------------------
+   version-switcher (Phase 1): trigger button + picker popover.
+   Composes <pop-over> for the picker surface. Mode = releases (distinct
+   URLs) or history (same URL with date/author differences).
+   -------------------------------------------------------------------------- */
+
+version-switcher {
+  display: inline-block;
+  font: inherit;
+}
+
+/* -------- Trigger -------- */
+
+version-switcher .version-switcher-trigger {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2xs, 0.375rem);
+  padding-block: var(--size-2xs, 0.375rem);
+  padding-inline: var(--size-s, 0.75rem);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-full, 999px);
+  font: inherit;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: border-color var(--duration-fast, 150ms), background var(--duration-fast, 150ms);
+}
+
+version-switcher .version-switcher-trigger:hover:not(:disabled) {
+  border-color: var(--color-interactive);
+  background: var(--color-surface-raised, var(--color-surface));
+}
+
+version-switcher .version-switcher-trigger:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+version-switcher .version-switcher-trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+version-switcher .version-switcher-trigger-label {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+version-switcher .version-switcher-trigger-chevron {
+  color: var(--color-text-muted, currentColor);
+  transition: transform var(--duration-fast, 150ms);
+}
+
+version-switcher .version-switcher-trigger[aria-expanded="true"] .version-switcher-trigger-chevron {
+  transform: rotate(180deg);
+}
+
+/* -------- Picker popover -------- */
+
+version-switcher .version-switcher-popover {
+  min-inline-size: 18rem;
+  max-inline-size: 24rem;
+  max-block-size: 24rem;
+  overflow-y: auto;
+  padding: var(--size-s, 0.5rem);
+  background: var(--color-surface, white);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-m, 0 6px 20px oklch(0 0 0 / 0.14));
+}
+
+version-switcher .version-switcher-heading {
+  margin: 0 0 var(--size-2xs, 0.375rem);
+  padding-inline: var(--size-2xs, 0.375rem);
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted, currentColor);
+}
+
+version-switcher .version-switcher-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-3xs, 0.125rem);
+}
+
+version-switcher .version-switcher-empty {
+  padding: var(--size-s, 0.75rem);
+  text-align: center;
+  font-style: italic;
+  color: var(--color-text-muted, currentColor);
+}
+
+/* -------- Entry -------- */
+
+version-switcher .version-switcher-entry {
+  appearance: none;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: var(--size-3xs, 0.25rem) var(--size-s, 0.5rem);
+  inline-size: 100%;
+  padding-block: var(--size-2xs, 0.375rem);
+  padding-inline: var(--size-s, 0.5rem);
+  background: transparent;
+  color: var(--color-text);
+  border: var(--border-width-thin, 1px) solid transparent;
+  border-radius: var(--radius-s);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background var(--duration-fast, 150ms);
+}
+
+version-switcher .version-switcher-entry:hover {
+  background: var(--color-surface-sunken, oklch(94% 0 0));
+}
+
+version-switcher .version-switcher-entry:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+version-switcher [data-current="true"] > .version-switcher-entry {
+  background: var(--color-action-subtle, color-mix(in oklch, var(--color-interactive) 12%, transparent));
+  border-color: var(--color-interactive);
+}
+
+version-switcher [data-archived] > .version-switcher-entry {
+  color: var(--color-text-muted, currentColor);
+}
+
+version-switcher .version-switcher-entry-label {
+  grid-column: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2xs, 0.375rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+version-switcher .version-switcher-entry-date {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 0.85em;
+  color: var(--color-text-muted, currentColor);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+version-switcher .version-switcher-entry-author {
+  grid-column: 1 / -1;
+  font-size: 0.85em;
+  color: var(--color-text-muted, currentColor);
+}
+
+version-switcher .version-switcher-entry-summary {
+  grid-column: 1 / -1;
+  font-size: 0.9em;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+version-switcher .version-switcher-entry-changelog {
+  grid-column: 1 / -1;
+  font-size: 0.85em;
+  color: var(--color-interactive);
+  text-decoration: none;
+  justify-self: start;
+}
+
+version-switcher .version-switcher-entry-changelog:hover {
+  text-decoration: underline;
+}
+
+/* -------- Badges -------- */
+
+version-switcher .version-switcher-badge {
+  display: inline-flex;
+  align-items: center;
+  padding-block: 0;
+  padding-inline: var(--size-3xs, 0.25rem);
+  border-radius: var(--radius-full, 999px);
+  font-size: 0.7em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+version-switcher .version-switcher-badge-current {
+  background: var(--color-interactive);
+  color: var(--color-text-on-interactive, white);
+}
+
+version-switcher .version-switcher-badge-archived {
+  background: var(--color-text-muted, oklch(60% 0 0));
+  color: var(--color-surface, white);
+}
+
+version-switcher .version-switcher-badge-draft {
+  background: var(--color-warning);
+  color: var(--color-text-on-warning, white);
+}

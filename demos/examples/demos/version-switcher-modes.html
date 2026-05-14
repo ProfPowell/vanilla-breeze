@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>version-switcher — Phase 1 Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/version-switcher/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h2 { font-size: 1rem; color: var(--color-text-muted); margin-block: var(--size-l) var(--size-xs); }
+    pre { font-size: 0.8rem; color: var(--color-text-muted); background: var(--color-surface-sunken, oklch(94% 0 0)); padding: var(--size-s); border-radius: var(--radius-s); min-block-size: 4rem; max-block-size: 12rem; overflow: auto; }
+    .demo-row { display: flex; align-items: baseline; gap: var(--size-m); flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="readable">
+    <layout-stack data-layout-gap="m">
+
+      <h1>version-switcher — Phase 1</h1>
+      <p>Surface and switch between versions of a page over time. Phase 1 ships the trigger + picker UI with the <code>navigate</code> action. Phase 2 will add <code>swap</code> + <code>diff</code> actions; Phase 3 will integrate with <code>page-info</code> + the provenance meta-tag system.</p>
+
+      <h2>Releases mode (distinct URLs auto-detected)</h2>
+      <div class="demo-row">
+        <span>API docs:</span>
+        <version-switcher
+          aria-label="API version"
+          data-versions='[
+            {"id":"v2.1","label":"v2.1","url":"#v2.1/api","date":"2026-05-01","summary":"Adds rate-limit headers in every response.","versionUrl":"#changelog-v2-1","current":true},
+            {"id":"v2.0","label":"v2.0","url":"#v2/api","date":"2026-01-15","summary":"Breaking: auth flow renamed from /sso to /auth.","versionUrl":"#changelog-v2-0"},
+            {"id":"v1.4","label":"v1.4","url":"#v1.4/api","date":"2025-08-10","summary":"Last v1.x release. Security backports only.","archived":true,"versionUrl":"#changelog-v1-4"},
+            {"id":"v3-beta","label":"v3 (beta)","url":"#v3/api","date":"2026-05-08","summary":"Async streaming, GraphQL surface preview.","draft":true}
+          ]'></version-switcher>
+      </div>
+
+      <h2>History mode (script-tag data, same URL)</h2>
+      <div class="demo-row">
+        <span>Privacy policy:</span>
+        <version-switcher aria-label="Policy revision">
+          <script type="application/json" data-versions>
+          [
+            {"id":"r-2026-05-12","label":"Latest revision","url":"#policy","date":"2026-05-12","author":"Ada","summary":"Clarified data-retention period to 90 days.","current":true},
+            {"id":"r-2026-04-01","label":"April revision","url":"#policy","date":"2026-04-01","author":"Bob","summary":"Updated EU references for DSA compliance."},
+            {"id":"r-2026-01-15","label":"Q1 baseline","url":"#policy","date":"2026-01-15","author":"Carol","summary":"Initial public version."}
+          ]
+          </script>
+        </version-switcher>
+      </div>
+
+      <h2>Empty state</h2>
+      <div class="demo-row">
+        <span>No data:</span>
+        <version-switcher aria-label="Empty"></version-switcher>
+      </div>
+
+      <h2>Programmatic switch + cancellable navigate</h2>
+      <div class="demo-row">
+        <button id="prog-switch" type="button">Switch to v2.0 programmatically</button>
+        <button id="cancel-toggle" type="button">Toggle: cancel navigation</button>
+      </div>
+
+      <h2>Event log</h2>
+      <pre id="log" aria-live="polite"></pre>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const log = document.getElementById('log');
+    const append = (msg) => { log.textContent = msg + '\n' + log.textContent; };
+
+    const releaseSwitcher = document.querySelector('version-switcher[aria-label="API version"]');
+
+    document.querySelectorAll('version-switcher').forEach((sw) => {
+      const tag = sw.getAttribute('aria-label');
+      sw.addEventListener('version-switcher:open',  () => append(`${tag}: open`));
+      sw.addEventListener('version-switcher:close', () => append(`${tag}: close`));
+      sw.addEventListener('version-switcher:select', (e) => append(`${tag}: select ${e.detail.entry.id}`));
+      sw.addEventListener('version-switcher:before-navigate', (e) => append(`${tag}: before-navigate → ${e.detail.entry.url}`));
+      sw.addEventListener('version-switcher:error', (e) => append(`${tag}: error: ${e.detail.message}`));
+    });
+
+    // Always cancel navigation in the demo so the page stays open.
+    let cancelOn = true;
+    document.getElementById('cancel-toggle').textContent = `Toggle: cancel navigation (${cancelOn ? 'ON' : 'off'})`;
+    document.getElementById('cancel-toggle').addEventListener('click', () => {
+      cancelOn = !cancelOn;
+      document.getElementById('cancel-toggle').textContent = `Toggle: cancel navigation (${cancelOn ? 'ON' : 'off'})`;
+      append(`cancel-navigation: ${cancelOn ? 'ENABLED' : 'disabled'}`);
+    });
+    document.querySelectorAll('version-switcher').forEach((sw) => {
+      sw.addEventListener('version-switcher:before-navigate', (e) => {
+        if (cancelOn) {
+          e.preventDefault();
+          append(`cancelled navigation to ${e.detail.entry.url}`);
+        }
+      });
+    });
+
+    document.getElementById('prog-switch').addEventListener('click', () => {
+      append('calling switchTo("v2.0")');
+      releaseSwitcher.switchTo('v2.0');
+    });
+  </script>
+</body>
+</html>

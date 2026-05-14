@@ -145,6 +145,7 @@ export default {
     { name: 'author-index', href: '/docs/elements/web-components/author-index/', desc: 'Author-grouped view of site content' },
     { name: 'topic-map', href: '/docs/elements/web-components/topic-map/', desc: 'SKOS-aware concept tree from vocabulary.json + pages.json' },
     { name: 'trust-filter', href: '/docs/elements/web-components/trust-filter/', desc: 'Filter pages by provenance, review level, status, and signed state' },
+    { name: 'version-switcher', href: '/docs/elements/web-components/version-switcher/', desc: 'Surface and switch between versions of a page over time. Two modes (release versions / per-page history); navigate action (Phase 1)' },
     { name: 'recently-visited', href: '/docs/elements/web-components/recently-visited/', desc: 'Device-local reader history (localStorage, never aggregated)' },
     { name: 'popularity-index', href: '/docs/elements/web-components/popularity-index/', desc: 'Aggregated most-visited lens (degrades when endpoint unavailable)' },
   ],

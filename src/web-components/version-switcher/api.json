@@ -1,0 +1,31 @@
+{
+  "$schema": "../../../schemas/api.schema.json",
+  "element": "version-switcher",
+  "type": "web-component",
+  "description": "Surface and switch between versions of a page over time. Phase 1: inline data source + trigger + picker popover + navigate action. Modes auto-derived from data shape (releases vs history).",
+  "attributes": [
+    { "name": "data-versions", "kind": "data", "purpose": "config", "type": "string", "description": "Inline JSON array of version entries: { id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }. Alternative: a <script type=\"application/json\" data-versions> child." },
+    { "name": "data-mode",     "kind": "data", "purpose": "config", "type": "string", "description": "\"releases\" | \"history\" — override the auto-detected mode" },
+    { "name": "data-action",   "kind": "data", "purpose": "config", "type": "string", "description": "\"navigate\" (Phase 1 default). \"swap\" / \"diff\" ship in Phase 2." },
+    { "name": "aria-label",    "kind": "aria", "purpose": "config", "type": "string", "description": "Trigger / popover label (default \"Version\")" }
+  ],
+  "events": [
+    { "name": "version-switcher:open",            "description": "Picker popover opened" },
+    { "name": "version-switcher:close",           "description": "Picker popover closed" },
+    { "name": "version-switcher:select",          "detail": "{ entry }", "description": "Fires when an entry is selected (before the action runs)" },
+    { "name": "version-switcher:before-navigate", "detail": "{ entry }", "description": "Cancellable. Fires before location.href is set; preventDefault() blocks navigation." },
+    { "name": "version-switcher:error",           "detail": "{ message, entry?, error? }", "description": "Parse / resolve / navigation failure" }
+  ],
+  "properties": [
+    { "name": "versions",    "type": "VersionEntry[]", "description": "Resolved version entries" },
+    { "name": "currentId",   "type": "string|null",    "description": "Id of the current entry" },
+    { "name": "openPicker",  "type": "() => void" },
+    { "name": "closePicker", "type": "() => void" },
+    { "name": "switchTo",    "type": "(id) => void",   "description": "Programmatic selection; honors data-action" },
+    { "name": "refresh",     "type": "() => void",     "description": "Re-resolve the data source" }
+  ],
+  "childAttributes": [
+    { "name": "data-versions", "on": "script", "type": "boolean", "description": "Marks a <script type=\"application/json\"> child as the versions JSON source" }
+  ],
+  "structure": []
+}

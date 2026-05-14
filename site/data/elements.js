@@ -298,6 +298,7 @@ const elementsByLetter = {
   ],
   V: [
     { name: 'var', type: 'native', href: '/docs/elements/native/var/' },
+    { name: 'version-switcher', type: 'component', href: '/docs/elements/web-components/version-switcher/' },
     { name: 'video', type: 'native', href: '/docs/elements/native/video/' },
     { name: 'video-player', type: 'component', href: '/docs/elements/web-components/video-player/' },
   ],

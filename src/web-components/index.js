@@ -87,6 +87,7 @@ import './poll-wc/logic.js';
 import './layout-specimen/logic.js';
 import './accessibility-specimen/logic.js';
 import './progress-tracker/logic.js';
+import './version-switcher/logic.js';
 import './audio-player/logic.js';
 import './audio-visualizer/logic.js';
 import './video-player/logic.js';
