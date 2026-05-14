@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>comment-thread — Issue Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="importmap">{"imports": {"marked": "https://esm.sh/marked@15"}}</script>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/comment-thread/logic.js"></script>
+  <script type="module" src="/src/web-components/reaction-bar/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    pre { font-size: 0.8rem; color: var(--color-text-muted); background: var(--color-surface-sunken, oklch(94% 0 0)); padding: var(--size-s); border-radius: var(--radius-s); min-block-size: 4rem; max-block-size: 12rem; overflow: auto; }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="readable">
+    <layout-stack data-layout-gap="m">
+
+      <h1>comment-thread</h1>
+      <p>Threaded discussion on a mock issue. Replies nest via <code>data-parent</code>; per-comment reactions via <code>&lt;reaction-bar&gt;</code>; reply form composes <code>&lt;comment-box&gt;</code> from a <code>&lt;template data-reply-form&gt;</code>.</p>
+
+      <comment-thread id="thread" aria-label="Comments on issue 482">
+        <article data-comment id="c1" data-author="Ada Lovelace" data-author-href="/users/ada"
+                 data-time="2026-05-14T08:00:00Z" data-mine>
+          <div data-comment-body>
+            <p>Looks great — ship it 🚀</p>
+            <p>One question: how does this interact with the prior migration on table <code>events</code>?</p>
+          </div>
+          <reaction-bar aria-label="Reactions to comment 1">
+            <button data-reaction="thumbsup" data-count="3" data-mine>👍</button>
+            <button data-reaction="rocket"   data-count="2">🚀</button>
+            <template data-palette>
+              <button data-reaction="thumbsup">👍</button>
+              <button data-reaction="thumbsdown">👎</button>
+              <button data-reaction="laugh">😄</button>
+              <button data-reaction="hooray">🎉</button>
+              <button data-reaction="confused">😕</button>
+              <button data-reaction="heart">❤️</button>
+              <button data-reaction="rocket">🚀</button>
+              <button data-reaction="eyes">👀</button>
+            </template>
+          </reaction-bar>
+        </article>
+
+        <article data-comment id="c2" data-author="Bob Carter" data-author-href="/users/bob"
+                 data-time="2026-05-14T09:00:00Z" data-parent="c1">
+          <div data-comment-body>
+            <p>The migration is idempotent — re-running is safe.</p>
+          </div>
+        </article>
+
+        <article data-comment id="c3" data-author="Carol Diaz" data-author-href="/users/carol"
+                 data-time="2026-05-14T10:30:00Z" data-parent="c2">
+          <div data-comment-body>
+            <p>Confirmed locally. 👍</p>
+          </div>
+        </article>
+
+        <article data-comment id="c4" data-author="Dan Evans" data-author-href="/users/dan"
+                 data-time="2026-05-14T11:00:00Z" data-edited="2026-05-14T11:05:00Z">
+          <div data-comment-body>
+            <p>Nit: the changelog still references the old endpoint name.</p>
+          </div>
+        </article>
+
+        <template data-reply-form>
+          <comment-box submit-label="Reply" data-show-cancel placeholder="Write a reply…"></comment-box>
+        </template>
+      </comment-thread>
+
+      <h2>Event log</h2>
+      <pre id="log" aria-live="polite"></pre>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const log = document.getElementById('log');
+    const append = (msg) => { log.textContent = msg + '\n' + log.textContent; };
+    const thread = document.getElementById('thread');
+
+    let nextId = 100;
+    thread.addEventListener('comment-thread:reply', (e) => {
+      const { parentId, value } = e.detail;
+      append(`reply to ${parentId}: "${value.slice(0, 60)}"`);
+      // Mock backend: insert the new comment after a short delay.
+      setTimeout(() => {
+        thread.addComment({
+          id: `c${++nextId}`,
+          author: 'You',
+          time: new Date().toISOString(),
+          body: `<p>${value.replace(/[<>&]/g, (c) => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p>`,
+          parentId,
+          mine: true,
+        });
+      }, 150);
+    });
+    thread.addEventListener('comment-thread:edit-request', (e) => {
+      append(`edit-request: ${e.detail.commentId} (current value: "${e.detail.value.slice(0, 40)}")`);
+      // Mock: prompt for new content.
+      const next = prompt('Edit body:', e.detail.value);
+      if (next != null) {
+        thread.updateComment(e.detail.commentId, { body: `<p>${next}</p>`, edited: new Date().toISOString() });
+      }
+    });
+    thread.addEventListener('comment-thread:delete-request', (e) => {
+      append(`delete-request: ${e.detail.commentId}`);
+      if (confirm('Delete this comment?')) thread.removeComment(e.detail.commentId);
+    });
+    thread.addEventListener('reaction-bar:toggle', (e) => {
+      const { reaction, action, count, mine } = e.detail;
+      append(`reaction ${action} ${reaction} (count=${count}, mine=${mine})`);
+      // Mock: bubble the new count back so the chip updates.
+      const bar = e.target.closest('reaction-bar');
+      const next = action === 'add' ? count + 1 : count - 1;
+      setTimeout(() => bar.setCount(reaction, next, { mine: action === 'add' }), 100);
+    });
+  </script>
+</body>
+</html>

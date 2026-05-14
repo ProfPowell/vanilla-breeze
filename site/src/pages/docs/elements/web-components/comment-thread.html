@@ -1,0 +1,182 @@
+---
+layout: element
+title: "comment-thread"
+description: "Persistent threaded-discussion container. Decorates author-rendered <article data-comment> children with header, action row, and threaded indentation. Composes <comment-box> (reply form) and bubbles <reaction-bar> events naturally."
+elementName: comment-thread
+category: component
+currentPath: /docs/elements/web-components/comment-thread/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>&lt;comment-thread&gt;</code> is the container primitive for a persistent, threaded discussion. Authors render comments as <code>&lt;article data-comment&gt;</code> children with metadata attributes; the component decorates each one with an author header, relative timestamp, action toolbar (Reply / Edit / Delete), and threaded indentation via <code>data-parent</code>.</p>
+
+  <p>The component is <strong>presentational with respect to persistence</strong>: action clicks emit events, and authors call <code>addComment</code> / <code>updateComment</code> / <code>removeComment</code> after the server confirms.</p>
+
+  <browser-window
+    src="/docs/examples/demos/comment-thread-issue.html"
+    url="https://vanilla-breeze.dev/comment-thread"
+    title="comment-thread — issue thread"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>When to use which primitive</h2>
+  <table class="props-table">
+    <thead><tr><th>Use this</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;comment-thread&gt;</code></td><td>Threaded, persistent discussion attached to an item. Comments have authors + timestamps + replies + reactions + edit/delete.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/comment-wc/"><code>&lt;comment-wc&gt;</code></a></td><td>Single inline action button used by <code>&lt;selection-menu&gt;</code> for adding a comment to selected text. <strong>Different role &mdash; we keep both.</strong></td></tr>
+      <tr><td><a href="/docs/elements/web-components/comment-box/"><code>&lt;comment-box&gt;</code></a></td><td>The reply / new-comment form. <code>&lt;comment-thread&gt;</code> consumes it as the reply-form template.</td></tr>
+      <tr><td><a href="/docs/elements/custom-elements/chat-thread/"><code>&lt;chat-thread&gt;</code></a></td><td>Real-time chat (sender-grouped, ephemeral). Different interaction model from threaded comments.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Author surface</h2>
+  <p>Render comments as direct <code>&lt;article data-comment&gt;</code> children. Put the rendered body in <code>&lt;div data-comment-body&gt;</code>. Provide a <code>&lt;template data-reply-form&gt;</code> that wraps a <code>&lt;comment-box&gt;</code> &mdash; the component clones it under whichever comment is being replied to.</p>
+
+  <code-block language="html" show-lines label="Author markup" data-escape><comment-thread aria-label="Comments on issue 482">
+  <article data-comment id="c1" data-author="Ada Lovelace" data-time="2026-05-14T10:00:00Z" data-mine>
+    <div data-comment-body>Looks great — ship it.</div>
+    <reaction-bar>
+      <button data-reaction="thumbsup" data-count="3" data-mine>👍</button>
+      <template data-palette>
+        <button data-reaction="thumbsup">👍</button>
+        <button data-reaction="heart">❤️</button>
+        <button data-reaction="rocket">🚀</button>
+      </template>
+    </reaction-bar>
+  </article>
+
+  <article data-comment id="c2" data-author="Bob" data-time="2026-05-14T11:00:00Z" data-parent="c1">
+    <div data-comment-body>Agreed!</div>
+  </article>
+
+  <template data-reply-form>
+    <comment-box submit-label="Reply" data-show-cancel></comment-box>
+  </template>
+</comment-thread></code-block>
+</section>
+
+<section>
+  <h2>Comment attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>Stable comment id (used in events + parent refs).</td></tr>
+      <tr><td><code>data-author</code></td><td>Display name.</td></tr>
+      <tr><td><code>data-author-href</code></td><td>Optional link to the author's profile.</td></tr>
+      <tr><td><code>data-author-avatar</code></td><td>Optional avatar URL (renders <code>&lt;user-avatar&gt;</code>).</td></tr>
+      <tr><td><code>data-time</code></td><td>ISO-8601 timestamp; rendered as relative ("2 hours ago") with absolute on hover.</td></tr>
+      <tr><td><code>data-mine</code></td><td>Current user authored this &mdash; enables Edit / Delete actions and accent styling.</td></tr>
+      <tr><td><code>data-parent</code></td><td>Id of the parent comment for nested replies (drives indent depth).</td></tr>
+      <tr><td><code>data-edited</code></td><td>Optional ISO timestamp; renders an "(edited)" badge with the absolute time on hover.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Wiring the backend</h2>
+  <p>Hook the events; call back via the imperative API.</p>
+
+  <code-block language="javascript" show-lines label="Reply / Edit / Delete" data-escape>const thread = document.querySelector('comment-thread');
+
+thread.addEventListener('comment-thread:reply', async (e) => {
+  const { parentId, value } = e.detail;
+  const saved = await api.postComment({ parentId, body: value });
+  thread.addComment({
+    id: saved.id, author: saved.author, time: saved.time,
+    body: saved.bodyHtml, parentId, mine: true,
+  });
+});
+
+thread.addEventListener('comment-thread:edit-request', async (e) => {
+  const { commentId, value } = e.detail;
+  // Render your own inline editor, then on save:
+  const next = await showEditor(value);
+  const saved = await api.updateComment(commentId, next);
+  thread.updateComment(commentId, { body: saved.bodyHtml, edited: saved.editedAt });
+});
+
+thread.addEventListener('comment-thread:delete-request', async (e) => {
+  if (!confirm('Delete this comment?')) return;
+  await api.deleteComment(e.detail.commentId);
+  thread.removeComment(e.detail.commentId);
+});</code-block>
+
+  <p>Per-comment reactions bubble up as <code>reaction-bar:toggle</code> events &mdash; the thread doesn't intercept them. Wire them once at the thread level.</p>
+</section>
+
+<section>
+  <h2>Read-only mode</h2>
+  <p>Set <code>data-disabled</code> on the thread to hide all action toolbars (no Reply / Edit / Delete). Reactions still render but stay clickable unless the inner <code>&lt;reaction-bar&gt;</code> elements also carry <code>data-disabled</code>.</p>
+
+  <code-block language="html" show-lines label="Archived thread" data-escape><comment-thread data-disabled aria-label="Archived discussion">
+  <article data-comment id="c1" data-author="Ada" data-time="2025-01-01T00:00:00Z">
+    <div data-comment-body>Original launch announcement.</div>
+  </article>
+</comment-thread></code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Thread:</strong> <code>role="region"</code> with the host's <code>aria-label</code> ("Comments" by default).</li>
+    <li><strong>Comments:</strong> native <code>&lt;article&gt;</code> role; nested replies get <code>aria-level</code> matching their depth.</li>
+    <li><strong>Action buttons:</strong> labelled per target ("Reply to Ada Lovelace", "Edit your comment", "Delete your comment").</li>
+    <li><strong>Times:</strong> <code>&lt;time datetime&gt;</code> with the absolute timestamp in <code>title</code>; component refreshes the relative text every 60s.</li>
+    <li><strong>Reply form:</strong> focus moves into the editor when shown; Cancel removes the form. (<code>&lt;comment-box&gt;</code> handles its own keyboard.)</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>aria-label</code></td><td>string</td><td><code>Comments</code></td><td>Region label.</td></tr>
+      <tr><td><code>data-disabled</code></td><td>boolean</td><td><code>false</code></td><td>Read-only mode &mdash; hides the action toolbar on every comment.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Bubbles</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>comment-thread:reply</code></td><td>yes</td><td><code>{ parentId, value }</code></td></tr>
+      <tr><td><code>comment-thread:edit-request</code></td><td>yes</td><td><code>{ commentId, value }</code></td></tr>
+      <tr><td><code>comment-thread:delete-request</code></td><td>yes</td><td><code>{ commentId }</code></td></tr>
+    </tbody>
+  </table>
+  <p>Reactions bubble naturally via <code>reaction-bar:toggle</code> from each per-comment <code>&lt;reaction-bar&gt;</code>.</p>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>addComment(data)</code></td><td>Insert a new comment. <code>data: { id, author, time, body, parentId?, mine?, authorHref?, authorAvatar?, edited? }</code>.</td></tr>
+      <tr><td><code>updateComment(id, patch)</code></td><td>Patch a comment. <code>patch: { body?, author?, edited? }</code>.</td></tr>
+      <tr><td><code>removeComment(id)</code></td><td>Remove a comment from the thread.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/comment-box/"><code>&lt;comment-box&gt;</code></a> &mdash; the reply form (composed via the <code>&lt;template data-reply-form&gt;</code>).</li>
+    <li><a href="/docs/elements/web-components/comment-wc/"><code>&lt;comment-wc&gt;</code></a> &mdash; single inline action used by <code>&lt;selection-menu&gt;</code>. Different role; both ship.</li>
+    <li><a href="/docs/elements/web-components/reaction-bar/"><code>&lt;reaction-bar&gt;</code></a> &mdash; per-comment emoji reactions.</li>
+    <li><a href="/docs/elements/web-components/markdown-viewer/"><code>&lt;markdown-viewer&gt;</code></a> &mdash; for rendering the comment body server-side or client-side.</li>
+  </ul>
+</section>

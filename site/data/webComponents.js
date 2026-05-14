@@ -128,6 +128,7 @@ export default {
     { name: 'print-page', href: '/docs/elements/web-components/print-page/', desc: 'Print button with raw-mode toggle' },
     { name: 'settings-panel', href: '/docs/elements/web-components/settings-panel/', desc: 'Theme/settings panel with gear trigger and details accordion' },
     { name: 'comment-box', href: '/docs/elements/web-components/comment-box/', desc: 'Form-associated comment form composing markdown-editor + Submit/Cancel; presentational with respect to persistence' },
+    { name: 'comment-thread', href: '/docs/elements/web-components/comment-thread/', desc: 'Threaded discussion container; decorates author-rendered <article data-comment> children with header, action row, threaded indentation; composes comment-box for reply form' },
     { name: 'reaction-bar', href: '/docs/elements/web-components/reaction-bar/', desc: 'GitHub-style emoji reaction picker with persistent chips and a curated palette popover' },
     { name: 'share-wc', href: '/docs/elements/web-components/share/', desc: 'Social share with native Web Share API and platform fallbacks' },
     { name: 'site-index', href: '/docs/elements/web-components/site-index/', desc: 'Site keyword index with search filtering' },

@@ -1,0 +1,143 @@
+/* --------------------------------------------------------------------------
+   comment-thread: persistent threaded-discussion container.
+   Decorates author-rendered <article data-comment> children with a header,
+   action footer, and threaded indentation. Composes <comment-box> for
+   the reply form and bubbles <reaction-bar> events naturally.
+   -------------------------------------------------------------------------- */
+
+comment-thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-s, 0.75rem);
+  font: inherit;
+  --comment-depth: 0;
+  --comment-indent: var(--size-l, 1.5rem);
+}
+
+comment-thread > template {
+  display: none;
+}
+
+comment-thread > article[data-comment] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2xs, 0.375rem);
+  padding-block: var(--size-s, 0.75rem);
+  padding-inline: var(--size-s, 0.75rem);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  /* Threaded indentation per data-parent depth. */
+  margin-inline-start: calc(var(--comment-depth) * var(--comment-indent));
+}
+
+comment-thread > article[data-comment][data-mine] {
+  border-color: var(--color-interactive);
+  background: var(--color-action-subtle, color-mix(in oklch, var(--color-interactive) 6%, var(--color-surface)));
+}
+
+/* -------- Header -------- */
+
+comment-thread .comment-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2xs, 0.375rem);
+  flex-wrap: wrap;
+  font-size: 0.9em;
+  color: var(--color-text-muted, currentColor);
+}
+
+comment-thread .comment-author {
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+comment-thread a.comment-author:hover {
+  text-decoration: underline;
+}
+
+comment-thread .comment-time {
+  color: var(--color-text-muted, currentColor);
+}
+
+comment-thread .comment-time::before {
+  content: '·';
+  margin-inline-end: var(--size-3xs, 0.25rem);
+  color: var(--color-text-muted, currentColor);
+}
+
+comment-thread .comment-edited {
+  font-style: italic;
+  font-size: 0.85em;
+  color: var(--color-text-muted, currentColor);
+}
+
+comment-thread .comment-header user-avatar {
+  --avatar-size: 1.5rem;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* -------- Body -------- */
+
+comment-thread [data-comment-body] {
+  font: inherit;
+  color: var(--color-text);
+  /* Author-supplied HTML — let it inherit page typography. */
+}
+
+comment-thread [data-comment-body] > *:first-child { margin-block-start: 0; }
+comment-thread [data-comment-body] > *:last-child  { margin-block-end: 0; }
+
+/* -------- Footer (action toolbar) -------- */
+
+comment-thread .comment-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2xs, 0.375rem);
+  margin-block-start: var(--size-3xs, 0.25rem);
+}
+
+comment-thread .comment-footer:empty { display: none; }
+
+comment-thread .comment-action {
+  appearance: none;
+  background: transparent;
+  color: var(--color-text-muted, currentColor);
+  border: none;
+  padding-block: var(--size-3xs, 0.25rem);
+  padding-inline: var(--size-2xs, 0.375rem);
+  border-radius: var(--radius-s, 0.25rem);
+  font: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background var(--duration-fast, 150ms), color var(--duration-fast, 150ms);
+}
+
+comment-thread .comment-action:hover {
+  background: var(--color-surface-sunken, oklch(94% 0 0));
+  color: var(--color-text);
+}
+
+comment-thread .comment-action:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+comment-thread .comment-delete:hover {
+  color: var(--color-error);
+}
+
+/* -------- Inline reply form -------- */
+
+comment-thread .comment-reply-form {
+  margin-block-start: var(--size-2xs, 0.375rem);
+}
+
+/* -------- Disabled (read-only) -------- */
+
+comment-thread[data-disabled] .comment-footer {
+  display: none;
+}
