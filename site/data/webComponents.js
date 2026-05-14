@@ -107,6 +107,7 @@ export default {
   ],
 
   'Design System Tools': [
+    { name: 'accessibility-specimen', href: '/docs/elements/web-components/accessibility-specimen/', desc: 'WCAG contrast-ratio table for color pairs + a11y checklist with status icons' },
     { name: 'color-palette', href: '/docs/elements/web-components/color-palette/', desc: 'Interactive color swatch display with click-to-copy' },
     { name: 'component-sampler', href: '/docs/elements/web-components/component-sampler/', desc: 'Themed grid of native UI elements' },
     { name: 'font-pairer', href: '/docs/elements/web-components/font-pairer/', desc: 'Interactive font pairing tool with Google Fonts, live preview, and CSS export' },

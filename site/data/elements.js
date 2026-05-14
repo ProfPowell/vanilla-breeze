@@ -8,6 +8,7 @@ const elementsByLetter = {
   A: [
     { name: 'a', type: 'native', href: '/docs/elements/native/a/' },
     { name: 'abbr', type: 'native', href: '/docs/elements/native/abbr/' },
+    { name: 'accessibility-specimen', type: 'component', href: '/docs/elements/web-components/accessibility-specimen/' },
     { name: 'accordion-wc', type: 'component', href: '/docs/elements/web-components/accordion/' },
     { name: 'activity-feed', type: 'component', href: '/docs/elements/web-components/activity-feed/' },
     { name: 'address', type: 'native', href: '/docs/elements/native/address/' },

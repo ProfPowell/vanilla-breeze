@@ -62,7 +62,7 @@ Current surface: **119 web components** across 7 categories (as of 2026-05-13).
 | Component | Type | Notes |
 |-----------|------|-------|
 | ~~`layout-specimen`~~ | **Shipped** as `layout-specimen` (`src/web-components/layout-specimen/`). Renders all 14 VB layout primitives (`stack` / `cluster` / `grid` / `center` / `cover` / `imposter` / `columns` / `card` / `canvas` / `badge` / `reel` / `sidebar` / `switcher` / `text`) with name + description + live mini-example + canonical HTML snippet. Optional `data-only="cluster,grid,stack"` subset. Docs: [reference](/docs/elements/web-components/layout-specimen/). Bead: `vanilla-breeze-l6mu`. | |
-| `accessibility-specimen` | New | A11y checklist and contrast ratio specimen for design system docs. |
+| ~~`accessibility-specimen`~~ | **Shipped** as `accessibility-specimen` (`src/web-components/accessibility-specimen/`). Two modes: contrast-pair table with WCAG 2.x ratio + AA/AAA badges (default), and slot-driven a11y checklist with `data-status="pass\|fail\|warn\|na"` icons. Docs: [reference](/docs/elements/web-components/accessibility-specimen/). Bead: `vanilla-breeze-o6l9`. | |
 | ~~`animation-specimen`~~ | **Shipped** as `motion-specimen` (`src/web-components/motion-specimen/`) — easing curves with animated preview dots and durations as bars. Same component, different name. | |
 | ~~`breakpoint-specimen`~~ | **Shipped** as `breakpoint-specimen` (`src/web-components/breakpoint-specimen/`). Bead: `vanilla-breeze-a7a7`. | |
 
