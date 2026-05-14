@@ -154,6 +154,7 @@ const elementsByLetter = {
     { name: 'layout-imposter', type: 'custom', href: '/docs/elements/custom-elements/imposter/' },
     { name: 'layout-reel', type: 'custom', href: '/docs/elements/custom-elements/reel/' },
     { name: 'layout-sidebar', type: 'custom', href: '/docs/elements/custom-elements/sidebar/' },
+    { name: 'layout-specimen', type: 'component', href: '/docs/elements/web-components/layout-specimen/' },
     { name: 'layout-stack', type: 'custom', href: '/docs/elements/custom-elements/stack/' },
     { name: 'layout-switcher', type: 'custom', href: '/docs/elements/custom-elements/switcher/' },
     { name: 'layout-text', type: 'custom', href: '/docs/elements/custom-elements/layout-text/' },

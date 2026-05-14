@@ -111,6 +111,7 @@ export default {
     { name: 'component-sampler', href: '/docs/elements/web-components/component-sampler/', desc: 'Themed grid of native UI elements' },
     { name: 'font-pairer', href: '/docs/elements/web-components/font-pairer/', desc: 'Interactive font pairing tool with Google Fonts, live preview, and CSS export' },
     { name: 'gradient-builder', href: '/docs/elements/web-components/gradient-builder/', desc: 'Interactive CSS gradient builder with color stops and oklab interpolation' },
+    { name: 'layout-specimen', href: '/docs/elements/web-components/layout-specimen/', desc: 'Visual specimen of all 14 VB layout primitives with mini-examples and snippets' },
     { name: 'palette-generator', href: '/docs/elements/web-components/palette-generator/', desc: 'Algorithmic color palette generation from a seed using OKLCH harmony modes' },
     { name: 'spacing-specimen', href: '/docs/elements/web-components/spacing-specimen/', desc: 'Spacing scale specimen that reads VB tokens and renders a visual bar chart' },
     { name: 'token-specimen', href: '/docs/elements/web-components/token-specimen/', desc: 'Unified design token scale display for shadows, radii, borders, colors, or sizes' },
