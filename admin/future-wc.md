@@ -55,7 +55,7 @@ Current surface: **119 web components** across 7 categories (as of 2026-05-13).
 | ~~`avatar-group`~~ | **Superseded** by `<user-avatar>` + `<layout-cluster data-layout-overlap>`. See [user-avatar docs](https://vanilla-breeze.com/docs/elements/custom-elements/user-avatar/#avatar-group). Bead closed: `vanilla-breeze-pahv`. | |
 | `activity-feed` | New | Timeline of user actions with relative timestamps. |
 | `poll-wc` | New | Simple poll/survey with live results. |
-| `live-indicator` | New | Pulsing live/online status badge. |
+| `status-wc` (was `live-indicator`) | New | Visual state indicator: live/recording (pulse red), online/running (green), streaming/away/paused (amber), busy (red steady), offline/stopped (muted), error (red pulse). 12 built-in variants, custom variants via CSS only. `role="status"` + `aria-live="polite"` by default; `prefers-reduced-motion` collapses pulse to steady. Pairs with `status-message` (textual) and `notification-wc` (action-bearing). Plan: `admin/r-n-d/status-wc.md`. Bead: `vanilla-breeze-6ckr`. |
 
 ## Design Systems
 
