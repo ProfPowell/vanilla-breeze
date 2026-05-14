@@ -1379,6 +1379,19 @@ module.exports = {
     }
   },
 
+  "status-wc": {
+    attributes: {
+      "data-variant": {},
+      "data-size": {},
+      "data-position": {},
+      "data-pulse": {},
+      "data-live": {},
+      "aria-label": {},
+      "role": {},
+      "aria-live": {}
+    }
+  },
+
   "stepper-wc": {
     attributes: {
       "value": {},
