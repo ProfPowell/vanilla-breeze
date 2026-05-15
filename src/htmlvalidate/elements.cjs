@@ -1535,7 +1535,8 @@ module.exports = {
       "scope": {},
       "selector": {},
       "include": {},
-      "format": { enum: ["css", "json"] },
+      "format": { enum: ["css", "json", "dtcg"] },
+      "vb-version": {},
       "label": {},
       "live": { boolean: true }
     }
@@ -1721,6 +1722,8 @@ module.exports = {
       "data-versions": {},
       "data-mode": {},
       "data-action": {},
+      "data-versioned-region": {},
+      "data-diff-position": {},
       "aria-label": {}
     }
   },

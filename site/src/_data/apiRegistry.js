@@ -9173,10 +9173,18 @@ export default {
         "type": "enum",
         "values": [
           "css",
-          "json"
+          "json",
+          "dtcg"
         ],
         "default": "css",
-        "description": "Output format."
+        "description": "Output format. 'dtcg' emits Design Tokens Community Group JSON (stable spec 2025.10)."
+      },
+      {
+        "name": "vb-version",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Optional VB version string included in DTCG $extensions metadata."
       },
       {
         "name": "label",
@@ -10232,7 +10240,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "version-switcher",
     "type": "web-component",
-    "description": "Surface and switch between versions of a page over time. Phase 1: inline data source + trigger + picker popover + navigate action. Modes auto-derived from data shape (releases vs history).",
+    "description": "Surface and switch between versions of a page over time. Inline data source + trigger + picker popover; three actions (navigate / swap / diff). Modes auto-derived from data shape (releases vs history).",
     "attributes": [
       {
         "name": "data-versions",
@@ -10253,7 +10261,21 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "\"navigate\" (Phase 1 default). \"swap\" / \"diff\" ship in Phase 2."
+        "description": "\"navigate\" (default) | \"swap\" | \"diff\""
+      },
+      {
+        "name": "data-versioned-region",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS selector for the swappable / diffable region (default: \"[data-versioned], main\")"
+      },
+      {
+        "name": "data-diff-position",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "\"before\" (default) | \"after\" — where to mount the diff render"
       },
       {
         "name": "aria-label",
@@ -10283,9 +10305,29 @@ export default {
         "description": "Cancellable. Fires before location.href is set; preventDefault() blocks navigation."
       },
       {
+        "name": "version-switcher:before-swap",
+        "detail": "{ entry }",
+        "description": "Cancellable. Fires before swap fetches and replaces the versioned region."
+      },
+      {
+        "name": "version-switcher:swap",
+        "detail": "{ entry, previousId }",
+        "description": "Fires after swap completes. Versioned region replaced + vb:version meta updated."
+      },
+      {
+        "name": "version-switcher:before-diff",
+        "detail": "{ entry }",
+        "description": "Cancellable. Fires before diff fetches the other version."
+      },
+      {
+        "name": "version-switcher:diff",
+        "detail": "{ entry, previousId, diffElement, opCount }",
+        "description": "Fires after diff renders. diffElement is the mounted <change-set>."
+      },
+      {
         "name": "version-switcher:error",
         "detail": "{ message, entry?, error? }",
-        "description": "Parse / resolve / navigation failure"
+        "description": "Parse / fetch / action failure"
       }
     ],
     "properties": [
