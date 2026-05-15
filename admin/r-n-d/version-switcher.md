@@ -1,6 +1,6 @@
 ---
 title: version-switcher Component Plan
-description: Component for surfacing and switching between versions of a page over time. Two modes — docs releases (v1.x / v2.x / latest) and per-page edit history. Three switch actions (navigate / swap / diff). Pluggable data source (inline / src URL / meta tags). Integrates with the existing provenance system (vb:version meta tags, page-info, change-set).
+description: Component for surfacing and switching between versions of a page over time. Two modes — docs releases (v1.x / v2.x / latest) and per-page edit history. Three switch actions (navigate / swap / diff). Pluggable data source (inline / src URL / meta tags). Integrates with the existing provenance system (`meta[itemprop=version]` + new `meta[name=vb:versions-manifest]`, page-info, change-set).
 tags:
   - web-components
   - specification
@@ -22,7 +22,7 @@ A small label "v2.1" hidden in a docs corner is not enough. Authors need a primi
 
 Two distinct use-cases that share enough machinery to live in one component:
 
-- **Mode A — release versions** (classic docs version selector): switch between `/v1/page` and `/v2/page` and `/latest/page`. Each version lives at a different URL. The current version is declared via `<meta name="vb:version">` (already supported by the provenance system).
+- **Mode A — release versions** (classic docs version selector): switch between `/v1/page` and `/v2/page` and `/latest/page`. Each version lives at a different URL. The current version is declared via `<meta itemprop="version">` (the open-standard tag the provenance system already emits).
 - **Mode B — per-page edit history**: a chronological list of how *this same URL* has changed over time. Each entry is a snapshot or a change-set. Useful for evolving canonical pages — policies, glossaries, ADRs.
 
 The user's requirement was explicit: **one component, both modes**. Same trigger UI, same picker UI, the data shape and switch action determine which mode you get.
@@ -31,7 +31,7 @@ The user's requirement was explicit: **one component, both modes**. Same trigger
 
 | Existing | What it does | Why this isn't it |
 |----------|--------------|-------------------|
-| `<page-info>` | Shows authorship + history + trust badge from the provenance meta tags. Currently surfaces the *current* version via `vb:version` / `vb:version-url`. | Display-only; no switching, no listing of other versions. **`<version-switcher>` complements it** — page-info answers "what version is this?", switcher answers "what other versions exist, and how do I get there?". |
+| `<page-info>` | Shows authorship + history + trust badge from the provenance meta tags. Currently surfaces the *current* version via `meta[itemprop=version]` + `vb:version-url`. | Display-only; no switching, no listing of other versions. **`<version-switcher>` complements it** — page-info answers "what version is this?", switcher answers "what other versions exist, and how do I get there?". |
 | `<change-set>` | Wraps `<ins>` / `<del>` for inline diff display with tracking / final / original view modes. | Per-change visual diff of authored markup. **`<version-switcher>` reuses change-set as the renderer** for its diff switch-action. |
 | `<time-index>` | Changelog / version-filtered release timeline (the GLOBAL release history). | Site-level changelog, not per-page. Switcher's mode-A history likely cross-links to time-index entries via `vb:version-url`. |
 | `<comment-thread>` | Persistent discussion attached to a page. | Related to versioning of conversation, not page content. |
@@ -59,7 +59,7 @@ Three actions, configurable via `data-action`:
 | Value | Behavior | Use case |
 |-------|----------|----------|
 | `navigate` (default) | Sets `location.href` to the picked version's URL. Standard docs version selector. | Mode A: `/v1/page` → `/v2/page` |
-| `swap` | Fetches the picked version's HTML and swaps the `[data-versioned]` region in place. No navigation. Updates `vb:version` meta accordingly. | Mode B: time-travel preview without losing scroll/state. |
+| `swap` | Fetches the picked version's HTML and swaps the `[data-versioned]` region in place. No navigation. Updates `<meta itemprop="version">` accordingly. | Mode B: time-travel preview without losing scroll/state. |
 | `diff` | Renders a diff between the current and picked version inline, using `<change-set>` (or future `<diff-viewer>`). | Reviewing what changed between two snapshots. |
 
 ### Data sources (3-tier: inline > src > meta fallback)
@@ -87,11 +87,11 @@ Three actions, configurable via `data-action`:
 ```
 
 ```html
-<!-- 3. Meta-tag fallback: derive from <meta name="vb:version*"> + a sibling
-        manifest URL specified by <meta name="vb:versions-manifest"> -->
+<!-- 3. Meta-tag fallback: derive current from <meta itemprop="version"> +
+        the manifest URL from <meta name="vb:versions-manifest"> -->
 <version-switcher></version-switcher>
 <!-- in <head>: -->
-<!-- <meta name="vb:version" content="v2.1"> -->
+<!-- <meta itemprop="version" content="v2.1"> -->
 <!-- <meta name="vb:versions-manifest" content="/data/versions/api.json"> -->
 ```
 
@@ -110,7 +110,7 @@ type VersionEntry = {
   archived?: boolean;  // archived release (banner trigger)
   draft?: boolean;     // pre-release / draft
   current?: boolean;   // marks the "current" entry; if absent, derived from
-                       //   matching <meta name="vb:version"> or first entry
+                       //   matching <meta itemprop="version"> or first entry
   versionUrl?: string; // (mode A) link out to the changelog anchor
                        //   (matches existing vb:version-url semantics)
 };
@@ -131,11 +131,11 @@ Mode is derived from the data, not declared:
 
 ## Composition with the existing provenance system
 
-This is the load-bearing integration the user called out. The provenance system (per `admin/specs/meta-tag-contract-v1.md`) already declares per-page version metadata via `<meta name="vb:version">` and `<meta name="vb:version-url">`. `<page-info>` reads these and shows them.
+This is the load-bearing integration the user called out. The provenance system (per `admin/specs/meta-tag-contract-v1.md`) already declares per-page version metadata via `<meta itemprop="version">` (the open-standard tag) and `<meta name="vb:version-url">`. `<page-info>` reads these and shows them.
 
 `<version-switcher>` extends this in two directions:
 
-1. **Adds a manifest tag**: `<meta name="vb:versions-manifest" content="/data/versions/<page-id>.json">` — points at the JSON list of all versions of the page. The site-build step (`generate-provenance-meta.js`) gets a frontmatter `versionsManifest` field that emits this tag. Existing `vb:version` becomes the *current-version* marker; `vb:versions-manifest` is the *index*.
+1. **Adds a manifest tag**: `<meta name="vb:versions-manifest" content="/data/versions/<page-id>.json">` — points at the JSON list of all versions of the page. The site-build step (`generate-provenance-meta.js`) gets a frontmatter `versionsManifest` field that emits this tag. Existing `<meta itemprop="version">` becomes the *current-version* marker; `vb:versions-manifest` is the *index*.
 
 2. **Renders inside `<page-info>`'s panel**: when `data-page-info-target="ID"` is set, the switcher mounts as a section inside that page-info's expandable detail. So `page-info` becomes the canonical "what's the provenance of this page?" surface and `version-switcher` is one of the sections inside it. Standalone use (without page-info) still works — it renders a button + popover on its own.
 
@@ -159,7 +159,7 @@ const doc = new DOMParser().parseFromString(html, 'text/html');
 const incoming = doc.querySelector('[data-versioned]') || doc.body;
 document.querySelector('[data-versioned]').replaceChildren(...incoming.children);
 // Update meta tags so page-info reflects the swapped state
-updateMeta('vb:version', entry.id);
+updateMeta('itemprop:version', entry.id);  // sets <meta itemprop="version" content="…">
 emit('version-switcher:swap', { entry, previousId });
 ```
 
@@ -301,7 +301,7 @@ Each phase is its own bead. Ship phase 1 first; phases 2 and 3 unblock as author
 
 ## References
 
-- `admin/specs/meta-tag-contract-v1.md` — `vb:version`, `vb:version-url` (existing); add `vb:versions-manifest` (new)
+- `admin/specs/meta-tag-contract-v1.md` — `meta[itemprop=version]` + `vb:version-url` (existing); add `vb:versions-manifest` (new)
 - `site/plugins/generate-provenance-meta.js` — needs `versionsManifest` frontmatter wiring (separate build-tooling bead)
 - `src/web-components/page-info/` — primary integration target via `data-page-info-target`
 - `src/web-components/change-set/` — diff-action renderer

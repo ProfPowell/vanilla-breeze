@@ -101,8 +101,9 @@ class VersionSwitcher extends VBElement {
     // 1. explicit current: true
     const explicit = this.#versions.find((e) => e.current === true);
     if (explicit) return explicit.id;
-    // 2. matches <meta name="vb:version">
-    const metaVersion = document.querySelector('meta[name="vb:version"]')?.getAttribute('content');
+    // 2. matches <meta itemprop="version"> — the standards-aligned tag the
+    //    provenance system already emits (per meta-tag-contract-v1).
+    const metaVersion = document.querySelector('meta[itemprop="version"]')?.getAttribute('content');
     if (metaVersion) {
       const match = this.#versions.find((e) => e.id === metaVersion);
       if (match) return match.id;
@@ -410,10 +411,12 @@ class VersionSwitcher extends VBElement {
     }
 
     // Reflect the swapped state via the existing provenance meta tag.
-    let meta = document.querySelector('meta[name="vb:version"]');
+    // Uses meta[itemprop="version"] (open standard, what the provenance
+    // generator emits) rather than the non-standard meta[name=vb:version].
+    let meta = document.querySelector('meta[itemprop="version"]');
     if (!meta) {
       meta = document.createElement('meta');
-      meta.setAttribute('name', 'vb:version');
+      meta.setAttribute('itemprop', 'version');
       document.head.appendChild(meta);
     }
     meta.setAttribute('content', entry.id);

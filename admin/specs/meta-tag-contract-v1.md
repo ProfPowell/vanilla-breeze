@@ -110,8 +110,11 @@ Concept IDs are flat slugs (kebab-case). Hierarchy is expressed in `vocabulary.j
 | Field | Values | Consumers |
 |---|---|---|
 | `<meta name="vb:version-url" content="/changelog#v1-4-0">` | URL to changelog entry for this page's version | `<page-info>` version link — links out to the changelog's anchor for this version |
+| `<meta name="vb:versions-manifest" content="/data/versions/page-id.json">` | URL of a JSON manifest listing every version of this page (release versions or per-page edit history) | `<version-switcher>` data-source fallback — fetched when no inline `data-versions` is provided |
 
 No public equivalent exists for "link from a page to its release record." `vb:version-url` complements the open-standard `meta[itemprop="version"]` (the semver) with the anchor.
+
+`vb:versions-manifest` is the index complement to `vb:version`: where `vb:version` declares the *current* version of this URL, `vb:versions-manifest` points at the list of *all* versions. The manifest schema is documented in `<version-switcher>`'s reference (`{ id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }[]`).
 
 ### Content integrity (signing)
 
@@ -203,6 +206,7 @@ A single page demonstrating every field VB consumes:
   <link rel="tag" href="/topics/upgrade-guide">
   <link rel="glossary" href="/glossary">
   <meta name="vb:version-url" content="/changelog#v2-1-0">
+  <meta name="vb:versions-manifest" content="/data/versions/migration.json">
 
   <!-- Signing (Section B integrity) -->
   <meta name="vb:hash" content="sha256-abc123…">

@@ -16,6 +16,11 @@
  *   lastModified  : "2026-04-24"          → last-modified, article:modified_time
  *   version       : "1.4.0"               → meta[itemprop=version]
  *   versionUrl    : "/changelog#v1-4-0"   → vb:version-url
+ *   versionsManifest: "/data/versions/migration.json"
+ *                                          → vb:versions-manifest
+ *                                            (URL of the per-page versions
+ *                                            JSON manifest consumed by
+ *                                            <version-switcher>)
  *   keywords      : ["a", "b"] or "a, b"
  *   license       : "CC BY 4.0"
  *   licenseUrl    : "https://creativecommons.org/licenses/by/4.0/"
@@ -159,6 +164,7 @@ function buildMetaTags(fm) {
     push(`<link rel="glossary" href="/glossary/">`);
   }
   if (fm.versionUrl) push(`<meta name="vb:version-url" content="${escAttr(fm.versionUrl)}">`);
+  if (fm.versionsManifest) push(`<meta name="vb:versions-manifest" content="${escAttr(fm.versionsManifest)}">`);
 
   return lines.join('\n  ');
 }
