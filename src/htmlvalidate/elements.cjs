@@ -198,6 +198,8 @@ module.exports = {
   },
 
   "form-field": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-valid": {},
       "data-invalid": {}
@@ -207,6 +209,8 @@ module.exports = {
   // ── Web Components ──────────────────────────────────────────────
 
   "accessibility-specimen": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "type": {}
     }
@@ -226,6 +230,8 @@ module.exports = {
   },
 
   "activity-feed": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "aria-label": {},
       "data-group": {},
@@ -292,6 +298,8 @@ module.exports = {
   },
 
   "audio-player": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "autoplay": { boolean: true },
       "loop": { boolean: true },
@@ -305,6 +313,8 @@ module.exports = {
   },
 
   "audio-visualizer": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "for": {},
       "data-mode": {},
@@ -313,6 +323,8 @@ module.exports = {
   },
 
   "author-index": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-lens-src": {},
       "src": {},
@@ -322,6 +334,8 @@ module.exports = {
   },
 
   "bread-crumb": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-from-pathname": { boolean: true },
       "data-current-label": {},
@@ -332,6 +346,8 @@ module.exports = {
   },
 
   "breakpoint-specimen": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "tokens": {},
       "prefix": {},
@@ -341,6 +357,8 @@ module.exports = {
   },
 
   "burndown-chart": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "start": {},
       "end": {},
@@ -352,6 +370,8 @@ module.exports = {
   },
 
   "calendar-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-month": {},
       "data-year": {},
@@ -799,6 +819,8 @@ module.exports = {
   },
 
   "geo-map": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "lat": {},
       "lng": {},
@@ -1140,6 +1162,8 @@ module.exports = {
   },
 
   "print-page": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "raw-toggle": { boolean: true },
       "label": {},
@@ -1326,6 +1350,8 @@ module.exports = {
   },
 
   "share-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "url": {},
       "title": {},
@@ -1520,6 +1546,8 @@ module.exports = {
   },
 
   "text-reader": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "for": {},
       "selectors": {},

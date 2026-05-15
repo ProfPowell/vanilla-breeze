@@ -921,6 +921,12 @@ export default {
     "element": "accessibility-specimen",
     "type": "web-component",
     "description": "WCAG contrast-ratio table + a11y checklist for design-system docs. Default mode: tabular display of color pairs with computed contrast ratio + AA/AAA badges. Checklist mode: slot-driven WCAG checklist with status icons.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "type",
@@ -1042,6 +1048,12 @@ export default {
     "element": "activity-feed",
     "type": "web-component",
     "description": "WAI-ARIA Feed timeline of user actions. Author renders <article data-activity data-time=ISO> children; component decorates with relative-time badges, optional date grouping, optional infinite-scroll sentinel, and per-entry avatar / icon left-rail.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "aria-label",
@@ -1543,6 +1555,12 @@ export default {
     "element": "audio-player",
     "type": "web-component",
     "description": "Platform audio player web component",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "autoplay",
@@ -1613,6 +1631,12 @@ export default {
     "element": "audio-visualizer",
     "type": "web-component",
     "description": "Canvas-based audio visualization companion",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "for",
@@ -1644,6 +1668,12 @@ export default {
     "element": "author-index",
     "type": "web-component",
     "description": "Author-grouped view of site content",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "data-lens-src",
@@ -1680,6 +1710,12 @@ export default {
     "element": "bread-crumb",
     "type": "web-component",
     "description": "Hierarchical navigation trail. Wraps existing <ol> markup HTML-first, or auto-generates from window.location.pathname. Emits BreadcrumbList JSON-LD for SEO.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "data-from-pathname",
@@ -1732,6 +1768,12 @@ export default {
     "element": "breakpoint-specimen",
     "type": "web-component",
     "description": "Responsive breakpoint visualization with live width readout",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "tokens",
@@ -1770,6 +1812,12 @@ export default {
     "element": "burndown-chart",
     "type": "web-component",
     "description": "Sprint burndown plot. Wraps <chart-wc> with auto-computed ideal line and scope-change annotations.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "start",
@@ -1838,6 +1886,12 @@ export default {
     "element": "calendar-wc",
     "type": "web-component",
     "description": "Standalone calendar display with rich cell content",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "data-month",
@@ -4518,6 +4572,12 @@ export default {
     "element": "form-field",
     "type": "web-component",
     "description": "Accessible form field web component",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "data-valid",
@@ -4613,6 +4673,12 @@ export default {
     "element": "geo-map",
     "type": "web-component",
     "description": "A zero-dependency map component using OSM tiles.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "lat",
@@ -6491,6 +6557,47 @@ export default {
       }
     ]
   },
+  "pager-wc": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "pager-wc",
+    "type": "web-component",
+    "description": "Standalone pagination controls element targeting any [data-paged] container. The element form of the data-paged primitive — same shape as the layout-grid / data-layout-* element-attribute symmetry across VB. Authors pick the surface that fits the markup; both feed the same engine. Multiple <pager-wc> instances pointing at the same target stay in sync via paged:change.",
+    "attributes": [
+      {
+        "name": "target",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "CSS selector for the [data-paged] container (preferred form)."
+      },
+      {
+        "name": "for",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of the target container (HTML-form-style alternative to target)."
+      },
+      {
+        "name": "style",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "numbered",
+          "prev-next",
+          "load-more"
+        ],
+        "default": "numbered",
+        "description": "Control style. Infinite is intentionally unsupported — a sentinel pattern doesn't make sense for decoupled controls."
+      }
+    ],
+    "events": [
+      {
+        "name": "pager-wc:navigate",
+        "description": "Bubbles before the target's data-paged engine processes the navigation. detail: { page }. Use for analytics / scroll-restore hooks."
+      }
+    ]
+  },
   "palette-generator": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "palette-generator",
@@ -6779,6 +6886,12 @@ export default {
     "element": "print-page",
     "type": "web-component",
     "description": "Print button with optional raw-mode toggle",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "raw-toggle",
@@ -7958,6 +8071,12 @@ export default {
     "element": "share-wc",
     "type": "web-component",
     "description": "Social share component with native Web Share API and platform fallbacks",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "url",
@@ -9050,6 +9169,12 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "text-reader",
     "type": "web-component",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "for",
