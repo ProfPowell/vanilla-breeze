@@ -111,6 +111,8 @@ These enhance native attributes rather than creating new components. **All five 
 | `data-accordion` | `open` | `vanilla-breeze-03jb` | ✓ Shipped |
 | `data-sandbox-report` | `sandbox` | `vanilla-breeze-rrtx` | ✓ Shipped |
 | `data-paged` | (no native equivalent) — list-pagination upscale on any list-shaped container | `vanilla-breeze-07td` | ✓ Shipped |
+| `data-sortable` | (no native equivalent) — client-side list/table sorting; composes with `data-paged` | `vanilla-breeze-87x2` | ✓ Shipped |
+| `data-toggle` | (no native equivalent) — generic click-to-flip-attribute upscale; catch-all for non-popover/commandfor cases | `vanilla-breeze-fyso` | ✓ Shipped |
 
 ---
 
