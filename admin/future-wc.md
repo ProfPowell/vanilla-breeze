@@ -2,7 +2,7 @@
 
 Master list of components we may develop, organized by nav category. Each entry notes whether it's a new component, an upscale of a native attribute, or an expansion of an existing component. Priority is rough — actual scheduling depends on user demand and architectural readiness.
 
-Current surface: **131 web components** across 7 categories (as of 2026-05-14).
+Current surface: **137 web components** across 7 categories (as of 2026-05-15).
 
 ---
 
@@ -29,7 +29,7 @@ Current surface: **131 web components** across 7 categories (as of 2026-05-14).
 
 | Component | Type | Notes |
 |-----------|------|-------|
-| `pdf-viewer` | In progress (external) | Standalone build at https://profpowell.github.io/pdf-viewer/. **Integration task**: ensure VB design-token compatibility (colors, spacing, typography, focus rings) before importing. Theme-pack tokens should drive UI chrome — no hardcoded values. Bead: `vanilla-breeze-3xwu`. |
+| `pdf-viewer` | External (token-compat done) | Standalone build at https://profpowell.github.io/pdf-viewer/. Token-compatibility pass complete (bead `vanilla-breeze-3xwu` closed). Lives outside VB; import as `@profpowell/pdf-viewer`-style consumer when needed. |
 | `model-viewer` | New | 3D model viewer. Wraps `<model-viewer>` or Three.js. |
 | `map-viewer` | New | Interactive map beyond static tiles. Zoom, pan, markers. Extends `geo-map`. |
 
@@ -65,6 +65,8 @@ Current surface: **131 web components** across 7 categories (as of 2026-05-14).
 | ~~`accessibility-specimen`~~ | **Shipped** as `accessibility-specimen` (`src/web-components/accessibility-specimen/`). Two modes: contrast-pair table with WCAG 2.x ratio + AA/AAA badges (default), and slot-driven a11y checklist with `data-status="pass\|fail\|warn\|na"` icons. Docs: [reference](/docs/elements/web-components/accessibility-specimen/). Bead: `vanilla-breeze-o6l9`. | |
 | ~~`animation-specimen`~~ | **Shipped** as `motion-specimen` (`src/web-components/motion-specimen/`) — easing curves with animated preview dots and durations as bars. Same component, different name. | |
 | ~~`breakpoint-specimen`~~ | **Shipped** as `breakpoint-specimen` (`src/web-components/breakpoint-specimen/`). Bead: `vanilla-breeze-a7a7`. | |
+| ~~`theme-import`~~ | **Shipped** as `theme-import` (`src/web-components/theme-import/`). Apply DTCG (Design Tokens Community Group, stable 2025.10) JSON to a preview scope via paste / file / URL. Round-trip lossless via `$extensions["com.vanilla-breeze"]`. Phase 3 of the DTCG pipeline epic. Bead: `vanilla-breeze-uojr`. | |
+| ~~`theme-catalog`~~ | **Shipped** as `theme-catalog` (`src/web-components/theme-catalog/`). Tile grid of curated public design systems (Material 3, IBM Carbon, Salesforce Lightning, GOV.UK, Atlassian, Tailwind, Bootstrap, Catppuccin Mocha) with one-click apply via the Phase 3 deserializer. License attribution surfaced per entry. Phase 4 of the DTCG pipeline epic. Bead: `vanilla-breeze-073k`. | |
 
 
 ## Planning
@@ -84,7 +86,7 @@ Consolidation outcome (May 2026): five proposed components reduced to **1 primit
 | ~~`product-roadmap`~~ | **Shipped** as `product-roadmap` (`src/web-components/product-roadmap/`). Bead: `vanilla-breeze-epvt`. Interactive themes × quarters with drag-to-reschedule. | |
 | `decision-matrix` (continued ideas) | Backlog | Multi-evaluator scoring + per-cell rationale notes. Defer until requested. |
 | `risk-register` (continued ideas) | Backlog | Bidirectional editing (table edit → quadrant move → table refresh). Currently one-way render. |
-| `time-axis-utility` | Backlog | Extract shared quarter/month axis math from gantt-chart + roadmap once a 3rd consumer appears. Bead: `vanilla-breeze-l0my`. |
+| `time-axis-utility` | Deferred-until-trigger (bead closed) | Extract shared quarter/month axis math from gantt-chart + roadmap once a 3rd consumer appears (likely `okr-tracker` or `milestone-timeline`). Per the project's "don't extract until 3 use cases" rule. Bead `vanilla-breeze-l0my` closed; re-open when the trigger lands. |
 
 ## AI
 
@@ -99,15 +101,51 @@ Page-tools that wrap browser-native AI APIs (Chrome Summarizer, LanguageModel, e
 
 ## Upscale Attributes (not components)
 
-These are tracked as beads and enhance native attributes rather than creating new components:
+These enhance native attributes rather than creating new components. **All five from the original wishlist have shipped.** New upscale ideas should be added below as they're identified.
 
-| Attribute | Upscales | Bead |
-|-----------|----------|------|
-| `data-spellcheck` | `spellcheck` | `vanilla-breeze-x0f2` |
-| `data-responsive` | `srcset/sizes` | `vanilla-breeze-uy6h` |
-| `data-hotkey` (extend) | `accesskey` | `vanilla-breeze-p880` |
-| `data-accordion` | `open` | `vanilla-breeze-03jb` |
-| `data-sandbox-report` | `sandbox` | `vanilla-breeze-rrtx` |
+| Attribute | Upscales | Bead | Status |
+|-----------|----------|------|--------|
+| `data-spellcheck` | `spellcheck` | `vanilla-breeze-x0f2` | ✓ Shipped |
+| `data-responsive` | `srcset/sizes` | `vanilla-breeze-uy6h` | ✓ Shipped |
+| `data-hotkey` (extend) | `accesskey` | `vanilla-breeze-p880` | ✓ Shipped |
+| `data-accordion` | `open` | `vanilla-breeze-03jb` | ✓ Shipped |
+| `data-sandbox-report` | `sandbox` | `vanilla-breeze-rrtx` | ✓ Shipped |
+
+---
+
+## What's still on the table
+
+Live shortlist of wishlist work not yet started, plus new ideas surfaced from recent sessions. Pick from here when scheduling next.
+
+### Unshipped wishlist components
+
+| Component | Where | Notes |
+|-----------|-------|-------|
+| `rich-editor` | Interaction | ProseMirror AST-based; **on hold** until VB stabilizes. See `admin/r-n-d/editor-plan.md`. Largest single-component effort on the list. |
+| `model-viewer` | Media | Wraps `<model-viewer>` or Three.js. New use case; no current demand signal. |
+| `map-viewer` | Media | Interactive map (zoom / pan / markers) extending `geo-map`. |
+| `annotation-layer` | Content Management | Overlay annotations on any content block. Likely overlaps with `<highlight-wc>` + `<note-wc>` — scope-check before scaffolding. |
+| `content-feed` | Content Management | Paginated/infinite-scroll feed. **Overlap check** with `<activity-feed>` (already does WAI-ARIA Feed timeline w/ infinite scroll); may be a recipe rather than a new component. |
+| `search-results` | Content Management | Standalone results list w/ highlighting. **Overlap check**: `<site-search>` already does highlighting. Either fold into `site-search` slots/recipe, or scope narrowly to non-dialog standalone. |
+| `decision-matrix` (continued) | Planning | Multi-evaluator scoring + per-cell rationale notes. Defer until requested. |
+| `risk-register` (continued) | Planning | Bidirectional editing (table edit → quadrant move → table refresh). Currently one-way render. |
+
+### New ideas surfaced from recent sessions
+
+| Idea | Source | Status |
+|------|--------|--------|
+| URL-inferred theme service | DTCG pipeline plan, Phase 6 | **Future R&D**, not committed. Concept: paste a URL → service scrapes computed styles → proposes a VB theme. Requires server-side (Cloudflare Worker + headless browser), OKLCH clustering heuristics, and trademark/scraping-ethics design. Plan sketch in `admin/dtcg-theme-pipeline-plan.md`. |
+| `@profpowell/canvas-text` | render-tag R&D | Stand-alone npm package, not part of VB core. Wraps `render-tag` to paint rich-text HTML onto a `<canvas>`. Foundation for OG cards, screensavers, sticker tools. Plan in `admin/canvas-text-plan.md`. |
+| `@profpowell/meme-maker` | render-tag R&D | Stand-alone npm package. Image + caption → PNG export, presets, drafts. Built on `canvas-text` if shipped first, or `render-tag` directly. Plan in `admin/meme-maker-plan.md`. |
+
+### Backlog questions worth answering
+
+These are decisions, not components. Each could redirect future work.
+
+- **annotation-layer vs `<highlight-wc>` + `<note-wc>`** — is annotation-layer a real new shape, or a recipe over the existing primitives?
+- **content-feed vs `<activity-feed>`** — same question; activity-feed already covers most of the surface.
+- **search-results vs `<site-search>` slots** — fold or scope?
+- **`<theme-picker>` + theme-library page convergence** — both expose theme browsing now; consider whether the picker should embed library-page filters or vice versa.
 
 ---
 
