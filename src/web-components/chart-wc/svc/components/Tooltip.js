@@ -1,4 +1,4 @@
-import VElement from '../DOM/VElement.js';
+import { VElement } from '../DOM/VElement.js';
 
 /**
  * Tooltip Class
@@ -180,4 +180,4 @@ class Tooltip {
   }
 }
 
-export default Tooltip;
+export { Tooltip };

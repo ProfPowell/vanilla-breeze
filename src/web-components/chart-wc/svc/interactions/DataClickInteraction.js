@@ -10,14 +10,14 @@
 export function dataClickInteraction(
   state, instance, chart,
 ) {
-  var plotarea = instance.querySelector('chart-plot');
+  let plotarea = instance.querySelector('chart-plot');
   if (!plotarea) return;
 
   function handleClick(e) {
-    var node = e.target.closest('[role="graphics-symbol"]');
+    let node = e.target.closest('[role="graphics-symbol"]');
     if (!node) return;
 
-    var info = {
+    let info = {
       type: 'click',
       event: e,
       element: node,
@@ -39,7 +39,7 @@ export function dataClickInteraction(
   plotarea.addEventListener('click', handleClick);
 
   // Extend cleanup
-  var existingCleanup = state._dataClickCleanup;
+  let existingCleanup = state._dataClickCleanup;
   state._dataClickCleanup = function() {
     if (existingCleanup) existingCleanup();
     plotarea.removeEventListener('click', handleClick);

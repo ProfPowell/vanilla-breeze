@@ -1,6 +1,6 @@
-import Chart from './Chart.js';
-import VElement from '../DOM/VElement.js';
-import Tooltip from '../components/Tooltip.js';
+import { Chart } from './Chart.js';
+import { VElement } from '../DOM/VElement.js';
+import { Tooltip } from '../components/Tooltip.js';
 import * as Util from '../utils/Utils.js';
 import {escapeHtml, isPlainObject} from '../utils/Utils.js';
 
@@ -394,56 +394,56 @@ class PieChart extends Chart {
    */
   tooltipLocation(state, instance, chart) {
     return function tooltipLocation(e) {
-      var target = instance.querySelector('chart-plot');
+      let target = instance.querySelector('chart-plot');
       if (!target) return null;
-      var box = target.getBoundingClientRect();
+      let box = target.getBoundingClientRect();
 
       // Find the actual pie SVG (preserveAspectRatio means it's centered)
-      var pieSvg = target.querySelector('.svc-nodeGroup');
-      var pieBox = pieSvg ? pieSvg.getBoundingClientRect() : box;
+      let pieSvg = target.querySelector('.svc-nodeGroup');
+      let pieBox = pieSvg ? pieSvg.getBoundingClientRect() : box;
 
       // Mouse position relative to pie circle center
-      var centerX = pieBox.left + pieBox.width / 2;
-      var centerY = pieBox.top + pieBox.height / 2;
-      var dx = e.clientX - centerX;
-      var dy = e.clientY - centerY;
+      let centerX = pieBox.left + pieBox.width / 2;
+      let centerY = pieBox.top + pieBox.height / 2;
+      let dx = e.clientX - centerX;
+      let dy = e.clientY - centerY;
 
       // Use the smaller dimension as the radius reference
-      var pieRadius = Math.min(pieBox.width, pieBox.height) / 2;
-      var dist = Math.sqrt(dx * dx + dy * dy);
+      let pieRadius = Math.min(pieBox.width, pieBox.height) / 2;
+      let dist = Math.sqrt(dx * dx + dy * dy);
       if (dist > pieRadius) return null;
 
       // Ring hole — ignore if inside the donut hole
       if (chart.config.plot.ring) {
-        var ringSize = parseFloat(chart.config.center.size) || 40;
-        var holeRadius = pieRadius * (ringSize / 100);
+        let ringSize = parseFloat(chart.config.center.size) || 40;
+        let holeRadius = pieRadius * (ringSize / 100);
         if (dist < holeRadius) return null;
       }
 
       // Calculate angle (0° = right, clockwise) — matches calculateSlice
-      var angle = Math.atan2(dy, dx);
+      let angle = Math.atan2(dy, dx);
       if (angle < 0) angle += 2 * Math.PI;
-      var fraction = angle / (2 * Math.PI);
+      let fraction = angle / (2 * Math.PI);
 
       // Tooltip position as percentage of chart-plot
-      var xPercent = ((e.clientX - box.left) / box.width) * 100;
-      var yPercent = ((e.clientY - box.top) / box.height) * 100;
+      let xPercent = ((e.clientX - box.left) / box.width) * 100;
+      let yPercent = ((e.clientY - box.top) / box.height) * 100;
 
       // Find which slice this angle falls in
-      var data = chart.data;
-      var keys = Object.keys(data);
-      var total = keys.reduce(function(sum, k) {
+      let data = chart.data;
+      let keys = Object.keys(data);
+      let total = keys.reduce(function(sum, k) {
         return sum + (data[k] || 0);
       }, 0);
       if (total === 0) return null;
 
-      var running = 0;
-      var hitKey = null;
-      var hitValue = 0;
-      var hitIndex = 0;
-      for (var i = 0; i < keys.length; i++) {
-        var val = data[keys[i]] || 0;
-        var sliceFraction = val / total;
+      let running = 0;
+      let hitKey = null;
+      let hitValue = 0;
+      let hitIndex = 0;
+      for (let i = 0; i < keys.length; i++) {
+        let val = data[keys[i]] || 0;
+        let sliceFraction = val / total;
         if (fraction >= running &&
             fraction < running + sliceFraction) {
           hitKey = keys[i];
@@ -455,8 +455,8 @@ class PieChart extends Chart {
       }
       if (!hitKey) return null;
 
-      var percentage = ((hitValue / total) * 100).toFixed(1);
-      var info = {
+      let percentage = ((hitValue / total) * 100).toFixed(1);
+      let info = {
         tooltip: {},
         crosshair: {x1: -10, x2: -10, y1: -10, y2: -10},
       };
@@ -465,8 +465,8 @@ class PieChart extends Chart {
       info.tooltip.x = xPercent;
       info.tooltip.y = yPercent;
 
-      var name = escapeHtml(String(hitKey));
-      var content;
+      let name = escapeHtml(String(hitKey));
+      let content;
       if (chart.config.tooltip && chart.config.tooltip.format) {
         try {
           content = escapeHtml(
@@ -492,4 +492,4 @@ class PieChart extends Chart {
   }
 }
 
-export default PieChart;
+export { PieChart };

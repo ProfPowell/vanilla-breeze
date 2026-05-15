@@ -1,12 +1,12 @@
-import Defaults from '../Defaults.js';
-import VElement from '../DOM/VElement.js';
-import Title from '../components/Title.js';
-import Legend from '../components/Legend.js';
-import Tooltip from '../components/Tooltip.js';
-import Stylesheet from '../styles/Stylesheet.js';
-import createSVGContainer from '../DOM/structure.js';
+import { Defaults } from '../Defaults.js';
+import { VElement } from '../DOM/VElement.js';
+import { Title } from '../components/Title.js';
+import { Legend } from '../components/Legend.js';
+import { Tooltip } from '../components/Tooltip.js';
+import { Stylesheet } from '../styles/Stylesheet.js';
+import { createSVGContainer } from '../DOM/structure.js';
 import {compileDOM, escapeHtml} from '../utils/Utils.js';
-import SVC from '../SVC.js';
+import { SVC } from '../SVC.js';
 import {
   tooltipInteraction, legendInteraction,
   keyboardNavigation, dataClickInteraction,
@@ -506,4 +506,4 @@ class Chart extends SVC {
   }
 }
 
-export default Chart;
+export { Chart };

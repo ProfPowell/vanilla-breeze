@@ -92,4 +92,4 @@ function pickFormatter(rangeMs) {
   return (d) => d.toLocaleDateString(undefined, {year: 'numeric'});
 }
 
-export default TimeScale;
+export { TimeScale };

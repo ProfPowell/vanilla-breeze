@@ -14,18 +14,18 @@ export function legendInteraction(state, instance, chart) {
   state.toggles.forEach(function(toggle) {
     toggle.removeAttribute('onclick');
     toggle.addEventListener('click', function(e) {
-      var series = e.target.getAttribute('data-series');
+      let series = e.target.getAttribute('data-series');
       state.toggles[series] = e.target.checked;
-      var isVisible = state.toggles[series] !== false;
-      var opacity = isVisible ? 1 : 0;
+      let isVisible = state.toggles[series] !== false;
+      let opacity = isVisible ? 1 : 0;
 
       // Toggle plot path (exists on Cartesian charts, not on Pie)
-      var plot = instance.getElementsByClassName('svc-plot-' + series)[0];
+      let plot = instance.getElementsByClassName('svc-plot-' + series)[0];
       if (plot) plot.style.opacity = opacity;
 
       // Toggle nodes
-      var nodes = instance.getElementsByClassName('svc-plot-node-' + series);
-      for (var i = 0; i < nodes.length; i++) {
+      let nodes = instance.getElementsByClassName('svc-plot-node-' + series);
+      for (let i = 0; i < nodes.length; i++) {
         nodes[i].style.opacity = opacity;
       }
 

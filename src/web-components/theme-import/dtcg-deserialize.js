@@ -102,7 +102,6 @@ function pathToVar(path) {
         default:              return null;
       }
       // (unreachable)
-      // eslint-disable-next-line no-unused-vars
       const _ = leaf;
     }
     case 'spacing':

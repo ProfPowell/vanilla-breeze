@@ -1,6 +1,6 @@
 import * as Util from './utils/Utils.js';
 import {isPlainObject} from './utils/Utils.js';
-import VElement from './DOM/VElement.js';
+import { VElement } from './DOM/VElement.js';
 
 /**
  * Creates the default configuration object for every chart.
@@ -269,4 +269,4 @@ class Defaults {
     }
   }
 }
-export default Defaults;
+export { Defaults };

@@ -68,4 +68,4 @@ class VElement {
     this.options[key] = value;
   }
 }
-export default VElement;
+export { VElement };

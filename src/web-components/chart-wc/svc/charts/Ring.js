@@ -1,4 +1,4 @@
-import PieChart from './Pie.js';
+import { PieChart } from './Pie.js';
 
 /**
  * Ring (donut) Chart — pie chart with a transparent center hole.
@@ -37,4 +37,4 @@ class RingChart extends PieChart {
   }
 }
 
-export default RingChart;
+export { RingChart };

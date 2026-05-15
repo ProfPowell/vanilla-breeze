@@ -1,9 +1,9 @@
-import Chart from './Chart.js';
-import VElement from '../DOM/VElement.js';
+import { Chart } from './Chart.js';
+import { VElement } from '../DOM/VElement.js';
 import * as Util from '../utils/Utils.js';
-import Baseline from '../components/Baseline.js';
-import Tooltip from '../components/Tooltip.js';
-import createMediaQueries from '../components/ScaleQueries.js';
+import { Baseline } from '../components/Baseline.js';
+import { Tooltip } from '../components/Tooltip.js';
+import { createMediaQueries } from '../components/ScaleQueries.js';
 import {calculateStats} from '../stats/index.js';
 import {createScale} from '../scales/index.js';
 
@@ -387,4 +387,4 @@ function detectScaleType(axisType, stats, config) {
   return stats.associative ? 'category' : 'linear';
 }
 
-export default Cartesian;
+export { Cartesian };

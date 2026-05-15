@@ -1,5 +1,5 @@
-import VElement from '../DOM/VElement.js';
-import ScatterChart from './Scatter.js';
+import { VElement } from '../DOM/VElement.js';
+import { ScatterChart } from './Scatter.js';
 import {BUBBLE_SIZE_DIVISOR, BUBBLE_DEFAULT_OPACITY} from '../constants.js';
 
 /**
@@ -90,4 +90,4 @@ class BubbleChart extends ScatterChart {
   }
 }
 
-export default BubbleChart;
+export { BubbleChart };

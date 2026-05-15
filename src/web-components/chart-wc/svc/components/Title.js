@@ -1,4 +1,4 @@
-import VElement from '../DOM/VElement.js';
+import { VElement } from '../DOM/VElement.js';
 import {escapeHtml, miniMarkdown} from '../utils/Utils.js';
 
 /**
@@ -104,4 +104,4 @@ function escapeSubtitle(text, useMarkdown) {
   return useMarkdown ? miniMarkdown(text) : escapeHtml(text);
 }
 
-export default Title;
+export { Title };

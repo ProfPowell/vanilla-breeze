@@ -67,4 +67,4 @@ function formatLogLabel(value) {
   return String(value);
 }
 
-export default LogScale;
+export { LogScale };

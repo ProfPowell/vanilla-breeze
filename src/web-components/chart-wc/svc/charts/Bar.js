@@ -1,4 +1,4 @@
-import ColumnChart from './Column.js';
+import { ColumnChart } from './Column.js';
 import {escapeHtml} from '../utils/Utils.js';
 
 /**
@@ -137,4 +137,4 @@ class BarChart extends ColumnChart {
   }
 }
 
-export default BarChart;
+export { BarChart };

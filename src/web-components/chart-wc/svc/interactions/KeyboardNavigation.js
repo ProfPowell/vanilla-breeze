@@ -10,11 +10,11 @@
  * @param {Object} chart - the chart instance
  */
 export function keyboardNavigation(state, instance, _chart) {
-  var nodes = instance.querySelectorAll('[role="graphics-symbol"]');
+  let nodes = instance.querySelectorAll('[role="graphics-symbol"]');
   if (nodes.length === 0) return;
 
-  var currentIndex = -1;
-  var plotarea = instance.querySelector('chart-plot');
+  let currentIndex = -1;
+  let plotarea = instance.querySelector('chart-plot');
   if (!plotarea) return;
 
   plotarea.setAttribute('tabindex', '0');
@@ -30,7 +30,7 @@ export function keyboardNavigation(state, instance, _chart) {
       focusNode(currentIndex);
     } else if (e.key === 'Escape') {
       blurAll();
-      var tooltip = instance.querySelector('#svc-tooltip-label');
+      let tooltip = instance.querySelector('#svc-tooltip-label');
       if (tooltip) tooltip.classList.add('svc-hide');
       currentIndex = -1;
     }
@@ -38,12 +38,12 @@ export function keyboardNavigation(state, instance, _chart) {
 
   function focusNode(index) {
     blurAll();
-    var node = nodes[index];
+    let node = nodes[index];
     if (!node) return;
     node.classList.add('svc-focus');
     // Announce to screen readers via aria-live region
-    var label = node.getAttribute('aria-label');
-    var tooltip = instance.querySelector('#svc-tooltip-label');
+    let label = node.getAttribute('aria-label');
+    let tooltip = instance.querySelector('#svc-tooltip-label');
     if (tooltip && label) {
       tooltip.textContent = label;
       tooltip.classList.remove('svc-hide');
@@ -51,7 +51,7 @@ export function keyboardNavigation(state, instance, _chart) {
   }
 
   function blurAll() {
-    for (var i = 0; i < nodes.length; i++) {
+    for (let i = 0; i < nodes.length; i++) {
       nodes[i].classList.remove('svc-focus');
     }
   }

@@ -87,4 +87,4 @@ class Hooks {
   }
 }
 
-export default Hooks;
+export { Hooks };

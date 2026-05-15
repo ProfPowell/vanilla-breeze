@@ -1,4 +1,4 @@
-import VElement from '../DOM/VElement.js';
+import { VElement } from '../DOM/VElement.js';
 import * as Util from '../utils/Utils.js';
 
 /**
@@ -138,6 +138,6 @@ function applyLabelFormat(labelText, type, config) {
   return labelText;
 }
 
-export default LinearScale;
+export { LinearScale };
 // Re-export helpers for CategoryScale reuse
 export {createTick, createGuide, createLabel, applyLabelFormat};

@@ -1,4 +1,4 @@
-import LineChart from './Line.js';
+import { LineChart } from './Line.js';
 import {formatNumber} from '../utils/Utils.js';
 
 /**
@@ -97,4 +97,4 @@ class AreaChart extends LineChart {
   }
 }
 
-export default AreaChart;
+export { AreaChart };

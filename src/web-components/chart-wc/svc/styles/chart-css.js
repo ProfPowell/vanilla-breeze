@@ -294,4 +294,4 @@ path.svc-focus {
 }
 `;
 
-export default CHART_CSS;
+export { CHART_CSS };

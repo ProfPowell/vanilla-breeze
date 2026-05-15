@@ -1,5 +1,5 @@
-import Cartesian from './Cartesian.js';
-import VElement from '../DOM/VElement.js';
+import { Cartesian } from './Cartesian.js';
+import { VElement } from '../DOM/VElement.js';
 import {escapeHtml} from '../utils/Utils.js';
 
 /**
@@ -650,4 +650,4 @@ class ColumnChart extends Cartesian {
   }
 }
 
-export default ColumnChart;
+export { ColumnChart };

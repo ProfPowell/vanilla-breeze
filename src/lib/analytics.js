@@ -149,7 +149,6 @@ function dispatch(kind, envelope) {
     // Dev visibility — clearly namespaced so it's easy to spot/filter.
     // Use console.log so events show under the default console filter
     // (console.debug is hidden unless "Verbose" is enabled in Chrome).
-    // eslint-disable-next-line no-console
     console.log('%c[vb:analytics]', 'color:#0aa;font-weight:600', kind, envelope);
     return true;
   }

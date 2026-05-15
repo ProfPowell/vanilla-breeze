@@ -1,5 +1,5 @@
-import Cartesian from './Cartesian.js';
-import VElement from '../DOM/VElement.js';
+import { Cartesian } from './Cartesian.js';
+import { VElement } from '../DOM/VElement.js';
 import * as Util from '../utils/Utils.js';
 import {escapeHtml} from '../utils/Utils.js';
 import {CURVE_TENSION, CURVE_SMOOTHNESS} from '../constants.js';
@@ -329,4 +329,4 @@ class LineChart extends Cartesian {
   }
 }
 
-export default LineChart;
+export { LineChart };

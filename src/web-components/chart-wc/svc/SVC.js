@@ -1,5 +1,5 @@
-import VElement from './DOM/VElement.js';
-import Hooks from './Hooks.js';
+import { VElement } from './DOM/VElement.js';
+import { Hooks } from './Hooks.js';
 import {deepAssign} from './utils/Utils.js';
 
 /**
@@ -371,4 +371,4 @@ class SVC {
   }
 }
 
-export default SVC;
+export { SVC };

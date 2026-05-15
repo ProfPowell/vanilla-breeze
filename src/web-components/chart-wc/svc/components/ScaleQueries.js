@@ -153,4 +153,4 @@ function createMediaQueries({config}) {
   return compiledQueries;
 }
 
-export default createMediaQueries;
+export { createMediaQueries };

@@ -7,17 +7,17 @@
  * @param {Object} chart - the chart instance (stats, data, config, hooks)
  */
 export function tooltipInteraction(state, instance, chart) {
-  var HIDE_DELAY_MS = (chart.config && chart.config.tooltip &&
+  let HIDE_DELAY_MS = (chart.config && chart.config.tooltip &&
     chart.config.tooltip.hideDelay) || 2000;
 
-  var target = instance.querySelector('chart-plot');
-  var tooltipElement = instance.querySelector('#svc-tooltip-box');
-  var tooltipTextElement = instance.querySelector('#svc-tooltip-label');
-  var crosshairElement = instance.querySelector('.svc-tooltip-crosshair');
+  let target = instance.querySelector('chart-plot');
+  let tooltipElement = instance.querySelector('#svc-tooltip-box');
+  let tooltipTextElement = instance.querySelector('#svc-tooltip-label');
+  let crosshairElement = instance.querySelector('.svc-tooltip-crosshair');
 
-  var activeNodes = [];
-  var hideTimeoutId = null;
-  var cachedTargetBbox = null;
+  let activeNodes = [];
+  let hideTimeoutId = null;
+  let cachedTargetBbox = null;
 
   function invalidateBboxCache() {
     cachedTargetBbox = null;
@@ -29,7 +29,7 @@ export function tooltipInteraction(state, instance, chart) {
     window.addEventListener('resize', invalidateBboxCache, {passive: true});
   }
   // Also invalidate on container resize via ResizeObserver
-  var resizeObserver = null;
+  let resizeObserver = null;
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(invalidateBboxCache);
     resizeObserver.observe(target);
@@ -43,7 +43,7 @@ export function tooltipInteraction(state, instance, chart) {
     crosshairElement.setAttribute('x2', '-10%');
     crosshairElement.setAttribute('y1', '-10%');
     crosshairElement.setAttribute('y2', '-10%');
-    for (var i = 0; i < activeNodes.length; i++) {
+    for (let i = 0; i < activeNodes.length; i++) {
       activeNodes[i].classList.remove('svc-plot-node-active-' + i);
     }
     activeNodes = [];
@@ -78,16 +78,16 @@ export function tooltipInteraction(state, instance, chart) {
    */
   function execute(e) {
     resetHideTimer();
-    var info = state.functions.tooltipLocation(e, state, instance, chart);
+    let info = state.functions.tooltipLocation(e, state, instance, chart);
     if (!info) return;
 
     // Set which nodes are active, and deactivate old ones
-    var nodes = instance.querySelectorAll('.svc-plot-node[node="' + info.index + '"]');
-    for (var i = 0; i < activeNodes.length; i++) {
+    let nodes = instance.querySelectorAll('.svc-plot-node[node="' + info.index + '"]');
+    for (let i = 0; i < activeNodes.length; i++) {
       activeNodes[i].classList.remove('svc-plot-node-active-' + i);
     }
     activeNodes = [];
-    for (var j = 0; j < nodes.length; j++) {
+    for (let j = 0; j < nodes.length; j++) {
       nodes[j].classList.add('svc-plot-node-active-' + j);
       activeNodes.push(nodes[j]);
     }
@@ -109,17 +109,17 @@ export function tooltipInteraction(state, instance, chart) {
     if (!cachedTargetBbox) {
       cachedTargetBbox = target.getBoundingClientRect();
     }
-    var targetBbox = cachedTargetBbox;
-    var tooltipBbox = tooltipTextElement.getBoundingClientRect();
-    var tooltipWidthPercent = (tooltipBbox.width / targetBbox.width) * 100;
-    var tooltipHeightPercent = (tooltipBbox.height / targetBbox.height) * 100;
+    let targetBbox = cachedTargetBbox;
+    let tooltipBbox = tooltipTextElement.getBoundingClientRect();
+    let tooltipWidthPercent = (tooltipBbox.width / targetBbox.width) * 100;
+    let tooltipHeightPercent = (tooltipBbox.height / targetBbox.height) * 100;
 
     // Use provided position as starting point
-    var xPos = info.tooltip.x;
-    var yPos = info.tooltip.y;
+    let xPos = info.tooltip.x;
+    let yPos = info.tooltip.y;
 
     // Flip horizontally if tooltip would overflow the right edge
-    var tooltipOffset = 1;
+    let tooltipOffset = 1;
     if (xPos + tooltipWidthPercent > 98) {
       xPos = xPos - tooltipWidthPercent - tooltipOffset;
     }
@@ -136,12 +136,12 @@ export function tooltipInteraction(state, instance, chart) {
     }
 
     // Position tooltip — SVG foreignObject or HTML div
-    var fo = tooltipElement.querySelector('foreignObject');
+    let fo = tooltipElement.querySelector('foreignObject');
     if (fo) {
       fo.setAttribute('x', xPos + '%');
       fo.setAttribute('y', yPos + '%');
     } else {
-      var container = tooltipTextElement.parentElement;
+      let container = tooltipTextElement.parentElement;
       if (container) {
         container.style.left = xPos + '%';
         container.style.top = yPos + '%';

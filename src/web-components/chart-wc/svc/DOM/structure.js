@@ -1,4 +1,4 @@
-import VElement from './VElement.js';
+import { VElement } from './VElement.js';
 
 /**
   Creates the chart skeleton using custom element tag names and CSS Grid layout.
@@ -172,4 +172,4 @@ function createSVGContainer({interactive = false} = {}) {
   };
 }
 
-export default createSVGContainer;
+export { createSVGContainer };

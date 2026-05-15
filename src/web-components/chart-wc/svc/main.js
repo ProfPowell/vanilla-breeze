@@ -1,19 +1,19 @@
-import Line from './charts/Line.js';
-import Area from './charts/Area.js';
-import Bar from './charts/Bar.js';
-import Column from './charts/Column.js';
-import Scatter from './charts/Scatter.js';
-import Bubble from './charts/Bubble.js';
-import Pie from './charts/Pie.js';
-import Ring from './charts/Ring.js';
+import { LineChart } from './charts/Line.js';
+import { AreaChart } from './charts/Area.js';
+import { BarChart } from './charts/Bar.js';
+import { ColumnChart } from './charts/Column.js';
+import { ScatterChart } from './charts/Scatter.js';
+import { BubbleChart } from './charts/Bubble.js';
+import { PieChart } from './charts/Pie.js';
+import { RingChart } from './charts/Ring.js';
 
 export {
-  Line as LineChart,
-  Area as AreaChart,
-  Bar as BarChart,
-  Column as ColumnChart,
-  Scatter as ScatterChart,
-  Bubble as BubbleChart,
-  Pie as PieChart,
-  Ring as RingChart,
+  LineChart,
+  AreaChart,
+  BarChart,
+  ColumnChart,
+  ScatterChart,
+  BubbleChart,
+  PieChart,
+  RingChart,
 };

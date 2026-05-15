@@ -1,4 +1,4 @@
-import VElement from '../DOM/VElement.js';
+import { VElement } from '../DOM/VElement.js';
 
 /**
  * Legend class
@@ -140,4 +140,4 @@ class Legend {
   }
 }
 
-export default Legend;
+export { Legend };

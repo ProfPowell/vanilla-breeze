@@ -70,4 +70,4 @@ class CategoryScale {
   }
 }
 
-export default CategoryScale;
+export { CategoryScale };

@@ -1,4 +1,4 @@
-import VElement from '../DOM/VElement.js';
+import { VElement } from '../DOM/VElement.js';
 
 /**
  * Baseline class
@@ -48,4 +48,4 @@ class Baseline {
   }
 }
 
-export default Baseline;
+export { Baseline };

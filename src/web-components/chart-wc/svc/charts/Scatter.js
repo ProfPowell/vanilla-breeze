@@ -1,5 +1,5 @@
-import Cartesian from './Cartesian.js';
-import VElement from '../DOM/VElement.js';
+import { Cartesian } from './Cartesian.js';
+import { VElement } from '../DOM/VElement.js';
 import {escapeHtml} from '../utils/Utils.js';
 
 /**
@@ -82,17 +82,17 @@ class ScatterChart extends Cartesian {
       const yTens = Math.floor(yPercent/10);
 
       // Search current cell and neighboring cells for improved hover tolerance
-      var nodes = null;
-      var searchOffsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1]];
-      for (var s = 0; s < searchOffsets.length; s++) {
-        var sy = yTens + searchOffsets[s][0];
-        var sx = xTens + searchOffsets[s][1];
+      let nodes = null;
+      let searchOffsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1]];
+      for (let s = 0; s < searchOffsets.length; s++) {
+        let sy = yTens + searchOffsets[s][0];
+        let sx = xTens + searchOffsets[s][1];
         if (sy >= 0 && sy < 10 && sx >= 0 && sx < 10 && state.nodeMap[sy] && state.nodeMap[sy][sx]) {
           // Check exact ones position first, then any nodes in the cell
-          var found = state.nodeMap[sy][sx][xOnes];
+          let found = state.nodeMap[sy][sx][xOnes];
           if (!found) {
             // Check neighboring ones positions for tolerance
-            for (var oi = Math.max(0, xOnes - 1); oi <= Math.min(9, xOnes + 1); oi++) {
+            for (let oi = Math.max(0, xOnes - 1); oi <= Math.min(9, xOnes + 1); oi++) {
               if (state.nodeMap[sy][sx][oi]) {
                 found = state.nodeMap[sy][sx][oi];
                 break;
@@ -202,4 +202,4 @@ function createNodeMap(instance) {
   return nodeMap;
 }
 
-export default ScatterChart;
+export { ScatterChart };

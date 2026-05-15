@@ -1,4 +1,4 @@
-import CHART_CSS from './chart-css.js';
+import { CHART_CSS } from './chart-css.js';
 
 /**
  * Virtual Stylesheet
@@ -133,4 +133,4 @@ class Stylesheet {
   }
 }
 
-export default Stylesheet;
+export { Stylesheet };
