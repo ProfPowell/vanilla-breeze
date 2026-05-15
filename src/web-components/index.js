@@ -64,6 +64,7 @@ import './motion-specimen/logic.js';
 import './breakpoint-specimen/logic.js';
 import './theme-export/logic.js';
 import './theme-import/logic.js';
+import './theme-catalog/logic.js';
 import './emoji-picker/logic.js';
 import './settings-panel/logic.js';
 import './notification-wc/logic.js';

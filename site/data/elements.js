@@ -274,6 +274,7 @@ const elementsByLetter = {
     { name: 'tfoot', type: 'native', href: '/docs/elements/native/tfoot/' },
     { name: 'th', type: 'native', href: '/docs/elements/native/th/' },
     { name: 'thead', type: 'native', href: '/docs/elements/native/thead/' },
+    { name: 'theme-catalog', type: 'component', href: '/docs/elements/web-components/theme-catalog/' },
     { name: 'theme-export', type: 'component', href: '/docs/elements/web-components/theme-export/' },
     { name: 'theme-import', type: 'component', href: '/docs/elements/web-components/theme-import/' },
     { name: 'theme-picker', type: 'component', href: '/docs/elements/web-components/theme-picker/', pack: 'ui' },

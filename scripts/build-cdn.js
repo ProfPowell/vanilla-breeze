@@ -215,6 +215,18 @@ async function buildThemes() {
   console.log(`  ${files.length} themes → dist/cdn/themes/`);
   console.log(`  ${dtcgCount} DTCG (.tokens.json), ${dtcgDarkCount} with -dark variants`);
   console.log(`  manifest.json written (${Object.keys(manifest).length} entries)`);
+
+  // ── Public-token-set catalog (Phase 4) ──────────────────────────────
+  // Vendored under src/web-components/theme-import/catalog/. Copied into
+  // the CDN tree so <theme-catalog> can fetch it from /cdn/themes/catalog.
+  // Source-of-truth files are the vendored ones; these are runtime mirrors.
+  const catalogSrc = join(SRC, 'web-components', 'theme-import', 'catalog');
+  const catalogOut = join(outDir, 'catalog');
+  if (existsSync(catalogSrc)) {
+    cpSync(catalogSrc, catalogOut, { recursive: true });
+    const catalogFiles = readdirSync(catalogOut).filter(f => f.endsWith('.json'));
+    console.log(`  catalog: ${catalogFiles.length} files copied to dist/cdn/themes/catalog/`);
+  }
 }
 
 /**

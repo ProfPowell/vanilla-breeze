@@ -1530,6 +1530,13 @@ module.exports = {
     }
   },
 
+  "theme-catalog": {
+    attributes: {
+      "target": {},
+      "catalog-base": {}
+    }
+  },
+
   "theme-export": {
     attributes: {
       "scope": {},
