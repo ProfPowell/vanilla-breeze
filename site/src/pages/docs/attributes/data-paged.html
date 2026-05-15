@@ -1,0 +1,102 @@
+---
+layout: attribute
+title: "data-paged"
+description: "Pagination upscale for any list-shaped container — native ul/ol/table or VB collections like card-list, data-table, layout-grid. Numbered, prev/next, load-more, and infinite styles. Optional URL state."
+attributeName: data-paged
+category: layout
+attributeType: data
+currentPath: /docs/attributes/data-paged/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-paged</code> attribute upscales <em>any list-shaped container</em> with pagination &mdash; native lists (<code>&lt;ul&gt;</code>, <code>&lt;ol&gt;</code>), tables (<code>&lt;table&gt;</code>, paginates the <code>&lt;tbody&gt;</code> rows), or VB collections (<code>&lt;card-list&gt;</code>, <code>&lt;data-table&gt;</code>, <code>&lt;layout-grid&gt;</code>). One attribute on the container, no per-element wiring; the script slices direct children, hides those outside the active page, and injects a <code>&lt;nav aria-label="Pagination"&gt;</code> sibling with the controls.</p>
+
+  <code-block language="html" show-lines label="Minimal" data-escape><ul data-paged data-paged-size="10">
+  <li>...</li>
+</ul></code-block>
+
+  <aside class="note">
+    <strong>Progressive enhancement:</strong> without JavaScript the list renders with all items visible &mdash; readable, navigable, no broken UI. The enhancement adds the page slicing and controls.
+  </aside>
+</section>
+
+<section>
+  <h2>Styles</h2>
+  <p>Four <code>data-paged-style</code> values cover the common pagination shapes:</p>
+  <dl>
+    <dt><code>numbered</code> (default)</dt>
+    <dd>Prev / 1&nbsp;2&nbsp;3 &hellip; / Next. Best for indexed content like blog posts or product listings.</dd>
+    <dt><code>prev-next</code></dt>
+    <dd>Previous / "Page N of M" / Next. Best for linear sequences (tutorials, multi-step forms).</dd>
+    <dt><code>load-more</code></dt>
+    <dd>Single button reveals the next page worth of items in place. Best for activity-style feeds.</dd>
+    <dt><code>infinite</code></dt>
+    <dd><code>IntersectionObserver</code> sentinel auto-loads more when scrolled into view. Best for endless feeds where users scroll without thinking about pages.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="prose">
+    <thead>
+      <tr><th>Attribute</th><th>Default</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-paged</code></td><td>&mdash;</td><td>Opt-in (boolean).</td></tr>
+      <tr><td><code>data-paged-size</code></td><td><code>10</code></td><td>Items per page. <code>0</code> disables paging (single page covering all items).</td></tr>
+      <tr><td><code>data-paged-page</code></td><td><code>1</code></td><td>Initial page (1-based, user-facing).</td></tr>
+      <tr><td><code>data-paged-style</code></td><td><code>numbered</code></td><td><code>numbered</code> &middot; <code>prev-next</code> &middot; <code>load-more</code> &middot; <code>infinite</code></td></tr>
+      <tr><td><code>data-paged-window</code></td><td><code>2</code></td><td>For <code>numbered</code>: page numbers shown around current before ellipsis kicks in.</td></tr>
+      <tr><td><code>data-paged-controls</code></td><td><code>after</code></td><td><code>before</code> &middot; <code>after</code> &middot; <code>both</code> &middot; <code>none</code></td></tr>
+      <tr><td><code>data-paged-url</code></td><td>&mdash;</td><td>Opt-in URL search-param name (e.g. <code>page</code>). When set, page state syncs to the address bar via the History API and back/forward navigates.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <p>The container emits <code>paged:change</code> after each render. Use it for analytics, scroll-restoration, or driving a sibling component.</p>
+  <code-block language="js" show-lines data-escape>list.addEventListener('paged:change', (e) => {
+  const { page, size, total, totalPages } = e.detail;
+  console.log(`Page ${page} of ${totalPages}`);
+});</code-block>
+</section>
+
+<section>
+  <h2>Composition recipe &mdash; content feed</h2>
+  <p>The pattern that would have been <code>&lt;content-feed&gt;</code> is a recipe over existing primitives plus this attribute. No wrapper component required.</p>
+  <code-block language="html" show-lines label="Filter + paginated card list" data-escape><site-search target="#feed"></site-search>
+
+<card-list id="feed"
+           data-paged
+           data-paged-size="20"
+           data-paged-style="numbered"
+           data-paged-url="page">
+  <article>...</article>
+  <article>...</article>
+  ...
+</card-list></code-block>
+  <p><a href="/docs/concepts/dtcg/">site-search</a> handles filtering and highlighting; <code>&lt;card-list&gt;</code> handles template-driven rendering; <code>data-paged</code> handles paging and URL state. Each piece is independently testable and re-composable.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The injected nav uses <code>&lt;nav aria-label="Pagination"&gt;</code> with native <code>&lt;button&gt;</code>s &mdash; keyboard-navigable by default.</li>
+    <li>The active page button gets <code>aria-current="page"</code>.</li>
+    <li>Disabled prev/next buttons get the native <code>disabled</code> attribute (focusable but not actionable per WAI-ARIA pagination guidance &mdash; use <code>aria-disabled</code> if you need them focusable).</li>
+    <li>Ellipsis markers (<code>&hellip;</code>) get <code>aria-hidden="true"</code> so screen readers don't announce them.</li>
+    <li><code>prev-next</code> style includes a live status (<code>"Page N of M"</code>) with <code>aria-live="polite"</code>.</li>
+    <li>Honours <code>prefers-reduced-motion</code>: no transitions on page change.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>What gets paginated</h2>
+  <p>The script paginates <strong>direct children</strong> of the host, with one exception: when the host is <code>&lt;table&gt;</code>, it paginates the <code>&lt;tbody&gt;</code> rows instead (so the <code>&lt;thead&gt;</code> and <code>&lt;tfoot&gt;</code> stay visible).</p>
+  <p>The injected <code>&lt;nav&gt;</code> nodes are placed as siblings of the host, not children &mdash; so they don't affect the host's grid / flex layout and don't trip its mutation observer.</p>
+</section>

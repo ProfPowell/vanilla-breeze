@@ -17,6 +17,8 @@ if (document.querySelector('[data-scroll-hide]')) import('./utils/scroll-hide-in
 if (document.querySelector('[data-focus-trap]')) import('./utils/focus-trap-init.js');
 // Lazy-load responsive image enhancement only when [data-responsive] is present
 if (document.querySelector('img[data-responsive]')) import('./utils/responsive-init.js');
+// Lazy-load pagination upscale only when [data-paged] is present
+if (document.querySelector('[data-paged]')) import('./utils/data-paged-init.js');
 // Lazy-load loading button enhancement only when [data-loading] is on a button
 if (document.querySelector('button[data-loading]')) import('./utils/loading-button-init.js');
 // Lazy-load floating label only when [data-floating-label] is present
