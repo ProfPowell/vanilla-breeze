@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>data-responsive — responsive image upscale</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    section + section { margin-block-start: var(--size-xl); }
+    h3 { margin-block: 0 var(--size-s); }
+    figure { margin: 0; }
+    figure img { inline-size: 100%; block-size: auto; display: block; border-radius: var(--radius-m); }
+    figcaption {
+      margin-block-start: var(--size-2xs);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      gap: var(--size-m);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="xl">
+
+    <section>
+      <h3>Auto-sizes (srcset already provided)</h3>
+      <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+        A <code>ResizeObserver</code> watches the rendered width and keeps <code>sizes</code> in sync, so the browser always picks the closest source for the actual layout. Loading and decoding defaults are added too.
+      </p>
+      <figure>
+        <img data-responsive
+             src="/cdn/icons/lucide/image.svg"
+             srcset="/cdn/icons/lucide/image.svg 400w,
+                     /cdn/icons/lucide/image.svg 800w,
+                     /cdn/icons/lucide/image.svg 1200w"
+             sizes="100vw"
+             alt="Sample image with explicit srcset">
+        <figcaption>Resize the window: <code>sizes</code> updates with the rendered CSS pixel width.</figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <h3>Srcset shorthand from a width list</h3>
+      <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+        Drop the verbose <code>srcset</code>; let <code>data-responsive="400,800,1200"</code> synthesize it from <code>src</code> by inserting <code>-{width}</code> before the file extension.
+      </p>
+      <figure>
+        <img data-responsive="400,800,1200"
+             src="/cdn/icons/lucide/layout.svg"
+             alt="Same shorthand as srcset='layout-400.svg 400w, layout-800.svg 800w, layout-1200.svg 1200w'">
+        <figcaption>The generated <code>srcset</code> + auto-<code>sizes</code> ship together.</figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <h3>Dev overlay (data-responsive-debug)</h3>
+      <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+        Add <code>data-responsive-debug</code> to inspect the chosen source &mdash; useful while tuning <code>sizes</code> or checking which width the browser picked.
+      </p>
+      <div class="grid">
+        <figure>
+          <img data-responsive
+               data-responsive-debug
+               src="/cdn/icons/lucide/sun.svg"
+               srcset="/cdn/icons/lucide/sun.svg 200w, /cdn/icons/lucide/sun.svg 400w"
+               sizes="100vw"
+               alt="Sunrise">
+        </figure>
+        <figure>
+          <img data-responsive
+               data-responsive-debug
+               src="/cdn/icons/lucide/moon.svg"
+               srcset="/cdn/icons/lucide/moon.svg 200w, /cdn/icons/lucide/moon.svg 400w"
+               sizes="100vw"
+               alt="Moon">
+        </figure>
+        <figure>
+          <img data-responsive
+               data-responsive-debug
+               src="/cdn/icons/lucide/star.svg"
+               srcset="/cdn/icons/lucide/star.svg 200w, /cdn/icons/lucide/star.svg 400w"
+               sizes="100vw"
+               alt="Star">
+        </figure>
+      </div>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

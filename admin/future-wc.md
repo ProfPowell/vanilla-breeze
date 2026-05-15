@@ -105,14 +105,14 @@ These enhance native attributes rather than creating new components. **All five 
 
 | Attribute | Upscales | Bead | Status |
 |-----------|----------|------|--------|
-| `data-spellcheck` | `spellcheck` | `vanilla-breeze-x0f2` | ✓ Shipped |
 | `data-responsive` | `srcset/sizes` | `vanilla-breeze-uy6h` | ✓ Shipped |
 | `data-hotkey` (extend) | `accesskey` | `vanilla-breeze-p880` | ✓ Shipped |
-| `data-accordion` | `open` | `vanilla-breeze-03jb` | ✓ Shipped |
-| `data-sandbox-report` | `sandbox` | `vanilla-breeze-rrtx` | ✓ Shipped |
 | `data-paged` | (no native equivalent) — list-pagination upscale on any list-shaped container | `vanilla-breeze-07td` | ✓ Shipped |
 | `data-sortable` | (no native equivalent) — client-side list/table sorting; composes with `data-paged` | `vanilla-breeze-87x2` | ✓ Shipped |
 | `data-toggle` | (no native equivalent) — generic click-to-flip-attribute upscale; catch-all for non-popover/commandfor cases | `vanilla-breeze-fyso` | ✓ Shipped |
+| ~~`data-spellcheck`~~ | `spellcheck` | `vanilla-breeze-x0f2` | **Deferred** — closed without implementation. Custom dictionary support / domain vocabulary / inline correction UI deferred until a real consumer asks. |
+| ~~`data-accordion`~~ | `open` | `vanilla-breeze-03jb` | **Delivered via CSS, not as a `data-*` attribute.** Smooth open/close animation lives in `src/custom-elements/details/styles.css` (`::details-content` + `interpolate-size: allow-keywords` from `motion.css`). The `<accordion-wc>` component adds View Transitions and `name`-attribute exclusivity polyfill. No separate attribute exists. |
+| ~~`data-sandbox-report`~~ | `sandbox` | `vanilla-breeze-rrtx` | **Won't do** — closed because browsers don't expose a "blocked by sandbox" signal; any real implementation has to infer from side effects or inject a cooperating agent. Not worth the maintenance cost for a P4 debugging nicety. |
 
 ---
 
