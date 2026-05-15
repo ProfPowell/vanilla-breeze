@@ -2106,6 +2106,12 @@ export default {
     "element": "card-list",
     "type": "web-component",
     "description": "Template-based list rendering with SAFE data binding",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "src",
@@ -2470,6 +2476,12 @@ export default {
     "element": "chat-input",
     "type": "web-component",
     "description": "Form-associated chat input with auto-growing textarea",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "name",
@@ -2523,6 +2535,12 @@ export default {
     "element": "chat-window",
     "type": "web-component",
     "description": "Light DOM orchestrator for chat UI",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "endpoint",
@@ -2595,6 +2613,12 @@ export default {
     "element": "color-palette",
     "type": "web-component",
     "description": "Interactive color swatch display",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "colors",
@@ -2662,6 +2686,12 @@ export default {
     "element": "color-picker",
     "type": "web-component",
     "description": "Form-associated color picker with HSL color space",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "name",
@@ -2948,6 +2978,12 @@ export default {
     "element": "command-palette",
     "type": "web-component",
     "description": "Command palette / Cmd+K launcher",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "hotkey",
@@ -3015,6 +3051,12 @@ export default {
     "element": "comment-box",
     "type": "web-component",
     "description": "Form-associated comment form composing <markdown-editor> + Submit / Cancel buttons. Used standalone or as the reply-form template inside <comment-thread>. Presentational with respect to persistence.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "name",
@@ -3126,6 +3168,12 @@ export default {
     "element": "comment-thread",
     "type": "web-component",
     "description": "Persistent threaded-discussion container. Author renders <article data-comment> children with metadata; component decorates each with author header, relative timestamp, action row (Reply / Edit / Delete) + threaded indentation. Composes <comment-box> (reply form template), <markdown-viewer> (body rendering by author), and bubbles <reaction-bar> events naturally.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "aria-label",
@@ -3270,6 +3318,12 @@ export default {
     "element": "compare-surface",
     "type": "web-component",
     "description": "Before/after image comparison slider",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "position",
@@ -3458,6 +3512,12 @@ export default {
     "element": "content-lens",
     "type": "web-component",
     "description": "Universal switchable host for VB lens components",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "data-lens-default",
@@ -3514,6 +3574,12 @@ export default {
     "element": "content-swap",
     "type": "web-component",
     "description": "Two-face content toggle with accessible state management",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "transition",
@@ -3771,6 +3837,12 @@ export default {
     "element": "date-picker",
     "type": "web-component",
     "description": "Form-associated calendar date picker with combobox text entry",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "name",
@@ -3892,6 +3964,12 @@ export default {
     "element": "day-view",
     "type": "web-component",
     "description": "Hour-grid schedule for a single day, using hour-view and calendar-event children",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "data-date",
@@ -7387,6 +7465,12 @@ export default {
     "element": "reaction-bar",
     "type": "web-component",
     "description": "GitHub-style emoji reaction picker. Persistent bar of reaction chips with counts + a trigger that opens a curated palette popover. Composes pop-over for the palette surface.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "aria-label",
@@ -8559,6 +8643,12 @@ export default {
     "element": "spacing-specimen",
     "type": "web-component",
     "description": "Design token spacing scale display",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "tokens",
@@ -9403,6 +9493,12 @@ export default {
     "element": "theme-picker",
     "type": "web-component",
     "description": "Theme selection component",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "variant",
@@ -10005,6 +10101,12 @@ export default {
     "element": "type-specimen",
     "type": "web-component",
     "description": "Typography specimen display",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "font-family",

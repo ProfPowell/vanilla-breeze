@@ -1,0 +1,95 @@
+---
+layout: element
+title: "theme-catalog"
+description: "Browse and apply curated public design-system token sets (Material 3, IBM Carbon, Salesforce Lightning, GOV.UK, Atlassian, Tailwind, Bootstrap, Catppuccin Mocha). Tile grid; clicking applies the entry's DTCG file to a target preview scope via the same deserializer <theme-import> uses."
+elementName: theme-catalog
+category: component
+currentPath: /docs/elements/web-components/theme-catalog/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;theme-catalog&gt;</code> component renders a tile grid of curated public design systems shipped as <a href="/docs/concepts/dtcg/">DTCG</a> token files. Clicking a tile fetches the entry, runs it through the same deserializer <a href="/docs/elements/web-components/theme-import/"><code>&lt;theme-import&gt;</code></a> uses, and applies the resulting tokens to a target preview scope. Provenance (homepage, source URL, license, attribution) is surfaced after each apply so users always see the credit chain.</p>
+  <p>It's the <em>quick-start</em> surface alongside <code>&lt;theme-import&gt;</code>, which handles ad-hoc paste / file / URL imports. Both feed the Theme Composer or any preview-scope target.</p>
+</section>
+
+<section>
+  <h2>Live demo</h2>
+  <p>The Theme Composer page mounts <code>&lt;theme-catalog&gt;</code> in its aside.</p>
+  <p><a href="/docs/tools/theme-composer/">Open the Theme Composer →</a></p>
+</section>
+
+<section>
+  <h2>Catalog entries</h2>
+  <p>Eight vendored systems ship in <code>src/web-components/theme-import/catalog/</code>; copied to <code>dist/cdn/themes/catalog/</code> at build time. Refresh from upstream sources via <code>npm run sync:tokens</code> (manual; not in CI).</p>
+  <ul>
+    <li><strong>Material Design 3</strong> &mdash; Google Material 3 (Apache-2.0)</li>
+    <li><strong>IBM Carbon</strong> &mdash; Carbon Design System (Apache-2.0)</li>
+    <li><strong>Salesforce Lightning</strong> &mdash; SLDS tokens (BSD-3-Clause)</li>
+    <li><strong>GOV.UK</strong> &mdash; UK government design system (MIT, Open Government Licence v3.0)</li>
+    <li><strong>Atlassian</strong> &mdash; Atlassian Design Tokens (Apache-2.0)</li>
+    <li><strong>Tailwind defaults</strong> &mdash; synthesized from Tailwind's default theme (MIT)</li>
+    <li><strong>Bootstrap defaults</strong> &mdash; synthesized from Bootstrap 5 variables (MIT)</li>
+    <li><strong>Catppuccin Mocha</strong> &mdash; the soothing dark Catppuccin flavor (MIT)</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>target</code></td>
+        <td>string (CSS selector)</td>
+        <td><code>#preview</code></td>
+        <td>Scope to apply tokens to. Tokens land as inline custom properties on this element.</td>
+      </tr>
+      <tr>
+        <td><code>catalog-base</code></td>
+        <td>string (URL)</td>
+        <td><code>/cdn/themes/catalog</code></td>
+        <td>Base URL for catalog files (manifest.json + entry .tokens.json). Override for hosted contexts where the CDN lives elsewhere.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>theme-catalog:applied</code></td>
+        <td><code>{ id, applied, ignored, tokens, source }</code></td>
+        <td>After an entry is applied to the target scope.</td>
+      </tr>
+      <tr>
+        <td><code>theme-catalog:error</code></td>
+        <td><code>{ id, error, phase }</code></td>
+        <td>When fetch / parse / apply fails.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Companion components</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/theme-import/"><code>&lt;theme-import&gt;</code></a> &mdash; ad-hoc DTCG import via paste / file / URL</li>
+    <li><a href="/docs/elements/web-components/theme-export/"><code>&lt;theme-export&gt;</code></a> &mdash; export the current scope as DTCG (or CSS, JSON)</li>
+    <li><a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> &mdash; the user-facing theme switcher; per-theme DTCG download links</li>
+    <li><a href="/docs/tools/theme-library/">Theme Library</a> &mdash; full list of VB themes with downloads</li>
+  </ul>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/concepts/dtcg/">DTCG concept page</a> &mdash; what DTCG is, what VB supports, parametric round-trip story</li>
+    <li><a href="/docs/tools/theme-composer/">Theme Composer</a> &mdash; the integrated workflow (composes catalog + import + export)</li>
+  </ul>
+</section>

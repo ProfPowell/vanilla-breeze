@@ -412,6 +412,8 @@ module.exports = {
   },
 
   "card-list": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "src": {},
       "data-items": {},
@@ -468,6 +470,8 @@ module.exports = {
   },
 
   "chat-input": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "name": {},
       "maxlength": {},
@@ -478,6 +482,8 @@ module.exports = {
   },
 
   "chat-window": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "endpoint": {},
       "model": {},
@@ -492,6 +498,8 @@ module.exports = {
   },
 
   "color-palette": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "colors": {},
       "names": {},
@@ -504,6 +512,8 @@ module.exports = {
   },
 
   "color-picker": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "name": {},
       "disabled": { boolean: true },
@@ -558,6 +568,8 @@ module.exports = {
   },
 
   "command-palette": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "hotkey": {},
       "placeholder": {},
@@ -571,6 +583,8 @@ module.exports = {
   },
 
   "comment-box": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "name": {},
       "value": {},
@@ -586,6 +600,8 @@ module.exports = {
   },
 
   "comment-thread": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "aria-label": {},
       "data-disabled": { boolean: true },
@@ -599,6 +615,8 @@ module.exports = {
   },
 
   "compare-surface": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "position": {},
       "role": {},
@@ -630,6 +648,8 @@ module.exports = {
   },
 
   "content-lens": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-lens-default": {},
       "data-lens-controls": {},
@@ -640,6 +660,8 @@ module.exports = {
   },
 
   "content-swap": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "transition": {},
       "swapped": { boolean: true },
@@ -666,6 +688,8 @@ module.exports = {
   },
 
   "date-picker": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "name": {},
       "disabled": { boolean: true },
@@ -689,6 +713,8 @@ module.exports = {
   },
 
   "day-view": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-date": {},
       "data-start-hour": {},
@@ -1238,6 +1264,8 @@ module.exports = {
   },
 
   "reaction-bar": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "aria-label": {},
       "data-trigger-icon": {},
@@ -1446,6 +1474,8 @@ module.exports = {
   },
 
   "spacing-specimen": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "tokens": {},
       "prefix": {},
@@ -1593,6 +1623,8 @@ module.exports = {
   },
 
   "theme-picker": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "variant": {},
       "compact": { boolean: true },
@@ -1707,6 +1739,8 @@ module.exports = {
   },
 
   "type-specimen": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "font-family": {},
       "label": {},

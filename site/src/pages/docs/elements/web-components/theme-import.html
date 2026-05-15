@@ -1,0 +1,99 @@
+---
+layout: element
+title: "theme-import"
+description: "Apply a DTCG (Design Tokens Community Group, stable 2025.10) tokens.json file to a preview scope. Sibling of <theme-export>. Three input modes: paste, file, URL. Round-trip lossless for VB-authored DTCG via $extensions['com.vanilla-breeze']."
+elementName: theme-import
+category: component
+currentPath: /docs/elements/web-components/theme-import/
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;theme-import&gt;</code> component takes <a href="/docs/concepts/dtcg/">DTCG</a> JSON via paste, file upload, or URL fetch and applies the resulting tokens to a target preview scope. Tokens that don't map to a known VB prefix are surfaced in a collapsible &ldquo;ignored&rdquo; panel rather than dropped silently. Round-trip lossless for VB-authored DTCG &mdash; <code>$extensions["com.vanilla-breeze"]</code> preserves relative-color expressions, <code>light-dark()</code> literals, and em/% units.</p>
+  <p>It's the ad-hoc-input sibling of <a href="/docs/elements/web-components/theme-catalog/"><code>&lt;theme-catalog&gt;</code></a> (curated public design systems) and <a href="/docs/elements/web-components/theme-export/"><code>&lt;theme-export&gt;</code></a> (the inverse direction). Together they cover the full DTCG round-trip surface.</p>
+</section>
+
+<section>
+  <h2>Live demo</h2>
+  <p>The Theme Composer page mounts <code>&lt;theme-import&gt;</code> in its aside.</p>
+  <p><a href="/docs/tools/theme-composer/">Open the Theme Composer →</a></p>
+</section>
+
+<section>
+  <h2>Three input modes</h2>
+  <ul>
+    <li><strong>Paste</strong> &mdash; drop DTCG JSON into the textarea and click Apply.</li>
+    <li><strong>File</strong> &mdash; native <code>&lt;input type="file"&gt;</code> accepts <code>.json</code>, <code>.tokens</code>, <code>.tokens.json</code>.</li>
+    <li><strong>URL</strong> &mdash; fetch from a CORS-permitted host. Useful for grabbing a published token set without saving locally first.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>target</code></td>
+        <td>string (CSS selector)</td>
+        <td><code>#preview</code></td>
+        <td>Scope to apply tokens to. Tokens land as inline custom properties on this element. Never writes to <code>:root</code> by default &mdash; import experiments don't leak into the live site.</td>
+      </tr>
+      <tr>
+        <td><code>placeholder</code></td>
+        <td>string</td>
+        <td><code>"Paste DTCG tokens.json here…"</code></td>
+        <td>Placeholder text for the paste textarea.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>theme-import:applied</code></td>
+        <td><code>{ tokens, applied, ignored, source }</code></td>
+        <td>Tokens applied to the target. <code>source</code> is <code>'paste'</code> | <code>'file'</code> | <code>'url'</code>.</td>
+      </tr>
+      <tr>
+        <td><code>theme-import:error</code></td>
+        <td><code>{ error, phase }</code></td>
+        <td>Parse / fetch / apply failure. <code>phase</code> identifies which step.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>What happens to "foreign" DTCG</h2>
+  <p>The deserializer reverses the prefix mapping established by <code>&lt;theme-export format="dtcg"&gt;</code>. DTCG tokens that <em>don't</em> map to a known VB CSS-variable prefix land in an &ldquo;ignored&rdquo; panel rather than being silently dropped &mdash; the user always sees what was lost. The importer never writes new VB token names, only known-good ones from the prefix map. This preserves the &ldquo;themes override existing tokens only&rdquo; contract from <code>src/tokens/index.css</code>.</p>
+</section>
+
+<section>
+  <h2>Composite typography unpacking</h2>
+  <p>DTCG's composite <code>typography</code> token bundles font-family, size, weight, line-height, and letter-spacing into one object. VB stores these as separate scalars. On import, composite typography unpacks into <code>--font-{name}</code>, <code>--font-size-{name}</code>, <code>--font-weight-{name}</code>, <code>--line-height-{name}</code>, and <code>--letter-spacing-{name}</code> as appropriate.</p>
+</section>
+
+<section>
+  <h2>Companion components</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/theme-catalog/"><code>&lt;theme-catalog&gt;</code></a> &mdash; curated public design systems in a tile grid; one-click apply</li>
+    <li><a href="/docs/elements/web-components/theme-export/"><code>&lt;theme-export&gt;</code></a> &mdash; export the current scope as DTCG (or CSS, JSON)</li>
+    <li><a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> &mdash; the user-facing theme switcher with per-theme DTCG download links</li>
+    <li><a href="/docs/tools/theme-library/">Theme Library</a> &mdash; full list of VB themes with downloads</li>
+  </ul>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/concepts/dtcg/">DTCG concept page</a> &mdash; what DTCG is, what VB supports, the parametric round-trip story</li>
+    <li><a href="/docs/tools/theme-composer/">Theme Composer</a> &mdash; the integrated workflow (composes import + catalog + export)</li>
+  </ul>
+</section>
