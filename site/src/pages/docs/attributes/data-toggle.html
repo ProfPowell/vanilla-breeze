@@ -1,0 +1,101 @@
+---
+layout: attribute
+title: "data-toggle"
+description: "Click-to-flip-attribute upscale. Toggles a boolean attribute, ARIA two-state value, custom on/off value, or CSS class on a target — the catch-all for the recurring 'change state' pattern that doesn't have a native primitive."
+attributeName: data-toggle
+category: interaction
+attributeType: data
+currentPath: /docs/attributes/data-toggle/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-toggle</code> attribute upscales a <code>&lt;button&gt;</code> with click-to-flip-attribute behavior. Three modes are auto-detected from the spec, plus a <code>class:name</code> shorthand. <code>aria-controls</code> and <code>aria-pressed</code> / <code>aria-expanded</code> are wired automatically where it makes sense.</p>
+
+  <browser-window url="data-toggle" src="/docs/snippets/demos/data-toggle-basic.html"></browser-window>
+
+  <aside class="note">
+    <strong>Reach for native first.</strong> If you're opening a popover, use <code>popovertarget</code>. If you're invoking a registered command on a target, use <code>commandfor</code>. <code>data-toggle</code> is for the generic "click this button → flip this attribute" case where neither native primitive applies.
+  </aside>
+</section>
+
+<section>
+  <h2>Three modes (auto-detected)</h2>
+
+  <h3>1. Boolean attributes</h3>
+  <p>Standard boolean HTML attrs (<code>hidden</code>, <code>disabled</code>, <code>open</code>, <code>checked</code>, <code>readonly</code>, …). Toggles attribute <em>presence</em>: absent ↔ present.</p>
+  <code-block language="html" show-lines data-escape><button data-toggle="hidden" data-toggle-target="#sidebar">Toggle sidebar</button>
+<aside id="sidebar">...</aside></code-block>
+
+  <h3>2. ARIA two-state</h3>
+  <p><code>aria-pressed</code>, <code>aria-expanded</code>, <code>aria-selected</code>, <code>aria-checked</code> always carry the string <code>"true"</code> or <code>"false"</code>. Toggle flips between them.</p>
+  <code-block language="html" show-lines data-escape><button data-toggle="aria-pressed">🔇 Mute</button></code-block>
+  <p>With no <code>data-toggle-target</code>, the button toggles the attribute on itself.</p>
+
+  <h3>3. Custom on/off cycle</h3>
+  <p>Anything else — typically <code>data-state</code> — cycles between two values supplied via <code>data-toggle-on</code> and <code>data-toggle-off</code>. Defaults to <code>"true"</code> / <code>"false"</code>.</p>
+  <code-block language="html" show-lines data-escape><button data-toggle="data-state" data-toggle-target="#tray"
+        data-toggle-on="open" data-toggle-off="closed">
+  Toggle tray
+</button>
+<div id="tray" data-state="closed">...</div></code-block>
+
+  <h3>4. Class shorthand</h3>
+  <p>Prefix the spec with <code>class:</code> to toggle a CSS class instead of an attribute.</p>
+  <code-block language="html" show-lines data-escape><button data-toggle="class:expanded" data-toggle-target="#card">Toggle</button>
+<article id="card">...</article></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="prose">
+    <thead><tr><th>Attribute</th><th>Default</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-toggle</code></td><td>&mdash;</td><td>Attribute name to flip, OR <code>class:name</code>.</td></tr>
+      <tr><td><code>data-toggle-target</code></td><td>self</td><td>CSS selector for the target. Omit for self-toggling.</td></tr>
+      <tr><td><code>data-toggle-on</code></td><td><code>"true"</code></td><td>"On" value for custom mode. Set to <code>"open"</code> to enable <code>aria-expanded</code> auto-wiring.</td></tr>
+      <tr><td><code>data-toggle-off</code></td><td><code>"false"</code></td><td>"Off" value for custom mode.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <p>The button emits <code>toggle:change</code> after each click.</p>
+  <code-block language="js" show-lines data-escape>btn.addEventListener('toggle:change', (e) => {
+  const { spec, value, present, target } = e.detail;
+  // spec: "hidden" | "data-state" | "class:expanded" | ...
+  // present: true if attr/class is now applied
+  // value: the new attribute value (for non-boolean / non-class modes)
+});</code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>aria-controls</strong> — set on the button to the target's id when the target is external (<em>not</em> self).</li>
+    <li><strong>aria-pressed</strong> — reflected on the button when self-toggling a boolean attribute (e.g. a "Mute" toggle).</li>
+    <li><strong>aria-expanded</strong> — reflected on the button when the target has <code>[popover]</code>, OR when <code>data-toggle-on="open"</code> is set on a <code>data-state</code> toggle (a common disclosure pattern).</li>
+    <li><strong>Native button</strong> — keyboard activation (Enter / Space) just works.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>When to reach for native instead</h2>
+  <p>Several other primitives cover overlapping shapes — pick the one closest to your use case:</p>
+  <table class="prose">
+    <thead><tr><th>If you want to…</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>Open a popover</td><td>Native <code>popovertarget</code> (no JS needed)</td></tr>
+      <tr><td>Invoke a registered command (close, open, …) on a target</td><td>Native <code>commandfor</code> (WICG; works with <code>&lt;dialog&gt;</code>, <code>[popover]</code>, custom-defined commands). VB wires this via <a href="/docs/attributes/data-command/"><code>data-command</code></a>.</td></tr>
+      <tr><td>Show / hide based on a form-field value</td><td><a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> / <code>data-hide-when</code></td></tr>
+      <tr><td>Toggle a checkbox styled as a switch</td><td><a href="/docs/attributes/data-switch/"><code>data-switch</code></a> on <code>&lt;input type="checkbox"&gt;</code></td></tr>
+      <tr><td>Reveal masked content</td><td><a href="/docs/attributes/data-spoiler/"><code>data-spoiler</code></a></td></tr>
+      <tr><td>Animate a <code>&lt;details&gt;</code></td><td><a href="/docs/attributes/data-accordion/"><code>data-accordion</code></a></td></tr>
+      <tr><td>Anything else — flip arbitrary attribute / class on a target</td><td><strong>This attribute.</strong></td></tr>
+    </tbody>
+  </table>
+</section>

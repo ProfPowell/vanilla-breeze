@@ -21,6 +21,8 @@ if (document.querySelector('img[data-responsive]')) import('./utils/responsive-i
 if (document.querySelector('[data-paged]')) import('./utils/data-paged-init.js');
 // Lazy-load sortable upscale when [data-sortable] or [data-sort-target] is present
 if (document.querySelector('[data-sortable], [data-sort-target]')) import('./utils/data-sortable-init.js');
+// Lazy-load attribute-toggle upscale when [data-toggle] is present
+if (document.querySelector('[data-toggle]')) import('./utils/data-toggle-init.js');
 // Lazy-load loading button enhancement only when [data-loading] is on a button
 if (document.querySelector('button[data-loading]')) import('./utils/loading-button-init.js');
 // Lazy-load floating label only when [data-floating-label] is present
