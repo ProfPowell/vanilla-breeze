@@ -160,7 +160,7 @@ function checkFile(filePath) {
         line: lineNum,
         col: line.indexOf('style="') + 1,
         rule: 'vb/no-inline-style',
-        severity: severity('vb/no-inline-style', 'error'),
+        severity: severity('vb/no-inline-style', 'error-new'),
         message: 'Move inline styles to CSS. Use data-* attributes for dynamic values.'
       });
     }
@@ -187,7 +187,7 @@ function checkFile(filePath) {
           line: lineNum,
           col: 1,
           rule: 'vb/semantic-heading-hierarchy',
-          severity: severity('vb/semantic-heading-hierarchy', 'error'),
+          severity: severity('vb/semantic-heading-hierarchy', 'error-new'),
           message: `Heading level skipped: h${lastHeadingLevel} → h${level}. Use h${lastHeadingLevel + 1} instead.`
         });
       }
@@ -200,7 +200,7 @@ function checkFile(filePath) {
         line: lineNum,
         col: line.indexOf('<svg') + 1,
         rule: 'vb/icon-wc-required',
-        severity: severity('vb/icon-wc-required', 'error'),
+        severity: severity('vb/icon-wc-required', 'error-new'),
         message: 'Use <icon-wc name="..."/> instead of inline SVG.'
       });
     }
