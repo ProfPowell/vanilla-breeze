@@ -9137,6 +9137,39 @@ export default {
     "childAttributes": [],
     "structure": []
   },
+  "theme-catalog": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "theme-catalog",
+    "type": "web-component",
+    "description": "Browse and apply curated public design-system token sets (Material, IBM Carbon, Salesforce Lightning, GOV.UK, Atlassian, Tailwind, Bootstrap, Catppuccin Mocha). Renders a tile grid; clicking a tile fetches the entry's DTCG file and applies its tokens to a target preview scope via the same deserializer <theme-import> uses.",
+    "attributes": [
+      {
+        "name": "target",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "#preview",
+        "description": "CSS selector for the scope to apply tokens to. Tokens land as inline custom properties."
+      },
+      {
+        "name": "catalog-base",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Base URL for catalog files (manifest.json + entry .tokens.json). Defaults to /cdn/themes/catalog; override for hosted contexts."
+      }
+    ],
+    "events": [
+      {
+        "name": "theme-catalog:applied",
+        "description": "Fired after an entry is applied. detail: { id, applied, ignored, tokens, source }"
+      },
+      {
+        "name": "theme-catalog:error",
+        "description": "Fired when fetch / parse / apply fails. detail: { id, error, phase }"
+      }
+    ]
+  },
   "theme-export": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "theme-export",
@@ -9297,6 +9330,10 @@ export default {
       },
       {
         "name": "theme-picker:close"
+      },
+      {
+        "name": "theme-picker:dtcg-download",
+        "description": "Fired when a user clicks the per-swatch DTCG download link. Native <a download> still handles the save; this event is for analytics / consumer hooks. detail: { themeId, href }"
       }
     ],
     "childAttributes": [],
