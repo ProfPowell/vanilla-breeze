@@ -34,6 +34,7 @@
 
 import { registerInit } from './_init-registry.js';
 import { paginationState } from '../lib/data-paged.js';
+import { buildNav, wireNav } from '../lib/data-paged-controls.js';
 
 const SELECTOR = '[data-paged]';
 const STATE = new WeakMap();
@@ -73,6 +74,12 @@ function enhance(host) {
   // Re-paginate when children change.
   state.childObserver = new MutationObserver(() => render(state));
   state.childObserver.observe(host, { childList: true });
+
+  // External-control hooks — pager-wc and other consumers drive
+  // navigation by dispatching these events on the host. Same
+  // contract for in-place and decoupled controls.
+  host.addEventListener('paged:goto',     (e) => goTo(state, /** @type {CustomEvent} */ (e).detail?.page ?? 1));
+  host.addEventListener('paged:loadmore', () => loadMore(state));
 
   render(state);
 }
@@ -155,7 +162,14 @@ function renderControls(state, sm, cfg, isProgressive) {
 
   if (isProgressive) {
     if (cfg.style === 'load-more') {
-      const nav = buildLoadMoreNav(state, sm, cfg);
+      const nav = buildNav({
+        style: 'load-more',
+        page: sm.page,
+        totalPages: sm.totalPages,
+        pageNumbers: sm.pageNumbers,
+        total: state.children.length,
+        visible: state.visible,
+      });
       placeNav(state, nav, cfg);
     } else {
       // infinite — sentinel is a SIBLING (not a child) so it doesn't
@@ -178,107 +192,35 @@ function renderControls(state, sm, cfg, isProgressive) {
 
   if (sm.totalPages <= 1) return;
 
-  const nav = cfg.style === 'prev-next' ? buildPrevNextNav(state, sm, cfg) : buildNumberedNav(state, sm, cfg);
+  const nav = buildNav({
+    style: cfg.style,
+    page: sm.page,
+    totalPages: sm.totalPages,
+    pageNumbers: sm.pageNumbers,
+    total: state.children.length,
+    visible: state.visible,
+  });
   placeNav(state, nav, cfg);
 }
 
 function placeNav(state, nav, cfg) {
   const { host } = state;
+  const handlers = {
+    onNavigate: (page) => goTo(state, page),
+    onLoadMore: () => loadMore(state),
+  };
   if (cfg.controls === 'before' || cfg.controls === 'both') {
     const before = nav.cloneNode(true);
-    wireNav(before, state);
+    wireNav(before, handlers);
     host.parentNode?.insertBefore(before, host);
     state.nav.before = before;
   }
   if (cfg.controls === 'after' || cfg.controls === 'both' || cfg.controls === 'none') {
     // (cfg.controls === 'none' shouldn't reach here for non-progressive)
-    wireNav(nav, state);
+    wireNav(nav, handlers);
     host.parentNode?.insertBefore(nav, host.nextSibling);
     state.nav.after = nav;
   }
-}
-
-/* ---------- control builders ---------- */
-
-function makeNav() {
-  const nav = document.createElement('nav');
-  nav.setAttribute('data-paged-nav', '');
-  nav.setAttribute('aria-label', 'Pagination');
-  return nav;
-}
-
-function buildNumberedNav(state, sm, cfg) {
-  const nav = makeNav();
-  const list = document.createElement('ol');
-  list.setAttribute('role', 'list');
-
-  list.appendChild(makePageItem('Previous', sm.page - 1, sm.page === 1, false, 'prev'));
-
-  for (const n of sm.pageNumbers) {
-    if (n === '…') {
-      const li = document.createElement('li');
-      li.textContent = '…';
-      li.setAttribute('aria-hidden', 'true');
-      li.setAttribute('data-paged-ellipsis', '');
-      list.appendChild(li);
-    } else {
-      list.appendChild(makePageItem(String(n), n, false, n === sm.page, 'page'));
-    }
-  }
-
-  list.appendChild(makePageItem('Next', sm.page + 1, sm.page === sm.totalPages, false, 'next'));
-
-  nav.appendChild(list);
-  return nav;
-}
-
-function buildPrevNextNav(state, sm, cfg) {
-  const nav = makeNav();
-  const list = document.createElement('ol');
-  list.setAttribute('role', 'list');
-  list.appendChild(makePageItem('Previous', sm.page - 1, sm.page === 1, false, 'prev'));
-  const status = document.createElement('li');
-  status.setAttribute('data-paged-status', '');
-  status.setAttribute('aria-live', 'polite');
-  status.textContent = `Page ${sm.page} of ${sm.totalPages}`;
-  list.appendChild(status);
-  list.appendChild(makePageItem('Next', sm.page + 1, sm.page === sm.totalPages, false, 'next'));
-  nav.appendChild(list);
-  return nav;
-}
-
-function buildLoadMoreNav(state, sm, cfg) {
-  const nav = makeNav();
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.setAttribute('data-paged-loadmore', '');
-  const remaining = state.children.length - state.visible;
-  btn.textContent = remaining > 0 ? `Load more (${remaining})` : 'No more';
-  btn.disabled = remaining <= 0;
-  btn.addEventListener('click', () => loadMore(state));
-  nav.appendChild(btn);
-  return nav;
-}
-
-function makePageItem(label, page, disabled, current, kind) {
-  const li = document.createElement('li');
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.setAttribute('data-paged-action', kind);
-  btn.dataset.pagedTarget = String(page);
-  btn.textContent = label;
-  if (current) {
-    btn.setAttribute('aria-current', 'page');
-  }
-  if (disabled) btn.disabled = true;
-  li.appendChild(btn);
-  return li;
-}
-
-function wireNav(nav, state) {
-  nav.querySelectorAll('button[data-paged-target]').forEach((btn) => {
-    btn.addEventListener('click', () => goTo(state, parseInt(btn.dataset.pagedTarget || '1', 10)));
-  });
 }
 
 /* ---------- transitions ---------- */

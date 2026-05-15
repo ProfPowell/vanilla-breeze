@@ -1,0 +1,119 @@
+---
+layout: element
+title: "pager-wc"
+description: "Standalone pagination controls element targeting any [data-paged] container. The element form of the data-paged primitive. Mirrors VB's layout-* / data-layout-* element-attribute symmetry — pick the surface that fits the markup."
+elementName: pager-wc
+category: component
+currentPath: /docs/elements/web-components/pager-wc/
+
+crumbHref: /docs/elements/web-components/
+crumbLabel: Web Components
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>&lt;pager-wc&gt;</code> element is the <strong>element form</strong> of the <a href="/docs/attributes/data-paged/"><code>data-paged</code></a> primitive. Same engine, different surface. Authors choose:</p>
+  <ul>
+    <li><strong>Attribute form</strong> &mdash; <code>data-paged</code> on the container; controls render in place as siblings of the items.</li>
+    <li><strong>Element form</strong> &mdash; <code>&lt;pager-wc target="#id"&gt;</code> anywhere on the page; controls live wherever you put the element.</li>
+  </ul>
+  <p>This mirrors the framework-wide pattern: <code>&lt;layout-grid&gt;</code> + <code>data-layout-min</code>, <code>&lt;layout-stack&gt;</code> + <code>data-gap</code>, etc. Element-and-attribute symmetry covers all the cases &mdash; pick the one that fits the markup you already have.</p>
+
+  <browser-window url="pager-wc" src="/docs/snippets/demos/pager-wc-basic.html"></browser-window>
+</section>
+
+<section>
+  <h2>When to reach for pager-wc</h2>
+  <p>Use the element form when the items and the controls live in different parts of the layout:</p>
+  <ul>
+    <li>Controls in a sticky header with items in the main column</li>
+    <li>Controls in a footer with items above</li>
+    <li>Multiple sets of controls (top + bottom) staying in sync</li>
+    <li>Controls in a sidebar driving a paginated main column</li>
+  </ul>
+  <p>For the common in-place case (controls right after the items), use <code>data-paged</code> directly &mdash; no extra element required.</p>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>target</code></td>
+        <td>string (CSS selector)</td>
+        <td>&mdash;</td>
+        <td>Preferred. CSS selector for the <code>[data-paged]</code> container.</td>
+      </tr>
+      <tr>
+        <td><code>for</code></td>
+        <td>string (id)</td>
+        <td>&mdash;</td>
+        <td>HTML-form-style alternative to <code>target</code>: the bare ID of the target.</td>
+      </tr>
+      <tr>
+        <td><code>style</code></td>
+        <td>enum: <code>numbered</code> &middot; <code>prev-next</code> &middot; <code>load-more</code></td>
+        <td><code>numbered</code></td>
+        <td>Control style. <code>infinite</code> is intentionally unsupported &mdash; an <code>IntersectionObserver</code> sentinel doesn't make sense for decoupled controls.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Implicit target:</strong> if neither <code>target</code> nor <code>for</code> is set, <code>&lt;pager-wc&gt;</code> binds to the nearest preceding <code>[data-paged]</code> sibling. Useful for the common "items above, pager below" pattern with zero wiring.</p>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Event</th><th>Detail</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>pager-wc:navigate</code></td>
+        <td><code>{ page }</code></td>
+        <td>Bubbles before the target processes the navigation. Use for analytics, scroll-restore, or transition hooks.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>The target's own <code>paged:change</code> event fires from the data-paged engine after the slice updates &mdash; listen on the target itself for "after navigation" hooks.</p>
+</section>
+
+<section>
+  <h2>Multi-instance sync</h2>
+  <p>Two or more <code>&lt;pager-wc&gt;</code> elements pointing at the same target stay in sync automatically &mdash; each subscribes to the target's <code>paged:change</code> event and re-renders. No additional wiring needed.</p>
+
+  <code-block language="html" show-lines label="Top + bottom controls" data-escape><pager-wc target="#feed"></pager-wc>
+
+<ul id="feed" data-paged data-paged-size="10" data-paged-controls="none">
+  <li>...</li>
+</ul>
+
+<pager-wc target="#feed"></pager-wc></code-block>
+
+  <aside class="note">
+    <strong>Tip:</strong> set <code>data-paged-controls="none"</code> on the target to suppress the in-place controls and let your <code>&lt;pager-wc&gt;</code> instances be the only nav surface.
+  </aside>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Renders the same <code>&lt;nav aria-label="Pagination"&gt;</code> markup as <code>data-paged</code> &mdash; native <code>&lt;button&gt;</code>s, <code>aria-current="page"</code>, ellipsis with <code>aria-hidden</code>.</li>
+    <li>If the target can't be found, the element renders a polite live-region note (<code>"No paginated target found"</code>) instead of failing silently.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>How it talks to the engine</h2>
+  <p>The decoupled-control story is wired through three custom events on the target:</p>
+  <ul>
+    <li><code>paged:change</code> &mdash; fired by the engine after each render. <code>&lt;pager-wc&gt;</code> listens and re-renders its own controls.</li>
+    <li><code>paged:goto</code> <code>{ page }</code> &mdash; fired by <code>&lt;pager-wc&gt;</code> button clicks. The engine listens and navigates.</li>
+    <li><code>paged:loadmore</code> &mdash; fired for the load-more button. Same pattern.</li>
+  </ul>
+  <p>Any consumer can dispatch <code>paged:goto</code> on a <code>[data-paged]</code> container to drive navigation &mdash; <code>&lt;pager-wc&gt;</code> is just one possible source.</p>
+</section>

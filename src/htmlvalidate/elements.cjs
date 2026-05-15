@@ -1089,6 +1089,14 @@ module.exports = {
     }
   },
 
+  "pager-wc": {
+    attributes: {
+      "target": {},
+      "for": {},
+      "style": { enum: ["numbered", "prev-next", "load-more"] }
+    }
+  },
+
   "palette-generator": {
     attributes: {
       "seed": {},

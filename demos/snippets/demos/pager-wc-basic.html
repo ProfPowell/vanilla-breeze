@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>pager-wc — decoupled pagination controls</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    section + section { margin-block-start: var(--size-xl); }
+    h3 { margin-block: 0 var(--size-s); }
+
+    /* Sticky header pattern: pager pinned to the top, list scrolls below. */
+    .header-pager-demo {
+      position: relative;
+    }
+    .header-pager-demo header {
+      position: sticky;
+      inset-block-start: 0;
+      background: var(--color-surface);
+      padding-block: var(--size-s);
+      border-block-end: 1px solid var(--color-border);
+      z-index: 1;
+    }
+
+    /* Sidebar pattern: pager in aside, list in main */
+    .sidebar-pager-demo {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--size-l);
+      align-items: start;
+    }
+    .sidebar-pager-demo aside {
+      position: sticky;
+      inset-block-start: var(--size-s);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="xl">
+
+    <section>
+      <h3>Top + bottom controls staying in sync</h3>
+      <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+        Two <code>&lt;pager-wc&gt;</code> instances point at the same target. Click either; both update.
+        The data-paged container stays unaware of the surrounding controls.
+      </p>
+      <pager-wc target="#feed-a"></pager-wc>
+      <ul id="feed-a" data-paged data-paged-size="3" data-paged-controls="none">
+        <li>Article 1</li><li>Article 2</li><li>Article 3</li>
+        <li>Article 4</li><li>Article 5</li><li>Article 6</li>
+        <li>Article 7</li><li>Article 8</li><li>Article 9</li>
+        <li>Article 10</li><li>Article 11</li><li>Article 12</li>
+      </ul>
+      <pager-wc target="#feed-a"></pager-wc>
+    </section>
+
+    <section class="header-pager-demo">
+      <header>
+        <h3>Sticky header pager</h3>
+        <pager-wc target="#feed-b" style="prev-next"></pager-wc>
+      </header>
+      <ol id="feed-b" data-paged data-paged-size="4" data-paged-controls="none">
+        <li>Step 1: Set up your account</li>
+        <li>Step 2: Pick a theme</li>
+        <li>Step 3: Choose a template</li>
+        <li>Step 4: Add content</li>
+        <li>Step 5: Configure analytics</li>
+        <li>Step 6: Set up notifications</li>
+        <li>Step 7: Connect a domain</li>
+        <li>Step 8: Publish</li>
+        <li>Step 9: Share with the world</li>
+      </ol>
+    </section>
+
+    <section class="sidebar-pager-demo">
+      <main>
+        <h3>Sidebar pager driving the main column</h3>
+        <ul id="feed-c" data-paged data-paged-size="2" data-paged-controls="none">
+          <li>Pinned: Welcome to Vanilla Breeze</li>
+          <li>Pinned: Get started in 5 minutes</li>
+          <li>Tip: Use data-paged on any container</li>
+          <li>Tip: pager-wc keeps controls anywhere you want them</li>
+          <li>Reference: data-paged attribute table</li>
+          <li>Reference: pager-wc element table</li>
+          <li>Recipe: content-feed composition</li>
+          <li>Recipe: search-results with infinite scroll</li>
+        </ul>
+      </main>
+      <aside>
+        <pager-wc target="#feed-c" style="numbered"></pager-wc>
+      </aside>
+    </section>
+
+    <section>
+      <h3>Implicit target (preceding [data-paged] sibling)</h3>
+      <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+        With no <code>target</code> or <code>for</code>, <code>&lt;pager-wc&gt;</code> binds to the nearest preceding <code>[data-paged]</code> sibling.
+      </p>
+      <ul data-paged data-paged-size="2" data-paged-controls="none">
+        <li>Quick item A</li>
+        <li>Quick item B</li>
+        <li>Quick item C</li>
+        <li>Quick item D</li>
+        <li>Quick item E</li>
+      </ul>
+      <pager-wc style="prev-next"></pager-wc>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -109,6 +109,7 @@ import './page-stats/logic.js';
 import './reading-progress/logic.js';
 import './bread-crumb/logic.js';
 import './pop-over/logic.js';
+import './pager-wc/logic.js';
 import './page-tools/logic.js';
 import './ai-summary/logic.js';
 import './ai-chat/logic.js';
