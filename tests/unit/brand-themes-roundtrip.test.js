@@ -24,45 +24,10 @@ import { dirname, join } from 'node:path';
 
 import { serializeDTCG } from '../../src/web-components/theme-export/dtcg-serialize.js';
 import { deserializeDTCG } from '../../src/web-components/theme-import/dtcg-deserialize.js';
+import { extractBaseBlock, parseDeclarations } from '../../src/web-components/theme-export/theme-css-parse.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const THEMES_DIR = join(__dirname, '..', '..', 'src', 'tokens', 'themes');
-
-/**
- * Pull the body of the first `:root[data-theme~="{brand}"]` block from a
- * CSS string. Walks braces so nested rules don't confuse the boundary.
- */
-function extractBaseBlock(css, brand) {
-  const sel = `data-theme~="${brand}"]`;
-  const idx = css.indexOf(sel);
-  if (idx === -1) return '';
-  const braceStart = css.indexOf('{', idx);
-  if (braceStart === -1) return '';
-  let depth = 1;
-  let pos = braceStart + 1;
-  while (pos < css.length && depth > 0) {
-    if (css[pos] === '{') depth++;
-    else if (css[pos] === '}') depth--;
-    pos++;
-  }
-  return css.slice(braceStart + 1, pos - 1);
-}
-
-/**
- * Pull `--name: value;` declarations out of a CSS block body.
- * Skips nested-rule contents; brand themes don't nest token declarations.
- */
-function parseDeclarations(blockBody) {
-  const out = [];
-  // Match: --name: <value>;  where value runs until the next semicolon
-  // (no nested '{}' inside our brand themes' base blocks).
-  const re = /(--[\w-]+)\s*:\s*([^;{}]+);/g;
-  let m;
-  while ((m = re.exec(blockBody)) !== null) {
-    out.push([m[1], m[2].trim()]);
-  }
-  return out;
-}
 
 const BRANDS = [
   { id: 'mcdonalds', file: '_brand-mcdonalds.css', primary: '#DB0007' },

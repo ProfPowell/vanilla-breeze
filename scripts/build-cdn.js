@@ -127,6 +127,12 @@ async function buildThemes() {
   const outDir = join(CDN, 'themes');
   const manifest = {};
 
+  // DTCG sibling artifacts share the same loop. Imported lazily so a
+  // serializer change doesn't reach build until the theme step runs.
+  const { serializeDTCG } = await import('../src/web-components/theme-export/dtcg-serialize.js');
+  const { extractBaseBlock, extractDarkBlock, parseDeclarations } =
+    await import('../src/web-components/theme-export/theme-css-parse.js');
+
   const files = readdirSync(themesDir).filter(f => {
     // Include brand and extreme themes, skip access, index, and template files
     if (!f.endsWith('.css')) return false;
@@ -137,6 +143,9 @@ async function buildThemes() {
   });
 
   console.log(`Building ${files.length} individual theme files...`);
+
+  let dtcgCount = 0;
+  let dtcgDarkCount = 0;
 
   for (const file of files) {
     // Derive output name: _brand-ocean.css -> ocean.css, _extreme-cyber.css -> cyber.css
@@ -155,7 +164,47 @@ async function buildThemes() {
 
     const outPath = join(outDir, name);
     const size = statSync(outPath).size;
-    manifest[themeId] = { file: name, size, tier: getThemeTier(themeId) };
+    const entry = {
+      file: name,
+      size,
+      tier: getThemeTier(themeId),
+    };
+
+    // ── DTCG sibling artifact ────────────────────────────────────────────
+    // Read the source CSS (NOT the bundled one — esbuild may have
+    // inlined imports we don't want to re-walk). Parse the base + dark
+    // blocks, run them through the same serializer <theme-export> uses.
+    try {
+      const sourceCss = readFileSync(join(themesDir, file), 'utf-8');
+      const baseEntries = parseDeclarations(extractBaseBlock(sourceCss, themeId));
+      if (baseEntries.length > 0) {
+        const dtcg = serializeDTCG(baseEntries, {
+          vbVersion: pkg.version,
+        });
+        const dtcgName = `${themeId}.tokens.json`;
+        writeFileSync(join(outDir, dtcgName), JSON.stringify(dtcg, null, 2));
+        entry.dtcg = dtcgName;
+        dtcgCount++;
+      }
+
+      const darkBlock = extractDarkBlock(sourceCss, themeId);
+      if (darkBlock) {
+        const darkEntries = parseDeclarations(darkBlock);
+        if (darkEntries.length > 0) {
+          const dtcgDark = serializeDTCG(darkEntries, {
+            vbVersion: pkg.version,
+          });
+          const dtcgDarkName = `${themeId}-dark.tokens.json`;
+          writeFileSync(join(outDir, dtcgDarkName), JSON.stringify(dtcgDark, null, 2));
+          entry.dtcgDark = dtcgDarkName;
+          dtcgDarkCount++;
+        }
+      }
+    } catch (err) {
+      console.warn(`  ⚠ DTCG generation failed for ${themeId}: ${err.message}`);
+    }
+
+    manifest[themeId] = entry;
   }
 
   writeFileSync(
@@ -164,6 +213,7 @@ async function buildThemes() {
   );
 
   console.log(`  ${files.length} themes → dist/cdn/themes/`);
+  console.log(`  ${dtcgCount} DTCG (.tokens.json), ${dtcgDarkCount} with -dark variants`);
   console.log(`  manifest.json written (${Object.keys(manifest).length} entries)`);
 }
 
