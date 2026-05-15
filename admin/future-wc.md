@@ -110,7 +110,7 @@ These enhance native attributes rather than creating new components. **All five 
 | `data-hotkey` (extend) | `accesskey` | `vanilla-breeze-p880` | ✓ Shipped |
 | `data-accordion` | `open` | `vanilla-breeze-03jb` | ✓ Shipped |
 | `data-sandbox-report` | `sandbox` | `vanilla-breeze-rrtx` | ✓ Shipped |
-| `data-paged` | (no native equivalent) — list-pagination upscale on any list-shaped container | `vanilla-breeze-07td` | In progress |
+| `data-paged` | (no native equivalent) — list-pagination upscale on any list-shaped container | `vanilla-breeze-07td` | ✓ Shipped |
 
 ---
 
