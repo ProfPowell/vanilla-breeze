@@ -41,7 +41,7 @@ Current surface: **137 web components** across 7 categories (as of 2026-05-15).
 | ~~`comment-thread`~~ | **Shipped** as `comment-thread` (`src/web-components/comment-thread/`). Persistent threaded-discussion container; decorates author-rendered `<article data-comment>` children with author header, relative timestamp, action row (Reply / Edit / Delete) + threaded indentation. Composes `<comment-box>` (reply-form template) and bubbles `<reaction-bar>` events naturally. **`comment-wc` stub kept** as a separate inline action for `selection-menu`. Docs: [reference](/docs/elements/web-components/comment-thread/) + cross-link added on `comment-wc` doc page. Plan: `admin/r-n-d/comment-thread.md`. Bead: `vanilla-breeze-k4m5`. | |
 | `annotation-layer` | New | Overlay annotations on any content block. |
 | ~~`reading-progress`~~ | **Shipped** as `reading-progress` (`src/web-components/reading-progress/`). Bead: `vanilla-breeze-13rv`. | |
-| `content-feed` | New | Paginated/infinite-scroll content feed. |
+| ~~`content-feed`~~ | **Resolved as recipe + `data-paged`** (2026-05-15). The pattern dissolves into `<site-search>` (filter) + `<card-list>` / `<ul>` / `<layout-grid>` (render) + `data-paged` upscale (paginate). Same architectural call as the `diff-viewer` and Planning consolidations: composition over a wrapper. Recipe doc at `/docs/patterns/content-feed/` once `data-paged` ships. Bead: `vanilla-breeze-07td` (data-paged). | |
 | `search-results` | New | Structured search results display with highlighting. **Overlap check**: `site-search` already does result highlighting per its own api.json. Either fold this into `site-search` slots/recipe, or scope `search-results` narrowly to standalone (non-dialog) result lists. |
 | ~~`bread-crumb`~~ | **Shipped** as `bread-crumb` (`src/web-components/bread-crumb/`, registered in `extras.js` per commit `12b475c8`). Auto-generates from `pathname` with structured-data hooks. Bead: `vanilla-breeze-yr9r`. | |
 | ~~`version-switcher`~~ | **All three phases Shipped** as `version-switcher` (`src/web-components/version-switcher/`). Three actions (`navigate` default, `swap` with View Transitions + `<meta itemprop=version>` update, `diff` via `<change-set>` tracking-view). Three data sources (inline JSON > `data-src` URL > `<meta name=vb:versions-manifest>` fallback). Archived-version banner (`data-banner`, `role=region`+`aria-live=polite`). Mounting inside `<page-info>`'s expandable panel (`data-page-info-target=ID`). Build-pipeline sibling shipped: `versionsManifest` frontmatter → `<meta name=vb:versions-manifest>` via generate-provenance-meta plugin. Cross-links added on `page-info` and `time-index` doc pages. Docs: [reference](/docs/elements/web-components/version-switcher/). Plan: `admin/r-n-d/version-switcher.md`. Beads (all closed): `vanilla-breeze-jusx` (Phase 1), `vanilla-breeze-c42e` (Phase 2), `vanilla-breeze-smb8` (build-pipeline), `vanilla-breeze-j6uo` (Phase 3). | |
@@ -110,6 +110,7 @@ These enhance native attributes rather than creating new components. **All five 
 | `data-hotkey` (extend) | `accesskey` | `vanilla-breeze-p880` | ✓ Shipped |
 | `data-accordion` | `open` | `vanilla-breeze-03jb` | ✓ Shipped |
 | `data-sandbox-report` | `sandbox` | `vanilla-breeze-rrtx` | ✓ Shipped |
+| `data-paged` | (no native equivalent) — list-pagination upscale on any list-shaped container | `vanilla-breeze-07td` | In progress |
 
 ---
 
@@ -125,7 +126,6 @@ Live shortlist of wishlist work not yet started, plus new ideas surfaced from re
 | `model-viewer` | Media | Wraps `<model-viewer>` or Three.js. New use case; no current demand signal. |
 | `map-viewer` | Media | Interactive map (zoom / pan / markers) extending `geo-map`. |
 | `annotation-layer` | Content Management | Overlay annotations on any content block. Likely overlaps with `<highlight-wc>` + `<note-wc>` — scope-check before scaffolding. |
-| `content-feed` | Content Management | Paginated/infinite-scroll feed. **Overlap check** with `<activity-feed>` (already does WAI-ARIA Feed timeline w/ infinite scroll); may be a recipe rather than a new component. |
 | `search-results` | Content Management | Standalone results list w/ highlighting. **Overlap check**: `<site-search>` already does highlighting. Either fold into `site-search` slots/recipe, or scope narrowly to non-dialog standalone. |
 | `decision-matrix` (continued) | Planning | Multi-evaluator scoring + per-cell rationale notes. Defer until requested. |
 | `risk-register` (continued) | Planning | Bidirectional editing (table edit → quadrant move → table refresh). Currently one-way render. |
@@ -143,8 +143,8 @@ Live shortlist of wishlist work not yet started, plus new ideas surfaced from re
 These are decisions, not components. Each could redirect future work.
 
 - **annotation-layer vs `<highlight-wc>` + `<note-wc>`** — is annotation-layer a real new shape, or a recipe over the existing primitives?
-- **content-feed vs `<activity-feed>`** — same question; activity-feed already covers most of the surface.
 - **search-results vs `<site-search>` slots** — fold or scope?
+- **decoupled pagination controls** — once `data-paged` (bead `vanilla-breeze-07td`) ships, decide whether a thin `<pager-wc target="#x">` wrapper is worth the ~30 lines of glue, or if the in-container pattern is sufficient. Build only if a real consumer needs separated nav.
 - **`<theme-picker>` + theme-library page convergence** — both expose theme browsing now; consider whether the picker should embed library-page filters or vice versa.
 
 ---
