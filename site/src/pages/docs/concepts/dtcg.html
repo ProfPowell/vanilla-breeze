@@ -1,0 +1,197 @@
+---
+layout: guide
+title: "DTCG (Design Tokens Community Group)"
+description: "What DTCG is, what Vanilla Breeze supports, and how to round-trip themes through Figma plugins, Style Dictionary, and other DTCG-aware tools."
+guideGroup: Concepts
+currentPath: /docs/concepts/dtcg/
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/themes/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">DTCG</span></li>
+  </ol>
+</nav>
+</template>
+
+<h1>DTCG &mdash; Design Tokens Community Group</h1>
+
+<p class="lead">
+  DTCG is a JSON file format for exchanging design tokens between tools.
+  Vanilla Breeze supports it as a sibling artifact to its CSS-native theme
+  system, so designers and developers can move VB themes through Figma,
+  Tokens Studio, Style Dictionary, and other DTCG-aware tools without a
+  per-tool integration.
+</p>
+
+<aside class="note">
+  <p>
+    <strong>VB targets the stable spec, version 2025.10</strong> (published
+    by the W3C Design Tokens Community Group on 2025-10-28). Reference
+    implementations exist in Style Dictionary, Tokens Studio, Terrazzo,
+    Penpot, and others.
+  </p>
+</aside>
+
+<h2>Why DTCG matters for VB</h2>
+
+<p>
+  VB's runtime token system &mdash; CSS custom properties, OKLCH,
+  <code>light-dark()</code>, relative-color computation &mdash; is
+  expressive and platform-native. But until DTCG, every design tool spoke
+  its own dialect: Figma Variables, Tokens Studio JSON, Style Dictionary's
+  legacy format, Sketch shared styles. Sharing a theme across tools meant
+  manual translation each time.
+</p>
+
+<p>
+  DTCG gives the ecosystem a common JSON shape with explicit
+  <code>$type</code> + <code>$value</code> per token, hierarchical groups,
+  alias references, and composite types for typography / shadow / border.
+  When VB themes are emitted as DTCG, they become consumable in any
+  DTCG-aware tool. When DTCG files arrive (from Figma exports, public
+  design systems, or hand-authored sets), VB can apply them as themes.
+</p>
+
+<h2>What VB supports</h2>
+
+<dl>
+  <dt>Export</dt>
+  <dd>
+    <a href="/docs/elements/web-components/theme-export/"><code>&lt;theme-export&gt;</code></a>
+    has a <code>format="dtcg"</code> mode that emits stable-spec 2025.10
+    JSON. The format selector is in the toolbar; the download saves as
+    <code>theme.tokens.json</code> with MIME
+    <code>application/design-tokens+json</code>.
+  </dd>
+
+  <dt>Import</dt>
+  <dd>
+    <a href="/docs/elements/web-components/theme-import/"><code>&lt;theme-import&gt;</code></a>
+    takes DTCG JSON via paste, file upload, or URL fetch and applies the
+    resulting tokens to a target preview scope. Tokens that don't map to a
+    known VB prefix are surfaced in an <em>ignored</em> panel rather than
+    dropped silently.
+  </dd>
+
+  <dt>Catalog</dt>
+  <dd>
+    <a href="/docs/elements/web-components/theme-catalog/"><code>&lt;theme-catalog&gt;</code></a>
+    lets you start from a known design system in one click &mdash; Material 3,
+    IBM Carbon, Salesforce Lightning, GOV.UK, Atlassian, Tailwind defaults,
+    Bootstrap defaults, Catppuccin Mocha. Each entry carries license and
+    attribution metadata.
+  </dd>
+
+  <dt>Theme library</dt>
+  <dd>
+    Every theme in VB ships as a <code>.tokens.json</code> sibling next to
+    its CSS at <a href="/cdn/themes/manifest.json"><code>/cdn/themes/</code></a>.
+    See the <a href="/docs/tools/theme-library/">theme library</a> for the
+    full list with download links.
+  </dd>
+</dl>
+
+<h2>Color, dimension, and the parametric round-trip</h2>
+
+<p>
+  DTCG 2025.10 supports OKLCH and all CSS Color Module 4 spaces natively,
+  so VB's OKLCH primitives translate cleanly. Dimensions in
+  <code>px</code> and <code>rem</code> are spec-supported; for
+  <code>em</code> and percent units (which VB uses in places like
+  <code>--letter-spacing-tight</code>), VB stores the unit hint under
+  <code>$extensions["com.vanilla-breeze"].unit</code> so it round-trips
+  exactly.
+</p>
+
+<p>
+  The interesting case is <strong>parametric themes</strong>. VB themes
+  often define state colors as derivations:
+</p>
+
+<pre><code>--color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
+--color-primary-hover:  oklch(from var(--color-primary) calc(l - 0.08) calc(c + 0.02) h);
+--color-primary-active: oklch(from var(--color-primary) calc(l - 0.12) c h);</code></pre>
+
+<p>
+  The CSS <code>oklch(from &hellip;)</code> relative-color syntax has no
+  direct DTCG equivalent &mdash; DTCG aliases are pass-through references,
+  not derivations. So when VB exports a parametric theme:
+</p>
+
+<ul>
+  <li>
+    The <strong>resolved value</strong> goes into <code>$value</code> &mdash;
+    other tools see a real, usable color.
+  </li>
+  <li>
+    The <strong>original CSS expression</strong> is preserved under
+    <code>$extensions["com.vanilla-breeze"].expression</code>.
+  </li>
+  <li>
+    On re-import into VB, the importer prefers the preserved expression
+    over the resolved value, so a round-trip through VB tooling is
+    <em>lossless</em>.
+  </li>
+  <li>
+    A round-trip through a third-party tool that strips unknown extensions
+    will downgrade to the resolved value &mdash; functional but no longer
+    parametric. This is a known and documented trade-off.
+  </li>
+</ul>
+
+<p>
+  The same pattern applies to <code>light-dark(a, b)</code> values: VB
+  emits a <code>$root</code>/<code>light</code>/<code>dark</code> variant
+  triplet for cross-tool fidelity AND preserves the literal under
+  <code>$extensions["com.vanilla-breeze"].lightDark</code>.
+</p>
+
+<h2>Composite typography</h2>
+
+<p>
+  DTCG's composite <code>typography</code> token bundles related primitives
+  (<code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>,
+  <code>lineHeight</code>) into one object. VB's runtime stores those as
+  separate scalars. On import, VB unpacks composite typography tokens into
+  the matching scalars (<code>--font-{name}</code>,
+  <code>--font-size-{name}</code>, etc.). On export, VB emits scalars by
+  default; future revisions may synthesize composite tokens for tools that
+  prefer them.
+</p>
+
+<h2>Tooling pointers</h2>
+
+<dl>
+  <dt><a href="https://www.designtokens.org/">Design Tokens Community Group</a></dt>
+  <dd>The W3C community group and canonical spec.</dd>
+
+  <dt><a href="https://styledictionary.com/info/dtcg/">Style Dictionary</a></dt>
+  <dd>
+    Multi-platform code generator. Run <code>sd build</code> against any
+    <code>.tokens.json</code> VB emits to produce iOS, Android, Flutter,
+    or alternative CSS output.
+  </dd>
+
+  <dt><a href="https://tokens.studio/">Tokens Studio for Figma</a></dt>
+  <dd>
+    The dominant Figma plugin for managing tokens. Imports / exports DTCG;
+    pipes through Style Dictionary.
+  </dd>
+
+  <dt><a href="https://penpot.app/">Penpot</a></dt>
+  <dd>
+    Open-source design tool with native DTCG export.
+  </dd>
+</dl>
+
+<h2>What's next</h2>
+
+<p>
+  See the <a href="/docs/tools/theme-composer/">Theme Composer</a> for the
+  hands-on workflow: edit specimens, browse the catalog, paste DTCG, and
+  export your result. The <a href="/docs/tools/theme-library/">theme
+  library</a> lists every shipped theme with one-click DTCG downloads.
+</p>
