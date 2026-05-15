@@ -1,0 +1,86 @@
+---
+layout: attribute
+title: "data-layout-density"
+description: "Page-wide density variant. Set on <html> or <body> to compress or expand the entire VB spacing scale (--size-3xs through --size-3xl) without touching individual layouts. Compact for dashboards/admin UIs, spacious for marketing/landing pages."
+attributeName: data-layout-density
+category: layout
+attributeType: data
+currentPath: /docs/attributes/data-layout-density/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-layout-density</code> attribute is a single-knob switch over VB's spacing scale. Set it once on <code>&lt;html&gt;</code> (or any ancestor) and every <code>--size-*</code> token in scope shifts in lockstep. Layouts already using <a href="/docs/attributes/data-layout/"><code>data-layout-gap</code></a>, <code>--size-m</code>, <code>--size-l</code>, etc. recompute automatically — no per-component changes.</p>
+  <p>Two values:</p>
+  <ul>
+    <li><strong><code>compact</code></strong> &mdash; tighter spacing for dashboards, data tables, admin UIs.</li>
+    <li><strong><code>spacious</code></strong> &mdash; generous spacing for marketing pages, hero-heavy landings.</li>
+    <li>Omitting the attribute is the default scale.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" show-lines label="Whole-page compact dashboard" data-escape><html lang="en" data-layout-density="compact">
+  <body data-page-layout="dashboard">
+    ...
+  </body>
+</html></code-block>
+
+  <code-block language="html" show-lines label="Density on a single section" data-escape><body>
+  <main>...</main>
+  <section data-layout-density="spacious" class="marketing">
+    <h2>Pricing</h2>
+    ...
+  </section>
+</body></code-block>
+</section>
+
+<section>
+  <h2>What changes</h2>
+  <p>The attribute redefines the size scale within its subtree. The full <code>--size-3xs</code> through <code>--size-3xl</code> scale is replaced; everything that consumes those tokens (gap, padding, margin, layout primitives, components) shifts by the same factor.</p>
+
+  <table class="prose">
+    <thead><tr><th>Token</th><th>Default</th><th><code>compact</code></th><th><code>spacious</code></th></tr></thead>
+    <tbody>
+      <tr><td><code>--size-3xs</code></td><td>2px</td>      <td>1px</td>  <td>4px</td></tr>
+      <tr><td><code>--size-2xs</code></td><td>4px</td>      <td>2px</td>  <td>8px</td></tr>
+      <tr><td><code>--size-xs</code></td> <td>8px</td>      <td>4px</td>  <td>12px</td></tr>
+      <tr><td><code>--size-s</code></td>  <td>12px</td>     <td>8px</td>  <td>16px</td></tr>
+      <tr><td><code>--size-m</code></td>  <td>16px</td>     <td>12px</td> <td>24px</td></tr>
+      <tr><td><code>--size-l</code></td>  <td>24px</td>     <td>16px</td> <td>32px</td></tr>
+      <tr><td><code>--size-xl</code></td> <td>32px</td>     <td>24px</td> <td>48px</td></tr>
+      <tr><td><code>...</code></td>       <td>...</td>      <td>...</td>  <td>...</td></tr>
+    </tbody>
+  </table>
+
+  <p>The exact values are defined in <a href="https://github.com/profpowell/vanilla-breeze/blob/main/src/custom-elements/layout-attributes.css"><code>src/custom-elements/layout-attributes.css</code></a> &mdash; consult the source for the canonical scale.</p>
+</section>
+
+<section>
+  <h2>What does NOT change</h2>
+  <ul>
+    <li><strong>Typography</strong> &mdash; <code>--font-size-*</code> and <code>--line-height-*</code> are independent.</li>
+    <li><strong>Color tokens</strong> &mdash; unaffected.</li>
+    <li><strong>Border-radius / shadow</strong> &mdash; unaffected.</li>
+    <li><strong>Component-specific tokens</strong> like <code>--button-padding-inline</code> &mdash; unaffected unless they reference <code>--size-*</code>.</li>
+  </ul>
+  <p>If you want a "denser feel" everywhere including type, layer this attribute with a smaller <code>--font-size-md</code> in your theme.</p>
+</section>
+
+<section>
+  <h2>Composition</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; commonly paired (compact density on a dashboard page-layout).</li>
+    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> + <code>data-layout-gap</code> &mdash; the gap scale recomputes automatically.</li>
+    <li>VB themes &mdash; orthogonal; density is structural, themes are decorative.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>When to use vs theming</h2>
+  <p>Pick <code>data-layout-density</code> when the whole information density of a region needs to shift &mdash; admin dashboards, data-heavy tables, signed-in app shells. Pick a custom theme when only the look (colors, typography, shadows) should change. The two compose: an admin section can use <code>data-layout-density="compact"</code> with the standard brand theme above it.</p>
+</section>

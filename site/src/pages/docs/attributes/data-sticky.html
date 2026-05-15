@@ -1,0 +1,108 @@
+---
+layout: attribute
+title: "data-sticky"
+description: "Activate viewport-aware sticky-positioning coordination. Set on <html> to enable the system; the StickyManager keeps a --sticky-offset custom property in sync with the actual sticky-header height so all sticky elements (sidebar, TOC, headings) line up correctly."
+attributeName: data-sticky
+category: layout
+attributeType: data
+currentPath: /docs/attributes/data-sticky/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-sticky</code> attribute on <code>&lt;html&gt;</code> turns on VB's sticky coordination system. Behind it, <code>StickyManager</code> measures the live sticky-header height and writes it to <code>--sticky-offset</code> on <code>:root</code>. Every sticky sidebar, TOC, scroll-padding setting, and "scroll into view" behavior reads that variable, so they all line up correctly without you hardcoding a header offset anywhere.</p>
+  <p>On other elements, <code>data-sticky</code> marks the element as a sticky participant. The first <code>&lt;header&gt;</code> in the document picks it up automatically when the system is active; other elements opt in explicitly.</p>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" show-lines label="Activate the system" data-escape><html lang="en" data-sticky>
+  <body>
+    <header>
+      <!-- Auto-marked data-sticky by StickyManager -->
+    </header>
+    <main>...</main>
+  </body>
+</html></code-block>
+
+  <code-block language="html" show-lines label="Mark a custom element as sticky" data-escape><body>
+  <header data-sticky>...</header>
+  <aside data-sticky class="page-toc">
+    <!-- Constrained by max-block-size: calc(100dvh - var(--sticky-offset) - var(--sticky-gap)) -->
+  </aside>
+</body></code-block>
+</section>
+
+<section>
+  <h2>Two roles</h2>
+  <table class="prose">
+    <thead><tr><th>On</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>&lt;html data-sticky&gt;</code></td>
+        <td>Enables the system. <code>StickyManager.init()</code> runs; auto-applies <code>data-sticky</code> to the first <code>&lt;header&gt;</code> if not already present; sets up <code>resize</code> + <code>fonts.ready</code> + <code>toggle</code> listeners to keep <code>--sticky-offset</code> current.</td>
+      </tr>
+      <tr>
+        <td><code>&lt;header data-sticky&gt;</code></td>
+        <td>Header opts in (or is auto-applied). Becomes <code>position: sticky</code> at <code>top: 0</code>; its height is what <code>StickyManager</code> measures.</td>
+      </tr>
+      <tr>
+        <td><code>&lt;aside data-sticky&gt;</code> / <code>&lt;nav data-sticky&gt;</code></td>
+        <td>Marked as a sticky region. CSS in <code>src/utils/sticky.css</code> applies <code>position: sticky</code> with <code>top: var(--sticky-offset)</code> and a height constraint so the region can scroll independently if its content exceeds the viewport.</td>
+      </tr>
+      <tr>
+        <td><code>&lt;footer data-sticky&gt;</code></td>
+        <td>Sticky-to-bottom variant; styles in <code>src/native-elements/footer/styles.css</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>The CSS variables it provides</h2>
+  <table class="prose">
+    <thead><tr><th>Variable</th><th>Set by</th><th>Use for</th></tr></thead>
+    <tbody>
+      <tr><td><code>--sticky-offset</code></td><td>StickyManager (px)</td><td>Top offset for any other sticky element so it stays below the header.</td></tr>
+      <tr><td><code>--sticky-gap</code></td>   <td>theme / authors</td>   <td>Gap to leave above the bottom of the viewport when constraining sticky region height.</td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="css" show-lines label="Pattern: a sticky aside with self-scroll" data-escape>aside[data-sticky] {
+  position: sticky;
+  inset-block-start: var(--sticky-offset, 0);
+  max-block-size: calc(100dvh - var(--sticky-offset) - var(--sticky-gap, 1rem));
+  overflow-y: auto;
+}</code-block>
+</section>
+
+<section>
+  <h2>What triggers a re-measure</h2>
+  <ul>
+    <li><strong>Window resize</strong> &mdash; <code>resize</code> listener on <code>window</code> (passive).</li>
+    <li><strong>Fonts loaded</strong> &mdash; <code>document.fonts.ready</code> resolves and triggers a re-measure (header height often changes once webfonts arrive).</li>
+    <li><strong>Toggle events</strong> &mdash; any <code>&lt;details&gt;</code> opening / closing inside the header.</li>
+    <li><strong>Initial mount</strong> &mdash; immediate measure plus a follow-up in the next <code>requestAnimationFrame</code> after layout settles.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Composition</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a> &mdash; the TOC sidebar reads <code>--sticky-offset</code> for its own positioning.</li>
+    <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; the <code>app-shell</code> and <code>dashboard</code> templates assume a sticky header.</li>
+    <li><code>scroll-padding-block-start</code> on <code>:root</code> &mdash; set to <code>var(--sticky-offset)</code> so anchor-link jumps land below the sticky header.</li>
+    <li>Print stylesheet &mdash; <code>src/utils/print.css</code> disables sticky behavior automatically.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>When NOT to use</h2>
+  <ul>
+    <li>Pages with no sticky chrome &mdash; the system measures and sets variables every resize; that's cheap but pointless if nothing's sticky.</li>
+    <li>Inside scrollable subregions &mdash; <code>data-sticky</code> on a child of an overflowing container won't measure correctly; coordinate with the parent's scroll state instead.</li>
+  </ul>
+</section>

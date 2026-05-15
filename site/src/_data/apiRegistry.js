@@ -587,6 +587,105 @@ export default {
       }
     ]
   },
+  "calendar-event": {
+    "element": "calendar-event",
+    "type": "custom-element",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-category",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string"
+      },
+      {
+        "name": "data-start",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string"
+      },
+      {
+        "name": "data-duration",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string"
+      }
+    ]
+  },
+  "chat-bubble": {
+    "element": "chat-bubble",
+    "type": "custom-element",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": []
+  },
+  "chat-message": {
+    "element": "chat-message",
+    "type": "custom-element",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-role",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "user",
+          "agent",
+          "system"
+        ]
+      },
+      {
+        "name": "data-from",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string"
+      },
+      {
+        "name": "data-from-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string"
+      },
+      {
+        "name": "data-status",
+        "kind": "data",
+        "purpose": "semantic-state",
+        "type": "string"
+      },
+      {
+        "name": "data-model",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string"
+      }
+    ]
+  },
+  "chat-thread": {
+    "element": "chat-thread",
+    "type": "custom-element",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": []
+  },
   "code-block": {
     "element": "code-block",
     "type": "custom-element",
@@ -612,6 +711,24 @@ export default {
       {
         "name": "label",
         "kind": "host-api",
+        "purpose": "config",
+        "type": "string"
+      }
+    ]
+  },
+  "day-schedule": {
+    "element": "day-schedule",
+    "type": "custom-element",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-date",
+        "kind": "data",
         "purpose": "config",
         "type": "string"
       }
@@ -682,6 +799,24 @@ export default {
         }
       ]
     }
+  },
+  "hour-view": {
+    "element": "hour-view",
+    "type": "custom-element",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-overlap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean"
+      }
+    ]
   },
   "loading-spinner": {
     "element": "loading-spinner",

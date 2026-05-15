@@ -208,6 +208,54 @@ module.exports = {
 
   // ── Web Components ──────────────────────────────────────────────
 
+  "calendar-event": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-category": {},
+      "data-start": {},
+      "data-duration": {}
+    }
+  },
+
+  "chat-bubble": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  "chat-message": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-role": { enum: ["user", "agent", "system"] },
+      "data-from": {},
+      "data-from-label": {},
+      "data-status": {},
+      "data-model": {}
+    }
+  },
+
+  "chat-thread": {
+    flow: true,
+    permittedContent: ["@flow"]
+  },
+
+  "day-schedule": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-date": {}
+    }
+  },
+
+  "hour-view": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-overlap": { boolean: true }
+    }
+  },
+
   "accessibility-specimen": {
     flow: true,
     permittedContent: ["@flow"],

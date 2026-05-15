@@ -1,0 +1,95 @@
+---
+layout: attribute
+title: "data-layout"
+description: "Component-level layout primitive. Drop on any element to apply a named layout (stack, cluster, grid, center, cover, sidebar, columns…) without wrapping in a custom element. Same surface as the layout-* custom elements; better semantics."
+attributeName: data-layout
+category: layout
+attributeType: data
+currentPath: /docs/attributes/data-layout/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-layout</code> attribute applies one of VB's named layout primitives to <em>any</em> element. It's the attribute form of the <code>&lt;layout-*&gt;</code> custom-element family &mdash; same engine, better semantics. Use <code>&lt;article data-layout="stack"&gt;</code> when the element you already have is the right semantic container; use <code>&lt;layout-stack&gt;</code> when you need a generic wrapper.</p>
+  <p>This is the same element-and-attribute symmetry the framework uses across the layout surface (and that <a href="/docs/attributes/data-paged/"><code>data-paged</code></a> + <a href="/docs/elements/web-components/pager-wc/"><code>&lt;pager-wc&gt;</code></a> mirror for pagination): pick the surface that fits the markup you already have.</p>
+</section>
+
+<section>
+  <h2>Component layouts</h2>
+  <p>Drop on any element you want to lay out. Modifiers (<code>data-layout-gap</code>, <code>data-layout-align</code>) tune the layout without changing its kind.</p>
+
+  <code-block language="html" show-lines data-escape><article data-layout="stack" data-layout-gap="m">
+  <h2>Title</h2>
+  <p>Body</p>
+</article>
+
+<nav data-layout="cluster" data-layout-gap="s">
+  <a href="/">Home</a>
+  <a href="/docs/">Docs</a>
+  <a href="/blog/">Blog</a>
+</nav>
+
+<section data-layout="grid" data-layout-gap="m">
+  <article>...</article>
+  <article>...</article>
+  <article>...</article>
+</section></code-block>
+</section>
+
+<section>
+  <h2>Layout values</h2>
+  <table class="prose">
+    <thead><tr><th>Value</th><th>Pattern</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>stack</code></td>      <td>Vertical flex with gap</td>           <td>Default for vertical rhythm.</td></tr>
+      <tr><td><code>cluster</code></td>    <td>Horizontal flex, wraps</td>           <td>Tag rows, button groups, filter chips.</td></tr>
+      <tr><td><code>grid</code></td>       <td>Auto-fit grid by min column width</td><td>Card grids; pair with <code>data-min</code> on the host.</td></tr>
+      <tr><td><code>center</code></td>     <td>Centered intrinsic / max-width box</td><td>Article column; pair with <code>data-max</code>.</td></tr>
+      <tr><td><code>cover</code></td>      <td>Header-content-footer in a min-block area</td><td>Hero sections.</td></tr>
+      <tr><td><code>columns</code></td>    <td>CSS multicolumn</td>                  <td>Reading-flow columns.</td></tr>
+      <tr><td><code>sidebar</code></td>    <td>Two-column sidebar with content</td>  <td>Use <code>sidebar-left</code> / <code>sidebar-right</code> for explicit placement.</td></tr>
+      <tr><td><code>holy-grail</code></td> <td>Header / sidebar / main / sidebar / footer</td><td>Classic three-column page.</td></tr>
+      <tr><td><code>dashboard</code></td>  <td>Header + sidebar + main app shell</td><td>Application chrome.</td></tr>
+      <tr><td><code>switcher</code></td>   <td>Switcher (flex, swaps to wrap by threshold)</td><td>Layout-switcher pattern from Every Layout.</td></tr>
+      <tr><td><code>prose</code></td>      <td>Article reading column with vertical rhythm</td><td>Mirrors <code>article.blog</code>.</td></tr>
+      <tr><td><code>media</code></td>      <td>Media-object: figure beside body</td> <td>Avatar + comment, icon + label.</td></tr>
+      <tr><td><code>split</code></td>      <td>Resizable two-pane split</td>         <td>Pairs with <code>&lt;split-surface&gt;</code> behaviour.</td></tr>
+      <tr><td><code>regions</code></td>    <td>Free-form named-grid regions</td>     <td>For ad-hoc grid-area layouts.</td></tr>
+    </tbody>
+  </table>
+
+  <p>The <code>body-*</code> variants (<code>body-stack</code>, <code>body-sidebar-left</code>, etc.) are page-shape templates — use them on <code>&lt;body&gt;</code> via <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> instead, which adds semantic-element grid-area wiring.</p>
+</section>
+
+<section>
+  <h2>Modifiers</h2>
+  <table class="prose">
+    <thead><tr><th>Attribute</th><th>Values</th><th>Default</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-layout-gap</code></td>   <td><code>none</code> &middot; <code>3xs</code> &middot; <code>2xs</code> &middot; <code>xs</code> &middot; <code>s</code> &middot; <code>m</code> &middot; <code>l</code> &middot; <code>xl</code> &middot; <code>2xl</code> &middot; <code>3xl</code></td><td><code>m</code> (or <code>s</code> for cluster)</td><td>Maps to the <code>--size-*</code> token scale.</td></tr>
+      <tr><td><code>data-layout-align</code></td> <td><code>start</code> &middot; <code>center</code> &middot; <code>end</code> &middot; <code>stretch</code></td><td><code>stretch</code> (stack) / <code>center</code> (cluster)</td><td>Cross-axis alignment.</td></tr>
+      <tr><td><code>data-min</code></td>          <td>any CSS length</td><td>varies</td><td>Per-layout: minimum column width for <code>grid</code>, or threshold for <code>switcher</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Element vs attribute &mdash; pick what fits</h2>
+  <p>Both forms feed the same engine. Pick by which surface fits the existing markup:</p>
+  <ul>
+    <li><strong>Use <code>data-layout</code></strong> when you already have a semantic element that should also be the layout container (<code>&lt;article&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;form&gt;</code>).</li>
+    <li><strong>Use <code>&lt;layout-stack&gt;</code> / <code>&lt;layout-grid&gt;</code> / etc.</strong> when you need a generic wrapper purely for layout. See <a href="/docs/elements/web-components/layout-specimen/"><code>&lt;layout-specimen&gt;</code></a> for the full element family.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Composition with other VB primitives</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; the <code>&lt;body&gt;</code>-level sibling that wires semantic regions (header / nav / main / aside / footer) to grid areas.</li>
+    <li><a href="/docs/attributes/data-layout-density/"><code>data-layout-density</code></a> &mdash; root-level density variant (<code>compact</code> / <code>spacious</code>) that re-tokens the spacing scale; <code>data-layout-gap</code> values cascade.</li>
+    <li><a href="/docs/attributes/data-paged/"><code>data-paged</code></a> &mdash; pagination on any list-shaped container, including <code>data-layout="grid"</code>.</li>
+  </ul>
+</section>

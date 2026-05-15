@@ -1,0 +1,96 @@
+---
+layout: attribute
+title: "data-page-layout"
+description: "Body-level page-shape template with semantic-element grid identity. Drop on <body> and the semantic children (header, nav, main, aside, footer) auto-assign to grid areas — no classes, no wrappers, no <div data-area>."
+attributeName: data-page-layout
+category: layout
+attributeType: data
+currentPath: /docs/attributes/data-page-layout/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-page-layout</code> attribute on <code>&lt;body&gt;</code> turns the page into a CSS grid where <em>semantic elements</em> are the grid items &mdash; <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;footer&gt;</code> auto-register to named grid areas. No classes, no wrappers, no <code>&lt;div data-area="main"&gt;</code> — the existing semantic markup IS the layout.</p>
+  <p>This is the <strong>page-shape</strong> sibling of <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> (which lays out the children of <em>any</em> element). The hierarchy:</p>
+  <ul>
+    <li><code>data-page-layout</code> &mdash; on <code>&lt;body&gt;</code>, owns the page structure.</li>
+    <li><code>data-layout</code> &mdash; on any element, lays out a single component.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" show-lines data-escape><body data-page-layout="sidebar-left">
+  <header>...</header>
+  <nav>...</nav>
+  <main data-layout="stack">
+    <article>...</article>
+  </main>
+  <footer>...</footer>
+</body></code-block>
+
+  <p>The semantic children land in the <code>body-header</code>, <code>body-nav</code>, <code>body-main</code>, <code>body-footer</code> grid areas automatically. A second <code>&lt;nav&gt;</code> (e.g. a secondary nav) goes to <code>body-nav-secondary</code>.</p>
+</section>
+
+<section>
+  <h2>Layout values</h2>
+  <table class="prose">
+    <thead><tr><th>Value</th><th>Shape</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>stack</code></td>          <td>Vertical: header / nav / main / aside / footer</td><td>Default for content-first sites.</td></tr>
+      <tr><td><code>sidebar-left</code></td>   <td>Header / nav-on-left + main / footer</td>          <td>Docs sites, blogs.</td></tr>
+      <tr><td><code>sidebar-right</code></td>  <td>Header / main + aside-on-right / footer</td>       <td>Articles with TOC.</td></tr>
+      <tr><td><code>holy-grail</code></td>     <td>Header / nav-left + main + aside-right / footer</td><td>Classic three-column.</td></tr>
+      <tr><td><code>app-shell</code></td>      <td>Sticky header + sidebar + scrolling main</td>      <td>Application chrome (gap: 0).</td></tr>
+      <tr><td><code>dashboard</code></td>      <td>Sticky header + nav + main grid</td>               <td>Admin / data-heavy UIs (gap: 0).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Semantic elements → grid areas</h2>
+  <p>Default mapping (apply to direct children of the <code>data-page-layout</code> element):</p>
+  <table class="prose">
+    <thead><tr><th>Element</th><th>Grid area</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;header&gt;</code></td><td><code>body-header</code></td></tr>
+      <tr><td><code>&lt;nav&gt;</code></td>   <td><code>body-nav</code></td></tr>
+      <tr><td><code>&lt;main&gt;</code></td>  <td><code>body-main</code></td></tr>
+      <tr><td><code>&lt;aside&gt;</code></td> <td><code>body-aside</code></td></tr>
+      <tr><td><code>&lt;footer&gt;</code></td><td><code>body-footer</code></td></tr>
+      <tr><td>second <code>&lt;nav&gt;</code></td><td><code>body-nav-secondary</code></td></tr>
+      <tr><td><code>&lt;nav class="bottom"&gt;</code></td><td><code>auto</code> (escape hatch — flows naturally)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Container queries</h2>
+  <p>Each major region also gets a CSS <code>container-name</code> so component CSS can adapt to the region it lives in:</p>
+  <ul>
+    <li><code>&lt;main&gt;</code>  &rarr; <code>container-name: region-main</code></li>
+    <li><code>&lt;nav&gt;</code>   &rarr; <code>container-name: region-nav</code></li>
+    <li><code>&lt;aside&gt;</code> &rarr; <code>container-name: region-aside</code></li>
+  </ul>
+  <code-block language="css" show-lines data-escape>/* A card knows it's in the main region vs the sidebar */
+@container region-aside (max-width: 16rem) {
+  .product-card { /* compact variant */ }
+}</code-block>
+</section>
+
+<section>
+  <h2>Composition</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> on regions &mdash; nest a stack/grid/cluster inside <code>&lt;main&gt;</code> for the article body.</li>
+    <li><a href="/docs/attributes/data-layout-density/"><code>data-layout-density</code></a> &mdash; pair <code>compact</code> with <code>dashboard</code> / <code>app-shell</code>.</li>
+    <li><code>data-backdrop</code> on <code>&lt;html&gt;</code> &mdash; canvas backdrop renders behind the page-layout grid; the two compose cleanly.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Why a body-level attribute (not a custom element)</h2>
+  <p>A page shell is not a wrapper — it's <em>the page</em>. Wrapping <code>&lt;body&gt;</code> contents in <code>&lt;page-shell&gt;</code> would break document semantics (header / nav / main / aside / footer are direct children of the body for a reason — landmark roles, default styling, AT navigation). The attribute form preserves the semantics and adds the grid behavior on top.</p>
+</section>
