@@ -48,6 +48,20 @@ let _SoundManager = null;
 const SETTINGS_NS = 'settings';
 const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
 
+// Module-level singleton fetch of /cdn/themes/manifest.json. Shared
+// across every <theme-picker> instance on the page (per vanilla-breeze-hojq).
+// Returns the parsed manifest or null on failure (component degrades to
+// no DTCG download links — the picker still works).
+let _dtcgManifestPromise = null;
+function loadDtcgManifest() {
+  if (!_dtcgManifestPromise) {
+    _dtcgManifestPromise = fetch('/cdn/themes/manifest.json', { credentials: 'same-origin' })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+  }
+  return _dtcgManifestPromise;
+}
+
 class ThemePicker extends VBElement {
   // Delay before auto-dismissing after selection (ms)
   static #AUTO_DISMISS_DELAY = 200;
@@ -82,6 +96,10 @@ class ThemePicker extends VBElement {
     this.#render();
     this.#bindEvents();
     this.#syncState();
+    // Per-theme DTCG download links from /cdn/themes/manifest.json. Async
+    // and non-blocking — the picker is fully usable before the manifest
+    // resolves; links materialize when it does.
+    this.#enhanceWithDtcg();
 
     // Listen for external theme changes
     this.listen(window, 'vb:theme-change', this.#handleThemeChange);
@@ -701,6 +719,65 @@ class ThemePicker extends VBElement {
     // Update accent select (compact mode)
     const accentSelect = this.#panel.querySelector('select[name="theme-accent-select"]');
     if (accentSelect) accentSelect.value = accent || 'default';
+
+    // Re-target DTCG download links to the right (light/dark) variant for
+    // the current mode. Cheap query — links may not exist yet (manifest
+    // still loading) which is fine.
+    this.#panel.querySelectorAll('.swatch-dtcg').forEach((link) => this.#updateDtcgLinkHref(link));
+  }
+
+  // ── DTCG download enhancement (vanilla-breeze-hojq) ────────────────
+
+  async #enhanceWithDtcg() {
+    const manifest = await loadDtcgManifest();
+    if (!manifest || !this.#panel?.isConnected) return;
+
+    for (const input of this.#panel.querySelectorAll('input[name="theme-brand"]')) {
+      const id = input.value;
+      const entry = manifest[id];
+      if (!entry?.dtcg) continue;
+
+      const label = input.closest('.swatch-cell');
+      if (!label || label.parentElement?.classList.contains('swatch-cell-group')) continue;
+
+      // Wrap the label in a positioning context so the absolute-positioned
+      // link doesn't activate the radio (which would happen if it were
+      // inside the <label>).
+      const wrapper = document.createElement('span');
+      wrapper.className = 'swatch-cell-group';
+      label.parentNode.insertBefore(wrapper, label);
+      wrapper.appendChild(label);
+
+      const link = document.createElement('a');
+      link.className = 'swatch-dtcg';
+      link.dataset.dtcg = entry.dtcg;
+      if (entry.dtcgDark) link.dataset.dtcgDark = entry.dtcgDark;
+      link.setAttribute('download', '');
+      const themeName = label.getAttribute('title') || id;
+      link.setAttribute('aria-label', `Download ${themeName} as DTCG tokens.json`);
+      link.setAttribute('title', `Download ${themeName} as DTCG`);
+      link.innerHTML = '<icon-wc name="download" size="xs"></icon-wc>';
+
+      this.#updateDtcgLinkHref(link);
+      // Native <a download> handles the file save; emit a sibling custom
+      // event for analytics consumers (matches api.json contract).
+      link.addEventListener('click', () => {
+        this.dispatchEvent(new CustomEvent('theme-picker:dtcg-download', {
+          bubbles: true,
+          detail: { themeId: id, href: link.href },
+        }));
+      });
+      wrapper.appendChild(link);
+    }
+  }
+
+  #updateDtcgLinkHref(link) {
+    const mode = ThemeManager.getState().mode;
+    const isDark = mode === 'dark'
+      || (mode === 'auto' && typeof matchMedia === 'function'
+          && matchMedia('(prefers-color-scheme: dark)').matches);
+    const file = isDark && link.dataset.dtcgDark ? link.dataset.dtcgDark : link.dataset.dtcg;
+    link.href = `/cdn/themes/${file}`;
   }
 
   open() {

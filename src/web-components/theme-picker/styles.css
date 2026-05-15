@@ -217,6 +217,59 @@ theme-picker {
     gap: var(--size-xs);
   }
 
+  /* Wrapper around .swatch-cell when a DTCG download link is attached.
+     Provides a positioning context so the absolute-positioned link sits
+     on top of the swatch without breaking the label/input relationship.
+     (vanilla-breeze-hojq) */
+  .swatch-cell-group {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .swatch-dtcg {
+    position: absolute;
+    inset-block-start: -0.25rem;
+    inset-inline-end: -0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1rem;
+    block-size: 1rem;
+    padding: 0;
+    border-radius: var(--radius-full, 999px);
+    background: var(--color-surface, white);
+    color: var(--color-text-muted, currentColor);
+    border: 1px solid var(--color-border);
+    text-decoration: none;
+    line-height: 1;
+    /* Hidden by default to keep the swatch grid clean — appears on hover
+       of the wrapper or when the link itself receives keyboard focus. */
+    opacity: 0;
+    transition: opacity var(--duration-fast, 150ms);
+    cursor: pointer;
+  }
+
+  .swatch-cell-group:hover .swatch-dtcg,
+  .swatch-cell-group:focus-within .swatch-dtcg,
+  .swatch-dtcg:focus-visible {
+    opacity: 1;
+  }
+
+  .swatch-dtcg:hover {
+    color: var(--color-text);
+    border-color: var(--color-interactive, currentColor);
+  }
+
+  .swatch-dtcg:focus-visible {
+    outline: 2px solid var(--color-interactive);
+    outline-offset: 1px;
+  }
+
+  .swatch-dtcg icon-wc {
+    inline-size: 0.625rem;
+    block-size: 0.625rem;
+  }
+
   .swatch-cell {
     cursor: pointer;
 
