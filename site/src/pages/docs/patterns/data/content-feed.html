@@ -1,0 +1,141 @@
+---
+layout: pattern
+title: "Content Feed Pattern"
+description: "Filter + sort + paginated card list — the classic blog/product/search-results layout assembled from existing VB primitives. No content-feed component required."
+patternName: "Content Feed"
+category: data
+currentPath: /docs/patterns/data/content-feed/
+---
+
+<section>
+  <h2>The recipe in one snippet</h2>
+  <layout-text>
+    <p>The "content feed" page type — a list of substantial items with optional filtering, sorting, and pagination — is a composition over existing primitives, not a single component. Three pieces:</p>
+    <ul>
+      <li><a href="/docs/elements/web-components/site-search/"><code>&lt;site-search&gt;</code></a> for filtering / highlighting</li>
+      <li><a href="/docs/elements/web-components/card-list/"><code>&lt;card-list&gt;</code></a> (or any list-shaped container: <code>&lt;ul&gt;</code>, <code>&lt;ol&gt;</code>, <code>&lt;table&gt;</code>, <code>&lt;layout-grid&gt;</code>) for rendering</li>
+      <li><a href="/docs/attributes/data-paged/"><code>data-paged</code></a> upscale for pagination + URL state</li>
+    </ul>
+  </layout-text>
+
+  <code-block language="html" show-lines label="Filtered, paginated card grid" data-escape><site-search target="#feed"></site-search>
+
+<card-list id="feed"
+           data-paged
+           data-paged-size="20"
+           data-paged-style="numbered"
+           data-paged-url="page">
+  <article>...</article>
+  <article>...</article>
+  ...
+</card-list></code-block>
+
+  <p>Each piece is independently testable, replaceable, and re-composable. The "content-feed" component this would have been dissolves into the recipe below.</p>
+</section>
+
+<section>
+  <h2>Variants</h2>
+
+  <h3>Blog index</h3>
+  <p>Native <code>&lt;ul&gt;</code>; numbered pagination with the page in the URL so individual pages are linkable / shareable.</p>
+  <code-block language="html" show-lines data-escape><ul class="post-list" data-paged data-paged-size="10" data-paged-url="page">
+  <li><article>...post 1...</article></li>
+  <li><article>...post 2...</article></li>
+  ...
+</ul></code-block>
+
+  <h3>Product grid</h3>
+  <p><code>&lt;layout-grid&gt;</code> for the auto-fitting card grid; <code>load-more</code> style for catalog-style browsing.</p>
+  <code-block language="html" show-lines data-escape><layout-grid data-min="20rem" data-gap="m"
+             data-paged data-paged-size="12" data-paged-style="load-more">
+  <article class="product-card">...</article>
+  <article class="product-card">...</article>
+  ...
+</layout-grid></code-block>
+
+  <h3>Search results</h3>
+  <p><code>&lt;site-search&gt;</code> handles the input + highlighting; <code>infinite</code> pagination drops the user into a continuous scroll once the hits exceed one screen.</p>
+  <code-block language="html" show-lines data-escape><site-search target="#results"></site-search>
+
+<card-list id="results"
+           data-paged data-paged-size="20" data-paged-style="infinite">
+  <article>...result 1...</article>
+  <article>...result 2...</article>
+  ...
+</card-list></code-block>
+
+  <h3>Settings or admin table</h3>
+  <p>Native <code>&lt;table&gt;</code>; <code>data-paged</code> paginates the <code>&lt;tbody&gt;</code> rows, leaving <code>&lt;thead&gt;</code> visible. <code>prev-next</code> style fits the dense layout.</p>
+  <code-block language="html" show-lines data-escape><table data-paged data-paged-size="50" data-paged-style="prev-next">
+  <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+  <tbody>
+    <tr><td>...</td><td>...</td><td>...</td></tr>
+    ...
+  </tbody>
+</table></code-block>
+</section>
+
+<section>
+  <h2>URL state</h2>
+  <layout-text>
+    <p>Opt into URL syncing with <code>data-paged-url="page"</code> when the page is independently linkable — blog indices, search results, paginated lists in articles. Skip it for ephemeral surfaces like dashboards or modal lists where browser back/forward shouldn't navigate pages.</p>
+    <p>The attribute uses the History API's <code>pushState</code>; <code>popstate</code> automatically re-syncs the rendered page. Reload preserves position via the URL parameter.</p>
+  </layout-text>
+</section>
+
+<section>
+  <h2>Filtering composition</h2>
+  <layout-text>
+    <p>Two paths depending on how dynamic the content is:</p>
+    <ul>
+      <li><strong>Author-rendered items, client filtering</strong> — <code>&lt;site-search target="#feed"&gt;</code> filters the items in place. Pagination from <code>data-paged</code> applies to the filtered subset automatically (the engine re-paginates on <code>MutationObserver</code> child changes).</li>
+      <li><strong>Server-rendered subsets</strong> — handle the filter in your data layer; re-render the items into the container; <code>data-paged</code> picks up the new children and re-paginates from page 1.</li>
+    </ul>
+  </layout-text>
+</section>
+
+<section>
+  <h2>Sorting composition</h2>
+  <layout-text>
+    <p>VB ships <code>data-sort</code> on <code>&lt;data-table&gt;</code> column headers for in-table sorting. For other containers, sort either via your data layer (re-render) or with a vanilla <code>&lt;select&gt;</code> + JS that reorders DOM nodes (the <code>data-paged</code> engine re-paginates on the resulting child mutations).</p>
+    <p>A generic <code>data-sortable</code> upscale for arbitrary list containers may land later if a third use case appears.</p>
+  </layout-text>
+</section>
+
+<section>
+  <h2>Decoupled pagination controls</h2>
+  <layout-text>
+    <p>When the items and the controls live in different parts of the layout — sticky header pager + items below, sidebar pager driving the main column, top + bottom pagers staying in sync — use the <a href="/docs/elements/web-components/pager-wc/"><code>&lt;pager-wc&gt;</code></a> element form. Same engine; different surface.</p>
+  </layout-text>
+  <code-block language="html" show-lines label="Top + bottom pagers" data-escape><pager-wc target="#feed"></pager-wc>
+
+<card-list id="feed" data-paged data-paged-size="20" data-paged-controls="none">
+  <article>...</article>
+</card-list>
+
+<pager-wc target="#feed"></pager-wc></code-block>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <layout-text>
+    <ul>
+      <li>Wrap the whole composition in a <code>&lt;section aria-label="..."&gt;</code> or use the existing landmark of the page.</li>
+      <li>The <code>data-paged</code> nav uses native <code>&lt;button&gt;</code> elements with <code>aria-current="page"</code>; the <code>prev-next</code> style includes an <code>aria-live="polite"</code> "Page N of M" status.</li>
+      <li>For server-rendered re-fetches, set <code>aria-busy="true"</code> on the container while loading and announce the new count in a live region.</li>
+    </ul>
+  </layout-text>
+</section>
+
+<section>
+  <h2>When NOT to use this pattern</h2>
+  <layout-text>
+    <ul>
+      <li><strong>Timelines of events</strong> — use <a href="/docs/elements/web-components/activity-feed/"><code>&lt;activity-feed&gt;</code></a>. WAI-ARIA Feed semantics, time grouping, and infinite-scroll built in.</li>
+      <li><strong>Conversations</strong> — use <a href="/docs/elements/web-components/chat-window/"><code>&lt;chat-window&gt;</code></a> + <code>&lt;chat-thread&gt;</code>.</li>
+      <li><strong>Threaded comments</strong> — use <a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a>.</li>
+      <li><strong>Dense data with column-level sort/filter</strong> — use <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> with its built-in <code>data-sort</code> + <code>data-paged</code>.</li>
+    </ul>
+    <p>The recipe above is for substantial, paginated <em>content</em> items (articles, products, search hits). The components above each cover their own shape better than a generic feed would.</p>
+  </layout-text>
+</section>
