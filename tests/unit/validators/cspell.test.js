@@ -8,7 +8,7 @@ const projectRoot = resolve(import.meta.dirname, '../../..');
 
 function runCspell(file) {
   try {
-    execSync(`npx cspell "${file}" --config "${projectRoot}/.claude/.cspell.json"`, {
+    execSync(`npx --no cspell "${file}" --config "${projectRoot}/.claude/.cspell.json"`, {
       encoding: 'utf8',
       stdio: 'pipe',
       cwd: projectRoot

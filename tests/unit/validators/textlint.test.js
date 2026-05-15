@@ -8,7 +8,7 @@ const projectRoot = resolve(import.meta.dirname, '../../..');
 
 function runTextlint(file) {
   try {
-    execSync(`npx textlint "${file}" --config .claude/.textlintrc`, {
+    execSync(`npx --no textlint "${file}" --config .claude/.textlintrc`, {
       encoding: 'utf8',
       stdio: 'pipe',
       cwd: projectRoot

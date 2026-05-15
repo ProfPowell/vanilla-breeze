@@ -7,7 +7,7 @@ const fixturesDir = resolve(import.meta.dirname, '../fixtures');
 
 function runHtmlValidate(file) {
   try {
-    execSync(`npx html-validate "${file}"`, { encoding: 'utf8', stdio: 'pipe' });
+    execSync(`npx --no html-validate "${file}"`, { encoding: 'utf8', stdio: 'pipe' });
     return { passed: true, output: '' };
   } catch (error) {
     return { passed: false, output: error.stdout || error.stderr || error.message };

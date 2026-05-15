@@ -18,7 +18,7 @@ const projectRoot = join(__dirname, '../../..');
  */
 function runStylelint(filePath) {
   try {
-    const output = execSync(`npx stylelint "${filePath}" --formatter json --config .claude/.stylelintrc.json`, {
+    const output = execSync(`npx --no stylelint "${filePath}" --formatter json --config .claude/.stylelintrc.json`, {
       cwd: projectRoot,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],

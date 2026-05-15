@@ -18,7 +18,7 @@ const projectRoot = join(__dirname, '../../..');
  */
 function runMarkdownlint(filePath) {
   try {
-    execSync(`npx markdownlint "${filePath}" --config .claude/.markdownlint.json`, {
+    execSync(`npx --no markdownlint "${filePath}" --config .claude/.markdownlint.json`, {
       cwd: projectRoot,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],

@@ -20,7 +20,7 @@ const projectRoot = join(__dirname, '../../..');
  */
 function runEslint(filePath) {
     try {
-        const output = execSync(`npx eslint "${filePath}" --format json --config .claude/eslint.config.js`, {
+        const output = execSync(`npx --no eslint "${filePath}" --format json --config .claude/eslint.config.js`, {
             cwd: projectRoot,
             encoding: 'utf-8',
         });

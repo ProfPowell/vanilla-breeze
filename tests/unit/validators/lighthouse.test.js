@@ -14,7 +14,7 @@ import assert from 'node:assert';
 
 function checkLighthouseCLI() {
   try {
-    const output = execSync('npx lhci --version', { encoding: 'utf8', stdio: 'pipe' });
+    const output = execSync('npx --no lhci --version', { encoding: 'utf8', stdio: 'pipe' });
     return { available: true, version: output.trim() };
   } catch (error) {
     return { available: false, error: error.message };

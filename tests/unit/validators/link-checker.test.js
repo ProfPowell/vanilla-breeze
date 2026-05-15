@@ -7,7 +7,7 @@ const fixturesDir = resolve(import.meta.dirname, '../fixtures');
 
 function runLinkChecker(dir) {
   try {
-    const output = execSync(`npx link-checker "${dir}"`, { encoding: 'utf8', stdio: 'pipe' });
+    const output = execSync(`npx --no link-checker "${dir}"`, { encoding: 'utf8', stdio: 'pipe' });
     // Check for "N errors" where N > 0
     const errorMatch = output.match(/(\d+)\s+errors?/);
     const hasErrors = errorMatch && parseInt(errorMatch[1], 10) > 0;

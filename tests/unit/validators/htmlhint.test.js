@@ -7,7 +7,7 @@ const fixturesDir = resolve(import.meta.dirname, '../fixtures');
 
 function runHtmlHint(file) {
   try {
-    execSync(`npx htmlhint "${file}"`, { encoding: 'utf8', stdio: 'pipe' });
+    execSync(`npx --no htmlhint "${file}"`, { encoding: 'utf8', stdio: 'pipe' });
     return { passed: true, output: '' };
   } catch (error) {
     return { passed: false, output: error.stdout || error.stderr || error.message };
