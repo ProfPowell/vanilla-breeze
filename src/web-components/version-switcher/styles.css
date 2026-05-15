@@ -208,3 +208,63 @@ version-switcher .version-switcher-badge-draft {
   background: var(--color-warning);
   color: var(--color-text-on-warning, white);
 }
+
+/* -------- Phase 2: diff render mounted as a sibling of the versioned region -------- */
+
+change-set.version-switcher-diff-host {
+  display: block;
+  margin-block: var(--size-m, 1rem);
+  border: var(--border-width-thin, 1px) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  padding: var(--size-s, 0.75rem);
+}
+
+change-set.version-switcher-diff-host::before {
+  content: 'Diff: ' attr(data-version-from) ' → ' attr(data-version-to);
+  display: block;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--color-text-muted, currentColor);
+  margin-block-end: var(--size-xs, 0.5rem);
+}
+
+change-set.version-switcher-diff-host:focus-visible {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+pre.version-switcher-diff {
+  margin: 0;
+  padding: var(--size-s, 0.5rem);
+  background: var(--color-surface-sunken, oklch(94% 0 0));
+  border-radius: var(--radius-s, 0.25rem);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.85em;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  max-block-size: 28rem;
+}
+
+pre.version-switcher-diff ins {
+  display: inline;
+  background: color-mix(in oklch, var(--color-success, oklch(70% 0.18 145)) 22%, transparent);
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+pre.version-switcher-diff del {
+  display: inline;
+  background: color-mix(in oklch, var(--color-error, oklch(58% 0.18 25)) 22%, transparent);
+  color: var(--color-text);
+}
+
+/* -------- Phase 2: View Transition crossfade for swap action -------- */
+
+@supports (view-transition-name: none) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--duration-default, 250ms);
+  }
+}

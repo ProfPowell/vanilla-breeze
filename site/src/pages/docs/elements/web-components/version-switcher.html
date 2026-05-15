@@ -28,8 +28,36 @@ crumbLabel: Web Components
 </section>
 
 <aside class="note">
-  <strong>This is Phase 1.</strong> The <code>navigate</code> action ships now. Phase 2 adds <code>data-action="swap"</code> (in-place fetch + replace via View Transitions) and <code>data-action="diff"</code> (composes <code>&lt;change-set&gt;</code>). Phase 3 adds <code>data-page-info-target</code> mounting inside <code>&lt;page-info&gt;</code>, the archived-version banner, and meta-tag fallback. See <a href="https://github.com/profpowell/vanilla-breeze/blob/main/admin/r-n-d/version-switcher.md">the full plan</a>.
+  <strong>Phases 1 + 2 shipped.</strong> All three actions (<code>navigate</code>, <code>swap</code>, <code>diff</code>) work today. Phase 3 adds <code>data-page-info-target</code> mounting inside <code>&lt;page-info&gt;</code>, the archived-version banner, and meta-tag fallback. See <a href="https://github.com/profpowell/vanilla-breeze/blob/main/admin/r-n-d/version-switcher.md">the full plan</a>.
 </aside>
+
+<section>
+  <h2>Switch actions</h2>
+  <p>Pick the action via <code>data-action</code>. Each action operates on the current page's <em>versioned region</em> &mdash; an element matched by <code>data-versioned-region</code> (defaults to <code>[data-versioned], main</code>).</p>
+  <table class="props-table">
+    <thead><tr><th>Action</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr><td><code>navigate</code> (default)</td><td>Sets <code>location.href</code> to the picked entry's <code>url</code>. Cancellable via <code>version-switcher:before-navigate</code>.</td></tr>
+      <tr><td><code>swap</code></td><td>Fetches the picked URL, extracts its versioned region, and replaces the current versioned region in place. Updates <code>&lt;meta name="vb:version"&gt;</code> with the picked id. Uses <code>document.startViewTransition</code> for a crossfade when supported. Emits <code>version-switcher:before-swap</code> (cancellable) then <code>version-switcher:swap</code>.</td></tr>
+      <tr><td><code>diff</code></td><td>Fetches the picked URL, computes a line-level diff against the current versioned region, and mounts a <a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a> sibling containing the diff (use the change-set's tracking-view buttons to flip between final / original / both). <code>data-diff-position="before|after"</code> controls placement. Emits <code>version-switcher:before-diff</code> (cancellable) then <code>version-switcher:diff</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" show-lines label="Swap action — in-place page replacement" data-escape><version-switcher data-action="swap"
+  data-versions='[…]'></version-switcher>
+
+<main data-versioned>
+  <h1>Authentication API — v2.1</h1>
+  <p>…</p>
+</main></code-block>
+
+  <code-block language="html" show-lines label="Diff action — line-level diff in a change-set" data-escape><version-switcher data-action="diff" data-diff-position="before"
+  data-versions='[…]'></version-switcher>
+
+<main data-versioned>…</main>
+<!-- A <change-set class="version-switcher-diff-host"> appears here on diff -->
+</code-block>
+</section>
 
 <section>
   <h2>When to use which primitive</h2>
@@ -120,7 +148,9 @@ sw.switchTo('v2.0');</code-block>
     <tbody>
       <tr><td><code>data-versions</code></td><td>string (JSON)</td><td>&mdash;</td><td>Inline JSON array of version entries.</td></tr>
       <tr><td><code>data-mode</code></td><td>string</td><td><em>derived</em></td><td><code>releases</code> | <code>history</code> &mdash; override the auto-detected mode.</td></tr>
-      <tr><td><code>data-action</code></td><td>string</td><td><code>navigate</code></td><td>Phase 1 only. Phase 2 adds <code>swap</code> and <code>diff</code>.</td></tr>
+      <tr><td><code>data-action</code></td><td>string</td><td><code>navigate</code></td><td><code>navigate</code> | <code>swap</code> | <code>diff</code>.</td></tr>
+      <tr><td><code>data-versioned-region</code></td><td>string (CSS selector)</td><td><code>[data-versioned], main</code></td><td>Selector for the swappable / diffable region in this page AND in the fetched response document.</td></tr>
+      <tr><td><code>data-diff-position</code></td><td>string</td><td><code>before</code></td><td><code>before</code> | <code>after</code> &mdash; where to mount the diff render relative to the versioned region.</td></tr>
       <tr><td><code>aria-label</code></td><td>string</td><td><code>Version</code></td><td>Trigger / picker label.</td></tr>
     </tbody>
   </table>
@@ -135,6 +165,10 @@ sw.switchTo('v2.0');</code-block>
       <tr><td><code>version-switcher:close</code></td><td>yes</td><td>&mdash;</td></tr>
       <tr><td><code>version-switcher:select</code></td><td>yes</td><td><code>{ entry }</code></td></tr>
       <tr><td><code>version-switcher:before-navigate</code></td><td>yes (cancellable)</td><td><code>{ entry }</code></td></tr>
+      <tr><td><code>version-switcher:before-swap</code></td><td>yes (cancellable)</td><td><code>{ entry }</code></td></tr>
+      <tr><td><code>version-switcher:swap</code></td><td>yes</td><td><code>{ entry, previousId }</code></td></tr>
+      <tr><td><code>version-switcher:before-diff</code></td><td>yes (cancellable)</td><td><code>{ entry }</code></td></tr>
+      <tr><td><code>version-switcher:diff</code></td><td>yes</td><td><code>{ entry, previousId, diffElement, opCount }</code></td></tr>
       <tr><td><code>version-switcher:error</code></td><td>yes</td><td><code>{ message, entry?, error? }</code></td></tr>
     </tbody>
   </table>

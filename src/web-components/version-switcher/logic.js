@@ -31,6 +31,9 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 // Compose pop-over for the picker surface (mirrors reaction-bar / selection-menu).
 import '../pop-over/logic.js';
+// Phase 2: diff action composes <change-set> as the diff renderer.
+import '../change-set/logic.js';
+import { diffLines, renderDiffFragment } from './_diff.js';
 
 let switcherSeq = 0;
 
@@ -317,9 +320,9 @@ class VersionSwitcher extends VBElement {
   #performAction(entry) {
     const action = this.getAttribute('data-action') || 'navigate';
     if (action === 'navigate') return this.#actionNavigate(entry);
-    // Phase 2 actions ship via separate beads; ignore unknown actions
-    // gracefully so authors who set them ahead of time don't crash.
-    this.#emitError(`Action "${action}" is not available in Phase 1; falling back to navigate.`);
+    if (action === 'swap')     return this.#actionSwap(entry);
+    if (action === 'diff')     return this.#actionDiff(entry);
+    this.#emitError(`Unknown action "${action}"; falling back to navigate.`);
     this.#actionNavigate(entry);
   }
 
@@ -335,6 +338,155 @@ class VersionSwitcher extends VBElement {
     if (!proceed) return;
     this.closePicker();
     location.href = entry.url;
+  }
+
+  // ── Phase 2: swap action ──────────────────────────────────────────
+
+  /** Selector that locates the swappable / diffable region in the page
+   *  AND inside the fetched response document. */
+  #versionedSelector() {
+    return this.getAttribute('data-versioned-region') || '[data-versioned], main';
+  }
+
+  #findVersionedRegion(root) {
+    return root.querySelector(this.#versionedSelector());
+  }
+
+  async #fetchVersionedRegion(url) {
+    const res = await fetch(url, { credentials: 'same-origin' });
+    if (!res.ok) throw new Error(`Fetch failed (${res.status}) for ${url}`);
+    const html = await res.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const region = this.#findVersionedRegion(doc);
+    if (!region) {
+      throw new Error(`No versioned region (${this.#versionedSelector()}) found in ${url}`);
+    }
+    return region;
+  }
+
+  async #actionSwap(entry) {
+    if (!entry?.url) {
+      this.#emitError('Cannot swap: entry has no url.', { entry });
+      return;
+    }
+
+    const target = this.#findVersionedRegion(document);
+    if (!target) {
+      this.#emitError(`No versioned region (${this.#versionedSelector()}) on this page to swap.`, { entry });
+      return;
+    }
+
+    const evt = new CustomEvent('version-switcher:before-swap', {
+      bubbles: true, cancelable: true, detail: { entry },
+    });
+    if (!this.dispatchEvent(evt)) return;
+
+    this.closePicker();
+    const previousId = this.#currentId;
+
+    const apply = async () => {
+      try {
+        const incoming = await this.#fetchVersionedRegion(entry.url);
+        target.replaceChildren(...incoming.childNodes);
+      } catch (err) {
+        this.#emitError(err.message, { entry, error: err });
+        throw err;
+      }
+    };
+
+    try {
+      if ('startViewTransition' in document) {
+        // updateCallbackDone resolves as soon as apply() finishes (after the
+        // DOM swap). We do NOT await .finished — that would block until the
+        // crossfade animation completes (potentially seconds), delaying the
+        // swap event + post-swap meta/render work. The animation runs in
+        // the background unaffected.
+        await document.startViewTransition(apply).updateCallbackDone;
+      } else {
+        await apply();
+      }
+    } catch {
+      return; // error already emitted
+    }
+
+    // Reflect the swapped state via the existing provenance meta tag.
+    let meta = document.querySelector('meta[name="vb:version"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'vb:version');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', entry.id);
+
+    this.#currentId = entry.id;
+    this.#renderTrigger();
+    this.#renderPicker();
+
+    this.dispatchEvent(new CustomEvent('version-switcher:swap', {
+      bubbles: true, detail: { entry, previousId },
+    }));
+  }
+
+  // ── Phase 2: diff action ──────────────────────────────────────────
+
+  async #actionDiff(entry) {
+    if (!entry?.url) {
+      this.#emitError('Cannot diff: entry has no url.', { entry });
+      return;
+    }
+    const current = this.#findVersionedRegion(document);
+    if (!current) {
+      this.#emitError(`No versioned region (${this.#versionedSelector()}) on this page to diff against.`, { entry });
+      return;
+    }
+    if (entry.id === this.#currentId) {
+      this.#emitError('Cannot diff against the current version.', { entry });
+      return;
+    }
+
+    const evt = new CustomEvent('version-switcher:before-diff', {
+      bubbles: true, cancelable: true, detail: { entry },
+    });
+    if (!this.dispatchEvent(evt)) return;
+    this.closePicker();
+
+    let other;
+    try {
+      other = await this.#fetchVersionedRegion(entry.url);
+    } catch (err) {
+      this.#emitError(err.message, { entry, error: err });
+      return;
+    }
+
+    // Drop any existing diff render before producing a new one.
+    document.querySelectorAll('.version-switcher-diff-host').forEach((el) => el.remove());
+
+    // Line-level diff over textContent (markup-aware deferred per the plan).
+    const ops = diffLines(current.textContent.trim(), other.textContent.trim());
+
+    const host = document.createElement('change-set');
+    host.classList.add('version-switcher-diff-host');
+    host.dataset.versionFrom = this.#currentId ?? '';
+    host.dataset.versionTo = entry.id;
+    host.appendChild(renderDiffFragment(ops));
+
+    const position = this.getAttribute('data-diff-position') || 'before';
+    if (position === 'after') current.parentNode.insertBefore(host, current.nextSibling);
+    else current.parentNode.insertBefore(host, current);
+
+    // Move focus to the diff so AT users notice the new region.
+    host.setAttribute('tabindex', '-1');
+    host.focus({ preventScroll: false });
+
+    this.dispatchEvent(new CustomEvent('version-switcher:diff', {
+      bubbles: true,
+      detail: {
+        entry,
+        previousId: this.#currentId,
+        diffElement: host,
+        opCount: ops.length,
+      },
+    }));
   }
 
   // ── Public API ─────────────────────────────────────────────────────

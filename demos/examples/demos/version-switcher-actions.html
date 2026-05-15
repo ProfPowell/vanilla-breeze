@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="vb:version" content="v2.1">
+  <title>version-switcher — Phase 2 Actions Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/version-switcher/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h2 { font-size: 1rem; color: var(--color-text-muted); margin-block: var(--size-l) var(--size-xs); }
+    pre.event-log { font-size: 0.8rem; color: var(--color-text-muted); background: var(--color-surface-sunken, oklch(94% 0 0)); padding: var(--size-s); border-radius: var(--radius-s); min-block-size: 4rem; max-block-size: 12rem; overflow: auto; }
+    .demo-controls { display: flex; align-items: center; gap: var(--size-m); flex-wrap: wrap; margin-block-end: var(--size-m); }
+    main[data-versioned] {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="readable">
+    <layout-stack data-layout-gap="m">
+
+      <h1>version-switcher — Phase 2 actions (swap + diff)</h1>
+      <p>The <code>swap</code> action fetches the picked version's HTML and replaces the <code>[data-versioned]</code> region in place (with View Transitions when supported). The <code>diff</code> action fetches both versions and renders a line-level diff inside a <code>&lt;change-set&gt;</code> mounted as a sibling of the versioned region — the change-set's tracking-view toggle then lets you flip between final / original / both.</p>
+
+      <h2>Swap action — replaces the region in place</h2>
+      <div class="demo-controls">
+        <span>Version:</span>
+        <version-switcher
+          id="swap-switcher"
+          aria-label="API doc version (swap)"
+          data-action="swap"
+          data-versions='[
+            {"id":"v2.1","label":"v2.1","url":"/docs/examples/demos/version-content-v2.1.html","date":"2026-05-01","summary":"Adds rate-limit headers in every response.","current":true},
+            {"id":"v2.0","label":"v2.0","url":"/docs/examples/demos/version-content-v2.html","date":"2026-01-15","summary":"Breaking: auth endpoint renamed to /auth."},
+            {"id":"v1.0","label":"v1.0","url":"/docs/examples/demos/version-content-v1.html","date":"2025-08-10","summary":"Original version using /sso/login.","archived":true}
+          ]'></version-switcher>
+      </div>
+
+      <main data-versioned>
+        <h1>Authentication API — v2.1</h1>
+        <p>Send credentials to the <code>/auth/login</code> endpoint.</p>
+        <p>Tokens are returned as JSON in the response body.</p>
+        <p>Use the <code>/auth/refresh</code> endpoint to refresh expiring tokens.</p>
+        <p>Two-factor codes are accepted alongside passwords.</p>
+        <p>Rate-limit headers (<code>X-RateLimit-*</code>) are included in every response.</p>
+      </main>
+
+      <h2>Diff action — renders a change-set diff inline</h2>
+      <p>Pick a version other than the current; a <code>&lt;change-set&gt;</code> appears just above the versioned region with the line-level diff. Use the change-set's tracking / final / original buttons to flip view modes.</p>
+      <div class="demo-controls">
+        <span>Compare against:</span>
+        <version-switcher
+          id="diff-switcher"
+          aria-label="Compare versions"
+          data-action="diff"
+          data-versions='[
+            {"id":"v2.1","label":"v2.1","url":"/docs/examples/demos/version-content-v2.1.html","date":"2026-05-01","current":true},
+            {"id":"v2.0","label":"v2.0","url":"/docs/examples/demos/version-content-v2.html","date":"2026-01-15"},
+            {"id":"v1.0","label":"v1.0","url":"/docs/examples/demos/version-content-v1.html","date":"2025-08-10","archived":true}
+          ]'></version-switcher>
+      </div>
+
+      <h2>Event log</h2>
+      <pre class="event-log" id="log" aria-live="polite"></pre>
+
+    </layout-stack>
+  </layout-center>
+
+  <script type="module">
+    const log = document.getElementById('log');
+    const append = (msg) => { log.textContent = msg + '\n' + log.textContent; };
+
+    document.querySelectorAll('version-switcher').forEach((sw) => {
+      const tag = sw.id;
+      ['open','close','select','before-navigate','before-swap','swap','before-diff','diff','error'].forEach((kind) => {
+        sw.addEventListener(`version-switcher:${kind}`, (e) => {
+          const detail = e.detail ? Object.entries(e.detail).map(([k,v]) =>
+            v?.id ? `${k}=${v.id}` : (typeof v === 'object' ? `${k}=${v?.tagName ?? '[object]'}` : `${k}=${v}`)).join(' ') : '';
+          append(`${tag}: ${kind}${detail ? ' ' + detail : ''}`);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
