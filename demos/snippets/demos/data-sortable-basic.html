@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>data-sortable — client-side list/table sorting</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    section + section { margin-block-start: var(--size-xl); }
+    h3 { margin-block: 0 var(--size-s); }
+    table { border-collapse: collapse; inline-size: 100%; }
+    th, td { padding: var(--size-xs) var(--size-s); border-block-end: 1px solid var(--color-border); text-align: start; }
+    .controls { display: flex; gap: var(--size-s); align-items: center; margin-block-end: var(--size-s); }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="xl">
+
+    <section>
+      <h3>Table mode — click any column header</h3>
+      <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+        Cycles asc → desc → none. Date column uses the <code>&lt;time datetime&gt;</code> attribute as the sort value.
+      </p>
+      <table data-sortable>
+        <thead>
+          <tr>
+            <th data-sort="name">Name</th>
+            <th data-sort="role">Role</th>
+            <th data-sort="score" data-sort-type="number">Score</th>
+            <th data-sort="joined" data-sort-type="date">Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Alice</td><td>Engineer</td><td>87</td><td><time datetime="2026-03-14">Mar 14</time></td></tr>
+          <tr><td>Bob</td><td>Designer</td><td>92</td><td><time datetime="2025-11-02">Nov 2 '25</time></td></tr>
+          <tr><td>Charlie</td><td>Engineer</td><td>74</td><td><time datetime="2026-05-01">May 1</time></td></tr>
+          <tr><td>Diana</td><td>Manager</td><td>95</td><td><time datetime="2025-07-22">Jul 22 '25</time></td></tr>
+          <tr><td>Eve</td><td>Designer</td><td>88</td><td><time datetime="2026-01-15">Jan 15</time></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h3>List mode — external select</h3>
+      <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+        Each list item declares <code>data-sort-{key}</code> attributes; the select chooses the active key + direction.
+      </p>
+      <div class="controls">
+        <label>
+          Sort by:
+          <select data-sort-target="#projects">
+            <option value="">— None —</option>
+            <option value="name">Name (A-Z)</option>
+            <option value="-name">Name (Z-A)</option>
+            <option value="-priority" data-sort-type="number">Priority (high to low)</option>
+            <option value="due" data-sort-type="date">Due date (soonest)</option>
+          </select>
+        </label>
+      </div>
+      <ul id="projects" data-sortable>
+        <li data-sort-name="Bonsai" data-sort-priority="2" data-sort-due="2026-08-12">Bonsai — design refresh</li>
+        <li data-sort-name="Aurora" data-sort-priority="3" data-sort-due="2026-06-01">Aurora — onboarding flow</li>
+        <li data-sort-name="Comet" data-sort-priority="1" data-sort-due="2026-09-30">Comet — analytics dashboard</li>
+        <li data-sort-name="Delta" data-sort-priority="3" data-sort-due="2026-07-04">Delta — pricing page</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Composes with data-paged</h3>
+      <p style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+        Sort fires a child mutation; <code>data-paged</code> re-paginates from page 1.
+      </p>
+      <div class="controls">
+        <label>
+          Sort by:
+          <select data-sort-target="#paged-list">
+            <option value="">— None —</option>
+            <option value="name">Name (A-Z)</option>
+            <option value="-rating" data-sort-type="number">Rating (high to low)</option>
+          </select>
+        </label>
+      </div>
+      <ul id="paged-list" data-sortable data-paged data-paged-size="3" data-paged-style="numbered">
+        <li data-sort-name="Apple"      data-sort-rating="4">Apple — 4★</li>
+        <li data-sort-name="Banana"     data-sort-rating="3">Banana — 3★</li>
+        <li data-sort-name="Cherry"     data-sort-rating="5">Cherry — 5★</li>
+        <li data-sort-name="Date"       data-sort-rating="2">Date — 2★</li>
+        <li data-sort-name="Elderberry" data-sort-rating="4">Elderberry — 4★</li>
+        <li data-sort-name="Fig"        data-sort-rating="5">Fig — 5★</li>
+        <li data-sort-name="Grape"      data-sort-rating="3">Grape — 3★</li>
+        <li data-sort-name="Honeydew"   data-sort-rating="4">Honeydew — 4★</li>
+      </ul>
+    </section>
+
+  </layout-stack>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

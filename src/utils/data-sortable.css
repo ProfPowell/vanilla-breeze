@@ -1,0 +1,50 @@
+/* data-sortable: minimal column-header indicator for the table mode.
+   Authors override via the standard cascade — these defaults give
+   usable feedback without bespoke styling. */
+
+table[data-sortable] > thead th[data-sort] {
+  position: relative;
+  padding-inline-end: 1.5em;
+  user-select: none;
+  cursor: pointer;
+}
+
+table[data-sortable] > thead th[data-sort]:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, currentColor);
+  outline-offset: 1px;
+}
+
+table[data-sortable] > thead th[data-sort]:not([aria-sort]),
+table[data-sortable] > thead th[data-sort][aria-sort="none"] {
+  /* Neutral indicator hint: small up/down chevrons in muted color. */
+  &::after {
+    content: "↕";
+    position: absolute;
+    inset-inline-end: 0.375em;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted, #888);
+    font-size: 0.75em;
+    opacity: 0.6;
+  }
+}
+
+table[data-sortable] > thead th[data-sort][aria-sort="ascending"]::after {
+  content: "▲";
+  position: absolute;
+  inset-inline-end: 0.375em;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  color: var(--color-interactive, currentColor);
+  font-size: 0.75em;
+}
+
+table[data-sortable] > thead th[data-sort][aria-sort="descending"]::after {
+  content: "▼";
+  position: absolute;
+  inset-inline-end: 0.375em;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  color: var(--color-interactive, currentColor);
+  font-size: 0.75em;
+}

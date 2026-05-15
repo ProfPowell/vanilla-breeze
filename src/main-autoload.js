@@ -89,6 +89,7 @@ if (document.querySelector('fieldset[data-toggle-tags][data-max]')) import('./ut
 if (document.querySelector(':is(img, video, iframe, canvas)[data-mock]')) import('./utils/mock-init.js');
 if (document.querySelector('[data-lorem]')) import('./utils/lorem-init.js');
 if (document.querySelector('[data-paged]')) import('./utils/data-paged-init.js');
+if (document.querySelector('[data-sortable], [data-sort-target]')) import('./utils/data-sortable-init.js');
 
 // Boot unified effects observer
 VB.observe();

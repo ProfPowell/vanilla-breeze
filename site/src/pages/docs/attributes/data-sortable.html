@@ -1,0 +1,122 @@
+---
+layout: attribute
+title: "data-sortable"
+description: "Client-side list/table sorting upscale on any container — native ul/ol/table or VB collections. Two API shapes (clickable column headers OR external select/button); composes with data-paged."
+attributeName: data-sortable
+category: data
+attributeType: data
+currentPath: /docs/attributes/data-sortable/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p>The <code>data-sortable</code> attribute upscales <em>any list-shaped container</em> with client-side sorting. Same upscale model as <a href="/docs/attributes/data-paged/"><code>data-paged</code></a>: pure attribute, no custom element, auto-attaches via the shared init registry. Two API shapes share one engine — clickable <code>&lt;th&gt;</code> headers for tables, external controls (<code>&lt;select&gt;</code> or <code>&lt;button&gt;</code>) for other containers.</p>
+
+  <browser-window url="data-sortable" src="/docs/snippets/demos/data-sortable-basic.html"></browser-window>
+
+  <aside class="note">
+    <strong>Composes with <code>data-paged</code>:</strong> a sort fires a child-list mutation, which the <code>data-paged</code> engine sees and re-paginates from page 1. Drop both attributes on the same container — they cooperate without extra wiring.
+  </aside>
+</section>
+
+<section>
+  <h2>Two shapes</h2>
+
+  <h3>Table mode</h3>
+  <p>Clicking <code>&lt;th data-sort="key"&gt;</code> cycles the column through asc &rarr; desc &rarr; none &rarr; asc. Row sort-value comes from the matching <code>&lt;td&gt;</code> via (in order): <code>data-value</code>, <code>&lt;time datetime&gt;</code> when type is <code>date</code>, otherwise <code>textContent</code>.</p>
+
+  <code-block language="html" show-lines data-escape><table data-sortable>
+  <thead>
+    <tr>
+      <th data-sort="name">Name</th>
+      <th data-sort="score" data-sort-type="number">Score</th>
+      <th data-sort="joined" data-sort-type="date">Joined</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Alice</td><td>87</td><td><time datetime="2026-03-14">Mar 14</time></td></tr>
+    ...
+  </tbody>
+</table></code-block>
+
+  <h3>List mode</h3>
+  <p>Items declare <code>data-sort-{key}=value</code> attributes; an external control declares <code>data-sort-target=selector</code> and supplies the active key. A <code>&lt;select&gt;</code>'s value (or a <code>&lt;button&gt;</code>'s <code>data-sort-by</code> attribute) chooses the key. Leading <code>-</code> on the value flips direction.</p>
+
+  <code-block language="html" show-lines data-escape><select data-sort-target="#projects">
+  <option value="name">Name (A-Z)</option>
+  <option value="-name">Name (Z-A)</option>
+  <option value="-priority">Priority (high to low)</option>
+  <option value="due">Due date (soonest)</option>
+</select>
+
+<ul id="projects" data-sortable>
+  <li data-sort-name="Bonsai" data-sort-priority="2" data-sort-due="2026-08-12">...</li>
+</ul></code-block>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="prose">
+    <thead><tr><th>Attribute</th><th>Default</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-sortable</code></td><td>&mdash;</td><td>Opt-in (boolean) on the container.</td></tr>
+      <tr><td><code>data-sortable-default</code></td><td>&mdash;</td><td>Initial sort key (e.g. <code>-date</code> for newest-first).</td></tr>
+      <tr><td><code>data-sort-by</code></td><td>&mdash;</td><td>Reflected on the host: current sort key.</td></tr>
+      <tr><td><code>data-sort-direction</code></td><td>&mdash;</td><td>Reflected on the host: <code>asc</code> &middot; <code>desc</code> &middot; <code>none</code></td></tr>
+      <tr><td><code>data-sort</code></td><td>&mdash;</td><td>On <code>&lt;th&gt;</code> in table mode: column key.</td></tr>
+      <tr><td><code>data-sort-type</code></td><td><code>text</code></td><td><code>text</code> &middot; <code>number</code> &middot; <code>date</code> &mdash; on container or <code>&lt;th&gt;</code>.</td></tr>
+      <tr><td><code>data-sort-target</code></td><td>&mdash;</td><td>On external controls: CSS selector for the target container.</td></tr>
+      <tr><td><code>data-sort-by</code></td><td>&mdash;</td><td>On a <code>&lt;button&gt;</code> control: the key to apply on click.</td></tr>
+      <tr><td><code>data-sort-{key}</code></td><td>&mdash;</td><td>On list children: per-key sort value.</td></tr>
+      <tr><td><code>data-value</code></td><td>&mdash;</td><td>Per-cell override; takes precedence over <code>textContent</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <p>The container emits <code>sort:change</code> after each reorder. Use it for analytics, scroll-restoration, or driving a sibling component.</p>
+  <code-block language="js" show-lines data-escape>list.addEventListener('sort:change', (e) => {
+  const { key, direction, total } = e.detail;
+});</code-block>
+</section>
+
+<section>
+  <h2>Comparators</h2>
+  <ul>
+    <li><strong>text</strong> &mdash; <code>localeCompare</code> with <code>sensitivity: "base"</code> and <code>numeric: true</code>. Case-insensitive; <code>"item 10"</code> sorts after <code>"item 2"</code>.</li>
+    <li><strong>number</strong> &mdash; <code>Number()</code> coercion; non-numeric values sort to the end.</li>
+    <li><strong>date</strong> &mdash; <code>Date.parse</code>. Use ISO 8601 (<code>YYYY-MM-DD</code>) or <code>&lt;time datetime&gt;</code> for unambiguous parsing.</li>
+  </ul>
+  <p>Empty / nullish values always sort to the end regardless of direction &mdash; "no value" is treated as "no opinion, put it last."</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Table headers in table mode get <code>role="button"</code>, <code>tabindex="0"</code>, and reflected <code>aria-sort</code> (<code>ascending</code> / <code>descending</code> / <code>none</code>).</li>
+    <li>Headers respond to <kbd>Enter</kbd> and <kbd>Space</kbd>.</li>
+    <li>External controls use native <code>&lt;select&gt;</code> / <code>&lt;button&gt;</code> &mdash; native a11y.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Compose with <code>data-paged</code></h2>
+  <p>Drop both attributes on the same container. Sorting reorders children; the <code>data-paged</code> engine's <code>MutationObserver</code> sees the reorder and re-paginates from page 1, so the user always lands on the first page of the newly sorted list.</p>
+  <code-block language="html" show-lines data-escape><ul id="feed" data-sortable data-paged data-paged-size="20">
+  <li data-sort-name="..." data-sort-date="...">...</li>
+  ...
+</ul></code-block>
+</section>
+
+<section>
+  <h2>When to reach for <code>data-table</code> instead</h2>
+  <p><a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> ships its own column-level <code>data-sort</code> alongside <code>data-weight</code>, <code>data-rollup</code>, <code>data-heatmap</code>, etc. If you're already using <code>&lt;data-table&gt;</code> for typed cells / weighted rollups / heatmaps, use its built-in sort. Reach for <code>data-sortable</code> when:</p>
+  <ul>
+    <li>You're sorting non-table containers (<code>&lt;ul&gt;</code>, <code>&lt;ol&gt;</code>, <code>&lt;card-list&gt;</code>, <code>&lt;layout-grid&gt;</code>).</li>
+    <li>You're working with a plain <code>&lt;table&gt;</code> and don't want the <code>&lt;data-table&gt;</code> upgrade surface.</li>
+  </ul>
+</section>
