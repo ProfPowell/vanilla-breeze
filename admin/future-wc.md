@@ -2,7 +2,7 @@
 
 Master list of components we may develop, organized by nav category. Each entry notes whether it's a new component, an upscale of a native attribute, or an expansion of an existing component. Priority is rough — actual scheduling depends on user demand and architectural readiness.
 
-Current surface: **119 web components** across 7 categories (as of 2026-05-13).
+Current surface: **131 web components** across 7 categories (as of 2026-05-14).
 
 ---
 
