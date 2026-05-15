@@ -38,13 +38,16 @@ import { diffLines, renderDiffFragment } from './_diff.js';
 let switcherSeq = 0;
 
 class VersionSwitcher extends VBElement {
-  static observedAttributes = ['data-versions'];
+  static observedAttributes = ['data-versions', 'data-src'];
 
   #versions = [];        // resolved entries
   #currentId = null;
   #trigger;
   #popover;
   #pickerList;
+  #panelSection = null;  // set when mounted inside a <page-info> panel
+  #banner = null;        // set when data-banner is on AND current is archived
+  #pendingFetch = null;  // tracks the in-flight data-src / meta-fallback fetch
 
   setup() {
     this.#resolveVersions();
@@ -57,11 +60,27 @@ class VersionSwitcher extends VBElement {
     this.#buildPopover();
     this.#renderTrigger();
     this.#renderPicker();
+    this.#updateBanner();
+
+    // Phase 3: page-info mount target — render as a section inside the
+    // targeted page-info's expandable panel rather than (or in addition to)
+    // the standalone trigger.
+    if (this.hasAttribute('data-page-info-target')) {
+      this.#mountInPageInfo();
+    }
+
+    // Phase 3: if no inline data was found, kick off a fetch from data-src
+    // or the meta-tag fallback. Async — the trigger renders in a "Loading…"
+    // disabled state until the fetch resolves.
+    if (this.#versions.length === 0 && (this.getAttribute('data-src') || this.#metaManifestUrl())) {
+      this.#fetchManifest();
+    }
   }
 
   attributeChangedCallback(name, oldVal, newVal) {
     if (!this.isConnected || oldVal === newVal) return;
     if (name === 'data-versions') this.refresh();
+    if (name === 'data-src') this.#fetchManifest();
   }
 
   // ── Data resolution ────────────────────────────────────────────────
@@ -120,6 +139,160 @@ class VersionSwitcher extends VBElement {
     return urls.size > 1 ? 'releases' : 'history';
   }
 
+  // ── Phase 3: data-src + meta-tag fallback fetch ────────────────────
+
+  #metaManifestUrl() {
+    return document.querySelector('meta[name="vb:versions-manifest"]')?.getAttribute('content');
+  }
+
+  async #fetchManifest() {
+    const url = this.getAttribute('data-src') || this.#metaManifestUrl();
+    if (!url) return;
+
+    this.#pendingFetch = url;
+    this.#renderTrigger(); // shows Loading… while a fetch is in flight
+
+    let raw;
+    try {
+      const res = await fetch(url, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error(`Fetch failed (${res.status}) for ${url}`);
+      raw = await res.json();
+    } catch (err) {
+      this.#pendingFetch = null;
+      this.#emitError(`Failed to load versions manifest: ${err.message}`, { error: err });
+      this.#renderTrigger();
+      return;
+    }
+
+    // Bail if a newer fetch superseded us mid-request.
+    if (this.#pendingFetch !== url) return;
+    this.#pendingFetch = null;
+
+    if (!Array.isArray(raw)) {
+      this.#emitError(`Manifest is not a JSON array: ${url}`);
+      this.#renderTrigger();
+      return;
+    }
+
+    this.#versions = raw.filter((e) => e && typeof e.id === 'string');
+    this.#currentId = this.#deriveCurrentId();
+    this.#renderTrigger();
+    this.#renderPicker();
+    this.#updateBanner();
+    if (this.#panelSection) this.#renderPanelSection();
+  }
+
+  // ── Phase 3: archived-version banner ───────────────────────────────
+
+  #updateBanner() {
+    if (!this.hasAttribute('data-banner')) return;
+    const current = this.#versions.find((e) => e.id === this.#currentId);
+    const latest = this.#versions.find((e) => !e.archived && !e.draft);
+
+    // Tear down any prior banner first so a re-render doesn't duplicate.
+    this.#banner?.remove();
+    this.#banner = null;
+
+    // Banner only renders when current is archived AND a non-archived
+    // "latest" exists to point at.
+    if (!current?.archived || !latest || latest.id === current.id) return;
+
+    const banner = document.createElement('aside');
+    banner.className = 'version-switcher-banner';
+    banner.setAttribute('role', 'region');
+    banner.setAttribute('aria-live', 'polite');
+    banner.setAttribute('aria-label', 'Archived version notice');
+
+    const text = document.createElement('span');
+    text.className = 'version-switcher-banner-text';
+    text.textContent = `You're viewing ${current.label || current.id} (archived).`;
+
+    const link = document.createElement('a');
+    link.className = 'version-switcher-banner-link';
+    if (latest.url) link.href = latest.url;
+    link.textContent = `Latest: ${latest.label || latest.id} →`;
+
+    banner.append(text, ' ', link);
+    this.prepend(banner);
+    this.#banner = banner;
+  }
+
+  // ── Phase 3: mount inside <page-info>'s expandable panel ──────────
+
+  #mountInPageInfo() {
+    const id = this.getAttribute('data-page-info-target');
+    if (!id) return;
+    const target = document.getElementById(id);
+    if (!target || target.localName !== 'page-info') {
+      this.#emitError(`data-page-info-target: no <page-info id="${id}"> found.`);
+      return;
+    }
+
+    // Hide the standalone trigger when mounted in a page-info panel — the
+    // version list lives inside the panel as a section instead.
+    this.#trigger.hidden = true;
+
+    const tryMount = () => {
+      const panel = target.querySelector('.page-info-panel');
+      if (!panel) return false;
+      this.#renderPanelSection(panel);
+      return true;
+    };
+
+    if (tryMount()) return;
+
+    // page-info hasn't rendered its panel yet (auto mode upgrade pending).
+    // Watch for it.
+    const obs = new MutationObserver(() => {
+      if (tryMount()) obs.disconnect();
+    });
+    obs.observe(target, { childList: true, subtree: true });
+
+    // Safety timeout — give up after 5s and log the miss.
+    setTimeout(() => {
+      if (this.#panelSection) return;
+      obs.disconnect();
+      this.#emitError(`<page-info id="${id}"> never rendered .page-info-panel within 5s.`);
+    }, 5000);
+  }
+
+  #renderPanelSection(panel) {
+    panel = panel || this.#panelSection?.parentNode;
+    if (!panel) return;
+
+    if (!this.#panelSection) {
+      this.#panelSection = document.createElement('section');
+      this.#panelSection.className = 'version-switcher-panel-section';
+      this.#panelSection.setAttribute('aria-label', this.getAttribute('aria-label') || 'Versions');
+      const heading = document.createElement('h3');
+      heading.className = 'version-switcher-panel-heading';
+      heading.textContent = this.#mode() === 'history' ? 'History' : 'Versions';
+      this.#panelSection.appendChild(heading);
+      panel.appendChild(this.#panelSection);
+    }
+
+    // Populate / repopulate the version list inside the section.
+    let list = this.#panelSection.querySelector('ul.version-switcher-panel-list');
+    if (!list) {
+      list = document.createElement('ul');
+      list.className = 'version-switcher-panel-list';
+      this.#panelSection.appendChild(list);
+    }
+    list.replaceChildren();
+
+    if (this.#versions.length === 0) {
+      const li = document.createElement('li');
+      li.className = 'version-switcher-empty';
+      li.textContent = this.#pendingFetch ? 'Loading versions…' : 'No versions available.';
+      list.appendChild(li);
+      return;
+    }
+
+    for (const entry of this.#versions) {
+      list.appendChild(this.#renderEntry(entry));
+    }
+  }
+
   // ── DOM build ──────────────────────────────────────────────────────
 
   #buildTrigger() {
@@ -173,7 +346,8 @@ class VersionSwitcher extends VBElement {
 
   #renderTrigger() {
     const current = this.#versions.find((e) => e.id === this.#currentId);
-    const label = current?.label || current?.id || 'Version';
+    const loading = !!this.#pendingFetch && this.#versions.length === 0;
+    const label = loading ? 'Loading…' : (current?.label || current?.id || 'Version');
     this.#trigger.replaceChildren();
     const text = document.createElement('span');
     text.className = 'version-switcher-trigger-label';
@@ -186,7 +360,7 @@ class VersionSwitcher extends VBElement {
 
     if (this.#versions.length === 0) {
       this.#trigger.disabled = true;
-      this.#trigger.setAttribute('title', 'No versions available');
+      this.#trigger.setAttribute('title', loading ? 'Loading versions…' : 'No versions available');
     } else {
       this.#trigger.disabled = false;
       this.#trigger.removeAttribute('title');
@@ -522,6 +696,8 @@ class VersionSwitcher extends VBElement {
     if (!this.#trigger || !this.#pickerList) return;
     this.#renderTrigger();
     this.#renderPicker();
+    this.#updateBanner();
+    if (this.#panelSection) this.#renderPanelSection();
   }
 
   // ── Errors ─────────────────────────────────────────────────────────

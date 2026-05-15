@@ -28,8 +28,49 @@ crumbLabel: Web Components
 </section>
 
 <aside class="note">
-  <strong>Phases 1 + 2 shipped.</strong> All three actions (<code>navigate</code>, <code>swap</code>, <code>diff</code>) work today. Phase 3 adds <code>data-page-info-target</code> mounting inside <code>&lt;page-info&gt;</code>, the archived-version banner, and meta-tag fallback. See <a href="https://github.com/profpowell/vanilla-breeze/blob/main/admin/r-n-d/version-switcher.md">the full plan</a>.
+  <strong>All three phases shipped.</strong> All three actions (<code>navigate</code>, <code>swap</code>, <code>diff</code>), all three data sources (inline / <code>data-src</code> URL / <code>vb:versions-manifest</code> meta fallback), the archived-version banner, and <code>&lt;page-info&gt;</code> mounting all work today. See <a href="https://github.com/profpowell/vanilla-breeze/blob/main/admin/r-n-d/version-switcher.md">the full plan</a>.
 </aside>
+
+<section>
+  <h2>Phase 3: provenance integration</h2>
+
+  <h3>Meta-tag manifest fallback</h3>
+  <p>If no inline <code>data-versions</code> and no <code>data-src</code> are provided, the component falls back to <code>&lt;meta name="vb:versions-manifest"&gt;</code> and fetches the URL listed there. The provenance build pipeline emits this tag from the page's <code>versionsManifest</code> frontmatter (per <a href="/admin/specs/meta-tag-contract-v1/">meta-tag-contract-v1</a>).</p>
+
+  <code-block language="html" show-lines label="Page head + bare switcher" data-escape><!-- in <head>: -->
+<meta itemprop="version" content="v2.1">
+<meta name="vb:versions-manifest" content="/data/versions/api.json">
+
+<!-- in <body>: just drop the element — it fetches the manifest -->
+<version-switcher aria-label="API version"></version-switcher></code-block>
+
+  <h3>Archived-version banner</h3>
+  <p>Set <code>data-banner</code> to render a full-width warning banner above the trigger when the current version is archived AND a non-archived "latest" version exists. The banner uses <code>role="region"</code> + <code>aria-live="polite"</code> so screen-reader users hear the notice when it appears.</p>
+
+  <code-block language="html" show-lines label="Banner on archived pages" data-escape><version-switcher data-banner data-versions='[
+  {"id":"v2.1","label":"v2.1","url":"/v2.1/api"},
+  {"id":"v1.0","label":"v1.0","url":"/v1/api","current":true,"archived":true}
+]'></version-switcher>
+
+<!-- Renders an aside above the trigger:
+     "You're viewing v1.0 (archived). Latest: v2.1 →" -->
+</code-block>
+
+  <h3>Mount inside <code>&lt;page-info&gt;</code></h3>
+  <p>Set <code>data-page-info-target="ID"</code> to render the version list as a section inside the named <code>&lt;page-info&gt;</code>'s expandable panel rather than as a standalone trigger. The standalone trigger is hidden in this mode — readers find versions inside the page-info panel alongside authorship + provenance.</p>
+
+  <code-block language="html" show-lines label="Mounted inside page-info" data-escape><page-info id="docs-page-info">
+  <details>
+    <summary>…</summary>
+    <div class="page-info-panel">…</div>
+  </details>
+</page-info>
+
+<version-switcher
+  data-page-info-target="docs-page-info"
+  data-src="/data/versions/api.json"
+></version-switcher></code-block>
+</section>
 
 <section>
   <h2>Switch actions</h2>
@@ -147,10 +188,13 @@ sw.switchTo('v2.0');</code-block>
     <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
       <tr><td><code>data-versions</code></td><td>string (JSON)</td><td>&mdash;</td><td>Inline JSON array of version entries.</td></tr>
+      <tr><td><code>data-src</code></td><td>string (URL)</td><td>&mdash;</td><td>URL of a JSON manifest to fetch when no inline data is provided. Falls back to <code>&lt;meta name="vb:versions-manifest"&gt;</code> if neither is set.</td></tr>
       <tr><td><code>data-mode</code></td><td>string</td><td><em>derived</em></td><td><code>releases</code> | <code>history</code> &mdash; override the auto-detected mode.</td></tr>
       <tr><td><code>data-action</code></td><td>string</td><td><code>navigate</code></td><td><code>navigate</code> | <code>swap</code> | <code>diff</code>.</td></tr>
       <tr><td><code>data-versioned-region</code></td><td>string (CSS selector)</td><td><code>[data-versioned], main</code></td><td>Selector for the swappable / diffable region in this page AND in the fetched response document.</td></tr>
       <tr><td><code>data-diff-position</code></td><td>string</td><td><code>before</code></td><td><code>before</code> | <code>after</code> &mdash; where to mount the diff render relative to the versioned region.</td></tr>
+      <tr><td><code>data-banner</code></td><td>boolean</td><td><code>false</code></td><td>Render an archived-version warning banner above the trigger when the current entry is archived AND a non-archived "latest" exists.</td></tr>
+      <tr><td><code>data-page-info-target</code></td><td>string (ID)</td><td>&mdash;</td><td>ID of a <code>&lt;page-info&gt;</code> to mount inside as a section in its expandable panel; the standalone trigger is hidden in this mode.</td></tr>
       <tr><td><code>aria-label</code></td><td>string</td><td><code>Version</code></td><td>Trigger / picker label.</td></tr>
     </tbody>
   </table>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta itemprop="version" content="v1.0">
+  <meta name="vb:versions-manifest" content="/docs/examples/demos/version-switcher-manifest.json">
+  <title>version-switcher — Phase 3 Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/web-components/version-switcher/logic.js"></script>
+  <script type="module" src="/src/web-components/page-info/logic.js"></script>
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+    h2 { font-size: 1rem; color: var(--color-text-muted); margin-block: var(--size-l) var(--size-xs); }
+    .panel { border: 1px solid var(--color-border); border-radius: var(--radius-m); padding: var(--size-m); }
+  </style>
+</head>
+<body>
+  <layout-center data-layout-max="readable">
+    <layout-stack data-layout-gap="m">
+
+      <h1>version-switcher — Phase 3</h1>
+      <p>Three Phase-3 features: meta-tag manifest fallback, archived-version banner, and mounting inside a <code>&lt;page-info&gt;</code> panel.</p>
+
+      <h2>1. Meta-tag manifest fallback</h2>
+      <p>This page has no inline <code>data-versions</code> on the switcher, but the <code>&lt;head&gt;</code> contains <code>&lt;meta name="vb:versions-manifest" content="…json"&gt;</code>. The component fetches that URL and resolves the version list from it.</p>
+      <div class="panel">
+        <span>API version:</span>
+        <version-switcher id="meta-fallback" aria-label="API version (meta fallback)"></version-switcher>
+      </div>
+
+      <h2>2. Archived-version banner</h2>
+      <p>The page declares <code>&lt;meta itemprop="version" content="v1.0"&gt;</code>; v1.0 is archived in this manifest (which has no explicit <code>current: true</code>, so the meta tag wins). With <code>data-banner</code> set, the switcher renders a warning banner pointing at the latest non-archived entry.</p>
+      <version-switcher id="banner-demo" aria-label="API version" data-src="/docs/examples/demos/version-switcher-manifest-no-current.json" data-banner></version-switcher>
+
+      <h2>3. Mount inside &lt;page-info&gt;</h2>
+      <p>The switcher can render its version list as a section <em>inside</em> a <code>&lt;page-info&gt;</code>'s expandable panel via <code>data-page-info-target="ID"</code>. The standalone trigger is hidden in this mode.</p>
+      <page-info id="docs-page-info">
+        <details>
+          <summary>
+            <span class="page-info-author">Ada Lovelace</span>
+            <span class="page-info-sep" aria-hidden="true">·</span>
+            <time datetime="2026-05-01">May 1, 2026</time>
+          </summary>
+          <div class="page-info-panel">
+            <p><strong>Document provenance.</strong> This is the <code>&lt;page-info&gt;</code>'s expandable panel — the version-switcher below should mount as a section inside it.</p>
+          </div>
+        </details>
+      </page-info>
+      <version-switcher
+        aria-label="API version"
+        data-page-info-target="docs-page-info"
+        data-src="/docs/examples/demos/version-switcher-manifest.json"
+      ></version-switcher>
+
+    </layout-stack>
+  </layout-center>
+</body>
+</html>
