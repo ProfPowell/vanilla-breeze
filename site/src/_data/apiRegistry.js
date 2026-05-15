@@ -10283,6 +10283,13 @@ export default {
         "description": "Inline JSON array of version entries: { id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }. Alternative: a <script type=\"application/json\" data-versions> child."
       },
       {
+        "name": "data-src",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "URL of a JSON manifest to fetch when no inline data is provided. Falls back to <meta name=\"vb:versions-manifest\"> if neither is set."
+      },
+      {
         "name": "data-mode",
         "kind": "data",
         "purpose": "config",
@@ -10309,6 +10316,20 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "\"before\" (default) | \"after\" — where to mount the diff render"
+      },
+      {
+        "name": "data-banner",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Render an archived-version warning banner above the trigger when current is archived AND a non-archived \"latest\" exists."
+      },
+      {
+        "name": "data-page-info-target",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of a <page-info> to mount inside as a section in its expandable panel; standalone trigger is hidden in this mode."
       },
       {
         "name": "aria-label",

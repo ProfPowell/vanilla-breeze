@@ -1727,10 +1727,13 @@ module.exports = {
   "version-switcher": {
     attributes: {
       "data-versions": {},
+      "data-src": {},
       "data-mode": {},
       "data-action": {},
       "data-versioned-region": {},
       "data-diff-position": {},
+      "data-banner": { boolean: true },
+      "data-page-info-target": {},
       "aria-label": {}
     }
   },
