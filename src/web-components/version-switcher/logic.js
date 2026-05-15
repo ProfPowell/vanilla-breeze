@@ -32,8 +32,11 @@ import { VBElement } from '../../lib/vb-element.js';
 // Compose pop-over for the picker surface (mirrors reaction-bar / selection-menu).
 import '../pop-over/logic.js';
 // Phase 2: diff action composes <change-set> as the diff renderer.
+// text-diff was promoted from this component's private _diff.js to a
+// shared utility so any author can compose runtime diffs into <change-set>
+// directly. See /docs/concepts/diff-display/ for the recipe.
 import '../change-set/logic.js';
-import { diffLines, renderDiffFragment } from './_diff.js';
+import { diffLines, renderDiffFragment } from '../../utils/text-diff.js';
 
 let switcherSeq = 0;
 

@@ -1,13 +1,29 @@
 /**
- * Line-level LCS diff for version-switcher's diff action.
+ * text-diff: line-level LCS diff helper + change-set fragment renderer.
  *
- * Returns an array of operations:
- *   { type: 'eq' | 'add' | 'del', text: string }
+ * Promoted from `<version-switcher>`'s private _diff.js so any author
+ * can compose runtime text diffs into a `<change-set>` without going
+ * through the version-switcher.
  *
- * Markup-aware diffing is the plan's open question for a future phase
- * (admin/r-n-d/version-switcher.md). Phase 2 ships line-level only —
- * splits textContent on \n and computes the longest-common-subsequence,
- * good enough for typical doc-page sizes (~hundreds of lines).
+ * See `/docs/concepts/diff-display/` for the recipe that explains when
+ * to reach for this helper vs the existing diff-shaped primitives
+ * (`<change-set>` for authored markup, `<compare-surface>` for image
+ * before/after, `<review-surface>` for editorial review,
+ * `<version-switcher data-action="diff">` for page-version diffs).
+ *
+ * Markup-aware diffing is intentionally out of scope — for prose-level
+ * use cases the line-level LCS is good enough up to the low thousands
+ * of lines. For richer use cases, post-process the ops yourself or
+ * compose with a dedicated diff library.
+ *
+ * @example Build a diff inside <change-set> from two strings
+ *   import { diffLines, renderDiffFragment } from '/src/utils/text-diff.js';
+ *
+ *   const ops = diffLines(oldText, newText);
+ *   const cs = document.createElement('change-set');
+ *   cs.appendChild(renderDiffFragment(ops));
+ *   document.body.appendChild(cs);
+ *   // <change-set> renders tracking / final / original view toggles automatically
  */
 
 /**
@@ -55,10 +71,10 @@ export function diffLines(oldText, newText) {
 }
 
 /**
- * Render a diff op list into a DOM fragment suitable for mounting inside
- * a <change-set>. Each op becomes one line: equal lines unwrapped, deletes
- * wrapped in <del>, adds wrapped in <ins>. Wrapped in a <pre> so newlines
- * are preserved without extra block flow.
+ * Render a diff op list into a DocumentFragment suitable for mounting
+ * inside a <change-set>. Each op becomes one line: equal lines are
+ * unwrapped text, deletes get <del>, adds get <ins>. Wrapped in a <pre>
+ * so newlines are preserved without extra block flow.
  *
  * @param {ReturnType<typeof diffLines>} ops
  * @returns {DocumentFragment}
@@ -66,7 +82,7 @@ export function diffLines(oldText, newText) {
 export function renderDiffFragment(ops) {
   const frag = document.createDocumentFragment();
   const pre = document.createElement('pre');
-  pre.className = 'version-switcher-diff';
+  pre.className = 'text-diff';
 
   for (const op of ops) {
     if (op.type === 'eq') {

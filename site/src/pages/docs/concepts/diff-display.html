@@ -1,0 +1,162 @@
+---
+layout: guide
+title: "Diff Display &mdash; Decision Guide"
+description: "When to use <change-set>, <compare-surface>, <review-surface>, <version-switcher>, or the text-diff utility for showing differences between two states. There is no <diff-viewer> — by design."
+guideGroup: Concepts
+currentPath: /docs/concepts/diff-display/
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Diff Display</span></li>
+  </ol>
+</nav>
+</template>
+
+<p class="lead">There's no <code>&lt;diff-viewer&gt;</code> in VB &mdash; by design. The "diff" use case fans out into five very different shapes, each handled by an existing primitive (or a small composition). Pick the one that matches the <em>shape</em> of your diff, not the word "diff".</p>
+
+<section>
+  <h2>Decision table</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Use case</th>
+        <th>Reach for</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Author-marked-up inline change tracking (<code>&lt;ins&gt;</code> / <code>&lt;del&gt;</code> in prose)</td>
+        <td><a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a></td>
+      </tr>
+      <tr>
+        <td>Side-by-side <strong>image</strong> before-after with a draggable handle</td>
+        <td><a href="/docs/elements/web-components/comparison/"><code>&lt;compare-surface&gt;</code></a></td>
+      </tr>
+      <tr>
+        <td>Editorial review surface with comments and pinned annotations</td>
+        <td><a href="/docs/elements/web-components/review-surface/"><code>&lt;review-surface&gt;</code></a></td>
+      </tr>
+      <tr>
+        <td>Switch between page versions; show the diff between them</td>
+        <td><a href="/docs/elements/web-components/version-switcher/"><code>&lt;version-switcher data-action="diff"&gt;</code></a></td>
+      </tr>
+      <tr>
+        <td>Compute a runtime text diff yourself and render it through tracking-view UI</td>
+        <td><a href="#text-diff-utility"><code>text-diff</code> utility</a> &rarr; mount inside <code>&lt;change-set&gt;</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Why no <code>&lt;diff-viewer&gt;</code>?</h2>
+  <p>"Diff display" is a <em>shape</em>, not a primitive. The five rows above all show "what changed," but they have wildly different inputs (authored markup vs computed strings vs image pairs vs comment trees), interaction models (toggle view vs drag a handle vs pin a comment), and lifecycle (static vs runtime fetch). Bundling them into a single <code>&lt;diff-viewer&gt;</code> would either:</p>
+  <ul>
+    <li><strong>Force one input shape</strong> &mdash; making all the others second-class via "modes," or</li>
+    <li><strong>Duplicate</strong> what <code>&lt;change-set&gt;</code> / <code>&lt;compare-surface&gt;</code> / <code>&lt;review-surface&gt;</code> already do well, fragmenting the codebase.</li>
+  </ul>
+  <p>This follows the May 2026 Planning consolidation pattern (<code>decision-matrix</code>, <code>swot-analysis</code>, <code>stakeholder-map</code>, <code>retrospective-board</code> all became recipes on existing primitives instead of new components). Same call here.</p>
+</section>
+
+<section>
+  <h2>1. Authored inline diff &mdash; <code>&lt;change-set&gt;</code></h2>
+  <p>When the diff is part of your authored content (a release note showing what's been deprecated, an editorial change with rationale), wrap the <code>&lt;ins&gt;</code> / <code>&lt;del&gt;</code> markup in <code>&lt;change-set&gt;</code>. Readers get a tracking / final / original view toggle for free.</p>
+
+  <code-block language="html" show-lines label="Inline change tracking" data-escape><change-set datetime="2026-02-20" author="tpowell">
+  <p>
+    Send requests to
+    <del>/api/v1/upload</del>
+    <ins>/api/v2/ingest</ins>
+    with a
+    <del>Content-Type: application/xml</del>
+    <ins>Content-Type: application/json</ins>
+    header.
+  </p>
+</change-set></code-block>
+</section>
+
+<section>
+  <h2>2. Image before/after &mdash; <code>&lt;compare-surface&gt;</code></h2>
+  <p>Two images stacked with a draggable wipe handle. Use this for visual diffs (design iterations, screenshot comparisons, before/after photos).</p>
+
+  <code-block language="html" show-lines label="Image comparison" data-escape><compare-surface>
+  <img slot="before" src="/screens/v1.png" alt="v1 layout">
+  <img slot="after"  src="/screens/v2.png" alt="v2 layout">
+</compare-surface></code-block>
+</section>
+
+<section>
+  <h2>3. Editorial review &mdash; <code>&lt;review-surface&gt;</code></h2>
+  <p>When the diff carries conversation (comments pinned to the changes, suggestions, accept/reject flows), use <code>&lt;review-surface&gt;</code>. It composes <code>&lt;change-set&gt;</code> for the inline marks and adds the pin / comment / status machinery on top.</p>
+
+  <p>See the <a href="/docs/elements/web-components/review-surface/"><code>&lt;review-surface&gt;</code> reference</a> for the full slot / event shape.</p>
+</section>
+
+<section>
+  <h2>4. Page-version diff &mdash; <code>&lt;version-switcher&gt;</code></h2>
+  <p>If you've already declared the page's versions (release versions or per-page edit history) for a <a href="/docs/elements/web-components/version-switcher/"><code>&lt;version-switcher&gt;</code></a>, the <code>diff</code> action gives you a one-line setup: pick a version from the picker, the component fetches it, computes the line-level diff against the current page's versioned region, and mounts a <code>&lt;change-set&gt;</code> with the diff inline.</p>
+
+  <code-block language="html" show-lines label="Pick a version, see the diff" data-escape><version-switcher data-action="diff" data-versions='[
+  {"id":"v2.1","label":"v2.1","url":"/v2.1/api","current":true},
+  {"id":"v2.0","label":"v2.0","url":"/v2/api"},
+  {"id":"v1.4","label":"v1.4","url":"/v1.4/api","archived":true}
+]'></version-switcher>
+
+<main data-versioned>
+  <h1>API documentation</h1>
+  &hellip;
+</main></code-block>
+
+  <p>This is the highest-level recipe &mdash; almost no wiring required. Use it whenever the diff is "between this page now and that page archived."</p>
+</section>
+
+<section id="text-diff-utility">
+  <h2>5. Custom runtime diff &mdash; <code>text-diff</code> utility</h2>
+  <p>If your inputs aren't whole pages (e.g., comparing two API response bodies, two user-submitted strings, two arbitrary text snippets), import the <code>text-diff</code> utility directly and mount the result inside a <code>&lt;change-set&gt;</code> for the tracking-view chrome.</p>
+
+  <code-block language="javascript" show-lines label="Diff two strings into a change-set" data-escape>import { diffLines, renderDiffFragment } from '/src/utils/text-diff.js';
+// Make sure <change-set> is registered (autoload bundle covers this).
+
+function mountDiff(host, oldText, newText) {
+  const ops = diffLines(oldText, newText);
+  const cs = document.createElement('change-set');
+  cs.appendChild(renderDiffFragment(ops));
+  host.replaceChildren(cs);
+  // <change-set> renders tracking / final / original view toggle for free.
+}</code-block>
+
+  <p>The utility ships line-level <abbr title="Longest Common Subsequence">LCS</abbr> diff &mdash; good enough up to the low thousands of lines. For markup-aware diff, post-process the ops yourself or compose with a dedicated diff library.</p>
+
+  <h3>Output shape</h3>
+  <p><code>diffLines(oldText, newText)</code> returns an array of operations:</p>
+
+  <code-block language="javascript" show-lines label="diffLines output" data-escape>// [
+//   { type: 'eq',  text: 'Send requests to' },
+//   { type: 'del', text: '/api/v1/upload' },
+//   { type: 'add', text: '/api/v2/ingest' },
+//   { type: 'eq',  text: 'with a' }
+// ]</code-block>
+
+  <p><code>renderDiffFragment(ops)</code> wraps those ops into a <code>&lt;pre class="text-diff"&gt;&hellip;&lt;/pre&gt;</code> with <code>&lt;ins&gt;</code> / <code>&lt;del&gt;</code> runs &mdash; the markup that <code>&lt;change-set&gt;</code> understands for its tracking-view toggle.</p>
+</section>
+
+<section>
+  <h2>If you really want a side-by-side diff layout</h2>
+  <p>Compose the <code>text-diff</code> utility into two parallel columns yourself with <code>&lt;layout-grid&gt;</code> &mdash; one column showing only the additions, one showing only the deletions. Or use <code>&lt;change-set&gt;</code>'s "final" + "original" view toggle for the same effect without the layout work.</p>
+
+  <p>Side-by-side as a default rendering is rarely worth the horizontal real estate cost; tracking-view (interleaved with toggle) reads better in narrow contexts. If you find a real use case, file a bead with the screenshots / requirements.</p>
+</section>
+
+<section>
+  <h2>See also</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a></li>
+    <li><a href="/docs/elements/web-components/comparison/"><code>&lt;compare-surface&gt;</code></a></li>
+    <li><a href="/docs/elements/web-components/review-surface/"><code>&lt;review-surface&gt;</code></a></li>
+    <li><a href="/docs/elements/web-components/version-switcher/"><code>&lt;version-switcher&gt;</code></a></li>
+  </ul>
+</section>
