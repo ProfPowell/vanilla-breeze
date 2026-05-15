@@ -1542,6 +1542,13 @@ module.exports = {
     }
   },
 
+  "theme-import": {
+    attributes: {
+      "target": {},
+      "placeholder": {}
+    }
+  },
+
   "theme-picker": {
     attributes: {
       "variant": {},
