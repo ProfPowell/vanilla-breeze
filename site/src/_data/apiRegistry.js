@@ -9743,6 +9743,12 @@ export default {
     "element": "time-picker",
     "type": "web-component",
     "description": "Form-associated time input with combobox text entry",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "name",
