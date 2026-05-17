@@ -24,6 +24,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, resolve, relative, extname } from 'path';
 import { execSync } from 'child_process';
+import { parseHTML } from 'linkedom';
 
 const args = process.argv.slice(2);
 const ciMode = args.includes('--ci');
@@ -224,19 +225,51 @@ function checkFile(filePath) {
     }
   }
 
-  // vb/no-div-wrapper — <div> wrapping a single semantic child
-  // Simple regex-based detection: <div...>\n  <semantic>\n  </semantic>\n</div>
-  const divWrapperPattern = /<div[^>]*>\s*\n\s*<(article|section|header|footer|nav|main|aside|ul|ol|form|table|figure|details|fieldset|dialog|menu)[^>]*>/gi;
-  let wrapperMatch;
-  while ((wrapperMatch = divWrapperPattern.exec(content)) !== null) {
-    const lineNum = content.substring(0, wrapperMatch.index).split('\n').length;
-    issues.push({
-      line: lineNum,
-      col: 1,
-      rule: 'vb/no-div-wrapper',
-      severity: severity('vb/no-div-wrapper', 'error-new'),
-      message: `<div> wraps a single <${wrapperMatch[1]}>. The div likely adds nothing — move attributes to the child.`
-    });
+  // vb/no-div-wrapper — <div> wrapping a single semantic child.
+  // DOM-based detection via linkedom: a <div> is flagged only if it
+  // contains exactly one element child AND that child is in the semantic
+  // list. The previous regex was too eager — it matched any <div>\n<semantic>
+  // pattern regardless of how many siblings followed, producing many false
+  // positives on multi-child grid containers.
+  const SEMANTIC_CHILDREN = new Set([
+    'article', 'section', 'header', 'footer', 'nav', 'main', 'aside',
+    'ul', 'ol', 'form', 'table', 'figure', 'details', 'fieldset',
+    'dialog', 'menu'
+  ]);
+  try {
+    const { document } = parseHTML(content);
+    // Precompute source line numbers for every <div opening so we can
+    // map the Nth linkedom-found div to the Nth source-found div by
+    // document order. (querySelectorAll('div') returns elements in
+    // document order, matching their appearance in source.)
+    const divLineNumbers = [];
+    {
+      const divRe = /<div\b/gi;
+      let m;
+      while ((m = divRe.exec(content)) !== null) {
+        divLineNumbers.push(content.substring(0, m.index).split('\n').length);
+      }
+    }
+    let i = 0;
+    for (const div of document.querySelectorAll('div')) {
+      const sourceLine = divLineNumbers[i] || 1;
+      i++;
+      const elementChildren = Array.from(div.children);
+      if (elementChildren.length !== 1) continue;
+      const child = elementChildren[0];
+      const tag = child.tagName.toLowerCase();
+      if (!SEMANTIC_CHILDREN.has(tag)) continue;
+      issues.push({
+        line: sourceLine,
+        col: 1,
+        rule: 'vb/no-div-wrapper',
+        severity: severity('vb/no-div-wrapper', 'error-new'),
+        message: `<div> wraps a single <${tag}>. The div likely adds nothing — move attributes to the child.`
+      });
+    }
+  } catch {
+    // linkedom can choke on malformed input; skip silently rather than
+    // failing the whole conformance run.
   }
 
   // vb/use-form-field — Label+input outside form-field in forms with validation
