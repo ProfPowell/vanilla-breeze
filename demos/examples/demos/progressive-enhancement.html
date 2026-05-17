@@ -66,12 +66,12 @@
       font-weight: 600;
     }
 
-    .js-status.enabled {
+    .js-status[data-state="enabled"] {
       background: var(--color-success-subtle);
       color: var(--color-success);
     }
 
-    .js-status.disabled {
+    .js-status[data-state="disabled"] {
       background: var(--color-warning-subtle);
       color: var(--color-warning);
     }
@@ -197,7 +197,7 @@
       <input type="checkbox" id="js-toggle" checked/>
       JavaScript Enabled
     </label>
-    <span class="js-status enabled" id="js-status">JS Active</span>
+    <span class="js-status" data-state="enabled" id="js-status">JS Active</span>
     <small style="color: var(--color-text-muted);">Toggle to see baseline HTML behavior</small>
   </div>
 
@@ -704,12 +704,14 @@
     jsToggle.addEventListener('change', (e) => {
       if (e.target.checked) {
         jsStatus.textContent = 'JS Active';
-        jsStatus.className = 'js-status enabled';
+        jsStatus.className = 'js-status';
+        jsStatus.dataset.state = 'enabled';
         // Reload to re-enable scripts
         window.location.reload();
       } else {
         jsStatus.textContent = 'JS Disabled';
-        jsStatus.className = 'js-status disabled';
+        jsStatus.className = 'js-status';
+        jsStatus.dataset.state = 'disabled';
         // Remove enhanced components, show baseline HTML
         document.querySelectorAll('accordion-wc, tab-set, drop-down').forEach(el => {
           // For accordion, just remove the wrapper

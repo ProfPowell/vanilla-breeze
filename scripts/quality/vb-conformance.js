@@ -165,17 +165,31 @@ function checkFile(filePath) {
       });
     }
 
-    // vb/no-class-for-state — State classes that should be data-* attributes
-    const stateMatch = line.match(STATE_CLASS_PATTERN);
-    if (stateMatch) {
-      const stateClass = stateMatch[1];
-      issues.push({
-        line: lineNum,
-        col: line.indexOf(stateClass),
-        rule: 'vb/no-class-for-state',
-        severity: severity('vb/no-class-for-state', 'warn'),
-        message: `Class "${stateClass}" represents state. Use data-${stateClass} or data-state="${stateClass}" instead.`
-      });
+    // vb/no-class-for-state — State classes that should be data-* attributes.
+    //
+    // Token-exact match: we previously used \b boundaries inside a single
+    // regex, which over-matched compound class names like "badge-success",
+    // "visually-hidden", or "surface-state-card" because "-" is a non-word
+    // char. Now we parse the class attribute, split on whitespace, and
+    // check each token literally.
+    //
+    // Exception: <output class="error"> / <output class="hint"> are the
+    // documented form-field contract — form-field's logic.js looks for
+    // output.error to identify the validation message element. Those are
+    // discriminator classes, not state classes. Skip <output> entirely.
+    const classAttrMatch = !/<output\b/i.test(line) && line.match(/\bclass="([^"]+)"/);
+    if (classAttrMatch) {
+      const tokens = classAttrMatch[1].split(/\s+/).filter(Boolean);
+      const stateClass = tokens.find(t => STATE_CLASSES.includes(t.toLowerCase()));
+      if (stateClass) {
+        issues.push({
+          line: lineNum,
+          col: line.indexOf(stateClass),
+          rule: 'vb/no-class-for-state',
+          severity: severity('vb/no-class-for-state', 'warn'),
+          message: `Class "${stateClass}" represents state. Use data-${stateClass} or data-state="${stateClass}" instead.`
+        });
+      }
     }
 
     // vb/semantic-heading-hierarchy — Skipped heading levels
