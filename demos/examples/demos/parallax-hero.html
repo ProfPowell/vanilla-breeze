@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parallax Hero Demo — Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    html, body { margin: 0; padding: 0; }
+
+    section[data-parallax-group] {
+      position: relative;
+      overflow: clip;
+      min-block-size: 70vh;
+      display: grid;
+      place-items: end start;
+      isolation: isolate;
+      background: linear-gradient(180deg,
+        oklch(0.25 0.08 250) 0%,
+        oklch(0.45 0.12 270) 100%);
+    }
+
+    section[data-parallax-group] figure[data-parallax] {
+      --vb-parallax-to: -18%;
+      --vb-parallax-scale: 1.08;
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse at 30% 20%, oklch(0.7 0.18 60 / 0.7), transparent 60%),
+        radial-gradient(ellipse at 80% 70%, oklch(0.55 0.22 320 / 0.6), transparent 55%),
+        linear-gradient(135deg, oklch(0.3 0.08 250) 0%, oklch(0.5 0.15 280) 100%);
+    }
+
+    section[data-parallax-group] header {
+      padding: var(--size-xl);
+      color: oklch(0.98 0.01 250);
+      max-inline-size: 40rem;
+    }
+
+    section[data-parallax-group] header h1 {
+      margin: 0 0 var(--size-m);
+      font-size: var(--font-size-4xl, 2.5rem);
+      line-height: 1.1;
+    }
+
+    section[data-parallax-group] header p {
+      margin: 0;
+      font-size: var(--font-size-l, 1.125rem);
+      opacity: 0.9;
+    }
+
+    main {
+      padding: var(--size-2xl) var(--size-xl);
+    }
+
+    main > section + section {
+      margin-block-start: var(--size-2xl);
+      padding-block-start: var(--size-2xl);
+      border-block-start: 1px solid var(--color-border);
+    }
+
+    main > section:last-of-type { margin-block-end: var(--size-3xl); }
+
+    main h2 { margin-block-end: var(--size-m); }
+
+    .browser-note {
+      position: fixed;
+      inset-inline: 0;
+      inset-block-end: 0;
+      padding: var(--size-s) var(--size-l);
+      background: oklch(0.95 0.02 250);
+      border-block-start: 1px solid oklch(0.85 0.04 250);
+      font-size: var(--font-size-sm);
+      color: oklch(0.4 0.05 250);
+      text-align: center;
+      z-index: 200;
+    }
+  </style>
+</head>
+<body>
+  <section data-parallax-group>
+    <figure data-parallax></figure>
+    <header>
+      <h1>Built on motion that respects readers.</h1>
+      <p>The background drifts at a different rate than this copy as you scroll. The text never leaves a static, readable layer.</p>
+    </header>
+  </section>
+
+  <main>
+    <section>
+      <h2>What this demo proves</h2>
+      <p>The hero uses a single <code>data-parallax</code> media layer driven by a section-local <code>view()</code> timeline. There is no JavaScript. There are no scroll listeners.</p>
+      <p>On browsers without scroll-driven animation support, the hero figure stays static and the layout remains correct. The foreground content is always readable; nothing is locked to motion to make sense.</p>
+    </section>
+
+    <section>
+      <h2>How to tune it</h2>
+      <p>Three custom properties drive the effect — set them inline or in your own CSS:</p>
+      <ul>
+        <li><code>--vb-parallax-from</code> (default <code>0%</code>) — start translateY</li>
+        <li><code>--vb-parallax-to</code> (default <code>-12%</code>) — end translateY</li>
+        <li><code>--vb-parallax-scale</code> (default <code>1</code>) — apply a small scale so the layer can drift without revealing edges</li>
+      </ul>
+      <p>Keep the range subtle. Heavy parallax breaks rhythm and quickly degrades on smaller viewports.</p>
+    </section>
+
+    <section>
+      <h2>Reduced motion</h2>
+      <p>When the user has <code>prefers-reduced-motion: reduce</code> set, the animation is removed and the figure renders at its starting transform. The static hero remains intentional — the copy still does its job.</p>
+    </section>
+
+    <section>
+      <h2>Where this fits</h2>
+      <p>Use <code>data-parallax</code> for at most one media layer per section. For staged storytelling with pinned visuals and sequential narrative steps, see <code>data-stage</code> instead.</p>
+    </section>
+  </main>
+
+  <aside class="browser-note">Parallax requires <code>animation-timeline: view()</code> support (Chrome 115+, Safari 18+). Other browsers see the static hero.</aside>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

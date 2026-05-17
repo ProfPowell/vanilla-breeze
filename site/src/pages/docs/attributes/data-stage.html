@@ -1,0 +1,87 @@
+---
+layout: attribute
+title: "data-stage"
+description: "Scrollytelling layout pattern: pinned visual on one side, sequential semantic steps on the other. Pure CSS, no scroll listeners."
+attributeName: data-stage
+category: layout
+attributeType: data
+currentPath: /docs/attributes/data-stage/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section id="overview">
+  <h2>Pinned visual, sequential steps</h2>
+  <p>The <code>data-stage</code> attribute set provides a layout for staged narrative sections — a pinned visual that stays in view while a column of semantic steps scrolls past. It is pure CSS layout: no scroll listeners, no <code>IntersectionObserver</code>, no JavaScript registry.</p>
+
+  <browser-window src="/docs/examples/demos/staged-story.html" url="https://vanilla-breeze.dev/stage" title="Staged Story" shadow></browser-window>
+
+  <code-block language="html" label="Staged story scaffold" data-escape><section data-stage>
+  <figure data-stage-pin>
+    <img src="/images/scene.jpg" alt="" />
+    <figcaption>Supporting visual</figcaption>
+  </figure>
+
+  <article data-stage-steps>
+    <section data-stage-step>
+      <h2 data-animate="fade-up">Introduce the subject</h2>
+      <p data-animate="fade-up">Opening narrative paragraph.</p>
+    </section>
+
+    <section data-stage-step>
+      <h2 data-animate="fade-up">Reveal the tension</h2>
+      <p data-animate="fade-up">Second step advances the story.</p>
+    </section>
+  </article>
+</section></code-block>
+</section>
+
+<section id="api">
+  <h2>Attributes</h2>
+
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-stage</code></td><td>Container. Sets up a two-column grid on viewports ≥ 60rem; collapses to a single column below that.</td></tr>
+      <tr><td><code>data-stage-pin</code></td><td>The visual that stays in view. Pinned with <code>position: sticky</code> on wide viewports; released to static flow on narrow viewports and under reduced motion.</td></tr>
+      <tr><td><code>data-stage-steps</code></td><td>Authoring marker for the column that holds the step sections. Carries no CSS this pass; reserved for future composition.</td></tr>
+      <tr><td><code>data-stage-step</code></td><td>One narrative step. Receives <code>min-block-size: 60vh</code> so the pinned visual always has scroll room between steps.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="copy-reveal">
+  <h2>Step content reveal</h2>
+  <p>Use the existing <code>data-animate</code> attribute on headings and paragraphs inside each step to fade or slide copy in as it enters the viewport. The same reveals available on any page — <code>fade-up</code>, <code>fade-in</code>, <code>slide-left</code>, <code>scale-up</code>, <code>blur-in</code> — compose directly with the staged layout. There is no separate reveal system to learn.</p>
+
+  <code-block language="html" label="Step with copy reveal" data-escape><section data-stage-step>
+  <h2 data-animate="fade-up">Step heading</h2>
+  <p data-animate="fade-up">Body copy fades in as the step enters view.</p>
+</section></code-block>
+</section>
+
+<section id="responsive">
+  <h2>Responsive behavior</h2>
+  <p>The layout has two states:</p>
+  <ul>
+    <li><strong>Wide (≥ 60rem):</strong> two columns, pinned visual sticks to the top of the viewport while the step column scrolls.</li>
+    <li><strong>Narrow (&lt; 60rem):</strong> single column. The pin releases and content flows naturally. The figure and the steps appear in document order — the narrative reads correctly without any pinning.</li>
+  </ul>
+  <p>This is why <code>data-stage-pin</code> must come before <code>data-stage-steps</code> in the DOM: the document order is the mobile reading order.</p>
+</section>
+
+<section id="reduced-motion">
+  <h2>Reduced motion</h2>
+  <p>When <code>prefers-reduced-motion: reduce</code> is set, the pin is released regardless of viewport width and copy-reveal animations are disabled by <code>data-animate</code>'s own reduced-motion rule. The layout falls back to a flat sequence of figure followed by narrative — readable, complete, and without scroll-coupled movement.</p>
+</section>
+
+<section id="guidance">
+  <h2>Guidance</h2>
+  <ul>
+    <li><strong>Use semantic sectioning.</strong> The example pairs <code>&lt;figure&gt;</code>, <code>&lt;article&gt;</code>, and <code>&lt;section&gt;</code> intentionally — the staged layout should still convey the right document outline to assistive technology.</li>
+    <li><strong>Don't trap the reader.</strong> Each step should make sense on its own. If the next step depends on a state set by motion, the design is over-reaching what the pattern supports.</li>
+    <li><strong>Use <code>scroll-margin-block-start</code> on step headings.</strong> Anchor links into a staged section should land below any sticky UI above the stage, not under it.</li>
+    <li><strong>This is layout, not an engine.</strong> If you find yourself reaching for active-step state tracking or scroll-progress events, step back and verify whether the layout alone solves the problem first.</li>
+  </ul>
+</section>

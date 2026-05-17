@@ -1,0 +1,72 @@
+---
+layout: attribute
+title: "data-parallax"
+description: "Section-local, transform-only depth motion driven by a CSS view-progress timeline. CSS-only, no JavaScript."
+attributeName: data-parallax
+category: visual-effects
+attributeType: data
+currentPath: /docs/attributes/data-parallax/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section id="overview">
+  <h2>Subtle scroll-driven depth</h2>
+  <p>The <code>data-parallax</code> attribute applies a transform-only depth animation to a single media layer inside a section. The motion is driven by the CSS <code>view()</code> progress timeline, so it tracks the element's own travel through the viewport without scroll listeners and without JavaScript.</p>
+
+  <browser-window src="/docs/examples/demos/parallax-hero.html" url="https://vanilla-breeze.dev/parallax" title="Parallax Hero" shadow></browser-window>
+
+  <code-block language="html" label="Hero with parallax media layer" data-escape><section data-parallax-group>
+  <figure data-parallax style="--vb-parallax-to: -18%; --vb-parallax-scale: 1.08">
+    <img src="/images/hero.jpg" alt="" />
+  </figure>
+  <header>
+    <h1>Built on motion that respects readers.</h1>
+    <p>Foreground copy stays still while the figure drifts behind it.</p>
+  </header>
+</section></code-block>
+</section>
+
+<section id="api">
+  <h2>Attributes and properties</h2>
+
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-parallax</code></td><td>Applies the parallax animation to the element. Use on the media layer (a <code>&lt;figure&gt;</code>, <code>&lt;img&gt;</code>, or wrapper) — not on the section that contains it.</td></tr>
+      <tr><td><code>data-parallax-group</code></td><td>Authoring marker for the section that owns a parallax layer. Has no CSS attached this pass; reserved for future composition rules.</td></tr>
+    </tbody>
+  </table>
+
+  <table class="props-table">
+    <thead><tr><th>CSS Property</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>--vb-parallax-from</code></td><td><code>0%</code></td><td>Starting <code>translateY</code> value when the element enters the viewport.</td></tr>
+      <tr><td><code>--vb-parallax-to</code></td><td><code>-12%</code></td><td>Ending <code>translateY</code> value when the element exits.</td></tr>
+      <tr><td><code>--vb-parallax-scale</code></td><td><code>1</code></td><td>Constant scale applied to the layer. A small scale (1.05–1.1) lets the layer drift without revealing its edges.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="browser-support">
+  <h2>Browser support and fallback</h2>
+  <p>The animation requires <code>animation-timeline: view()</code>. In supporting browsers (Chrome 115+, Safari 18+, Firefox behind a flag) the layer animates. Elsewhere the layer renders at its starting transform — the static composition is the fallback, and the demo above is designed to look correct without motion.</p>
+
+  <p>The rule is wrapped in an <code>@supports</code> block, so unsupported browsers see no animation declarations at all — no flash, no JS shim, no layout shift.</p>
+</section>
+
+<section id="reduced-motion">
+  <h2>Reduced motion</h2>
+  <p>When the user has <code>prefers-reduced-motion: reduce</code> set, the animation is removed and the layer is reset to its starting transform. The motion is suppressed at the CSS level — there is no JS to bypass.</p>
+</section>
+
+<section id="guidance">
+  <h2>Guidance</h2>
+  <ul>
+    <li><strong>One layer per section.</strong> Stack-of-parallax patterns are hard to read and degrade on mobile. Reach for <a href="/docs/attributes/data-stage/"><code>data-stage</code></a> if you need richer scroll-linked storytelling.</li>
+    <li><strong>Keep the range conservative.</strong> Values past 25% start to feel disruptive and reveal layout edges. The defaults are intentionally small.</li>
+    <li><strong>Animate only <code>transform</code>.</strong> The shipped rule uses <code>transform</code> exclusively so the browser can composite the layer on the GPU. Do not extend the keyframes to animate <code>top</code>, <code>background-position</code>, or layout properties.</li>
+    <li><strong>The static layout must work.</strong> If the page only makes sense with motion, the design is too aggressive — soften it.</li>
+  </ul>
+</section>

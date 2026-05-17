@@ -1536,6 +1536,86 @@ main, article, section, aside:not(.float):not(.sidenote) {
 
 
 /* ==========================================================================
+   PARALLAX
+   Opt-in via data-parallax. Section-local, transform-only depth motion
+   driven by view-progress timeline. Tune with custom properties:
+     --vb-parallax-from   (default: 0%)
+     --vb-parallax-to     (default: -12%)
+     --vb-parallax-scale  (default: 1)
+   Use `data-parallax-group` as an authoring marker on the section that
+   contains a parallax layer; it has no CSS attached this pass.
+   ========================================================================== */
+
+@supports (animation-timeline: view()) {
+  @keyframes vb-parallax {
+    from {
+      transform:
+        translateY(var(--vb-parallax-from, 0%))
+        scale(var(--vb-parallax-scale, 1));
+    }
+    to {
+      transform:
+        translateY(var(--vb-parallax-to, -12%))
+        scale(var(--vb-parallax-scale, 1));
+    }
+  }
+
+  [data-parallax] {
+    animation: vb-parallax linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-parallax] {
+    animation: none !important;
+    transform: none;
+  }
+}
+
+
+/* ==========================================================================
+   STAGED PRESENTATION
+   Opt-in via data-stage. Two-column layout: pinned visual + sequential
+   semantic steps. Pure layout — no scroll listeners, no IntersectionObserver.
+   Copy reveal inside steps uses existing `data-animate` attributes.
+   ========================================================================== */
+
+[data-stage] {
+  display: grid;
+  gap: var(--size-l);
+  grid-template-columns: 1fr;
+}
+
+[data-stage-step] {
+  min-block-size: 60vh;
+}
+
+@media (min-width: 60rem) {
+  [data-stage] {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  [data-stage-pin] {
+    position: sticky;
+    inset-block-start: var(--size-l);
+    align-self: start;
+    max-block-size: calc(100dvh - var(--size-2xl));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-stage-pin] {
+    position: static;
+    max-block-size: none;
+  }
+}
+
+
+/* ==========================================================================
    CONTAINER QUERY EXPANSION
    Additional container-based adaptations for page regions.
    ========================================================================== */
