@@ -194,8 +194,12 @@ function checkFile(filePath) {
       lastHeadingLevel = level;
     }
 
-    // vb/icon-wc-required — Inline <svg> should use <icon-wc>
-    if (/<svg[\s>]/i.test(line) && !/<svg[^>]*role="img"/i.test(line)) {
+    // vb/icon-wc-required — Inline <svg> should use <icon-wc>.
+    // Opt-outs: role="img" (declares "this is a real image, not an icon")
+    // or aria-hidden="true" (declares "this is decorative, no AT involvement").
+    // Both signal the author knows what they're doing with this SVG; the rule
+    // is only there to nudge people away from inlining icons.
+    if (/<svg[\s>]/i.test(line) && !/<svg[^>]*role="img"/i.test(line) && !/<svg[^>]*aria-hidden="true"/i.test(line)) {
       issues.push({
         line: lineNum,
         col: line.indexOf('<svg') + 1,
