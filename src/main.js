@@ -23,6 +23,11 @@ if (document.querySelector('[data-paged]')) import('./utils/data-paged-init.js')
 if (document.querySelector('[data-sortable], [data-sort-target]')) import('./utils/data-sortable-init.js');
 // Lazy-load attribute-toggle upscale when [data-toggle] is present
 if (document.querySelector('[data-toggle]')) import('./utils/data-toggle-init.js');
+// Lazy-load the rel-aware link enhancer only when there's an outbound
+// _blank link on the page — the only thing it auto-upgrades. The
+// exported helpers (collectLinksByRel, upgradeBlankTargets) are still
+// importable on demand from anywhere.
+if (document.querySelector('a[target="_blank"]')) import('./utils/links-init.js');
 // Lazy-load loading button enhancement only when [data-loading] is on a button
 if (document.querySelector('button[data-loading]')) import('./utils/loading-button-init.js');
 // Lazy-load floating label only when [data-floating-label] is present
