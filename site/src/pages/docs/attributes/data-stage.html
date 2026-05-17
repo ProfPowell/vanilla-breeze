@@ -46,7 +46,7 @@ crumbLabel: Data Attributes
       <tr><td><code>data-stage</code></td><td>Container. Sets up a two-column grid on viewports ≥ 60rem; collapses to a single column below that.</td></tr>
       <tr><td><code>data-stage-pin</code></td><td>The visual that stays in view. Pinned with <code>position: sticky</code> on wide viewports; released to static flow on narrow viewports and under reduced motion.</td></tr>
       <tr><td><code>data-stage-steps</code></td><td>Authoring marker for the column that holds the step sections. Carries no CSS this pass; reserved for future composition.</td></tr>
-      <tr><td><code>data-stage-step</code></td><td>One narrative step. Receives <code>min-block-size: 60vh</code> so the pinned visual always has scroll room between steps.</td></tr>
+      <tr><td><code>data-stage-step</code></td><td>One narrative step. Receives <code>min-block-size: 60vh</code> as a floor so the pinned visual always has scroll room. For scrollytelling, override with <code>min-block-size: 100vh</code> per step so each step occupies roughly one viewport — that's what gives the pin time to read as anchored while the narrative progresses.</td></tr>
     </tbody>
   </table>
 </section>
@@ -83,5 +83,6 @@ crumbLabel: Data Attributes
     <li><strong>Don't trap the reader.</strong> Each step should make sense on its own. If the next step depends on a state set by motion, the design is over-reaching what the pattern supports.</li>
     <li><strong>Use <code>scroll-margin-block-start</code> on step headings.</strong> Anchor links into a staged section should land below any sticky UI above the stage, not under it.</li>
     <li><strong>This is layout, not an engine.</strong> If you find yourself reaching for active-step state tracking or scroll-progress events, step back and verify whether the layout alone solves the problem first.</li>
+    <li><strong>Top-anchor step content.</strong> Avoid <code>display: grid; align-content: center</code> on the step container — vertically centering short copy inside a tall step box creates a long dead gap between the end of one step and the start of the next. Let copy sit at the top of each step and use the remaining height as the pin's scroll runway.</li>
   </ul>
 </section>
