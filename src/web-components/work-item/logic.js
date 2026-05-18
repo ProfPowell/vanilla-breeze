@@ -236,20 +236,20 @@ class WorkItem extends HTMLElement {
       if (data[jsonKey] != null) this.setAttribute(attr, String(data[jsonKey]));
     }
     if (data.storyIds) {
-      this.setAttribute('story-ids', Array.isArray(data.storyIds) ? data.storyIds.join(',') : data.storyIds);
+      this.setAttribute('story-ids', Array.isArray(data.storyIds) ? data.storyIds.join(',') : String(data.storyIds));
     }
 
     if (data.title && !this.querySelector('[slot="title"]')) {
       const el = document.createElement('h3');
       el.slot = 'title';
-      el.textContent = data.title;
+      el.textContent = String(data.title);
       this.appendChild(el);
     }
     for (const key of ['description', 'notes']) {
       if (data[key] && !this.querySelector(`[slot="${key}"]`)) {
         const el = document.createElement('p');
         el.slot = key;
-        el.textContent = data[key];
+        el.textContent = String(data[key]);
         this.appendChild(el);
       }
     }
@@ -259,7 +259,7 @@ class WorkItem extends HTMLElement {
       const items = Array.isArray(data.checklist) ? data.checklist : [data.checklist];
       for (const item of items) {
         const li = document.createElement('li');
-        li.textContent = item;
+        li.textContent = String(item);
         ul.appendChild(li);
       }
       this.appendChild(ul);
@@ -270,7 +270,8 @@ class WorkItem extends HTMLElement {
 
   async _loadSrc(url) {
     if (!url) return;
-    this.shadowRoot.innerHTML = `<style>${styles}</style><div class="state-msg">Loading\u2026</div>`;
+    const root = /** @type {ShadowRoot} */ (this.shadowRoot);
+    root.innerHTML = `<style>${styles}</style><div class="state-msg">Loading\u2026</div>`;
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -278,14 +279,15 @@ class WorkItem extends HTMLElement {
       this._applyData(data);
       this.#render();
     } catch (err) {
-      this.shadowRoot.innerHTML = `<style>${styles}</style>` +
-        `<div class="state-msg state-msg--error">Could not load: ${esc(err.message)}</div>`;
+      root.innerHTML = `<style>${styles}</style>` +
+        `<div class="state-msg state-msg--error">Could not load: ${esc(/** @type {Error} */ (err).message)}</div>`;
     }
   }
 
   /* ── Render ────────────────────────────────────── */
 
   #render() {
+    const root = /** @type {ShadowRoot} */ (this.shadowRoot);
     const priorityInfo = PRIORITIES[this.priority] || PRIORITIES.medium;
     const statusInfo = STATUSES[this.status] || STATUSES.backlog;
     const type = this.itemType;
@@ -294,7 +296,7 @@ class WorkItem extends HTMLElement {
     const ariaLabel = this.itemId ? `Work item: ${esc(this.itemId)}` : 'Work item';
 
     if (level === 'minimal') {
-      this.shadowRoot.innerHTML = `<style>${styles}</style>
+      root.innerHTML = `<style>${styles}</style>
         <article class="wi-card wi-card--minimal" role="article" aria-label="${ariaLabel}"
           tabindex="0">
           <div class="wi-body">
@@ -310,7 +312,7 @@ class WorkItem extends HTMLElement {
       return;
     }
 
-    this.shadowRoot.innerHTML = `<style>${styles}</style>
+    root.innerHTML = `<style>${styles}</style>
       <article class="wi-card wi-card--${level}" role="article" aria-label="${ariaLabel}">
 
         <header class="wi-header">
@@ -386,7 +388,7 @@ class WorkItem extends HTMLElement {
 
     // Compact: mark empty slot sections
     if (level === 'compact') {
-      for (const section of this.shadowRoot.querySelectorAll('.wi-section')) {
+      for (const section of root.querySelectorAll('.wi-section')) {
         const slot = section.querySelector('slot');
         if (slot && slot.assignedNodes().length === 0) {
           section.setAttribute('data-empty', '');

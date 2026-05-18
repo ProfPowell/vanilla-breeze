@@ -106,9 +106,9 @@ class BreakpointSpecimen extends VBElement {
     `;
 
     this.innerHTML = `${labelHTML}${readoutHTML}${rulerHTML}${tableHTML}`;
-    this.#widthEl = this.querySelector('.bps-width');
-    this.#activeEl = this.querySelector('.bps-active');
-    this.#cursorEl = this.querySelector('[data-cursor]');
+    this.#widthEl = /** @type {HTMLElement | null} */ (this.querySelector('.bps-width'));
+    this.#activeEl = /** @type {HTMLElement | null} */ (this.querySelector('.bps-active'));
+    this.#cursorEl = /** @type {HTMLElement | null} */ (this.querySelector('[data-cursor]'));
   }
 
   #start() {
@@ -134,7 +134,7 @@ class BreakpointSpecimen extends VBElement {
   }
 
   #update(width) {
-    if (!this.#widthEl) return;
+    if (!this.#widthEl || !this.#activeEl) return;
     this.#widthEl.textContent = `${Math.round(width)}px`;
     const active = this.#activeFor(width);
     this.#activeEl.textContent = active ? active.name : 'base';
@@ -168,11 +168,16 @@ class BreakpointSpecimen extends VBElement {
     return n;
   }
 
+  /** @type {Array<{name: string, raw: string, px: number}>} */
   #stops = [];
   #max = 1;
+  /** @type {ResizeObserver | null} */
   #ro = null;
+  /** @type {HTMLElement | null} */
   #widthEl = null;
+  /** @type {HTMLElement | null} */
   #activeEl = null;
+  /** @type {HTMLElement | null} */
   #cursorEl = null;
 }
 

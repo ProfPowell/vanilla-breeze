@@ -44,9 +44,11 @@ class ContextMenuWc extends VBElement {
   /** @type {Array<() => void>} */ #unbindFns = [];
 
   setup() {
-    this.#trigger = this.querySelector(':scope > [data-trigger]');
-    this.#menu = this.querySelector('menu, ul[role="menu"]');
-    if (!this.#trigger || !this.#menu) return false;
+    const trigger = /** @type {HTMLElement | null} */ (this.querySelector(':scope > [data-trigger]'));
+    const menu = /** @type {HTMLElement | null} */ (this.querySelector('menu, ul[role="menu"]'));
+    if (!trigger || !menu) return false;
+    this.#trigger = trigger;
+    this.#menu = menu;
 
     /* Compose pop-over: wrap the menu in an auto-mode pop-over so the
        browser handles outside-click / Escape dismissal in the top layer.
@@ -81,9 +83,9 @@ class ContextMenuWc extends VBElement {
     });
 
     // Collect menu items
-    this.#items = Array.from(
-      this.#menu.querySelectorAll('button, a, [role="menuitem"]')
-    ).filter(item => !item.disabled && !item.hasAttribute('data-disabled'));
+    this.#items = /** @type {HTMLElement[]} */ (
+      Array.from(this.#menu.querySelectorAll('button, a, [role="menuitem"]'))
+    ).filter(item => !(/** @type {any} */ (item)).disabled && !item.hasAttribute('data-disabled'));
 
     this.#items.forEach(item => {
       item.setAttribute('role', 'menuitem');
@@ -101,7 +103,7 @@ class ContextMenuWc extends VBElement {
         item.appendChild(kbd);
 
         const unbind = bindHotkey(shortcut, () => item.click());
-        this.#unbindFns.push(unbind);
+        this.#unbindFns.push(/** @type {() => void} */ (unbind));
       }
     });
 
@@ -115,6 +117,7 @@ class ContextMenuWc extends VBElement {
 
     // Sync state when pop-over dismisses natively (outside click / Escape).
     this.listen(this.#popover, 'pop-over:hide', this.#handlePopoverHide);
+    return true;
   }
 
   teardown() {
@@ -143,7 +146,7 @@ class ContextMenuWc extends VBElement {
         value: action.getAttribute('data-value') || undefined,
         href: action.tagName === 'A' ? action.getAttribute('href') : undefined,
         shortcut: action.getAttribute('data-shortcut') || undefined,
-        disabled: action.disabled || action.hasAttribute('data-disabled') || undefined,
+        disabled: /** @type {any} */ (action).disabled || action.hasAttribute('data-disabled') || undefined,
       });
     }
     return result;
@@ -173,7 +176,7 @@ class ContextMenuWc extends VBElement {
         if (entry.value) action.setAttribute('data-value', entry.value);
         if (entry.shortcut) action.setAttribute('data-shortcut', entry.shortcut);
         if (entry.disabled) {
-          if (action.tagName === 'BUTTON') action.disabled = true;
+          if (action.tagName === 'BUTTON') /** @type {HTMLButtonElement} */ (action).disabled = true;
           else action.setAttribute('data-disabled', '');
         }
         action.textContent = entry.label || '';
