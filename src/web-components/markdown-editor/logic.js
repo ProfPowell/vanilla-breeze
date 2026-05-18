@@ -45,8 +45,8 @@ class MarkdownEditor extends VBElement {
   #previewPane = null;
   /** @type {string} Last committed value for change detection */
   #lastValue = '';
-  /** @type {number} Debounce timer for preview updates */
-  #debounceTimer = 0;
+  /** @type {ReturnType<typeof setTimeout> | null} Debounce timer for preview updates */
+  #debounceTimer = null;
 
   static get observedAttributes() {
     return ['name', 'placeholder', 'rows'];
@@ -60,7 +60,7 @@ class MarkdownEditor extends VBElement {
   }
 
   teardown() {
-    clearTimeout(this.#debounceTimer);
+    if (this.#debounceTimer !== null) clearTimeout(this.#debounceTimer);
     this.removeAttribute('data-editing');
   }
 
@@ -124,7 +124,7 @@ class MarkdownEditor extends VBElement {
     this.#textarea.value = initialValue;
     this.#textarea.name = this.getAttribute('name') || '';
     this.#textarea.placeholder = this.getAttribute('placeholder') || 'Write markdown here...';
-    this.#textarea.rows = parseInt(this.getAttribute('rows'), 10) || 10;
+    this.#textarea.rows = parseInt(this.getAttribute('rows') ?? '', 10) || 10;
     this.#textarea.setAttribute('spellcheck', 'true');
 
     // Create viewer
@@ -133,7 +133,7 @@ class MarkdownEditor extends VBElement {
       this.#viewer.setAttribute('highlight', '');
     }
     const theme = this.dataset.theme
-      ?? this.closest('[data-theme]')?.dataset.theme;
+      ?? /** @type {HTMLElement | null} */ (this.closest('[data-theme]'))?.dataset.theme;
     if (theme) this.#viewer.dataset.theme = theme;
 
     // Assemble
@@ -151,31 +151,35 @@ class MarkdownEditor extends VBElement {
   // ── Event binding ───────────────────────────────────────────
 
   #bindEvents() {
-    this.listen(this.#textarea, 'input', () => {
-      this.#emit('markdown-editor:input', { value: this.#textarea.value });
+    const textarea = this.#textarea;
+    if (!textarea) return;
+
+    this.listen(textarea, 'input', () => {
+      this.#emit('markdown-editor:input', { value: textarea.value });
       this.#schedulePreview();
     });
 
-    this.listen(this.#textarea, 'focus', () => {
+    this.listen(textarea, 'focus', () => {
       this.setAttribute('data-editing', '');
     });
 
-    this.listen(this.#textarea, 'blur', () => {
+    this.listen(textarea, 'blur', () => {
       this.removeAttribute('data-editing');
-      if (this.#textarea.value !== this.#lastValue) {
-        this.#lastValue = this.#textarea.value;
-        this.#emit('markdown-editor:change', { value: this.#textarea.value });
+      if (textarea.value !== this.#lastValue) {
+        this.#lastValue = textarea.value;
+        this.#emit('markdown-editor:change', { value: textarea.value });
       }
     });
 
     // Tab key inserts spaces instead of moving focus (opt-in via data-tab-indent)
     if (this.hasAttribute('data-tab-indent')) {
-      this.listen(this.#textarea, 'keydown', (e) => {
-        if (e.key === 'Tab' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-          e.preventDefault();
-          const { selectionStart, selectionEnd } = this.#textarea;
-          this.#textarea.setRangeText('  ', selectionStart, selectionEnd, 'end');
-          this.#textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      this.listen(textarea, 'keydown', (/** @type {Event} */ e) => {
+        const ke = /** @type {KeyboardEvent} */ (e);
+        if (ke.key === 'Tab' && !ke.shiftKey && !ke.ctrlKey && !ke.metaKey) {
+          ke.preventDefault();
+          const { selectionStart, selectionEnd } = textarea;
+          textarea.setRangeText('  ', selectionStart, selectionEnd, 'end');
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
         }
       });
     }
@@ -184,7 +188,7 @@ class MarkdownEditor extends VBElement {
   // ── Preview update ──────────────────────────────────────────
 
   #schedulePreview() {
-    clearTimeout(this.#debounceTimer);
+    if (this.#debounceTimer !== null) clearTimeout(this.#debounceTimer);
     this.#debounceTimer = setTimeout(() => this.#updatePreview(), 150);
   }
 
@@ -200,7 +204,7 @@ class MarkdownEditor extends VBElement {
     }
 
     // Feed markdown to viewer via a script slot (hidden, no fallback needed)
-    let script = this.#viewer.querySelector('script[type="text/markdown"]');
+    let script = /** @type {HTMLScriptElement | null} */ (this.#viewer.querySelector('script[type="text/markdown"]'));
     if (!script) {
       script = document.createElement('script');
       script.type = 'text/markdown';
@@ -210,7 +214,7 @@ class MarkdownEditor extends VBElement {
 
     // Trigger re-render
     this.#viewer.removeAttribute('data-rendered');
-    this.#viewer.render();
+    /** @type {any} */ (this.#viewer).render?.();
   }
 
   // ── Events ──────────────────────────────────────────────────

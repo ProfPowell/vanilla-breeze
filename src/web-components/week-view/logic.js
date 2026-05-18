@@ -34,7 +34,8 @@ function toISO(d) {
 }
 
 class WeekView extends VBElement {
-  #table;
+  /** @type {HTMLTableElement | null} */
+  #table = null;
 
   setup() {
     this.#table = this.querySelector('table');
@@ -45,7 +46,8 @@ class WeekView extends VBElement {
 
     // Click delegation
     this.listen(this.#table, 'click', (e) => {
-      const event = e.target.closest('calendar-event');
+      const target = /** @type {Element | null} */ (e.target);
+      const event = /** @type {HTMLElement | null} */ (target?.closest('calendar-event'));
       if (!event) return;
       const tr = event.closest('tr');
       const hourTime = tr?.querySelector('th time[datetime]');
@@ -55,7 +57,7 @@ class WeekView extends VBElement {
           date: event.dataset.date,
           time: event.querySelector('time[datetime]')?.getAttribute('datetime')
             || hourTime?.getAttribute('datetime'),
-          text: event.textContent.trim(),
+          text: event.textContent?.trim() ?? '',
           element: event,
           category: event.dataset.category,
           duration: event.dataset.duration,
@@ -68,11 +70,12 @@ class WeekView extends VBElement {
 
     const firstEvent = this.#table.querySelector('calendar-event');
     if (firstEvent) firstEvent.setAttribute('tabindex', '0');
+    return true;
   }
 
   teardown() {
     this.querySelectorAll('calendar-event.wv-spanning').forEach(el => {
-      el.style.cssText = '';
+      /** @type {HTMLElement} */ (el).style.cssText = '';
       el.classList.remove('wv-spanning');
     });
   }
@@ -90,13 +93,16 @@ class WeekView extends VBElement {
    * `{ date, time, text, category?, duration? }`.
    */
   get events() {
-    return [...this.querySelectorAll('calendar-event')].map(el => ({
-      date: el.dataset.date || undefined,
-      time: el.querySelector('time[datetime]')?.getAttribute('datetime') || undefined,
-      text: el.textContent.trim(),
-      category: el.dataset.category || undefined,
-      duration: el.dataset.duration || undefined,
-    }));
+    return [...this.querySelectorAll('calendar-event')].map((/** @type {Element} */ rawEl) => {
+      const el = /** @type {HTMLElement} */ (rawEl);
+      return {
+        date: el.dataset.date || undefined,
+        time: el.querySelector('time[datetime]')?.getAttribute('datetime') || undefined,
+        text: el.textContent?.trim() ?? '',
+        category: el.dataset.category || undefined,
+        duration: el.dataset.duration || undefined,
+      };
+    });
   }
 
   /**
@@ -157,13 +163,15 @@ class WeekView extends VBElement {
     const eventMap = new Map();
     const allHours = new Set();
 
-    events.forEach(evt => {
+    events.forEach((/** @type {Element} */ rawEvt) => {
+      const evt = /** @type {HTMLElement} */ (rawEvt);
       const date = evt.dataset.date;
       if (!date || !dateISOs.includes(date)) return;
 
       const timeEl = evt.querySelector('time[datetime]');
       if (!timeEl) return;
       const dt = timeEl.getAttribute('datetime');
+      if (!dt) return;
       const parts = dt.split(':');
       const hour = parseInt(parts[0], 10);
       const min = parseInt(parts[1] || '0', 10);
@@ -183,17 +191,17 @@ class WeekView extends VBElement {
     const autoRange = this.dataset.startHour === 'auto' || !this.dataset.startHour;
     const startH = autoRange
       ? (sortedHours.length > 0 ? Math.max(0, sortedHours[0] - 1) : 7)
-      : parseInt(this.dataset.startHour, 10);
+      : parseInt(this.dataset.startHour ?? '', 10);
     const endH = autoRange
       ? (sortedHours.length > 0 ? Math.min(23, sortedHours[sortedHours.length - 1] + 1) : 19)
       : parseInt(this.dataset.endHour || '19', 10);
 
     // Locale formatting
-    const locale = this.closest('[lang]')?.lang || navigator.language;
+    const locale = /** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language;
     const dayFmt = new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric' });
     const hourFmt = new Intl.DateTimeFormat(locale, { hour: 'numeric' });
 
-    this.style.setProperty('--wv-days', numDays);
+    this.style.setProperty('--wv-days', String(numDays));
 
     // Build <table>
     const table = document.createElement('table');
@@ -256,7 +264,7 @@ class WeekView extends VBElement {
   }
 
   #positionSpanningEvents() {
-    const tbody = this.#table.querySelector('tbody');
+    const tbody = this.#table?.querySelector('tbody');
     if (!tbody) return;
 
     const spanningEvents = tbody.querySelectorAll('calendar-event[data-duration]');
@@ -266,11 +274,14 @@ class WeekView extends VBElement {
       const tbodyRect = tbody.getBoundingClientRect();
 
       // Measure row positions
+      /** @type {Map<number, {top: number, height: number}>} */
       const rowMeasures = new Map();
       tbody.querySelectorAll(':scope > tr').forEach(tr => {
         const timeEl = tr.querySelector('th time[datetime]');
         if (!timeEl) return;
-        const hour = parseInt(timeEl.getAttribute('datetime').split(':')[0], 10);
+        const dt = timeEl.getAttribute('datetime');
+        if (!dt) return;
+        const hour = parseInt(dt.split(':')[0], 10);
         const rect = tr.getBoundingClientRect();
         rowMeasures.set(hour, {
           top: rect.top - tbodyRect.top,
@@ -278,16 +289,19 @@ class WeekView extends VBElement {
         });
       });
 
-      spanningEvents.forEach(event => {
+      spanningEvents.forEach((/** @type {Element} */ rawEvent) => {
+        const event = /** @type {HTMLElement} */ (rawEvent);
         const td = event.closest('td');
         const tr = td?.closest('tr');
         if (!td || !tr) return;
 
         const timeEl = tr.querySelector('th time[datetime]');
-        const startHour = parseInt(timeEl?.getAttribute('datetime')?.split(':')[0], 10);
+        const dt = timeEl?.getAttribute('datetime');
+        if (!dt) return;
+        const startHour = parseInt(dt.split(':')[0], 10);
         const startMin = parseInt(event.dataset.start || '0', 10);
 
-        const dur = event.dataset.duration;
+        const dur = event.dataset.duration ?? '';
         let durationMinutes = 60;
         const hMatch = dur.match(/(\d+)h/);
         const mMatch = dur.match(/(\d+)m/);
@@ -315,39 +329,44 @@ class WeekView extends VBElement {
   }
 
   #setupKeyboardNav() {
-    this.listen(this.#table, 'keydown', (e) => {
-      if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    const table = this.#table;
+    if (!table) return;
+    this.listen(table, 'keydown', (/** @type {Event} */ e) => {
+      const ke = /** @type {KeyboardEvent} */ (e);
+      if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(ke.key)) return;
 
-      const current = e.target.closest('calendar-event');
+      const eventTarget = /** @type {Element | null} */ (ke.target);
+      const current = eventTarget?.closest('calendar-event');
       if (!current) return;
 
       const td = current.closest('td');
       const tr = td?.closest('tr');
-      if (!td || !tr) return;
+      if (!td || !tr || !tr.parentElement) return;
 
       const rows = [...tr.parentElement.children];
       const rowIdx = rows.indexOf(tr);
       const cells = [...tr.children];
       const colIdx = cells.indexOf(td);
 
+      /** @type {Element | null} */
       let target = null;
 
-      if (e.key === 'ArrowDown') {
+      if (ke.key === 'ArrowDown') {
         for (let r = rowIdx + 1; r < rows.length; r++) {
           const evt = rows[r].children[colIdx]?.querySelector('calendar-event');
           if (evt) { target = evt; break; }
         }
-      } else if (e.key === 'ArrowUp') {
+      } else if (ke.key === 'ArrowUp') {
         for (let r = rowIdx - 1; r >= 0; r--) {
           const evt = rows[r].children[colIdx]?.querySelector('calendar-event');
           if (evt) { target = evt; break; }
         }
-      } else if (e.key === 'ArrowRight') {
+      } else if (ke.key === 'ArrowRight') {
         for (let c = colIdx + 1; c < cells.length; c++) {
           const evt = cells[c]?.querySelector('calendar-event');
           if (evt) { target = evt; break; }
         }
-      } else if (e.key === 'ArrowLeft') {
+      } else if (ke.key === 'ArrowLeft') {
         for (let c = colIdx - 1; c >= 1; c--) {
           const evt = cells[c]?.querySelector('calendar-event');
           if (evt) { target = evt; break; }
@@ -355,10 +374,10 @@ class WeekView extends VBElement {
       }
 
       if (target) {
-        e.preventDefault();
+        ke.preventDefault();
         target.setAttribute('tabindex', '0');
         current.setAttribute('tabindex', '-1');
-        target.focus();
+        /** @type {HTMLElement} */ (target).focus();
       }
     });
   }
