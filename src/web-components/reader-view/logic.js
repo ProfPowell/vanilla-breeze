@@ -29,7 +29,8 @@ class ReaderView extends VBElement {
   #ro         = /** @type {ResizeObserver | null} */ (null)
 
   #programmaticScroll = false
-  #snapTimer = 0
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  #snapTimer = null
   #built = false
   #boundKeydown = /** @type {((e: KeyboardEvent) => void) | null} */ (null)
   #viewportHandler = /** @type {(() => void) | null} */ (null)
@@ -61,7 +62,7 @@ class ReaderView extends VBElement {
     this.#ro?.disconnect();
     this.#ro = null;
     this.removeAttribute('upgraded');
-    clearTimeout(this.#snapTimer);
+    if (this.#snapTimer !== null) clearTimeout(this.#snapTimer);
     activePagedInstances.delete(this);
   }
 
@@ -196,14 +197,16 @@ class ReaderView extends VBElement {
   // ── Columns wrapper ───────────────────────────────────────────
 
   #ensureColumnsWrapper() {
+    const scroller = this.#scroller;
+    if (!scroller) return;
     // Check inside scroller for existing layout-columns
-    this.#columns = this.#scroller.querySelector(':scope > layout-columns');
+    this.#columns = /** @type {HTMLElement | null} */ (scroller.querySelector(':scope > layout-columns'));
     if (this.#columns) return;
 
-    const wrapper = document.createElement('layout-columns');
-    const children = [...this.#scroller.children];
+    const wrapper = /** @type {HTMLElement} */ (document.createElement('layout-columns'));
+    const children = [...scroller.children];
     children.forEach(child => wrapper.appendChild(child));
-    this.#scroller.appendChild(wrapper);
+    scroller.appendChild(wrapper);
     this.#columns = wrapper;
   }
 
@@ -215,6 +218,11 @@ class ReaderView extends VBElement {
     this.setAttribute('mode', mode);
 
     const isPages = mode === 'pages';
+    const scroller = this.#scroller;
+    const pager = this.#pager;
+    const columns = this.#columns;
+    const pageNav = this.#pageNav;
+    if (!scroller || !pager || !columns || !pageNav) return;
 
     if (isPages) {
       // Enforce single active paged instance
@@ -224,10 +232,10 @@ class ReaderView extends VBElement {
       activePagedInstances.add(this);
 
       // Move columns into pager
-      this.#pager.appendChild(this.#columns);
-      this.#pager.style.display = 'block';
-      this.#scroller.style.display = 'none';
-      this.#pageNav.style.display = 'flex';
+      pager.appendChild(columns);
+      pager.style.display = 'block';
+      scroller.style.display = 'none';
+      pageNav.style.display = 'flex';
 
       this.#applyColumnCount();
       this.#applyFontSizeToColumns();
@@ -238,18 +246,18 @@ class ReaderView extends VBElement {
       activePagedInstances.delete(this);
 
       // Move columns back into scroller
-      this.#scroller.appendChild(this.#columns);
-      this.#pager.style.display = 'none';
-      this.#scroller.style.display = '';
-      this.#pageNav.style.display = 'none';
+      scroller.appendChild(columns);
+      pager.style.display = 'none';
+      scroller.style.display = '';
+      pageNav.style.display = 'none';
 
       // Reset pager overrides on columns
-      this.#columns.style.removeProperty('column-count');
-      this.#columns.style.removeProperty('column-width');
+      columns.style.removeProperty('column-count');
+      columns.style.removeProperty('column-width');
 
       requestAnimationFrame(() => {
-        const max = this.#scroller.scrollHeight - this.#scroller.clientHeight;
-        this.#scroller.scrollTop = max > 0 ? anchorRatio * max : 0;
+        const max = scroller.scrollHeight - scroller.clientHeight;
+        scroller.scrollTop = max > 0 ? anchorRatio * max : 0;
         this.#updateScrollProgress();
       });
     }
@@ -271,6 +279,7 @@ class ReaderView extends VBElement {
 
   #applyColumnCount() {
     const count = this.#resolveColumnCount();
+    if (!this.#columns) return;
     this.#columns.style.setProperty('column-count', String(count));
     this.#columns.style.setProperty('column-width', 'auto');
     this.setAttribute('columns', this.#columnMode);
@@ -282,6 +291,7 @@ class ReaderView extends VBElement {
     if (this.#mode !== 'pages') return;
 
     const pager = this.#pager;
+    if (!pager) return;
     const width = pager.clientWidth || 1;
     const scrollWidth = pager.scrollWidth;
     const maxScroll = Math.max(0, scrollWidth - width);
@@ -314,7 +324,7 @@ class ReaderView extends VBElement {
     const left = this.#pageStops[this.#page] ?? 0;
     this.#programmaticScroll = true;
     const useSmoothScroll = smooth && !this.#prefersReducedMotion();
-    this.#pager.scrollTo({
+    this.#pager?.scrollTo({
       left,
       behavior: useSmoothScroll ? 'smooth' : 'instant'
     });
@@ -416,7 +426,8 @@ class ReaderView extends VBElement {
 
   #bindActions() {
     this.addEventListener('click', e => {
-      const el = e.target.closest('[data-reader-action]');
+      const target = /** @type {Element | null} */ (e.target);
+      const el = /** @type {HTMLElement | null} */ (target?.closest('[data-reader-action]'));
       if (!el) return;
       const action = el.dataset.readerAction;
       switch (action) {
@@ -444,22 +455,24 @@ class ReaderView extends VBElement {
     });
 
     // Scroll progress
-    this.#scroller.addEventListener('scroll',
+    this.#scroller?.addEventListener('scroll',
       () => this.#updateScrollProgress(), { passive: true });
 
     // Pager scroll snap correction
-    this.#pager.addEventListener('scroll', () => {
+    this.#pager?.addEventListener('scroll', () => {
       if (this.#mode !== 'pages') return;
-      const next = this.#findNearestPage(this.#pager.scrollLeft);
+      const pager = this.#pager;
+      if (!pager) return;
+      const next = this.#findNearestPage(pager.scrollLeft);
       if (next !== this.#page) {
         this.#page = next;
         this.#updateHUD();
       }
       if (this.#programmaticScroll) return;
-      clearTimeout(this.#snapTimer);
+      if (this.#snapTimer !== null) clearTimeout(this.#snapTimer);
       this.#snapTimer = setTimeout(() => {
         this.#scrollToPage(
-          this.#findNearestPage(this.#pager.scrollLeft), false
+          this.#findNearestPage(pager.scrollLeft), false
         );
       }, ReaderView.SNAP_DELAY);
     }, { passive: true });
@@ -508,7 +521,7 @@ class ReaderView extends VBElement {
         this.#updateScrollProgress();
       }
     });
-    this.#ro.observe(this.#pager);
+    if (this.#pager) this.#ro.observe(this.#pager);
   }
 
   // ── Viewport ──────────────────────────────────────────────────
@@ -582,8 +595,8 @@ class ReaderView extends VBElement {
 
     // Column buttons
     this.querySelectorAll('[data-reader-action="set-columns"]')
-      .forEach(btn => {
-        const active = btn.dataset.readerValue === this.#columnMode;
+      .forEach((/** @type {Element} */ btn) => {
+        const active = /** @type {HTMLElement} */ (btn).dataset.readerValue === this.#columnMode;
         btn.setAttribute('data-reader-state', active ? 'active' : '');
       });
 

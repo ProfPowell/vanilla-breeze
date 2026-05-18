@@ -66,6 +66,7 @@ class Roadmap extends VBElement {
     }
     this.#sourceLanes = lanes;
     this.#render();
+    return true;
   }
 
   attributeChangedCallback() {
@@ -79,7 +80,7 @@ class Roadmap extends VBElement {
       if (!this.#sourceLanes.includes(c)) c.remove();
     });
     /* Move source lanes out of the host so they don't display directly. */
-    this.#sourceLanes.forEach((lane) => { lane.hidden = true; });
+    this.#sourceLanes.forEach((lane) => { /** @type {HTMLElement} */ (lane).hidden = true; });
 
     const wrapper = document.createElement('div');
     wrapper.className = 'rm-wrapper';
@@ -125,7 +126,7 @@ class Roadmap extends VBElement {
 
     wrapper.appendChild(lanesEl);
 
-    if (this.hasAttribute('today-marker')) {
+    if (this.hasAttribute('today-marker') && this.#start && this.#end) {
       const today = new Date();
       if (today >= this.#start && today <= this.#end) {
         const marker = document.createElement('div');
@@ -158,7 +159,7 @@ class Roadmap extends VBElement {
   #buildBar(initiative, laneName) {
     const start = Roadmap.#parseDate(initiative.getAttribute('data-start'), 'start');
     const end   = Roadmap.#parseDate(initiative.getAttribute('data-end'),   'end');
-    if (!start || !end) return null;
+    if (!start || !end || !this.#start || !this.#end) return null;
 
     /* Clip to visible range. */
     const clipStart = start < this.#start ? this.#start : start;
@@ -218,8 +219,10 @@ class Roadmap extends VBElement {
 
       /* HTML5 DnD for cross-lane drops. */
       bar.addEventListener('dragstart', (e) => {
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', initiative.id || bar.dataset.sourceId || '');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', initiative.id || bar.dataset.sourceId || '');
+        }
         this.#draggingInitiative = initiative;
         this.#draggingFromLane = laneName;
       });
@@ -301,8 +304,10 @@ class Roadmap extends VBElement {
     bar.style.setProperty('--rm-w', snappedW.toFixed(4));
 
     /* Mirror back to the source <article> so the author's data is updated. */
-    initiative.setAttribute('data-start', bar.dataset.start);
-    initiative.setAttribute('data-end',   bar.dataset.end);
+    if (initiative) {
+      initiative.setAttribute('data-start', bar.dataset.start ?? '');
+      initiative.setAttribute('data-end',   bar.dataset.end ?? '');
+    }
 
     this.dispatchEvent(new CustomEvent(kind === 'move' ? 'product-roadmap:reschedule' : 'product-roadmap:resize', {
       bubbles: true,
@@ -353,12 +358,14 @@ class Roadmap extends VBElement {
 
   /* --- date math --- */
   #fractionFor(date) {
+    if (!this.#start) return 0;
     const ms = date.getTime() - this.#start.getTime();
     return Math.max(0, Math.min(1, ms / this.#totalMs));
   }
 
   #dateForFraction(frac) {
-    return new Date(this.#start.getTime() + frac * this.#totalMs);
+    const start = this.#start ?? new Date();
+    return new Date(start.getTime() + frac * this.#totalMs);
   }
 
   #snapDate(date) {
@@ -373,22 +380,25 @@ class Roadmap extends VBElement {
 
   #enumerateTicks() {
     const ticks = [];
+    const start = this.#start;
+    const end = this.#end;
+    if (!start || !end) return ticks;
     if (this.#view === 'quarter') {
-      let cursor = this.#snapDate(this.#start);
-      while (cursor < this.#end) {
+      let cursor = this.#snapDate(start);
+      while (cursor < end) {
         const next = new Date(cursor.getFullYear(), cursor.getMonth() + 3, 1);
-        const startFraction = this.#fractionFor(cursor < this.#start ? this.#start : cursor);
-        const endFraction   = this.#fractionFor(next > this.#end ? this.#end : next);
+        const startFraction = this.#fractionFor(cursor < start ? start : cursor);
+        const endFraction   = this.#fractionFor(next > end ? end : next);
         const q = Math.floor(cursor.getMonth() / 3) + 1;
         ticks.push({ startFraction, endFraction, label: `Q${q} ${cursor.getFullYear()}` });
         cursor = next;
       }
     } else {
-      let cursor = new Date(this.#start.getFullYear(), this.#start.getMonth(), 1);
-      while (cursor < this.#end) {
+      let cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+      while (cursor < end) {
         const next = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
-        const startFraction = this.#fractionFor(cursor < this.#start ? this.#start : cursor);
-        const endFraction   = this.#fractionFor(next > this.#end ? this.#end : next);
+        const startFraction = this.#fractionFor(cursor < start ? start : cursor);
+        const endFraction   = this.#fractionFor(next > end ? end : next);
         const m = cursor.toLocaleString(undefined, { month: 'short' });
         ticks.push({ startFraction, endFraction, label: `${m} ${cursor.getFullYear()}` });
         cursor = next;
@@ -437,8 +447,11 @@ class Roadmap extends VBElement {
   #sourceLanes = [];
   /** @type {HTMLElement | null} */
   #wrapper = null;
+  /** @type {{ kind: string, bar: HTMLElement, initiative?: Element, trackRect: DOMRect, startX: number, startFraction: number, widthFraction: number } | null} */
   #dragInfo = null;
+  /** @type {Element | null} */
   #draggingInitiative = null;
+  /** @type {Element | null} */
   #draggingFromLane = null;
 }
 

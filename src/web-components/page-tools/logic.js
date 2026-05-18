@@ -35,10 +35,14 @@ let idCounter = 0;
 
 class PageTools extends VBElement {
 
+  /** @type {HTMLButtonElement | null} */
   #fab = null;
+  /** @type {HTMLElement | null} */
   #popover = null;
+  /** @type {MediaQueryList | null} */
   #mql = null;
   #collapsed = false;
+  /** @type {MutationObserver | null} */
   #observer = null;
 
   setup() {
@@ -128,7 +132,7 @@ class PageTools extends VBElement {
 
     /* Return focus to FAB when popover closes */
     this.listen(this.#popover, 'toggle', (e) => {
-      if (e.newState === 'closed') this.#fab.focus();
+      if (/** @type {ToggleEvent} */ (e).newState === 'closed') this.#fab?.focus();
     });
   }
 
@@ -143,6 +147,7 @@ class PageTools extends VBElement {
 
   #collapse() {
     if (this.#collapsed) return;
+    if (!this.#fab || !this.#popover) return;
     this.#collapsed = true;
 
     /* Move tools into popover */
@@ -158,11 +163,12 @@ class PageTools extends VBElement {
 
   #expand() {
     if (!this.#collapsed) return;
+    if (!this.#fab || !this.#popover) return;
     this.#collapsed = false;
 
     /* Close popover if open */
     if (this.#popover.matches(':popover-open')) {
-      this.#popover.hidePopover();
+      this.#popover.hidePopover?.();
     }
 
     /* Move tools back before FAB */
@@ -178,6 +184,7 @@ class PageTools extends VBElement {
 
   #syncPopover() {
     /* If collapsed, ensure new non-internal children go into popover */
+    if (!this.#popover) return;
     const stray = this.tools;
     for (const tool of stray) {
       this.#popover.appendChild(tool);

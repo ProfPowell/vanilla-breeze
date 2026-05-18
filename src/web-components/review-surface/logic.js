@@ -24,6 +24,22 @@
  *       }
  *     ]
  *   }
+ *
+ * @typedef {object} PinReply
+ * @property {string} id
+ * @property {string} text
+ * @property {string} [author]
+ * @property {string} [createdAt]
+ *
+ * @typedef {object} Pin
+ * @property {string} id
+ * @property {number} x
+ * @property {number} y
+ * @property {string} text
+ * @property {string} [author]
+ * @property {string} [createdAt]
+ * @property {boolean} [resolved]
+ * @property {PinReply[]} [replies]
  */
 
 import { styles } from './styles.js';
@@ -260,7 +276,7 @@ class ReviewSurface extends HTMLElement {
         break;
       case 'rest':
         try {
-          this.__adapter = new RestAdapter(this.getAttribute('endpoint'));
+          this.__adapter = new RestAdapter(this.getAttribute('endpoint') ?? '');
         } catch {
           this.__adapter = new MemoryAdapter();
         }
@@ -273,7 +289,7 @@ class ReviewSurface extends HTMLElement {
   /* ── Data loading ──────────────────────────────── */
 
   async _loadSrc(src) {
-    if (!src) return;
+    if (!src || !this.shadowRoot) return;
     this.shadowRoot.innerHTML = `<style>${styles}</style>` +
       `<div class="state-msg">Loading\u2026</div>`;
     try {
@@ -283,8 +299,9 @@ class ReviewSurface extends HTMLElement {
       this.__pins = Array.isArray(data) ? data : data.pins || [];
       this._render();
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       this.shadowRoot.innerHTML = `<style>${styles}</style>` +
-        `<div class="state-msg state-msg--error">Could not load pins: ${esc(err.message)}</div>`;
+        `<div class="state-msg state-msg--error">Could not load pins: ${esc(msg)}</div>`;
     }
   }
 
@@ -430,10 +447,11 @@ class ReviewSurface extends HTMLElement {
     const showResolved = this.hasAttribute('show-resolved');
     return this.__pins
       .filter(p => showResolved || !p.resolved)
-      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      .sort((a, b) => new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime());
   }
 
   _render() {
+    if (!this.shadowRoot) return;
     const editable = this.hasAttribute('editable');
     const visible = this.#visiblePins();
     const activePin = this._activePin ? this.__pins.find(p => p.id === this._activePin) : null;
@@ -560,12 +578,13 @@ class ReviewSurface extends HTMLElement {
 
   _bindListeners(editable) {
     const root = this.shadowRoot;
+    if (!root) return;
 
     /* Pin clicks — open popover */
-    root.querySelectorAll('.rs-pin').forEach(btn => {
+    root.querySelectorAll('.rs-pin').forEach((/** @type {Element} */ btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const id = btn.dataset.pinId;
+        const id = /** @type {HTMLElement} */ (btn).dataset.pinId ?? null;
         this._activePin = this._activePin === id ? null : id;
         this._render();
 
@@ -581,24 +600,26 @@ class ReviewSurface extends HTMLElement {
     /* Overlay click — place new pin in annotate mode */
     const overlay = root.querySelector('.rs-overlay');
     if (overlay && editable) {
-      overlay.addEventListener('click', (e) => {
+      overlay.addEventListener('click', (/** @type {Event} */ e) => {
         if (!this._annotating) return;
-        if (e.target.closest('.rs-pin')) return;
+        const me = /** @type {MouseEvent} */ (e);
+        const target = /** @type {Element | null} */ (me.target);
+        if (target?.closest('.rs-pin')) return;
 
         const rect = overlay.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        const x = ((me.clientX - rect.left) / rect.width) * 100;
+        const y = ((me.clientY - rect.top) / rect.height) * 100;
 
         this.#promptNewPin(x, y);
       });
     }
 
     /* Popover actions */
-    root.querySelectorAll('[data-action]').forEach(btn => {
+    root.querySelectorAll('[data-action]').forEach((/** @type {Element} */ btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const action = btn.dataset.action;
-        const pinId = btn.dataset.pinId;
+        const action = /** @type {HTMLElement} */ (btn).dataset.action;
+        const pinId = /** @type {HTMLElement} */ (btn).dataset.pinId;
 
         switch (action) {
           case 'close':
@@ -606,13 +627,13 @@ class ReviewSurface extends HTMLElement {
             this._render();
             break;
           case 'resolve':
-            this.resolvePin(pinId);
+            if (pinId) this.resolvePin(pinId);
             break;
           case 'unresolve':
-            this.unresolvePin(pinId);
+            if (pinId) this.unresolvePin(pinId);
             break;
           case 'delete':
-            this.removePin(pinId);
+            if (pinId) this.removePin(pinId);
             break;
           case 'toggle-mode':
             this._annotating = !this._annotating;
@@ -640,18 +661,21 @@ class ReviewSurface extends HTMLElement {
     /* Reply input — Enter to submit (Shift+Enter for newline) */
     const replyField = root.querySelector('.rs-input__field');
     if (replyField) {
-      replyField.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          const pinId = root.querySelector('[data-action="reply"]')?.dataset.pinId;
+      replyField.addEventListener('keydown', (/** @type {Event} */ e) => {
+        const ke = /** @type {KeyboardEvent} */ (e);
+        if (ke.key === 'Enter' && !ke.shiftKey) {
+          ke.preventDefault();
+          const replyBtn = /** @type {HTMLElement | null} */ (root.querySelector('[data-action="reply"]'));
+          const pinId = replyBtn?.dataset.pinId;
           if (pinId) this.#submitReply(pinId);
         }
       });
     }
 
     /* Keyboard: Escape to close popover or exit annotate mode */
-    root.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
+    root.addEventListener('keydown', (/** @type {Event} */ e) => {
+      const ke = /** @type {KeyboardEvent} */ (e);
+      if (ke.key === 'Escape') {
         if (this._activePin) {
           this._activePin = null;
           this._render();
@@ -680,13 +704,13 @@ class ReviewSurface extends HTMLElement {
 
     /* Focus the reply field for immediate text entry */
     requestAnimationFrame(() => {
-      const field = this.shadowRoot.querySelector('.rs-input__field');
-      if (field) field.focus();
+      const field = /** @type {HTMLTextAreaElement | null} */ (this.shadowRoot?.querySelector('.rs-input__field') ?? null);
+      field?.focus();
     });
   }
 
   async #submitReply(pinId) {
-    const field = this.shadowRoot.querySelector('.rs-input__field');
+    const field = /** @type {HTMLTextAreaElement | null} */ (this.shadowRoot?.querySelector('.rs-input__field') ?? null);
     if (!field) return;
 
     const text = field.value.trim();
@@ -722,8 +746,8 @@ class ReviewSurface extends HTMLElement {
 
     /* Re-focus input */
     requestAnimationFrame(() => {
-      const newField = this.shadowRoot.querySelector('.rs-input__field');
-      if (newField) newField.focus();
+      const newField = /** @type {HTMLTextAreaElement | null} */ (this.shadowRoot?.querySelector('.rs-input__field') ?? null);
+      newField?.focus();
     });
 
     this.dispatchEvent(new CustomEvent('review-surface:update', {
@@ -755,7 +779,7 @@ class ReviewSurface extends HTMLElement {
     try {
       const date = new Date(isoString);
       const now = new Date();
-      const diffMs = now - date;
+      const diffMs = now.getTime() - date.getTime();
       const diffMins = Math.floor(diffMs / 60000);
 
       if (diffMins < 1) return 'just now';
@@ -774,7 +798,7 @@ class ReviewSurface extends HTMLElement {
   }
 
   #announce(message) {
-    const live = this.shadowRoot.querySelector('.rs-live');
+    const live = this.shadowRoot?.querySelector('.rs-live');
     if (live) live.textContent = message;
   }
 }
