@@ -84,12 +84,12 @@ function resolveRange(evt, keyISO) {
       end = addDays(start, Math.floor(evt.days) - 1);
     }
   }
-  return { start, end, startISO: keyISO, endISO: toISO(end), days: Math.round((end - start) / 86400000) + 1 };
+  return { start, end, startISO: keyISO, endISO: toISO(end), days: Math.round((end.getTime() - start.getTime()) / 86400000) + 1 };
 }
 
 function getFirstDayOfWeek() {
   try {
-    const locale = new Intl.Locale(navigator.language);
+    const locale = /** @type {Intl.Locale & { weekInfo?: { firstDay: number } }} */ (new Intl.Locale(navigator.language));
     if (locale.weekInfo) return locale.weekInfo.firstDay % 7;
   } catch { /* fallback */ }
   return 0;
@@ -145,31 +145,48 @@ function getLocalizedHours(locale) {
 class CalendarWc extends VBElement {
   static formAssociated = true;
 
+  /** @type {ElementInternals} */
   #internals;
-  #locale;
-  #viewMonth;
-  #viewYear;
-  #firstDayOfWeek;
+  /** @type {string} */
+  #locale = 'en-US';
+  /** @type {number} */
+  #viewMonth = new Date().getMonth();
+  /** @type {number} */
+  #viewYear = new Date().getFullYear();
+  /** @type {number} */
+  #firstDayOfWeek = 0;
+  /** @type {Record<string, any[]>} */
   #events = {};
+  /** @type {Date | null} */
   #minDate = null;
+  /** @type {Date | null} */
   #maxDate = null;
+  /** @type {Set<string>} */
   #disabledDates = new Set();
+  /** @type {Map<string, string>} */
   #highlightDates = new Map();
+  /** @type {Date | null} */
   #selectedDate = null;
+  /** @type {Set<string>} */
   #selectedDates = new Set();
+  /** @type {Date | null} */
   #rangeStart = null;
+  /** @type {Date | null} */
   #rangeEnd = null;
+  /** @type {Date | null} */
   #hoverDate = null;
   #selectionMode = 'none';
   #size = 'default';
   #monthCount = 1;
 
   /** JS-only callback: (date: Date) => boolean. If it returns true, the date is disabled. */
+  /** @type {((date: Date) => boolean) | null} */
   #isDateDisallowedFn = null;
   get isDateDisallowed() { return this.#isDateDisallowedFn; }
   set isDateDisallowed(fn) { this.#isDateDisallowedFn = fn; if (this.#built) this.#renderMonth(); }
 
   /** JS-only callback: (date: Date) => string | string[] | null. Return value set as data-day-part on the cell. */
+  /** @type {((date: Date) => string | string[] | null) | null} */
   #getDayPartsFn = null;
   get getDayParts() { return this.#getDayPartsFn; }
   set getDayParts(fn) { this.#getDayPartsFn = fn; if (this.#built) this.#renderMonth(); }
@@ -228,7 +245,10 @@ class CalendarWc extends VBElement {
   #monthsWrap;
   #prevBtn;
   #nextBtn;
+  /** @type {HTMLDivElement | null} */
   #detailOverlay = null;
+  /** @type {(() => void) | null} */
+  _detailCleanup = null;
   /** @type {{dayToEvents: Map<string, any[]>, spans: any[]}} */
   #renderData = { dayToEvents: new Map(), spans: [] };
 
@@ -241,16 +261,16 @@ class CalendarWc extends VBElement {
   }
 
   setup() {
-    this.#locale = this.closest('[lang]')?.lang || navigator.language;
+    this.#locale = /** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language;
     const today = new Date();
-    this.#viewMonth = parseInt(this.getAttribute('data-month'), 10) - 1;
+    this.#viewMonth = parseInt(this.getAttribute('data-month') ?? '', 10) - 1;
     if (isNaN(this.#viewMonth)) this.#viewMonth = today.getMonth();
-    this.#viewYear = parseInt(this.getAttribute('data-year'), 10);
+    this.#viewYear = parseInt(this.getAttribute('data-year') ?? '', 10);
     if (isNaN(this.#viewYear)) this.#viewYear = today.getFullYear();
     this.#firstDayOfWeek = getFirstDayOfWeek();
     this.#selectionMode = this.getAttribute('data-selection') || 'none';
     this.#size = this.getAttribute('data-size') || 'default';
-    this.#monthCount = Math.max(1, Math.min(12, parseInt(this.dataset.months, 10) || 1));
+    this.#monthCount = Math.max(1, Math.min(12, parseInt(this.dataset.months ?? '', 10) || 1));
 
     // Parse events
     const eventsAttr = this.getAttribute('data-events');
@@ -273,7 +293,7 @@ class CalendarWc extends VBElement {
     if (highlights) {
       highlights.split(',').forEach(entry => {
         const [date, category] = entry.trim().split(':');
-        this.#highlightDates.set(date, category || null);
+        this.#highlightDates.set(date, category || '');
       });
     }
 
@@ -341,9 +361,11 @@ class CalendarWc extends VBElement {
 
     // Click delegation — select or open day detail (not both)
     this.listen(this.#monthsWrap, 'click', (e) => {
-      const btn = e.target.closest('button[data-date]');
+      const target = /** @type {Element | null} */ (e.target);
+      const btn = /** @type {HTMLButtonElement | null} */ (target?.closest('button[data-date]'));
       if (!btn || btn.disabled) return;
       const iso = btn.getAttribute('data-date');
+      if (!iso) return;
 
       if (this.#selectionMode !== 'none') {
         this.#handleSelect(iso);
@@ -361,7 +383,8 @@ class CalendarWc extends VBElement {
     // Hover for range preview — in-place attribute update, no re-render
     if (this.#selectionMode === 'range') {
       this.listen(this.#monthsWrap, 'mouseover', (e) => {
-        const btn = e.target.closest('button[data-date]');
+        const target = /** @type {Element | null} */ (e.target);
+        const btn = target?.closest('button[data-date]');
         if (btn && this.#rangeStart && !this.#rangeEnd) {
           this.#hoverDate = fromISO(btn.getAttribute('data-date'));
           this.#updateSelectionUI();
@@ -377,8 +400,8 @@ class CalendarWc extends VBElement {
     const maxYear = this.#maxDate ? this.#maxDate.getFullYear() : currentYear + 10;
     for (let y = minYear; y <= maxYear; y++) {
       const opt = document.createElement('option');
-      opt.value = y;
-      opt.textContent = y;
+      opt.value = String(y);
+      opt.textContent = String(y);
       if (y === this.#viewYear) opt.selected = true;
       this.#yearSelect.appendChild(opt);
     }
@@ -398,6 +421,7 @@ class CalendarWc extends VBElement {
   #handleSelect(iso) {
     if (this.#selectionMode === 'none') return;
     const date = fromISO(iso);
+    if (!date) return;
 
     if (this.#selectionMode === 'single') {
       this.#selectedDate = date;
@@ -414,7 +438,7 @@ class CalendarWc extends VBElement {
         this.dataset.tentative = toISO(this.#rangeStart);
       } else {
         this.#rangeEnd = date;
-        if (this.#rangeStart > this.#rangeEnd) {
+        if (this.#rangeStart && this.#rangeStart > this.#rangeEnd) {
           [this.#rangeStart, this.#rangeEnd] = [this.#rangeEnd, this.#rangeStart];
         }
         this.#hoverDate = null;
@@ -487,6 +511,7 @@ class CalendarWc extends VBElement {
 
       const iso = btn.getAttribute('data-date');
       const cellDate = fromISO(iso);
+      if (!cellDate || !iso) continue;
 
       // Clear old selection attributes
       td.removeAttribute('data-selected');
@@ -896,8 +921,10 @@ class CalendarWc extends VBElement {
 
       const rowStart = colDates[0];
       const rowEnd = colDates[colDates.length - 1];
+      if (!rowStart || !rowEnd) continue;
 
       // Spans that intersect this row, with column extents within it.
+      /** @type {Array<{evt: any, range: any, startCol: number, endCol: number, continuesLeft: boolean, continuesRight: boolean, lane?: number}>} */
       const items = [];
       for (const { evt, range } of this.#renderData.spans) {
         if (range.end < rowStart || range.start > rowEnd) continue;
@@ -916,6 +943,7 @@ class CalendarWc extends VBElement {
       // Greedy lane packing: longer spans first, earlier starts first.
       items.sort((a, b) =>
         (a.startCol - b.startCol) || ((b.endCol - b.startCol) - (a.endCol - a.startCol)));
+      /** @type {number[]} */
       const lanes = []; // lanes[laneIdx] = endCol of last placed
       for (const item of items) {
         let lane = 0;
@@ -950,7 +978,7 @@ class CalendarWc extends VBElement {
   #openDayDetail(iso, events) {
     this.#closeDayDetail();
 
-    const date = fromISO(iso);
+    const date = fromISO(iso) ?? new Date();
     const overlay = document.createElement('div');
     overlay.className = 'day-detail';
     overlay.setAttribute('role', 'dialog');
