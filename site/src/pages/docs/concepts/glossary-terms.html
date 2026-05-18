@@ -90,6 +90,62 @@ concepts: ["glossary", "content-lens", "metadata-substrate"]
 </section>
 
 <section>
+  <h2>Auto-linking at build time</h2>
+  <p>Cook ships an <code>auto-link-glossary</code> plugin that scans every docs prose page (<code>/docs/concepts/</code>, <code>/docs/elements/</code>, <code>/docs/attributes/</code>, <code>/docs/patterns/</code>, <code>/docs/integrations/</code>, <code>/docs/recipes/</code>, <code>/docs/snippets/</code>) and wraps vocabulary terms automatically. The manual pattern above still works &mdash; author-written mentions always win and suppress auto-linking of that concept anywhere in the page.</p>
+
+  <h3>What it does</h3>
+  <ul>
+    <li>First occurrence of a concept's <code>prefLabel</code> wraps with <code>&lt;dfn&gt;&lt;a data-concept="..."&gt;</code></li>
+    <li>First occurrence of an opted-in <code>altLabel</code> wraps with <code>&lt;abbr title="prefLabel"&gt;&lt;a data-concept="..."&gt;</code></li>
+    <li>Subsequent occurrences get a bare <code>&lt;a data-concept="..."&gt;</code></li>
+    <li>Max one auto-link per <code>&lt;p&gt;</code> / <code>&lt;li&gt;</code> / <code>&lt;td&gt;</code> / <code>&lt;dd&gt;</code> to keep prose readable</li>
+  </ul>
+
+  <h3>What it never touches</h3>
+  <ul>
+    <li>Text inside <code>&lt;a&gt;</code>, <code>&lt;code&gt;</code>, <code>&lt;pre&gt;</code>, <code>&lt;dfn&gt;</code>, <code>&lt;abbr&gt;</code>, <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, <code>&lt;template&gt;</code>, <code>&lt;noscript&gt;</code></li>
+    <li>Any heading (<code>&lt;h1&gt;</code>&ndash;<code>&lt;h6&gt;</code>)</li>
+    <li>Concepts the author already manually mentioned anywhere in the page</li>
+  </ul>
+
+  <h3>Opt-outs (three layers, decreasing scope)</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Mechanism</th><th>Scope</th><th>When to use</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>autolink: false</code> in page frontmatter</td>
+        <td>Whole page</td>
+        <td>Reference pages, the glossary itself, anywhere prose isn't the focus</td>
+      </tr>
+      <tr>
+        <td><code>data-no-glossary</code> attribute on any element</td>
+        <td>That element and all descendants</td>
+        <td>A specific section where auto-linking would distract</td>
+      </tr>
+      <tr>
+        <td>Manual <code>&lt;a data-concept="..."&gt;</code> anywhere on the page</td>
+        <td>That one concept on this page</td>
+        <td>You want explicit control over where the concept links from</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Per-concept opt-in via <code>vocabulary.json</code></h3>
+  <p>By default, <code>prefLabel</code> auto-links and <code>altLabel</code> does not. That keeps short common-word altLabels like &ldquo;review&rdquo;, &ldquo;lens&rdquo;, or &ldquo;index&rdquo; from generating noise. To opt a concept's altLabels in, add a <code>vb:autoLink</code> object:</p>
+
+  <code-block language="json" show-lines label="vocabulary.json — opting altLabel in">{
+  "@id": "changelog",
+  "skos:prefLabel": "changelog",
+  "skos:altLabel": ["release notes"],
+  "vb:autoLink": { "prefLabel": true, "altLabel": true }
+}</code-block>
+
+  <p>Defaults: <code>prefLabel: true</code> (auto-link the canonical name), <code>altLabel: false</code> (opt-in only). Both fields are optional.</p>
+</section>
+
+<section>
   <h2>See also</h2>
   <ul>
     <li><a href="/glossary/">The glossary page</a></li>
