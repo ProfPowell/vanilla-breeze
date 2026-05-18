@@ -23,6 +23,16 @@ function _safeJsonEmbed(value) {
 class SVC {
   /** @type {Hooks} */
   hooks = new Hooks();
+  /** @type {{ root: any, body: any }} Subclass-defined */
+  structure = /** @type {any} */ ({});
+  /** @type {(node: any) => string} Subclass-defined */
+  compile = /** @type {any} */ (() => '');
+  /** @type {(node: any, opts?: any) => string} Subclass-defined */
+  compileHTML = /** @type {any} */ (() => '');
+  /** @type {(config: any) => any} Subclass-defined */
+  applyConfigToDefaults = /** @type {any} */ ((c) => c);
+  /** @type {() => void} Subclass-defined */
+  render = /** @type {any} */ (() => {});
   /**
    * Creates a SVG string of the chart with the appropriate XML header. Use this method if creating a .svg file.
    * @param {object} [options] - Options object.
@@ -138,7 +148,7 @@ class SVC {
     const blob = await this.toBlob(type, options);
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
+      reader.onload = () => resolve(/** @type {string} */ (reader.result));
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
@@ -154,7 +164,7 @@ class SVC {
     if (typeof document === 'undefined') {
       throw new Error('SVC: download() requires a browser environment.');
     }
-    const ext = filename.split('.').pop().toLowerCase();
+    const ext = filename.split('.').pop()?.toLowerCase();
     const type = ext === 'png' ? 'image/png' : 'image/svg+xml';
     const blob = await this.toBlob(type, options);
     const url = URL.createObjectURL(blob);
@@ -186,6 +196,7 @@ class SVC {
       const url = URL.createObjectURL(blob);
 
       img.onload = () => {
+        if (!ctx) { reject(new Error('SVC: 2D canvas context unavailable.')); return; }
         ctx.drawImage(img, 0, 0, width, height);
         URL.revokeObjectURL(url);
         canvas.toBlob((pngBlob) => {
@@ -217,7 +228,7 @@ class SVC {
     this._state = this.hydrate(container);
     this._container = container;
     // ResizeObserver needs an Element, not a ShadowRoot
-    const observeTarget = container.host || container;
+    const observeTarget = /** @type {any} */ (container).host || container;
     this._observeResize(observeTarget);
     return this._state;
   }
@@ -225,7 +236,7 @@ class SVC {
   /**
    * @deprecated Use mount(container) instead.
    * Creates a DOM element dynamically with the chart inside. Attaches event listeners to the Element.
-   * @return {Element} A DOM element with the svg chart inside.
+   * @return {Element | null} A DOM element with the svg chart inside.
    */
   createElement() {
     if (typeof document === 'undefined') {
@@ -245,10 +256,13 @@ class SVC {
     if (!container) {
       return null;
     }
+    /** @type {{ functions: Record<string, any> }} */
     const state = {
-      functions: [],
+      functions: {},
     };
-    this.interactions.forEach((interaction) => {
+    /** @type {any[]} */
+    const interactions = /** @type {any} */ (this).interactions || [];
+    interactions.forEach((interaction) => {
       state.functions[interaction.name] = interaction(state, container, this);
     });
     this._state = state;
@@ -338,7 +352,7 @@ class SVC {
   /**
    * Creates stringified javascript event handlers for the chart.
    * Used when creating .svg files to bake in interactivity.
-   * @param {*} structure
+   * @param {*} _structure
    * @return {object} A VElement object containing stringified javascript
    */
   _createScripts(_structure) {
@@ -347,17 +361,20 @@ class SVC {
     });
 
     let toExecute = '';
+    /** @type {string[]} */
     const functions = [];
-    this.interactions.forEach((fn) => {
+    const interactions = /** @type {any} */ (this).interactions || [];
+    interactions.forEach((/** @type {any} */ fn) => {
       toExecute += fn.toString() + '\n';
       functions.push(fn.name);
     });
 
+    const self = /** @type {any} */ (this);
     toExecute += `
     var chart = {
-      stats: ${_safeJsonEmbed(this.stats || {})},
-      data: ${_safeJsonEmbed(this.data)},
-      config: ${_safeJsonEmbed(this.config)}
+      stats: ${_safeJsonEmbed(self.stats || {})},
+      data: ${_safeJsonEmbed(self.data)},
+      config: ${_safeJsonEmbed(self.config)}
     };
     var svgRoot = document.currentScript.closest('svg');
     var state = { functions: []};`;

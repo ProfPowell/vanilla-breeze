@@ -195,7 +195,7 @@ class EmpathyMap extends HTMLElement {
   /* ── JSON loading ──────────────────────────────── */
 
   async _loadSrc(src) {
-    if (!src) return;
+    if (!src || !this.shadowRoot) return;
     this.shadowRoot.innerHTML = `<style>${styles}</style>` +
       `<div class="state-msg">Loading\u2026</div>`;
     try {
@@ -222,8 +222,10 @@ class EmpathyMap extends HTMLElement {
       this.__painPoints = data.painPoints || null;
       this._render();
     } catch (err) {
+      if (!this.shadowRoot) return;
+      const msg = err instanceof Error ? err.message : String(err);
       this.shadowRoot.innerHTML = `<style>${styles}</style>` +
-        `<div class="state-msg state-msg--error">Could not load empathy map: ${esc(err.message)}</div>`;
+        `<div class="state-msg state-msg--error">Could not load empathy map: ${esc(msg)}</div>`;
     }
   }
 
@@ -278,10 +280,11 @@ class EmpathyMap extends HTMLElement {
        light-DOM snapshot (which includes shadow paint) on data/theme
        swaps. Skip on the first render — nothing to fade from. */
     const swap = () => {
+      if (!this.shadowRoot) return;
       this.shadowRoot.innerHTML = html;
       if (editable) this._bindEditListeners();
     };
-    if (this.shadowRoot.querySelector('article')) {
+    if (this.shadowRoot?.querySelector('article')) {
       viewTransitionSwap(this, swap, 'em-vt');
     } else {
       swap();
@@ -374,24 +377,30 @@ class EmpathyMap extends HTMLElement {
 
   _bindEditListeners() {
     const root = this.shadowRoot;
+    if (!root) return;
 
-    root.querySelectorAll('.quadrant__edit-btn').forEach(btn => {
+    root.querySelectorAll('.quadrant__edit-btn').forEach((/** @type {Element} */ btn) => {
       btn.addEventListener('click', () => {
-        this._openEdit(btn.dataset.quadrant);
+        const q = /** @type {HTMLElement} */ (btn).dataset.quadrant;
+        if (q) this._openEdit(q);
       });
     });
 
-    root.querySelectorAll('.quadrant__done-btn').forEach(btn => {
+    root.querySelectorAll('.quadrant__done-btn').forEach((/** @type {Element} */ btn) => {
       btn.addEventListener('click', () => {
-        this._closeEdit(btn.dataset.quadrant);
+        const q = /** @type {HTMLElement} */ (btn).dataset.quadrant;
+        if (q) this._closeEdit(q);
       });
     });
 
-    root.querySelectorAll('.quadrant__editor').forEach(textarea => {
-      textarea.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          this._closeEdit(textarea.dataset.quadrant);
+    root.querySelectorAll('.quadrant__editor').forEach((/** @type {Element} */ rawTextarea) => {
+      const textarea = /** @type {HTMLTextAreaElement} */ (rawTextarea);
+      textarea.addEventListener('keydown', (/** @type {Event} */ e) => {
+        const ke = /** @type {KeyboardEvent} */ (e);
+        if (ke.key === 'Escape') {
+          ke.preventDefault();
+          const q = textarea.dataset.quadrant;
+          if (q) this._closeEdit(q);
         }
       });
     });
@@ -400,7 +409,7 @@ class EmpathyMap extends HTMLElement {
   _openEdit(key) {
     this._editingQuadrants.add(key);
 
-    const section = this.shadowRoot.querySelector(`.quadrant--${key}`);
+    const section = this.shadowRoot?.querySelector(`.quadrant--${key}`);
     if (!section) return;
 
     section.setAttribute('data-editing', '');
@@ -410,24 +419,25 @@ class EmpathyMap extends HTMLElement {
     if (front) front.setAttribute('inert', '');
     if (back)  back.removeAttribute('inert');
 
-    const textarea = section.querySelector('.quadrant__editor');
+    const textarea = /** @type {HTMLTextAreaElement | null} */ (section.querySelector('.quadrant__editor'));
     if (textarea) {
       /* Pre-fill: prefer JSON data; fall back to slotted text */
       const items = this.__quadrants?.[key];
       if (items?.length) {
         textarea.value = items.join('\n');
       } else {
-        const slot = section.querySelector(`slot[name="${key}"]`);
+        const slot = /** @type {HTMLSlotElement | null} */ (section.querySelector(`slot[name="${key}"]`));
         if (slot) {
           const assigned = slot.assignedElements();
           if (assigned.length) {
+            /** @type {string[]} */
             const lines = [];
             assigned.forEach(el => {
               const lis = el.querySelectorAll('li');
               if (lis.length) {
-                lis.forEach(li => lines.push(li.textContent.trim()));
+                lis.forEach(li => lines.push(li.textContent?.trim() ?? ''));
               } else {
-                lines.push(el.textContent.trim());
+                lines.push(el.textContent?.trim() ?? '');
               }
             });
             textarea.value = lines.filter(Boolean).join('\n');
@@ -439,10 +449,10 @@ class EmpathyMap extends HTMLElement {
   }
 
   _closeEdit(key) {
-    const section = this.shadowRoot.querySelector(`.quadrant--${key}`);
+    const section = this.shadowRoot?.querySelector(`.quadrant--${key}`);
     if (!section) return;
 
-    const textarea = section.querySelector('.quadrant__editor');
+    const textarea = /** @type {HTMLTextAreaElement | null} */ (section.querySelector('.quadrant__editor'));
     if (textarea) {
       const items = textarea.value
         .split('\n')
