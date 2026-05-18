@@ -48,15 +48,17 @@ function shallowEqual(a, b) {
 }
 
 /**
- * @template {abstract new (...args: any[]) => HTMLElement} TBase
+ * @template {new (...args: any[]) => HTMLElement} TBase
  * @param {TBase} Base
  */
 export function VBRecord(Base) {
-  return class extends Base {
+  const BaseAny = /** @type {any} */ (Base);
+  return class extends BaseAny {
     static get observedAttributes() {
-      const schema = (this /** @type {any} */).dataSchema || {};
-      const fromSchema = Object.values(schema).map((f /** @type {any} */) => f.attr).filter(Boolean);
-      const fromBase = (Base /** @type {any} */).observedAttributes || [];
+      const self = /** @type {any} */ (this);
+      const schema = self.dataSchema || {};
+      const fromSchema = Object.values(schema).map(f => /** @type {any} */ (f).attr).filter(Boolean);
+      const fromBase = /** @type {any} */ (Base).observedAttributes || [];
       return [...new Set([...fromBase, ...fromSchema])];
     }
 
@@ -77,6 +79,11 @@ export function VBRecord(Base) {
       this.#emitDataChanged('property');
     }
 
+    /**
+     * @param {string} name
+     * @param {string|null} oldVal
+     * @param {string|null} newVal
+     */
     attributeChangedCallback(name, oldVal, newVal) {
       if (this.#suppressReflect) {
         if (super.attributeChangedCallback) super.attributeChangedCallback(name, oldVal, newVal);
@@ -87,10 +94,11 @@ export function VBRecord(Base) {
         return;
       }
 
-      const schema = (this.constructor /** @type {any} */).dataSchema || {};
+      const schema = /** @type {any} */ (this.constructor).dataSchema || {};
       for (const [key, field] of Object.entries(schema)) {
-        if ((field /** @type {any} */).attr !== name) continue;
-        const coerce = COERCERS[(field /** @type {any} */).type] || COERCERS.string;
+        const f = /** @type {any} */ (field);
+        if (f.attr !== name) continue;
+        const coerce = COERCERS[/** @type {keyof typeof COERCERS} */ (f.type)] || COERCERS.string;
         if (this.#data == null) this.#data = {};
         if (newVal == null) {
           delete this.#data[key];
@@ -104,10 +112,11 @@ export function VBRecord(Base) {
       if (super.attributeChangedCallback) super.attributeChangedCallback(name, oldVal, newVal);
     }
 
+    /** @param {Record<string, unknown>} data */
     #reflectToAttributes(data) {
       this.#suppressReflect = true;
       try {
-        const schema = (this.constructor /** @type {any} */).dataSchema || {};
+        const schema = /** @type {any} */ (this.constructor).dataSchema || {};
         for (const [key, field] of Object.entries(schema)) {
           const f = /** @type {any} */ (field);
           if (f.reflect === 'never') continue;
@@ -127,18 +136,19 @@ export function VBRecord(Base) {
     }
 
     #dataFromAttributes() {
-      const schema = (this.constructor /** @type {any} */).dataSchema || {};
+      const schema = /** @type {any} */ (this.constructor).dataSchema || {};
       /** @type {Record<string, unknown>} */
       const obj = {};
       for (const [key, field] of Object.entries(schema)) {
         const f = /** @type {any} */ (field);
         if (!this.hasAttribute(f.attr)) continue;
-        const coerce = COERCERS[f.type] || COERCERS.string;
+        const coerce = COERCERS[/** @type {keyof typeof COERCERS} */ (f.type)] || COERCERS.string;
         obj[key] = f.type === 'boolean' ? true : coerce(this.getAttribute(f.attr));
       }
       return obj;
     }
 
+    /** @param {string} source */
     #emitDataChanged(source) {
       this.dispatchEvent(new CustomEvent(`${this.localName}:data-changed`, {
         detail: { data: this.data, source },

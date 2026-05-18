@@ -9,7 +9,7 @@
  * @attr {string}  body-font     - Initial body font family
  * @attr {string}  code-font     - Initial code/monospace font family
  * @attr {string}  display-font  - Initial display/decorative font family
- * @attr {boolean} show-export   - Show Copy CSS / Copy @import toolbar
+ * @attr {boolean} show-export   - Show Copy CSS / Copy CSS @​import toolbar
  * @attr {boolean} show-suggestions - Show curated pairing suggestions
  * @attr {string}  preview       - Preview mode: "combined" (default), "article", "card", "hero"
  *
@@ -296,7 +296,8 @@ class FontPairer extends VBElement {
     // Font role selects
     this.querySelectorAll('.fp-select').forEach(sel => {
       sel.addEventListener('change', (e) => {
-        this.#fonts[e.target.dataset.role] = e.target.value;
+        const target = /** @type {HTMLSelectElement} */ (e.target);
+        this.#fonts[target.dataset.role] = target.value;
         this.#loadAllFonts();
         this.#renderPreview();
         this.#updateCode();
@@ -307,7 +308,8 @@ class FontPairer extends VBElement {
     // Preview mode tabs
     this.querySelectorAll('.fp-tab').forEach(btn => {
       btn.addEventListener('click', () => {
-        this.#preview = btn.dataset.mode;
+        const el = /** @type {HTMLElement} */ (btn);
+        this.#preview = el.dataset.mode || 'combined';
         this.#render();
         this.#loadAllFonts();
       });
@@ -316,9 +318,10 @@ class FontPairer extends VBElement {
     // Suggestion pills
     this.querySelectorAll('.fp-suggestion').forEach(btn => {
       btn.addEventListener('click', () => {
-        this.#fonts.heading = btn.dataset.h;
-        this.#fonts.body = btn.dataset.b;
-        this.#fonts.display = btn.dataset.h;
+        const el = /** @type {HTMLElement} */ (btn);
+        this.#fonts.heading = el.dataset.h || '';
+        this.#fonts.body = el.dataset.b || '';
+        this.#fonts.display = el.dataset.h || '';
         this.#render();
         this.#loadAllFonts();
         this.#emit();
@@ -327,10 +330,11 @@ class FontPairer extends VBElement {
 
     // Editable text — save changes
     this.querySelectorAll('.fp-editable').forEach(el => {
-      el.addEventListener('blur', () => {
-        const role = el.dataset.role;
-        if (role && el.textContent.trim()) {
-          this.#sampleText[role] = el.textContent.trim();
+      const node = /** @type {HTMLElement} */ (el);
+      node.addEventListener('blur', () => {
+        const role = node.dataset.role;
+        if (role && node.textContent.trim()) {
+          this.#sampleText[role] = node.textContent.trim();
         }
       });
     });
@@ -338,13 +342,13 @@ class FontPairer extends VBElement {
     // Copy CSS
     this.querySelector('.fp-copy-css')?.addEventListener('click', (e) => {
       navigator.clipboard?.writeText(this.#buildCSS());
-      this.#copyFeedback(e.target);
+      this.#copyFeedback(/** @type {HTMLElement} */ (e.target));
     });
 
-    // Copy @import
+    // Copy CSS @import
     this.querySelector('.fp-copy-import')?.addEventListener('click', (e) => {
       navigator.clipboard?.writeText(this.#buildImports());
-      this.#copyFeedback(e.target);
+      this.#copyFeedback(/** @type {HTMLElement} */ (e.target));
     });
   }
 
@@ -360,10 +364,11 @@ class FontPairer extends VBElement {
     container.innerHTML = PREVIEWS[this.#preview]?.render(fontStyles, this.#sampleText) || '';
     // Re-wire editable listeners
     container.querySelectorAll('.fp-editable').forEach(el => {
-      el.addEventListener('blur', () => {
-        const role = el.dataset.role;
-        if (role && el.textContent.trim()) {
-          this.#sampleText[role] = el.textContent.trim();
+      const node = /** @type {HTMLElement} */ (el);
+      node.addEventListener('blur', () => {
+        const role = node.dataset.role;
+        if (role && node.textContent.trim()) {
+          this.#sampleText[role] = node.textContent.trim();
         }
       });
     });
