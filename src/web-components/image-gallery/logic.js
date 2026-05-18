@@ -69,6 +69,7 @@ class ImageGallery extends VBElement {
 
     // Intercept clicks on thumbnail links
     this.listen(this, 'click', this.#onThumbnailClick);
+    return true;
   }
 
   teardown() {
@@ -120,7 +121,9 @@ class ImageGallery extends VBElement {
     for (const img of next) {
       if (!img?.href || !img?.thumbSrc) continue;
       const wrapper = img.caption ? document.createElement('figure') : document.createElement('a');
-      const anchor = wrapper.tagName === 'FIGURE' ? document.createElement('a') : wrapper;
+      const anchor = /** @type {HTMLAnchorElement} */ (
+        wrapper.tagName === 'FIGURE' ? document.createElement('a') : wrapper
+      );
       anchor.href = img.href;
       const imgEl = document.createElement('img');
       imgEl.src = img.thumbSrc;
@@ -129,7 +132,7 @@ class ImageGallery extends VBElement {
       if (wrapper.tagName === 'FIGURE') {
         wrapper.appendChild(anchor);
         const cap = document.createElement('figcaption');
-        cap.innerHTML = img.caption;
+        cap.innerHTML = img.caption ?? '';
         wrapper.appendChild(cap);
       }
       this.appendChild(wrapper);
@@ -156,22 +159,24 @@ class ImageGallery extends VBElement {
     const item = this.#items[index];
     const transition = this.getAttribute('transition') || 'morph';
 
-    if (this.#vtSupported && transition === 'morph') {
+    if (this.#vtSupported && transition === 'morph' && this.#frame && this.#dialog) {
       const vtName = `gallery-morph-${this.#id}`;
       item.thumbEl.style.viewTransitionName = vtName;
+      const frame = this.#frame;
+      const dialog = this.#dialog;
 
       startSwapTransition(() => {
         // Move the VT name from thumbnail to full image for the "new" snapshot
         item.thumbEl.style.viewTransitionName = '';
-        const img = this.#frame.querySelector('img');
+        const img = /** @type {HTMLImageElement | null} */ (frame.querySelector('img'));
         if (img) img.style.viewTransitionName = vtName;
-        this.#dialog.showModal();
+        dialog.showModal();
       }).finished?.then(() => {
-        const img = this.#frame.querySelector('img');
+        const img = /** @type {HTMLImageElement | null} */ (frame.querySelector('img'));
         if (img) img.style.viewTransitionName = '';
       });
     } else {
-      this.#dialog.showModal();
+      this.#dialog?.showModal();
     }
 
     this.#preloadAdjacent(index);
@@ -184,21 +189,22 @@ class ImageGallery extends VBElement {
     const item = this.#items[this.#currentIndex];
     const transition = this.getAttribute('transition') || 'morph';
 
-    if (this.#vtSupported && transition === 'morph') {
+    if (this.#vtSupported && transition === 'morph' && this.#frame && this.#dialog) {
       const vtName = `gallery-morph-${this.#id}`;
-      const img = this.#frame.querySelector('img');
+      const img = /** @type {HTMLImageElement | null} */ (this.#frame.querySelector('img'));
       if (img) img.style.viewTransitionName = vtName;
+      const dialog = this.#dialog;
 
       startSwapTransition(() => {
         // Move the VT name from full image to thumbnail for the "new" snapshot
         if (img) img.style.viewTransitionName = '';
         item.thumbEl.style.viewTransitionName = vtName;
-        this.#dialog.close();
+        dialog.close();
       }).finished?.then(() => {
         item.thumbEl.style.viewTransitionName = '';
       });
     } else {
-      this.#dialog.close();
+      this.#dialog?.close();
     }
   }
 
@@ -226,10 +232,12 @@ class ImageGallery extends VBElement {
     this.#items = [];
     for (const child of this.children) {
       const isFigure = child.tagName === 'FIGURE';
-      const anchor = isFigure ? child.querySelector('a[href]') : (child.matches('a[href]') ? child : null);
+      const anchor = /** @type {HTMLAnchorElement | null} */ (
+        isFigure ? child.querySelector('a[href]') : (child.matches('a[href]') ? child : null)
+      );
       if (!anchor) continue;
 
-      const img = anchor.querySelector('img');
+      const img = /** @type {HTMLImageElement | null} */ (anchor.querySelector('img'));
       if (!img) continue;
 
       const caption = isFigure ? child.querySelector('figcaption')?.innerHTML ?? null : null;
@@ -244,8 +252,10 @@ class ImageGallery extends VBElement {
     }
   }
 
+  /** @type {(e: Event) => void} */
   #onThumbnailClick = (e) => {
-    const anchor = e.target.closest('a[href]');
+    const target = /** @type {Element | null} */ (e.target);
+    const anchor = target?.closest('a[href]');
     if (!anchor || !this.contains(anchor)) return;
 
     // Find which item was clicked
@@ -390,8 +400,10 @@ class ImageGallery extends VBElement {
     img.alt = item.alt;
 
     // Clear and populate frame
-    this.#frame.innerHTML = '';
-    this.#frame.append(img);
+    if (!this.#frame) return;
+    const frame = this.#frame;
+    frame.innerHTML = '';
+    frame.append(img);
 
     // Caption handling
     const captionMode = this.getAttribute('captions') || 'auto';
@@ -399,7 +411,7 @@ class ImageGallery extends VBElement {
     if (captionMode === 'overlay' && item.caption) {
       const figcaption = document.createElement('figcaption');
       figcaption.innerHTML = item.caption;
-      this.#frame.append(figcaption);
+      frame.append(figcaption);
     } else if (captionMode === 'auto') {
       // Update caption footer — show footer when caption exists, collapse text on nav
       const footer = this.#detailsPopover?.parentElement;
