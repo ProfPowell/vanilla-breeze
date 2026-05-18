@@ -55,7 +55,7 @@ function daysInMonth(year, month) {
 /** Get the first day of week for a locale (0=Sun, 1=Mon, etc.) */
 function getFirstDayOfWeek() {
   try {
-    const locale = new Intl.Locale(navigator.language);
+    const locale = /** @type {Intl.Locale & { weekInfo?: { firstDay: number } }} */ (new Intl.Locale(navigator.language));
     if (locale.weekInfo) return locale.weekInfo.firstDay % 7;
   } catch { /* fallback */ }
   return 0; // Sunday
@@ -181,16 +181,26 @@ class DatePicker extends VBElement {
   #isOpen = false;
   #usePopover = false;
 
+  /** @type {Date | null} */
   #selectedDate = null;
+  /** @type {Date | null} */
   #focusedDate = null;
-  #viewYear;
-  #viewMonth;
+  /** @type {number} */
+  #viewYear = new Date().getFullYear();
+  /** @type {number} */
+  #viewMonth = new Date().getMonth();
+  /** @type {Date | null} */
   #minDate = null;
+  /** @type {Date | null} */
   #maxDate = null;
+  /** @type {Map<string, string>} */
   #disabledDates = new Map();
+  /** @type {Map<string, string>} */
   #highlightDates = new Map();
-  #initialValue;
-  #firstDayOfWeek;
+  /** @type {string|null} */
+  #initialValue = null;
+  /** @type {number} */
+  #firstDayOfWeek = 0;
 
   constructor() {
     super();
@@ -212,7 +222,7 @@ class DatePicker extends VBElement {
     if (disabled) {
       disabled.split(',').forEach(entry => {
         const [date, reason] = entry.trim().split(':');
-        this.#disabledDates.set(date, reason || null);
+        this.#disabledDates.set(date, reason || '');
       });
     }
 
@@ -221,7 +231,7 @@ class DatePicker extends VBElement {
     if (highlights) {
       highlights.split(',').forEach(entry => {
         const [date, category] = entry.trim().split(':');
-        this.#highlightDates.set(date, category || null);
+        this.#highlightDates.set(date, category || '');
       });
     }
 
@@ -263,6 +273,8 @@ class DatePicker extends VBElement {
       this.setAttribute('data-disabled', '');
       this.#textInput.disabled = true;
     }
+
+    return true;
   }
 
   teardown() {
@@ -408,7 +420,7 @@ class DatePicker extends VBElement {
     this.listen(this.#yearSelect, 'change', () => {
       this.#viewYear = Number(this.#yearSelect.value);
       const maxDay = daysInMonth(this.#viewYear, this.#viewMonth);
-      const day = Math.min(this.#focusedDate.getDate(), maxDay);
+      const day = Math.min(this.#focusedDate?.getDate() ?? 1, maxDay);
       this.#focusedDate = new Date(this.#viewYear, this.#viewMonth, day);
       this.#renderMonth();
     });
@@ -549,7 +561,7 @@ class DatePicker extends VBElement {
 
     // Keep focused date in the new month
     const maxDay = daysInMonth(this.#viewYear, this.#viewMonth);
-    const day = Math.min(this.#focusedDate.getDate(), maxDay);
+    const day = Math.min(this.#focusedDate?.getDate() ?? 1, maxDay);
     this.#focusedDate = new Date(this.#viewYear, this.#viewMonth, day);
 
     this.#renderMonth();
@@ -612,8 +624,10 @@ class DatePicker extends VBElement {
     this.#calendar.hidden = false;
 
     // Ensure focused date is in view
-    this.#viewYear = this.#focusedDate.getFullYear();
-    this.#viewMonth = this.#focusedDate.getMonth();
+    if (this.#focusedDate) {
+      this.#viewYear = this.#focusedDate.getFullYear();
+      this.#viewMonth = this.#focusedDate.getMonth();
+    }
     this.#renderMonth();
 
     if (this.#usePopover) {
@@ -696,7 +710,7 @@ class DatePicker extends VBElement {
       this.#viewYear = partial.year;
       this.#viewMonth = partial.month;
       const maxDay = daysInMonth(partial.year, partial.month);
-      const day = Math.min(this.#focusedDate.getDate(), maxDay);
+      const day = Math.min(this.#focusedDate?.getDate() ?? 1, maxDay);
       this.#focusedDate = new Date(partial.year, partial.month, day);
       this.#renderMonth();
     }
@@ -777,12 +791,16 @@ class DatePicker extends VBElement {
     }
   };
 
+  /** @type {(e: Event) => void} */
   #handleGridClick = (e) => {
-    const btn = e.target.closest('button[data-date]');
+    const target = /** @type {Element | null} */ (e.target);
+    const btn = target?.closest('button[data-date]');
     if (!btn || btn.hasAttribute('disabled')) return;
-    this.#selectDate(fromISO(btn.getAttribute('data-date')));
+    const date = fromISO(btn.getAttribute('data-date'));
+    if (date) this.#selectDate(date);
   };
 
+  /** @type {(e: KeyboardEvent) => void} */
   #handleCalendarKeydown = (e) => {
     // Combobox pattern: Tab closes calendar and leaves the component
     if (e.key === 'Tab') {
@@ -791,6 +809,8 @@ class DatePicker extends VBElement {
     }
 
     const fd = this.#focusedDate;
+    if (!fd) return;
+    /** @type {Date | undefined} */
     let next;
 
     switch (e.key) {
