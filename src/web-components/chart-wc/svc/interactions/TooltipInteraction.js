@@ -10,12 +10,23 @@ export function tooltipInteraction(state, instance, chart) {
   let HIDE_DELAY_MS = (chart.config && chart.config.tooltip &&
     chart.config.tooltip.hideDelay) || 2000;
 
-  let target = instance.querySelector('chart-plot');
-  let tooltipElement = instance.querySelector('#svc-tooltip-box');
-  let tooltipTextElement = instance.querySelector('#svc-tooltip-label');
-  let crosshairElement = instance.querySelector('.svc-tooltip-crosshair');
+  const targetRaw = instance.querySelector('chart-plot');
+  const tooltipElementRaw = instance.querySelector('#svc-tooltip-box');
+  const tooltipTextElementRaw = instance.querySelector('#svc-tooltip-label');
+  const crosshairElementRaw = instance.querySelector('.svc-tooltip-crosshair');
+  if (!targetRaw || !tooltipElementRaw || !tooltipTextElementRaw || !crosshairElementRaw) return;
+  /** @type {Element} */
+  const target = targetRaw;
+  /** @type {Element} */
+  const tooltipElement = tooltipElementRaw;
+  /** @type {Element} */
+  const tooltipTextElement = tooltipTextElementRaw;
+  /** @type {Element} */
+  const crosshairElement = crosshairElementRaw;
 
+  /** @type {Element[]} */
   let activeNodes = [];
+  /** @type {ReturnType<typeof setTimeout> | null} */
   let hideTimeoutId = null;
   let cachedTargetBbox = null;
 

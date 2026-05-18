@@ -94,7 +94,7 @@ class SiteMapWc extends VBElement {
     // 2. Check for visual mode
     if (this.dataset.view === 'visual') {
       this.#buildHeader();
-      this.#buildVisualTree(nav);
+      this.#buildVisualTree(/** @type {HTMLElement} */ (nav));
       this.dispatchEvent(new CustomEvent('site-map-wc:ready', {
         bubbles: true,
         detail: { nodeCount: this.#nodeCount, depth: this.#maxDepth },
@@ -112,7 +112,7 @@ class SiteMapWc extends VBElement {
     nav.classList.add('sm-tree');
     nav.setAttribute('role', 'tree');
     nav.setAttribute('aria-label', this.getAttribute('title') || 'Site map');
-    this.#treeContainer = nav;
+    this.#treeContainer = /** @type {HTMLElement} */ (nav);
 
     // 6. Apply collapsed state
     if (this.hasAttribute('collapsed')) {
@@ -701,6 +701,7 @@ class SiteMapWc extends VBElement {
   #captureAnchor(anchorId) {
     const scroller = this.#visualContainer?.querySelector('.sm-visual-scroll');
     const svg = this.#visualContainer?.querySelector('svg[role="tree"]');
+    /** @type {{ nodeId: string | null, rectTop: number, rectLeft: number, focusId: string | null }} */
     const anchor = { nodeId: null, rectTop: 0, rectLeft: 0, focusId: this.#visualFocusId };
     if (!scroller || !svg) return anchor;
 
@@ -745,7 +746,7 @@ class SiteMapWc extends VBElement {
 
     if (anchor.focusId) {
       this.#focusVisualNode(anchor.focusId);
-      svg.focus({ preventScroll: true });
+      /** @type {SVGElement} */ (svg).focus({ preventScroll: true });
     }
   }
 
@@ -793,7 +794,7 @@ class SiteMapWc extends VBElement {
     scroller.className = 'sm-visual-scroll';
 
     // SVG element — fixed size, zoom via CSS transform on a wrapper
-    const svg = document.createElementNS(NS, 'svg');
+    const svg = /** @type {SVGSVGElement} */ (document.createElementNS(NS, 'svg'));
     svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
     svg.setAttribute('width', String(svgW));
     svg.setAttribute('height', String(svgH));
@@ -810,7 +811,7 @@ class SiteMapWc extends VBElement {
 
     // Apply rotation for horizontal orientation
     if (horiz) {
-      const g = document.createElementNS(NS, 'g');
+      const g = /** @type {SVGGElement} */ (document.createElementNS(NS, 'g'));
       g.setAttribute('transform', `rotate(90 0 0) translate(0 -${svgH})`);
       this.#renderEdges(g, this.#visualData);
       this.#renderNodes(g, this.#visualData);
@@ -873,13 +874,14 @@ class SiteMapWc extends VBElement {
       const toggle = target.closest('[data-toggle]');
       if (toggle) {
         const nodeId = toggle.getAttribute('data-toggle');
-        this.#toggleCollapse(nodeId);
+        if (nodeId) this.#toggleCollapse(nodeId);
         return;
       }
 
       const nodeG = target.closest('[data-node-id]');
       if (nodeG) {
-        this.#focusVisualNode(nodeG.getAttribute('data-node-id'));
+        const id = nodeG.getAttribute('data-node-id');
+        if (id) this.#focusVisualNode(id);
         this.dispatchEvent(new CustomEvent('site-map-wc:select', {
           bubbles: true,
           detail: {
@@ -1092,17 +1094,17 @@ class SiteMapWc extends VBElement {
     const rect = g.querySelector('rect');
     if (rect) {
       const ring = document.createElementNS(NS, 'rect');
-      ring.setAttribute('x', String(parseFloat(rect.getAttribute('x')) - 3));
-      ring.setAttribute('y', String(parseFloat(rect.getAttribute('y')) - 3));
-      ring.setAttribute('width', String(parseFloat(rect.getAttribute('width')) + 6));
-      ring.setAttribute('height', String(parseFloat(rect.getAttribute('height')) + 6));
+      ring.setAttribute('x', String(parseFloat(rect.getAttribute('x') ?? '0') - 3));
+      ring.setAttribute('y', String(parseFloat(rect.getAttribute('y') ?? '0') - 3));
+      ring.setAttribute('width', String(parseFloat(rect.getAttribute('width') ?? '0') + 6));
+      ring.setAttribute('height', String(parseFloat(rect.getAttribute('height') ?? '0') + 6));
       ring.setAttribute('rx', '11');
       ring.setAttribute('fill', 'none');
       ring.setAttribute('stroke', '#3b82f6');
       ring.setAttribute('stroke-width', '2');
       ring.setAttribute('class', 'sm-vfocus-ring');
       // Insert before the group so it's behind
-      g.parentNode.insertBefore(ring, g);
+      g.parentNode?.insertBefore(ring, g);
     }
 
     g.setAttribute('aria-current', 'true');
@@ -1222,24 +1224,26 @@ class SiteMapWc extends VBElement {
 
     const ds = this.#dragState;
 
-    this.listen(this, 'pointerdown', (e) => {
-      if (/** @type {HTMLElement} */ (e.target).closest('button, [data-toggle], .sm-vtoolbar, input')) return;
+    this.listen(this, 'pointerdown', (/** @type {Event} */ e) => {
+      const pe = /** @type {PointerEvent} */ (e);
+      if (/** @type {HTMLElement} */ (pe.target).closest('button, [data-toggle], .sm-vtoolbar, input')) return;
       const cont = this.querySelector('.sm-visual-scroll');
       if (!cont) return;
       ds.dragging = true;
       ds.moved = false;
-      ds.startX = e.clientX;
-      ds.startY = e.clientY;
+      ds.startX = pe.clientX;
+      ds.startY = pe.clientY;
       ds.scrollLeft = cont.scrollLeft;
       ds.scrollTop = cont.scrollTop;
       const s = this.querySelector('svg[role="tree"]');
       if (s) /** @type {SVGElement} */ (s).style.cursor = 'grabbing';
     });
 
-    this.listen(window, 'pointermove', (e) => {
+    this.listen(window, 'pointermove', (/** @type {Event} */ e) => {
       if (!ds.dragging) return;
-      const dx = e.clientX - ds.startX;
-      const dy = e.clientY - ds.startY;
+      const pe = /** @type {PointerEvent} */ (e);
+      const dx = pe.clientX - ds.startX;
+      const dy = pe.clientY - ds.startY;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) ds.moved = true;
       const cont = this.querySelector('.sm-visual-scroll');
       if (cont) {
@@ -1337,7 +1341,7 @@ class SiteMapWc extends VBElement {
         ? { stroke: '#94a3b8', fill: '#ffffff', text: '#475569' }
         : (SiteMapWc.#TYPE_COLORS[node.pageType] || SiteMapWc.#TYPE_COLORS.page);
 
-      const g = document.createElementNS(NS, 'g');
+      const g = /** @type {SVGGElement} */ (document.createElementNS(NS, 'g'));
       g.setAttribute('data-node-id', nodeId);
       g.setAttribute('data-href', node.href);
       g.setAttribute('data-page-type', node.pageType);
@@ -1424,7 +1428,7 @@ class SiteMapWc extends VBElement {
 
       // Collapse/expand toggle (if has children)
       if (node.children.length > 0) {
-        const tg = document.createElementNS(NS, 'g');
+        const tg = /** @type {SVGGElement} */ (document.createElementNS(NS, 'g'));
         tg.setAttribute('data-toggle', nodeId);
         tg.style.cursor = 'pointer';
 
@@ -1576,7 +1580,7 @@ class SiteMapWc extends VBElement {
         template: li.getAttribute('data-template') || undefined,
         status: li.getAttribute('data-status') || undefined,
       };
-      if (childUl) page.children = this.#serializeListToJson(childUl);
+      if (childUl) page.children = this.#serializeListToJson(/** @type {HTMLUListElement} */ (childUl));
       pages.push(page);
     }
     return pages;
