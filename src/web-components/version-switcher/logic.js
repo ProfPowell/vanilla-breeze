@@ -45,11 +45,15 @@ class VersionSwitcher extends VBElement {
 
   #versions = [];        // resolved entries
   #currentId = null;
+  /** @type {HTMLButtonElement} */
   #trigger;
   #popover;
   #pickerList;
+  /** @type {HTMLElement | null} */
   #panelSection = null;  // set when mounted inside a <page-info> panel
+  /** @type {HTMLElement | null} */
   #banner = null;        // set when data-banner is on AND current is archived
+  /** @type {string | null} */
   #pendingFetch = null;  // tracks the in-flight data-src / meta-fallback fetch
 
   setup() {
@@ -259,27 +263,30 @@ class VersionSwitcher extends VBElement {
     }, 5000);
   }
 
+  /** @param {ParentNode} [panel] */
   #renderPanelSection(panel) {
-    panel = panel || this.#panelSection?.parentNode;
-    if (!panel) return;
+    const host = /** @type {ParentNode | null | undefined} */ (panel || this.#panelSection?.parentNode);
+    if (!host) return;
 
-    if (!this.#panelSection) {
-      this.#panelSection = document.createElement('section');
-      this.#panelSection.className = 'version-switcher-panel-section';
-      this.#panelSection.setAttribute('aria-label', this.getAttribute('aria-label') || 'Versions');
+    let section = this.#panelSection;
+    if (!section) {
+      section = document.createElement('section');
+      section.className = 'version-switcher-panel-section';
+      section.setAttribute('aria-label', this.getAttribute('aria-label') || 'Versions');
       const heading = document.createElement('h3');
       heading.className = 'version-switcher-panel-heading';
       heading.textContent = this.#mode() === 'history' ? 'History' : 'Versions';
-      this.#panelSection.appendChild(heading);
-      panel.appendChild(this.#panelSection);
+      section.appendChild(heading);
+      host.appendChild(section);
+      this.#panelSection = section;
     }
 
     // Populate / repopulate the version list inside the section.
-    let list = this.#panelSection.querySelector('ul.version-switcher-panel-list');
+    let list = /** @type {HTMLUListElement | null} */ (section.querySelector('ul.version-switcher-panel-list'));
     if (!list) {
       list = document.createElement('ul');
       list.className = 'version-switcher-panel-list';
-      this.#panelSection.appendChild(list);
+      section.appendChild(list);
     }
     list.replaceChildren();
 

@@ -37,8 +37,8 @@ class ComboBox extends VBElement {
   /** @type {HTMLInputElement} */ #input;
   /** @type {HTMLElement} */ #listbox;
   /** @type {HTMLElement} */ #popover;
-  /** @type {Element[]} */ #options = [];
-  /** @type {Element[]} */ #filteredOptions = [];
+  /** @type {HTMLElement[]} */ #options = [];
+  /** @type {HTMLElement[]} */ #filteredOptions = [];
   #activeIndex = -1;
   #isOpen = false;
 
@@ -63,37 +63,43 @@ class ComboBox extends VBElement {
   }
 
   setup() {
-    this.#input = this.querySelector(':scope > input') ||
-                  this.querySelector(':scope > .tags-input-area > input');
-    if (!this.#input) return false;
+    const input = /** @type {HTMLInputElement | null} */ (
+      this.querySelector(':scope > input') ||
+      this.querySelector(':scope > .tags-input-area > input')
+    );
+    if (!input) return false;
+    this.#input = input;
 
     // Find listbox (may already be wrapped in pop-over from a prior upgrade)
-    this.#listbox = this.querySelector('ul, ol');
-    if (!this.#listbox) return false;
+    const listbox = /** @type {HTMLElement | null} */ (this.querySelector('ul, ol'));
+    if (!listbox) return false;
+    this.#listbox = listbox;
 
     // Multi mode: ensure .tags-input-area wrapper exists and input is inside.
     if (this.#isMultiple) {
-      this.#inputArea = this.querySelector(':scope > .tags-input-area');
-      if (!this.#inputArea) {
-        this.#inputArea = document.createElement('div');
-        this.#inputArea.className = 'tags-input-area';
+      let inputArea = /** @type {HTMLElement | null} */ (this.querySelector(':scope > .tags-input-area'));
+      if (!inputArea) {
+        inputArea = document.createElement('div');
+        inputArea.className = 'tags-input-area';
         // Insert before the listbox or its pop-over wrapper.
         const beforeNode = this.querySelector(':scope > pop-over[data-combobox-host]') || this.#listbox;
-        this.insertBefore(this.#inputArea, beforeNode);
+        this.insertBefore(inputArea, beforeNode);
       }
+      this.#inputArea = inputArea;
       if (this.#input.parentNode !== this.#inputArea) {
         this.#inputArea.appendChild(this.#input);
       }
 
-      this.#liveRegion = this.querySelector(':scope > [data-combobox-live]');
-      if (!this.#liveRegion) {
-        this.#liveRegion = document.createElement('div');
-        this.#liveRegion.setAttribute('aria-live', 'polite');
-        this.#liveRegion.setAttribute('aria-atomic', 'true');
-        this.#liveRegion.setAttribute('data-combobox-live', '');
-        this.#liveRegion.className = 'visually-hidden';
-        this.appendChild(this.#liveRegion);
+      let liveRegion = /** @type {HTMLElement | null} */ (this.querySelector(':scope > [data-combobox-live]'));
+      if (!liveRegion) {
+        liveRegion = document.createElement('div');
+        liveRegion.setAttribute('aria-live', 'polite');
+        liveRegion.setAttribute('aria-atomic', 'true');
+        liveRegion.setAttribute('data-combobox-live', '');
+        liveRegion.className = 'visually-hidden';
+        this.appendChild(liveRegion);
       }
+      this.#liveRegion = liveRegion;
     }
 
     const placeholder = this.getAttribute('placeholder');
@@ -162,12 +168,13 @@ class ComboBox extends VBElement {
     this.#syncFormValue();
     this.#validate();
     this.#close();
+    return true;
   }
 
   teardown() {}
 
   #collectOptions() {
-    this.#options = Array.from(this.#listbox.querySelectorAll(':scope > li[data-value]'));
+    this.#options = /** @type {HTMLElement[]} */ (Array.from(this.#listbox.querySelectorAll(':scope > li[data-value]')));
     this.#options.forEach((option, index) => {
       option.setAttribute('role', 'option');
       option.setAttribute('aria-selected', 'false');
@@ -427,7 +434,7 @@ class ComboBox extends VBElement {
 
   /** @param {Element} option */
   #selectOption(option, source = 'internal') {
-    const value = option.getAttribute('data-value');
+    const value = option.getAttribute('data-value') || '';
     const label = option.textContent.trim();
     if (this.#selectedValue === value) return;
 

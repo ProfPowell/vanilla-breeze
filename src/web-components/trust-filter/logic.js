@@ -75,18 +75,21 @@ class TrustFilter extends VBElement {
     html.push('<output data-trust-filter-results aria-live="polite"></output>');
     this.innerHTML = html.join('\n');
 
-    this.querySelector('form').addEventListener('change', (e) => {
-      if (e.target.matches('input[type="checkbox"]')) {
-        const dim = e.target.getAttribute('data-dim');
-        const val = e.target.value;
-        const set = this.#selected[dim];
-        if (e.target.checked) set.add(val);
+    const form = /** @type {HTMLFormElement} */ (this.querySelector('form'));
+    form.addEventListener('change', (e) => {
+      const target = /** @type {HTMLInputElement | null} */ (e.target);
+      if (target && target.matches('input[type="checkbox"]')) {
+        const dim = target.getAttribute('data-dim');
+        const val = target.value;
+        const set = dim ? this.#selected[dim] : null;
+        if (!set) return;
+        if (target.checked) set.add(val);
         else set.delete(val);
         this.#renderResults();
       }
     });
 
-    this.querySelector('form').addEventListener('reset', () => {
+    form.addEventListener('reset', () => {
       for (const set of Object.values(this.#selected)) set.clear();
       /* Defer until reset clears native checked state */
       setTimeout(() => this.#renderResults(), 0);
