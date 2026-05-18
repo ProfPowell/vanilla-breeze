@@ -195,30 +195,30 @@ class AdrWc extends HTMLElement {
     if (data.detail != null) this.setAttribute('detail', String(data.detail));
 
     if (data.supersedes) {
-      this.setAttribute('supersedes', Array.isArray(data.supersedes) ? data.supersedes.join(',') : data.supersedes);
+      this.setAttribute('supersedes', Array.isArray(data.supersedes) ? data.supersedes.join(',') : String(data.supersedes));
     }
     if (data.supersededBy) {
-      this.setAttribute('superseded-by', Array.isArray(data.supersededBy) ? data.supersededBy.join(',') : data.supersededBy);
+      this.setAttribute('superseded-by', Array.isArray(data.supersededBy) ? data.supersededBy.join(',') : String(data.supersededBy));
     }
 
     if (data.title && !this.querySelector('[slot="title"]')) {
       const h = document.createElement('h3');
       h.slot = 'title';
-      h.textContent = data.title;
+      h.textContent = String(data.title);
       this.appendChild(h);
     }
     if (data.date && !this.querySelector('[slot="date"]')) {
       const t = document.createElement('time');
       t.slot = 'date';
-      t.setAttribute('datetime', data.date);
-      t.textContent = new Date(data.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      t.setAttribute('datetime', String(data.date));
+      t.textContent = new Date(String(data.date)).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
       this.appendChild(t);
     }
     for (const key of ['context', 'decision']) {
       if (data[key] && !this.querySelector(`[slot="${key}"]`)) {
         const p = document.createElement('p');
         p.slot = key;
-        p.textContent = data[key];
+        p.textContent = String(data[key]);
         this.appendChild(p);
       }
     }
@@ -228,7 +228,7 @@ class AdrWc extends HTMLElement {
       const items = Array.isArray(data.consequences) ? data.consequences : [data.consequences];
       for (const item of items) {
         const li = document.createElement('li');
-        li.textContent = item;
+        li.textContent = String(item);
         ul.appendChild(li);
       }
       this.appendChild(ul);
@@ -239,7 +239,8 @@ class AdrWc extends HTMLElement {
 
   async _loadSrc(url) {
     if (!url) return;
-    this.shadowRoot.innerHTML = `<style>${styles}</style><div class="state-msg">Loading\u2026</div>`;
+    const root = /** @type {ShadowRoot} */ (this.shadowRoot);
+    root.innerHTML = `<style>${styles}</style><div class="state-msg">Loading\u2026</div>`;
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -249,21 +250,22 @@ class AdrWc extends HTMLElement {
       this.#cacheSlotValues();
       this.#render();
     } catch (err) {
-      this.shadowRoot.innerHTML = `<style>${styles}</style>` +
-        `<div class="state-msg state-msg--error">Could not load: ${esc(err.message)}</div>`;
+      root.innerHTML = `<style>${styles}</style>` +
+        `<div class="state-msg state-msg--error">Could not load: ${esc(/** @type {Error} */ (err).message)}</div>`;
     }
   }
 
   /* ── Render ────────────────────────────────────── */
 
   #render() {
+    const root = /** @type {ShadowRoot} */ (this.shadowRoot);
     const statusInfo = STATUSES[this.status] || STATUSES.proposed;
     const level = this._detailLevel;
     const ariaLabel = this.adrId ? `ADR: ${esc(this.adrId)}` : 'Architectural Decision Record';
     const hasDate = !!this.querySelector('[slot="date"]') || this.#slotCache.has('date');
 
     if (level === 'minimal') {
-      this.shadowRoot.innerHTML = `<style>${styles}</style>
+      root.innerHTML = `<style>${styles}</style>
         <article class="adr-card adr-card--minimal" role="article" aria-label="${ariaLabel}"
           tabindex="0">
           <div class="adr-body">
@@ -279,7 +281,7 @@ class AdrWc extends HTMLElement {
       return;
     }
 
-    this.shadowRoot.innerHTML = `<style>${styles}</style>
+    root.innerHTML = `<style>${styles}</style>
       <article class="adr-card adr-card--${level}" role="article" aria-label="${ariaLabel}">
 
         <header class="adr-header">
@@ -350,7 +352,7 @@ class AdrWc extends HTMLElement {
 
     // Compact: mark empty slot sections
     if (level === 'compact') {
-      for (const section of this.shadowRoot.querySelectorAll('.adr-section')) {
+      for (const section of root.querySelectorAll('.adr-section')) {
         const slot = section.querySelector('slot');
         if (slot && slot.assignedNodes().length === 0) {
           section.setAttribute('data-empty', '');

@@ -39,9 +39,13 @@ const supportsPositionArea = CSS.supports('position-area', 'bottom');
 let anchorCounter = 0;
 
 class PopOver extends VBElement {
+  /** @type {HTMLElement | null} */
   #anchor = null;
+  /** @type {string | null} */
   #anchorName = null;
+  /** @type {((e: any) => void) | null} */
   #onBeforeToggle = null;
+  /** @type {(() => void) | null} */
   #onWindowChange = null;
 
   setup() {
@@ -105,11 +109,11 @@ class PopOver extends VBElement {
   #resolveAnchor() {
     const ref = this.dataset.anchor;
     if (ref) {
-      this.#anchor = document.getElementById(ref) || document.querySelector(ref);
+      this.#anchor = /** @type {HTMLElement | null} */ (document.getElementById(ref) || document.querySelector(ref));
     } else {
       /* Find the trigger via popovertarget. Authors don't have to
          duplicate the anchor reference. */
-      this.#anchor = document.querySelector(`[popovertarget="${CSS.escape(this.id)}"]`);
+      this.#anchor = /** @type {HTMLElement | null} */ (document.querySelector(`[popovertarget="${CSS.escape(this.id)}"]`));
     }
   }
 
@@ -119,7 +123,7 @@ class PopOver extends VBElement {
     this.#anchorName = `--pop-over-anchor-${this.id}`;
     this.#anchor.style.setProperty('anchor-name', this.#anchorName);
     this.style.setProperty('position-anchor', this.#anchorName);
-    this.setAttribute('data-anchor-name', this.#anchorName);
+    this.setAttribute('data-anchor-name', this.#anchorName || '');
 
     /* When position-area isn't available but anchor-name is (e.g.,
        Safari TP), fall back to inset/anchor() arithmetic for the
@@ -146,6 +150,7 @@ class PopOver extends VBElement {
   // ── JS-driven fallback (no anchor-positioning support) ──────────────
 
   #positionFallback() {
+    if (!this.#anchor) return;
     const r = this.#anchor.getBoundingClientRect();
     const pos = this.dataset.position || 'bottom';
     const off = this.#offsetPx();
