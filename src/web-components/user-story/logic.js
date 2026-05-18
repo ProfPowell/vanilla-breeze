@@ -146,25 +146,25 @@ class UserStory extends HTMLElement {
     if (data.persona && !this.querySelector('[slot="persona"]')) {
       const el = document.createElement('span');
       el.slot = 'persona';
-      el.textContent = data.persona;
+      el.textContent = String(data.persona);
       this.appendChild(el);
     }
     if (data.action && !this.querySelector('[slot="action"]')) {
       const el = document.createElement('span');
       el.slot = 'action';
-      el.textContent = data.action;
+      el.textContent = String(data.action);
       this.appendChild(el);
     }
     if (data.benefit && !this.querySelector('[slot="benefit"]')) {
       const el = document.createElement('span');
       el.slot = 'benefit';
-      el.textContent = data.benefit;
+      el.textContent = String(data.benefit);
       this.appendChild(el);
     }
     if (data.title && !this.querySelector('[slot="title"]')) {
       const el = document.createElement('h3');
       el.slot = 'title';
-      el.textContent = data.title;
+      el.textContent = String(data.title);
       this.appendChild(el);
     }
     for (const key of ['acceptance-criteria', 'tasks', 'notes']) {
@@ -175,14 +175,14 @@ class UserStory extends HTMLElement {
           ul.slot = key;
           for (const item of data[jsonKey]) {
             const li = document.createElement('li');
-            li.textContent = item;
+            li.textContent = String(item);
             ul.appendChild(li);
           }
           this.appendChild(ul);
         } else {
           const p = document.createElement('p');
           p.slot = key;
-          p.textContent = data[jsonKey];
+          p.textContent = String(data[jsonKey]);
           this.appendChild(p);
         }
       }
@@ -320,7 +320,7 @@ class UserStory extends HTMLElement {
 
   showDetail() {
     const dialogId = `story-dialog-${this.storyId || this.id || 'detail'}`;
-    let dialog = document.getElementById(dialogId);
+    let dialog = /** @type {HTMLDialogElement | null} */ (document.getElementById(dialogId));
     if (!dialog) {
       dialog = document.createElement('dialog');
       dialog.id = dialogId;
@@ -344,7 +344,7 @@ class UserStory extends HTMLElement {
     const full = document.createElement('user-story');
     for (const attr of this.getAttributeNames()) {
       if (attr === 'detail' || attr === 'compact' || attr === 'data-upgraded' || attr === 'draggable' || attr === 'data-id' || attr === 'data-quadrant') continue;
-      full.setAttribute(attr, this.getAttribute(attr));
+      full.setAttribute(attr, this.getAttribute(attr) ?? '');
     }
     const hasSlottedContent = [...this.children].some(c => c.getAttribute('slot') && c.tagName !== 'DIALOG');
     full.setAttribute('detail', hasSlottedContent ? 'full' : 'compact');
@@ -373,6 +373,7 @@ class UserStory extends HTMLElement {
       ? `User story: ${esc(this.storyId)}`
       : 'User story';
 
+    if (!this.shadowRoot) return;
     if (level === 'minimal') {
       this.shadowRoot.innerHTML = `
         <style>${styles}</style>
@@ -387,9 +388,11 @@ class UserStory extends HTMLElement {
         </article>
       `;
       const card = this.shadowRoot.querySelector('.story-card--minimal');
+      if (!card) return;
       card.addEventListener('click', () => this.showDetail());
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.showDetail(); }
+      card.addEventListener('keydown', (/** @type {Event} */ e) => {
+        const ke = /** @type {KeyboardEvent} */ (e);
+        if (ke.key === 'Enter' || ke.key === ' ') { ke.preventDefault(); this.showDetail(); }
       });
     } else {
       this.shadowRoot.innerHTML = `

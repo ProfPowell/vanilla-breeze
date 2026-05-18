@@ -38,6 +38,10 @@ const CHART_TYPES = {
   bubble: BubbleChart,
 };
 
+/**
+ * @param {*} value
+ * @param {*} [fallback]
+ */
 function parseJson(value, fallback = null) {
   if (value == null) return fallback;
   if (typeof value !== 'string') return value;
@@ -78,11 +82,16 @@ class ChartWc extends VBElement {
     ];
   }
 
+  /** @type {any} */
   #data = null;
+  /** @type {any} */
   #config = null;
+  /** @type {{ destroy: () => void, mount: (el: Element) => any } | null} */
   #chart = null;
   #renderQueued = false;
+  /** @type {HTMLDivElement | null} */
   #svgContainer = null;
+  /** @type {HTMLDivElement | null} */
   #shadowWrapper = null;
 
   // -- Public property API --
@@ -199,7 +208,7 @@ class ChartWc extends VBElement {
     }
 
     // 4. <template data-chart-data> child
-    const template = this.querySelector('template[data-chart-data]');
+    const template = /** @type {HTMLTemplateElement | null} */ (this.querySelector('template[data-chart-data]'));
     if (template) {
       const content = template.content?.textContent || template.innerHTML;
       return {data: parseJson(content, null), tableConfig: {}};
@@ -419,8 +428,9 @@ class ChartWc extends VBElement {
           bubbles: true,
         }));
 
-        this.#chart = new ChartType({config, data});
-        this.#chart.mount(this.#svgContainer);
+        const chart = new ChartType({config, data});
+        this.#chart = chart;
+        if (this.#svgContainer) chart.mount(this.#svgContainer);
 
         this.dispatchEvent(new CustomEvent('chart-wc:render', {
           detail: {
@@ -430,8 +440,9 @@ class ChartWc extends VBElement {
           bubbles: true,
         }));
       } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
         this.dispatchEvent(new CustomEvent('chart-wc:error', {
-          detail: {message: err.message},
+          detail: {message: msg},
           bubbles: true,
         }));
       }
