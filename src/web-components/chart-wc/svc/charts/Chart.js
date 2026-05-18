@@ -56,6 +56,19 @@ class Chart extends SVC {
   #stylesheet;
   #defs;
 
+  /** @type {any} */ data;
+  /** @type {any} */ config;
+  /** @type {any} */ palette;
+  /** @type {string} */ _scopeId = '';
+  /** @type {any[]} */ interactions = [];
+  /** @type {any} */ stats;
+  /** @type {any} */ chart;
+  /** @type {any} */ legend;
+  /** @type {any} */ title;
+  /** @type {any} */ tooltip;
+  /** @type {((...args: any[]) => any) | undefined} */ tooltipLocation;
+  /** @type {any} */ _styleElement;
+
   /**
    * Creates the instance of a chart. Can be used directly in Node.js.
    * @param {Object} options - The options object.
@@ -88,7 +101,7 @@ class Chart extends SVC {
     this.hooks.run('configResolved', {
       config: this.config,
       data: this.data,
-      chartType: this.constructor.type,
+      chartType: /** @type {any} */ (this.constructor).type,
     });
 
     // Create a Stylesheet
@@ -150,10 +163,10 @@ class Chart extends SVC {
     const defaults = new Defaults(this.palette, ...defaultObjs, config);
 
     // Apply the palette from the Chart defaults
-    defaults.applyPalette(Chart.specs());
+    defaults.applyPalette(/** @type {any} */ (Chart).specs());
 
     // Apply the chart type's palette
-    defaults.applyPalette(this.constructor.specs(defaults.config));
+    defaults.applyPalette(/** @type {any} */ (this.constructor).specs(defaults.config));
     return defaults;
   }
 
@@ -259,7 +272,7 @@ class Chart extends SVC {
     structure.wrap.setAttribute('data-chart-id', this._scopeId);
 
     // Set ARIA attributes on root SVG
-    const chartType = this.constructor.type || 'chart';
+    const chartType = /** @type {any} */ (this.constructor).type || 'chart';
     if (this.config.title && this.config.title.text) {
       const safeTitle = escapeHtml(this.config.title.text);
       structure.root.setAttribute('aria-label', safeTitle);
@@ -317,7 +330,7 @@ class Chart extends SVC {
     // Legend
     if (this.config.legend && this.config.legend.enabled) {
       const legend = new VElement('chart-legend');
-      legend.appendChild(this.legend.render(null, null, this.constructor.type));
+      legend.appendChild(this.legend.render(null, null, /** @type {any} */ (this.constructor).type));
       body.appendChild(legend);
       this.interactions.push(legendInteraction);
     }
@@ -327,7 +340,7 @@ class Chart extends SVC {
         stats: this.stats,
         data: this.data,
         config: this.config,
-        type: this.constructor.type,
+        type: /** @type {any} */ (this.constructor).type,
       }).render();
 
       layoutChart.appendChild(this.tooltip.tooltip);
@@ -346,7 +359,7 @@ class Chart extends SVC {
   /**
     * Generate CSS, compile virtualDOM into a stringified DOM element
     * @param {Object} root - The top level element object.
-    * @param {boolean} isSparkline
+    * @param {boolean} [_isSparkline]
     * @return {string} - The stringified SVC output
     */
   compile(root, _isSparkline) {
@@ -434,7 +447,7 @@ class Chart extends SVC {
    */
   compileStyles() {
     const style = new VElement('style');
-    const numInstances = (this.constructor.type !== 'pie') ? this.data.length : Object.keys(this.data).length;
+    const numInstances = (/** @type {any} */ (this.constructor).type !== 'pie') ? this.data.length : Object.keys(this.data).length;
     const styles = this.stylesheet.convertconfig(this.config, numInstances, this._scopeId) + this.stylesheet.sheet;
     style.innerHTML = `@layer charts { ${styles} }`;
     return style;

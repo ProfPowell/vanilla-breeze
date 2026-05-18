@@ -23,16 +23,37 @@ function _safeJsonEmbed(value) {
 class SVC {
   /** @type {Hooks} */
   hooks = new Hooks();
-  /** @type {{ root: any, body: any }} Subclass-defined */
-  structure = /** @type {any} */ ({});
-  /** @type {(node: any) => string} Subclass-defined */
-  compile = /** @type {any} */ (() => '');
-  /** @type {(node: any, opts?: any) => string} Subclass-defined */
-  compileHTML = /** @type {any} */ (() => '');
-  /** @type {(config: any) => any} Subclass-defined */
-  applyConfigToDefaults = /** @type {any} */ ((c) => c);
-  /** @type {() => void} Subclass-defined */
-  render = /** @type {any} */ (() => {});
+  /** @type {{ root: any, body: any } | null} Subclass-defined */
+  structure = null;
+
+  /** @param {any} [_options] */
+  constructor(_options) { /* subclasses may consume options */ }
+
+  /**
+   * Subclass-defined: compile a structure node to an SVG/HTML string.
+   * @param {any} _node
+   * @param {any} [_opts]
+   * @returns {string}
+   */
+  compile(_node, _opts) { return ''; }
+
+  /**
+   * Subclass-defined: compile to HTML.
+   * @param {any} _node
+   * @param {any} [_opts]
+   * @returns {string}
+   */
+  compileHTML(_node, _opts) { return ''; }
+
+  /**
+   * Subclass-defined: merge config into defaults.
+   * @param {any} _config
+   * @returns {any}
+   */
+  applyConfigToDefaults(_config) { return _config; }
+
+  /** Subclass-defined: re-render the chart. */
+  render() { /* implemented by subclasses */ }
   /**
    * Creates a SVG string of the chart with the appropriate XML header. Use this method if creating a .svg file.
    * @param {object} [options] - Options object.
@@ -47,6 +68,7 @@ class SVC {
     const HEADER = `<?xml version="1.0" standalone="no"?>
     <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">`;
     const structure = this.structure;
+    if (!structure) return HEADER;
     const {body} = structure;
     let script;
     if (opts.includeScripts) {
@@ -86,7 +108,7 @@ class SVC {
    * @return {string} The chart as a string
    */
   toString() {
-    return this.compile(this.structure.root);
+    return this.structure ? this.compile(this.structure.root) : '';
   }
 
   /**

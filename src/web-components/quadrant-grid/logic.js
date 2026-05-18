@@ -135,7 +135,8 @@ class QuadrantGrid extends VBElement {
     }
 
     /* Distribute captured children into matching quadrants. */
-    children.forEach((child, i) => {
+    children.forEach((/** @type {Element} */ rawChild, i) => {
+      const child = /** @type {HTMLElement} */ (rawChild);
       const q = this.#resolveQuadrant(child);
       const target = draggable ? this.#surfaces[q] : this.#lists[q];
 
@@ -148,8 +149,8 @@ class QuadrantGrid extends VBElement {
       // (each quadrant spans half the grid; convert document 0..1 to
       // section 0..1) and pin via --qg-local-x / --qg-local-y.
       if (child.hasAttribute('data-x') && child.hasAttribute('data-y')) {
-        const x = parseFloat(child.getAttribute('data-x'));
-        const y = parseFloat(child.getAttribute('data-y'));
+        const x = parseFloat(child.getAttribute('data-x') ?? '');
+        const y = parseFloat(child.getAttribute('data-y') ?? '');
         if (Number.isFinite(x) && Number.isFinite(y)) {
           const localX = q === 0 || q === 3 ? (x - 0.5) * 2 : x * 2;
           const localY = q === 0 || q === 1 ? (y - 0.5) * 2 : y * 2;
@@ -239,7 +240,8 @@ class QuadrantGrid extends VBElement {
      or focus. Cluster pairs by bounding-rect intersection — robust to
      pin size, padding, and inline-size differences. */
   #detectClusters() {
-    for (const pin of this.querySelectorAll('.qg-pinned')) {
+    for (const rawPin of this.querySelectorAll('.qg-pinned')) {
+      const pin = /** @type {HTMLElement} */ (rawPin);
       pin.classList.remove('qg-clustered');
       pin.style.removeProperty('--qg-cluster-i');
       pin.style.removeProperty('--qg-cluster-n');
@@ -254,10 +256,11 @@ class QuadrantGrid extends VBElement {
     for (let q = 0; q < 4; q++) {
       const section = this.#sections[q];
       if (!section) continue;
-      const pins = [...section.querySelectorAll('.qg-pinned')];
+      const pins = /** @type {HTMLElement[]} */ ([...section.querySelectorAll('.qg-pinned')]);
       if (pins.length < 2) continue;
       const rects = pins.map((p) => p.getBoundingClientRect());
       const parent = Array.from({ length: pins.length }, (_, i) => i);
+      /** @type {(i: number) => number} */
       const find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])));
       const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent[ra] = rb; };
       for (let i = 0; i < pins.length; i++) {
@@ -265,11 +268,12 @@ class QuadrantGrid extends VBElement {
           if (QuadrantGrid.#rectsIntersect(rects[i], rects[j])) union(i, j);
         }
       }
+      /** @type {Map<number, number[]>} */
       const groups = new Map();
       for (let i = 0; i < pins.length; i++) {
         const root = find(i);
         if (!groups.has(root)) groups.set(root, []);
-        groups.get(root).push(i);
+        groups.get(root)?.push(i);
       }
       for (const members of groups.values()) {
         if (members.length < 2) continue;
