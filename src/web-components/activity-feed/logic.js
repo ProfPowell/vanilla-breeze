@@ -49,7 +49,7 @@ function weekKey(d) {
   const thursday = new Date(monday);
   thursday.setDate(monday.getDate() + 3);
   const yearStart = new Date(thursday.getFullYear(), 0, 1);
-  const weekNum = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7);
+  const weekNum = Math.ceil((((thursday.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
   return `${thursday.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 }
 
@@ -70,10 +70,15 @@ function weekHeading(key) {
 }
 
 class ActivityFeed extends VBElement {
+  /** @type {MutationObserver | null} */
   #observer = null;     // MutationObserver on direct children
+  /** @type {HTMLElement | null} */
   #ioSentinel = null;   // <div> at the end for IntersectionObserver
+  /** @type {IntersectionObserver | null} */
   #io = null;           // IntersectionObserver
-  #refreshTimer = 0;
+  /** @type {ReturnType<typeof setInterval> | null} */
+  #refreshTimer = null;
+  /** @type {HTMLElement | null} */
   #emptyEl = null;
 
   setup() {
@@ -90,8 +95,9 @@ class ActivityFeed extends VBElement {
       let added = false;
       for (const m of mutations) {
         for (const node of m.addedNodes) {
-          if (node.nodeType === 1 && node.matches?.('article[data-activity]')) {
-            this.#decorateEntry(node);
+          const el = /** @type {Element} */ (node);
+          if (node.nodeType === 1 && el.matches?.('article[data-activity]')) {
+            this.#decorateEntry(/** @type {HTMLElement} */ (el));
             added = true;
           }
         }
@@ -111,18 +117,20 @@ class ActivityFeed extends VBElement {
     if (this.hasAttribute('data-infinite')) this.#armInfiniteScroll();
 
     this.listen(this, 'keydown', this.#onKeydown);
+    return true;
   }
 
   teardown() {
-    clearInterval(this.#refreshTimer);
+    if (this.#refreshTimer !== null) clearInterval(this.#refreshTimer);
     this.#observer?.disconnect();
     this.#io?.disconnect();
   }
 
   // ── Entry decoration ───────────────────────────────────────────────
 
+  /** @returns {HTMLElement[]} */
   #scanEntries() {
-    return [...this.querySelectorAll(':scope > article[data-activity]')];
+    return /** @type {HTMLElement[]} */ ([...this.querySelectorAll(':scope > article[data-activity]')]);
   }
 
   #decorateEntry(entry) {
@@ -234,9 +242,11 @@ class ActivityFeed extends VBElement {
 
   // ── Keyboard nav (WAI-ARIA Feed pattern) ───────────────────────────
 
+  /** @type {(e: KeyboardEvent) => void} */
   #onKeydown = (e) => {
     const entries = this.#scanEntries();
-    const i = entries.indexOf(document.activeElement);
+    const active = /** @type {HTMLElement | null} */ (document.activeElement);
+    const i = active ? entries.indexOf(active) : -1;
     if (i === -1) return;
     let next = i;
     switch (e.key) {

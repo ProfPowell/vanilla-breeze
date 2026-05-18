@@ -31,11 +31,12 @@ class GradientBuilder extends VBElement {
   #interpolation = 'oklab';
 
   setup() {
-    this.#stops = parseColorStops(this.getAttribute('colors'));
+    this.#stops = parseColorStops(this.getAttribute('colors') ?? '');
     this.#type = this.getAttribute('type') || 'linear';
     this.#angle = Number(this.getAttribute('angle')) || 90;
     this.#interpolation = this.getAttribute('interpolation') || 'oklab';
     this.#render();
+    return true;
   }
 
   attributeChangedCallback(name, oldVal, newVal) {
@@ -151,7 +152,8 @@ class GradientBuilder extends VBElement {
   #wire() {
     // Type select
     this.querySelector('.gb-type')?.addEventListener('change', (e) => {
-      this.#type = e.target.value;
+      const t = /** @type {HTMLSelectElement} */ (e.target);
+      this.#type = t.value;
       this.#render();
       this.#emit();
     });
@@ -160,17 +162,19 @@ class GradientBuilder extends VBElement {
     const angleInput = this.querySelector('.gb-angle');
     const angleValue = this.querySelector('.gb-angle-value');
     angleInput?.addEventListener('input', (e) => {
-      this.#angle = Number(e.target.value);
+      const t = /** @type {HTMLInputElement} */ (e.target);
+      this.#angle = Number(t.value);
       if (angleValue) angleValue.textContent = `${this.#angle}°`;
       // Live update preview without full re-render
-      const preview = this.querySelector('.gb-preview');
+      const preview = /** @type {HTMLElement | null} */ (this.querySelector('.gb-preview'));
       if (preview) preview.style.background = this.css;
       this.#emit();
     });
 
     // Interpolation select
     this.querySelector('.gb-space')?.addEventListener('change', (e) => {
-      this.#interpolation = e.target.value;
+      const t = /** @type {HTMLSelectElement} */ (e.target);
+      this.#interpolation = t.value;
       this.#render();
       this.#emit();
     });
@@ -178,8 +182,9 @@ class GradientBuilder extends VBElement {
     // Stop color inputs
     this.querySelectorAll('.gb-stop-color').forEach((input) => {
       input.addEventListener('input', (e) => {
-        const i = Number(e.target.dataset.i);
-        this.#stops[i].color = e.target.value;
+        const t = /** @type {HTMLInputElement} */ (e.target);
+        const i = Number(t.dataset.i);
+        this.#stops[i].color = t.value;
         this.#updatePreview();
         this.#emit();
       });
@@ -188,8 +193,9 @@ class GradientBuilder extends VBElement {
     // Stop position range sliders
     this.querySelectorAll('.gb-stop-pos-range').forEach((input) => {
       input.addEventListener('input', (e) => {
-        const i = Number(e.target.dataset.i);
-        const val = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+        const t = /** @type {HTMLInputElement} */ (e.target);
+        const i = Number(t.dataset.i);
+        const val = Math.max(0, Math.min(100, Number(t.value) || 0));
         this.#stops[i].position = val;
         const label = this.querySelector(`.gb-stop-pos-label[data-i="${i}"]`);
         if (label) label.textContent = `${val}%`;
@@ -201,7 +207,8 @@ class GradientBuilder extends VBElement {
     // Remove stop buttons
     this.querySelectorAll('.gb-remove').forEach((btn) => {
       btn.addEventListener('click', (e) => {
-        const i = Number(e.target.dataset.i);
+        const t = /** @type {HTMLElement} */ (e.target);
+        const i = Number(t.dataset.i);
         this.#stops.splice(i, 1);
         this.#render();
         this.#emit();
@@ -222,7 +229,8 @@ class GradientBuilder extends VBElement {
     // Copy CSS button
     this.querySelector('.gb-copy')?.addEventListener('click', (e) => {
       navigator.clipboard?.writeText(this.css);
-      const btn = e.target;
+      const btn = /** @type {HTMLElement | null} */ (e.target);
+      if (!btn) return;
       const orig = btn.textContent;
       btn.textContent = 'Copied!';
       setTimeout(() => { btn.textContent = orig; }, 1500);
@@ -231,7 +239,7 @@ class GradientBuilder extends VBElement {
 
   #updatePreview() {
     const css = this.css;
-    const preview = this.querySelector('.gb-preview');
+    const preview = /** @type {HTMLElement | null} */ (this.querySelector('.gb-preview'));
     if (preview) preview.style.background = css;
     const output = this.querySelector('.gb-css-output');
     if (output) output.textContent = css;

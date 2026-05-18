@@ -17,9 +17,11 @@ import { initHighlights } from '../../utils/highlights-init.js';
 const DEFAULT_COLORS = ['yellow', 'green', 'blue', 'pink'];
 
 class HighlightWC extends VBElement {
+  /** @type {{ destroy: () => void, _createFromSelection: (color: string) => void, getHighlights: () => any[], removeHighlight: (id: string) => void, clearAll: () => void, exportHighlights: () => any, importHighlights: (data: any) => void } | null} */
   #controller = null;
   #lastColor = 'yellow';
   #inSelectionMenu = false;
+  /** @type {HTMLDivElement | null} */
   #palette = null;
 
   setup() {
@@ -65,6 +67,7 @@ class HighlightWC extends VBElement {
     this.#palette.setAttribute('aria-label', 'Highlight color');
     this.#palette.hidden = true;
 
+    const palette = this.#palette;
     colors.forEach(color => {
       const swatch = document.createElement('button');
       swatch.type = 'button';
@@ -76,16 +79,16 @@ class HighlightWC extends VBElement {
       swatch.addEventListener('click', (e) => {
         e.stopPropagation();
         this.#lastColor = color;
-        this.#palette.querySelectorAll('.highlight-color-swatch').forEach(s =>
-          s.setAttribute('aria-pressed', s.dataset.color === color ? 'true' : 'false')
+        palette.querySelectorAll('.highlight-color-swatch').forEach((s) =>
+          s.setAttribute('aria-pressed', /** @type {HTMLElement} */ (s).dataset.color === color ? 'true' : 'false')
         );
-        this.#palette.hidden = true;
+        palette.hidden = true;
         this.#applyHighlight();
       });
-      this.#palette.appendChild(swatch);
+      palette.appendChild(swatch);
     });
 
-    this.appendChild(this.#palette);
+    this.appendChild(palette);
   }
 
   #togglePalette() {
@@ -94,9 +97,9 @@ class HighlightWC extends VBElement {
   }
 
   #applyHighlight() {
-    const menu = this.closest('selection-menu');
+    const menu = /** @type {any} */ (this.closest('selection-menu'));
     if (!menu) return;
-    const sel = menu.getSelection();
+    const sel = menu.getSelection?.();
     if (!sel) return;
 
     const target = sel.target;
@@ -104,15 +107,15 @@ class HighlightWC extends VBElement {
       const storageKey = this.getAttribute('storage-key') || '';
       target.setAttribute('data-highlights', storageKey);
       if (this.hasAttribute('colors')) {
-        target.setAttribute('data-highlights-colors', this.getAttribute('colors'));
+        target.setAttribute('data-highlights-colors', this.getAttribute('colors') ?? '');
       }
       this.#controller = initHighlights(target);
     } else if (!this.#controller) {
       this.#controller = initHighlights(target);
     }
 
-    this.#controller._createFromSelection(this.#lastColor);
-    menu.dismiss();
+    this.#controller?._createFromSelection(this.#lastColor);
+    menu.dismiss?.();
   }
 
   // --- Standalone mode ---
@@ -123,12 +126,13 @@ class HighlightWC extends VBElement {
     const storageKey = this.getAttribute('storage-key') || '';
     target.setAttribute('data-highlights', storageKey);
     if (this.hasAttribute('colors')) {
-      target.setAttribute('data-highlights-colors', this.getAttribute('colors'));
+      target.setAttribute('data-highlights-colors', this.getAttribute('colors') ?? '');
     }
     if (this.hasAttribute('readonly')) {
       target.setAttribute('data-highlights-readonly', '');
     }
     this.#controller = initHighlights(target);
+    return true;
   }
 
   #resolveTarget() {

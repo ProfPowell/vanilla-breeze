@@ -31,15 +31,18 @@ const VALIDITY_KEYS = [
 ];
 
 class FormField extends VBElement {
+  /** @type {HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null} */
   #input = null;
+  /** @type {HTMLOutputElement | null} */
   #output = null;
   #hasBeenInvalid = false;
 
   setup() {
     this.#input = this.querySelector('input, textarea, select');
     // Target the error output — prefer output.error, fall back to first non-hint output
-    this.#output = this.querySelector('output.error')
-      ?? this.querySelector('output:not(.hint)');
+    this.#output = /** @type {HTMLOutputElement | null} */ (
+      this.querySelector('output.error') ?? this.querySelector('output:not(.hint)')
+    );
 
     if (!this.#input) return false;
 
@@ -48,6 +51,7 @@ class FormField extends VBElement {
       // Only re-validate eagerly after the first error has been shown
       if (this.#hasBeenInvalid) this.validate();
     });
+    return true;
   }
 
   teardown() {
@@ -134,6 +138,7 @@ class FormField extends VBElement {
   #updateMessage(validity) {
     if (!this.#output) return;
     const input = this.#input;
+    if (!input || !this.#output) return;
 
     for (const key of VALIDITY_KEYS) {
       if (!validity[key]) continue;
