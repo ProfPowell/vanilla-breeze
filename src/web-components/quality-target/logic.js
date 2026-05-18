@@ -125,7 +125,7 @@ class QualityTarget extends VBElement {
   get overrunRationale() { return this.#overrunRationale; }
   set overrunRationale(s) {
     this.#overrunRationale = String(s ?? '');
-    const ta = this.querySelector('[data-quality-overrun] textarea');
+    const ta = /** @type {HTMLTextAreaElement | null} */ (this.querySelector('[data-quality-overrun] textarea'));
     if (ta) ta.value = this.#overrunRationale;
     this.#publishFormValue();
   }
@@ -284,8 +284,10 @@ class QualityTarget extends VBElement {
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const level = form.querySelector('input[name="level"]:checked')?.value;
-      const rationale = form.querySelector('textarea[name="rationale"]').value;
+      const levelInput = /** @type {HTMLInputElement | null} */ (form.querySelector('input[name="level"]:checked'));
+      const level = levelInput?.value;
+      const rationaleEl = /** @type {HTMLTextAreaElement | null} */ (form.querySelector('textarea[name="rationale"]'));
+      const rationale = rationaleEl?.value ?? '';
       const result = canSaveAxis({ level, rationale, minRationale: this.#minRationale() });
       if (!result.ok) {
         err.hidden = false;
@@ -294,7 +296,7 @@ class QualityTarget extends VBElement {
           : `Rationale must be at least ${this.#minRationale()} characters.`;
         return;
       }
-      this.#vector[ility] = level;
+      this.#vector[ility] = level ?? '';
       if (level === 'critical') this.#rationales[ility] = rationale.trim();
       else delete this.#rationales[ility];
       dialog.close('save');
@@ -309,12 +311,13 @@ class QualityTarget extends VBElement {
     const dialog = this.#dialogs[ility];
     if (!dialog) return;
     const level = this.#vector[ility];
-    for (const radio of dialog.querySelectorAll('input[name="level"]')) {
+    for (const rawRadio of dialog.querySelectorAll('input[name="level"]')) {
+      const radio = /** @type {HTMLInputElement} */ (rawRadio);
       radio.checked = (radio.value === level);
     }
-    const ta = dialog.querySelector('textarea[name="rationale"]');
+    const ta = /** @type {HTMLTextAreaElement | null} */ (dialog.querySelector('textarea[name="rationale"]'));
     if (ta) ta.value = this.#rationales[ility] || '';
-    const err = dialog.querySelector('[data-dialog-error]');
+    const err = /** @type {HTMLElement | null} */ (dialog.querySelector('[data-dialog-error]'));
     if (err) { err.hidden = true; err.textContent = ''; }
   }
 
@@ -359,7 +362,7 @@ class QualityTarget extends VBElement {
     const cap = this.#resolveCapacity();
     const sum = this.criticalSum;
     const isOver = Number.isFinite(cap) && sum > cap;
-    const overrun = this.#footer.querySelector('[data-quality-overrun]');
+    const overrun = /** @type {HTMLElement | null} */ (this.#footer.querySelector('[data-quality-overrun]'));
     if (overrun) {
       overrun.hidden = !isOver;
       const prompt = overrun.querySelector('[data-overrun-prompt]');
@@ -401,8 +404,9 @@ class QualityTarget extends VBElement {
     }
     const attr = Number(this.getAttribute('data-capacity-points'));
     if (Number.isFinite(attr) && attr > 0) return attr;
-    if (Number.isFinite(this.#capacityPropOverride) && this.#capacityPropOverride > 0) {
-      return this.#capacityPropOverride;
+    const override = this.#capacityPropOverride;
+    if (override !== null && Number.isFinite(override) && override > 0) {
+      return override;
     }
     return Infinity;
   }
@@ -423,7 +427,7 @@ class QualityTarget extends VBElement {
   #findTriangle() {
     const id = this.getAttribute('data-bind-to');
     if (!id) return null;
-    const root = this.getRootNode();
+    const root = /** @type {any} */ (this.getRootNode());
     const found = root.getElementById ? root.getElementById(id) : document.getElementById(id);
     return found && found.localName === 'iron-triangle' ? found : null;
   }
@@ -491,7 +495,9 @@ class QualityTarget extends VBElement {
   #syncDisabledLocked() {
     const off = this.hasAttribute('disabled') || this.hasAttribute('locked');
     for (const dialog of Object.values(this.#dialogs)) {
-      for (const el of dialog.querySelectorAll('input, textarea, select, button')) el.disabled = off;
+      for (const el of dialog.querySelectorAll('input, textarea, select, button')) {
+        /** @type {HTMLInputElement} */ (el).disabled = off;
+      }
     }
   }
 

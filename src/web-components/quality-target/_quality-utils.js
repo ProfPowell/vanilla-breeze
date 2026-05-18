@@ -289,11 +289,14 @@ const LEVEL_RING_RATIOS = Object.freeze([
 
 const CENTER_HOLE_RADIUS_RATIO = 0.22;   // fraction of `radius` reserved for capacity readout
 
+/**
+ * @param {{ ilities?: any[], vector?: Record<string, string>, costWeights?: Record<string, number>, capacityPoints?: number, radius?: number }} [opts]
+ */
 export function buildTargetSvg({
-  ilities,
-  vector,
-  costWeights,
-  capacityPoints,
+  ilities = /** @type {any[]} */ ([]),
+  vector = /** @type {Record<string, string>} */ ({}),
+  costWeights = /** @type {Record<string, number>} */ ({}),
+  capacityPoints = 0,
   radius = 100,
 } = {}) {
   const svg = document.createElementNS(SVG_NS, 'svg');
@@ -358,7 +361,7 @@ export function buildTargetSvg({
     const g = document.createElementNS(SVG_NS, 'g');
     g.setAttribute('class', 'axis');
     g.setAttribute('data-ility', ility);
-    if (level) g.setAttribute('data-level', level);
+    if (level) g.setAttribute('data-level', String(level));
     g.setAttribute('tabindex', '0');
     g.setAttribute('role', 'button');
     g.setAttribute('aria-label',

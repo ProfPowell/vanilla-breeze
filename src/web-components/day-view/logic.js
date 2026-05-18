@@ -41,7 +41,8 @@ import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 
 class DayView extends VBElement {
-  #ol;
+  /** @type {HTMLOListElement | null} */
+  #ol = null;
 
   setup() {
     this.#ol = this.querySelector('ol');
@@ -52,19 +53,21 @@ class DayView extends VBElement {
     }
 
     if (!this.#ol) return false;
+    const ol = this.#ol;
 
     // Position spanning events after layout settles
     this.#positionSpanningEvents();
 
     // Click delegation for all events
-    this.listen(this.#ol, 'click', (e) => {
-      const event = e.target.closest('calendar-event');
+    this.listen(ol, 'click', (e) => {
+      const target = /** @type {Element | null} */ (e.target);
+      const event = /** @type {HTMLElement | null} */ (target?.closest('calendar-event'));
       if (!event) return;
       this.dispatchEvent(new CustomEvent('day-view:event-click', {
         bubbles: true,
         detail: {
           time: event.querySelector('time[datetime]')?.getAttribute('datetime'),
-          text: event.textContent.trim(),
+          text: event.textContent?.trim() ?? '',
           element: event,
           category: event.dataset.category,
           duration: event.dataset.duration,
@@ -73,20 +76,23 @@ class DayView extends VBElement {
     });
 
     // Keyboard navigation between events
-    this.listen(this.#ol, 'keydown', (e) => {
-      const event = e.target.closest('calendar-event');
+    this.listen(ol, 'keydown', (/** @type {Event} */ e) => {
+      const ke = /** @type {KeyboardEvent} */ (e);
+      const target = /** @type {Element | null} */ (ke.target);
+      const event = /** @type {HTMLElement | null} */ (target?.closest('calendar-event'));
       if (!event) return;
 
-      const events = [...this.#ol.querySelectorAll('calendar-event')];
+      const events = /** @type {HTMLElement[]} */ ([...ol.querySelectorAll('calendar-event')]);
       const idx = events.indexOf(event);
       if (idx === -1) return;
 
+      /** @type {HTMLElement | undefined} */
       let next;
-      if (e.key === 'ArrowDown' && idx < events.length - 1) next = events[idx + 1];
-      if (e.key === 'ArrowUp' && idx > 0) next = events[idx - 1];
+      if (ke.key === 'ArrowDown' && idx < events.length - 1) next = events[idx + 1];
+      if (ke.key === 'ArrowUp' && idx > 0) next = events[idx - 1];
 
       if (next) {
-        e.preventDefault();
+        ke.preventDefault();
         next.setAttribute('tabindex', '0');
         event.setAttribute('tabindex', '-1');
         next.focus();
@@ -94,8 +100,9 @@ class DayView extends VBElement {
     });
 
     // Set initial tabindex
-    const firstEvent = this.#ol.querySelector('calendar-event');
+    const firstEvent = ol.querySelector('calendar-event');
     if (firstEvent) firstEvent.setAttribute('tabindex', '0');
+    return true;
   }
 
   /**
@@ -109,10 +116,12 @@ class DayView extends VBElement {
     const eventsByHour = new Map();
     const untimed = [];
 
-    events.forEach(evt => {
+    events.forEach((/** @type {Element} */ rawEvt) => {
+      const evt = /** @type {HTMLElement} */ (rawEvt);
       const timeEl = evt.querySelector('time[datetime]');
       if (!timeEl) { untimed.push(evt); return; }
       const dt = timeEl.getAttribute('datetime');
+      if (!dt) { untimed.push(evt); return; }
       const parts = dt.split(':');
       const hour = parseInt(parts[0], 10);
       const min = parseInt(parts[1] || '0', 10);
@@ -145,7 +154,7 @@ class DayView extends VBElement {
     const endH = Math.min(23, sortedHours[sortedHours.length - 1] + 1);
 
     // Locale-aware hour labels
-    const locale = this.closest('[lang]')?.lang || navigator.language;
+    const locale = /** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language;
     const hourFmt = new Intl.DateTimeFormat(locale, { hour: 'numeric' });
 
     const ol = document.createElement('ol');
@@ -173,7 +182,7 @@ class DayView extends VBElement {
   teardown() {
     // Remove absolute positioning from events on disconnect
     this.querySelectorAll('calendar-event.dv-spanning').forEach(el => {
-      el.style.cssText = '';
+      /** @type {HTMLElement} */ (el).style.cssText = '';
       el.classList.remove('dv-spanning');
     });
   }
@@ -192,13 +201,16 @@ class DayView extends VBElement {
    * <calendar-event> children currently exist.
    */
   get events() {
-    return [...this.querySelectorAll('calendar-event')].map(el => ({
-      time: el.querySelector('time[datetime]')?.getAttribute('datetime') || undefined,
-      text: el.textContent.trim(),
-      category: el.dataset.category || undefined,
-      duration: el.dataset.duration || undefined,
-      href: el.querySelector('a[href]')?.getAttribute('href') || undefined,
-    }));
+    return [...this.querySelectorAll('calendar-event')].map((/** @type {Element} */ rawEl) => {
+      const el = /** @type {HTMLElement} */ (rawEl);
+      return {
+        time: el.querySelector('time[datetime]')?.getAttribute('datetime') || undefined,
+        text: el.textContent?.trim() ?? '',
+        category: el.dataset.category || undefined,
+        duration: el.dataset.duration || undefined,
+        href: el.querySelector('a[href]')?.getAttribute('href') || undefined,
+      };
+    });
   }
 
   /**
@@ -245,6 +257,7 @@ class DayView extends VBElement {
 
   #positionSpanningEvents() {
     const ol = this.#ol;
+    if (!ol) return;
     const spanningEvents = ol.querySelectorAll('calendar-event[data-duration]');
     if (spanningEvents.length === 0) return;
 
@@ -272,16 +285,19 @@ class DayView extends VBElement {
       // Phase 2: Compute positions
       const placements = [];
 
-      spanningEvents.forEach(event => {
+      spanningEvents.forEach((/** @type {Element} */ rawEvent) => {
+        const event = /** @type {HTMLElement} */ (rawEvent);
         const li = event.closest('ol > li');
         if (!li) return;
 
         const timeEl = li.querySelector(':scope > time');
-        const startHour = parseInt(timeEl?.getAttribute('datetime')?.split(':')[0], 10);
+        const startDt = timeEl?.getAttribute('datetime');
+        if (!startDt) return;
+        const startHour = parseInt(startDt.split(':')[0], 10);
         const startMin = parseInt(event.dataset.start || '0', 10);
 
         // Parse duration
-        const dur = event.dataset.duration;
+        const dur = event.dataset.duration ?? '';
         let durationMinutes = 60;
         const hMatch = dur.match(/(\d+)h/);
         const mMatch = dur.match(/(\d+)m/);
