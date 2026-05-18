@@ -66,7 +66,6 @@ class Chart extends SVC {
   /** @type {any} */ legend;
   /** @type {any} */ title;
   /** @type {any} */ tooltip;
-  /** @type {((...args: any[]) => any) | undefined} */ tooltipLocation;
   /** @type {any} */ _styleElement;
 
   /**
@@ -345,9 +344,10 @@ class Chart extends SVC {
 
       layoutChart.appendChild(this.tooltip.tooltip);
       // Only push tooltip interactions if the chart type provides a tooltipLocation method
-      if (typeof this.tooltipLocation === 'function') {
+      const ttLoc = /** @type {any} */ (this).tooltipLocation;
+      if (typeof ttLoc === 'function') {
         this.interactions.push(tooltipInteraction);
-        this.interactions.push(this.tooltipLocation);
+        this.interactions.push(ttLoc);
       }
       this.interactions.push(keyboardNavigation);
     }

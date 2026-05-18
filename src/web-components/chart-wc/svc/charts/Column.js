@@ -56,9 +56,11 @@ class ColumnChart extends Cartesian {
 
   /**
   * Creates the plot from the user provided data.
-  * @param {object} data - the user supplied data
-  * @param {object} stats - the computed constraints of the chart
-  * @param {object} subchartStretch - the parent VElement container
+  * @param {object} options
+  * @param {object} options.data - the user supplied data
+  * @param {object} options.stats - the computed constraints of the chart
+  * @param {object} options.subchartStretch - the parent VElement container
+  * @param {object} [options.subchartNoStretch]
   */
   createPlot({
     data,
@@ -164,7 +166,7 @@ class ColumnChart extends Cartesian {
               if (value > 0) {
                 x = originPoint.toFixed(3) + '%';
               } else {
-                x = originPoint.toFixed(3) - width + '%';
+                x = (Number(originPoint.toFixed(3)) - width) + '%';
               }
 
               // Y position
@@ -250,7 +252,7 @@ class ColumnChart extends Cartesian {
             if (value > 0) {
               x = originPoint.toFixed(3) + '%';
             } else {
-              x = originPoint.toFixed(3) - width + '%';
+              x = (Number(originPoint.toFixed(3)) - width) + '%';
             }
 
             // Y position
@@ -597,7 +599,7 @@ class ColumnChart extends Cartesian {
         yPercent = stats.y.max * stats.y.scaleFactor;
       }
       const xPos = (stats.x.scaleFactor * index) + (stats.x.scaleFactor / 2);
-      let yPos = (yPercent.toFixed(2));
+      let yPos = Number(yPercent.toFixed(2));
       if (isNaN(xPos) || isNaN(yPos) || index < 0 || index >= stats.x.scaleLength) {
         return null;
       }

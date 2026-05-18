@@ -12,7 +12,7 @@ const WEIGHTS = [35, 30, 20, 5, 10]
 /**
  * Trigger an attractor animation on an icon element.
  * Cleans up after animation ends so it can retrigger.
- * @param {Element} iconEl
+ * @param {HTMLElement} iconEl
  * @param {'pulse'|'beat'|'bounce'|'wiggle'|'breathe'} [type='pulse']
  */
 export function attract(iconEl, type = 'pulse') {
@@ -34,7 +34,7 @@ export function attract(iconEl, type = 'pulse') {
 /**
  * Trigger a weighted-random attractor animation.
  * Pulse and beat are most common; wiggle is rare.
- * @param {Element} iconEl
+ * @param {HTMLElement} iconEl
  */
 export function attractRandom(iconEl) {
   const type = weightedRandom(ATTRACT_TYPES, WEIGHTS)
@@ -54,7 +54,7 @@ export function enableWhimsy(idleMs = 45000) {
   const reset = () => {
     clearTimeout(timer)
     timer = setTimeout(() => {
-      const icons = [...document.querySelectorAll('.vb-icon:not([data-vb-attract])')]
+      const icons = /** @type {HTMLElement[]} */ ([...document.querySelectorAll('.vb-icon:not([data-vb-attract])')])
       if (icons.length) {
         const target = icons[Math.floor(Math.random() * icons.length)]
         attractRandom(target)
@@ -87,9 +87,10 @@ function initAttractOnObservers() {
     const io = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          const type = entry.target.dataset.vbAttract || 'pulse'
-          attract(entry.target, type)
-          io.unobserve(entry.target)
+          const el = /** @type {HTMLElement} */ (entry.target)
+          const type = /** @type {any} */ (el.dataset.vbAttract || 'pulse')
+          attract(el, type)
+          io.unobserve(el)
         }
       }
     }, { threshold: 0.5 })
@@ -98,9 +99,10 @@ function initAttractOnObservers() {
 
   // Hover-triggered attractors
   document.querySelectorAll('[data-vb-attract-on="hover"]').forEach(el => {
-    el.addEventListener('mouseenter', () => {
-      const type = el.dataset.vbAttract || 'pulse'
-      attract(el, type)
+    const node = /** @type {HTMLElement} */ (el)
+    node.addEventListener('mouseenter', () => {
+      const type = /** @type {any} */ (node.dataset.vbAttract || 'pulse')
+      attract(node, type)
     })
   })
 
@@ -109,10 +111,11 @@ function initAttractOnObservers() {
   if (errorEls.length) {
     const mo = new MutationObserver((mutations) => {
       for (const mut of mutations) {
-        if (mut.attributeName === 'aria-invalid' && mut.target.getAttribute('aria-invalid') === 'true') {
+        const target = /** @type {Element} */ (mut.target)
+        if (mut.attributeName === 'aria-invalid' && target.getAttribute('aria-invalid') === 'true') {
           // Find sibling .vb-icon with data-vb-attract-on="error"
-          const icon = mut.target.parentElement?.querySelector('[data-vb-attract-on="error"]')
-          if (icon) attract(icon, icon.dataset.vbAttract || 'wiggle')
+          const icon = /** @type {HTMLElement | null} */ (target.parentElement?.querySelector('[data-vb-attract-on="error"]'))
+          if (icon) attract(icon, /** @type {any} */ (icon.dataset.vbAttract || 'wiggle'))
         }
       }
     })
