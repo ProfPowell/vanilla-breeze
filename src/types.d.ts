@@ -39,6 +39,25 @@ interface CSSStyleDeclaration {
 }
 
 // ---------------------------------------------------------------------------
+// Navigator extensions (non-standard / emerging)
+// ---------------------------------------------------------------------------
+
+interface Navigator {
+  /** Global Privacy Control signal — Firefox & Brave expose this; Chrome/Safari do not. */
+  globalPrivacyControl?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// HTMLElement extensions (popover API ships, but lib.dom.d.ts coverage is patchy)
+// ---------------------------------------------------------------------------
+
+interface Element {
+  hidePopover?(): void;
+  showPopover?(): void;
+  togglePopover?(force?: boolean): boolean;
+}
+
+// ---------------------------------------------------------------------------
 // Command system
 // ---------------------------------------------------------------------------
 

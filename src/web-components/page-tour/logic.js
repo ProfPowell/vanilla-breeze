@@ -40,7 +40,7 @@ const prefersReducedMotion = () =>
  * Passive data element — exposes getters for the parent component.
  */
 class TourStep extends HTMLElement {
-  get target() { return this.dataset.target; }
+  get target() { return this.dataset.target ?? ''; }
   get placement() { return this.dataset.placement ?? 'auto'; }
   get action() { return this.dataset.action ?? 'none'; }
   get actionHint() { return this.dataset.actionHint ?? null; }
@@ -49,16 +49,25 @@ class TourStep extends HTMLElement {
 }
 
 class PageTour extends VBElement {
+  /** @type {TourStep[]} */
   #steps = [];
   #currentStep = 0;
   #active = false;
+  /** @type {HTMLDivElement | null} */
   #backdrop = null;
+  /** @type {HTMLDivElement | null} */
   #spotlight = null;
+  /** @type {HTMLDivElement | null} */
   #card = null;
+  /** @type {HTMLDivElement | null} */
   #announcer = null;
+  /** @type {Element | null} */
   #returnFocus = null;
+  /** @type {ResizeObserver | null} */
   #resizeObserver = null;
+  /** @type {AbortController | null} */
   #actionController = null;
+  /** @type {number | null} */
   #rafId = null;
 
   /** @type {PageTour|null} */
@@ -67,7 +76,7 @@ class PageTour extends VBElement {
   static observedAttributes = ['data-step'];
 
   setup() {
-    this.#steps = [...this.querySelectorAll('tour-step')];
+    this.#steps = /** @type {TourStep[]} */ ([...this.querySelectorAll('tour-step')]);
     if (this.#steps.length === 0) return false;
 
     // Wire the Layer 3 start button if present
@@ -79,7 +88,8 @@ class PageTour extends VBElement {
     // Wire external data-tour="id" buttons
     if (this.id) {
       this.listen(document, 'click', (e) => {
-        const trigger = e.target.closest(`[data-tour="${this.id}"]`);
+        const target = /** @type {Element | null} */ (e.target);
+        const trigger = target?.closest?.(`[data-tour="${this.id}"]`);
         if (trigger) { e.preventDefault(); this.start(); }
       });
     }
@@ -93,6 +103,8 @@ class PageTour extends VBElement {
         setTimeout(() => this.start(saved?.step ?? 0), 400);
       }
     }
+
+    return true;
   }
 
   teardown() {
@@ -234,7 +246,8 @@ class PageTour extends VBElement {
   // -----------------------------------------------------------
 
   #positionSpotlight(targetEl) {
-    const padding = parseInt(this.dataset.spotlightPadding, 10) || 8;
+    if (!this.#spotlight) return;
+    const padding = parseInt(this.dataset.spotlightPadding ?? '', 10) || 8;
     const rect = targetEl.getBoundingClientRect();
     Object.assign(this.#spotlight.style, {
       top: `${rect.top - padding}px`,
@@ -257,6 +270,7 @@ class PageTour extends VBElement {
   }
 
   #positionCardAnchor(targetEl, placement) {
+    if (!this.#card) return;
     const anchorName = '--tour-target';
     targetEl.style.anchorName = anchorName;
     this.#card.style.positionAnchor = anchorName;
@@ -296,6 +310,7 @@ class PageTour extends VBElement {
   }
 
   #positionCardRect(targetEl, placement) {
+    if (!this.#card) return;
     const rect = targetEl.getBoundingClientRect();
     const gap = 12;
     const viewPad = 8;
@@ -310,8 +325,8 @@ class PageTour extends VBElement {
     const cardRect = this.#card.getBoundingClientRect();
     this.#card.style.visibility = '';
 
-    let top, left;
-    const spotlightPad = parseInt(this.dataset.spotlightPadding, 10) || 8;
+    let top = 0, left = 0;
+    const spotlightPad = parseInt(this.dataset.spotlightPadding ?? '', 10) || 8;
 
     switch (resolved) {
       case 'bottom':
@@ -365,6 +380,7 @@ class PageTour extends VBElement {
   // -----------------------------------------------------------
 
   #renderCard(step, index) {
+    if (!this.#card) return;
     const total = this.#steps.length;
     const isLast = index === total - 1;
     const isFirst = index === 0;
@@ -424,7 +440,7 @@ class PageTour extends VBElement {
     // Clean up previous step's target (anchor name + raised state)
     if (this.#currentStep !== index) {
       const prevStep = this.#steps[this.#currentStep];
-      const prevTarget = prevStep ? document.querySelector(prevStep.target) : null;
+      const prevTarget = /** @type {HTMLElement | null} */ (prevStep ? document.querySelector(prevStep.target) : null);
       if (prevTarget) {
         if (supportsAnchor) prevTarget.style.anchorName = '';
         prevTarget.removeAttribute('data-tour-target');
@@ -436,7 +452,7 @@ class PageTour extends VBElement {
 
     this.#currentStep = index;
     const step = this.#steps[index];
-    const targetEl = document.querySelector(step.target);
+    const targetEl = /** @type {HTMLElement | null} */ (document.querySelector(step.target));
 
     if (!targetEl) {
       // Target not found — skip to next valid step
@@ -453,7 +469,7 @@ class PageTour extends VBElement {
     targetEl.setAttribute('data-tour-target', '');
 
     // Scroll target into view
-    const scrollBehavior = prefersReducedMotion() ? 'instant' : step.scrollBehavior;
+    const scrollBehavior = /** @type {ScrollBehavior} */ (prefersReducedMotion() ? 'instant' : step.scrollBehavior);
     if (step.scrollBehavior !== 'none') {
       targetEl.scrollIntoView({ block: 'nearest', behavior: scrollBehavior });
     }
@@ -473,17 +489,21 @@ class PageTour extends VBElement {
 
     // Focus management — focus card immediately (so keydown stays captured),
     // then refine to heading or Next button on next frame
-    if (!this.#card.hasAttribute('tabindex')) {
-      this.#card.setAttribute('tabindex', '-1');
+    const card = this.#card;
+    if (card) {
+      if (!card.hasAttribute('tabindex')) {
+        card.setAttribute('tabindex', '-1');
+      }
+      card.focus();
     }
-    this.#card.focus();
     requestAnimationFrame(() => {
-      const heading = this.#card?.querySelector('.page-tour-content h3, .page-tour-content h2, .page-tour-content h4');
+      const heading = /** @type {HTMLElement | null} */ (this.#card?.querySelector('.page-tour-content h3, .page-tour-content h2, .page-tour-content h4') ?? null);
       if (heading) {
         if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
         heading.focus();
       } else {
-        this.#card?.querySelector('[data-action="next"]')?.focus();
+        const nextBtn = /** @type {HTMLElement | null} */ (this.#card?.querySelector('[data-action="next"]') ?? null);
+        nextBtn?.focus();
       }
     });
 
@@ -520,7 +540,7 @@ class PageTour extends VBElement {
     const targetEl = document.querySelector(step.target);
     if (!targetEl) return;
 
-    const nextBtn = this.#card?.querySelector('[data-action="next"]');
+    const nextBtn = /** @type {HTMLElement | null} */ (this.#card?.querySelector('[data-action="next"]') ?? null);
     const ac = new AbortController();
     this.#actionController = ac;
 
@@ -601,22 +621,24 @@ class PageTour extends VBElement {
   }
 
   #handleTabTrap(e, isActionGated) {
-    const focusables = [...this.#card.querySelectorAll(
+    if (!this.#card) return;
+    const focusables = /** @type {HTMLElement[]} */ ([...this.#card.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )].filter(el => !el.disabled && el.offsetParent !== null);
+    )]).filter(el => !(/** @type {HTMLButtonElement} */ (el)).disabled && el.offsetParent !== null);
 
     // When action-gated, include the target element in the focus set
+    /** @type {HTMLElement[]} */
     let targetFocusables = [];
     if (isActionGated) {
       const step = this.#steps[this.#currentStep];
-      const targetEl = document.querySelector(step.target);
+      const targetEl = /** @type {HTMLElement | null} */ (document.querySelector(step.target));
       if (targetEl) {
-        const tf = targetEl.matches('input, select, textarea, button, [href], [tabindex]')
+        const tf = /** @type {HTMLElement[]} */ (targetEl.matches('input, select, textarea, button, [href], [tabindex]')
           ? [targetEl]
           : [...targetEl.querySelectorAll(
               'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            )];
-        targetFocusables = tf.filter(el => !el.disabled && el.offsetParent !== null);
+            )]);
+        targetFocusables = tf.filter(el => !(/** @type {HTMLButtonElement} */ (el)).disabled && el.offsetParent !== null);
       }
     }
 
@@ -625,15 +647,15 @@ class PageTour extends VBElement {
 
     const first = allFocusables[0];
     const last = allFocusables[allFocusables.length - 1];
-    const active = document.activeElement;
+    const active = /** @type {HTMLElement | null} */ (document.activeElement);
 
     if (e.shiftKey) {
-      if (active === first || !allFocusables.includes(active)) {
+      if (active === first || (active && !allFocusables.includes(active))) {
         e.preventDefault();
         last.focus();
       }
     } else {
-      if (active === last || !allFocusables.includes(active)) {
+      if (active === last || (active && !allFocusables.includes(active))) {
         e.preventDefault();
         first.focus();
       }
@@ -720,7 +742,7 @@ class PageTour extends VBElement {
 
     // Clean up current target (anchor name + raised state)
     const step = this.#steps[this.#currentStep];
-    const targetEl = step ? document.querySelector(step.target) : null;
+    const targetEl = /** @type {HTMLElement | null} */ (step ? document.querySelector(step.target) : null);
     if (targetEl) {
       if (supportsAnchor) targetEl.style.anchorName = '';
       targetEl.removeAttribute('data-tour-target');
@@ -739,8 +761,9 @@ class PageTour extends VBElement {
     this.#announcer = null;
 
     // Restore focus
-    if (this.#returnFocus && typeof this.#returnFocus.focus === 'function') {
-      this.#returnFocus.focus();
+    const returnFocus = /** @type {HTMLElement | null} */ (this.#returnFocus);
+    if (returnFocus && typeof returnFocus.focus === 'function') {
+      returnFocus.focus();
       this.#returnFocus = null;
     }
   }
@@ -789,7 +812,7 @@ class PageTour extends VBElement {
     const key = this.#getStorageKey();
     let current = {};
     try {
-      current = JSON.parse(storage.getItem(key)) ?? {};
+      current = JSON.parse(storage.getItem(key) ?? 'null') ?? {};
     } catch { /* empty */ }
     storage.setItem(key, JSON.stringify({ ...current, ...patch }));
   }
@@ -798,7 +821,7 @@ class PageTour extends VBElement {
     const storage = this.#getStorage();
     if (!storage) return null;
     try {
-      return JSON.parse(storage.getItem(this.#getStorageKey()));
+      return JSON.parse(storage.getItem(this.#getStorageKey()) ?? 'null');
     } catch {
       return null;
     }

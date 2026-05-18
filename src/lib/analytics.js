@@ -57,9 +57,10 @@ function readHtmlDataset() {
 }
 
 function readTaxonomy() {
+  /** @type {Record<string, string | string[]>} */
   const taxonomy = {};
   for (const meta of document.querySelectorAll('meta[name^="vb:"]')) {
-    const key = meta.getAttribute('name').slice(3);
+    const key = meta.getAttribute('name')?.slice(3);
     const val = meta.getAttribute('content')?.trim();
     if (key && val) taxonomy[key] = val;
   }
@@ -85,7 +86,7 @@ function readTaxonomy() {
  * most specific to least specific.
  *
  * @param {string} path - `location.pathname + location.search`
- * @param {Array<{pattern: RegExp, replace: string}>} [masks]
+ * @param {Array<{pattern: RegExp, replace: string}>|null} [masks]
  * @returns {string} Rewritten path (or original if nothing matched).
  */
 export function maskUrl(path, masks) {
@@ -114,6 +115,22 @@ function sendBeacon(url, payload) {
 
 // ── Internal state ───────────────────────────────────────────────────
 
+/**
+ * @typedef {object} AnalyticsConfig
+ * @property {string} endpoint
+ * @property {string} siteId
+ * @property {'beacon'|'console'|'disabled'} transport
+ * @property {number} sampleRate
+ * @property {(() => boolean)|null} consent
+ * @property {(() => Record<string, unknown> | null | undefined)|null} context
+ * @property {Array<{pattern: RegExp, replace: string}>|null} urlMasks
+ * @property {boolean} autoPageView
+ * @property {boolean} autoOutboundLinks
+ * @property {boolean} autoDeclarative
+ * @property {boolean} allowInIframe
+ */
+
+/** @type {{ config: AnalyticsConfig | null, queue: Array<{ kind: string, envelope: object }> }} */
 const state = {
   config: null,
   queue: [],
@@ -126,6 +143,7 @@ function getEndpoint(kind) {
 
 function buildEnvelope(name, props) {
   const cfg = state.config;
+  if (!cfg) throw new Error('analytics: buildEnvelope called before init');
   const path = maskUrl(location.pathname + location.search, cfg.urlMasks);
   const extra = typeof cfg.context === 'function' ? (cfg.context() ?? {}) : {};
   return {
@@ -194,7 +212,12 @@ function watchNavigation() {
 
 // ── Declarative events (data-vb-event) ───────────────────────────────
 
+/**
+ * @param {HTMLElement} el
+ * @returns {Record<string, unknown>}
+ */
 function extractDeclarativeProps(el) {
+  /** @type {Record<string, unknown>} */
   const props = {};
   for (const [key, value] of Object.entries(el.dataset)) {
     if (key === 'vbEvent' || !key.startsWith('vbEvent')) continue;
@@ -205,9 +228,11 @@ function extractDeclarativeProps(el) {
   return props;
 }
 
+/** @param {Event} e */
 function handleDocumentClick(e) {
   if (!state.config || isOptedOut(state.config)) return;
-  const target = e.target.closest?.('[data-vb-event]');
+  const eventTarget = /** @type {Element | null} */ (e.target);
+  const target = /** @type {HTMLElement | null} */ (eventTarget?.closest?.('[data-vb-event]'));
   if (!target || isExcludedElement(target)) return;
   const name = target.dataset.vbEvent;
   if (!name) return;
@@ -217,7 +242,7 @@ function handleDocumentClick(e) {
 // ── Outbound link instrumentation ────────────────────────────────────
 
 function instrumentOutboundLinks() {
-  const anchors = document.querySelectorAll('a[href^="http"]');
+  const anchors = /** @type {NodeListOf<HTMLAnchorElement>} */ (document.querySelectorAll('a[href^="http"]'));
   for (const link of anchors) {
     if (link.hostname === location.hostname) continue;
     if (isExcludedElement(link)) continue;
@@ -284,35 +309,36 @@ export const Analytics = {
    */
   init(config = {}) {
     if (state.config) return; // idempotent
-    state.config = { ...defaults, ...config };
+    const cfg = /** @type {AnalyticsConfig} */ ({ ...defaults, ...config });
+    state.config = cfg;
 
     // Sandboxed demos embedded via iframe should not report analytics —
     // every page-view beacon would be a demo load, not a real visit.
     // Callers that *do* want analytics inside an iframe set allowInIframe.
-    if (isInIframe() && !state.config.allowInIframe) {
-      state.config.transport = 'disabled';
-      state.config.autoPageView = false;
-      state.config.autoOutboundLinks = false;
-      state.config.autoDeclarative = false;
+    if (isInIframe() && !cfg.allowInIframe) {
+      cfg.transport = 'disabled';
+      cfg.autoPageView = false;
+      cfg.autoOutboundLinks = false;
+      cfg.autoDeclarative = false;
       return;
     }
 
     // Transport 'disabled' means no backend — skip the outbound link
     // ping wiring so external clicks don't POST to a 404 endpoint.
-    if (state.config.transport === 'disabled') {
-      state.config.autoOutboundLinks = false;
+    if (cfg.transport === 'disabled') {
+      cfg.autoOutboundLinks = false;
     }
 
-    if (state.config.autoDeclarative) {
+    if (cfg.autoDeclarative) {
       document.addEventListener('click', handleDocumentClick, { capture: true });
     }
-    if (state.config.autoOutboundLinks) {
+    if (cfg.autoOutboundLinks) {
       instrumentOutboundLinks();
       // Re-scan when DOM changes (SPA, dynamically injected links)
       const mo = new MutationObserver(() => instrumentOutboundLinks());
       mo.observe(document.body, { childList: true, subtree: true });
     }
-    if (state.config.autoPageView) {
+    if (cfg.autoPageView) {
       trackPageView();
       watchNavigation();
     }
