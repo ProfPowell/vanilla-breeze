@@ -72,6 +72,7 @@ class NotificationWc extends VBElement {
   #dynamic = [];
   #isOpen = false;
   /** @type {number|null} */
+  /** @type {ReturnType<typeof setInterval> | null} */
   #pollTimer = null;
   /** @type {Set<string>} Seen notification ids for toast debounce */
   #seenIds = new Set();
@@ -82,7 +83,9 @@ class NotificationWc extends VBElement {
 
   setup() {
     this.#mode = this.getAttribute('mode') === 'banner' ? 'banner' : 'panel';
-    return this.#mode === 'banner' ? this.#setupBanner() : this.#setupPanel();
+    if (this.#mode === 'banner') this.#setupBanner();
+    else this.#setupPanel();
+    return true;
   }
 
   teardown() {
@@ -140,7 +143,7 @@ class NotificationWc extends VBElement {
       const maxAge = Number.isFinite(expiresDays) && expiresDays > 0
         ? expiresDays * 86_400_000
         : undefined;
-      const state = await VBStore.get('notifications', persist, maxAge ? { maxAge } : undefined);
+      const state = /** @type {any} */ (await VBStore.get('notifications', persist, maxAge ? { maxAge } : undefined));
       if (state && state.dismissed) {
         this.hidden = true;
         return;
@@ -190,7 +193,7 @@ class NotificationWc extends VBElement {
       await this.#fetchDynamic();
       const poll = Number(this.getAttribute('poll'));
       if (Number.isFinite(poll) && poll > 0) {
-        this.#pollTimer = /** @type {unknown} */ (setInterval(() => this.#fetchDynamic(), poll));
+        this.#pollTimer = setInterval(() => this.#fetchDynamic(), poll);
       }
     }
   }
@@ -222,7 +225,7 @@ class NotificationWc extends VBElement {
       this.prepend(btn);
     } else {
       // Ensure a badge exists inside the author's trigger
-      let badge = this.#trigger.querySelector('.notification-badge');
+      let badge = /** @type {HTMLElement | null} */ (this.#trigger.querySelector('.notification-badge'));
       if (!badge) {
         badge = document.createElement('span');
         badge.className = 'notification-badge';

@@ -37,7 +37,7 @@ class BurndownChart extends VBElement {
   setup() {
     const start = this.getAttribute('start');
     const end = this.getAttribute('end');
-    const total = parseFloat(this.getAttribute('total'));
+    const total = parseFloat(this.getAttribute('total') || '');
 
     if (!start || !end || !Number.isFinite(total)) {
       console.warn('burndown-chart: requires start, end, and total attributes');
@@ -162,6 +162,7 @@ class BurndownChart extends VBElement {
   static #idealSeries(dayLabels, total, includeWeekends) {
     const isWeekend = (label) => {
       const d = BurndownChart.#parseDate(label);
+      if (!d) return false;
       const w = d.getDay();
       return w === 0 || w === 6;
     };

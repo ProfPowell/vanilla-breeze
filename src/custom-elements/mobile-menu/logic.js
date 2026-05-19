@@ -27,8 +27,7 @@ class MobileMenu extends HTMLElement {
     this.#mql = null;
   }
 
-  /** @type {EventListener} */
-  #onBreakpoint = () => {
+  #onBreakpoint = (/** @type {Event | undefined} */ _e) => {
     const mobile = this.#mql?.matches ?? false;
 
     if (mobile) {
@@ -36,9 +35,9 @@ class MobileMenu extends HTMLElement {
     } else {
       this.removeAttribute('data-mobile');
       // Close panel if open when switching to desktop
-      const panel = this.querySelector('[popover]');
+      const panel = /** @type {HTMLElement | null} */ (this.querySelector('[popover]'));
       if (panel?.matches(':popover-open')) {
-        panel.hidePopover();
+        panel.hidePopover?.();
       }
     }
 
@@ -48,7 +47,7 @@ class MobileMenu extends HTMLElement {
       for (const sibling of header.children) {
         if (sibling === this) continue;
         if (sibling.matches('nav, site-tools')) {
-          sibling.style.display = mobile ? 'none' : '';
+          /** @type {HTMLElement} */ (sibling).style.display = mobile ? 'none' : '';
         }
       }
     }

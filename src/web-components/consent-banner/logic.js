@@ -43,7 +43,7 @@ class ConsentBanner extends VBElement {
     return days > 0 ? days * 86_400_000 : undefined;
   }
 
-  async setup() {
+  setup() {
     this.#dialog = /** @type {HTMLDialogElement} */ (this.querySelector('dialog'));
     if (!this.#dialog) return false;
 
@@ -51,6 +51,11 @@ class ConsentBanner extends VBElement {
       this.listen(document, 'click', this.#onTriggerClick);
     }
 
+    this.#initStored();
+    return true;
+  }
+
+  async #initStored() {
     const stored = await this.#read();
     if (stored) {
       if (this.getAttribute('trigger')) {
@@ -58,11 +63,10 @@ class ConsentBanner extends VBElement {
       } else {
         this.remove();
       }
-      return false;
+      return;
     }
 
     this.#open();
-    return true;
   }
 
   #open() {
@@ -133,7 +137,7 @@ class ConsentBanner extends VBElement {
     e.preventDefault();
 
     /* Restore stored preferences to checkboxes */
-    const stored = await this.#read();
+    const stored = /** @type {any} */ (await this.#read());
     if (stored?.preferences) {
       for (const [name, checked] of Object.entries(stored.preferences)) {
         const cb = /** @type {HTMLInputElement | null} */ (this.querySelector(

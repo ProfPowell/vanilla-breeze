@@ -165,7 +165,8 @@ function swapTo(el, show, source = 'api') {
   // <content-swap> custom element exposes setState; [data-swap] enhanced
   // elements skip this transparently.
   const setRunning = (on) => {
-    if (typeof el.setState === 'function') el.setState('transition-running', on);
+    const ce = /** @type {any} */ (el);
+    if (typeof ce.setState === 'function') ce.setState('transition-running', on);
   };
   setRunning(true);
   const result = startSwapTransition(applySwap);
@@ -177,7 +178,7 @@ function swapTo(el, show, source = 'api') {
 }
 
 function toggleSwap(el, source = 'api') {
-  swapTo(el, !el.hasAttribute(attrName(el, 'swapped')), source);
+  swapTo(el, !el.hasAttribute(attrName(el, 'swapped')), /** @type {any} */ (source));
 }
 
 function dispatchSwapEvent(el, source = 'internal') {

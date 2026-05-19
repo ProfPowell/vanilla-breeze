@@ -34,8 +34,10 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 
 class NavBar extends VBElement {
+  /** @type {Array<{href: string, label: string}> | null} */
   #items = null;          // Last assigned .items array (deep-cloned)
   #explicit = false;      // Did consumer assign .current?
+  /** @type {string | null} */
   #current = null;        // Current value (only meaningful when #explicit)
 
   setup() {

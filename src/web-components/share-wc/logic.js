@@ -36,7 +36,8 @@ class ShareWc extends VBElement {
   /** @type {string | undefined} */
   #text;
   /** @type {string | undefined} */
-  #tier;
+  /** @type {string} */
+  #tier = '';
   /** @type {ReturnType<typeof setTimeout> | null} */
   #copyTimer = null;
   /** @type {HTMLElement} */
@@ -165,7 +166,7 @@ class ShareWc extends VBElement {
     btn.appendChild(icon);
     btn.addEventListener('click', () => {
       // Get selection from parent selection-menu
-      const menu = this.closest('selection-menu');
+      const menu = /** @type {any} */ (this.closest('selection-menu'));
       const sel = menu?.getSelection?.();
       const text = sel?.text || window.getSelection()?.toString() || '';
       if (text && navigator.share) {

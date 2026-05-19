@@ -63,8 +63,8 @@ function canUseInterestFor(trigger) {
 let toolTipSeq = 0;
 
 class ToolTip extends VBElement {
-  /** @type {HTMLElement} */ #trigger;
-  /** @type {HTMLElement} */ #popover;
+  /** @type {HTMLElement | null} */ #trigger = null;
+  /** @type {HTMLElement | null} */ #popover = null;
   #showTimer;
   #hideTimer;
   #isCard = false;
@@ -80,7 +80,7 @@ class ToolTip extends VBElement {
   // --- Regular tooltip setup ---
   #setupTooltip() {
     // Find trigger (first non-template child)
-    this.#trigger = this.querySelector(':scope > :not(template)');
+    this.#trigger = /** @type {HTMLElement | null} */ (this.querySelector(':scope > :not(template)'));
     if (!this.#trigger) return;
 
     this.#useInterestFor = canUseInterestFor(this.#trigger);
@@ -158,7 +158,7 @@ class ToolTip extends VBElement {
 
   // --- Card variant setup ---
   #setupCard() {
-    this.#trigger = this.querySelector(':scope > [data-trigger]');
+    this.#trigger = /** @type {HTMLElement | null} */ (this.querySelector(':scope > [data-trigger]'));
     const content = this.querySelector(':scope > [data-content]');
     if (!this.#trigger || !content) return;
 

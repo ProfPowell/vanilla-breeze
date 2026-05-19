@@ -57,7 +57,7 @@ class ChangeSet extends VBElement {
 
     controls.addEventListener('click', (e) => {
       const target = /** @type {HTMLElement} */ (e.target);
-      const action = target.closest('[data-action]')?.dataset.action;
+      const action = /** @type {HTMLElement | null} */ (target.closest('[data-action]'))?.dataset.action;
       if (!action) return;
 
       if (action === 'tracking') {
@@ -67,7 +67,7 @@ class ChangeSet extends VBElement {
       }
 
       for (const btn of controls.querySelectorAll('button')) {
-        btn.setAttribute('aria-pressed', btn.dataset.action === action);
+        btn.setAttribute('aria-pressed', String(btn.dataset.action === action));
       }
 
       this.dispatchEvent(new CustomEvent('change-set:view', {
@@ -100,7 +100,7 @@ class ChangeSet extends VBElement {
     const controls = this.querySelector('[data-controls]');
     if (controls) {
       for (const btn of controls.querySelectorAll('button')) {
-        btn.setAttribute('aria-pressed', btn.dataset.action === value);
+        btn.setAttribute('aria-pressed', String(btn.dataset.action === value));
       }
     }
     this.dispatchEvent(new CustomEvent('change-set:view', {

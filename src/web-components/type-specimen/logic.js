@@ -118,7 +118,7 @@ class TypeSpecimen extends VBElement {
 
   #wireEditing() {
     if (!this.hasAttribute('editable')) return;
-    const input = this.querySelector('.specimen-font-input');
+    const input = /** @type {HTMLInputElement | null} */ (this.querySelector('.specimen-font-input'));
     if (input) {
       this.listen(input, 'input', () => this.#applyFontFamily(input.value));
     }
@@ -132,7 +132,7 @@ class TypeSpecimen extends VBElement {
   }
 
   #applyFontFamily(value) {
-    const target = this.#resolveTarget();
+    const target = /** @type {HTMLElement | null} */ (this.#resolveTarget());
     const token = this.getAttribute('token') || 'font-family-base';
     if (target) target.style.setProperty(`--${token}`, value);
     // Update the attribute so the specimen re-renders with the new font

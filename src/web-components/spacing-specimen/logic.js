@@ -79,7 +79,8 @@ class SpacingSpecimen extends VBElement {
     requestAnimationFrame(() => {
       if (editable) {
         const cs = getComputedStyle(this);
-        this.querySelectorAll('.scale-edit').forEach((input) => {
+        this.querySelectorAll('.scale-edit').forEach((node) => {
+          const input = /** @type {HTMLInputElement} */ (node);
           const name = input.getAttribute('data-token');
           const raw = cs.getPropertyValue(`${prefix}${name}`).trim();
           input.value = raw || '';
@@ -100,7 +101,7 @@ class SpacingSpecimen extends VBElement {
     this.querySelectorAll('.scale-edit').forEach((input) => {
       this.listen(input, 'change', () => this.#applyTokenEdit(input, prefix));
       this.listen(input, 'keydown', (e) => {
-        if (e.key === 'Enter') this.#applyTokenEdit(input, prefix);
+        if (/** @type {KeyboardEvent} */ (e).key === 'Enter') this.#applyTokenEdit(input, prefix);
       });
     });
   }
@@ -109,7 +110,7 @@ class SpacingSpecimen extends VBElement {
     const name = input.getAttribute('data-token');
     const value = input.value.trim();
     if (!name || !value) return;
-    const target = this.#resolveTarget();
+    const target = /** @type {HTMLElement | null} */ (this.#resolveTarget());
     const token = `${prefix}${name}`;
     if (target) target.style.setProperty(token, value);
     this.dispatchEvent(new CustomEvent('spacing-specimen:change', {

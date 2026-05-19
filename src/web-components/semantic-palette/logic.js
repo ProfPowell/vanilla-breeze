@@ -110,7 +110,7 @@ class SemanticPalette extends VBElement {
     const pg = this.querySelector('palette-generator');
     if (pg) {
       const seed = pg.getAttribute('seed')
-        || pg.querySelector('input[type="color"]')?.value
+        || /** @type {HTMLInputElement | null} */ (pg.querySelector('input[type="color"]'))?.value
         || '';
       const harmony = pg.getAttribute('harmony') || 'complementary';
       if (seed) {
@@ -252,8 +252,8 @@ class SemanticPalette extends VBElement {
   }
 
   #sample({ render, fg, bg, caption }) {
-    const fgHex = resolveToHex(fg, this.#probe) || '#000000';
-    const bgHex = resolveToHex(bg, this.#probe) || '#ffffff';
+    const fgHex = resolveToHex(fg, this.#probe || undefined) || '#000000';
+    const bgHex = resolveToHex(bg, this.#probe || undefined) || '#ffffff';
     const ratio = contrastRatio(fgHex, bgHex);
     const level = wcagLevel(ratio).toLowerCase();
     const lc = LEVEL_COLORS[level];

@@ -113,7 +113,8 @@ class ImpactEffort extends VBElement {
     }
 
     // 4. Distribute captured children into matching surfaces
-    children.forEach((child, i) => {
+    children.forEach((c, i) => {
+      const child = /** @type {HTMLElement} */ (c);
       const quadrant = child.getAttribute('data-quadrant') || 'quick-wins';
       const target = this.#surfaces[quadrant] || this.#surfaces['quick-wins'];
 
@@ -251,8 +252,9 @@ class ImpactEffort extends VBElement {
       nodes: this.#nodes,
       keyOf: (it) => it.id ?? `${it.quadrant}:${it.text}`,
       renderItem: (it) => {
-        if (typeof this.renderItem === 'function') {
-          const out = this.renderItem(it);
+        const self = /** @type {any} */ (this);
+        if (typeof self.renderItem === 'function') {
+          const out = self.renderItem(it);
           if (out instanceof Element) {
             if (!out.hasAttribute('draggable')) out.setAttribute('draggable', 'true');
             if (!out.hasAttribute('data-id')) out.setAttribute('data-id', String(it.id ?? ''));

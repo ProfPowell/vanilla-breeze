@@ -179,7 +179,7 @@ class KanbanBoard extends VBCollection(VBElement) {
     // 7. Listen for drag-surface:reorder
     this.listen(this, 'drag-surface:reorder', (e) => {
       const detail = /** @type {CustomEvent} */ (e).detail;
-      const surface = /** @type {HTMLElement} */ (e.target).closest('drag-surface');
+      const surface = /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('drag-surface'));
       const columnId = this.#findColumnForSurface(surface);
       if (!columnId) return;
 
@@ -422,6 +422,9 @@ class KanbanBoard extends VBCollection(VBElement) {
 
   /**
    * VBCollection hook: route this item to the drag-surface for its column.
+   * @param {any} item
+   * @param {any} _existing
+   * @returns {any}
    */
   _containerFor(item, _existing) {
     const surface = this.#surfaces[item.column];
@@ -461,7 +464,7 @@ class KanbanBoard extends VBCollection(VBElement) {
    */
   #defaultRenderItem(item) {
     const tag = customElements.get('work-item') ? 'work-item' : 'article';
-    const el = document.createElement(tag);
+    const el = /** @type {any} */ (document.createElement(tag));
     if (tag === 'work-item') {
       // Map the kanban item shape to work-item's data shape.
       el.data = {
@@ -691,5 +694,5 @@ class KanbanBoard extends VBCollection(VBElement) {
   }
 }
 
-registerComponent('kanban-board', KanbanBoard);
+registerComponent('kanban-board', /** @type {any} */ (KanbanBoard));
 export { KanbanBoard };

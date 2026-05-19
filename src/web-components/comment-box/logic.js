@@ -74,8 +74,8 @@ class CommentBox extends VBElement {
     if (!existingEditor) {
       existingEditor = document.createElement('markdown-editor');
       const ta = document.createElement('textarea');
-      if (this.hasAttribute('placeholder')) ta.placeholder = this.getAttribute('placeholder');
-      if (this.hasAttribute('value')) ta.value = this.getAttribute('value');
+      if (this.hasAttribute('placeholder')) ta.placeholder = this.getAttribute('placeholder') || '';
+      if (this.hasAttribute('value')) ta.value = this.getAttribute('value') || '';
       existingEditor.appendChild(ta);
     }
     this.#editor = existingEditor;
@@ -197,7 +197,7 @@ class CommentBox extends VBElement {
     // Cmd/Ctrl+Enter submits — matches GitHub/Slack convention.
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
-      this.#onSubmit(e);
+      this.#onSubmit();
     }
   };
 
