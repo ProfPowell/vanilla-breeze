@@ -2441,7 +2441,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "chart-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4232,7 +4238,13 @@ export default {
         "detail": "{ source }",
         "description": ".source setter fired"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "dl": {
     "element": "dl",
@@ -4355,7 +4367,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "drop-down": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4509,7 +4527,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "empathy-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -4726,7 +4750,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "foot-note": {
     "element": "foot-note",
@@ -4778,7 +4808,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "form-field": {
     "$schema": "../../../schemas/api.schema.json",
@@ -6412,7 +6448,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "page-stats": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7092,7 +7134,13 @@ export default {
         "type": "string",
         "description": "Time-window query forwarded to endpoint (e.g. \"24h\", \"7d\", \"30d\")"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "print-page": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7812,7 +7860,13 @@ export default {
         "name": "recently-visited:clear",
         "description": "Fires when the reader clears the local history"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "requirement-card": {
     "$schema": "../../../schemas/api.schema.json",
@@ -10122,7 +10176,13 @@ export default {
         "required": false,
         "description": "Rendered when either data source fails to load."
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "traceability-matrix": {
     "$schema": "../../../schemas/api.schema.json",
@@ -10229,7 +10289,13 @@ export default {
         "detail": "{ selected, count }",
         "description": "Fires when the reader changes any filter chip"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "type-specimen": {
     "$schema": "../../../schemas/api.schema.json",

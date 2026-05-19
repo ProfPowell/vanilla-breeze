@@ -492,6 +492,8 @@ module.exports = {
   },
 
   "change-set": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "view": {},
       "datetime": {},
@@ -772,6 +774,8 @@ module.exports = {
   },
 
   "diagram-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "type": {},
       "src": {},
@@ -783,6 +787,8 @@ module.exports = {
   },
 
   "drag-surface": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "group": {},
       "orientation": {},
@@ -813,6 +819,8 @@ module.exports = {
   },
 
   "emoji-picker": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "for": {},
       "recent-limit": {},
@@ -852,6 +860,8 @@ module.exports = {
   },
 
   "font-pairer": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "heading-font": {},
       "body-font": {},
@@ -868,6 +878,8 @@ module.exports = {
   },
 
   "foot-notes": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-back-label": {},
       "data-mode": {},
@@ -1128,6 +1140,8 @@ module.exports = {
   },
 
   "page-info": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "auto": { boolean: true },
       "og-preview": { boolean: true },
@@ -1227,6 +1241,8 @@ module.exports = {
   },
 
   "popularity-index": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-lens-src": {},
       "data-meta-src": {},
@@ -1348,6 +1364,8 @@ module.exports = {
   },
 
   "recently-visited": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "limit": {},
       "no-track": { boolean: true },
@@ -1759,6 +1777,8 @@ module.exports = {
   },
 
   "topic-map": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-lens-src": {},
       "src": {},
@@ -1780,6 +1800,8 @@ module.exports = {
   },
 
   "trust-filter": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-lens-src": {},
       "src": {}
