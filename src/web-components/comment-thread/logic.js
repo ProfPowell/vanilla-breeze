@@ -34,15 +34,18 @@ import { formatRelative } from '../../lib/time-relative.js';
 import '../comment-box/logic.js';
 
 class CommentThread extends VBElement {
-  #replyTemplate;     // <template data-reply-form>
+  /** @type {HTMLTemplateElement | null} */
+  #replyTemplate = null;     // <template data-reply-form>
+  /** @type {HTMLElement | null} */
   #activeReplyForm = null;  // live reply form mounted under a comment
+  /** @type {ReturnType<typeof setInterval> | 0} */
   #refreshTimer = 0;  // periodic time-relative refresh
 
   setup() {
     if (!this.hasAttribute('role')) this.setAttribute('role', 'region');
     if (!this.hasAttribute('aria-label')) this.setAttribute('aria-label', 'Comments');
 
-    this.#replyTemplate = this.querySelector(':scope > template[data-reply-form]');
+    this.#replyTemplate = /** @type {HTMLTemplateElement | null} */ (this.querySelector(':scope > template[data-reply-form]'));
 
     // Decorate every authored comment.
     this.#scanComments().forEach((c) => this.#decorateComment(c));
@@ -57,7 +60,7 @@ class CommentThread extends VBElement {
   }
 
   #scanComments() {
-    return [...this.querySelectorAll(':scope > article[data-comment]')];
+    return /** @type {HTMLElement[]} */ ([...this.querySelectorAll(':scope > article[data-comment]')]);
   }
 
   // ── Decoration ─────────────────────────────────────────────────────
@@ -89,7 +92,7 @@ class CommentThread extends VBElement {
     while (parentId) {
       if (seen.has(parentId)) break; // guard against cycles
       seen.add(parentId);
-      const parent = this.querySelector(`:scope > article[data-comment][id="${CSS.escape(parentId)}"]`);
+      const parent = /** @type {HTMLElement | null} */ (this.querySelector(`:scope > article[data-comment][id="${CSS.escape(parentId)}"]`));
       if (!parent) break;
       depth += 1;
       parentId = parent.dataset.parent;
@@ -115,7 +118,7 @@ class CommentThread extends VBElement {
     const authorEl = document.createElement(authorHref ? 'a' : 'span');
     authorEl.className = 'comment-author';
     authorEl.textContent = author;
-    if (authorHref) authorEl.href = authorHref;
+    if (authorHref) /** @type {HTMLAnchorElement} */ (authorEl).href = authorHref;
     header.appendChild(authorEl);
 
     const time = comment.dataset.time;
@@ -181,10 +184,10 @@ class CommentThread extends VBElement {
     if (this.#activeReplyForm) this.#dismissReplyForm();
     if (!this.#replyTemplate) return;
 
-    const fragment = this.#replyTemplate.content.cloneNode(true);
-    const form = fragment.firstElementChild?.cloneNode
+    const fragment = /** @type {DocumentFragment} */ (this.#replyTemplate.content.cloneNode(true));
+    const form = /** @type {HTMLElement} */ (fragment.firstElementChild?.cloneNode
       ? fragment.firstElementChild
-      : document.createElement('comment-box');
+      : document.createElement('comment-box'));
     if (!form.hasAttribute('data-show-cancel')) form.setAttribute('data-show-cancel', '');
 
     const wrapper = document.createElement('div');
@@ -201,7 +204,7 @@ class CommentThread extends VBElement {
     form.addEventListener('comment-box:submit', (e) => {
       this.dispatchEvent(new CustomEvent('comment-thread:reply', {
         bubbles: true,
-        detail: { parentId: comment.id, value: e.detail.value },
+        detail: { parentId: comment.id, value: /** @type {CustomEvent} */ (e).detail.value },
       }));
       this.#dismissReplyForm();
     });
@@ -298,7 +301,7 @@ class CommentThread extends VBElement {
    * @param {{ body?: string, edited?: string, author?: string }} patch
    */
   updateComment(id, patch = {}) {
-    const c = this.querySelector(`:scope > article[data-comment][id="${CSS.escape(id)}"]`);
+    const c = /** @type {HTMLElement | null} */ (this.querySelector(`:scope > article[data-comment][id="${CSS.escape(id)}"]`));
     if (!c) return;
     if (patch.body != null) {
       const body = c.querySelector(':scope > [data-comment-body]');

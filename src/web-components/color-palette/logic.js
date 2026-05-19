@@ -112,14 +112,15 @@ export class ColorPalette extends VBElement {
   }
 
   #wireReadonly(colors, names, showValues) {
-    this.querySelectorAll('.color-box').forEach((btn) => {
+    this.querySelectorAll('.color-box').forEach((el) => {
+      const btn = /** @type {HTMLElement} */ (el);
       if (!showValues) {
         btn.addEventListener('pointerenter', () => {
-          const val = btn.querySelector('.color-value');
+          const val = /** @type {HTMLElement | null} */ (btn.querySelector('.color-value'));
           if (val) val.style.opacity = '1';
         });
         btn.addEventListener('pointerleave', () => {
-          const val = btn.querySelector('.color-value');
+          const val = /** @type {HTMLElement | null} */ (btn.querySelector('.color-value'));
           if (val) val.style.opacity = '0';
         });
       }
