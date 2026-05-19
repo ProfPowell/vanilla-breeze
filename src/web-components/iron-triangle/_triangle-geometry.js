@@ -17,7 +17,10 @@
 const MIN_STRETCH = 0.55;
 const MAX_STRETCH = 1.45;
 
-/** Reduce each constraint's snapshot to one comparable scalar. */
+/**
+ * Reduce each constraint's snapshot to one comparable scalar.
+ * @param {{ time?: any, cost?: any, scope?: any }} [value]
+ */
 export function relativeMagnitudes({ time = {}, cost = {}, scope = {} } = {}) {
   return {
     t: numeric(time.sprintCount, 1) * numeric(time.sprintWeeks, 1),
@@ -127,6 +130,9 @@ const VERTEX_LABELS = {
  *
  * The component (logic.js) attaches click/keydown listeners to these
  * groups by `data-axis` / `data-target`.
+ */
+/**
+ * @param {{ value?: any, vertices?: any, capacityPoints?: number, capacitySource?: string, qualitySummary?: string }} [options]
  */
 export function buildTriangleSvg({
   value = {},

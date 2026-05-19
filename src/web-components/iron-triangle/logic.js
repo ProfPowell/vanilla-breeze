@@ -323,10 +323,10 @@ class IronTriangle extends VBElement {
       const dialog = this.#dialogs[axis];
       if (!dialog) continue;
       for (const def of FIELD_DEFS[axis]) {
-        const input = dialog.querySelector(`[name="${axis}.${def.key}"]`);
+        const input = /** @type {HTMLInputElement | null} */ (dialog.querySelector(`[name="${axis}.${def.key}"]`));
         if (!input) continue;
         const v = this.#value[axis]?.[def.key];
-        input.value = v == null ? '' : v;
+        input.value = v == null ? '' : String(v);
       }
     }
   }
@@ -344,6 +344,7 @@ class IronTriangle extends VBElement {
     this.#recompute({ source: 'init' });
   }
 
+  /** @param {{ source?: string, field?: string }} [options] */
   #recompute({ source, field } = {}) {
     const focusFactor = Number(this.dataset.focusFactor ?? 0.6);
     const minCapacity = Number(this.dataset.minCapacity ?? 1);
@@ -407,7 +408,7 @@ class IronTriangle extends VBElement {
   #syncDisabledLocked() {
     const off = this.hasAttribute('disabled') || this.hasAttribute('locked');
     for (const dialog of Object.values(this.#dialogs)) {
-      for (const el of dialog.querySelectorAll('input, select, textarea, button')) el.disabled = off;
+      for (const el of dialog.querySelectorAll('input, select, textarea, button')) /** @type {any} */ (el).disabled = off;
     }
   }
 

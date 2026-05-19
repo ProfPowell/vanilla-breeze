@@ -53,14 +53,18 @@ class DropDown extends VBElement {
 
   setup() {
     // Find trigger
-    this.#trigger = this.querySelector(':scope > [data-trigger]')
-      || this.querySelector(':scope > button');
-    if (!this.#trigger) return false;
+    const trigger = /** @type {HTMLElement | null} */ (
+      this.querySelector(':scope > [data-trigger]')
+      || this.querySelector(':scope > button')
+    );
+    if (!trigger) return false;
+    this.#trigger = trigger;
 
     // Find the slotted menu (may already be inside a pop-over from a previous
     // mount; querySelector reaches deeper).
-    this.#menu = this.querySelector('menu, ul[role="menu"]');
-    if (!this.#menu) return false;
+    const menu = /** @type {HTMLElement | null} */ (this.querySelector('menu, ul[role="menu"]'));
+    if (!menu) return false;
+    this.#menu = menu;
 
     this.#hoverMode = this.hasAttribute('hover');
 
@@ -124,6 +128,7 @@ class DropDown extends VBElement {
       // Manual mode has no native light-dismiss — keep Escape handling.
       this.listen(document, 'keydown', this.#handleEscape);
     }
+    return true;
   }
 
   teardown() {
@@ -151,7 +156,7 @@ class DropDown extends VBElement {
         label: action.textContent.trim().replace(/\s+/g, ' '),
         value: action.getAttribute('data-value') || undefined,
         href: action.tagName === 'A' ? action.getAttribute('href') : undefined,
-        disabled: action.disabled || action.hasAttribute('data-disabled') || undefined,
+        disabled: /** @type {any} */ (action).disabled || action.hasAttribute('data-disabled') || undefined,
       });
     }
     return result;
@@ -177,7 +182,7 @@ class DropDown extends VBElement {
         if (entry.href) action.setAttribute('href', entry.href);
         if (entry.value) action.setAttribute('data-value', entry.value);
         if (entry.disabled) {
-          if (action.tagName === 'BUTTON') action.disabled = true;
+          if (action.tagName === 'BUTTON') /** @type {HTMLButtonElement} */ (action).disabled = true;
           else action.setAttribute('data-disabled', '');
         }
         action.textContent = entry.label || '';
@@ -197,9 +202,9 @@ class DropDown extends VBElement {
   }
 
   #collectItems() {
-    this.#items = Array.from(
-      this.#menu.querySelectorAll('button, a, [role="menuitem"]')
-    ).filter(item => !item.disabled && !item.closest('[role="separator"]'));
+    this.#items = /** @type {HTMLElement[]} */ (
+      Array.from(this.#menu.querySelectorAll('button, a, [role="menuitem"]'))
+    ).filter(item => !(/** @type {any} */ (item)).disabled && !item.closest('[role="separator"]'));
 
     this.#items.forEach((item) => {
       item.setAttribute('role', 'menuitem');
