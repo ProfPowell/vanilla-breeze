@@ -18,8 +18,9 @@ const XProvider = {
     host.innerHTML = `<blockquote class="twitter-tweet" data-theme="${theme}"><a href="${url}"></a></blockquote>`;
 
     // twttr.widgets.load() processes blockquotes into iframes
-    if (window.twttr?.widgets?.load) {
-      window.twttr.widgets.load(host);
+    const w = /** @type {any} */ (window);
+    if (w.twttr?.widgets?.load) {
+      w.twttr.widgets.load(host);
     }
   }
 };

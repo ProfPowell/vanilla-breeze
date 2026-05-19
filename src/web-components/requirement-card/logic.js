@@ -83,9 +83,10 @@ class RequirementCard extends VBElement {
 
     this.listen(this, 'click', (e) => this.#onActivate(e));
     this.listen(this, 'keydown', (e) => {
-      if ((e.key === 'Enter' || e.key === ' ') && this.#interactive) {
-        e.preventDefault();
-        this.#onActivate(e);
+      const ke = /** @type {KeyboardEvent} */ (e);
+      if ((ke.key === 'Enter' || ke.key === ' ') && this.#interactive) {
+        ke.preventDefault();
+        this.#onActivate(ke);
       }
     });
   }

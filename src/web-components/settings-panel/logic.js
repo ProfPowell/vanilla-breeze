@@ -44,7 +44,12 @@ class SettingsPanel extends VBElement {
   #extensions = { ...EXTENSION_DEFAULTS };
   #stickyOn = false;
 
-  async setup() {
+  setup() {
+    this.#initAsync();
+    return true;
+  }
+
+  async #initAsync() {
     await this.#hydrateFromStore();
     this.#render();
     this.#bindEvents();
@@ -749,7 +754,7 @@ class SettingsPanel extends VBElement {
     // A11y toggles
     this.#panel.querySelectorAll('input[data-a11y]').forEach(el => {
       const input = /** @type {HTMLInputElement} */ (el);
-      input.checked = a11yThemes.includes(input.dataset.a11y);
+      input.checked = a11yThemes.includes(input.dataset.a11y || '');
     });
 
     // Extension toggles

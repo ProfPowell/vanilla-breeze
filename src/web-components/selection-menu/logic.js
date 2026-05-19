@@ -114,7 +114,7 @@ class SelectionMenu extends VBElement {
       if (!a?.tag) continue;
       const el = document.createElement(a.tag);
       if (a.attrs) {
-        for (const [name, val] of Object.entries(a.attrs)) {
+        for (const [name, val] of Object.entries(/** @type {Record<string, any>} */ (a.attrs))) {
           if (val == null || val === false) continue;
           el.setAttribute(name, val === true ? '' : String(val));
         }

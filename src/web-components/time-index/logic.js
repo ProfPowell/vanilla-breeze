@@ -84,16 +84,16 @@ class TimeIndex extends VBElement {
   }
 
   #filterByVersion(version) {
-    const sections = this.querySelectorAll('section[id^="v"]');
+    const sections = /** @type {NodeListOf<HTMLElement>} */ (this.querySelectorAll('section[id^="v"]'));
     for (const section of sections) {
-      section.hidden = version && section.id !== version.replace(/\./g, '-').replace(/^v/, 'v');
+      section.hidden = !!version && section.id !== version.replace(/\./g, '-').replace(/^v/, 'v');
     }
 
     if (!sections.length) {
-      const articles = this.querySelectorAll('.changelog-entries article');
+      const articles = /** @type {NodeListOf<HTMLElement>} */ (this.querySelectorAll('.changelog-entries article'));
       for (const article of articles) {
         const tag = article.querySelector('.version-tag');
-        article.hidden = version && tag?.textContent.trim() !== version;
+        article.hidden = !!version && tag?.textContent?.trim() !== version;
       }
     }
   }

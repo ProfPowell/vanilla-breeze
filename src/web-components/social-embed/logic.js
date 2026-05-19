@@ -50,7 +50,7 @@ export function loadScript(src) {
     const el = document.createElement('script');
     el.src = src;
     el.async = true;
-    el.onload = () => resolve();
+    el.onload = () => resolve(undefined);
     el.onerror = () => reject(new Error(`Failed to load script: ${src}`));
     document.head.appendChild(el);
   });
@@ -136,6 +136,7 @@ class SocialEmbed extends VBElement {
   /** @type {object|null} Provider resolved during setup, kept for theme re-render */
   #provider = null;
   /** @type {number|null} */
+  /** @type {ReturnType<typeof setTimeout> | null} */
   #themeRerenderTimer = null;
 
   setup() {

@@ -69,7 +69,7 @@ class ReadingProgress extends VBElement {
     const ratio = this.target ? this.#targetRatio() : this.#documentRatio();
     const clamped = Math.min(1, Math.max(0, ratio));
     this.style.setProperty('--vb-reading-progress', clamped.toFixed(4));
-    this.bar.value = Math.round(clamped * 100);
+    if (this.bar) this.bar.value = Math.round(clamped * 100);
   }
 
   #documentRatio() {
@@ -78,6 +78,7 @@ class ReadingProgress extends VBElement {
   }
 
   #targetRatio() {
+    if (!this.target) return 0;
     const rect = this.target.getBoundingClientRect();
     const span = rect.height - window.innerHeight;
     if (span <= 0) {

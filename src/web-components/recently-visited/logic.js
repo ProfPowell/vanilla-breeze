@@ -56,6 +56,7 @@ class RecentlyVisited extends VBElement {
     }
   }
 
+  /** @type {((e: StorageEvent) => void) | null} */
   #storageHandler = null;
 
   #wireStorage() {

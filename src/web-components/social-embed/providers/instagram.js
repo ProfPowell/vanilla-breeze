@@ -18,8 +18,9 @@ const InstagramProvider = {
     host.innerHTML = `<blockquote class="instagram-media" data-instgrm-permalink="${url}" data-instgrm-version="14"><a href="${url}"></a></blockquote>`;
 
     // instgrm.Embeds.process() converts blockquotes to iframes
-    if (window.instgrm?.Embeds?.process) {
-      window.instgrm.Embeds.process();
+    const w = /** @type {any} */ (window);
+    if (w.instgrm?.Embeds?.process) {
+      w.instgrm.Embeds.process();
     }
   }
 };

@@ -274,7 +274,8 @@ class StepperWc extends VBElement {
     if (!this.#accelerate) return;
 
     this.listen(btn, 'pointerdown', (e) => {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      const pe = /** @type {PointerEvent} */ (e);
+      if (pe.pointerType === 'mouse' && pe.button !== 0) return;
       if (this.#disabledOrReadonly()) return;
       this.#holdRamped = false;
       // Start fast-step phase after 500ms hold.
