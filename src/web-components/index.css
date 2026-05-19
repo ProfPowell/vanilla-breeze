@@ -731,6 +731,36 @@ textarea[data-grow][data-grow-init] {
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
+   Composable animation slots
+
+   Every animated data-effect publishes into one of four named slots
+   (entrance, attention, decoration, exit) via a CSS custom property.
+   The composer rule below reads all four slots into a single multi-value
+   `animation` declaration so cross-category pairs (e.g. pop + neon) all run
+   simultaneously instead of clobbering each other.
+
+   Intra-slot collisions (e.g. two entrance effects) are still single-slot
+   and need a merged keyframe — see [data-effect~="fade-in"][data-effect~="slide-up"].
+
+   Static paint (text-shadow, color, -webkit-text-stroke) MUST live on the
+   selector, not inside @keyframes, so decoration visuals survive when the
+   animation slot is stolen.
+   -------------------------------------------------------------------------- */
+
+/* Registered properties so intensity modulators interpolate smoothly. */
+@property --vb-neon-intensity    { syntax: '<number>'; inherits: false; initial-value: 1; }
+@property --vb-outline-intensity { syntax: '<number>'; inherits: false; initial-value: 1; }
+@property --vb-rainbow-hue       { syntax: '<angle>';  inherits: false; initial-value: 0deg; }
+
+[data-effect] {
+  animation:
+    var(--vb-anim-entrance,   none),
+    var(--vb-anim-attention,  none),
+    var(--vb-anim-decoration, none),
+    var(--vb-anim-exit,       none);
+}
+
+/* --------------------------------------------------------------------------
    data-effect~="gradient-text": Gradient text coloring (CSS-only)
    -------------------------------------------------------------------------- */
 @supports (-webkit-background-clip: text) or (background-clip: text) {
@@ -770,7 +800,7 @@ textarea[data-grow][data-grow-init] {
 
   [data-effect~="gradient-text"].animate {
     background-size: 200% 200%;
-    animation: vb-gradient-flow 4s var(--ease-default, ease) infinite;
+    --vb-anim-decoration: vb-gradient-flow 4s var(--ease-default, ease) infinite;
   }
 }
 
@@ -779,16 +809,12 @@ textarea[data-grow][data-grow-init] {
   50% { background-position: 100% 50%; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  [data-effect~="gradient-text"].animate { animation: none; }
-}
-:root[data-motion-reduced] [data-effect~="gradient-text"].animate { animation: none; }
-
 /* --------------------------------------------------------------------------
    data-effect~="shimmer": Shimmering text highlight (CSS-only)
    -------------------------------------------------------------------------- */
 @supports (-webkit-background-clip: text) or (background-clip: text) {
   [data-effect~="shimmer"] {
+    --vb-shimmer-duration: 2s;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -799,23 +825,18 @@ textarea[data-grow][data-grow-init] {
       currentColor 65%
     );
     background-size: 200% 100%;
-    animation: vb-shimmer 2s linear infinite;
     color: var(--color-text);
+    --vb-anim-decoration: vb-shimmer var(--vb-shimmer-duration) linear infinite;
   }
 
-  [data-effect~="shimmer"].slow { animation-duration: 4s; }
-  [data-effect~="shimmer"].fast { animation-duration: 1s; }
+  [data-effect~="shimmer"].slow { --vb-shimmer-duration: 4s; }
+  [data-effect~="shimmer"].fast { --vb-shimmer-duration: 1s; }
 }
 
 @keyframes vb-shimmer {
   from { background-position: 200% center; }
   to { background-position: -200% center; }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  [data-effect~="shimmer"] { animation: none; }
-}
-:root[data-motion-reduced] [data-effect~="shimmer"] { animation: none; }
 
 /* --------------------------------------------------------------------------
    data-effect~="glitch": Chromatic aberration glitch effect (CSS + tiny JS)
@@ -989,7 +1010,7 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="blink"] {
   --vb-blink-rate: 1s;
-  animation: vb-blink var(--vb-blink-rate) steps(1) infinite;
+  --vb-anim-attention: vb-blink var(--vb-blink-rate) steps(1) infinite;
 }
 
 [data-effect~="blink"].slow  { --vb-blink-rate: 2s; }
@@ -999,12 +1020,6 @@ textarea[data-grow][data-grow-init] {
   0%, 49% { opacity: 1; }
   50%, 100% { opacity: 0; }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  [data-effect~="blink"] { animation: none; }
-}
-
-:root[data-motion-reduced] [data-effect~="blink"] { animation: none; }
 
 
 /* --------------------------------------------------------------------------
@@ -1020,37 +1035,19 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="neon"] {
   color: var(--vb-neon-color);
-  animation: vb-neon-pulse 2.5s ease-in-out infinite alternate;
+  /* Static base paint — survives even when the decoration slot is overridden. */
+  text-shadow:
+    0 0 calc(var(--vb-neon-spread) * var(--vb-neon-intensity, 1)) color-mix(in oklch, var(--vb-neon-color), white 60%),
+    0 0 calc(var(--vb-neon-spread) * 3  * var(--vb-neon-intensity, 1)) var(--vb-neon-color),
+    0 0 calc(var(--vb-neon-spread) * 8  * var(--vb-neon-intensity, 1)) var(--vb-neon-color),
+    0 0 calc(var(--vb-neon-spread) * 16 * var(--vb-neon-intensity, 1)) color-mix(in oklch, var(--vb-neon-color), transparent 40%);
+  --vb-anim-decoration: vb-neon-pulse 2.5s ease-in-out infinite alternate;
 }
 
 @keyframes vb-neon-pulse {
-  from {
-    text-shadow:
-      0 0 var(--vb-neon-spread) color-mix(in oklch, var(--vb-neon-color), white 60%),
-      0 0 calc(var(--vb-neon-spread) * 3) var(--vb-neon-color),
-      0 0 calc(var(--vb-neon-spread) * 8) var(--vb-neon-color),
-      0 0 calc(var(--vb-neon-spread) * 16) color-mix(in oklch, var(--vb-neon-color), transparent 40%);
-  }
-  to {
-    text-shadow:
-      0 0 calc(var(--vb-neon-spread) * 0.5) color-mix(in oklch, var(--vb-neon-color), white 80%),
-      0 0 calc(var(--vb-neon-spread) * 2) var(--vb-neon-color),
-      0 0 calc(var(--vb-neon-spread) * 6) var(--vb-neon-color),
-      0 0 calc(var(--vb-neon-spread) * 12) color-mix(in oklch, var(--vb-neon-color), transparent 60%);
-  }
+  from { --vb-neon-intensity: 0.55; }
+  to   { --vb-neon-intensity: 1.15; }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  [data-effect~="neon"] {
-    animation: none;
-    text-shadow:
-      0 0 var(--vb-neon-spread) color-mix(in oklch, var(--vb-neon-color), white 60%),
-      0 0 calc(var(--vb-neon-spread) * 4) var(--vb-neon-color),
-      0 0 calc(var(--vb-neon-spread) * 10) color-mix(in oklch, var(--vb-neon-color), transparent 40%);
-  }
-}
-
-:root[data-motion-reduced] [data-effect~="neon"] { animation: none; }
 
 
 /* --------------------------------------------------------------------------
@@ -1083,7 +1080,7 @@ textarea[data-grow][data-grow-init] {
 }
 
 [data-effect~="text-3d"].animate {
-  animation: vb-3d-shift 3s ease-in-out infinite alternate;
+  --vb-anim-decoration: vb-3d-shift 3s ease-in-out infinite alternate;
 }
 
 @keyframes vb-3d-shift {
@@ -1104,12 +1101,6 @@ textarea[data-grow][data-grow-init] {
       -8px 8px 0 color-mix(in oklch, var(--vb-3d-color), transparent 40%);
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  [data-effect~="text-3d"].animate { animation: none; }
-}
-
-:root[data-motion-reduced] [data-effect~="text-3d"].animate { animation: none; }
 
 
 /* --------------------------------------------------------------------------
@@ -1133,31 +1124,17 @@ textarea[data-grow][data-grow-init] {
     --vb-outline-width: 1px;
     --vb-outline-glow: var(--vb-neon-color, var(--vb-outline-color));
     -webkit-text-stroke: var(--vb-outline-width) var(--vb-outline-glow);
+    /* Static glow base — survives loss of the decoration slot. */
     text-shadow:
-      0 0 0.1em color-mix(in oklch, var(--vb-outline-glow), transparent 20%),
-      0 0 0.3em color-mix(in oklch, var(--vb-outline-glow), transparent 50%);
-    animation: vb-outline-glow-pulse 2s ease-in-out infinite alternate;
+      0 0 calc(0.1em * var(--vb-outline-intensity, 1)) color-mix(in oklch, var(--vb-outline-glow), transparent 20%),
+      0 0 calc(0.3em * var(--vb-outline-intensity, 1)) color-mix(in oklch, var(--vb-outline-glow), transparent 50%);
+    --vb-anim-decoration: vb-outline-glow-pulse 2s ease-in-out infinite alternate;
   }
 
   @keyframes vb-outline-glow-pulse {
-    from {
-      text-shadow:
-        0 0 0.08em color-mix(in oklch, var(--vb-outline-glow, var(--color-text)), transparent 10%),
-        0 0 0.25em color-mix(in oklch, var(--vb-outline-glow, var(--color-text)), transparent 40%);
-    }
-    to {
-      text-shadow:
-        0 0 0.15em color-mix(in oklch, var(--vb-outline-glow, var(--color-text)), transparent 5%),
-        0 0 0.4em color-mix(in oklch, var(--vb-outline-glow, var(--color-text)), transparent 60%),
-        0 0 0.8em color-mix(in oklch, var(--vb-outline-glow, var(--color-text)), transparent 80%);
-    }
+    from { --vb-outline-intensity: 0.7; }
+    to   { --vb-outline-intensity: 1.4; }
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    [data-effect~="outline"].glow { animation: none; }
-  }
-
-  :root[data-motion-reduced] [data-effect~="outline"].glow { animation: none; }
 }
 
 
@@ -1239,23 +1216,19 @@ textarea[data-grow][data-grow-init] {
 [data-effect~="rainbow"] {
   --vb-rainbow-speed: 4s;
   color: oklch(65% 0.3 0);
-  animation: vb-rainbow var(--vb-rainbow-speed) linear infinite;
   display: inline-block;
+  /* Static base — surviving paint when the decoration slot is stolen. */
+  filter: hue-rotate(var(--vb-rainbow-hue, 0deg));
+  --vb-anim-decoration: vb-rainbow var(--vb-rainbow-speed) linear infinite;
 }
 
 [data-effect~="rainbow"].slow { --vb-rainbow-speed: 8s; }
 [data-effect~="rainbow"].fast { --vb-rainbow-speed: 1.5s; }
 
 @keyframes vb-rainbow {
-  from { filter: hue-rotate(0deg); }
-  to   { filter: hue-rotate(360deg); }
+  from { --vb-rainbow-hue: 0deg; }
+  to   { --vb-rainbow-hue: 360deg; }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  [data-effect~="rainbow"] { animation: none; filter: none; }
-}
-
-:root[data-motion-reduced] [data-effect~="rainbow"] { animation: none; filter: none; }
 
 
 /* --------------------------------------------------------------------------
@@ -1466,7 +1439,7 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="fade-in"][data-effect-active],
 [data-effect~="fade-in"]:not([data-trigger]) {
-  animation: vb-fade-in var(--vb-duration, 300ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-fade-in var(--vb-duration, 300ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
 }
 
 /* ── Entrance: slide-up ── */
@@ -1482,7 +1455,7 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="slide-up"][data-effect-active],
 [data-effect~="slide-up"]:not([data-trigger]) {
-  animation: vb-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
 }
 
 /* ── Entrance: pop ── */
@@ -1498,7 +1471,7 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="pop"][data-effect-active],
 [data-effect~="pop"]:not([data-trigger]) {
-  animation: vb-pop var(--vb-duration, 300ms) var(--vb-easing, cubic-bezier(0.68, -0.55, 0.27, 1.55)) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-pop var(--vb-duration, 300ms) var(--vb-easing, cubic-bezier(0.68, -0.55, 0.27, 1.55)) var(--vb-delay, 0ms) forwards;
 }
 
 /* ── Exit: fade-out ── */
@@ -1508,7 +1481,7 @@ textarea[data-grow][data-grow-init] {
 }
 
 [data-effect~="fade-out"][data-effect-active] {
-  animation: vb-fade-out var(--vb-duration, 300ms) var(--vb-easing, ease-in) var(--vb-delay, 0ms) forwards;
+  --vb-anim-exit: vb-fade-out var(--vb-duration, 300ms) var(--vb-easing, ease-in) var(--vb-delay, 0ms) forwards;
 }
 
 /* ── Attention: shake ── */
@@ -1520,7 +1493,7 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="shake"][data-effect-active],
 [data-effect~="shake"]:not([data-trigger]) {
-  animation: vb-shake var(--vb-duration, 400ms) var(--vb-easing, ease-in-out);
+  --vb-anim-attention: vb-shake var(--vb-duration, 400ms) var(--vb-easing, ease-in-out);
 }
 
 /* ── Attention: pulse ── */
@@ -1531,7 +1504,7 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="pulse"][data-effect-active],
 [data-effect~="pulse"]:not([data-trigger]) {
-  animation: vb-pulse var(--vb-duration, 1.5s) var(--vb-easing, ease-in-out) infinite;
+  --vb-anim-attention: vb-pulse var(--vb-duration, 1.5s) var(--vb-easing, ease-in-out) infinite;
 }
 
 /* ── Attention: bounce ── */
@@ -1544,7 +1517,7 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="bounce"][data-effect-active],
 [data-effect~="bounce"]:not([data-trigger]) {
-  animation: vb-bounce var(--vb-duration, 1s) var(--vb-easing, ease-in-out) infinite;
+  --vb-anim-attention: vb-bounce var(--vb-duration, 1s) var(--vb-easing, ease-in-out) infinite;
 }
 
 /* ── Decoration: float ── */
@@ -1554,7 +1527,7 @@ textarea[data-grow][data-grow-init] {
 }
 
 [data-effect~="float"] {
-  animation: vb-float var(--vb-duration, 3s) var(--vb-easing, ease-in-out) infinite;
+  --vb-anim-decoration: vb-float var(--vb-duration, 3s) var(--vb-easing, ease-in-out) infinite;
 }
 
 /* ── Composed: fade-in + slide-up ── */
@@ -1570,7 +1543,7 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="fade-in"][data-effect~="slide-up"][data-effect-active],
 [data-effect~="fade-in"][data-effect~="slide-up"]:not([data-trigger]) {
-  animation: vb-fade-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-fade-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
 }
 
 /* ── Entrance: slide-in ── */
@@ -1595,14 +1568,14 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="slide-in"][data-effect-active],
 [data-effect~="slide-in"]:not([data-trigger]) {
-  animation: vb-slide-in-ltr var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-slide-in-ltr var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
 }
 
 :where([dir="rtl"]) [data-effect~="slide-in"][data-effect-active],
 :where([dir="rtl"]) [data-effect~="slide-in"]:not([data-trigger]),
 [data-effect~="slide-in"][dir="rtl"][data-effect-active],
 [data-effect~="slide-in"][dir="rtl"]:not([data-trigger]) {
-  animation-name: vb-slide-in-rtl;
+  --vb-anim-entrance: vb-slide-in-rtl var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
 }
 
 /* ── Exit: collapse ── */
@@ -1612,7 +1585,7 @@ textarea[data-grow][data-grow-init] {
 }
 
 [data-effect~="collapse"][data-effect-active] {
-  animation: vb-collapse var(--vb-duration, 300ms) var(--vb-easing, ease-in) forwards;
+  --vb-anim-exit: vb-collapse var(--vb-duration, 300ms) var(--vb-easing, ease-in) forwards;
 }
 
 /* ── Exit: slide-out ── */
@@ -1626,19 +1599,20 @@ textarea[data-grow][data-grow-init] {
 }
 
 [data-effect~="slide-out"][data-effect-active] {
-  animation: vb-slide-out-ltr var(--vb-duration, 400ms) var(--vb-easing, ease-in) var(--vb-delay, 0ms) forwards;
+  --vb-anim-exit: vb-slide-out-ltr var(--vb-duration, 400ms) var(--vb-easing, ease-in) var(--vb-delay, 0ms) forwards;
 }
 
 :where([dir="rtl"]) [data-effect~="slide-out"][data-effect-active],
 [data-effect~="slide-out"][dir="rtl"][data-effect-active] {
-  animation-name: vb-slide-out-rtl;
+  --vb-anim-exit: vb-slide-out-rtl var(--vb-duration, 400ms) var(--vb-easing, ease-in) var(--vb-delay, 0ms) forwards;
 }
 
 /* ── Attention: glow ── */
 [data-effect~="glow"] {
   --vb-glow-color: var(--color-primary, oklch(55% 0.2 260));
+  /* Static baseline glow — survives loss of the decoration slot. */
   filter: drop-shadow(0 0 0.3em color-mix(in oklch, var(--vb-glow-color), transparent 40%));
-  animation: vb-glow var(--vb-duration, 2s) var(--vb-easing, ease-in-out) infinite alternate;
+  --vb-anim-decoration: vb-glow var(--vb-duration, 2s) var(--vb-easing, ease-in-out) infinite alternate;
 }
 
 @keyframes vb-glow {
@@ -1664,22 +1638,14 @@ textarea[data-grow][data-grow-init] {
 
 [data-effect~="shadow"][data-effect-active],
 [data-effect~="shadow"]:not([data-trigger]) {
-  animation: vb-shadow-lift var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-shadow-lift var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
 }
 
-/* ── Composed: fade-in + glow ── */
-[data-effect~="fade-in"][data-effect~="glow"][data-trigger] {
-  opacity: 0;
-}
+/* fade-in + glow now composes automatically — fade-in publishes into entrance,
+   glow into decoration. No bespoke selector needed. */
 
-[data-effect~="fade-in"][data-effect~="glow"][data-effect-active],
-[data-effect~="fade-in"][data-effect~="glow"]:not([data-trigger]) {
-  animation:
-    vb-fade-in var(--vb-duration, 300ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards,
-    vb-glow 2s ease-in-out 300ms infinite alternate;
-}
-
-/* ── Composed: shimmer + gradient-text (both use background-clip: text) ── */
+/* ── Composed: shimmer + gradient-text (both use background-clip: text,
+   both occupy the decoration slot — this rule merges their gradient/animation) ── */
 @supports (-webkit-background-clip: text) or (background-clip: text) {
   [data-effect~="shimmer"][data-effect~="gradient-text"] {
     background-image: linear-gradient(
@@ -1691,10 +1657,10 @@ textarea[data-grow][data-grow-init] {
       var(--color-primary, oklch(55% 0.2 260)) 100%
     );
     background-size: 300% 100%;
-    animation: vb-shimmer-gradient 3s linear infinite;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    --vb-anim-decoration: vb-shimmer-gradient 3s linear infinite;
   }
 }
 
@@ -1713,54 +1679,57 @@ textarea[data-grow][data-grow-init] {
   --vb-delay: calc(var(--vb-stagger-index, 0) * var(--vb-stagger, 80ms));
 }
 
-/* ── Reduced motion for new effects ── */
+/* ── Reduced motion ──
+   With the slot system, blanking every slot kills every animation in one rule.
+   Static decoration paint (neon text-shadow, outline stroke, rainbow color,
+   text-3d shadow, hard-shadow) lives outside @keyframes so it stays visible.
+   For triggered entrance effects we also assert their final visual state so
+   the element doesn't sit at opacity:0 / translated when the animation
+   never runs. */
 @media (prefers-reduced-motion: reduce) {
-  [data-effect~="fade-in"],
-  [data-effect~="slide-up"],
-  [data-effect~="slide-in"],
-  [data-effect~="pop"],
-  [data-effect~="fade-out"],
-  [data-effect~="slide-out"],
-  [data-effect~="collapse"],
-  [data-effect~="shake"],
-  [data-effect~="pulse"],
-  [data-effect~="bounce"],
-  [data-effect~="glow"],
-  [data-effect~="shadow"],
-  [data-effect~="float"] {
-    animation: none !important;
+  [data-effect] {
+    --vb-anim-entrance: none;
+    --vb-anim-attention: none;
+    --vb-anim-decoration: none;
+    --vb-anim-exit: none;
+  }
+
+  [data-effect~="fade-in"][data-trigger]:not([data-effect-active]),
+  [data-effect~="slide-up"][data-trigger]:not([data-effect-active]),
+  [data-effect~="slide-in"][data-trigger]:not([data-effect-active]),
+  [data-effect~="pop"][data-trigger]:not([data-effect-active]) {
     opacity: 1;
     transform: none;
-    filter: none;
   }
 
   [data-effect~="shadow"] {
     box-shadow: var(--vb-shadow, 0 8px 24px oklch(0% 0 0 / 0.18));
   }
+
+  [data-effect~="marquee"] > * { animation: none; }
+  [data-effect~="marquee"] { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
 }
 
-:root[data-motion-reduced] [data-effect~="fade-in"],
-:root[data-motion-reduced] [data-effect~="slide-up"],
-:root[data-motion-reduced] [data-effect~="slide-in"],
-:root[data-motion-reduced] [data-effect~="pop"],
-:root[data-motion-reduced] [data-effect~="fade-out"],
-:root[data-motion-reduced] [data-effect~="slide-out"],
-:root[data-motion-reduced] [data-effect~="collapse"],
-:root[data-motion-reduced] [data-effect~="shake"],
-:root[data-motion-reduced] [data-effect~="pulse"],
-:root[data-motion-reduced] [data-effect~="bounce"],
-:root[data-motion-reduced] [data-effect~="glow"],
-:root[data-motion-reduced] [data-effect~="shadow"],
-:root[data-motion-reduced] [data-effect~="float"] {
-  animation: none !important;
+:root[data-motion-reduced] [data-effect] {
+  --vb-anim-entrance: none;
+  --vb-anim-attention: none;
+  --vb-anim-decoration: none;
+  --vb-anim-exit: none;
+}
+
+:root[data-motion-reduced] [data-effect~="fade-in"][data-trigger]:not([data-effect-active]),
+:root[data-motion-reduced] [data-effect~="slide-up"][data-trigger]:not([data-effect-active]),
+:root[data-motion-reduced] [data-effect~="slide-in"][data-trigger]:not([data-effect-active]),
+:root[data-motion-reduced] [data-effect~="pop"][data-trigger]:not([data-effect-active]) {
   opacity: 1;
   transform: none;
-  filter: none;
 }
 
 :root[data-motion-reduced] [data-effect~="shadow"] {
   box-shadow: var(--vb-shadow, 0 8px 24px oklch(0% 0 0 / 0.18));
 }
+
+:root[data-motion-reduced] [data-effect~="marquee"] > * { animation: none; }
 
 /* --------------------------------------------------------------------------
    data-math: MathML enhancement for code elements
