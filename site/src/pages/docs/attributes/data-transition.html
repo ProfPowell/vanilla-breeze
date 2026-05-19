@@ -160,6 +160,25 @@ VB.transition('flip', (el) => {
   </code-block>
 </section>
 
+<section id="effect-bridge">
+  <h2>effect:<var>class</var> bridge</h2>
+  <p>Cross-fades the element via View Transitions while descendants with <code>data-trigger="vt"</code> defer their entrance animation until the swap commits. The view-transition's <code>updateCallbackDone</code> fires <code>vb:vt-update-done</code> on the descendants, then their entrance runs in sync with the fade — no double-flash, no race against the <code>finished</code> promise (see the gotcha note in the project memory).</p>
+
+  <code-block language="html" label="Effect bridge">
+&lt;!-- The fade is the cross-fade; the pop happens once the new DOM is live. --&gt;
+&lt;section data-transition="effect:fade"&gt;
+  &lt;h2 data-effect="pop" data-trigger="vt"&gt;Pops in after the cross-fade&lt;/h2&gt;
+  &lt;ul data-stagger="60ms"&gt;
+    &lt;li data-effect="fade-in slide-up" data-trigger="vt"&gt;One&lt;/li&gt;
+    &lt;li data-effect="fade-in slide-up" data-trigger="vt"&gt;Two&lt;/li&gt;
+    &lt;li data-effect="fade-in slide-up" data-trigger="vt"&gt;Three&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/section&gt;
+  </code-block>
+
+  <p>The class after the colon is the <code>view-transition-class</code> for the cross-fade (defaults to <code>fade</code>). Pair it with the existing CSS presets or your own keyframes registered against <code>::view-transition-group(.<var>class</var>)</code>.</p>
+</section>
+
 <section id="browser-support">
   <h2>Browser support</h2>
   <p>View Transitions require Chrome 111+ or Safari 18+. In unsupported browsers, <code>VB.swap()</code> falls back to calling the update function directly — the DOM change happens instantly, no error.</p>
@@ -176,6 +195,7 @@ VB.transition('flip', (el) => {
       <tr><td><code>scale</code></td><td><code>scale</code></td><td>Scale-down/scale-up swap.</td></tr>
       <tr><td><code>stagger</code></td><td><code>fade</code></td><td>Children get individual names for list reorder transitions.</td></tr>
       <tr><td><code>none</code></td><td><code>none</code></td><td>Instant swap, no animation.</td></tr>
+      <tr><td><code>effect:<var>class</var></code></td><td><var>class</var> (default <code>fade</code>)</td><td>Bridges to <code>data-effect</code>: descendants with <code>data-trigger="vt"</code> fire their entrance once the swap commits.</td></tr>
     </tbody>
   </table>
 

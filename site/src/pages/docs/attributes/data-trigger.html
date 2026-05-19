@@ -59,6 +59,61 @@ crumbLabel: Data Attributes
   </code-block>
 </section>
 
+<section id="intersect">
+  <h2>intersect, intersect:once, intersect:toggle</h2>
+  <p>Generalised <code>IntersectionObserver</code> trigger. <code>intersect</code> and <code>intersect:once</code> fire once on first viewport entry (same behaviour as <code>scroll</code>). <code>intersect:toggle</code> re-activates on every viewport entry and deactivates on every exit — useful for decoration effects that should follow the viewport.</p>
+
+  <code-block language="html" label="Intersect modes">
+&lt;h2 data-effect="fade-in slide-up" data-trigger="intersect"&gt;Fires once&lt;/h2&gt;
+&lt;aside data-effect="neon" data-trigger="intersect:toggle"&gt;Glows only while on screen&lt;/aside&gt;
+  </code-block>
+</section>
+
+<section id="media">
+  <h2>media:<var>(query)</var></h2>
+  <p>Activates while a <code>matchMedia</code> query matches, deactivates on mismatch. Reacts to media-query change events so a decoration switches on at a breakpoint, in dark mode, or when reduced-motion lifts.</p>
+
+  <code-block language="html" label="Media trigger">
+&lt;h1 data-effect="neon" data-trigger="media:(prefers-color-scheme:dark)"&gt;
+  Neon only in dark mode
+&lt;/h1&gt;
+&lt;p data-effect="float" data-trigger="media:(min-width:60rem)"&gt;
+  Floats only on wide screens
+&lt;/p&gt;
+  </code-block>
+
+  <p><strong>Note:</strong> the query must not contain whitespace — <code>data-trigger</code> is split on whitespace into multiple triggers.</p>
+</section>
+
+<section id="event">
+  <h2>event:<var>name</var></h2>
+  <p>Listens for a custom DOM event by <var>name</var> on the element. Pairs with <code>VB.activate(el)</code> so app code can drive effect timing without touching <code>data-effect-active</code> directly.</p>
+
+  <code-block language="html" label="Event trigger">
+&lt;h1 id="title" data-effect="pop" data-trigger="event:order-confirmed"&gt;
+  Thanks for your order!
+&lt;/h1&gt;
+&lt;script&gt;
+  document.getElementById('title').dispatchEvent(
+    new CustomEvent('order-confirmed')
+  );
+&lt;/script&gt;
+  </code-block>
+</section>
+
+<section id="vt">
+  <h2>vt (View Transition bridge)</h2>
+  <p>Defers activation until <code>VB.swap()</code>'s view transition commits the new DOM. Bridges the <a href="/docs/attributes/data-transition/">data-transition</a> system into the effect lifecycle, so an entrance animation runs <em>in sync with</em> the cross-fade instead of before it.</p>
+
+  <code-block language="html" label="VT-coordinated entrance">
+&lt;section data-transition="effect:fade"&gt;
+  &lt;h2 data-effect="pop" data-trigger="vt"&gt;
+    Pops in after the cross-fade
+  &lt;/h2&gt;
+&lt;/section&gt;
+  </code-block>
+</section>
+
 <section id="no-trigger">
   <h2>No trigger (immediate)</h2>
   <p>When <code>data-trigger</code> is omitted, CSS-only effects activate immediately via their CSS selectors. JS effects run their <code>activate()</code> function on initialization.</p>
@@ -100,10 +155,14 @@ VB.trigger('visible', (el, activate, param) => {
   <table class="props-table">
     <thead><tr><th>Trigger</th><th>Implementation</th><th>Notes</th></tr></thead>
     <tbody>
-      <tr><td><code>scroll</code></td><td><code>IntersectionObserver</code></td><td>Fires once at 10% visible, then disconnects.</td></tr>
+      <tr><td><code>scroll</code></td><td><code>IntersectionObserver</code></td><td>Fires once at 10% visible, then disconnects. Alias of <code>intersect:once</code>.</td></tr>
       <tr><td><code>hover</code></td><td>CSS <code>:hover</code> + JS events</td><td>CSS-only effects use <code>:hover</code>. JS effects use pointer events.</td></tr>
       <tr><td><code>click</code></td><td><code>addEventListener('click')</code></td><td>Toggles <code>[data-effect-active]</code>.</td></tr>
       <tr><td><code>time:<var>n</var></code></td><td><code>setTimeout</code></td><td><var>n</var> is delay in milliseconds.</td></tr>
+      <tr><td><code>intersect:<var>once|toggle</var></code></td><td><code>IntersectionObserver</code></td><td><code>once</code> (default) fires on first entry; <code>toggle</code> activates/deactivates on every enter/leave.</td></tr>
+      <tr><td><code>media:<var>(query)</var></code></td><td><code>matchMedia</code></td><td>Activates while query matches; deactivates on mismatch. No whitespace in the query.</td></tr>
+      <tr><td><code>event:<var>name</var></code></td><td><code>addEventListener</code></td><td>Activates when the named DOM event fires on the element.</td></tr>
+      <tr><td><code>vt</code></td><td><code>vb:vt-update-done</code></td><td>Fires after <code>VB.swap()</code>'s view transition commits. Pairs with <code>data-transition="effect:<var>class</var>"</code>.</td></tr>
     </tbody>
   </table>
 </section>

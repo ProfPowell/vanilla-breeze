@@ -40,6 +40,71 @@ crumbLabel: Data Attributes
   <p>Apply multiple effects to a single element with space-separated values:</p>
   <code-block language="html" label="Multiple effects">
 &lt;h1 data-effect="gradient-text shimmer"&gt;Gradient + Shimmer&lt;/h1&gt;
+&lt;h1 data-effect="pop neon outline" class="green"&gt;Entrance + glow + stroke&lt;/h1&gt;
+&lt;p data-effect="text-3d bounce" class="gold"&gt;3D shadow + bouncing&lt;/p&gt;
+  </code-block>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<section id="slots">
+  <h2>Composition: animation slots</h2>
+  <p>Every animated effect publishes into one of four <strong>animation slots</strong>. A single composer rule on <code>[data-effect]</code> reads all four into a comma-separated <code>animation</code> shorthand, so cross-category pairs compose automatically:</p>
+
+  <table class="props-table">
+    <thead><tr><th>Slot</th><th>Examples</th><th>Lifecycle</th></tr></thead>
+    <tbody>
+      <tr><td><code>entrance</code></td><td><code>fade-in</code>, <code>slide-up</code>, <code>pop</code>, <code>slide-in</code>, <code>shadow</code></td><td>One-shot, <code>forwards</code>. Fires once on activation.</td></tr>
+      <tr><td><code>attention</code></td><td><code>shake</code>, <code>pulse</code>, <code>bounce</code>, <code>blink</code></td><td>Repeating, attention-grabbing.</td></tr>
+      <tr><td><code>decoration</code></td><td><code>neon</code>, <code>outline.glow</code>, <code>text-3d.animate</code>, <code>rainbow</code>, <code>gradient-text.animate</code>, <code>shimmer</code>, <code>glow</code>, <code>float</code></td><td>Continuous / infinite. Static paint survives loss of the slot.</td></tr>
+      <tr><td><code>exit</code></td><td><code>fade-out</code>, <code>collapse</code>, <code>slide-out</code></td><td>One-shot, <code>forwards</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Cross-slot composition is automatic</h3>
+  <p>Effects in different slots compose with no extra work — they each occupy their own animation, so neither steals from the other:</p>
+  <code-block language="html" label="Cross-slot pairs that just work">
+&lt;h1 data-effect="pop neon" class="green"&gt;Entrance + decoration&lt;/h1&gt;
+&lt;span data-effect="outline float" class="thick"&gt;Static stroke + decoration motion&lt;/span&gt;
+&lt;p data-effect="text-3d bounce" class="gold"&gt;Decoration + attention&lt;/p&gt;
+&lt;li data-effect="fade-in slide-up" data-trigger="scroll"&gt;Two entrance effects — merged via a shared keyframe&lt;/li&gt;
+  </code-block>
+
+  <h3>Intra-slot collisions</h3>
+  <p>Two effects in the <em>same</em> slot share one animation. A small number of pairs ship pre-merged keyframes (e.g. <code>fade-in + slide-up</code>, <code>shimmer + gradient-text</code>). For ad-hoc combinations the second selector wins by source order — pick one, or write your own composite selector. Effects that paint static visuals outside the animation (<code>hard-shadow</code>, <code>text-3d</code> without <code>.animate</code>, <code>outline</code> without <code>.glow</code>, <code>stamp</code>) never collide.</p>
+
+  <h3>Static paint survives slot loss</h3>
+  <p>Decoration effects (<code>neon</code>, <code>outline.glow</code>, <code>text-3d.animate</code>, <code>rainbow</code>) keep their visual when the slot is occupied by something else (e.g. by a custom user animation). The pulse stops, the glow stays — only the motion is lost, not the paint.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<section id="lifecycle-api">
+  <h2>Lifecycle JS API</h2>
+  <p>The slot system is paired with a small JS surface for cross-effect coordination:</p>
+  <table class="props-table">
+    <thead><tr><th>Method</th><th>Signature</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td><code>VB.activate(el)</code></td><td><code>(el) =&gt; void</code></td><td>Add <code>data-effect-active</code> and fire entrance/attention. Programmatic trigger.</td></tr>
+      <tr><td><code>VB.deactivate(el)</code></td><td><code>(el) =&gt; void</code></td><td>Remove <code>data-effect-active</code>; slot vars un-publish, animations stop.</td></tr>
+      <tr><td><code>VB.onPhaseEnd(el, phase, fn)</code></td><td><code>(el, phase, fn) =&gt; unsubscribe</code></td><td>Run <code>fn</code> when any keyframe in <code>phase</code> finishes (entrance/exit fire once; finite attention also fires).</td></tr>
+      <tr><td><code>VB.registerKeyframe(name, phase)</code></td><td><code>(name, phase) =&gt; void</code></td><td>Map a custom keyframe to a phase so <code>animationend</code> classification works for it.</td></tr>
+    </tbody>
+  </table>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Fired on</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><code>vb:effect-phase-end</code></td><td>Element with <code>[data-effect]</code></td><td><code>{ phase, animationName }</code> — phase is <code>entrance | exit | attention | decoration</code>.</td></tr>
+      <tr><td><code>vb:phase-change</code></td><td>Element when activated/deactivated</td><td><code>{ active: true | false }</code>.</td></tr>
+      <tr><td><code>vb:vt-update-done</code></td><td>Elements with <code>[data-trigger~="vt"]</code></td><td>Fired by <code>VB.swap()</code> after the view transition's <code>updateCallbackDone</code> resolves.</td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="js" label="Chain a typewriter after an entrance">
+const el = document.querySelector('[data-effect~="pop"]');
+VB.onPhaseEnd(el, 'entrance', () =&gt; {
+  startTypewriter(el);
+});
   </code-block>
 </section>
 

@@ -51,14 +51,38 @@ crumbLabel: Data Attributes
   <h2>Custom timing</h2>
   <p>Override the stagger interval with a CSS custom property or inline style:</p>
   <code-block language="html" label="Custom stagger timing">
-&lt;!-- Fast stagger --&gt;
+&lt;!-- CSS-time shorthand: sets --vb-stagger directly --&gt;
 &lt;ul data-stagger="40ms"&gt;...&lt;/ul&gt;
-
-&lt;!-- Slow stagger --&gt;
 &lt;ul data-stagger="200ms"&gt;...&lt;/ul&gt;
 
-&lt;!-- Via CSS custom property --&gt;
+&lt;!-- Explicit CSS custom property --&gt;
 &lt;ul data-stagger style="--vb-stagger: 120ms"&gt;...&lt;/ul&gt;
+  </code-block>
+</section>
+
+<section id="modes">
+  <h2>Ordering modes</h2>
+  <p>By default <code>data-stagger</code> orders children by DOM position. Mode keywords change the index assignment:</p>
+  <table class="props-table">
+    <thead><tr><th>Mode</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><em>(default / time value)</em></td><td>Linear DOM order: child 0 gets index 0, child 1 gets index 1, etc.</td></tr>
+      <tr><td><code>reverse</code></td><td>Last child gets index 0, first child gets the highest index.</td></tr>
+      <tr><td><code>random</code></td><td>Fisher-Yates shuffle seeded by the parent's <code>id</code> (or generated UID), so the order is deterministic across reloads.</td></tr>
+      <tr><td><code>grid</code></td><td>Manhattan distance from the top-left grid cell. Uses each child's computed <code>grid-row-start</code> / <code>grid-column-start</code>; falls back to DOM order outside a grid.</td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" label="Stagger modes">
+&lt;ul data-stagger="reverse" style="--vb-stagger: 80ms"&gt;
+  &lt;li data-effect="fade-in" data-trigger="scroll"&gt;Last in DOM, first to appear&lt;/li&gt;
+  &lt;li data-effect="fade-in" data-trigger="scroll"&gt;Middle&lt;/li&gt;
+  &lt;li data-effect="fade-in" data-trigger="scroll"&gt;First in DOM, last to appear&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol id="words" data-stagger="random" style="--vb-stagger: 60ms"&gt;...&lt;/ol&gt;
+
+&lt;section data-stagger="grid" data-layout="grid" style="--vb-stagger: 50ms"&gt;...&lt;/section&gt;
   </code-block>
 </section>
 
@@ -67,7 +91,7 @@ crumbLabel: Data Attributes
   <table class="props-table">
     <thead><tr><th>Attribute</th><th>Applied to</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>data-stagger</code></td><td>Parent element</td><td>Value is the delay between children (e.g. <code>"80ms"</code>). JS sets <code>--vb-stagger-index</code> on each child.</td></tr>
+      <tr><td><code>data-stagger</code></td><td>Parent element</td><td>Empty or a CSS time (e.g. <code>"80ms"</code>) → linear cascade. <code>reverse</code> / <code>random</code> / <code>grid</code> → alternate ordering. CSS-time values set <code>--vb-stagger</code> on the parent as a shorthand.</td></tr>
     </tbody>
   </table>
   <table class="props-table">

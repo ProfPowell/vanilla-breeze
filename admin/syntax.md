@@ -1837,7 +1837,10 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-trust` | `.page-info-badge` only — verification tier (runtime-computed; see §10) |
 | `data-tooltip-delay` | `<tool-tip>` — show delay |
 | `data-tooltip-position` | Tooltip — position |
-| `data-trigger` | `<tool-tip>` — trigger mode |
+| `data-trigger` | Any with `data-effect` — activation trigger. Built-ins: `scroll`, `hover`, `click`, `time:<ms>`, `intersect[:once\|toggle]`, `media:<query>`, `event:<name>`, `vt`. Also `<tool-tip>` — trigger mode. |
+| `data-stagger` | Parent — child cascade. Empty or CSS time (e.g. `80ms`) → linear; `reverse`, `random`, `grid` → alternate ordering. |
+| `data-transition` | Any — View Transition handler. Built-ins: `morph`, `slide`, `fade`, `scale`, `stagger`, `none`, `effect:<class>` (bridges to `data-effect` via `vb:vt-update-done` / `data-trigger="vt"`). |
+| `data-effect-active` | Auto-managed — set by `VB.activate(el)` and trigger handlers. Effects gate on it. |
 | `data-truncated` | Breadcrumb li — truncate text |
 | `data-type` | Chart, `<form-field>` — type variant |
 | `data-typewriter` | Text — typing animation |
