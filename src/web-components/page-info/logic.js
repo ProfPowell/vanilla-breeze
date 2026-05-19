@@ -132,11 +132,11 @@ class PageInfo extends VBElement {
   /* ── Cryptographic signature verification (Stage 4) ── */
 
   async #verifySignature() {
-    const signatureEl = document.querySelector('meta[name="vb:signature"]');
+    const signatureEl = /** @type {HTMLMetaElement | null} */ (document.querySelector('meta[name="vb:signature"]'));
     const signature = signatureEl?.content;
     if (!signature) return; /* nothing to verify; stay at `declared` */
 
-    const algorithm = document.querySelector('meta[name="vb:signature-algorithm"]')?.content;
+    const algorithm = /** @type {HTMLMetaElement | null} */ (document.querySelector('meta[name="vb:signature-algorithm"]'))?.content;
     if (algorithm && algorithm !== 'ECDSA-P256-SHA256') {
       this.#setTrust('failed', { reason: `unsupported-algorithm:${algorithm}` });
       return;
@@ -176,7 +176,7 @@ class PageInfo extends VBElement {
 
     let canonical;
     try {
-      const canonicalUrl = document.querySelector('link[rel="canonical"]')?.href || document.location.href;
+      const canonicalUrl = /** @type {HTMLLinkElement | null} */ (document.querySelector('link[rel="canonical"]'))?.href || document.location.href;
       canonical = serializeCanonical(buildCanonicalDocument(document, { url: canonicalUrl }));
     } catch (err) {
       this.#setTrust('failed', { reason: `canonicalize:${err.message}` });
@@ -257,13 +257,13 @@ class PageInfo extends VBElement {
 
   #renderFromMeta() {
     const meta = (name) =>
-      document.querySelector(`meta[name="${name}"]`)?.content;
+      /** @type {HTMLMetaElement | null} */ (document.querySelector(`meta[name="${name}"]`))?.content;
     const prop = (name) =>
-      document.querySelector(`meta[property="${name}"]`)?.content;
+      /** @type {HTMLMetaElement | null} */ (document.querySelector(`meta[property="${name}"]`))?.content;
     const itemprop = (name) =>
-      document.querySelector(`meta[itemprop="${name}"]`)?.content;
+      /** @type {HTMLMetaElement | null} */ (document.querySelector(`meta[itemprop="${name}"]`))?.content;
     const linkHref = (rel) =>
-      document.querySelector(`link[rel="${rel}"]`)?.href;
+      /** @type {HTMLLinkElement | null} */ (document.querySelector(`link[rel="${rel}"]`))?.href;
 
     /* Section A — public-standard fields */
     const author = meta('author');

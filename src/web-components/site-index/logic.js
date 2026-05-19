@@ -253,7 +253,7 @@ class SiteIndex extends VBElement {
       const items = [...section.querySelectorAll(':scope > ul > li')];
       if (items.length <= limit) continue;
 
-      const overflow = items.slice(limit);
+      const overflow = /** @type {HTMLElement[]} */ (items.slice(limit));
       for (const item of overflow) {
         item.hidden = true;
         item.setAttribute('data-index-overflow', '');
@@ -272,7 +272,7 @@ class SiteIndex extends VBElement {
           item.hidden = isExpanded;
         }
 
-        btn.setAttribute('aria-expanded', !isExpanded);
+        btn.setAttribute('aria-expanded', String(!isExpanded));
         btn.textContent = isExpanded
           ? `Show ${overflow.length} more`
           : 'Show less';
@@ -290,8 +290,8 @@ class SiteIndex extends VBElement {
     const scope = this.#scopeSelect?.value || 'topic';
     const sections = this.querySelectorAll('nav[aria-label="Site index"] > section');
 
-    for (const section of sections) {
-      const items = section.querySelectorAll(':scope > ul > li');
+    for (const section of /** @type {NodeListOf<HTMLElement>} */ (sections)) {
+      const items = /** @type {NodeListOf<HTMLElement>} */ (section.querySelectorAll(':scope > ul > li'));
       let hasMatch = false;
 
       for (const item of items) {
@@ -302,7 +302,7 @@ class SiteIndex extends VBElement {
         if (!matches && scope === 'all') {
           const refs = item.querySelectorAll('.index-refs a');
           for (const ref of refs) {
-            if (ref.textContent.toLowerCase().includes(q)) {
+            if ((ref.textContent || '').toLowerCase().includes(q)) {
               matches = true;
               break;
             }
@@ -323,12 +323,12 @@ class SiteIndex extends VBElement {
     const jumpNav = this.querySelector('.index-jump');
     if (!jumpNav) return;
 
-    const sections = this.querySelectorAll('nav[aria-label="Site index"] > section');
+    const sections = /** @type {NodeListOf<HTMLElement>} */ (this.querySelectorAll('nav[aria-label="Site index"] > section'));
     for (const section of sections) {
       const letter = section.id?.replace('index-', '').toUpperCase();
       if (!letter) continue;
 
-      const link = jumpNav.querySelector(`a[href="#index-${letter.toLowerCase()}"]`);
+      const link = /** @type {HTMLElement | null} */ (jumpNav.querySelector(`a[href="#index-${letter.toLowerCase()}"]`));
       if (link) {
         link.style.opacity = section.hidden ? '0.3' : '';
       }
