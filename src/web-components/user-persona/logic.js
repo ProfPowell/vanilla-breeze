@@ -103,8 +103,8 @@ class UserPersona extends HTMLElement {
    */
   relatedStories() {
     if (!this.id) return [];
-    const root = this.getRootNode();
-    const scope = root.querySelectorAll ? root : document;
+    const root = /** @type {ParentNode} */ (this.getRootNode());
+    const scope = /** @type {ParentNode} */ (/** @type {any} */ (root).querySelectorAll ? root : document);
     return Array.from(scope.querySelectorAll(`user-story[persona-id="${cssEscape(this.id)}"]`));
   }
 
@@ -163,22 +163,22 @@ class UserPersona extends HTMLElement {
    */
   _applyData(data) {
     for (const key of ['role', 'age', 'location', 'avatar']) {
-      if (data[key]) this.setAttribute(key, data[key]);
+      if (data[key]) this.setAttribute(key, String(data[key]));
     }
     if (data.name && !this.querySelector('[slot="name"]')) {
       const el = document.createElement('h2');
       el.slot = 'name';
-      el.textContent = data.name;
+      el.textContent = String(data.name);
       this.appendChild(el);
     }
     if (data.quote && !this.querySelector('[slot="quote"]')) {
       const el = document.createElement('p');
       el.slot = 'quote';
-      el.textContent = data.quote;
+      el.textContent = String(data.quote);
       this.appendChild(el);
     }
     for (const key of ['bio', 'goals', 'frustrations', 'behaviors']) {
-      if (data[key]) this.#slotCache.set(key, data[key]);
+      if (data[key]) this.#slotCache.set(key, String(data[key]));
     }
   }
 

@@ -73,7 +73,7 @@ class ProgressTracker extends VBElement {
   // ── Scan + decorate ───────────────────────────────────────────────
 
   #scanSteps() {
-    return [...this.querySelectorAll(':scope > li[data-step]')];
+    return /** @type {HTMLElement[]} */ ([...this.querySelectorAll(':scope > li[data-step]')]);
   }
 
   #decorateStep(li) {

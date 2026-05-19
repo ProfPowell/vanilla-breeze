@@ -39,7 +39,7 @@ class PageStats extends VBElement {
     const target = document.getElementById(targetId);
     if (!target) return;
 
-    const wpm = parseInt(this.dataset.wpm, 10) || 238;
+    const wpm = parseInt(this.dataset.wpm || '', 10) || 238;
     const show = (this.dataset.show || 'reading-time')
       .split(',')
       .map(s => s.trim());
@@ -94,13 +94,13 @@ class PageStats extends VBElement {
   }
 
   #getLastModified() {
-    const meta = document.querySelector('meta[name="last-modified"]');
+    const meta = /** @type {HTMLMetaElement | null} */ (document.querySelector('meta[name="last-modified"]'));
     if (meta?.content) {
       const d = new Date(meta.content);
-      if (!isNaN(d)) return d;
+      if (!isNaN(d.getTime())) return d;
     }
     const docMod = new Date(document.lastModified);
-    if (!isNaN(docMod)) return docMod;
+    if (!isNaN(docMod.getTime())) return docMod;
     return null;
   }
 

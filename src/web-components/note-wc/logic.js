@@ -25,6 +25,7 @@ const panelHosts = new Set();
 
 class NoteWC extends VBElement {
   #inSelectionMenu = false;
+  /** @type {HTMLElement | null} */
   #panel = null;
 
   setup() {
@@ -69,7 +70,7 @@ class NoteWC extends VBElement {
 
   /** Selection-menu mode: highlight + open note panel */
   #handleSelectionNote() {
-    const menu = this.closest('selection-menu');
+    const menu = /** @type {any} */ (this.closest('selection-menu'));
     if (!menu) return;
 
     const sel = menu.getSelection();
@@ -217,7 +218,7 @@ class NoteWC extends VBElement {
   }
 
   #onOutsideClick = (e) => {
-    if (this.#panel && !this.#panel.contains(e.target)) {
+    if (this.#panel && !this.#panel.contains(/** @type {Node} */ (e.target))) {
       this.#hidePanel();
     }
   };
