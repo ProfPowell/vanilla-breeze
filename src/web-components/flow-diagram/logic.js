@@ -68,7 +68,7 @@ class FlowDiagram extends VBElement {
   #cachedSteps = [];
 
   setup() {
-    const ol = this.querySelector(':scope > ol');
+    const ol = /** @type {HTMLElement | null} */ (this.querySelector(':scope > ol'));
     if (!ol) return false;
 
     // 1. Parse the flow from the <ol>
@@ -116,9 +116,9 @@ class FlowDiagram extends VBElement {
 
     // 6. Click handler
     this.listen(this.#container, 'click', (e) => {
-      const shape = /** @type {HTMLElement} */ (e.target).closest('.fd-node-shape');
+      const shape = /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('.fd-node-shape'));
       if (!shape) return;
-      const node = shape.closest('.fd-node');
+      const node = /** @type {HTMLElement | null} */ (shape.closest('.fd-node'));
       const type = node?.dataset.type || 'action';
       const text = shape.textContent?.trim() || '';
       this.#announce(`Selected: ${text}`);
@@ -133,6 +133,7 @@ class FlowDiagram extends VBElement {
       bubbles: true,
       detail: { nodeCount: this.#nodeCount },
     }));
+    return true;
   }
 
   teardown() {
@@ -213,7 +214,7 @@ class FlowDiagram extends VBElement {
 
     // Ensure a source <ol> exists (hidden) so attribute-driven re-render
     // and accessibility fallbacks behave consistently.
-    let ol = this.querySelector(':scope > ol');
+    let ol = /** @type {HTMLOListElement | null} */ (this.querySelector(':scope > ol'));
     if (!ol) {
       ol = document.createElement('ol');
       ol.style.display = 'none';

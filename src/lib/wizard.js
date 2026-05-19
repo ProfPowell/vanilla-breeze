@@ -339,7 +339,7 @@ class WizardController {
   #syncStepNav() {
     if (!this.#stepNav) return;
 
-    const navItems = Array.from(this.#stepNav.querySelectorAll('ol > li'));
+    const navItems = /** @type {HTMLElement[]} */ (Array.from(this.#stepNav.querySelectorAll('ol > li')));
     const visibleSteps = this.#getVisibleSteps();
 
     // Map each step fieldset to its corresponding nav li by index
@@ -476,9 +476,10 @@ class WizardController {
     if (!this.#stepNav) return;
 
     this.#stepNav.addEventListener('keydown', (e) => {
+      if (!this.#stepNav) return;
       const items = Array.from(this.#stepNav.querySelectorAll('ol > li:not([hidden])'));
       const current = /** @type {HTMLElement} */ (e.target).closest('li');
-      const currentIdx = items.indexOf(current);
+      const currentIdx = current ? items.indexOf(current) : -1;
       if (currentIdx === -1) return;
 
       let nextIdx;
@@ -781,7 +782,7 @@ class WizardController {
     const fieldEls = currentStep.querySelectorAll('[data-wizard-field]');
     if (fieldEls.length > 0) {
       for (const el of fieldEls) {
-        const fieldName = el.getAttribute('data-wizard-field');
+        const fieldName = el.getAttribute('data-wizard-field') || '';
         el.textContent = this.#getFieldValue(fieldName) || '\u2014';
       }
       return;

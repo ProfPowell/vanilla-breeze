@@ -52,7 +52,7 @@ const DEFAULT_MERMAID_URL = 'https://cdn.jsdelivr.net/npm/mermaid@11.14.0/dist/m
 const mermaidPromises = new Map();
 
 function loadMermaid(url) {
-  const u = url || (typeof window !== 'undefined' && window.VB_MERMAID_URL) || DEFAULT_MERMAID_URL;
+  const u = url || (typeof window !== 'undefined' && /** @type {any} */ (window).VB_MERMAID_URL) || DEFAULT_MERMAID_URL;
   let p = mermaidPromises.get(u);
   if (!p) {
     p = import(/* @vite-ignore */ /* webpackIgnore: true */ u).then((m) => m.default || m);
@@ -73,7 +73,7 @@ class DiagramWc extends VBElement {
   #figure = null;
   /** @type {IntersectionObserver|null} */
   #io = null;
-  /** @type {number|null} */
+  /** @type {ReturnType<typeof setTimeout> | null} */
   #themeRerenderTimer = null;
   /** @type {boolean} */
   #rendered = false;
@@ -86,7 +86,7 @@ class DiagramWc extends VBElement {
 
     // Capture the inner authoring fallback (a <pre><code>) into a hidden template
     // so teardown can restore it on disconnect.
-    const pre = this.querySelector(':scope > pre');
+    const pre = /** @type {HTMLPreElement | null} */ (this.querySelector(':scope > pre'));
     if (pre) {
       this.#fallbackTpl = document.createElement('template');
       this.#fallbackTpl.appendChild(pre.cloneNode(true));
@@ -100,7 +100,7 @@ class DiagramWc extends VBElement {
     // markdown-mermaid-bridge cache). Treating it as a prior render means
     // transient parse errors during typing won't blank the diagram —
     // #showError keeps the prior figure visible when #rendered is true.
-    const primed = this.querySelector(':scope > .dwc-figure');
+    const primed = /** @type {HTMLElement | null} */ (this.querySelector(':scope > .dwc-figure'));
     if (primed) {
       this.#figure = primed;
       this.#rendered = true;

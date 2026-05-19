@@ -30,6 +30,7 @@ const DEBOUNCE_MS = 250;
 const MAX_CACHE_PER_VIEWER = 16;
 
 /** @type {WeakMap<Element, number>} per-viewer debounce timers */
+/** @type {WeakMap<object, ReturnType<typeof setTimeout>>} */
 const timers = new WeakMap();
 /** @type {WeakMap<Element, string[]>} viewer → last-good SVGs by position */
 const svgCache = new WeakMap();
@@ -78,20 +79,20 @@ function runEnhance(viewer, node) {
 document.addEventListener('markdown-viewer:rendered', (e) => {
   const viewer = /** @type {Element} */ (e.target);
   if (!shouldEnhance(viewer)) return;
-  const node = /** @type {Element|undefined} */ (e.detail?.node) || viewer;
+  const node = /** @type {Element|undefined} */ (/** @type {CustomEvent} */ (e).detail?.node) || viewer;
   scheduleEnhance(viewer, node);
 });
 
 // Update the per-viewer cache whenever a diagram-wc renders successfully.
 // Bubbles up through the viewer thanks to standard DOM event propagation.
 document.addEventListener('diagram-wc:ready', (e) => {
-  const dw = /** @type {Element} */ (e.target);
+  const dw = /** @type {HTMLElement} */ (e.target);
   const viewer = dw.closest?.('markdown-viewer');
   if (!viewer) return;
   const idx = parseInt(dw.dataset.bridgeIndex || '', 10);
   if (Number.isNaN(idx)) return;
   const cache = getCache(viewer);
-  cache[idx] = e.detail?.svg || cache[idx];
+  cache[idx] = /** @type {CustomEvent} */ (e).detail?.svg || cache[idx];
 });
 
 // Theme change → tokens change → cached SVGs are stale. Clear all caches

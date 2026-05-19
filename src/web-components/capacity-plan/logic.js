@@ -86,7 +86,7 @@ class CapacityPlan extends VBElement {
 
   #findById(id) {
     if (!id) return null;
-    const root = this.getRootNode();
+    const root = /** @type {any} */ (this.getRootNode());
     return root.getElementById ? root.getElementById(id) : document.getElementById(id);
   }
 
@@ -116,7 +116,7 @@ class CapacityPlan extends VBElement {
       // Ignore mutations that happen inside the rendered ledger table —
       // otherwise we'd loop on our own innerHTML writes.
       const meaningful = records.some(r => {
-        const target = r.target;
+        const target = /** @type {any} */ (r.target);
         return !target.closest?.('[data-capacity-table]');
       });
       if (meaningful) this.#render();

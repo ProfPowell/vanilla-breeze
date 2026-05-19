@@ -41,7 +41,7 @@ export function enhanceMermaidFences(root = document, opts = {}) {
       fig.innerHTML = priming[i];
       wrap.appendChild(fig);
     }
-    parent.insertBefore(wrap, next);
+    parent?.insertBefore(wrap, next);
     created.push(wrap);
     i++;
   }

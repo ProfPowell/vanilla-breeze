@@ -102,7 +102,7 @@ class Cartesian extends Chart {
    * @return {string}
    */
   getName() {
-    return super.getName();
+    return /** @type {any} */ (super.getName());
   }
 
   /**
@@ -130,7 +130,7 @@ class Cartesian extends Chart {
       layoutYAxisLabel,
     } = structure;
     // Create and cache stats for use later when creating tooltip and legend interactions
-    const stats = this.stats = calculateStats(data, this.config, this.constructor.type);
+    const stats = this.stats = calculateStats(data, this.config, /** @type {any} */ (this.constructor).type);
     this.data = data;
 
     this.hooks.run('beforeRender', {config, data, stats, structure});
@@ -144,7 +144,7 @@ class Cartesian extends Chart {
         config,
         stats,
         data,
-        chartType: this.constructor.type,
+        chartType: /** @type {any} */ (this.constructor).type,
       }).render();
       Object.keys(elements).forEach((section) => {
         if (section === 'labels') {
@@ -311,7 +311,7 @@ class Cartesian extends Chart {
 
     // PLOT
     // -----------------------
-    this.createPlot({
+    /** @type {any} */ (this).createPlot({
       data,
       stats,
       subchartStretch,

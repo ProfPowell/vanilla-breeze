@@ -4,6 +4,11 @@ import { VElement } from '../DOM/VElement.js';
  * Baseline class
  */
 class Baseline {
+  /** @type {any} */ type;
+  /** @type {any} */ stats;
+  /** @type {any} */ stroke;
+  /** @type {any} */ width;
+
   /**
    * Constructor for the baseline axis to designate positive and negative
    * values

@@ -46,11 +46,12 @@ function rgbify(ctx, value) {
 
   // Step 2: force RGB via canvas fillStyle + getImageData. This works even
   // when computed style preserves the source color space (oklch/oklab/lch).
-  const canvas = rgbify._canvas || (rgbify._canvas = document.createElement('canvas'));
+  const fn = /** @type {any} */ (rgbify);
+  const canvas = fn._canvas || (fn._canvas = document.createElement('canvas'));
   canvas.width = canvas.height = 1;
   // willReadFrequently: hint to browsers we'll readback often (every token,
   // every render); avoids a Canvas2D performance warning.
-  const c = rgbify._ctx || (rgbify._ctx = canvas.getContext('2d', { willReadFrequently: true }));
+  const c = fn._ctx || (fn._ctx = canvas.getContext('2d', { willReadFrequently: true }));
   c.clearRect(0, 0, 1, 1);
   c.fillStyle = resolved;
   c.fillRect(0, 0, 1, 1);

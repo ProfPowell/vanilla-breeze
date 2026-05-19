@@ -44,6 +44,7 @@ class CarouselWc extends VBElement {
   #currentIndex = 0;
   #reducedMotion = false;
   #vtMode = false;
+  /** @type {(() => void) | null} */
   #swipeCleanup = null;
 
   get currentIndex() {
@@ -189,6 +190,7 @@ class CarouselWc extends VBElement {
     if (this.hasAttribute('autoplay') && !this.#reducedMotion) {
       this.#setupAutoplay();
     }
+    return true;
   }
 
   teardown() {
@@ -403,7 +405,7 @@ class CarouselWc extends VBElement {
     });
     this.listen(this, 'focusin', () => this.pause());
     this.listen(this, 'focusout', (e) => {
-      if (!this.contains(/** @type {Node} */ (e.relatedTarget)) && this.hasAttribute('autoplay')) {
+      if (!this.contains(/** @type {Node} */ (/** @type {FocusEvent} */ (e).relatedTarget)) && this.hasAttribute('autoplay')) {
         this.play();
       }
     });
