@@ -158,7 +158,8 @@ class UserJourney extends HTMLElement {
 
   async _loadSrc(src) {
     if (!src) return;
-    this.shadowRoot.innerHTML = `<style>${styles}</style>` +
+    const root = /** @type {ShadowRoot} */ (this.shadowRoot);
+    root.innerHTML = `<style>${styles}</style>` +
       `<div class="state-msg">Loading\u2026</div>`;
     try {
       const res = await fetch(src);
@@ -181,8 +182,8 @@ class UserJourney extends HTMLElement {
       this.__phases = data.phases || [];
       this._render();
     } catch (err) {
-      this.shadowRoot.innerHTML = `<style>${styles}</style>` +
-        `<div class="state-msg state-msg--error">Could not load journey: ${esc(err.message)}</div>`;
+      root.innerHTML = `<style>${styles}</style>` +
+        `<div class="state-msg state-msg--error">Could not load journey: ${esc(/** @type {Error} */ (err).message)}</div>`;
     }
   }
 
@@ -236,8 +237,9 @@ class UserJourney extends HTMLElement {
        light-DOM snapshot (which includes the shadow paint) when the
        shadowRoot innerHTML swap replaces all content. Skip on the first
        render — there's nothing to fade from. */
-    const swap = () => { this.shadowRoot.innerHTML = html; };
-    if (this.shadowRoot.querySelector('article')) {
+    const root = /** @type {ShadowRoot} */ (this.shadowRoot);
+    const swap = () => { root.innerHTML = html; };
+    if (root.querySelector('article')) {
       viewTransitionSwap(this, swap, 'uj-vt');
     } else {
       swap();

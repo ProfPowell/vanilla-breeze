@@ -108,19 +108,20 @@ class TokenSpecimen extends VBElement {
 
   #injectEditors(type, prefix) {
     const cs = getComputedStyle(this);
-    this.querySelectorAll('[data-token-value]').forEach((el) => {
+    this.querySelectorAll('[data-token-value]').forEach((node) => {
+      const el = /** @type {HTMLElement} */ (node);
       const name = el.dataset.tokenValue;
       const raw = cs.getPropertyValue(`${prefix}${name}`).trim();
       const input = document.createElement('input');
       input.type = type === 'color' && /^#[0-9a-f]{3,8}$/i.test(raw) ? 'color' : 'text';
       input.value = raw || '';
       input.className = 'ts-edit';
-      input.setAttribute('data-token', name);
+      input.setAttribute('data-token', name || '');
       input.setAttribute('aria-label', `${name} value`);
       input.style.cssText = `font-family:var(--font-mono,monospace);font-size:0.625rem;padding:0.125rem 0.25rem;border:1px solid var(--color-border,#ccc);border-radius:var(--radius-s,0.25rem);background:var(--color-surface,#fff);color:var(--color-text,#222);inline-size:${type === 'color' ? '3rem' : '100%'};${type === 'color' ? 'block-size:1.5rem;padding:0;' : 'max-inline-size:8rem;'}`;
       el.replaceWith(input);
       this.listen(input, 'change', () => this.#applyEdit(input, prefix));
-      this.listen(input, 'keydown', (e) => { if (e.key === 'Enter') this.#applyEdit(input, prefix); });
+      this.listen(input, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') this.#applyEdit(input, prefix); });
     });
   }
 
@@ -128,7 +129,7 @@ class TokenSpecimen extends VBElement {
     const name = input.getAttribute('data-token');
     const value = input.value.trim();
     if (!name || !value) return;
-    const target = this.#resolveTarget();
+    const target = /** @type {HTMLElement | null} */ (this.#resolveTarget());
     const token = `${prefix}${name}`;
     if (target) target.style.setProperty(token, value);
     this.dispatchEvent(new CustomEvent('token-specimen:change', {
@@ -148,7 +149,8 @@ class TokenSpecimen extends VBElement {
 
   #readComputedValues(type, prefix, tokens) {
     const cs = getComputedStyle(this);
-    this.querySelectorAll('[data-token-value]').forEach(el => {
+    this.querySelectorAll('[data-token-value]').forEach(node => {
+      const el = /** @type {HTMLElement} */ (node);
       const name = el.dataset.tokenValue;
       const raw = cs.getPropertyValue(`${prefix}${name}`).trim();
       if (type === 'radius' || type === 'size') {

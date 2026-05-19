@@ -222,7 +222,7 @@ class ReactionBar extends VBElement {
   #onBarKeydown = (e) => {
     // Only handle keys on direct toolbar items (chips + trigger), not the popover.
     const items = this.#toolbarFocusables();
-    const i = items.indexOf(document.activeElement);
+    const i = document.activeElement ? items.indexOf(/** @type {Element} */ (document.activeElement)) : -1;
     if (i === -1) return;
     let next = i;
     switch (e.key) {
@@ -237,7 +237,7 @@ class ReactionBar extends VBElement {
       default: return;
     }
     items.forEach((el, idx) => el.setAttribute('tabindex', idx === next ? '0' : '-1'));
-    items[next].focus();
+    /** @type {HTMLElement} */ (items[next]).focus();
   };
 
   // ── Public API ───────────────────────────────────────────────────────
@@ -253,7 +253,7 @@ class ReactionBar extends VBElement {
    */
   setCount(reaction, count, opts = {}) {
     const n = Number(count) || 0;
-    let chip = this.querySelector(`:scope > button[data-reaction="${CSS.escape(reaction)}"]`);
+    let chip = /** @type {HTMLButtonElement | null} */ (this.querySelector(`:scope > button[data-reaction="${CSS.escape(reaction)}"]`));
 
     if (n <= 0) {
       if (chip) {

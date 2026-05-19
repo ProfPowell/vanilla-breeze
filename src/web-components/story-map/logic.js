@@ -148,7 +148,7 @@ class StoryMap extends VBElement {
     // 8. Listen for drag-surface:reorder
     this.listen(this, 'drag-surface:reorder', (e) => {
       const detail = /** @type {CustomEvent} */ (e).detail;
-      const surface = /** @type {HTMLElement} */ (e.target).closest('drag-surface');
+      const surface = /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('drag-surface'));
       const activityId = this.#findActivityForSurface(surface);
       if (!activityId) return;
 
@@ -282,14 +282,15 @@ class StoryMap extends VBElement {
       if (a.journeyPhase) section.setAttribute('data-journey-phase', a.journeyPhase);
       for (const story of (a.stories || [])) {
         let el;
-        if (typeof this.renderStory === 'function') {
-          const out = this.renderStory(story);
+        const self = /** @type {any} */ (this);
+        if (typeof self.renderStory === 'function') {
+          const out = self.renderStory(story);
           el = out instanceof Element ? out : null;
         }
         if (!el) {
           if (customElements.get('user-story')) {
             el = document.createElement('user-story');
-            el.data = story;
+            /** @type {any} */ (el).data = story;
           } else {
             el = document.createElement('article');
             el.className = 'sm-card';
