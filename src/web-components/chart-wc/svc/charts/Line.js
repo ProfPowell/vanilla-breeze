@@ -16,6 +16,7 @@ import {CURVE_TENSION, CURVE_SMOOTHNESS} from '../constants.js';
  * });
  * const svg = chart.toString();
  */
+// @ts-ignore static-side defaults shape varies per chart type
 class LineChart extends Cartesian {
   /**
    * Returns the stringified name of the chart type
@@ -172,9 +173,11 @@ class LineChart extends Cartesian {
 
   /**
   * Creates the plot and markers from the user provided data.
-  * @param {object} data - the user supplied data
-  * @param {object} stats - the computed constraints of the chart
-  * @param {object} subchartStretch - the parent VElement container
+  * @param {object} options
+  * @param {object} options.data - the user supplied data
+  * @param {object} options.stats - the computed constraints of the chart
+  * @param {object} options.subchartStretch - the parent VElement container
+  * @param {object} [options.subchartNoStretch]
   */
   createPlot({
     data,
@@ -188,11 +191,12 @@ class LineChart extends Cartesian {
       const values = Array.isArray(series.values)
         ? series.values
         : stats.x.keys.map((key) => series.values[key] ?? null);
+      /** @type {any} */
       const chartLineOptions = {
         'class': this.getPlotClass(index),
         'plot': index,
       };
-      if (this.constructor.type === 'line') {
+      if (/** @type {any} */ (this.constructor).type === 'line') {
         chartLineOptions.fill = 'none';
       }
       const chartLine = new VElement('path', chartLineOptions);
@@ -285,7 +289,7 @@ class LineChart extends Cartesian {
         yPercent = stats.y.max * stats.y.scaleFactor;
       }
       const xPos = (stats.x.scaleFactor * index);
-      const yPos = yPercent.toFixed(2);
+      const yPos = Number(yPercent.toFixed(2));
 
       if (isNaN(xPos) || isNaN(yPos) || index < 0 || index >= stats.x.scaleLength) {
         return null;

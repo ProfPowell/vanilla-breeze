@@ -212,6 +212,7 @@ interface VBMathGlobal {
 interface VBThemePrefs {
   mode: string;
   brand: string;
+  accent: string;
   borderStyle: string;
   iconSet: string;
   fluid: string;

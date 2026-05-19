@@ -133,7 +133,7 @@ export const ThemeManager = {
       }
 
       _state = merged;
-      this.apply(_state);
+      this.apply(/** @type {Partial<VBThemePrefs>} */ (_state || {}));
     });
   },
 
