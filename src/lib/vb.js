@@ -19,6 +19,43 @@ function prefersReducedMotion() {
 
 let _uidCounter = 0
 
+/**
+ * Keyframe → animation slot phase. Used by the global animationend handler
+ * to translate raw `event.animationName` back into the slot that owns it
+ * so listeners can react to "the entrance just finished" without needing
+ * to know individual keyframe names. Extend via VB.registerKeyframe().
+ */
+const KEYFRAME_PHASE = new Map([
+  // entrance
+  ['vb-fade-in', 'entrance'],
+  ['vb-slide-up', 'entrance'],
+  ['vb-pop', 'entrance'],
+  ['vb-slide-in-ltr', 'entrance'],
+  ['vb-slide-in-rtl', 'entrance'],
+  ['vb-fade-slide-up', 'entrance'],
+  ['vb-shadow-lift', 'entrance'],
+  // exit
+  ['vb-fade-out', 'exit'],
+  ['vb-collapse', 'exit'],
+  ['vb-slide-out-ltr', 'exit'],
+  ['vb-slide-out-rtl', 'exit'],
+  // attention (animationend rarely fires for infinite, but shake is finite)
+  ['vb-shake', 'attention'],
+  ['vb-pulse', 'attention'],
+  ['vb-bounce', 'attention'],
+  ['vb-blink', 'attention'],
+  // decoration
+  ['vb-neon-pulse', 'decoration'],
+  ['vb-3d-shift', 'decoration'],
+  ['vb-outline-glow-pulse', 'decoration'],
+  ['vb-rainbow', 'decoration'],
+  ['vb-gradient-flow', 'decoration'],
+  ['vb-shimmer', 'decoration'],
+  ['vb-shimmer-gradient', 'decoration'],
+  ['vb-glow', 'decoration'],
+  ['vb-float', 'decoration'],
+])
+
 const VB = {
   _effects: new Map(),
   _triggers: new Map(),
@@ -26,8 +63,11 @@ const VB = {
   _instances: new WeakMap(),    // el → Map<effectName, { activate, cleanup }>
   _triggerCleanups: new WeakMap(), // el → cleanup function
   _transitionCleanups: new WeakMap(), // el → cleanup function
+  _keyframePhase: KEYFRAME_PHASE,
   /** @type {MutationObserver | null} */
   _observer: null,
+  /** @type {((e: AnimationEvent) => void) | null} */
+  _animationEndHandler: null,
 
   /**
    * Register an effect handler.
@@ -111,6 +151,50 @@ const VB = {
   },
 
   /**
+   * Public version of internal activation. Adds `data-effect-active` and
+   * runs JS effect handlers. Use for programmatic triggering, e.g. wiring
+   * `<my-component>` to drive an entrance after some async work resolves.
+   */
+  activate(el) {
+    this._activateEffects(el)
+  },
+
+  /**
+   * Remove `data-effect-active`. Entrance/exit slots un-publish, so the
+   * composer falls back to the pre-activation visual state. Useful for
+   * re-triggering on hover/click cycles.
+   */
+  deactivate(el) {
+    if (!el.hasAttribute('data-effect-active')) return
+    el.removeAttribute('data-effect-active')
+    this.emit(el, 'vb:phase-change', { active: false })
+  },
+
+  /**
+   * Subscribe to phase-end events on a specific element + phase.
+   * Fires when any keyframe whose name maps to that phase finishes.
+   * Returns a function that removes the listener.
+   *
+   * @example
+   * VB.onPhaseEnd(el, 'entrance', () => startTypewriter())
+   */
+  onPhaseEnd(el, phase, fn) {
+    const handler = (e) => {
+      if (e.detail?.phase === phase) fn(e.detail)
+    }
+    el.addEventListener('vb:effect-phase-end', handler)
+    return () => el.removeEventListener('vb:effect-phase-end', handler)
+  },
+
+  /**
+   * Register a custom keyframe name → phase mapping so the global
+   * animationend handler can classify it.
+   */
+  registerKeyframe(name, phase) {
+    this._keyframePhase.set(name, phase)
+  },
+
+  /**
    * Start observing the DOM for data-effect and data-trigger changes.
    */
   observe(root = document) {
@@ -158,6 +242,26 @@ const VB = {
       attributes: true,
       attributeFilter: ['data-effect', 'data-trigger', 'data-stagger', 'data-transition'],
     })
+
+    // Single delegated animationend listener. AnimationEvents bubble, so one
+    // listener at the document root catches every slot animation. Maps the
+    // raw keyframe name back to its phase via KEYFRAME_PHASE and dispatches
+    // `vb:effect-phase-end` on the originating element so other effects (or
+    // app code via VB.onPhaseEnd) can chain after entrance/exit finishes.
+    if (!this._animationEndHandler) {
+      this._animationEndHandler = (e) => {
+        const el = e.target
+        if (!(el instanceof Element)) return
+        if (!el.hasAttribute('data-effect')) return
+        const phase = this._keyframePhase.get(e.animationName)
+        if (!phase) return
+        this.emit(el, 'vb:effect-phase-end', {
+          phase,
+          animationName: e.animationName,
+        })
+      }
+      document.addEventListener('animationend', this._animationEndHandler)
+    }
   },
 
   /**
@@ -167,6 +271,10 @@ const VB = {
     if (this._observer) {
       this._observer.disconnect()
       this._observer = null
+    }
+    if (this._animationEndHandler) {
+      document.removeEventListener('animationend', this._animationEndHandler)
+      this._animationEndHandler = null
     }
   },
 
@@ -308,6 +416,7 @@ const VB = {
 
   _activateEffects(el) {
     el.setAttribute('data-effect-active', '')
+    this.emit(el, 'vb:phase-change', { active: true })
 
     const instances = this._instances.get(el)
     if (!instances) return
