@@ -58,7 +58,8 @@ function observeCLS() {
   let score = 0;
   const obs = new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
-      if (!entry.hadRecentInput) score += entry.value;
+      const e = /** @type {any} */ (entry);
+      if (!e.hadRecentInput) score += e.value;
     }
   });
   try { obs.observe({ type: 'layout-shift', buffered: true }); }
@@ -81,7 +82,7 @@ function observeINP() {
       if (entry.duration > max) max = entry.duration;
     }
   });
-  try { obs.observe({ type: 'event', durationThreshold: 40, buffered: true }); }
+  try { obs.observe(/** @type {any} */ ({ type: 'event', durationThreshold: 40, buffered: true })); }
   catch {
     // Older browsers don't support 'event' — fall back silently.
     return;
@@ -102,7 +103,7 @@ function reportTTFB() {
   // Navigation Timing Level 2 — the single entry type 'navigation' carries
   // responseStart, which is the classic TTFB moment.
   try {
-    const [nav] = performance.getEntriesByType('navigation');
+    const [nav] = /** @type {any[]} */ (performance.getEntriesByType('navigation'));
     if (!nav || !nav.responseStart) return;
     track('perf.ttfb', nav.responseStart, 800, 1800, {
       navigationType: nav.type,

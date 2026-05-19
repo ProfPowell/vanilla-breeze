@@ -150,9 +150,10 @@ class ScatterChart extends Cartesian {
 
   /**
   * Creates the plot and markers from the user provided data.
-  * @param {object} data - the user supplied data
-  * @param {object} stats - the computed constraints of the chart
-  * @param {object} subchartNoStretch - the parent VElement container
+  * @param {object} options
+  * @param {object} options.data - the user supplied data
+  * @param {object} options.stats - the computed constraints of the chart
+  * @param {object} options.subchartNoStretch - the parent VElement container
   */
   createPlot({
     data,
@@ -188,11 +189,12 @@ class ScatterChart extends Cartesian {
  * @return {Array} A 3D array of nodes in proximity
  */
 function createNodeMap(instance) {
+  /** @type {any[][][]} */
   const nodeMap = Array.from(new Array(10)).map(() => Array.from(new Array(10)).map(() => []));
   instance.querySelectorAll('.svc-plot-node').forEach((node) => {
-    const series = parseInt(node.getAttribute('data-series'), 10);
-    const x = parseInt(node.getAttribute('cx'));
-    const y = parseInt(node.getAttribute('cy'));
+    const series = parseInt(node.getAttribute('data-series') || '0', 10);
+    const x = parseInt(node.getAttribute('cx') || '0');
+    const y = parseInt(node.getAttribute('cy') || '0');
     const xTens = Math.min(9, Math.floor(x / 10));
     const xOnes = parseInt((x / 10).toFixed(1).split('.')[1]);
     const yTens = Math.min(9, Math.floor(y / 10));

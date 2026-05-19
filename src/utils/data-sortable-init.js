@@ -114,7 +114,7 @@ function wireExternalControls() {
 
     const selector = ctrl.getAttribute('data-sort-target');
     if (!selector) continue;
-    const target = document.querySelector(selector);
+    const target = /** @type {HTMLElement | null} */ (document.querySelector(selector));
     if (!target || !target.matches('[data-sortable]')) continue;
 
     if (ctrl.tagName === 'SELECT') {
@@ -198,10 +198,10 @@ function getColIndex(table, key) {
  * Apply a sort to a host container. Reorders DOM nodes in place and
  * reflects state attributes (data-sort-by, data-sort-direction) on the
  * host. Updates aria-sort on table headers.
- * @param host
- * @param key
- * @param direction
- * @param typeHint
+ * @param {HTMLElement} host
+ * @param {string} key
+ * @param {string} direction
+ * @param {string} [typeHint]
  */
 function applySort(host, key, direction, typeHint) {
   const isTable = host.tagName === 'TABLE';
@@ -225,7 +225,7 @@ function applySort(host, key, direction, typeHint) {
     items,
     (it) => projectValue(it, key, type, { isTable, colIndex }),
     type,
-    direction,
+    /** @type {'asc' | 'desc'} */ (direction),
   );
 
   const parent = isTable ? host.querySelector(':scope > tbody') : host;
