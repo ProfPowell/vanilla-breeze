@@ -54,6 +54,7 @@ class CompareSurface extends VBElement {
     // Pointer events on divider
     this.listen(this.#divider, 'pointerdown', this.#onPointerDown);
     this.listen(this.#divider, 'keydown', this.#onKeyDown);
+    return true;
   }
 
   teardown() {

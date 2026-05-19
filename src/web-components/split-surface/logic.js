@@ -107,6 +107,7 @@ class SplitSurface extends VBElement {
     if (this.hasAttribute('collapsible')) {
       this.listen(this.#divider, 'dblclick', this.#onDblClick);
     }
+    return true;
   }
 
   teardown() {

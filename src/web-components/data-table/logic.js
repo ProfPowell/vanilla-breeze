@@ -92,6 +92,7 @@ class DataTable extends VBElement {
     if (!this.#tbody) return false;
 
     this.#init();
+    return true;
   }
 
   teardown() {

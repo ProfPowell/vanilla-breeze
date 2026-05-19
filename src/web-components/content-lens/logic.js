@@ -46,6 +46,7 @@ class ContentLens extends VBElement {
 
     const initial = this.#initialLens();
     this.#activate(initial, /* persist */ false);
+    return true;
   }
 
   #discoverLenses() {

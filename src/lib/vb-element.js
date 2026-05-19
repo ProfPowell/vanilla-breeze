@@ -49,7 +49,10 @@ class VBElement extends HTMLElement {
     this.#cleanups.push(() => target.removeEventListener(event, handler, opts));
   }
 
-  /** Override in subclass. Return false to abort upgrade. */
+  /**
+   * Override in subclass. Return false to abort upgrade.
+   * @returns {boolean | void}
+   */
   setup() {}
 
   /** Override in subclass for cleanup beyond event listeners. */

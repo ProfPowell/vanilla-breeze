@@ -98,6 +98,7 @@ export function enhanceBotProtection(form) {
   if (form.hasAttribute('data-bot-enhanced')) return;
   form.setAttribute('data-bot-enhanced', '');
 
+  /** @type {any} */
   const signals = {
     fieldFocusCount: 0,
     keyboardEventCount: 0,

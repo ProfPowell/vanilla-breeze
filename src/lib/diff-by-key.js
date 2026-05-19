@@ -54,7 +54,7 @@ export function diffByKey({ newItems, nodes, keyOf, renderItem, containerFor }) 
     const existing = nodes.get(key) || null;
     const container = containerFor(item, existing);
     if (!byContainer.has(container)) byContainer.set(container, []);
-    byContainer.get(container).push({ item, key, existing });
+    byContainer.get(container)?.push({ item, key, existing });
   }
 
   // 4. For each container, place each entry at its target index.

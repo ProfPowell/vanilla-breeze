@@ -107,6 +107,7 @@ class TextReader extends VBElement {
     this.#voicesPromise.then(voices => this.#populateVoiceSelect(voices));
 
     this.listen(window, 'beforeunload', this.#handleBeforeUnload);
+    return true;
   }
 
   teardown() {

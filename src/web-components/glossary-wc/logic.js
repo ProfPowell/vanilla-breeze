@@ -120,6 +120,7 @@ class GlossaryWc extends VBElement {
         categories: [...this.#categories],
       },
     }));
+    return true;
   }
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────

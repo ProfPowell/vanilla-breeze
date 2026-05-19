@@ -42,6 +42,7 @@ class YouTubePlayer extends VBElement {
     } else {
       this.#renderFacade();
     }
+    return true;
   }
 
   #buildEmbedURL() {

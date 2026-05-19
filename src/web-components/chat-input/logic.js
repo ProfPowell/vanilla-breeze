@@ -62,6 +62,7 @@ class ChatInput extends VBElement {
     if (this.hasAttribute('autofocus')) {
       requestAnimationFrame(() => this.#textarea.focus());
     }
+    return true;
   }
 
   teardown() {

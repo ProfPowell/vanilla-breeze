@@ -44,6 +44,7 @@ export const haptic = {
  * @param {number}      [options.restraint=100]   - Max perpendicular distance
  * @param {number}      [options.timeout=300]     - Max duration in ms
  * @param {number}      [options.velocity=0.5]    - Min px/ms to qualify as a flick when distance < threshold
+ * @param {number}      [options.minFlickDistance=10] - Min px movement to qualify as a flick
  * @returns {Function} cleanup
  */
 export function addSwipeListener(element, options = {}) {

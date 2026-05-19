@@ -208,6 +208,7 @@ class SocialEmbed extends VBElement {
       this.setAttribute('role', 'button');
       this.setAttribute('aria-label', 'Load embed');
     }
+    return true;
   }
 
   teardown() {

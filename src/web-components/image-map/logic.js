@@ -186,6 +186,7 @@ class ImageMapWc extends VBElement {
     } else {
       this.#img.addEventListener('load', () => this.#build(), { once: true });
     }
+    return true;
   }
 
   teardown() {

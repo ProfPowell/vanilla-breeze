@@ -19,6 +19,7 @@ class TabSet extends VBElement {
     this.#setup();
     this.#ensureOneOpen();
     this.#initVT();
+    return true;
   }
 
   teardown() {

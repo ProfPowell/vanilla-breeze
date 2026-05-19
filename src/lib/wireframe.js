@@ -173,7 +173,7 @@ export const wireframe = {
       wrap.setAttribute('data-wf-img-wrap', '');
       wrap.style.cssText = 'position:relative;display:inline-block';
       img.setAttribute('data-wf-wrapped', '');
-      img.parentNode.insertBefore(wrap, img);
+      img.parentNode?.insertBefore(wrap, img);
       wrap.appendChild(img);
     });
   },
@@ -221,7 +221,7 @@ export const wireframe = {
     let index = 0;
     document.querySelectorAll('[data-wf-callout]').forEach((el) => {
       index++;
-      const text = /** @type {HTMLElement} */ (el).dataset.wfCallout;
+      const text = /** @type {HTMLElement} */ (el).dataset.wfCallout || '';
 
       // Numbered marker badge
       const marker = document.createElement('mark');

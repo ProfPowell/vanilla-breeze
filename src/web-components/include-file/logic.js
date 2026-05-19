@@ -54,6 +54,7 @@ class IncludeFile extends VBElement {
     } else {
       this.#load(src);
     }
+    return true;
   }
 
   teardown() {

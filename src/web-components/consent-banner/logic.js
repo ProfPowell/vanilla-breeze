@@ -62,6 +62,7 @@ class ConsentBanner extends VBElement {
     }
 
     this.#open();
+    return true;
   }
 
   #open() {

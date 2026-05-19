@@ -147,6 +147,7 @@ class VideoPlayerElement extends VBElement {
     this.listen(document, 'fullscreenchange', this.#onFullscreenChange)
 
     this.setAttribute('state', 'idle')
+    return true;
   }
 
   teardown() {

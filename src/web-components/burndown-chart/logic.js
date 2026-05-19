@@ -71,6 +71,7 @@ class BurndownChart extends VBElement {
         detail: { dayCount: dayLabels.length, total, scopeChanges: scopeChanges.length },
       }));
     });
+    return true;
   }
 
   #render({ label, unit, dayLabels, actual, ideal, scopeChanges }) {

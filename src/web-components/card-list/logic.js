@@ -107,6 +107,7 @@ class CardList extends VBElement {
     if (src) {
       this.#fetchData(src);
     }
+    return true;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {

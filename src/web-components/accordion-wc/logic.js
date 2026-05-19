@@ -44,6 +44,7 @@ class AccordionWc extends VBElement {
     this.#ensurePanelWrappers();
     this.#setup();
     this.#initVT();
+    return true;
   }
 
   teardown() {

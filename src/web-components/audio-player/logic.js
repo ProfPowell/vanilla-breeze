@@ -104,6 +104,7 @@ class AudioPlayerElement extends VBElement {
       }
     }
     this.listen(window, 'vb:theme-change', this.#onThemeChange)
+    return true;
   }
 
   teardown() {

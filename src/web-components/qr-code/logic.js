@@ -42,6 +42,7 @@ class QrCodeWc extends VBElement {
     this.#canvas.setAttribute('aria-label', `QR code: ${value}`);
 
     this.#render(value, size, ecl);
+    return true;
   }
 
   static get observedAttributes() {

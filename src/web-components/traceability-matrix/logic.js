@@ -58,6 +58,7 @@ class TraceabilityMatrix extends VBElement {
     /* Defer one microtask so any sibling components (e.g. user-persona)
        have finished assigning ids and slot content before we read them. */
     queueMicrotask(() => this.#build(rowsSel, colsSel, linkAttr));
+    return true;
   }
 
   #build(rowsSel, colsSel, linkAttr) {

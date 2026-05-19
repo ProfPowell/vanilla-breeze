@@ -65,7 +65,7 @@ export function destroyStickyManager() {
 
   // Only remove data-sticky from header if we added it
   if (headerAddedByUs) {
-    const header = document.querySelector('header[data-sticky]');
+    const header = /** @type {HTMLElement | null} */ (document.querySelector('header[data-sticky]'));
     if (header) delete header.dataset.sticky;
     headerAddedByUs = false;
   }

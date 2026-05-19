@@ -22,13 +22,15 @@
 import { diffByKey } from './diff-by-key.js';
 
 /**
- * @template {abstract new (...args: any[]) => HTMLElement} TBase
+ * @template {new (...args: any[]) => HTMLElement} TBase
  * @param {TBase} Base
  */
 export function VBCollection(Base) {
-  return class extends Base {
+  const BaseAny = /** @type {any} */ (Base);
+  return class extends BaseAny {
     static keyOf(item) { return item.id; }
 
+    /** @type {any[]} */
     #items = [];
     /** @type {Map<unknown, Element>} */
     #nodes = new Map();
@@ -39,7 +41,7 @@ export function VBCollection(Base) {
       const result = diffByKey({
         newItems: next,
         nodes: this.#nodes,
-        keyOf: (this.constructor /** @type {any} */).keyOf,
+        keyOf: /** @type {any} */ (this.constructor).keyOf,
         renderItem: (item) => this._renderItem(item),
         containerFor: (item, existing) => this._containerFor(item, existing),
       });

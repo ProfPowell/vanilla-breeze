@@ -161,7 +161,7 @@ function waitForExistingThemeLink(link, themeName) {
       link.setAttribute('data-vb-theme-state', 'ready');
       cleanup();
       loadPackScript();
-      resolve();
+      resolve(undefined);
     };
     const handleError = () => {
       link.setAttribute('data-vb-theme-state', 'error');
