@@ -49,6 +49,7 @@ export function extractDarkBlock(css, slug) {
  * @returns {Array<[string, string]>}
  */
 export function parseDeclarations(blockBody) {
+  /** @type {[string, string][]} */
   const out = [];
   const re = /(--[\w-]+)\s*:\s*([^;{}]+);/g;
   let m;

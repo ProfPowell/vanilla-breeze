@@ -19,7 +19,7 @@ class MobileMenu extends HTMLElement {
     const bp = this.getAttribute('breakpoint') || DEFAULT_BREAKPOINT;
     this.#mql = matchMedia(`(max-width: ${bp})`);
     this.#mql.addEventListener('change', this.#onBreakpoint);
-    this.#onBreakpoint();
+    this.#onBreakpoint(/** @type {any} */ (undefined));
   }
 
   disconnectedCallback() {

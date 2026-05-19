@@ -148,7 +148,7 @@ class PagerWC extends VBElement {
     if (style !== 'load-more' && sm.totalPages <= 1) return;
 
     const nav = buildNav({
-      style,
+      style: /** @type {'numbered' | 'prev-next' | 'load-more'} */ (style),
       page: sm.page,
       totalPages: sm.totalPages,
       pageNumbers: sm.pageNumbers,

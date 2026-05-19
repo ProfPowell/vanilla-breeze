@@ -47,7 +47,7 @@ function unenhance(el) {
   el.removeEventListener('click', onClick);
   activeElements.delete(el);
   if (activeElements.size === 0 && scrollListener) {
-    window.removeEventListener('scroll', scrollListener, { passive: true });
+    window.removeEventListener('scroll', scrollListener);
     scrollListener = null;
   }
 }

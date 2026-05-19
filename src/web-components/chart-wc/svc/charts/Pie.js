@@ -142,9 +142,10 @@ class PieChart extends Chart {
 
   /**
   * Creates the plot and markers from the user provided data.
-  * @param {object} data - the user supplied data
-  * @param {object} stats - the computed constraints of the chart
-  * @param {object} subchartStretch - the parent VElement container
+  * @param {object} options
+  * @param {object} [options.layoutChart] - the chart layout
+  * @param {object} [options.subchartStretch] - the parent VElement container
+  * @param {object} options.subchartNoStretch
   * @throws {Error} If `data` is not a plain object with numeric values.
   */
   createPlot({

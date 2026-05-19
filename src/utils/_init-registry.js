@@ -25,8 +25,8 @@ function processNode(node) {
   if (node.nodeType !== Node.ELEMENT_NODE) return;
   const el = /** @type {Element} */ (node);
   for (const [selector, fn] of registry) {
-    if (el.matches(selector)) fn(el);
-    el.querySelectorAll(selector).forEach(fn);
+    if (el.matches(selector)) /** @type {any} */ (fn)(el);
+    el.querySelectorAll(selector).forEach(/** @type {any} */ (fn));
   }
 }
 
@@ -63,7 +63,7 @@ export function registerInit(selector, enhanceFn) {
   // If DOM is already ready, scan immediately for this selector
   if (domReady || document.readyState !== 'loading') {
     domReady = true;
-    document.querySelectorAll(selector).forEach(enhanceFn);
+    document.querySelectorAll(selector).forEach(/** @type {any} */ (enhanceFn));
   } else if (registry.size === 1) {
     // First registration — set up the DOMContentLoaded listener once
     document.addEventListener('DOMContentLoaded', onReady);

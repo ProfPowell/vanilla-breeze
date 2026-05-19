@@ -7,6 +7,7 @@ let _legendIdCounter = 0;
 
 class Legend {
   /**
+   * @param {object} obj
    * @param {object} obj.config - the user config object
    * @param {object} obj.data - the user data
    */

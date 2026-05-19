@@ -71,7 +71,7 @@ function enhance(input) {
     return;
   }
 
-  const config = resolveAccept(input.dataset.accept);
+  const config = resolveAccept(input.dataset.accept || '');
   if (!config) return;
 
   const { regex, inputmode } = config;

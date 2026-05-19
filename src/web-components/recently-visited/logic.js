@@ -68,7 +68,7 @@ class RecentlyVisited extends VBElement {
       RecentlyVisited.SHOW_ANCHORS_KEY,
     ]);
     this.#storageHandler = (e) => {
-      if (watched.has(e.key)) this.#render();
+      if (e.key && watched.has(e.key)) this.#render();
     };
     window.addEventListener('storage', this.#storageHandler);
   }

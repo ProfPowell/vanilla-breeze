@@ -152,7 +152,7 @@ class CapacityPlan extends VBElement {
     });
     const bars = barProportions(ledger);
 
-    let table = this.querySelector(':scope > [data-capacity-table]');
+    let table = /** @type {HTMLElement | null} */ (this.querySelector(':scope > [data-capacity-table]'));
     if (!table) {
       table = document.createElement('section');
       table.dataset.capacityTable = '';

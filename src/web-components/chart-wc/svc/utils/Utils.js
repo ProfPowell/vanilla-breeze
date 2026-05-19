@@ -52,7 +52,7 @@ function isPlainObject(value) {
 /**
  * Formats to 2 decimal places, and drops trailing 0
  * @param {*} value
- * @return {Float} the floating point value
+ * @return {number} the floating point value
  */
 function formatNumber(value) {
   const val = value.toFixed(2);

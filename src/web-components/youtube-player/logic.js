@@ -55,7 +55,7 @@ class YouTubePlayer extends VBElement {
     if (list) params.set('list', list);
 
     if (this.getAttribute('params')) {
-      new URLSearchParams(this.getAttribute('params')).forEach((v, k) => params.set(k, v));
+      new URLSearchParams(this.getAttribute('params') || '').forEach((v, k) => params.set(k, v));
     }
 
     return `https://www.youtube-nocookie.com/embed/${this.#id}?${params}`;

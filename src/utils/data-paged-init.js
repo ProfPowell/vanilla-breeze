@@ -44,6 +44,7 @@ const STATE = new WeakMap();
 function enhance(host) {
   if (STATE.has(host)) return;
 
+  /** @type {{host: any, nav: any, sentinel: any, intersect: any, children: any[], childObserver: MutationObserver | null, visible: number}} */
   const state = {
     host,
     nav: { before: null, after: null },

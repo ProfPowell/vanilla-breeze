@@ -84,9 +84,14 @@ class ThemePicker extends VBElement {
   /** Bound handler for scroll/resize repositioning */
   #onReposition = () => this.#positionPanel();
 
-  async setup() {
+  setup() {
     this.#isInline = this.getAttribute('variant') === 'inline';
     this.#isCompact = this.hasAttribute('compact');
+    this.#initAsync();
+    return true;
+  }
+
+  async #initAsync() {
     // When loaded from the ui pack bundle, this file's ThemeManager import is
     // a separate singleton from the core bundle's — so its _state stays null
     // until we init it ourselves. Without this, #applyA11yThemes below reads

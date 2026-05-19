@@ -102,7 +102,8 @@ class Cartesian extends Chart {
    * @return {string}
    */
   getName() {
-    return /** @type {any} */ (super.getName());
+    // @ts-ignore — getName is defined on chart subclasses, not on base Chart
+    return super.getName();
   }
 
   /**

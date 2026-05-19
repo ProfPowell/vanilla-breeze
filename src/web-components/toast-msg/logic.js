@@ -52,6 +52,7 @@ class ToastMsg extends VBElement {
    * @param {boolean} [options.dismissible=true] - Whether the toast can be manually dismissed
    * @param {string} [options.action] - Optional action button text
    * @param {Function} [options.onAction] - Callback when action button is clicked
+   * @param {string} [options.source] - Origin tag for events
    * @returns {HTMLElement} The toast element
    */
   show(options) {

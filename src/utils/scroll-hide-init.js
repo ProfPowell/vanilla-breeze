@@ -5,6 +5,8 @@
  * Uses IntersectionObserver on a sentinel element for performant
  * detection, with a scroll listener for direction-aware hysteresis.
  */
+export {};
+
 const HIDE_THRESHOLD = 80;  // px scrolled down before hiding
 const SHOW_THRESHOLD = 40;  // px scrolled up before showing (hysteresis)
 
@@ -13,7 +15,7 @@ document.querySelectorAll('header[data-scroll-hide]').forEach(header => {
   let hidden = false;
   const scrollTarget = header.closest('main') ?? window;
   const getScrollTop = () =>
-    scrollTarget === window ? window.scrollY : scrollTarget.scrollTop;
+    scrollTarget === window ? window.scrollY : /** @type {HTMLElement} */ (scrollTarget).scrollTop;
 
   const update = () => {
     const currentY = getScrollTop();

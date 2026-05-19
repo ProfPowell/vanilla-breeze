@@ -160,7 +160,7 @@ class Defaults {
    *     n: '#434'
    *  }
    * @param {number} index - The plotindex
-   * @param {type} type - primary, secondary, ...
+   * @param {string} type - primary, secondary, ...
    * @return {object} - contains the url and the def Element
    */
   generateGradient(color, index, type) {
@@ -194,10 +194,6 @@ class Defaults {
    *  and directions of what colors should go where.
    *  e.g. { 'plot.node.label': { fill: 'primary'} } means that the object in the properties
    *  plot -> node -> label, will have a fill color from the 'primary' color in the palette.
-   * @param {Object} palette - An array of palette colors in the form of:
-   *   {
-   *     primary: 'red', secondary: 'green'...
-   *   }
    */
   applyPalette(specs) {
     for (const path in specs) {

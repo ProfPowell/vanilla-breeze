@@ -66,21 +66,21 @@ class GlossaryIndex extends VBElement {
     const q = query.toLowerCase().trim();
     const sections = this.querySelectorAll('.glossary-section, section[id^="glossary-"]');
 
-    for (const section of sections) {
-      const terms = section.querySelectorAll('dt');
+    for (const sec of /** @type {NodeListOf<HTMLElement>} */ (sections)) {
+      const terms = sec.querySelectorAll('dt');
       let hasMatch = false;
 
       for (const dt of terms) {
         const text = dt.textContent?.toLowerCase() || '';
         const matches = !q || text.includes(q);
-        const dd = dt.nextElementSibling;
+        const dd = /** @type {HTMLElement | null} */ (dt.nextElementSibling);
 
         dt.hidden = !matches;
         if (dd?.tagName === 'DD') dd.hidden = !matches;
         if (matches) hasMatch = true;
       }
 
-      section.hidden = !hasMatch;
+      sec.hidden = !hasMatch;
     }
   }
 

@@ -83,7 +83,7 @@ function enhanceRing(el) {
       wrap.style.setProperty('--progress-ring-size', SIZE_MAP[size]);
     }
 
-    el.parentNode.insertBefore(wrap, el);
+    el.parentNode?.insertBefore(wrap, el);
     wrap.appendChild(el);
 
     // Create label

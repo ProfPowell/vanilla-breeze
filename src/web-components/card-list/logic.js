@@ -182,8 +182,9 @@ class CardList extends VBElement {
         nodes: this.#nodes,
         keyOf: (item) => item?.[this.#keyProp],
         renderItem: (item) => {
-          const clone = this.#template.content.cloneNode(true);
-          const wrapper = clone.firstElementChild;
+          if (!this.#template) throw new Error('card-list: missing template');
+          const clone = /** @type {DocumentFragment} */ (this.#template.content.cloneNode(true));
+          const wrapper = /** @type {HTMLElement} */ (clone.firstElementChild);
           this.#bindData(wrapper, item);
           return wrapper;
         },

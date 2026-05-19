@@ -104,9 +104,10 @@ class AuthorIndex extends VBElement {
 
   #filter(query) {
     const q = query.trim().toLowerCase();
-    for (const group of this.querySelectorAll('[data-author-group]')) {
-      const haystack = group.textContent.toLowerCase();
-      group.hidden = q && !haystack.includes(q);
+    for (const node of this.querySelectorAll('[data-author-group]')) {
+      const group = /** @type {HTMLElement} */ (node);
+      const haystack = (group.textContent || '').toLowerCase();
+      group.hidden = !!q && !haystack.includes(q);
     }
   }
 }

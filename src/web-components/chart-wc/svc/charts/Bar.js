@@ -86,8 +86,8 @@ class BarChart extends ColumnChart {
       if (isNaN(xPercent)) {
         xPercent = stats.x.max * stats.x.scaleFactor;
       }
-      const xPos = xPercent.toFixed(2);
-      let yPos = (100 * yPercent.toFixed(2));
+      const xPos = Number(xPercent.toFixed(2));
+      let yPos = 100 * Number(yPercent.toFixed(2));
 
       if (isNaN(xPos) || isNaN(yPos) || index < 0 || index >= stats.x.scaleLength) {
         return null;

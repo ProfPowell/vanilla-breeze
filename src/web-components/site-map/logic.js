@@ -48,7 +48,7 @@ class SiteMap extends VBElement {
     let el = currentLink.parentElement;
     while (el && el !== this) {
       if (el.tagName === 'DETAILS') {
-        el.open = true;
+        /** @type {HTMLDetailsElement} */ (el).open = true;
       }
       el = el.parentElement;
     }

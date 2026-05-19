@@ -256,11 +256,11 @@ class Chart extends SVC {
 
     // Create a legend
     if (this.config.legend) {
-      this.legend = new Legend({
+      this.legend = new Legend(/** @type {any} */ ({
         config: this.config,
         data: this.data,
         chart: this.chart,
-      });
+      }));
     }
 
     // Create the vDOM

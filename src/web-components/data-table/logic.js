@@ -212,8 +212,9 @@ class DataTable extends VBElement {
    * `row[column.key]`. Sets data-id from row.id for diff stability.
    */
   _renderRow(row) {
-    if (typeof this.renderRow === 'function') {
-      const out = this.renderRow(row, this.#columnSpec);
+    const self = /** @type {any} */ (this);
+    if (typeof self.renderRow === 'function') {
+      const out = self.renderRow(row, this.#columnSpec);
       if (!(out instanceof Element)) {
         throw new Error('data-table: renderRow must return an Element');
       }

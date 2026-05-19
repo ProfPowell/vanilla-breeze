@@ -103,7 +103,7 @@ class BrandMark extends VBElement {
 
     // data-mode attribute changes on <html>
     if (!this.#modeObserver) {
-      this.#modeObserver = new MutationObserver(this.#onModeChange);
+      this.#modeObserver = new MutationObserver(() => this.#onModeChange(/** @type {any} */ (undefined)));
       this.#modeObserver.observe(document.documentElement, {
         attributes: true,
         attributeFilter: ['data-mode', 'data-theme'],

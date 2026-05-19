@@ -187,7 +187,7 @@ class BreadCrumb extends VBElement {
       itemListElement: list,
     };
 
-    let script = this.querySelector(':scope > script[type="application/ld+json"]');
+    let script = /** @type {HTMLScriptElement | null} */ (this.querySelector(':scope > script[type="application/ld+json"]'));
     if (!script) {
       script = document.createElement('script');
       script.type = 'application/ld+json';

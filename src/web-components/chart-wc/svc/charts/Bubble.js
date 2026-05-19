@@ -51,8 +51,11 @@ class BubbleChart extends ScatterChart {
 
   /**
    * Creates the plot of the chart by creating an SVG shape for every plot node.
+   * @param {object} obj
    * @param {object} obj.data - The user supplied data
    * @param {object} obj.stats
+   * @param {object} [obj.subchartStretch]
+   * @param {object} obj.subchartNoStretch
    */
   createPlot({
     data,

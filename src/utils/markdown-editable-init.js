@@ -30,7 +30,7 @@ const SELECTOR = '[data-markdown-editable]';
 /** Parse inline markdown and sanitize the output. */
 function renderInline(md) {
   if (!md.trim()) return '';
-  return sanitizeHTML(marked.parseInline(md, { gfm: true }));
+  return sanitizeHTML(/** @type {string} */ (marked.parseInline(md, { gfm: true })));
 }
 
 /** Emit the change event with both raw and rendered values. */
@@ -112,7 +112,7 @@ function enhanceTextarea(el) {
 
   function renderPreview() {
     const html = renderInline(el.value);
-    preview.innerHTML = html;
+    if (preview) preview.innerHTML = html;
     return html;
   }
 

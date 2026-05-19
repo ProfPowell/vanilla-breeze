@@ -50,6 +50,7 @@ export function diffLines(oldText, newText) {
   }
 
   // Backtrack to construct ops.
+  /** @type {Array<{type: 'del'|'add'|'eq', text: string}>} */
   const ops = [];
   let i = m;
   let j = n;

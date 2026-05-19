@@ -71,14 +71,19 @@ class SplitSurface extends VBElement {
     this.#clearPersist();
   }
 
-  async setup() {
+  setup() {
     // Select panels: exclude any previously-generated divider
     const panels = [...this.children].filter(el => !el.classList.contains('split-divider'));
     if (panels.length < 2) return false;
 
-    this.#first = panels[0];
-    this.#second = panels[1];
+    this.#first = /** @type {HTMLElement} */ (panels[0]);
+    this.#second = /** @type {HTMLElement} */ (panels[1]);
 
+    this.#initAsync();
+    return true;
+  }
+
+  async #initAsync() {
     // Read initial position (authored attribute wins over persisted)
     const posAttr = this.getAttribute('position');
     const posVal = Number(posAttr);

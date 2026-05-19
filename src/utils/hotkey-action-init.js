@@ -79,7 +79,8 @@ function enhance(el) {
 function getHotkeyActions() {
   const grouped = new Map();
   for (const [el, entry] of registry) {
-    if (el.hidden || el.closest('[hidden]')) continue;
+    const he = /** @type {HTMLElement} */ (el);
+    if (he.hidden || he.closest('[hidden]')) continue;
     const list = grouped.get(entry.group) || [];
     list.push({ label: entry.label, shortcut: entry.combo, element: el });
     grouped.set(entry.group, list);
@@ -89,7 +90,7 @@ function getHotkeyActions() {
 
 // Expose on window for short-cuts component integration
 if (typeof window !== 'undefined') {
-  window.__hotkeyActionRegistry = { getHotkeyActions };
+  /** @type {any} */ (window).__hotkeyActionRegistry = { getHotkeyActions };
 }
 
 registerInit(SELECTOR, enhance);

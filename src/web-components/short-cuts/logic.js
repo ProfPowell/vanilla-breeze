@@ -102,7 +102,7 @@ class ShortCuts extends VBElement {
     }
 
     // Also gather from hotkey-action registry
-    const { getHotkeyActions } = window.__hotkeyActionRegistry || {};
+    const { getHotkeyActions } = /** @type {any} */ (window).__hotkeyActionRegistry || {};
     if (getHotkeyActions) {
       for (const [groupName, entries] of getHotkeyActions()) {
         const list = grouped.get(groupName) || [];

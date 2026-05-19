@@ -124,7 +124,7 @@ class MarkdownViewer extends VBElement {
     const script = this.querySelector('script[type="text/markdown"]');
     if (script) return script.textContent;
 
-    const template = this.querySelector('template[data-md]');
+    const template = /** @type {HTMLTemplateElement | null} */ (this.querySelector('template[data-md]'));
     if (template) return template.content.textContent;
 
     const pre = this.querySelector(':scope > pre');
@@ -235,7 +235,7 @@ class MarkdownViewer extends VBElement {
   #propagateTheme() {
     if (!this.#contentEl) return;
     const theme = this.dataset.theme
-      ?? this.closest('[data-theme]')?.dataset.theme;
+      ?? /** @type {HTMLElement | null} */ (this.closest('[data-theme]'))?.dataset.theme;
     if (theme) {
       this.#contentEl.dataset.theme = theme;
     }

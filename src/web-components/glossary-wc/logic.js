@@ -46,6 +46,7 @@ class GlossaryWc extends VBElement {
   /** @type {HTMLElement | null} */
   #liveRegion = null;
   /** @type {HTMLElement | null} */
+  /** @type {HTMLElement | null} */
   #categoriesContainer = null;
   /** @type {string} */
   #instanceId = '';
@@ -342,7 +343,7 @@ class GlossaryWc extends VBElement {
     this.#categoryTermEls.set(category, termEls);
 
     section.appendChild(dl);
-    this.#categoriesContainer.appendChild(section);
+    this.#categoriesContainer?.appendChild(section);
 
     // Toggle handler
     this.listen(toggle, 'click', () => {

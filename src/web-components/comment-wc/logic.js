@@ -39,7 +39,7 @@ class CommentWC extends VBElement {
   }
 
   #handleClick(reviewSurface) {
-    const menu = this.closest('selection-menu');
+    const menu = /** @type {any} */ (this.closest('selection-menu'));
     if (!menu) return;
 
     const sel = menu.getSelection();

@@ -42,8 +42,8 @@ export function VBCollection(Base) {
         newItems: next,
         nodes: this.#nodes,
         keyOf: /** @type {any} */ (this.constructor).keyOf,
-        renderItem: (item) => this._renderItem(item),
-        containerFor: (item, existing) => this._containerFor(item, existing),
+        renderItem: (item) => /** @type {any} */ (this._renderItem(item)),
+        containerFor: (item, existing) => /** @type {any} */ (this._containerFor(item, existing)),
       });
       this.#items = next;
       this._postRender({ ...result, items: next });

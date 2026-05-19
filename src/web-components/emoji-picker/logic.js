@@ -64,7 +64,12 @@ class EmojiPicker extends VBElement {
   /** @type {Range | null} */
   #savedRange = null;
 
-  async setup() {
+  setup() {
+    this.#initAsync();
+    return true;
+  }
+
+  async #initAsync() {
     this.#emojiData = await loadEmojiModule();
 
     if (!this.#setupDone) {

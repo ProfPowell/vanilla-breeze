@@ -204,11 +204,15 @@ class PageToc extends VBElement {
     // can collapse when their parent section isn't active. Scroll-spy
     // adds `.active` to the current link; CSS :has() rules in styles.css
     // expand the ancestor branch automatically.
+    /** @typedef {{depth: number, heading?: any, children: TocNode[]}} TocNode */
+    /** @type {TocNode} */
     const sentinel = { depth: -1, children: [] };
+    /** @type {TocNode[]} */
     const stack = [sentinel];
     for (const heading of this.#headings) {
       const depth = levels.indexOf(heading.tagName.toLowerCase());
       while (stack[stack.length - 1].depth >= depth) stack.pop();
+      /** @type {TocNode} */
       const node = { heading, depth, children: [] };
       stack[stack.length - 1].children.push(node);
       stack.push(node);

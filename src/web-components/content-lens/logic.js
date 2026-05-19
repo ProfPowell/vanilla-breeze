@@ -135,7 +135,7 @@ class ContentLens extends VBElement {
     }
 
     if (this.#controls) {
-      const input = this.#controls.querySelector(`input[value="${name}"]`);
+      const input = /** @type {HTMLInputElement | null} */ (this.#controls.querySelector(`input[value="${name}"]`));
       if (input) input.checked = true;
     }
 
