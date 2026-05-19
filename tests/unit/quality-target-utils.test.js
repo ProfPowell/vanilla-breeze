@@ -1,3 +1,4 @@
+// @ts-nocheck -- unit test fakes intentionally diverge from DOM types
 /**
  * Unit tests for src/web-components/quality-target/_quality-utils.js
  *

@@ -57,7 +57,9 @@ const md = readFileSync(inPath, 'utf-8');
  */
 function parseReleases(text) {
   const lines = text.split('\n');
+  /** @type {Array<{version: string, rawDate: string, bodyLines: string[]}>} */
   const releases = [];
+  /** @type {{version: string, rawDate: string, bodyLines: string[]} | null} */
   let current = null;
 
   for (const line of lines) {

@@ -1,3 +1,4 @@
+// @ts-nocheck -- unit test fakes intentionally diverge from DOM types
 /**
  * Unit tests for wireframe utility pure functions
  *

@@ -54,9 +54,10 @@ for (const relDir of DEMO_DIRS) {
   const srcDir = join(DEMOS, relDir);
   const destDir = join(OUT, relDir);
 
+  /** @type {string[]} */
   let entries;
   try {
-    entries = readdirSync(srcDir, { recursive: true });
+    entries = /** @type {string[]} */ (readdirSync(srcDir, { recursive: true }));
   } catch {
     console.log(`  skip ${relDir}/ (not found)`);
     continue;

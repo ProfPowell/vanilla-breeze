@@ -486,6 +486,17 @@ async function main() {
     .filter(n => !n.startsWith('_'))  // skip _private dirs
     .sort();
 
+  /** @type {{
+    total: number,
+    apiGenerated: Array<{name: string, attrs: number, events: number, fromObserved: number, fromJSDoc: number, fromGetAttr: number, fromDataset: number}>,
+    apiSkipped: string[],
+    apiNoJs: string[],
+    staticGenerated: string[],
+    staticSkipped: string[],
+    zeroAttributes: string[],
+    validationErrors: Array<{component: string, errors: string[]}>,
+    ambiguous: Array<{component: string, attrs: any[]}>,
+  }} */
   const summary = {
     total: dirs.length,
     apiGenerated: [],
