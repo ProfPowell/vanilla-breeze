@@ -10,6 +10,10 @@ import {createTick, createGuide, createLabel, applyLabelFormat} from './LinearSc
  * or anything parseable by `new Date()`.
  */
 class TimeScale {
+  /** @type {any} */ type;
+  /** @type {any} */ config;
+  /** @type {any} */ stats;
+
   constructor(options) {
     Object.assign(this, options);
   }
@@ -20,6 +24,7 @@ class TimeScale {
    */
   render() {
     const {type, config, stats} = this;
+    /** @type {{ticks: any[], labels: any[], guides: any[]}} */
     const elements = {ticks: [], labels: [], guides: []};
     const {min, max, ticks} = stats[type];
 

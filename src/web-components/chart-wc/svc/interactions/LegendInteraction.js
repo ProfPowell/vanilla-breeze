@@ -20,13 +20,13 @@ export function legendInteraction(state, instance, chart) {
       let opacity = isVisible ? 1 : 0;
 
       // Toggle plot path (exists on Cartesian charts, not on Pie)
-      let plot = instance.getElementsByClassName('svc-plot-' + series)[0];
-      if (plot) plot.style.opacity = opacity;
+      let plot = /** @type {HTMLElement} */ (instance.getElementsByClassName('svc-plot-' + series)[0]);
+      if (plot) plot.style.opacity = String(opacity);
 
       // Toggle nodes
-      let nodes = instance.getElementsByClassName('svc-plot-node-' + series);
+      let nodes = /** @type {HTMLCollectionOf<HTMLElement>} */ (instance.getElementsByClassName('svc-plot-node-' + series));
       for (let i = 0; i < nodes.length; i++) {
-        nodes[i].style.opacity = opacity;
+        nodes[i].style.opacity = String(opacity);
       }
 
       if (chart && chart.hooks && chart.hooks.run) {

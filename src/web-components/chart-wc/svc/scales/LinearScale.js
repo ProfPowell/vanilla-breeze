@@ -6,6 +6,10 @@ import * as Util from '../utils/Utils.js';
  * Handles positive, negative, and mixed ranges with numeric labels.
  */
 class LinearScale {
+  /** @type {any} */ type;
+  /** @type {any} */ config;
+  /** @type {any} */ stats;
+
   constructor(options) {
     Object.assign(this, options);
   }
@@ -16,6 +20,7 @@ class LinearScale {
    */
   render() {
     const {type, config, stats} = this;
+    /** @type {{ticks: any[], labels: any[], guides: any[]}} */
     const elements = {ticks: [], labels: [], guides: []};
     const {min, max, ticks, step} = stats[type];
 

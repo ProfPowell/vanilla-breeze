@@ -7,7 +7,7 @@
  *
  * @param {Object} state - internal interaction state
  * @param {Element|Document} instance - the chart container or document
- * @param {Object} chart - the chart instance
+ * @param {Object} _chart - the chart instance
  */
 export function keyboardNavigation(state, instance, _chart) {
   let nodes = instance.querySelectorAll('[role="graphics-symbol"]');
@@ -19,7 +19,7 @@ export function keyboardNavigation(state, instance, _chart) {
 
   plotarea.setAttribute('tabindex', '0');
 
-  plotarea.addEventListener('keydown', function(e) {
+  plotarea.addEventListener('keydown', function(/** @type {KeyboardEvent} */ e) {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
       currentIndex = Math.min(currentIndex + 1, nodes.length - 1);

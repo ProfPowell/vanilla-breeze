@@ -6,6 +6,11 @@ import {createTick, createGuide, createLabel, applyLabelFormat} from './LinearSc
  * Handles bar/column centering and key-based labels.
  */
 class CategoryScale {
+  /** @type {any} */ type;
+  /** @type {any} */ config;
+  /** @type {any} */ stats;
+  /** @type {any} */ chartType;
+
   constructor(options) {
     Object.assign(this, options);
   }
@@ -16,6 +21,7 @@ class CategoryScale {
    */
   render() {
     const {type, config, stats} = this;
+    /** @type {{ticks: any[], labels: any[], guides: any[]}} */
     const elements = {ticks: [], labels: [], guides: []};
     const {ticks, step, max} = stats[type];
     const chartType = this.chartType;
