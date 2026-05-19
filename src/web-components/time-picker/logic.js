@@ -130,7 +130,9 @@ class TimePicker extends VBElement {
   #minutes = 0;
   #seconds = 0;
   #period = 'AM';  // only used in 12h mode
+  /** @type {{h: number, m: number, s: number} | null} */
   #minTime = null; // { h, m, s }
+  /** @type {{h: number, m: number, s: number} | null} */
   #maxTime = null;
   #step = 60;      // seconds
   #initialValue;
@@ -189,6 +191,7 @@ class TimePicker extends VBElement {
       this.setAttribute('data-disabled', '');
       this.#textInput.disabled = true;
     }
+    return true;
   }
 
   #buildTrigger() {
@@ -286,7 +289,8 @@ class TimePicker extends VBElement {
         this.#commit();
       });
 
-      this.listen(this.#periodBtn, 'keydown', (e) => {
+      this.listen(this.#periodBtn, 'keydown', (/** @type {Event} */ ev) => {
+        const e = /** @type {KeyboardEvent} */ (ev);
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
           this.#focusSpinner(this.#spinners.length - 1);
@@ -519,6 +523,7 @@ class TimePicker extends VBElement {
 
   /** Buffer for direct number entry */
   #digitBuffer = '';
+  /** @type {ReturnType<typeof setTimeout> | 0} */
   #digitTimer = 0;
 
   #handleDigitEntry(digit, spinner) {

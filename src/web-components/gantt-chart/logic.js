@@ -125,6 +125,7 @@ class GanttChart extends VBElement {
         },
       },
     }));
+    return true;
   }
 
   teardown() {
@@ -408,7 +409,7 @@ class GanttChart extends VBElement {
 
     // Event listeners
     this.listen(this.#container, 'click', (e) => {
-      const bar = /** @type {HTMLElement} */ (e.target).closest('.gc-bar, .gc-milestone');
+      const bar = /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('.gc-bar, .gc-milestone'));
       if (!bar) return;
       const taskId = bar.dataset.taskId;
       const task = this.#tasks.find(t => t.id === taskId);
@@ -422,10 +423,11 @@ class GanttChart extends VBElement {
     });
 
     this.listen(this.#container, 'keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        const bar = /** @type {HTMLElement} */ (e.target).closest('.gc-bar, .gc-milestone');
+      const ke = /** @type {KeyboardEvent} */ (e);
+      if (ke.key === 'Enter' || ke.key === ' ') {
+        const bar = /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (ke.target).closest('.gc-bar, .gc-milestone'));
         if (bar) {
-          e.preventDefault();
+          ke.preventDefault();
           bar.click();
         }
       }
@@ -559,7 +561,7 @@ class GanttChart extends VBElement {
     for (const task of this.#tasks) {
       const key = task.group || '';
       if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(task);
+      groups.get(key)?.push(task);
     }
 
     return groups;

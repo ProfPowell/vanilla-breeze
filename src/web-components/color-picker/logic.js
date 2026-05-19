@@ -105,6 +105,7 @@ class ColorPicker extends VBElement {
     if (this.#input.disabled || this.hasAttribute('disabled')) {
       this.setAttribute('data-disabled', '');
     }
+    return true;
   }
 
   teardown() {
@@ -225,7 +226,7 @@ class ColorPicker extends VBElement {
       this.#swatchBar.setAttribute('role', 'listbox');
       this.#swatchBar.setAttribute('aria-label', 'Preset colors');
 
-      for (const opt of datalist.querySelectorAll('option[value]')) {
+      for (const opt of /** @type {NodeListOf<HTMLOptionElement>} */ (datalist.querySelectorAll('option[value]'))) {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.setAttribute('role', 'option');
@@ -478,7 +479,7 @@ class ColorPicker extends VBElement {
 
   #handleEyeDropper = async () => {
     try {
-      const dropper = new EyeDropper();
+      const dropper = new (/** @type {any} */ (window).EyeDropper)();
       const result = await dropper.open();
       const hsl = hexToHsl(result.sRGBHex);
       this.#h = hsl.h;
@@ -491,7 +492,7 @@ class ColorPicker extends VBElement {
   // --- Copy ---
 
   #handleCopy = async () => {
-    const value = formatColor(this.#activeFormat, this.#h, this.#s, this.#l);
+    const value = formatColor(/** @type {any} */ (this.#activeFormat), this.#h, this.#s, this.#l);
     try {
       await navigator.clipboard.writeText(value);
       this.#copyBtn.textContent = 'Copied!';

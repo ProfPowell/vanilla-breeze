@@ -66,12 +66,12 @@ class PaletteGenerator extends VBElement {
   /** Extract seed hex from the picker element or seed attribute */
   #resolveSeed() {
     if (this.#pickerEl) {
-      const cp = this.#pickerEl;
+      const cp = /** @type {any} */ (this.#pickerEl);
       if (cp.tagName === 'COLOR-PICKER') {
         // Try upgraded getter first, fall back to inner input
         const val = cp.value;
         if (val && val !== '#000000') return val;
-        const input = cp.querySelector('input[type="color"]');
+        const input = /** @type {HTMLInputElement | null} */ (cp.querySelector('input[type="color"]'));
         return input?.value || val || '';
       }
       return cp.value || '';
@@ -166,7 +166,7 @@ class PaletteGenerator extends VBElement {
     if (exportHTML) {
       const tmp = document.createElement('div');
       tmp.innerHTML = exportHTML;
-      this.append(tmp.firstElementChild);
+      if (tmp.firstElementChild) this.append(tmp.firstElementChild);
     }
 
     // Wire swatch interactions
@@ -180,14 +180,15 @@ class PaletteGenerator extends VBElement {
 
   /** Wire click-to-copy and hover on swatches */
   #wireSwatches(container, colors, names, showValues) {
-    container.querySelectorAll('.color-box').forEach((btn) => {
+    container.querySelectorAll('.color-box').forEach((el) => {
+      const btn = /** @type {HTMLElement} */ (el);
       if (!showValues) {
         btn.addEventListener('pointerenter', () => {
-          const val = btn.querySelector('.color-value');
+          const val = /** @type {HTMLElement | null} */ (btn.querySelector('.color-value'));
           if (val) val.style.opacity = '1';
         });
         btn.addEventListener('pointerleave', () => {
-          const val = btn.querySelector('.color-value');
+          const val = /** @type {HTMLElement | null} */ (btn.querySelector('.color-value'));
           if (val) val.style.opacity = '0';
         });
       }
@@ -214,13 +215,13 @@ class PaletteGenerator extends VBElement {
 
     if (cp.tagName === 'COLOR-PICKER') {
       this.listen(cp, 'color-picker:change', (e) => {
-        this.#currentSeed = e.detail.hex;
+        this.#currentSeed = /** @type {CustomEvent} */ (e).detail.hex;
         this.#render();
         this.#emitGenerate();
       });
     } else {
       this.listen(cp, 'input', () => {
-        this.#currentSeed = cp.value;
+        this.#currentSeed = /** @type {any} */ (cp).value;
         this.#render();
         this.#emitGenerate();
       });

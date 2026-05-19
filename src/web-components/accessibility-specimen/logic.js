@@ -27,6 +27,7 @@ import { VBElement } from '../../lib/vb-element.js';
  * Parse a CSS color string into [r, g, b] (0-255). Supports #hex, #hex8,
  * rgb()/rgba() and named colors (via a temporary canvas trick). Returns
  * null on failure so the consumer can show a "?" badge.
+ * @returns {[number, number, number] | null}
  */
 function parseColor(str) {
   const s = String(str || '').trim();
@@ -114,7 +115,7 @@ class AccessibilitySpecimen extends VBElement {
 
   #renderContrast() {
     // Capture authored pairs (button[data-fg][data-bg]) before rebuilding.
-    const pairs = [...this.querySelectorAll(':scope > button[data-fg][data-bg]')].map((b) => ({
+    const pairs = /** @type {HTMLElement[]} */ ([...this.querySelectorAll(':scope > button[data-fg][data-bg]')]).map((b) => ({
       fg: b.dataset.fg,
       bg: b.dataset.bg,
       label: b.dataset.label || b.textContent.trim() || `${b.dataset.fg} on ${b.dataset.bg}`,
