@@ -146,8 +146,34 @@ const VB = {
    * @returns {ViewTransition|void}
    */
   swap(update) {
-    if (!document.startViewTransition) return update()
-    return document.startViewTransition(update)
+    if (!document.startViewTransition) {
+      update()
+      // Even without VT support, fire vb:vt-update-done so listeners
+      // (like the `vt` trigger) still get a consistent lifecycle.
+      queueMicrotask(() => this._dispatchVtDone(document.body))
+      return
+    }
+
+    const transition = document.startViewTransition(update)
+
+    // After the new DOM is committed (updateCallbackDone), but possibly
+    // BEFORE the cross-fade animation finishes (finished), fire the
+    // vb:vt-update-done event on every element with [data-trigger~="vt"]
+    // so deferred entrance animations can start in sync with the fade.
+    // See memory: view_transition_finished_vs_updatecallback — we use
+    // updateCallbackDone (DOM done ~10ms), not finished (~3-4s).
+    transition.updateCallbackDone.then(() => {
+      this._dispatchVtDone(document.body)
+    }).catch(() => { /* aborted VT — silently ignore */ })
+
+    return transition
+  },
+
+  /** Dispatch vb:vt-update-done on every [data-trigger~="vt"] in the tree. */
+  _dispatchVtDone(root) {
+    root.querySelectorAll('[data-trigger~="vt"]').forEach((el) => {
+      this.emit(el, 'vb:vt-update-done', {})
+    })
   },
 
   /**
@@ -484,26 +510,82 @@ const VB = {
   },
 
   _processStagger(el) {
+    const mode = el.getAttribute('data-stagger') || ''
     const children = el.children
-    for (let i = 0; i < children.length; i++) {
-      children[i].style.setProperty('--vb-stagger-index', String(i))
+    const n = children.length
+
+    // Compute the index array based on mode, then assign.
+    let indices
+    if (mode === 'reverse') {
+      indices = Array.from({ length: n }, (_, i) => n - 1 - i)
+    } else if (mode === 'random') {
+      // Fisher-Yates shuffle seeded by element id/uid for stable replay.
+      const seed = this._hashString(this.uid(el))
+      indices = Array.from({ length: n }, (_, i) => i)
+      let s = seed
+      for (let i = n - 1; i > 0; i--) {
+        // xorshift32 for a deterministic pseudo-random index.
+        s ^= s << 13; s ^= s >>> 17; s ^= s << 5
+        const j = Math.abs(s) % (i + 1)
+        ;[indices[i], indices[j]] = [indices[j], indices[i]]
+      }
+    } else if (mode === 'grid') {
+      // Manhattan distance from top-left corner using each child's
+      // computed grid-row / grid-column. Children outside a CSS grid
+      // fall back to their DOM order.
+      const positions = []
+      for (let i = 0; i < n; i++) {
+        const cs = getComputedStyle(children[i])
+        const r = parseInt(cs.gridRowStart, 10)
+        const c = parseInt(cs.gridColumnStart, 10)
+        positions.push({
+          i,
+          dist: Number.isFinite(r) && Number.isFinite(c)
+            ? (r - 1) + (c - 1)
+            : i,
+        })
+      }
+      positions.sort((a, b) => a.dist - b.dist)
+      indices = new Array(n)
+      positions.forEach((p, rank) => { indices[p.i] = rank })
+    } else {
+      // Default: linear DOM order.
+      indices = Array.from({ length: n }, (_, i) => i)
     }
+
+    for (let i = 0; i < n; i++) {
+      children[i].style.setProperty('--vb-stagger-index', String(indices[i]))
+    }
+  },
+
+  /** Simple 32-bit string hash used to seed the random stagger mode. */
+  _hashString(s) {
+    let h = 5381
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i)
+    return h | 0
   },
 
   _processTransition(el) {
     if (el.hasAttribute('data-transition-processed')) return
     el.setAttribute('data-transition-processed', '')
 
-    const transitionName = el.getAttribute('data-transition')
-    if (!transitionName) return
+    const transitionAttr = el.getAttribute('data-transition')
+    if (!transitionAttr) return
+
+    // Mirror the trigger parser: split on first colon for parametric
+    // transitions like `effect:fade` or `slide:left`.
+    const colonIdx = transitionAttr.indexOf(':')
+    const transitionName = colonIdx > -1 ? transitionAttr.slice(0, colonIdx) : transitionAttr
+    const transitionParam = colonIdx > -1 ? transitionAttr.slice(colonIdx + 1) : null
 
     const handler = this._transitions.get(transitionName)
     if (handler) {
-      const cleanup = handler(el)
+      const cleanup = handler(el, transitionParam)
       if (cleanup) this._transitionCleanups.set(el, cleanup)
     } else {
-      // Default behavior: auto-assign view-transition-name
-      el.style.viewTransitionName = `${transitionName}-${this.uid(el)}`
+      // Default behavior: auto-assign view-transition-name from the
+      // whole attribute (so legacy `data-transition="foo"` still works).
+      el.style.viewTransitionName = `${transitionAttr}-${this.uid(el)}`
     }
   },
 

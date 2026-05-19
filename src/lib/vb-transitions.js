@@ -87,3 +87,19 @@ VB.transition('none', (el) => {
     el.style.viewTransitionClass = ''
   }
 })
+
+// ─── Effect bridge ───────────────────────────────────────────────────────────
+// Cross-fades the element via View Transitions while descendants with
+// `data-trigger="vt"` defer their entrance animation until the swap commits.
+// Syntax: data-transition="effect:fade"  (`fade` is a view-transition-class)
+// Defaults to `fade` when no class is given.
+
+VB.transition('effect', (el, param) => {
+  const name = `effect-${VB.uid(el)}`
+  el.style.viewTransitionName = name
+  el.style.viewTransitionClass = param || 'fade'
+  return () => {
+    el.style.viewTransitionName = ''
+    el.style.viewTransitionClass = ''
+  }
+})
