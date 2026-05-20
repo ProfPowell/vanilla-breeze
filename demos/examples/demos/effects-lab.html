@@ -8,45 +8,21 @@
   <style>
     body { padding: 0; background: var(--color-surface); }
 
-    .lab-page {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 22rem;
-      grid-template-rows: auto auto;
-      grid-template-areas:
-        "preview controls"
-        "output  controls";
-      gap: var(--size-m);
-      max-width: 80rem;
+    /* Layout: <main data-layout="sidebar"> wraps the preview/output column and
+       the controls aside. Widen the sidebar from the default 15rem so the
+       controls comfortably fit; widen the content column's min so the preview
+       and code blocks dominate. */
+    main[data-layout="sidebar"] {
+      --_sidebar-width: 22rem;
+      --_content-min: 60%;
+      max-inline-size: 84rem;
       margin-inline: auto;
-      padding: var(--size-m);
-      block-size: calc(100vh - 4rem);
-    }
-    @media (max-width: 60rem) {
-      .lab-page {
-        grid-template-columns: 1fr;
-        grid-template-areas: "controls" "preview" "output";
-        block-size: auto;
-      }
-    }
-
-    .lab-preview { grid-area: preview; min-block-size: 0; }
-    .lab-output  { grid-area: output;  min-block-size: 0; }
-    .lab-controls {
-      grid-area: controls;
-      overflow-y: auto;
-      padding: var(--size-m);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-m);
-      background: var(--color-surface);
-      display: grid;
-      gap: var(--size-s);
-      align-content: start;
+      padding: var(--size-l);
     }
 
     /* ── Preview stage ── */
     .stage {
-      block-size: 100%;
-      min-block-size: 18rem;
+      min-block-size: 22rem;
       padding: var(--size-2xl) var(--size-xl);
       border: 1px dashed var(--color-border);
       border-radius: var(--radius-m);
@@ -86,24 +62,25 @@
       font-size: calc(var(--lab-font-size, 3rem) * 0.55);
     }
 
-    /* ── Preview header (sliders/toggles above stage) ── */
-    .stage-toolbar {
-      display: flex;
-      gap: var(--size-m);
-      align-items: center;
-      flex-wrap: wrap;
-      margin-block-end: var(--size-s);
+    /* Font slider toolbar above the stage */
+    .stage-toolbar input[type="range"] { inline-size: 12rem; }
+    .stage-toolbar output {
+      font-variant-numeric: tabular-nums;
+      min-inline-size: 3.5em;
+      color: var(--color-text-muted);
     }
     .stage-toolbar label {
-      display: inline-flex;
-      gap: 0.4em;
-      align-items: center;
       font-size: 0.875rem;
       color: var(--color-text-muted);
     }
-    .stage-toolbar input[type="range"] { inline-size: 12rem; }
 
     /* ── Controls panel ── */
+    .lab-controls {
+      padding: var(--size-m);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+    }
     .lab-controls .row {
       display: grid;
       grid-template-columns: 6.5rem 1fr;
@@ -111,6 +88,7 @@
       align-items: center;
     }
     .lab-controls .row[hidden] { display: none; }
+    .lab-controls .row.stack { grid-template-columns: 1fr; gap: var(--size-2xs); }
     .lab-controls .row > label {
       font-size: 0.8125rem;
       color: var(--color-text-muted);
@@ -126,29 +104,23 @@
       font: inherit;
       background: var(--color-surface);
     }
-    .lab-controls .row.stack {
-      grid-template-columns: 1fr;
-      gap: 0.3em;
+    .lab-controls combo-box { inline-size: 100%; }
+    .lab-controls .static-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--size-2xs) var(--size-s);
+      font-size: 0.875rem;
     }
-    .lab-controls .toggles {
-      display: flex;
-      gap: var(--size-m);
-      flex-wrap: wrap;
-      margin-block-start: var(--size-xs);
-    }
+    .lab-controls .static-options label,
     .lab-controls .toggles label {
       display: inline-flex;
       gap: 0.35em;
       align-items: center;
-      font-size: 0.875rem;
     }
-    .lab-controls .actions {
-      display: flex;
-      gap: var(--size-s);
-      margin-block-start: var(--size-s);
-    }
+    .lab-controls .toggles label { font-size: 0.875rem; }
+
     .lab-controls button {
-      padding: 0.45em 1em;
+      padding: 0.5em 1em;
       border: 1px solid var(--color-interactive, oklch(55% 0.2 260));
       border-radius: var(--radius-s);
       background: var(--color-interactive, oklch(55% 0.2 260));
@@ -157,9 +129,7 @@
       font: inherit;
       font-weight: 600;
     }
-    .lab-controls button:hover {
-      filter: brightness(1.1);
-    }
+    .lab-controls button:hover { filter: brightness(1.1); }
     .lab-controls button#lab-reset {
       background: var(--color-surface);
       color: var(--color-text);
@@ -169,88 +139,72 @@
       border-color: var(--color-interactive, oklch(55% 0.2 260));
     }
 
-    .lab-controls .static-options {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.2em 0.6em;
-      font-size: 0.875rem;
-    }
-    .lab-controls .static-options label {
-      display: inline-flex;
-      gap: 0.35em;
-      align-items: center;
-    }
-    .lab-controls combo-box { inline-size: 100%; }
-
-    /* ── Output ── */
+    /* ── Output code-blocks ── */
     .lab-output code-block { display: block; }
-    .lab-output details {
-      margin-block-start: var(--size-s);
-      font-size: 0.875rem;
-    }
-    .lab-output pre {
-      background: var(--color-surface-raised, oklch(95% 0.005 260));
-      padding: var(--size-s);
-      border-radius: var(--radius-s);
-      overflow-x: auto;
-      font-size: 0.85em;
-      margin: 0;
-    }
-
     .lab-section-label {
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-size: 0.8125rem;
       color: var(--color-text-muted);
-      margin-block-end: var(--size-s);
-    }
-
-    .lab-output .output-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: var(--size-m);
-    }
-    @media (max-width: 50rem) {
-      .lab-output .output-grid { grid-template-columns: 1fr; }
+      margin: 0;
     }
   </style>
 </head>
 <body>
 
-  <header style="padding: var(--size-m) var(--size-l); border-block-end: 1px solid var(--color-border);">
+  <header data-layout="stack" data-layout-gap="2xs" style="padding: var(--size-m) var(--size-l); border-block-end: 1px solid var(--color-border);">
     <h1 style="margin: 0; font-size: 1.5rem;">Effects Lab</h1>
-    <p style="margin: 0.25rem 0 0; color: var(--color-text-muted); font-size: 0.9375rem;">
+    <p style="margin: 0; color: var(--color-text-muted); font-size: 0.9375rem;">
       Write text, choose one effect per slot, add class modifiers, and watch the composed result live.
       The generated HTML and runtime CSS are below.
     </p>
   </header>
 
-  <div class="lab-page">
+  <main data-layout="sidebar" data-layout-gap="l">
 
-    <!-- ═══ Live preview stage ═══ -->
-    <section class="lab-preview" aria-label="Preview">
-      <div class="stage-toolbar">
-        <label>
+    <!-- Main content column: stage toolbar, preview, output (HTML+CSS).
+         <article> is one of the sidebar layout's content-slot elements
+         (unlike `section[data-layout]` which the sidebar rule deliberately
+         skips), so it gets flex-grow: 999 and min-inline-size: 60% from
+         the parent --_content-min. -->
+    <article class="lab-content" data-layout="stack" data-layout-gap="l" aria-label="Preview and output">
+
+      <header class="stage-toolbar" data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+        <label data-layout="cluster" data-layout-gap="xs" data-layout-align="center">
           <span>Font</span>
           <input type="range" id="font-size" min="1" max="8" step="0.1" value="3" />
-          <output id="font-size-out" style="font-variant-numeric: tabular-nums; min-inline-size: 3em;">3.0rem</output>
+          <output id="font-size-out">3.0rem</output>
         </label>
-      </div>
+      </header>
+
       <article id="stage" class="stage">
         <!-- Target element(s) injected by JS -->
       </article>
-    </section>
 
-    <!-- ═══ Controls ═══ -->
-    <aside class="lab-controls" aria-label="Effects controls">
-      <form id="lab" autocomplete="off">
+      <section class="lab-output" data-layout="stack" data-layout-gap="s" aria-label="Generated HTML and runtime CSS">
+        <layout-grid data-layout-min="20rem" data-layout-gap="m">
+          <section data-layout="stack" data-layout-gap="2xs">
+            <h2 class="lab-section-label">Generated HTML</h2>
+            <code-block id="syntax" language="html"></code-block>
+          </section>
+          <section data-layout="stack" data-layout-gap="2xs">
+            <h2 class="lab-section-label">Runtime CSS (computed)</h2>
+            <code-block id="runtime-css" language="css"></code-block>
+          </section>
+        </layout-grid>
+      </section>
+    </article>
+
+    <!-- ═══ Controls aside ═══ -->
+    <aside class="lab-controls" data-layout="stack" data-layout-gap="s" aria-label="Effects controls">
+      <form id="lab" autocomplete="off" data-layout="stack" data-layout-gap="s">
 
         <div class="row stack">
           <label for="content">Content</label>
           <input type="text" id="content" name="content" value="Page Title" />
         </div>
 
-        <div class="toggles">
+        <div class="toggles" data-layout="cluster" data-layout-gap="m">
           <label><input type="checkbox" name="dark" /> Dark stage</label>
           <label><input type="checkbox" name="stagger" /> 3-element stagger</label>
         </div>
@@ -387,28 +341,14 @@
           </select>
         </div>
 
-        <div class="actions">
+        <div class="actions" data-layout="cluster" data-layout-gap="s">
           <button type="button" id="lab-replay">Replay</button>
           <button type="button" id="lab-reset">Reset</button>
         </div>
       </form>
     </aside>
 
-    <!-- ═══ Generated syntax + computed CSS ═══ -->
-    <section class="lab-output" aria-label="Generated HTML and runtime CSS">
-      <div class="output-grid">
-        <div>
-          <h2 class="lab-section-label">Generated HTML</h2>
-          <code-block id="syntax" language="html"></code-block>
-        </div>
-        <div>
-          <h2 class="lab-section-label">Runtime CSS (computed)</h2>
-          <code-block id="runtime-css" language="css"></code-block>
-        </div>
-      </div>
-    </section>
-
-  </div>
+  </main>
 
   <script type="module" src="/src/main.js"></script>
   <!-- Registers <code-block>, <browser-window>, and friends used in this demo.
