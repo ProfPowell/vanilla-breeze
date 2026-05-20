@@ -8,19 +8,44 @@
   <style>
     body { padding: 0; background: var(--color-surface); }
 
-    .page {
+    .lab-page {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(20rem, 24rem);
-      gap: var(--size-l);
+      grid-template-columns: minmax(0, 1fr) 22rem;
+      grid-template-rows: auto auto;
+      grid-template-areas:
+        "preview controls"
+        "output  controls";
+      gap: var(--size-m);
       max-width: 80rem;
       margin-inline: auto;
-      padding: var(--size-l);
+      padding: var(--size-m);
+      block-size: calc(100vh - 4rem);
     }
     @media (max-width: 60rem) {
-      .page { grid-template-columns: 1fr; }
+      .lab-page {
+        grid-template-columns: 1fr;
+        grid-template-areas: "controls" "preview" "output";
+        block-size: auto;
+      }
     }
 
+    .lab-preview { grid-area: preview; min-block-size: 0; }
+    .lab-output  { grid-area: output;  min-block-size: 0; }
+    .lab-controls {
+      grid-area: controls;
+      overflow-y: auto;
+      padding: var(--size-m);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+      display: grid;
+      gap: var(--size-s);
+      align-content: start;
+    }
+
+    /* ── Preview stage ── */
     .stage {
+      block-size: 100%;
       min-block-size: 18rem;
       padding: var(--size-2xl) var(--size-xl);
       border: 1px dashed var(--color-border);
@@ -29,8 +54,14 @@
       display: grid;
       place-items: center;
       gap: var(--size-l);
+      overflow: hidden;
     }
-    .stage > * { margin: 0; text-align: center; }
+    .stage > * {
+      margin: 0;
+      text-align: center;
+      font-size: var(--lab-font-size, 3rem);
+      line-height: 1.1;
+    }
     .stage.dark {
       background: oklch(15% 0.01 260);
       color: white;
@@ -38,66 +69,79 @@
       color-scheme: dark;
     }
     .stage[data-stagger] {
-      grid-template-columns: repeat(3, 1fr);
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
       gap: var(--size-m);
     }
     .stage[data-stagger] > * {
       padding: var(--size-m);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-s);
-      font-size: 1.25rem;
+      font-size: calc(var(--lab-font-size, 3rem) * 0.55);
     }
 
-    .controls {
-      display: grid;
+    /* ── Preview header (sliders/toggles above stage) ── */
+    .stage-toolbar {
+      display: flex;
       gap: var(--size-m);
-      align-content: start;
-      padding: var(--size-m);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-m);
-      background: var(--color-surface);
-      position: sticky;
-      top: var(--size-m);
-      max-block-size: calc(100vh - 2 * var(--size-m));
-      overflow-y: auto;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-block-end: var(--size-s);
     }
+    .stage-toolbar label {
+      display: inline-flex;
+      gap: 0.4em;
+      align-items: center;
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+    }
+    .stage-toolbar input[type="range"] { inline-size: 12rem; }
 
-    .controls fieldset {
+    /* ── Controls panel ── */
+    .lab-controls .row {
+      display: grid;
+      grid-template-columns: 6.5rem 1fr;
+      gap: var(--size-s);
+      align-items: center;
+    }
+    .lab-controls .row[hidden] { display: none; }
+    .lab-controls .row > label {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .lab-controls input[type="text"],
+    .lab-controls select {
+      inline-size: 100%;
+      padding: 0.4em 0.55em;
       border: 1px solid var(--color-border);
       border-radius: var(--radius-s);
-      padding: var(--size-s) var(--size-m);
+      font: inherit;
+      background: var(--color-surface);
     }
-    .controls legend {
-      font-weight: 600;
-      font-size: 0.8125rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--color-text-muted);
-      padding-inline: 0.4em;
+    .lab-controls .row.stack {
+      grid-template-columns: 1fr;
+      gap: 0.3em;
     }
-    .controls fieldset > label {
+    .lab-controls .toggles {
+      display: flex;
+      gap: var(--size-m);
+      flex-wrap: wrap;
+      margin-block-start: var(--size-xs);
+    }
+    .lab-controls .toggles label {
       display: inline-flex;
       gap: 0.35em;
-      align-items: baseline;
-      padding: 0.15em 0.4em;
-      margin: 0.1em;
-      border-radius: var(--radius-s);
-      cursor: pointer;
+      align-items: center;
       font-size: 0.875rem;
     }
-    .controls fieldset > label:hover {
-      background: color-mix(in oklch, var(--color-primary, oklch(55% 0.2 260)), transparent 90%);
-    }
-    .controls fieldset > label > code {
-      font-size: 0.85em;
-    }
-
-    .controls .actions {
+    .lab-controls .actions {
       display: flex;
       gap: var(--size-s);
-      flex-wrap: wrap;
+      margin-block-start: var(--size-s);
     }
-    .controls button {
+    .lab-controls button {
       padding: 0.4em 0.9em;
       border: 1px solid var(--color-border);
       border-radius: var(--radius-s);
@@ -105,44 +149,81 @@
       cursor: pointer;
       font: inherit;
     }
-    .controls button:hover { border-color: var(--color-primary); }
+    .lab-controls button:hover { border-color: var(--color-primary); }
 
-    .output {
-      grid-column: 1 / -1;
+    .lab-controls .static-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.2em 0.6em;
+      font-size: 0.875rem;
     }
-    .output code-block { display: block; }
+    .lab-controls .static-options label {
+      display: inline-flex;
+      gap: 0.35em;
+      align-items: center;
+    }
+    .lab-controls combo-box { inline-size: 100%; }
+
+    /* ── Output ── */
+    .lab-output code-block { display: block; }
+    .lab-output details {
+      margin-block-start: var(--size-s);
+      font-size: 0.875rem;
+    }
+    .lab-output pre {
+      background: var(--color-surface-raised, oklch(95% 0.005 260));
+      padding: var(--size-s);
+      border-radius: var(--radius-s);
+      overflow-x: auto;
+      font-size: 0.85em;
+      margin: 0;
+    }
+
+    .lab-section-label {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      margin-block-end: var(--size-s);
+    }
   </style>
 </head>
 <body>
 
-  <header class="hero" style="padding: var(--size-xl); text-align: center;">
-    <h1 style="margin: 0;">Effects Lab</h1>
-    <p style="margin-block-start: 0.5em; color: var(--color-text-muted);">
-      Pick a content tag, write some text, toggle effects across the four animation slots,
-      add class modifiers, and watch the composed result live. The generated HTML is shown below.
+  <header style="padding: var(--size-m) var(--size-l); border-block-end: 1px solid var(--color-border);">
+    <h1 style="margin: 0; font-size: 1.5rem;">Effects Lab</h1>
+    <p style="margin: 0.25rem 0 0; color: var(--color-text-muted); font-size: 0.9375rem;">
+      Pick a tag, write text, choose one effect per slot, add class modifiers, and watch the composed result live.
+      The generated HTML is on the bottom.
     </p>
   </header>
 
-  <div class="page">
+  <div class="lab-page">
 
     <!-- ═══ Live preview stage ═══ -->
-    <section aria-label="Preview">
-      <h2 style="text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.875rem; color: var(--color-text-muted); margin-block-end: var(--size-s);">Preview</h2>
+    <section class="lab-preview" aria-label="Preview">
+      <div class="stage-toolbar">
+        <label>
+          <span>Font</span>
+          <input type="range" id="font-size" min="1" max="8" step="0.1" value="3" />
+          <output id="font-size-out" style="font-variant-numeric: tabular-nums; min-inline-size: 3em;">3.0rem</output>
+        </label>
+      </div>
       <article id="stage" class="stage">
         <!-- Target element(s) injected by JS -->
       </article>
     </section>
 
-    <!-- ═══ Controls panel ═══ -->
-    <aside class="controls" aria-label="Effects controls">
+    <!-- ═══ Controls ═══ -->
+    <aside class="lab-controls" aria-label="Effects controls">
       <form id="lab" autocomplete="off">
 
-        <form-field>
+        <div class="row stack">
           <label for="content">Content</label>
           <input type="text" id="content" name="content" value="Page Title" />
-        </form-field>
+        </div>
 
-        <form-field>
+        <div class="row">
           <label for="tag">Tag</label>
           <select id="tag" name="tag">
             <option value="h1" selected>h1</option>
@@ -153,106 +234,144 @@
             <option value="strong">strong</option>
             <option value="mark">mark</option>
           </select>
-        </form-field>
+        </div>
 
-        <form-field>
-          <label>
-            <input type="checkbox" name="dark" />
-            Dark stage (good for neon / outline.glow)
-          </label>
-        </form-field>
+        <div class="toggles">
+          <label><input type="checkbox" name="dark" /> Dark stage</label>
+          <label><input type="checkbox" name="stagger" /> 3-element stagger</label>
+        </div>
 
-        <form-field>
-          <label>
-            <input type="checkbox" name="stagger" />
-            Three-element stagger stage
-          </label>
-        </form-field>
+        <div class="row">
+          <label for="entrance">Entrance</label>
+          <select id="entrance" name="entrance">
+            <option value="">— none —</option>
+            <option value="fade-in">fade-in</option>
+            <option value="slide-up">slide-up</option>
+            <option value="slide-in">slide-in</option>
+            <option value="pop">pop</option>
+            <option value="fade-in slide-up">fade-in + slide-up</option>
+            <option value="shadow">shadow</option>
+          </select>
+        </div>
 
-        <fieldset>
-          <legend>Entrance (pick one)</legend>
-          <label><input type="radio" name="entrance" value="" checked /> <code>none</code></label>
-          <label><input type="radio" name="entrance" value="fade-in" /> <code>fade-in</code></label>
-          <label><input type="radio" name="entrance" value="slide-up" /> <code>slide-up</code></label>
-          <label><input type="radio" name="entrance" value="slide-in" /> <code>slide-in</code></label>
-          <label><input type="radio" name="entrance" value="pop" /> <code>pop</code></label>
-          <label><input type="radio" name="entrance" value="fade-in slide-up" /> <code>fade-in slide-up</code></label>
-          <label><input type="radio" name="entrance" value="shadow" /> <code>shadow</code></label>
-        </fieldset>
+        <div class="row">
+          <label for="attention">Attention</label>
+          <select id="attention" name="attention">
+            <option value="">— none —</option>
+            <option value="shake">shake</option>
+            <option value="pulse">pulse</option>
+            <option value="bounce">bounce</option>
+            <option value="blink">blink</option>
+          </select>
+        </div>
 
-        <fieldset>
-          <legend>Attention (pick one)</legend>
-          <label><input type="radio" name="attention" value="" checked /> <code>none</code></label>
-          <label><input type="radio" name="attention" value="shake" /> <code>shake</code></label>
-          <label><input type="radio" name="attention" value="pulse" /> <code>pulse</code></label>
-          <label><input type="radio" name="attention" value="bounce" /> <code>bounce</code></label>
-          <label><input type="radio" name="attention" value="blink" /> <code>blink</code></label>
-        </fieldset>
+        <div class="row">
+          <label for="decoration">Decoration</label>
+          <select id="decoration" name="decoration">
+            <option value="">— none —</option>
+            <option value="neon">neon</option>
+            <option value="rainbow">rainbow</option>
+            <option value="gradient-text">gradient-text</option>
+            <option value="shimmer">shimmer</option>
+            <option value="glow">glow</option>
+            <option value="float">float</option>
+          </select>
+        </div>
 
-        <fieldset>
-          <legend>Decoration motion (pick one)</legend>
-          <label><input type="radio" name="decoration" value="" checked /> <code>none</code></label>
-          <label><input type="radio" name="decoration" value="neon" /> <code>neon</code></label>
-          <label><input type="radio" name="decoration" value="rainbow" /> <code>rainbow</code></label>
-          <label><input type="radio" name="decoration" value="gradient-text" /> <code>gradient-text</code></label>
-          <label><input type="radio" name="decoration" value="shimmer" /> <code>shimmer</code></label>
-          <label><input type="radio" name="decoration" value="glow" /> <code>glow</code></label>
-          <label><input type="radio" name="decoration" value="float" /> <code>float</code></label>
-        </fieldset>
+        <div class="row">
+          <label for="exit">Exit</label>
+          <select id="exit" name="exit">
+            <option value="">— none —</option>
+            <option value="fade-out">fade-out</option>
+            <option value="collapse">collapse</option>
+            <option value="slide-out">slide-out</option>
+          </select>
+        </div>
 
-        <fieldset>
-          <legend>Exit (pick one — runs on activate)</legend>
-          <label><input type="radio" name="exit" value="" checked /> <code>none</code></label>
-          <label><input type="radio" name="exit" value="fade-out" /> <code>fade-out</code></label>
-          <label><input type="radio" name="exit" value="collapse" /> <code>collapse</code></label>
-          <label><input type="radio" name="exit" value="slide-out" /> <code>slide-out</code></label>
-        </fieldset>
+        <div class="row stack">
+          <label>Static paint (multi)</label>
+          <div class="static-options">
+            <label><input type="checkbox" name="static" value="hard-shadow" /> hard-shadow</label>
+            <label><input type="checkbox" name="static" value="text-3d" /> text-3d</label>
+            <label><input type="checkbox" name="static" value="outline" /> outline</label>
+            <label><input type="checkbox" name="static" value="stamp" /> stamp</label>
+          </div>
+        </div>
 
-        <fieldset>
-          <legend>Static paint (any — never collide)</legend>
-          <label><input type="checkbox" name="static" value="hard-shadow" /> <code>hard-shadow</code></label>
-          <label><input type="checkbox" name="static" value="text-3d" /> <code>text-3d</code></label>
-          <label><input type="checkbox" name="static" value="outline" /> <code>outline</code></label>
-          <label><input type="checkbox" name="static" value="stamp" /> <code>stamp</code></label>
-        </fieldset>
+        <div class="row stack">
+          <label for="classes-input">Class modifiers</label>
+          <combo-box id="classes-combo" name="classes" multiple custom>
+            <input id="classes-input" type="text" placeholder="Add modifier or type custom…" autocomplete="off" />
+            <ul>
+              <!-- Color tints -->
+              <li data-value="pink">pink</li>
+              <li data-value="cyan">cyan</li>
+              <li data-value="green">green</li>
+              <li data-value="amber">amber</li>
+              <li data-value="red">red</li>
+              <li data-value="gold">gold</li>
+              <li data-value="blue">blue</li>
+              <li data-value="purple">purple</li>
+              <li data-value="black">black</li>
+              <!-- Speed -->
+              <li data-value="slow">slow</li>
+              <li data-value="fast">fast</li>
+              <li data-value="bouncy">bouncy</li>
+              <!-- Outline -->
+              <li data-value="thick">thick</li>
+              <li data-value="ultra">ultra</li>
+              <li data-value="glow">glow</li>
+              <!-- text-3d -->
+              <li data-value="deep">deep</li>
+              <li data-value="animate">animate</li>
+              <!-- gradient-text -->
+              <li data-value="sunset">sunset</li>
+              <li data-value="ocean">ocean</li>
+              <li data-value="forest">forest</li>
+              <li data-value="neon">neon</li>
+              <!-- marquee -->
+              <li data-value="reverse">reverse</li>
+              <li data-value="pause">pause</li>
+              <li data-value="hover-pause">hover-pause</li>
+              <!-- stamp -->
+              <li data-value="straight">straight</li>
+              <li data-value="slight">slight</li>
+              <li data-value="heavy">heavy</li>
+              <!-- hard-shadow -->
+              <li data-value="double">double</li>
+              <li data-value="long">long</li>
+            </ul>
+          </combo-box>
+        </div>
 
-        <form-field>
-          <label for="classes">Class modifiers (space-separated)</label>
-          <input type="text" id="classes" name="classes" placeholder="e.g. green pink thick glow slow fast bouncy animate" />
-          <small style="color: var(--color-text-muted); font-size: 0.8em;">
-            Color tints (<code>pink</code>, <code>cyan</code>, <code>green</code>, <code>amber</code>, <code>red</code>, <code>gold</code>, <code>blue</code>, <code>purple</code>, <code>black</code>),
-            outline width (<code>thick</code>, <code>ultra</code>, <code>glow</code>), text-3d depth (<code>deep</code>, <code>animate</code>),
-            gradient-text variant (<code>sunset</code>, <code>ocean</code>, <code>forest</code>, <code>neon</code>, <code>animate</code>),
-            shared speed (<code>slow</code>, <code>fast</code>, <code>bouncy</code>).
-          </small>
-        </form-field>
+        <div class="row">
+          <label for="trigger">Trigger</label>
+          <select id="trigger" name="trigger">
+            <option value="">— none (immediate) —</option>
+            <option value="scroll">scroll</option>
+            <option value="hover">hover</option>
+            <option value="click">click</option>
+            <option value="time">time:&lt;ms&gt;</option>
+            <option value="intersect">intersect</option>
+            <option value="media">media:&lt;query&gt;</option>
+            <option value="event">event:&lt;name&gt;</option>
+          </select>
+        </div>
 
-        <fieldset>
-          <legend>Trigger</legend>
-          <label><input type="radio" name="trigger" value="" checked /> <code>none</code> (runs immediately)</label>
-          <label><input type="radio" name="trigger" value="scroll" /> <code>scroll</code></label>
-          <label><input type="radio" name="trigger" value="hover" /> <code>hover</code></label>
-          <label><input type="radio" name="trigger" value="click" /> <code>click</code></label>
-          <label><input type="radio" name="trigger" value="time" /> <code>time:&lt;ms&gt;</code></label>
-          <label><input type="radio" name="trigger" value="intersect" /> <code>intersect</code></label>
-          <label><input type="radio" name="trigger" value="media" /> <code>media:&lt;query&gt;</code></label>
-          <label><input type="radio" name="trigger" value="event" /> <code>event:&lt;name&gt;</code></label>
-        </fieldset>
-
-        <form-field>
+        <div class="row stack" id="trigger-param-row" hidden>
           <label for="triggerParam">Trigger param</label>
-          <input type="text" id="triggerParam" name="triggerParam" placeholder="e.g. 1500, toggle, (min-width:60rem), order-confirmed" />
-        </form-field>
+          <input type="text" id="triggerParam" name="triggerParam" placeholder="e.g. 1500 / toggle / (min-width:60rem) / order-confirmed" />
+        </div>
 
-        <form-field>
-          <label for="stagger">Stagger mode (only in 3-element stage)</label>
-          <select id="stagger" name="staggerMode">
-            <option value="" selected>linear (DOM order)</option>
+        <div class="row" id="stagger-mode-row" hidden>
+          <label for="stagger-mode">Stagger</label>
+          <select id="stagger-mode" name="staggerMode">
+            <option value="" selected>linear</option>
             <option value="reverse">reverse</option>
             <option value="random">random</option>
             <option value="grid">grid</option>
           </select>
-        </form-field>
+        </div>
 
         <div class="actions">
           <button type="button" id="replay">Replay</button>
@@ -262,13 +381,13 @@
     </aside>
 
     <!-- ═══ Generated syntax ═══ -->
-    <section class="output">
-      <h2 style="text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.875rem; color: var(--color-text-muted); margin-block-end: var(--size-s);">Generated HTML</h2>
+    <section class="lab-output" aria-label="Generated HTML">
+      <h2 class="lab-section-label">Generated HTML</h2>
       <code-block id="syntax" language="html"></code-block>
 
-      <details style="margin-block-start: var(--size-m);">
-        <summary>Runtime composed <code>animation</code> property</summary>
-        <pre id="runtime" style="background: var(--color-surface-raised, oklch(95% 0.005 260)); padding: var(--size-s); border-radius: var(--radius-s); overflow-x: auto; font-size: 0.85em;"></pre>
+      <details>
+        <summary>Runtime composed <code>animation</code> &amp; paint</summary>
+        <pre id="runtime"></pre>
       </details>
     </section>
 
@@ -276,19 +395,31 @@
 
   <script type="module" src="/src/main.js"></script>
   <script type="module">
-    // The lab is a controlled composer — render the target(s) from form state,
-    // expose the resulting markup, and surface the runtime-composed animation
-    // string so users can see the slot composition in action.
-
     const form = document.getElementById('lab');
     const stage = document.getElementById('stage');
     const syntax = document.getElementById('syntax');
     const runtime = document.getElementById('runtime');
+    const fontSize = document.getElementById('font-size');
+    const fontSizeOut = document.getElementById('font-size-out');
+    const triggerParamRow = document.getElementById('trigger-param-row');
+    const staggerModeRow = document.getElementById('stagger-mode-row');
+    const classesCombo = document.getElementById('classes-combo');
+
+    /** Read class modifiers from the <combo-box>. Multi mode exposes .values. */
+    function readClasses() {
+      // combo-box is upgraded asynchronously — `.values` is the getter on the
+      // upgraded element; fall back to splitting the raw input while it loads.
+      if (Array.isArray(classesCombo.values)) {
+        return classesCombo.values;
+      }
+      const raw = classesCombo.querySelector('input')?.value || '';
+      return raw.split(/\s+/).filter(Boolean);
+    }
 
     function readState() {
       const fd = new FormData(form);
-      const all = (n) => fd.getAll(n).filter(Boolean);
       const one = (n) => fd.get(n) || '';
+      const all = (n) => fd.getAll(n).filter(Boolean);
       return {
         content: one('content') || 'Page Title',
         tag: one('tag') || 'h1',
@@ -301,10 +432,11 @@
           one('exit'),
           ...all('static'),
         ].filter(Boolean),
-        classes: one('classes').trim(),
+        classes: readClasses(),
         trigger: one('trigger'),
-        triggerParam: one('triggerParam').trim(),
+        triggerParam: (form.elements.triggerParam?.value || '').trim(),
         staggerMode: one('staggerMode'),
+        fontSize: fontSize.value,
       };
     }
 
@@ -312,7 +444,7 @@
       const parts = [];
       const effect = state.effects.join(' ').trim();
       if (effect) parts.push(['data-effect', effect]);
-      if (state.classes) parts.push(['class', state.classes]);
+      if (state.classes.length) parts.push(['class', state.classes.join(' ')]);
       if (state.trigger) {
         const tv = state.triggerParam
           ? `${state.trigger}:${state.triggerParam}`
@@ -320,6 +452,12 @@
         parts.push(['data-trigger', tv]);
       }
       return parts;
+    }
+
+    function escape(s) {
+      return String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function renderHTML(state) {
@@ -336,16 +474,10 @@
       return `${open}${escape(state.content)}${close}`;
     }
 
-    function escape(s) {
-      return String(s)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
     function rebuildStage(state) {
-      // Wipe and replace — VB's MutationObserver picks the new node up.
       stage.replaceChildren();
       stage.classList.toggle('dark', state.dark);
+      stage.style.setProperty('--lab-font-size', `${state.fontSize}rem`);
 
       const make = (text) => {
         const el = document.createElement(state.tag);
@@ -371,27 +503,32 @@
     function updateRuntime() {
       const first = stage.firstElementChild;
       if (!first) return;
-      // Give the browser a tick to apply the composed animation longhand,
-      // then sample. Sample the first child so stagger users see slot vars
-      // resolved on the first element they'd watch.
       requestAnimationFrame(() => {
         const cs = getComputedStyle(first);
         runtime.textContent =
-          'animation:        ' + (cs.animation || '(none)') + '\n' +
-          'animation-name:   ' + cs.animationName + '\n' +
-          'text-shadow:      ' + cs.textShadow + '\n' +
+          'animation:           ' + (cs.animation || '(none)') + '\n' +
+          'animation-name:      ' + cs.animationName + '\n' +
+          'text-shadow:         ' + cs.textShadow + '\n' +
           '-webkit-text-stroke: ' + cs.webkitTextStroke + '\n' +
-          'filter:           ' + cs.filter;
+          'filter:              ' + cs.filter;
       });
     }
 
     function syncCodeBlock(state) {
       syntax.textContent = renderHTML(state);
-      // <code-block> rehighlights on textContent change via its MO.
+    }
+
+    function syncConditionalRows(state) {
+      // Trigger-param row appears only for triggers that take a parameter.
+      const wantsParam = ['time', 'intersect', 'media', 'event'].includes(state.trigger);
+      triggerParamRow.hidden = !wantsParam;
+      // Stagger-mode row appears only when the stagger toggle is on.
+      staggerModeRow.hidden = !state.stagger;
     }
 
     function update() {
       const state = readState();
+      syncConditionalRows(state);
       rebuildStage(state);
       syncCodeBlock(state);
       updateRuntime();
@@ -399,6 +536,15 @@
 
     form.addEventListener('input', update);
     form.addEventListener('change', update);
+    // <combo-box> dispatches its own change event with multi values.
+    classesCombo.addEventListener('combo-box:change', update);
+
+    fontSize.addEventListener('input', () => {
+      fontSizeOut.value = `${parseFloat(fontSize.value).toFixed(1)}rem`;
+      stage.style.setProperty('--lab-font-size', `${fontSize.value}rem`);
+    });
+    fontSizeOut.value = `${parseFloat(fontSize.value).toFixed(1)}rem`;
+
     document.getElementById('replay').addEventListener('click', () => {
       const targets = stage.querySelectorAll('[data-effect]');
       targets.forEach((el) => {
@@ -410,6 +556,11 @@
     });
     document.getElementById('reset').addEventListener('click', () => {
       form.reset();
+      // Clear combo-box chips — there is no `.clear()` method exposed, so
+      // remove the chip elements directly. The component will re-sync.
+      classesCombo.querySelectorAll('[data-chip]').forEach((c) => c.remove());
+      fontSize.value = 3;
+      fontSizeOut.value = '3.0rem';
       update();
     });
 
