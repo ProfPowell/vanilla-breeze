@@ -80,6 +80,47 @@ crumbLabel: Data Attributes
 
   <h3>Static paint survives slot loss</h3>
   <p>Decoration effects (<code>neon</code>, <code>outline.glow</code>, <code>text-3d.animate</code>, <code>rainbow</code>) keep their visual when the slot is occupied by something else (e.g. by a custom user animation). The pulse stops, the glow stays — only the motion is lost, not the paint.</p>
+
+  <h3 id="semantic-conflicts">Semantic conflicts (cross-slot)</h3>
+  <p>The slot system guarantees that two effects in different slots will both <em>run</em> — animation timelines never clobber each other. It does <strong>not</strong> guarantee they'll look harmonious. When two effects target the same CSS property, the later slot wins per frame (slot order is entrance → attention → decoration → exit). When one effect's animation makes the element invisible, decorations underneath have nothing to show during that interval. These are intentional limits, not bugs.</p>
+
+  <table class="props-table">
+    <thead><tr><th>Conflict</th><th>Effects involved</th><th>What you'll see</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Opacity flicker hides decoration</td>
+        <td><code>blink + neon</code>, <code>blink + shimmer</code>, <code>blink + rainbow</code>, etc.</td>
+        <td><code>blink</code> drives <code>opacity</code> 1 ↔ 0 with <code>steps(1)</code>. The decoration keeps animating, but you only see it during blink's "on" half. Net effect: <em>blinking decoration</em>, which is often not what was intended.</td>
+      </tr>
+      <tr>
+        <td>Exit erases decoration mid-flight</td>
+        <td><code>fade-out + decoration</code>, <code>collapse + decoration</code>, <code>slide-out + decoration</code></td>
+        <td>Exit animations drop <code>opacity</code> (or <code>max-block-size</code>) to 0 with <code>forwards</code>. Any decoration still running gets carried to invisible along with the element.</td>
+      </tr>
+      <tr>
+        <td>Attention transform wins during entrance</td>
+        <td><code>pop + bounce</code>, <code>slide-up + shake</code>, <code>slide-in + pulse</code></td>
+        <td>Both slots animate <code>transform</code>. Attention is later in slot order, so it overrides the entrance's transform from frame zero — the entrance scale/translate is suppressed and the attention motion is what you see. The entrance's <code>opacity</code> animation still runs cleanly because attention doesn't touch opacity.</td>
+      </tr>
+      <tr>
+        <td>Decoration transform wins after entrance</td>
+        <td><code>pop + float</code>, <code>slide-up + float</code></td>
+        <td>Same pattern as above for the entrance phase. Once the entrance ends (<code>forwards</code> snaps to its final transform), the decoration's continuous transform takes over — usually the desired outcome.</td>
+      </tr>
+      <tr>
+        <td>Background-clip stack collides</td>
+        <td><code>shimmer + gradient-text</code>, <code>shimmer + marquee</code></td>
+        <td>Both effects own the <code>background-image</code> + <code>-webkit-background-clip: text</code> stack. We ship a merged keyframe for <code>shimmer + gradient-text</code>; arbitrary pairs need a bespoke selector.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Workarounds:</strong></p>
+  <ul>
+    <li><strong>Pick one effect per perceptual axis.</strong> "Make it flash" and "make it shimmer" answer the same question two ways. Choose the one that fits the message.</li>
+    <li><strong>Sequence with the lifecycle hooks.</strong> Use <code>VB.onPhaseEnd(el, 'entrance', …)</code> to add an attention or decoration class only after the entrance finishes — see the <a href="#lifecycle-api">Lifecycle JS API</a>.</li>
+    <li><strong>Write a bespoke composite selector</strong> that merges the two effects' declarations into a single coherent CSS rule — that's how <code>fade-in + slide-up</code> and <code>shimmer + gradient-text</code> are handled in the framework.</li>
+  </ul>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════ -->
