@@ -68,6 +68,12 @@
       --color-text: white;
       color-scheme: dark;
     }
+    /* Lab-local workaround: <data-effect~="stamp"> uses mix-blend-mode: multiply
+       which renders nearly invisible on dark backgrounds. Switch to `screen` for
+       the dark stage so the badge stays legible. Follow-up: vanilla-breeze-suf1. */
+    .stage.dark [data-effect~="stamp"] {
+      mix-blend-mode: screen;
+    }
     .stage[data-stagger] {
       grid-auto-flow: column;
       grid-auto-columns: minmax(0, 1fr);
@@ -142,14 +148,26 @@
       margin-block-start: var(--size-s);
     }
     .lab-controls button {
-      padding: 0.4em 0.9em;
-      border: 1px solid var(--color-border);
+      padding: 0.45em 1em;
+      border: 1px solid var(--color-interactive, oklch(55% 0.2 260));
       border-radius: var(--radius-s);
-      background: var(--color-surface);
+      background: var(--color-interactive, oklch(55% 0.2 260));
+      color: white;
       cursor: pointer;
       font: inherit;
+      font-weight: 600;
     }
-    .lab-controls button:hover { border-color: var(--color-primary); }
+    .lab-controls button:hover {
+      filter: brightness(1.1);
+    }
+    .lab-controls button#lab-reset {
+      background: var(--color-surface);
+      color: var(--color-text);
+      border-color: var(--color-border);
+    }
+    .lab-controls button#lab-reset:hover {
+      border-color: var(--color-interactive, oklch(55% 0.2 260));
+    }
 
     .lab-controls .static-options {
       display: grid;
@@ -186,6 +204,15 @@
       color: var(--color-text-muted);
       margin-block-end: var(--size-s);
     }
+
+    .lab-output .output-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--size-m);
+    }
+    @media (max-width: 50rem) {
+      .lab-output .output-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -193,8 +220,8 @@
   <header style="padding: var(--size-m) var(--size-l); border-block-end: 1px solid var(--color-border);">
     <h1 style="margin: 0; font-size: 1.5rem;">Effects Lab</h1>
     <p style="margin: 0.25rem 0 0; color: var(--color-text-muted); font-size: 0.9375rem;">
-      Pick a tag, write text, choose one effect per slot, add class modifiers, and watch the composed result live.
-      The generated HTML is on the bottom.
+      Write text, choose one effect per slot, add class modifiers, and watch the composed result live.
+      The generated HTML and runtime CSS are below.
     </p>
   </header>
 
@@ -221,19 +248,6 @@
         <div class="row stack">
           <label for="content">Content</label>
           <input type="text" id="content" name="content" value="Page Title" />
-        </div>
-
-        <div class="row">
-          <label for="tag">Tag</label>
-          <select id="tag" name="tag">
-            <option value="h1" selected>h1</option>
-            <option value="h2">h2</option>
-            <option value="h3">h3</option>
-            <option value="p">p</option>
-            <option value="span">span</option>
-            <option value="strong">strong</option>
-            <option value="mark">mark</option>
-          </select>
         </div>
 
         <div class="toggles">
@@ -374,21 +388,24 @@
         </div>
 
         <div class="actions">
-          <button type="button" id="replay">Replay</button>
-          <button type="button" id="reset">Reset</button>
+          <button type="button" id="lab-replay">Replay</button>
+          <button type="button" id="lab-reset">Reset</button>
         </div>
       </form>
     </aside>
 
-    <!-- ═══ Generated syntax ═══ -->
-    <section class="lab-output" aria-label="Generated HTML">
-      <h2 class="lab-section-label">Generated HTML</h2>
-      <code-block id="syntax" language="html"></code-block>
-
-      <details>
-        <summary>Runtime composed <code>animation</code> &amp; paint</summary>
-        <pre id="runtime"></pre>
-      </details>
+    <!-- ═══ Generated syntax + computed CSS ═══ -->
+    <section class="lab-output" aria-label="Generated HTML and runtime CSS">
+      <div class="output-grid">
+        <div>
+          <h2 class="lab-section-label">Generated HTML</h2>
+          <code-block id="syntax" language="html"></code-block>
+        </div>
+        <div>
+          <h2 class="lab-section-label">Runtime CSS (computed)</h2>
+          <code-block id="runtime-css" language="css"></code-block>
+        </div>
+      </div>
     </section>
 
   </div>
@@ -398,12 +415,14 @@
     const form = document.getElementById('lab');
     const stage = document.getElementById('stage');
     const syntax = document.getElementById('syntax');
-    const runtime = document.getElementById('runtime');
+    const runtimeCss = document.getElementById('runtime-css');
     const fontSize = document.getElementById('font-size');
     const fontSizeOut = document.getElementById('font-size-out');
     const triggerParamRow = document.getElementById('trigger-param-row');
     const staggerModeRow = document.getElementById('stagger-mode-row');
     const classesCombo = document.getElementById('classes-combo');
+
+    const TAG = 'h1';
 
     /** Read class modifiers from the <combo-box>. Multi mode exposes .values. */
     function readClasses() {
@@ -422,7 +441,6 @@
       const all = (n) => fd.getAll(n).filter(Boolean);
       return {
         content: one('content') || 'Page Title',
-        tag: one('tag') || 'h1',
         dark: !!one('dark'),
         stagger: !!one('stagger'),
         effects: [
@@ -462,8 +480,8 @@
 
     function renderHTML(state) {
       const attrs = buildAttrs(state).map(([k, v]) => `${k}="${escape(v)}"`).join(' ');
-      const open = `<${state.tag}${attrs ? ' ' + attrs : ''}>`;
-      const close = `</${state.tag}>`;
+      const open = `<${TAG}${attrs ? ' ' + attrs : ''}>`;
+      const close = `</${TAG}>`;
       if (state.stagger) {
         const items = [1, 2, 3].map((n) => `  ${open}${escape(state.content)} ${n}${close}`).join('\n');
         const staggerAttr = state.staggerMode
@@ -480,7 +498,7 @@
       stage.style.setProperty('--lab-font-size', `${state.fontSize}rem`);
 
       const make = (text) => {
-        const el = document.createElement(state.tag);
+        const el = document.createElement(TAG);
         el.textContent = text;
         for (const [k, v] of buildAttrs(state)) {
           if (k === 'class') el.className = v;
@@ -500,18 +518,46 @@
       }
     }
 
-    function updateRuntime() {
+    /** Show the resolved CSS for the live target as authored declarations. */
+    function updateRuntime(state) {
       const first = stage.firstElementChild;
-      if (!first) return;
+      if (!first) {
+        runtimeCss.textContent = '/* no target */';
+        return;
+      }
       requestAnimationFrame(() => {
         const cs = getComputedStyle(first);
-        runtime.textContent =
-          'animation:           ' + (cs.animation || '(none)') + '\n' +
-          'animation-name:      ' + cs.animationName + '\n' +
-          'text-shadow:         ' + cs.textShadow + '\n' +
-          '-webkit-text-stroke: ' + cs.webkitTextStroke + '\n' +
-          'filter:              ' + cs.filter;
+        const sel = buildSelector(state);
+        // Only surface properties that are doing meaningful work — skip
+        // declarations whose computed value is the initial / none so the
+        // user can see at a glance which slots are filled.
+        const lines = [];
+        const add = (prop, val, allowed) => {
+          if (val && val !== 'none' && val !== 'normal' && val !== '0px' &&
+              val !== 'rgba(0, 0, 0, 0) 0px 0px 0px' &&
+              val !== '0px rgb(0, 0, 0)') {
+            lines.push(`  ${prop}: ${val};`);
+          }
+        };
+        add('animation', cs.animation);
+        add('text-shadow', cs.textShadow);
+        add('-webkit-text-stroke', cs.webkitTextStroke);
+        add('filter', cs.filter);
+        add('color', cs.color);
+        if (!lines.length) lines.push('  /* (no animated or decoration paint) */');
+        runtimeCss.textContent = `${sel} {\n${lines.join('\n')}\n}`;
       });
+    }
+
+    /** Build a CSS selector that matches the live target — for the
+        code-block header so the printout reads like real CSS. */
+    function buildSelector(state) {
+      if (!state) return TAG;
+      const cls = state.classes.length ? '.' + state.classes.join('.') : '';
+      const eff = state.effects.length
+        ? state.effects.map((e) => `[data-effect~="${e}"]`).join('')
+        : '';
+      return TAG + eff + cls;
     }
 
     function syncCodeBlock(state) {
@@ -531,7 +577,7 @@
       syncConditionalRows(state);
       rebuildStage(state);
       syncCodeBlock(state);
-      updateRuntime();
+      updateRuntime(state);
     }
 
     form.addEventListener('input', update);
@@ -545,16 +591,16 @@
     });
     fontSizeOut.value = `${parseFloat(fontSize.value).toFixed(1)}rem`;
 
-    document.getElementById('replay').addEventListener('click', () => {
+    document.getElementById('lab-replay').addEventListener('click', () => {
       const targets = stage.querySelectorAll('[data-effect]');
       targets.forEach((el) => {
         if (window.VB?.deactivate) VB.deactivate(el);
         void el.offsetWidth;
         if (window.VB?.activate) VB.activate(el);
       });
-      updateRuntime();
+      updateRuntime(readState());
     });
-    document.getElementById('reset').addEventListener('click', () => {
+    document.getElementById('lab-reset').addEventListener('click', () => {
       form.reset();
       // Clear combo-box chips — there is no `.clear()` method exposed, so
       // remove the chip elements directly. The component will re-sync.
