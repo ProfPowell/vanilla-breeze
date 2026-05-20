@@ -411,6 +411,9 @@
   </div>
 
   <script type="module" src="/src/main.js"></script>
+  <!-- Registers <code-block>, <browser-window>, and friends used in this demo.
+       /src/main.js does NOT bundle these — they live in doc-extras.js. -->
+  <script type="module" src="/src/doc-extras.js"></script>
   <script type="module">
     const form = document.getElementById('lab');
     const stage = document.getElementById('stage');
@@ -545,8 +548,16 @@
         add('filter', cs.filter);
         add('color', cs.color);
         if (!lines.length) lines.push('  /* (no animated or decoration paint) */');
-        runtimeCss.textContent = `${sel} {\n${lines.join('\n')}\n}`;
+        writeCode(runtimeCss, `${sel} {\n${lines.join('\n')}\n}`);
       });
+    }
+
+    /** <code-block> snapshots textContent on connect. Use its public setCode()
+        if available so the syntax-highlighted shadow tree re-renders on every
+        change; fall back to textContent if the element hasn't upgraded yet. */
+    function writeCode(el, text) {
+      if (typeof el.setCode === 'function') el.setCode(text);
+      else el.textContent = text;
     }
 
     /** Build a CSS selector that matches the live target — for the
@@ -561,7 +572,7 @@
     }
 
     function syncCodeBlock(state) {
-      syntax.textContent = renderHTML(state);
+      writeCode(syntax, renderHTML(state));
     }
 
     function syncConditionalRows(state) {
@@ -611,6 +622,10 @@
     });
 
     update();
+    // <code-block> snapshots its textContent on first connect, so re-run
+    // update() once it's defined to make sure setCode() can drive subsequent
+    // re-renders (and the initial paint matches the form state).
+    customElements.whenDefined('code-block').then(update);
   </script>
 </body>
 </html>
