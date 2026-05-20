@@ -475,18 +475,28 @@
         // declarations whose computed value is the initial / none so the
         // user can see at a glance which slots are filled.
         const lines = [];
-        const add = (prop, val, allowed) => {
-          if (val && val !== 'none' && val !== 'normal' && val !== '0px' &&
-              val !== 'rgba(0, 0, 0, 0) 0px 0px 0px' &&
-              val !== '0px rgb(0, 0, 0)') {
-            lines.push(`  ${prop}: ${val};`);
-          }
+        const add = (prop, val) => {
+          // Skip noisy initial values so the readout shows only what the
+          // effects actually changed. Each property has a different "boring"
+          // value depending on browser defaults.
+          const noise = new Set([
+            'none', 'normal', '0px', 'auto',
+            'rgba(0, 0, 0, 0) 0px 0px 0px',
+            '0px rgb(0, 0, 0)',
+            'rgb(0, 0, 0)',
+          ]);
+          if (val && !noise.has(val)) lines.push(`  ${prop}: ${val};`);
         };
         add('animation', cs.animation);
+        add('background-image', cs.backgroundImage);
+        add('background-clip', cs.backgroundClip);
+        add('background-size', cs.backgroundSize);
+        add('-webkit-text-fill-color', cs.webkitTextFillColor);
         add('text-shadow', cs.textShadow);
         add('-webkit-text-stroke', cs.webkitTextStroke);
         add('filter', cs.filter);
         add('color', cs.color);
+        add('mix-blend-mode', cs.mixBlendMode);
         if (!lines.length) lines.push('  /* (no animated or decoration paint) */');
         writeCode(runtimeCss, `${sel} {\n${lines.join('\n')}\n}`);
       });
