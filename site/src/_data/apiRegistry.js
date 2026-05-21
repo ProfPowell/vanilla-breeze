@@ -7409,6 +7409,7 @@ export default {
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
+        "li",
         "@flow"
       ]
     }

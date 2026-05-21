@@ -38,6 +38,15 @@ module.exports = {
     permittedContent: ["@flow"],
   },
 
+  // brand-mark is content-model flow per its manifest, but demos also
+  // place it inside <p> (phrasing-only). Declare it as both flow and
+  // phrasing so it can appear inline.
+  "brand-mark": {
+    inherit: "brand-mark",
+    flow: true,
+    phrasing: true,
+  },
+
   // <layout-badge data-color="..."> — the generated elements.cjs only lists
   // primary/success/warning/danger/info. VB themes also expose brand,
   // secondary, accent, error and the demos showcase all of them. Widen the

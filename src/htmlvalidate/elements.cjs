@@ -1292,7 +1292,7 @@ module.exports = {
 
   "progress-tracker": {
     flow: true,
-    permittedContent: ["@flow"],
+    permittedContent: ["li", "@flow"],
     attributes: {
       "data-current": {},
       "data-clickable": { boolean: true },
