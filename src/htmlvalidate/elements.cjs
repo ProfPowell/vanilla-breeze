@@ -1713,6 +1713,8 @@ module.exports = {
   },
 
   "time-picker": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "name": {},
       "data-format": {},

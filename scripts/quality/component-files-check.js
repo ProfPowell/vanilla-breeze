@@ -13,13 +13,24 @@
  * Exits non-zero if any required file is missing.
  */
 
-import { readdirSync, statSync, existsSync } from 'fs';
+import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
 import { join, resolve, basename } from 'path';
 
 const ROOT = resolve(import.meta.dirname, '../..');
 const WC_DIR = join(ROOT, 'src', 'web-components');
+const OVERRIDES_PATH = join(ROOT, 'src', 'htmlvalidate', 'api-overrides.json');
 
 const REQUIRED_FILES = ['api.json', 'static.html'];
+
+// Elements registered via the api-overrides.json sidecar don't need a
+// local api.json file in their component directory.
+let overrideElements = new Set();
+try {
+  const overrides = JSON.parse(readFileSync(OVERRIDES_PATH, 'utf-8'));
+  overrideElements = new Set(overrides.map(o => o.element));
+} catch {
+  // No overrides file \u2014 every component must have its own api.json
+}
 
 const errors = [];
 let componentCount = 0;
@@ -40,9 +51,10 @@ for (const entry of readdirSync(WC_DIR)) {
   componentCount++;
 
   for (const required of REQUIRED_FILES) {
-    if (!existsSync(join(dir, required))) {
-      errors.push(`  \u2717 ${entry}: missing ${required}`);
-    }
+    if (existsSync(join(dir, required))) continue;
+    // api.json may live in api-overrides.json instead of the component dir
+    if (required === 'api.json' && overrideElements.has(entry)) continue;
+    errors.push(`  \u2717 ${entry}: missing ${required}`);
   }
 }
 

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staged Story Demo — Vanilla Breeze</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      padding: var(--size-2xl) var(--size-xl) var(--size-3xl);
+      max-inline-size: 80rem;
+      margin-inline: auto;
+    }
+
+    header.page-header {
+      margin-block-end: var(--size-2xl);
+    }
+    header.page-header h1 { margin: 0 0 var(--size-s); }
+    header.page-header p  { margin: 0; color: var(--color-text-muted); max-inline-size: 50rem; }
+
+    section[data-stage] figure[data-stage-pin] {
+      margin: 0;
+      border-radius: var(--radius-l);
+      overflow: clip;
+      background: linear-gradient(135deg,
+        oklch(0.35 0.12 230) 0%,
+        oklch(0.55 0.18 280) 100%);
+      aspect-ratio: 1 / 1;
+      max-block-size: 70vh;
+      display: grid;
+      place-items: center;
+      color: oklch(0.98 0.01 250);
+      font-size: var(--font-size-xl, 1.5rem);
+      letter-spacing: 0.02em;
+    }
+
+    section[data-stage] figure[data-stage-pin] figcaption {
+      padding: var(--size-l);
+      text-align: center;
+      font-weight: 600;
+    }
+
+    article[data-stage-steps] { margin: 0; }
+
+    section[data-stage-step] {
+      min-block-size: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-m);
+      padding-block-start: var(--size-xl);
+    }
+    section[data-stage-step] h2 { margin: 0; }
+    section[data-stage-step] p  { margin: 0; max-inline-size: 36rem; }
+
+    h2 { scroll-margin-block-start: var(--size-xl); }
+
+    section.epilogue { margin-block-start: var(--size-3xl); }
+
+    .browser-note {
+      position: fixed;
+      inset-inline: 0;
+      inset-block-end: 0;
+      padding: var(--size-s) var(--size-l);
+      background: oklch(0.95 0.02 250);
+      border-block-start: 1px solid oklch(0.85 0.04 250);
+      font-size: var(--font-size-sm);
+      color: oklch(0.4 0.05 250);
+      text-align: center;
+      z-index: 200;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>Staged story pattern</h1>
+    <p>One pinned visual on the left. Sequential narrative sections on the right. Pure CSS — no scroll listeners, no IntersectionObserver. Resize narrow to see the layout collapse to a single column with no sticky pinning.</p>
+  </header>
+
+  <section data-stage>
+    <figure data-stage-pin>
+      <figcaption>Pinned visual</figcaption>
+    </figure>
+
+    <article data-stage-steps>
+      <section data-stage-step>
+        <h2 data-animate="fade-up">Introduce the subject</h2>
+        <p data-animate="fade-up">The first step sets the scene. The pinned figure stays in view while readers move through the opening paragraph at their own pace.</p>
+        <p data-animate="fade-up">Copy is the load-bearing element here. The visual is supporting context, not the message.</p>
+      </section>
+
+      <section data-stage-step>
+        <h2 data-animate="fade-up">Reveal the tension</h2>
+        <p data-animate="fade-up">A second step advances the narrative. The pinned figure remains visible, so the visual context is continuous even though the words progress.</p>
+        <p data-animate="fade-up">This is the pattern's reason for existing: keeping context anchored while the reader moves through a sequence.</p>
+      </section>
+
+      <section data-stage-step>
+        <h2 data-animate="fade-up">Resolve and exit</h2>
+        <p data-animate="fade-up">The closing step lets the reader land. After this step, the figure releases from its pin and the layout returns to normal flow.</p>
+        <p data-animate="fade-up">Anchor links inside steps use <code>scroll-margin-block-start</code> so deep links land below any fixed UI rather than under it.</p>
+      </section>
+    </article>
+  </section>
+
+  <section class="epilogue">
+    <h2>What this pattern is not</h2>
+    <p>This is a layout pattern, not an animation system. The copy reveal inside each step is handled by the existing <code>data-animate</code> attribute — no new motion code was needed.</p>
+    <p>If <code>animation-timeline: view()</code> is unsupported, the reveal animations disable and the pinned layout still works as plain sticky CSS. The page remains readable end-to-end.</p>
+  </section>
+
+  <aside class="browser-note">Sticky pinning works everywhere. Step reveals require <code>animation-timeline: view()</code> support (Chrome 115+, Safari 18+).</aside>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

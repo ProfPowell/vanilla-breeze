@@ -1,0 +1,71 @@
+/* links: rel-based semantic link styling
+ *
+ * Promotes the native <a rel="..."> attribute to a first-class
+ * styling hook. rel is standardised, ASCII-tokenised, machine-readable,
+ * and works natively with attribute selectors — perfect for VB's
+ * platform-first philosophy.
+ *
+ * See /docs/concepts/link-relations/ for the vocabulary, the three
+ * authoring rules, and the JS upgrade contract.
+ *
+ * Selectors use :where() so they don't add specificity beyond a single
+ * attribute selector — themes and component CSS can override freely.
+ */
+
+/* External link arrow — same glyph as the existing href-based detection
+ * in src/native-elements/anchor/styles.css. That stylesheet's
+ * a[href^="http"] rule is guarded with :not([rel~="external"]) so links
+ * carrying the rel get exactly one arrow (this one), not two.
+ */
+a:where([rel~="external"]):not([data-no-icon])::after {
+  content: "↗";
+  font-size: 0.9em;
+  font-style: normal;
+  opacity: 0.7;
+  display: inline-block;
+  text-decoration: none;
+  padding-inline-start: 0.5em;
+}
+
+/* Help links — dotted underline signals "context-sensitive help" */
+a:where([rel~="help"]) {
+  text-decoration-style: dotted;
+}
+
+/* Tag links — pill chip presentation for topic / facet linking */
+a:where([rel~="tag"]) {
+  display: inline-block;
+  border: var(--border-width-thin, 1px) solid currentColor;
+  border-radius: var(--radius-full, 999px);
+  padding-inline: 0.6em;
+  padding-block: 0.1em;
+  text-decoration: none;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+/* Sequence navigation — arrows before/after prev/next links */
+a:where([rel~="prev"])::before {
+  content: "← ";
+}
+
+a:where([rel~="next"])::after {
+  content: " →";
+}
+
+/* Legal / policy links — muted, smaller, footer-friendly */
+a:where([rel~="license"]),
+a:where([rel~="privacy-policy"]),
+a:where([rel~="terms-of-service"]) {
+  font-size: 0.95em;
+  opacity: 0.85;
+}
+
+/* Suppress decorative pseudo-elements in navigation contexts to match
+ * the existing href-based suppression in anchor/styles.css.
+ */
+:is(nav, header, footer) a:where([rel~="external"])::after,
+:is(nav, header, footer) a:where([rel~="prev"])::before,
+:is(nav, header, footer) a:where([rel~="next"])::after {
+  content: none;
+}

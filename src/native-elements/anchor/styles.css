@@ -72,9 +72,12 @@ a.plain {
    Use data-no-icon to suppress auto-icons
    =========================================== */
 
-/* External links - auto-detect http(s) links */
-a[href^="http"]:where(:not([data-no-icon]))::after,
-a[href^="//"]:where(:not([data-no-icon]))::after {
+/* External links - auto-detect http(s) links.
+ * Skip when rel~="external" is present — src/utils/links.css handles
+ * those, and double-applying the pseudo-element would render two arrows.
+ */
+a[href^="http"]:where(:not([data-no-icon]):not([rel~="external"]))::after,
+a[href^="//"]:where(:not([data-no-icon]):not([rel~="external"]))::after {
   content: "↗";
   font-size: 0.9em;
   font-style: normal;

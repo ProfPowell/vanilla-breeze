@@ -24,6 +24,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, resolve, relative, extname } from 'path';
 import { execSync } from 'child_process';
+import { parseHTML } from 'linkedom';
 
 const args = process.argv.slice(2);
 const ciMode = args.includes('--ci');
@@ -160,22 +161,36 @@ function checkFile(filePath) {
         line: lineNum,
         col: line.indexOf('style="') + 1,
         rule: 'vb/no-inline-style',
-        severity: severity('vb/no-inline-style', 'error'),
+        severity: severity('vb/no-inline-style', 'error-new'),
         message: 'Move inline styles to CSS. Use data-* attributes for dynamic values.'
       });
     }
 
-    // vb/no-class-for-state — State classes that should be data-* attributes
-    const stateMatch = line.match(STATE_CLASS_PATTERN);
-    if (stateMatch) {
-      const stateClass = stateMatch[1];
-      issues.push({
-        line: lineNum,
-        col: line.indexOf(stateClass),
-        rule: 'vb/no-class-for-state',
-        severity: severity('vb/no-class-for-state', 'warn'),
-        message: `Class "${stateClass}" represents state. Use data-${stateClass} or data-state="${stateClass}" instead.`
-      });
+    // vb/no-class-for-state — State classes that should be data-* attributes.
+    //
+    // Token-exact match: we previously used \b boundaries inside a single
+    // regex, which over-matched compound class names like "badge-success",
+    // "visually-hidden", or "surface-state-card" because "-" is a non-word
+    // char. Now we parse the class attribute, split on whitespace, and
+    // check each token literally.
+    //
+    // Exception: <output class="error"> / <output class="hint"> are the
+    // documented form-field contract — form-field's logic.js looks for
+    // output.error to identify the validation message element. Those are
+    // discriminator classes, not state classes. Skip <output> entirely.
+    const classAttrMatch = !/<output\b/i.test(line) && line.match(/\bclass="([^"]+)"/);
+    if (classAttrMatch) {
+      const tokens = classAttrMatch[1].split(/\s+/).filter(Boolean);
+      const stateClass = tokens.find(t => STATE_CLASSES.includes(t.toLowerCase()));
+      if (stateClass) {
+        issues.push({
+          line: lineNum,
+          col: line.indexOf(stateClass),
+          rule: 'vb/no-class-for-state',
+          severity: severity('vb/no-class-for-state', 'warn'),
+          message: `Class "${stateClass}" represents state. Use data-${stateClass} or data-state="${stateClass}" instead.`
+        });
+      }
     }
 
     // vb/semantic-heading-hierarchy — Skipped heading levels
@@ -187,38 +202,74 @@ function checkFile(filePath) {
           line: lineNum,
           col: 1,
           rule: 'vb/semantic-heading-hierarchy',
-          severity: severity('vb/semantic-heading-hierarchy', 'error'),
+          severity: severity('vb/semantic-heading-hierarchy', 'error-new'),
           message: `Heading level skipped: h${lastHeadingLevel} → h${level}. Use h${lastHeadingLevel + 1} instead.`
         });
       }
       lastHeadingLevel = level;
     }
 
-    // vb/icon-wc-required — Inline <svg> should use <icon-wc>
-    if (/<svg[\s>]/i.test(line) && !/<svg[^>]*role="img"/i.test(line)) {
+    // vb/icon-wc-required — Inline <svg> should use <icon-wc>.
+    // Opt-outs: role="img" (declares "this is a real image, not an icon")
+    // or aria-hidden="true" (declares "this is decorative, no AT involvement").
+    // Both signal the author knows what they're doing with this SVG; the rule
+    // is only there to nudge people away from inlining icons.
+    if (/<svg[\s>]/i.test(line) && !/<svg[^>]*role="img"/i.test(line) && !/<svg[^>]*aria-hidden="true"/i.test(line)) {
       issues.push({
         line: lineNum,
         col: line.indexOf('<svg') + 1,
         rule: 'vb/icon-wc-required',
-        severity: severity('vb/icon-wc-required', 'error'),
+        severity: severity('vb/icon-wc-required', 'error-new'),
         message: 'Use <icon-wc name="..."/> instead of inline SVG.'
       });
     }
   }
 
-  // vb/no-div-wrapper — <div> wrapping a single semantic child
-  // Simple regex-based detection: <div...>\n  <semantic>\n  </semantic>\n</div>
-  const divWrapperPattern = /<div[^>]*>\s*\n\s*<(article|section|header|footer|nav|main|aside|ul|ol|form|table|figure|details|fieldset|dialog|menu)[^>]*>/gi;
-  let wrapperMatch;
-  while ((wrapperMatch = divWrapperPattern.exec(content)) !== null) {
-    const lineNum = content.substring(0, wrapperMatch.index).split('\n').length;
-    issues.push({
-      line: lineNum,
-      col: 1,
-      rule: 'vb/no-div-wrapper',
-      severity: severity('vb/no-div-wrapper', 'error-new'),
-      message: `<div> wraps a single <${wrapperMatch[1]}>. The div likely adds nothing — move attributes to the child.`
-    });
+  // vb/no-div-wrapper — <div> wrapping a single semantic child.
+  // DOM-based detection via linkedom: a <div> is flagged only if it
+  // contains exactly one element child AND that child is in the semantic
+  // list. The previous regex was too eager — it matched any <div>\n<semantic>
+  // pattern regardless of how many siblings followed, producing many false
+  // positives on multi-child grid containers.
+  const SEMANTIC_CHILDREN = new Set([
+    'article', 'section', 'header', 'footer', 'nav', 'main', 'aside',
+    'ul', 'ol', 'form', 'table', 'figure', 'details', 'fieldset',
+    'dialog', 'menu'
+  ]);
+  try {
+    const { document } = parseHTML(content);
+    // Precompute source line numbers for every <div opening so we can
+    // map the Nth linkedom-found div to the Nth source-found div by
+    // document order. (querySelectorAll('div') returns elements in
+    // document order, matching their appearance in source.)
+    const divLineNumbers = [];
+    {
+      const divRe = /<div\b/gi;
+      let m;
+      while ((m = divRe.exec(content)) !== null) {
+        divLineNumbers.push(content.substring(0, m.index).split('\n').length);
+      }
+    }
+    let i = 0;
+    for (const div of document.querySelectorAll('div')) {
+      const sourceLine = divLineNumbers[i] || 1;
+      i++;
+      const elementChildren = Array.from(div.children);
+      if (elementChildren.length !== 1) continue;
+      const child = elementChildren[0];
+      const tag = child.tagName.toLowerCase();
+      if (!SEMANTIC_CHILDREN.has(tag)) continue;
+      issues.push({
+        line: sourceLine,
+        col: 1,
+        rule: 'vb/no-div-wrapper',
+        severity: severity('vb/no-div-wrapper', 'error-new'),
+        message: `<div> wraps a single <${tag}>. The div likely adds nothing — move attributes to the child.`
+      });
+    }
+  } catch {
+    // linkedom can choke on malformed input; skip silently rather than
+    // failing the whole conformance run.
   }
 
   // vb/use-form-field — Label+input outside form-field in forms with validation

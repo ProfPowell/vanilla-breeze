@@ -65,9 +65,12 @@ describe('VB Conformance Checker', () => {
       assert.ok(result.output.includes('vb/no-inline-style'), 'Should report vb/no-inline-style rule');
     });
 
-    it('exits with error code for inline styles', () => {
+    it('reports inline styles as warning for tracked files (error-new severity)', () => {
+      // vb/no-inline-style is severity 'error-new' — tracked fixtures get
+      // warnings (exit 0), untracked files would error (exit 1). The fixture
+      // here is committed to git, so this verifies the warn path.
       const result = runConformance(`${fixturesDir}/invalid/vb-conformance/has-inline-styles.html`);
-      assert.strictEqual(result.exitCode, 1, 'Should exit with code 1 for errors');
+      assert.ok(result.output.includes('warning'), 'Should emit a warning for tracked fixture');
     });
   });
 

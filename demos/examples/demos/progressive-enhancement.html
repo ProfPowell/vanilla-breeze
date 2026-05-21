@@ -66,12 +66,12 @@
       font-weight: 600;
     }
 
-    .js-status.enabled {
+    .js-status[data-state="enabled"] {
       background: var(--color-success-subtle);
       color: var(--color-success);
     }
 
-    .js-status.disabled {
+    .js-status[data-state="disabled"] {
       background: var(--color-warning-subtle);
       color: var(--color-warning);
     }
@@ -197,7 +197,7 @@
       <input type="checkbox" id="js-toggle" checked/>
       JavaScript Enabled
     </label>
-    <span class="js-status enabled" id="js-status">JS Active</span>
+    <span class="js-status" data-state="enabled" id="js-status">JS Active</span>
     <small style="color: var(--color-text-muted);">Toggle to see baseline HTML behavior</small>
   </div>
 
@@ -208,7 +208,7 @@
     <h2>Accordion</h2>
 
     <div class="description">
-      <h4>Progressive Enhancement</h4>
+      <h3>Progressive Enhancement</h3>
       <p><strong>Without JS:</strong> Native <code>&lt;details&gt;</code> elements are fully functional - users can expand/collapse any panel independently.</p>
       <p><strong>With JS:</strong> The <code>accordion-wc</code> wrapper adds single-open mode (only one panel open at a time), smooth animations, and programmatic control via API methods.</p>
     </div>
@@ -297,7 +297,7 @@
     <h2>Tabs</h2>
 
     <div class="description">
-      <h4>Progressive Enhancement</h4>
+      <h3>Progressive Enhancement</h3>
       <p><strong>Without JS:</strong> Content sections are displayed stacked vertically. All content is visible and accessible.</p>
       <p><strong>With JS:</strong> The <code>tab-set</code> component creates a tabbed interface with ARIA roles, keyboard navigation (arrow keys), and proper focus management.</p>
     </div>
@@ -381,7 +381,7 @@
     <h2>Dropdown Menu</h2>
 
     <div class="description">
-      <h4>Progressive Enhancement</h4>
+      <h3>Progressive Enhancement</h3>
       <p><strong>Without JS:</strong> Links are displayed as a visible list. All navigation options are immediately accessible.</p>
       <p><strong>With JS:</strong> The <code>drop-down</code> component hides the menu behind a trigger button, with click-outside-to-close, escape key handling, and proper ARIA expanded states.</p>
     </div>
@@ -392,18 +392,15 @@
           <span class="badge">HTML Only</span>
           Before JS
         </div>
-        <div class="panel-content demo-area">
-          <!-- Visible nav list - always accessible -->
-          <nav>
-            <strong>Account Menu</strong>
-            <ul style="margin-top: var(--size-xs); padding-left: var(--size-l);">
-              <li><a href="#">Profile</a></li>
-              <li><a href="#">Settings</a></li>
-              <li><a href="#">Billing</a></li>
-              <li><a href="#">Sign Out</a></li>
-            </ul>
-          </nav>
-        </div>
+        <nav class="panel-content demo-area">
+          <strong>Account Menu</strong>
+          <ul style="margin-top: var(--size-xs); padding-left: var(--size-l);">
+            <li><a href="#">Profile</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Billing</a></li>
+            <li><a href="#">Sign Out</a></li>
+          </ul>
+        </nav>
       </li>
       <li class="panel">
         <div class="panel-header after">
@@ -455,7 +452,7 @@
     <h2>Dialog / Modal</h2>
 
     <div class="description">
-      <h4>Progressive Enhancement</h4>
+      <h3>Progressive Enhancement</h3>
       <p><strong>Without JS:</strong> The native <code>&lt;dialog&gt;</code> element can still be shown via the <code>open</code> attribute or form method="dialog". Content is accessible.</p>
       <p><strong>With JS:</strong> Full modal behavior with <code>showModal()</code>, backdrop, focus trapping, escape to close, and scroll locking.</p>
     </div>
@@ -466,16 +463,14 @@
           <span class="badge">HTML Only</span>
           Before JS
         </div>
-        <div class="panel-content demo-area">
-          <!-- Native dialog with open attribute -->
-          <dialog open style="position: relative; padding: var(--size-m); border: 1px solid var(--color-border); border-radius: var(--radius-m);">
-            <h3 style="margin: 0 0 var(--size-s);">Dialog Title</h3>
-            <p>This dialog is visible via the <code>open</code> attribute. Without JavaScript, it appears inline in the document flow.</p>
-            <form method="dialog">
-              <button>Close</button>
-            </form>
-          </dialog>
-        </div>
+        <!-- Native dialog with open attribute -->
+        <dialog open class="panel-content demo-area" style="position: relative; padding: var(--size-m); border: 1px solid var(--color-border); border-radius: var(--radius-m);">
+          <h3 style="margin: 0 0 var(--size-s);">Dialog Title</h3>
+          <p>This dialog is visible via the <code>open</code> attribute. Without JavaScript, it appears inline in the document flow.</p>
+          <form method="dialog">
+            <button>Close</button>
+          </form>
+        </dialog>
       </li>
       <li class="panel">
         <div class="panel-header after">
@@ -525,7 +520,7 @@
     <h2>Toast Notifications</h2>
 
     <div class="description">
-      <h4>Progressive Enhancement</h4>
+      <h3>Progressive Enhancement</h3>
       <p><strong>Without JS:</strong> Status messages display inline as static alert boxes. Information is always visible.</p>
       <p><strong>With JS:</strong> The <code>toast-msg</code> component shows temporary, dismissible notifications that auto-hide and can be triggered programmatically.</p>
     </div>
@@ -585,7 +580,7 @@
     <h2>Loading States</h2>
 
     <div class="description">
-      <h4>Progressive Enhancement</h4>
+      <h3>Progressive Enhancement</h3>
       <p><strong>Without JS:</strong> The <code>data-loading</code> attribute provides CSS-only skeleton and shimmer effects. No JavaScript required for the visual loading state.</p>
       <p><strong>With JS:</strong> Loading states can be toggled dynamically, and content can be replaced when data arrives.</p>
     </div>
@@ -704,12 +699,14 @@
     jsToggle.addEventListener('change', (e) => {
       if (e.target.checked) {
         jsStatus.textContent = 'JS Active';
-        jsStatus.className = 'js-status enabled';
+        jsStatus.className = 'js-status';
+        jsStatus.dataset.state = 'enabled';
         // Reload to re-enable scripts
         window.location.reload();
       } else {
         jsStatus.textContent = 'JS Disabled';
-        jsStatus.className = 'js-status disabled';
+        jsStatus.className = 'js-status';
+        jsStatus.dataset.state = 'disabled';
         // Remove enhanced components, show baseline HTML
         document.querySelectorAll('accordion-wc, tab-set, drop-down').forEach(el => {
           // For accordion, just remove the wrapper

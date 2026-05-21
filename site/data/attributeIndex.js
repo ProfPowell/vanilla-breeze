@@ -101,6 +101,7 @@ const dataAttributes = {
       { name: 'data-page-layout', type: 'layout', href: '/docs/attributes/data-page-layout/', description: 'Full-page grid layouts with semantic area assignment' },
       { name: 'data-layout-density', type: 'layout', href: '/docs/attributes/data-layout-density/', description: 'Compact or spacious spacing modes that cascade to descendants' },
       { name: 'data-sticky', type: 'layout', href: '/docs/attributes/data-sticky/', description: 'Sticky positioning for header and footer elements — sticks to top or bottom on scroll' },
+      { name: 'data-stage', type: 'layout', href: '/docs/attributes/data-stage/', description: 'Scrollytelling layout — pinned visual plus sequential semantic steps, no JS' },
     ],
   },
   formatting: {
@@ -133,6 +134,7 @@ const dataAttributes = {
       { name: 'data-stagger', type: 'behavior', href: '/docs/attributes/data-stagger/', description: 'Cascades timing to children for choreographed entrance sequences' },
       { name: 'data-transition', type: 'behavior', href: '/docs/attributes/data-transition/', description: 'Declarative View Transitions: morph, slide, fade, scale, and stagger for state changes' },
       { name: 'data-emoji', type: 'behavior', href: '/docs/attributes/data-emoji/', description: 'Replace :shortcode: text with Unicode emoji characters', pack: 'extras' },
+      { name: 'data-parallax', type: 'behavior', href: '/docs/attributes/data-parallax/', description: 'Section-local, transform-only depth motion driven by view() timeline — CSS-only' },
     ],
   },
   interaction: {
