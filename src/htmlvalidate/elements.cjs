@@ -1759,7 +1759,7 @@ module.exports = {
 
   "toast-msg": {
     flow: true,
-    permittedContent: [],
+    permittedContent: ["@flow"],
     attributes: {
       "position": { enum: ["top-start", "top-center", "top-end", "bottom-start", "bottom-center", "bottom-end"] },
       "duration": {},
@@ -1851,7 +1851,7 @@ module.exports = {
 
   "user-journey": {
     flow: true,
-    permittedContent: [],
+    permittedContent: ["@flow"],
     attributes: {
       "title": {},
       "persona": {},

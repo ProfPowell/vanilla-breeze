@@ -9979,7 +9979,9 @@ export default {
     "description": "Toast notification container with stacking, auto-dismiss, and position options",
     "htmlvalidate": {
       "flow": true,
-      "permittedContent": []
+      "permittedContent": [
+        "@flow"
+      ]
     },
     "attributes": [
       {
@@ -10468,7 +10470,9 @@ export default {
     "description": "Visualises a multi-phase user journey with SVG emotion curve and structured breakdown grid",
     "htmlvalidate": {
       "flow": true,
-      "permittedContent": []
+      "permittedContent": [
+        "@flow"
+      ]
     },
     "attributes": [
       {
