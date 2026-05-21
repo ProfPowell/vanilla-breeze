@@ -90,6 +90,9 @@ module.exports = {
   "terminal-window": { flow: true, permittedContent: ["@flow"] },
   "pdf-viewer":      { flow: true, permittedContent: ["@flow"] },
   "image-editor":    { flow: true, permittedContent: ["@flow"] },
+  "browser-console": { flow: true, permittedContent: ["@flow"] },
+  "code-playground": { flow: true, permittedContent: ["@flow"] },
+  "epub-reader":     { flow: true, permittedContent: ["@flow"] },
 
   // CSS-only custom elements (style + structure, no JS logic, no manifest).
   "token-swatch":    { flow: true, phrasing: true, permittedContent: ["@phrasing"] },
