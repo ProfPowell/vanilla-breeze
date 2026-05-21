@@ -55,6 +55,15 @@ module.exports = {
     phrasing: true,
   },
 
+  // layout-cluster is technically flow but VB demos use it inside
+  // <button>/<summary> for icon-text-icon arrangements. Mark phrasing
+  // too so it can appear in phrasing contexts.
+  "layout-cluster": {
+    inherit: "layout-cluster",
+    flow: true,
+    phrasing: true,
+  },
+
   // <layout-badge data-color="..."> — the generated elements.cjs only lists
   // primary/success/warning/danger/info. VB themes also expose brand,
   // secondary, accent, error and the demos showcase all of them. Widen the

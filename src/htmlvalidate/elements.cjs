@@ -1171,6 +1171,8 @@ module.exports = {
   },
 
   "page-toc": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "levels": {},
       "title": {},

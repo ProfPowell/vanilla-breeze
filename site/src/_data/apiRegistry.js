@@ -6561,7 +6561,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "page-tools": {
     "$schema": "../../../schemas/api.schema.json",
