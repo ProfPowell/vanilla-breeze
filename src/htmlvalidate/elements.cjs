@@ -946,6 +946,8 @@ module.exports = {
   },
 
   "gradient-builder": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "colors": {},
       "type": {},
@@ -957,6 +959,8 @@ module.exports = {
   },
 
   "heading-links": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "levels": {},
       "data-toc-ignore": {},
@@ -992,7 +996,7 @@ module.exports = {
 
   "image-gallery": {
     flow: true,
-    permittedContent: ["a", "figure"],
+    permittedContent: ["a", "figure", "img"],
     attributes: {
       "columns": { enum: ["100px", "150px", "200px", "250px", "300px"] },
       "gap": { enum: ["none", "xs", "s", "m", "l", "xl"] },

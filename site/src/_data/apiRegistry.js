@@ -5184,7 +5184,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "heading-links": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5216,7 +5222,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "highlight-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5357,7 +5369,8 @@ export default {
       "flow": true,
       "permittedContent": [
         "a",
-        "figure"
+        "figure",
+        "img"
       ]
     },
     "attributes": [
