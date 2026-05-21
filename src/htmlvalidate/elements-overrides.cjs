@@ -16,6 +16,14 @@ module.exports = {
     requiredAncestors: ["dl > dd", "dl > div > dd", "dl-item > dd"],
   },
 
+  // <li> per spec requires <ul>/<ol>/<menu>/<template> parent, but VB's
+  // <progress-tracker> uses <li> children as wizard steps (the documented
+  // API). Widen the allowed parents to include <progress-tracker>.
+  "li": {
+    inherit: "li",
+    requiredAncestors: ["ul > li", "ol > li", "menu > li", "template > li", "progress-tracker > li"],
+  },
+
   // Customizable-select proposal — Chrome and WebKit ship this; html-
   // validate's base lib still treats <select>/<option> as their pre-2024
   // selves. The proposal allows <button> inside <select> (custom trigger)
@@ -87,4 +95,5 @@ module.exports = {
   "token-swatch":    { flow: true, phrasing: true, permittedContent: ["@phrasing"] },
   "layout-columns":  { flow: true, permittedContent: ["@flow"] },
   "layout-canvas":   { flow: true, permittedContent: ["@flow"] },
+  "layout-specimen": { flow: true, permittedContent: ["@flow"] },
 };

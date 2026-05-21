@@ -6434,7 +6434,13 @@ export default {
       {
         "name": "notification-wc:close"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "page-info": {
     "$schema": "../../../schemas/api.schema.json",

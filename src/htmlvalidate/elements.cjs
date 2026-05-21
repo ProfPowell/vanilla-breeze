@@ -1133,6 +1133,8 @@ module.exports = {
   },
 
   "notification-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "mode": { enum: ["banner", "panel"] },
       "persist": {},
