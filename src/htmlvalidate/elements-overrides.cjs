@@ -28,4 +28,25 @@ module.exports = {
     inherit: "option",
     permittedContent: ["@phrasing", "span", "div"],
   },
+
+  // <layout-badge data-color="..."> — the generated elements.cjs only lists
+  // primary/success/warning/danger/info. VB themes also expose brand,
+  // secondary, accent, error and the demos showcase all of them. Widen the
+  // enum to match the full theme color token set.
+  "layout-badge": {
+    inherit: "layout-badge",
+    attributes: {
+      "data-color": { enum: ["primary", "secondary", "accent", "brand", "success", "warning", "danger", "error", "info"] },
+    },
+  },
+
+  // <combo-box filter="..."> — html-validate's enum matcher is case-
+  // insensitive for plain strings, so "startsWith" fails against
+  // ["contains","startsWith"]. Use a regex to preserve the camelCase.
+  "combo-box": {
+    inherit: "combo-box",
+    attributes: {
+      "filter": { enum: [/^(contains|startsWith)$/] },
+    },
+  },
 };
