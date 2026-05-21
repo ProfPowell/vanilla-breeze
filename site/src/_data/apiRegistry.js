@@ -5623,7 +5623,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "impact-effort": {
     "$schema": "../../../schemas/api.schema.json",
@@ -6288,7 +6294,13 @@ export default {
         "description": "Marks a descendant <a> as a candidate for active-state matching when the link list is wrapped (e.g. inside <li> or <drop-down>). When any descendant carries this attribute, those replace 'direct children' as the candidate set."
       }
     ],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "note-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -6498,7 +6510,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "page-toc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -6864,7 +6882,13 @@ export default {
         "name": "pager-wc:navigate",
         "description": "Bubbles before the target's data-paged engine processes the navigation. detail: { page }. Use for analytics / scroll-restore hooks."
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "palette-generator": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7047,7 +7071,13 @@ export default {
         "description": "Current user voted for this option"
       }
     ],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "pop-over": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7311,7 +7341,13 @@ export default {
         "detail": "{ initiative, fromLane, toLane, start, end }",
         "description": "Fired after a bar drops on a different lane"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "progress-tracker": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7369,7 +7405,13 @@ export default {
         "description": "Marks this step as errored regardless of position"
       }
     ],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "qr-code": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7544,7 +7586,13 @@ export default {
         "description": "Fired when a draggable child moves between quadrants"
       }
     ],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "quality-target": {
     "$schema": "../../../schemas/api.schema.json",
@@ -11147,7 +11195,13 @@ export default {
         },
         "description": "Bubbles from the inner button when the user stops watching"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "week-view": {
     "$schema": "../../../schemas/api.schema.json",

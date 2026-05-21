@@ -1009,6 +1009,8 @@ module.exports = {
   },
 
   "image-map": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "x": {},
       "y": {},
@@ -1117,6 +1119,8 @@ module.exports = {
   },
 
   "nav-bar": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "aria-label": {},
       "data-match": { enum: ["exact"] }
@@ -1155,6 +1159,8 @@ module.exports = {
   },
 
   "page-stats": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-for": {},
       "data-wpm": {},
@@ -1204,6 +1210,8 @@ module.exports = {
   },
 
   "pager-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "target": {},
       "for": {},
@@ -1226,6 +1234,8 @@ module.exports = {
   },
 
   "poll-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "aria-label": {},
       "data-multi": { boolean: true },
@@ -1269,6 +1279,8 @@ module.exports = {
   },
 
   "product-roadmap": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "start": {},
       "end": {},
@@ -1279,6 +1291,8 @@ module.exports = {
   },
 
   "progress-tracker": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-current": {},
       "data-clickable": { boolean: true },
@@ -1301,6 +1315,8 @@ module.exports = {
   },
 
   "quadrant-grid": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "x-label": {},
       "y-label": {},
@@ -1934,6 +1950,8 @@ module.exports = {
   },
 
   "watch-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "variant": { enum: ["icon", "compact", "button"] },
       "label": {},

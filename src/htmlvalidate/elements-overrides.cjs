@@ -29,6 +29,15 @@ module.exports = {
     permittedContent: ["@phrasing", "span", "div"],
   },
 
+  // <output> per spec only accepts phrasing, but VB feedback demos use
+  // it as a labeled status region containing icon + heading + prose.
+  // Widen to @flow so the feedback pattern lints cleanly while
+  // preserving the role="status"/"alert" semantics that drive ATs.
+  "output": {
+    inherit: "output",
+    permittedContent: ["@flow"],
+  },
+
   // <layout-badge data-color="..."> — the generated elements.cjs only lists
   // primary/success/warning/danger/info. VB themes also expose brand,
   // secondary, accent, error and the demos showcase all of them. Widen the
