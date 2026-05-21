@@ -24,7 +24,6 @@
       color: var(--color-text-muted);
     }
 
-    /* Gradient slides for the carousel */
     .slide {
       display: grid;
       place-items: center;
@@ -53,7 +52,6 @@
     .slide-3 { background: linear-gradient(135deg, oklch(65% 0.24 30), oklch(55% 0.2 60)); }
     .slide-4 { background: linear-gradient(135deg, oklch(55% 0.2 340), oklch(45% 0.18 280)); }
 
-    /* Content-swap card sizing */
     content-swap[card] {
       max-inline-size: 400px;
     }
@@ -71,7 +69,6 @@
       color: var(--color-text-muted);
     }
 
-    /* Theme picker bar */
     .theme-bar {
       display: flex;
       align-items: center;
@@ -88,7 +85,6 @@
       font-weight: 500;
     }
 
-    /* No-VT fallback notice */
     .vt-notice {
       display: none;
       padding: var(--size-m);
@@ -98,6 +94,8 @@
       font-size: var(--font-size-sm);
       color: var(--color-text-muted);
     }
+
+    .vt-notice[data-shown] { display: block; }
   </style>
 </head>
 <body>
@@ -115,114 +113,96 @@
       <theme-picker></theme-picker>
     </nav>
 
-    <div class="vt-notice" id="vt-notice">
+    <aside class="vt-notice" id="vt-notice">
       <strong>Note:</strong> Your browser does not support the View Transitions API. Components below still function but without animated transitions. Use Chrome 111+ or Safari 18+ for the full experience.
-    </div>
+    </aside>
 
-    <!-- Tabs with slide transition -->
     <section data-layout="stack" data-layout-gap="s">
       <h2>Tabs with Slide Transition</h2>
       <p class="section-desc">Navigate between tabs to see the slide animation. Each theme adjusts easing and duration for a different feel.</p>
       <tab-set transition="slide">
         <details name="features" open>
           <summary>Design</summary>
-          <div>
-            <p>Vanilla Breeze uses design tokens for every visual property -- colors, spacing, typography, and motion. Themes override these tokens at the root level, cascading changes through every component without a single line of custom CSS. The result is a cohesive visual language that adapts instantly to any brand identity.</p>
-          </div>
+          <p>Vanilla Breeze uses design tokens for every visual property -- colors, spacing, typography, and motion. Themes override these tokens at the root level, cascading changes through every component without a single line of custom CSS. The result is a cohesive visual language that adapts instantly to any brand identity.</p>
         </details>
         <details name="features">
           <summary>Performance</summary>
-          <div>
-            <p>View transitions leverage the browser's compositor thread, keeping animations at a smooth 60fps even on lower-powered devices. Because transitions run as GPU-accelerated snapshots, the main thread stays free for JavaScript work. Combined with native HTML elements like details/summary, the framework delivers rich interactivity with near-zero JavaScript overhead.</p>
-          </div>
+          <p>View transitions leverage the browser's compositor thread, keeping animations at a smooth 60fps even on lower-powered devices. Because transitions run as GPU-accelerated snapshots, the main thread stays free for JavaScript work. Combined with native HTML elements like details/summary, the framework delivers rich interactivity with near-zero JavaScript overhead.</p>
         </details>
         <details name="features">
           <summary>Accessibility</summary>
-          <div>
-            <p>Every component is built on native HTML semantics first, with ARIA attributes added only where browsers need extra context. Keyboard navigation follows WAI-ARIA patterns, and view transitions respect the prefers-reduced-motion media query automatically. Focus management ensures users always know where they are after a transition completes.</p>
-          </div>
+          <p>Every component is built on native HTML semantics first, with ARIA attributes added only where browsers need extra context. Keyboard navigation follows WAI-ARIA patterns, and view transitions respect the prefers-reduced-motion media query automatically. Focus management ensures users always know where they are after a transition completes.</p>
         </details>
       </tab-set>
     </section>
 
-    <!-- Carousel with fade transition -->
     <section data-layout="stack" data-layout-gap="s">
       <h2>Carousel with Fade Transition</h2>
       <p class="section-desc">Cycle through slides to see the fade animation. Themes with longer durations create a dreamy dissolve; faster themes feel snappy and direct.</p>
       <carousel-wc transition="fade" loop>
-        <div class="slide slide-1">
-          <div>
+        <article class="slide slide-1">
+          <section>
             <h3>Violet Aurora</h3>
             <p>Deep violet to magenta gradient evoking the shimmer of polar lights across a twilight sky.</p>
-          </div>
-        </div>
-        <div class="slide slide-2">
-          <div>
+          </section>
+        </article>
+        <article class="slide slide-2">
+          <section>
             <h3>Emerald Depths</h3>
             <p>Rich greens and teals inspired by sunlight filtering through a dense forest canopy.</p>
-          </div>
-        </div>
-        <div class="slide slide-3">
-          <div>
+          </section>
+        </article>
+        <article class="slide slide-3">
+          <section>
             <h3>Golden Hour</h3>
             <p>Warm oranges and ambers capturing the last minutes of daylight on a summer evening.</p>
-          </div>
-        </div>
-        <div class="slide slide-4">
-          <div>
+          </section>
+        </article>
+        <article class="slide slide-4">
+          <section>
             <h3>Berry Twilight</h3>
             <p>Raspberry and plum tones blending into the deep indigo of a fading sunset.</p>
-          </div>
-        </div>
+          </section>
+        </article>
       </carousel-wc>
     </section>
 
-    <!-- Content-swap with scale transition -->
     <section data-layout="stack" data-layout-gap="s">
       <h2>Content Swap with Scale Transition</h2>
       <p class="section-desc">Click the button to toggle between faces. The scale transition zooms content in and out, with each theme adjusting the intensity and timing curve.</p>
       <content-swap transition="scale" card>
-        <div data-face="front">
+        <article data-face="front">
           <h3>Before</h3>
           <p>The original layout uses fixed pixel values, media-query breakpoints at arbitrary widths, and utility classes scattered throughout the markup. Changes require updating dozens of files and testing every breakpoint by hand.</p>
           <button type="button" data-swap>Show After</button>
-        </div>
-        <div data-face="back">
+        </article>
+        <article data-face="back">
           <h3>After</h3>
           <p>With Vanilla Breeze, design tokens handle responsive scaling automatically. Fluid spacing adapts to the viewport, semantic HTML replaces utility class soup, and theme changes propagate everywhere through a single token override.</p>
           <button type="button" data-swap>Show Before</button>
-        </div>
+        </article>
       </content-swap>
     </section>
 
-    <!-- Accordion with fade transition -->
     <section data-layout="stack" data-layout-gap="s">
       <h2>Accordion with Fade Transition</h2>
       <p class="section-desc">Expand and collapse panels to watch the fade animation. Slower themes produce a gentle reveal; faster themes pop content into view.</p>
       <accordion-wc transition="fade" bordered>
         <details name="faq">
           <summary>What are view transitions?</summary>
-          <div>
-            <p>View transitions are a browser-native API that animates changes between DOM states. Instead of manually coordinating CSS transitions or JavaScript animation libraries, you describe the before and after states and the browser handles the in-between frames using GPU-accelerated snapshots.</p>
-          </div>
+          <p>View transitions are a browser-native API that animates changes between DOM states. Instead of manually coordinating CSS transitions or JavaScript animation libraries, you describe the before and after states and the browser handles the in-between frames using GPU-accelerated snapshots.</p>
         </details>
         <details name="faq">
           <summary>How do themes affect transitions?</summary>
-          <div>
-            <p>Each theme defines motion tokens that control animation duration, easing curves, and scale factors. A "Modern" theme might use short durations with spring-like easing for a bouncy feel, while a "Classic" theme might use longer durations with ease-in-out for a more stately, graceful motion.</p>
-          </div>
+          <p>Each theme defines motion tokens that control animation duration, easing curves, and scale factors. A "Modern" theme might use short durations with spring-like easing for a bouncy feel, while a "Classic" theme might use longer durations with ease-in-out for a more stately, graceful motion.</p>
         </details>
         <details name="faq">
           <summary>Do transitions work without JavaScript?</summary>
-          <div>
-            <p>The underlying components use native HTML elements like details/summary that function fully without JavaScript. View transitions are a progressive enhancement -- when the API is unavailable or when JavaScript is disabled, content changes happen instantly with no loss of functionality.</p>
-          </div>
+          <p>The underlying components use native HTML elements like details/summary that function fully without JavaScript. View transitions are a progressive enhancement -- when the API is unavailable or when JavaScript is disabled, content changes happen instantly with no loss of functionality.</p>
         </details>
         <details name="faq">
           <summary>What about reduced motion preferences?</summary>
-          <div>
-            <p>Vanilla Breeze respects the prefers-reduced-motion media query at every level. When a user has reduced motion enabled, view transition durations drop to near-instant values and scale/slide effects are replaced with simple crossfades or instant swaps, ensuring comfort for motion-sensitive users.</p>
-          </div>
+          <p>Vanilla Breeze respects the prefers-reduced-motion media query at every level. When a user has reduced motion enabled, view transition durations drop to near-instant values and scale/slide effects are replaced with simple crossfades or instant swaps, ensuring comfort for motion-sensitive users.</p>
         </details>
       </accordion-wc>
     </section>
@@ -234,7 +214,7 @@
     // Show notice if VT API is unavailable
     if (!document.startViewTransition) {
       const notice = document.getElementById('vt-notice');
-      if (notice) notice.style.display = 'block';
+      if (notice) notice.setAttribute('data-shown', '');
     }
   </script>
 </body>
