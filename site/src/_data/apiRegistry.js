@@ -7111,7 +7111,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "popularity-index": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7413,7 +7419,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "quadrant-grid": {
     "$schema": "../../../schemas/api.schema.json",
@@ -8350,7 +8362,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "share-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -8779,7 +8797,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "social-embed": {
     "$schema": "../../../schemas/api.schema.json",
@@ -8838,7 +8862,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "spacing-specimen": {
     "$schema": "../../../schemas/api.schema.json",
@@ -9084,7 +9114,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "status-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -9176,7 +9212,13 @@ export default {
         "name": "--status-gap",
         "description": "Gap between dot and label"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "stepper-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -9333,7 +9375,13 @@ export default {
         "name": "at-max",
         "description": "Value is at the upper bound"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "story-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -10130,7 +10178,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "topic-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -10906,7 +10960,13 @@ export default {
         "description": "Marks a <script type=\"application/json\"> child as the versions JSON source"
       }
     ],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "video-player": {
     "$schema": "../../../schemas/api.schema.json",
@@ -11020,7 +11080,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "watch-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -11346,6 +11412,12 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   }
 };

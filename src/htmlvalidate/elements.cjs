@@ -1236,6 +1236,8 @@ module.exports = {
   },
 
   "pop-over": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-mode": { enum: ["auto", "manual", "hint"] },
       "data-anchor": {},
@@ -1286,6 +1288,8 @@ module.exports = {
   },
 
   "qr-code": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "value": {},
       "size": {},
@@ -1439,6 +1443,8 @@ module.exports = {
   },
 
   "settings-panel": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "open": { boolean: true },
       "data-trigger": {},
@@ -1515,6 +1521,8 @@ module.exports = {
   },
 
   "slide-accept": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "label": {},
       "activated-label": {},
@@ -1531,6 +1539,8 @@ module.exports = {
   },
 
   "social-embed": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "url": {},
       "provider": {},
@@ -1570,6 +1580,8 @@ module.exports = {
   },
 
   "star-rating": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "name": {},
       "value": {},
@@ -1589,6 +1601,8 @@ module.exports = {
   },
 
   "status-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-variant": {},
       "data-size": {},
@@ -1602,6 +1616,8 @@ module.exports = {
   },
 
   "stepper-wc": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "value": {},
       "name": {},
@@ -1768,6 +1784,8 @@ module.exports = {
   },
 
   "tool-tip": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "content": {},
       "position": {},
@@ -1878,6 +1896,8 @@ module.exports = {
   },
 
   "version-switcher": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-versions": {},
       "data-src": {},
@@ -1892,6 +1912,8 @@ module.exports = {
   },
 
   "video-player": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "autoplay": { boolean: true },
       "loop": { boolean: true },
@@ -1947,6 +1969,8 @@ module.exports = {
   },
 
   "youtube-player": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "video-id": {},
       "title": {},

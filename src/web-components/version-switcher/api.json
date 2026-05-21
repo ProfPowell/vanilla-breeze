@@ -4,37 +4,158 @@
   "type": "web-component",
   "description": "Surface and switch between versions of a page over time. Inline data source + trigger + picker popover; three actions (navigate / swap / diff). Modes auto-derived from data shape (releases vs history).",
   "attributes": [
-    { "name": "data-versions",         "kind": "data", "purpose": "config", "type": "string", "description": "Inline JSON array of version entries: { id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }. Alternative: a <script type=\"application/json\" data-versions> child." },
-    { "name": "data-src",              "kind": "data", "purpose": "config", "type": "string", "description": "URL of a JSON manifest to fetch when no inline data is provided. Falls back to <meta name=\"vb:versions-manifest\"> if neither is set." },
-    { "name": "data-mode",             "kind": "data", "purpose": "config", "type": "string", "description": "\"releases\" | \"history\" — override the auto-detected mode" },
-    { "name": "data-action",           "kind": "data", "purpose": "config", "type": "string", "description": "\"navigate\" (default) | \"swap\" | \"diff\"" },
-    { "name": "data-versioned-region", "kind": "data", "purpose": "config", "type": "string", "description": "CSS selector for the swappable / diffable region (default: \"[data-versioned], main\")" },
-    { "name": "data-diff-position",    "kind": "data", "purpose": "config", "type": "string", "description": "\"before\" (default) | \"after\" — where to mount the diff render" },
-    { "name": "data-banner",           "kind": "data", "purpose": "config", "type": "boolean", "description": "Render an archived-version warning banner above the trigger when current is archived AND a non-archived \"latest\" exists." },
-    { "name": "data-page-info-target", "kind": "data", "purpose": "config", "type": "string", "description": "ID of a <page-info> to mount inside as a section in its expandable panel; standalone trigger is hidden in this mode." },
-    { "name": "aria-label",            "kind": "aria", "purpose": "config", "type": "string", "description": "Trigger / popover label (default \"Version\")" }
+    {
+      "name": "data-versions",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Inline JSON array of version entries: { id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }. Alternative: a <script type=\"application/json\" data-versions> child."
+    },
+    {
+      "name": "data-src",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "URL of a JSON manifest to fetch when no inline data is provided. Falls back to <meta name=\"vb:versions-manifest\"> if neither is set."
+    },
+    {
+      "name": "data-mode",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "\"releases\" | \"history\" \u2014 override the auto-detected mode"
+    },
+    {
+      "name": "data-action",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "\"navigate\" (default) | \"swap\" | \"diff\""
+    },
+    {
+      "name": "data-versioned-region",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "CSS selector for the swappable / diffable region (default: \"[data-versioned], main\")"
+    },
+    {
+      "name": "data-diff-position",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "\"before\" (default) | \"after\" \u2014 where to mount the diff render"
+    },
+    {
+      "name": "data-banner",
+      "kind": "data",
+      "purpose": "config",
+      "type": "boolean",
+      "description": "Render an archived-version warning banner above the trigger when current is archived AND a non-archived \"latest\" exists."
+    },
+    {
+      "name": "data-page-info-target",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "ID of a <page-info> to mount inside as a section in its expandable panel; standalone trigger is hidden in this mode."
+    },
+    {
+      "name": "aria-label",
+      "kind": "aria",
+      "purpose": "config",
+      "type": "string",
+      "description": "Trigger / popover label (default \"Version\")"
+    }
   ],
   "events": [
-    { "name": "version-switcher:open",            "description": "Picker popover opened" },
-    { "name": "version-switcher:close",           "description": "Picker popover closed" },
-    { "name": "version-switcher:select",          "detail": "{ entry }", "description": "Fires when an entry is selected (before the action runs)" },
-    { "name": "version-switcher:before-navigate", "detail": "{ entry }", "description": "Cancellable. Fires before location.href is set; preventDefault() blocks navigation." },
-    { "name": "version-switcher:before-swap",     "detail": "{ entry }", "description": "Cancellable. Fires before swap fetches and replaces the versioned region." },
-    { "name": "version-switcher:swap",            "detail": "{ entry, previousId }", "description": "Fires after swap completes. Versioned region replaced + vb:version meta updated." },
-    { "name": "version-switcher:before-diff",     "detail": "{ entry }", "description": "Cancellable. Fires before diff fetches the other version." },
-    { "name": "version-switcher:diff",            "detail": "{ entry, previousId, diffElement, opCount }", "description": "Fires after diff renders. diffElement is the mounted <change-set>." },
-    { "name": "version-switcher:error",           "detail": "{ message, entry?, error? }", "description": "Parse / fetch / action failure" }
+    {
+      "name": "version-switcher:open",
+      "description": "Picker popover opened"
+    },
+    {
+      "name": "version-switcher:close",
+      "description": "Picker popover closed"
+    },
+    {
+      "name": "version-switcher:select",
+      "detail": "{ entry }",
+      "description": "Fires when an entry is selected (before the action runs)"
+    },
+    {
+      "name": "version-switcher:before-navigate",
+      "detail": "{ entry }",
+      "description": "Cancellable. Fires before location.href is set; preventDefault() blocks navigation."
+    },
+    {
+      "name": "version-switcher:before-swap",
+      "detail": "{ entry }",
+      "description": "Cancellable. Fires before swap fetches and replaces the versioned region."
+    },
+    {
+      "name": "version-switcher:swap",
+      "detail": "{ entry, previousId }",
+      "description": "Fires after swap completes. Versioned region replaced + vb:version meta updated."
+    },
+    {
+      "name": "version-switcher:before-diff",
+      "detail": "{ entry }",
+      "description": "Cancellable. Fires before diff fetches the other version."
+    },
+    {
+      "name": "version-switcher:diff",
+      "detail": "{ entry, previousId, diffElement, opCount }",
+      "description": "Fires after diff renders. diffElement is the mounted <change-set>."
+    },
+    {
+      "name": "version-switcher:error",
+      "detail": "{ message, entry?, error? }",
+      "description": "Parse / fetch / action failure"
+    }
   ],
   "properties": [
-    { "name": "versions",    "type": "VersionEntry[]", "description": "Resolved version entries" },
-    { "name": "currentId",   "type": "string|null",    "description": "Id of the current entry" },
-    { "name": "openPicker",  "type": "() => void" },
-    { "name": "closePicker", "type": "() => void" },
-    { "name": "switchTo",    "type": "(id) => void",   "description": "Programmatic selection; honors data-action" },
-    { "name": "refresh",     "type": "() => void",     "description": "Re-resolve the data source" }
+    {
+      "name": "versions",
+      "type": "VersionEntry[]",
+      "description": "Resolved version entries"
+    },
+    {
+      "name": "currentId",
+      "type": "string|null",
+      "description": "Id of the current entry"
+    },
+    {
+      "name": "openPicker",
+      "type": "() => void"
+    },
+    {
+      "name": "closePicker",
+      "type": "() => void"
+    },
+    {
+      "name": "switchTo",
+      "type": "(id) => void",
+      "description": "Programmatic selection; honors data-action"
+    },
+    {
+      "name": "refresh",
+      "type": "() => void",
+      "description": "Re-resolve the data source"
+    }
   ],
   "childAttributes": [
-    { "name": "data-versions", "on": "script", "type": "boolean", "description": "Marks a <script type=\"application/json\"> child as the versions JSON source" }
+    {
+      "name": "data-versions",
+      "on": "script",
+      "type": "boolean",
+      "description": "Marks a <script type=\"application/json\"> child as the versions JSON source"
+    }
   ],
-  "structure": []
+  "structure": [],
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": [
+      "@flow"
+    ]
+  }
 }

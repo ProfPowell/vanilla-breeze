@@ -49,4 +49,24 @@ module.exports = {
       "filter": { enum: [/^(contains|startsWith)$/] },
     },
   },
+
+  // Customizable-select <selectedcontent> proposal — Chrome+WebKit ship
+  // this; the html5 lib doesn't know the tag yet.
+  "selectedcontent": { flow: true, phrasing: true, permittedContent: ["@phrasing"] },
+
+  // VB elements referenced by demos but without manifest sources yet.
+  // Permit them as generic flow containers so lint can validate
+  // surrounding markup. When real manifests land, the generator-emitted
+  // entry in elements.cjs will take precedence.
+  "tour-step":       { flow: true, permittedContent: ["@flow"] },
+  "map-area":        { flow: true, permittedContent: ["@flow"] },
+  "screen-saver":    { flow: true, permittedContent: ["@flow"] },
+  "terminal-window": { flow: true, permittedContent: ["@flow"] },
+  "pdf-viewer":      { flow: true, permittedContent: ["@flow"] },
+  "image-editor":    { flow: true, permittedContent: ["@flow"] },
+
+  // CSS-only custom elements (style + structure, no JS logic, no manifest).
+  "token-swatch":    { flow: true, phrasing: true, permittedContent: ["@phrasing"] },
+  "layout-columns":  { flow: true, permittedContent: ["@flow"] },
+  "layout-canvas":   { flow: true, permittedContent: ["@flow"] },
 };
