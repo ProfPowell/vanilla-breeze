@@ -9,10 +9,6 @@
   <link rel="stylesheet" href="/src/main.css"/>
   <link rel="stylesheet" href="/docs/docs.css"/>
   <style>
-    /* ==========================================================================
-       PAGE STYLES
-       ========================================================================== */
-
     body {
       padding: var(--size-l);
       background: var(--color-background);
@@ -34,13 +30,11 @@
       margin-bottom: var(--size-l);
     }
 
-    /* Nav back link */
     .back-link {
       display: inline-block;
       margin-bottom: var(--size-l);
     }
 
-    /* Demo container */
     .demo-panel {
       border: 1px solid var(--color-border);
       border-radius: var(--radius-m);
@@ -70,6 +64,16 @@
       overflow: hidden;
     }
 
+    .demo-area[data-mockup-h="300"] { height: 300px; }
+    .demo-area[data-mockup-h="350"] { height: 350px; }
+    .demo-area[data-mockup-h="auto"] {
+      height: auto;
+      min-height: auto;
+      padding: var(--size-m);
+    }
+
+    .demo-area > [data-layout^="body-"] { min-height: 100%; }
+
     .code-area {
       padding: var(--size-m);
       background: var(--color-gray-900);
@@ -86,7 +90,8 @@
       word-break: break-word;
     }
 
-    /* Layout demo elements */
+    .code-area[data-bordered="no"] { border-top: none; }
+
     .demo-header {
       padding: var(--size-m);
       background: var(--color-gray-200);
@@ -122,6 +127,20 @@
       color: var(--color-text-muted);
     }
 
+    .demo-main[data-mockup-content="article"] {
+      text-align: left;
+      display: block;
+      padding: var(--size-l);
+    }
+
+    .demo-main[data-mockup-content="article"] :is(h2, p) {
+      margin: 0 0 var(--size-s) 0;
+    }
+
+    .demo-main[data-mockup-content="article"] p:last-child {
+      margin-block-end: 0;
+    }
+
     .demo-aside {
       padding: var(--size-m);
       background: var(--color-gray-100);
@@ -136,34 +155,14 @@
       color: var(--color-text-muted);
     }
 
-    /* Layout switcher controls */
-    .layout-controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--size-s);
-      margin-bottom: var(--size-m);
+    .demo-area[data-mockup-flavor="dashboard"] .demo-header,
+    .demo-area[data-mockup-flavor="dashboard"] .demo-nav {
+      position: relative;
+    }
+    .demo-area[data-mockup-flavor="dashboard"] .demo-nav {
+      max-height: none;
     }
 
-    .layout-controls button {
-      padding: var(--size-xs) var(--size-m);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-s);
-      cursor: pointer;
-      font-size: var(--font-size-sm);
-    }
-
-    .layout-controls button:hover {
-      background: var(--color-surface-raised);
-    }
-
-    .layout-controls button.active {
-      background: var(--color-primary);
-      color: var(--color-text-inverted);
-      border-color: var(--color-primary);
-    }
-
-    /* Feature highlight */
     .feature-box {
       padding: var(--size-m);
       background: var(--color-primary-subtle);
@@ -172,12 +171,13 @@
       margin: var(--size-m) 0;
     }
 
-    .feature-box h3 {
+    .feature-box h2 {
       margin: 0 0 var(--size-s) 0;
+      padding-block-start: 0;
+      border-block-start: none;
       color: var(--color-primary);
     }
 
-    /* Token display */
     .token-display {
       font-family: var(--font-mono);
       font-size: var(--font-size-sm);
@@ -187,6 +187,65 @@
       border-radius: var(--radius-m);
       overflow-x: auto;
       margin: var(--size-m) 0;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-l);
+    }
+
+    .region-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      overflow: hidden;
+    }
+
+    .region-card > header {
+      padding: var(--size-s) var(--size-m);
+      background: var(--color-surface-raised);
+      border-bottom: 1px solid var(--color-border);
+      font-weight: 600;
+    }
+
+    .region-card > section {
+      padding: var(--size-s) var(--size-m);
+    }
+
+    .region-card > section p { margin: 0; }
+
+    .region-card > footer {
+      padding: var(--size-xs) var(--size-m);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      background: var(--color-surface-raised);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .feed-card {
+      padding: var(--size-m);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+    .feed-card p { margin-block-start: var(--size-2xs); }
+    .avatar-rounded { border-radius: 50%; }
+
+    .layouts-table {
+      inline-size: 100%;
+      border-collapse: collapse;
+    }
+    .layouts-table thead tr {
+      text-align: left;
+      border-bottom: 2px solid var(--color-border);
+    }
+    .layouts-table tbody tr {
+      border-bottom: 1px solid var(--color-border);
+    }
+    .layouts-table tbody tr:last-child {
+      border-bottom: none;
+    }
+    .layouts-table :is(th, td) {
+      padding: var(--size-s);
     }
   </style>
 </head>
@@ -201,16 +260,15 @@
     <h1>Grid Identity System</h1>
     <p class="lead">A three-tier system where semantic HTML elements automatically register their grid areas. Pure separation of concerns: HTML declares structure, CSS assigns layout. See also <a href="/docs/grid-identity/">full documentation</a>.</p>
 
-    <div class="feature-box">
+    <aside class="feature-box">
       <h2>Zen Garden Architecture</h2>
       <p>This system implements the CSS Zen Garden principle: the same semantic HTML transforms through pure CSS. No wrapper elements, no layout components - just <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;footer&gt;</code>.</p>
-    </div>
+    </aside>
 
-    <!-- ========== LAYOUT TEMPLATE TOKENS ========== -->
     <h2>Layout Template Tokens</h2>
     <p>Grid templates are stored as CSS custom properties, making them reusable and easy to customize.</p>
 
-    <div class="token-display">
+    <figure class="token-display">
 <pre>:root {
   --tpl-stack:
     "body-header" auto
@@ -231,29 +289,27 @@
     "body-footer body-footer body-footer" auto
     / var(--_sidebar-width) 1fr var(--_sidebar-width);
 }</pre>
-    </div>
+    </figure>
 
-    <!-- ========== GRID IDENTITY ========== -->
     <h2>Grid Identity Layer</h2>
     <p>Semantic elements auto-register their grid areas based on DOM position. No classes needed.</p>
 
-    <div class="token-display">
+    <figure class="token-display">
 <pre>/* Semantic elements auto-register */
 body[data-layout] &gt; header { grid-area: body-header; }
 body[data-layout] &gt; nav    { grid-area: body-nav; }
 body[data-layout] &gt; main   { grid-area: body-main; }
 body[data-layout] &gt; aside  { grid-area: body-aside; }
 body[data-layout] &gt; footer { grid-area: body-footer; }</pre>
-    </div>
+    </figure>
 
-    <!-- ========== SIDEBAR LEFT ========== -->
     <h2>Body Sidebar Left Layout</h2>
     <p>Two-column layout with navigation on the left. Apply <code>data-layout="body-sidebar-left"</code> to the body.</p>
 
     <figure class="demo-panel">
       <strong class="demo-label feature">body-sidebar-left</strong>
-      <div class="demo-area" style="height: 350px;" inert>
-        <div data-layout="body-sidebar-left" style="min-height: 100%;">
+      <section class="demo-area" data-mockup-h="350" inert>
+        <section data-layout="body-sidebar-left">
           <header class="demo-header">Header</header>
           <nav class="demo-nav">
             <ul>
@@ -265,8 +321,8 @@ body[data-layout] &gt; footer { grid-area: body-footer; }</pre>
           </nav>
           <main class="demo-main">Main Content Area</main>
           <footer class="demo-footer">Footer</footer>
-        </div>
-      </div>
+        </section>
+      </section>
       <figcaption class="code-area">
         <pre>&lt;body data-layout="body-sidebar-left"&gt;
   &lt;header&gt;Header&lt;/header&gt;
@@ -277,14 +333,13 @@ body[data-layout] &gt; footer { grid-area: body-footer; }</pre>
       </figcaption>
     </figure>
 
-    <!-- ========== HOLY GRAIL ========== -->
     <h2>Body Holy Grail Layout</h2>
     <p>Classic three-column layout with nav, main, and aside.</p>
 
     <figure class="demo-panel">
       <strong class="demo-label feature">body-holy-grail</strong>
-      <div class="demo-area" style="height: 350px;" inert>
-        <div data-layout="body-holy-grail" style="min-height: 100%;">
+      <section class="demo-area" data-mockup-h="350" inert>
+        <section data-layout="body-holy-grail">
           <header class="demo-header">Header</header>
           <nav class="demo-nav">
             <ul>
@@ -300,8 +355,8 @@ body[data-layout] &gt; footer { grid-area: body-footer; }</pre>
             <p>Related content, ads, or supplementary information.</p>
           </aside>
           <footer class="demo-footer">Footer</footer>
-        </div>
-      </div>
+        </section>
+      </section>
       <figcaption class="code-area">
         <pre>&lt;body data-layout="body-holy-grail"&gt;
   &lt;header&gt;Header&lt;/header&gt;
@@ -313,7 +368,6 @@ body[data-layout] &gt; footer { grid-area: body-footer; }</pre>
       </figcaption>
     </figure>
 
-    <!-- ========== CONTENT-AWARE LAYOUTS ========== -->
     <h2>Content-Aware Layouts (:has() Powered)</h2>
     <p>The layout automatically adapts when elements are present or absent. CSS reads HTML structure and responds accordingly.</p>
 
@@ -322,8 +376,8 @@ body[data-layout] &gt; footer { grid-area: body-footer; }</pre>
 
     <figure class="demo-panel">
       <strong class="demo-label feature">:has() adaptation - no aside</strong>
-      <div class="demo-area" style="height: 300px;" inert>
-        <div data-layout="body-holy-grail" style="min-height: 100%;">
+      <section class="demo-area" data-mockup-h="300" inert>
+        <section data-layout="body-holy-grail">
           <header class="demo-header">Header</header>
           <nav class="demo-nav">
             <ul>
@@ -334,8 +388,8 @@ body[data-layout] &gt; footer { grid-area: body-footer; }</pre>
           </nav>
           <main class="demo-main">Main Content (aside absent - layout adapts!)</main>
           <footer class="demo-footer">Footer</footer>
-        </div>
-      </div>
+        </section>
+      </section>
       <figcaption class="code-area">
         <pre>&lt;body data-layout="body-holy-grail"&gt;
   &lt;header&gt;Header&lt;/header&gt;
@@ -356,16 +410,15 @@ body[data-layout="body-holy-grail"]:not(:has(&gt; aside)) {
       </figcaption>
     </figure>
 
-    <!-- ========== DASHBOARD ========== -->
     <h2>Body Dashboard Layout</h2>
     <p>Admin panel style with sticky header and sidebar navigation.</p>
 
     <figure class="demo-panel">
       <strong class="demo-label feature">body-dashboard</strong>
-      <div class="demo-area" style="height: 350px;" inert>
-        <div data-layout="body-dashboard" style="min-height: 100%;">
-          <header class="demo-header" style="position: relative;">Dashboard Header</header>
-          <nav class="demo-nav" style="position: relative; max-height: none;">
+      <section class="demo-area" data-mockup-h="350" data-mockup-flavor="dashboard" inert>
+        <section data-layout="body-dashboard">
+          <header class="demo-header">Dashboard Header</header>
+          <nav class="demo-nav">
             <ul>
               <li><a href="#">Overview</a></li>
               <li><a href="#">Users</a></li>
@@ -375,8 +428,8 @@ body[data-layout="body-holy-grail"]:not(:has(&gt; aside)) {
             </ul>
           </nav>
           <main class="demo-main">Dashboard Content</main>
-        </div>
-      </div>
+        </section>
+      </section>
       <figcaption class="code-area">
         <pre>&lt;body data-layout="body-dashboard"&gt;
   &lt;header&gt;Dashboard Header&lt;/header&gt;
@@ -390,23 +443,22 @@ body[data-layout="body-holy-grail"]:not(:has(&gt; aside)) {
       </figcaption>
     </figure>
 
-    <!-- ========== ARTICLE LAYOUT ========== -->
     <h2>Body Article Layout</h2>
     <p>Centered content layout optimized for reading. Content is constrained to a readable width.</p>
 
     <figure class="demo-panel">
       <strong class="demo-label feature">body-article</strong>
-      <div class="demo-area" style="height: 300px;" inert>
-        <div data-layout="body-article" style="min-height: 100%;">
+      <section class="demo-area" data-mockup-h="300" inert>
+        <section data-layout="body-article">
           <header class="demo-header">Site Header</header>
-          <main class="demo-main" style="text-align: left; display: block; padding: var(--size-l);">
-            <h2 style="margin: 0 0 var(--size-m) 0;">Article Title</h2>
-            <p style="margin: 0 0 var(--size-s) 0;">This is article content that is centered on the page with a maximum width for optimal readability. Long lines of text are harder to read because the eye has difficulty tracking from the end of one line to the beginning of the next.</p>
-            <p style="margin: 0;">The content is constrained to approximately 65 characters per line (65ch), which is the recommended measure for comfortable reading.</p>
+          <main class="demo-main" data-mockup-content="article">
+            <h2>Article Title</h2>
+            <p>This is article content that is centered on the page with a maximum width for optimal readability. Long lines of text are harder to read because the eye has difficulty tracking from the end of one line to the beginning of the next.</p>
+            <p>The content is constrained to approximately 65 characters per line (65ch), which is the recommended measure for comfortable reading.</p>
           </main>
           <footer class="demo-footer">Footer</footer>
-        </div>
-      </div>
+        </section>
+      </section>
       <figcaption class="code-area">
         <pre>&lt;body data-layout="body-article"&gt;
   &lt;header&gt;Site Header&lt;/header&gt;
@@ -421,12 +473,11 @@ body[data-layout="body-holy-grail"]:not(:has(&gt; aside)) {
       </figcaption>
     </figure>
 
-    <!-- ========== UTILITIES ========== -->
     <h2>Layout Utilities</h2>
     <p>Additional data attributes for fine-tuning layouts.</p>
 
     <h3>Sticky Header</h3>
-    <div class="token-display">
+    <figure class="token-display">
 <pre>&lt;header data-layout-sticky&gt;Stays at top when scrolling&lt;/header&gt;
 
 /* CSS */
@@ -435,10 +486,10 @@ body[data-layout] &gt; header[data-layout-sticky] {
   top: 0;
   z-index: var(--z-sticky, 100);
 }</pre>
-    </div>
+    </figure>
 
     <h3>Sticky Sidebar</h3>
-    <div class="token-display">
+    <figure class="token-display">
 <pre>&lt;nav data-layout-sticky&gt;Sticky navigation&lt;/nav&gt;
 
 /* CSS */
@@ -449,10 +500,10 @@ body[data-layout] &gt; nav[data-layout-sticky] {
   max-height: 100dvh;
   overflow-y: auto;
 }</pre>
-    </div>
+    </figure>
 
     <h3>Sidebar States</h3>
-    <div class="token-display">
+    <figure class="token-display">
 <pre>&lt;!-- Collapsed sidebar --&gt;
 &lt;body data-layout="body-sidebar-left" data-sidebar="collapsed"&gt;
 
@@ -467,27 +518,26 @@ body[data-layout][data-sidebar="collapsed"] {
 body[data-layout][data-sidebar="hidden"] &gt; nav {
   display: none;
 }</pre>
-    </div>
+    </figure>
 
     <h3>Full-Bleed Elements</h3>
-    <div class="token-display">
+    <figure class="token-display">
 <pre>&lt;!-- Element spans all columns --&gt;
-&lt;div data-layout-bleed&gt;Full-width banner&lt;/div&gt;
+&lt;section data-layout-bleed&gt;Full-width banner&lt;/section&gt;
 
 /* CSS */
 body[data-layout] &gt; [data-layout-bleed] {
   grid-column: 1 / -1;
 }</pre>
-    </div>
+    </figure>
 
-    <!-- ========== COMPARISON ========== -->
     <h2>Before vs After</h2>
     <p>Compare the old wrapper-based approach with the new semantic approach.</p>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--size-l);">
+    <section class="compare-grid">
       <figure class="demo-panel">
         <strong class="demo-label">Before (Wrapper Elements)</strong>
-        <div class="code-area" style="border-top: none;">
+        <section class="code-area" data-bordered="no">
           <pre>&lt;layout-sidebar data-layout-gap="m"&gt;
   &lt;layout-stack&gt;
     &lt;nav&gt;...&lt;/nav&gt;
@@ -496,148 +546,145 @@ body[data-layout] &gt; [data-layout-bleed] {
     &lt;main&gt;...&lt;/main&gt;
   &lt;/layout-stack&gt;
 &lt;/layout-sidebar&gt;</pre>
-        </div>
+        </section>
       </figure>
 
       <figure class="demo-panel">
         <strong class="demo-label feature">After (Grid Identity)</strong>
-        <div class="code-area" style="border-top: none;">
+        <section class="code-area" data-bordered="no">
           <pre>&lt;body data-layout="body-sidebar-left" data-layout-gap="m"&gt;
   &lt;header&gt;Site Header&lt;/header&gt;
   &lt;nav&gt;Navigation&lt;/nav&gt;
   &lt;main&gt;Content&lt;/main&gt;
   &lt;footer&gt;Footer&lt;/footer&gt;
 &lt;/body&gt;</pre>
-        </div>
+        </section>
       </figure>
-    </div>
+    </section>
 
-    <!-- ========== SUMMARY ========== -->
     <h2>Available Body Layouts</h2>
-    <table style="inline-size: 100%; border-collapse: collapse;">
+    <table class="layouts-table">
       <thead>
-        <tr style="text-align: left; border-bottom: 2px solid var(--color-border);">
-          <th scope="col" style="padding: var(--size-s);">Layout</th>
-          <th scope="col" style="padding: var(--size-s);">Template Token</th>
-          <th scope="col" style="padding: var(--size-s);">Description</th>
+        <tr>
+          <th scope="col">Layout</th>
+          <th scope="col">Template Token</th>
+          <th scope="col">Description</th>
         </tr>
       </thead>
       <tbody>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>body-stack</code></td>
-          <td style="padding: var(--size-s);"><code>--tpl-stack</code></td>
-          <td style="padding: var(--size-s);">Single column, mobile-first</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>body-sidebar-left</code></td>
-          <td style="padding: var(--size-s);"><code>--tpl-sidebar-left</code></td>
-          <td style="padding: var(--size-s);">Two-column with left nav</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>body-sidebar-right</code></td>
-          <td style="padding: var(--size-s);"><code>--tpl-sidebar-right</code></td>
-          <td style="padding: var(--size-s);">Two-column with right sidebar</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>body-holy-grail</code></td>
-          <td style="padding: var(--size-s);"><code>--tpl-holy-grail</code></td>
-          <td style="padding: var(--size-s);">Three-column classic layout</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>body-app-shell</code></td>
-          <td style="padding: var(--size-s);"><code>--tpl-app-shell</code></td>
-          <td style="padding: var(--size-s);">Vertical nav bar</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>body-dashboard</code></td>
-          <td style="padding: var(--size-s);"><code>--tpl-dashboard</code></td>
-          <td style="padding: var(--size-s);">Admin panel style</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>body-article</code></td>
-          <td style="padding: var(--size-s);"><code>--tpl-article</code></td>
-          <td style="padding: var(--size-s);">Centered reading layout</td>
+        <tr>
+          <td><code>body-stack</code></td>
+          <td><code>--tpl-stack</code></td>
+          <td>Single column, mobile-first</td>
         </tr>
         <tr>
-          <td style="padding: var(--size-s);"><code>body-landing</code></td>
-          <td style="padding: var(--size-s);"><code>--tpl-landing</code></td>
-          <td style="padding: var(--size-s);">Marketing page sections</td>
+          <td><code>body-sidebar-left</code></td>
+          <td><code>--tpl-sidebar-left</code></td>
+          <td>Two-column with left nav</td>
+        </tr>
+        <tr>
+          <td><code>body-sidebar-right</code></td>
+          <td><code>--tpl-sidebar-right</code></td>
+          <td>Two-column with right sidebar</td>
+        </tr>
+        <tr>
+          <td><code>body-holy-grail</code></td>
+          <td><code>--tpl-holy-grail</code></td>
+          <td>Three-column classic layout</td>
+        </tr>
+        <tr>
+          <td><code>body-app-shell</code></td>
+          <td><code>--tpl-app-shell</code></td>
+          <td>Vertical nav bar</td>
+        </tr>
+        <tr>
+          <td><code>body-dashboard</code></td>
+          <td><code>--tpl-dashboard</code></td>
+          <td>Admin panel style</td>
+        </tr>
+        <tr>
+          <td><code>body-article</code></td>
+          <td><code>--tpl-article</code></td>
+          <td>Centered reading layout</td>
+        </tr>
+        <tr>
+          <td><code>body-landing</code></td>
+          <td><code>--tpl-landing</code></td>
+          <td>Marketing page sections</td>
         </tr>
       </tbody>
     </table>
 
-    <!-- ========== COMPONENT REGIONS ========== -->
     <h2>Component Regions</h2>
     <p><code>data-layout="regions"</code> creates a header / content / footer grid on any element. Semantic children auto-place to named areas.</p>
 
     <figure class="demo-panel">
       <strong class="demo-label feature">data-layout="regions"</strong>
-      <div class="demo-area" style="height: auto; min-height: auto; padding: var(--size-m);" inert>
-        <div data-layout="grid" data-layout-min="12rem" data-layout-gap="m">
-          <article data-layout="regions" data-layout-gap="s" style="border: 1px solid var(--color-border); border-radius: var(--radius-m); overflow: hidden;">
-            <header style="padding: var(--size-s) var(--size-m); background: var(--color-surface-raised); border-bottom: 1px solid var(--color-border); font-weight: 600;">Performance</header>
-            <section style="padding: var(--size-s) var(--size-m);"><p style="margin:0;">Optimized for speed.</p></section>
-            <footer style="padding: var(--size-xs) var(--size-m); font-size: var(--font-size-sm); color: var(--color-text-muted); background: var(--color-surface-raised); border-top: 1px solid var(--color-border);">Core feature</footer>
+      <section class="demo-area" data-mockup-h="auto" inert>
+        <layout-grid data-layout-min="12rem" data-layout-gap="m">
+          <article data-layout="regions" data-layout-gap="s" class="region-card">
+            <header>Performance</header>
+            <section><p>Optimized for speed.</p></section>
+            <footer>Core feature</footer>
           </article>
-          <article data-layout="regions" data-layout-gap="s" style="border: 1px solid var(--color-border); border-radius: var(--radius-m); overflow: hidden;">
-            <header style="padding: var(--size-s) var(--size-m); background: var(--color-surface-raised); border-bottom: 1px solid var(--color-border); font-weight: 600;">Accessibility</header>
-            <section style="padding: var(--size-s) var(--size-m);"><p style="margin:0;">WCAG 2.1 AA compliant.</p></section>
-            <footer style="padding: var(--size-xs) var(--size-m); font-size: var(--font-size-sm); color: var(--color-text-muted); background: var(--color-surface-raised); border-top: 1px solid var(--color-border);">Built-in</footer>
+          <article data-layout="regions" data-layout-gap="s" class="region-card">
+            <header>Accessibility</header>
+            <section><p>WCAG 2.1 AA compliant.</p></section>
+            <footer>Built-in</footer>
           </article>
-          <article data-layout="regions" data-layout-gap="s" style="border: 1px solid var(--color-border); border-radius: var(--radius-m); overflow: hidden;">
-            <header style="padding: var(--size-s) var(--size-m); background: var(--color-surface-raised); border-bottom: 1px solid var(--color-border); font-weight: 600;">Theming</header>
-            <section style="padding: var(--size-s) var(--size-m);"><p style="margin:0;">Full design token control.</p></section>
-            <footer style="padding: var(--size-xs) var(--size-m); font-size: var(--font-size-sm); color: var(--color-text-muted); background: var(--color-surface-raised); border-top: 1px solid var(--color-border);">Customizable</footer>
+          <article data-layout="regions" data-layout-gap="s" class="region-card">
+            <header>Theming</header>
+            <section><p>Full design token control.</p></section>
+            <footer>Customizable</footer>
           </article>
-        </div>
-      </div>
+        </layout-grid>
+      </section>
       <figcaption class="code-area">
-        <pre>&lt;div data-layout="grid" data-layout-min="12rem"&gt;
+        <pre>&lt;layout-grid data-layout-min="12rem"&gt;
   &lt;article data-layout="regions" data-layout-gap="s"&gt;
     &lt;header&gt;Performance&lt;/header&gt;
     &lt;section&gt;&lt;p&gt;Optimized for speed.&lt;/p&gt;&lt;/section&gt;
     &lt;footer&gt;Core feature&lt;/footer&gt;
   &lt;/article&gt;
   &lt;!-- repeat for each card --&gt;
-&lt;/div&gt;</pre>
+&lt;/layout-grid&gt;</pre>
       </figcaption>
     </figure>
 
-    <!-- ========== MEDIA OBJECT ========== -->
     <h2>Media Object</h2>
     <p><code>data-layout="media"</code> places a figure and content side by side. The most common component pattern on the web.</p>
 
     <figure class="demo-panel">
       <strong class="demo-label feature">data-layout="media"</strong>
-      <div class="demo-area" style="height: auto; min-height: auto; padding: var(--size-m);" inert>
-        <div data-layout="stack" data-layout-gap="m">
-          <div data-layout="media" data-layout-gap="m" style="padding: var(--size-m); border: 1px solid var(--color-border); border-radius: var(--radius-m);">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='24' fill='%236366f1'/%3E%3Ctext x='24' y='30' text-anchor='middle' fill='white' font-size='18' font-family='system-ui'%3EAB%3C/text%3E%3C/svg%3E" alt="" width="48" height="48" style="border-radius: 50%;" />
-            <div>
+      <section class="demo-area" data-mockup-h="auto" inert>
+        <section data-layout="stack" data-layout-gap="m">
+          <article data-layout="media" data-layout-gap="m" class="feed-card">
+            <img class="avatar-rounded" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='24' fill='%236366f1'/%3E%3Ctext x='24' y='30' text-anchor='middle' fill='white' font-size='18' font-family='system-ui'%3EAB%3C/text%3E%3C/svg%3E" alt="" width="48" height="48" />
+            <section>
               <strong>Alice Brown</strong>
-              <p style="margin: var(--size-2xs) 0 0;">Deployed v2.1.0 to production. All health checks passing.</p>
-            </div>
-          </div>
-          <div data-layout="media" data-layout-gap="m" data-layout-reverse style="padding: var(--size-m); border: 1px solid var(--color-border); border-radius: var(--radius-m);">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='24' fill='%2310b981'/%3E%3Ctext x='24' y='30' text-anchor='middle' fill='white' font-size='18' font-family='system-ui'%3ECM%3C/text%3E%3C/svg%3E" alt="" width="48" height="48" style="border-radius: 50%;" />
-            <div>
+              <p>Deployed v2.1.0 to production. All health checks passing.</p>
+            </section>
+          </article>
+          <article data-layout="media" data-layout-gap="m" data-layout-reverse class="feed-card">
+            <img class="avatar-rounded" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='24' fill='%2310b981'/%3E%3Ctext x='24' y='30' text-anchor='middle' fill='white' font-size='18' font-family='system-ui'%3ECM%3C/text%3E%3C/svg%3E" alt="" width="48" height="48" />
+            <section>
               <strong>Carlos Martinez</strong> (reversed)
-              <p style="margin: var(--size-2xs) 0 0;">Merged PR #247: Container query support for media layout.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+              <p>Merged PR #247: Container query support for media layout.</p>
+            </section>
+          </article>
+        </section>
+      </section>
       <figcaption class="code-area">
-        <pre>&lt;div data-layout="media" data-layout-gap="m"&gt;
+        <pre>&lt;article data-layout="media" data-layout-gap="m"&gt;
   &lt;img src="avatar.jpg" alt="" width="48" height="48"&gt;
-  &lt;div&gt;
+  &lt;section&gt;
     &lt;strong&gt;Alice Brown&lt;/strong&gt;
     &lt;p&gt;Deployed v2.1.0 to production.&lt;/p&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+  &lt;/section&gt;
+&lt;/article&gt;
 
 &lt;!-- Reversed --&gt;
-&lt;div data-layout="media" data-layout-reverse&gt;...&lt;/div&gt;</pre>
+&lt;article data-layout="media" data-layout-reverse&gt;...&lt;/article&gt;</pre>
       </figcaption>
     </figure>
 
