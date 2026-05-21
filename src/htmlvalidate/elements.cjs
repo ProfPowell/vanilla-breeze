@@ -1178,6 +1178,8 @@ module.exports = {
   },
 
   "page-tools": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-position": {},
       "data-orientation": {},
@@ -1364,6 +1366,8 @@ module.exports = {
   },
 
   "reader-view": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "upgraded": {},
       "mode": {},
@@ -1381,6 +1385,8 @@ module.exports = {
   },
 
   "reading-progress": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-for": {},
       "data-position": {}
@@ -1424,6 +1430,8 @@ module.exports = {
   },
 
   "risk-register": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "src": {},
       "label": {}
@@ -1490,7 +1498,8 @@ module.exports = {
   },
 
   "short-cuts": {
-
+    flow: true,
+    permittedContent: ["@flow"]
   },
 
   "site-index": {
@@ -1670,7 +1679,7 @@ module.exports = {
 
   "tab-set": {
     flow: true,
-    permittedContent: ["details"],
+    permittedContent: ["details", "nav", "section", "@script"],
     attributes: {
       "aria-label": {},
       "transition": { enum: ["fade", "slide", "scale"] }
@@ -1828,6 +1837,8 @@ module.exports = {
   },
 
   "traceability-matrix": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "rows": {},
       "cols": {},
@@ -1961,6 +1972,8 @@ module.exports = {
   },
 
   "week-view": {
+    flow: true,
+    permittedContent: ["@flow"],
     attributes: {
       "data-start-date": {},
       "data-days": {},

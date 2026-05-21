@@ -6632,7 +6632,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "page-tour": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7875,7 +7881,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "reading-progress": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7899,7 +7911,13 @@ export default {
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "recently-visited": {
     "$schema": "../../../schemas/api.schema.json",
@@ -8171,7 +8189,13 @@ export default {
         "detail": "{ row, field, value }",
         "description": "Reserved: emitted on inline edits (future)"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "score-card": {
     "$schema": "../../../schemas/api.schema.json",
@@ -8538,7 +8562,13 @@ export default {
     "description": "Keyboard shortcuts help overlay",
     "attributes": [],
     "childAttributes": [],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "site-index": {
     "$schema": "../../../schemas/api.schema.json",
@@ -9512,7 +9542,10 @@ export default {
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
-        "details"
+        "details",
+        "nav",
+        "section",
+        "@script"
       ]
     },
     "attributes": [
@@ -10384,7 +10417,13 @@ export default {
         "description": "Fired when a cell toggles chain highlight"
       }
     ],
-    "structure": []
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "trust-filter": {
     "$schema": "../../../schemas/api.schema.json",
@@ -11282,7 +11321,13 @@ export default {
         "type": "string",
         "description": "ISO date assigning this event to a day column (auto mode)"
       }
-    ]
+    ],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
   },
   "work-item": {
     "$schema": "../../../schemas/api.schema.json",
