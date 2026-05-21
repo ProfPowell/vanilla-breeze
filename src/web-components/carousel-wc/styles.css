@@ -163,9 +163,15 @@ carousel-wc[gap="xl"] { --_gap: var(--size-xl); }
     border: 0;
   }
 
-  /* --- View Transition mode: stacked layout --- */
+  /* --- View Transition mode: stacked layout ---
+   *
+   * Load-bearing invariants — these MUST win against author CSS that might
+   * style slides (e.g. `.slide { display: grid }`). Author rules are typically
+   * unlayered, which beats our layered rules regardless of specificity, so we
+   * mark these with !important. Same class of fix as memory
+   * popover_display_gotcha + feedback_structural_css_invariants. */
   :scope[transition]:defined .carousel-track {
-    display: grid;
+    display: grid !important;
     grid-template-areas: "slide";
     overflow: visible;
     scroll-snap-type: none;
@@ -176,7 +182,7 @@ carousel-wc[gap="xl"] { --_gap: var(--size-xl); }
   }
 
   :scope[transition]:defined .carousel-track > [hidden] {
-    display: none;
+    display: none !important;
   }
 }
 
