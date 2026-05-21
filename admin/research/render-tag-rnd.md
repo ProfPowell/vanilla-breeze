@@ -131,7 +131,7 @@ text on a canvas?" The matrix:
 
 ### 1. OG / share card image generation — **strongest fit (maybe)**
 
-Vanilla Breeze ships [`share-wc`](../src/web-components/share-wc/) and
+Vanilla Breeze ships [`share-wc`](../../src/web-components/share-wc/) and
 the site has SEO/social metadata via the meta-tag contract v1
 (`admin/specs/`). Today, social cards are either:
 

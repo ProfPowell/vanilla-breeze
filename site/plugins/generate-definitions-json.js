@@ -17,8 +17,8 @@
  * Loaded by site/src/layouts/docs.html so every doc page can resolve
  * inline `<a data-concept>` references without each page opting in.
  *
- * Spec: admin/r-n-d/evaluate/glossary-system.md
- * Decision: admin/r-n-d/evaluate/decisions.md (adopted 2026-04-27).
+ * Spec: admin/shipped/glossary-system.md
+ * Decision: admin/reference/decisions.md (adopted 2026-04-27).
  */
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';

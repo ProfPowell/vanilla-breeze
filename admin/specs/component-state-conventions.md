@@ -2,7 +2,7 @@
 
 > **Status:** living, 2026-05-02
 > **Owner:** VB project
-> **Related:** [`custom-state-set-research.md`](./custom-state-set-research.md) (the why), [`syntax.md`](../syntax.md) (the public attribute catalog).
+> **Related:** [`custom-state-set-research.md`](../research/custom-state-set-research.md) (the why), [`syntax.md`](../reference/syntax.md) (the public attribute catalog).
 
 Vanilla Breeze components expose two distinct state surfaces. Authors and themes target one; the component itself owns the other.
 

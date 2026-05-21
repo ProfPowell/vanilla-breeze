@@ -1,7 +1,7 @@
 /**
  * notification-wc: Notification component with banner + panel modes
  *
- * Spec: admin/r-n-d/april13-plan/notification-wc.md
+ * Spec: admin/plans/april13-plan/notification-wc.md
  *
  * Two modes dispatched on the `mode` attribute:
  *

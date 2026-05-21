@@ -15,7 +15,7 @@
  *     <button data-watch-page>Watch for updates</button>
  *   </page-tools>
  *
- * Spec: admin/r-n-d/april13-plan/page-watch.md
+ * Spec: admin/plans/april13-plan/page-watch.md
  */
 
 import { VBStore } from '../lib/vb-store.js';

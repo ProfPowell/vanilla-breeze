@@ -8,7 +8,7 @@
  *   4. numeric    — fallback (logs a console hint pointing at data-stepper)
  *
  * Plain numeric stepping should use `<input type="number" data-stepper>`.
- * See admin/r-n-d/forms-and-interactions/stepper-wc.md for the full plan.
+ * See admin/shipped/stepper-wc.md for the full plan.
  *
  * @attr {string}  value          - Current value (string; reflected)
  * @attr {string}  name           - Form field name (form participation)

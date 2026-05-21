@@ -45,13 +45,13 @@ That means the best path is:
 
 | Existing VB capability | Where it lives | Why it matters here |
 | --- | --- | --- |
-| Unified effect registration and DOM observation | [`src/lib/vb.js`](../src/lib/vb.js) | Good foundation for opt-in enhancement hooks |
-| Built-in `scroll`, `hover`, `click`, and `time` triggers | [`src/lib/vb-triggers.js`](../src/lib/vb-triggers.js) | Scroll entrance effects already exist |
-| Effect compositing and trigger independence | [`site/src/pages/docs/concepts/effect-compositing.njk`](../site/src/pages/docs/concepts/effect-compositing.njk) | Useful for step reveals inside staged sections |
-| Semantic layout attributes | [`src/custom-elements/layout-attributes.css`](../src/custom-elements/layout-attributes.css) | Lets us build story sections without wrapper soup |
-| CSS scroll-linked sticky header shrink | [`src/custom-elements/layout-attributes.css`](../src/custom-elements/layout-attributes.css), [`demos/examples/demos/scroll-shrink-header.html`](../demos/examples/demos/scroll-shrink-header.html) | Proof that VB can ship scroll-driven enhancement cleanly |
-| `@property` token registration | [`src/main.css`](../src/main.css) | Useful if we decide to animate custom properties later |
-| Reduced-motion posture | [`site/src/pages/docs/accessibility.njk`](../site/src/pages/docs/accessibility.njk) and effect implementations | Required for any serious scroll-motion feature |
+| Unified effect registration and DOM observation | [`src/lib/vb.js`](../../src/lib/vb.js) | Good foundation for opt-in enhancement hooks |
+| Built-in `scroll`, `hover`, `click`, and `time` triggers | [`src/lib/vb-triggers.js`](../../src/lib/vb-triggers.js) | Scroll entrance effects already exist |
+| Effect compositing and trigger independence | [`site/src/pages/docs/concepts/effect-compositing.njk`](../../site/src/pages/docs/concepts/effect-compositing.njk) | Useful for step reveals inside staged sections |
+| Semantic layout attributes | [`src/custom-elements/layout-attributes.css`](../../src/custom-elements/layout-attributes.css) | Lets us build story sections without wrapper soup |
+| CSS scroll-linked sticky header shrink | [`src/custom-elements/layout-attributes.css`](../../src/custom-elements/layout-attributes.css), [`demos/examples/demos/scroll-shrink-header.html`](../../demos/examples/demos/scroll-shrink-header.html) | Proof that VB can ship scroll-driven enhancement cleanly |
+| `@property` token registration | [`src/main.css`](../../src/main.css) | Useful if we decide to animate custom properties later |
+| Reduced-motion posture | [`site/src/pages/docs/accessibility.njk`](../../site/src/pages/docs/accessibility.njk) and effect implementations | Required for any serious scroll-motion feature |
 
 ### Important limitations
 
@@ -473,17 +473,17 @@ I would not add:
 
 ## Internal references
 
-- [`src/lib/vb.js`](../src/lib/vb.js)
-- [`src/lib/vb-triggers.js`](../src/lib/vb-triggers.js)
-- [`src/custom-elements/layout-attributes.css`](../src/custom-elements/layout-attributes.css)
-- [`src/main.css`](../src/main.css)
-- [`site/src/pages/docs/concepts/effect-compositing.njk`](../site/src/pages/docs/concepts/effect-compositing.njk)
-- [`site/src/pages/docs/attributes/data-effect.njk`](../site/src/pages/docs/attributes/data-effect.njk)
-- [`site/src/pages/docs/attributes/data-stagger.njk`](../site/src/pages/docs/attributes/data-stagger.njk)
-- [`demos/examples/demos/scroll-shrink-header.html`](../demos/examples/demos/scroll-shrink-header.html)
-- [`admin/r-n-d/themes/review-first/css-layout-future.md`](./r-n-d/themes/review-first/css-layout-future.md)
-- [`admin/r-n-d/mobile/mobile-phases.md`](./r-n-d/mobile/mobile-phases.md)
-- [`admin/r-n-d/mobile/mobile-strategy.md`](./r-n-d/mobile/mobile-strategy.md)
+- [`src/lib/vb.js`](../../src/lib/vb.js)
+- [`src/lib/vb-triggers.js`](../../src/lib/vb-triggers.js)
+- [`src/custom-elements/layout-attributes.css`](../../src/custom-elements/layout-attributes.css)
+- [`src/main.css`](../../src/main.css)
+- [`site/src/pages/docs/concepts/effect-compositing.njk`](../../site/src/pages/docs/concepts/effect-compositing.njk)
+- [`site/src/pages/docs/attributes/data-effect.njk`](../../site/src/pages/docs/attributes/data-effect.njk)
+- [`site/src/pages/docs/attributes/data-stagger.njk`](../../site/src/pages/docs/attributes/data-stagger.njk)
+- [`demos/examples/demos/scroll-shrink-header.html`](../../demos/examples/demos/scroll-shrink-header.html)
+- [`admin/r-n-d/themes/review-first/css-layout-future.md`](./review-first/css-layout-future.md)
+- [`admin/r-n-d/mobile/mobile-phases.md`](../plans/mobile/mobile-phases.md)
+- [`admin/r-n-d/mobile/mobile-strategy.md`](../plans/mobile/mobile-strategy.md)
 
 ## External sources
 

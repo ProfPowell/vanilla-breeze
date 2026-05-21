@@ -1,7 +1,7 @@
 # Plan: DTCG-based theme pipeline for Vanilla Breeze
 
 > Status: draft, ready to break into beads issues
-> Companion doc: [dtcg-tokens-rnd.md](./dtcg-tokens-rnd.md)
+> Companion doc: [dtcg-tokens-rnd.md](../research/dtcg-tokens-rnd.md)
 > Authored: 2026-05-14
 
 ## Goal

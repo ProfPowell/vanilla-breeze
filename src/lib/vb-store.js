@@ -18,7 +18,7 @@
  *   await VBStore.clear('notifications');
  *   await VBStore.clearAll();
  *
- * Spec: admin/r-n-d/april13-plan/vb-store.md
+ * Spec: admin/plans/april13-plan/vb-store.md
  */
 
 const PREFIX = 'vb:';

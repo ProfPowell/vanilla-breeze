@@ -19,7 +19,7 @@
  *   const messages = await notify.get('/messages', { page: 2 });
  *   await notify.post('/read', { ids: ['msg-1'] });
  *
- * Spec: admin/r-n-d/april13-plan/vb-service.md
+ * Spec: admin/plans/april13-plan/vb-service.md
  */
 
 /** @type {{ baseUrl: string, headers: Record<string, string>, services: Record<string, string> }} */

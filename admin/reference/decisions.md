@@ -4,8 +4,8 @@ This file records standing decisions on the R&D specs in `admin/r-n-d/evaluate/`
 
 | Spec | Status | Decided | Notes |
 |---|---|---|---|
-| [glossary-system.md](./glossary-system.md) | **Adopted** | 2026-04-27 | SKOS Foundation + Glossary tracks (S1–S2) |
-| [topic-index-system.md](./topic-index-system.md) | **Adopted** | 2026-04-27 | SKOS Topic Index + topic-map upgrade (S3–S4) |
+| [glossary-system.md](../shipped/glossary-system.md) | **Adopted** | 2026-04-27 | SKOS Foundation + Glossary tracks (S1–S2) |
+| [topic-index-system.md](../shipped/topic-index-system.md) | **Adopted** | 2026-04-27 | SKOS Topic Index + topic-map upgrade (S3–S4) |
 
 ---
 

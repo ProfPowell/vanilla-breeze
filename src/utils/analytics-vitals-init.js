@@ -13,7 +13,7 @@
  * Each metric fires as a normalised analytics event:
  *   perf.lcp / perf.cls / perf.inp / perf.ttfb
  *
- * See admin/r-n-d/analytics/analytics-spec.md — Tier-3 table and
+ * See admin/plans/analytics/analytics-spec.md — Tier-3 table and
  * "Web Vitals Module" reference implementation.
  */
 

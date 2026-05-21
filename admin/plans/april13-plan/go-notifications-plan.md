@@ -711,5 +711,5 @@ Deliverables:
 - [RxDB — LocalStorage Article](https://rxdb.info/articles/localstorage.html) — Unified storage abstraction patterns
 - [Mozilla — DataStore Abstraction Layer](https://blog.mozilla.org/webdev/2011/03/07/datastore-an-abstraction-layer-for-storing-data-and-processing-requests/) — Centralized storage API design
 - [Improving Medium's Bookmark Feature (UX Collective)](https://uxdesign.cc/improving-mediums-bookmark-feature-ux-case-study-522470182faa) — Bookmark + watch UX analysis
-- [VB Server-Side Service Facade](admin/r-n-d/server-side-service-facade.md) — Existing VB research on first-party proxy pattern
+- [VB Server-Side Service Facade](./server-side-service-facade.md) — Existing VB research on first-party proxy pattern
 - [html-star](https://github.com/ProfPowell/html-star) — Hypermedia framework; handles HTML transport (SSE, polling, swap) independent of VBService

@@ -5,7 +5,7 @@
  * forwards them through Analytics.track() with normalised names and minimal
  * payloads. Event names here are verified against the live components.
  *
- * See `admin/r-n-d/analytics/analytics-spec.md` Tier 1/2 tables.
+ * See `admin/plans/analytics/analytics-spec.md` Tier 1/2 tables.
  */
 
 import { Analytics } from '../lib/analytics.js';

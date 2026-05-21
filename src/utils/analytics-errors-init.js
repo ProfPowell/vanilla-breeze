@@ -5,7 +5,7 @@
  * promise rejections via the standard analytics pipeline so they land
  * in the same hits table as everything else.
  *
- * Spec: admin/r-n-d/analytics/analytics-spec.md Tier-3 events
+ * Spec: admin/plans/analytics/analytics-spec.md Tier-3 events
  *   error.js_runtime         — window 'error' events
  *   error.unhandled_promise  — window 'unhandledrejection' events
  *

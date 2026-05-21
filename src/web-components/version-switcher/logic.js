@@ -1,7 +1,7 @@
 /**
  * version-switcher: surface and switch between versions of a page over time.
  *
- * Phase 1 of the plan at admin/r-n-d/version-switcher.md:
+ * Phase 1 of the plan at admin/shipped/version-switcher.md:
  *   - Inline data source (data-versions JSON OR <script type="application/json" data-versions>)
  *   - Trigger button + picker popover (composes <pop-over>)
  *   - 'navigate' action only (default; sets location.href)

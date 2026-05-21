@@ -12,7 +12,7 @@
  * Pairs with site/plugins/generate-topics.js (before-pass) which produces the
  * /topics/ source pages and stashes the aggregated index on this.data.topicIndex.
  *
- * Spec: admin/r-n-d/evaluate/topic-index-system.md
+ * Spec: admin/shipped/topic-index-system.md
  */
 
 import { writeFile, mkdir } from 'node:fs/promises';

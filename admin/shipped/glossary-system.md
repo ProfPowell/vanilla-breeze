@@ -1,6 +1,6 @@
 # Vanilla Breeze Glossary System
 
-> **Status: Adopted (2026-04-27).** See [decisions.md](./decisions.md). Implementation is tracked in sequence beads S1 (SKOS Foundation) and S2 (SKOS Glossary).
+> **Status: Adopted (2026-04-27).** See [decisions.md](../reference/decisions.md). Implementation is tracked in sequence beads S1 (SKOS Foundation) and S2 (SKOS Glossary).
 
 A platform-native glossary pattern for content-oriented websites. This system uses standard HTML elements, JSON-LD structured data, `rel` attributes, and `data-*` attributes to create a semantically rich, progressively enhanced glossary that is derived from a SKOS-based site vocabulary.
 

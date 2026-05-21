@@ -5,7 +5,7 @@
  * events and `data-vb-event` declarative tracking into a single envelope
  * and ships them via sendBeacon to a same-origin endpoint.
  *
- * See `admin/r-n-d/analytics/analytics-spec.md` (v0.4) for the full spec.
+ * See `admin/plans/analytics/analytics-spec.md` (v0.4) for the full spec.
  *
  * @example
  * import { Analytics } from './lib/analytics.js';

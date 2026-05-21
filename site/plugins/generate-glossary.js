@@ -14,7 +14,7 @@
  * Companion plugin: generate-definitions-json.js (after-pass) emits
  * /definitions.json and the popover script + CSS.
  *
- * Spec: admin/r-n-d/evaluate/glossary-system.md
+ * Spec: admin/shipped/glossary-system.md
  */
 
 import { readFile } from 'node:fs/promises';

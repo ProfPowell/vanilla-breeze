@@ -1,7 +1,7 @@
 # Plan: `@profpowell/meme-maker` — stand-alone web component for meme creation
 
 > Status: draft, ready to bootstrap a repo
-> Companion docs: [render-tag-rnd.md](./render-tag-rnd.md), [canvas-text-plan.md](./canvas-text-plan.md)
+> Companion docs: [render-tag-rnd.md](../research/render-tag-rnd.md), [canvas-text-plan.md](./canvas-text-plan.md)
 > Authored: 2026-05-14
 
 ## Goal

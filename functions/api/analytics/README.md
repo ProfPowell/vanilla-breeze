@@ -1,7 +1,7 @@
 # Analytics Ingest — Cloudflare Pages Functions
 
 First-cut ingest + stats endpoints. Implements Phase 4 of
-[`admin/r-n-d/analytics/analytics-spec.md`](../../../admin/r-n-d/analytics/analytics-spec.md)
+[`admin/plans/analytics/analytics-spec.md`](../../../admin/plans/analytics/analytics-spec.md)
 against Cloudflare Pages Functions + D1.
 
 ## Endpoints

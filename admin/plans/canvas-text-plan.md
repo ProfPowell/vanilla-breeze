@@ -1,7 +1,7 @@
 # Plan: `@profpowell/canvas-text` — stand-alone web component wrapping `render-tag`
 
 > Status: draft, ready to bootstrap a repo
-> Companion docs: [render-tag-rnd.md](./render-tag-rnd.md), [meme-maker-plan.md](./meme-maker-plan.md)
+> Companion docs: [render-tag-rnd.md](../research/render-tag-rnd.md), [meme-maker-plan.md](./meme-maker-plan.md)
 > Authored: 2026-05-14
 
 ## Goal

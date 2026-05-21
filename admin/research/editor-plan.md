@@ -2,7 +2,7 @@
 
 **Status**: Research / Pre-Decision
 **Date**: 2026-03-24
-**Related**: [editor-component.md](forms-and-interactions/editor-component.md), [MASTER-PLAN.md](MASTER-PLAN.md) (line 36–38), [global-overview.md](../global-overview.md) (line 60–68)
+**Related**: [editor-component.md](../plans/editor-component.md), [global-overview.md](../reference/global-overview.md) (line 60–68)
 
 ---
 

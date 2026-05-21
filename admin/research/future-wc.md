@@ -90,7 +90,7 @@ Consolidation outcome (May 2026): five proposed components reduced to **1 primit
 
 ## AI
 
-Page-tools that wrap browser-native AI APIs (Chrome Summarizer, LanguageModel, etc.) with provider-neutral inline-endpoint and external deep-link fallbacks. Conventions: [`admin/specs/ai-page-tools-v1.md`](specs/ai-page-tools-v1.md). Epic: `vanilla-breeze-ddm0`.
+Page-tools that wrap browser-native AI APIs (Chrome Summarizer, LanguageModel, etc.) with provider-neutral inline-endpoint and external deep-link fallbacks. Conventions: [`admin/specs/ai-page-tools-v1.md`](../specs/ai-page-tools-v1.md). Epic: `vanilla-breeze-ddm0`.
 
 | Component | Type | Notes |
 |-----------|------|-------|

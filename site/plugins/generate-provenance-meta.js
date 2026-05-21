@@ -36,7 +36,7 @@
  *
  * v1.1 (2026-04-27): replaced `topic` (single dotted-path string) with
  * `concepts` (array of SKOS concept @ids resolved against vocabulary.json).
- * See admin/specs/meta-tag-contract-v1.md and admin/r-n-d/evaluate/decisions.md.
+ * See admin/specs/meta-tag-contract-v1.md and admin/reference/decisions.md.
  */
 
 import { readFileSync, existsSync } from 'node:fs';

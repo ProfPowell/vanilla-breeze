@@ -14,7 +14,7 @@
  * them at runtime. Detail pages list the articles tagged with the concept,
  * sorted by date descending, with broader/related concept navigation.
  *
- * Spec: admin/r-n-d/evaluate/topic-index-system.md
+ * Spec: admin/shipped/topic-index-system.md
  * Analytics contract: admin/specs/analytics-viewcount-v1.md
  */
 

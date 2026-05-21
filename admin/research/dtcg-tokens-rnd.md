@@ -1,7 +1,7 @@
 # R&D: DTCG (Design Tokens Community Group) format vs. Vanilla Breeze tokens
 
 > Status: research → action. DTCG hit stable v1 on 2025-10-28; companion
-> implementation plan in [dtcg-theme-pipeline-plan.md](./dtcg-theme-pipeline-plan.md).
+> implementation plan in [dtcg-theme-pipeline-plan.md](../plans/dtcg-theme-pipeline-plan.md).
 > DTCG spec: [W3C Design Tokens stable spec 2025.10](https://www.designtokens.org/)
 > Authored: 2026-05-14 · Updated: 2026-05-14 (stable-spec correction)
 
@@ -39,7 +39,7 @@ real opportunity worth scheduling, not a "wait and see":
 6. **Future / speculative:** a "paste a URL, infer a theme" service that
    scrapes a site and proposes a VB theme from its computed styles.
 
-See [dtcg-theme-pipeline-plan.md](./dtcg-theme-pipeline-plan.md) for the
+See [dtcg-theme-pipeline-plan.md](../plans/dtcg-theme-pipeline-plan.md) for the
 phased implementation plan.
 
 ---
@@ -280,7 +280,7 @@ the transition is a runtime concern outside its scope.
 - Themes override semantic tokens, not primitives.
 
 VB's discipline (the [token strategy
-spec](r-n-d/themes/review-first/token-strategy.md) lays out
+spec](./review-first/token-strategy.md) lays out
 primitive/semantic/component) is essentially the DTCG philosophy in
 CSS form, predating it.
 
@@ -513,7 +513,7 @@ direct interop value.
 
 ## Concrete next steps
 
-Phased plan in [dtcg-theme-pipeline-plan.md](./dtcg-theme-pipeline-plan.md).
+Phased plan in [dtcg-theme-pipeline-plan.md](../plans/dtcg-theme-pipeline-plan.md).
 The summary of phases:
 
 1. DTCG export from `<theme-export>` (web, no CLI).
@@ -534,6 +534,6 @@ The summary of phases:
 - [Design Tokens Community Group — W3C](https://www.w3.org/community/design-tokens/)
 - [Style Dictionary DTCG support docs](https://styledictionary.com/info/dtcg/)
 - [Tokens Studio for Figma](https://tokens.studio/)
-- VB internal: [r-n-d/themes/review-first/token-strategy.md](r-n-d/themes/review-first/token-strategy.md)
+- VB internal: [r-n-d/themes/review-first/token-strategy.md](./review-first/token-strategy.md)
 - VB internal: `src/tokens/index.css` (token fallback contract)
 - VB internal: `src/web-components/theme-export/logic.js` (existing JSON serializer)
