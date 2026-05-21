@@ -12,12 +12,6 @@
       background: var(--color-surface);
     }
 
-    .preset-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: var(--size-l);
-    }
-
     .preset-card {
       background: var(--color-surface-raised);
       border-radius: var(--radius-m);
@@ -25,24 +19,24 @@
       box-shadow: var(--shadow-m);
     }
 
-    .preset-card header {
+    .preset-card > header {
       padding: var(--size-m);
       background: var(--color-surface);
       border-block-end: 1px solid var(--color-border);
     }
 
-    .preset-card header h2 {
+    .preset-card > header h2 {
       margin: 0;
       font-size: var(--font-size-lg);
     }
 
-    .preset-card header p {
+    .preset-card > header p {
       margin: var(--size-3xs) 0 0;
       color: var(--color-text-muted);
       font-size: var(--font-size-sm);
     }
 
-    .preset-card header code {
+    .preset-card > header code {
       background: var(--color-surface-raised);
       padding: 0.1em 0.3em;
       border-radius: var(--radius-s);
@@ -66,6 +60,20 @@
       font-weight: var(--font-weight-semibold);
       color: var(--color-text-on-interactive);
     }
+
+    /* Each preset gets two pre-computed colors (A and B = hue + 180°) */
+    .preview-box[data-bg="slide-left"][data-state="a"]  { background: oklch(65% 0.15 200); }
+    .preview-box[data-bg="slide-left"][data-state="b"]  { background: oklch(65% 0.15 20);  }
+    .preview-box[data-bg="slide-right"][data-state="a"] { background: oklch(65% 0.15 140); }
+    .preview-box[data-bg="slide-right"][data-state="b"] { background: oklch(65% 0.15 320); }
+    .preview-box[data-bg="scale"][data-state="a"]       { background: oklch(65% 0.15 30);  }
+    .preview-box[data-bg="scale"][data-state="b"]       { background: oklch(65% 0.15 210); }
+    .preview-box[data-bg="fade"][data-state="a"]        { background: oklch(65% 0.15 280); }
+    .preview-box[data-bg="fade"][data-state="b"]        { background: oklch(65% 0.15 100); }
+    .preview-box[data-bg="none"][data-state="a"]        { background: oklch(65% 0.15 60);  }
+    .preview-box[data-bg="none"][data-state="b"]        { background: oklch(65% 0.15 240); }
+    .preview-box[data-bg="default"][data-state="a"]     { background: oklch(65% 0.15 350); }
+    .preview-box[data-bg="default"][data-state="b"]     { background: oklch(65% 0.15 170); }
 
     .demo-btn {
       appearance: none;
@@ -109,143 +117,119 @@
         <p>View transition animation presets applied via <code>data-vt-class</code>. Click "Trigger" to see each preset using <code>document.startViewTransition()</code>.</p>
       </header>
 
-      <div class="info-box">
+      <aside class="info-box">
         <p><strong>Note:</strong> These presets work with both MPA navigation (<code>@view-transition</code>) and SPA transitions (<code>document.startViewTransition()</code>). This demo uses the SPA API for inline previews.</p>
-      </div>
+      </aside>
 
-      <div class="preset-grid">
-        <div class="preset-card">
+      <layout-grid data-layout-min="280px" data-layout-gap="l">
+        <article class="preset-card">
           <header aria-label="Slide Left">
             <h2>Slide Left</h2>
             <p><code>data-vt-class="slide-left"</code></p>
           </header>
-          <div class="preview-area">
-            <div class="preview-box" id="slide-left-box" data-vt-class="slide-left" style="background: oklch(65% 0.15 200);">
+          <section class="preview-area">
+            <section class="preview-box" id="slide-left-box" data-vt-class="slide-left" data-bg="slide-left" data-state="a">
               Content A
-            </div>
+            </section>
             <button type="button" class="demo-btn" data-demo="slide-left">Trigger</button>
-          </div>
-        </div>
+          </section>
+        </article>
 
-        <div class="preset-card">
+        <article class="preset-card">
           <header aria-label="Slide Right">
             <h2>Slide Right</h2>
             <p><code>data-vt-class="slide-right"</code></p>
           </header>
-          <div class="preview-area">
-            <div class="preview-box" id="slide-right-box" data-vt-class="slide-right" style="background: oklch(65% 0.15 140);">
+          <section class="preview-area">
+            <section class="preview-box" id="slide-right-box" data-vt-class="slide-right" data-bg="slide-right" data-state="a">
               Content A
-            </div>
+            </section>
             <button type="button" class="demo-btn" data-demo="slide-right">Trigger</button>
-          </div>
-        </div>
+          </section>
+        </article>
 
-        <div class="preset-card">
+        <article class="preset-card">
           <header aria-label="Scale">
             <h2>Scale</h2>
             <p><code>data-vt-class="scale"</code></p>
           </header>
-          <div class="preview-area">
-            <div class="preview-box" id="scale-box" data-vt-class="scale" style="background: oklch(65% 0.15 30);">
+          <section class="preview-area">
+            <section class="preview-box" id="scale-box" data-vt-class="scale" data-bg="scale" data-state="a">
               Content A
-            </div>
+            </section>
             <button type="button" class="demo-btn" data-demo="scale">Trigger</button>
-          </div>
-        </div>
+          </section>
+        </article>
 
-        <div class="preset-card">
+        <article class="preset-card">
           <header aria-label="Fade">
             <h2>Fade</h2>
             <p><code>data-vt-class="fade"</code></p>
           </header>
-          <div class="preview-area">
-            <div class="preview-box" id="fade-box" data-vt-class="fade" style="background: oklch(65% 0.15 280);">
+          <section class="preview-area">
+            <section class="preview-box" id="fade-box" data-vt-class="fade" data-bg="fade" data-state="a">
               Content A
-            </div>
+            </section>
             <button type="button" class="demo-btn" data-demo="fade">Trigger</button>
-          </div>
-        </div>
+          </section>
+        </article>
 
-        <div class="preset-card">
+        <article class="preset-card">
           <header aria-label="None">
             <h2>None</h2>
             <p><code>data-vt-class="none"</code></p>
           </header>
-          <div class="preview-area">
-            <div class="preview-box" id="none-box" data-vt-class="none" style="background: oklch(65% 0.15 60);">
+          <section class="preview-area">
+            <section class="preview-box" id="none-box" data-vt-class="none" data-bg="none" data-state="a">
               Content A
-            </div>
+            </section>
             <button type="button" class="demo-btn" data-demo="none">Trigger</button>
-          </div>
-        </div>
+          </section>
+        </article>
 
-        <div class="preset-card">
+        <article class="preset-card">
           <header aria-label="Default (Crossfade)">
             <h2>Default (Crossfade)</h2>
             <p>No <code>data-vt-class</code> — browser default</p>
           </header>
-          <div class="preview-area">
-            <div class="preview-box" id="default-box" style="background: oklch(65% 0.15 350);">
+          <section class="preview-area">
+            <section class="preview-box" id="default-box" data-bg="default" data-state="a">
               Content A
-            </div>
+            </section>
             <button type="button" class="demo-btn" data-demo="default">Trigger</button>
-          </div>
-        </div>
-      </div>
+          </section>
+        </article>
+      </layout-grid>
     </layout-stack>
   </layout-center>
 
   <script type="module" src="/src/main.js"></script>
   <script type="module">
-    const state = {};
-    const originals = {
-      'slide-left': 'oklch(65% 0.15 200)',
-      'slide-right': 'oklch(65% 0.15 140)',
-      'scale': 'oklch(65% 0.15 30)',
-      'fade': 'oklch(65% 0.15 280)',
-      'none': 'oklch(65% 0.15 60)',
-      'default': 'oklch(65% 0.15 350)'
-    };
-
     document.querySelectorAll('[data-demo]').forEach(btn => {
       const preset = btn.dataset.demo;
-      state[preset] = 'A';
+      const box = document.getElementById(`${preset}-box`);
+      if (!box) return;
+
+      const swap = () => {
+        const next = box.dataset.state === 'b' ? 'a' : 'b';
+        box.dataset.state = next;
+        box.textContent = `Content ${next.toUpperCase()}`;
+      };
 
       btn.addEventListener('click', () => {
-        const box = document.getElementById(`${preset}-box`);
-        if (!box) return;
-
         if (!document.startViewTransition) {
-          swap(preset);
+          swap();
           return;
         }
 
         // Only name THIS box so only it participates in the transition
         box.style.viewTransitionName = `demo-${preset}`;
-
-        const transition = document.startViewTransition(() => swap(preset));
-
+        const transition = document.startViewTransition(swap);
         transition.finished.then(() => {
           box.style.viewTransitionName = '';
         });
       });
     });
-
-    function swap(preset) {
-      const box = document.getElementById(`${preset}-box`);
-      if (!box) return;
-      state[preset] = state[preset] === 'A' ? 'B' : 'A';
-      box.textContent = `Content ${state[preset]}`;
-
-      if (state[preset] === 'B') {
-        box.style.background = box.style.background.replace(/\d+\)$/, (m) => {
-          const hue = parseInt(m);
-          return ((hue + 180) % 360) + ')';
-        });
-      } else {
-        box.style.background = originals[preset];
-      }
-    }
   </script>
 </body>
 </html>

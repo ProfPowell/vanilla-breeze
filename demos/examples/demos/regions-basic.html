@@ -39,8 +39,11 @@
     .demo-area {
       padding: var(--size-l);
     }
+    .demo-area :is(h3, h4) { margin: 0 0 var(--size-s); }
+    .demo-area :is(section, p) { margin: 0; }
+    .demo-area section + p,
+    .demo-area p + p { margin-block-start: var(--size-s); }
 
-    /* Card styling for regions demos */
     .region-card {
       border: 1px solid var(--color-border);
       border-radius: var(--radius-m);
@@ -78,6 +81,17 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .region-bare {
+      border: 2px dashed var(--color-border);
+      padding: var(--size-m);
+      border-radius: var(--radius-m);
+    }
+    .region-bare > header { font-weight: 600; }
+    .region-bare > footer {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
   </style>
 </head>
 <body>
@@ -90,24 +104,22 @@
   <h1>Component Regions</h1>
   <p><code>data-layout="regions"</code> creates a header / content / footer grid on any element. Semantic children auto-place without explicit layout attributes.</p>
 
-  <!-- Basic regions -->
   <h2>Basic Regions</h2>
-  <p>A <code>&lt;div&gt;</code> with <code>data-layout="regions"</code>. The <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, and <code>&lt;footer&gt;</code> children auto-register to named grid areas.</p>
+  <p>A <code>&lt;section&gt;</code> with <code>data-layout="regions"</code>. The <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, and <code>&lt;footer&gt;</code> children auto-register to named grid areas.</p>
 
   <figure class="demo-panel">
     <strong class="demo-label">data-layout="regions"</strong>
-    <div class="demo-area">
-      <div data-layout="regions" data-layout-gap="m" class="region-card">
+    <section class="demo-area">
+      <section data-layout="regions" data-layout-gap="m" class="region-card">
         <header aria-label="Regions Basic header">Card Header</header>
         <section aria-label="Regions Basic section">
-          <p style="margin: 0;">This section content auto-places into the <code>content</code> grid area. No explicit placement needed.</p>
+          <p>This section content auto-places into the <code>content</code> grid area. No explicit placement needed.</p>
         </section>
         <footer aria-label="Regions Basic footer">Updated 2 hours ago</footer>
-      </div>
-    </div>
+      </section>
+    </section>
   </figure>
 
-  <!-- Regions on article -->
   <h2>Regions on Article</h2>
   <p>Works on any element. An <code>&lt;article&gt;</code> with regions is a natural fit for blog posts, cards, and content blocks.</p>
 
@@ -116,94 +128,91 @@
     <article data-layout="regions" data-layout-gap="s" class="demo-area region-card">
       <header aria-label="Regions Basic header 2">Getting Started with Grid Identity</header>
       <section aria-label="Regions Basic section 2">
-        <p style="margin: 0 0 var(--size-s);">The grid identity system lets semantic HTML elements auto-register to grid areas based on their element type.</p>
-        <p style="margin: 0;">HTML declares structure, CSS assigns layout.</p>
+        <p>The grid identity system lets semantic HTML elements auto-register to grid areas based on their element type.</p>
+        <p>HTML declares structure, CSS assigns layout.</p>
       </section>
       <footer aria-label="Regions Basic footer 2">By Jane Doe &middot; 5 min read</footer>
     </article>
   </figure>
 
-  <!-- Implicit content -->
   <h2>Implicit Content Placement</h2>
   <p>Children that are not <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;footer&gt;</code>, or <code>[slot]</code> are implicitly placed in the <code>content</code> area.</p>
 
   <figure class="demo-panel">
     <strong class="demo-label">implicit content (bare &lt;p&gt; children)</strong>
-    <div class="demo-area">
-      <div data-layout="regions" data-layout-gap="m" class="region-card">
+    <section class="demo-area">
+      <section data-layout="regions" data-layout-gap="m" class="region-card">
         <header aria-label="Regions Basic header 3">Notification</header>
         <p>This bare paragraph auto-places into the content area without needing a <code>&lt;section&gt;</code> wrapper.</p>
         <footer aria-label="Regions Basic footer 3">Dismiss</footer>
-      </div>
-    </div>
+      </section>
+    </section>
   </figure>
 
-  <!-- Grid of region cards -->
   <h2>Grid of Region Cards</h2>
   <p>The big win: <code>data-layout="grid"</code> wrapping <code>data-layout="regions"</code> articles. Each card auto-places its header, content, and footer without any explicit layout attributes on children.</p>
 
   <figure class="demo-panel">
     <strong class="demo-label">grid + regions = card list</strong>
-    <div class="demo-area">
-      <div data-layout="grid" data-layout-min="15rem" data-layout-gap="m">
+    <section class="demo-area">
+      <layout-grid data-layout-min="15rem" data-layout-gap="m">
         <article data-layout="regions" data-layout-gap="s" class="region-card">
           <header aria-label="Regions Basic header 4">Performance</header>
           <section aria-label="Regions Basic section 3">
-            <p style="margin: 0;">Optimized for speed with lazy loading and tree-shaking built in.</p>
+            <p>Optimized for speed with lazy loading and tree-shaking built in.</p>
           </section>
           <footer aria-label="Regions Basic footer 4">Core feature</footer>
         </article>
         <article data-layout="regions" data-layout-gap="s" class="region-card">
           <header aria-label="Regions Basic header 5">Accessibility</header>
           <section aria-label="Regions Basic section 4">
-            <p style="margin: 0;">WCAG 2.1 AA compliant with semantic HTML and ARIA support.</p>
+            <p>WCAG 2.1 AA compliant with semantic HTML and ARIA support.</p>
           </section>
           <footer aria-label="Regions Basic footer 5">Built-in</footer>
         </article>
         <article data-layout="regions" data-layout-gap="s" class="region-card">
           <header aria-label="Regions Basic header 6">Theming</header>
           <section aria-label="Regions Basic section 5">
-            <p style="margin: 0;">CSS custom properties for full design token control.</p>
+            <p>CSS custom properties for full design token control.</p>
           </section>
           <footer aria-label="Regions Basic footer 6">Customizable</footer>
         </article>
         <article data-layout="regions" data-layout-gap="s" class="region-card">
           <header aria-label="Regions Basic header 7">Responsive</header>
           <section aria-label="Regions Basic section 6">
-            <p style="margin: 0;">Container queries and fluid layouts adapt to any viewport.</p>
+            <p>Container queries and fluid layouts adapt to any viewport.</p>
           </section>
           <footer aria-label="Regions Basic footer 7">Adaptive</footer>
         </article>
-      </div>
-    </div>
+      </layout-grid>
+    </section>
   </figure>
 
-  <!-- Comparison with layout-card -->
   <h2>Regions vs layout-card</h2>
   <p><code>data-layout="regions"</code> is structural only (grid placement). <code>&lt;layout-card&gt;</code> adds visual chrome (borders, shadows, padding) on top of the same grid structure.</p>
 
   <figure class="demo-panel">
     <strong class="demo-label">structural vs visual</strong>
-    <div class="demo-area">
-      <div class="comparison-grid">
-        <div>
-          <h3 style="margin: 0 0 var(--size-s);">Regions (structure only)</h3>
-          <article data-layout="regions" data-layout-gap="s" style="border: 2px dashed var(--color-border); padding: var(--size-m); border-radius: var(--radius-m);">
-            <header aria-label="Regions Basic header 8" style="font-weight: 600;">Card Title</header>
-            <section aria-label="Regions Basic section 7"><p style="margin: 0;">Content goes here. No visual styling from the layout.</p></section>
-            <footer aria-label="Regions Basic footer 8" style="font-size: var(--font-size-sm); color: var(--color-text-muted);">Footer text</footer>
+    <section class="demo-area">
+      <section class="comparison-grid">
+        <section>
+          <h3>Regions (structure only)</h3>
+          <article data-layout="regions" data-layout-gap="s" class="region-bare">
+            <header aria-label="Regions Basic header 8">Card Title</header>
+            <section aria-label="Regions Basic section 7"><p>Content goes here. No visual styling from the layout.</p></section>
+            <footer aria-label="Regions Basic footer 8">Footer text</footer>
           </article>
-        </div>
-        <div>
-          <h4 style="margin: 0 0 var(--size-s);">layout-card (structure + visuals)</h4>
+        </section>
+        <section>
+          <h4>layout-card (structure + visuals)</h4>
           <layout-card>
             <header aria-label="Regions Basic header 9">Card Title</header>
-            <section aria-label="Regions Basic section 8"><p style="margin: 0;">Content goes here. Visual chrome comes from the component.</p></section>
+            <section aria-label="Regions Basic section 8"><p>Content goes here. Visual chrome comes from the component.</p></section>
             <footer aria-label="Regions Basic footer 9">Footer text</footer>
           </layout-card>
-        </div>
-      </div>
-    </div>
+        </section>
+      </section>
+    </section>
   </figure>
 
   <script type="module" src="/src/main.js"></script>
