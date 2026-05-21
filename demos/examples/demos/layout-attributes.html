@@ -10,10 +10,6 @@
   <link rel="stylesheet" href="/src/main.css"/>
   <link rel="stylesheet" href="/docs/docs.css"/>
   <style>
-    /* ==========================================================================
-       PAGE STYLES
-       ========================================================================== */
-
     body {
       padding: var(--size-l);
       background: var(--color-background);
@@ -35,7 +31,6 @@
       margin-bottom: var(--size-l);
     }
 
-    /* Comparison grid - semantic ul */
     .comparison {
       display: grid;
       gap: var(--size-l);
@@ -51,7 +46,6 @@
       }
     }
 
-    /* Comparison panel - semantic figure */
     .comparison-panel {
       margin: 0;
       border: 1px solid var(--color-border);
@@ -59,7 +53,9 @@
       overflow: hidden;
     }
 
-    /* Panel label - semantic strong */
+    .comparison-panel[data-max="40rem"] { max-inline-size: 40rem; }
+    .comparison-panel[data-max="30rem"] { max-inline-size: 30rem; }
+
     .panel-label {
       display: block;
       margin: 0;
@@ -81,14 +77,32 @@
       background: var(--color-primary-subtle);
     }
 
-    /* Demo area - semantic section */
     .demo-area {
       padding: var(--size-m);
       background: var(--color-surface);
       min-height: 6rem;
     }
 
-    /* Code area - semantic figcaption */
+    .demo-area[data-mockup-h="16rem"],
+    .demo-area[data-mockup-h="20rem"] {
+      padding: 0;
+    }
+    .demo-area[data-mockup-h="16rem"] { block-size: 16rem; }
+    .demo-area[data-mockup-h="20rem"] { block-size: 20rem; }
+
+    .demo-area > [data-layout] {
+      block-size: 100%;
+      min-block-size: 100%;
+    }
+
+    .demo-area[data-mockup-flavor="dashboard"] .hg-header,
+    .demo-area[data-mockup-flavor="dashboard"] .hg-nav {
+      position: static;
+    }
+    .demo-area[data-mockup-flavor="dashboard"] .hg-nav {
+      height: auto;
+    }
+
     .code-area {
       margin: 0;
       padding: var(--size-m);
@@ -106,7 +120,6 @@
       word-break: break-word;
     }
 
-    /* Demo items - semantic p */
     .demo-item {
       margin: 0;
       background: var(--color-gray-100);
@@ -133,13 +146,11 @@
       border-radius: var(--radius-m);
     }
 
-    /* Nav back link */
     .back-link {
       display: inline-block;
       margin-bottom: var(--size-l);
     }
 
-    /* Page layout demos */
     .page-header, .page-footer {
       padding: var(--size-s) var(--size-m);
       background: var(--color-gray-200);
@@ -156,7 +167,6 @@
       color: var(--color-text-muted);
     }
 
-    /* Holy grail demo */
     .hg-header, .hg-footer {
       padding: var(--size-xs) var(--size-s);
       background: var(--color-gray-200);
@@ -181,7 +191,6 @@
       font-size: var(--font-size-sm);
     }
 
-    /* Sidebar demos */
     .sidebar-demo {
       padding: var(--size-m);
       background: var(--color-gray-100);
@@ -196,7 +205,6 @@
       border-radius: var(--radius-s);
     }
 
-    /* Split demo */
     .split-item {
       padding: var(--size-l);
       background: var(--color-gray-100);
@@ -204,16 +212,59 @@
       text-align: center;
     }
 
-    /* Cover demo */
     .cover-demo {
       background: linear-gradient(135deg, var(--color-primary-subtle), var(--color-surface));
     }
 
-    /* Prose demo */
+    .cover-demo header,
+    .cover-demo footer {
+      padding: var(--size-s);
+      text-align: center;
+    }
+
+    .cover-demo [data-layout-principal] :is(h2, p) { margin: 0; }
+    .cover-demo [data-layout-principal] p { margin-block-start: var(--size-s); }
+
     .prose-demo {
       padding: var(--size-m);
       background: var(--color-surface);
       border: 1px dashed var(--color-border);
+    }
+
+    .center-fill {
+      background: var(--color-gray-100);
+      padding: var(--size-m);
+    }
+
+    .list-reset {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .blog-card :is(h3, p) { margin: 0; }
+    .blog-card p { color: var(--color-text-muted); }
+    .blog-card footer span {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    .layouts-table {
+      inline-size: 100%;
+      border-collapse: collapse;
+    }
+    .layouts-table thead tr {
+      text-align: left;
+      border-bottom: 2px solid var(--color-border);
+    }
+    .layouts-table tbody tr {
+      border-bottom: 1px solid var(--color-border);
+    }
+    .layouts-table tbody tr:last-child {
+      border-bottom: none;
+    }
+    .layouts-table :is(th, td) {
+      padding: var(--size-s);
     }
   </style>
 </head>
@@ -228,7 +279,6 @@
     <h1>Layout Attributes</h1>
     <p class="lead">Use <code>data-layout</code> on semantic HTML elements for all VB layouts. No wrapper elements needed.</p>
 
-    <!-- ========== STACK ========== -->
     <h2>Stack Layout</h2>
     <p>Vertical rhythm with consistent spacing between child elements.</p>
 
@@ -270,7 +320,6 @@
       </figure></li>
     </ul>
 
-    <!-- ========== CLUSTER ========== -->
     <h2>Cluster Layout</h2>
     <p>Horizontal grouping with wrapping. Perfect for tags, buttons, and navigation.</p>
 
@@ -315,7 +364,7 @@
     </ul>
 
     <h3>Cluster with justify-between</h3>
-    <figure class="comparison-panel" style="max-inline-size: 40rem;">
+    <figure class="comparison-panel" data-max="40rem">
       <strong class="panel-label proposed">Header with Navigation</strong>
       <aside class="demo-area" inert role="presentation">
         <header data-layout="cluster" data-layout-justify="between">
@@ -340,7 +389,6 @@
       </figcaption>
     </figure>
 
-    <!-- ========== GRID ========== -->
     <h2>Grid Layout</h2>
     <p>Responsive auto-fit grid. Resize the browser to see columns adapt.</p>
 
@@ -366,7 +414,7 @@
       <li><figure class="comparison-panel">
         <strong class="panel-label proposed">Data Attribute</strong>
         <aside class="demo-area" inert role="presentation">
-          <ul data-layout="grid" data-layout-min="10rem" data-layout-gap="m" style="list-style: none; padding: 0; margin: 0;">
+          <ul data-layout="grid" data-layout-min="10rem" data-layout-gap="m" class="list-reset">
             <li class="card">Card 1</li>
             <li class="card">Card 2</li>
             <li class="card">Card 3</li>
@@ -382,16 +430,15 @@
       </figure></li>
     </ul>
 
-    <!-- ========== CENTER ========== -->
     <h2>Center Layout</h2>
     <p>Max-width container with auto margins. Great for readable content.</p>
 
     <figure class="comparison-panel">
       <strong class="panel-label proposed">Centered Content</strong>
       <aside class="demo-area" inert role="presentation">
-        <div data-layout="center" data-layout-max="narrow" style="background: var(--color-gray-100); padding: var(--size-m);">
+        <section data-layout="center" data-layout-max="narrow" class="center-fill">
           <p>This content is centered with a max-width. It won't stretch beyond the specified width regardless of viewport size.</p>
-        </div>
+        </section>
       </aside>
       <figcaption class="code-area">
         <pre>&lt;main data-layout="center" data-layout-max="narrow"&gt;
@@ -400,14 +447,13 @@
       </figcaption>
     </figure>
 
-    <!-- ========== PAGE STACK ========== -->
     <h2>Page Stack Layout</h2>
     <p>Header/Main/Footer with sticky footer. Main expands to fill available space.</p>
 
     <figure class="comparison-panel">
       <strong class="panel-label proposed">Sticky Footer Pattern</strong>
-      <aside class="demo-area" style="block-size: 20rem; padding: 0;" inert role="presentation">
-        <section data-layout="page-stack" style="block-size: 100%;">
+      <aside class="demo-area" data-mockup-h="20rem" inert role="presentation">
+        <section data-layout="page-stack">
           <header class="page-header">Header</header>
           <main class="page-main">Main Content</main>
           <footer class="page-footer">Footer</footer>
@@ -422,7 +468,6 @@
       </figcaption>
     </figure>
 
-    <!-- ========== SPLIT ========== -->
     <h2>Split Layout</h2>
     <p>Two-column ratio grid. Stacks on mobile.</p>
 
@@ -430,8 +475,8 @@
       <strong class="panel-label proposed">2:1 Ratio Split</strong>
       <aside class="demo-area" inert role="presentation">
         <section data-layout="split" data-layout-ratio="2:1" data-layout-gap="l">
-          <div class="split-item">Main content (2fr)</div>
-          <div class="split-item">Sidebar (1fr)</div>
+          <section class="split-item">Main content (2fr)</section>
+          <section class="split-item">Sidebar (1fr)</section>
         </section>
       </aside>
       <figcaption class="code-area">
@@ -447,19 +492,18 @@
       <strong class="panel-label proposed">Golden Ratio (1.618:1)</strong>
       <aside class="demo-area" inert role="presentation">
         <section data-layout="split" data-layout-ratio="golden" data-layout-gap="m">
-          <div class="split-item">Primary (1.618fr)</div>
-          <div class="split-item">Secondary (1fr)</div>
+          <section class="split-item">Primary (1.618fr)</section>
+          <section class="split-item">Secondary (1fr)</section>
         </section>
       </aside>
       <figcaption class="code-area">
         <pre>&lt;section data-layout="split" data-layout-ratio="golden"&gt;
-  &lt;div&gt;Primary (1.618fr)&lt;/div&gt;
-  &lt;div&gt;Secondary (1fr)&lt;/div&gt;
+  &lt;section&gt;Primary (1.618fr)&lt;/section&gt;
+  &lt;section&gt;Secondary (1fr)&lt;/section&gt;
 &lt;/section&gt;</pre>
       </figcaption>
     </figure>
 
-    <!-- ========== SIDEBAR ========== -->
     <h2>Sidebar Layout</h2>
     <p>Two-column flexbox that wraps responsively. Try resizing the browser.</p>
 
@@ -497,14 +541,13 @@
       </figure></li>
     </ul>
 
-    <!-- ========== HOLY GRAIL ========== -->
     <h2>Holy Grail Layout</h2>
     <p>Classic 3-column layout with header/footer. Uses CSS Grid named areas targeting semantic elements.</p>
 
     <figure class="comparison-panel">
       <strong class="panel-label proposed">Full Holy Grail</strong>
-      <aside class="demo-area" style="block-size: 20rem; padding: 0;" inert role="presentation">
-        <section data-layout="holy-grail" style="min-block-size: 100%;">
+      <aside class="demo-area" data-mockup-h="20rem" inert role="presentation">
+        <section data-layout="holy-grail">
           <header class="hg-header">Header</header>
           <nav class="hg-nav">Nav</nav>
           <main class="hg-main">Main Content</main>
@@ -527,8 +570,8 @@
     <p>The layout automatically adapts when semantic elements are missing.</p>
     <figure class="comparison-panel">
       <strong class="panel-label proposed">Two-Column (no aside)</strong>
-      <aside class="demo-area" style="block-size: 16rem; padding: 0;" inert role="presentation">
-        <section data-layout="holy-grail" style="min-block-size: 100%;">
+      <aside class="demo-area" data-mockup-h="16rem" inert role="presentation">
+        <section data-layout="holy-grail">
           <header class="hg-header">Header</header>
           <nav class="hg-nav">Nav</nav>
           <main class="hg-main">Main Content</main>
@@ -546,16 +589,15 @@
       </figcaption>
     </figure>
 
-    <!-- ========== DASHBOARD ========== -->
     <h2>Dashboard Layout</h2>
     <p>App shell with sticky header and sidebar. Nav slides in on mobile (toggle with data-nav-open).</p>
 
     <figure class="comparison-panel">
       <strong class="panel-label proposed">Dashboard App Shell</strong>
-      <aside class="demo-area" style="block-size: 20rem; padding: 0;" inert role="presentation">
-        <section data-layout="dashboard" style="min-block-size: 100%;">
-          <header class="hg-header" style="position: static;">Dashboard Header</header>
-          <nav class="hg-nav" style="position: static; height: auto;">Navigation</nav>
+      <aside class="demo-area" data-mockup-h="20rem" data-mockup-flavor="dashboard" inert role="presentation">
+        <section data-layout="dashboard">
+          <header class="hg-header">Dashboard Header</header>
+          <nav class="hg-nav">Navigation</nav>
           <main class="hg-main">Dashboard Content</main>
         </section>
       </aside>
@@ -570,35 +612,33 @@
       </figcaption>
     </figure>
 
-    <!-- ========== COVER ========== -->
     <h2>Cover Layout</h2>
     <p>Full-height container with vertically centered principal element. Use <code>data-layout-principal</code> on the centered child.</p>
 
     <figure class="comparison-panel">
       <strong class="panel-label proposed">Hero Section</strong>
-      <aside class="demo-area cover-demo" style="block-size: 20rem; padding: 0;" inert role="presentation">
-        <section data-layout="cover" data-layout-min="auto" data-layout-centered style="block-size: 100%;">
-          <header style="padding: var(--size-s); text-align: center;">Top content</header>
-          <div data-layout-principal>
-            <h2 style="margin: 0;">Hero Headline</h2>
-            <p style="margin: var(--size-s) 0 0;">Vertically centered content</p>
-          </div>
-          <footer style="padding: var(--size-s); text-align: center;">Bottom content</footer>
+      <aside class="demo-area cover-demo" data-mockup-h="20rem" inert role="presentation">
+        <section data-layout="cover" data-layout-min="auto" data-layout-centered>
+          <header>Top content</header>
+          <section data-layout-principal>
+            <h2>Hero Headline</h2>
+            <p>Vertically centered content</p>
+          </section>
+          <footer>Bottom content</footer>
         </section>
       </aside>
       <figcaption class="code-area">
         <pre>&lt;section data-layout="cover" data-layout-centered&gt;
   &lt;header&gt;Top content&lt;/header&gt;
-  &lt;div data-layout-principal&gt;
+  &lt;section data-layout-principal&gt;
     &lt;h1&gt;Hero Headline&lt;/h1&gt;
     &lt;p&gt;Vertically centered content&lt;/p&gt;
-  &lt;/div&gt;
+  &lt;/section&gt;
   &lt;footer&gt;Bottom content&lt;/footer&gt;
 &lt;/section&gt;</pre>
       </figcaption>
     </figure>
 
-    <!-- ========== SWITCHER ========== -->
     <h2>Switcher Layout</h2>
     <p>Flexbox that switches from horizontal to vertical based on container width. No media queries needed.</p>
 
@@ -606,23 +646,22 @@
       <strong class="panel-label proposed">Responsive Switcher</strong>
       <aside class="demo-area" inert role="presentation">
         <section data-layout="switcher" data-layout-threshold="30rem" data-layout-gap="m">
-          <div class="split-item">Item 1</div>
-          <div class="split-item">Item 2</div>
-          <div class="split-item">Item 3</div>
+          <section class="split-item">Item 1</section>
+          <section class="split-item">Item 2</section>
+          <section class="split-item">Item 3</section>
         </section>
       </aside>
       <figcaption class="code-area">
         <pre>&lt;section data-layout="switcher" data-layout-threshold="30rem"&gt;
-  &lt;div&gt;Item 1&lt;/div&gt;
-  &lt;div&gt;Item 2&lt;/div&gt;
-  &lt;div&gt;Item 3&lt;/div&gt;
+  &lt;section&gt;Item 1&lt;/section&gt;
+  &lt;section&gt;Item 2&lt;/section&gt;
+  &lt;section&gt;Item 3&lt;/section&gt;
 &lt;/section&gt;
 
 &lt;!-- Stacks when container &lt; 30rem --&gt;</pre>
       </figcaption>
     </figure>
 
-    <!-- ========== PROSE ========== -->
     <h2>Prose Layout</h2>
     <p>Utility for readable text content. Sets max-width in character units (ch).</p>
 
@@ -640,22 +679,21 @@
       </figcaption>
     </figure>
 
-    <!-- ========== COMPOSED EXAMPLE ========== -->
     <h2>Composed Layouts</h2>
     <p>Real-world example: A blog card using nested layouts on semantic elements.</p>
 
-    <figure class="comparison-panel" style="max-inline-size: 30rem;">
+    <figure class="comparison-panel" data-max="30rem">
       <strong class="panel-label proposed">Blog Card</strong>
       <aside class="demo-area" inert role="presentation">
-        <article class="card" data-layout="stack" data-layout-gap="s">
+        <article class="card blog-card" data-layout="stack" data-layout-gap="s">
           <header data-layout="cluster" data-layout-justify="between">
             <span class="tag">Tutorial</span>
             <time datetime="2026-01-18">Jan 18, 2026</time>
           </header>
-          <h3 style="margin: 0;">Building Semantic Layouts</h3>
-          <p style="margin: 0; color: var(--color-text-muted);">Learn how to build layouts with semantic HTML and data attributes.</p>
+          <h3>Building Semantic Layouts</h3>
+          <p>Learn how to build layouts with semantic HTML and data attributes.</p>
           <footer data-layout="cluster" data-layout-justify="between">
-            <span style="font-size: var(--font-size-sm); color: var(--color-text-muted);">5 min read</span>
+            <span>5 min read</span>
             <a href="#">Read more &rarr;</a>
           </footer>
         </article>
@@ -676,76 +714,75 @@
       </figcaption>
     </figure>
 
-    <!-- ========== SUMMARY ========== -->
     <h2>Summary</h2>
-    <table style="inline-size: 100%; border-collapse: collapse;">
+    <table class="layouts-table">
       <thead>
-        <tr style="text-align: left; border-bottom: 2px solid var(--color-border);">
-          <th scope="col" style="padding: var(--size-s);">Layout</th>
-          <th scope="col" style="padding: var(--size-s);">Child Attrs?</th>
-          <th scope="col" style="padding: var(--size-s);">Use Case</th>
+        <tr>
+          <th scope="col">Layout</th>
+          <th scope="col">Child Attrs?</th>
+          <th scope="col">Use Case</th>
         </tr>
       </thead>
       <tbody>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>stack</code></td>
-          <td style="padding: var(--size-s);">No</td>
-          <td style="padding: var(--size-s);">Vertical rhythm, forms, cards</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>cluster</code></td>
-          <td style="padding: var(--size-s);">No</td>
-          <td style="padding: var(--size-s);">Tags, buttons, nav links</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>grid</code></td>
-          <td style="padding: var(--size-s);">No</td>
-          <td style="padding: var(--size-s);">Card grids, galleries</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>center</code></td>
-          <td style="padding: var(--size-s);">No</td>
-          <td style="padding: var(--size-s);">Max-width containers</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>page-stack</code></td>
-          <td style="padding: var(--size-s);">No</td>
-          <td style="padding: var(--size-s);">Sticky footer pages</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>split</code></td>
-          <td style="padding: var(--size-s);">No</td>
-          <td style="padding: var(--size-s);">Two-column ratio layouts</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>sidebar</code></td>
-          <td style="padding: var(--size-s);">No</td>
-          <td style="padding: var(--size-s);">Responsive two-column</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>holy-grail</code></td>
-          <td style="padding: var(--size-s);">No</td>
-          <td style="padding: var(--size-s);">Classic 3-column pages</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>dashboard</code></td>
-          <td style="padding: var(--size-s);">No*</td>
-          <td style="padding: var(--size-s);">App shells (* data-nav-open toggle)</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>cover</code></td>
-          <td style="padding: var(--size-s);"><strong>Yes</strong></td>
-          <td style="padding: var(--size-s);">Hero sections (data-layout-principal)</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--color-border);">
-          <td style="padding: var(--size-s);"><code>switcher</code></td>
-          <td style="padding: var(--size-s);">No</td>
-          <td style="padding: var(--size-s);">Container-query-like responsive</td>
+        <tr>
+          <td><code>stack</code></td>
+          <td>No</td>
+          <td>Vertical rhythm, forms, cards</td>
         </tr>
         <tr>
-          <td style="padding: var(--size-s);"><code>prose</code></td>
-          <td style="padding: var(--size-s);">No</td>
-          <td style="padding: var(--size-s);">Readable text width</td>
+          <td><code>cluster</code></td>
+          <td>No</td>
+          <td>Tags, buttons, nav links</td>
+        </tr>
+        <tr>
+          <td><code>grid</code></td>
+          <td>No</td>
+          <td>Card grids, galleries</td>
+        </tr>
+        <tr>
+          <td><code>center</code></td>
+          <td>No</td>
+          <td>Max-width containers</td>
+        </tr>
+        <tr>
+          <td><code>page-stack</code></td>
+          <td>No</td>
+          <td>Sticky footer pages</td>
+        </tr>
+        <tr>
+          <td><code>split</code></td>
+          <td>No</td>
+          <td>Two-column ratio layouts</td>
+        </tr>
+        <tr>
+          <td><code>sidebar</code></td>
+          <td>No</td>
+          <td>Responsive two-column</td>
+        </tr>
+        <tr>
+          <td><code>holy-grail</code></td>
+          <td>No</td>
+          <td>Classic 3-column pages</td>
+        </tr>
+        <tr>
+          <td><code>dashboard</code></td>
+          <td>No*</td>
+          <td>App shells (* data-nav-open toggle)</td>
+        </tr>
+        <tr>
+          <td><code>cover</code></td>
+          <td><strong>Yes</strong></td>
+          <td>Hero sections (data-layout-principal)</td>
+        </tr>
+        <tr>
+          <td><code>switcher</code></td>
+          <td>No</td>
+          <td>Container-query-like responsive</td>
+        </tr>
+        <tr>
+          <td><code>prose</code></td>
+          <td>No</td>
+          <td>Readable text width</td>
         </tr>
       </tbody>
     </table>
