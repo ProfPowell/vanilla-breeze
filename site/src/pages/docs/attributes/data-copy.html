@@ -183,6 +183,59 @@ btn.addEventListener('copy', (e) => {
   </section>
 
   <section>
+    <h2>JavaScript API</h2>
+    <p>For components that need to copy computed strings (formatted output, JSON, CSS), import <code>copyText()</code> from the same module. It performs the clipboard write with the same visual feedback, screen-reader announcement, and <code>copy</code> event dispatch as the attribute pattern.</p>
+
+    <code-block language="javascript" show-lines label="Programmatic copy with feedback" data-escape>import { copyText } from '/src/utils/copy-init.js';
+
+// Minimal — text only, announces to document.body
+await copyText('hello');
+
+// With a button — applies data-state="copied" and dispatches the copy event
+await copyText(generateCSS(), { button: myButton });
+
+// Custom announcement + duration
+await copyText(json, {
+  button: myButton,
+  announceMessage: 'Settings exported',
+  duration: 2000
+});</code-block>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>button</code></td>
+          <td>HTMLElement</td>
+          <td>—</td>
+          <td>Receives <code>data-state="copied"</code> and dispatches the <code>copy</code> event. Omit for "fire and forget" copies.</td>
+        </tr>
+        <tr>
+          <td><code>announceMessage</code></td>
+          <td>string</td>
+          <td><code>"Copied to clipboard"</code></td>
+          <td>Screen-reader announcement text.</td>
+        </tr>
+        <tr>
+          <td><code>duration</code></td>
+          <td>number</td>
+          <td><code>1500</code></td>
+          <td>Milliseconds to hold <code>data-state="copied"</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Returns <code>Promise&lt;boolean&gt;</code> — resolves to <code>true</code> on success, <code>false</code> if the Clipboard API is unavailable or permission is denied. Never throws.</p>
+  </section>
+
+  <section>
     <h2>Dynamic Buttons</h2>
     <p>Buttons added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
 

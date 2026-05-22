@@ -1,8 +1,10 @@
 /**
- * copy-init: Clipboard copy via data attributes
+ * copy-init: Clipboard copy via data attributes + programmatic helper
  *
  * Enhances buttons with data-copy or data-copy-target to copy text
- * to the clipboard on click. Provides visual and screen reader feedback.
+ * to the clipboard on click. Also exports copyText() for components
+ * that need to copy computed strings — both paths produce the same
+ * visual + screen-reader feedback and dispatch the same `copy` event.
  *
  * @attr {string} data-copy - Static text to copy
  * @attr {string} data-copy-target - CSS selector for element whose textContent to copy
@@ -12,11 +14,62 @@
  *
  * @example Target element
  * <button data-copy-target="#code-block">Copy code</button>
+ *
+ * @example Programmatic
+ * import { copyText } from '/src/utils/copy-init.js';
+ * await copyText('hello', { button: myButton });
  */
 
 const COPIED_DURATION = 1500;
 const ANNOUNCE_DURATION = 1000;
 const SELECTOR = '[data-copy], [data-copy-target]';
+const DEFAULT_ANNOUNCE = 'Copied to clipboard';
+
+const resetTimers = new WeakMap();
+
+/**
+ * Copy text to the clipboard with VB's standard feedback semantics.
+ *
+ * Performs writeText, sets data-state="copied" on the button (if given),
+ * announces to screen readers, and dispatches a `copy` CustomEvent from
+ * the button. Safe to call when the Clipboard API is unavailable or
+ * permission is denied — returns false silently.
+ *
+ * @param {string} text - The text to copy.
+ * @param {object} [options]
+ * @param {HTMLElement} [options.button] - Button to receive data-state and dispatch the event.
+ * @param {string} [options.announceMessage] - Screen-reader message. Defaults to "Copied to clipboard".
+ * @param {number} [options.duration] - Milliseconds to hold data-state="copied". Defaults to 1500.
+ * @returns {Promise<boolean>} True if the write succeeded.
+ */
+async function copyText(text, options = {}) {
+  if (text == null || text === '') return false;
+  const { button, announceMessage = DEFAULT_ANNOUNCE, duration = COPIED_DURATION } = options;
+
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    return false;
+  }
+
+  if (button) {
+    button.dataset.state = 'copied';
+    const prior = resetTimers.get(button);
+    if (prior) clearTimeout(prior);
+    resetTimers.set(button, setTimeout(() => {
+      delete button.dataset.state;
+      resetTimers.delete(button);
+    }, duration));
+
+    button.dispatchEvent(new CustomEvent('copy', {
+      bubbles: true,
+      detail: { text }
+    }));
+  }
+
+  announce(announceMessage, button ?? document.body);
+  return true;
+}
 
 /**
  * Initialize copy buttons within a root element
@@ -34,32 +87,10 @@ function enhanceButton(button) {
   if (button.hasAttribute('data-copy-init')) return;
   button.setAttribute('data-copy-init', '');
 
-  let resetTimer;
-
-  button.addEventListener('click', async () => {
+  button.addEventListener('click', () => {
     const text = getText(button);
     if (!text) return;
-
-    try {
-      await navigator.clipboard.writeText(text);
-
-      // Visual feedback
-      button.dataset.state = 'copied';
-      clearTimeout(resetTimer);
-      resetTimer = setTimeout(() => {
-        delete button.dataset.state;
-      }, COPIED_DURATION);
-
-      // Screen reader announcement
-      announce('Copied to clipboard', button);
-
-      button.dispatchEvent(new CustomEvent('copy', {
-        bubbles: true,
-        detail: { text }
-      }));
-    } catch {
-      // Clipboard API unavailable or denied
-    }
+    copyText(text, { button });
   });
 }
 
@@ -121,4 +152,4 @@ const observer = new MutationObserver((mutations) => {
 
 observer.observe(document.documentElement, { childList: true, subtree: true });
 
-export { initCopyButtons };
+export { initCopyButtons, copyText };
