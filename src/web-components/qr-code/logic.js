@@ -17,6 +17,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { copyRich } from '../../utils/copy-init.js';
 
 class QrCodeWc extends VBElement {
   #canvas;
@@ -116,6 +117,26 @@ class QrCodeWc extends VBElement {
   /** Get the QR code as a data URL */
   toDataURL(type = 'image/png') {
     return this.#canvas?.toDataURL(type) ?? '';
+  }
+
+  /**
+   * Copy the QR code to the clipboard as both the encoded text and a PNG
+   * image. Pastes as text into text fields and as an image into design
+   * tools and chat clients. Falls back to text-only on browsers without
+   * ClipboardItem support.
+   *
+   * @param {object} [options]
+   * @param {HTMLElement} [options.button] - Trigger button for data-state + copy event.
+   * @returns {Promise<boolean>}
+   */
+  async copy({ button } = {}) {
+    if (!this.#canvas) return false;
+    const text = this.#savedValue || this.getAttribute('value') || '';
+    const blob = await new Promise((resolve) => this.#canvas.toBlob(resolve, 'image/png'));
+    return copyRich(
+      { text, blob: blob || undefined },
+      { button, announceMessage: 'QR code copied' },
+    );
   }
 }
 

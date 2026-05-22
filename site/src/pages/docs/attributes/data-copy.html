@@ -267,6 +267,30 @@ await copyText(json, {
   </section>
 
   <section>
+    <h2>Rich clipboard (multi-format)</h2>
+    <p>For payloads richer than text — copying a color as both hex and a swatch image, or a QR code as both the URL and a PNG — import <code>copyRich()</code>. It writes a <code>ClipboardItem</code> with any combination of <code>text/plain</code>, <code>text/html</code>, and a binary <code>Blob</code> (typically <code>image/png</code>). When the browser doesn&apos;t support <code>ClipboardItem</code> or rejects a specific MIME type, it transparently falls back to text-only via <code>copyText()</code>.</p>
+
+    <code-block language="javascript" show-lines label="Multi-format copy" data-escape>import { copyRich } from '/src/utils/copy-init.js';
+
+// Text + HTML — pastes as styled into rich-text targets, plain into code editors
+await copyRich({
+  text: 'Vanilla Breeze',
+  html: '&lt;strong&gt;Vanilla Breeze&lt;/strong&gt;',
+}, { button: myButton });
+
+// Text + image (e.g. a color swatch)
+const blob = await new Promise(r =&gt; canvas.toBlob(r, 'image/png'));
+await copyRich({
+  text: '#3366cc',
+  blob,
+}, { button: myButton, announceMessage: 'Color copied as text + image' });</code-block>
+
+    <p>Receiving apps choose the format they understand. Pasting into Slack or Figma uses the image; pasting into a code editor uses the text. The screen-reader announcement, <code>data-state="copied"</code> hook, and <code>copy</code> event behave exactly as with <code>copyText()</code>.</p>
+
+    <p>VB&apos;s <code>&lt;qr-code&gt;</code> uses <code>copyRich()</code> internally via its <code>copy()</code> method.</p>
+  </section>
+
+  <section>
     <h2>Dynamic Buttons</h2>
     <p>Buttons added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
 
