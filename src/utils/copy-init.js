@@ -8,12 +8,18 @@
  *
  * @attr {string} data-copy - Static text to copy
  * @attr {string} data-copy-target - CSS selector for element whose textContent to copy
+ * @attr {string} data-copy-attr - When paired with data-copy-target, copy the named
+ *                                 attribute of the target instead of its textContent
  *
  * @example Static text
  * <button data-copy="npm install vanilla-breeze">Copy</button>
  *
  * @example Target element
  * <button data-copy-target="#code-block">Copy code</button>
+ *
+ * @example Target attribute
+ * <output id="swatch" value="#3366cc">#3366cc</output>
+ * <button data-copy-target="#swatch" data-copy-attr="value">Copy hex</button>
  *
  * @example Programmatic
  * import { copyText } from '/src/utils/copy-init.js';
@@ -104,7 +110,10 @@ function getText(button) {
 
   if (button.dataset.copyTarget) {
     const target = document.querySelector(button.dataset.copyTarget);
-    return target?.textContent ?? '';
+    if (!target) return '';
+    const attr = button.dataset.copyAttr;
+    if (attr) return target.getAttribute(attr) ?? '';
+    return target.textContent ?? '';
   }
 
   return '';
