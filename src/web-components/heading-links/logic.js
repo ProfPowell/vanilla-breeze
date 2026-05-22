@@ -16,6 +16,7 @@
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { copyText } from '../../utils/copy-init.js';
 
 class HeadingLinks extends VBElement {
   #observer;
@@ -107,44 +108,29 @@ class HeadingLinks extends VBElement {
     const url = new URL(window.location.href);
     url.hash = heading.id;
 
-    // Update URL and scroll
     window.history.pushState(null, '', url);
     heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
     heading.focus();
 
-    // Copy to clipboard silently
-    try {
-      await navigator.clipboard.writeText(url.href);
+    const ok = await copyText(url.href, {
+      button: anchor,
+      announceMessage: 'Link copied to clipboard',
+    });
 
-      // Brief visual feedback
+    if (ok) {
       const originalIcon = anchor.innerHTML;
       anchor.innerHTML = '<icon-wc name="check" size="sm"></icon-wc>';
       anchor.classList.add('copied');
-
       setTimeout(() => {
         anchor.innerHTML = originalIcon;
         anchor.classList.remove('copied');
       }, 1500);
-
-      this.#announce('Link copied to clipboard');
-    } catch {
-      // Clipboard failed, but navigation still works
     }
 
     this.dispatchEvent(new CustomEvent('heading-links:navigate', {
       bubbles: true,
       detail: { id: heading.id, url: url.href }
     }));
-  }
-
-  #announce(message) {
-    const announcement = document.createElement('div');
-    announcement.setAttribute('role', 'status');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.className = 'visually-hidden';
-    announcement.textContent = message;
-    this.appendChild(announcement);
-    setTimeout(() => announcement.remove(), 1000);
   }
 }
 

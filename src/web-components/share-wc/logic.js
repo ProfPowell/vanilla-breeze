@@ -26,6 +26,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { copyText } from '../../utils/copy-init.js';
 import { PLATFORMS, DEFAULT_PLATFORMS } from './platforms.js';
 
 class ShareWc extends VBElement {
@@ -165,14 +166,13 @@ class ShareWc extends VBElement {
     icon.setAttribute('aria-hidden', 'true');
     btn.appendChild(icon);
     btn.addEventListener('click', () => {
-      // Get selection from parent selection-menu
       const menu = /** @type {any} */ (this.closest('selection-menu'));
       const sel = menu?.getSelection?.();
       const text = sel?.text || window.getSelection()?.toString() || '';
       if (text && navigator.share) {
         navigator.share({ text: `"${text}" — ${location.href}` }).catch(() => {});
       } else if (text) {
-        navigator.clipboard?.writeText(`"${text}" — ${location.href}`).catch(() => {});
+        copyText(`"${text}" — ${location.href}`, { button: btn, announceMessage: 'Selection copied' });
       }
       menu?.dismiss?.();
     });
@@ -332,39 +332,35 @@ class ShareWc extends VBElement {
     const btn = target || /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (_e?.target)?.closest('[data-platform="copy"]'));
     if (!btn) return;
 
-    try {
-      await navigator.clipboard.writeText(this.#url || '');
-      btn.dataset.state = 'copied';
+    const ok = await copyText(this.#url || '', {
+      button: btn,
+      announceMessage: 'Link copied to clipboard',
+      duration: 2000,
+    });
 
-      // Update label text
-      const label = btn.querySelector('.share-label');
-      const originalText = label?.textContent;
-      if (label) label.textContent = 'Copied!';
-
-      // Announce for screen readers
-      const live = btn.querySelector('[aria-live]') || btn;
-      if (!btn.querySelector('[aria-live]')) {
-        btn.setAttribute('aria-live', 'polite');
-      }
-
-      this.dispatchEvent(new CustomEvent('share-wc:success', {
+    if (!ok) {
+      this.dispatchEvent(new CustomEvent('share-wc:error', {
         detail: { platform: 'copy' },
         bubbles: true,
       }));
-
-      if (this.#copyTimer) clearTimeout(this.#copyTimer);
-      this.#copyTimer = setTimeout(() => {
-        delete /** @type {HTMLElement} */ (btn).dataset.state;
-        if (label && originalText) label.textContent = originalText;
-        btn.removeAttribute('aria-live');
-        this.#copyTimer = null;
-      }, 2000);
-    } catch (err) {
-      this.dispatchEvent(new CustomEvent('share-wc:error', {
-        detail: { platform: 'copy', error: err },
-        bubbles: true,
-      }));
+      return;
     }
+
+    // Visible label swap (data-state already set by copyText drives any CSS hook)
+    const label = btn.querySelector('.share-label');
+    const originalText = label?.textContent;
+    if (label) label.textContent = 'Copied!';
+
+    this.dispatchEvent(new CustomEvent('share-wc:success', {
+      detail: { platform: 'copy' },
+      bubbles: true,
+    }));
+
+    if (this.#copyTimer) clearTimeout(this.#copyTimer);
+    this.#copyTimer = setTimeout(() => {
+      if (label && originalText) label.textContent = originalText;
+      this.#copyTimer = null;
+    }, 2000);
   };
 }
 

@@ -46,6 +46,7 @@ import { styles } from './styles.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { esc, initials, hashColor, lucideSvg, UX_ICONS } from '../_ux-base.js';
 import { VBStore } from '../../lib/vb-store.js';
+import { copyText } from '../../utils/copy-init.js';
 
 /* ── Adapters ──────────────────────────────────────── */
 
@@ -758,20 +759,18 @@ class ReviewSurface extends HTMLElement {
 
   async #exportToClipboard() {
     const data = JSON.stringify(this.exportPins(), null, 2);
-    try {
-      await navigator.clipboard.writeText(data);
-      this.#announce('Pins copied to clipboard');
-    } catch {
-      /* Fallback: download as file */
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'review-pins.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      this.#announce('Pins exported as file');
-    }
+    const ok = await copyText(data, { announceMessage: 'Pins copied to clipboard' });
+    if (ok) return;
+
+    /* Fallback: download as file */
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'review-pins.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    this.#announce('Pins exported as file');
   }
 
   #formatTime(isoString) {
