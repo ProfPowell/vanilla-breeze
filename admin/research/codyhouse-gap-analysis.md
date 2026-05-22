@@ -125,13 +125,21 @@ CodyHouse subcategory list was not exposed by the index, but the genre is modals
 |---|---|---|
 | Toast | `toast-msg` | Covered. |
 | Notification | `notification-wc` | Covered. |
-| Loader / Spinner | — | **Gap (minor):** no `<spinner-wc>` or canonical loading primitive. Likely CSS recipe territory, not a component. |
+| Loader / Spinner | `<loading-spinner>` + `[data-loading]` + `button[data-loading]` + `icon-wc[data-animate="spin"]` | Covered with depth. (Originally listed as a gap; corrected 2026-05-22 via vb-9uay — see follow-up note.) |
 | Rating | `star-rating`, `score-card`, `reaction-bar` | Covered. |
 | Emoji Feedback | `reaction-bar`, `emoji-picker`, `poll-wc` | Covered. |
 | Content Rating | `star-rating`, `review-surface` | Covered. |
-| Empty State / Placeholder | — | **Gap (minor):** no canonical empty-state pattern. Layout + content job. |
+| Empty State / Placeholder | Unified `data-state="empty"` + `output[data-empty]` + `data-feedback="message"` pattern | Covered with pattern doc + 3 demos. (Originally listed as a gap; corrected 2026-05-22 via vb-9uay.) |
 
-**Material gaps:** loader/spinner recipe; empty-state recipe.
+**Material gaps:** none. Both loader/spinner and empty-state claims were research misses — corrected 2026-05-22.
+
+**Follow-up audit (vb-9uay):**
+
+*Loading*: `<loading-spinner>` CSS-only custom element with 5 sizes + 4 variants + overlay mode + reduced-motion handling (`src/custom-elements/loading-spinner/styles.css`); `[data-loading]` shimmer overlay with `skeleton`/`minimal`/`hide` variants (`src/utils/loading.css`); `button[data-loading]` with form integration, aria-busy, auto-revert, programmatic activate/deactivate API (`src/utils/loading-button-init.js`); `icon-wc[data-animate="spin"]`. Doc pages: `/docs/attributes/data-loading/`, `/docs/elements/custom-elements/loading-spinner/`, `/docs/snippets/css/loading-states/`, `/docs/patterns/feedback/skeleton/`. Four spinner demos (sizes, inline, variants, imposter overlay).
+
+*Empty state*: unified `data-state="empty"` pattern with `output[data-empty]` and `data-feedback="message|skeleton"` presentation (`src/utils/feedback-states.css`). Pattern docs: `/docs/patterns/feedback/empty-states/`, `/docs/patterns/feedback/feedback-states/`. Three demos (empty-simple, empty-action, empty-illustration).
+
+Both are more comprehensive than CodyHouse's offerings.
 
 ### Typography (CodyHouse: 24, flat)
 
@@ -207,14 +215,12 @@ Items below are **real** gaps, not category mismatches:
 | Footer recipe | Doc/recipe | Low | Low |
 | Mega-menu / drawer-nav recipes for `nav-bar` | Doc/recipe | Low–Med | Low |
 | Drawer overlay pattern | Doc/recipe | Low | Low |
-| Loader / spinner primitive or recipe | Component or recipe | Low | Low |
-| Empty-state pattern | Doc/recipe | Low | Low |
 | Ticker / marquee scroller | Recipe | Low | Very low |
 | Scroll-effect audit vs `data-effect` catalog | Audit | Med | Low |
 | Marketing-page templates (Hero/Features/Pricing) | Out of scope | — | — |
 | Decorative backgrounds | Out of scope | — | — |
 
-**Summary:** VB has effectively no missing primitives relative to CodyHouse's app-and-data scope. The genuine gaps are documentation/recipes for common compositions (split buttons, drawers, footers, mega-menus) and a handful of small utilities (clipboard, ticker, loader). Marketing-template territory (the bulk of CodyHouse's 404-count) is an intentional scope decision and matches memory `feedback_use_vb_primitives`: native HTML → VB primitives → component code.
+**Summary:** VB has effectively no missing primitives relative to CodyHouse's app-and-data scope. The genuine gaps are documentation/recipes for common compositions (split buttons, drawers, footers, mega-menus) and a single small utility (ticker). Marketing-template territory (the bulk of CodyHouse's 404-count) is an intentional scope decision and matches memory `feedback_use_vb_primitives`: native HTML → VB primitives → component code.
 
 ## What VB has that CodyHouse doesn't (consolidated)
 
@@ -233,7 +239,7 @@ CodyHouse has none of these because they're outside its marketing-kit scope. Thi
 
 If any of these become real work, file as new beads issues:
 
-1. **Doc-recipe sweep:** split button, drawer, footer, mega-menu, loader, empty-state, ticker. Bundle as one "common patterns" doc PR. Low effort, plausibly high payoff for newcomers comparing the two libraries.
+1. **Doc-recipe sweep:** split button, drawer, footer, mega-menu, ticker. Bundle as one "common patterns" doc PR. Low effort, plausibly high payoff for newcomers comparing the two libraries.
 2. **Scroll-effect audit:** map CodyHouse's 13 scroll effects against `data-effect` catalog. Output: either coverage confirmation or a short list of additions.
 3. **Strategic question (do not implement):** does VB want a marketing-page scaffold variant? Currently `scaffold-site` exists; `scaffold-blog` exists; no `scaffold-landing`. This is a positioning call, not a gap.
 

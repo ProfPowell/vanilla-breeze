@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>&lt;super-marquee&gt; — Vanilla Breeze demo</title>
+<link rel="stylesheet" href="super-marquee.css"/>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: oklch(98% 0.005 250);
+    --fg: oklch(20% 0.02 250);
+    --muted: oklch(60% 0.02 250);
+    --border: oklch(85% 0.01 250);
+    --accent: oklch(55% 0.18 250);
+    --code-bg: oklch(95% 0.01 250);
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(15% 0.02 250);
+      --fg: oklch(95% 0.01 250);
+      --muted: oklch(60% 0.02 250);
+      --border: oklch(28% 0.02 250);
+      --code-bg: oklch(20% 0.02 250);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2rem 1.5rem 6rem;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.5;
+    max-width: 70rem;
+    margin-inline: auto;
+  }
+  h1 { font-size: clamp(1.5rem, 4vw, 2.5rem); margin: 0 0 0.5rem; }
+  h2 {
+    margin: 3rem 0 0.5rem;
+    font-size: 1.25rem;
+    border-block-end: 1px solid var(--border);
+    padding-block-end: 0.5rem;
+  }
+  p { color: var(--muted); margin: 0 0 1rem; }
+  code {
+    font-family: ui-monospace, monospace;
+    background: var(--code-bg);
+    padding: 0.1em 0.3em;
+    border-radius: 0.25em;
+    font-size: 0.9em;
+  }
+  details {
+    margin-block: 0.5rem 1.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--code-bg);
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+  }
+  details summary { cursor: pointer; color: var(--muted); }
+  details pre {
+    margin-block-start: 0.75rem;
+    overflow-x: auto;
+    line-height: 1.4;
+  }
+  .controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-block: 0.75rem 1rem;
+  }
+  .controls button {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--fg);
+    border-radius: 0.4rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .controls button:hover { border-color: var(--accent); }
+  .logo-wall img,
+  .logo-wall svg {
+    height: 2.5rem;
+    width: auto;
+    filter: grayscale(1);
+    opacity: 0.7;
+  }
+  .logo-wall {
+    background: var(--code-bg);
+    padding-block: 1rem;
+    border-radius: 0.5rem;
+  }
+  .stock { display: inline-flex; gap: 0.5rem; align-items: center; }
+  .stock-up { color: oklch(65% 0.18 145); }
+  .stock-down { color: oklch(60% 0.20 25); }
+</style>
+</head>
+<body>
+
+<h1>&lt;super-marquee&gt;</h1>
+<p>A modern, themable, accessible marquee. The pragmatic platform answer to a problem that won't die.</p>
+
+<!-- ── 1. Legacy emulation ───────────────────────────────────────────── -->
+<h2>1. Legacy &lt;marquee&gt; emulation</h2>
+<p>Drop-in mental model. Defaults match the old behavior.</p>
+
+<super-marquee>
+  This is what the old &lt;marquee&gt; looked like. Now with constant velocity, autofill, and pause-when-offscreen.
+</super-marquee>
+
+<details><summary>HTML</summary><pre><code>&lt;super-marquee&gt;
+  This is what the old &amp;lt;marquee&amp;gt; looked like…
+&lt;/super-marquee&gt;</code></pre></details>
+
+<!-- ── 2. Ticker theme ───────────────────────────────────────────────── -->
+<h2>2. <code>theme="ticker"</code></h2>
+<p>Stock ticker. Monospace, fade edges, dot separators, pause-on-hover.</p>
+
+<super-marquee theme="ticker" speed="80" pause-on-hover fade>
+  <span class="stock">AAPL <span class="stock-up">▲ 178.42 (+1.2%)</span></span>
+  <span class="stock">MSFT <span class="stock-up">▲ 412.18 (+0.4%)</span></span>
+  <span class="stock">GOOG <span class="stock-down">▼ 138.21 (−0.8%)</span></span>
+  <span class="stock">NVDA <span class="stock-up">▲ 822.15 (+2.1%)</span></span>
+  <span class="stock">META <span class="stock-down">▼ 478.50 (−0.3%)</span></span>
+  <span class="stock">TSLA <span class="stock-up">▲ 192.30 (+3.4%)</span></span>
+</super-marquee>
+
+<!-- ── 3. Breaking news ──────────────────────────────────────────────── -->
+<h2>3. <code>theme="breaking-news"</code></h2>
+<p>Bold red bar, label slot via <code>label</code> attr in the <code>::before</code> pseudo (CSS-only).</p>
+
+<super-marquee theme="breaking-news" speed="60" pause-on-hover>
+  Web standards adopt <code>&lt;super-marquee&gt;</code> as new HTML element.
+  All major browsers ship in 2026. Developers rejoice. The 90s are back.
+</super-marquee>
+
+<!-- ── 4. Logo wall ──────────────────────────────────────────────────── -->
+<h2>4. Logo wall (autofill)</h2>
+<p>Short content auto-clones to fill viewport. Try resizing the window.</p>
+
+<super-marquee class="logo-wall" speed="40" pause-on-hover>
+  <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg"><text x="50" y="28" text-anchor="middle" font-size="20" font-weight="900">ACME</text></svg>
+  <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg"><text x="50" y="28" text-anchor="middle" font-size="18" font-family="serif" font-style="italic">Globex</text></svg>
+  <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg"><text x="50" y="28" text-anchor="middle" font-size="20" font-weight="300">SOYLENT</text></svg>
+  <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg"><text x="50" y="28" text-anchor="middle" font-size="18" font-weight="700">Initech</text></svg>
+  <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg"><text x="50" y="28" text-anchor="middle" font-size="18" font-weight="500">Hooli</text></svg>
+</super-marquee>
+
+<!-- ── 5. Code block theme ───────────────────────────────────────────── -->
+<h2>5. <code>theme="code-block"</code> — long-line tickers</h2>
+<p>Useful for terminal output, build logs, or a long line of code that won't wrap.</p>
+
+<super-marquee theme="code-block" speed="50" pause-on-hover>
+  $ cloudflare deploy --env production --branch main --route vanilla-breeze.com/* --vars KV_NAMESPACE=breeze_v2,API_TOKEN=*** --compatibility-date=2026-05-22
+</super-marquee>
+
+<!-- ── 6. Screen saver ───────────────────────────────────────────────── -->
+<h2>6. <code>theme="screen-saver"</code> + <code>behavior="alternate"</code></h2>
+<p>Bouncing DVD-logo energy. Alternate behavior with easing.</p>
+
+<super-marquee theme="screen-saver" behavior="alternate" speed="80">
+  HELLO WORLD
+</super-marquee>
+
+<!-- ── 7. Vertical credits ───────────────────────────────────────────── -->
+<h2>7. <code>theme="credits"</code> — vertical credit roll</h2>
+<p>Up direction, slow speed, vertical fade.</p>
+
+<super-marquee theme="credits" direction="up" speed="30" pause-on-hover>
+  <div>
+    <p><strong>VANILLA BREEZE</strong></p>
+    <p>A platform-first framework</p>
+    <br/>
+    <p><strong>WRITTEN AND DIRECTED BY</strong></p>
+    <p>Thomas Powell</p>
+    <br/>
+    <p><strong>CO-STARRING</strong></p>
+    <p>html-star</p>
+    <p>montane</p>
+    <p>Vanilla Press</p>
+    <br/>
+    <p><strong>SPECIAL THANKS</strong></p>
+    <p>The Web Platform</p>
+    <p>HTML, CSS, JavaScript</p>
+    <p>… in that order</p>
+    <br/>
+    <p><strong>NO FRAMEWORKS</strong></p>
+    <p>were harmed in the making of this site</p>
+  </div>
+</super-marquee>
+
+<!-- ── 8. Programmatic control ───────────────────────────────────────── -->
+<h2>8. Programmatic control (legacy API compat)</h2>
+<p><code>start()</code>, <code>stop()</code>, <code>toggle()</code> work just like the old <code>&lt;marquee&gt;</code>.</p>
+
+<super-marquee id="ctrl-demo" speed="100">
+  Use the buttons below to control this marquee.
+  It also fires <code>marquee-cycle</code> events on each loop iteration.
+</super-marquee>
+
+<div class="controls">
+  <button onclick="document.getElementById('ctrl-demo').start()">start()</button>
+  <button onclick="document.getElementById('ctrl-demo').stop()">stop()</button>
+  <button onclick="document.getElementById('ctrl-demo').toggle()">toggle()</button>
+  <button id="cycle-count">cycles: 0</button>
+</div>
+
+<!-- ── 9. Vertical with reverse ──────────────────────────────────────── -->
+<h2>9. Vertical scroll-down</h2>
+<p><code>direction="down"</code>, also demonstrates RTL-style reverse animation.</p>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+  <super-marquee direction="up" speed="40" style="height:8rem; background:var(--code-bg); border-radius:0.5rem; padding:0.5rem;" pause-on-hover>
+    <div>
+      <p>Item up 1</p><p>Item up 2</p><p>Item up 3</p><p>Item up 4</p><p>Item up 5</p>
+    </div>
+  </super-marquee>
+  <super-marquee direction="down" speed="40" style="height:8rem; background:var(--code-bg); border-radius:0.5rem; padding:0.5rem;" pause-on-hover>
+    <div>
+      <p>Item down 1</p><p>Item down 2</p><p>Item down 3</p><p>Item down 4</p><p>Item down 5</p>
+    </div>
+  </super-marquee>
+</div>
+
+<h2>Defensive defaults</h2>
+<p>Try the following — each is a "thing nobody else does well":</p>
+<ul>
+  <li>Switch to another tab and back. Marquees were paused while hidden (check console).</li>
+  <li>Scroll past a marquee. It stops animating until it returns to the viewport.</li>
+  <li>Tab through the page. <code>pause-on-hover</code> also pauses on <code>:focus-within</code>.</li>
+  <li>Enable <em>reduced motion</em> in your OS. All marquees pause unless explicitly <code>reduced-motion="ignore"</code>.</li>
+  <li>Inspect the cloned items. They have <code>aria-hidden</code>, <code>inert</code>, and no <code>id</code>s.</li>
+</ul>
+
+<script type="module" src="super-marquee.js"></script>
+<script>
+  let cycleCount = 0;
+  document.getElementById('ctrl-demo').addEventListener('marquee-cycle', () => {
+    cycleCount++;
+    document.getElementById('cycle-count').textContent = `cycles: ${cycleCount}`;
+  });
+</script>
+
+</body>
+</html>

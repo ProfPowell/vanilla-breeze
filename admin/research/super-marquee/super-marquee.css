@@ -1,0 +1,270 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * <super-marquee> — Vanilla Breeze component styles
+ *
+ * Theming hooks (CSS custom properties):
+ *   --marquee-gap            : space between repeats (overridable via attr)
+ *   --marquee-fade-size      : size of edge fade mask (default 3rem)
+ *   --marquee-duration       : set by JS based on speed × content
+ *   --marquee-cycle-distance : set by JS (one item + gap)
+ *   --marquee-bg, --marquee-fg : background/foreground for themed variants
+ *
+ * State hooks (data-* set by JS):
+ *   data-axis        : x | y
+ *   data-direction   : forward | reverse
+ *   data-behavior    : loop | slide | alternate
+ *   data-state       : running | paused
+ *   data-visible     : true | false (IntersectionObserver)
+ *   data-tab-visible : true | false (Page Visibility)
+ * ──────────────────────────────────────────────────────────────────────── */
+
+super-marquee {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  --marquee-gap: 2rem;
+  --marquee-fade-size: 3rem;
+  --marquee-duration: 20s;
+  --marquee-cycle-distance: 100%;
+}
+
+/* Unupgraded fallback: render content statically, no animation */
+super-marquee:not(:defined),
+super-marquee:not([data-ready]) {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Edge fade mask via CSS mask (no extra DOM) */
+super-marquee[fade] {
+  --_fade: var(--marquee-fade-size);
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black var(--_fade),
+    black calc(100% - var(--_fade)),
+    transparent 100%
+  );
+}
+super-marquee[fade][data-axis="y"] {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    black var(--_fade),
+    black calc(100% - var(--_fade)),
+    transparent 100%
+  );
+}
+
+/* Internal structure */
+super-marquee .marquee-viewport {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+super-marquee[data-axis="y"] .marquee-viewport {
+  flex-direction: column;
+}
+
+super-marquee .marquee-track {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--marquee-gap);
+  will-change: transform;
+}
+super-marquee[data-axis="y"] .marquee-track {
+  flex-direction: column;
+}
+
+super-marquee .marquee-item {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+super-marquee[data-axis="y"] .marquee-item {
+  white-space: normal;
+}
+
+/* ─── Keyframes ──────────────────────────────────────────────────────── */
+
+@keyframes super-marquee-loop-x {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(calc(-1 * var(--marquee-cycle-distance)), 0, 0); }
+}
+
+@keyframes super-marquee-loop-y {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(0, calc(-1 * var(--marquee-cycle-distance)), 0); }
+}
+
+@keyframes super-marquee-slide-x {
+  from { transform: translate3d(100%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes super-marquee-slide-y {
+  from { transform: translate3d(0, 100%, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes super-marquee-alternate-x {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(calc(-1 * var(--marquee-cycle-distance)), 0, 0); }
+}
+
+@keyframes super-marquee-alternate-y {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(0, calc(-1 * var(--marquee-cycle-distance)), 0); }
+}
+
+/* ─── Animation application ──────────────────────────────────────────── */
+
+super-marquee[data-behavior="loop"][data-axis="x"] .marquee-track {
+  animation: super-marquee-loop-x var(--marquee-duration) linear infinite;
+}
+super-marquee[data-behavior="loop"][data-axis="y"] .marquee-track {
+  animation: super-marquee-loop-y var(--marquee-duration) linear infinite;
+}
+super-marquee[data-behavior="slide"][data-axis="x"] .marquee-track {
+  animation: super-marquee-slide-x var(--marquee-duration) linear 1 forwards;
+}
+super-marquee[data-behavior="slide"][data-axis="y"] .marquee-track {
+  animation: super-marquee-slide-y var(--marquee-duration) linear 1 forwards;
+}
+super-marquee[data-behavior="alternate"][data-axis="x"] .marquee-track {
+  animation: super-marquee-alternate-x var(--marquee-duration) ease-in-out infinite alternate;
+}
+super-marquee[data-behavior="alternate"][data-axis="y"] .marquee-track {
+  animation: super-marquee-alternate-y var(--marquee-duration) ease-in-out infinite alternate;
+}
+
+/* Reverse direction uses CSS animation-direction */
+super-marquee[data-direction="reverse"][data-behavior="loop"] .marquee-track,
+super-marquee[data-direction="reverse"][data-behavior="slide"] .marquee-track {
+  animation-direction: reverse;
+}
+super-marquee[data-direction="reverse"][data-behavior="alternate"] .marquee-track {
+  animation-direction: alternate-reverse;
+}
+
+/* ─── Pause states ───────────────────────────────────────────────────── */
+
+super-marquee[data-state="paused"] .marquee-track,
+super-marquee[data-visible="false"] .marquee-track,
+super-marquee[data-tab-visible="false"] .marquee-track {
+  animation-play-state: paused;
+}
+
+super-marquee[pause-on-hover]:where(:hover, :focus-within) .marquee-track {
+  animation-play-state: paused;
+}
+
+/* ─── Accessibility: prefers-reduced-motion ──────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  super-marquee:not([reduced-motion="ignore"]) .marquee-track {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* ─── Theme: ticker (compact, monospace, fade edges) ─────────────────── */
+
+super-marquee[theme="ticker"] {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.9rem;
+  padding-block: 0.5rem;
+  background: var(--marquee-bg, oklch(20% 0.02 250));
+  color: var(--marquee-fg, oklch(95% 0.02 100));
+  --marquee-gap: 3rem;
+  --_fade: 2rem;
+  mask-image: linear-gradient(to right,
+    transparent 0, black var(--_fade),
+    black calc(100% - var(--_fade)), transparent 100%);
+}
+super-marquee[theme="ticker"] .marquee-item::after {
+  content: " •";
+  opacity: 0.4;
+  margin-inline-start: 1rem;
+}
+
+/* ─── Theme: breaking-news (red bar + label) ─────────────────────────── */
+
+super-marquee[theme="breaking-news"] {
+  display: flex;
+  align-items: stretch;
+  background: var(--marquee-bg, oklch(50% 0.22 25));
+  color: var(--marquee-fg, white);
+  font-weight: 600;
+  --marquee-gap: 4rem;
+}
+super-marquee[theme="breaking-news"]::before {
+  content: var(--marquee-label, "BREAKING");
+  flex-shrink: 0;
+  padding: 0.75rem 1rem;
+  background: oklch(0% 0 0 / 0.25);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  align-content: center;
+}
+super-marquee[theme="breaking-news"] .marquee-viewport {
+  padding-block: 0.75rem;
+}
+
+/* ─── Theme: code-block (monospace, syntax-friendly) ─────────────────── */
+
+super-marquee[theme="code-block"] {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  background: var(--marquee-bg, oklch(15% 0.01 250));
+  color: var(--marquee-fg, oklch(90% 0.02 250));
+  border-radius: var(--radius-md, 0.5rem);
+  padding: 1rem;
+  --marquee-gap: 4ch;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+super-marquee[theme="code-block"] .marquee-item {
+  tab-size: 2;
+}
+
+/* ─── Theme: screen-saver (DVD-bouncing energy, big text, glow) ──────── */
+
+super-marquee[theme="screen-saver"] {
+  background: var(--marquee-bg, oklch(15% 0.05 280));
+  color: var(--marquee-fg, oklch(80% 0.25 320));
+  font-size: clamp(2rem, 8vw, 6rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  padding-block: 2rem;
+  text-shadow:
+    0 0 1rem currentColor,
+    0 0 2rem currentColor;
+}
+
+/* ─── Theme: credits (vertical movie-credit roll) ────────────────────── */
+
+super-marquee[theme="credits"] {
+  background: black;
+  color: white;
+  font-family: var(--font-serif, ui-serif, Georgia, serif);
+  text-align: center;
+  min-height: 24rem;
+  --marquee-gap: 2rem;
+  --marquee-fade-size: 4rem;
+  mask-image: linear-gradient(to bottom,
+    transparent 0, black 4rem,
+    black calc(100% - 4rem), transparent 100%);
+}
+super-marquee[theme="credits"] .marquee-item {
+  white-space: normal;
+  padding-inline: 2rem;
+  line-height: 1.6;
+}
+
+/* ─── Hover affordance: subtle cursor hint when pausable ─────────────── */
+
+super-marquee[pause-on-hover] {
+  cursor: default;
+}
