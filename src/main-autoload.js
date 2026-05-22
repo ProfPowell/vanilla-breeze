@@ -58,7 +58,7 @@ if (document.querySelector('textarea[data-grow]')) import('./utils/textarea-grow
 if (document.querySelector('textarea[data-count]')) import('./utils/textarea-count-init.js');
 if (document.querySelector('input[data-accept]')) import('./utils/accept-init.js');
 if (document.querySelector('[data-highlights]')) import('./utils/highlights-init.js');
-if (document.querySelector('[data-copy], [data-copy-target]')) import('./utils/copy-init.js');
+if (document.querySelector('[data-copy], [data-copy-target], [data-paste-target]')) import('./utils/copy-init.js');
 if (document.querySelector('[data-back-to-top]')) import('./utils/back-to-top-init.js');
 if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-action-init.js');
 if (document.querySelector('[data-watch-page], watch-wc')) import('./utils/page-watch-init.js');

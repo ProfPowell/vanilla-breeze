@@ -1,16 +1,16 @@
 /**
- * copy-init: Clipboard copy via data attributes + programmatic helpers
+ * copy-init: Clipboard copy + paste via data attributes + programmatic helpers
  *
- * Enhances buttons with data-copy or data-copy-target to copy text
- * to the clipboard on click. Also exports copyText() for computed
- * strings and copyRich() for multi-format payloads (text + html + image).
- * All paths produce the same visual + screen-reader feedback and
- * dispatch the same `copy` event.
+ * Enhances buttons with data-copy / data-copy-target / data-paste-target
+ * to interact with the clipboard. Also exports copyText(), copyRich(),
+ * and pasteFromClipboard() for components that need clipboard access
+ * with VB's standard a11y + feedback semantics.
  *
  * @attr {string} data-copy - Static text to copy
  * @attr {string} data-copy-target - CSS selector for element whose textContent to copy
  * @attr {string} data-copy-attr - When paired with data-copy-target, copy the named
  *                                 attribute of the target instead of its textContent
+ * @attr {string} data-paste-target - CSS selector for element to receive pasted clipboard text
  *
  * @example Static text
  * <button data-copy="npm install vanilla-breeze">Copy</button>
@@ -22,16 +22,22 @@
  * <output id="swatch" value="#3366cc">#3366cc</output>
  * <button data-copy-target="#swatch" data-copy-attr="value">Copy hex</button>
  *
+ * @example Paste into a target
+ * <input id="dest" type="text">
+ * <button data-paste-target="#dest">Paste</button>
+ *
  * @example Programmatic
- * import { copyText, copyRich } from '/src/utils/copy-init.js';
+ * import { copyText, copyRich, pasteFromClipboard } from '/src/utils/copy-init.js';
  * await copyText('hello', { button: myButton });
  * await copyRich({ text: '#3366cc', blob: pngBlob }, { button: myButton });
+ * await pasteFromClipboard(inputEl, { button: myButton });
  */
 
 const COPIED_DURATION = 1500;
 const ANNOUNCE_DURATION = 1000;
-const SELECTOR = '[data-copy], [data-copy-target]';
+const SELECTOR = '[data-copy], [data-copy-target], [data-paste-target]';
 const DEFAULT_ANNOUNCE = 'Copied to clipboard';
+const DEFAULT_PASTE_ANNOUNCE = 'Pasted from clipboard';
 
 const resetTimers = new WeakMap();
 
@@ -115,12 +121,12 @@ async function copyRich(payload, options = {}) {
 
 /**
  * Apply the VB-standard post-write feedback: data-state, screen-reader
- * announce, and the `copy` event.
- * @param {{ button?: HTMLElement, duration: number, announceMessage: string, eventDetail: object }} args
+ * announce, and a CustomEvent from the button.
+ * @param {{ button?: HTMLElement, duration: number, announceMessage: string, eventDetail: object, state?: string, eventName?: string }} args
  */
-function applyFeedback({ button, duration, announceMessage, eventDetail }) {
+function applyFeedback({ button, duration, announceMessage, eventDetail, state = 'copied', eventName = 'copy' }) {
   if (button) {
-    button.dataset.state = 'copied';
+    button.dataset.state = state;
     const prior = resetTimers.get(button);
     if (prior) clearTimeout(prior);
     resetTimers.set(button, setTimeout(() => {
@@ -128,7 +134,7 @@ function applyFeedback({ button, duration, announceMessage, eventDetail }) {
       resetTimers.delete(button);
     }, duration));
 
-    button.dispatchEvent(new CustomEvent('copy', {
+    button.dispatchEvent(new CustomEvent(eventName, {
       bubbles: true,
       detail: eventDetail,
     }));
@@ -138,7 +144,56 @@ function applyFeedback({ button, duration, announceMessage, eventDetail }) {
 }
 
 /**
- * Initialize copy buttons within a root element
+ * Read text from the clipboard and write it into a target element.
+ *
+ * Form controls (input, textarea, select) receive `.value`; other
+ * elements receive `.textContent`. After writing, an `input` event
+ * is dispatched on the target so framework listeners notice the change.
+ * Sets data-state="pasted" on the button, announces to screen readers,
+ * and dispatches a `paste` CustomEvent from the button.
+ *
+ * Safe to call when the Clipboard API is unavailable or the user
+ * denies permission — returns null silently.
+ *
+ * @param {Element | null | undefined} target - Element to receive the pasted text.
+ * @param {object} [options]
+ * @param {HTMLElement} [options.button]
+ * @param {string} [options.announceMessage]
+ * @param {number} [options.duration]
+ * @returns {Promise<string | null>} The text that was pasted, or null on failure.
+ */
+async function pasteFromClipboard(target, options = {}) {
+  const { button, announceMessage = DEFAULT_PASTE_ANNOUNCE, duration = COPIED_DURATION } = options;
+
+  let text;
+  try {
+    text = await navigator.clipboard.readText();
+  } catch {
+    return null;
+  }
+
+  if (target) {
+    if ('value' in target && (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) {
+      target.value = text;
+    } else {
+      target.textContent = text;
+    }
+    target.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  applyFeedback({
+    button,
+    duration,
+    announceMessage,
+    eventDetail: { text },
+    state: 'pasted',
+    eventName: 'paste',
+  });
+  return text;
+}
+
+/**
+ * Initialize copy/paste buttons within a root element
  * @param {Element|Document} root - Root element to search within
  */
 function initCopyButtons(root = document) {
@@ -146,7 +201,7 @@ function initCopyButtons(root = document) {
 }
 
 /**
- * Enhance a single button with copy behavior
+ * Enhance a single button with copy or paste behavior
  * @param {HTMLElement} button - The button element to enhance
  */
 function enhanceButton(button) {
@@ -154,6 +209,13 @@ function enhanceButton(button) {
   button.setAttribute('data-copy-init', '');
 
   button.addEventListener('click', () => {
+    if (button.dataset.pasteTarget) {
+      const target = document.querySelector(button.dataset.pasteTarget);
+      if (!target) return;
+      pasteFromClipboard(target, { button });
+      return;
+    }
+
     const text = getText(button);
     if (!text) return;
     copyText(text, { button });
@@ -221,4 +283,4 @@ const observer = new MutationObserver((mutations) => {
 
 observer.observe(document.documentElement, { childList: true, subtree: true });
 
-export { initCopyButtons, copyText, copyRich };
+export { initCopyButtons, copyText, copyRich, pasteFromClipboard };
