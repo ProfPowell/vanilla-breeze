@@ -27,6 +27,7 @@
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { copyText } from '../../utils/copy-init.js';
 import { generatePalette } from './_palette-utils.js';
 import { hexToRgb } from '../color-picker/_color-utils.js';
 
@@ -197,7 +198,7 @@ class PaletteGenerator extends VBElement {
         const idx = Number(btn.dataset.index);
         const color = colors[idx];
         const name = names[idx] || '';
-        navigator.clipboard?.writeText(color);
+        copyText(color, { button: btn, announceMessage: 'Color copied' });
         this.dispatchEvent(new CustomEvent('color-palette:select', {
           bubbles: true, detail: { color, name, index: idx },
         }));
@@ -235,8 +236,10 @@ class PaletteGenerator extends VBElement {
 
     if (hexBtn) {
       hexBtn.addEventListener('click', () => {
-        navigator.clipboard?.writeText(this.#colors.join(', '));
-        this.#copyFeedback(hexBtn, 'Copy Hex');
+        copyText(this.#colors.join(', '), {
+          button: /** @type {HTMLElement} */ (hexBtn),
+          announceMessage: 'Hex values copied',
+        });
       });
     }
 
@@ -244,8 +247,10 @@ class PaletteGenerator extends VBElement {
       cssBtn.addEventListener('click', () => {
         const harmony = this.getAttribute('harmony') || 'complementary';
         const css = this.#formatCSSExport(harmony);
-        navigator.clipboard?.writeText(css);
-        this.#copyFeedback(cssBtn, 'Copy CSS');
+        copyText(css, {
+          button: /** @type {HTMLElement} */ (cssBtn),
+          announceMessage: 'CSS variables copied',
+        });
       });
     }
   }
@@ -269,11 +274,6 @@ class PaletteGenerator extends VBElement {
       const name = this.#names[i] ? this.#names[i].toLowerCase().replace(/\s+/g, '-') : `${i + 1}`;
       return `--palette-${name}: ${c};`;
     }).join('\n');
-  }
-
-  #copyFeedback(btn, originalText) {
-    btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = originalText; }, 1500);
   }
 
   #emitGenerate() {

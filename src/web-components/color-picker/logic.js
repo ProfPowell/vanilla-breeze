@@ -26,6 +26,7 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { supportsPopover } from '../../utils/popover-support.js';
+import { copyText } from '../../utils/copy-init.js';
 import {
   hexToHsl, hslToHex, hslToRgb, hexToRgb, rgbToHex, rgbToHsl, clamp,
   hslToOklch, oklchToHsl, formatColor,
@@ -491,13 +492,9 @@ class ColorPicker extends VBElement {
 
   // --- Copy ---
 
-  #handleCopy = async () => {
+  #handleCopy = () => {
     const value = formatColor(/** @type {any} */ (this.#activeFormat), this.#h, this.#s, this.#l);
-    try {
-      await navigator.clipboard.writeText(value);
-      this.#copyBtn.textContent = 'Copied!';
-      setTimeout(() => { this.#copyBtn.textContent = 'Copy'; }, 1500);
-    } catch { /* clipboard not available */ }
+    copyText(value, { button: this.#copyBtn, announceMessage: 'Color copied' });
   };
 
   // --- Update/Commit ---

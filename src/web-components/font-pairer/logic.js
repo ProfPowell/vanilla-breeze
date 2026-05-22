@@ -21,6 +21,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { copyText } from '../../utils/copy-init.js';
 import { FONTS, SUGGESTED_PAIRINGS, loadFont, googleFontsUrl } from './_font-data.js';
 
 /* Editable helper — makes any text contenteditable */
@@ -341,14 +342,18 @@ class FontPairer extends VBElement {
 
     // Copy CSS
     this.querySelector('.fp-copy-css')?.addEventListener('click', (e) => {
-      navigator.clipboard?.writeText(this.#buildCSS());
-      this.#copyFeedback(/** @type {HTMLElement} */ (e.target));
+      copyText(this.#buildCSS(), {
+        button: /** @type {HTMLElement} */ (e.target),
+        announceMessage: 'CSS copied',
+      });
     });
 
     // Copy CSS @import
     this.querySelector('.fp-copy-import')?.addEventListener('click', (e) => {
-      navigator.clipboard?.writeText(this.#buildImports());
-      this.#copyFeedback(/** @type {HTMLElement} */ (e.target));
+      copyText(this.#buildImports(), {
+        button: /** @type {HTMLElement} */ (e.target),
+        announceMessage: '@import statement copied',
+      });
     });
   }
 
@@ -382,12 +387,6 @@ class FontPairer extends VBElement {
   #updateCode() {
     const output = this.querySelector('.fp-css-output');
     if (output) output.textContent = this.#buildCSS();
-  }
-
-  #copyFeedback(btn) {
-    const orig = btn.textContent;
-    btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = orig; }, 1500);
   }
 
   #emit() {

@@ -19,6 +19,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { copyText } from '../../utils/copy-init.js';
 import { buildGradientCSS, parseColorStops, defaultStops } from './_gradient-utils.js';
 
 class GradientBuilder extends VBElement {
@@ -228,12 +229,9 @@ class GradientBuilder extends VBElement {
 
     // Copy CSS button
     this.querySelector('.gb-copy')?.addEventListener('click', (e) => {
-      navigator.clipboard?.writeText(this.css);
       const btn = /** @type {HTMLElement | null} */ (e.target);
       if (!btn) return;
-      const orig = btn.textContent;
-      btn.textContent = 'Copied!';
-      setTimeout(() => { btn.textContent = orig; }, 1500);
+      copyText(this.css, { button: btn, announceMessage: 'Gradient CSS copied' });
     });
   }
 

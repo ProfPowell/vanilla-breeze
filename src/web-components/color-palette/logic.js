@@ -27,6 +27,7 @@
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { copyText } from '../../utils/copy-init.js';
 
 export class ColorPalette extends VBElement {
   static observedAttributes = ['colors', 'names', 'layout', 'show-values', 'show-names', 'size', 'editable'];
@@ -130,7 +131,7 @@ export class ColorPalette extends VBElement {
         const color = colors[idx];
         const name = names[idx] || '';
 
-        navigator.clipboard?.writeText(color);
+        copyText(color, { button: btn, announceMessage: 'Color copied' });
         this.dispatchEvent(new CustomEvent('color-palette:select', {
           bubbles: true, detail: { color, name, index: idx }
         }));

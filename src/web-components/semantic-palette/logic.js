@@ -18,6 +18,7 @@
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { copyText } from '../../utils/copy-init.js';
 import {
   hexToOklch,
   oklchToHex,
@@ -304,14 +305,18 @@ class SemanticPalette extends VBElement {
     const jsonBtn = this.querySelector('.sp-copy-json');
     if (cssBtn) {
       this.listen(cssBtn, 'click', () => {
-        navigator.clipboard?.writeText(this.#buildCSS());
-        this.#flash(cssBtn, 'Copy Theme CSS');
+        copyText(this.#buildCSS(), {
+          button: /** @type {HTMLElement} */ (cssBtn),
+          announceMessage: 'Theme CSS copied',
+        });
       });
     }
     if (jsonBtn) {
       this.listen(jsonBtn, 'click', () => {
-        navigator.clipboard?.writeText(JSON.stringify(this.#mapping(), null, 2));
-        this.#flash(jsonBtn, 'Copy JSON');
+        copyText(JSON.stringify(this.#mapping(), null, 2), {
+          button: /** @type {HTMLElement} */ (jsonBtn),
+          announceMessage: 'JSON copied',
+        });
       });
     }
   }
@@ -382,11 +387,6 @@ class SemanticPalette extends VBElement {
       parts.push('  /* Status colors */', ...status);
     }
     return `:root {\n${parts.join('\n')}\n}\n`;
-  }
-
-  #flash(btn, original) {
-    btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = original; }, 1500);
   }
 
   #emitChange(source) {

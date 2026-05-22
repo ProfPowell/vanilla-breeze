@@ -22,6 +22,7 @@
  */
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { copyText } from '../../utils/copy-init.js';
 import { serializeDTCG } from './dtcg-serialize.js';
 
 const DEFAULT_INCLUDE = '--color-,--hue-,--lightness-,--chroma-,--font-,--size-,--radius-,--shadow-,--border-width-,--ease-,--duration-,--line-height-,--letter-spacing-';
@@ -157,10 +158,10 @@ class ThemeExport extends VBElement {
       this.listen(copy, 'click', () => {
         const ta = /** @type {HTMLTextAreaElement} */ (this.querySelector('.te-output'));
         if (!ta) return;
-        navigator.clipboard?.writeText(ta.value);
-        const original = copy.textContent;
-        copy.textContent = 'Copied!';
-        setTimeout(() => { copy.textContent = original; }, 1500);
+        copyText(ta.value, {
+          button: /** @type {HTMLElement} */ (copy),
+          announceMessage: 'Theme copied',
+        });
       });
     }
     if (download) {
