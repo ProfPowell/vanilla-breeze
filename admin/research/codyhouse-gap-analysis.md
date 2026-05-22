@@ -157,11 +157,11 @@ Both are more comprehensive than CodyHouse's offerings.
 | CodyHouse concept | VB equivalent | Notes |
 |---|---|---|
 | Page Transition | View Transitions API integration | Covered (memory `view_transition_finished_vs_updatecallback`). |
-| Scroll Effects (13) | `data-effect` spec + scroll-driven CSS | Largely covered. Worth auditing the 13 scroll effects against `data-effect` coverage. **Possible gap.** |
+| Scroll Effects (13) | `data-effect` + `data-trigger="scroll"` + `data-parallax` + `data-scroll-hide` + `data-sticky` + `<reading-progress>` | Audit complete 2026-05-22 (vb-b238). Broad coverage; one capability gap (continuous CSS scroll-driven timelines, filed as vb-8zc6) + doc-recipe gaps (vb-i4uw). See `admin/research/scroll-effects-audit.md`. |
 | Text Effects (6) | CSS / `data-effect` | Covered by composition. |
 | Controls Effects (5) | `data-effect` | Covered. |
 
-**Material gaps:** spot-audit CodyHouse scroll effects vs `data-effect` catalog.
+**Material gaps:** continuous scroll-driven timeline support (vb-8zc6); scroll-recipes doc bundle (vb-i4uw). See `scroll-effects-audit.md`.
 
 ### Plugins (CodyHouse: 51; Carousel 6, Misc 34, Slideshow 11)
 
@@ -216,7 +216,7 @@ Items below are **real** gaps, not category mismatches:
 | Mega-menu / drawer-nav recipes for `nav-bar` | Doc/recipe | Low–Med | Low |
 | Drawer overlay pattern | Doc/recipe | Low | Low |
 | Ticker / marquee scroller | Recipe | Low | Very low |
-| Scroll-effect audit vs `data-effect` catalog | Audit | Med | Low |
+| ~~Scroll-effect audit vs `data-effect` catalog~~ | ✅ done 2026-05-22 (vb-b238 closed; see `scroll-effects-audit.md`) |
 | Marketing-page templates (Hero/Features/Pricing) | Out of scope | — | — |
 | Decorative backgrounds | Out of scope | — | — |
 
@@ -240,7 +240,7 @@ CodyHouse has none of these because they're outside its marketing-kit scope. Thi
 If any of these become real work, file as new beads issues:
 
 1. **Doc-recipe sweep:** split button, drawer, footer, mega-menu, ticker. Bundle as one "common patterns" doc PR. Low effort, plausibly high payoff for newcomers comparing the two libraries.
-2. **Scroll-effect audit:** map CodyHouse's 13 scroll effects against `data-effect` catalog. Output: either coverage confirmation or a short list of additions.
+2. ~~**Scroll-effect audit:** map CodyHouse's 13 scroll effects against `data-effect` catalog.~~ — done 2026-05-22 (see `scroll-effects-audit.md`). Substantive follow-ups: vb-8zc6 (P2 scroll-driven timelines), vb-i4uw (P3 scroll recipes), vb-acz9 (P4 gallery demo).
 3. **Strategic question (do not implement):** does VB want a marketing-page scaffold variant? Currently `scaffold-site` exists; `scaffold-blog` exists; no `scaffold-landing`. This is a positioning call, not a gap.
 
 ## Open questions / methodology caveats
