@@ -7481,6 +7481,18 @@ export default {
     ],
     "childAttributes": [],
     "structure": [],
+    "methods": [
+      {
+        "name": "toDataURL(type?)",
+        "returns": "string",
+        "description": "Returns the QR canvas as a data URL (default image/png)."
+      },
+      {
+        "name": "copy(options?)",
+        "returns": "Promise<boolean>",
+        "description": "Copies the QR to the clipboard as text/plain (the encoded value) + image/png (the canvas). Falls back to text-only on browsers without ClipboardItem support."
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
