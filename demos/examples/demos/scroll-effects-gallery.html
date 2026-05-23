@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scroll-Effect Gallery — every entrance under data-trigger=&quot;scroll&quot;</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { margin: 0; padding: 0; background: var(--color-surface); }
+    .intro, .outro {
+      padding: 25vh var(--size-xl) 15vh;
+      text-align: center;
+      max-inline-size: 50rem;
+      margin-inline: auto;
+    }
+    .intro h1 { font-size: clamp(2rem, 5vw, 3.5rem); margin: 0; letter-spacing: -0.02em; }
+    .intro p { color: var(--color-text-muted); max-inline-size: 50ch; margin: var(--size-m) auto 0; }
+    .gallery {
+      max-inline-size: 50rem;
+      margin-inline: auto;
+      padding-inline: var(--size-l);
+      display: flex;
+      flex-direction: column;
+      gap: 60vh;
+    }
+    .gallery > section {
+      padding: var(--size-xl);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+    }
+    .gallery > section h2 {
+      margin-block: 0 var(--size-s);
+      font-size: var(--font-size-l);
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+      font-weight: normal;
+    }
+    .gallery > section h2 code {
+      color: var(--color-text);
+      background: var(--color-surface-alt);
+      padding: 0.15rem 0.4rem;
+      border-radius: var(--radius-s);
+    }
+    .gallery > section > p,
+    .gallery > section > h3 {
+      font-size: clamp(1.25rem, 3vw, 2rem);
+      line-height: 1.3;
+      margin-block: var(--size-m) 0;
+    }
+    .gallery > section > .note {
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+      margin-block-start: var(--size-m);
+    }
+  </style>
+</head>
+<body>
+  <header class="intro">
+    <h1>Scroll-effect gallery</h1>
+    <p>Every entrance-slot <code>data-effect</code> under <code>data-trigger="scroll"</code>. Scroll down to fire each in turn. See also the continuous-progress counterpart at <a href="/docs/examples/demos/view-progress-vs-binary.html">view-progress-vs-binary</a>.</p>
+  </header>
+
+  <section class="gallery">
+    <section>
+      <h2><code>data-effect="fade-in"</code></h2>
+      <h3 data-effect="fade-in" data-trigger="scroll">Opacity fades from 0 to 1.</h3>
+      <p class="note">Default duration 300ms, ease-out. The simplest entrance.</p>
+    </section>
+
+    <section>
+      <h2><code>data-effect="slide-up"</code></h2>
+      <h3 data-effect="slide-up" data-trigger="scroll">Translates up from below, with fade.</h3>
+      <p class="note">Default distance 40px (<code>--vb-slide-distance</code>), 400ms, ease-out.</p>
+    </section>
+
+    <section>
+      <h2><code>data-effect="slide-in"</code></h2>
+      <h3 data-effect="slide-in" data-trigger="scroll">Translates in from the side, with fade.</h3>
+      <p class="note">Direction follows <code>dir</code> attribute. LTR slides from the left; RTL flips.</p>
+    </section>
+
+    <section>
+      <h2><code>data-effect="pop"</code></h2>
+      <h3 data-effect="pop" data-trigger="scroll">Scales up from 80%, with fade.</h3>
+      <p class="note">Cubic-bezier overshoot easing — feels playful.</p>
+    </section>
+
+    <section>
+      <h2><code>data-effect="fade-in slide-up"</code> (composed)</h2>
+      <h3 data-effect="fade-in slide-up" data-trigger="scroll">Fade and translate, merged into one smooth motion.</h3>
+      <p class="note">Two effects in the same entrance slot — VB ships a pre-merged keyframe so they coexist cleanly.</p>
+    </section>
+
+    <section>
+      <h2><code>data-effect="blur-reveal"</code></h2>
+      <h3 data-effect="blur-reveal" data-trigger="scroll">Each word fades in from a blur, in sequence.</h3>
+      <p class="note">Chunk-based — splits content into <code>.vb-blur-chunk</code> spans with staggered delays.</p>
+    </section>
+
+    <section>
+      <h2><code>data-effect="reveal"</code></h2>
+      <h3 data-effect="reveal" data-trigger="scroll">Each word reveals one after another, sliding up.</h3>
+      <p class="note">Chunk-based. Pair with <code>style="--vb-reveal-delay: 120ms"</code> to slow the cadence.</p>
+    </section>
+
+    <section>
+      <h2><code>data-effect="scramble"</code></h2>
+      <h3 data-effect="scramble" data-trigger="scroll">Characters scramble into place</h3>
+      <p class="note">Pair with <code>style="--vb-scramble-chars: '01'"</code> for a binary effect.</p>
+    </section>
+
+    <section>
+      <h2><code>data-effect="typewriter"</code></h2>
+      <h3 data-effect="typewriter" data-trigger="scroll">Types out character by character.</h3>
+      <p class="note">Add <code>class="loop"</code> for a looping retype. <code>class="no-cursor"</code> hides the cursor.</p>
+    </section>
+
+    <section>
+      <h2><code>data-effect="fade-in slide-up"</code> · <code>data-stagger="100ms"</code></h2>
+      <ul data-stagger="100ms">
+        <li data-effect="fade-in slide-up" data-trigger="scroll">First item</li>
+        <li data-effect="fade-in slide-up" data-trigger="scroll">Second item</li>
+        <li data-effect="fade-in slide-up" data-trigger="scroll">Third item</li>
+        <li data-effect="fade-in slide-up" data-trigger="scroll">Fourth item</li>
+      </ul>
+      <p class="note">Add <code>data-stagger</code> to a parent to delay each child's entrance by that amount times its index.</p>
+    </section>
+  </section>
+
+  <footer class="outro">
+    <p>Each section here uses the binary <code>data-trigger="scroll"</code> — fires once at 10% visible. For continuous, scroll-position-linked variants, see <a href="/docs/attributes/data-trigger/#view-progress"><code>data-trigger="view-progress"</code></a>.</p>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
