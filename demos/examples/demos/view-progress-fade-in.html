@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View-Progress: Continuous Fade-In Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { margin: 0; padding: 0; }
+    header.hero {
+      min-block-size: 60vh;
+      display: grid;
+      place-items: center;
+      padding: var(--size-xl);
+      background: linear-gradient(135deg, oklch(0.25 0.08 250), oklch(0.4 0.15 280));
+      color: white;
+      text-align: center;
+    }
+    header.hero h1 { font-size: clamp(1.5rem, 4vw, 3rem); margin: 0; }
+    header.hero p { opacity: 0.85; max-inline-size: 40ch; margin: var(--size-m) auto 0; }
+    main { max-inline-size: 60rem; margin-inline: auto; padding: var(--size-xl); display: flex; flex-direction: column; gap: 70vh; }
+    .card {
+      padding: var(--size-xl);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m);
+      box-shadow: var(--shadow-m);
+    }
+    .card h2 { margin-block-start: 0; }
+    footer { padding: var(--size-xl); text-align: center; color: var(--color-text-muted); }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <hgroup>
+      <h1>Scroll down — each card fades in as it enters the viewport</h1>
+      <p>The opacity is driven by view progress, not a one-shot event. Scroll halfway down a card and the card is halfway opaque.</p>
+    </hgroup>
+  </header>
+  <main>
+    <article class="card" data-effect="fade-in" data-trigger="view-progress">
+      <h2>First reveal</h2>
+      <p>This card uses <code>data-effect="fade-in" data-trigger="view-progress"</code>. As it enters the viewport, opacity climbs from 0 to 1 in lockstep with scroll. Stop scrolling and the opacity stays where it stopped.</p>
+    </article>
+    <article class="card" data-effect="fade-in" data-trigger="view-progress">
+      <h2>Continuous, not binary</h2>
+      <p>Compare with the old IntersectionObserver-based <code>data-trigger="scroll"</code> — that fires once at 10% visible and plays a fixed-duration animation regardless of scroll speed. This one tracks scroll.</p>
+    </article>
+    <article class="card" data-effect="fade-in" data-trigger="view-progress">
+      <h2>Zero JS</h2>
+      <p>This entire effect is pure CSS via <code>animation-timeline: view()</code>. Browsers without support (Firefox without the flag) see the card in its idle hidden state — add <code>data-trigger="scroll view-progress"</code> for a one-shot fallback.</p>
+    </article>
+    <article class="card" data-effect="fade-in" data-trigger="view-progress">
+      <h2>Composes with the slot system</h2>
+      <p>Every entrance effect (<code>fade-in</code>, <code>slide-up</code>, <code>slide-in</code>, <code>pop</code>) works under <code>view-progress</code>. The slot composer handles cross-slot pairs as usual.</p>
+    </article>
+  </main>
+  <footer>
+    <p>You scrolled. They appeared. No JS.</p>
+  </footer>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

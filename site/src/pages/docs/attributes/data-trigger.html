@@ -59,6 +59,63 @@ crumbLabel: Data Attributes
   </code-block>
 </section>
 
+<section id="view-progress">
+  <h2>view-progress, view-progress:<var>range</var></h2>
+  <p>Drives the effect&apos;s animation <strong>continuously</strong> from the element&apos;s view progress through the scrollport, via CSS <code>animation-timeline: view()</code>. Unlike <code>scroll</code> (which fires once via <code>IntersectionObserver</code>), <code>view-progress</code> ties the animation directly to scroll position — stop scrolling mid-reveal and the animation pauses at that exact frame.</p>
+
+  <browser-window src="/docs/examples/demos/view-progress-vs-binary.html" url="https://vanilla-breeze.dev/view-progress-vs-binary" title="view-progress vs. scroll (side by side)" shadow></browser-window>
+
+  <code-block language="html" label="Continuous fade-in">
+&lt;article data-effect="fade-in" data-trigger="view-progress"&gt;
+  Opacity follows scroll position
+&lt;/article&gt;
+  </code-block>
+
+  <h3>Range variants</h3>
+  <p>The range controls <em>which slice</em> of the element&apos;s scrollport journey drives the animation. Default is <code>entry 0% cover 50%</code> — animation reaches its end keyframe by the time the element is halfway covered.</p>
+
+  <table class="props-table">
+    <thead><tr><th>Variant</th><th>animation-range</th><th>When the animation plays</th></tr></thead>
+    <tbody>
+      <tr><td><code>view-progress</code></td><td><code>entry 0% cover 50%</code></td><td>Default. Starts as element enters viewport, finishes when half-covered.</td></tr>
+      <tr><td><code>view-progress:entry</code></td><td><code>entry 0% entry 100%</code></td><td>Only while entering the viewport (bottom edge crossing).</td></tr>
+      <tr><td><code>view-progress:exit</code></td><td><code>exit 0% exit 100%</code></td><td>Only while leaving the viewport (top edge crossing). Pair with exit-slot effects (<code>fade-out</code>, <code>collapse</code>).</td></tr>
+      <tr><td><code>view-progress:cover</code></td><td><code>cover 0% cover 100%</code></td><td>Across the entire time the element is in view.</td></tr>
+      <tr><td><code>view-progress:contain</code></td><td><code>contain 0% contain 100%</code></td><td>Only while element is fully visible (smaller than the scrollport).</td></tr>
+    </tbody>
+  </table>
+
+  <code-block language="html" label="Range variants">
+&lt;h1 data-effect="slide-up" data-trigger="view-progress:entry"&gt;
+  Slides up only during entry
+&lt;/h1&gt;
+
+&lt;p data-effect="fade-in" data-trigger="view-progress:cover"&gt;
+  Fades across the full time in view
+&lt;/p&gt;
+  </code-block>
+
+  <browser-window src="/docs/examples/demos/view-progress-fade-in.html" url="https://vanilla-breeze.dev/view-progress" title="Continuous fade-in via view-progress" shadow></browser-window>
+
+  <h3>scroll-progress (root scroller)</h3>
+  <p><code>data-trigger="scroll-progress"</code> ties the animation to the <em>root scroller&apos;s</em> total progress (0% at top, 100% at bottom of the page) rather than the element&apos;s view progress. Useful for whole-page indicators and parallax decoration.</p>
+
+  <code-block language="html" label="scroll-progress">
+&lt;div data-effect="float" data-trigger="scroll-progress"&gt;
+  Drift bound to page scroll
+&lt;/div&gt;
+  </code-block>
+
+  <h3>Browser support and fallback</h3>
+  <ul>
+    <li>Chromium 115+ (July 2023): stable.</li>
+    <li>Safari 26+: partial (<code>view()</code> supported, <code>scroll()</code> more limited).</li>
+    <li>Firefox: behind <code>layout.css.scroll-driven-animations.enabled</code>.</li>
+  </ul>
+  <p>The rules are wrapped in <code>@supports (animation-timeline: view())</code>. Browsers without support see the element&apos;s idle (hidden) state — no broken layout. For a one-shot fallback, add <code>scroll</code> as a peer trigger: <code>data-trigger="scroll view-progress"</code> — the existing <code>IntersectionObserver</code> trigger fires in older browsers; newer browsers run the timeline-driven version (CSS specificity favors the timeline rule).</p>
+  <p><code>prefers-reduced-motion: reduce</code> (and the project-wide <code>:root[data-motion-reduced]</code> opt-in) suppress the timeline binding entirely and snap the element to its final state — no scroll-linked motion at all.</p>
+</section>
+
 <section id="intersect">
   <h2>intersect, intersect:once, intersect:toggle</h2>
   <p>Generalised <code>IntersectionObserver</code> trigger. <code>intersect</code> and <code>intersect:once</code> fire once on first viewport entry (same behaviour as <code>scroll</code>). <code>intersect:toggle</code> re-activates on every viewport entry and deactivates on every exit — useful for decoration effects that should follow the viewport.</p>
@@ -160,6 +217,8 @@ VB.trigger('visible', (el, activate, param) => {
       <tr><td><code>click</code></td><td><code>addEventListener('click')</code></td><td>Toggles <code>[data-effect-active]</code>.</td></tr>
       <tr><td><code>time:<var>n</var></code></td><td><code>setTimeout</code></td><td><var>n</var> is delay in milliseconds.</td></tr>
       <tr><td><code>intersect:<var>once|toggle</var></code></td><td><code>IntersectionObserver</code></td><td><code>once</code> (default) fires on first entry; <code>toggle</code> activates/deactivates on every enter/leave.</td></tr>
+      <tr><td><code>view-progress<var>[:entry|:exit|:cover|:contain]</var></code></td><td><code>animation-timeline: view()</code></td><td>Continuous, scroll-linked. Drives the animation from the element&apos;s view progress through the scrollport.</td></tr>
+      <tr><td><code>scroll-progress</code></td><td><code>animation-timeline: scroll()</code></td><td>Continuous, bound to root-scroller progress (0% top, 100% bottom).</td></tr>
       <tr><td><code>media:<var>(query)</var></code></td><td><code>matchMedia</code></td><td>Activates while query matches; deactivates on mismatch. No whitespace in the query.</td></tr>
       <tr><td><code>event:<var>name</var></code></td><td><code>addEventListener</code></td><td>Activates when the named DOM event fires on the element.</td></tr>
       <tr><td><code>vt</code></td><td><code>vb:vt-update-done</code></td><td>Fires after <code>VB.swap()</code>'s view transition commits. Pairs with <code>data-transition="effect:<var>class</var>"</code>.</td></tr>

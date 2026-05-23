@@ -1555,6 +1555,146 @@ textarea[data-grow][data-grow-init] {
   --vb-anim-entrance: vb-fade-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
 }
 
+/* --------------------------------------------------------------------------
+   Continuous scroll-driven triggers (vb-8zc6)
+
+   data-trigger="view-progress"           → animation driven by the element's
+                                            view progress through the scrollport
+   data-trigger="view-progress:entry"     → only while entering
+   data-trigger="view-progress:exit"      → only while leaving
+   data-trigger="view-progress:cover"     → across the full time in view
+   data-trigger="view-progress:contain"   → only while fully contained
+   data-trigger="scroll-progress"         → animation driven by root scroll progress
+
+   These bind entrance animations to a CSS scroll-driven timeline instead of
+   firing once via IntersectionObserver. Same keyframes, same slot system —
+   only the animation timeline changes.
+
+   Browser support: Chromium 115+ stable, Safari 26 partial, Firefox behind
+   `layout.css.scroll-driven-animations.enabled` flag. Older browsers fall
+   through to the existing idle state (hidden); add `data-trigger="scroll"`
+   as a peer trigger if you want one-shot fallback.
+   -------------------------------------------------------------------------- */
+
+@supports (animation-timeline: view()) {
+  /* Bind the timeline + default range. The composer rule on [data-effect]
+     supplies the animation-name from --vb-anim-entrance; the entries below
+     populate that slot for each entrance effect under the new trigger. */
+  [data-effect][data-trigger~="view-progress"] {
+    animation-timeline: view();
+    animation-range: entry 0% cover 50%;
+  }
+  [data-effect][data-trigger~="view-progress:entry"] {
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+  [data-effect][data-trigger~="view-progress:exit"] {
+    animation-timeline: view();
+    animation-range: exit 0% exit 100%;
+  }
+  [data-effect][data-trigger~="view-progress:cover"] {
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+  }
+  [data-effect][data-trigger~="view-progress:contain"] {
+    animation-timeline: view();
+    animation-range: contain 0% contain 100%;
+  }
+  [data-effect][data-trigger~="scroll-progress"] {
+    animation-timeline: scroll();
+  }
+
+  /* Force the entrance slot to populate even though data-effect-active is
+     never set — the timeline drives the animation, not JS. Duration is
+     ignored when a scroll/view timeline is bound; only the keyframes matter. */
+  [data-effect~="fade-in"]:is(
+    [data-trigger~="view-progress"],
+    [data-trigger~="view-progress:entry"],
+    [data-trigger~="view-progress:exit"],
+    [data-trigger~="view-progress:cover"],
+    [data-trigger~="view-progress:contain"],
+    [data-trigger~="scroll-progress"]
+  ) {
+    --vb-anim-entrance: vb-fade-in 1s linear forwards;
+  }
+
+  [data-effect~="slide-up"]:is(
+    [data-trigger~="view-progress"],
+    [data-trigger~="view-progress:entry"],
+    [data-trigger~="view-progress:exit"],
+    [data-trigger~="view-progress:cover"],
+    [data-trigger~="view-progress:contain"],
+    [data-trigger~="scroll-progress"]
+  ) {
+    --vb-anim-entrance: vb-slide-up 1s linear forwards;
+  }
+
+  [data-effect~="slide-in"]:is(
+    [data-trigger~="view-progress"],
+    [data-trigger~="view-progress:entry"],
+    [data-trigger~="view-progress:exit"],
+    [data-trigger~="view-progress:cover"],
+    [data-trigger~="view-progress:contain"],
+    [data-trigger~="scroll-progress"]
+  ) {
+    --vb-anim-entrance: vb-slide-in-ltr 1s linear forwards;
+  }
+
+  [data-effect~="pop"]:is(
+    [data-trigger~="view-progress"],
+    [data-trigger~="view-progress:entry"],
+    [data-trigger~="view-progress:exit"],
+    [data-trigger~="view-progress:cover"],
+    [data-trigger~="view-progress:contain"],
+    [data-trigger~="scroll-progress"]
+  ) {
+    --vb-anim-entrance: vb-pop 1s linear forwards;
+  }
+
+  /* Composed fade-in + slide-up under view-progress */
+  [data-effect~="fade-in"][data-effect~="slide-up"]:is(
+    [data-trigger~="view-progress"],
+    [data-trigger~="view-progress:entry"],
+    [data-trigger~="view-progress:exit"],
+    [data-trigger~="view-progress:cover"],
+    [data-trigger~="view-progress:contain"],
+    [data-trigger~="scroll-progress"]
+  ) {
+    --vb-anim-entrance: vb-fade-slide-up 1s linear forwards;
+  }
+}
+
+/* Reduced motion: snap to the final state instead of binding the timeline.
+   Authors get the visual outcome (visible, transformed-to-rest) with no motion. */
+@media (prefers-reduced-motion: reduce) {
+  [data-effect]:is(
+    [data-trigger~="view-progress"],
+    [data-trigger~="view-progress:entry"],
+    [data-trigger~="view-progress:exit"],
+    [data-trigger~="view-progress:cover"],
+    [data-trigger~="view-progress:contain"],
+    [data-trigger~="scroll-progress"]
+  ) {
+    --vb-anim-entrance: none;
+    animation-timeline: auto;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+:root[data-motion-reduced] [data-effect]:is(
+  [data-trigger~="view-progress"],
+  [data-trigger~="view-progress:entry"],
+  [data-trigger~="view-progress:exit"],
+  [data-trigger~="view-progress:cover"],
+  [data-trigger~="view-progress:contain"],
+  [data-trigger~="scroll-progress"]
+) {
+  --vb-anim-entrance: none;
+  animation-timeline: auto;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 /* ── Entrance: slide-in ── */
 @keyframes vb-slide-in-ltr {
   from { opacity: 0; transform: translateX(calc(-1 * var(--vb-slide-distance, 40px))); }
