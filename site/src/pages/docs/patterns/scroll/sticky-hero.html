@@ -1,0 +1,98 @@
+---
+layout: pattern
+title: "Sticky Hero with Scale-Out"
+description: "Pinned hero that scales and fades as the reader scrolls past. Pure CSS via position: sticky + animation-timeline: view()."
+patternName: "Sticky Hero"
+category: scroll
+currentPath: /docs/patterns/scroll/sticky-hero/
+---
+
+<section>
+  <h2>Overview</h2>
+  <layout-text>
+    <p>A hero section that stays pinned to the top of the viewport while the user scrolls past it, then scales down and fades as it exits. The effect makes the transition into the article body feel cinematic without hijacking scroll.</p>
+    <p><strong>Anatomy:</strong></p>
+    <ul>
+      <li>An outer <code>.stage</code> taller than the viewport — its height controls how long the hero stays pinned</li>
+      <li>The hero is <code>position: sticky</code> inside the stage</li>
+      <li><code>animation-timeline: view()</code> on the hero binds a scale/fade animation to its <em>exit</em> progress</li>
+      <li>Browsers without scroll-driven animation support see a normal sticky hero — no broken layout</li>
+    </ul>
+  </layout-text>
+
+  <browser-window src="/docs/examples/demos/sticky-hero.html" url="https://vanilla-breeze.dev/sticky-hero" title="Sticky Hero with Scale-Out" shadow></browser-window>
+</section>
+
+<section>
+  <h2>HTML</h2>
+  <code-block language="html" label="Stage + sticky hero" data-escape><section class="stage">
+  <header class="hero">
+    <hgroup>
+      <h1>Sticky hero with scale-out</h1>
+      <p>The hero stays pinned while the user scrolls past it.</p>
+    </hgroup>
+  </header>
+</section>
+<main>
+  ... content below the stage ...
+</main></code-block>
+</section>
+
+<section>
+  <h2>CSS</h2>
+  <code-block language="css" label="Stage + sticky + scroll-driven shrink" data-escape>.stage {
+  block-size: 200vh;  /* twice the viewport — controls how long the hero pins */
+  position: relative;
+}
+
+.hero {
+  position: sticky;
+  inset-block-start: 0;
+  block-size: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+@supports (animation-timeline: view()) {
+  .hero {
+    animation: hero-shrink 1s linear forwards;
+    animation-timeline: view();
+    animation-range: exit -10% exit 90%;
+  }
+  @keyframes hero-shrink {
+    to { transform: scale(0.85); opacity: 0.2; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero { animation: none; animation-timeline: auto; }
+}</code-block>
+</section>
+
+<section>
+  <h2>How it composes with VB</h2>
+  <layout-text>
+    <p>If you&apos;d rather use the unified trigger system, swap the custom animation for an entrance-slot effect plus <code>data-trigger="view-progress:exit"</code>:</p>
+  </layout-text>
+
+  <code-block language="html" label="With data-trigger view-progress" data-escape><section class="stage">
+  <header class="hero" data-effect="fade-out" data-trigger="view-progress:exit">
+    <hgroup>...</hgroup>
+  </header>
+</section></code-block>
+
+  <layout-text>
+    <p>This gives a fade only. For combined scale-out you currently still want the custom keyframe shown above — bundled scale+fade is a future addition. See the <a href="/docs/attributes/data-trigger/#view-progress">view-progress trigger docs</a>.</p>
+  </layout-text>
+</section>
+
+<section>
+  <h2>Notes</h2>
+  <layout-text>
+    <ul>
+      <li><strong>Stage height controls timing.</strong> A 2× viewport stage gives a comfortable hero pin. Make it 3× for a slower exit, 1.5× for a quicker one.</li>
+      <li><strong>The <code>animation-range</code> negative start</strong> (<code>exit -10%</code>) starts the animation just before the hero actually begins exiting, so it feels responsive at the top of the scroll-out.</li>
+      <li><strong>Don&apos;t set <code>overflow: hidden</code></strong> on the stage — it breaks <code>position: sticky</code>.</li>
+    </ul>
+  </layout-text>
+</section>

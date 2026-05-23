@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pinned Card Stack Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { margin: 0; padding: 0; background: oklch(0.18 0.03 250); color: oklch(0.95 0.01 250); }
+    .intro, .outro {
+      padding: 30vh var(--size-xl);
+      text-align: center;
+      max-inline-size: 50rem;
+      margin-inline: auto;
+    }
+    .intro h1 { font-size: clamp(2rem, 5vw, 3.5rem); margin: 0; }
+    .intro p { opacity: 0.8; margin-block-start: var(--size-m); }
+
+    /* The stack — each card sticks to the top, offset by --i so they pile up */
+    .stack { padding-block: 0; }
+    .stack > article {
+      position: sticky;
+      inset-block-start: calc(var(--size-l) + var(--i, 0) * var(--size-m));
+      margin-inline: auto;
+      margin-block-end: 50vh;
+      max-inline-size: 40rem;
+      padding: var(--size-xl);
+      border-radius: var(--radius-l);
+      box-shadow: 0 12px 40px oklch(0% 0 0 / 0.4);
+      background: var(--bg, oklch(0.3 0.1 250));
+      color: white;
+    }
+    .stack > article[data-i="0"] { --i: 0; --bg: oklch(0.4 0.18 260); }
+    .stack > article[data-i="1"] { --i: 1; --bg: oklch(0.45 0.18 295); }
+    .stack > article[data-i="2"] { --i: 2; --bg: oklch(0.5 0.18 330); }
+    .stack > article[data-i="3"] { --i: 3; --bg: oklch(0.55 0.18 360); }
+    .stack > article h2 { margin-block-start: 0; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stack > article { position: static; margin-block-end: var(--size-l); }
+    }
+  </style>
+</head>
+<body>
+  <section class="intro">
+    <h1>Pinned card stack</h1>
+    <p>Scroll down — each card sticks to the top, stacking on top of the previous one.</p>
+  </section>
+  <section class="stack">
+    <article data-i="0">
+      <h2>First card</h2>
+      <p>Pins at the top first. Stays pinned until the next card comes up and covers it.</p>
+    </article>
+    <article data-i="1">
+      <h2>Second card</h2>
+      <p>Pins below the first by one offset increment, so a sliver of the previous card peeks out at the top.</p>
+    </article>
+    <article data-i="2">
+      <h2>Third card</h2>
+      <p>Adds another offset. The pattern scales — keep adding cards and the offsets keep stacking.</p>
+    </article>
+    <article data-i="3">
+      <h2>Fourth card</h2>
+      <p>The bottom of the stack. When this releases, the page continues normally.</p>
+    </article>
+  </section>
+  <section class="outro">
+    <p>The whole effect is pure CSS — <code>position: sticky</code> plus a per-card <code>--i</code> custom property driving the top offset. No JS, no scroll listeners.</p>
+  </section>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sticky Share Bar Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { margin: 0; padding: 0; }
+    article.post {
+      display: grid;
+      grid-template-columns: auto minmax(0, 60ch) 1fr;
+      gap: var(--size-l);
+      padding: var(--size-l);
+      max-inline-size: 80rem;
+      margin-inline: auto;
+    }
+    .share-rail {
+      position: sticky;
+      inset-block-start: var(--size-l);
+      align-self: start;
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-s);
+      padding-inline-end: var(--size-m);
+      border-inline-end: 1px solid var(--color-border);
+    }
+    .share-rail a {
+      display: grid;
+      place-items: center;
+      inline-size: 2.5rem;
+      block-size: 2.5rem;
+      border-radius: 50%;
+      background: var(--color-surface-alt);
+      color: var(--color-text);
+      text-decoration: none;
+      transition: background var(--duration-fast, 150ms);
+    }
+    .share-rail a:hover { background: var(--color-interactive-subtle, var(--color-surface-alt)); }
+    .post-body h1 { font-size: var(--font-size-3xl); margin-block-start: 0; }
+    .post-body p { line-height: 1.7; }
+    .post-body p.tall { min-block-size: 60vh; }
+    @media (max-width: 50rem) {
+      article.post { grid-template-columns: 1fr; }
+      .share-rail {
+        flex-direction: row;
+        border-inline-end: none;
+        border-block-end: 1px solid var(--color-border);
+        padding-block-end: var(--size-s);
+        padding-inline-end: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <article class="post">
+    <nav class="share-rail" aria-label="Share">
+      <a href="#" data-platform="x" aria-label="Share on X">𝕏</a>
+      <a href="#" data-platform="linkedin" aria-label="Share on LinkedIn">in</a>
+      <a href="#" data-platform="bluesky" aria-label="Share on Bluesky">🦋</a>
+      <a href="#" data-copy="https://example.com/post" aria-label="Copy link">🔗</a>
+    </nav>
+    <section class="post-body">
+      <h1>The sticky share bar pattern</h1>
+      <p>A vertical share rail that sticks to the side as readers scroll through an article. It&apos;s pure <code>position: sticky</code> composition — no JS, no scroll listeners, no <code>IntersectionObserver</code>.</p>
+      <p>The rail is a sibling of the article body inside a grid container. <code>align-self: start</code> keeps it pinned at the top of the scroll range; <code>inset-block-start</code> sets the offset from the viewport edge.</p>
+      <p class="tall">Scroll down — the rail follows. The trick is that <code>position: sticky</code> respects its containing block, so the rail stops sticking when the article ends.</p>
+      <p>At narrow widths the rail flips to a horizontal bar above the article, still sticky from the top.</p>
+      <p class="tall">More content to demonstrate the sticky behavior across a long scroll.</p>
+      <p>The copy-link button uses <code>data-copy</code> from VB&apos;s clipboard utility — no JS needed in this file.</p>
+    </section>
+    <aside></aside>
+  </article>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

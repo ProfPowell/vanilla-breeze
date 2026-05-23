@@ -1,0 +1,79 @@
+---
+layout: pattern
+title: "Pinned Card Stack"
+description: "Apple-style cards that pin to the top of the viewport and stack on top of each other as the reader scrolls."
+patternName: "Pinned Card Stack"
+category: scroll
+currentPath: /docs/patterns/scroll/pinned-card-stack/
+---
+
+<section>
+  <h2>Overview</h2>
+  <layout-text>
+    <p>A series of cards each <code>position: sticky</code> to the top, offset by an increasing distance so they stack visibly. Reading the page feels like flipping through a deck — each card stays put long enough to be read, then the next one slides over it.</p>
+    <p><strong>Anatomy:</strong></p>
+    <ul>
+      <li>A wrapper containing the card series</li>
+      <li>Each card is <code>position: sticky</code> with an <code>inset-block-start</code> that grows by a per-card increment (via a <code>--i</code> custom property)</li>
+      <li><code>margin-block-end</code> on each card creates the scroll distance before the next one arrives</li>
+      <li>Reduced-motion lifts the sticky behaviour entirely</li>
+    </ul>
+  </layout-text>
+
+  <browser-window src="/docs/examples/demos/pinned-card-stack.html" url="https://vanilla-breeze.dev/pinned-cards" title="Pinned Card Stack" shadow></browser-window>
+</section>
+
+<section>
+  <h2>HTML</h2>
+  <code-block language="html" label="Stack of cards with stacking index" data-escape><section class="stack">
+  <article style="--i: 0;">
+    <h2>First card</h2>
+    <p>Pins first.</p>
+  </article>
+  <article style="--i: 1;">
+    <h2>Second card</h2>
+    <p>Pins one offset below.</p>
+  </article>
+  <article style="--i: 2;">
+    <h2>Third card</h2>
+    <p>Two offsets.</p>
+  </article>
+  <article style="--i: 3;">
+    <h2>Fourth card</h2>
+    <p>Bottom of the stack.</p>
+  </article>
+</section></code-block>
+</section>
+
+<section>
+  <h2>CSS</h2>
+  <code-block language="css" label="Sticky + per-card offset" data-escape>.stack > article {
+  position: sticky;
+  inset-block-start: calc(var(--size-l) + var(--i, 0) * var(--size-m));
+  margin-block-end: 50vh;  /* scroll distance between cards */
+  margin-inline: auto;
+  max-inline-size: 40rem;
+  padding: var(--size-xl);
+  border-radius: var(--radius-l);
+  box-shadow: 0 12px 40px oklch(0% 0 0 / 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack > article {
+    position: static;
+    margin-block-end: var(--size-l);
+  }
+}</code-block>
+</section>
+
+<section>
+  <h2>Notes</h2>
+  <layout-text>
+    <ul>
+      <li><strong>The <code>--i</code> trick lets you add cards without writing per-card CSS.</strong> Use inline style or a small <code>nth-child</code> rule for the index.</li>
+      <li><strong>Tune <code>margin-block-end</code></strong> to control how long each card has on screen before being covered. 50vh is a comfortable default.</li>
+      <li><strong>No <code>overflow: hidden</code></strong> on the stack — same caveat as any sticky pattern.</li>
+      <li>Native CSS, zero JavaScript, zero scroll listeners. <code>position: sticky</code> has been broadly supported since 2017.</li>
+    </ul>
+  </layout-text>
+</section>

@@ -1,0 +1,89 @@
+---
+layout: pattern
+title: "Sticky Share Bar"
+description: "Vertical share rail beside an article that follows the reader. Pure position: sticky composition, no JS, no scroll listeners."
+patternName: "Sticky Share Bar"
+category: scroll
+currentPath: /docs/patterns/scroll/sticky-share-bar/
+---
+
+<section>
+  <h2>Overview</h2>
+  <layout-text>
+    <p>A vertical rail of share buttons that sticks to the side of an article as the reader scrolls. The rail releases naturally when the article ends because <code>position: sticky</code> respects its containing block.</p>
+    <p><strong>Anatomy:</strong></p>
+    <ul>
+      <li>A grid container with <em>rail · body · gutter</em> columns</li>
+      <li>The rail is <code>position: sticky</code> with <code>align-self: start</code></li>
+      <li><code>inset-block-start</code> sets the offset from the viewport edge</li>
+      <li>At narrow widths the rail flips to a horizontal bar above the article</li>
+    </ul>
+  </layout-text>
+
+  <browser-window src="/docs/examples/demos/sticky-share-bar.html" url="https://vanilla-breeze.dev/sticky-share" title="Sticky Share Bar" shadow></browser-window>
+</section>
+
+<section>
+  <h2>HTML</h2>
+  <code-block language="html" label="Article with sticky share rail" data-escape><article class="post">
+  <nav class="share-rail" aria-label="Share">
+    <a href="#" data-platform="x" aria-label="Share on X">𝕏</a>
+    <a href="#" data-platform="linkedin" aria-label="Share on LinkedIn">in</a>
+    <a href="#" data-copy="https://example.com/post" aria-label="Copy link">🔗</a>
+  </nav>
+  <div class="post-body">
+    <h1>Post title</h1>
+    <p>...long-form content...</p>
+  </div>
+  <aside></aside>
+</article></code-block>
+</section>
+
+<section>
+  <h2>CSS</h2>
+  <code-block language="css" label="Grid layout + sticky rail" data-escape>article.post {
+  display: grid;
+  grid-template-columns: auto minmax(0, 60ch) 1fr;
+  gap: var(--size-l);
+  padding: var(--size-l);
+  max-inline-size: 80rem;
+  margin-inline: auto;
+}
+
+.share-rail {
+  position: sticky;
+  inset-block-start: var(--size-l);
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-s);
+}
+
+@media (max-width: 50rem) {
+  article.post { grid-template-columns: 1fr; }
+  .share-rail {
+    flex-direction: row;
+    inset-block-start: 0;
+  }
+}</code-block>
+</section>
+
+<section>
+  <h2>Composing with VB&apos;s clipboard utility</h2>
+  <layout-text>
+    <p>The copy-link button in the demo uses <code>data-copy</code> from VB&apos;s clipboard system — no per-page JS, automatic <code>data-state="copied"</code> feedback, screen-reader announce. See <a href="/docs/attributes/data-copy/">data-copy</a>.</p>
+    <p>For a full share component with platform-specific share URLs and the Web Share API, use <a href="/docs/elements/web-components/share-wc/"><code>&lt;share-wc&gt;</code></a> instead of rolling your own anchors.</p>
+  </layout-text>
+</section>
+
+<section>
+  <h2>Notes</h2>
+  <layout-text>
+    <ul>
+      <li><strong><code>align-self: start</code> is what keeps the rail pinned at the top.</strong> Without it the rail stretches to the article&apos;s height and never sticks.</li>
+      <li><strong>The third column (<code>aside</code>) is intentionally empty</strong> in the demo — it gives the article a centred feel by claiming the right gutter. Drop it if you don&apos;t need symmetry.</li>
+      <li><strong>No <code>overflow: hidden</code></strong> on any ancestor — same sticky caveat as everywhere.</li>
+      <li>If the body is shorter than the viewport, the rail won&apos;t appear to stick (there&apos;s nothing to scroll). That&apos;s correct.</li>
+    </ul>
+  </layout-text>
+</section>

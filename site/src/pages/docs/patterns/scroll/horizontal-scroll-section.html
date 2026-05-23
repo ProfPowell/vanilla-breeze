@@ -1,0 +1,100 @@
+---
+layout: pattern
+title: "Horizontal Scroll Section"
+description: "Vertical-scroll section where content translates sideways via scroll-driven animation. Pure CSS with position: sticky and animation-timeline."
+patternName: "Horizontal Scroll Section"
+category: scroll
+currentPath: /docs/patterns/scroll/horizontal-scroll-section/
+---
+
+<section>
+  <h2>Overview</h2>
+  <layout-text>
+    <p>A section that translates a horizontal row of content sideways as the user scrolls vertically. The browser still scrolls normally — the row just animates in response to scroll position. No scroll-jacking.</p>
+    <p><strong>Anatomy:</strong></p>
+    <ul>
+      <li>An outer <code>.stage</code> taller than the viewport — its height controls how long the horizontal pass lasts</li>
+      <li>A <code>.track</code> that is <code>position: sticky</code>, viewport-sized, with <code>overflow: hidden</code></li>
+      <li>A <code>.row</code> inside the track containing the horizontal content</li>
+      <li><code>animation-timeline: view()</code> on the row drives a translate-X animation from the stage&apos;s scroll progress</li>
+      <li>Reduced-motion users get a wrapped vertical layout</li>
+    </ul>
+  </layout-text>
+
+  <browser-window src="/docs/examples/demos/horizontal-scroll-section.html" url="https://vanilla-breeze.dev/horizontal-scroll" title="Horizontal Scroll Section" shadow></browser-window>
+</section>
+
+<section>
+  <h2>HTML</h2>
+  <code-block language="html" label="Stage + sticky track + row" data-escape><section class="stage">
+  <section class="track">
+    <div class="row" role="list">
+      <article role="listitem">Step 1</article>
+      <article role="listitem">Step 2</article>
+      <article role="listitem">Step 3</article>
+      <article role="listitem">Step 4</article>
+    </div>
+  </section>
+</section></code-block>
+</section>
+
+<section>
+  <h2>CSS</h2>
+  <code-block language="css" label="Tall stage, sticky track, scroll-driven row" data-escape>.stage {
+  block-size: 400vh;  /* taller stage = longer horizontal pass */
+  position: relative;
+}
+
+.track {
+  position: sticky;
+  inset-block-start: 0;
+  block-size: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.row {
+  display: flex;
+  gap: var(--size-l);
+  padding-inline: 5vw;
+}
+
+.row > article {
+  flex: 0 0 70vw;
+  max-inline-size: 50rem;
+  padding: var(--size-xl);
+  border-radius: var(--radius-l);
+}
+
+@supports (animation-timeline: view()) {
+  .stage { view-timeline-name: --hstage; }
+  .row {
+    animation: scroll-left 1s linear forwards;
+    animation-timeline: --hstage;
+    animation-range: cover 0% cover 100%;
+  }
+  @keyframes scroll-left {
+    /* end translate = row width − viewport width + edge padding */
+    to { transform: translateX(calc(-1 * (4 * 70vw + 3 * var(--size-l) - 100vw + 10vw))); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row   { animation: none; flex-wrap: wrap; }
+  .track { block-size: auto; overflow: visible; }
+  .stage { block-size: auto; }
+}</code-block>
+</section>
+
+<section>
+  <h2>Notes</h2>
+  <layout-text>
+    <ul>
+      <li><strong>Tune the end translate</strong> based on how many cards × their width. The formula in the demo (<code>4 * 70vw + 3 * gap - 100vw + 10vw</code>) leaves the last card centred.</li>
+      <li><strong>The stage height controls timing.</strong> 400vh gives ~3 viewport-heights of vertical scroll across which the horizontal pass happens. Halve it for a snappier pass, double it for a slower one.</li>
+      <li><strong>Named view-timeline.</strong> <code>view-timeline-name</code> on the stage and <code>animation-timeline</code> on the row decouples the animated element from the timeline source — useful when the element and the scroll trigger aren&apos;t the same node.</li>
+      <li><strong>Don&apos;t use this for primary navigation flow.</strong> Horizontal-on-scroll is a feature presentation pattern, not a way to read essential content. Reduced-motion fallback is essential.</li>
+    </ul>
+  </layout-text>
+</section>

@@ -1,0 +1,85 @@
+---
+layout: pattern
+title: "Scroll-Down Indicator"
+description: "Animated chevron at the bottom of a hero nudging readers to scroll. Pure CSS, reduced-motion aware."
+patternName: "Scroll-Down Indicator"
+category: scroll
+currentPath: /docs/patterns/scroll/scroll-down-indicator/
+---
+
+<section>
+  <h2>Overview</h2>
+  <layout-text>
+    <p>A small chevron pinned to the bottom of a hero section, gently bouncing to hint that more content lives below the fold. Used by countless marketing sites; recognised instantly by readers.</p>
+    <p><strong>Anatomy:</strong></p>
+    <ul>
+      <li>A link inside the hero, absolutely positioned at <code>inset-block-end</code></li>
+      <li>A <code>::after</code> pseudo-element renders the chevron glyph</li>
+      <li>A keyframe animation bounces the chevron on a continuous loop</li>
+      <li>Anchors to the section below for keyboard users — clicking it scrolls to the next anchor</li>
+      <li><code>prefers-reduced-motion</code> stops the bounce</li>
+    </ul>
+  </layout-text>
+
+  <browser-window src="/docs/examples/demos/scroll-down-indicator.html" url="https://vanilla-breeze.dev/scroll-down" title="Scroll-Down Indicator" shadow></browser-window>
+</section>
+
+<section>
+  <h2>HTML</h2>
+  <code-block language="html" label="Hero with scroll-down indicator" data-escape><header class="hero">
+  <hgroup>
+    <h1>The hero</h1>
+    <p>Headline copy here.</p>
+  </hgroup>
+  <a href="#below" class="scroll-down" aria-label="Scroll to content">Scroll</a>
+</header>
+<main id="below">
+  ...
+</main></code-block>
+</section>
+
+<section>
+  <h2>CSS</h2>
+  <code-block language="css" label="Indicator styles" data-escape>.scroll-down {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: var(--size-l);
+  margin-inline: auto;
+  inline-size: fit-content;
+  color: white;
+  text-decoration: none;
+  font-size: var(--font-size-s);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-2xs);
+}
+
+.scroll-down::after {
+  content: "↓";
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1;
+  animation: scroll-bounce 1.6s ease-in-out infinite;
+}
+
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50%      { transform: translateY(6px); opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-down::after { animation: none; }
+}</code-block>
+</section>
+
+<section>
+  <h2>Notes</h2>
+  <layout-text>
+    <ul>
+      <li>Use an <code>&lt;a&gt;</code> rather than a button — the destination is content, not an action. Keyboard users get free Enter-to-scroll behaviour and you don&apos;t need any JavaScript.</li>
+      <li>The hero needs <code>position: relative</code> (or any non-static positioning) so the absolute indicator anchors to it.</li>
+      <li>An alternative glyph: use VB&apos;s <code>&lt;icon-wc name="chevron-down"&gt;</code> instead of the unicode arrow for a sharper look.</li>
+    </ul>
+  </layout-text>
+</section>
