@@ -1,0 +1,65 @@
+/**
+ * Animated Borders — Attribute API rules
+ *
+ * Sibling to data-border-style / data-border-shape.
+ * Mutually exclusive with data-border-shape (both use ::before).
+ *
+ * These rules live in @layer bundle-effects (NOT tokens) so they reliably
+ * win over element/component backgrounds — spin in particular replaces the
+ * background, which would otherwise lose to a .card surface in a higher layer.
+ *
+ * Tokens (--border-anim-*) and @keyframes stay in animated-borders.css
+ * (tokens layer). This file carries only the per-element attribute rules.
+ * It is imported at the top level of main.css / main-core.css (NOT via a
+ * layer(tokens) import) so the @layer bundle-effects block below targets the
+ * top-level bundle-effects layer rather than a tokens.bundle-effects sublayer.
+ */
+
+@layer bundle-effects {
+  /* spin replaces the element background with the gradient layers */
+  [data-border-effect~="spin"] {
+    border: var(--border-anim-spin-width) solid transparent;
+    background:
+      linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+      conic-gradient(from var(--vb-border-angle),
+        var(--color-primary), var(--color-secondary), var(--color-accent), var(--color-primary)) border-box;
+    animation: vb-border-spin var(--border-anim-spin-duration) linear infinite;
+  }
+  [data-border-effect~="pulse"] {
+    border: 2px solid var(--border-anim-pulse-color);
+    animation: vb-border-pulse var(--border-anim-pulse-duration) ease-in-out infinite;
+  }
+  /* filter: hue-rotate tints the whole subtree, not just the border */
+  [data-border-effect~="hue-cycle"] {
+    border: var(--border-anim-hue-width) solid var(--border-anim-hue-color);
+    animation: vb-border-hue var(--border-anim-hue-duration) linear infinite;
+  }
+  [data-border-effect~="march"] { position: relative; }
+  [data-border-effect~="march"]::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    --c: var(--border-anim-march-color);
+    background-image:
+      repeating-linear-gradient(90deg,  var(--c) 0 8px, transparent 8px 16px),
+      repeating-linear-gradient(180deg, var(--c) 0 8px, transparent 8px 16px),
+      repeating-linear-gradient(90deg,  var(--c) 0 8px, transparent 8px 16px),
+      repeating-linear-gradient(180deg, var(--c) 0 8px, transparent 8px 16px);
+    background-size: 16px var(--border-anim-march-width), var(--border-anim-march-width) 16px, 16px var(--border-anim-march-width), var(--border-anim-march-width) 16px;
+    background-position: 0 0, 100% 0, 0 100%, 0 0;
+    background-repeat: repeat-x, repeat-y, repeat-x, repeat-y;
+    animation: vb-border-march var(--border-anim-march-duration) linear infinite;
+  }
+  [data-border-effect~="breathe"] { position: relative; isolation: isolate; }
+  [data-border-effect~="breathe"]::before {
+    content: ""; position: absolute; inset: -6px; border-radius: inherit; pointer-events: none;
+    border: 2px solid var(--border-anim-breathe-color);
+    animation: vb-border-breathe var(--border-anim-breathe-duration) ease-in-out infinite;
+  }
+  [data-border-effect~="trace"] { position: relative; }
+  [data-border-effect~="trace"]::before, [data-border-effect~="trace"]::after {
+    content: ""; position: absolute; inset: 0; border: 2px solid transparent; border-radius: inherit; pointer-events: none;
+  }
+  [data-border-effect~="trace"]::before { transition: border-block-start-color var(--border-anim-trace-duration) ease 0s, border-inline-end-color var(--border-anim-trace-duration) ease var(--border-anim-trace-duration); }
+  [data-border-effect~="trace"]::after  { transition: border-block-end-color var(--border-anim-trace-duration) ease calc(2*var(--border-anim-trace-duration)), border-inline-start-color var(--border-anim-trace-duration) ease calc(3*var(--border-anim-trace-duration)); }
+  [data-border-effect~="trace"]:hover::before { border-block-start-color: var(--border-anim-trace-color); border-inline-end-color: var(--border-anim-trace-color); }
+  [data-border-effect~="trace"]:hover::after  { border-block-end-color: var(--border-anim-trace-color); border-inline-start-color: var(--border-anim-trace-color); }
+}
