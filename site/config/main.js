@@ -16,7 +16,14 @@ export default {
   // Custom plugins
   plugins: {
     before: ['generate-sidebars', 'generate-topics'],
-    default: ['generate-provenance-meta', 'auto-link-glossary', 'generate-api-tables', 'generate-indexes', 'render-dynamic-pages', 'generate-glossary'],
+    // generate-api-tables must run before auto-link-glossary: api-tables
+    // strips legacy `{% from "partials/attribute-table.njk" %}` import
+    // lines. If auto-link runs first, it wraps the word "attribute" inside
+    // those literals with <dfn><a href="...">, embedding `"` characters into
+    // the import path. That breaks api-tables' strip regex (which expects a
+    // clean quoted string), so the directive survives to the rendered HTML
+    // and trips audit-unresolved-templates.
+    default: ['generate-provenance-meta', 'generate-api-tables', 'auto-link-glossary', 'generate-indexes', 'render-dynamic-pages', 'generate-glossary'],
     after: ['generate-pages-json', 'generate-definitions-json', 'generate-topic-assets'],
   },
   pluginPath: 'plugins',
