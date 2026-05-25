@@ -1,0 +1,29 @@
+/**
+ * Scrollbar Extension
+ *
+ * Baseline scrollbar-color / scrollbar-width. Themes set the tokens; :root
+ * applies them globally. Per-element variants via data-scrollbar. Zero JS.
+ * Defaults map to existing surface/border tokens so importing changes nothing
+ * dramatic until a theme overrides --scrollbar-thumb / --scrollbar-track.
+ */
+:root {
+  --scrollbar-thumb: var(--color-border-strong);
+  --scrollbar-track: var(--color-surface-sunken);
+  --scrollbar-width: thin; /* auto | thin | none */
+  --scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+:root {
+  scrollbar-color: var(--scrollbar-color);
+  scrollbar-width: var(--scrollbar-width);
+}
+[data-scrollbar] {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: var(--scrollbar-width);
+}
+[data-scrollbar="primary"] {
+  --scrollbar-thumb: var(--color-primary);
+  --scrollbar-track: color-mix(in oklab, var(--color-primary) 12%, var(--color-surface-sunken));
+}
+[data-scrollbar="minimal"] { --scrollbar-width: thin; --scrollbar-thumb: var(--color-border); }
+[data-scrollbar="hidden"]  { scrollbar-width: none; }
+[data-scrollbar="auto"]    { scrollbar-width: auto; }
