@@ -23,16 +23,8 @@
  *   }
  */
 
-/* ========================================
- * @property declarations
- * Required for animating conic-gradient angle.
- * Must be at top level — cannot nest inside :root.
- * ======================================== */
-@property --vb-border-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
+/* Note: @property --vb-border-angle is registered top-level in src/main.css
+ * (it must be unlayered, so it cannot live in this layered token file). */
 
 /* ========================================
  * Tokens
@@ -46,6 +38,27 @@
   --border-anim-pulse-duration: 2s;
   --border-anim-pulse-color: var(--color-primary);
   --border-anim-pulse-size: 8px;
+
+  /* March (dashed marching-ants via background-position) */
+  --border-anim-march-duration: 1s;
+  --border-anim-march-color: var(--color-primary);
+  --border-anim-march-width: 2px;
+  /* Hue-cycle */
+  --border-anim-hue-duration: 4s;
+  --border-anim-hue-width: 3px;
+  --border-anim-hue-color: oklch(60% 0.22 260);
+  /* Breathe */
+  --border-anim-breathe-duration: 2s;
+  --border-anim-breathe-color: var(--color-primary);
+  /* Corner-trace (hover) */
+  --border-anim-trace-duration: 0.18s;
+  --border-anim-trace-color: var(--color-primary);
+  /* Complete vocabulary — recognized names rendered by the border-wc package
+     (Decorated Layers #4), declared here so themes can set them uniformly. */
+  --border-anim-squiggle-duration: 2s;
+  --border-anim-draw-duration: 1.5s;
+  --border-anim-sparks-count: 24;
+  --border-anim-liquid-duration: 6s;
 }
 
 /* ========================================
@@ -62,6 +75,61 @@
   50% { box-shadow: 0 0 0 var(--border-anim-pulse-size) oklch(from var(--border-anim-pulse-color) l c h / 0); }
 }
 
+@keyframes vb-border-march { to { background-position: 32px 0, 100% 32px, -32px 100%, 0 -32px; } }
+@keyframes vb-border-hue   { to { filter: hue-rotate(360deg); } }
+@keyframes vb-border-breathe { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0; transform: scale(1.06); } }
+
+/* ========================================
+ * Per-element opt-in attribute API
+ * data-border-effect (sibling to data-border-style / data-border-shape).
+ * Base values render here; extreme values (squiggle/draw/sparks/liquid) are
+ * no-ops until @profpowell/border-wc is loaded.
+ * ======================================== */
+[data-border-effect~="spin"] {
+  border: var(--border-anim-spin-width) solid transparent;
+  background:
+    linear-gradient(var(--color-surface-raised), var(--color-surface-raised)) padding-box,
+    conic-gradient(from var(--vb-border-angle),
+      var(--color-primary), var(--color-secondary), var(--color-accent), var(--color-primary)) border-box;
+  animation: vb-border-spin var(--border-anim-spin-duration) linear infinite;
+}
+[data-border-effect~="pulse"] {
+  border: 2px solid var(--border-anim-pulse-color);
+  animation: vb-border-pulse var(--border-anim-pulse-duration) ease-in-out infinite;
+}
+[data-border-effect~="hue-cycle"] {
+  border: var(--border-anim-hue-width) solid var(--border-anim-hue-color);
+  animation: vb-border-hue var(--border-anim-hue-duration) linear infinite;
+}
+[data-border-effect~="march"] { position: relative; }
+[data-border-effect~="march"]::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  --c: var(--border-anim-march-color);
+  background-image:
+    repeating-linear-gradient(90deg,  var(--c) 0 8px, transparent 8px 16px),
+    repeating-linear-gradient(180deg, var(--c) 0 8px, transparent 8px 16px),
+    repeating-linear-gradient(90deg,  var(--c) 0 8px, transparent 8px 16px),
+    repeating-linear-gradient(180deg, var(--c) 0 8px, transparent 8px 16px);
+  background-size: 16px var(--border-anim-march-width), var(--border-anim-march-width) 16px, 16px var(--border-anim-march-width), var(--border-anim-march-width) 16px;
+  background-position: 0 0, 100% 0, 0 100%, 0 0;
+  background-repeat: repeat-x, repeat-y, repeat-x, repeat-y;
+  animation: vb-border-march var(--border-anim-march-duration) linear infinite;
+}
+[data-border-effect~="breathe"] { position: relative; isolation: isolate; }
+[data-border-effect~="breathe"]::before {
+  content: ""; position: absolute; inset: -6px; border-radius: inherit; pointer-events: none;
+  border: 2px solid var(--border-anim-breathe-color);
+  animation: vb-border-breathe var(--border-anim-breathe-duration) ease-in-out infinite;
+}
+[data-border-effect~="trace"] { position: relative; }
+[data-border-effect~="trace"]::before, [data-border-effect~="trace"]::after {
+  content: ""; position: absolute; inset: 0; border: 2px solid transparent; border-radius: inherit; pointer-events: none;
+}
+[data-border-effect~="trace"]::before { transition: border-block-start-color var(--border-anim-trace-duration) ease 0s, border-inline-end-color var(--border-anim-trace-duration) ease var(--border-anim-trace-duration); }
+[data-border-effect~="trace"]::after  { transition: border-block-end-color var(--border-anim-trace-duration) ease calc(2*var(--border-anim-trace-duration)), border-inline-start-color var(--border-anim-trace-duration) ease calc(3*var(--border-anim-trace-duration)); }
+[data-border-effect~="trace"]:hover::before { border-block-start-color: var(--border-anim-trace-color); border-inline-end-color: var(--border-anim-trace-color); }
+[data-border-effect~="trace"]:hover::after  { border-block-end-color: var(--border-anim-trace-color); border-inline-start-color: var(--border-anim-trace-color); }
+
 /* ========================================
  * Reduced Motion
  * Freeze animations for users who prefer reduced motion
@@ -71,6 +139,10 @@
   :root {
     --border-anim-spin-duration: 0s;
     --border-anim-pulse-duration: 0s;
+    --border-anim-march-duration: 0s;
+    --border-anim-hue-duration: 0s;
+    --border-anim-breathe-duration: 0s;
+    --border-anim-trace-duration: 0s;
   }
 }
 
@@ -78,4 +150,8 @@
 :root[data-motion-reduced] {
   --border-anim-spin-duration: 0s;
   --border-anim-pulse-duration: 0s;
+  --border-anim-march-duration: 0s;
+  --border-anim-hue-duration: 0s;
+  --border-anim-breathe-duration: 0s;
+  --border-anim-trace-duration: 0s;
 }
