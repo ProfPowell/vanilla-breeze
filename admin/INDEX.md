@@ -64,6 +64,7 @@ Workflow note: when a `plans/` doc ships, move it to `shipped/`. When a `researc
 
 - **Plans**: [animated-bg-spec.md](./plans/animated-bg-spec.md)
 - **Shipped**: [activity-feed.md](./shipped/activity-feed.md), [comment-thread.md](./shipped/comment-thread.md), [poll-wc.md](./shipped/poll-wc.md), [reaction-bar.md](./shipped/reaction-bar.md), [status-wc.md](./shipped/status-wc.md), [version-switcher.md](./shipped/version-switcher.md), [social-embed-spec.md](./shipped/social-embed-spec.md)
+- **Plans (integrations)**: [gl-wc-spec.md](./plans/gl-wc-spec.md)
 - **Research**: [future-wc.md](./research/future-wc.md) (wishlist), [feed-reader/](./research/feed-reader/)
 
 ### Layout & CSS
@@ -117,7 +118,7 @@ Workflow note: when a `plans/` doc ships, move it to `shipped/`. When a `researc
 ### Tooling & audits
 
 - **Research**: [pdf-viewer-token-audit.md](./research/pdf-viewer-token-audit.md), [page-diag-debug/](./research/page-diag-debug/)
-- **Research (comparisons)**: [shad-compare.md](./research/shad-compare.md), [semtx-comparison.md](./research/semtx-comparison.md), [custom-state-set-research.md](./research/custom-state-set-research.md)
+- **Research (comparisons)**: [shad-compare.md](./research/shad-compare.md), [cult-compare.md](./research/cult-compare.md), [semtx-comparison.md](./research/semtx-comparison.md), [custom-state-set-research.md](./research/custom-state-set-research.md)
 
 ## Cross-cutting
 
