@@ -52,10 +52,15 @@ const PROSE_PATH_HINTS = [
 ];
 
 // Skip text inside these elements (and any descendants).
+// VB custom elements that present code/markup source (<code-block>,
+// <browser-window>, <terminal-window>) must be listed here too: the
+// auto-linker runs build-time, before custom elements upgrade, so their
+// slotted source text would otherwise be treated as prose.
 const PROTECTED_TAGS = new Set([
   'a', 'code', 'pre', 'dfn', 'abbr',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'script', 'style', 'template', 'noscript',
+  'code-block', 'browser-window', 'terminal-window',
 ]);
 
 // Module-level cache so we parse vocabulary once per build.

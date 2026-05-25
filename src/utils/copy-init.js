@@ -100,6 +100,7 @@ async function copyRich(payload, options = {}) {
   const richSupported = typeof ClipboardItem !== 'undefined' && typeof navigator.clipboard?.write === 'function';
 
   if (richSupported) {
+    /** @type {Record<string, Blob>} */
     const items = {};
     if (text) items['text/plain'] = new Blob([text], { type: 'text/plain' });
     if (html) items['text/html'] = new Blob([html], { type: 'text/html' });
