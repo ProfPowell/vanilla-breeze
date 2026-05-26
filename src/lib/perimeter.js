@@ -382,6 +382,53 @@ export function pathShape(d) {
   return { start: startPt, segments };
 }
 
+// ---------- CSS shape() ----------
+
+// commands = ordered verbs with px-resolved coords:
+//   { verb:'from', to:[x,y] }
+//   { verb:'line', to:[x,y] }
+//   { verb:'hline', x } | { verb:'vline', y }
+//   { verb:'curve', to:[x,y], via:[[cx,cy]] }   // 1 control = quadratic, 2 = cubic
+//   { verb:'close' }
+export function shapeShape(commands) {
+  let cur = [0, 0];
+  let startPt = [0, 0];
+  const segments = [];
+  for (const c of commands) {
+    if (c.verb === 'from') {
+      cur = c.to.slice();
+      startPt = cur.slice();
+    } else if (c.verb === 'line') {
+      segments.push(lineSeg(cur, c.to));
+      cur = c.to.slice();
+    } else if (c.verb === 'hline') {
+      const p = [c.x, cur[1]];
+      segments.push(lineSeg(cur, p));
+      cur = p;
+    } else if (c.verb === 'vline') {
+      const p = [cur[0], c.y];
+      segments.push(lineSeg(cur, p));
+      cur = p;
+    } else if (c.verb === 'curve') {
+      const end = c.to;
+      if (c.via.length === 2) {
+        const [c1, c2] = c.via;
+        const poly = flattenCubic(cur, c1, c2, end);
+        segments.push({ kind: 'curve', ...flattenedWalker(poly), d: `C${n(c1[0])} ${n(c1[1])} ${n(c2[0])} ${n(c2[1])} ${n(end[0])} ${n(end[1])}` });
+      } else {
+        const c1 = c.via[0];
+        const poly = flattenQuad(cur, c1, end);
+        segments.push({ kind: 'curve', ...flattenedWalker(poly), d: `Q${n(c1[0])} ${n(c1[1])} ${n(end[0])} ${n(end[1])}` });
+      }
+      cur = end.slice();
+    } else if (c.verb === 'close') {
+      if (cur[0] !== startPt[0] || cur[1] !== startPt[1]) segments.push(lineSeg(cur, startPt));
+      cur = startPt.slice();
+    }
+  }
+  return { start: startPt, segments };
+}
+
 // ---------- DOM wrappers ----------
 
 function readDims(host) {

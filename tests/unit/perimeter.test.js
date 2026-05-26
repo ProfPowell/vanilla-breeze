@@ -211,3 +211,32 @@ describe('pathShape', () => {
     assert.ok(Math.abs(traceLength(shape) - (10 + 10 + Math.hypot(10, 10))) < 1e-9);
   });
 });
+
+import { shapeShape } from '../../src/lib/perimeter.js';
+
+describe('shapeShape', () => {
+  it('matches the equivalent pathShape for a straight triangle', () => {
+    const viaShape = shapeShape([
+      { verb: 'from', to: [0, 0] },
+      { verb: 'line', to: [100, 0] },
+      { verb: 'line', to: [100, 100] },
+      { verb: 'close' },
+    ]);
+    const viaPath = pathShape('M0 0 L100 0 L100 100 Z');
+    assert.equal(tracePath(viaShape), tracePath(viaPath));
+    assert.ok(Math.abs(traceLength(viaShape) - traceLength(viaPath)) < 1e-9);
+  });
+  it('supports hline/vline and a cubic curve', () => {
+    const shape = shapeShape([
+      { verb: 'from', to: [0, 0] },
+      { verb: 'hline', x: 100 },
+      { verb: 'curve', to: [100, 100], via: [[100, 33], [100, 66]] },
+      { verb: 'vline', y: 0 },
+      { verb: 'close' },
+    ]);
+    const d = tracePath(shape);
+    assert.ok(d.startsWith('M0 0'));
+    assert.match(d, /C100 33 100 66 100 100/);
+    assert.match(d, /Z$/);
+  });
+});
