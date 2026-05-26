@@ -216,6 +216,172 @@ export function ellipseShape({ cx, cy, rx, ry }) {
   return ellipseSegments({ cx, cy, rx, ry });
 }
 
+// ---------- inset() ----------
+
+// edges in px from each side; corners as for roundedRectShape (raw radii).
+export function insetShape({ top = 0, right = 0, bottom = 0, left = 0, corners = [[0, 0], [0, 0], [0, 0], [0, 0]] }, { width, height }) {
+  const w = Math.max(0, width - left - right);
+  const h = Math.max(0, height - top - bottom);
+  const shape = roundedRectShape({ width: w, height: h, corners });
+  return shiftShape(shape, left, top);
+}
+
+function shiftShape({ start, segments }, dx, dy) {
+  if (dx === 0 && dy === 0) return { start, segments };
+  const shift = (p) => [p[0] + dx, p[1] + dy];
+  const newSegs = segments.map((s) => ({ ...s, at: (u) => shift(s.at(u)), d: shiftPathCommand(s.d, dx, dy) }));
+  return { start: shift(start), segments: newSegs };
+}
+
+// Shift the absolute coordinates inside a single-command `d` (H/V/L/A) by dx,dy.
+function shiftPathCommand(d, dx, dy) {
+  const cmd = d[0];
+  if (cmd === 'H') return `H${n(parseFloat(d.slice(1)) + dx)}`;
+  if (cmd === 'V') return `V${n(parseFloat(d.slice(1)) + dy)}`;
+  if (cmd === 'L') {
+    const [x, y] = d.slice(1).split(' ').map(parseFloat);
+    return `L${n(x + dx)} ${n(y + dy)}`;
+  }
+  if (cmd === 'A') {
+    const [rx, ry, rot, laf, sf, x, y] = d.slice(1).trim().split(/\s+/).map(Number);
+    return `A${n(rx)} ${n(ry)} ${n(rot)} ${laf} ${sf} ${n(x + dx)} ${n(y + dy)}`;
+  }
+  return d;
+}
+
+// ---------- bezier flattening ----------
+
+function flattenCubic(p0, p1, p2, p3, N = 24) {
+  const pts = [];
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const mt = 1 - t;
+    const a = mt * mt * mt, b = 3 * mt * mt * t, c = 3 * mt * t * t, e = t * t * t;
+    pts.push([a * p0[0] + b * p1[0] + c * p2[0] + e * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + e * p3[1]]);
+  }
+  return pts;
+}
+function flattenQuad(p0, p1, p2, N = 24) {
+  const pts = [];
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const mt = 1 - t;
+    const a = mt * mt, b = 2 * mt * t, c = t * t;
+    pts.push([a * p0[0] + b * p1[0] + c * p2[0], a * p0[1] + b * p1[1] + c * p2[1]]);
+  }
+  return pts;
+}
+
+// ---------- path() ----------
+
+function tokenizePath(d) {
+  const tokens = [];
+  const re = /([MmLlHhVvCcSsQqTtAaZz])|(-?\d*\.?\d+(?:e[-+]?\d+)?)/gi;
+  let m;
+  let cur = null;
+  while ((m = re.exec(d))) {
+    if (m[1]) {
+      cur = { cmd: m[1], args: [] };
+      tokens.push(cur);
+    } else if (cur) {
+      cur.args.push(parseFloat(m[2]));
+    }
+  }
+  return tokens;
+}
+
+// Parse SVG path data `d` into a traced shape. Supports M L H V C S Q T Z (abs+rel).
+// The `A` arc command is NOT implemented (clip-path: path() rarely uses it) — such
+// segments are skipped. Coordinates are taken as-is (px); the DOM layer resolves units.
+export function pathShape(d) {
+  const toks = tokenizePath(d);
+  let cur = [0, 0];
+  let startPt = [0, 0];
+  let prevCubicCtrl = null;
+  let prevQuadCtrl = null;
+  const segments = [];
+  const push = (seg) => segments.push(seg);
+  const rel = (cmd) => cmd === cmd.toLowerCase();
+  for (const { cmd, args } of toks) {
+    const C = cmd.toUpperCase();
+    const r = rel(cmd);
+    const ax = (x) => (r ? cur[0] + x : x);
+    const ay = (y) => (r ? cur[1] + y : y);
+    if (C === 'M') {
+      cur = [ax(args[0]), ay(args[1])];
+      startPt = cur.slice();
+      for (let i = 2; i + 1 < args.length; i += 2) {
+        const p = [r ? cur[0] + args[i] : args[i], r ? cur[1] + args[i + 1] : args[i + 1]];
+        push(lineSeg(cur, p));
+        cur = p;
+      }
+      prevCubicCtrl = prevQuadCtrl = null;
+    } else if (C === 'L') {
+      for (let i = 0; i + 1 < args.length; i += 2) {
+        const p = [r ? cur[0] + args[i] : args[i], r ? cur[1] + args[i + 1] : args[i + 1]];
+        push(lineSeg(cur, p));
+        cur = p;
+      }
+      prevCubicCtrl = prevQuadCtrl = null;
+    } else if (C === 'H') {
+      for (const xv of args) {
+        const p = [r ? cur[0] + xv : xv, cur[1]];
+        push(lineSeg(cur, p));
+        cur = p;
+      }
+      prevCubicCtrl = prevQuadCtrl = null;
+    } else if (C === 'V') {
+      for (const yv of args) {
+        const p = [cur[0], r ? cur[1] + yv : yv];
+        push(lineSeg(cur, p));
+        cur = p;
+      }
+      prevCubicCtrl = prevQuadCtrl = null;
+    } else if (C === 'C' || C === 'S') {
+      const step = C === 'C' ? 6 : 4;
+      for (let i = 0; i + step - 1 < args.length; i += step) {
+        let c1, c2, end;
+        if (C === 'C') {
+          c1 = [ax(args[i]), ay(args[i + 1])];
+          c2 = [ax(args[i + 2]), ay(args[i + 3])];
+          end = [ax(args[i + 4]), ay(args[i + 5])];
+        } else {
+          c1 = prevCubicCtrl ? [2 * cur[0] - prevCubicCtrl[0], 2 * cur[1] - prevCubicCtrl[1]] : cur.slice();
+          c2 = [ax(args[i]), ay(args[i + 1])];
+          end = [ax(args[i + 2]), ay(args[i + 3])];
+        }
+        const poly = flattenCubic(cur, c1, c2, end);
+        push({ kind: 'curve', ...flattenedWalker(poly), d: `C${n(c1[0])} ${n(c1[1])} ${n(c2[0])} ${n(c2[1])} ${n(end[0])} ${n(end[1])}` });
+        prevCubicCtrl = c2;
+        prevQuadCtrl = null;
+        cur = end;
+      }
+    } else if (C === 'Q' || C === 'T') {
+      const step = C === 'Q' ? 4 : 2;
+      for (let i = 0; i + step - 1 < args.length; i += step) {
+        let c1, end;
+        if (C === 'Q') {
+          c1 = [ax(args[i]), ay(args[i + 1])];
+          end = [ax(args[i + 2]), ay(args[i + 3])];
+        } else {
+          c1 = prevQuadCtrl ? [2 * cur[0] - prevQuadCtrl[0], 2 * cur[1] - prevQuadCtrl[1]] : cur.slice();
+          end = [ax(args[i]), ay(args[i + 1])];
+        }
+        const poly = flattenQuad(cur, c1, end);
+        push({ kind: 'curve', ...flattenedWalker(poly), d: `Q${n(c1[0])} ${n(c1[1])} ${n(end[0])} ${n(end[1])}` });
+        prevQuadCtrl = c1;
+        prevCubicCtrl = null;
+        cur = end;
+      }
+    } else if (C === 'Z') {
+      if (cur[0] !== startPt[0] || cur[1] !== startPt[1]) push(lineSeg(cur, startPt));
+      cur = startPt.slice();
+      prevCubicCtrl = prevQuadCtrl = null;
+    }
+  }
+  return { start: startPt, segments };
+}
+
 // ---------- DOM wrappers ----------
 
 function readDims(host) {

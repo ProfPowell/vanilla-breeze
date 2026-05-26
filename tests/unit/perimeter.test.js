@@ -144,6 +144,7 @@ describe('roundedRectShape — asymmetric & elliptical', () => {
 });
 
 import { polygonShape, circleShape, ellipseShape } from '../../src/lib/perimeter.js';
+import { insetShape, pathShape } from '../../src/lib/perimeter.js';
 
 describe('polygonShape', () => {
   it('traces a closed triangle with line segments', () => {
@@ -179,5 +180,34 @@ describe('circleShape / ellipseShape', () => {
     const [x, y] = s(0.1);
     const e = ((x - 50) / 50) ** 2 + ((y - 50) / 25) ** 2;
     assert.ok(Math.abs(e - 1) < 0.02);
+  });
+});
+
+describe('insetShape', () => {
+  it('equals roundedRectShape on the inset box, shifted into place', () => {
+    const got = tracePath(insetShape({ top: 10, right: 10, bottom: 10, left: 10, corners: [[5, 5], [5, 5], [5, 5], [5, 5]] }, { width: 100, height: 100 }));
+    assert.ok(got.startsWith('M15 10'), got);
+    assert.match(got, /A5 5 0 0 1/);
+  });
+});
+
+describe('pathShape', () => {
+  it('traces a closed straight-line triangle', () => {
+    const shape = pathShape('M0 0 L100 0 L100 100 Z');
+    const d = tracePath(shape);
+    assert.ok(d.startsWith('M0 0'));
+    assert.match(d, /Z$/);
+    const L = traceLength(shape);
+    assert.ok(Math.abs(L - (100 + 100 + Math.hypot(100, 100))) < 1e-9);
+  });
+  it('flattens a cubic and measures a sane length', () => {
+    const shape = pathShape('M0 0 C10 0 20 0 30 0');
+    assert.ok(Math.abs(traceLength(shape) - 30) < 1e-6);
+  });
+  it('handles relative commands', () => {
+    const shape = pathShape('M10 10 l10 0 l0 10 z');
+    const s = traceSampler(shape);
+    assert.deepEqual(s(0).map((v) => Math.round(v)), [10, 10]);
+    assert.ok(Math.abs(traceLength(shape) - (10 + 10 + Math.hypot(10, 10))) < 1e-9);
   });
 });
