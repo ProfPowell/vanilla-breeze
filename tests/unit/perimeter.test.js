@@ -280,3 +280,32 @@ describe('DOM wrappers — shape detection', () => {
     assert.match(perimeterPath(host), /A10 20 0 0 1/);
   });
 });
+
+describe('perimeter Phase 2 — review fixes', () => {
+  afterEach(() => { delete globalThis.getComputedStyle; });
+
+  it('a corner with one zero radius component (via inset) is square, with correct length', () => {
+    const shape = roundedRectShape({ width: 100, height: 100, corners: [[5, 10], [0, 0], [0, 0], [0, 0]], inset: 5 });
+    assert.deepEqual(shape.start.map((v) => Math.round(v)), [5, 5]);
+    const d = tracePath(shape);
+    assert.ok(!/A/.test(d), d);
+    assert.ok(Math.abs(traceLength(shape) - 360) < 1e-9, String(traceLength(shape)));
+  });
+
+  it('tracePath keeps a trailing line that does NOT return to start (open path)', () => {
+    const open = pathShape('M0 0 L100 0 L100 100');
+    assert.equal(tracePath(open), 'M0 0H100V100Z');
+  });
+
+  it('circle() with a closest-side keyword radius defaults to half the shorter side', () => {
+    const shape = parseClipPath('circle(closest-side at 50% 50%)', { width: 100, height: 60 });
+    assert.ok(Math.abs(traceLength(shape) - 2 * Math.PI * 30) < 1e-6, String(traceLength(shape)));
+  });
+
+  it('inset() round expands multi-value border-radius shorthand per corner', () => {
+    const shape = parseClipPath('inset(0px round 10px 20px)', { width: 200, height: 200 });
+    const d = tracePath(shape);
+    assert.match(d, /A10 10 0 0 1/);
+    assert.match(d, /A20 20 0 0 1/);
+  });
+});

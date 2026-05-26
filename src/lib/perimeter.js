@@ -30,8 +30,12 @@ export function tracePath({ start, segments }) {
   let out = `M${n(start[0])} ${n(start[1])}`;
   segments.forEach((s, i) => {
     if (s.len <= 0 && s.kind !== 'line') return; // skip degenerate (e.g. zero-radius arc)
-    // Z draws a straight line back to start, so a trailing straight segment is redundant.
-    if (i === segments.length - 1 && s.kind === 'line') return;
+    // The closing Z draws a straight line back to start, so a trailing line that
+    // returns to start is redundant. An open trailing line must still be drawn.
+    if (i === segments.length - 1 && s.kind === 'line') {
+      const end = s.at(1);
+      if (Math.abs(end[0] - start[0]) < 1e-6 && Math.abs(end[1] - start[1]) < 1e-6) return;
+    }
     out += s.d;
   });
   return out + 'Z';
@@ -129,6 +133,9 @@ export function roundedRectShape({ width, height, corners, inset = 0 }) {
     ratio(h, c[1][1] + c[2][1]) // right:  ryTR + ryBR
   );
   if (f < 1) c = c.map(([rx, ry]) => [rx * f, ry * f]);
+  // A corner needs BOTH radii to form an arc; if either is 0 (e.g. inset zeroed
+  // one component), the corner is square so edges meet with no offset.
+  c = c.map(([rx, ry]) => (rx > 0 && ry > 0 ? [rx, ry] : [0, 0]));
 
   const [[rxTL, ryTL], [rxTR, ryTR], [rxBR, ryBR], [rxBL, ryBL]] = c;
   const start = [ox + rxTL, oy];
@@ -438,6 +445,11 @@ function resolveLen(tok, ref) {
   return parseFloat(t) || 0;
 }
 
+// True when a token is a CSS length/percentage (not a keyword like closest-side).
+function isLen(tok) {
+  return tok != null && /^-?\d*\.?\d/.test(String(tok).trim());
+}
+
 // Parse a computed clip-path value into a traced shape, resolving against {width,height}.
 // Returns null for 'none' / unsupported so callers fall back to border-radius.
 export function parseClipPath(value, box) {
@@ -463,15 +475,17 @@ export function parseClipPath(value, box) {
     const [cxs, cys] = (at[1] || '50% 50%').trim().split(/\s+/);
     const cx = resolveLen(cxs ?? '50%', width);
     const cy = resolveLen(cys ?? '50%', height);
-    const radius = r ? resolveLen(r, Math.hypot(width, height) / Math.SQRT2) : Math.min(width, height) / 2;
+    // A length/percentage radius, else a keyword (closest-side, etc.) → default
+    // to closest-side (half the shorter dimension).
+    const radius = isLen(r) ? resolveLen(r, Math.hypot(width, height) / Math.SQRT2) : Math.min(width, height) / 2;
     return circleShape({ cx, cy, r: radius });
   }
   if (fn === 'ellipse') {
     const at = inner.split(/\bat\b/i);
     const radii = at[0].trim().split(/\s+/);
     const [cxs, cys] = (at[1] || '50% 50%').trim().split(/\s+/);
-    const rx = radii[0] ? resolveLen(radii[0], width) : width / 2;
-    const ry = radii[1] ? resolveLen(radii[1], height) : height / 2;
+    const rx = isLen(radii[0]) ? resolveLen(radii[0], width) : width / 2;
+    const ry = isLen(radii[1]) ? resolveLen(radii[1], height) : height / 2;
     return ellipseShape({ cx: resolveLen(cxs ?? '50%', width), cy: resolveLen(cys ?? '50%', height), rx, ry });
   }
   if (fn === 'inset') {
@@ -483,9 +497,15 @@ export function parseClipPath(value, box) {
     const left = resolveLen(e[3] ?? e[1] ?? e[0], width);
     let corners = [[0, 0], [0, 0], [0, 0], [0, 0]];
     if (roundPart) {
-      const rr = roundPart.trim().split(/\s+/);
-      const cr = resolveLen(rr[0], Math.min(width, height));
-      corners = [[cr, cr], [cr, cr], [cr, cr], [cr, cr]];
+      // 1–4 value border-radius shorthand: TL / TL TR / TL TR BR / TL TR BR BL.
+      // (Elliptical "rx / ry" form is rare in computed clip-path; first group used.)
+      const rr = roundPart.trim().split('/')[0].trim().split(/\s+/);
+      const ref = Math.min(width, height);
+      const tl = resolveLen(rr[0], ref);
+      const tr = resolveLen(rr[1] ?? rr[0], ref);
+      const br = resolveLen(rr[2] ?? rr[0], ref);
+      const bl = resolveLen(rr[3] ?? rr[1] ?? rr[0], ref);
+      corners = [[tl, tl], [tr, tr], [br, br], [bl, bl]];
     }
     return insetShape({ top, right, bottom, left, corners }, box);
   }
