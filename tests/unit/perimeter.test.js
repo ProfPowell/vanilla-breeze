@@ -64,6 +64,30 @@ describe('roundedRectSampler', () => {
   });
 });
 
+describe('roundedRectPath — rounded + inset + clamp', () => {
+  it('rounded rect with inset shifts origin and shrinks radius', () => {
+    // inset 5 on 100x100, radius 20 → origin 5, inner 90x90, r = 20-5 = 15
+    const d = roundedRectPath({ width: 100, height: 100, radius: 20, inset: 5 });
+    assert.ok(d.startsWith('M20 5'));          // ox+r = 5+15 = 20
+    assert.match(d, /A15 15 0 0 1/);           // radius shrank to 15
+  });
+  it('clamps radius to half the shorter side in the path', () => {
+    // 100x40 radius 999 → r clamps to 20; arc radius is 20
+    const d = roundedRectPath({ width: 100, height: 40, radius: 999 });
+    assert.match(d, /A20 20 0 0 1/);
+  });
+});
+
+describe('roundedRectSampler — clamp', () => {
+  it('clamps radius so the sampler still walks the full clamped perimeter', () => {
+    const w = 100, h = 40, radius = 999;        // r clamps to 20
+    const s = roundedRectSampler({ width: w, height: h, radius });
+    // t=0 should be at top edge start (ox+r, oy) = (20, 0)
+    const p = s(0);
+    assert.ok(Math.abs(p[0] - 20) < 1e-6 && Math.abs(p[1] - 0) < 1e-6);
+  });
+});
+
 describe('DOM wrappers', () => {
   afterEach(() => { delete globalThis.getComputedStyle; });
   const stubHost = (width, height, radiusPx) => {

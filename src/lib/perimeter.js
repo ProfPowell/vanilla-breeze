@@ -78,6 +78,7 @@ export function roundedRectSampler(dims) {
 function readDims(host) {
   const rect = host.getBoundingClientRect();
   const cs = getComputedStyle(host);
+  // Assumes the computed value is in px (getComputedStyle normally resolves radii to px).
   const radius = parseFloat(cs.borderTopLeftRadius) || 0;
   return { width: rect.width, height: rect.height, radius };
 }
