@@ -41,3 +41,36 @@ export function roundedRectPath(dims) {
     'Z'
   );
 }
+
+export function roundedRectSampler(dims) {
+  const { ox, oy, w, h, r } = box(dims);
+  if (w <= 0 || h <= 0) return () => [ox, oy];
+  const edgeH = w - 2 * r;
+  const edgeV = h - 2 * r;
+  const arc = (Math.PI / 2) * r;
+  const deg = (d) => (d * Math.PI) / 180;
+  const onArc = (cx, cy, a0deg) => (u) => {
+    const th = deg(a0deg + 90 * u);
+    return [cx + r * Math.cos(th), cy + r * Math.sin(th)];
+  };
+  const segs = [
+    { len: edgeH, at: (u) => [ox + r + edgeH * u, oy] },
+    { len: arc, at: onArc(ox + w - r, oy + r, -90) },
+    { len: edgeV, at: (u) => [ox + w, oy + r + edgeV * u] },
+    { len: arc, at: onArc(ox + w - r, oy + h - r, 0) },
+    { len: edgeH, at: (u) => [ox + w - r - edgeH * u, oy + h] },
+    { len: arc, at: onArc(ox + r, oy + h - r, 90) },
+    { len: edgeV, at: (u) => [ox, oy + h - r - edgeV * u] },
+    { len: arc, at: onArc(ox + r, oy + r, 180) },
+  ];
+  const total = segs.reduce((acc, s) => acc + s.len, 0) || 1;
+  return (t) => {
+    let d = (((t % 1) + 1) % 1) * total;
+    for (const s of segs) {
+      if (s.len <= 0) continue;
+      if (d <= s.len) return s.at(d / s.len);
+      d -= s.len;
+    }
+    return segs[0].at(0);
+  };
+}
