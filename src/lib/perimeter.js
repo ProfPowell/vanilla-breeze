@@ -429,18 +429,100 @@ export function shapeShape(commands) {
   return { start: startPt, segments };
 }
 
-// ---------- DOM wrappers ----------
+// ---------- clip-path parsing ----------
 
-function readDims(host) {
+// Resolve a CSS length/percentage token against a reference length (px).
+function resolveLen(tok, ref) {
+  const t = String(tok).trim();
+  if (t.endsWith('%')) return (parseFloat(t) / 100) * ref;
+  return parseFloat(t) || 0;
+}
+
+// Parse a computed clip-path value into a traced shape, resolving against {width,height}.
+// Returns null for 'none' / unsupported so callers fall back to border-radius.
+export function parseClipPath(value, box) {
+  if (!value || value === 'none') return null;
+  const v = value.trim();
+  const { width, height } = box;
+  const fnMatch = v.match(/^([a-z-]+)\((.*)\)$/i);
+  if (!fnMatch) return null;
+  const fn = fnMatch[1].toLowerCase();
+  const inner = fnMatch[2].trim();
+
+  if (fn === 'polygon') {
+    const body = inner.replace(/^(nonzero|evenodd)\s*,?\s*/i, '');
+    const pts = body.split(',').map((pair) => {
+      const [xs, ys] = pair.trim().split(/\s+/);
+      return [resolveLen(xs, width), resolveLen(ys, height)];
+    });
+    return polygonShape(pts);
+  }
+  if (fn === 'circle') {
+    const at = inner.split(/\bat\b/i);
+    const r = at[0].trim();
+    const [cxs, cys] = (at[1] || '50% 50%').trim().split(/\s+/);
+    const cx = resolveLen(cxs ?? '50%', width);
+    const cy = resolveLen(cys ?? '50%', height);
+    const radius = r ? resolveLen(r, Math.hypot(width, height) / Math.SQRT2) : Math.min(width, height) / 2;
+    return circleShape({ cx, cy, r: radius });
+  }
+  if (fn === 'ellipse') {
+    const at = inner.split(/\bat\b/i);
+    const radii = at[0].trim().split(/\s+/);
+    const [cxs, cys] = (at[1] || '50% 50%').trim().split(/\s+/);
+    const rx = radii[0] ? resolveLen(radii[0], width) : width / 2;
+    const ry = radii[1] ? resolveLen(radii[1], height) : height / 2;
+    return ellipseShape({ cx: resolveLen(cxs ?? '50%', width), cy: resolveLen(cys ?? '50%', height), rx, ry });
+  }
+  if (fn === 'inset') {
+    const [edgesPart, roundPart] = inner.split(/\bround\b/i);
+    const e = edgesPart.trim().split(/\s+/);
+    const top = resolveLen(e[0], height);
+    const right = resolveLen(e[1] ?? e[0], width);
+    const bottom = resolveLen(e[2] ?? e[0], height);
+    const left = resolveLen(e[3] ?? e[1] ?? e[0], width);
+    let corners = [[0, 0], [0, 0], [0, 0], [0, 0]];
+    if (roundPart) {
+      const rr = roundPart.trim().split(/\s+/);
+      const cr = resolveLen(rr[0], Math.min(width, height));
+      corners = [[cr, cr], [cr, cr], [cr, cr], [cr, cr]];
+    }
+    return insetShape({ top, right, bottom, left, corners }, box);
+  }
+  if (fn === 'path') {
+    const d = inner.replace(/^(nonzero|evenodd)\s*,?\s*/i, '').replace(/^["']|["']$/g, '');
+    return pathShape(d);
+  }
+  return null;
+}
+
+// ---------- DOM wrappers (shape detection) ----------
+
+// Read one corner radius computed value ("10px" or "10px 20px") → [rx, ry] in px.
+function readCorner(cs, prop) {
+  const v = (cs[prop] || '').trim();
+  if (!v) return [0, 0];
+  const parts = v.split(/\s+/).map((p) => parseFloat(p) || 0);
+  return parts.length >= 2 ? [parts[0], parts[1]] : [parts[0], parts[0]];
+}
+
+function readShape(host, inset) {
   const rect = host.getBoundingClientRect();
   const cs = getComputedStyle(host);
-  const radius = parseFloat(cs.borderTopLeftRadius) || 0;
-  return { width: rect.width, height: rect.height, radius };
+  const clip = parseClipPath(cs.clipPath, { width: rect.width, height: rect.height });
+  if (clip) return clip; // clip-path wins; inset not applied to an explicit shape
+  const tl = readCorner(cs, 'borderTopLeftRadius');
+  const hasPerCorner =
+    cs.borderTopRightRadius != null || cs.borderBottomRightRadius != null || cs.borderBottomLeftRadius != null;
+  const corners = hasPerCorner
+    ? [tl, readCorner(cs, 'borderTopRightRadius'), readCorner(cs, 'borderBottomRightRadius'), readCorner(cs, 'borderBottomLeftRadius')]
+    : [tl, tl, tl, tl];
+  return roundedRectShape({ width: rect.width, height: rect.height, corners, inset });
 }
 
 export function perimeterPath(host, inset = 0) {
-  return roundedRectPath({ ...readDims(host), inset });
+  return tracePath(readShape(host, inset));
 }
 export function perimeterSampler(host, inset = 0) {
-  return roundedRectSampler({ ...readDims(host), inset });
+  return traceSampler(readShape(host, inset));
 }

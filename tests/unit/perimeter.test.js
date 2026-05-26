@@ -240,3 +240,43 @@ describe('shapeShape', () => {
     assert.match(d, /Z$/);
   });
 });
+
+import { parseClipPath } from '../../src/lib/perimeter.js';
+
+describe('parseClipPath', () => {
+  it('returns null for none', () => {
+    assert.equal(parseClipPath('none', { width: 100, height: 100 }), null);
+  });
+  it('parses polygon with %', () => {
+    const shape = parseClipPath('polygon(0% 0%, 100% 0%, 50% 100%)', { width: 100, height: 100 });
+    assert.equal(tracePath(shape), tracePath(polygonShape([[0, 0], [100, 0], [50, 100]])));
+  });
+  it('parses circle at center', () => {
+    const shape = parseClipPath('circle(40px at 50% 50%)', { width: 100, height: 100 });
+    assert.ok(Math.abs(traceLength(shape) - 2 * Math.PI * 40) < 1e-6);
+  });
+  it('parses inset with round', () => {
+    const shape = parseClipPath('inset(10px round 5px)', { width: 100, height: 100 });
+    assert.ok(tracePath(shape).startsWith('M15 10'));
+  });
+});
+
+describe('DOM wrappers — shape detection', () => {
+  afterEach(() => { delete globalThis.getComputedStyle; });
+  it('perimeterPath traces clip-path polygon when present', () => {
+    globalThis.getComputedStyle = () => ({ clipPath: 'polygon(0% 0%, 100% 0%, 50% 100%)' });
+    const host = { getBoundingClientRect: () => ({ width: 100, height: 100 }) };
+    assert.equal(perimeterPath(host), tracePath(polygonShape([[0, 0], [100, 0], [50, 100]])));
+  });
+  it('perimeterPath reads per-corner radii when no clip-path', () => {
+    globalThis.getComputedStyle = () => ({
+      clipPath: 'none',
+      borderTopLeftRadius: '10px 20px',
+      borderTopRightRadius: '0px',
+      borderBottomRightRadius: '0px',
+      borderBottomLeftRadius: '0px',
+    });
+    const host = { getBoundingClientRect: () => ({ width: 100, height: 100 }) };
+    assert.match(perimeterPath(host), /A10 20 0 0 1/);
+  });
+});
