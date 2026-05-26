@@ -15,6 +15,8 @@ if (document.querySelector('[data-markdown-editable]')) import('./utils/markdown
 if (document.querySelector('[data-scroll-hide]')) import('./utils/scroll-hide-init.js');
 // Lazy-load focus-trap only when [data-focus-trap] is present
 if (document.querySelector('[data-focus-trap]')) import('./utils/focus-trap-init.js');
+// Lazy-load cursor spotlight only when [data-spotlight] is present
+if (document.querySelector('[data-spotlight]')) import('./utils/spotlight-init.js');
 // Lazy-load responsive image enhancement only when [data-responsive] is present
 if (document.querySelector('img[data-responsive]')) import('./utils/responsive-init.js');
 // Lazy-load pagination upscale only when [data-paged] is present
