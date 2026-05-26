@@ -21,3 +21,23 @@ export function roundedRectPerimeter(dims) {
   if (w <= 0 || h <= 0) return 0;
   return 2 * w + 2 * h - 8 * r + 2 * Math.PI * r;
 }
+
+// Round to 3 decimals for stable, compact path strings.
+const n = (v) => (Math.round(v * 1000) / 1000).toString();
+
+export function roundedRectPath(dims) {
+  const { ox, oy, w, h, r } = box(dims);
+  if (w <= 0 || h <= 0) return '';
+  if (r <= 0) {
+    return `M${n(ox)} ${n(oy)}H${n(ox + w)}V${n(oy + h)}H${n(ox)}Z`;
+  }
+  const a = (x, y) => `A${n(r)} ${n(r)} 0 0 1 ${n(x)} ${n(y)}`;
+  return (
+    `M${n(ox + r)} ${n(oy)}` +
+    `H${n(ox + w - r)}` + a(ox + w, oy + r) +
+    `V${n(oy + h - r)}` + a(ox + w - r, oy + h) +
+    `H${n(ox + r)}` + a(ox, oy + h - r) +
+    `V${n(oy + r)}` + a(ox + r, oy) +
+    'Z'
+  );
+}
