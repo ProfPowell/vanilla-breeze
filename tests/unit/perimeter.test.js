@@ -5,6 +5,7 @@ import { roundedRectPath } from '../../src/lib/perimeter.js';
 import { roundedRectSampler } from '../../src/lib/perimeter.js';
 const near = (a, b, eps = 1e-6) => Math.abs(a - b) < eps;
 import { perimeterPath, perimeterSampler } from '../../src/lib/perimeter.js';
+import { roundedRectShape, tracePath, traceLength, traceSampler } from '../../src/lib/perimeter.js';
 import { afterEach } from 'node:test';
 
 describe('roundedRectPerimeter', () => {
@@ -101,5 +102,43 @@ describe('DOM wrappers', () => {
   it('perimeterSampler reads host + honors inset', () => {
     const host = stubHost(100, 100, 10);
     assert.deepEqual(perimeterSampler(host, 2)(0.3), roundedRectSampler({ width: 100, height: 100, radius: 10, inset: 2 })(0.3));
+  });
+});
+
+describe('roundedRectShape — asymmetric & elliptical', () => {
+  it('per-corner radii emit their own arcs; a zero corner is sharp', () => {
+    const shape = roundedRectShape({
+      width: 100, height: 100,
+      corners: [[10, 10], [20, 20], [0, 0], [30, 30]],
+    });
+    const d = tracePath(shape);
+    assert.match(d, /A10 10 0 0 1/); // TL
+    assert.match(d, /A20 20 0 0 1/); // TR
+    assert.match(d, /A30 30 0 0 1/); // BL
+    assert.ok(!/A0 0/.test(d));      // BR sharp: no zero-radius arc
+    assert.match(d, /Z$/);
+  });
+
+  it('elliptical corner emits A rx ry and samples onto the ellipse', () => {
+    const shape = roundedRectShape({ width: 100, height: 100, corners: [[0, 0], [20, 10], [0, 0], [0, 0]] });
+    const d = tracePath(shape);
+    assert.match(d, /A20 10 0 0 1/);
+    const total = traceLength(shape);
+    const topEdgeLen = 100 - 0 - 20; // start (0,0)->(80,0)
+    const sampler = traceSampler(shape);
+    const [x, y] = sampler((topEdgeLen + 5) / total);
+    const e = ((x - 80) / 20) ** 2 + ((y - 10) / 10) ** 2;
+    assert.ok(Math.abs(e - 1) < 0.05, `point not on ellipse: e=${e}`);
+  });
+
+  it('overlap clamp scales radii so opposite corners do not overlap', () => {
+    // 100x100, all corners 80 → top sum 160 > 100 → f = 100/160 = 0.625 → r = 50.
+    const d = tracePath(roundedRectShape({ width: 100, height: 100, corners: [[80, 80], [80, 80], [80, 80], [80, 80]] }));
+    assert.match(d, /A50 50 0 0 1/);
+  });
+
+  it('asymmetric perimeter ≈ straight edges + quarter-arc lengths', () => {
+    const L = traceLength(roundedRectShape({ width: 100, height: 100, corners: [[10, 10], [10, 10], [10, 10], [10, 10]] }));
+    assert.ok(Math.abs(L - (4 * 80 + 2 * Math.PI * 10)) < 1e-9);
   });
 });
