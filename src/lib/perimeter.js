@@ -74,3 +74,18 @@ export function roundedRectSampler(dims) {
     return segs[0].at(0);
   };
 }
+
+function readDims(host) {
+  const rect = host.getBoundingClientRect();
+  const cs = getComputedStyle(host);
+  const radius = parseFloat(cs.borderTopLeftRadius) || 0;
+  return { width: rect.width, height: rect.height, radius };
+}
+
+export function perimeterPath(host, inset = 0) {
+  return roundedRectPath({ ...readDims(host), inset });
+}
+
+export function perimeterSampler(host, inset = 0) {
+  return roundedRectSampler({ ...readDims(host), inset });
+}

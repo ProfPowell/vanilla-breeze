@@ -4,6 +4,8 @@ import { roundedRectPerimeter } from '../../src/lib/perimeter.js';
 import { roundedRectPath } from '../../src/lib/perimeter.js';
 import { roundedRectSampler } from '../../src/lib/perimeter.js';
 const near = (a, b, eps = 1e-6) => Math.abs(a - b) < eps;
+import { perimeterPath, perimeterSampler } from '../../src/lib/perimeter.js';
+import { afterEach } from 'node:test';
 
 describe('roundedRectPerimeter', () => {
   it('sharp rectangle is 2(w+h)', () => {
@@ -59,5 +61,21 @@ describe('roundedRectSampler', () => {
     const L = roundedRectPerimeter({ width: w, height: h, radius: r });
     const [x, y] = s((Ltop + Lcorner / 2) / L);
     assert.ok(near(Math.hypot(x - (w - r), y - r), r, 1e-6));
+  });
+});
+
+describe('DOM wrappers', () => {
+  afterEach(() => { delete globalThis.getComputedStyle; });
+  const stubHost = (width, height, radiusPx) => {
+    globalThis.getComputedStyle = () => ({ borderTopLeftRadius: `${radiusPx}px` });
+    return { getBoundingClientRect: () => ({ width, height }) };
+  };
+  it('perimeterPath reads host box + uniform radius', () => {
+    const host = stubHost(100, 50, 0);
+    assert.equal(perimeterPath(host), roundedRectPath({ width: 100, height: 50, radius: 0 }));
+  });
+  it('perimeterSampler reads host + honors inset', () => {
+    const host = stubHost(100, 100, 10);
+    assert.deepEqual(perimeterSampler(host, 2)(0.3), roundedRectSampler({ width: 100, height: 100, radius: 10, inset: 2 })(0.3));
   });
 });
