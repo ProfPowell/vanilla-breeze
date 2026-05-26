@@ -142,3 +142,42 @@ describe('roundedRectShape — asymmetric & elliptical', () => {
     assert.ok(Math.abs(L - (4 * 80 + 2 * Math.PI * 10)) < 1e-9);
   });
 });
+
+import { polygonShape, circleShape, ellipseShape } from '../../src/lib/perimeter.js';
+
+describe('polygonShape', () => {
+  it('traces a closed triangle with line segments', () => {
+    const shape = polygonShape([[0, 0], [100, 0], [50, 100]]);
+    const d = tracePath(shape);
+    assert.ok(d.startsWith('M0 0'));
+    assert.match(d, /Z$/);
+    assert.ok(!/A/.test(d)); // no arcs
+    const L = traceLength(shape);
+    assert.ok(Math.abs(L - (100 + 2 * Math.hypot(50, 100))) < 1e-9);
+  });
+  it('sampler starts at the first point', () => {
+    const s = traceSampler(polygonShape([[0, 0], [100, 0], [50, 100]]));
+    assert.deepEqual(s(0).map((v) => Math.round(v)), [0, 0]);
+  });
+});
+
+describe('circleShape / ellipseShape', () => {
+  it('circle length ≈ 2πr and points satisfy the circle equation', () => {
+    const shape = circleShape({ cx: 50, cy: 50, r: 50 });
+    assert.ok(Math.abs(traceLength(shape) - 2 * Math.PI * 50) < 1e-6);
+    const s = traceSampler(shape);
+    for (const t of [0, 0.2, 0.5, 0.85]) {
+      const [x, y] = s(t);
+      assert.ok(Math.abs(Math.hypot(x - 50, y - 50) - 50) < 1e-6);
+    }
+    assert.deepEqual(s(0).map((v) => Math.round(v)), [50, 0]); // top
+  });
+  it('ellipse emits A rx ry and samples roughly onto the ellipse', () => {
+    const shape = ellipseShape({ cx: 50, cy: 50, rx: 50, ry: 25 });
+    assert.match(tracePath(shape), /A50 25 0 0 1/);
+    const s = traceSampler(shape);
+    const [x, y] = s(0.1);
+    const e = ((x - 50) / 50) ** 2 + ((y - 50) / 25) ** 2;
+    assert.ok(Math.abs(e - 1) < 0.02);
+  });
+});

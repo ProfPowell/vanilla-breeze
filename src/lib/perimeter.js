@@ -175,6 +175,47 @@ export function roundedRectSampler(dims) {
   return traceSampler(roundedRectShape(uniformCorners(dims)));
 }
 
+// ---------- polygon ----------
+
+// points = [[x,y],…] already resolved to px. Closed.
+export function polygonShape(points) {
+  if (!points || points.length < 2) return { start: points?.[0]?.slice() ?? [0, 0], segments: [] };
+  const start = points[0].slice();
+  const segments = [];
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % points.length];
+    segments.push(lineSeg(a, b));
+  }
+  return { start, segments };
+}
+
+// ---------- circle / ellipse ----------
+
+// Two clockwise arcs from the top (12 o'clock). rx/ry equal → circle.
+function ellipseSegments({ cx, cy, rx, ry }) {
+  const top = [cx, cy - ry];
+  const bottom = [cx, cy + ry];
+  const half = (a0deg, end) => {
+    const pt = (adeg) => [cx + rx * Math.cos(deg(adeg)), cy + ry * Math.sin(deg(adeg))];
+    const d = `A${n(rx)} ${n(ry)} 0 0 1 ${n(end[0])} ${n(end[1])}`;
+    if (rx === ry) return { kind: 'arc', len: Math.PI * rx, at: (u) => pt(a0deg + 180 * u), d };
+    const N = 48;
+    const poly = [];
+    for (let i = 0; i <= N; i++) poly.push(pt(a0deg + 180 * (i / N)));
+    return { kind: 'arc', ...flattenedWalker(poly), d };
+  };
+  // top (−90°) → bottom (+90°) → top (+270°). cos(−90)=0, sin(−90)=−1 → (cx,cy−ry)=top.
+  return { start: top, segments: [half(-90, bottom), half(90, top)] };
+}
+
+export function circleShape({ cx, cy, r }) {
+  return ellipseSegments({ cx, cy, rx: r, ry: r });
+}
+export function ellipseShape({ cx, cy, rx, ry }) {
+  return ellipseSegments({ cx, cy, rx, ry });
+}
+
 // ---------- DOM wrappers ----------
 
 function readDims(host) {
