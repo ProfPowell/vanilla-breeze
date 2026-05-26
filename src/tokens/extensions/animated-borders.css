@@ -23,16 +23,14 @@
  *   }
  */
 
-/* ========================================
- * @property declarations
- * Required for animating conic-gradient angle.
- * Must be at top level — cannot nest inside :root.
- * ======================================== */
-@property --vb-border-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
+/* Note: @property --vb-border-angle is registered top-level in BOTH
+ * src/main.css and src/main-core.css (it must be unlayered, so it cannot
+ * live in this layered token file).
+ *
+ * The per-element [data-border-effect~="…"] attribute rules do NOT live here —
+ * they ship in animated-borders-effects.css under @layer bundle-effects so they
+ * win over element/component backgrounds. This file keeps only tokens + keyframes
+ * (keyframes are layer-agnostic). */
 
 /* ========================================
  * Tokens
@@ -46,6 +44,27 @@
   --border-anim-pulse-duration: 2s;
   --border-anim-pulse-color: var(--color-primary);
   --border-anim-pulse-size: 8px;
+
+  /* March (dashed marching-ants via background-position) */
+  --border-anim-march-duration: 1s;
+  --border-anim-march-color: var(--color-primary);
+  --border-anim-march-width: 2px;
+  /* Hue-cycle */
+  --border-anim-hue-duration: 4s;
+  --border-anim-hue-width: 3px;
+  --border-anim-hue-color: oklch(60% 0.22 260);
+  /* Breathe */
+  --border-anim-breathe-duration: 2s;
+  --border-anim-breathe-color: var(--color-primary);
+  /* Corner-trace (hover) */
+  --border-anim-trace-duration: 0.18s;
+  --border-anim-trace-color: var(--color-primary);
+  /* Complete vocabulary — recognized names rendered by the border-wc package
+     (Decorated Layers #4), declared here so themes can set them uniformly. */
+  --border-anim-squiggle-duration: 2s;
+  --border-anim-draw-duration: 1.5s;
+  --border-anim-sparks-count: 24;
+  --border-anim-liquid-duration: 6s;
 }
 
 /* ========================================
@@ -62,6 +81,19 @@
   50% { box-shadow: 0 0 0 var(--border-anim-pulse-size) oklch(from var(--border-anim-pulse-color) l c h / 0); }
 }
 
+@keyframes vb-border-march { to { background-position: 32px 0, 100% 32px, -32px 100%, 0 -32px; } }
+@keyframes vb-border-hue   { to { filter: hue-rotate(360deg); } }
+@keyframes vb-border-breathe { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0; transform: scale(1.06); } }
+
+/* ========================================
+ * Per-element opt-in attribute API
+ * data-border-effect (sibling to data-border-style / data-border-shape).
+ * The attribute RULES live in animated-borders-effects.css (@layer
+ * bundle-effects); only tokens + keyframes live here (@layer tokens).
+ * Base values render there; extreme values (squiggle/draw/sparks/liquid) are
+ * no-ops until @profpowell/border-wc is loaded.
+ * ======================================== */
+
 /* ========================================
  * Reduced Motion
  * Freeze animations for users who prefer reduced motion
@@ -71,6 +103,10 @@
   :root {
     --border-anim-spin-duration: 0s;
     --border-anim-pulse-duration: 0s;
+    --border-anim-march-duration: 0s;
+    --border-anim-hue-duration: 0s;
+    --border-anim-breathe-duration: 0s;
+    --border-anim-trace-duration: 0s;
   }
 }
 
@@ -78,4 +114,8 @@
 :root[data-motion-reduced] {
   --border-anim-spin-duration: 0s;
   --border-anim-pulse-duration: 0s;
+  --border-anim-march-duration: 0s;
+  --border-anim-hue-duration: 0s;
+  --border-anim-breathe-duration: 0s;
+  --border-anim-trace-duration: 0s;
 }

@@ -25,3 +25,21 @@
   --cursor-grab: grab;
   --cursor-grabbing: grabbing;
 }
+
+/* Spotlight — CSS renders a radial gradient from two custom properties that
+   spotlight-init.js updates on mousemove. Opt in per element with the
+   data-spotlight attribute (the attribute alone activates both the CSS and JS).
+   @property --spotlight-x/y are registered top-level in main.css + main-core.css. */
+:root {
+  --spotlight-color: oklch(60% 0.10 var(--hue-primary, 260));
+  --spotlight-size: 300px;
+}
+[data-spotlight] { position: relative; }
+[data-spotlight]::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(circle var(--spotlight-size) at var(--spotlight-x) var(--spotlight-y),
+    color-mix(in oklab, var(--spotlight-color) 35%, transparent) 0%, transparent 70%);
+  transition: --spotlight-x 60ms linear, --spotlight-y 60ms linear;
+}
+@media (prefers-reduced-motion: reduce) { [data-spotlight]::before { transition: none; } }
+:root[data-motion-reduced] [data-spotlight]::before { transition: none; }

@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decorated Base Tokens — Specimen</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-l);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    h1 {
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+      margin-block-end: var(--size-xs);
+    }
+
+    .lead {
+      color: var(--color-text-muted);
+      max-inline-size: var(--measure-normal);
+      margin-block-end: var(--size-2xl);
+    }
+
+    h2 {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-semibold);
+      margin-block-end: var(--size-m);
+      padding-block-end: var(--size-xs);
+      border-block-end: var(--border-width-thin) solid var(--color-border);
+    }
+
+    section {
+      margin-block-end: var(--size-3xl);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+      gap: var(--size-l);
+      margin-block-end: var(--size-l);
+    }
+
+    .card {
+      background: var(--color-surface-raised);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-l);
+      padding: var(--size-l);
+      min-block-size: 7rem;
+    }
+
+    /* spin owns its own two-layer gradient background + border, so this card
+       variant deliberately omits background/border to let that gradient show. */
+    .card-spin {
+      border-radius: var(--radius-l);
+      padding: var(--size-l);
+      min-block-size: 7rem;
+      color: var(--color-text);
+    }
+
+    .card strong,
+    .card-spin strong {
+      display: block;
+      margin-block-end: var(--size-xs);
+    }
+
+    .card p,
+    .card-spin p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      line-height: var(--line-height-relaxed);
+      margin: 0;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: var(--color-surface-sunken);
+      padding: 0.1em 0.35em;
+      border-radius: var(--radius-xs);
+    }
+
+    /* ── Scrollbar specimen boxes ── */
+    .scroll-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+      gap: var(--size-l);
+    }
+
+    .scroll-box {
+      block-size: 9rem;
+      overflow: auto;
+      background: var(--color-surface-raised);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+    }
+
+    .scroll-box strong {
+      display: block;
+      margin-block-end: var(--size-2xs);
+      font-size: var(--font-size-sm);
+    }
+
+    .scroll-box p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      line-height: var(--line-height-relaxed);
+      margin: 0 0 var(--size-s);
+    }
+
+    /* ── Spotlight zone ── */
+    .spotlight-zone {
+      --spotlight-enabled: 1;
+      --spotlight-color: oklch(70% 0.18 280);
+      --spotlight-size: 260px;
+      background: oklch(15% 0.03 280);
+      color: oklch(95% 0.01 280);
+      border-radius: var(--radius-l);
+      padding: var(--size-2xl);
+      min-block-size: 14rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--size-s);
+    }
+
+    .spotlight-zone strong {
+      position: relative;
+      z-index: 1;
+      font-size: var(--font-size-l);
+    }
+
+    .spotlight-zone p {
+      position: relative;
+      z-index: 1;
+      max-inline-size: var(--measure-normal);
+      color: oklch(80% 0.02 280);
+      margin: 0;
+    }
+
+    .note {
+      background: var(--color-surface);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+      padding: var(--size-m);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-block-start: var(--size-l);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Decorated Base Tokens</h1>
+    <p class="lead">
+      Specimen for three opt-in base decorations: animated borders via
+      <code>data-border-effect</code>, themed scrollbars via <code>data-scrollbar</code>,
+      and a cursor spotlight via <code>data-spotlight</code>. All defaults are inert —
+      apply the attribute to opt in.
+    </p>
+  </header>
+
+
+  <!-- ═══ ANIMATED BORDERS ═══ -->
+  <section aria-labelledby="border-h">
+    <h2 id="border-h">data-border-effect</h2>
+    <p class="lead">Six CSS-only border animations. Add one keyword to any bordered element.</p>
+
+    <nav class="grid" aria-label="Border effect variants">
+      <article class="card-spin" data-border-effect="spin">
+        <strong>spin</strong>
+        <p>Rotating conic-gradient through <code>--color-primary/secondary/accent</code>.</p>
+      </article>
+
+      <article class="card" data-border-effect="pulse">
+        <strong>pulse</strong>
+        <p>Box-shadow glow ring driven by <code>--border-anim-pulse-*</code>.</p>
+      </article>
+
+      <article class="card" data-border-effect="march">
+        <strong>march</strong>
+        <p>Marching-ants dashed outline from <code>--border-anim-march-*</code>.</p>
+      </article>
+
+      <article class="card" data-border-effect="hue-cycle">
+        <strong>hue-cycle</strong>
+        <p>Border hue rotates via <code>--border-anim-hue-*</code>.</p>
+      </article>
+
+      <article class="card" data-border-effect="breathe">
+        <strong>breathe</strong>
+        <p>Offset ring scales in and out using <code>--border-anim-breathe-*</code>.</p>
+      </article>
+
+      <article class="card" data-border-effect="trace">
+        <strong>trace</strong>
+        <p>On hover, each edge colours in sequence (<code>--border-anim-trace-*</code>). Hover me.</p>
+      </article>
+    </nav>
+  </section>
+
+
+  <!-- ═══ SCROLLBARS ═══ -->
+  <section aria-labelledby="scroll-h">
+    <h2 id="scroll-h">data-scrollbar</h2>
+    <p class="lead">Per-element scrollbar styling. Each box scrolls — drag the thumb to compare.</p>
+
+    <div class="scroll-grid">
+      <article class="scroll-box" data-scrollbar="primary" tabindex="0">
+        <strong>primary</strong>
+        <p>Thumb tinted with <code>--color-primary</code>; track is a faint primary mix.</p>
+        <p>Scroll this box. The thumb picks up the active theme primary colour so the chrome reads as part of the brand rather than a neutral grey.</p>
+        <p>Longer content forces the scrollbar to appear. Resize the window if it does not overflow on your display.</p>
+        <p>Final line to guarantee overflow within the fixed-height box above.</p>
+      </article>
+
+      <article class="scroll-box" data-scrollbar="minimal" tabindex="0">
+        <strong>minimal</strong>
+        <p>Thin width, low-contrast <code>--color-border</code> thumb. Quiet, unobtrusive chrome.</p>
+        <p>Scroll this box. Minimal keeps the scrollbar visible but understated for dense reading surfaces.</p>
+        <p>Longer content forces the scrollbar to appear. Resize the window if it does not overflow on your display.</p>
+        <p>Final line to guarantee overflow within the fixed-height box above.</p>
+      </article>
+
+      <article class="scroll-box" data-scrollbar="hidden" tabindex="0">
+        <strong>hidden</strong>
+        <p>Scrollbar fully hidden (<code>scrollbar-width: none</code>) while content stays scrollable.</p>
+        <p>Scroll this box with wheel or keyboard. No visible track or thumb appears at all.</p>
+        <p>Longer content forces overflow. Use arrow keys after focusing to scroll without a visible bar.</p>
+        <p>Final line to guarantee overflow within the fixed-height box above.</p>
+      </article>
+
+      <article class="scroll-box" data-scrollbar="auto" tabindex="0">
+        <strong>auto</strong>
+        <p>Native full-width scrollbar (<code>scrollbar-width: auto</code>) for maximum affordance.</p>
+        <p>Scroll this box. Auto restores the platform default chrome where discoverability matters most.</p>
+        <p>Longer content forces the scrollbar to appear. Resize the window if it does not overflow on your display.</p>
+        <p>Final line to guarantee overflow within the fixed-height box above.</p>
+      </article>
+    </div>
+  </section>
+
+
+  <!-- ═══ SPOTLIGHT ═══ -->
+  <section aria-labelledby="spot-h">
+    <h2 id="spot-h">data-spotlight</h2>
+    <p class="lead">Cursor-tracking radial spotlight. Set <code>--spotlight-enabled:1</code> on the zone to activate the JS.</p>
+
+    <article class="spotlight-zone" data-spotlight>
+      <strong>Move your cursor across this zone</strong>
+      <p>
+        A radial gradient follows the pointer, driven by <code>--spotlight-x</code> /
+        <code>--spotlight-y</code> set on mousemove. Tune <code>--spotlight-color</code> and
+        <code>--spotlight-size</code> per zone. Respects <code>prefers-reduced-motion</code>.
+      </p>
+    </article>
+
+    <aside class="note" aria-label="Spotlight note">
+      The spotlight script lazy-loads only when a <code>[data-spotlight]</code> element exists.
+      Enable globally by setting <code>--spotlight-enabled:1</code> on <code>:root</code> (e.g. a dramatic theme).
+    </aside>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
