@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>bg-wc + Vanilla Breeze — data-background binder</title>
+  <link rel="stylesheet" href="/src/main.css"/>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="https://unpkg.com/@profpowell/bg-wc@0.2.1/dist/data-background.js"></script>
+  <style>
+    html, body { block-size: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      color: var(--color-text);
+      background: var(--color-background);
+    }
+    /* The binder injects an empty <bg-wc> as the section's first child;
+       position it as an absolute fill so it sits behind the content. */
+    section[data-background] {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-content: center;
+      min-block-size: 100%;
+      padding: var(--size-l) var(--size-m);
+      text-align: center;
+    }
+    section[data-background] > bg-wc {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    section[data-background] > article {
+      position: relative;
+      z-index: 1;
+      /* Definite width: VB sets container-type:inline-size on <article>,
+         which otherwise collapses it to 0 as a centered grid item. */
+      inline-size: min(48ch, 90%);
+      margin-inline: auto;
+    }
+    h1 { margin-block: 0 var(--size-s); }
+  </style>
+</head>
+<body>
+  <section
+    data-background="mosaic"
+    data-background-mode="isometric"
+    data-background-intensity="0.7"
+    data-background-density="0.55">
+    <article>
+      <h1 style="margin-block-start: 0;">data-background binder</h1>
+      <p>There is no <code>&lt;bg-wc&gt;</code> in the markup — just <code>data-background</code> and <code>data-background-*</code> attributes on a plain <code>&lt;section&gt;</code>. Importing <code>@profpowell/bg-wc/data-background</code> injects the renderer behind the content.</p>
+    </article>
+  </section>
+</body>
+</html>

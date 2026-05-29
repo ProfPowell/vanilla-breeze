@@ -1,0 +1,236 @@
+---
+layout: docs
+title: bg-wc integration
+description: "Drop a bg-wc element — or just data-background attributes — into a Vanilla Breeze page for an animated WebGL/Canvas2D background that inherits the active theme's tokens automatically."
+currentSection: explore
+currentPath: /docs/integrations/web-components/bg-wc/
+---
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/integrations/">Integrations</a></li>
+    <li><a href="/docs/integrations/web-components/">Web Components</a></li>
+    <li><span aria-current="page">bg-wc</span></li>
+  </ol>
+</nav>
+
+<h1>bg-wc</h1>
+<p class="lead">A theme-aware graphics layer. <code>&lt;bg-wc&gt;</code> renders an animated WebGL or Canvas2D background behind any HTML content, picking the right renderer per preset. It reads the same <code>--color-*</code> tokens Vanilla Breeze themes set on <code>:root</code>, so it re-skins automatically when you switch theme packs — and it can be applied without writing a custom element at all, via <code>data-background</code> attributes.</p>
+
+<section>
+  <h2>Where to find it</h2>
+  <ul>
+    <li>npm: <a href="https://www.npmjs.com/package/@profpowell/bg-wc"><code>@profpowell/bg-wc</code></a> (currently <code>0.2.1</code> — pre-1.0, the API may still shift)</li>
+    <li>GitHub: <a href="https://github.com/ProfPowell/bg-wc">ProfPowell/bg-wc</a></li>
+    <li>Docs: <a href="https://profpowell.github.io/bg-wc/docs/index.html">profpowell.github.io/bg-wc</a></li>
+    <li>License: MIT</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Install</h2>
+  <p>Via CDN:</p>
+  <code-block language="html" data-escape><script type="module" src="https://unpkg.com/@profpowell/bg-wc@0.2.1/dist/bg-wc.js"></script></code-block>
+  <p>Or via npm:</p>
+  <code-block language="bash" data-escape>npm install @profpowell/bg-wc</code-block>
+  <code-block language="javascript" data-escape>import '@profpowell/bg-wc';</code-block>
+  <p>Not bundled into Vanilla Breeze — wire it in yourself. There is no build coupling between the two repos; the interface is purely CSS custom properties.</p>
+</section>
+
+<section>
+  <h2>Two ways to apply it</h2>
+
+  <h3>1. As a custom element</h3>
+  <p>Wrap your content. The content stays in the light DOM and renders above the animated layer:</p>
+  <code-block language="html" data-escape><bg-wc preset="mesh-gradient" intensity="0.65">
+  <h1>Hero headline</h1>
+  <p>Content sits above the rendered layer.</p>
+  <img slot="fallback" src="hero-static.webp" alt=""/>
+</bg-wc></code-block>
+
+  <h3>2. As <code>data-background</code> attributes (no custom element)</h3>
+  <p>Import the binder once, then decorate any existing element with <code>data-background</code> and matching <code>data-background-*</code> attributes. The binder injects a <code>&lt;bg-wc&gt;</code> behind that element's content — handy when you don't want to restructure your markup:</p>
+  <code-block language="javascript" data-escape>import '@profpowell/bg-wc/data-background';</code-block>
+  <code-block language="html" data-escape><section
+  data-background="mosaic"
+  data-background-mode="isometric"
+  data-background-intensity="0.7"
+  data-background-density="0.55">
+  <h1>Squares behind any element</h1>
+</section></code-block>
+  <p>Add <code>data-background-skip</code> to an element to opt it out of binding. For dynamically inserted DOM, call <code>bindDataBackgrounds(root)</code> after import.</p>
+</section>
+
+<section>
+  <h2>Demos</h2>
+  <p>Each demo loads a default-theme Vanilla Breeze page and fills the frame with a single background. Switching the page's <code>data-theme</code> would re-skin each one, since they read VB tokens directly.</p>
+
+  <h3>mesh-gradient (WebGL custom element)</h3>
+  <browser-window url="bg-wc-mesh-gradient" src="/docs/integrations/web-components/demos/bg-wc-mesh-gradient.html"></browser-window>
+
+  <h3>mosaic (via the data-background binder)</h3>
+  <browser-window url="bg-wc-data-background" src="/docs/integrations/web-components/demos/bg-wc-data-background.html"></browser-window>
+
+  <h3>confetti (Canvas2D, semantic palette)</h3>
+  <browser-window url="bg-wc-confetti" src="/docs/integrations/web-components/demos/bg-wc-confetti.html"></browser-window>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>preset</code></td><td>preset name</td><td>—</td><td>Required. Which effect to render (see below).</td></tr>
+      <tr><td><code>palette</code></td><td><code>theme</code> / <code>rainbow</code> / <code>mono</code></td><td><code>theme</code></td><td>Color strategy. <code>theme</code> pulls VB tokens.</td></tr>
+      <tr><td><code>intensity</code></td><td>0–1</td><td><code>0.5</code></td><td>Per-preset drama / strength.</td></tr>
+      <tr><td><code>speed</code></td><td>0–5</td><td><code>1</code></td><td>Time multiplier; <code>0</code> freezes the animation.</td></tr>
+      <tr><td><code>density</code></td><td>0–1</td><td><code>0.5</code></td><td>Particle count or shader detail.</td></tr>
+      <tr><td><code>seed</code></td><td>integer</td><td><code>0</code></td><td>Deterministic randomization.</td></tr>
+      <tr><td><code>paused</code></td><td>boolean</td><td>unset</td><td>Pauses the render loop without unmounting.</td></tr>
+      <tr><td><code>pixel-ratio</code></td><td>number</td><td><code>min(devicePixelRatio, 2)</code></td><td>Override render pixel density.</td></tr>
+      <tr><td><code>quality</code></td><td><code>low</code> / <code>med</code> / <code>high</code></td><td><code>med</code></td><td>Renderer-level quality hint.</td></tr>
+      <tr><td><code>fit</code></td><td><code>cover</code> / <code>contain</code> / <code>stretch</code></td><td><code>cover</code></td><td>Surface sizing behavior.</td></tr>
+      <tr><td><code>motion</code></td><td><code>auto</code> / <code>reduce</code> / <code>force</code></td><td><code>auto</code></td><td>Reduced-motion handling (see below).</td></tr>
+      <tr><td><code>text</code></td><td>string</td><td>—</td><td>Payload for text presets; lines split on <code>|</code>.</td></tr>
+      <tr><td><code>mode</code></td><td>string</td><td>—</td><td>Used by <code>mosaic</code>: <code>isometric</code>, <code>flat</code>, <code>sparse</code>, <code>stacked</code>.</td></tr>
+      <tr><td><code>use-theme</code></td><td>boolean</td><td>unset</td><td>Enables theme-token coloring for <code>system7</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>data-background attributes</h2>
+  <p>After importing <code>@profpowell/bg-wc/data-background</code>, every attribute below maps to the matching <code>&lt;bg-wc&gt;</code> attribute or custom property on the injected element.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>data-* attribute</th><th>Maps to</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-background</code></td><td><code>preset</code> (required)</td></tr>
+      <tr><td><code>data-background-intensity</code></td><td><code>intensity</code></td></tr>
+      <tr><td><code>data-background-speed</code></td><td><code>speed</code></td></tr>
+      <tr><td><code>data-background-density</code></td><td><code>density</code></td></tr>
+      <tr><td><code>data-background-seed</code></td><td><code>seed</code></td></tr>
+      <tr><td><code>data-background-palette</code></td><td><code>palette</code></td></tr>
+      <tr><td><code>data-background-quality</code></td><td><code>quality</code></td></tr>
+      <tr><td><code>data-background-fit</code></td><td><code>fit</code></td></tr>
+      <tr><td><code>data-background-motion</code></td><td><code>motion</code></td></tr>
+      <tr><td><code>data-background-paused</code></td><td><code>paused</code></td></tr>
+      <tr><td><code>data-background-pixel-ratio</code></td><td><code>pixel-ratio</code></td></tr>
+      <tr><td><code>data-background-color-1</code></td><td><code>--bg-wc-color-1</code></td></tr>
+      <tr><td><code>data-background-color-2</code></td><td><code>--bg-wc-color-2</code></td></tr>
+      <tr><td><code>data-background-color-3</code></td><td><code>--bg-wc-color-3</code></td></tr>
+      <tr><td><code>data-background-color-bg</code></td><td><code>--bg-wc-color-bg</code></td></tr>
+      <tr><td><code>data-background-color-fg</code></td><td><code>--bg-wc-color-fg</code></td></tr>
+      <tr><td><code>data-background-skip</code></td><td>escape hatch — prevents binding</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Presets</h2>
+  <p>Dozens of presets ship across two renderers. The current catalog:</p>
+
+  <h3>WebGL (shader) presets</h3>
+  <p><code>dither</code>, <code>noise</code>, <code>mesh-gradient</code>, <code>warp</code>, <code>waves</code>, <code>lava</code>, <code>plasma</code>, <code>aurora</code>, <code>tunnel</code>, <code>caustics</code>, <code>glitch</code>, <code>rainbow</code>, <code>halftone</code>, <code>kaleidoscope</code>, <code>vhs</code>, <code>synthwave</code>, <code>crt</code>, <code>gameboy</code>, <code>copperbars</code>, <code>topology</code>, <code>cells</code>, <code>shine</code>, <code>conic</code>, <code>grain</code>, <code>trench</code>, <code>marble</code>, <code>benday</code>, <code>comic</code>, <code>deco</code>, <code>bliss</code></p>
+
+  <h3>Canvas2D presets</h3>
+  <table class="props-table">
+    <thead><tr><th>Group</th><th>Presets</th></tr></thead>
+    <tbody>
+      <tr><td>Vector / arcade</td><td><code>asteroids</code>, <code>wireframe</code>, <code>spirograph</code>, <code>incoming</code>, <code>tempest</code>, <code>fireworks</code></td></tr>
+      <tr><td>Text</td><td><code>crawl</code>, <code>marquee</code>, <code>sinescroll</code>, <code>cascade</code></td></tr>
+      <tr><td>Dataviz</td><td><code>trades</code>, <code>dashboard</code>, <code>vectormap</code>, <code>scatter</code>, <code>waveform</code>, <code>wordcloud</code></td></tr>
+      <tr><td>Particles</td><td><code>stars</code>, <code>snow</code>, <code>confetti</code>, <code>network</code>, <code>particles</code>, <code>pulse</code>, <code>tetris</code>, <code>matrix</code>, <code>mystify</code></td></tr>
+      <tr><td>Pattern / geometric</td><td><code>mosaic</code>, <code>ribbons</code>, <code>source</code>, <code>system7</code></td></tr>
+    </tbody>
+  </table>
+  <p>For the live gallery see the <a href="https://profpowell.github.io/bg-wc/docs/index.html">component docs</a>.</p>
+</section>
+
+<section>
+  <h2>Theme tokens</h2>
+  <p>The renderer reads these VB tokens once per frame, with built-in fallbacks so it still works on a non-VB page:</p>
+  <table class="props-table">
+    <thead><tr><th>Token</th><th>Role</th><th>Fallback</th></tr></thead>
+    <tbody>
+      <tr><td><code>--color-background</code></td><td>Canvas backdrop</td><td><code>transparent</code></td></tr>
+      <tr><td><code>--color-foreground</code></td><td>Default line / particle color</td><td><code>#1a1a1a</code></td></tr>
+      <tr><td><code>--color-primary</code></td><td>Primary tint</td><td><code>#3b82f6</code></td></tr>
+      <tr><td><code>--color-accent</code></td><td>Accent tint</td><td><code>#ec4899</code></td></tr>
+      <tr><td><code>--color-info</code></td><td>Tertiary tint</td><td><code>#10b981</code></td></tr>
+      <tr><td><code>--color-success</code> / <code>--color-warning</code> / <code>--color-error</code></td><td>Semantic palette (e.g. <code>confetti</code>)</td><td>green / amber / red</td></tr>
+    </tbody>
+  </table>
+  <p>Per-instance overrides via the component's own namespace always win:</p>
+  <table class="props-table">
+    <thead><tr><th>Property</th><th>Overrides</th></tr></thead>
+    <tbody>
+      <tr><td><code>--bg-wc-color-1</code></td><td><code>--color-primary</code></td></tr>
+      <tr><td><code>--bg-wc-color-2</code></td><td><code>--color-accent</code></td></tr>
+      <tr><td><code>--bg-wc-color-3</code></td><td><code>--color-info</code></td></tr>
+      <tr><td><code>--bg-wc-color-bg</code></td><td><code>--color-background</code></td></tr>
+      <tr><td><code>--bg-wc-color-fg</code></td><td><code>--color-foreground</code></td></tr>
+      <tr><td><code>--bg-wc-intensity</code> / <code>--bg-wc-speed</code> / <code>--bg-wc-density</code></td><td>the matching attribute</td></tr>
+    </tbody>
+  </table>
+  <code-block language="css" data-escape>bg-wc {
+  --bg-wc-color-1: hotpink;
+  --bg-wc-color-bg: #0a0a0a;
+  --bg-wc-intensity: 0.8;
+}</code-block>
+  <p>The internal <code>&lt;canvas&gt;</code> is exposed as <code>part="canvas"</code> for further styling.</p>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <p>Methods and properties on the element:</p>
+  <table class="props-table">
+    <thead><tr><th>Member</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr><td><code>.preset</code></td><td>Reflects the <code>preset</code> attribute.</td></tr>
+      <tr><td><code>.paused</code></td><td>Reflects the <code>paused</code> attribute.</td></tr>
+      <tr><td><code>.pause()</code></td><td>Pauses the render loop.</td></tr>
+      <tr><td><code>.resume()</code></td><td>Resumes the render loop.</td></tr>
+      <tr><td><code>.snapshot()</code></td><td>Resolves to a PNG <code>Blob</code> of the current frame.</td></tr>
+      <tr><td><code>.ready</code></td><td>Promise that resolves after the first frame renders.</td></tr>
+    </tbody>
+  </table>
+  <p>Events it dispatches:</p>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>bg-wc:ready</code></td><td><code>{ preset, renderer }</code></td><td>First frame rendered.</td></tr>
+      <tr><td><code>bg-wc:preset-changed</code></td><td><code>{ from, to }</code></td><td>After a successful preset swap.</td></tr>
+      <tr><td><code>bg-wc:error</code></td><td><code>{ phase, error }</code></td><td>Compile, load, or runtime error.</td></tr>
+      <tr><td><code>bg-wc:visibility</code></td><td><code>{ visible }</code></td><td>IntersectionObserver gate flips.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Performance &amp; reduced motion</h2>
+  <ul>
+    <li>The render loop auto-pauses when the element scrolls off-screen (IntersectionObserver) and when the tab is hidden, so idle backgrounds cost nothing.</li>
+    <li><code>motion="auto"</code> (the default) honors <code>prefers-reduced-motion: reduce</code>. <code>reduce</code> forces a pause; <code>force</code> always animates.</li>
+    <li>When reduced motion is active and a preset has no static frame, the <code>fallback</code> slot is shown — supply a static image there for the best result.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" data-escape><html data-theme="rough">
+  <body>
+    <bg-wc preset="aurora" intensity="0.6" speed="0.8">
+      <header>
+        <h1>Theme-aware hero</h1>
+        <p>The aurora bands tint themselves from the active VB theme.</p>
+      </header>
+      <img slot="fallback" src="hero-static.webp" alt=""/>
+    </bg-wc>
+  </body>
+</html></code-block>
+  <p>Custom properties declared on <code>:root</code> — which is exactly what VB themes do — inherit through the shadow boundary, so no piercing is required.</p>
+</section>
