@@ -21,6 +21,7 @@
       border-top: 1px solid var(--color-border);
     }
     h3 { margin-bottom: var(--size-s); }
+    h4 { margin: 0; }
 
     .lead {
       font-size: var(--font-size-l);
@@ -180,6 +181,64 @@
       margin: 0 0 var(--size-s);
       color: var(--color-success);
     }
+
+    /* Alignment test section */
+    .alignment-test {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-xl);
+      margin: var(--size-l) 0;
+    }
+
+    @media (width < 900px) {
+      .alignment-test {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Guide lines overlay showing header bottom edge */
+    .with-guides {
+      position: relative;
+    }
+
+    .with-guides .card-before header,
+    .with-guides .card-subgrid header {
+      position: relative;
+    }
+
+    .with-guides .card-before header::after,
+    .with-guides .card-subgrid header::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--color-error, red);
+    }
+
+    /* Legend for guide lines */
+    .guide-legend {
+      display: flex;
+      align-items: center;
+      gap: var(--size-s);
+      font-size: var(--font-size-s);
+      margin-top: var(--size-s);
+    }
+
+    .header-line {
+      display: inline-block;
+      width: 1.5rem;
+      height: 2px;
+      background: var(--color-error, red);
+    }
+
+    /* Measurement notice */
+    .measure-notice {
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
+      margin-top: var(--size-s);
+    }
   </style>
 </head>
 <body>
@@ -199,57 +258,107 @@
         <h3>Before: Independent Grids</h3>
         <div class="card-grid-before">
           <article class="card-before">
-            <header><h4>Short Title</h4></header>
+            <header><h4>Short</h4></header>
             <section>
-              <p>Brief content that fits in one line.</p>
+              <p>Brief.</p>
             </section>
             <footer><button>Action</button></footer>
           </article>
           <article class="card-before">
-            <header><h4>A Much Longer Card Title That Wraps</h4></header>
+            <header><h4>This Card Has a Much Longer Title That Will Definitely Wrap to Multiple Lines</h4></header>
             <section>
-              <p>This card has more content which makes the body taller than the first card.</p>
+              <p>This card has substantially more content to demonstrate how varying content lengths affect the layout. Notice the footer positions.</p>
             </section>
             <footer><button>Action</button></footer>
           </article>
           <article class="card-before">
-            <header><h4>Medium Title</h4></header>
+            <header><h4>Medium</h4></header>
             <section>
-              <p>Middle ground content length here.</p>
+              <p>Some content here.</p>
             </section>
             <footer><button>Action</button></footer>
           </article>
         </div>
-        <p><strong>Notice:</strong> Headers and footers don't align across cards.</p>
+        <p class="measure-notice" data-target="before"><strong>↑ Notice:</strong> Draw a horizontal line across - headers and footers are at different heights.</p>
       </section>
 
       <section class="comparison-section">
         <h3 class="after">After: Subgrid Alignment</h3>
         <div class="card-grid-subgrid">
           <article class="card-subgrid">
-            <header><h4>Short Title</h4></header>
+            <header><h4>Short</h4></header>
             <section>
-              <p>Brief content that fits in one line.</p>
+              <p>Brief.</p>
             </section>
             <footer><button>Action</button></footer>
           </article>
           <article class="card-subgrid">
-            <header><h4>A Much Longer Card Title That Wraps</h4></header>
+            <header><h4>This Card Has a Much Longer Title That Will Definitely Wrap to Multiple Lines</h4></header>
             <section>
-              <p>This card has more content which makes the body taller than the first card.</p>
+              <p>This card has substantially more content to demonstrate how varying content lengths affect the layout. Notice the footer positions.</p>
             </section>
             <footer><button>Action</button></footer>
           </article>
           <article class="card-subgrid">
-            <header><h4>Medium Title</h4></header>
+            <header><h4>Medium</h4></header>
             <section>
-              <p>Middle ground content length here.</p>
+              <p>Some content here.</p>
             </section>
             <footer><button>Action</button></footer>
           </article>
         </div>
-        <p><strong>Notice:</strong> All headers align, all footers align!</p>
+        <p class="measure-notice" data-target="after"><strong>↑ Notice:</strong> All headers align at the same height. All footers align at the same height!</p>
       </section>
+    </div>
+
+    <!-- Visual alignment test with guide lines -->
+    <h2>Visual Alignment Test</h2>
+    <p>These grids have guide lines overlaid to show row alignment:</p>
+
+    <div class="alignment-test">
+      <div>
+        <h3>Before: Independent Grids</h3>
+        <div class="card-grid-before with-guides">
+          <article class="card-before">
+            <header><h4>Short</h4></header>
+            <section><p>Brief.</p></section>
+            <footer><button>Go</button></footer>
+          </article>
+          <article class="card-before">
+            <header><h4>A Much Longer Title That Wraps</h4></header>
+            <section><p>More content here with multiple lines to show the difference.</p></section>
+            <footer><button>Go</button></footer>
+          </article>
+          <article class="card-before">
+            <header><h4>Mid</h4></header>
+            <section><p>Medium.</p></section>
+            <footer><button>Go</button></footer>
+          </article>
+        </div>
+        <p class="guide-legend"><span class="header-line"></span> Header bottom boundaries don't align</p>
+      </div>
+
+      <div>
+        <h3 class="after">After: Subgrid Alignment</h3>
+        <div class="card-grid-subgrid with-guides">
+          <article class="card-subgrid">
+            <header><h4>Short</h4></header>
+            <section><p>Brief.</p></section>
+            <footer><button>Go</button></footer>
+          </article>
+          <article class="card-subgrid">
+            <header><h4>A Much Longer Title That Wraps</h4></header>
+            <section><p>More content here with multiple lines to show the difference.</p></section>
+            <footer><button>Go</button></footer>
+          </article>
+          <article class="card-subgrid">
+            <header><h4>Mid</h4></header>
+            <section><p>Medium.</p></section>
+            <footer><button>Go</button></footer>
+          </article>
+        </div>
+        <p class="guide-legend"><span class="header-line"></span> Header bottom boundaries perfectly aligned!</p>
+      </div>
     </div>
 
     <h2>The CSS</h2>
