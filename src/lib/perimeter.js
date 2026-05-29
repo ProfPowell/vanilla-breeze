@@ -285,6 +285,7 @@ function tokenizePath(d) {
   const tokens = [];
   const re = /([MmLlHhVvCcSsQqTtAaZz])|(-?\d*\.?\d+(?:e[-+]?\d+)?)/gi;
   let m;
+  /** @type {{ cmd: string, args: number[] } | null} */
   let cur = null;
   while ((m = re.exec(d))) {
     if (m[1]) {

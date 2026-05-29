@@ -1,3 +1,4 @@
+// @ts-nocheck -- unit test fakes (getComputedStyle, partial style objects) intentionally diverge from DOM types
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { roundedRectPerimeter } from '../../src/lib/perimeter.js';
