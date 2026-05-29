@@ -141,6 +141,21 @@
     }
   }
 
+  /* Integration pages mix prose, card grids, tables, and embedded demos.
+     Without a unified width the page jumps between the full fluid canvas
+     (grids/tables ~1380px) and the narrow layout-text measure (~654px),
+     reading erratically. Pin one consistent content column so every block
+     aligns to the same edges. Scoped via the layout's data-path hook. */
+  main[data-path^="/docs/integrations/"] {
+    --canvas-width: var(--content-normal);
+
+    /* layout-text otherwise clamps prose to --measure-normal (65ch), far
+       narrower than the column — let it fill the shared column instead. */
+    & layout-text {
+      max-inline-size: none;
+    }
+  }
+
   footer.minimal {
     display: flex;
     flex-direction: column;
