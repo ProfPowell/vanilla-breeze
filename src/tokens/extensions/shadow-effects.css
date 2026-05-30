@@ -1,0 +1,75 @@
+/**
+ * Shadow effects — data-shadow attribute API
+ *
+ * Sibling to data-border-effect. Composable, space-separated tokens:
+ *   <article data-shadow="tint">          theme-tinted drop shadow
+ *   <button  data-shadow="material">       hover-raise (Material-style)
+ *   <figure  data-shadow="shape">          alpha-true drop-shadow (clip-path/PNG/text)
+ *   <aside   data-shadow="glow flicker">   accent glow, optional gated flicker
+ *
+ * These rules live in @layer bundle-effects (NOT tokens) so an opt-in effect
+ * reliably wins over a component's own box-shadow (e.g. a .card surface in a
+ * higher layer). Mirrors animated-borders-effects.css: imported at the TOP
+ * LEVEL of main.css / main-core.css (NOT via a layer(tokens) import) so the
+ * @layer block targets the top-level bundle-effects layer, and the @keyframes
+ * below register globally.
+ *
+ * Effects read VB tokens (--color-accent, the --shadow-* elevation ramp) so
+ * they re-skin with the active theme. Tint/glow keep mix transparency >= ~50%
+ * so the hue survives over busy/textured backgrounds.
+ */
+
+@keyframes vb-shadow-glow-pulse {
+  0%, 100% { box-shadow: 0 0 1.1rem color-mix(in oklch, var(--shadow-glow-color), transparent 52%); }
+  50%      { box-shadow: 0 0 1.9rem color-mix(in oklch, var(--shadow-glow-color), transparent 32%); }
+}
+
+@layer bundle-effects {
+  /* tint — luminous, on-brand shadow derived from the accent hue. Re-tints
+     automatically when --color-accent changes with the theme. */
+  [data-shadow~="tint"] {
+    box-shadow:
+      0 10px 26px color-mix(in oklch, var(--color-accent), transparent 55%),
+      0 3px 7px   color-mix(in oklch, var(--color-accent), transparent 66%);
+  }
+
+  /* material — rests at --shadow-md, raises on hover. Theme-agnostic: it just
+     swaps elevation-ramp tokens. The lift transform + transition are motion,
+     so reduced-motion drops them but keeps the elevation feedback. */
+  [data-shadow~="material"] {
+    box-shadow: var(--shadow-md);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+  [data-shadow~="material"]:hover,
+  [data-shadow~="material"]:focus-visible {
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-4px);
+  }
+
+  /* shape — alpha-true shadow that follows a non-rectangular shape. Use on
+     clip-path'd elements, PNGs with transparency, or text — NOT box-shadow,
+     which only ever paints the rectangular border-box. */
+  [data-shadow~="shape"] {
+    filter: drop-shadow(0 4px 6px oklch(0 0 0 / 0.34));
+  }
+
+  /* glow — soft accent halo. Static by default (the reduced-motion fallback);
+     add the `flicker` token to opt into a gentle pulse, gated below. */
+  [data-shadow~="glow"] {
+    --shadow-glow-color: var(--color-accent);
+    box-shadow: 0 0 var(--shadow-glow-size, 1.4rem)
+      color-mix(in oklch, var(--shadow-glow-color), transparent 42%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-shadow~="material"] { transition: none; }
+    [data-shadow~="material"]:hover,
+    [data-shadow~="material"]:focus-visible { transform: none; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-shadow~="glow"][data-shadow~="flicker"] {
+      animation: vb-shadow-glow-pulse 3s ease-in-out infinite;
+    }
+  }
+}
