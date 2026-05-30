@@ -40,3 +40,26 @@ test('dots surface uses the 22px journal tile', async ({ page }) => {
   );
   expect(size).toContain('22px');
 });
+
+test('dots surface paints a real (non-transparent) dot color', async ({ page }) => {
+  const img = await page.evaluate(
+    () => getComputedStyle(document.getElementById('dots')).backgroundImage
+  );
+  expect(img).toContain('radial-gradient');
+  // --surface-dot resolves to a real color (oklch / rgb / color()), not transparent-only.
+  expect(img).toMatch(/oklch|rgb|color\(/);
+});
+
+test('grid surface uses the 22px journal tile', async ({ page }) => {
+  const size = await page.evaluate(
+    () => getComputedStyle(document.getElementById('grid')).backgroundSize
+  );
+  expect(size).toContain('22px');
+});
+
+test('lines surface draws ruled lines via a repeating gradient', async ({ page }) => {
+  const img = await page.evaluate(
+    () => getComputedStyle(document.getElementById('lines')).backgroundImage
+  );
+  expect(img).toContain('repeating-linear-gradient'); // the 28px-pitch rules
+});
