@@ -1,0 +1,100 @@
+---
+layout: guide
+title: "Shadows"
+description: "How depth works in Vanilla Breeze: a themeable elevation ramp, the box-shadow vs drop-shadow distinction that trips most authors up, and the opt-in data-shadow effects (tint, material, shape, glow)."
+guideGroup: Concepts
+currentPath: /docs/concepts/shadows/
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">Shadows</span></li>
+  </ol>
+</nav>
+</template>
+
+<p class="lead">Depth in Vanilla Breeze is a token layer, not a component &mdash; shadows have no runtime behaviour to encapsulate, so they ship as CSS custom properties and a small attribute API. This page covers the one distinction authors get wrong (<code>box-shadow</code> vs <code>drop-shadow</code>), the elevation ramp, and the opt-in <code>data-shadow</code> effects.</p>
+
+<section>
+  <h2><code>box-shadow</code> vs <code>drop-shadow</code></h2>
+  <p>This is the single most useful thing to know about shadows. They look similar but paint completely differently, and reaching for the wrong one is why a shadow on a rounded badge or a transparent logo comes out as an unexpected rectangle.</p>
+  <table class="props-table">
+    <thead>
+      <tr><th></th><th><code>box-shadow</code></th><th><code>filter: drop-shadow()</code></th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Paints</td><td>The <strong>border-box</strong> &mdash; always a rectangle (rounded by <code>border-radius</code>).</td><td>The element&rsquo;s actual <strong>alpha</strong> &mdash; follows the real shape.</td></tr>
+      <tr><td>Use for</td><td>Cards, panels, popovers, raised surfaces.</td><td><code>clip-path</code> shapes, transparent PNGs, SVG, text.</td></tr>
+      <tr><td>Composes with</td><td>Other box-shadows (comma-stacked layers).</td><td>Other <code>filter</code> functions.</td></tr>
+      <tr><td>VB hook</td><td><code>--shadow-*</code> tokens, <code>data-shadow="tint"</code>, <code>data-shadow="material"</code></td><td><code>data-shadow="shape"</code></td></tr>
+    </tbody>
+  </table>
+  <code-block language="css" label="A clip-path'd element needs drop-shadow, not box-shadow" data-escape>/* WRONG — box-shadow paints a rectangle behind the clipped shape */
+.badge { clip-path: polygon(50% 0, 100% 100%, 0 100%); box-shadow: 0 4px 6px #0006; }
+
+/* RIGHT — drop-shadow follows the triangle's real edges */
+.badge { clip-path: polygon(50% 0, 100% 100%, 0 100%); filter: drop-shadow(0 4px 6px #0006); }</code-block>
+</section>
+
+<section>
+  <h2>The elevation ramp</h2>
+  <p>Six themeable levels live in <code>src/tokens/shadows.css</code>. The default theme uses layered, &ldquo;photographic&rdquo; ramps at the higher steps &mdash; a tight contact stop plus progressively softer ambient stops &mdash; so raised surfaces read with real depth instead of one flat blur.</p>
+  <code-block language="css" label="src/tokens/shadows.css (excerpt)" data-escape>--shadow-xs:  0 1px 2px 0 oklch(0 0 0 / 0.05);
+--shadow-md:  0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
+--shadow-2xl: 0 1px 2px 0 oklch(0 0 0 / 0.05),
+              0 4px 8px -2px oklch(0 0 0 / 0.06),
+              0 10px 20px -4px oklch(0 0 0 / 0.08),
+              0 20px 36px -8px oklch(0 0 0 / 0.11),
+              0 34px 58px -12px oklch(0 0 0 / 0.14);</code-block>
+  <p>Reference the tokens directly &mdash; <code>box-shadow: var(--shadow-md)</code>. Numeric aliases <code>--shadow-1</code>&hellip;<code>--shadow-6</code> map onto the same scale for Open Props compatibility. <strong>Themes override these tokens</strong>, so each pack carries its own shadow language (brutalist hard offsets, claymorphism&rsquo;s inset highlights, and so on) without any component changes.</p>
+  <table class="props-table">
+    <thead><tr><th>Token</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td><code>--shadow-xs</code> &hellip; <code>--shadow-2xl</code></td><td>The elevation scale, lowest to highest.</td></tr>
+      <tr><td><code>--shadow-inner</code></td><td>Inset shadow for wells and pressed states.</td></tr>
+      <tr><td><code>--shadow-flush</code></td><td>Hairline + soft drop, an alternative to <code>border: 1px solid</code> on raised surfaces. See <a href="/docs/concepts/feel/">Feel</a>.</td></tr>
+      <tr><td><code>--shadow-none</code></td><td>Explicit no-shadow reset.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>The <code>data-shadow</code> effects</h2>
+  <p>Opt-in, composable, theme-aware effects &mdash; the depth-layer sibling of <code>data-border-effect</code>. They read VB tokens, so they re-skin with the active theme, and they live in <code>@layer bundle-effects</code> so they win over a component&rsquo;s own <code>box-shadow</code>. No JavaScript, no custom element.</p>
+  <table class="props-table">
+    <thead><tr><th>Token</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>tint</code></td><td>Luminous, accent-tinted drop shadow derived from <code>--color-accent</code>. Re-tints with the theme.</td></tr>
+      <tr><td><code>material</code></td><td>Rests at <code>--shadow-md</code>, raises to <code>--shadow-xl</code> with a <code>translateY(-4px)</code> lift on hover/focus.</td></tr>
+      <tr><td><code>shape</code></td><td>Alpha-true <code>drop-shadow</code> for <code>clip-path</code>, PNG, SVG, or text &mdash; not the border-box rectangle.</td></tr>
+      <tr><td><code>glow</code></td><td>Soft accent halo. Static by default; add <code>flicker</code> for a gentle pulse.</td></tr>
+    </tbody>
+  </table>
+  <code-block language="html" label="Composable, space-separated tokens" data-escape><article data-shadow="tint">Accent-tinted card</article>
+
+<button data-shadow="material">Lifts on hover</button>
+
+<img src="/logo.png" alt="…" data-shadow="shape" />
+
+<aside data-shadow="glow flicker">Pulsing accent halo</aside></code-block>
+
+  <h3>Reduced motion</h3>
+  <p>Motion is gated. <code>material</code> keeps its elevation feedback under <code>prefers-reduced-motion: reduce</code> but drops the lift transform and transition. <code>glow</code> is static by default; its <code>flicker</code> pulse only runs under <code>prefers-reduced-motion: no-preference</code>, so the static halo is the reduced-motion fallback.</p>
+
+  <h3>On busy backgrounds</h3>
+  <p><code>tint</code> and <code>glow</code> keep their <code>color-mix</code> transparency at or above ~50% so the hue survives over textured surfaces; pushed more opaque, the colour muddies.</p>
+</section>
+
+<section>
+  <h2>Live demo</h2>
+  <p>The elevation ramp followed by all four effects (move the pointer over the <code>material</code> card to see it raise):</p>
+  <browser-window src="/docs/examples/demos/shadows.html" url="https://vanilla-breeze.dev/shadows" title="Shadows: elevation ramp and data-shadow effects" shadow></browser-window>
+</section>
+
+<section>
+  <h2>Why no <code>shadow-wc</code></h2>
+  <p>Surface (<code>bg-wc</code>) and edge (<code>border-wc</code>) earn web components &mdash; SVG/canvas overlays, perimeter geometry, resize refitting. Depth needs none of that: <code>box-shadow</code> and <code>drop-shadow</code> paint with the box and scale with it automatically. A component would wrap nothing, so depth ships as tokens and this attribute layer instead.</p>
+</section>
