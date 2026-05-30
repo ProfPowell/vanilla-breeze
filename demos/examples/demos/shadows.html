@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shadows Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-background); }
+    h1 { margin-block-start: 0; }
+    .ramp,
+    .fx { display: grid; gap: var(--size-2xl) var(--size-xl); }
+    .ramp { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+    .fx { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .ramp article,
+    .fx article {
+      background: var(--color-surface);
+      border-radius: var(--radius-l);
+      padding: var(--size-l) var(--size-m);
+      text-align: center;
+    }
+    /* Definite grid tracks keep the cards from collapsing under
+       container-type: inline-size (which VB sets on <article>). */
+    .ramp article[data-elevation="xs"] { box-shadow: var(--shadow-xs); }
+    .ramp article[data-elevation="sm"] { box-shadow: var(--shadow-sm); }
+    .ramp article[data-elevation="md"] { box-shadow: var(--shadow-md); }
+    .ramp article[data-elevation="lg"] { box-shadow: var(--shadow-lg); }
+    .ramp article[data-elevation="xl"] { box-shadow: var(--shadow-xl); }
+    .ramp article[data-elevation="2xl"] { box-shadow: var(--shadow-2xl); }
+    .fx figure { margin: 0; display: grid; place-items: center; gap: var(--size-m); text-align: center; }
+    .blob {
+      inline-size: 116px;
+      block-size: 116px;
+      background: var(--color-accent);
+      clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%);
+    }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="2xl">
+  <header>
+    <h1>Shadows</h1>
+    <p>The elevation ramp and the composable <code>data-shadow</code> effects.</p>
+  </header>
+
+  <section>
+    <h2>Elevation ramp</h2>
+    <p>Six themeable levels. Themes override <code>--shadow-*</code>, so each pack brings its own shadow language; the default theme uses a layered, photographic ramp.</p>
+    <section class="ramp">
+      <article data-elevation="xs"><code>--shadow-xs</code></article>
+      <article data-elevation="sm"><code>--shadow-sm</code></article>
+      <article data-elevation="md"><code>--shadow-md</code></article>
+      <article data-elevation="lg"><code>--shadow-lg</code></article>
+      <article data-elevation="xl"><code>--shadow-xl</code></article>
+      <article data-elevation="2xl"><code>--shadow-2xl</code></article>
+    </section>
+  </section>
+
+  <section>
+    <h2>data-shadow effects</h2>
+    <p>Opt-in, composable, theme-aware. Each reads VB tokens, so they re-skin with the active theme.</p>
+    <section class="fx">
+      <article data-shadow="tint">
+        <strong><code>tint</code></strong>
+        <p>Accent-tinted drop shadow.</p>
+      </article>
+      <article data-shadow="material">
+        <strong><code>material</code></strong>
+        <p>Hover to raise (md&nbsp;&rarr;&nbsp;xl).</p>
+      </article>
+      <figure>
+        <p class="blob" data-shadow="shape" role="img" aria-label="Pentagon"></p>
+        <figcaption><strong><code>shape</code></strong> &mdash; <code>drop-shadow</code> follows the clip-path, not a box.</figcaption>
+      </figure>
+      <article data-shadow="glow">
+        <strong><code>glow</code></strong>
+        <p>Soft accent halo.</p>
+      </article>
+    </section>
+  </section>
+</body>
+</html>
