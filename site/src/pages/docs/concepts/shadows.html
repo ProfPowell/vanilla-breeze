@@ -32,11 +32,17 @@ currentPath: /docs/concepts/shadows/
       <tr><td>VB hook</td><td><code>--shadow-*</code> tokens, <code>data-shadow="tint"</code>, <code>data-shadow="material"</code></td><td><code>data-shadow="shape"</code></td></tr>
     </tbody>
   </table>
-  <code-block language="css" label="A clip-path'd element needs drop-shadow, not box-shadow" data-escape>/* WRONG — box-shadow paints a rectangle behind the clipped shape */
+  <code-block language="css" label="A clip-path'd shape needs drop-shadow on a wrapper" data-escape>/* WRONG — box-shadow paints a rectangle behind the clipped shape */
 .badge { clip-path: polygon(50% 0, 100% 100%, 0 100%); box-shadow: 0 4px 6px #0006; }
 
-/* RIGHT — drop-shadow follows the triangle's real edges */
-.badge { clip-path: polygon(50% 0, 100% 100%, 0 100%); filter: drop-shadow(0 4px 6px #0006); }</code-block>
+/* ALSO WRONG — clip-path is applied after the filter, so the element
+   clips its own drop-shadow away and nothing shows */
+.badge { clip-path: polygon(50% 0, 100% 100%, 0 100%); filter: drop-shadow(0 4px 6px #0006); }
+
+/* RIGHT — clip the child, drop-shadow the (unclipped) parent */
+.badge        { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.badge-shadow { filter: drop-shadow(0 4px 6px #0006); }  /* wraps .badge */</code-block>
+  <p>A transparent PNG, SVG, or text element carries its own alpha, so <code>drop-shadow</code> goes <strong>directly</strong> on it. Only <code>clip-path</code> needs the wrapper, because the clip would otherwise cut the shadow it just generated.</p>
 </section>
 
 <section>
@@ -69,7 +75,7 @@ currentPath: /docs/concepts/shadows/
     <tbody>
       <tr><td><code>tint</code></td><td>Luminous, accent-tinted drop shadow derived from <code>--color-accent</code>. Re-tints with the theme.</td></tr>
       <tr><td><code>material</code></td><td>Rests at <code>--shadow-md</code>, raises to <code>--shadow-xl</code> with a <code>translateY(-4px)</code> lift on hover/focus.</td></tr>
-      <tr><td><code>shape</code></td><td>Alpha-true <code>drop-shadow</code> for <code>clip-path</code>, PNG, SVG, or text &mdash; not the border-box rectangle.</td></tr>
+      <tr><td><code>shape</code></td><td>Alpha-true <code>drop-shadow</code> for transparent PNG, SVG, or text &mdash; not the border-box rectangle. For a <code>clip-path</code> shape, put it on a <strong>wrapper</strong> (a clipped element clips its own shadow).</td></tr>
       <tr><td><code>glow</code></td><td>Soft accent halo. Static by default; add <code>flicker</code> for a gentle pulse.</td></tr>
     </tbody>
   </table>
@@ -77,7 +83,11 @@ currentPath: /docs/concepts/shadows/
 
 <button data-shadow="material">Lifts on hover</button>
 
+<!-- transparent image carries its own alpha: apply shape directly -->
 <img src="/logo.png" alt="…" data-shadow="shape" />
+
+<!-- clip-path shape: apply shape to a wrapper of the clipped element -->
+<span data-shadow="shape"><span class="clipped-badge"></span></span>
 
 <aside data-shadow="glow flicker">Pulsing accent halo</aside></code-block>
 

@@ -79,7 +79,7 @@ Opt-in, composable, theme-aware — the depth-layer sibling of `data-border-effe
 |-------|---------|
 | `tint` | Luminous drop shadow from `--color-accent` via `color-mix` (≥ ~50% transparent so the hue survives busy backgrounds). Re-tints with the theme. |
 | `material` | Rests at `--shadow-md`, raises to `--shadow-xl` + `translateY(-4px)` on `:hover`/`:focus-visible`. Reduced-motion drops the lift/transition, keeps the elevation feedback. |
-| `shape` | `filter: drop-shadow()` for `clip-path`/PNG/SVG/text — alpha-true, not the border-box rectangle. |
+| `shape` | `filter: drop-shadow()` — alpha-true, not the border-box rectangle. Apply directly to a transparent PNG/SVG/text; for a `clip-path` shape apply it to a **wrapper** (see clangs). |
 | `glow` | Soft accent halo. Static by default; add `flicker` for a pulse gated behind `prefers-reduced-motion: no-preference`. |
 
 ```css
@@ -136,4 +136,5 @@ site/src/pages/docs/concepts/index.html        # + Shadows card
 
 - **Neumorphism needs surface match.** It only reads as soft-UI when `--surface` equals the page behind it — which is exactly why it stayed a theme, not an element attribute.
 - **Tinted shadows can muddy on busy backgrounds.** `color-mix` transparency over a textured surface loses the hue; keep transparency ≥ ~50%.
+- **`clip-path` clips its own `drop-shadow`.** `clip-path` is applied *after* the filter in the render pipeline, so a `filter: drop-shadow()` on the same clipped element gets cut away (the shape shows no shadow). Apply `data-shadow="shape"` to a **wrapper** of the clipped element. Transparent PNG/SVG/text carry intrinsic alpha and take it directly. (This was a real bug in the first demo/doc draft.)
 - **`drop-shadow` and an SVG-overlay border don't compose.** A `clip-path`'d element has no border box for an overlay to stroke — shape-shadow and border-wc overlays are mutually exclusive.

@@ -28,7 +28,12 @@
     .ramp article[data-elevation="xl"] { box-shadow: var(--shadow-xl); }
     .ramp article[data-elevation="2xl"] { box-shadow: var(--shadow-2xl); }
     .fx figure { margin: 0; display: grid; place-items: center; gap: var(--size-m); text-align: center; }
+    /* shape: filter goes on the wrapper, clip-path on the child — a clipped
+       element would clip its own drop-shadow (clip-path is applied after the
+       filter in the render pipeline). */
+    .shape-frame { margin: 0; display: inline-block; line-height: 0; }
     .blob {
+      display: block;
       inline-size: 116px;
       block-size: 116px;
       background: var(--color-accent);
@@ -68,8 +73,10 @@
         <p>Hover to raise (md&nbsp;&rarr;&nbsp;xl).</p>
       </article>
       <figure>
-        <p class="blob" data-shadow="shape" role="img" aria-label="Pentagon"></p>
-        <figcaption><strong><code>shape</code></strong> &mdash; <code>drop-shadow</code> follows the clip-path, not a box.</figcaption>
+        <p class="shape-frame" data-shadow="shape">
+          <span class="blob" role="img" aria-label="Pentagon"></span>
+        </p>
+        <figcaption><strong><code>shape</code></strong> &mdash; <code>drop-shadow</code> follows the clip-path, not a box. Put it on a <em>wrapper</em>: a clipped element clips its own shadow.</figcaption>
       </figure>
       <article data-shadow="glow">
         <strong><code>glow</code></strong>
