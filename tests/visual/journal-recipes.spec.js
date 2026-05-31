@@ -103,3 +103,28 @@ test('habit tracker: a done cell is a filled circle', async ({ page }) => {
   );
   expect(r).toMatch(/50%|9999px|999px/);
 });
+
+test('index tabs: asymmetric radius', async ({ page }) => {
+  await mount(page, '<nav data-journal="tabs"><a id="t" href="#">plan</a></nav>');
+  expect(await css(page, '#t', 'border-top-left-radius')).toMatch(/^0px$|^0$/);
+  expect(await css(page, '#t', 'border-top-right-radius')).not.toMatch(/^0px$|^0$/);
+});
+
+test('index tabs: hover-slide is gated by reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await mount(page, '<nav data-journal="tabs"><a id="t" href="#">plan</a></nav>');
+  expect(await css(page, '#t', 'transition-duration')).toMatch(/^0s$|(^|,\s*)0s/);
+});
+
+test('notebook chrome: dot-grid page, red margin rule, ribbon', async ({ page }) => {
+  await mount(
+    page,
+    '<div data-journal="page" id="pg"><span data-journal="ribbon" id="rb"></span>x</div>'
+  );
+  expect(await css(page, '#pg', 'background-image')).toContain('radial-gradient');
+  const margin = await page.evaluate(
+    () => getComputedStyle(document.querySelector('#pg'), '::before').borderLeftStyle
+  );
+  expect(margin).toBe('solid');
+  expect(await css(page, '#rb', 'clip-path')).not.toBe('none');
+});

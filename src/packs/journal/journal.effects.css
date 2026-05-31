@@ -234,3 +234,102 @@
     border-color: transparent;
   }
 }
+
+/* ── Index tabs ──────────────────────────────────────────────────────── */
+@layer bundle-effects {
+  [data-theme~="journal"] [data-journal="tabs"] {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  [data-theme~="journal"] [data-journal="tabs"] :is(a, button) {
+    display: inline-block;
+    font-family: var(--_journal-hand);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--_journal-ink);
+    text-decoration: none;
+    padding: 7px 14px;
+    border: none;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 2px 2px 5px oklch(0 0 0 / 0.16);
+    background: var(--_journal-mint);
+    cursor: pointer;
+    transition: transform 0.15s var(--ease-out);
+  }
+  [data-theme~="journal"] [data-journal="tabs"] :is(a, button):nth-child(2) { background: var(--_journal-sky); }
+  [data-theme~="journal"] [data-journal="tabs"] :is(a, button):nth-child(3) { background: var(--_journal-blush); }
+  [data-theme~="journal"] [data-journal="tabs"] :is(a, button):nth-child(4) { background: var(--_journal-butter); }
+  [data-theme~="journal"] [data-journal="tabs"] :is(a, button):hover { transform: translateX(6px); }
+  @media (prefers-reduced-motion: reduce) {
+    [data-theme~="journal"] [data-journal="tabs"] :is(a, button) { transition: none; }
+    [data-theme~="journal"] [data-journal="tabs"] :is(a, button):hover { transform: none; }
+  }
+}
+
+/* ── Notebook chrome ─────────────────────────────────────────────────── */
+/* The page is paper in BOTH modes (a lit notebook page on the desk); only the
+   surrounding body/desk follows light/dark. */
+@layer bundle-effects {
+  [data-theme~="journal"] [data-journal="page"] {
+    position: relative;
+    padding: 56px 48px 64px 78px;
+    border-radius: 4px;
+    background:
+      radial-gradient(circle, var(--_journal-dot) 1.3px, transparent 1.7px) 8px 8px / 22px 22px,
+      var(--_journal-paper);
+    box-shadow: var(--shadow-xl);
+    color: var(--_journal-ink);
+  }
+  [data-theme~="journal"] [data-journal="page"]::before {
+    /* red margin rule */
+    content: "";
+    position: absolute;
+    left: 62px;
+    top: 0;
+    bottom: 0;
+    border-left: 1.5px solid var(--_journal-margin);
+    opacity: 0.55;
+  }
+  [data-theme~="journal"] [data-journal="page"]::after {
+    /* binding holes down the left gutter */
+    content: "";
+    position: absolute;
+    left: 16px;
+    top: 30px;
+    bottom: 30px;
+    width: 12px;
+    background: radial-gradient(circle, oklch(0.86 0.02 80) 5px, transparent 6px) center top / 12px 60px repeat-y;
+  }
+  [data-theme~="journal"] [data-journal="ribbon"] {
+    position: absolute;
+    top: -6px;
+    right: 64px;
+    width: 26px;
+    height: 96px;
+    background: var(--_journal-coral);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
+    box-shadow: 0 4px 8px oklch(0 0 0 / 0.2);
+  }
+  [data-theme~="journal"] [data-journal="stamp"] {
+    position: absolute;
+    top: 12px;
+    right: 120px;
+    transform: rotate(-11deg);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--_journal-margin);
+    border: 2px solid var(--_journal-margin);
+    border-radius: 6px;
+    padding: 6px 10px;
+    opacity: 0.62;
+    mix-blend-mode: multiply;
+    text-align: center;
+    line-height: 1.25;
+  }
+}
