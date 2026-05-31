@@ -77,3 +77,29 @@ test('taped photo: tape corners + rotation', async ({ page }) => {
   );
   expect(tape).toBe('""'); // Chromium serializes the applied content:"" as the string '""'
 });
+
+test('rapid log: bullet glyphs differ; done strikes through', async ({ page }) => {
+  await mount(
+    page,
+    '<ul data-journal="rapid-log"><li id="t">task</li><li id="d" data-bullet="done">done</li></ul>'
+  );
+  const t = await page.evaluate(
+    () => getComputedStyle(document.querySelector('#t'), '::before').content
+  );
+  const d = await page.evaluate(
+    () => getComputedStyle(document.querySelector('#d'), '::before').content
+  );
+  expect(t).not.toBe(d); // bullet vs check glyph
+  expect(await css(page, '#d', 'text-decoration-line')).toContain('line-through');
+});
+
+test('habit tracker: a done cell is a filled circle', async ({ page }) => {
+  await mount(
+    page,
+    '<table data-journal="tracker"><tbody><tr><td data-mark="done" id="c"></td></tr></tbody></table>'
+  );
+  const r = await page.evaluate(
+    () => getComputedStyle(document.querySelector('#c'), '::before').borderRadius
+  );
+  expect(r).toMatch(/50%|9999px|999px/);
+});
