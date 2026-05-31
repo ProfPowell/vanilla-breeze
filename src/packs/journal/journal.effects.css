@@ -64,3 +64,81 @@
   }
   [data-theme~="journal"] hr[data-ornament="doodle"]::before { content: ""; }
 }
+
+/* ── Sticky note (extends [data-callout]) ────────────────────────────── */
+@layer bundle-effects {
+  [data-theme~="journal"] [data-callout="sticky"] {
+    background: var(--_journal-butter);
+    background-image: linear-gradient(180deg, oklch(1 0 0 / 0.35), transparent 22%);
+    color: var(--_journal-ink);
+    font-family: var(--_journal-hand);
+    padding: 1.25rem 1.5rem;
+    border: none;
+    border-radius: 1px;
+    transform: rotate(-2deg);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+  }
+  [data-theme~="journal"] [data-callout="sticky"]::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 26px;
+    height: 26px;
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    background: linear-gradient(135deg, oklch(0.84 0.09 96), oklch(0.7 0.08 92));
+    box-shadow: -2px -2px 5px oklch(0 0 0 / 0.18);
+  }
+}
+
+/* ── Taped photo ─────────────────────────────────────────────────────── */
+@layer bundle-effects {
+  [data-theme~="journal"] [data-journal="photo"] {
+    background: #fff;
+    padding: 11px 11px 40px;
+    max-width: 240px;
+    border: none;
+    border-radius: 1px;
+    transform: rotate(2deg);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    margin: 0;
+  }
+  [data-theme~="journal"] [data-journal="photo"] :is(img, svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  [data-theme~="journal"] [data-journal="photo"] figcaption {
+    font-family: var(--_journal-hand);
+    text-align: center;
+    margin-top: 8px;
+    color: var(--_journal-ink);
+  }
+  [data-theme~="journal"] [data-journal="photo"]::before,
+  [data-theme~="journal"] [data-journal="photo"]::after {
+    content: "";
+    position: absolute;
+    top: -9px;
+    width: 62px;
+    height: 22px;
+    background: oklch(0.92 0.04 200 / 0.55);
+    mix-blend-mode: multiply;
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.14);
+  }
+  [data-theme~="journal"] [data-journal="photo"]::before { left: -14px; transform: rotate(-38deg); }
+  [data-theme~="journal"] [data-journal="photo"]::after { right: -14px; transform: rotate(38deg); }
+  /* Night desk: multiply tape washes out — lighten instead. Cover BOTH the
+     explicit dark path and the system-dark (no data-mode) path. */
+  [data-theme~="journal"][data-mode="dark"] [data-journal="photo"]::before,
+  [data-theme~="journal"][data-mode="dark"] [data-journal="photo"]::after {
+    mix-blend-mode: screen;
+  }
+  @media (prefers-color-scheme: dark) {
+    [data-theme~="journal"]:not([data-mode="light"]) [data-journal="photo"]::before,
+    [data-theme~="journal"]:not([data-mode="light"]) [data-journal="photo"]::after {
+      mix-blend-mode: screen;
+    }
+  }
+}

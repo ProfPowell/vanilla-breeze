@@ -56,3 +56,24 @@ test('doodle divider: masked squiggle, not the literal attr text', async ({ page
   );
   expect(before).not.toContain('doodle'); // base attr-text is neutralized
 });
+
+test('sticky note: rotated callout with a curl corner', async ({ page }) => {
+  await mount(page, '<div id="s" data-callout="sticky">note</div>');
+  expect(await css(page, '#s', 'transform')).not.toBe('none'); // rotate(-2deg) -> matrix(...)
+  const curl = await page.evaluate(
+    () => getComputedStyle(document.querySelector('#s'), '::after').clipPath
+  );
+  expect(curl).not.toBe('none'); // curl corner
+});
+
+test('taped photo: tape corners + rotation', async ({ page }) => {
+  await mount(
+    page,
+    '<figure id="p" data-journal="photo"><img src="data:," alt=""><figcaption>c</figcaption></figure>'
+  );
+  expect(await css(page, '#p', 'transform')).not.toBe('none');
+  const tape = await page.evaluate(
+    () => getComputedStyle(document.querySelector('#p'), '::before').content
+  );
+  expect(tape).not.toBe('none'); // a tape strip exists (content: "")
+});
