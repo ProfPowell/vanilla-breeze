@@ -75,5 +75,5 @@ test('taped photo: tape corners + rotation', async ({ page }) => {
   const tape = await page.evaluate(
     () => getComputedStyle(document.querySelector('#p'), '::before').content
   );
-  expect(tape).not.toBe('none'); // a tape strip exists (content: "")
+  expect(tape).toBe('""'); // Chromium serializes the applied content:"" as the string '""'
 });
