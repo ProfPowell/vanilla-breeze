@@ -54,3 +54,11 @@ test('light: paper background, ink text, deep-mint primary, dot-grid page bg', a
   expect(t.pageImage).toContain('radial-gradient'); // dot grid
   expect(t.pageSize).toContain('22px');
 });
+
+test('dark: night-journal desk background, paper-white text', async ({ page }) => {
+  await page.setContent('<!doctype html><title>t</title>');
+  const t = await readTokens(page, { mode: 'dark' });
+  expect(lightnessOf(t.background)).toBeLessThan(0.3); // deep ink-navy desk
+  expect(lightnessOf(t.text)).toBeGreaterThan(0.8); // warm paper-white
+  expect(t.pageImage).toContain('radial-gradient'); // dot grid still present
+});
