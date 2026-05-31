@@ -1,0 +1,61 @@
+/**
+ * Journal pack — component recipes (sub-project B).
+ *
+ * CSS-only. EVERY selector is scoped under [data-theme~="journal"] so recipes
+ * apply only with the journal theme active (they consume --_journal-* tokens
+ * defined by _extreme-journal.css) and never leak into other themes.
+ *
+ * Reuses VB's [data-callout] (sticky), [data-ornament] (doodle <hr>), and
+ * <mark> (highlighter); composites use a data-journal="…" namespace plus
+ * li[data-bullet] / td[data-mark]. Rules live in @layer bundle-effects.
+ *
+ * Author contract:
+ *   <mark [data-tint="mint|coral|sky|lilac|blush|butter"]>
+ *   <hr data-ornament="doodle">
+ *   <div data-callout="sticky">
+ *   <ul data-journal="rapid-log"><li data-bullet="task|done|dropped|migrated|event|note">
+ *   <table data-journal="tracker"> … <td data-mark="done|miss"> ; <tr style="--_c: var(--_journal-sky)">
+ *   <figure data-journal="photo"><img><figcaption>
+ *   <nav data-journal="tabs"><a>…</a> (direct <a>/<button> children)
+ *   <div data-journal="page"> … <span data-journal="ribbon"></span> <span data-journal="stamp">…</span>
+ */
+
+/* ── Highlighter ─────────────────────────────────────────────────────── */
+@layer bundle-effects {
+  [data-theme~="journal"] mark {
+    --_hl: var(--_journal-butter);
+    background: linear-gradient(transparent 8%, var(--_hl) 8% 86%, transparent 86%);
+    color: inherit;
+    mix-blend-mode: multiply;
+    padding: 0 0.12em;
+    border-radius: 2px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  [data-theme~="journal"] mark[data-tint="mint"] { --_hl: var(--_journal-mint); }
+  [data-theme~="journal"] mark[data-tint="coral"] { --_hl: var(--_journal-coral); }
+  [data-theme~="journal"] mark[data-tint="sky"] { --_hl: var(--_journal-sky); }
+  [data-theme~="journal"] mark[data-tint="lilac"] { --_hl: var(--_journal-lilac); }
+  [data-theme~="journal"] mark[data-tint="blush"] { --_hl: var(--_journal-blush); }
+  [data-theme~="journal"] mark[data-tint="butter"] { --_hl: var(--_journal-butter); }
+  /* Night desk: multiply darkens the pastel into the navy — lighten instead. */
+  [data-theme~="journal"][data-mode="dark"] mark { mix-blend-mode: screen; }
+}
+
+/* ── Doodle divider ──────────────────────────────────────────────────── */
+/* Base hr[data-ornament]::before prints the attr value as text; neutralize it
+   and paint a squiggle via mask filled from --color-text (inks in both modes). */
+@layer bundle-effects {
+  [data-theme~="journal"] hr[data-ornament="doodle"] {
+    border: none;
+    height: 24px;
+    margin-block: 2rem;
+    background: var(--color-text);
+    opacity: 0.7;
+    -webkit-mask: center / 300px 24px no-repeat
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='24'%3E%3Cpath d='M4 14 Q40 3 76 14 T148 14 T220 14 T292 14' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+    mask: center / 300px 24px no-repeat
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='24'%3E%3Cpath d='M4 14 Q40 3 76 14 T148 14 T220 14 T292 14' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+  [data-theme~="journal"] hr[data-ornament="doodle"]::before { content: ""; }
+}
