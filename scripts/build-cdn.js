@@ -105,6 +105,7 @@ const CORE_THEME_IDS = new Set([
   'modern', 'minimal', 'classic',
 ]);
 const SHOWCASE_THEME_IDS = new Set([
+  'journal',
   'swiss', 'brutalist', 'art-deco', 'editorial',
   'genai', 'glassmorphism', 'startup',
   'organic', 'rough', 'cyber',
