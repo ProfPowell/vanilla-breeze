@@ -48,8 +48,8 @@ test('highlighter: <mark> uses a gradient; tints vary', async ({ page }) => {
 
 test('doodle divider: masked squiggle, not the literal attr text', async ({ page }) => {
   await mount(page, '<hr id="d" data-ornament="doodle">');
-  const mask =
-    (await css(page, '#d', 'mask-image')) || (await css(page, '#d', '-webkit-mask-image'));
+  // Chromium resolves `mask` to mask-image; the squiggle is a data-URI url().
+  const mask = await css(page, '#d', 'mask-image');
   expect(mask).toContain('url('); // a mask image (the squiggle), not text
   const before = await page.evaluate(
     () => getComputedStyle(document.querySelector('#d'), '::before').content
