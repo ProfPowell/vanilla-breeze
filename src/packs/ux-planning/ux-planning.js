@@ -23,8 +23,5 @@ import '../../web-components/kanban-board/logic.js';
 import '../../web-components/story-map/logic.js';
 import '../../web-components/review-surface/logic.js';
 import '../../web-components/gantt-chart/logic.js';
-import '../../web-components/glossary-wc/logic.js';
 import '../../web-components/work-item/logic.js';
 import '../../web-components/adr-wc/logic.js';
-import '../../web-components/flow-diagram/logic.js';
-import '../../web-components/diagram-wc/logic.js';
