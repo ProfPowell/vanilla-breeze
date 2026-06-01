@@ -43,8 +43,10 @@ const KEY = 'current';
 const DEFAULTS = { mode: 'auto', brand: 'default', accent: 'default', borderStyle: '', iconSet: '', fluid: '', backdrop: '', backdropChrome: '', pageBgType: '', pageBgColor: '', pageBgGradStart: '', pageBgGradEnd: '', pageBgGradDir: '' };
 
 /**
- * Resolve the brand to apply on init(). A stored user preference always wins;
- * otherwise honor a brand the page pinned via `<html data-theme="…">` (e.g.
+ * Resolve the brand to apply on init(). A stored user preference always wins
+ * (even a partial one without a `brand` resolves to the default, never falling
+ * through to the page); otherwise honor a brand the page pinned via
+ * `<html data-theme="…">` (e.g.
  * theme-showcase demos) so init() doesn't clobber it with the default;
  * otherwise fall back to the default brand. Pure (no DOM) for unit testing.
  *
