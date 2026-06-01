@@ -140,7 +140,6 @@ import './risk-register/logic.js';
 import './traceability-matrix/logic.js';
 import './burndown-chart/logic.js';
 import './product-roadmap/logic.js';
-import './site-map-wc/logic.js';
 import './adr-wc/logic.js';
 import './iron-triangle/logic.js';
 import './quality-target/logic.js';

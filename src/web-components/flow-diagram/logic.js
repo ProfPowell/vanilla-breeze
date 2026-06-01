@@ -165,7 +165,7 @@ class FlowDiagram extends VBElement {
   /**
    * Tear down and re-setup, wrapped in a View Transition so the swap
    * crossfades instead of flashing. Same pattern as diagram-wc and
-   * site-map-wc.
+   * site-map.
    */
   #refresh() {
     const swap = () => {

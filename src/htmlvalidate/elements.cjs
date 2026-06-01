@@ -1523,21 +1523,19 @@ module.exports = {
   },
 
   "site-map": {
-    attributes: {
-      "current": {},
-      "src": {},
-      "data-sitemap-controls": {}
-    }
-  },
-
-  "site-map-wc": {
     flow: true,
     permittedContent: ["nav"],
     attributes: {
-      "title": {},
+      "mode": {},
+      "current": {},
       "src": {},
+      "title": {},
       "collapsed": { boolean: true },
-      "compact": { boolean: true }
+      "compact": { boolean: true },
+      "data-view": {},
+      "data-orientation": {},
+      "data-detail": {},
+      "data-sitemap-controls": {}
     }
   },
 

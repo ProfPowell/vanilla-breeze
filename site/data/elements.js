@@ -256,7 +256,6 @@ const elementsByLetter = {
     { name: 'site-index', type: 'component', href: '/docs/elements/web-components/site-index/' },
     { name: 'site-legal', type: 'custom', href: '/docs/elements/custom-elements/site-legal/' },
     { name: 'site-map', type: 'component', href: '/docs/elements/web-components/site-map/' },
-    { name: 'site-map-wc', type: 'component', href: '/docs/elements/web-components/site-map-wc/' },
     { name: 'site-search', type: 'component', href: '/docs/elements/web-components/site-search/' },
     { name: 'site-tools', type: 'custom', href: '/docs/elements/custom-elements/site-tools/' },
     { name: 'social-embed', type: 'component', href: '/docs/elements/web-components/social-embed/' },
