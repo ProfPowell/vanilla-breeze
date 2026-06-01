@@ -147,6 +147,7 @@ export const SHOWCASE_THEMES = [
   { id: 'organic', name: 'Organic', icon: 'leaf', character: 'Natural, handcrafted', swatchBg: '#2d5016', swatchFg: '#faf5e6', tier: 'showcase', category: 'Creative' },
   { id: 'rough', name: 'Rough', icon: 'pencil', character: 'Hand-drawn sketch', swatchBg: '#f5f0e8', swatchFg: '#3a3a3a', tier: 'showcase', category: 'Creative' },
   { id: 'cyber', name: 'Cyber', icon: 'zap', character: 'Neon futuristic', swatchBg: '#0a0a1a', swatchFg: '#00ff88', tier: 'showcase', category: 'Creative' },
+  { id: 'journal', name: 'Journal', icon: 'notebook-pen', character: 'Dot-grid bullet journal', swatchBg: '#f3ecdc', swatchFg: '#27313f', tier: 'showcase', category: 'Creative' },
   // Aesthetic
   { id: 'vaporwave', name: 'Vaporwave', icon: 'radio', character: 'Neon dreamy', swatchBg: '#2b0040', swatchFg: '#ff6ad5', tier: 'showcase', category: 'Aesthetic' },
   { id: 'neumorphism', name: 'Neumorph', icon: 'circle', character: 'Soft embossed', swatchBg: '#e0e0e0', swatchFg: '#a0a0a0', tier: 'showcase', category: 'Aesthetic' },
