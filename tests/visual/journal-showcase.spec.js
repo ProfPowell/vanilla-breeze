@@ -69,9 +69,9 @@ test('cascade: recipes win under full VB; doodle overrides the base ornament', a
 test('wiring: the showcase page loads theme, pack, border-wc, rough filters, recipes', async () => {
   expect(pageHtml).toContain('data-theme="journal"');
   expect(pageHtml).toContain('/cdn/packs/journal.full.css');
-  expect(pageHtml).toContain('@profpowell/border-wc@0.2.0');
+  expect(pageHtml).toContain('@profpowell/border-wc@'); // wired (version-agnostic)
   expect(pageHtml).toContain('id="vb-rough-light"');
-  expect(pageHtml).toContain('filter: var(--filter-rough-light)');
+  expect(pageHtml).toContain('.jr-sketch { filter: var(--filter-rough-light)'); // the real style rule, not the doc <code>
   expect(pageHtml).toContain('data-journal="page"');
   expect(pageHtml).toContain('effect="washi"');
   expect(pageHtml).toContain('data-ornament="doodle"');
