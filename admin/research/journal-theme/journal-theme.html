@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journal — a bullet-journal theme exploration for Vanilla Breeze</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,600;0,700;1,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* palette tokens */
+    --paper: oklch(0.965 0.018 88);
+    --paper-edge: oklch(0.99 0.01 88);
+    --kraft: oklch(0.81 0.06 72);
+    --ink: oklch(0.32 0.045 262);      /* pen-ink blue-black */
+    --pencil: oklch(0.56 0.012 270);
+    --dot: oklch(0.8 0.018 250);
+    --margin: oklch(0.64 0.16 25);
+    --mint: oklch(0.86 0.09 160);
+    --blush: oklch(0.86 0.08 18);
+    --butter: oklch(0.91 0.1 96);
+    --sky: oklch(0.85 0.08 232);
+    --lilac: oklch(0.84 0.08 300);
+    --coral: oklch(0.79 0.13 36);
+    /* fonts */
+    --hand: "Shantell Sans", "Comic Sans MS", cursive;
+    --body: "Newsreader", Georgia, serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--body);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;
+    background: oklch(0.92 0.02 80);
+    background-image: radial-gradient(circle at 50% 0%, oklch(0.95 0.02 85), oklch(0.89 0.025 75));
+    min-height:100vh; padding:40px 18px 90px;}
+  body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");}
+
+  .lead{max-width:940px;margin:0 auto 26px;padding:0 6px;}
+  .lead .kick{font-family:var(--mono);font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--pencil);margin:0 0 8px;}
+  .lead h1{font-family:var(--hand);font-weight:700;font-size:clamp(2.2rem,6vw,3.6rem);margin:0 0 .25em;color:var(--ink);}
+  .lead p{margin:0;max-width:62ch;color:var(--pencil);font-size:1.05rem;}
+
+  /* ===== the notebook page ===== */
+  .journal{
+    position:relative; max-width:940px; margin:0 auto;
+    padding:56px 48px 64px 78px; border-radius:4px;
+    background:
+      radial-gradient(circle, var(--dot) 1.3px, transparent 1.7px) 8px 8px / 22px 22px,
+      var(--paper);
+    box-shadow: 0 1px 0 var(--paper-edge), 0 18px 44px -12px oklch(0.4 0.04 60 / .4), 0 6px 14px oklch(0.4 0.04 60/.2);
+  }
+  /* ring-bound holes + red margin */
+  .binding{position:absolute;left:0;top:0;bottom:0;width:46px;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;padding:26px 0;}
+  .binding i{width:12px;height:12px;border-radius:50%;background:oklch(0.88 0.02 80);
+    box-shadow: inset 0 2px 3px oklch(0.3 0.03 60/.45), 0 1px 0 var(--paper-edge);}
+  .margin{position:absolute;left:62px;top:0;bottom:0;width:0;border-left:1.5px solid var(--margin);opacity:.55;}
+  .margin::after{content:"";position:absolute;left:3px;top:0;bottom:0;border-left:1px solid var(--margin);opacity:.4;}
+
+  /* ribbon bookmark */
+  .ribbon{position:absolute;top:-6px;right:64px;width:26px;height:96px;background:var(--coral);
+    clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%);box-shadow:0 4px 8px rgba(0,0,0,.2);z-index:5;}
+
+  /* index tabs */
+  .tabs{position:absolute;top:120px;right:-10px;display:flex;flex-direction:column;gap:10px;z-index:4;}
+  .tabs b{font-family:var(--hand);font-weight:600;font-size:13px;color:oklch(0.32 0.04 262);
+    padding:7px 14px 7px 12px;border-radius:0 8px 8px 0;box-shadow:2px 2px 5px rgba(0,0,0,.16);transform:translateX(0);transition:transform .15s;}
+  .tabs b:hover{transform:translateX(6px);}
+  .tabs b:nth-child(1){background:var(--mint);} .tabs b:nth-child(2){background:var(--sky);}
+  .tabs b:nth-child(3){background:var(--blush);} .tabs b:nth-child(4){background:var(--butter);}
+
+  /* ===== washi tape ===== */
+  .washi{position:relative;display:inline-block;height:30px;width:140px;opacity:.86;mix-blend-mode:multiply;
+    box-shadow:0 2px 4px rgba(0,0,0,.16);
+    -webkit-mask:linear-gradient(90deg,transparent,#000 5px,#000 calc(100% - 5px),transparent);
+            mask:linear-gradient(90deg,transparent,#000 5px,#000 calc(100% - 5px),transparent);}
+  .washi.stripe{background:repeating-linear-gradient(45deg,var(--mint) 0 7px,oklch(0.93 0.05 160) 7px 14px);}
+  .washi.dot{background:var(--blush);background-image:radial-gradient(oklch(1 0 0/.7) 2px,transparent 2.6px);background-size:11px 11px;}
+  .washi.check{background:var(--sky);background-image:repeating-linear-gradient(0deg,oklch(1 0 0/.35) 0 5px,transparent 5px 10px),repeating-linear-gradient(90deg,oklch(1 0 0/.35) 0 5px,transparent 5px 10px);}
+  .washi.grid{background:var(--lilac);background-image:repeating-linear-gradient(0deg,oklch(0.4 0.04 300/.3) 0 1px,transparent 1px 9px),repeating-linear-gradient(90deg,oklch(0.4 0.04 300/.3) 0 1px,transparent 1px 9px);}
+  .washi.butter{background:repeating-linear-gradient(-45deg,var(--butter) 0 8px,oklch(0.94 0.06 96) 8px 16px);}
+  .washi.coral{background:var(--coral);background-image:radial-gradient(oklch(1 0 0/.55) 1.5px,transparent 2px);background-size:9px 9px;}
+  .tape-tl{position:absolute;top:-13px;left:40px;transform:rotate(-7deg);z-index:6;}
+  .tape-tr{position:absolute;top:-13px;right:120px;transform:rotate(5deg);z-index:6;}
+
+  /* ===== spread layout ===== */
+  .spread{display:flex;gap:36px;flex-wrap:wrap;align-items:flex-start;}
+  .colA{flex:1 1 330px;display:flex;flex-direction:column;gap:30px;min-width:0;}
+  .colB{flex:1 1 290px;display:flex;flex-direction:column;gap:30px;min-width:0;}
+
+  /* title */
+  .title{margin-bottom:6px;}
+  .title .month{font-family:var(--hand);font-weight:700;font-size:2.5rem;line-height:1;margin:0;}
+  .title .week{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--pencil);margin:6px 0 0;text-transform:uppercase;}
+  /* highlighter */
+  .hl{background:linear-gradient(transparent 8%, var(--hl,var(--butter)) 8% 86%, transparent 86%);
+    mix-blend-mode:multiply;padding:0 .12em;border-radius:2px;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone;}
+
+  .card{position:relative;}
+  .card h3{font-family:var(--hand);font-weight:700;font-size:1.4rem;margin:0 0 12px;}
+
+  /* rapid log */
+  .rapid{font-family:var(--hand);font-size:1.12rem;}
+  .rapid ul{list-style:none;margin:0;padding:0;}
+  .rapid li{display:flex;gap:10px;align-items:baseline;padding:5px 0;}
+  .rapid .b{flex:none;width:1.1em;color:var(--pencil);font-weight:700;text-align:center;}
+  .rapid li.done{color:var(--pencil);text-decoration:line-through;text-decoration-color:var(--coral);text-decoration-thickness:2px;}
+  .rapid li.cancel{color:oklch(0.7 0.01 270);text-decoration:line-through;}
+  .key{font-family:var(--mono);font-size:10.5px;color:var(--pencil);margin-top:14px;line-height:1.9;letter-spacing:.02em;border-top:1px dashed var(--dot);padding-top:10px;}
+  .key span{white-space:nowrap;margin-right:14px;}
+
+  /* habit tracker */
+  .tracker{background:oklch(0.99 0.008 88);padding:22px 20px 20px;border-radius:8px;}
+  .tracker table{border-collapse:collapse;width:100%;font-family:var(--hand);}
+  .tracker th{font-weight:600;font-size:11px;color:var(--pencil);font-family:var(--mono);padding:0 0 8px;letter-spacing:.06em;}
+  .tracker td{text-align:center;padding:4px 0;}
+  .tracker .lab{text-align:left;font-size:1.02rem;color:var(--ink);padding-right:8px;white-space:nowrap;}
+  .tracker .o{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid var(--dot);}
+  .tracker .o.f{background:var(--c,var(--mint));border-color:transparent;}
+
+  /* sticky note */
+  .sticky{position:relative;background:var(--butter);padding:20px 22px 24px;font-family:var(--hand);font-size:1.12rem;
+    transform:rotate(-2.2deg);box-shadow:0 8px 16px oklch(0.4 0.04 60/.2);
+    background-image:linear-gradient(180deg,oklch(1 1 1/.35),transparent 22%);}
+  .sticky::after{content:"";position:absolute;right:0;bottom:0;width:26px;height:26px;
+    clip-path:polygon(100% 0,100% 100%,0 100%);
+    background:linear-gradient(135deg,oklch(0.84 0.09 96),oklch(0.7 0.08 92));box-shadow:-2px -2px 5px rgba(0,0,0,.18);}
+  .sticky b{font-weight:700;}
+
+  /* taped polaroid */
+  .polaroid{position:relative;background:#fff;padding:11px 11px 40px;width:100%;max-width:240px;align-self:center;
+    transform:rotate(2.2deg);box-shadow:0 10px 20px oklch(0.4 0.04 60/.22);}
+  .polaroid .pic{display:block;width:100%;height:138px;border-radius:1px;overflow:hidden;}
+  .polaroid figcaption{font-family:var(--hand);font-size:1.05rem;text-align:center;margin-top:8px;color:var(--ink);}
+  .tape{position:absolute;width:62px;height:22px;background:oklch(0.92 0.04 200/.55);mix-blend-mode:multiply;
+    box-shadow:0 1px 2px rgba(0,0,0,.14);}
+  .tape.a{top:-9px;left:-14px;transform:rotate(-38deg);} .tape.b{top:-9px;right:-14px;transform:rotate(38deg);}
+
+  /* date stamp */
+  .stamp{position:absolute;top:8px;right:120px;transform:rotate(-11deg);font-family:var(--mono);font-weight:700;
+    font-size:11px;letter-spacing:.12em;color:var(--margin);border:2px solid var(--margin);border-radius:6px;
+    padding:6px 10px;opacity:.62;mix-blend-mode:multiply;text-align:center;line-height:1.25;z-index:3;}
+
+  /* doodle divider */
+  .doodle{margin:2px 0;}
+  .approach{max-width:940px;margin:46px auto 0;padding:30px 6px 0;border-top:2px dashed var(--dot);}
+  .approach h2{font-family:var(--hand);font-weight:700;font-size:1.7rem;margin:0 0 4px;}
+  .approach .intro{color:var(--pencil);max-width:64ch;margin:0 0 22px;}
+  .swatches{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 26px;}
+  .sw{font-family:var(--mono);font-size:10px;color:var(--pencil);text-align:center;}
+  .sw i{display:block;width:54px;height:38px;border-radius:6px;margin-bottom:5px;box-shadow:inset 0 0 0 1px oklch(0 0 0/.06);}
+  .maps{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+  .map{background:oklch(0.99 0.008 88);border:1px solid var(--dot);border-radius:10px;padding:14px 16px;}
+  .map .vb{font-family:var(--mono);font-size:11px;color:var(--margin);letter-spacing:.04em;}
+  .map .pc{font-family:var(--hand);font-weight:700;font-size:1.2rem;margin:2px 0 4px;}
+  .map .ds{font-family:var(--mono);font-size:10.5px;color:var(--pencil);}
+  footer{max-width:940px;margin:30px auto 0;padding:18px 6px 0;border-top:1px solid var(--dot);
+    font-family:var(--mono);font-size:12px;color:var(--pencil);line-height:1.7;}
+  footer a{color:var(--ink);}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+
+<div class="lead">
+  <p class="kick">decorated layers · theme exploration · vanilla breeze</p>
+  <h1>A journaling theme</h1>
+  <p>Dot-grid paper, washi tape, and a little handmade imperfection. The whole look is layers — a
+  surface, decorated edges, and soft physical depth — which is exactly what Decorated Layers is for.</p>
+</div>
+
+<div class="journal" id="journal">
+  <div class="binding"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="margin"></div>
+  <div class="ribbon"></div>
+  <div class="tabs"><b>plan</b><b>track</b><b>notes</b><b>ideas</b></div>
+
+  <span class="washi stripe tape-tl"></span>
+  <span class="washi dot tape-tr"></span>
+  <div class="stamp">MAY 29<br>2026</div>
+
+  <div class="title">
+    <p class="month">May <span class="hl" style="--hl:var(--mint)">’26</span></p>
+    <p class="week">week 22 · mon–sun · rapid log</p>
+  </div>
+
+  <div class="spread">
+    <!-- LEFT COLUMN -->
+    <div class="colA">
+      <section class="card rapid">
+        <h3>To-do &amp; log</h3>
+        <ul>
+          <li><span class="b">✗</span><span class="cancel" style="text-decoration:line-through">cancel old domain</span></li>
+          <li class="done"><span class="b">✓</span> ship border-wc notch fix</li>
+          <li><span class="b">•</span> draft <span class="hl" style="--hl:var(--butter)">shadow-wc</span> spec</li>
+          <li><span class="b">○</span> 3pm — design review</li>
+          <li><span class="b">&gt;</span> migrate vine effect to perimeter.js</li>
+          <li class="done"><span class="b">✓</span> water the monstera</li>
+          <li><span class="b">—</span> idea: container-query washi widths</li>
+        </ul>
+        <div class="key">
+          <span>• task</span><span>✓ done</span><span>✗ dropped</span><span>&gt; migrated</span><span>○ event</span><span>— note</span>
+        </div>
+      </section>
+
+      <!-- washi sample palette -->
+      <section class="card">
+        <h3>Washi swatches</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:8px 6px;">
+          <span class="washi stripe" style="transform:rotate(-2deg)"></span>
+          <span class="washi dot" style="transform:rotate(1.5deg)"></span>
+          <span class="washi check" style="transform:rotate(-1deg)"></span>
+          <span class="washi grid" style="transform:rotate(2deg)"></span>
+          <span class="washi butter" style="transform:rotate(-1.5deg)"></span>
+          <span class="washi coral" style="transform:rotate(1deg)"></span>
+        </div>
+      </section>
+
+      <!-- doodle divider -->
+      <div class="doodle" aria-hidden="true">
+        <svg viewBox="0 0 300 30" width="100%" height="26" fill="none" stroke="var(--pencil)" stroke-width="2" stroke-linecap="round">
+          <path d="M4 16 Q 40 4 76 16 T 148 16 T 220 16 T 292 16"/>
+          <circle cx="148" cy="16" r="3.2" fill="var(--coral)" stroke="none"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="colB">
+      <section class="card sketch" data-sketch="var(--pencil)" style="padding:0">
+        <div class="tracker">
+          <h3 style="margin:0 0 12px">Habits</h3>
+          <table>
+            <thead><tr><th class="lab"></th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th></tr></thead>
+            <tbody>
+              <tr><td class="lab">read</td><td><i class="o f" style="--c:var(--mint)"></i></td><td><i class="o f" style="--c:var(--mint)"></i></td><td><i class="o"></i></td><td><i class="o f" style="--c:var(--mint)"></i></td><td><i class="o f" style="--c:var(--mint)"></i></td><td><i class="o"></i></td><td><i class="o"></i></td></tr>
+              <tr><td class="lab">walk</td><td><i class="o f" style="--c:var(--sky)"></i></td><td><i class="o f" style="--c:var(--sky)"></i></td><td><i class="o f" style="--c:var(--sky)"></i></td><td><i class="o f" style="--c:var(--sky)"></i></td><td><i class="o"></i></td><td><i class="o f" style="--c:var(--sky)"></i></td><td><i class="o f" style="--c:var(--sky)"></i></td></tr>
+              <tr><td class="lab">water</td><td><i class="o f" style="--c:var(--coral)"></i></td><td><i class="o"></i></td><td><i class="o f" style="--c:var(--coral)"></i></td><td><i class="o f" style="--c:var(--coral)"></i></td><td><i class="o f" style="--c:var(--coral)"></i></td><td><i class="o"></i></td><td><i class="o f" style="--c:var(--coral)"></i></td></tr>
+              <tr><td class="lab">sleep 8h</td><td><i class="o"></i></td><td><i class="o f" style="--c:var(--lilac)"></i></td><td><i class="o f" style="--c:var(--lilac)"></i></td><td><i class="o"></i></td><td><i class="o f" style="--c:var(--lilac)"></i></td><td><i class="o f" style="--c:var(--lilac)"></i></td><td><i class="o f" style="--c:var(--lilac)"></i></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="sticky">
+        <b>note to self —</b><br>the imperfection <span class="hl" style="--hl:var(--coral)">is</span> the feature. tiny rotations &amp; jitter = warmth.
+      </section>
+
+      <figure class="polaroid">
+        <span class="tape a"></span><span class="tape b"></span>
+        <span class="pic" aria-hidden="true">
+          <svg viewBox="0 0 240 138" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+            <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="oklch(0.86 0.08 232)"/><stop offset="1" stop-color="oklch(0.93 0.06 90)"/></linearGradient></defs>
+            <rect width="240" height="138" fill="url(#sky)"/>
+            <circle cx="186" cy="40" r="18" fill="oklch(0.92 0.12 92)"/>
+            <path d="M0 104 Q60 70 120 96 T240 88 V138 H0 Z" fill="oklch(0.72 0.1 150)"/>
+            <path d="M0 120 Q70 96 140 116 T240 110 V138 H0 Z" fill="oklch(0.6 0.11 155)"/>
+          </svg>
+        </span>
+        <figcaption>golden hour ☀</figcaption>
+      </figure>
+    </div>
+  </div>
+</div>
+
+<!-- ===== design approach ===== -->
+<section class="approach">
+  <h2>How it maps to Vanilla Breeze</h2>
+  <p class="intro">A journaling theme isn’t a skin — it’s a stack. Each element is a surface, an edge,
+  and a shadow, composed from the Decorated Layers family. The pieces above are all standard components
+  wearing journal tokens.</p>
+
+  <div class="swatches">
+    <div class="sw"><i style="background:var(--paper)"></i>--paper</div>
+    <div class="sw"><i style="background:var(--kraft)"></i>--kraft</div>
+    <div class="sw"><i style="background:var(--ink)"></i>--ink</div>
+    <div class="sw"><i style="background:var(--pencil)"></i>--pencil</div>
+    <div class="sw"><i style="background:var(--mint)"></i>--mint</div>
+    <div class="sw"><i style="background:var(--blush)"></i>--blush</div>
+    <div class="sw"><i style="background:var(--butter)"></i>--butter</div>
+    <div class="sw"><i style="background:var(--sky)"></i>--sky</div>
+    <div class="sw"><i style="background:var(--lilac)"></i>--lilac</div>
+    <div class="sw"><i style="background:var(--coral)"></i>--coral</div>
+    <div class="sw"><i style="background:var(--margin)"></i>--margin</div>
+  </div>
+
+  <div class="maps">
+    <div class="map"><div class="vb">bg-wc · surface</div><div class="pc">Dot grid</div><div class="ds">radial-gradient tile · also ruled / grid / kraft</div></div>
+    <div class="map"><div class="vb">border-wc · edge</div><div class="pc">Washi tape</div><div class="ds">pattern + multiply blend + masked torn ends</div></div>
+    <div class="map"><div class="vb">border-wc · edge</div><div class="pc">Sketch box</div><div class="ds">feDisplacementMap on a traced rect (hand-drawn)</div></div>
+    <div class="map"><div class="vb">card</div><div class="pc">Sticky note</div><div class="ds">tint + rotate + curl shadow (callout variant)</div></div>
+    <div class="map"><div class="vb">figure</div><div class="pc">Taped photo</div><div class="ds">white frame + tape corners + lift shadow</div></div>
+    <div class="map"><div class="vb">list</div><div class="pc">Rapid log</div><div class="ds">bullet-key glyphs + strike states + highlight</div></div>
+    <div class="map"><div class="vb">nav / aside</div><div class="pc">Index tabs</div><div class="ds">asymmetric radius + hover slide</div></div>
+    <div class="map"><div class="vb">mark / hr</div><div class="pc">Highlighter &amp; doodles</div><div class="ds">multiply gradient mark · SVG divider strokes</div></div>
+  </div>
+</section>
+
+<footer>
+  <strong>Design approach.</strong> Everything is pure-CSS surface + one decorative layer; the only JS is the
+  sketch-border (an SVG <code>feDisplacementMap</code> on a traced rect). Washi uses
+  <code>mix-blend-mode: multiply</code> so it tints whatever it crosses, like real translucent tape.
+  Imperfection is intentional — small <code>rotate()</code> values and jitter read as handmade. Motion is
+  avoided by design (a journal sits still); only tabs/photos lift on hover, and that’s disabled under
+  <code>prefers-reduced-motion</code>. — exploration for
+  <a href="https://github.com/ProfPowell/border-wc">ProfPowell/border-wc</a> &amp; vanilla-breeze.
+</footer>
+
+<script type="module">
+/* the only scripted layer: a hand-drawn "sketch" border (border-wc style) */
+const SVGNS='http://www.w3.org/2000/svg';
+let UID=0;
+function S(t,a={}){const e=document.createElementNS(SVGNS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function rrPath(w,h,r,inset=0){w-=inset*2;h-=inset*2;r=Math.max(0,Math.min(r,w/2,h/2));const o=inset;
+  return `M${o+r} ${o} H${o+w-r} A${r} ${r} 0 0 1 ${o+w} ${o+r} V${o+h-r} A${r} ${r} 0 0 1 ${o+w-r} ${o+h} H${o+r} A${r} ${r} 0 0 1 ${o} ${o+h-r} V${o+r} A${r} ${r} 0 0 1 ${o+r} ${o} Z`;}
+function sketchBorder(host){
+  if(getComputedStyle(host).position==='static') host.style.position='relative';
+  const color=host.dataset.sketch||'currentColor';
+  const svg=S('svg',{width:'100%',height:'100%'});
+  Object.assign(svg.style,{position:'absolute',inset:'0',overflow:'visible',pointerEvents:'none'});
+  host.appendChild(svg);
+  const id='sk'+(++UID);
+  const defs=S('defs');const f=S('filter',{id,x:'-10%',y:'-10%',width:'120%',height:'120%'});
+  f.appendChild(S('feTurbulence',{type:'fractalNoise',baseFrequency:'0.028',numOctaves:'2',result:'n'}));
+  f.appendChild(S('feDisplacementMap',{in:'SourceGraphic',in2:'n',scale:'3.2'}));
+  defs.appendChild(f);svg.appendChild(defs);
+  const g=S('g',{filter:`url(#${id})`});svg.appendChild(g);
+  const fit=()=>{[...g.childNodes].forEach(n=>n.remove());
+    const r=host.getBoundingClientRect();const rad=parseFloat(getComputedStyle(host).borderTopLeftRadius)||8;
+    const d=rrPath(r.width,r.height,rad,2.5);
+    g.appendChild(S('path',{d,fill:'none',stroke:color,'stroke-width':1.8,'stroke-linecap':'round'}));
+    g.appendChild(S('path',{d,fill:'none',stroke:color,'stroke-width':1,opacity:.5,transform:'translate(1.2 0.8)'}));
+  };
+  fit();new ResizeObserver(fit).observe(host);
+}
+document.querySelectorAll('.sketch').forEach(sketchBorder);
+</script>
+</body>
+</html>
