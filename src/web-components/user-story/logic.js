@@ -290,6 +290,16 @@ class UserStory extends HTMLElement {
     return persona.getAttribute('role')?.trim() || '';
   }
 
+  /**
+   * Indefinite article ("a" / "an") for the persona role so the statement
+   * reads naturally — "As an Analyst", "As a Product Manager". Simple
+   * vowel-start heuristic (excludes "u", which usually sounds like "you":
+   * "a user"). Falls back to "a".
+   */
+  #personaArticle() {
+    return /^[aeio]/i.test(this.persona.trim()) ? 'an' : 'a';
+  }
+
   /** Read action from slotted element or cache */
   get action() {
     const slotted = this.querySelector('[slot="action"]');
@@ -468,7 +478,7 @@ class UserStory extends HTMLElement {
 
           <div class="story-body" part="body">
             <p class="story-statement" part="statement">
-              <span class="keyword">As a</span>
+              <span class="keyword">As ${this.#personaArticle()}</span>
               ${this.personaId
                 ? `<a class="persona-text persona-text--link" href="#${esc(this.personaId)}">${lucideSvg(UX_ICONS.user)} <slot name="persona"><span>${esc(this.#linkedPersonaRole() || 'user')}</span></slot></a>`
                 : `<span class="persona-text"><slot name="persona"><span>user</span></slot></span>`},
