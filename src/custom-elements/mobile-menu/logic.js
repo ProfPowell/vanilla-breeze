@@ -46,7 +46,9 @@ class MobileMenu extends HTMLElement {
     if (header) {
       for (const sibling of header.children) {
         if (sibling === this) continue;
-        if (sibling.matches('nav, site-tools')) {
+        // `nav-bar` is the primary-nav wrapper; without it here the desktop nav
+        // stays visible on mobile when authors wrap <nav> in <nav-bar>.
+        if (sibling.matches('nav, nav-bar, site-tools')) {
           /** @type {HTMLElement} */ (sibling).style.display = mobile ? 'none' : '';
         }
       }
