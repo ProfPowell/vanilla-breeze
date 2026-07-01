@@ -1,0 +1,28 @@
+/* src/custom-elements/icon-attributes.css
+   [data-icon] — terse, native single-icon primitive (sibling of <icon-wc>).
+   The enhancer (src/web-components/icon-wc/enhance-data-icon.js) or a generated
+   per-set stylesheet sets --vb-icon to the SVG url; the browser loads it as a
+   CSS mask, tinted by currentColor. Monochrome only; multi-color -> <icon-wc>. */
+
+@property --vb-icon {
+  syntax: "<image>";
+  /* Must inherit: the enhancer/generated CSS sets --vb-icon on the host
+     element (e.g. <i data-icon>), and [data-icon]::before reads it via
+     var(). Pseudo-elements only see a custom property set on their
+     originating element when the property inherits; inherits:false would
+     make ::before always fall back to the initial value below. */
+  inherits: true;
+  /* Empty SVG: an unresolved icon masks to nothing (invisible), never a solid square. */
+  initial-value: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22/%3E');
+}
+
+[data-icon]::before {
+  content: "";
+  display: inline-block;
+  inline-size: 1em;
+  block-size: 1em;
+  vertical-align: -0.125em;
+  background-color: currentColor;
+  -webkit-mask: var(--vb-icon) no-repeat center / contain;
+          mask: var(--vb-icon) no-repeat center / contain;
+}
