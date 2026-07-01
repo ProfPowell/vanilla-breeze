@@ -111,10 +111,13 @@ test.describe('[data-icon] enhancer', () => {
 
   test('nested [data-icon] without its own name does not inherit ancestor icon', async ({ page: p }) => {
     // Sets outer's --vb-icon directly (not via the enhancer) so this proves the
-    // CSS guard alone, independent of whether the enhancer has run.
+    // CSS guard alone, independent of whether the enhancer has run. Inner uses
+    // a non-empty (but unresolved, since the enhancer isn't loaded on this
+    // page) icon name -- a bare/empty data-icon is the boolean-marker case
+    // and is intentionally excluded from the icon rules altogether.
     const nestedPage = `<!doctype html><html data-icon-path="/cdn/icons"><head>
 <link rel="stylesheet" href="/src/main.css"></head><body>
-<i id="outer" data-icon="star" style="--vb-icon:url('/cdn/icons/lucide/star.svg')"><i id="inner" data-icon="" style="display:inline-block"></i></i>
+<i id="outer" data-icon="star" style="--vb-icon:url('/cdn/icons/lucide/star.svg')"><i id="inner" data-icon="pending" style="display:inline-block"></i></i>
 </body></html>`;
     await p.route('**/nested.html', r => r.fulfill({ contentType: 'text/html', body: nestedPage }));
     await p.goto('https://vb.test/nested.html');
@@ -122,5 +125,44 @@ test.describe('[data-icon] enhancer', () => {
       (getComputedStyle(el, '::before').maskImage || getComputedStyle(el, '::before').webkitMaskImage));
     expect(mask).not.toContain('star.svg');
     expect(mask).toContain('svg');
+  });
+});
+
+/**
+ * Bare/empty `data-icon` marker collision (selector-collision fix).
+ * `data-icon` is also used elsewhere as a boolean marker attribute with an
+ * empty value (e.g. status-message's icon slot: `& > [data-icon]` matched
+ * against `<icon-wc data-icon>`). The icon rules in icon-attributes.css must
+ * only paint a ::before box when data-icon has a non-empty value, otherwise
+ * every bare marker gets an invisible-but-1em-wide generated box that shifts
+ * layout.
+ */
+const collisionPage = `<!doctype html><html><head>
+<link rel="stylesheet" href="/src/main.css"></head><body>
+<span id="bare-no-value" data-icon></span>
+<span id="bare-empty-value" data-icon=""></span>
+<i id="valued" data-icon="star" style="--vb-icon:url('/cdn/icons/lucide/star.svg')"></i>
+</body></html>`;
+
+test.describe('[data-icon] bare marker does not collide with icon rules', () => {
+  test('bare data-icon (no value) generates no ::before content', async ({ page: p }) => {
+    await p.route('**/collision.html', r => r.fulfill({ contentType: 'text/html', body: collisionPage }));
+    await p.goto('https://vb.test/collision.html');
+    const content = await p.locator('#bare-no-value').evaluate((el) => getComputedStyle(el, '::before').content);
+    expect(content).toBe('none');
+  });
+
+  test('empty data-icon="" generates no ::before content', async ({ page: p }) => {
+    await p.route('**/collision.html', r => r.fulfill({ contentType: 'text/html', body: collisionPage }));
+    await p.goto('https://vb.test/collision.html');
+    const content = await p.locator('#bare-empty-value').evaluate((el) => getComputedStyle(el, '::before').content);
+    expect(content).toBe('none');
+  });
+
+  test('valued data-icon="star" still generates a ::before box', async ({ page: p }) => {
+    await p.route('**/collision.html', r => r.fulfill({ contentType: 'text/html', body: collisionPage }));
+    await p.goto('https://vb.test/collision.html');
+    const content = await p.locator('#valued').evaluate((el) => getComputedStyle(el, '::before').content);
+    expect(content).toBe('""');
   });
 });

@@ -16,7 +16,12 @@
   initial-value: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22/%3E');
 }
 
-[data-icon] {
+/* data-icon is also used elsewhere as a bare boolean marker attribute (empty
+   value), e.g. status-message's icon slot (`& > [data-icon]`) matched against
+   `<icon-wc data-icon>`). Excluding [data-icon=""] keeps the icon reset/paint
+   rules scoped to hosts with an actual icon name, so bare markers don't get
+   an invisible-but-1em-wide generated ::before box that shifts layout. */
+[data-icon]:not([data-icon=""]) {
   /* Guard against icon bleed: @property --vb-icon is inherits:true (required
      so ::before can read it), which means a nested [data-icon] host with no
      explicit icon of its own would otherwise inherit an ancestor's --vb-icon
@@ -26,7 +31,7 @@
   --vb-icon: initial;
 }
 
-[data-icon]::before {
+[data-icon]:not([data-icon=""])::before {
   content: "";
   display: inline-block;
   inline-size: 1em;
