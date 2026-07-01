@@ -4,17 +4,12 @@
    per-set stylesheet sets --vb-icon to the SVG url; the browser loads it as a
    CSS mask, tinted by currentColor. Monochrome only; multi-color -> <icon-wc>. */
 
-@property --vb-icon {
-  syntax: "<image>";
-  /* Must inherit: the enhancer/generated CSS sets --vb-icon on the host
-     element (e.g. <i data-icon>), and [data-icon]::before reads it via
-     var(). Pseudo-elements only see a custom property set on their
-     originating element when the property inherits; inherits:false would
-     make ::before always fall back to the initial value below. */
-  inherits: true;
-  /* Empty SVG: an unresolved icon masks to nothing (invisible), never a solid square. */
-  initial-value: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22/%3E');
-}
+/* @property --vb-icon is registered at top level in src/main.css (with the
+   framework's other @property declarations) — NOT here, because this file is
+   imported via layer(custom-elements) and @property is ignored inside a
+   cascade layer. In the esbuild-bundled dist, a layered @property can be
+   dropped, leaving [data-icon] with an invalid <image> -> mask "none" -> a
+   solid currentColor square FOUC. See src/main.css for the registration. */
 
 /* data-icon is also used elsewhere as a bare boolean marker attribute (empty
    value), e.g. status-message's icon slot (`& > [data-icon]`) matched against
@@ -36,7 +31,7 @@
   display: inline-block;
   inline-size: 1em;
   block-size: 1em;
-  vertical-align: -0.125em;
+  vertical-align: -0.125em; /* optical baseline nudge */
   background-color: currentColor;
   -webkit-mask: var(--vb-icon) no-repeat center / contain;
           mask: var(--vb-icon) no-repeat center / contain;

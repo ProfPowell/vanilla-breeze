@@ -3,7 +3,10 @@
  * Kept DOM-light so it is unit-testable without a browser.
  */
 
-/** @param {{basePath:string,set:string,name:string}} p */
+/**
+ * @param {{basePath:string,set:string,name:string}} p
+ * @returns {string}
+ */
 export function buildIconUrl({ basePath, set, name }) {
   return `${basePath}/${set}/${name}.svg`;
 }

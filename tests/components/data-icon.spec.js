@@ -46,6 +46,34 @@ test.describe('[data-icon] CSS rule', () => {
 });
 
 /**
+ * No-JS generated-stylesheet path (Important #2 of the whole-feature review).
+ * The generated per-set stylesheet (scripts/gen-icon-css.js output) only wins
+ * over the layered `[data-icon]:not([data-icon=""]) { --vb-icon: initial; }`
+ * reset because it is linked UNLAYERED: unlayered CSS always beats layered
+ * CSS regardless of specificity. This reproduces that page shape directly
+ * (an unlayered <style> after main.css) WITHOUT loading the enhancer script,
+ * proving the no-JS guarantee holds on CSS alone.
+ */
+const noJsPage = `<!doctype html><html data-icon-path="/cdn/icons"><head>
+<link rel="stylesheet" href="/src/main.css">
+<style>[data-icon="star"]{--vb-icon:url("/cdn/icons/lucide/star.svg")}</style>
+</head><body>
+<i id="star" data-icon="star"></i>
+</body></html>`;
+
+test.describe('[data-icon] no-JS generated stylesheet path', () => {
+  test('unlayered generated rule wins over the layered --vb-icon:initial reset, with no enhancer loaded', async ({ page: p }) => {
+    await p.route('**/nojs.html', r => r.fulfill({ contentType: 'text/html', body: noJsPage }));
+    await p.goto('https://vb.test/nojs.html');
+    const mask = await p.locator('#star').evaluate((el) => {
+      const cs = getComputedStyle(el, '::before');
+      return cs.maskImage || cs.webkitMaskImage;
+    });
+    expect(mask).toContain('star.svg');
+  });
+});
+
+/**
  * [data-icon] enhancer (Task 3 of the icon architecture).
  * Loads the real icon-wc.js bundle (core-loaded) and asserts it sets
  * --vb-icon on every [data-icon] element, without fetching/injecting SVG.
@@ -107,6 +135,24 @@ test.describe('[data-icon] enhancer', () => {
       return el.style.getPropertyValue('--vb-icon');
     });
     expect(after).toBe('');
+  });
+
+  test('live data-icon-set switch on <html> re-resolves descendants', async ({ page: p }) => {
+    const setSwitchPage = `<!doctype html><html data-icon-path="/cdn/icons" data-icon-set="lucide"><head>
+<link rel="stylesheet" href="/src/main.css">
+<script type="module" src="/src/web-components/icon-wc/icon-wc.js"></script></head><body>
+<i id="s" data-icon="star"></i>
+</body></html>`;
+    await p.route('**/setswitch.html', r => r.fulfill({ contentType: 'text/html', body: setSwitchPage }));
+    await p.goto('https://vb.test/setswitch.html');
+    const before = await p.locator('#s').evaluate(el => el.style.getPropertyValue('--vb-icon'));
+    expect(before).toContain('lucide/star.svg');
+    const after = await p.evaluate(async () => {
+      document.documentElement.setAttribute('data-icon-set', 'tabler');
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return document.getElementById('s').style.getPropertyValue('--vb-icon');
+    });
+    expect(after).toContain('tabler/star.svg');
   });
 
   test('nested [data-icon] without its own name does not inherit ancestor icon', async ({ page: p }) => {
