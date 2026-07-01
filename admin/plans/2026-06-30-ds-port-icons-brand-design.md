@@ -84,10 +84,18 @@ VB has 135 web-components. Design-system-shaped set:
     sets `--vb-icon: url(/cdn/icons/{set}/{name}.svg)` on each `[data-icon]` element. It does
     **not** fetch or inject SVG — the browser loads the SVG as a CSS mask resource. Observes DOM
     additions (MutationObserver) like `icon-wc`.
-  - **No-JS path:** a build-generated `icons.core.css` ships `[data-icon="check"]{--vb-icon:url(…)}`
-    rules for the ~40 highest-use icons (from usage data: `check`, `x`, `star`, `users`, `home`,
-    `search`, `file-text`, `palette`, `settings`, `heart`, …), so the icons that dominate pages
-    paint with **zero JS**. The enhancer covers the long tail.
+  - **No-JS path:** build-generated **per-set** stylesheets (`icons.lucide.css`, `icons.phosphor.css`,
+    …) ship a `--vb-icon` rule for **every** icon in the set — we can't predict which icons a given
+    site uses, so we generate the full set rather than a curated subset. A site opts into the
+    stylesheet(s) for the set(s) it uses (default `lucide`); every icon in an included set then
+    paints with **zero JS**. Rules are **set-scoped** so overrides work:
+    `[data-icon="star"]{--vb-icon:url(/cdn/icons/lucide/star.svg)}` for the default set, and
+    `[data-icon-set="phosphor"] [data-icon="star"], [data-icon-set="phosphor"][data-icon="star"]{…}`
+    for non-default sets (covers both the inherited `<html data-icon-set>` and per-element cases).
+    The JS enhancer stays as the **zero-config default and fallback** — it resolves any icon/set on
+    demand (including dynamic name changes and sets whose stylesheet isn't loaded) by setting
+    `--vb-icon` directly. Gzip compresses the repetitive per-set CSS well; the stylesheets are
+    opt-in per set so a site never pays for sets it doesn't use.
   - **Scope:** monochrome only (mask + currentColor). Multi-color/duotone or runtime name-swaps
     keep using `icon-wc`.
   - **A11y:** decorative by default (CSS `::before` content is not exposed to AT). Functional
@@ -155,19 +163,25 @@ Consume VB tokens via CSS custom-property inheritance; hardcode fallbacks. `pale
 
 ## Sequencing (implementation plans)
 
-Likely two plans, landable independently:
+Two plans; **land order chosen for expediency** (we are midstream and want to finish soon):
 
-1. **VB-core icon architecture** — `[data-icon]` CSS rule, the enhancer, generated `icons.core.css`,
-   docs, and tests. Pure core addition; no dependency on the DS package.
-2. **DS package growth** — port the 8, create the 3 new specimens (icon-set, icon-specimen,
-   brand-specimen), doc pages, and peer-dependency notes. `icon-set`/`icon-specimen` can use the
-   new `[data-icon]` mechanism once (1) lands, but can fall back to `icon-wc` if built first.
+1. **VB-core icon architecture (first)** — `[data-icon]` CSS rule, the enhancer, the generated
+   per-set stylesheets, docs, and tests. Small, self-contained core addition with no dependency on
+   the DS package, and it unblocks `icon-set`/`icon-specimen` to render via `[data-icon]`. Fast win.
+2. **DS package growth (second)** — port the 8, create the 3 new specimens (icon-set,
+   icon-specimen, brand-specimen), doc pages, and peer-dependency notes.
+
+The two are independent enough to run in parallel if capacity allows; if DS growth starts first,
+`icon-set`/`icon-specimen` fall back to `icon-wc` until plan 1 lands. Optimize for throughput, not
+strict serialization.
 
 ## Acceptance criteria
 
 - **Icons (core):** `<i data-icon="star">` renders the icon tinted with `currentColor`, sized in
   `em`, on `<i>`/`<span>`/`<button>` (with text); `data-icon-set` (element + global) switches sets;
-  the ~40 core icons render with JS disabled; `icon-wc` still works unchanged; docs page added.
+  with a set's generated stylesheet loaded, **any** icon in that set renders with JS disabled;
+  the enhancer resolves icons for sets whose stylesheet isn't loaded; `icon-wc` still works
+  unchanged; docs page added.
 - **DS port:** all 8 ported components register from the package barrel, are exported by subpath,
   have doc pages + demos, and render themed against VB tokens with no VB build coupling;
   `semantic-palette` uses the ported `palette-generator` (no vendored utils); `color-picker` noted
@@ -178,13 +192,14 @@ Likely two plans, landable independently:
 
 ## Non-goals / YAGNI
 
-- No `<use>`-sprite or fully-generated per-icon stylesheet (rejected in favor of the hybrid).
+- No `<use>`-sprite mechanism (rejected in favor of the mask hybrid).
 - No `<app-brand>` split (single `brand-mark` primitive is sufficient).
 - No multi-color support for `[data-icon]` (use `icon-wc`).
 - No `data-icon-after` variant unless a real need appears.
+- Generated per-set stylesheets are **opt-in per set**; VB does not ship all sets' icon CSS by
+  default (that would be large) — the enhancer is the zero-config default.
 
 ## Open questions
 
-- Final size of the `icons.core.css` no-JS set (start ~40 by usage frequency; tune later).
 - Whether `icon-specimen` and `icon-set` share a base module or are independent (decide during
   implementation).
