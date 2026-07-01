@@ -482,7 +482,9 @@ function main() {
     if (!names.length) continue;
     const css = generateSetCss(set, names, { isDefault: set === DEFAULT_SET });
     writeFileSync(join(iconsRoot, `${set}.css`), css);
-    console.log(`icons: ${set}.css (${names.length} icons)`);
+    // Also emit a names manifest so DS's <icon-set> catalog can list the set.
+    writeFileSync(join(iconsRoot, `${set}.json`), JSON.stringify([...names].sort()));
+    console.log(`icons: ${set}.css + ${set}.json (${names.length} icons)`);
   }
 }
 
@@ -541,8 +543,8 @@ Expected: a `[data-icon-set="phosphor"] [data-icon="star"],…` scoped rule.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add package.json dist/cdn/icons/*.css
-git commit -m "build(icons): generate per-set [data-icon] stylesheets in CDN build"
+git add package.json dist/cdn/icons/*.css dist/cdn/icons/*.json
+git commit -m "build(icons): generate per-set [data-icon] stylesheets + name manifests"
 ```
 
 ---
