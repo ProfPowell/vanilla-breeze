@@ -90,6 +90,25 @@ test.describe('[data-icon] enhancer', () => {
     expect(val).toContain('/cdn/icons/lucide/search.svg');
   });
 
+  test('live data-icon mutation to empty clears stale --vb-icon', async ({ page: p }) => {
+    const mutPage = `<!doctype html><html data-icon-path="/cdn/icons"><head>
+<link rel="stylesheet" href="/src/main.css">
+<script type="module" src="/src/web-components/icon-wc/icon-wc.js"></script></head><body>
+<i id="m" data-icon="star"></i>
+</body></html>`;
+    await p.route('**/mut.html', r => r.fulfill({ contentType: 'text/html', body: mutPage }));
+    await p.goto('https://vb.test/mut.html');
+    const before = await p.locator('#m').evaluate(el => el.style.getPropertyValue('--vb-icon'));
+    expect(before).toContain('/cdn/icons/lucide/star.svg');
+    const after = await p.evaluate(async () => {
+      const el = document.getElementById('m');
+      el.setAttribute('data-icon', '');
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return el.style.getPropertyValue('--vb-icon');
+    });
+    expect(after).toBe('');
+  });
+
   test('nested [data-icon] without its own name does not inherit ancestor icon', async ({ page: p }) => {
     // Sets outer's --vb-icon directly (not via the enhancer) so this proves the
     // CSS guard alone, independent of whether the enhancer has run.

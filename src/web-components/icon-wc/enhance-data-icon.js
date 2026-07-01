@@ -9,7 +9,7 @@ import { buildIconUrl, resolveIconSet, resolveIconBase } from '../../lib/icon-ur
 /** @param {Element} el */
 function enhance(el) {
   const name = el.getAttribute('data-icon');
-  if (!name) return;
+  if (!name) { /** @type {HTMLElement} */ (el).style.removeProperty('--vb-icon'); return; }
   const url = buildIconUrl({
     basePath: resolveIconBase(document),
     set: resolveIconSet(el, document),
