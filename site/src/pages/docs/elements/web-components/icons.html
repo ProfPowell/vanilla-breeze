@@ -29,6 +29,46 @@ crumbLabel: Web Components
   </section>
 
   <section>
+    <h2>The <code>[data-icon]</code> Primitive</h2>
+    <p>For a single monochrome icon, <code>[data-icon]</code> is a terser alternative to <code>&lt;icon-wc&gt;</code>. Add it to a native <code>&lt;i&gt;</code>, <code>&lt;span&gt;</code>, or <code>&lt;button&gt;</code> and set the value to an icon name — no wrapper element required. A core-loaded enhancer sets a <code>--vb-icon</code> custom property, which a CSS <code>::before</code> mask renders in <code>currentColor</code>.</p>
+
+    <browser-window
+      src="/docs/examples/demos/data-icon-basic.html"
+      url="https://vanilla-breeze.dev/data-icon"
+      title="[data-icon] Demo"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic [data-icon] usage" data-escape><i data-icon="star" aria-hidden="true"></i>
+<span data-icon="home" aria-hidden="true"></span>
+
+<!-- Icon coexists with text via ::before — no wrapper markup needed -->
+<button type="button" data-icon="x">Close</button></code-block>
+
+    <h3>Sizing</h3>
+    <p>The icon is sized <code>1em</code>, so it scales with the element's <code>font-size</code>. There is no <code>size</code> attribute — set <code>font-size</code> instead.</p>
+
+    <code-block language="html" show-lines label="Sizing via font-size" data-escape><i data-icon="star" style="font-size: 2rem;" aria-hidden="true"></i></code-block>
+
+    <h3>Switching Icon Sets</h3>
+    <p>Set <code>data-icon-set</code> on the element itself, on an ancestor, or on <code>&lt;html&gt;</code> to change the icon set for every <code>[data-icon]</code> beneath it. Resolution checks the element first, then the nearest ancestor, then <code>&lt;html data-icon-set&gt;</code>, falling back to <code>lucide</code>.</p>
+
+    <code-block language="html" show-lines label="Per-element and document-wide icon set" data-escape><!-- Override on a single icon -->
+<span data-icon="star" data-icon-set="tabler" aria-hidden="true"></span>
+
+<!-- Set the default for the whole document -->
+<html lang="en" data-icon-set="tabler"></code-block>
+
+    <aside class="note">
+      <strong>No-JS path:</strong> Every icon set also ships a generated, zero-JS stylesheet at <code>/cdn/icons/&lt;set&gt;.css</code> (for example <code>/cdn/icons/lucide.css</code>). It contains one rule per icon name (<code>[data-icon="star"]{--vb-icon:url(...)}</code>), so linking it renders every <code>[data-icon]</code> in that set correctly even with JavaScript disabled.
+    </aside>
+
+    <aside class="note">
+      <strong>When to use <code>&lt;icon-wc&gt;</code> instead:</strong> <code>[data-icon]</code> is monochrome only — the mask is tinted a single <code>currentColor</code>. Reach for <code>&lt;icon-wc&gt;</code> when an icon needs multiple colors or a duotone treatment, or when the icon name changes at runtime and you want a component API (<code>icon.setAttribute('name', ...)</code>) rather than re-authoring a <code>data-icon</code> value by hand.
+    </aside>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
