@@ -4,7 +4,12 @@ ul, ol {
   padding-inline-start: var(--size-l);
 }
 
-li + li {
+/* Flow spacing for stacked (block-flow) list items. Wrapped in :where() so it
+   is a zero-specificity default: any list laid out horizontally (flex) or as a
+   grid can override it with a single class, and VB's own layout primitives
+   reset it below. Without this, the vertical margin misfires as a cross-axis
+   offset in flex-row / grid lists (e.g. the first item appears shifted). */
+:where(li + li) {
   margin-block-start: var(--size-xs);
 }
 
@@ -58,8 +63,11 @@ ol.unstyled {
   }
 }
 
-/* Grid lists - gap handles spacing, not margins */
-[data-layout="grid"] > li {
+/* Layout-primitive lists (stack, cluster, grid, sidebar, switcher, …) all use
+   `gap` for spacing, so the block-flow li margin must not apply — it would
+   either double the gap (stack) or offset items on the cross axis (cluster,
+   grid). Reset it for any list that is itself a VB layout primitive. */
+:where([data-layout]) > li {
   margin-block-start: 0;
 }
 
