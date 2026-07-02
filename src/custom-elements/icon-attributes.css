@@ -1,0 +1,38 @@
+/* src/custom-elements/icon-attributes.css
+   [data-icon] — terse, native single-icon primitive (sibling of <icon-wc>).
+   The enhancer (src/web-components/icon-wc/enhance-data-icon.js) or a generated
+   per-set stylesheet sets --vb-icon to the SVG url; the browser loads it as a
+   CSS mask, tinted by currentColor. Monochrome only; multi-color -> <icon-wc>. */
+
+/* @property --vb-icon is registered at top level in src/main.css (with the
+   framework's other @property declarations) — NOT here, because this file is
+   imported via layer(custom-elements) and @property is ignored inside a
+   cascade layer. In the esbuild-bundled dist, a layered @property can be
+   dropped, leaving [data-icon] with an invalid <image> -> mask "none" -> a
+   solid currentColor square FOUC. See src/main.css for the registration. */
+
+/* data-icon is also used elsewhere as a bare boolean marker attribute (empty
+   value), e.g. status-message's icon slot (`& > [data-icon]`) matched against
+   `<icon-wc data-icon>`). Excluding [data-icon=""] keeps the icon reset/paint
+   rules scoped to hosts with an actual icon name, so bare markers don't get
+   an invisible-but-1em-wide generated ::before box that shifts layout. */
+[data-icon]:not([data-icon=""]) {
+  /* Guard against icon bleed: @property --vb-icon is inherits:true (required
+     so ::before can read it), which means a nested [data-icon] host with no
+     explicit icon of its own would otherwise inherit an ancestor's --vb-icon
+     instead of falling back to the empty-SVG initial value. Resetting to
+     `initial` here forces every host to start unset; the enhancer or a
+     generated per-set stylesheet then overrides it on hosts with a real icon. */
+  --vb-icon: initial;
+}
+
+[data-icon]:not([data-icon=""])::before {
+  content: "";
+  display: inline-block;
+  inline-size: 1em;
+  block-size: 1em;
+  vertical-align: -0.125em; /* optical baseline nudge */
+  background-color: currentColor;
+  -webkit-mask: var(--vb-icon) no-repeat center / contain;
+          mask: var(--vb-icon) no-repeat center / contain;
+}

@@ -1,3 +1,4 @@
+import './enhance-data-icon.js';
 import { styles } from './styles.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 

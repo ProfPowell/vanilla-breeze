@@ -14,7 +14,9 @@
  * @slot notes               - Additional context (e.g., <p>)
  *
  * State/config attributes:
- * @attr {string}  persona-id - Links to a user-persona element by id
+ * @attr {string}  persona-id - Links to a user-persona element by id. When no
+ *                              slot="persona" is given, the "As a…" text falls
+ *                              back to that persona's role (live-updating).
  * @attr {enum}    priority   - critical | high | medium | low
  * @attr {enum}    status     - backlog | to-do | in-progress | review | done
  * @attr {string}  points     - Story point estimate
@@ -73,6 +75,9 @@ class UserStory extends HTMLElement {
   };
 
   #slotCache = new Map();
+
+  /** @type {MutationObserver | null} */
+  #personaObserver = null;
 
   constructor() {
     super();
@@ -210,11 +215,14 @@ class UserStory extends HTMLElement {
       this._loadSrc(this.getAttribute('src'));
     }
     this.#render();
+    this.#observeLinkedPersona();
     this.setAttribute('data-upgraded', '');
   }
 
   disconnectedCallback() {
     this.removeAttribute('data-upgraded');
+    this.#personaObserver?.disconnect();
+    this.#personaObserver = null;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -223,20 +231,73 @@ class UserStory extends HTMLElement {
         this._loadSrc(newValue);
       } else {
         this.#render();
+        if (name === 'persona-id') this.#observeLinkedPersona();
       }
     }
   }
 
+  /**
+   * Keep the "As a…" text in sync when the linked persona's role is edited.
+   * Only observes when persona-id resolves and the author has not supplied an
+   * explicit persona slot (an explicit slot always wins, so nothing to track).
+   */
+  #observeLinkedPersona() {
+    this.#personaObserver?.disconnect();
+    this.#personaObserver = null;
+    if (!this.personaId || this.#explicitPersona()) return;
+    const root = /** @type {Document | ShadowRoot} */ (this.getRootNode());
+    const scope = root && typeof root.getElementById === 'function' ? root : document;
+    const persona = scope.getElementById(this.personaId);
+    if (!persona || persona.tagName !== 'USER-PERSONA') return;
+    this.#personaObserver = new MutationObserver(() => this.#render());
+    this.#personaObserver.observe(persona, { attributes: true, attributeFilter: ['role'] });
+  }
+
   // ── Getters ────────────────────────────────────────────────────────
 
-  /** Read persona from slotted element or cache */
+  /**
+   * Read persona from slotted element or cache. When neither is authored but
+   * persona-id links to a <user-persona> on the page, fall back to that
+   * persona's role ("As a Product Manager…") rather than the generic "user".
+   */
   get persona() {
-    const slotted = this.querySelector('[slot="persona"]');
-    return slotted?.textContent?.trim() || this.#slotCache.get('persona') || 'user';
+    const explicit = this.#explicitPersona();
+    return explicit || this.#linkedPersonaRole() || 'user';
   }
 
   get personaId() {
     return this.getAttribute('persona-id') || '';
+  }
+
+  /** Persona text the author supplied directly via slot or .data (no link resolution). */
+  #explicitPersona() {
+    const slotted = this.querySelector('[slot="persona"]');
+    return slotted?.textContent?.trim() || this.#slotCache.get('persona') || '';
+  }
+
+  /**
+   * Resolve the role of the <user-persona> referenced by persona-id, if one
+   * exists in the same tree. Used as the "As a…" fallback so a linked story
+   * reads "As a Product Manager" instead of "As a user". Returns '' when there
+   * is no persona-id, no matching persona, or the persona has no role.
+   */
+  #linkedPersonaRole() {
+    if (!this.personaId) return '';
+    const root = /** @type {Document | ShadowRoot} */ (this.getRootNode());
+    const scope = root && typeof root.getElementById === 'function' ? root : document;
+    const persona = scope.getElementById(this.personaId);
+    if (!persona || persona.tagName !== 'USER-PERSONA') return '';
+    return persona.getAttribute('role')?.trim() || '';
+  }
+
+  /**
+   * Indefinite article ("a" / "an") for the persona role so the statement
+   * reads naturally — "As an Analyst", "As a Product Manager". Simple
+   * vowel-start heuristic (excludes "u", which usually sounds like "you":
+   * "a user"). Falls back to "a".
+   */
+  #personaArticle() {
+    return /^[aeio]/i.test(this.persona.trim()) ? 'an' : 'a';
   }
 
   /** Read action from slotted element or cache */
@@ -417,9 +478,9 @@ class UserStory extends HTMLElement {
 
           <div class="story-body" part="body">
             <p class="story-statement" part="statement">
-              <span class="keyword">As a</span>
+              <span class="keyword">As ${this.#personaArticle()}</span>
               ${this.personaId
-                ? `<a class="persona-text persona-text--link" href="#${esc(this.personaId)}">${lucideSvg(UX_ICONS.user)} <slot name="persona"><span>user</span></slot></a>`
+                ? `<a class="persona-text persona-text--link" href="#${esc(this.personaId)}">${lucideSvg(UX_ICONS.user)} <slot name="persona"><span>${esc(this.#linkedPersonaRole() || 'user')}</span></slot></a>`
                 : `<span class="persona-text"><slot name="persona"><span>user</span></slot></span>`},
               <span class="keyword">I want</span>
               <span class="action-text"><slot name="action"><span>[describe the action]</span></slot></span>${this.benefit || this.querySelector('[slot="benefit"]') ? `

@@ -8,7 +8,7 @@
  *   - prefers-reduced-motion is set.
  *
  * Same pattern used inline by diagram-wc, flow-diagram, gantt-chart,
- * and site-map-wc (vanilla-breeze-4tsb); extracted for the components
+ * and site-map (vanilla-breeze-4tsb); extracted for the components
  * covered by vanilla-breeze-7ixr.
  *
  * @param {HTMLElement} host - Element to pin the transition to. The browser

@@ -8675,36 +8675,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "site-map",
     "type": "web-component",
-    "description": "Interactive HTML sitemap",
-    "attributes": [
-      {
-        "name": "current",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Pathname of the current page"
-      },
-      {
-        "name": "src",
-        "kind": "native",
-        "purpose": "config",
-        "type": "string",
-        "description": "URL to load sitemap data from (optional)"
-      },
-      {
-        "name": "data-sitemap-controls",
-        "kind": "data",
-        "purpose": "config"
-      }
-    ],
-    "childAttributes": [],
-    "structure": []
-  },
-  "site-map-wc": {
-    "$schema": "../../../schemas/api.schema.json",
-    "element": "site-map-wc",
-    "type": "web-component",
-    "description": "Information architecture tree with page-type badges, expand/collapse, and visual hierarchy",
+    "description": "Dual-mode sitemap: a lightweight static-sitemap enhancer (nav-enhance) or an interactive information-architecture tree with badges and an org-chart visual mode (ia-tree)",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -8713,32 +8684,73 @@ export default {
     },
     "attributes": [
       {
-        "name": "title",
+        "name": "mode",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Site map heading"
+        "description": "Behavior mode: nav-enhance (default) | ia-tree"
+      },
+      {
+        "name": "current",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "[nav-enhance] Pathname of the current page"
       },
       {
         "name": "src",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to JSON data for the site tree"
+        "description": "URL to JSON data (nav-enhance: { children }, ia-tree: { title, pages })"
+      },
+      {
+        "name": "title",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "[ia-tree] Site map heading"
       },
       {
         "name": "collapsed",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Start all nodes collapsed"
+        "description": "[ia-tree] Start all nodes collapsed"
       },
       {
         "name": "compact",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Reduced spacing variant"
+        "description": "[ia-tree] Reduced spacing variant"
+      },
+      {
+        "name": "data-view",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "[ia-tree] Set to \"visual\" for the org-chart visualization"
+      },
+      {
+        "name": "data-orientation",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "[ia-tree visual] Layout orientation"
+      },
+      {
+        "name": "data-detail",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "[ia-tree visual] Node detail level"
+      },
+      {
+        "name": "data-sitemap-controls",
+        "kind": "data",
+        "purpose": "config",
+        "description": "[nav-enhance] Marks the generated expand/collapse-all controls nav"
       }
     ],
     "childAttributes": [
@@ -8746,33 +8758,34 @@ export default {
         "name": "data-page-type",
         "on": "li",
         "type": "string",
-        "description": "Page type: layout | section | dashboard | page | modal | redirect"
+        "description": "[ia-tree] Page type: layout | section | dashboard | page | modal | redirect"
       },
       {
         "name": "data-template",
         "on": "li",
         "type": "string",
-        "description": "Template or view name shown as a badge"
+        "description": "[ia-tree] Template or view name shown as a badge"
       },
       {
         "name": "data-status",
         "on": "li",
         "type": "string",
-        "description": "Page status: draft | ready | live | deprecated"
+        "description": "[ia-tree] Page status: draft | ready | live | deprecated"
       }
     ],
     "events": [
       {
-        "name": "site-map-wc:ready",
+        "name": "site-map:ready",
         "detail": "{ nodeCount, depth }",
-        "description": "Fired after component initializes"
+        "description": "[ia-tree] Fired after component initializes"
       },
       {
-        "name": "site-map-wc:select",
+        "name": "site-map:select",
         "detail": "{ href, pageType, template }",
-        "description": "Node clicked — dispatched with page details"
+        "description": "[ia-tree] Node clicked — dispatched with page details"
       }
-    ]
+    ],
+    "structure": []
   },
   "site-search": {
     "$schema": "../../../schemas/api.schema.json",
