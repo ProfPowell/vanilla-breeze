@@ -430,35 +430,5 @@ export class RenderDynamicPages {
         .replace(/<section>\s*<h2>Component Notes<\/h2>[\s\S]*?<\/section>/, rendered.notes);
     }
 
-    if (path.includes('docs/tools/theme-lab/index')) {
-      const themeRegistryJson = stringifyForScript(this.data.themeRegistry || []);
-      this.file.src = this.file.src
-        .replaceAll('{{ themeRegistry | dump | safe }}', themeRegistryJson)
-        .replace(
-          /(<optgroup label="Extreme">)[\s\S]*?(<\/optgroup>)/,
-          `$1\n${renderThemeLabExtremeOptions(this.data.themeRegistry)}\n      $2`,
-        )
-        .replace(
-          /(<section class="border-gallery">)[\s\S]*?(<\/section>)/,
-          `$1\n${renderThemeLabBorderGallery()}\n  $2`,
-        )
-        .replace(
-          /(<section class="icon-compare-grid">)[\s\S]*?(<\/section>)/,
-          `$1
-    <span class="header label">Name</span>
-    <span class="header">Lucide</span>
-    <span class="header">Phosphor</span>
-    <span class="header">Tabler</span>
-    <span class="header">Bold</span>
-    <span class="header">Mage</span>
-${renderThemeLabIconRows()}
-  $2`,
-        )
-        .replace(
-          /(<section class="vignettes-grid">)[\s\S]*?(<\/section>)/,
-          `$1\n${renderThemeLabVignettes()}\n  $2`,
-        );
-    }
-
   }
 }

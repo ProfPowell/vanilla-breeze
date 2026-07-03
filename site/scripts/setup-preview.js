@@ -57,10 +57,6 @@ link(demoSource('snippets/demos'), resolve(dist, 'docs/snippets/demos'));
 mkdirSync(resolve(dist, 'docs/patterns'), { recursive: true });
 link(demoSource('patterns/demos'), resolve(dist, 'docs/patterns/demos'));
 
-// Theme lab surfaces
-mkdirSync(resolve(dist, 'docs/tools/theme-lab'), { recursive: true });
-link(demoSource('tools/theme-lab/surfaces'), resolve(dist, 'docs/tools/theme-lab/surfaces'));
-
 // Example demos
 mkdirSync(resolve(dist, 'docs/examples'), { recursive: true });
 link(demoSource('examples/demos'), resolve(dist, 'docs/examples/demos'));
