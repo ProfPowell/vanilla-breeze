@@ -12,7 +12,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { serializeDTCG } from '../../src/web-components/theme-export/dtcg-serialize.js';
+import { serializeDTCG } from '../../src/lib/dtcg/dtcg-serialize.js';
 
 const VB_NS = 'com.vanilla-breeze';
 

@@ -49,7 +49,6 @@ export default {
     { name: 'data-table', href: '/docs/elements/web-components/data-table/', desc: 'Enhanced data tables with sorting and filtering' },
     { name: 'diagram-wc', href: '/docs/elements/web-components/diagram-wc/', desc: 'Mermaid diagram renderer with VB token theming and lazy loading' },
     { name: 'flow-diagram', href: '/docs/elements/web-components/flow-diagram/', desc: 'SVG flow diagram renderer for process and workflow visualization' },
-    { name: 'gantt-chart', href: '/docs/elements/web-components/gantt-chart/', desc: 'Timeline-based Gantt chart with task bars, dependencies, and milestones' },
     { name: 'geo-map', href: '/docs/elements/web-components/geo-map/', desc: 'Static map tiles with marker and address caption' },
     { name: 'image-map', href: '/docs/elements/web-components/image-map/', desc: 'Interactive image map with hotspots' },
     { name: 'qr-code', href: '/docs/elements/web-components/qr-code/', desc: 'QR code generator with progressive enhancement' },
@@ -70,7 +69,6 @@ export default {
     { name: 'markdown-viewer', href: '/docs/elements/web-components/markdown-viewer/', desc: 'Render markdown with progressive enhancement and theme integration' },
     { name: 'note-wc', href: '/docs/elements/web-components/note-wc/', desc: 'Annotation note component for selection-menu and page-level contexts' },
     { name: 'reader-view', href: '/docs/elements/web-components/reader-view/', desc: 'Immersive reading shell with scroll and paged modes' },
-    { name: 'review-surface', href: '/docs/elements/web-components/review-surface/', desc: 'Document review surface with inline commenting and track-changes' },
     { name: 'selection-menu', href: '/docs/elements/web-components/selection-menu/', desc: 'Floating toolbar on text selection for highlighting, sharing, and annotating' },
     { name: 'text-reader', href: '/docs/elements/web-components/text-reader/', desc: 'Text-to-speech reader with word-level highlighting' },
   ],
@@ -96,28 +94,9 @@ export default {
   ],
 
   'UX Planning': [
-    { name: 'adr-wc', href: '/docs/elements/web-components/adr-wc/', desc: 'Architecture Decision Record for documenting technical decisions' },
-    { name: 'empathy-map', href: '/docs/elements/web-components/empathy-map/', desc: 'Four-quadrant empathy map (Says, Thinks, Does, Feels) with flip-to-edit' },
-    { name: 'impact-effort', href: '/docs/elements/web-components/impact-effort/', desc: '2×2 prioritization matrix with drag between quadrants' },
-    { name: 'kanban-board', href: '/docs/elements/web-components/kanban-board/', desc: 'Columnar drag-and-drop board with WIP limits' },
-    { name: 'story-map', href: '/docs/elements/web-components/story-map/', desc: 'Horizontal user story map with activity columns and drag-and-drop' },
-    { name: 'user-journey', href: '/docs/elements/web-components/user-journey/', desc: 'User journey map with SVG emotion curve and phase breakdown' },
-    { name: 'user-persona', href: '/docs/elements/web-components/user-persona/', desc: 'User persona card with avatar, demographics, goals, and frustrations' },
-    { name: 'user-story', href: '/docs/elements/web-components/user-story/', desc: 'Agile user story card with priority, status, and acceptance criteria' },
-    { name: 'work-item', href: '/docs/elements/web-components/work-item/', desc: 'Agile work item card with status, priority, and assignee fields' },
   ],
 
   'Design System Tools': [
-    { name: 'accessibility-specimen', href: '/docs/elements/web-components/accessibility-specimen/', desc: 'WCAG contrast-ratio table for color pairs + a11y checklist with status icons' },
-    { name: 'color-palette', href: '/docs/elements/web-components/color-palette/', desc: 'Interactive color swatch display with click-to-copy' },
-    { name: 'component-sampler', href: '/docs/elements/web-components/component-sampler/', desc: 'Themed grid of native UI elements' },
-    { name: 'font-pairer', href: '/docs/elements/web-components/font-pairer/', desc: 'Interactive font pairing tool with Google Fonts, live preview, and CSS export' },
-    { name: 'gradient-builder', href: '/docs/elements/web-components/gradient-builder/', desc: 'Interactive CSS gradient builder with color stops and oklab interpolation' },
-    { name: 'layout-specimen', href: '/docs/elements/web-components/layout-specimen/', desc: 'Visual specimen of all 14 VB layout primitives with mini-examples and snippets' },
-    { name: 'palette-generator', href: '/docs/elements/web-components/palette-generator/', desc: 'Algorithmic color palette generation from a seed using OKLCH harmony modes' },
-    { name: 'spacing-specimen', href: '/docs/elements/web-components/spacing-specimen/', desc: 'Spacing scale specimen that reads VB tokens and renders a visual bar chart' },
-    { name: 'token-specimen', href: '/docs/elements/web-components/token-specimen/', desc: 'Unified design token scale display for shadows, radii, borders, colors, or sizes' },
-    { name: 'type-specimen', href: '/docs/elements/web-components/type-specimen/', desc: 'Typography specimen with character grid, weight scale, and type scale' },
   ],
 
   'Site Infrastructure': [

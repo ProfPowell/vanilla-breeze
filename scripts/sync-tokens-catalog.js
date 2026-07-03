@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * sync-tokens-catalog: Generate the public-token-set catalog vendored under
- * src/web-components/theme-import/catalog/.
+ * src/data/theme-catalog/.
  *
  * Run manually (NOT in CI) to refresh the catalog from upstream sources.
  * Each entry is a curated SUBSET of the upstream system's tokens — enough
@@ -16,8 +16,8 @@
  *   npm run sync:tokens
  *
  * Output:
- *   src/web-components/theme-import/catalog/{slug}.tokens.json
- *   src/web-components/theme-import/catalog/manifest.json
+ *   src/data/theme-catalog/{slug}.tokens.json
+ *   src/data/theme-catalog/manifest.json
  *
  * Phase 4 of vanilla-breeze-jxlv (DTCG theme pipeline).
  */
@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const OUT_DIR = join(ROOT, 'src', 'web-components', 'theme-import', 'catalog');
+const OUT_DIR = join(ROOT, 'src', 'data', 'theme-catalog');
 const SYNC_DATE = new Date().toISOString().slice(0, 10);
 const SPEC = '2025.10';
 const VB_NS = 'com.vanilla-breeze';
