@@ -91,7 +91,7 @@ The following projects are currently under development:
     - <http-component> - a collection of HTTP components that allow us to show request and responses in a pretty manner and to monitor requests on a web page like the browser dev tools
     - <browser-console> - a way to bring the console of the browser into the web page and display it in a pretty manner, might also be used to display errors and other messages
     - <screen-saver> - a silly screen saver component that may be consumed into vanilla breeze to allow users to market and have fun with their sites and applications.
-    - Misc others like <user-persona>, <user-story>, <user-journey> (to be developed) and <page-diagnostics> are being developed and likely will fall into vanilla breeze or the UUCD or CMS projects
+    - <page-diagnostics> is being developed and will likely fall into vanilla breeze or the UUCD or CMS projects. (<user-persona>, <user-story>, and <user-journey> now ship in the standalone `@profpowell/vb-project-planning` package, decomposed out of core along with the rest of the project-planning family.)
 
     9. Teaching Artifacts
 
