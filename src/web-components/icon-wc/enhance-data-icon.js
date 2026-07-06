@@ -36,13 +36,13 @@ function start() {
         const t = /** @type {Element} */ (rec.target);
         if (t.hasAttribute && t.hasAttribute('data-icon')) enhance(t);
         // An ancestor's data-icon-set changed -> re-resolve its descendants.
-        if (rec.attributeName === 'data-icon-set' && t.querySelectorAll) enhanceAll(t);
+        if (rec.attributeName === 'data-icon-set') enhanceAll(t);
       } else {
         for (const node of rec.addedNodes) {
           if (node.nodeType !== 1) continue;
           const el = /** @type {Element} */ (node);
           if (el.hasAttribute('data-icon')) enhance(el);
-          if (el.querySelectorAll) enhanceAll(el);
+          enhanceAll(el);
         }
       }
     }

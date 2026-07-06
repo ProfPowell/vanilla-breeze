@@ -19,8 +19,8 @@ export function buildIconUrl({ basePath, set, name }) {
 export function resolveIconSet(el, doc = document) {
   const own = el.getAttribute('data-icon-set');
   if (own) return own;
-  const anc = el.closest('[data-icon-set]');
-  if (anc) return anc.getAttribute('data-icon-set');
+  const ancSet = el.closest('[data-icon-set]')?.getAttribute('data-icon-set');
+  if (ancSet) return ancSet;
   return doc.documentElement.dataset.iconSet || 'lucide';
 }
 
