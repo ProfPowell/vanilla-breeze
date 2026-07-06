@@ -4,13 +4,14 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildIconUrl, resolveIconSet, resolveIconBase } from '../../src/lib/icon-url.js';
 
-// Minimal DOM stand-ins (project does not use jsdom).
-const el = (attrs = {}, ancestorSet) => ({
+// Minimal DOM stand-ins (project does not use jsdom); cast to the DOM types the
+// functions expect — these mocks intentionally implement only what's exercised.
+const el = (attrs = {}, ancestorSet) => /** @type {any} */ ({
   getAttribute: (k) => (k in attrs ? attrs[k] : null),
   closest: (sel) => (sel === '[data-icon-set]' && ancestorSet
     ? { getAttribute: () => ancestorSet } : null),
 });
-const doc = (iconSet, iconPath) => ({ documentElement: { dataset: { iconSet, iconPath } } });
+const doc = (iconSet, iconPath) => /** @type {any} */ ({ documentElement: { dataset: { iconSet, iconPath } } });
 
 describe('icon-url', () => {
   it('builds the SVG url from base/set/name', () => {
