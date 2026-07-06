@@ -336,6 +336,17 @@ export default [
 
   // ─── Showcase: Aesthetic ───────────────────────────────────
   {
+    id: 'journal',
+    name: 'Journal',
+    tier: 'showcase',
+    category: 'extreme',
+    character: 'Dot-grid paper, washi tape, and handmade warmth',
+    colors: { huePrimary: 160, hueSecondary: 232, hueAccent: 36 },
+    swatchBg: '#f3ecdc',
+    swatchFg: '#27313f',
+    hints: { borderStyle: 'rough', iconSet: 'lucide' },
+  },
+  {
     id: 'vaporwave',
     name: 'Vaporwave',
     tier: 'showcase',

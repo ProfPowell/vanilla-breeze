@@ -42,6 +42,24 @@ const NS = 'theme';
 const KEY = 'current';
 const DEFAULTS = { mode: 'auto', brand: 'default', accent: 'default', borderStyle: '', iconSet: '', fluid: '', backdrop: '', backdropChrome: '', pageBgType: '', pageBgColor: '', pageBgGradStart: '', pageBgGradEnd: '', pageBgGradDir: '' };
 
+/**
+ * Resolve the brand to apply on init(). A stored user preference always wins
+ * (even a partial one without a `brand` resolves to the default, never falling
+ * through to the page); otherwise honor a brand the page pinned via
+ * `<html data-theme="…">` (e.g.
+ * theme-showcase demos) so init() doesn't clobber it with the default;
+ * otherwise fall back to the default brand. Pure (no DOM) for unit testing.
+ *
+ * @param {Partial<VBThemePrefs>|null} stored - persisted prefs, or null if none
+ * @param {string} [domTheme] - the current `data-theme` attribute value
+ * @returns {string} the brand id to apply
+ */
+export function resolveInitialBrand(stored, domTheme) {
+  if (stored) return stored.brand || DEFAULTS.brand;
+  const pinned = (domTheme || '').split(/\s+/).find((t) => t && !t.startsWith('a11y-'));
+  return pinned || DEFAULTS.brand;
+}
+
 const SEED_PROPERTIES = [
   '--hue-primary', '--hue-secondary', '--hue-accent',
   '--lightness-primary', '--chroma-primary',
@@ -69,6 +87,9 @@ export const ThemeManager = {
     this._initPromise = (async () => {
       const stored = /** @type {Partial<VBThemePrefs>|null} */ (await VBStore.get(NS, KEY));
       _state = stored ? { ...DEFAULTS, ...stored } : { ...DEFAULTS };
+      // With no saved preference, honor a brand the page pinned via
+      // <html data-theme="…"> (theme-showcase demos) instead of clobbering it.
+      _state.brand = resolveInitialBrand(stored, document.documentElement.dataset.theme);
 
       // Load saved brand CSS before applying
       try {
