@@ -93,12 +93,6 @@ export default {
     { name: 'tool-tip', href: '/docs/elements/web-components/tooltip/', desc: 'Contextual tooltips' },
   ],
 
-  'UX Planning': [
-  ],
-
-  'Design System Tools': [
-  ],
-
   'Site Infrastructure': [
     { name: 'brand-mark', href: '/docs/elements/web-components/brand-mark/', desc: 'Logo display with dark mode, compact variant, and stacked layout' },
     { name: 'change-set', href: '/docs/elements/web-components/change-set/', desc: 'Change tracking group with toggle between tracking, final, and original views' },
