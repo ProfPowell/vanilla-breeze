@@ -14,7 +14,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { deserializeDTCG } from '../../src/web-components/theme-import/dtcg-deserialize.js';
+import { deserializeDTCG } from '../../src/lib/dtcg/dtcg-deserialize.js';
 
 const VB_NS = 'com.vanilla-breeze';
 

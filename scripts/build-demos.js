@@ -25,7 +25,6 @@ const DEMO_DIRS = [
   'examples/fixtures',
   'patterns/demos',
   'snippets/demos',
-  'tools/theme-lab/surfaces',
   'alpenglow',
   'integrations/web-components',
 ];

@@ -22,9 +22,9 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { serializeDTCG } from '../../src/web-components/theme-export/dtcg-serialize.js';
-import { deserializeDTCG } from '../../src/web-components/theme-import/dtcg-deserialize.js';
-import { extractBaseBlock, parseDeclarations } from '../../src/web-components/theme-export/theme-css-parse.js';
+import { serializeDTCG } from '../../src/lib/dtcg/dtcg-serialize.js';
+import { deserializeDTCG } from '../../src/lib/dtcg/dtcg-deserialize.js';
+import { extractBaseBlock, parseDeclarations } from '../../src/lib/dtcg/theme-css-parse.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const THEMES_DIR = join(__dirname, '..', '..', 'src', 'tokens', 'themes');

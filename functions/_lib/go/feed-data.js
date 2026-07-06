@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.2.0",
+      "type": "update",
+      "title": "v0.2.0",
+      "body": "`[data-icon]` icon primitive — a terse, native way to place a single monochrome icon (`<i data-icon=\"star\">`, or on any element) via a CSS `mask` `::before` plus a tiny core-loaded enhancer, alongside `<icon-wc>`. Ships build-generated per-set no-JS stylesheets and name manife…",
+      "url": "https://vanilla-breeze.com/changelog#0.2.0",
+      "date": "2026-07-02"
+    },
+    {
       "id": "0.1.0",
       "type": "update",
       "title": "v0.1.0",

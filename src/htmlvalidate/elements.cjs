@@ -26,12 +26,6 @@ module.exports = {
     }
   },
 
-  "layout-specimen": {
-    attributes: {
-      "data-only": {}
-    }
-  },
-
   "layout-sidebar": {
     flow: true,
     permittedContent: ["@flow"],
@@ -256,14 +250,6 @@ module.exports = {
     }
   },
 
-  "accessibility-specimen": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "type": {}
-    }
-  },
-
   "accordion-wc": {
     flow: true,
     permittedContent: ["details"],
@@ -287,20 +273,6 @@ module.exports = {
       "data-empty-text": {},
       "role": {},
       "aria-busy": {}
-    }
-  },
-
-  "adr-wc": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "adr-id": {},
-      "status": {},
-      "supersedes": {},
-      "superseded-by": {},
-      "detail": {},
-      "compact": { boolean: true },
-      "src": {}
     }
   },
 
@@ -393,30 +365,6 @@ module.exports = {
     }
   },
 
-  "breakpoint-specimen": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "tokens": {},
-      "prefix": {},
-      "label": {},
-      "data-observe": {}
-    }
-  },
-
-  "burndown-chart": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "start": {},
-      "end": {},
-      "total": {},
-      "unit": {},
-      "label": {},
-      "weekends": { enum: ["include", "exclude"] }
-    }
-  },
-
   "calendar-wc": {
     flow: true,
     permittedContent: ["@flow"],
@@ -447,15 +395,6 @@ module.exports = {
       "size": {},
       "data-event-dot": {},
       "title": {}
-    }
-  },
-
-  "capacity-plan": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-bind-triangle": {},
-      "data-bind-quality": {}
     }
   },
 
@@ -544,20 +483,6 @@ module.exports = {
       "data-role": {},
       "data-model": {},
       "data-chat-empty": {}
-    }
-  },
-
-  "color-palette": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "colors": {},
-      "names": {},
-      "layout": {},
-      "show-values": { boolean: true },
-      "show-names": { boolean: true },
-      "size": {},
-      "editable": { boolean: true }
     }
   },
 
@@ -673,16 +598,6 @@ module.exports = {
       "aria-valuemin": {},
       "aria-valuemax": {},
       "aria-valuenow": {}
-    }
-  },
-
-  "component-sampler": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "components": {},
-      "label": {},
-      "compact": { boolean: true }
     }
   },
 
@@ -834,20 +749,6 @@ module.exports = {
     }
   },
 
-  "empathy-map": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "title": {},
-      "persona": {},
-      "persona-id": {},
-      "summary": {},
-      "src": {},
-      "editable": { boolean: true },
-      "compact": { boolean: true }
-    }
-  },
-
   "flow-diagram": {
     flow: true,
     permittedContent: ["@flow"],
@@ -856,18 +757,6 @@ module.exports = {
       "src": {},
       "data-direction": {},
       "compact": { boolean: true }
-    }
-  },
-
-  "font-pairer": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "heading-font": {},
-      "body-font": {},
-      "sample": {},
-      "show-export": { boolean: true },
-      "show-suggestions": { boolean: true }
     }
   },
 
@@ -887,20 +776,6 @@ module.exports = {
       "data-side": {},
       "role": {},
       "data-backref": {}
-    }
-  },
-
-  "gantt-chart": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "title": {},
-      "src": {},
-      "view": {},
-      "show-today": { boolean: true },
-      "show-progress": { boolean: true },
-      "show-dependencies": { boolean: true },
-      "compact": { boolean: true }
     }
   },
 
@@ -942,19 +817,6 @@ module.exports = {
       "src": {},
       "searchable": { boolean: true },
       "compact": { boolean: true }
-    }
-  },
-
-  "gradient-builder": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "colors": {},
-      "type": {},
-      "angle": {},
-      "interpolation": {},
-      "show-export": { boolean: true },
-      "show-controls": { boolean: true }
     }
   },
 
@@ -1037,16 +899,6 @@ module.exports = {
     }
   },
 
-  "impact-effort": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "src": {},
-      "title": {},
-      "compact": { boolean: true }
-    }
-  },
-
   "include-file": {
     flow: true,
     permittedContent: ["@flow"],
@@ -1055,30 +907,6 @@ module.exports = {
       "mode": { enum: ["replace", "append", "prepend"] },
       "lazy": { boolean: true },
       "allow-scripts": { boolean: true }
-    }
-  },
-
-  "iron-triangle": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "name": {},
-      "data-focus-factor": {},
-      "data-min-capacity": {},
-      "data-quality-href": {},
-      "data-quality-summary": {},
-      "disabled": { boolean: true },
-      "locked": { boolean: true }
-    }
-  },
-
-  "kanban-board": {
-    flow: true,
-    permittedContent: ["section"],
-    attributes: {
-      "src": {},
-      "title": {},
-      "compact": { boolean: true }
     }
   },
 
@@ -1104,17 +932,6 @@ module.exports = {
       "highlight": { boolean: true },
       "ping": {},
       "data-theme": {}
-    }
-  },
-
-  "motion-specimen": {
-    attributes: {
-      "type": { enum: ["easing", "duration", "both"] },
-      "tokens": {},
-      "prefix": {},
-      "duration": {},
-      "show-values": { boolean: true },
-      "label": {}
     }
   },
 
@@ -1225,20 +1042,6 @@ module.exports = {
     }
   },
 
-  "palette-generator": {
-    attributes: {
-      "seed": {},
-      "harmony": {},
-      "include-seed": { boolean: true },
-      "show-export": { boolean: true },
-      "layout": {},
-      "size": {},
-      "show-values": { boolean: true },
-      "show-names": { boolean: true },
-      "role": {}
-    }
-  },
-
   "poll-wc": {
     flow: true,
     permittedContent: ["@flow"],
@@ -1284,18 +1087,6 @@ module.exports = {
     }
   },
 
-  "product-roadmap": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "start": {},
-      "end": {},
-      "view": { enum: ["quarter", "month"] },
-      "editable": { boolean: true },
-      "today-marker": { boolean: true }
-    }
-  },
-
   "progress-tracker": {
     flow: true,
     permittedContent: ["li", "@flow"],
@@ -1317,43 +1108,6 @@ module.exports = {
       "background": {},
       "error-correction": {},
       "role": {}
-    }
-  },
-
-  "quadrant-grid": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "x-label": {},
-      "y-label": {},
-      "x-low": {},
-      "x-high": {},
-      "y-low": {},
-      "y-high": {},
-      "q1-label": {},
-      "q2-label": {},
-      "q3-label": {},
-      "q4-label": {},
-      "draggable": { boolean: true }
-    }
-  },
-
-  "quality-target": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "name": {},
-      "data-bind-to": {},
-      "data-capacity-points": {},
-      "data-cost-weights": {},
-      "data-radius": {},
-      "data-show-envelope": { boolean: true },
-      "data-min-rationale": {},
-      "data-max-rationale": {},
-      "data-min-overrun-rationale": {},
-      "data-max-overrun-rationale": {},
-      "disabled": { boolean: true },
-      "locked": { boolean: true }
     }
   },
 
@@ -1407,41 +1161,6 @@ module.exports = {
     }
   },
 
-  "requirement-card": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-priority": { enum: ["critical", "important", "acceptable", "not-relevant"] },
-      "data-conflict": { boolean: true },
-      "tabindex": {}
-    }
-  },
-
-  "review-surface": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "src": {},
-      "editable": { boolean: true },
-      "adapter": {},
-      "endpoint": {},
-      "storage-key": {},
-      "author": {},
-      "compact": { boolean: true },
-      "show-resolved": { boolean: true },
-      "pin-count": {}
-    }
-  },
-
-  "risk-register": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "src": {},
-      "label": {}
-    }
-  },
-
   "score-card": {
     flow: true,
     permittedContent: ["@flow"],
@@ -1458,15 +1177,6 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "for": {}
-    }
-  },
-
-  "semantic-palette": {
-    attributes: {
-      "colors": {},
-      "roles": {},
-      "show-export": { boolean: true },
-      "label": {}
     }
   },
 
@@ -1580,19 +1290,6 @@ module.exports = {
     }
   },
 
-  "spacing-specimen": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "tokens": {},
-      "prefix": {},
-      "show-values": { boolean: true },
-      "label": {},
-      "editable": { boolean: true },
-      "target": {}
-    }
-  },
-
   "split-surface": {
     flow: true,
     permittedContent: ["@flow"],
@@ -1669,16 +1366,6 @@ module.exports = {
     }
   },
 
-  "story-map": {
-    flow: true,
-    permittedContent: ["section"],
-    attributes: {
-      "src": {},
-      "title": {},
-      "compact": { boolean: true }
-    }
-  },
-
   "tab-set": {
     flow: true,
     permittedContent: ["details", "nav", "section", "@script"],
@@ -1706,32 +1393,6 @@ module.exports = {
       "data-speed-group": {},
       "data-speed-value": {},
       "slot": {}
-    }
-  },
-
-  "theme-catalog": {
-    attributes: {
-      "target": {},
-      "catalog-base": {}
-    }
-  },
-
-  "theme-export": {
-    attributes: {
-      "scope": {},
-      "selector": {},
-      "include": {},
-      "format": { enum: ["css", "json", "dtcg"] },
-      "vb-version": {},
-      "label": {},
-      "live": { boolean: true }
-    }
-  },
-
-  "theme-import": {
-    attributes: {
-      "target": {},
-      "placeholder": {}
     }
   },
 
@@ -1794,22 +1455,6 @@ module.exports = {
     }
   },
 
-  "token-specimen": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "type": { enum: ["shadow", "radius", "border", "color", "size", "icon"] },
-      "tokens": {},
-      "prefix": {},
-      "show-values": { boolean: true },
-      "label": {},
-      "size": {},
-      "icon-set": {},
-      "editable": { boolean: true },
-      "target": {}
-    }
-  },
-
   "tool-tip": {
     flow: true,
     permittedContent: ["@flow"],
@@ -1838,88 +1483,11 @@ module.exports = {
     }
   },
 
-  "traceability-matrix": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "rows": {},
-      "cols": {},
-      "link-attr": {},
-      "label": {},
-      "row-label": {},
-      "cell-mark": {},
-      "flag-orphans": { boolean: true }
-    }
-  },
-
   "trust-filter": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
       "data-lens-src": {},
-      "src": {}
-    }
-  },
-
-  "type-specimen": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "font-family": {},
-      "label": {},
-      "sample": {},
-      "show-scale": { boolean: true },
-      "show-weights": { boolean: true },
-      "show-characters": { boolean: true },
-      "weights": {},
-      "editable": { boolean: true },
-      "target": {},
-      "token": {}
-    }
-  },
-
-  "user-journey": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "title": {},
-      "persona": {},
-      "persona-id": {},
-      "summary": {},
-      "story-ids": {},
-      "src": {},
-      "compact": { boolean: true }
-    }
-  },
-
-  "user-persona": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "name": {},
-      "role": {},
-      "age": {},
-      "location": {},
-      "avatar": {},
-      "quote": {},
-      "compact": { boolean: true },
-      "src": {},
-      "data-list-stories": { boolean: true }
-    }
-  },
-
-  "user-story": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "persona-id": {},
-      "priority": { enum: ["critical", "high", "medium", "low"] },
-      "status": { enum: ["backlog", "to-do", "in-progress", "review", "done"] },
-      "points": {},
-      "epic": {},
-      "story-id": {},
-      "detail": { enum: ["full", "compact", "minimal"] },
-      "compact": { boolean: true },
       "src": {}
     }
   },
@@ -1981,23 +1549,6 @@ module.exports = {
       "data-days": {},
       "data-start-hour": {},
       "data-end-hour": {}
-    }
-  },
-
-  "work-item": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "item-id": {},
-      "type": {},
-      "priority": {},
-      "status": {},
-      "estimate": {},
-      "assignee": {},
-      "story-ids": {},
-      "detail": {},
-      "compact": { boolean: true },
-      "src": {}
     }
   },
 

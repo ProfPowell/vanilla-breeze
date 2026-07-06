@@ -130,9 +130,9 @@ async function buildThemes() {
 
   // DTCG sibling artifacts share the same loop. Imported lazily so a
   // serializer change doesn't reach build until the theme step runs.
-  const { serializeDTCG } = await import('../src/web-components/theme-export/dtcg-serialize.js');
+  const { serializeDTCG } = await import('../src/lib/dtcg/dtcg-serialize.js');
   const { extractBaseBlock, extractDarkBlock, parseDeclarations } =
-    await import('../src/web-components/theme-export/theme-css-parse.js');
+    await import('../src/lib/dtcg/theme-css-parse.js');
 
   const files = readdirSync(themesDir).filter(f => {
     // Include brand and extreme themes, skip access, index, and template files
@@ -218,10 +218,10 @@ async function buildThemes() {
   console.log(`  manifest.json written (${Object.keys(manifest).length} entries)`);
 
   // ── Public-token-set catalog (Phase 4) ──────────────────────────────
-  // Vendored under src/web-components/theme-import/catalog/. Copied into
+  // Vendored under src/data/theme-catalog/. Copied into
   // the CDN tree so <theme-catalog> can fetch it from /cdn/themes/catalog.
   // Source-of-truth files are the vendored ones; these are runtime mirrors.
-  const catalogSrc = join(SRC, 'web-components', 'theme-import', 'catalog');
+  const catalogSrc = join(SRC, 'data', 'theme-catalog');
   const catalogOut = join(outDir, 'catalog');
   if (existsSync(catalogSrc)) {
     cpSync(catalogSrc, catalogOut, { recursive: true });

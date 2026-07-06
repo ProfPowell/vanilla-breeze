@@ -12,11 +12,11 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { deserializeDTCG } from '../../src/web-components/theme-import/dtcg-deserialize.js';
-import { serializeDTCG } from '../../src/web-components/theme-export/dtcg-serialize.js';
+import { deserializeDTCG } from '../../src/lib/dtcg/dtcg-deserialize.js';
+import { serializeDTCG } from '../../src/lib/dtcg/dtcg-serialize.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CATALOG_DIR = join(__dirname, '..', '..', 'src', 'web-components', 'theme-import', 'catalog');
+const CATALOG_DIR = join(__dirname, '..', '..', 'src', 'data', 'theme-catalog');
 
 const VB_NS = 'com.vanilla-breeze';
 const manifest = JSON.parse(readFileSync(join(CATALOG_DIR, 'manifest.json'), 'utf-8'));
