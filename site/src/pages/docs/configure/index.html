@@ -146,7 +146,7 @@ currentPath: /docs/configure/
           Bundle
           <select name="css-bundle">
             <option value="core">Core (base styles, layout)</option>
-            <option value="full">Full (includes all themes)</option>
+            <option value="full">Standard (all components, core themes)</option>
             <option value="none">None (bring your own)</option>
           </select>
         </label>
@@ -296,8 +296,8 @@ currentPath: /docs/configure/
       totalSize += getSize('vanilla-breeze.css');
     }
 
-    // Theme links (only for core CSS — full already includes all themes)
-    if (cssBundle !== 'full' && cssBundle !== 'none') {
+    // Theme links — decorative themes are à la carte for every bundle
+    if (cssBundle !== 'none') {
       for (const theme of themes) {
         lines.push(`<link rel="stylesheet" href="${CDN_BASE}/themes/${theme}.css">`);
         totalSize += getSize(`themes/${theme}.css`);
@@ -353,7 +353,7 @@ currentPath: /docs/configure/
 
   form.addEventListener('change', () => {
     const cssBundle = new FormData(form).get('css-bundle');
-    const isDisabled = cssBundle === 'full' || cssBundle === 'none';
+    const isDisabled = cssBundle === 'none';
     themeSelect.disabled = isDisabled;
     if (isDisabled) {
       // Deselect all themes, reselect base

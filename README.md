@@ -8,7 +8,7 @@ A layered HTML component system extending HTML's native model. Build accessible,
 - **Layout attributes** — responsive layouts via `data-layout="stack | cluster | sidebar | grid"` instead of wrapper divs
 - **30+ web components** — accordion, tabs, carousel, data-table, command-palette, combo-box, toast, tooltip, drag-surface, and more
 - **Design tokens** — spacing, typography, colors, sizing, borders, shadows, motion
-- **Theme engine** — 10 brand themes, 18 extreme themes, 4 accessibility themes, dark/light mode
+- **Theme engine** — 40+ themes as tiny à-la-carte token files (1–4 KB each), plus dark/light mode; only core themes ship in the main bundle
 - **Progressive enhancement** — everything works without JavaScript; JS adds interactivity
 
 ## Quick Start
@@ -30,6 +30,17 @@ npm install vanilla-breeze
 import 'vanilla-breeze';
 import 'vanilla-breeze/css';
 ```
+
+### Themes
+
+The main bundle includes only the core themes. Decorative themes are standalone token files — add one line and set `data-theme`:
+
+```html
+<link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/themes/nord.css">
+<html data-theme="nord">
+```
+
+Or via npm: `import 'vanilla-breeze/themes/nord';`. Runtime switching (`<theme-picker>`, `ThemeManager`) fetches theme CSS automatically on first use.
 
 ## Usage
 
