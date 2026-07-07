@@ -3,8 +3,9 @@
  * Build CDN distribution files using esbuild
  *
  * Creates stable-named bundled files for CDN distribution:
- * - cdn/vanilla-breeze.css (full bundle, backwards compat)
- * - cdn/vanilla-breeze-core.css (slim, no decorative themes)
+ * - cdn/vanilla-breeze.css (all components, core themes only — decorative
+ *   themes load à la carte from cdn/themes/*.css)
+ * - cdn/vanilla-breeze-core.css (slim, core components only)
  * - cdn/vanilla-breeze-charts.css (charts add-on)
  * - cdn/vanilla-breeze-dev.css (debug/wireframe add-on)
  * - cdn/vanilla-breeze.js (full bundle, backwards compat)
@@ -96,7 +97,7 @@ function fixAtPropertyLeadingZeros(filePath) {
  * Build individual theme CSS files and manifest
  */
 // Theme tier classification for manifest metadata.
-// Core themes are bundled in vanilla-breeze-core.css (instant switching).
+// Core themes are bundled in the main CSS bundles (instant switching).
 // Showcase themes are prominently featured on-demand themes.
 // Community themes are available but not prominent.
 const CORE_THEME_IDS = new Set([
@@ -435,12 +436,13 @@ async function buildPacks() {
 async function buildCDN() {
   console.log('Building CDN files with esbuild...\n');
 
-  // --- Full backwards-compatible bundles ---
+  // --- Main bundles ---
 
-  // Build full CSS bundle (backwards compat — includes all themes)
+  // Build main CSS bundle (all components, core themes only — decorative
+  // themes load à la carte from /cdn/themes/*.css via <link> or ThemeLoader)
   await esbuild.build({
     ...CSS_DEFAULTS,
-    entryPoints: [join(SRC, 'main-full.css')],
+    entryPoints: [join(SRC, 'main.css')],
     outfile: join(CDN, 'vanilla-breeze.css'),
     logLevel: 'info',
   });
@@ -637,9 +639,9 @@ async function buildCDN() {
   console.log('─'.repeat(50));
 
   const coreBundles = ['vanilla-breeze-core.css', 'vanilla-breeze-core.js'];
-  const fullBundles = ['vanilla-breeze.css', 'vanilla-breeze.js'];
+  const mainBundles = ['vanilla-breeze.css', 'vanilla-breeze.js'];
 
-  for (const [label, files] of [['Core', coreBundles], ['Full', fullBundles]]) {
+  for (const [label, files] of [['Core', coreBundles], ['Main', mainBundles]]) {
     let rawTotal = 0;
     let gzipTotal = 0;
     for (const file of files) {
