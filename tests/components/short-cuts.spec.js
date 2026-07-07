@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/short-cuts-basic.html';
+const demoPage = '/docs/examples/demos/short-cuts-basic.html';
 
 test.describe('short-cuts — baseline', () => {
 

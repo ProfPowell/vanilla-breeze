@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/toast-basic.html';
+const demoPage = '/docs/examples/demos/toast-basic.html';
 
 test.describe('toast-msg — baseline', () => {
 

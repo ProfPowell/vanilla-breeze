@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/data-table-basic.html';
+const demoPage = '/docs/examples/demos/data-table-basic.html';
 
 test.describe('data-table — baseline', () => {
 

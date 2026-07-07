@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const inlinePage = '/demos/examples/demos/theme-picker-inline.html';
+const inlinePage = '/docs/examples/demos/theme-picker-inline.html';
 
 const waitForUpgrade = (page) =>
   page.waitForSelector('theme-picker[data-upgraded]', { timeout: 10_000 });

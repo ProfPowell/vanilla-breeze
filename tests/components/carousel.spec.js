@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/carousel-basic.html';
+const demoPage = '/docs/examples/demos/carousel-basic.html';
 
 test.describe('carousel-wc — baseline', () => {
 

@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/reader-view.html';
+const demoPage = '/docs/examples/demos/reader-view.html';
 
 test.describe('reader-view — baseline', () => {
 

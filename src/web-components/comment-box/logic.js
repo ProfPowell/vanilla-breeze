@@ -41,10 +41,6 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
-// Ensure both deps are registered when comment-box is used. markdown-editor
-// composes markdown-viewer internally but does not import it itself.
-import '../markdown-viewer/logic.js';
-import '../markdown-editor/logic.js';
 
 class CommentBox extends VBElement {
   static formAssociated = true;
@@ -66,6 +62,14 @@ class CommentBox extends VBElement {
   }
 
   setup() {
+    // Register both editor deps on first use. Dynamic imports keep the bare
+    // 'marked' specifier (markdown-viewer's dependency) out of main.js's
+    // static module graph — pages without an importmap for it must still
+    // load. Until the modules land, the editor degrades to its textarea.
+    // markdown-editor composes markdown-viewer but does not import it itself.
+    import('../markdown-viewer/logic.js').catch(() => console.warn('[VB] comment-box: markdown-viewer failed to load (missing importmap for "marked"?)'));
+    import('../markdown-editor/logic.js').catch(() => console.warn('[VB] comment-box: markdown-editor failed to load'));
+
     // Capture toolbar-slot children before we rebuild the DOM.
     const toolbarChildren = [...this.querySelectorAll(':scope > [slot="toolbar"]')];
 

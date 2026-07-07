@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/compare-surface-basic.html';
+const demoPage = '/docs/examples/demos/compare-surface-basic.html';
 
 test.describe('compare-surface — baseline', () => {
 

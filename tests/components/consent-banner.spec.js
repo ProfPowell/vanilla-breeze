@@ -7,9 +7,9 @@
 
 import { test, expect } from 'playwright/test';
 
-const simplePage = '/demos/snippets/demos/consent-banner-simple.html';
-const granularPage = '/demos/snippets/demos/consent-banner-granular.html';
-const positionsPage = '/demos/snippets/demos/consent-banner-positions.html';
+const simplePage = '/docs/snippets/demos/consent-banner-simple.html';
+const granularPage = '/docs/snippets/demos/consent-banner-granular.html';
+const positionsPage = '/docs/snippets/demos/consent-banner-positions.html';
 
 /* Each test gets a fresh browser context (isolated localStorage). */
 

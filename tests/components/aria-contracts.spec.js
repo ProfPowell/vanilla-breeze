@@ -10,7 +10,7 @@ import { test, expect } from 'playwright/test';
 // ── tab-set: aria-selected ───────────────────────────────────────────
 
 test.describe('tab-set ARIA contracts', () => {
-  const page_url = '/demos/examples/demos/tabs-basic.html';
+  const page_url = '/docs/examples/demos/tabs-basic.html';
 
   test('active tab summary has aria-selected="true"', async ({ page }) => {
     await page.goto(page_url);
@@ -52,7 +52,7 @@ test.describe('tab-set ARIA contracts', () => {
 // ── drop-down: aria-expanded + aria-haspopup ─────────────────────────
 
 test.describe('drop-down ARIA contracts', () => {
-  const page_url = '/demos/examples/demos/dropdown-basic.html';
+  const page_url = '/docs/examples/demos/dropdown-basic.html';
 
   test('trigger has aria-haspopup="menu"', async ({ page }) => {
     await page.goto(page_url);
@@ -84,7 +84,7 @@ test.describe('drop-down ARIA contracts', () => {
 // ── drop-down: reflected open attribute ──────────────────────────────
 
 test.describe('drop-down reflected state', () => {
-  const page_url = '/demos/examples/demos/dropdown-basic.html';
+  const page_url = '/docs/examples/demos/dropdown-basic.html';
 
   test('open attribute is set when menu opens', async ({ page }) => {
     await page.goto(page_url);
@@ -138,7 +138,7 @@ test.describe('drop-down reflected state', () => {
 // ── combo-box: aria-expanded ─────────────────────────────────────────
 
 test.describe('combo-box ARIA contracts', () => {
-  const page_url = '/demos/examples/demos/combobox-basic.html';
+  const page_url = '/docs/examples/demos/combobox-basic.html';
 
   test('input has role="combobox" and aria-expanded', async ({ page }) => {
     await page.goto(page_url);
@@ -163,7 +163,7 @@ test.describe('combo-box ARIA contracts', () => {
 // ── context-menu: aria-expanded ──────────────────────────────────────
 
 test.describe('context-menu ARIA contracts', () => {
-  const page_url = '/demos/examples/demos/context-menu-basic.html';
+  const page_url = '/docs/examples/demos/context-menu-basic.html';
 
   test('trigger has aria-expanded="false" initially', async ({ page }) => {
     await page.goto(page_url);
@@ -187,7 +187,7 @@ test.describe('context-menu ARIA contracts', () => {
 // ── data-table: aria-sort ────────────────────────────────────────────
 
 test.describe('data-table ARIA contracts', () => {
-  const page_url = '/demos/examples/demos/data-table-basic.html';
+  const page_url = '/docs/examples/demos/data-table-basic.html';
 
   test('sortable headers have aria-sort="none" initially', async ({ page }) => {
     await page.goto(page_url);

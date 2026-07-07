@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/qr-code-basic.html';
+const demoPage = '/docs/examples/demos/qr-code-basic.html';
 
 test.describe('qr-code — baseline', () => {
 

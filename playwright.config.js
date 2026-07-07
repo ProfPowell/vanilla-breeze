@@ -13,13 +13,17 @@ export default defineConfig({
     },
   },
   use: {
-    // Tests run against the local Caddy at https://vb.test, which serves
-    // /cdn/* from dist/, /src/* from the repo root, and everything else
-    // from site/dist/pages/ (see /opt/homebrew/etc/Caddyfile). Build the
-    // site (`npm run build`) and ensure Caddy is up before running.
-    baseURL: 'https://vb.test',
-    ignoreHTTPSErrors: true,
+    // Tests run against a self-contained static server (scripts/test-server.mjs)
+    // that serves site/dist/pages — the assembled site, which includes /cdn,
+    // /src, and /docs demo pages. Run `npm run build` first to populate it.
+    baseURL: 'http://127.0.0.1:8123',
     screenshot: 'only-on-failure',
+  },
+  webServer: {
+    command: 'node scripts/test-server.mjs',
+    url: 'http://127.0.0.1:8123/',
+    reuseExistingServer: !process.env.CI,
+    timeout: 15000,
   },
   projects: [
     {
