@@ -44,6 +44,14 @@ const REPLACEMENTS = [
   ['src="/src/charts-standalone.js"',     'src="/cdn/vanilla-breeze-charts.js"'],
 ];
 
+/**
+ * Regex replacements: raw theme source links → built per-theme CDN files
+ * @type {Array<[RegExp, string]>}
+ */
+const REGEX_REPLACEMENTS = [
+  [/href="\/src\/tokens\/themes\/_(?:brand|extreme)-([\w-]+)\.css"/g, 'href="/cdn/themes/$1.css"'],
+];
+
 let totalFiles = 0;
 let rewrittenFiles = 0;
 
@@ -77,6 +85,14 @@ for (const relDir of DEMO_DIRS) {
       for (const [from, to] of REPLACEMENTS) {
         if (html.includes(from)) {
           html = html.replaceAll(from, to);
+          changed = true;
+        }
+      }
+
+      for (const [pattern, to] of REGEX_REPLACEMENTS) {
+        const next = html.replace(pattern, to);
+        if (next !== html) {
+          html = next;
           changed = true;
         }
       }
