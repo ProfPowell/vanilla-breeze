@@ -34,6 +34,7 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { ThemeManager } from '../../lib/theme-manager.js';
+import { preloadTheme } from '../../lib/theme-loader.js';
 import {
   MODES, COLOR_ACCENTS, PERSONALITY_THEMES,
   COMMUNITY_THEMES, FLUID_PRESETS, ACCESSIBILITY_THEMES,
@@ -430,6 +431,9 @@ class ThemePicker extends VBElement {
     // Brand change — swatch grid (radio buttons)
     this.#panel.querySelectorAll('input[name="theme-brand"]').forEach(input => {
       input.addEventListener('change', this.#handleBrandChange);
+      // Preload theme CSS on hover/focus so selection applies instantly
+      input.addEventListener('focus', this.#handleBrandPreload);
+      input.closest('label')?.addEventListener('pointerenter', this.#handleBrandPreload);
     });
 
     // Brand change — compact select
@@ -506,6 +510,14 @@ class ThemePicker extends VBElement {
   #handleModeChange = (e) => {
     ThemeManager.setMode(e.target.value);
     this.#autoDismiss();
+  };
+
+  #handleBrandPreload = (e) => {
+    const el = /** @type {HTMLElement} */ (e.currentTarget);
+    const input = el instanceof HTMLInputElement
+      ? el
+      : /** @type {HTMLInputElement|null} */ (el.querySelector('input[name="theme-brand"]'));
+    if (input?.value) preloadTheme(input.value);
   };
 
   #handleBrandChange = async (e) => {
