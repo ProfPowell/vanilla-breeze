@@ -4,6 +4,16 @@ All notable changes to Vanilla Breeze will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.1] - 2026-07-07
+
+### Removed
+
+- Purged stale build artifacts left over from the 0.3.0 decomposition: the
+  `design-system` + `ux-planning` pack bundles (`dist/cdn/packs/*`) and the
+  individual component bundles for the 36 removed components
+  (`dist/cdn/components/*`). No `package.json` export referenced them — this
+  just trims dead weight from the published tarball.
+
 ## [0.3.0] - 2026-07-06
 
 ### Changed (breaking)
