@@ -222,6 +222,9 @@ export async function ensureThemeLoaded(themeName) {
  */
 export function preloadTheme(themeName) {
   if (!themeName || CORE_THEMES.has(themeName)) return;
+  // Pack themes load packs/{name}.theme.css at apply time — preloading
+  // themes/{name}.css would fetch a file that is never used.
+  if (isPackTheme(themeName)) return;
   if (loadCache.has(themeName)) return;
   if (typeof document === 'undefined') return;
 

@@ -88,12 +88,12 @@ copyDir('src/icons', join(pagesDir, 'src', 'icons'));
 
 // VB source for dev references (/src/base/…, /src/tokens/…, etc.)
 //
-// Demo HTML files load /src/main.js and /src/main-full.css raw. Both of
+// Demo HTML files load /src/main.js and /src/main.css raw. Both of
 // these transitively import from the dirs below — any missing one causes
 // the browser to 404 and reject the asset with a MIME-type mismatch.
 //
 // To audit: grep the tree for /src/<dir>/ references from demos/ and
-// follow the static-import chain from src/main.js, src/main-full.css,
+// follow the static-import chain from src/main.js, src/main.css,
 // and src/main-autoload.js.
 const srcDirs = [
   'base',
