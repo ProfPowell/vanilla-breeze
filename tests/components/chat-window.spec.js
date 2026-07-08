@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/chat-window-basic.html';
+const demoPage = '/docs/examples/demos/chat-window-basic.html';
 
 test.describe('chat-window — baseline', () => {
 

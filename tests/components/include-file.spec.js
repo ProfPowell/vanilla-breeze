@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/include-file-basic.html';
+const demoPage = '/docs/examples/demos/include-file-basic.html';
 
 test.describe('include-file', () => {
 
@@ -23,7 +23,7 @@ test.describe('include-file', () => {
         el.addEventListener('include-file:loaded', () => {
           resolve(el.innerHTML.trim());
         });
-        el.setAttribute('src', '/demos/examples/demos/_include-fragment.html');
+        el.setAttribute('src', '/docs/examples/demos/_include-fragment.html');
         document.body.appendChild(el);
         setTimeout(() => resolve(''), 5000);
       });
@@ -44,7 +44,7 @@ test.describe('include-file', () => {
             hasLoading: el.hasAttribute('data-loading'),
           });
         });
-        el.setAttribute('src', '/demos/examples/demos/_include-fragment.html');
+        el.setAttribute('src', '/docs/examples/demos/_include-fragment.html');
         document.body.appendChild(el);
         setTimeout(() => resolve({ hasLoaded: false, hasLoading: true, timeout: true }), 5000);
       });
@@ -74,7 +74,7 @@ test.describe('include-file', () => {
         el.addEventListener('include-file:loaded', (e) => {
           resolve({ src: e.detail.src, hasHtml: !!e.detail.html });
         });
-        el.setAttribute('src', '/demos/examples/demos/_include-fragment.html');
+        el.setAttribute('src', '/docs/examples/demos/_include-fragment.html');
         document.body.appendChild(el);
         setTimeout(() => resolve(null), 5000);
       });
@@ -115,7 +115,7 @@ test.describe('include-file', () => {
         el.addEventListener('include-file:loaded', () => {
           resolve({ hasFallback: el.querySelector('.fallback-test') !== null });
         });
-        el.setAttribute('src', '/demos/examples/demos/_include-fragment.html');
+        el.setAttribute('src', '/docs/examples/demos/_include-fragment.html');
         document.body.appendChild(el);
         setTimeout(() => resolve({ hasFallback: true, timeout: true }), 5000);
       });
@@ -139,7 +139,7 @@ test.describe('include-file', () => {
             childCount: el.children.length,
           });
         });
-        el.setAttribute('src', '/demos/examples/demos/_include-fragment.html');
+        el.setAttribute('src', '/docs/examples/demos/_include-fragment.html');
         document.body.appendChild(el);
         setTimeout(() => resolve({ hasOriginal: false, childCount: 0, timeout: true }), 5000);
       });

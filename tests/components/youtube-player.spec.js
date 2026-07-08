@@ -1,5 +1,5 @@
 // @ts-check
-import { test, expect } from '@playwright/test';
+import { test, expect } from 'playwright/test';
 
 const DEMO = '/docs/examples/demos/youtube-player-basic.html';
 

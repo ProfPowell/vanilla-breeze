@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/slide-accept-basic.html';
+const demoPage = '/docs/examples/demos/slide-accept-basic.html';
 
 test.describe('slide-accept — baseline', () => {
 

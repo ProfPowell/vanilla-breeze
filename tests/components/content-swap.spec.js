@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/content-swap-basic.html';
+const demoPage = '/docs/examples/demos/content-swap-basic.html';
 
 test.describe('content-swap — baseline', () => {
 

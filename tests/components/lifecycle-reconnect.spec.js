@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const videoDemoPage = '/demos/examples/demos/video-player-basic.html';
+const videoDemoPage = '/docs/examples/demos/video-player-basic.html';
 
 test.describe('lifecycle: remove and reinsert', () => {
 

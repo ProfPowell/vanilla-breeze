@@ -6,7 +6,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/emoji-basic.html';
+const demoPage = '/docs/examples/demos/emoji-basic.html';
 
 test.describe('emoji-picker — baseline', () => {
 

@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/heading-links-basic.html';
+const demoPage = '/docs/examples/demos/heading-links-basic.html';
 
 /** Wait for heading-links WC to process headings */
 async function waitForAnchors(page) {

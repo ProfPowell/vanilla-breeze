@@ -7,8 +7,8 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/drag-surface-basic.html';
-const kanbanPage = '/demos/examples/demos/drag-surface-kanban.html';
+const demoPage = '/docs/examples/demos/drag-surface-basic.html';
+const kanbanPage = '/docs/examples/demos/drag-surface-kanban.html';
 
 /** Wait for drag-surface WC to initialize */
 async function waitForSurface(page) {

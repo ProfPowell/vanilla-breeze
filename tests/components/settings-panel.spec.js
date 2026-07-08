@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/settings-panel-basic.html';
+const demoPage = '/docs/examples/demos/settings-panel-basic.html';
 
 test.describe('settings-panel — baseline', () => {
 

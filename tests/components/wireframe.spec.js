@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/wireframe-mode.html';
+const demoPage = '/docs/examples/demos/wireframe-mode.html';
 
 test.describe('wireframe mode', () => {
 

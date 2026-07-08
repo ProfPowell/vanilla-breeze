@@ -7,7 +7,7 @@
 
 import { test, expect } from 'playwright/test';
 
-const demoPage = '/demos/examples/demos/video-player-basic.html';
+const demoPage = '/docs/examples/demos/video-player-basic.html';
 
 test.describe('video-player', () => {
 
