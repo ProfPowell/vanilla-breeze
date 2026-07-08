@@ -2,6 +2,22 @@
 export default {
   "items": [
     {
+      "id": "0.3.1",
+      "type": "update",
+      "title": "v0.3.1",
+      "body": "Purged stale build artifacts left over from the 0.3.0 decomposition: the `design-system` + `ux-planning` pack bundles (`dist/cdn/packs/*`) and the individual component bundles for the 36 removed components (`dist/cdn/components/*`). No `package.json` export referenced them — t…",
+      "url": "https://vanilla-breeze.com/changelog#0.3.1",
+      "date": "2026-07-07"
+    },
+    {
+      "id": "0.3.0",
+      "type": "update",
+      "title": "v0.3.0",
+      "body": "Decomposed the design-system and project-planning packs out of core. These 36 components now ship as standalone, token-driven packages and were removed from `vanilla-breeze`: Design system → [`@profpowell/vb-design-system`](https://www.npmjs.com/package/@profpowell/vb-design-s…",
+      "url": "https://vanilla-breeze.com/changelog#0.3.0",
+      "date": "2026-07-06"
+    },
+    {
       "id": "0.2.0",
       "type": "update",
       "title": "v0.2.0",
