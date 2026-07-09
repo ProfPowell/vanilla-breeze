@@ -133,7 +133,10 @@ class TabSet extends VBElement {
       summary.id = tabId;
       summary.setAttribute('aria-controls', panelId);
       summary.setAttribute('tabindex', detail.open ? '0' : '-1');
-      summary.setAttribute('aria-selected', detail.open ? 'true' : 'false');
+      // <summary> exposes an implicit button role; aria-expanded is the
+      // supported state attribute for it. aria-selected belongs to tab/
+      // option roles, which this component deliberately does not apply.
+      summary.setAttribute('aria-expanded', detail.open ? 'true' : 'false');
 
       panel.id = panelId;
       panel.setAttribute('aria-labelledby', tabId);
@@ -179,7 +182,7 @@ class TabSet extends VBElement {
     this.#details.forEach((detail, i) => {
       const summary = this.#summaries[i];
       summary.setAttribute('tabindex', detail.open ? '0' : '-1');
-      summary.setAttribute('aria-selected', detail.open ? 'true' : 'false');
+      summary.setAttribute('aria-expanded', detail.open ? 'true' : 'false');
     });
   }
 

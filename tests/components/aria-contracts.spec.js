@@ -7,20 +7,20 @@
 
 import { test, expect } from 'playwright/test';
 
-// ── tab-set: aria-selected ───────────────────────────────────────────
+// ── tab-set: aria-expanded ───────────────────────────────────────────
 
 test.describe('tab-set ARIA contracts', () => {
   const page_url = '/docs/examples/demos/tabs-basic.html';
 
-  test('active tab summary has aria-selected="true"', async ({ page }) => {
+  test('active tab summary has aria-expanded="true"', async ({ page }) => {
     await page.goto(page_url);
     await page.waitForSelector('tab-set[data-upgraded]');
 
     const activeTab = page.locator('tab-set > details[open] > summary');
-    await expect(activeTab.first()).toHaveAttribute('aria-selected', 'true');
+    await expect(activeTab.first()).toHaveAttribute('aria-expanded', 'true');
   });
 
-  test('inactive tab summaries have aria-selected="false"', async ({ page }) => {
+  test('inactive tab summaries have aria-expanded="false"', async ({ page }) => {
     await page.goto(page_url);
     await page.waitForSelector('tab-set[data-upgraded]');
 
@@ -29,11 +29,11 @@ test.describe('tab-set ARIA contracts', () => {
     expect(count).toBeGreaterThan(0);
 
     for (let i = 0; i < count; i++) {
-      await expect(inactiveTabs.nth(i)).toHaveAttribute('aria-selected', 'false');
+      await expect(inactiveTabs.nth(i)).toHaveAttribute('aria-expanded', 'false');
     }
   });
 
-  test('switching tabs updates aria-selected', async ({ page }) => {
+  test('switching tabs updates aria-expanded', async ({ page }) => {
     await page.goto(page_url);
     await page.waitForSelector('tab-set[data-upgraded]');
 
@@ -41,11 +41,11 @@ test.describe('tab-set ARIA contracts', () => {
     const secondSummary = page.locator('tab-set > details:nth-child(2) > summary');
     await secondSummary.click();
 
-    await expect(secondSummary).toHaveAttribute('aria-selected', 'true');
+    await expect(secondSummary).toHaveAttribute('aria-expanded', 'true');
 
     // First tab should now be false
     const firstSummary = page.locator('tab-set > details:nth-child(1) > summary');
-    await expect(firstSummary).toHaveAttribute('aria-selected', 'false');
+    await expect(firstSummary).toHaveAttribute('aria-expanded', 'false');
   });
 });
 

@@ -90,24 +90,24 @@ test.describe('tab-set — ARIA contracts', () => {
     await expect(panel).toHaveAttribute('aria-labelledby', summaryId);
   });
 
-  test('aria-selected reflects open state', async ({ page }) => {
+  test('aria-expanded reflects open state', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForSelector('tab-set[data-upgraded]');
 
     const summaries = page.locator('tab-set summary');
 
-    // First tab is open — should be selected
-    await expect(summaries.first()).toHaveAttribute('aria-selected', 'true');
-    await expect(summaries.nth(1)).toHaveAttribute('aria-selected', 'false');
-    await expect(summaries.nth(2)).toHaveAttribute('aria-selected', 'false');
+    // First tab is open — should be expanded
+    await expect(summaries.first()).toHaveAttribute('aria-expanded', 'true');
+    await expect(summaries.nth(1)).toHaveAttribute('aria-expanded', 'false');
+    await expect(summaries.nth(2)).toHaveAttribute('aria-expanded', 'false');
 
     // Switch to second tab
     await summaries.nth(1).click();
     await page.waitForTimeout(200);
 
-    await expect(summaries.first()).toHaveAttribute('aria-selected', 'false');
-    await expect(summaries.nth(1)).toHaveAttribute('aria-selected', 'true');
-    await expect(summaries.nth(2)).toHaveAttribute('aria-selected', 'false');
+    await expect(summaries.first()).toHaveAttribute('aria-expanded', 'false');
+    await expect(summaries.nth(1)).toHaveAttribute('aria-expanded', 'true');
+    await expect(summaries.nth(2)).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('tabindex follows roving pattern', async ({ page }) => {
