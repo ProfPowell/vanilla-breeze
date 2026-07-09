@@ -337,6 +337,7 @@
 
     /* ===== Token info panel ===== */
     .token-info {
+      container-type: normal;
       position: fixed;
       bottom: var(--size-m);
       right: var(--size-m);
@@ -353,6 +354,17 @@
       z-index: 100;
       transition: opacity 0.3s ease;
       line-height: 1.6;
+    }
+
+    /* Inner rows are plain <section>s: opt out of VB's inline-size
+       containment so the shrink-to-fit fixed panel sizes to their content,
+       and keep the [hidden] detail row hidden (section{display:block}
+       otherwise overrides the UA [hidden] rule). */
+    .token-info > section {
+      container-type: normal;
+    }
+    .token-info > section[hidden] {
+      display: none;
     }
 
     .token-info code {
@@ -391,7 +403,7 @@
 <body>
 
   <!-- Compact toolbar — single fixed row with selects -->
-  <div class="toolbar" id="toolbar-container">
+  <section class="toolbar" id="toolbar-container">
     <label>Theme
       <select id="ctl-theme">
         <option value="">Default</option>
@@ -487,7 +499,7 @@
     <label>Gap
       <input type="range" id="gap-slider" min="0" max="48" value="24" step="4"/>
     </label><output id="gap-output">24px</output>
-  </div>
+  </section>
 
   <!-- Semantic regions — grid children when data-page-layout is set -->
   <header>
@@ -509,48 +521,48 @@
   <main>
     <section>
       <h2>Dashboard</h2>
-      <div class="stats-row">
-        <div class="stat">
+      <section class="stats-row">
+        <section class="stat">
           <span class="stat-value">2,847</span>
           <span class="stat-label">Active Users</span>
-        </div>
-        <div class="stat">
+        </section>
+        <section class="stat">
           <span class="stat-value">94.2%</span>
           <span class="stat-label">Uptime</span>
-        </div>
-        <div class="stat">
+        </section>
+        <section class="stat">
           <span class="stat-value">1.4s</span>
           <span class="stat-label">Avg Load</span>
-        </div>
-        <div class="stat">
+        </section>
+        <section class="stat">
           <span class="stat-value">47</span>
           <span class="stat-label">Themes</span>
-        </div>
-      </div>
+        </section>
+      </section>
     </section>
 
     <hr/>
 
     <section>
       <h2>Capabilities</h2>
-      <div class="feature-grid">
-        <div class="feature-card">
+      <section class="feature-grid">
+        <section class="feature-card">
           <h3>Rich Backgrounds</h3>
           <p>Gradient, image, and mesh backgrounds via CSS custom properties.</p>
-        </div>
-        <div class="feature-card">
+        </section>
+        <section class="feature-card">
           <h3>Multi-Region Elevation</h3>
           <p>Header, main, footer, nav, and aside all float as separate canvas regions.</p>
-        </div>
-        <div class="feature-card">
+        </section>
+        <section class="feature-card">
           <h3>Theme-Aware Shape</h3>
           <p>Radius and shadow inherit from theme tokens — Swiss: sharp, Brutalist: offset, Organic: round.</p>
-        </div>
-        <div class="feature-card">
+        </section>
+        <section class="feature-card">
           <h3>Layout Integration</h3>
           <p>Works with data-page-layout grids — sidebar, holy-grail, and stack layouts.</p>
-        </div>
-      </div>
+        </section>
+      </section>
     </section>
 
     <hr/>
@@ -589,17 +601,17 @@
   </footer>
 
   <!-- Token info panel -->
-  <div class="token-info" id="token-info">
-    <div>Theme: <code id="token-theme">default</code></div>
-    <div>Layout: <code id="token-layout">none</code></div>
-    <div>Backdrop: <code id="token-backdrop">default</code></div>
-    <div>Chrome: <code id="token-chrome">card</code></div>
-    <div>BG: <code id="token-bg">theme gradient</code></div>
-    <div>Gap: <code id="token-gap">24px</code></div>
-    <div>Depth: <code id="token-depth">none</code></div>
-    <div id="token-depth-detail" hidden>Shadow: <code id="token-depth-shadow">—</code></div>
-    <div>Surface: <code id="token-surface">solid</code></div>
-  </div>
+  <section class="token-info" id="token-info">
+    <section>Theme: <code id="token-theme">default</code></section>
+    <section>Layout: <code id="token-layout">none</code></section>
+    <section>Backdrop: <code id="token-backdrop">default</code></section>
+    <section>Chrome: <code id="token-chrome">card</code></section>
+    <section>BG: <code id="token-bg">theme gradient</code></section>
+    <section>Gap: <code id="token-gap">24px</code></section>
+    <section>Depth: <code id="token-depth">none</code></section>
+    <section id="token-depth-detail" hidden>Shadow: <code id="token-depth-shadow">—</code></section>
+    <section>Surface: <code id="token-surface">solid</code></section>
+  </section>
 
   <script>
     const ctlTheme = document.getElementById('ctl-theme');

@@ -29,6 +29,16 @@
       border-block-start: 1px solid var(--color-border);
       margin-block: var(--size-2xl);
     }
+    [data-form-success] layout-stack {
+      text-align: center;
+      padding: var(--size-xl);
+    }
+    [data-form-success] layout-stack > p:first-child {
+      font-size: var(--font-size-xl);
+    }
+    /* <section> gets a bare `display: block` that overrides the UA
+       [hidden] rule, so re-assert it for the hidden success panel. */
+    [data-form-success][hidden] { display: none; }
   </style>
 </head>
 <body>
@@ -39,12 +49,12 @@
         <p>This form works at every layer of the PE stack. Disable CSS or JS to see graceful degradation.</p>
       </header>
 
-      <div class="info-box">
+      <aside class="info-box">
         <p><strong>Layer 1 — HTML:</strong> Native validation attributes + static <code>&lt;output&gt;</code> hints. Browser shows bubbles.</p>
         <p><strong>Layer 2 — CSS:</strong> <code>:user-valid</code>/<code>:user-invalid</code> styling after interaction. No JS needed.</p>
         <p><strong>Layer 3 — Enhanced HTML:</strong> <code>data-message-*</code> attributes authored as the contract for Layer 4.</p>
         <p><strong>Layer 4 — JS:</strong> <code>&lt;form-field&gt;</code> upgrades, dynamic messages, error summary, native submit.</p>
-      </div>
+      </aside>
 
       <!-- Full 4-layer form -->
       <section>
@@ -53,14 +63,14 @@
           <form action="/contact" method="post" data-validate id="pe-form">
 
             <!-- Error summary slot — Layer 4 populates and un-hides this -->
-            <div id="pe-summary"
+            <section id="pe-summary"
                  data-form-summary
                  role="alert"
                  tabindex="-1"
                  hidden>
               <h2>There are problems with your submission</h2>
               <ul data-summary-list></ul>
-            </div>
+            </section>
 
             <layout-stack data-layout-gap="l">
               <form-field>
@@ -122,12 +132,12 @@
             </layout-stack>
 
             <!-- Success message slot — Layer 4 swaps in this -->
-            <div data-form-success hidden>
-              <layout-stack data-layout-gap="m" style="text-align: center; padding: var(--size-xl);">
-                <p style="font-size: var(--font-size-xl);">Thank you!</p>
+            <section data-form-success hidden>
+              <layout-stack data-layout-gap="m">
+                <p>Thank you!</p>
                 <p>Your message has been sent successfully.</p>
               </layout-stack>
-            </div>
+            </section>
           </form>
         </layout-card>
       </section>

@@ -18,6 +18,11 @@
       border-radius: var(--radius-s);
     }
     .info-box p { margin: 0; }
+    .success-panel { text-align: center; padding: var(--size-xl); }
+    .success-panel .thanks { font-size: var(--font-size-xl); }
+    /* <section> gets a bare `display: block` that overrides the UA
+       [hidden] rule, so re-assert it for the hidden success panel. */
+    [data-form-success][hidden] { display: none; }
     code {
       background: var(--color-surface-raised);
       padding: 0.1em 0.3em;
@@ -39,9 +44,9 @@
         <p>When <code>data-submit="fetch"</code> is set, the form coordinator handles async submission with loading, success, and error states.</p>
       </header>
 
-      <div class="info-box">
+      <section class="info-box">
         <p><strong>Note:</strong> This demo uses a mock endpoint. Open the console to see the simulated server interaction. The form cycles through <code>data-submitting</code> → <code>data-success</code> or <code>data-error</code> states.</p>
-      </div>
+      </section>
 
       <!-- ═══════════════════════════════════════════════════════════
            FETCH SUBMIT WITH SUCCESS
@@ -50,10 +55,10 @@
         <h2>Contact Form (fetch with success)</h2>
         <layout-card>
           <form data-validate data-submit="fetch" action="/api/contact" method="post">
-            <div data-form-summary role="alert" tabindex="-1" hidden>
+            <section data-form-summary role="alert" tabindex="-1" hidden>
               <h2>There are problems with your submission</h2>
               <ul data-summary-list></ul>
-            </div>
+            </section>
 
             <layout-stack data-layout-gap="l">
               <form-field>
@@ -86,12 +91,12 @@
               <button type="submit">Send Message</button>
             </layout-stack>
 
-            <div data-form-success hidden>
-              <layout-stack data-layout-gap="m" style="text-align: center; padding: var(--size-xl);">
-                <p style="font-size: var(--font-size-xl);">Thank you!</p>
+            <section data-form-success hidden>
+              <layout-stack data-layout-gap="m" class="success-panel">
+                <p class="thanks">Thank you!</p>
                 <p>Your message has been sent. We will be in touch shortly.</p>
               </layout-stack>
-            </div>
+            </section>
           </form>
         </layout-card>
       </section>
@@ -103,9 +108,9 @@
            ═══════════════════════════════════════════════════════════ -->
       <section>
         <h2>Event-Only Mode</h2>
-        <div class="info-box">
+        <section class="info-box">
           <p><code>data-submit="event"</code> dispatches a cancelable <code>vb:submit</code> event instead of submitting. Use this for SPA forms where you handle submission in JavaScript.</p>
-        </div>
+        </section>
         <layout-card>
           <form data-validate data-submit="event" id="event-form">
             <layout-stack data-layout-gap="l">

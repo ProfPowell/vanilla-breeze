@@ -186,6 +186,125 @@
       border: 1px solid var(--color-border);
       border-radius: var(--radius-m);
     }
+
+    /* Demo sizing hooks (moved from inline styles) */
+    .page-demo[data-demo-h="160"] { min-height: 160px; }
+    .page-demo[data-demo-h="140"] { min-height: 140px; }
+    .page-demo[data-sidebar-w="70"] { --_sidebar-width: 70px; }
+    .page-demo[data-sidebar-w="60"] { --_sidebar-width: 60px; }
+
+    .component-demo[data-sidebar-w="100"] {
+      --_sidebar-width: 100px;
+      --_content-min: 40%;
+    }
+
+    .component-demo.demo-mb { margin-bottom: var(--size-m); }
+
+    .grid-demo { --_grid-min: 80px; }
+
+    .demo-cell {
+      background: var(--color-gray-100);
+      padding: var(--size-s);
+      font-size: var(--font-size-xs);
+    }
+
+    .demo-content {
+      background: var(--color-gray-50);
+      padding: var(--size-s);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* ------------------------------------------------------------------
+       Semantic-conversion compensation.
+
+       These demos were rebuilt from generic boxes to semantic elements.
+       Two framework behaviors keyed on element identity must be opted out
+       of so the layout mockups still render as the plain boxes they depict:
+
+       1. docs.css (@scope [data-page="docs"]) applies vertical rhythm
+          (margin/padding/border-block-start, plus heading margins) to
+          every section descendant of the article — spacing a generic box
+          never received. Its :first-of-type reset also strips a section's
+          own top padding/border.
+       2. custom-elements/layout-attributes.css sets
+          container-type: inline-size on section/main/article/aside, which
+          drops a grid/flex cell's content-size contribution (collapsing
+          mockup tracks) and re-anchors descendant container queries.
+
+       Scoped with [data-page="docs"] article to outrank the scoped
+       docs.css rules (including their :first-of-type variants). Values
+       mirror the pre-conversion generic-box rendering exactly. */
+    [data-page="docs"] article :is(
+      .demo-grid > section:not(.component-demo),
+      .page-demo,
+      [data-layout="stack"],
+      .grid-demo,
+      .demo-cell > section
+    ) {
+      margin-block-start: 0;
+      padding-block-start: 0;
+      border-block-start: 0;
+    }
+
+    [data-page="docs"] article .hierarchy-diagram {
+      margin-block-start: var(--size-l);
+      padding-block-start: 0;
+      border-block-start: 0;
+    }
+
+    [data-page="docs"] article .demo-grid {
+      margin-block-start: var(--size-m);
+      padding-block-start: 0;
+      border-block-start: 0;
+    }
+
+    [data-page="docs"] article .page-demo > * {
+      margin-block-start: 0;
+      padding-block-start: var(--size-xs);
+      border-block-start: 0;
+    }
+
+    [data-page="docs"] article .demo-cell {
+      margin-block-start: 0;
+      padding-block-start: var(--size-s);
+      border-block-start: 0;
+    }
+
+    [data-page="docs"] article .component-demo.demo-mb {
+      margin-block-start: 0;
+      padding-block-start: var(--size-m);
+      border-block-start: var(--border-width-thin, 1px) solid var(--color-border);
+    }
+
+    [data-page="docs"] article .hierarchy-level {
+      margin-block-start: 0;
+      padding-block-start: var(--size-m);
+      border-block-start-width: 2px;
+      border-block-start-style: solid;
+    }
+
+    [data-page="docs"] article :is(.hierarchy-level, .demo-grid > section) > h3 {
+      margin-block-start: var(--size-l);
+      margin-block-end: var(--size-s);
+    }
+
+    [data-page="docs"] article .demo-grid > section > h4 {
+      margin-block-start: 0;
+      margin-block-end: 0;
+    }
+
+    /* Restore generic-box sizing: opt mockup cells and container-query
+       ancestors out of size containment. */
+    [data-page="docs"] article :is(
+      .hierarchy-diagram, .hierarchy-level,
+      .demo-grid, .demo-grid > section:not(.component-demo),
+      .page-demo, .page-demo > .el-nav, .page-demo > .el-main, .page-demo > .el-aside,
+      [data-layout="stack"], .grid-demo, .demo-cell, .demo-cell > section,
+      .component-demo.demo-mb
+    ) {
+      container-type: normal;
+    }
   </style>
 </head>
 <body>
@@ -207,29 +326,29 @@
 
     <p>Layouts work at two distinct levels:</p>
 
-    <div class="hierarchy-diagram">
-      <div class="hierarchy-level page">
+    <section class="hierarchy-diagram">
+      <section class="hierarchy-level page">
         <h3>Page Layout</h3>
         <code>data-page-layout</code>
         <p>Full-page structure on <code>&lt;body&gt;</code></p>
         <p>Uses semantic element identity</p>
-      </div>
+      </section>
 
-      <div class="hierarchy-level component">
+      <section class="hierarchy-level component">
         <h4>Component Layout</h4>
         <code>data-layout</code>
         <p>Works on any element</p>
         <p>For sections, cards, panels</p>
-      </div>
-    </div>
+      </section>
+    </section>
 
-    <div class="info-box">
+    <aside class="info-box" aria-label="Key principle">
       <p>
         <strong>Key principle:</strong> <code>data-page-layout</code> uses semantic element identity&mdash;your
         <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>,
         and <code>&lt;footer&gt;</code> are automatically placed in the correct grid areas. No classes needed.
       </p>
-    </div>
+    </aside>
 
 
     <!-- ========== PAGE LAYOUTS ========== -->
@@ -241,18 +360,18 @@
     </p>
 
     <h3>Sidebar Left</h3>
-    <div class="demo-grid">
+    <section class="demo-grid">
       <browser-window url="mysite.com">
-        <div class="page-demo" data-page-layout="sidebar-left" data-layout-gap="none" style="min-height: 160px;">
-          <div class="el-header">Header</div>
-          <div class="el-nav">
+        <section class="page-demo" data-page-layout="sidebar-left" data-layout-gap="none" data-demo-h="160">
+          <header class="el-header">Header</header>
+          <section class="el-nav">
             <span>Home</span>
             <span>About</span>
             <span>Contact</span>
-          </div>
-          <div class="el-main">Main Content</div>
-          <div class="el-footer">Footer</div>
-        </div>
+          </section>
+          <section class="el-main">Main Content</section>
+          <footer class="el-footer">Footer</footer>
+        </section>
       </browser-window>
 
       <code-block language="html" label="Sidebar Left">&lt;body data-page-layout="sidebar-left"&gt;
@@ -266,18 +385,18 @@
   &lt;/main&gt;
   &lt;footer&gt;...&lt;/footer&gt;
 &lt;/body&gt;</code-block>
-    </div>
+    </section>
 
     <h3>Holy Grail (Three Column)</h3>
-    <div class="demo-grid">
+    <section class="demo-grid">
       <browser-window url="mysite.com">
-        <div class="page-demo" data-page-layout="holy-grail" data-layout-gap="none" style="min-height: 160px; --_sidebar-width: 70px;">
-          <div class="el-header">Header</div>
-          <div class="el-nav"><span>Nav</span></div>
-          <div class="el-main">Main</div>
-          <div class="el-aside">Aside</div>
-          <div class="el-footer">Footer</div>
-        </div>
+        <section class="page-demo" data-page-layout="holy-grail" data-layout-gap="none" data-demo-h="160" data-sidebar-w="70">
+          <header class="el-header">Header</header>
+          <section class="el-nav"><span>Nav</span></section>
+          <section class="el-main">Main</section>
+          <section class="el-aside">Aside</section>
+          <footer class="el-footer">Footer</footer>
+        </section>
       </browser-window>
 
       <code-block language="html" label="Holy Grail">&lt;body data-page-layout="holy-grail"&gt;
@@ -287,20 +406,20 @@
   &lt;aside&gt;...&lt;/aside&gt;
   &lt;footer&gt;...&lt;/footer&gt;
 &lt;/body&gt;</code-block>
-    </div>
+    </section>
 
     <h3>Dashboard</h3>
-    <div class="demo-grid">
+    <section class="demo-grid">
       <browser-window url="app.mysite.com/dashboard">
-        <div class="page-demo" data-page-layout="dashboard" style="min-height: 160px; --_sidebar-width: 70px;">
-          <div class="el-header">Dashboard</div>
-          <div class="el-nav">
+        <section class="page-demo" data-page-layout="dashboard" data-demo-h="160" data-sidebar-w="70">
+          <header class="el-header">Dashboard</header>
+          <section class="el-nav">
             <span>Overview</span>
             <span>Users</span>
             <span>Reports</span>
-          </div>
-          <div class="el-main">Dashboard Content</div>
-        </div>
+          </section>
+          <section class="el-main">Dashboard Content</section>
+        </section>
       </browser-window>
 
       <code-block language="html" label="Dashboard">&lt;body data-page-layout="dashboard"&gt;
@@ -312,7 +431,7 @@
   &lt;/nav&gt;
   &lt;main&gt;...&lt;/main&gt;
 &lt;/body&gt;</code-block>
-    </div>
+    </section>
 
     <h3>Available Page Layouts</h3>
     <table class="feature-table">
@@ -372,13 +491,13 @@
     </p>
 
     <h3>Sidebar (Component Level)</h3>
-    <div class="demo-grid">
-      <section aria-label="Layout Comparison section" class="component-demo" data-layout="sidebar" data-layout-gap="s" style="--_sidebar-width: 100px; --_content-min: 40%;">
-        <nav aria-label="Layout Comparison nav 2" style="background: var(--color-gray-100); padding: var(--size-s); font-size: var(--font-size-xs);">
-          <div>Link 1</div>
-          <div>Link 2</div>
+    <section class="demo-grid">
+      <section aria-label="Layout Comparison section" class="component-demo" data-layout="sidebar" data-layout-gap="s" data-sidebar-w="100">
+        <nav aria-label="Layout Comparison nav 2" class="demo-cell">
+          <section>Link 1</section>
+          <section>Link 2</section>
         </nav>
-        <article style="background: var(--color-gray-50); padding: var(--size-s); font-size: var(--font-size-xs); color: var(--color-text-muted);">
+        <article class="demo-content">
           Article content goes here...
         </article>
       </section>
@@ -388,41 +507,41 @@
   &lt;nav&gt;Section nav...&lt;/nav&gt;
   &lt;article&gt;Content...&lt;/article&gt;
 &lt;/section&gt;</code-block>
-    </div>
+    </section>
 
     <h3>Stack and Grid</h3>
-    <div class="demo-grid">
-      <div>
+    <section class="demo-grid">
+      <section>
         <h4>Stack Layout</h4>
-        <div class="component-demo" style="margin-bottom: var(--size-m);">
-          <div data-layout="stack" data-layout-gap="s">
-            <div style="background: var(--color-gray-100); padding: var(--size-s); font-size: var(--font-size-xs);">Item 1</div>
-            <div style="background: var(--color-gray-100); padding: var(--size-s); font-size: var(--font-size-xs);">Item 2</div>
-            <div style="background: var(--color-gray-100); padding: var(--size-s); font-size: var(--font-size-xs);">Item 3</div>
-          </div>
-        </div>
+        <section class="component-demo demo-mb">
+          <section data-layout="stack" data-layout-gap="s">
+            <section class="demo-cell">Item 1</section>
+            <section class="demo-cell">Item 2</section>
+            <section class="demo-cell">Item 3</section>
+          </section>
+        </section>
         <code-block language="html" label="Stack">&lt;div data-layout="stack"&gt;
   &lt;div&gt;Item 1&lt;/div&gt;
   &lt;div&gt;Item 2&lt;/div&gt;
 &lt;/div&gt;</code-block>
-      </div>
+      </section>
 
-      <div>
+      <section>
         <h4>Grid Layout</h4>
-        <div class="component-demo" style="margin-bottom: var(--size-m);">
-          <div data-layout="grid" data-layout-gap="s" style="--_grid-min: 80px;">
-            <div style="background: var(--color-gray-100); padding: var(--size-s); font-size: var(--font-size-xs);">1</div>
-            <div style="background: var(--color-gray-100); padding: var(--size-s); font-size: var(--font-size-xs);">2</div>
-            <div style="background: var(--color-gray-100); padding: var(--size-s); font-size: var(--font-size-xs);">3</div>
-            <div style="background: var(--color-gray-100); padding: var(--size-s); font-size: var(--font-size-xs);">4</div>
-          </div>
-        </div>
+        <section class="component-demo demo-mb">
+          <section data-layout="grid" data-layout-gap="s" class="grid-demo">
+            <section class="demo-cell">1</section>
+            <section class="demo-cell">2</section>
+            <section class="demo-cell">3</section>
+            <section class="demo-cell">4</section>
+          </section>
+        </section>
         <code-block language="html" label="Grid">&lt;div data-layout="grid"&gt;
   &lt;div&gt;Card 1&lt;/div&gt;
   &lt;div&gt;Card 2&lt;/div&gt;
 &lt;/div&gt;</code-block>
-      </div>
-    </div>
+      </section>
+    </section>
 
 
     <!-- ========== COMBINING LAYOUTS ========== -->
@@ -468,39 +587,39 @@
       Using CSS <code>:has()</code>, the grid reconfigures itself.
     </p>
 
-    <div class="demo-grid">
-      <div>
+    <section class="demo-grid">
+      <section>
         <h3>Holy Grail (all elements)</h3>
         <browser-window url="Full layout">
-          <div class="page-demo" data-page-layout="holy-grail" data-layout-gap="none" style="min-height: 140px; --_sidebar-width: 60px;">
-            <div class="el-header">Header</div>
-            <div class="el-nav">Nav</div>
-            <div class="el-main">Main</div>
-            <div class="el-aside">Aside</div>
-            <div class="el-footer">Footer</div>
-          </div>
+          <section class="page-demo" data-page-layout="holy-grail" data-layout-gap="none" data-demo-h="140" data-sidebar-w="60">
+            <header class="el-header">Header</header>
+            <section class="el-nav">Nav</section>
+            <section class="el-main">Main</section>
+            <section class="el-aside">Aside</section>
+            <footer class="el-footer">Footer</footer>
+          </section>
         </browser-window>
-      </div>
+      </section>
 
-      <div>
+      <section>
         <h4>Holy Grail (no aside)</h4>
         <browser-window url="Auto-adapts!">
-          <div class="page-demo" data-page-layout="holy-grail" data-layout-gap="none" style="min-height: 140px; --_sidebar-width: 60px;">
-            <div class="el-header">Header</div>
-            <div class="el-nav">Nav</div>
-            <div class="el-main">Main expands</div>
-            <div class="el-footer">Footer</div>
-          </div>
+          <section class="page-demo" data-page-layout="holy-grail" data-layout-gap="none" data-demo-h="140" data-sidebar-w="60">
+            <header class="el-header">Header</header>
+            <section class="el-nav">Nav</section>
+            <section class="el-main">Main expands</section>
+            <footer class="el-footer">Footer</footer>
+          </section>
         </browser-window>
-      </div>
-    </div>
+      </section>
+    </section>
 
-    <div class="info-box">
+    <aside class="info-box" aria-label="No JavaScript required">
       <p>
         <strong>No JavaScript required.</strong> The CSS <code>:has()</code> selector detects which
         semantic elements are present and adjusts the grid template automatically.
       </p>
-    </div>
+    </aside>
 
 
     <!-- ========== COMPARISON ========== -->

@@ -78,6 +78,15 @@ class VbCanvas extends HTMLElement {
 
   #prepareBlock(el) {
     el.setAttribute('tabindex', '0');
+    // Bridge authored data-* placement → grid custom properties, so demos
+    // can declare a block's position with attributes instead of inline
+    // styles. addBlock() sets the props first, so this is a no-op there.
+    for (const prop of ['col', 'cspan', 'row', 'rspan']) {
+      const val = el.dataset[prop];
+      if (val != null && el.style.getPropertyValue(`--${prop}`) === '') {
+        el.style.setProperty(`--${prop}`, val);
+      }
+    }
     if (!el.hasAttribute('data-vb-label')) {
       el.setAttribute('data-vb-label', el.localName);
     }

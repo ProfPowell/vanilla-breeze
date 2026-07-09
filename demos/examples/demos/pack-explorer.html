@@ -132,6 +132,19 @@
       border-block-end: 1px solid var(--color-border, oklch(32% 0.04 260));
     }
 
+    /* These grid containers are now section elements (previously plain block
+       wrappers) and would pick up the bare `section { margin-block-end }` rule
+       above. Their parent section is a container (container-type: inline-size),
+       so that margin cannot collapse away — it adds 4rem inside each parent.
+       Previously they had no bottom margin; zero it to keep spacing identical. */
+    .token-grid,
+    .type-preview,
+    .effect-grid,
+    .component-grid,
+    .mem-pattern-grid {
+      margin-block-end: 0;
+    }
+
     /* ── Token Preview ──────────────────────────── */
     .token-grid {
       display: grid;
@@ -227,6 +240,7 @@
       text-align: center;
       padding: var(--size-2xl, 4rem) var(--size-m, 1rem);
       opacity: 0.5;
+      margin: 0; /* neutralize <figure> UA margin */
     }
 
     .empty-state p {
@@ -256,6 +270,174 @@
       opacity: 0.45;
       margin-block-end: var(--size-xs, 0.5rem);
     }
+
+    /* ── Moved inline styles (conformance) ──────── */
+
+    /* Token swatches (rendered as <span>, need block box) */
+    .swatch-color {
+      display: block;
+    }
+    .swatch-color[data-swatch="color-primary"]        { background: var(--color-primary); }
+    .swatch-color[data-swatch="color-surface"]        { background: var(--color-surface); }
+    .swatch-color[data-swatch="color-surface-raised"] { background: var(--color-surface-raised); }
+    .swatch-color[data-swatch="color-surface-sunken"] { background: var(--color-surface-sunken); }
+    .swatch-color[data-swatch="color-text"]           { background: var(--color-text); }
+    .swatch-color[data-swatch="color-border"]         { background: var(--color-border); }
+
+    /* Typography preview */
+    .type-display {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      line-height: 1.05;
+      font-family: var(--font-display, var(--font-mono, system-ui));
+    }
+    .type-body {
+      font-size: 1rem;
+      line-height: 1.5;
+      font-family: var(--font-mono, monospace);
+    }
+    .type-chrome {
+      display: flex;
+      gap: var(--size-m, 1rem);
+      flex-wrap: wrap;
+    }
+    .chrome-btn {
+      padding: 0.4em 1em;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-m, 6px);
+      background: var(--color-surface-raised);
+      color: var(--color-text);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .chrome-btn-primary {
+      padding: 0.4em 1em;
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius-m, 6px);
+      background: var(--color-primary);
+      color: oklch(10% 0 0);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .chrome-code {
+      padding: 0.2em 0.5em;
+      background: var(--color-surface-sunken);
+      border-radius: var(--radius-s, 3px);
+      font-size: 0.8rem;
+    }
+
+    /* Retro effects demo */
+    .neon-row {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .neon-chip {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .rainbow-seed {
+      color: oklch(65% 0.28 0);
+    }
+    .demo-flipboard {
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+    }
+
+    /* Kawaii effects demo */
+    .sparkle-primary {
+      color: var(--color-primary);
+    }
+    .bounce-btn {
+      padding: 0.5em 1.5em;
+      font-size: 1rem;
+      font-weight: 700;
+      border: 2px solid var(--color-primary);
+      border-radius: var(--radius-full, 9999px);
+      background: var(--color-primary-subtle);
+      color: var(--color-primary);
+      cursor: pointer;
+    }
+    .wiggle-row {
+      font-size: 2rem;
+      display: flex;
+      gap: 1rem;
+    }
+    .wiggle-delay-1 {
+      animation-delay: -0.5s;
+    }
+    .wiggle-delay-2 {
+      animation-delay: -1s;
+    }
+    .kawaii-starburst-box {
+      padding: var(--size-m, 1rem);
+      border-radius: var(--radius-l, 1.5rem);
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .kawaii-starburst-label {
+      font-family: var(--font-display, cursive);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+    .kawaii-particles-box {
+      min-height: 120px;
+      background: linear-gradient(135deg, var(--color-primary-subtle, oklch(95% 0.05 350)), oklch(95% 0.04 290));
+      border-radius: var(--radius-l, 1.5rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .kawaii-particles-label {
+      font-family: var(--font-display, cursive);
+      color: var(--color-primary);
+    }
+
+    /* Memphis effects demo */
+    .mem-band {
+      display: block;
+    }
+    .mem-band-mb {
+      margin-block: 0.5rem;
+    }
+    .mem-band-mbs {
+      margin-block-start: 0.5rem;
+    }
+    .mem-confetti-box {
+      padding: 1.5rem;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mem-confetti-label {
+      font-family: var(--font-display, sans-serif);
+      font-size: 1.3rem;
+    }
+    .mem-pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .mem-swatch {
+      display: block;
+      height: 60px;
+      border: 2px solid var(--m-black);
+    }
+    .mem-swatch[data-swatch="stripe-y"] {
+      background: var(--m-pat-stripe-y);
+      background-color: var(--m-cream);
+    }
+    .mem-swatch[data-swatch="dots-r"] {
+      background: var(--m-pat-dots-r);
+      background-color: var(--m-cream);
+    }
+    .mem-swatch[data-swatch="check-y"] {
+      background: var(--m-pat-check-y);
+    }
   </style>
 </head>
 <body>
@@ -283,62 +465,62 @@
 </nav>
 
 <!-- Status Bar -->
-<div class="status-bar" aria-live="polite">
+<output class="status-bar" aria-live="polite">
   <span class="status-dot" data-active></span>
   <span id="status-text">retro pack loaded</span>
   <span>&middot;</span>
   <span id="status-files">theme + effects + components</span>
-</div>
+</output>
 
 <!-- Token Preview -->
 <section id="tokens">
   <h2>Active Tokens</h2>
-  <div class="token-grid" id="token-grid">
+  <section class="token-grid" id="token-grid">
     <!-- Populated by JS -->
-  </div>
+  </section>
 </section>
 
 <!-- Typography Preview -->
 <section id="typography">
   <h2>Typography</h2>
-  <div class="type-preview">
+  <section class="type-preview">
     <article class="type-sample">
       <p class="type-label">HEADING / DISPLAY</p>
-      <p style="font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; line-height: 1.05; font-family: var(--font-display, var(--font-mono, system-ui));">The Quick Brown Fox</p>
+      <p class="type-display">The Quick Brown Fox</p>
     </article>
     <article class="type-sample">
       <p class="type-label">BODY / MONOSPACE</p>
-      <p style="font-size: 1rem; line-height: 1.5; font-family: var(--font-mono, monospace);">Sphinx of black quartz, judge my vow. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump!</p>
+      <p class="type-body">Sphinx of black quartz, judge my vow. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump!</p>
     </article>
     <article class="type-sample">
       <p class="type-label">UI CHROME</p>
-      <p style="display: flex; gap: var(--size-m, 1rem); flex-wrap: wrap;">
-        <button type="button" style="padding: 0.4em 1em; border: 1px solid var(--color-border); border-radius: var(--radius-m, 6px); background: var(--color-surface-raised); color: var(--color-text); font-size: 0.85rem; cursor: pointer;">Button</button>
-        <button type="button" style="padding: 0.4em 1em; border: 1px solid var(--color-primary); border-radius: var(--radius-m, 6px); background: var(--color-primary); color: oklch(10% 0 0); font-size: 0.85rem; cursor: pointer;">Primary</button>
-        <code style="padding: 0.2em 0.5em; background: var(--color-surface-sunken); border-radius: var(--radius-s, 3px); font-size: 0.8rem;">code sample</code>
+      <p class="type-chrome">
+        <button type="button" class="chrome-btn">Button</button>
+        <button type="button" class="chrome-btn-primary">Primary</button>
+        <code class="chrome-code">code sample</code>
       </p>
     </article>
-  </div>
+  </section>
 </section>
 
 <!-- Effects Playground -->
 <section id="effects">
   <h2>Effects</h2>
-  <div class="effect-grid" id="effects-grid">
-    <div class="empty-state" id="effects-empty">
+  <section class="effect-grid" id="effects-grid">
+    <figure class="empty-state" id="effects-empty">
       <p>Load a pack to see its effects here.</p>
-    </div>
-  </div>
+    </figure>
+  </section>
 </section>
 
 <!-- Components Playground -->
 <section id="components">
   <h2>Components</h2>
-  <div class="component-grid" id="components-grid">
-    <div class="empty-state" id="components-empty">
+  <section class="component-grid" id="components-grid">
+    <figure class="empty-state" id="components-empty">
       <p>Load a pack to see its components here.</p>
-    </div>
-  </div>
+    </figure>
+  </section>
 </section>
 
 
@@ -415,15 +597,16 @@
     const style = getComputedStyle(document.body)
     grid.innerHTML = TOKENS_TO_SHOW.map(t => {
       const val = style.getPropertyValue(t.prop).trim() || '(not set)'
+      const slug = t.prop.replace(/^--/, '')
       const colorBlock = t.type === 'color'
-        ? `<div class="swatch-color" style="background: var(${t.prop});"></div>`
+        ? `<span class="swatch-color" data-swatch="${slug}"></span>`
         : ''
       return `
-        <div class="token-swatch">
+        <article class="token-swatch">
           ${colorBlock}
           <p class="swatch-label">${t.prop}</p>
           <p class="swatch-value">${val.length > 40 ? val.slice(0, 40) + '...' : val}</p>
-        </div>
+        </article>
       `
     }).join('')
   }
@@ -434,10 +617,10 @@
       <article class="effect-card neon-bg">
         <h3>data-effect="neon"</h3>
         <p class="effect-demo" data-effect="neon">LASER</p>
-        <p style="margin-top: 0.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
-          <span data-effect="neon" class="pink" style="font-size: 1.2rem; font-weight: 700;">PINK</span>
-          <span data-effect="neon" class="cyan" style="font-size: 1.2rem; font-weight: 700;">CYAN</span>
-          <span data-effect="neon" class="amber" style="font-size: 1.2rem; font-weight: 700;">AMBER</span>
+        <p class="neon-row">
+          <span data-effect="neon" class="pink neon-chip">PINK</span>
+          <span data-effect="neon" class="cyan neon-chip">CYAN</span>
+          <span data-effect="neon" class="amber neon-chip">AMBER</span>
         </p>
       </article>
       <article class="effect-card">
@@ -461,11 +644,11 @@
       </article>
       <article class="effect-card">
         <h3>data-effect="rainbow"</h3>
-        <p class="effect-demo" data-effect="rainbow" style="color: oklch(65% 0.28 0);">PRIDE</p>
+        <p class="effect-demo rainbow-seed" data-effect="rainbow">PRIDE</p>
       </article>
       <article class="effect-card">
         <h3>data-effect="flipboard"</h3>
-        <p class="effect-demo" style="font-size: clamp(1.2rem, 3vw, 1.8rem);" data-effect="flipboard">DEPARTURES</p>
+        <p class="effect-demo demo-flipboard" data-effect="flipboard">DEPARTURES</p>
       </article>
     `
   }
@@ -487,31 +670,31 @@
     return `
       <article class="effect-card">
         <h3>data-effect="sparkle"</h3>
-        <p class="effect-demo"><span data-effect="sparkle" style="color: var(--color-primary);">Magical</span></p>
+        <p class="effect-demo"><span data-effect="sparkle" class="sparkle-primary">Magical</span></p>
       </article>
       <article class="effect-card">
         <h3>data-effect="bounce"</h3>
-        <p><button type="button" data-effect="bounce" style="padding: 0.5em 1.5em; font-size: 1rem; font-weight: 700; border: 2px solid var(--color-primary); border-radius: var(--radius-full, 9999px); background: var(--color-primary-subtle); color: var(--color-primary); cursor: pointer;">Hover me!</button></p>
+        <p><button type="button" data-effect="bounce" class="bounce-btn">Hover me!</button></p>
       </article>
       <article class="effect-card">
         <h3>data-effect="wiggle"</h3>
-        <p style="font-size: 2rem; display: flex; gap: 1rem;">
+        <p class="wiggle-row">
           <span data-effect="wiggle">&#x2661;</span>
-          <span data-effect="wiggle" style="animation-delay: -0.5s;">&#x2726;</span>
-          <span data-effect="wiggle" style="animation-delay: -1s;">&#x2605;</span>
+          <span data-effect="wiggle" class="wiggle-delay-1">&#x2726;</span>
+          <span data-effect="wiggle" class="wiggle-delay-2">&#x2605;</span>
         </p>
       </article>
       <article class="effect-card">
         <h3>data-effect="starburst"</h3>
-        <div data-effect="starburst" style="padding: var(--size-m, 1rem); border-radius: var(--radius-l, 1.5rem); min-height: 100px; display: flex; align-items: center; justify-content: center;">
-          <span data-effect="sparkle" style="font-family: var(--font-display, cursive); font-size: 1.3rem; font-weight: 700; color: var(--color-primary);">So Kawaii!</span>
-        </div>
+        <span data-effect="starburst" class="kawaii-starburst-box">
+          <span data-effect="sparkle" class="kawaii-starburst-label">So Kawaii!</span>
+        </span>
       </article>
       <article class="effect-card">
         <h3>data-effect="particles" (JS)</h3>
-        <div data-effect="particles" style="min-height: 120px; background: linear-gradient(135deg, var(--color-primary-subtle, oklch(95% 0.05 350)), oklch(95% 0.04 290)); border-radius: var(--radius-l, 1.5rem); display: flex; align-items: center; justify-content: center;">
-          <span style="font-family: var(--font-display, cursive); color: var(--color-primary);">Sparkles!</span>
-        </div>
+        <span data-effect="particles" class="kawaii-particles-box">
+          <span class="kawaii-particles-label">Sparkles!</span>
+        </span>
       </article>
     `
   }
@@ -519,9 +702,9 @@
   // ─── Components content builder (kawaii) ─────────────────
   function buildKawaiiComponents() {
     return `
-      <div class="empty-state">
+      <figure class="empty-state">
         <p>The kawaii pack has no custom web components yet — it focuses on theme tokens and CSS/JS effects.</p>
-      </div>
+      </figure>
     `
   }
 
@@ -530,31 +713,31 @@
     return `
       <article class="effect-card">
         <h3>data-effect="memphis-zigzag"</h3>
-        <div data-effect="memphis-zigzag" style="margin-block: 0.5rem;"></div>
-        <div data-effect="memphis-zigzag" data-color="yellow" style="margin-block-start: 0.5rem;"></div>
+        <span data-effect="memphis-zigzag" class="mem-band mem-band-mb"></span>
+        <span data-effect="memphis-zigzag" data-color="yellow" class="mem-band mem-band-mbs"></span>
       </article>
       <article class="effect-card">
         <h3>data-effect="memphis-dots"</h3>
-        <div data-effect="memphis-dots" style="margin-block: 0.5rem;"></div>
+        <span data-effect="memphis-dots" class="mem-band mem-band-mb"></span>
       </article>
       <article class="effect-card">
         <h3>data-effect="memphis-stripe"</h3>
-        <div data-effect="memphis-stripe" style="margin-block: 0.5rem;"></div>
-        <div data-effect="memphis-stripe" data-color="pink" style="margin-block-start: 0.5rem;"></div>
+        <span data-effect="memphis-stripe" class="mem-band mem-band-mb"></span>
+        <span data-effect="memphis-stripe" data-color="pink" class="mem-band mem-band-mbs"></span>
       </article>
       <article class="effect-card">
         <h3>data-effect="memphis-confetti"</h3>
-        <div data-effect="memphis-confetti" style="padding: 1.5rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
-          <span style="font-family: var(--font-display, sans-serif); font-size: 1.3rem;">Pattern overlay</span>
-        </div>
+        <span data-effect="memphis-confetti" class="mem-confetti-box">
+          <span class="mem-confetti-label">Pattern overlay</span>
+        </span>
       </article>
       <article class="effect-card">
         <h3>Pattern Tokens</h3>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-          <div style="height: 60px; background: var(--m-pat-stripe-y); background-color: var(--m-cream); border: 2px solid var(--m-black);"></div>
-          <div style="height: 60px; background: var(--m-pat-dots-r); background-color: var(--m-cream); border: 2px solid var(--m-black);"></div>
-          <div style="height: 60px; background: var(--m-pat-check-y); border: 2px solid var(--m-black);"></div>
-        </div>
+        <section class="mem-pattern-grid">
+          <span class="mem-swatch" data-swatch="stripe-y"></span>
+          <span class="mem-swatch" data-swatch="dots-r"></span>
+          <span class="mem-swatch" data-swatch="check-y"></span>
+        </section>
       </article>
     `
   }
@@ -562,9 +745,9 @@
   // ─── Components content builder (memphis) ──────────────
   function buildMemphisComponents() {
     return `
-      <div class="empty-state">
+      <figure class="empty-state">
         <p>The Memphis pack has no custom web components — it focuses on theme tokens, pattern system, and decorative CSS effects.</p>
-      </div>
+      </figure>
     `
   }
 
@@ -587,8 +770,8 @@
     const statusDot = document.querySelector('.status-dot')
 
     if (name === 'none' || !BUNDLES[name]) {
-      effectsGrid.innerHTML = '<div class="empty-state"><p>No pack loaded. Core Vanilla Breeze tokens are active.</p></div>'
-      componentsGrid.innerHTML = '<div class="empty-state"><p>No pack components loaded.</p></div>'
+      effectsGrid.innerHTML = '<figure class="empty-state"><p>No pack loaded. Core Vanilla Breeze tokens are active.</p></figure>'
+      componentsGrid.innerHTML = '<figure class="empty-state"><p>No pack components loaded.</p></figure>'
       statusText.textContent = 'core only'
       statusFiles.textContent = 'no pack'
       statusDot.removeAttribute('data-active')

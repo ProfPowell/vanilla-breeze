@@ -123,6 +123,30 @@ function checkFile(filePath) {
   // Track heading levels for hierarchy check
   let lastHeadingLevel = 0;
 
+  // Precompute source lines of <div>s that are direct children of <dl>.
+  // HTML5's content model permits ONLY <div> (as a name-value grouping)
+  // between <dl> and its <dt>/<dd> pairs — there is no semantic
+  // alternative — so vb/no-div must not flag those.
+  const dlChildDivLines = new Set();
+  try {
+    const { document } = parseHTML(content);
+    if (document.querySelector('dl > div')) {
+      const divLineNumbers = [];
+      const divRe = /<div\b/gi;
+      let m;
+      while ((m = divRe.exec(content)) !== null) {
+        divLineNumbers.push(content.substring(0, m.index).split('\n').length);
+      }
+      [...document.querySelectorAll('div')].forEach((div, idx) => {
+        if (div.parentElement?.tagName.toLowerCase() === 'dl') {
+          dlChildDivLines.add(divLineNumbers[idx]);
+        }
+      });
+    }
+  } catch {
+    // linkedom can choke on malformed input; then simply don't exempt.
+  }
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const lineNum = i + 1;
@@ -131,8 +155,8 @@ function checkFile(filePath) {
     // Skip comments and script/style blocks
     if (trimmed.startsWith('<!--') || trimmed.startsWith('<script') || trimmed.startsWith('<style')) continue;
 
-    // vb/no-div — Any <div> element
-    if (/<div[\s>]/i.test(line)) {
+    // vb/no-div — Any <div> element (except the spec-mandated <dl> > <div>)
+    if (/<div[\s>]/i.test(line) && !dlChildDivLines.has(lineNum)) {
       const classMatch = line.match(/<div\s+class="([^"]+)"/i);
       const className = classMatch ? classMatch[1] : null;
       let suggestion = 'Replace with a semantic element (<section>, <article>, <header>, <footer>, <aside>, <nav>, <main>)';
@@ -274,7 +298,12 @@ function checkFile(filePath) {
 
   // vb/use-form-field — Label+input outside form-field in forms with validation
   const hasForm = /<form[\s>]/i.test(content);
-  const hasValidation = /required|pattern=|minlength|maxlength|type="email"|type="url"|type="number"/i.test(content);
+  // Anchor validation to actual form controls — a bare /required/ match
+  // also hit the English word "required" in prose (e.g. "No JavaScript
+  // required"), firing on button-only <form method="dialog"> demos.
+  const hasValidation =
+    /<(input|textarea|select)\b[^>]*\b(required|pattern=|minlength=|maxlength=)/i.test(content) ||
+    /type="(email|url|number)"/i.test(content);
   if (hasForm && hasValidation) {
     const hasFormField = /<form-field[\s>]/i.test(content);
     if (!hasFormField) {

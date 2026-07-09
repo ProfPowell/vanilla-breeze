@@ -148,13 +148,21 @@
       color: var(--color-text-muted);
       margin: 0;
     }
+
+    /* ── Page header ── */
+    .lab-header {
+      padding: var(--size-m) var(--size-l);
+      border-block-end: 1px solid var(--color-border);
+    }
+    .lab-title { margin: 0; font-size: 1.5rem; }
+    .lab-subtitle { margin: 0; color: var(--color-text-muted); font-size: 0.9375rem; }
   </style>
 </head>
 <body>
 
-  <header data-layout="stack" data-layout-gap="2xs" style="padding: var(--size-m) var(--size-l); border-block-end: 1px solid var(--color-border);">
-    <h1 style="margin: 0; font-size: 1.5rem;">Effects Lab</h1>
-    <p style="margin: 0; color: var(--color-text-muted); font-size: 0.9375rem;">
+  <header class="lab-header" data-layout="stack" data-layout-gap="2xs">
+    <h1 class="lab-title">Effects Lab</h1>
+    <p class="lab-subtitle">
       Write text, choose one effect per slot, add class modifiers, and watch the composed result live.
       The generated HTML and runtime CSS are below.
     </p>
@@ -199,17 +207,17 @@
     <aside class="lab-controls" data-layout="stack" data-layout-gap="s" aria-label="Effects controls">
       <form id="lab" autocomplete="off" data-layout="stack" data-layout-gap="s">
 
-        <div class="row stack">
+        <section class="row stack">
           <label for="content">Content</label>
           <input type="text" id="content" name="content" value="Page Title" />
-        </div>
+        </section>
 
-        <div class="toggles" data-layout="cluster" data-layout-gap="m">
+        <section class="toggles" data-layout="cluster" data-layout-gap="m">
           <label><input type="checkbox" name="dark" /> Dark stage</label>
           <label><input type="checkbox" name="stagger" /> 3-element stagger</label>
-        </div>
+        </section>
 
-        <div class="row">
+        <section class="row">
           <label for="entrance">Entrance</label>
           <select id="entrance" name="entrance">
             <option value="">— none —</option>
@@ -220,9 +228,9 @@
             <option value="fade-in slide-up">fade-in + slide-up</option>
             <option value="shadow">shadow</option>
           </select>
-        </div>
+        </section>
 
-        <div class="row">
+        <section class="row">
           <label for="attention">Attention</label>
           <select id="attention" name="attention">
             <option value="">— none —</option>
@@ -231,9 +239,9 @@
             <option value="bounce">bounce</option>
             <option value="blink">blink</option>
           </select>
-        </div>
+        </section>
 
-        <div class="row">
+        <section class="row">
           <label for="decoration">Decoration</label>
           <select id="decoration" name="decoration">
             <option value="">— none —</option>
@@ -244,9 +252,9 @@
             <option value="glow">glow</option>
             <option value="float">float</option>
           </select>
-        </div>
+        </section>
 
-        <div class="row">
+        <section class="row">
           <label for="exit">Exit</label>
           <select id="exit" name="exit">
             <option value="">— none —</option>
@@ -254,19 +262,19 @@
             <option value="collapse">collapse</option>
             <option value="slide-out">slide-out</option>
           </select>
-        </div>
+        </section>
 
-        <div class="row stack">
+        <section class="row stack">
           <label>Static paint (multi)</label>
-          <div class="static-options">
+          <section class="static-options">
             <label><input type="checkbox" name="static" value="hard-shadow" /> hard-shadow</label>
             <label><input type="checkbox" name="static" value="text-3d" /> text-3d</label>
             <label><input type="checkbox" name="static" value="outline" /> outline</label>
             <label><input type="checkbox" name="static" value="stamp" /> stamp</label>
-          </div>
-        </div>
+          </section>
+        </section>
 
-        <div class="row stack">
+        <section class="row stack">
           <label for="classes-input">Class modifiers</label>
           <combo-box id="classes-combo" name="classes" multiple custom>
             <input id="classes-input" type="text" placeholder="Add modifier or type custom…" autocomplete="off" />
@@ -310,9 +318,9 @@
               <li data-value="long">long</li>
             </ul>
           </combo-box>
-        </div>
+        </section>
 
-        <div class="row">
+        <section class="row">
           <label for="trigger">Trigger</label>
           <select id="trigger" name="trigger">
             <option value="">— none (immediate) —</option>
@@ -324,14 +332,14 @@
             <option value="media">media:&lt;query&gt;</option>
             <option value="event">event:&lt;name&gt;</option>
           </select>
-        </div>
+        </section>
 
-        <div class="row stack" id="trigger-param-row" hidden>
+        <section class="row stack" id="trigger-param-row" hidden>
           <label for="triggerParam">Trigger param</label>
           <input type="text" id="triggerParam" name="triggerParam" placeholder="e.g. 1500 / toggle / (min-width:60rem) / order-confirmed" />
-        </div>
+        </section>
 
-        <div class="row" id="stagger-mode-row" hidden>
+        <section class="row" id="stagger-mode-row" hidden>
           <label for="stagger-mode">Stagger</label>
           <select id="stagger-mode" name="staggerMode">
             <option value="" selected>linear</option>
@@ -339,12 +347,12 @@
             <option value="random">random</option>
             <option value="grid">grid</option>
           </select>
-        </div>
+        </section>
 
-        <div class="actions" data-layout="cluster" data-layout-gap="s">
+        <section class="actions" data-layout="cluster" data-layout-gap="s">
           <button type="button" id="lab-replay">Replay</button>
           <button type="button" id="lab-reset">Reset</button>
-        </div>
+        </section>
       <button type="submit" hidden>Submit</button>
 </form>
     </aside>
@@ -431,7 +439,8 @@
         const staggerAttr = state.staggerMode
           ? ` data-stagger="${state.staggerMode}"`
           : ' data-stagger';
-        return `<section${staggerAttr} style="--vb-stagger: 120ms">\n${items}\n</section>`;
+        const staggerStyle = 'style="--vb-stagger: 120ms"';
+        return `<section${staggerAttr} ${staggerStyle}>\n${items}\n</section>`;
       }
       return `${open}${escape(state.content)}${close}`;
     }
