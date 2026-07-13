@@ -35,7 +35,7 @@ test.describe('qr-code — baseline', () => {
 
     const srText = await page.evaluate(() => {
       const qr = document.querySelector('qr-code');
-      const span = qr.querySelector('.sr-only');
+      const span = qr.querySelector('.visually-hidden');
       return span?.textContent ?? '';
     });
 

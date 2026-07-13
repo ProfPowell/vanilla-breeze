@@ -57,8 +57,10 @@ test.describe('content-swap — swap behavior', () => {
 
     const swap = page.locator('content-swap').first();
 
-    // Find a trigger — either a [data-swap] button or the whole element
-    const trigger = page.locator('content-swap [data-swap]').first();
+    // Find a trigger — either a [data-swap] button inside THIS instance
+    // or the whole element (scoped: other instances on the page have their
+    // own [data-swap] triggers that must not be matched)
+    const trigger = swap.locator('[data-swap]').first();
     const hasTrigger = await trigger.count();
 
     if (hasTrigger > 0) {
@@ -75,7 +77,7 @@ test.describe('content-swap — swap behavior', () => {
     await page.waitForSelector('content-swap[data-upgraded]');
 
     const swap = page.locator('content-swap').first();
-    const trigger = page.locator('content-swap [data-swap]').first();
+    const trigger = swap.locator('[data-swap]').first();
     const hasTrigger = await trigger.count();
     const clickTarget = hasTrigger > 0 ? trigger : swap;
 
@@ -83,7 +85,7 @@ test.describe('content-swap — swap behavior', () => {
     await expect(swap).toHaveAttribute('swapped', '');
 
     // Find trigger on back face or use element again
-    const backTrigger = page.locator('content-swap [data-face="back"] [data-swap]').first();
+    const backTrigger = swap.locator('[data-face="back"] [data-swap]').first();
     const hasBackTrigger = await backTrigger.count();
     const secondTarget = hasBackTrigger > 0 ? backTrigger : clickTarget;
 
@@ -95,10 +97,15 @@ test.describe('content-swap — swap behavior', () => {
     await page.goto(demoPage);
     await page.waitForSelector('content-swap[data-upgraded]');
 
-    const result = await page.evaluate(() => {
+    const result = await page.evaluate(async () => {
       const swap = document.querySelector('content-swap');
-      // Programmatic swap
+      // Programmatic swap — state applies asynchronously inside a View
+      // Transition update callback, so wait for the swap event
+      const swapped = new Promise(resolve => {
+        swap.addEventListener('content-swap:swap', resolve, { once: true });
+      });
       swap.flip();
+      await swapped;
 
       return {
         frontInert: swap.querySelector('[data-face="front"]').inert,
@@ -119,12 +126,24 @@ test.describe('content-swap — public API', () => {
     await page.goto(demoPage);
     await page.waitForSelector('content-swap[data-upgraded]');
 
-    const result = await page.evaluate(() => {
+    const result = await page.evaluate(async () => {
       const swap = document.querySelector('content-swap');
+      // flip()/unflip() apply asynchronously (View Transition update
+      // callback) — await the swap event after each call
+      const nextSwap = () => new Promise(resolve => {
+        swap.addEventListener('content-swap:swap', resolve, { once: true });
+      });
+
+      let settled = nextSwap();
       swap.flip();
+      await settled;
       const afterFlip = swap.swapped;
+
+      settled = nextSwap();
       swap.unflip();
+      await settled;
       const afterUnflip = swap.swapped;
+
       return { afterFlip, afterUnflip };
     });
 
@@ -136,13 +155,26 @@ test.describe('content-swap — public API', () => {
     await page.goto(demoPage);
     await page.waitForSelector('content-swap[data-upgraded]');
 
-    const result = await page.evaluate(() => {
+    const result = await page.evaluate(async () => {
       const swap = document.querySelector('content-swap');
+      // toggle() applies asynchronously (View Transition update
+      // callback) — await the swap event after each call
+      const nextSwap = () => new Promise(resolve => {
+        swap.addEventListener('content-swap:swap', resolve, { once: true });
+      });
+
       const initial = swap.swapped;
+
+      let settled = nextSwap();
       swap.toggle();
+      await settled;
       const first = swap.swapped;
+
+      settled = nextSwap();
       swap.toggle();
+      await settled;
       const second = swap.swapped;
+
       return { initial, first, second };
     });
 

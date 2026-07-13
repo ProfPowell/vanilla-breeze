@@ -15,7 +15,8 @@ test.describe('chat-window — baseline', () => {
     await page.goto(demoPage);
     await page.waitForSelector('chat-window[data-upgraded]');
 
-    const chatWindow = page.locator('chat-window');
+    // Demo contains multiple chat-window instances — scope to the first
+    const chatWindow = page.locator('chat-window').first();
     await expect(chatWindow).toBeVisible();
   });
 
@@ -23,11 +24,12 @@ test.describe('chat-window — baseline', () => {
     await page.goto(demoPage);
     await page.waitForSelector('chat-window[data-upgraded]');
 
-    const thread = page.locator('chat-window chat-thread');
-    const input = page.locator('chat-window chat-input');
+    // Demo contains multiple chat-window instances — each should have
+    // exactly one chat-thread and one chat-input
+    const firstWindow = page.locator('chat-window').first();
 
-    await expect(thread).toHaveCount(1);
-    await expect(input).toHaveCount(1);
+    await expect(firstWindow.locator('chat-thread')).toHaveCount(1);
+    await expect(firstWindow.locator('chat-input')).toHaveCount(1);
   });
 });
 
