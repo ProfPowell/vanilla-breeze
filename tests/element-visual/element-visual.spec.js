@@ -66,8 +66,9 @@ test.describe('Element visual regression', () => {
             // Full page screenshot for components with top-layer popovers
             await page.waitForTimeout(300);
             await expect(page).toHaveScreenshot(`${testName}.png`, screenshotOpts);
-          } else if (fixture.screenshotTarget === 'dialog' || (fixture.interactive && !fixture.screenshotTarget)) {
-            // Dialog screenshot (backward compat: interactive without screenshotTarget)
+          } else if (fixture.screenshotTarget === 'dialog') {
+            // Dialog screenshot — declare screenshotTarget: "dialog" in the
+            // compendium; `interactive` alone no longer implies a dialog.
             const dialog = page.locator('dialog[open]');
             await expect(dialog).toBeVisible({ timeout: 5000 });
             await expect(dialog).toHaveScreenshot(`${testName}.png`, screenshotOpts);

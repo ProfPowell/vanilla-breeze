@@ -16,8 +16,10 @@ const demosDir = join(import.meta.dirname, '../../demos/examples/demos');
 // JS-driven animations or runtime-fetched content. Screenshot comparison
 // is meaningless for them; behavior is covered by tests/components/.
 const SKIP = new Set([
-  'scramble-basic.html', // rAF text-scramble animation
-  'content-lens.html',   // renders from fetched /pages.json
+  'scramble-basic.html',           // rAF text-scramble animation
+  'content-lens.html',             // renders from fetched /pages.json
+  'scroll-effects-gallery.html',   // scroll-driven animations settle nondeterministically
+  'activity-feed-dashboard.html',  // relative-time badges change with the wall clock
 ]);
 
 const demos = readdirSync(demosDir)

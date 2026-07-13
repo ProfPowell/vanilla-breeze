@@ -20,6 +20,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', 'site', 'dist', 'pages');
 const PORT = Number(process.env.TEST_SERVER_PORT ?? 8123);
 
+// The element-visual suite loads generated fixture pages that live in the
+// repo, not in the assembled site. Mount that one directory.
+const FIXTURES_PREFIX = '/tests/element-visual/fixtures/generated/';
+const FIXTURES_ROOT = join(__dirname, '..', 'tests', 'element-visual', 'fixtures', 'generated');
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css',
@@ -49,10 +54,15 @@ const MIME = {
 };
 
 async function resolveFile(urlPath) {
+  let root = ROOT;
+  if (urlPath.startsWith(FIXTURES_PREFIX)) {
+    root = FIXTURES_ROOT;
+    urlPath = urlPath.slice(FIXTURES_PREFIX.length);
+  }
   // Prevent path traversal; normalize collapses ../ segments
   const safe = normalize(urlPath).replace(/^(\.\.[/\\])+/, '');
-  const base = join(ROOT, safe);
-  if (!base.startsWith(ROOT)) return null;
+  const base = join(root, safe);
+  if (!base.startsWith(root)) return null;
 
   // try_files {path} {path}/index.html
   try {
