@@ -1,4 +1,5 @@
 import { defineConfig } from 'playwright/test';
+import { join } from 'node:path';
 
 /**
  * Playwright config for element-level visual tests.
@@ -20,7 +21,7 @@ export default defineConfig({
     },
   },
   use: {
-    baseURL: 'http://localhost:4321',
+    baseURL: 'http://127.0.0.1:8123',
     screenshot: 'only-on-failure',
   },
   projects: [
@@ -29,9 +30,12 @@ export default defineConfig({
       use: { viewport: { width: 1280, height: 720 } },
     },
   ],
+  // Same static server as the root suite (serves site/dist/pages plus the
+  // generated fixtures dir). Run `npm run build` first to populate it.
   webServer: {
-    command: 'npm run dev',
-    port: 4321,
+    command: 'node scripts/test-server.mjs',
+    cwd: join(import.meta.dirname, '../..'),
+    port: 8123,
     reuseExistingServer: true,
     timeout: 30000,
   },
