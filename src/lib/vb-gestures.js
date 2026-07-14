@@ -609,7 +609,8 @@ export function initGestures(root = document) {
 // module twice — bundled into vanilla-breeze-autoload.js AND imported raw
 // from /src/lib/... by demo scripts — and double-wiring doubles every
 // gesture (one swipe advances a carousel two steps).
-if (!document.documentElement.hasAttribute('data-vb-gestures-init')) {
-  document.documentElement.setAttribute('data-vb-gestures-init', '');
+const _docEl = typeof document !== 'undefined' ? document.documentElement : null;
+if (!_docEl || !_docEl.hasAttribute('data-vb-gestures-init')) {
+  _docEl?.setAttribute('data-vb-gestures-init', '');
   initGestures();
 }

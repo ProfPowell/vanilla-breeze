@@ -219,8 +219,11 @@ class CarouselWc extends VBElement {
     }
     // Restore the authored children and drop the rendered chrome so a
     // reconnect's setup() rebuilds from a clean slate instead of stacking
-    // a second set of controls around the old track
-    if (this.#track) {
+    // a second set of controls around the old track. Skip when the track
+    // was already detached (the .slides setter clears all children before
+    // calling teardown — restoring from the detached track would resurrect
+    // the old slides alongside the new ones).
+    if (this.#track?.parentElement === this) {
       [...this.#track.children].forEach(child => this.appendChild(child));
     }
     this.#track?.remove();

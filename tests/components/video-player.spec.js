@@ -104,9 +104,9 @@ test.describe('video-player', () => {
     await player.focus();
     await page.keyboard.press('Space');
 
-    // Should attempt to play (state changes to playing or buffering)
-    const state = await player.getAttribute('state');
-    expect(['playing', 'buffering']).toContain(state);
+    // Should attempt to play — retry while the media element spins up
+    // (a one-shot read races the async play()/buffering transition)
+    await expect(player).toHaveAttribute('state', /^(playing|buffering)$/);
   });
 
   test('keyboard M toggles mute', async ({ page }) => {
