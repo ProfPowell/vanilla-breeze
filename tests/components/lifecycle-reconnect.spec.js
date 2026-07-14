@@ -82,10 +82,10 @@ test.describe('lifecycle: remove and reinsert', () => {
     // Mute toggle should still work
     await player.focus();
     await page.keyboard.press('m');
-    await expect(player).toHaveAttribute('data-muted', '');
+    await expect(player).toHaveAttribute('muted', '');
 
     await page.keyboard.press('m');
-    const hasMuted = await player.evaluate(el => el.hasAttribute('data-muted'));
+    const hasMuted = await player.evaluate(el => el.hasAttribute('muted'));
     expect(hasMuted).toBe(false);
   });
 

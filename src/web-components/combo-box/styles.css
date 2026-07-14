@@ -175,8 +175,11 @@ combo-box:not(:defined) {
 
 /* Override pop-over's default container chrome with combobox-specific
    tokens. Match the anchor's width via anchor-size() in modern browsers
-   so the listbox aligns visually with the input/tags-area. */
-combo-box > pop-over[data-combobox-host] {
+   so the listbox aligns visually with the input/tags-area.
+   [popover] is required for specificity: pop-over's own
+   pop-over[popover][data-anchor-name] margin rule (0-2-1) must lose to
+   this alignment override, or the listbox sits 8px off its anchor. */
+combo-box > pop-over[popover][data-combobox-host] {
   padding: 0;
   background: var(--color-surface-overlay);
   border: var(--border-width-thin) solid var(--color-border);
@@ -198,7 +201,9 @@ combo-box > pop-over[data-combobox-host] {
 }
 
 @supports (inline-size: anchor-size(width)) {
-  combo-box > pop-over[data-combobox-host] {
+  /* Same [popover] specificity bump as the base rule above, or its
+     inline-size: max-content wins and the listbox ignores the anchor */
+  combo-box > pop-over[popover][data-combobox-host] {
     inline-size: anchor-size(width);
   }
 }

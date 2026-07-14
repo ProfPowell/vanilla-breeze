@@ -140,13 +140,20 @@ test.describe('drop-down reflected state', () => {
 test.describe('combo-box ARIA contracts', () => {
   const page_url = '/docs/examples/demos/combobox-basic.html';
 
-  test('input has role="combobox" and aria-expanded', async ({ page }) => {
+  test('input carries the combobox ARIA contract (role via ElementInternals)', async ({ page }) => {
     await page.goto(page_url);
     await page.waitForSelector('combo-box[data-upgraded]');
 
+    // The combobox role is set through ElementInternals.role on the host
+    // (setRole in utils/form-internals.js), not as a role attribute, so it
+    // is invisible to attribute assertions and Playwright's role engine.
+    // Assert the author-facing ARIA attributes that drive screen-reader
+    // behavior on the focused input (mirrors combo-box.spec.js baseline).
     const input = page.locator('combo-box input[type="text"]').first();
-    await expect(input).toHaveAttribute('role', 'combobox');
+    await expect(input).not.toHaveAttribute('role', /.+/);
     await expect(input).toHaveAttribute('aria-expanded', 'false');
+    await expect(input).toHaveAttribute('aria-autocomplete', 'list');
+    await expect(input).toHaveAttribute('aria-controls', /combobox-listbox-/);
   });
 
   test('aria-expanded becomes true when listbox opens', async ({ page }) => {
@@ -202,13 +209,19 @@ test.describe('data-table ARIA contracts', () => {
     }
   });
 
-  test('clicking sortable header changes aria-sort to ascending', async ({ page }) => {
+  test('clicking sortable header cycles aria-sort (descending first on pre-sorted data)', async ({ page }) => {
     await page.goto(page_url);
     await page.waitForSelector('data-table[data-upgraded]');
 
     const sortableHeader = page.locator('data-table th[data-sort]').first();
     const count = await page.locator('data-table th[data-sort]').count();
     if (count === 0) return;
+
+    // The demo's Name column is authored in ascending order. data-table's
+    // first click checks #isAlreadySorted and starts DESCENDING so the user
+    // sees an immediate visible change; the second click flips to ascending.
+    await sortableHeader.click();
+    await expect(sortableHeader).toHaveAttribute('aria-sort', 'descending');
 
     await sortableHeader.click();
     await expect(sortableHeader).toHaveAttribute('aria-sort', 'ascending');

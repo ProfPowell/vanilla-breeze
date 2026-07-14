@@ -247,7 +247,9 @@ test.describe('combo-box — popup positioning', () => {
       const cb = document.querySelector('combo-box[multiple]');
       const input = cb.querySelector(':scope > .tags-input-area > input');
       const area = cb.querySelector(':scope > .tags-input-area');
-      const list = cb.querySelector(':scope > ul, :scope > ol');
+      // The popup surface is the composed <pop-over> wrapper; the listbox
+      // <ul> lives inside it since the pop-over composition refactor.
+      const list = cb.querySelector(':scope > pop-over[data-combobox-host]');
 
       input.focus();
       input.click();
@@ -276,7 +278,8 @@ test.describe('combo-box — popup positioning', () => {
 
       const cb = document.querySelector('combo-box');
       const input = cb.querySelector('input');
-      const list = cb.querySelector(':scope > ul, :scope > ol');
+      // Popup surface = composed <pop-over> wrapper (owns anchoring).
+      const list = cb.querySelector(':scope > pop-over[data-combobox-host]');
 
       input.focus();
       input.click();
@@ -311,7 +314,9 @@ test.describe('combo-box — popup positioning', () => {
 
     const before = await page.evaluate(() => {
       const cb = document.querySelector('combo-box');
-      const list = cb.querySelector(':scope > ul, :scope > ol');
+      // Popup surface = composed <pop-over> wrapper; its inline-size tracks
+      // the anchor via anchor-size(width).
+      const list = cb.querySelector(':scope > pop-over[data-combobox-host]');
       const input = cb.querySelector('input');
       return {
         listWidth: Math.round(list.getBoundingClientRect().width),
@@ -328,7 +333,7 @@ test.describe('combo-box — popup positioning', () => {
 
     const after = await page.evaluate(() => {
       const cb = document.querySelector('combo-box');
-      const list = cb.querySelector(':scope > ul, :scope > ol');
+      const list = cb.querySelector(':scope > pop-over[data-combobox-host]');
       const input = cb.querySelector('input');
       return {
         listWidth: Math.round(list.getBoundingClientRect().width),

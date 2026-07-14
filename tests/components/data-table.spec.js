@@ -53,11 +53,14 @@ test.describe('data-table — sorting', () => {
     const header = page.locator('data-table th[data-sort]').first();
     if (await header.count() === 0) return;
 
-    await header.click();
-    await expect(header).toHaveAttribute('aria-sort', 'ascending');
-
+    // The demo's first column is authored pre-sorted ascending, and
+    // #isAlreadySorted makes the first click sort descending so the user
+    // sees a visible change; the second click flips back to ascending
     await header.click();
     await expect(header).toHaveAttribute('aria-sort', 'descending');
+
+    await header.click();
+    await expect(header).toHaveAttribute('aria-sort', 'ascending');
   });
 
   test('data-state-sorted is NOT used (uses aria-sort only)', async ({ page }) => {
