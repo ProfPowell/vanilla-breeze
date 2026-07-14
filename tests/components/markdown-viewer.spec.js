@@ -133,8 +133,17 @@ test.describe('markdown-viewer — src attribute', () => {
   test('fires markdown-viewer:error event on fetch failure', async ({ page }) => {
     await page.goto(srcPage);
     await page.waitForSelector('#error-demo[data-error]', { timeout: RENDER_TIMEOUT });
-    const output = page.locator('#error-output');
-    await expect(output).toContainText('Error caught');
+
+    // Drive the contract directly: the demo's inline listener can attach
+    // after the component's initial fast-failing fetch already fired the
+    // event, so listen ourselves and re-trigger via the src attribute
+    const detail = await page.evaluate(() => new Promise((resolve, reject) => {
+      const el = document.getElementById('error-demo');
+      el.addEventListener('markdown-viewer:error', (e) => resolve(e.detail ?? {}), { once: true });
+      el.setAttribute('src', '/definitely-missing-' + Math.random().toString(36).slice(2) + '.md');
+      setTimeout(() => reject(new Error('markdown-viewer:error never fired')), 5000);
+    }));
+    expect(detail).toBeDefined();
   });
 });
 
