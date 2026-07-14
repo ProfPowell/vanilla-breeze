@@ -49,7 +49,10 @@ test('selection-menu: .actions setter replaces toolbar children', async ({ page 
       { tag: 'highlight-wc', attrs: { color: 'yellow' } },
       { tag: 'note-wc' },
     ];
-    const tags = [...sm.children].map(c => c.tagName.toLowerCase());
+    // selection-menu composes <pop-over> for the toolbar surface (52a792d3);
+    // authored/replaced actions live inside the pop-over, not as direct children.
+    const toolbar = sm.querySelector(':scope > pop-over[data-selection-menu-host]');
+    const tags = [...(toolbar?.children ?? [])].map(c => c.tagName.toLowerCase());
     return { fired, tags };
   });
 
@@ -75,7 +78,10 @@ test('context-menu: .items setter rebuilds menu with groups + separators', async
       { separator: true },
       { label: 'Delete', value: 'del', disabled: true },
     ];
-    const menu = cm.querySelector(':scope > menu, :scope > ul[role="menu"]');
+    // context-menu composes <pop-over> for the menu surface (afa41863);
+    // the setter re-runs setup(), which moves the menu inside the pop-over.
+    const menu = cm.querySelector(
+      ':scope > pop-over[data-context-menu-host] > menu, :scope > pop-over[data-context-menu-host] > ul[role="menu"]');
     return {
       fired,
       liCount: menu?.querySelectorAll(':scope > li').length,
@@ -108,7 +114,10 @@ test('drop-down: .items setter rebuilds menu', async ({ page }) => {
       { separator: true },
       { label: 'External', href: 'https://example.com' },
     ];
-    const menu = dd.querySelector(':scope > menu, :scope > ul[role="menu"]');
+    // drop-down composes <pop-over> for the popover surface (fb9d00b4);
+    // the setter re-runs setup(), which moves the menu inside the pop-over.
+    const menu = dd.querySelector(
+      ':scope > pop-over[data-dropdown-host] > menu, :scope > pop-over[data-dropdown-host] > ul[role="menu"]');
     return {
       fired,
       liCount: menu?.querySelectorAll(':scope > li').length,

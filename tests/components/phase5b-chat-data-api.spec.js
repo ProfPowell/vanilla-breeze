@@ -1,5 +1,8 @@
 /**
- * Phase 5b — chat-window, chat-input, review-surface dual-mode contracts.
+ * Phase 5b — chat-window, chat-input dual-mode contracts.
+ *
+ * review-surface coverage was removed: the component moved out of core to
+ * the external vb-project-planning pack (commit 1b859a60).
  */
 
 import { test, expect } from 'playwright/test';
@@ -78,24 +81,4 @@ test('chat-input: idempotent .value emits chat-input:change with source: "api"',
   expect(result.fired[0].value).toBe('hello');
   expect(result.fired[1].value).toBe('world');
   expect(result.current).toBe('world');
-});
-
-test('review-surface: .pins setter emits review-surface:pins-changed with source tag', async ({ page }) => {
-  await page.goto('/docs/examples/demos/review-surface-basic.html');
-  await page.waitForFunction(() => document.querySelector('review-surface[data-upgraded]'));
-
-  const result = await page.evaluate(() => {
-    const rs = document.querySelector('review-surface');
-    const fired = [];
-    rs.addEventListener('review-surface:pins-changed', (e) => {
-      fired.push({ source: e.detail.source, count: e.detail.pins.length });
-    });
-    rs.pins = [
-      { id: 'p1', x: 10, y: 20, text: 'First' },
-      { id: 'p2', x: 50, y: 80, text: 'Second' },
-    ];
-    return { fired };
-  });
-
-  expect(result.fired).toEqual([{ source: 'property', count: 2 }]);
 });
