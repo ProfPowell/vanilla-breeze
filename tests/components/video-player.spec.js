@@ -18,7 +18,7 @@ test.describe('video-player', () => {
     const player = page.locator('video-player').first();
     await expect(player).toBeVisible();
     await expect(player).toHaveAttribute('data-upgraded', '');
-    await expect(player).toHaveAttribute('data-state', 'idle');
+    await expect(player).toHaveAttribute('state', 'idle');
   });
 
   test('video element is visible in light DOM', async ({ page }) => {
@@ -105,7 +105,7 @@ test.describe('video-player', () => {
     await page.keyboard.press('Space');
 
     // Should attempt to play (state changes to playing or buffering)
-    const state = await player.getAttribute('data-state');
+    const state = await player.getAttribute('state');
     expect(['playing', 'buffering']).toContain(state);
   });
 
@@ -118,11 +118,11 @@ test.describe('video-player', () => {
 
     // Mute
     await page.keyboard.press('m');
-    await expect(player).toHaveAttribute('data-muted', '');
+    await expect(player).toHaveAttribute('muted', '');
 
     // Unmute
     await page.keyboard.press('m');
-    const hasMuted = await player.evaluate(el => el.hasAttribute('data-muted'));
+    const hasMuted = await player.evaluate(el => el.hasAttribute('muted'));
     expect(hasMuted).toBe(false);
   });
 
@@ -140,7 +140,7 @@ test.describe('video-player', () => {
 
     // Third video-player has the playlist
     const tracks = page.locator('video-player').nth(2).locator('.track-list li');
-    await expect(tracks).toHaveCount(3);
+    await expect(tracks).toHaveCount(2);
   });
 
   test('playlist has active track marked', async ({ page }) => {

@@ -215,7 +215,8 @@ test.describe('page-tour — action gating', () => {
 
   test('next button disabled until action completes', async ({ page }) => {
     await page.goto(activePage);
-    // Auto-trigger tour starts after 400ms
+    // The demo uses data-trigger="button" — start via its trigger button
+    await page.locator('[data-tour="settings-tour"]').click();
     await page.waitForSelector('.page-tour-card', { timeout: 3000 });
 
     const nextBtn = page.locator('[data-action="next"]');
@@ -228,6 +229,7 @@ test.describe('page-tour — action gating', () => {
 
   test('action hint is visible while waiting', async ({ page }) => {
     await page.goto(activePage);
+    await page.locator('[data-tour="settings-tour"]').click();
     await page.waitForSelector('.page-tour-card', { timeout: 3000 });
 
     const hint = page.locator('.page-tour-action-hint');
@@ -237,6 +239,7 @@ test.describe('page-tour — action gating', () => {
 
   test('arrow keys blocked while action-gated', async ({ page }) => {
     await page.goto(activePage);
+    await page.locator('[data-tour="settings-tour"]').click();
     await page.waitForSelector('.page-tour-card', { timeout: 3000 });
 
     await page.keyboard.press('ArrowRight');
@@ -301,26 +304,26 @@ test.describe('page-tour — button trigger', () => {
 test.describe('page-tour — persistence', () => {
 
   test('auto-trigger does not restart completed tour', async ({ page }) => {
-    await page.goto(activePage);
+    // The active demo is data-persist="none" now — the forced demo is the
+    // one that persists (data-trigger="auto", data-persist="local")
+    await page.goto(forcedPage);
     await page.waitForSelector('.page-tour-card', { timeout: 3000 });
 
-    // Complete the tour by performing actions and advancing via keyboard
-    // Step 1: input action on profile-name
-    await page.locator('#profile-name').fill('Test');
-    await page.keyboard.press('ArrowRight');
+    // Step 1 is ungated
+    await page.locator('[data-action="next"]').click();
 
-    // Step 2: click action on notification-toggle
-    await page.locator('#notification-toggle').click({ force: true });
-    await page.keyboard.press('ArrowRight');
+    // Step 2: click action on the terms checkbox
+    await page.locator('#accept-terms').click({ force: true });
+    await page.locator('[data-action="next"]').click();
 
-    // Step 3: click action on save-btn
-    await page.locator('#save-btn').click({ force: true });
-    await page.keyboard.press('ArrowRight'); // Finish
+    // Step 3: click action on confirm — advancing past the last step completes
+    await page.locator('#confirm-btn').click({ force: true });
+    await page.locator('[data-action="next"]').click();
 
     // Tour should be complete
     await expect(page.locator('.page-tour-card')).toHaveCount(0);
 
-    // Reload — tour should NOT auto-start
+    // Reload — tour should NOT auto-start again
     await page.reload();
     await waitForTour(page);
     await page.waitForTimeout(600);
