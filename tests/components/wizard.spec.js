@@ -685,7 +685,9 @@ test.describe('wizard — auto-injected nav', () => {
 
     await expect(page.locator('#auto-nav-wizard [data-wizard-prev]')).toHaveCount(1);
     await expect(page.locator('#auto-nav-wizard [data-wizard-next]')).toHaveCount(1);
-    await expect(page.locator('#auto-nav-wizard [type="submit"]')).toHaveCount(1);
+    // The demo form also carries an authored hidden submit (WCAG H32
+    // fallback for the no-JS case) — count only the injected nav's
+    await expect(page.locator('#auto-nav-wizard [data-wizard-nav] [type="submit"]')).toHaveCount(1);
   });
 
   test('navigation works with injected nav', async ({ page }) => {
@@ -715,7 +717,7 @@ test.describe('wizard — auto-injected nav', () => {
     const form = page.locator('#auto-nav-wizard');
     await expect(form).toHaveAttribute('data-wizard-last', '');
 
-    const submitBtn = page.locator('#auto-nav-wizard [type="submit"]');
+    const submitBtn = page.locator('#auto-nav-wizard [data-wizard-nav] [type="submit"]');
     await expect(submitBtn).toBeVisible();
   });
 });

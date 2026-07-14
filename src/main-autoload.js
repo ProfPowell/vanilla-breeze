@@ -51,6 +51,15 @@ initBotProtection();
 // Lazy-load wizard only when [data-wizard] is present
 if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
 
+// Guards below must stay in sync with src/main.js — a guard present there
+// but missing here ships the feature broken on every built page (this file
+// becomes /cdn/vanilla-breeze-autoload.js, which built demos load).
+if (document.querySelector('[data-gesture]')) import('./lib/vb-gestures.js');
+if (document.querySelector('[data-keyboard-aware]')) import('./lib/vb-forms.js');
+if (document.querySelector('[data-scroll-hide]')) import('./utils/scroll-hide-init.js');
+if (document.querySelector('[data-spotlight]')) import('./utils/spotlight-init.js');
+if (document.querySelector('a[target="_blank"]')) import('./utils/links-init.js');
+
 // Lazy-load data-attribute utilities only when matching elements are present
 if (document.querySelector('[data-emoji]')) import('./utils/emoji-init.js');
 if (document.querySelector('input[data-mask]')) import('./utils/mask-init.js');

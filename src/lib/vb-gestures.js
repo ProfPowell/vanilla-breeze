@@ -604,5 +604,13 @@ export function initGestures(root = document) {
   return () => cleanups.forEach(fn => fn());
 }
 
-// Auto-init on load (triggered by lazy-load guard in main.js)
-initGestures();
+// Auto-init on load (triggered by the lazy-load guards in main.js /
+// main-autoload.js). Guarded per document: built pages can evaluate this
+// module twice — bundled into vanilla-breeze-autoload.js AND imported raw
+// from /src/lib/... by demo scripts — and double-wiring doubles every
+// gesture (one swipe advances a carousel two steps).
+const _docEl = typeof document !== 'undefined' ? document.documentElement : null;
+if (!_docEl || !_docEl.hasAttribute('data-vb-gestures-init')) {
+  _docEl?.setAttribute('data-vb-gestures-init', '');
+  initGestures();
+}

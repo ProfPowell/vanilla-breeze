@@ -42,6 +42,8 @@ class CarouselWc extends VBElement {
   /** @type {ReturnType<typeof setInterval> | null} */
   #autoplayTimer = null;
   #currentIndex = 0;
+  #announcedIndex = 0;
+  #scrollSettling = false;
   #reducedMotion = false;
   #vtMode = false;
   /** @type {(() => void) | null} */
@@ -167,6 +169,18 @@ class CarouselWc extends VBElement {
         threshold: 0.5,
       });
       this.#slides.forEach(slide => this.#observer.observe(slide));
+
+      // Smooth scroll + snap can oscillate past the target, making the
+      // observer report transient indexes (1 → 0 → 1 for a single next()).
+      // Announce the first index change immediately, suppress the
+      // transitional flapping, and reconcile once the scroll settles.
+      // #setCurrentIndex still updates controls/persistence throughout.
+      if ('onscrollend' in window) {
+        this.listen(this.#track, 'scrollend', () => {
+          this.#scrollSettling = false;
+          this.#announceChange();
+        });
+      }
     }
 
     // Initial slide (persisted > attribute > 0)
@@ -203,8 +217,26 @@ class CarouselWc extends VBElement {
       this.#swipeCleanup();
       this.#swipeCleanup = null;
     }
+    // Restore the authored children and drop the rendered chrome so a
+    // reconnect's setup() rebuilds from a clean slate instead of stacking
+    // a second set of controls around the old track. Skip when the track
+    // was already detached (the .slides setter clears all children before
+    // calling teardown — restoring from the detached track would resurrect
+    // the old slides alongside the new ones).
+    if (this.#track?.parentElement === this) {
+      [...this.#track.children].forEach(child => this.appendChild(child));
+    }
+    this.#track?.remove();
+    this.#prevBtn?.remove();
+    this.#nextBtn?.remove();
+    this.#indicators?.remove();
+    this.#liveRegion?.remove();
+    this.#track = this.#prevBtn = this.#nextBtn = this.#indicators = this.#liveRegion = null;
     this.#slides = [];
     this.#vtMode = false;
+    this.#currentIndex = 0;
+    this.#announcedIndex = 0;
+    this.#scrollSettling = false;
   }
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
@@ -333,8 +365,19 @@ class CarouselWc extends VBElement {
       this.#liveRegion.textContent = `Slide ${index + 1} of ${this.#slides.length}`;
     }
 
+    if (this.#scrollSettling) return; // reconciled on scrollend
+    this.#announceChange();
+    // Suppress transitional announcements until the scroll settles (only
+    // when scrollend support armed the settle listener)
+    if (!this.#vtMode && 'onscrollend' in window) this.#scrollSettling = true;
+  }
+
+  /** Dispatch carousel-wc:change for the current index, once per change. */
+  #announceChange() {
+    if (this.#currentIndex === this.#announcedIndex) return;
+    this.#announcedIndex = this.#currentIndex;
     this.dispatchEvent(new CustomEvent('carousel-wc:change', {
-      detail: { index, slide: this.#slides[index] },
+      detail: { index: this.#currentIndex, slide: this.#slides[this.#currentIndex] },
       bubbles: true,
     }));
   }

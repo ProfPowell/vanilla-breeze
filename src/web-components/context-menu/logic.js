@@ -197,7 +197,19 @@ class ContextMenuWc extends VBElement {
 
   #handleContextMenu = (e) => {
     e.preventDefault();
-    this.#openAt(e.clientX, e.clientY);
+    // On macOS the contextmenu event fires on pointerDOWN. Opening the
+    // auto-mode popover mid-gesture lets the same gesture's pointerup
+    // light-dismiss it the instant it opens — so while the triggering
+    // button is still held, defer show() until the gesture ends.
+    // (Windows fires contextmenu after release, and the keyboard menu
+    // key has no pressed buttons: both open immediately.)
+    if (e.buttons !== 0) {
+      this.listen(window, 'pointerup', () => {
+        setTimeout(() => this.#openAt(e.clientX, e.clientY), 0);
+      }, { once: true, capture: true });
+    } else {
+      this.#openAt(e.clientX, e.clientY);
+    }
   };
 
   #openAt(x, y) {

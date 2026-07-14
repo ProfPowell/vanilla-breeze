@@ -37,9 +37,19 @@
 
   <script type="module">
     const output = document.getElementById('error-output');
-    document.getElementById('error-demo').addEventListener('markdown-viewer:error', (e) => {
+    const viewer = document.getElementById('error-demo');
+    viewer.addEventListener('markdown-viewer:error', (e) => {
       output.textContent = `Error caught: ${e.detail.error}`;
     });
+    // The component's fast-failing fetch can fire the error before this
+    // module runs. If we lost that race, remove and re-set src (the
+    // component ignores same-value writes) to re-trigger the fetch so the
+    // listener above always renders the message.
+    if (viewer.hasAttribute('data-error')) {
+      const src = viewer.getAttribute('src');
+      viewer.removeAttribute('src');
+      viewer.setAttribute('src', src);
+    }
   </script>
 </body>
 </html>

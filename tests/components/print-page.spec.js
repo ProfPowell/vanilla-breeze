@@ -15,20 +15,24 @@ test.describe('print-page', () => {
     await page.goto(demoPage);
     await page.waitForSelector('print-page button', { timeout: 5000 });
 
-    const text = await page.evaluate(() => {
-      return document.querySelector('print-page button').textContent.trim();
+    // Default variant is "icon": label lives in aria-label, not text content
+    const label = await page.evaluate(() => {
+      const button = document.querySelector('print-page button');
+      return (button.getAttribute('aria-label') || button.textContent).trim();
     });
-    expect(text.length).toBeGreaterThan(0);
+    expect(label.length).toBeGreaterThan(0);
   });
 
   test('button has correct label', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForSelector('print-page button', { timeout: 5000 });
 
-    const text = await page.evaluate(() => {
-      return document.querySelector('print-page button').textContent.trim();
+    // Authored text content becomes the button's accessible name
+    const label = await page.evaluate(() => {
+      const button = document.querySelector('print-page button');
+      return (button.getAttribute('aria-label') || button.textContent).trim();
     });
-    expect(text).toBeTruthy();
+    expect(label).toBe('Print this article');
   });
 
   test('renders raw-mode toggle when raw-toggle present', async ({ page }) => {
@@ -173,7 +177,9 @@ test.describe('print-page — lifecycle', () => {
 
     const result = await page.evaluate(() => {
       const pp = document.querySelector('print-page');
-      const originalLabel = pp.querySelector('button').textContent.trim();
+      const accessibleName = (el) =>
+        (el?.getAttribute('aria-label') || el?.textContent || '').trim();
+      const originalLabel = accessibleName(pp.querySelector('button'));
 
       const parent = pp.parentElement;
       parent.removeChild(pp);
@@ -181,12 +187,13 @@ test.describe('print-page — lifecycle', () => {
 
       return new Promise(resolve => {
         requestAnimationFrame(() => {
-          const newLabel = pp.querySelector('button')?.textContent.trim();
+          const newLabel = accessibleName(pp.querySelector('button'));
           resolve({ originalLabel, newLabel });
         });
       });
     });
 
+    expect(result.originalLabel.length).toBeGreaterThan(0);
     expect(result.newLabel).toBe(result.originalLabel);
   });
 

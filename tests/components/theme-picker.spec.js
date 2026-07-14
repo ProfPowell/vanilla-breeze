@@ -64,9 +64,12 @@ test.describe('theme-picker', () => {
     await page.goto(inlinePage);
     await waitForUpgrade(page);
 
-    /* Click the "dark" mode radio */
-    const darkRadio = page.locator('theme-picker input[type="radio"][value="dark"]');
-    await darkRadio.click();
+    /* Click the "dark" mode option — the styled label is the click surface
+       (it covers the radio input) */
+    const darkOption = page.locator('theme-picker label.option', {
+      has: page.locator('input[type="radio"][value="dark"]'),
+    });
+    await darkOption.click();
 
     /* The html element should reflect the mode change */
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark');

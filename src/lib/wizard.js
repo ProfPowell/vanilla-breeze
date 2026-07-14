@@ -270,6 +270,9 @@ class WizardController {
    */
   #clearState() {
     if (!this.#storage) return;
+    // Cancel any pending debounced save — it would re-persist the state
+    // this clear is removing (e.g. a field input just before wizardReset())
+    cancelAnimationFrame(this.#saveRafId);
     this.#storage.removeItem(this.#storageKey);
   }
 

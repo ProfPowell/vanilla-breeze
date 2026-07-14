@@ -11,12 +11,17 @@ const demoPage = '/docs/examples/demos/wireframe-mode.html';
 
 test.describe('wireframe mode', () => {
 
+  // The demo intentionally scopes wireframe to #demo-content (authored
+  // data-wireframe="mid" on the article) rather than <html>; the html-level
+  // mode and its fixed indicator badge are exercised via the JS API below.
+
   test('applies grayscale filter when data-wireframe is set', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    const html = page.locator('html');
-    const filter = await html.evaluate((el) => getComputedStyle(el).filter);
+    const scope = page.locator('#demo-content');
+    await expect(scope).toHaveAttribute('data-wireframe', 'mid');
+    const filter = await scope.evaluate((el) => getComputedStyle(el).filter);
     expect(filter).toContain('grayscale');
   });
 
@@ -26,17 +31,23 @@ test.describe('wireframe mode', () => {
 
     // Uncheck wireframe toggle
     await page.locator('#wireframe-toggle').uncheck();
-    const html = page.locator('html');
-    const hasAttr = await html.evaluate((el) => el.hasAttribute('data-wireframe'));
+    const scope = page.locator('#demo-content');
+    const hasAttr = await scope.evaluate((el) => el.hasAttribute('data-wireframe'));
     expect(hasAttr).toBe(false);
+    const filter = await scope.evaluate((el) => getComputedStyle(el).filter);
+    expect(filter).not.toContain('grayscale');
   });
 
   test('shows SKETCH indicator badge for lo fidelity', async ({ page }) => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
+    // Demo radio drives the scoped attribute (badge is suppressed there)
     await page.locator('input[name="fidelity"][value="lo"]').check();
+    await expect(page.locator('#demo-content')).toHaveAttribute('data-wireframe', 'lo');
 
+    // The indicator badge is html-level — drive it via the JS API
+    await page.evaluate(() => VanillaBreeze.wireframe.setFidelity('lo'));
     const html = page.locator('html');
     await expect(html).toHaveAttribute('data-wireframe', 'lo');
 
@@ -48,7 +59,7 @@ test.describe('wireframe mode', () => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    await page.locator('input[name="fidelity"][value="mid"]').check();
+    await page.evaluate(() => VanillaBreeze.wireframe.setFidelity('mid'));
 
     const html = page.locator('html');
     const badge = await html.evaluate((el) => getComputedStyle(el, '::before').content);
@@ -59,7 +70,7 @@ test.describe('wireframe mode', () => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
-    await page.locator('input[name="fidelity"][value="hi"]').check();
+    await page.evaluate(() => VanillaBreeze.wireframe.setFidelity('hi'));
 
     const html = page.locator('html');
     await expect(html).toHaveAttribute('data-wireframe', 'hi');
@@ -74,8 +85,9 @@ test.describe('wireframe mode', () => {
 
     await page.locator('input[name="fidelity"][value="hi"]').check();
 
-    const html = page.locator('html');
-    const filter = await html.evaluate((el) => getComputedStyle(el).filter);
+    const scope = page.locator('#demo-content');
+    await expect(scope).toHaveAttribute('data-wireframe', 'hi');
+    const filter = await scope.evaluate((el) => getComputedStyle(el).filter);
     expect(filter).toContain('grayscale(0.3)');
   });
 
@@ -85,15 +97,16 @@ test.describe('wireframe mode', () => {
 
     await page.locator('input[name="fidelity"][value="annotate"]').check();
 
+    // Labeled elements show their authored data-wf-label, not the tag name
     const headerLabel = await page.locator('header').evaluate(
       (el) => getComputedStyle(el, '::after').content
     );
-    expect(headerLabel).toContain('<header>');
+    expect(headerLabel).toContain('Global Header');
 
     const footerLabel = await page.locator('footer').evaluate(
       (el) => getComputedStyle(el, '::after').content
     );
-    expect(footerLabel).toContain('<footer>');
+    expect(footerLabel).toContain('Global Footer');
   });
 
   test('annotate shows labels for expanded element list via ::after', async ({ page }) => {
@@ -102,29 +115,25 @@ test.describe('wireframe mode', () => {
 
     await page.locator('input[name="fidelity"][value="annotate"]').check();
 
-    // form element
+    // form element — labeled, shows its data-wf-label
     const formLabel = await page.locator('form').first().evaluate(
       (el) => getComputedStyle(el, '::after').content
     );
-    expect(formLabel).toContain('<form>');
+    expect(formLabel).toContain('Lead Capture');
 
-    // fieldset element
-    const fieldsetLabel = await page.locator('fieldset').first().evaluate(
+    // main element — unlabeled with no labeled ancestor, falls back to the
+    // tag name. (Descendants of labeled elements inherit --wf-label-text, so
+    // e.g. the fieldsets inside the labeled form show "Lead Capture".)
+    const mainLabel = await page.locator('#demo-content main').evaluate(
       (el) => getComputedStyle(el, '::after').content
     );
-    expect(fieldsetLabel).toContain('<fieldset>');
+    expect(mainLabel).toContain('<main>');
 
-    // blockquote element
-    const bqLabel = await page.locator('blockquote').first().evaluate(
-      (el) => getComputedStyle(el, '::after').content
-    );
-    expect(bqLabel).toContain('<blockquote>');
-
-    // table element
+    // table element — labeled
     const tableLabel = await page.locator('table').first().evaluate(
       (el) => getComputedStyle(el, '::after').content
     );
-    expect(tableLabel).toContain('<table>');
+    expect(tableLabel).toContain('Plan Comparison');
   });
 
   test('labels and annotations coexist — ::before badge + ::after tag name', async ({ page }) => {
@@ -141,11 +150,11 @@ test.describe('wireframe mode', () => {
     expect(headerBefore).not.toBe('none');
     expect(headerBefore).not.toBe('""');
 
-    // And annotation on ::after
+    // And annotation on ::after (labeled element shows its data-wf-label)
     const headerAfter = await page.locator('header').evaluate(
       (el) => getComputedStyle(el, '::after').content
     );
-    expect(headerAfter).toContain('<header>');
+    expect(headerAfter).toContain('Global Header');
   });
 
   test('data-wf-label renders badge on elements', async ({ page }) => {
@@ -205,6 +214,11 @@ test.describe('wireframe JS API', () => {
     await page.goto(demoPage);
     await page.waitForLoadState('networkidle');
 
+    // The demo scopes wireframe to #demo-content, so html-level mode is off
+    // until enabled through the API
+    expect(await page.evaluate(() => VanillaBreeze.wireframe.isActive())).toBe(false);
+
+    await page.evaluate(() => VanillaBreeze.wireframe.setFidelity('mid'));
     expect(await page.evaluate(() => VanillaBreeze.wireframe.isActive())).toBe(true);
 
     await page.evaluate(() => VanillaBreeze.wireframe.setFidelity(''));
@@ -280,15 +294,19 @@ test.describe('wireframe callouts', () => {
 
     await page.evaluate(() => {
       VanillaBreeze.wireframe.renderCallouts();
-      VanillaBreeze.wireframe.renderCalloutPanel();
+      // Append to the demo scope like the demo's callout toggle does —
+      // foot-notes only collects foot-note elements that precede it, and the
+      // footer callout sits after <main> (the no-arg default target)
+      VanillaBreeze.wireframe.renderCalloutPanel(document.getElementById('demo-content'));
     });
 
     const panel = page.locator('[data-wf-callout-panel]');
     await expect(panel).toBeVisible();
 
-    // Panel should be an <aside>
+    // Panel is a <foot-notes> element — the footnotes component collects the
+    // generated foot-note entries and handles numbering/back-links
     const tagName = await panel.evaluate((el) => el.tagName);
-    expect(tagName).toBe('ASIDE');
+    expect(tagName).toBe('FOOT-NOTES');
 
     // Should have an <ol> with 5 items
     const itemCount = await panel.locator('ol li').count();

@@ -179,14 +179,18 @@ test.describe('accordion-wc — single-open mode', () => {
     const details = accordion.locator('details');
     const summaries = accordion.locator('summary');
 
-    // Open first
-    await summaries.first().click();
+    // The demo authors the first panel open
     await expect(details.first()).toHaveAttribute('open', '');
 
     // Open second — first should close
     await summaries.nth(1).click();
     await expect(details.nth(1)).toHaveAttribute('open', '');
     await expect(details.first()).not.toHaveAttribute('open');
+
+    // Open third — second should close
+    await summaries.nth(2).click();
+    await expect(details.nth(2)).toHaveAttribute('open', '');
+    await expect(details.nth(1)).not.toHaveAttribute('open');
   });
 });
 

@@ -13,7 +13,7 @@ test.describe('short-cuts — baseline', () => {
 
   test('renders with data-upgraded', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('short-cuts[data-upgraded]');
+    await page.waitForSelector('short-cuts[data-upgraded]', { state: 'attached' });
 
     const el = page.locator('short-cuts');
     await expect(el).toHaveAttribute('data-upgraded', '');
@@ -21,7 +21,7 @@ test.describe('short-cuts — baseline', () => {
 
   test('has a dialog element inside', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('short-cuts[data-upgraded]');
+    await page.waitForSelector('short-cuts[data-upgraded]', { state: 'attached' });
 
     const dialog = page.locator('short-cuts dialog');
     await expect(dialog).toHaveCount(1);
@@ -32,7 +32,7 @@ test.describe('short-cuts — lifecycle', () => {
 
   test('reconnect does not duplicate dialog', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('short-cuts[data-upgraded]');
+    await page.waitForSelector('short-cuts[data-upgraded]', { state: 'attached' });
 
     // Remove and reinsert
     await page.evaluate(() => {
@@ -42,7 +42,7 @@ test.describe('short-cuts — lifecycle', () => {
       parent.appendChild(el);
     });
 
-    await page.waitForSelector('short-cuts[data-upgraded]');
+    await page.waitForSelector('short-cuts[data-upgraded]', { state: 'attached' });
 
     const dialogCount = await page.evaluate(() => {
       return document.querySelectorAll('short-cuts dialog').length;
@@ -52,7 +52,7 @@ test.describe('short-cuts — lifecycle', () => {
 
   test('disconnect removes data-upgraded', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('short-cuts[data-upgraded]');
+    await page.waitForSelector('short-cuts[data-upgraded]', { state: 'attached' });
 
     const hasAttr = await page.evaluate(() => {
       const el = document.querySelector('short-cuts');
@@ -68,7 +68,7 @@ test.describe('short-cuts — hotkey', () => {
 
   test('pressing ? opens the dialog', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('short-cuts[data-upgraded]');
+    await page.waitForSelector('short-cuts[data-upgraded]', { state: 'attached' });
 
     // Press Shift+? to open
     await page.keyboard.press('Shift+?');
@@ -83,7 +83,7 @@ test.describe('short-cuts — hotkey', () => {
 
   test('pressing ? again closes the dialog', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('short-cuts[data-upgraded]');
+    await page.waitForSelector('short-cuts[data-upgraded]', { state: 'attached' });
 
     // Open
     await page.keyboard.press('Shift+?');
@@ -105,7 +105,7 @@ test.describe('short-cuts — content', () => {
 
   test('dialog contains shortcut entries from the command registry', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('short-cuts[data-upgraded]');
+    await page.waitForSelector('short-cuts[data-upgraded]', { state: 'attached' });
 
     // Open the overlay to populate content
     await page.keyboard.press('Shift+?');
@@ -131,7 +131,7 @@ test.describe('short-cuts — content', () => {
 
   test('dialog contains kbd badges for shortcuts', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('short-cuts[data-upgraded]');
+    await page.waitForSelector('short-cuts[data-upgraded]', { state: 'attached' });
 
     await page.keyboard.press('Shift+?');
     await page.waitForTimeout(200);
