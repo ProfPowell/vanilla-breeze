@@ -68,6 +68,10 @@ class SiteSearch extends VBElement {
     }
     this.#unbindHotkey?.();
     this.#clearDebounce();
+    // Remove the rendered dialog so a reconnect's setup() doesn't stack a
+    // second one (the trigger is find-or-create and safely reused)
+    this.#dialog?.remove();
+    this.#dialog = null;
   }
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────

@@ -60,7 +60,12 @@ class SettingsPanel extends VBElement {
     this.listen(window, 'vb:a11y-themes-change', this.#handleExternalChange);
   }
 
-  teardown() {}
+  teardown() {
+    // Remove the rendered panel so a reconnect's setup() doesn't stack a
+    // second one (the trigger is find-or-create and safely reused)
+    this.#panel?.remove();
+    this.#panel = null;
+  }
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
 

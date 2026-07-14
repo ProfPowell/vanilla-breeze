@@ -131,6 +131,10 @@ class ThemePicker extends VBElement {
     window.removeEventListener('scroll', this.#onReposition, { capture: true });
     window.removeEventListener('resize', this.#onReposition);
     this.#clearAutoDismiss();
+    // Remove rendered DOM so a reconnect's setup() doesn't stack a second
+    // panel (setup re-runs after disconnect clears data-upgraded)
+    this.#panel?.remove();
+    this.#panel = null;
   }
 
   #render() {
