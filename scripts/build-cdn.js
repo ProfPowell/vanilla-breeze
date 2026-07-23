@@ -232,6 +232,25 @@ async function buildThemes() {
 }
 
 /**
+ * Every custom element tag a module registers, in source order.
+ *
+ * Both registration forms count. Matching only customElements.define misses
+ * everything registered through registerComponent (icon-wc), and taking only
+ * the first match misses every extra tag a chunk defines — image-map registers
+ * map-area first, so keying the manifest on the first tag left <image-map>
+ * itself unable to autoload unless it happened to contain a <map-area> child.
+ *
+ * @param {string} source
+ * @returns {string[]} tag names, deduped
+ */
+function extractTagNames(source) {
+  const matches = source.matchAll(
+    /(?:customElements\.define|registerComponent)\(\s*['"]([^'"]+)['"]/g
+  );
+  return [...new Set([...matches].map(m => m[1]))];
+}
+
+/**
  * Build individual component JS files and manifest
  */
 async function buildComponents() {
@@ -250,13 +269,10 @@ async function buildComponents() {
     const logicPath = join(wcDir, dir, 'logic.js');
     if (!existsSync(logicPath)) continue;
 
-    // Read the logic file to extract the tag name from customElements.define() or registerComponent()
+    // Every tag this chunk registers — a chunk may define several.
     const content = readFileSync(logicPath, 'utf-8');
-    const defineMatch = content.match(/customElements\.define\(\s*['"]([^'"]+)['"]/)
-      || content.match(/registerComponent\(\s*['"]([^'"]+)['"]/);
-    if (!defineMatch) continue;
-
-    const tagName = defineMatch[1];
+    const tagNames = extractTagNames(content);
+    if (!tagNames.length) continue;
 
     // Some components split runtime code into sibling modules that logic.js
     // cannot import itself (e.g. social-embed's providers/*.js import from
@@ -286,7 +302,11 @@ async function buildComponents() {
 
       const outPath = join(outDir, `${dir}.js`);
       const size = statSync(outPath).size;
-      manifest[tagName] = { file: `${dir}.js`, size };
+      // One entry per tag; several tags legitimately share a chunk. The
+      // autoloader keys by tag and the browser dedupes the import() by URL.
+      for (const tagName of tagNames) {
+        manifest[tagName] = { file: `${dir}.js`, size };
+      }
       count++;
     } catch {
       // Skip components that fail to build individually
@@ -294,9 +314,10 @@ async function buildComponents() {
     }
   }
 
-  // Also handle icon-wc which has a different file structure
+  // Also handle icon-wc, whose entry is icon-wc/icon-wc.js rather than logic.js
+  // so the loop above skips it entirely.
   const iconPath = join(wcDir, 'icon-wc', 'icon-wc.js');
-  if (existsSync(iconPath) && !manifest['x-icon']) {
+  if (existsSync(iconPath) && !manifest['icon-wc']) {
     try {
       await esbuild.build({
         ...JS_DEFAULTS,
@@ -309,9 +330,8 @@ async function buildComponents() {
       const outPath = join(outDir, 'icon-wc.js');
       const size = statSync(outPath).size;
       const iconContent = readFileSync(iconPath, 'utf-8');
-      const iconDefine = iconContent.match(/customElements\.define\(\s*['"]([^'"]+)['"]/);
-      if (iconDefine) {
-        manifest[iconDefine[1]] = { file: 'icon-wc.js', size };
+      for (const tagName of extractTagNames(iconContent)) {
+        manifest[tagName] = { file: 'icon-wc.js', size };
       }
     } catch {
       console.warn('  Warning: skipped icon-wc (build error)');
