@@ -41,39 +41,8 @@
    reasoning: the file self-declares @layer bundle-effects internally. */
 @import "./tokens/extensions/shadow-effects.css";
 
-/* @property must be at top level — ignored inside @layer.
-   Placed after @import so esbuild resolves the layer imports.
-   @property has no cascade order dependency — it registers
-   the property globally regardless of source position. */
-@property --hue-primary         { syntax: "<number>"; inherits: true; initial-value: 260; }
-@property --hue-secondary       { syntax: "<number>"; inherits: true; initial-value: 200; }
-@property --hue-accent          { syntax: "<number>"; inherits: true; initial-value: 30; }
-@property --lightness-primary   { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
-@property --chroma-primary      { syntax: "<number>"; inherits: true; initial-value: 0.2; }
-@property --lightness-secondary { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
-@property --chroma-secondary    { syntax: "<number>"; inherits: true; initial-value: 0.08; }
-@property --lightness-accent    { syntax: "<percentage>"; inherits: true; initial-value: 65%; }
-@property --chroma-accent       { syntax: "<number>"; inherits: true; initial-value: 0.18; }
-@property --chroma-surface-tint { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --radius-s      { syntax: "<length>"; inherits: true; initial-value: 4px; }
-@property --radius-m      { syntax: "<length>"; inherits: true; initial-value: 8px; }
-@property --radius-l      { syntax: "<length>"; inherits: true; initial-value: 12px; }
-@property --sidebar-width { syntax: "<length>"; inherits: true; initial-value: 280px; }
-@property --vb-icon {
-  syntax: "<image>";
-  /* Must inherit: the enhancer/generated CSS sets --vb-icon on the host
-     element (e.g. <i data-icon>), and [data-icon]::before reads it via
-     var(). Pseudo-elements only see a custom property set on their
-     originating element when the property inherits; inherits:false would
-     make ::before always fall back to the initial value below. */
-  inherits: true;
-  /* Empty SVG: an unresolved icon masks to nothing (invisible), never a solid square. */
-  initial-value: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22/%3E');
-}
-@property --shape-depth   { syntax: "<percentage>"; inherits: true; initial-value: 15%; }
-@property --shape-bevel   { syntax: "<length>"; inherits: true; initial-value: 20px; }
-@property --shape-curve   { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
-@property --shape-border  { syntax: "<length>"; inherits: true; initial-value: 4px; }
-@property --vb-border-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
-@property --spotlight-x { syntax: "<percentage>"; inherits: false; initial-value: 50%; }
-@property --spotlight-y { syntax: "<percentage>"; inherits: false; initial-value: 50%; }
+/* @property registrations — single source of truth shared by both entry
+   points, so the core and full bundles cannot drift. Imported WITHOUT a
+   layer() directive: @property is ignored inside @layer and a layered one
+   can be dropped by the bundler. See src/properties.css. */
+@import "./properties.css";
