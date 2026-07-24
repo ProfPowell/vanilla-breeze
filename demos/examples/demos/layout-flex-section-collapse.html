@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Layout — semantic section children keep intrinsic size</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+    /* The test items are bare <section>s with a visible background and NO
+       padding, border or width. Their inline size is therefore entirely
+       content-determined. The framework makes every section an inline-size
+       container, and size containment zeroes a flex/grid item's intrinsic
+       inline size — so without the central `container-type: normal` antidote in
+       layout-attributes.css these sections collapse to zero width and vanish.
+       See the project gotcha (memory: container_type_flex_item_collapse).
+
+       Padding/border are deliberately avoided: they would floor the collapsed
+       width at the padding+border box and hide the bug. */
+    .item { background: var(--color-primary); color: var(--color-on-primary, #fff); }
+  </style>
+</head>
+<body data-layout="stack" data-layout-gap="xl">
+  <h1>Sections keep their intrinsic size in flex layouts</h1>
+  <p>
+    Each coloured block below is a bare <code>&lt;section&gt;</code> with no
+    width, padding or border. If any block is invisible, its intrinsic size was
+    zeroed by size containment and the antidote has regressed.
+  </p>
+
+  <section data-layout="stack" data-layout-gap="s">
+    <h2>Cluster</h2>
+    <layout-cluster data-layout-gap="m">
+      <section class="item">Alpha</section>
+      <section class="item">Beta</section>
+      <section class="item">Gamma has more text</section>
+    </layout-cluster>
+  </section>
+
+  <section data-layout="stack" data-layout-gap="s">
+    <h2>Cluster (attribute form)</h2>
+    <section data-layout="cluster" data-layout-gap="m">
+      <section class="item">One</section>
+      <section class="item">Two</section>
+      <section class="item">Three</section>
+    </section>
+  </section>
+
+  <section data-layout="stack" data-layout-gap="s">
+    <h2>Reel</h2>
+    <layout-reel data-layout-gap="m">
+      <section class="item">Slide one</section>
+      <section class="item">Slide two</section>
+      <section class="item">Slide three</section>
+    </layout-reel>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

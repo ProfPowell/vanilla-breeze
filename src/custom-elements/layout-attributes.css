@@ -1375,6 +1375,37 @@ main, article, section, aside:not(.float):not(.sidenote) {
   container-type: inline-size;
 }
 
+/* Undo container-type on semantic sections that are direct children of a
+   flex layout whose items are content-sized. `container-type: inline-size`
+   applies size containment, which zeroes a flex item's intrinsic inline size —
+   so a <section>/<article> with no explicit width collapses to nothing.
+   See the project gotcha (memory: container_type_flex_item_collapse).
+
+   Scope is deliberately limited to the two layouts that actually collapse:
+   cluster (wrapping, content-sized items) and reel (flex-shrink: 0, content-
+   sized items). This antidote was previously a local copy inside layout-reel;
+   centralizing it also picks up cluster and keeps the element and attribute
+   forms from drifting.
+
+   The other flex/grid layouts (switcher, cover, media, split, sidebar) are
+   NOT included: they give their items a definite size (flex-basis or fr
+   tracks) so their section children never collapse, and stripping their
+   container-type would needlessly disable any container queries an author put
+   on those children — verified: adding cover here shifted cover-basic.
+
+   The `:not([data-container])` is the escape hatch: an author who deliberately
+   wants container queries on such a child adds `data-container` and is simply
+   excluded from this rule, so the `[data-container]` rule below establishes the
+   container unopposed. (We exclude rather than rely on specificity — the
+   attribute-selector arm makes this selector's `:is()` compute to (0,1,0),
+   which would otherwise tie/beat `[data-container]`.) */
+:is(
+  layout-cluster, [data-layout="cluster"],
+  layout-reel
+) > :is(main, article, section, aside):not([data-container]) {
+  container-type: normal;
+}
+
 /* Card grids adapt to container width */
 @container (width < 400px) {
   [data-layout="grid"] {
