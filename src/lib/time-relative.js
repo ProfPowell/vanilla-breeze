@@ -57,7 +57,17 @@ export function updateRelativeTimes(root = document) {
   }
 }
 
-/* Auto-init on DOMContentLoaded, refresh every 60s */
+/* Auto-init on DOMContentLoaded, refresh every 60s.
+
+   Guarded per document: this module is bundled into vanilla-breeze.js AND
+   into four per-component chunks (activity-feed, comment-thread, time-index,
+   page-info). Each is a distinct module URL, so each gets its own evaluation
+   and — without this guard — its own 60s interval, all scanning the whole
+   document and rewriting the same elements. A page autoloading all four ran
+   five intervals. The module-local `_interval` cannot catch that; only a
+   marker on the shared document can. */
+const _docEl = typeof document !== 'undefined' ? document.documentElement : null;
+
 let _interval;
 
 function init() {
@@ -67,8 +77,11 @@ function init() {
   }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init, { once: true });
-} else {
-  init();
+if (_docEl && !_docEl.hasAttribute('data-vb-time-relative-init')) {
+  _docEl.setAttribute('data-vb-time-relative-init', '');
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
 }

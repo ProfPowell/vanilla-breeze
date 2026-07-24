@@ -99,12 +99,22 @@ function trackCurrent() {
 
 /* Track once when this script runs, on bfcache restore, and on every
    in-page hash change. The renderer's show-anchors flag is irrelevant
-   to tracking — it only controls visibility. */
-trackCurrent();
-window.addEventListener('pageshow', (event) => {
-  if (event.persisted) trackCurrent();
-});
-window.addEventListener('hashchange', trackCurrent);
+   to tracking — it only controls visibility.
+
+   Guarded per document so a second evaluation of this module (it is imported
+   by both src/main.js and src/main-autoload.js, and demos may load it raw)
+   does not double-track the visit or stack duplicate listeners. */
+const _docEl = typeof document !== 'undefined' ? document.documentElement : null;
+
+if (_docEl && !_docEl.hasAttribute('data-vb-recently-visited-init')) {
+  _docEl.setAttribute('data-vb-recently-visited-init', '');
+
+  trackCurrent();
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) trackCurrent();
+  });
+  window.addEventListener('hashchange', trackCurrent);
+}
 
 /* Public surface for components / tests. */
 export {

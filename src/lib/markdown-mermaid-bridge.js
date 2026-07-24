@@ -76,40 +76,53 @@ function runEnhance(viewer, node) {
   if (cache.length > MAX_CACHE_PER_VIEWER) cache.length = MAX_CACHE_PER_VIEWER;
 }
 
-document.addEventListener('markdown-viewer:rendered', (e) => {
-  const viewer = /** @type {Element} */ (e.target);
-  if (!shouldEnhance(viewer)) return;
-  const node = /** @type {Element|undefined} */ (/** @type {CustomEvent} */ (e).detail?.node) || viewer;
-  scheduleEnhance(viewer, node);
-});
+/* Module-scope side effects, guarded per document.
 
-// Update the per-viewer cache whenever a diagram-wc renders successfully.
-// Bubbles up through the viewer thanks to standard DOM event propagation.
-document.addEventListener('diagram-wc:ready', (e) => {
-  const dw = /** @type {HTMLElement} */ (e.target);
-  const viewer = dw.closest?.('markdown-viewer');
-  if (!viewer) return;
-  const idx = parseInt(dw.dataset.bridgeIndex || '', 10);
-  if (Number.isNaN(idx)) return;
-  const cache = getCache(viewer);
-  cache[idx] = /** @type {CustomEvent} */ (e).detail?.svg || cache[idx];
-});
+   This module can be evaluated more than once in one page — it is imported
+   conditionally by both src/main.js and src/main-autoload.js, and a demo may
+   also import it raw from /src/lib/. Every extra evaluation adds a second set
+   of markdown-viewer:rendered / diagram-wc:ready / vb:theme-change listeners,
+   so each render re-enhances and each theme change re-clears caches N times. */
+const _docEl = typeof document !== 'undefined' ? document.documentElement : null;
 
-// Theme change → tokens change → cached SVGs are stale. Clear all caches
-// so the next render produces fresh output.
-window.addEventListener('vb:theme-change', () => {
-  // WeakMap doesn't expose iteration; we rely on per-viewer renders to
-  // overwrite cached entries. To force-discard stale entries between
-  // theme changes, prune any viewer reachable via the live DOM.
-  for (const viewer of document.querySelectorAll('markdown-viewer')) {
-    const cache = svgCache.get(viewer);
-    if (cache) cache.length = 0;
+if (_docEl && !_docEl.hasAttribute('data-vb-mermaid-bridge-init')) {
+  _docEl.setAttribute('data-vb-mermaid-bridge-init', '');
+
+  document.addEventListener('markdown-viewer:rendered', (e) => {
+    const viewer = /** @type {Element} */ (e.target);
+    if (!shouldEnhance(viewer)) return;
+    const node = /** @type {Element|undefined} */ (/** @type {CustomEvent} */ (e).detail?.node) || viewer;
+    scheduleEnhance(viewer, node);
+  });
+
+  // Update the per-viewer cache whenever a diagram-wc renders successfully.
+  // Bubbles up through the viewer thanks to standard DOM event propagation.
+  document.addEventListener('diagram-wc:ready', (e) => {
+    const dw = /** @type {HTMLElement} */ (e.target);
+    const viewer = dw.closest?.('markdown-viewer');
+    if (!viewer) return;
+    const idx = parseInt(dw.dataset.bridgeIndex || '', 10);
+    if (Number.isNaN(idx)) return;
+    const cache = getCache(viewer);
+    cache[idx] = /** @type {CustomEvent} */ (e).detail?.svg || cache[idx];
+  });
+
+  // Theme change → tokens change → cached SVGs are stale. Clear all caches
+  // so the next render produces fresh output.
+  window.addEventListener('vb:theme-change', () => {
+    // WeakMap doesn't expose iteration; we rely on per-viewer renders to
+    // overwrite cached entries. To force-discard stale entries between
+    // theme changes, prune any viewer reachable via the live DOM.
+    for (const viewer of document.querySelectorAll('markdown-viewer')) {
+      const cache = svgCache.get(viewer);
+      if (cache) cache.length = 0;
+    }
+  });
+
+  // On first load, run once over any viewer that already rendered before this
+  // bridge attached.
+  const initialSelector = 'markdown-viewer[data-auto-mermaid], markdown-editor[data-auto-mermaid] markdown-viewer';
+  for (const viewer of document.querySelectorAll(initialSelector)) {
+    runEnhance(viewer, viewer);
   }
-});
-
-// On first load, run once over any viewer that already rendered before this
-// bridge attached.
-const initialSelector = 'markdown-viewer[data-auto-mermaid], markdown-editor[data-auto-mermaid] markdown-viewer';
-for (const viewer of document.querySelectorAll(initialSelector)) {
-  runEnhance(viewer, viewer);
 }

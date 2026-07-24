@@ -107,6 +107,13 @@ async function runFlipSequence(el, text, cells, generation) {
 }
 
 VB.effect('flipboard', (el) => {
+  // The only effect that lacked this guard. Without it a second VB instance
+  // re-runs the effect after the board is built, and `el.textContent` then
+  // reads back the concatenated flap cells — mid-flip filler, not the original
+  // string — so the board rebuilds from garbage.
+  if (el.hasAttribute('data-effect-flipboard-init')) return
+  el.setAttribute('data-effect-flipboard-init', '')
+
   const text = (el.textContent || '').trim().toUpperCase()
   if (!text) return
 
