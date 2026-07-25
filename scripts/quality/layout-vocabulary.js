@@ -13,7 +13,7 @@
  * See admin/specs/layout-value-vocabulary-v1.md.
  */
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,23 +35,28 @@ export const ESCAPE_HATCH_PROPS = new Set([
  *
  * @param {string} root - Repo root.
  * @returns {string[]} absolute paths
+ * @throws if layout-attributes.css is missing or unreadable (required file)
  */
 function vocabularyFiles(root) {
   const base = join(root, 'src', 'custom-elements');
-  const files = [join(base, 'layout-attributes.css')];
+  const requiredFile = join(base, 'layout-attributes.css');
+
+  // Required file — throw if missing or unreadable.
+  if (!existsSync(requiredFile)) {
+    throw new Error(`Required vocabulary file missing: ${requiredFile}`);
+  }
+
+  const files = [requiredFile];
   for (const entry of readdirSync(base, { withFileTypes: true })) {
     if (entry.isDirectory() && entry.name.startsWith('layout-')) {
-      files.push(join(base, entry.name, 'styles.css'));
+      const styleFile = join(base, entry.name, 'styles.css');
+      // Optional files — skip if missing, but error on read failure.
+      if (existsSync(styleFile)) {
+        files.push(styleFile);
+      }
     }
   }
-  return files.filter((f) => {
-    try {
-      readFileSync(f);
-      return true;
-    } catch {
-      return false;
-    }
-  });
+  return files;
 }
 
 /**
