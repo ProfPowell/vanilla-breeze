@@ -44,6 +44,7 @@ Workflow note: when a `plans/` doc ships, move it to `shipped/`. When a `researc
 | [component-state-conventions.md](./specs/component-state-conventions.md) | Public attributes vs internal `:state()` |
 | [data-api-audit.md](./specs/data-api-audit.md) | Per-component JS-first / HTML-first classification |
 | [navbar.md](./specs/navbar.md) | `<nav-bar>` v1 spec |
+| [layout-value-vocabulary-v1.md](./specs/layout-value-vocabulary-v1.md) | Closed named vocabulary for `data-layout-*` values + escape hatch |
 
 ## By topic
 
@@ -71,6 +72,7 @@ Workflow note: when a `plans/` doc ships, move it to `shipped/`. When a `researc
 
 - **Research**: [css-parts.md](./research/css-parts.md), [multi-stroke/](./research/multi-stroke/), [parallex.md](./research/parallex.md), [data-model-concept.md](./research/data-model-concept.md)
 - **Plans**: [grid-composer-status.md](./plans/grid-composer-status.md), [utility-class-plan.md](./plans/utility-class-plan.md)
+- **Specs**: [layout-value-vocabulary-v1.md](./specs/layout-value-vocabulary-v1.md)
 
 ### Provenance & content trust
 
