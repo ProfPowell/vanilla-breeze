@@ -21,6 +21,11 @@ import './carousel-wc/logic.js';
 import './image-gallery/logic.js';
 import './star-rating/logic.js';
 import './combo-box/logic.js';
+import './time-picker/logic.js';
+import './date-picker/logic.js';
+import './color-picker/logic.js';
+import './stepper-wc/logic.js';
+import './status-wc/logic.js';
 import './context-menu/logic.js';
 import './command-palette/logic.js';
 import './short-cuts/logic.js';
@@ -110,6 +115,23 @@ import './trust-filter/logic.js';
 import './recently-visited/logic.js';
 import './popularity-index/logic.js';
 import './page-tour/logic.js';
+// Annotation stack — extras.js ships these, so the full barrel must too or
+// they are inert in dev demos loading /src/main.js.
+//
+// markdown-viewer and markdown-editor are deliberately NOT here: markdown-
+// viewer imports the bare specifier 'marked', which esbuild resolves for the
+// bundles but a browser cannot. This barrel is also loaded raw over HTTP by
+// dev demos (/src/main.js), where an unresolvable specifier kills the whole
+// module graph — every component on the page stops registering, not just the
+// viewer. They rejoin this list once 'marked' is vendored or an import map
+// ships (vanilla-breeze-kdkb). Until then they reach pages through the
+// bundles and the autoloader only.
+import './highlight-wc/logic.js';
+import './selection-menu/logic.js';
+import './note-wc/logic.js';
+import './comment-wc/logic.js';
+import '../utils/chapter-list-init.js';
+import '../utils/recently-visited-init.js';
 import '../lib/time-relative.js';
 import './brand-mark/logic.js';
 import '../custom-elements/mobile-menu/logic.js';

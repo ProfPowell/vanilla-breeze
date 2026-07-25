@@ -5,51 +5,14 @@ import './utils/tooltip-init.js';
 import './utils/highlights-init.js';
 import './utils/view-transition-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
-// Lazy-load wizard only when [data-wizard] is present (~15 KB deferred)
-if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
-// Lazy-load gestures only when [data-gesture] is present
-if (document.querySelector('[data-gesture]')) import('./lib/vb-gestures.js');
-// Lazy-load markdown-editable only when [data-markdown-editable] is present
-if (document.querySelector('[data-markdown-editable]')) import('./utils/markdown-editable-init.js');
-// Lazy-load scroll-hide only when [data-scroll-hide] is present
-if (document.querySelector('[data-scroll-hide]')) import('./utils/scroll-hide-init.js');
-// Lazy-load focus-trap only when [data-focus-trap] is present
-if (document.querySelector('[data-focus-trap]')) import('./utils/focus-trap-init.js');
-// Lazy-load cursor spotlight only when [data-spotlight] is present
-if (document.querySelector('[data-spotlight]')) import('./utils/spotlight-init.js');
-// Lazy-load responsive image enhancement only when [data-responsive] is present
-if (document.querySelector('img[data-responsive]')) import('./utils/responsive-init.js');
-// Lazy-load pagination upscale only when [data-paged] is present
-if (document.querySelector('[data-paged]')) import('./utils/data-paged-init.js');
-// Lazy-load sortable upscale when [data-sortable] or [data-sort-target] is present
-if (document.querySelector('[data-sortable], [data-sort-target]')) import('./utils/data-sortable-init.js');
-// Lazy-load attribute-toggle upscale when [data-toggle] is present
-if (document.querySelector('[data-toggle]')) import('./utils/data-toggle-init.js');
-// Lazy-load the rel-aware link enhancer only when there's an outbound
-// _blank link on the page — the only thing it auto-upgrades. The
-// exported helpers (collectLinksByRel, upgradeBlankTargets) are still
-// importable on demand from anywhere.
-if (document.querySelector('a[target="_blank"]')) import('./utils/links-init.js');
-// Lazy-load loading button enhancement only when [data-loading] is on a button
-if (document.querySelector('button[data-loading]')) import('./utils/loading-button-init.js');
-// Lazy-load floating label only when [data-floating-label] is present
-if (document.querySelector('[data-floating-label]')) import('./utils/floating-label-init.js');
-// Lazy-load hotkey action binding when [data-hotkey] is on non-kbd elements
-if (document.querySelector('[data-hotkey]:not(kbd)')) import('./utils/hotkey-action-init.js');
-// Lazy-load page-watch when either a [data-watch-page] trigger or a
-// <watch-wc> wrapper is present (the wrapper renders the trigger at setup).
-if (document.querySelector('[data-watch-page], watch-wc')) import('./utils/page-watch-init.js');
-// Lazy-load email-form enhancement only when a form opts in
-if (document.querySelector('form[data-vb-email-form]')) import('./utils/email-form-init.js');
-// Lazy-load newsletter-form enhancement only when a form opts in
-if (document.querySelector('form[data-vb-newsletter-form]')) import('./utils/newsletter-form-init.js');
-// Auto-upgrade mermaid fences inside markdown-viewer or markdown-editor when opted in
-if (document.querySelector('markdown-viewer[data-auto-mermaid], markdown-editor[data-auto-mermaid]')) import('./lib/markdown-mermaid-bridge.js');
+import { runFullGuards } from './lib/lazy-guards-full.js';
+// Every conditional enhancement import lives in lib/lazy-guards.js so the
+// three entry points cannot drift apart. 'full' runs the extras-tier guards
+// (markdown editing, emoji, highlights) on top of the core set.
+runFullGuards();
 // Progress ring upscale — static import, self-guards via MutationObserver
 import './utils/progress-ring-init.js';
 import { initStickyManager } from './lib/sticky-manager.js';
-// Lazy-load mobile form utilities only when [data-keyboard-aware] is present
-if (document.querySelector('[data-keyboard-aware]')) import('./lib/vb-forms.js');
 import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
 import { initBotProtection } from './lib/bot-protection.js';

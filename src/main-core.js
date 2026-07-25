@@ -15,7 +15,11 @@ import './custom-elements/register.js';
 import './web-components/core.js';
 import './utils/tooltip-init.js';
 import './utils/view-transition-init.js';
+// Progress ring upscale — static in every entry, self-guards via
+// MutationObserver so it also catches rings rendered after boot.
+import './utils/progress-ring-init.js';
 import { initExternalThemeSync } from './utils/external-theme-sync.js';
+import { runCoreGuards } from './lib/lazy-guards.js';
 import { initStickyManager } from './lib/sticky-manager.js';
 import { initFormCoordinator } from './lib/form-coordinator.js';
 import { initFormFieldEnhancements } from './lib/form-field-enhancements.js';
@@ -60,13 +64,15 @@ import('./utils/analytics-vitals-init.js');
 import('./utils/analytics-errors-init.js');
 import('./utils/analytics-buffer-init.js');
 
-// Lazy-load wizard only when [data-wizard] is present
-if (document.querySelector('[data-wizard]')) import('./lib/wizard.js');
-
-// Lazy-load page-watch when either a [data-watch-page] trigger or a
-// <watch-wc> wrapper is on the page. The wrapper renders the trigger
-// at setup() time, so match either. Previously the trigger only lived
-// in main.js + main-autoload.js, which dev loads directly — production
-// loads this core bundle and was missing the enhancement entirely,
-// which is why clicking the watch button did nothing on vanilla-breeze.com.
-if (document.querySelector('[data-watch-page], watch-wc')) import('./utils/page-watch-init.js');
+// Conditional enhancement imports, from the shared table in
+// lib/lazy-guards.js. This entry gets the 'core' tier: every guard except
+// the heavy extras-tier ones (markdown editing, emoji data, annotation
+// highlights, prototyping fillers), which a core-only page cannot use.
+//
+// This file used to carry two hand-copied guards while main.js carried
+// nineteen, so seventeen enhancements — gestures, focus-trap, loading
+// buttons, floating labels, hotkeys, the email/newsletter forms, paged and
+// sortable collections — were dead on every page loading the core bundle,
+// which is what the production docs site ships. Same failure mode as the
+// page-watch button that shipped broken on vanilla-breeze.com.
+runCoreGuards();
