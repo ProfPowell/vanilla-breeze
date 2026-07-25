@@ -306,6 +306,12 @@ class VersionSwitcher extends VBElement {
   // ── DOM build ──────────────────────────────────────────────────────
 
   #buildTrigger() {
+    // Reconnect guard: on disconnect the base class clears data-upgraded and
+    // re-runs setup() on the next connect, but the owned DOM moved back with
+    // the host, so rebuilding would append a duplicate trigger. Skip if it is
+    // already our child.
+    if (this.#trigger?.parentNode === this) return;
+
     this.#trigger = document.createElement('button');
     this.#trigger.type = 'button';
     this.#trigger.className = 'version-switcher-trigger';
@@ -316,6 +322,9 @@ class VersionSwitcher extends VBElement {
   }
 
   #buildPopover() {
+    // Reconnect guard — see #buildTrigger.
+    if (this.#popover?.parentNode === this) return;
+
     const popoverId = `version-switcher-${++switcherSeq}`;
     this.#trigger.setAttribute('popovertarget', popoverId);
 

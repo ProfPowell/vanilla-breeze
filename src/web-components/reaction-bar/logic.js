@@ -112,6 +112,11 @@ class ReactionBar extends VBElement {
   // ── Trigger + palette ────────────────────────────────────────────────
 
   #buildTrigger() {
+    // Reconnect guard: setup() re-runs after a disconnect/reconnect (the base
+    // class clears data-upgraded), but the trigger moved back with the host —
+    // rebuilding would append a duplicate. Skip if it is already our child.
+    if (this.#trigger?.parentNode === this) return;
+
     this.#trigger = document.createElement('button');
     this.#trigger.type = 'button';
     this.#trigger.className = 'reaction-trigger';
@@ -125,6 +130,8 @@ class ReactionBar extends VBElement {
 
   #buildPopover() {
     if (!this.#template) return;
+    // Reconnect guard — see #buildTrigger.
+    if (this.#popover?.parentNode === this) return;
 
     const popoverId = `reaction-bar-palette-${++reactionBarSeq}`;
     this.#trigger.setAttribute('popovertarget', popoverId);

@@ -195,6 +195,11 @@ class TimePicker extends VBElement {
   }
 
   #buildTrigger() {
+    // Reconnect guard: setup() re-runs after a disconnect/reconnect (the base
+    // class clears data-upgraded), but the trigger moved back with the host —
+    // rebuilding would append a duplicate. Skip if it is already our child.
+    if (this.#trigger?.parentNode === this) return;
+
     this.#trigger = document.createElement('div');
     this.#trigger.className = 'time-trigger';
 
@@ -238,6 +243,9 @@ class TimePicker extends VBElement {
   }
 
   #buildPanel() {
+    // Reconnect guard — see #buildTrigger.
+    if (this.#panel?.parentNode === this) return;
+
     this.#panelId = `tp-${Math.random().toString(36).slice(2, 8)}`;
 
     this.#panel = document.createElement('div');
