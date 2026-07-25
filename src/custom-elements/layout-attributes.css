@@ -94,27 +94,18 @@
    Grid: Auto-fit responsive grid
    -------------------------------------------------------------------------- */
 [data-layout="grid"] {
+  --_min: var(--layout-min, var(--_min-token, 15rem));
+
   display: grid;
   gap: var(--_gap, var(--size-m));
-  grid-template-columns: repeat(auto-fit, minmax(var(--_min, 15rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--_min), 1fr));
 }
 
-[data-layout="grid"][data-layout-min="6rem"]  { --_min: 6rem; }
-[data-layout="grid"][data-layout-min="8rem"]  { --_min: 8rem; }
-[data-layout="grid"][data-layout-min="10rem"] { --_min: 10rem; }
-[data-layout="grid"][data-layout-min="12rem"] { --_min: 12rem; }
-[data-layout="grid"][data-layout-min="15rem"] { --_min: 15rem; }
-[data-layout="grid"][data-layout-min="18rem"] { --_min: 18rem; }
-[data-layout="grid"][data-layout-min="20rem"] { --_min: 20rem; }
-[data-layout="grid"][data-layout-min="25rem"] { --_min: 25rem; }
-
-/* Pixel-based min widths */
-[data-layout="grid"][data-layout-min="150px"] { --_min: 150px; }
-[data-layout="grid"][data-layout-min="200px"] { --_min: 200px; }
-[data-layout="grid"][data-layout-min="250px"] { --_min: 250px; }
-[data-layout="grid"][data-layout-min="280px"] { --_min: 280px; }
-[data-layout="grid"][data-layout-min="300px"] { --_min: 300px; }
-[data-layout="grid"][data-layout-min="400px"] { --_min: 400px; }
+[data-layout="grid"][data-layout-min="xs"] { --_min-token: 8rem; }
+[data-layout="grid"][data-layout-min="s"]  { --_min-token: 10rem; }
+[data-layout="grid"][data-layout-min="m"]  { --_min-token: 15rem; }
+[data-layout="grid"][data-layout-min="l"]  { --_min-token: 20rem; }
+[data-layout="grid"][data-layout-min="xl"] { --_min-token: 25rem; }
 
 [data-layout="grid"][data-layout-gap="none"] { --_gap: 0; }
 [data-layout="grid"][data-layout-gap="xs"]   { --_gap: var(--size-xs); }
@@ -277,6 +268,8 @@
    For generic elements (div), position-based fallback applies.
    -------------------------------------------------------------------------- */
 [data-layout="sidebar"] {
+  --_content-min: var(--layout-content-min, var(--_content-min-token, 50%));
+
   display: flex;
   flex-wrap: wrap;
   gap: var(--_gap, var(--size-m));
@@ -295,7 +288,7 @@
 [data-layout="sidebar"] > section:not([data-layout]) {
   flex-basis: 0;
   flex-grow: 999;
-  min-inline-size: var(--_content-min, 50%);
+  min-inline-size: var(--_content-min);
 }
 
 /* --- Generic element fallback (position-based) --- */
@@ -308,7 +301,7 @@
 [data-layout="sidebar"]:not(:has(> nav, > aside)) > :last-child {
   flex-basis: 0;
   flex-grow: 999;
-  min-inline-size: var(--_content-min, 50%);
+  min-inline-size: var(--_content-min);
 }
 
 /* --- Gap variants --- */
@@ -337,9 +330,9 @@
 [data-layout="sidebar"][data-layout-sidebar-width="wide"]   { --_sidebar-width: 20rem; }
 
 /* --- Content minimum width variants --- */
-[data-layout="sidebar"][data-layout-content-min="40"] { --_content-min: 40%; }
-[data-layout="sidebar"][data-layout-content-min="50"] { --_content-min: 50%; }
-[data-layout="sidebar"][data-layout-content-min="60"] { --_content-min: 60%; }
+[data-layout="sidebar"][data-layout-content-min="s"] { --_content-min-token: 40%; }
+[data-layout="sidebar"][data-layout-content-min="m"] { --_content-min-token: 50%; }
+[data-layout="sidebar"][data-layout-content-min="l"] { --_content-min-token: 60%; }
 
 /* --- No wrap --- */
 [data-layout="sidebar"][data-layout-nowrap] {
@@ -517,21 +510,19 @@
    Cover: Full-height container with vertically centered principal element
    -------------------------------------------------------------------------- */
 [data-layout="cover"] {
+  --_min-height: var(--layout-min, var(--_min-height-token, 100dvh));
+
   display: flex;
   flex-direction: column;
-  min-block-size: var(--_min-height, 100dvh);
+  min-block-size: var(--_min-height);
   padding: var(--_padding, var(--size-m));
 }
 
-[data-layout="cover"][data-layout-min="50vh"]  { --_min-height: 50vh; }
-[data-layout="cover"][data-layout-min="75vh"]  { --_min-height: 75vh; }
-[data-layout="cover"][data-layout-min="100vh"] { --_min-height: 100vh; }
-[data-layout="cover"][data-layout-min="100dvh"] { --_min-height: 100dvh; }
-[data-layout="cover"][data-layout-min="100svh"] { --_min-height: 100svh; }
-[data-layout="cover"][data-layout-min="60vh"]  { --_min-height: 60vh; }
-[data-layout="cover"][data-layout-min="70vh"]  { --_min-height: 70vh; }
-[data-layout="cover"][data-layout-min="80vh"]  { --_min-height: 80vh; }
-[data-layout="cover"][data-layout-min="auto"]  { --_min-height: auto; }
+[data-layout="cover"][data-layout-min="s"]    { --_min-height-token: 50vh; }
+[data-layout="cover"][data-layout-min="m"]    { --_min-height-token: 70vh; }
+[data-layout="cover"][data-layout-min="l"]    { --_min-height-token: 80vh; }
+[data-layout="cover"][data-layout-min="xl"]   { --_min-height-token: 100dvh; }
+[data-layout="cover"][data-layout-min="auto"] { --_min-height-token: auto; }
 
 [data-layout="cover"][data-layout-padding="none"] { --_padding: 0; }
 [data-layout="cover"][data-layout-padding="s"]    { --_padding: var(--size-s); }
@@ -578,6 +569,8 @@
    Switcher: Flexbox that switches direction at a threshold
    -------------------------------------------------------------------------- */
 [data-layout="switcher"] {
+  --_threshold: var(--layout-threshold, var(--_threshold-token, 30rem));
+
   display: flex;
   flex-wrap: wrap;
   gap: var(--_gap, var(--size-m));
@@ -585,7 +578,7 @@
 
 [data-layout="switcher"] > * {
   flex-grow: 1;
-  flex-basis: calc((var(--_threshold, 30rem) - 100%) * 999);
+  flex-basis: calc((var(--_threshold) - 100%) * 999);
 }
 
 [data-layout="switcher"][data-layout-gap="none"] { --_gap: 0; }
@@ -595,12 +588,9 @@
 [data-layout="switcher"][data-layout-gap="l"]    { --_gap: var(--size-l); }
 [data-layout="switcher"][data-layout-gap="xl"]   { --_gap: var(--size-xl); }
 
-[data-layout="switcher"][data-layout-threshold="20rem"] { --_threshold: 20rem; }
-[data-layout="switcher"][data-layout-threshold="25rem"] { --_threshold: 25rem; }
-[data-layout="switcher"][data-layout-threshold="30rem"] { --_threshold: 30rem; }
-[data-layout="switcher"][data-layout-threshold="35rem"] { --_threshold: 35rem; }
-[data-layout="switcher"][data-layout-threshold="40rem"] { --_threshold: 40rem; }
-[data-layout="switcher"][data-layout-threshold="45rem"] { --_threshold: 45rem; }
+[data-layout="switcher"][data-layout-threshold="s"] { --_threshold-token: 25rem; }
+[data-layout="switcher"][data-layout-threshold="m"] { --_threshold-token: 30rem; }
+[data-layout="switcher"][data-layout-threshold="l"] { --_threshold-token: 40rem; }
 
 /* Limit number of items before forcing vertical */
 [data-layout="switcher"][data-layout-limit="2"] > :nth-last-child(n+3),

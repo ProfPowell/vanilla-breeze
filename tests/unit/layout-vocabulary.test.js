@@ -56,3 +56,49 @@ describe('LAYOUT_ATTR_RE', () => {
     assert.equal(matches[1][2], 'm', 'second attribute value');
   });
 });
+
+describe('tokenized layout vocabulary', () => {
+  const vocab = readLayoutVocabulary();
+
+  it('min is the t-shirt scale plus auto — no raw lengths', () => {
+    assert.deepEqual(
+      [...vocab.get('min')].sort(),
+      ['auto', 'l', 'm', 's', 'xl', 'xs'],
+      'data-layout-min still enumerates raw lengths; they belong to --layout-min now.',
+    );
+  });
+
+  it('threshold and content-min are tokenized', () => {
+    assert.deepEqual([...vocab.get('threshold')].sort(), ['l', 'm', 's']);
+    assert.deepEqual([...vocab.get('content-min')].sort(), ['l', 'm', 's']);
+  });
+
+  it('no layout attribute enumerates a raw length anywhere', () => {
+    // Scoped to the attributes this task tokenizes (min/threshold/content-min).
+    // Bare-integer values on other attributes (data-layout-limit="3",
+    // data-layout-order="99", etc.) are counts/positions, not lengths, and
+    // are out of scope for the layout-value-vocabulary spec.
+    const tokenized = ['min', 'threshold', 'content-min'];
+    const offenders = [];
+    for (const [attr, values] of vocab) {
+      if (!tokenized.includes(attr)) continue;
+      for (const v of values) {
+        if (/^[\d.]+(rem|px|vh|dvh|svh|vw|%)$/.test(v) || /^\d+$/.test(v)) {
+          offenders.push(`data-layout-${attr}="${v}"`);
+        }
+      }
+    }
+    assert.deepEqual(
+      offenders,
+      [],
+      'Raw lengths are not part of the HTML API — use a token or --layout-*.',
+    );
+  });
+
+  it('behavioral keywords survive tokenization', () => {
+    // full is inline-size:100%, xl is 30rem — different things, both needed.
+    assert.ok(vocab.get('item-width').has('full'));
+    assert.ok(vocab.get('item-width').has('xl'));
+    assert.ok(vocab.get('min').has('auto'));
+  });
+});
