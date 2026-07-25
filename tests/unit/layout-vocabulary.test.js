@@ -73,15 +73,23 @@ describe('tokenized layout vocabulary', () => {
     assert.deepEqual([...vocab.get('content-min')].sort(), ['l', 'm', 's']);
   });
 
+  // These carry counts and positions, not lengths — bare integers are correct
+  // for them (data-layout-subgrid="2", data-layout-limit="3",
+  // data-layout-column-count="2", data-layout-order="99"). Everything else in
+  // the layout vocabulary must be a named token. Do not re-add a length-taking
+  // attribute here just because it happens to fail the check — that means a
+  // raw length regressed and needs tokenizing, not exempting.
+  const COUNT_ATTRS = new Set([
+    'subgrid', // number of subgrid tracks, e.g. data-layout-subgrid="4"
+    'limit', // item count before forced wrap, e.g. data-layout-limit="3"
+    'column-count', // explicit column count, e.g. data-layout-column-count="2"
+    'order', // flex/grid order position, e.g. data-layout-order="99"
+  ]);
+
   it('no layout attribute enumerates a raw length anywhere', () => {
-    // Scoped to the attributes this task tokenizes (min/threshold/content-min).
-    // Bare-integer values on other attributes (data-layout-limit="3",
-    // data-layout-order="99", etc.) are counts/positions, not lengths, and
-    // are out of scope for the layout-value-vocabulary spec.
-    const tokenized = ['min', 'threshold', 'content-min'];
     const offenders = [];
     for (const [attr, values] of vocab) {
-      if (!tokenized.includes(attr)) continue;
+      if (COUNT_ATTRS.has(attr)) continue;
       for (const v of values) {
         if (/^[\d.]+(rem|px|vh|dvh|svh|vw|%)$/.test(v) || /^\d+$/.test(v)) {
           offenders.push(`data-layout-${attr}="${v}"`);
