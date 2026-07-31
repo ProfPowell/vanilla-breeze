@@ -25,6 +25,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, resolve, relative, extname } from 'path';
 import { execSync } from 'child_process';
 import { parseHTML } from 'linkedom';
+import { readLayoutVocabulary } from './layout-vocabulary.js';
 
 const args = process.argv.slice(2);
 const ciMode = args.includes('--ci');
@@ -45,6 +46,10 @@ try {
 } catch {
   // No allowlist file — treat all violations at default severity
 }
+
+// Parsed from the layout CSS — never hand-listed. See
+// admin/specs/layout-value-vocabulary-v1.md.
+const layoutVocabulary = readLayoutVocabulary(projectRoot);
 
 // Check if file is tracked in git (existing) vs untracked (new)
 function isNewFile(filePath) {
@@ -179,15 +184,58 @@ function checkFile(filePath) {
       });
     }
 
-    // vb/no-inline-style — style="..." attributes
-    if (/\sstyle="[^"]+"/i.test(line) && !/<(meta|link)/i.test(line)) {
-      issues.push({
-        line: lineNum,
-        col: line.indexOf('style="') + 1,
-        rule: 'vb/no-inline-style',
-        severity: severity('vb/no-inline-style', 'error-new'),
-        message: 'Move inline styles to CSS. Use data-* attributes for dynamic values.'
-      });
+    // vb/no-inline-style — style="..." attributes.
+    //
+    // Exception: a style attribute whose declarations are ALL custom
+    // properties is the documented layout escape hatch
+    // (style="--layout-min: 220px"). Setting a custom property passes a
+    // value into a CSS contract; it is not styling. Mixing custom
+    // properties with real declarations is still a violation.
+    const styleMatch = line.match(/\sstyle="([^"]+)"/i);
+    if (styleMatch && !/<(meta|link)/i.test(line)) {
+      const declarations = styleMatch[1]
+        .split(';')
+        .map((d) => d.trim())
+        .filter(Boolean);
+      const customPropsOnly =
+        declarations.length > 0 && declarations.every((d) => d.startsWith('--'));
+
+      if (!customPropsOnly) {
+        issues.push({
+          line: lineNum,
+          col: line.indexOf('style="') + 1,
+          rule: 'vb/no-inline-style',
+          severity: severity('vb/no-inline-style', 'error-new'),
+          message: 'Move inline styles to CSS. Use data-* attributes for dynamic values.'
+        });
+      }
+    }
+
+    // vb/layout-attr-value — data-layout-* values outside the vocabulary.
+    //
+    // These fail silently: an unknown value matches no attribute selector,
+    // so the element falls back to its default with no error anywhere. An
+    // audit found 148 such usages across the repo. Catches raw lengths,
+    // keyword typos, values borrowed from another attribute's enum, and
+    // attribute names that do not exist at all.
+    for (const m of line.matchAll(/data-layout-([a-z-]+)="([^"]*)"/g)) {
+      const [, attr, value] = m;
+      const known = layoutVocabulary.get(attr);
+
+      const message = !known
+        ? `Unknown layout attribute data-layout-${attr}. No CSS defines it, so it does nothing.`
+        : `data-layout-${attr}="${value}" is not in the vocabulary (${[...known].sort().join(', ')}). ` +
+          `Unknown values fall back to the default silently. For a one-off, use style="--layout-${attr}: ${value}".`;
+
+      if (!known || !known.has(value)) {
+        issues.push({
+          line: lineNum,
+          col: line.indexOf(m[0]) + 1,
+          rule: 'vb/layout-attr-value',
+          severity: severity('vb/layout-attr-value', 'error-new'),
+          message
+        });
+      }
     }
 
     // vb/no-class-for-state — State classes that should be data-* attributes.
