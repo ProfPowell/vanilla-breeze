@@ -25,7 +25,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, resolve, relative, extname } from 'path';
 import { execSync } from 'child_process';
 import { parseHTML } from 'linkedom';
-import { readLayoutVocabulary } from './layout-vocabulary.js';
+import { readLayoutVocabulary, readPresenceAttrs, ESCAPE_HATCH_PROPS } from './layout-vocabulary.js';
 
 const args = process.argv.slice(2);
 const ciMode = args.includes('--ci');
@@ -50,6 +50,11 @@ try {
 // Parsed from the layout CSS — never hand-listed. See
 // admin/specs/layout-value-vocabulary-v1.md.
 const layoutVocabulary = readLayoutVocabulary(projectRoot);
+
+// Attributes whose CSS contract is presence, not value (e.g.
+// [data-layout-centered], with no ="..."). No value is a no-op for these —
+// skip vocabulary validation for them entirely. See layout-vocabulary.js.
+const presenceLayoutAttrs = readPresenceAttrs(projectRoot);
 
 // Check if file is tracked in git (existing) vs untracked (new)
 function isNewFile(filePath) {
@@ -220,12 +225,25 @@ function checkFile(filePath) {
     // attribute names that do not exist at all.
     for (const m of line.matchAll(/data-layout-([a-z-]+)="([^"]*)"/g)) {
       const [, attr, value] = m;
+
+      // Presence-only attributes (e.g. data-layout-centered="") have no
+      // value vocabulary to check against — any value, including "", is
+      // exactly as valid as bare data-layout-centered. See
+      // readPresenceAttrs for why this isn't just "no CSS uses ="".
+      if (presenceLayoutAttrs.has(attr)) continue;
+
       const known = layoutVocabulary.get(attr);
+      // Only three attributes have a documented custom-property escape
+      // hatch (see ESCAPE_HATCH_PROPS). Suggesting `style="--layout-X: ..."`
+      // for anything else recommends a custom property no CSS reads —
+      // the same silent no-op this rule exists to catch, just relocated.
+      const hasEscapeHatch = ESCAPE_HATCH_PROPS.has(`--layout-${attr}`);
 
       const message = !known
         ? `Unknown layout attribute data-layout-${attr}. No CSS defines it, so it does nothing.`
         : `data-layout-${attr}="${value}" is not in the vocabulary (${[...known].sort().join(', ')}). ` +
-          `Unknown values fall back to the default silently. For a one-off, use style="--layout-${attr}: ${value}".`;
+          `Unknown values fall back to the default silently.` +
+          (hasEscapeHatch ? ` For a one-off, use style="--layout-${attr}: ${value}".` : '');
 
       if (!known || !known.has(value)) {
         issues.push({

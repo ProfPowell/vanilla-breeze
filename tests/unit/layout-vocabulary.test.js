@@ -6,7 +6,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { readLayoutVocabulary, ESCAPE_HATCH_PROPS, LAYOUT_ATTR_RE } from '../../scripts/quality/layout-vocabulary.js';
+import { readLayoutVocabulary, readPresenceAttrs, ESCAPE_HATCH_PROPS, LAYOUT_ATTR_RE } from '../../scripts/quality/layout-vocabulary.js';
 
 describe('readLayoutVocabulary', () => {
   const vocab = readLayoutVocabulary();
@@ -108,5 +108,36 @@ describe('tokenized layout vocabulary', () => {
     assert.ok(vocab.get('item-width').has('full'));
     assert.ok(vocab.get('item-width').has('xl'));
     assert.ok(vocab.get('min').has('auto'));
+  });
+});
+
+describe('readPresenceAttrs', () => {
+  const presenceAttrs = readPresenceAttrs();
+
+  it('includes attributes with no value vocabulary at all', () => {
+    // centered/sticky/intrinsic never appear as data-layout-X="value"
+    // anywhere — a bare [data-layout-X] selector is their whole contract.
+    for (const attr of ['centered', 'sticky', 'intrinsic']) {
+      assert.ok(presenceAttrs.has(attr), `data-layout-${attr} should be presence-only`);
+    }
+  });
+
+  it('includes an attribute that also has scoped token values in one mode', () => {
+    // subgrid has [data-layout="grid"][data-layout-subgrid] (any value gets
+    // the default 3-row span) AND [data-layout-subgrid="2"/"4"] refinements,
+    // both confined to the "grid" mode — still presence-only in the sense
+    // that no value is ever a no-op there.
+    assert.ok(presenceAttrs.has('subgrid'));
+  });
+
+  it('excludes value-taking attributes reused across many layout modes', () => {
+    // gap and min are real, validate-able token vocabularies shared across
+    // most layout modes. gap also has a local, single-mode presence
+    // selector ([data-layout="center"][data-layout-gap]) that must NOT
+    // cause the whole attribute to be exempted from value checking —
+    // data-layout-gap="0" (a real bug fixed in this batch) must still be
+    // flagged.
+    assert.ok(!presenceAttrs.has('gap'), 'gap has a real token vocabulary; must stay validated');
+    assert.ok(!presenceAttrs.has('min'), 'min has a real token vocabulary; must stay validated');
   });
 });
