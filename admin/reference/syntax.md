@@ -703,6 +703,13 @@ CSS-only custom HTML tags. No JavaScript required. Use as regular HTML elements.
 
 ### Layout Primitives
 
+> **Layout values are a closed vocabulary.** Every `data-layout-*` value is a
+> named token; raw lengths are not part of the HTML API. An unknown value
+> matches no CSS and silently falls back to the default, so `vb/layout-attr-value`
+> rejects it at conformance time. For a genuine one-off, set the public custom
+> property instead: `style="--layout-min: 220px"`. Full contract:
+> [`layout-value-vocabulary-v1.md`](../specs/layout-value-vocabulary-v1.md).
+
 #### `<layout-stack>`
 Vertical flex layout with configurable gap.
 
@@ -738,7 +745,7 @@ Auto-fit responsive grid.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-min` | `6rem`…`25rem`, `150px`…`400px` | Minimum column width |
+| `data-layout-min` | `xs` \| `s` \| `m` \| `l` \| `xl` | Minimum column width (8/10/15/20/25rem). One-off: `style="--layout-min: 220px"` |
 | `data-layout-gap` | `none`, `xs`, `s`, `m`, `l`, `xl` | Gap between items |
 
 #### `<layout-cover>`
@@ -746,7 +753,7 @@ Full-height container with centered principal element.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-min` | `50vh`…`100vh`, `100dvh`, `auto` | Minimum height |
+| `data-layout-min` | `s` \| `m` \| `l` \| `xl` \| `auto` | Minimum block size (50/70/80vh, 100dvh). One-off: `style="--layout-min: 65vh"` |
 | `data-layout-padding` | `none`, `s`, `m`, `l`, `xl` | Padding |
 | `data-layout-gap` | `s`, `m`, `l` | Gap between items |
 | `data-layout-nospace` | (boolean) | Remove padding |
@@ -762,7 +769,7 @@ Two-column layout (sidebar + content).
 | `data-layout-gap` | `xs`, `s`, `m`, `l`, `xl` | Gap between columns |
 | `data-layout-side` | `end` | Sidebar on right |
 | `data-layout-sidebar-width` | `narrow`, `normal`, `wide` | Sidebar width |
-| `data-layout-content-min` | `40`, `50`, `60` | Min content % |
+| `data-layout-content-min` | `s` \| `m` \| `l` | Min content width (40/50/60%). One-off: `style="--layout-content-min: 45%"` |
 | `data-layout-nowrap` | (boolean) | Prevent stacking |
 
 #### `<layout-switcher>`
@@ -771,7 +778,7 @@ Flexbox that flips horizontal↔vertical based on available space.
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-layout-gap` | `none`, `xs`, `s`, `m`, `l`, `xl` | Gap |
-| `data-layout-threshold` | `20rem`…`45rem` | Switch threshold |
+| `data-layout-threshold` | `s` \| `m` \| `l` | Switch threshold (25/30/40rem). One-off: `style="--layout-threshold: 35rem"` |
 | `data-layout-limit` | `2`, `3`, `4` | Max items before vertical |
 | `data-layout-reverse` | (boolean) | Reverse when stacked |
 
@@ -1341,7 +1348,7 @@ These `data-layout-*` attributes work on layout elements and `data-layout` conta
 | `data-layout-align` | `start`, `center`, `end`, `stretch`, `baseline` | Cross-axis alignment |
 | `data-layout-justify` | `start`, `end`, `center`, `between` | Main-axis alignment |
 | `data-layout-padding` | `none`, `s`, `m`, `l`, `xl` | Container padding |
-| `data-layout-min` | Various rem/px values | Minimum size |
+| `data-layout-min` | `xs` \| `s` \| `m` \| `l` \| `xl` (cover also accepts `auto`) | Minimum size; scale is context-dependent per element — see the layout vocabulary spec |
 | `data-layout-max` | `narrow`, `normal`, `wide`, `prose` | Max-width constraint |
 | `data-layout-nowrap` | (boolean) | Prevent wrapping |
 | `data-layout-sticky` | (boolean) | Sticky positioning |
