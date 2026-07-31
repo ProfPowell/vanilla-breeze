@@ -33,17 +33,6 @@ export const LAYOUT_ATTR_RE = /data-layout-([a-z-]+)="([^"]*)"/g;
  */
 export const PRESENCE_ATTR_RE = /\[data-layout-([a-z-]+)\]/g;
 
-/**
- * Matches a valued selector anchored to a specific layout mode —
- * `[data-layout="grid"][data-layout-subgrid="2"]` — capturing (mode, attr).
- * Used only to count how many distinct layout modes give an attribute real
- * token values (see readPresenceAttrs below); this is a narrow, read-only
- * tally for that one purpose, not a general per-mode vocabulary — building
- * that is a separate, deliberately deferred piece of work (the grid/cover
- * `min` merge issue tracked in its own bead).
- */
-const CONTEXTUAL_VALUE_RE = /\[data-layout="([a-z-]+)"\]\[data-layout-([a-z-]+)="[^"]*"\]/g;
-
 /** Public custom properties that override a token. */
 export const ESCAPE_HATCH_PROPS = new Set([
   '--layout-min',
@@ -100,54 +89,55 @@ export function readLayoutVocabulary(root = DEFAULT_ROOT) {
 
 /**
  * Attributes whose CSS contract is presence, not value — `[data-layout-X]`
- * with no `="..."`. A presence selector matches the attribute no matter
- * what value it holds (including `""`), so there is no value vocabulary to
+ * with no `="..."`, and NO `[data-layout-X="..."]` selector anywhere else
+ * in the CSS. A presence selector matches the attribute no matter what
+ * value it holds (including `""`), so there is no value vocabulary to
  * check for these: `data-layout-centered=""` is exactly as valid as bare
  * `data-layout-centered`.
  *
- * Several attributes (`subgrid`, `overlap`, `threshold`, …) have BOTH a
- * presence selector, scoped to one layout mode, that sets a complete
- * fallback on its own (e.g. `[data-layout="grid"][data-layout-subgrid] > *`
- * defaults to a 3-row span before `="2"`/`="4"` ever narrow it), AND
- * specific-token refinements layered on top within that same mode. Those
- * belong in this set too — any value at all still gets the mode's default
- * treatment, so there is nothing a value check would usefully reject.
- *
- * `gap` is the attribute that makes a naive "any bare `[data-layout-X]`
- * counts" scan wrong: `[data-layout="center"][data-layout-gap]` is a real
- * presence selector (it switches `center` into a flex column), but gap is
- * simultaneously a full token vocabulary reused across ten other layout
- * modes (stack, grid, cover, split, …), and that one local presence rule
- * doesn't set a gap size on its own — an unrecognized value there
- * (`data-layout-gap="0"`) still produces a visibly broken result (no
- * spacing at all), which is exactly the class of bug this vocabulary
- * exists to catch (see the `effects-kitchen-sink.html` fix in this same
- * batch). Attributes reused as real values across 2+ distinct layout modes
- * are excluded from this set for that reason, even where a bare selector
- * also exists in one of those modes.
+ * The rule is deliberately structural and binary — bare form exists AND
+ * zero value-bearing selectors exist — not "does the bare selector look
+ * like a boolean flag." An earlier version of this function tried to keep
+ * `subgrid`/`overlap`/`threshold` in this set (their bare selector sets a
+ * complete fallback: `[data-layout="grid"][data-layout-subgrid] > *`
+ * defaults to a 3-row span, `margin-inline-start: var(--_overlap,
+ * -0.5rem)` has its own fallback, `flex-wrap: wrap-reverse` doesn't
+ * reference the threshold token at all) by counting how many distinct
+ * layout modes each attribute's value-bearing form spans. That heuristic
+ * was wrong: it exempted `threshold` and `overlap` from validation
+ * entirely — `data-layout-threshold="99rem"` and `data-layout-overlap="99px"`
+ * both went unflagged, silently unprotecting two of the three attributes
+ * this whole vocabulary effort was built to tokenize (see
+ * admin/specs/layout-value-vocabulary-v1.md). A bare selector coexisting
+ * with `="value"` selectors for the SAME attribute means "this rule
+ * applies whatever the value is" (a catch-all guard layered under the
+ * specific-token rules) — it does not mean the attribute has no vocabulary
+ * to validate against. If any value-bearing selector exists for an
+ * attribute, that attribute has a real vocabulary and must be checked;
+ * the bare form is irrelevant to validation once that's true. `subgrid`,
+ * `overlap`, `threshold`, and `gap` (all of which have both forms) are
+ * therefore NOT presence-only under this rule.
  *
  * @param {string} [root] - Repo root; defaults to the checkout this file is in.
  * @returns {Set<string>} attribute names (no prefix) that are presence-only
  */
 export function readPresenceAttrs(root = DEFAULT_ROOT) {
   const bareAttrs = new Set();
-  const modesByAttr = new Map();
+  const valuedAttrs = new Set();
 
   for (const file of vocabularyFiles(root)) {
     const css = readFileSync(file, 'utf8');
     for (const [, attr] of css.matchAll(PRESENCE_ATTR_RE)) {
       bareAttrs.add(attr);
     }
-    for (const [, mode, attr] of css.matchAll(CONTEXTUAL_VALUE_RE)) {
-      if (!modesByAttr.has(attr)) modesByAttr.set(attr, new Set());
-      modesByAttr.get(attr).add(mode);
+    for (const [, attr] of css.matchAll(LAYOUT_ATTR_RE)) {
+      valuedAttrs.add(attr);
     }
   }
 
   const presenceAttrs = new Set();
   for (const attr of bareAttrs) {
-    const modeCount = modesByAttr.get(attr)?.size ?? 0;
-    if (modeCount < 2) presenceAttrs.add(attr);
+    if (!valuedAttrs.has(attr)) presenceAttrs.add(attr);
   }
   return presenceAttrs;
 }

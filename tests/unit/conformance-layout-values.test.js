@@ -86,6 +86,45 @@ describe('vb/layout-attr-value presence-only attributes', () => {
   });
 });
 
+describe('vb/layout-attr-value regression: bare-guard attributes stay validated', () => {
+  // threshold, overlap, and subgrid each pair a bare "applies regardless of
+  // value" guard selector with real [data-layout-X="token"] rules. An
+  // earlier version of readPresenceAttrs treated the bare guard as proof
+  // the attribute had no vocabulary and fully exempted all three from
+  // validation — data-layout-threshold="99rem" and data-layout-overlap="99px"
+  // went completely unflagged, unprotecting two of the three attributes
+  // this whole vocabulary effort exists to tokenize. These lock the fix.
+
+  it('flags a raw length on threshold and accepts a real token', () => {
+    const bad = check('<section data-layout="switcher" data-layout-threshold="99rem">x</section>');
+    assert.match(bad, /vb\/layout-attr-value/, bad);
+
+    const good = check('<section data-layout="switcher" data-layout-threshold="m">x</section>');
+    assert.ok(!good.includes('vb/layout-attr-value'), good);
+  });
+
+  it('flags a raw length on overlap and accepts a real token', () => {
+    const bad = check('<section data-layout="cluster" data-layout-overlap="99px">x</section>');
+    assert.match(bad, /vb\/layout-attr-value/, bad);
+
+    const good = check('<section data-layout="cluster" data-layout-overlap="s">x</section>');
+    assert.ok(!good.includes('vb/layout-attr-value'), good);
+  });
+
+  it('flags an out-of-range count on subgrid; accepts a real count and the bare form', () => {
+    const bad = check('<section data-layout="grid" data-layout-subgrid="9">x</section>');
+    assert.match(bad, /vb\/layout-attr-value/, bad);
+
+    const good = check('<section data-layout="grid" data-layout-subgrid="2">x</section>');
+    assert.ok(!good.includes('vb/layout-attr-value'), good);
+
+    // Bare form (no "=" at all) never enters the value-checking regex in
+    // the first place — it's the [data-layout-subgrid] default (span 3).
+    const bare = check('<section data-layout="grid" data-layout-subgrid>x</section>');
+    assert.ok(!bare.includes('vb/layout-attr-value'), bare);
+  });
+});
+
 describe('vb/layout-attr-value escape-hatch suggestion', () => {
   it('suggests the custom property for an attribute that actually has one', () => {
     const out = check('<section data-layout="grid" data-layout-min="220px">x</section>');

@@ -122,22 +122,32 @@ describe('readPresenceAttrs', () => {
     }
   });
 
-  it('includes an attribute that also has scoped token values in one mode', () => {
-    // subgrid has [data-layout="grid"][data-layout-subgrid] (any value gets
-    // the default 3-row span) AND [data-layout-subgrid="2"/"4"] refinements,
-    // both confined to the "grid" mode — still presence-only in the sense
-    // that no value is ever a no-op there.
-    assert.ok(presenceAttrs.has('subgrid'));
+  it('excludes attributes that have ANY value-bearing selector, even ones that also have a bare guard', () => {
+    // threshold, overlap, and subgrid all pair a bare "catch-all" selector
+    // ([data-layout="switcher"][data-layout-reverse][data-layout-threshold],
+    // [data-layout="cluster"][data-layout-overlap] > *,
+    // [data-layout="grid"][data-layout-subgrid] > *) with real
+    // [data-layout-X="token"] rules. The bare form there means "this guard
+    // applies whatever the value is," not "there is no vocabulary" — an
+    // earlier version of readPresenceAttrs got this wrong and fully
+    // exempted all three from validation (data-layout-threshold="99rem"
+    // and data-layout-overlap="99px" went unflagged). Any value-bearing
+    // selector for an attribute means it has a real vocabulary and must
+    // stay validated, regardless of a coexisting bare guard.
+    for (const attr of ['threshold', 'overlap', 'subgrid']) {
+      assert.ok(!presenceAttrs.has(attr), `data-layout-${attr} has real token values; must stay validated`);
+    }
   });
 
-  it('excludes value-taking attributes reused across many layout modes', () => {
-    // gap and min are real, validate-able token vocabularies shared across
-    // most layout modes. gap also has a local, single-mode presence
-    // selector ([data-layout="center"][data-layout-gap]) that must NOT
-    // cause the whole attribute to be exempted from value checking —
-    // data-layout-gap="0" (a real bug fixed in this batch) must still be
-    // flagged.
+  it('excludes gap, which has a local single-mode bare guard but a real multi-mode vocabulary', () => {
+    // [data-layout="center"][data-layout-gap] is a bare guard (switches
+    // center to a flex column for any gap value), but gap is also a real
+    // token vocabulary reused across ten layout modes. data-layout-gap="0"
+    // (a real bug fixed in this batch) must still be flagged.
     assert.ok(!presenceAttrs.has('gap'), 'gap has a real token vocabulary; must stay validated');
+  });
+
+  it('excludes min, which has no bare form at all', () => {
     assert.ok(!presenceAttrs.has('min'), 'min has a real token vocabulary; must stay validated');
   });
 });
