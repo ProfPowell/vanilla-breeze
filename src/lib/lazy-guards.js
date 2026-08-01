@@ -51,7 +51,7 @@
  * the guard selector below must be that same SELECTOR. main.js used to guard
  * `[data-floating-label]` while the module only enhances
  * `form-field[data-floating-label]`, so the module was fetched and evaluated
- * for markup it would never touch. tests/unit/bundle-parity.test.js asserts the
+ * for markup it would never touch. tests/unit/entry-parity.test.js asserts the
  * two agree.
  */
 
