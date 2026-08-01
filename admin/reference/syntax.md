@@ -1348,7 +1348,7 @@ These `data-layout-*` attributes work on layout elements and `data-layout` conta
 | `data-layout-align` | `start`, `center`, `end`, `stretch`, `baseline` | Cross-axis alignment |
 | `data-layout-justify` | `start`, `end`, `center`, `between` | Main-axis alignment |
 | `data-layout-padding` | `none`, `s`, `m`, `l`, `xl` | Container padding |
-| `data-layout-min` | `xs` \| `s` \| `m` \| `l` \| `xl` (cover also accepts `auto`) | Minimum size; scale is context-dependent per element — see the layout vocabulary spec |
+| `data-layout-min` | grid: `xs`\|`s`\|`m`\|`l`\|`xl`; cover: `s`\|`m`\|`l`\|`xl`\|`auto` (no `xs`) | Minimum size; scale is context-dependent per element — see the layout vocabulary spec |
 | `data-layout-max` | `narrow`, `normal`, `wide`, `prose` | Max-width constraint |
 | `data-layout-nowrap` | (boolean) | Prevent wrapping |
 | `data-layout-sticky` | (boolean) | Sticky positioning |
