@@ -253,7 +253,7 @@ WCAG 2.1 AA targets:
 ### Dashboard grid
 
 ```html
-<layout-grid data-layout-min="240px" data-layout-gap="m">
+<layout-grid data-layout-min="m" data-layout-gap="m">
   <a href="/users"><score-card>…</score-card></a>
   <a href="/revenue"><score-card>…</score-card></a>
   <a href="/orders"><score-card>…</score-card></a>

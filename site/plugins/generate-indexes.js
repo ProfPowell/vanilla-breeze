@@ -42,7 +42,7 @@ function generateNativeIndex(data) {
   let html = '';
   for (const [category, items] of Object.entries(cats)) {
     html += `<section>\n<h2>${esc(category)}</h2>\n`;
-    html += `<layout-grid data-layout-min="200px" data-layout-gap="s">\n`;
+    html += `<layout-grid data-layout-min="m" data-layout-gap="s">\n`;
     for (const item of items) {
       html += `<a href="${item.href}" class="section-card"><h3><code>&lt;${esc(item.name)}&gt;</code></h3><p>${esc(item.desc)}</p></a>\n`;
     }
@@ -61,7 +61,7 @@ function generateWebComponentsIndex(data) {
     let html = '';
     for (const [category, entries] of Object.entries(items)) {
       html += `<h3>${esc(category)} <small style="font-weight:400;color:var(--color-text-muted,#666)">(${entries.length})</small></h3>\n`;
-      html += `<layout-grid data-layout-min="250px" data-layout-gap="s" style="margin-block-end:var(--size-l,1.5rem)">\n`;
+      html += `<layout-grid data-layout-min="m" data-layout-gap="s" style="margin-block-end:var(--size-l,1.5rem)">\n`;
       for (const item of entries) {
         html += `<a href="${item.href}" class="section-card"><h4><code>&lt;${esc(item.name)}&gt;</code></h4><p>${esc(item.desc)}</p></a>\n`;
       }
@@ -139,7 +139,7 @@ function generateAttributeSubIndex(categories) {
   let html = '';
   for (const [key, category] of Object.entries(categories)) {
     html += `<section>\n<h2>${esc(category.label)}</h2>\n`;
-    html += `<layout-grid data-layout-min="280px" data-layout-gap="s">\n`;
+    html += `<layout-grid data-layout-min="l" data-layout-gap="s">\n`;
     for (const item of category.items) {
       html += `<a href="${item.href}" class="section-card"><h3><code>${esc(item.name)}</code></h3><p>${esc(item.description)}</p></a>\n`;
     }
