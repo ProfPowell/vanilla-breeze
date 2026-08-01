@@ -192,27 +192,39 @@ function checkFile(filePath) {
     // vb/no-inline-style — style="..." attributes.
     //
     // Exception: a style attribute whose declarations are ALL custom
-    // properties is the documented layout escape hatch
-    // (style="--layout-min: 220px"). Setting a custom property passes a
-    // value into a CSS contract; it is not styling. Mixing custom
-    // properties with real declarations is still a violation.
-    const styleMatch = line.match(/\sstyle="([^"]+)"/i);
-    if (styleMatch && !/<(meta|link)/i.test(line)) {
-      const declarations = styleMatch[1]
-        .split(';')
-        .map((d) => d.trim())
-        .filter(Boolean);
-      const customPropsOnly =
-        declarations.length > 0 && declarations.every((d) => d.startsWith('--'));
+    // properties, AND every one of those properties is a documented layout
+    // escape hatch (ESCAPE_HATCH_PROPS: --layout-min, --layout-threshold,
+    // --layout-content-min — see layout-vocabulary.js). Setting one of
+    // those three passes a value into a documented CSS contract; it is not
+    // styling. Any other custom property — including VB-private
+    // `--_`-prefixed internals, or a made-up name nothing reads — is not a
+    // public contract and stays a violation, same as mixing an escape-hatch
+    // property with a real declaration.
+    //
+    // Iterate every style="..." on the line with matchAll, not the first
+    // match only: a line can carry two style attributes (e.g. a layout
+    // element wrapping a styled child), and a bare `.match()` here used to
+    // return only the first, so an exempt first style attribute silently
+    // exempted the rest of the line too.
+    if (!/<(meta|link)/i.test(line)) {
+      for (const styleMatch of line.matchAll(/\sstyle="([^"]+)"/gi)) {
+        const declarations = styleMatch[1]
+          .split(';')
+          .map((d) => d.trim())
+          .filter(Boolean);
+        const isEscapeHatch =
+          declarations.length > 0 &&
+          declarations.every((d) => ESCAPE_HATCH_PROPS.has(d.split(':')[0].trim()));
 
-      if (!customPropsOnly) {
-        issues.push({
-          line: lineNum,
-          col: line.indexOf('style="') + 1,
-          rule: 'vb/no-inline-style',
-          severity: severity('vb/no-inline-style', 'error-new'),
-          message: 'Move inline styles to CSS. Use data-* attributes for dynamic values.'
-        });
+        if (!isEscapeHatch) {
+          issues.push({
+            line: lineNum,
+            col: styleMatch.index + 1,
+            rule: 'vb/no-inline-style',
+            severity: severity('vb/no-inline-style', 'error-new'),
+            message: 'Move inline styles to CSS. Use data-* attributes for dynamic values.'
+          });
+        }
       }
     }
 

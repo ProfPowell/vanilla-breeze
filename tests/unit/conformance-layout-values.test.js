@@ -144,7 +144,7 @@ describe('vb/layout-attr-value escape-hatch suggestion', () => {
 });
 
 describe('vb/no-inline-style escape hatch', () => {
-  it('allows a style attribute holding only custom properties', () => {
+  it('allows a style attribute holding only escape-hatch custom properties', () => {
     const out = check('<section data-layout="grid" style="--layout-min: 220px">x</section>');
     assert.ok(!out.includes('vb/no-inline-style'), out);
   });
@@ -157,5 +157,27 @@ describe('vb/no-inline-style escape hatch', () => {
   it('still flags custom properties mixed with a real declaration', () => {
     const out = check('<section style="--layout-min: 220px; color: red">x</section>');
     assert.match(out, /vb\/no-inline-style/);
+  });
+
+  it('flags a custom property that is not one of the three documented escape hatches', () => {
+    // --_gap is a VB-private internal (the underscore prefix marks it as
+    // such), and --size-m is a real design token but not a layout escape
+    // hatch. The exemption is for ESCAPE_HATCH_PROPS specifically, not
+    // "any custom property" — a bare `startsWith('--')` check blesses
+    // exactly the silent no-op this rule exists to catch (a style
+    // attribute nothing reads).
+    const out = check('<section style="--_gap: 40px; --size-m: 100px">x</section>');
+    assert.match(out, /vb\/no-inline-style/, out);
+  });
+
+  it('flags a second style attribute on the same line even when the first is exempt', () => {
+    // Regression: a bare line.match() (no /g) returns only the first
+    // style="..." on the line, so an exempt first attribute used to
+    // blanket-exempt the whole line — including a genuinely-styled sibling
+    // element sharing the line. matchAll must evaluate each independently.
+    const out = check(
+      '<section style="--layout-min: 220px"><span style="color: red">x</span></section>'
+    );
+    assert.match(out, /vb\/no-inline-style/, out);
   });
 });
