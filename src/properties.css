@@ -35,6 +35,35 @@
 @property --radius-l      { syntax: "<length>"; inherits: true; initial-value: 12px; }
 @property --sidebar-width { syntax: "<length>"; inherits: true; initial-value: 280px; }
 
+/* Layout token escape hatch — see admin/specs/layout-value-vocabulary-v1.md.
+   These three are the documented one-off override for data-layout-min /
+   -threshold / -content-min: style="--layout-min: 220px" beats the token.
+   Registered here ONLY for inherits:false — unregistered custom properties
+   always inherit, so an author setting --layout-min on an ancestor (e.g. a
+   cover) would otherwise leak into every descendant layout (e.g. a nested
+   grid), which is not what a one-off override on one element should do.
+
+   syntax is deliberately the universal selector "*", not a typed syntax
+   like <length-percentage>. A registered property with a typed syntax MUST
+   have an initial-value, and once it has one, an element that never sets
+   the property no longer has an unset/guaranteed-invalid value — it has
+   the initial-value, which wins the var() substitution before the
+   fallback ever gets a chance to run. The layout CSS relies on exactly
+   that failure mode to make the escape hatch optional:
+
+     --_min: var(--layout-min, var(--_min-token, 15rem));
+
+   A typed --layout-min with any initial-value would make EVERY grid
+   resolve to that one value regardless of its data-layout-min token —
+   the fallback chain would never fire again. The universal syntax has no
+   initial-value and keeps the property invalid-at-computed-value-time when
+   unset, exactly like an unregistered property, so var() still falls
+   through to the token. inherits:false is still enforced despite the
+   universal syntax — that's the one thing actually being fixed here. */
+@property --layout-min         { syntax: "*"; inherits: false; }
+@property --layout-threshold   { syntax: "*"; inherits: false; }
+@property --layout-content-min { syntax: "*"; inherits: false; }
+
 /* Icons — see src/custom-elements/icon-attributes.css */
 @property --vb-icon {
   syntax: "<image>";
