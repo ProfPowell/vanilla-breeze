@@ -33,6 +33,20 @@ export const LAYOUT_ATTR_RE = /data-layout-([a-z-]+)="([^"]*)"/g;
  */
 export const PRESENCE_ATTR_RE = /\[data-layout-([a-z-]+)\]/g;
 
+/**
+ * Strip CSS block comments before scanning for selectors. Without this, a
+ * commented-out `/* data-layout-min="220px" *\/` would silently widen the
+ * parsed vocabulary — the checker exists to catch exactly the kind of
+ * unintentional-looking value this would admit. tests/unit/bundle-parity.test.js
+ * strips comments the same way for the same reason; keep the two in sync.
+ *
+ * @param {string} css
+ * @returns {string}
+ */
+function stripComments(css) {
+  return css.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
 /** Public custom properties that override a token. */
 export const ESCAPE_HATCH_PROPS = new Set([
   '--layout-min',
@@ -78,7 +92,7 @@ function vocabularyFiles(root) {
 export function readLayoutVocabulary(root = DEFAULT_ROOT) {
   const vocab = new Map();
   for (const file of vocabularyFiles(root)) {
-    const css = readFileSync(file, 'utf8');
+    const css = stripComments(readFileSync(file, 'utf8'));
     for (const [, attr, value] of css.matchAll(LAYOUT_ATTR_RE)) {
       if (!vocab.has(attr)) vocab.set(attr, new Set());
       vocab.get(attr).add(value);
@@ -126,7 +140,7 @@ export function readPresenceAttrs(root = DEFAULT_ROOT) {
   const valuedAttrs = new Set();
 
   for (const file of vocabularyFiles(root)) {
-    const css = readFileSync(file, 'utf8');
+    const css = stripComments(readFileSync(file, 'utf8'));
     for (const [, attr] of css.matchAll(PRESENCE_ATTR_RE)) {
       bareAttrs.add(attr);
     }

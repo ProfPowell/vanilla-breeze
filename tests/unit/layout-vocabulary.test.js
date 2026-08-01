@@ -6,6 +6,9 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { readLayoutVocabulary, readPresenceAttrs, ESCAPE_HATCH_PROPS, LAYOUT_ATTR_RE } from '../../scripts/quality/layout-vocabulary.js';
 
 describe('readLayoutVocabulary', () => {
@@ -108,6 +111,33 @@ describe('tokenized layout vocabulary', () => {
     assert.ok(vocab.get('item-width').has('full'));
     assert.ok(vocab.get('item-width').has('xl'));
     assert.ok(vocab.get('min').has('auto'));
+  });
+});
+
+describe('readLayoutVocabulary strips CSS comments', () => {
+  // A commented-out selector must not widen the parsed vocabulary — that
+  // would silently admit values the rule is meant to catch. Build a
+  // synthetic root so this doesn't depend on any real comment existing in
+  // the repo today.
+  it('does not admit a value that only appears inside a /* ... */ comment', () => {
+    const root = mkdtempSync(join(tmpdir(), 'vb-layout-vocab-'));
+    const base = join(root, 'src', 'custom-elements');
+    mkdirSync(base, { recursive: true });
+    writeFileSync(
+      join(base, 'layout-attributes.css'),
+      [
+        '[data-layout="grid"][data-layout-min="m"] { --_min: 15rem; }',
+        '/* commented out: [data-layout="grid"][data-layout-min="220px"] { --_min: 220px; } */',
+        '/* multi-line comment',
+        '   [data-layout="grid"][data-layout-min="999px"] { --_min: 999px; }',
+        '*/',
+      ].join('\n'),
+    );
+
+    const vocab = readLayoutVocabulary(root);
+    assert.ok(vocab.get('min').has('m'), 'the real, uncommented selector must still be read');
+    assert.ok(!vocab.get('min').has('220px'), 'a single-line-comment value must not be admitted');
+    assert.ok(!vocab.get('min').has('999px'), 'a multi-line-comment value must not be admitted');
   });
 });
 
