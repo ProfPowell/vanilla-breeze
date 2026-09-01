@@ -1,0 +1,44 @@
+# The old GitHub Pages mirror at profpowell.github.io/vanilla-breeze is
+# retired. This publishes a single redirect page (plus a 404 that forwards
+# deep links) so old inbound links land on vanilla-breeze.com instead of
+# a stale copy or a 404. It only runs when the redirect page itself changes.
+name: Pages redirect
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/pages-redirect/**'
+      - '.github/workflows/pages-redirect.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload redirect page
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .github/pages-redirect
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

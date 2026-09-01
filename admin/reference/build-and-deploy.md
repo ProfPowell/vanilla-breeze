@@ -60,7 +60,11 @@ failed, while Cloudflare kept serving the real site, and it leaked into
 `site.url` (canonical + `og:url` on vanilla-breeze.com itself). The
 workflow is now `.github/workflows/ci.yml` — quality gate and reports
 only, no deploy. Public references (README, `package.json` homepage,
-`site/data/site.js`) point at `https://vanilla-breeze.com`.
+`site/data/site.js`) point at `https://vanilla-breeze.com`. The Pages site
+itself now serves only `.github/pages-redirect/` — an `index.html` and a
+`404.html` that forward any old deep link to the same path on
+vanilla-breeze.com — published by `.github/workflows/pages-redirect.yml`
+whenever that folder changes.
 
 ## Caching strategy
 
