@@ -17,21 +17,30 @@
 
 import { test, expect } from 'playwright/test';
 
-/** @type {{demo: string, selector: string}[]} */
+/**
+ * `demo` is a path under /docs/. Most reconnect demos live in examples/demos;
+ * the selection-menu one is a snippet demo.
+ *
+ * @type {{demo: string, selector: string}[]}
+ */
 const CASES = [
-  { demo: 'version-switcher-modes.html', selector: 'version-switcher' },
-  { demo: 'time-picker-basic.html', selector: 'time-picker' },
-  { demo: 'reaction-bar-comment.html', selector: 'reaction-bar' },
-  // 3pyj: the two components the September re-audit caught duplicating live.
-  // comment-wc has the same guard but no built demo upgrades it yet (aynl).
-  { demo: 'content-lens.html', selector: 'content-lens' },
-  { demo: 'timeline-changelog.html', selector: 'time-index' },
+  { demo: 'examples/demos/version-switcher-modes.html', selector: 'version-switcher' },
+  { demo: 'examples/demos/time-picker-basic.html', selector: 'time-picker' },
+  { demo: 'examples/demos/reaction-bar-comment.html', selector: 'reaction-bar' },
+  // 3pyj: the two components the September re-audit caught duplicating live,
+  // plus comment-wc, which had the same unguarded append. It is extras-only,
+  // so this case also proves the autoloader upgrades it on a built page (aynl).
+  { demo: 'examples/demos/content-lens.html', selector: 'content-lens' },
+  { demo: 'examples/demos/timeline-changelog.html', selector: 'time-index' },
+  { demo: 'snippets/demos/selection-menu-basic.html', selector: 'comment-wc' },
 ];
 
 for (const { demo, selector } of CASES) {
   test(`${selector} does not duplicate DOM across a reconnect`, async ({ page }) => {
-    await page.goto(`/docs/examples/demos/${demo}`);
-    await page.waitForSelector(`${selector}[data-upgraded]`);
+    await page.goto(`/docs/${demo}`);
+    // Attached, not visible: the check is structural, and comment-wc sits in
+    // a manual-mode pop-over that stays hidden until text is selected.
+    await page.waitForSelector(`${selector}[data-upgraded]`, { state: 'attached' });
 
     const result = await page.evaluate((sel) => {
       const el = document.querySelector(`${sel}[data-upgraded]`);
