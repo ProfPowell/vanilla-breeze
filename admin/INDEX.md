@@ -22,6 +22,7 @@ Workflow note: when a `plans/` doc ships, move it to `shipped/`. When a `researc
 
 | Doc | What it is |
 |---|---|
+| [pickup.md](./reference/pickup.md) | Where things stand and how to resume — rewrite at the end of every session |
 | [overview.md](./reference/overview.md) | Project philosophy and core tenets |
 | [global-overview.md](./reference/global-overview.md) | Cross-project orientation (zingsoft, ProfPowell, related repos) |
 | [syntax.md](./reference/syntax.md) | Definitive catalog of every element, attribute, class, and data-attribute |
