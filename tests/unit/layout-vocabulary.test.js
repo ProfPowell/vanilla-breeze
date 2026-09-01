@@ -11,6 +11,18 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { readLayoutVocabulary, readPresenceAttrs, ESCAPE_HATCH_PROPS, LAYOUT_ATTR_RE } from '../../scripts/quality/layout-vocabulary.js';
 
+/**
+ * An attribute's parsed value set, failing loudly if the parser never saw it.
+ * @param {Map<string, Set<string>>} vocab
+ * @param {string} attr
+ * @returns {Set<string>}
+ */
+const values = (vocab, attr) => {
+  const set = vocab.get(attr);
+  assert.ok(set, `data-layout-${attr} missing from the parsed vocabulary`);
+  return set;
+};
+
 describe('readLayoutVocabulary', () => {
   const vocab = readLayoutVocabulary();
 
@@ -27,8 +39,8 @@ describe('readLayoutVocabulary', () => {
   it('reads values from both the element and attribute forks', () => {
     // gap is defined in layout-attributes.css; item-width only in
     // layout-reel/styles.css. Both must be picked up.
-    assert.ok(vocab.get('item-width').has('full'), 'element-fork file not scanned');
-    assert.ok(vocab.get('gap').has('m'), 'attribute-fork file not scanned');
+    assert.ok(values(vocab, 'item-width').has('full'), 'element-fork file not scanned');
+    assert.ok(values(vocab, 'gap').has('m'), 'attribute-fork file not scanned');
   });
 
   it('names the three escape-hatch custom properties', () => {
@@ -41,7 +53,7 @@ describe('readLayoutVocabulary', () => {
   it('throws when required layout-attributes.css is missing', () => {
     assert.throws(
       () => readLayoutVocabulary('/nonexistent/root'),
-      (err) => err.message.includes('Required vocabulary file missing'),
+      /Required vocabulary file missing/,
       'should throw with clear error message for missing layout-attributes.css',
     );
   });
@@ -65,15 +77,15 @@ describe('tokenized layout vocabulary', () => {
 
   it('min is the t-shirt scale plus auto — no raw lengths', () => {
     assert.deepEqual(
-      [...vocab.get('min')].sort(),
+      [...values(vocab, 'min')].sort(),
       ['auto', 'l', 'm', 's', 'xl', 'xs'],
       'data-layout-min still enumerates raw lengths; they belong to --layout-min now.',
     );
   });
 
   it('threshold and content-min are tokenized', () => {
-    assert.deepEqual([...vocab.get('threshold')].sort(), ['l', 'm', 's']);
-    assert.deepEqual([...vocab.get('content-min')].sort(), ['l', 'm', 's']);
+    assert.deepEqual([...values(vocab, 'threshold')].sort(), ['l', 'm', 's']);
+    assert.deepEqual([...values(vocab, 'content-min')].sort(), ['l', 'm', 's']);
   });
 
   // These carry counts and positions, not lengths — bare integers are correct
@@ -108,9 +120,9 @@ describe('tokenized layout vocabulary', () => {
 
   it('behavioral keywords survive tokenization', () => {
     // full is inline-size:100%, xl is 30rem — different things, both needed.
-    assert.ok(vocab.get('item-width').has('full'));
-    assert.ok(vocab.get('item-width').has('xl'));
-    assert.ok(vocab.get('min').has('auto'));
+    assert.ok(values(vocab, 'item-width').has('full'));
+    assert.ok(values(vocab, 'item-width').has('xl'));
+    assert.ok(values(vocab, 'min').has('auto'));
   });
 });
 
@@ -135,9 +147,9 @@ describe('readLayoutVocabulary strips CSS comments', () => {
     );
 
     const vocab = readLayoutVocabulary(root);
-    assert.ok(vocab.get('min').has('m'), 'the real, uncommented selector must still be read');
-    assert.ok(!vocab.get('min').has('220px'), 'a single-line-comment value must not be admitted');
-    assert.ok(!vocab.get('min').has('999px'), 'a multi-line-comment value must not be admitted');
+    assert.ok(values(vocab, 'min').has('m'), 'the real, uncommented selector must still be read');
+    assert.ok(!values(vocab, 'min').has('220px'), 'a single-line-comment value must not be admitted');
+    assert.ok(!values(vocab, 'min').has('999px'), 'a multi-line-comment value must not be admitted');
   });
 });
 

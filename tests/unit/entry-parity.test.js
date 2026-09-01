@@ -109,7 +109,12 @@ function splitSelectorList(selector) {
 const guardSpecifiers = (rel) =>
   [...read(rel).matchAll(/load:\s*\(\)\s*=>\s*import\('([^']+)'\)/g)].map((m) => m[1]);
 
-/** Both halves of the table, paired with the file that declares them. */
+/** @typedef {import('../../src/lib/lazy-guards.js').LazyGuard} LazyGuard */
+
+/**
+ * Both halves of the table, paired with the file that declares them.
+ * @type {Array<[string, readonly LazyGuard[]]>}
+ */
 const TABLES = [
   ['src/lib/lazy-guards.js', CORE_GUARDS],
   ['src/lib/lazy-guards-full.js', EXTRAS_GUARDS],
@@ -262,10 +267,12 @@ describe('core ⊆ full JS graph parity', () => {
     );
   });
 
-  for (const [label, rel, expand] of [
+  /** @type {Array<[string, string, string[]]>} */
+  const SUBSET_ENTRIES = [
     ['web-components/core.js', 'src/main-core.js', ['src/web-components/core.js']],
     ['web-components/extras.js', 'src/web-components/extras.js', []],
-  ]) {
+  ];
+  for (const [label, rel, expand] of SUBSET_ENTRIES) {
     it(`${label} imports nothing the full entry graph lacks`, () => {
       const orphans = [...graph(rel, expand)].filter(
         (spec) =>

@@ -64,7 +64,7 @@ class SettingsPanel extends VBElement {
     // Remove the rendered panel so a reconnect's setup() doesn't stack a
     // second one (the trigger is find-or-create and safely reused)
     this.#panel?.remove();
-    this.#panel = null;
+    this.#panel = /** @type {*} */ (null);
   }
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
