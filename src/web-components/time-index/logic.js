@@ -30,6 +30,10 @@ class TimeIndex extends VBElement {
   }
 
   #addControls() {
+    // Reconnect guard: VBElement re-runs setup() on every reconnect, which
+    // would prepend a second controls <nav>. Skip if ours is already in place.
+    if (this.querySelector(':scope > [data-timeline-controls]')) return;
+
     const controls = document.createElement('nav');
     controls.setAttribute('data-timeline-controls', '');
     controls.setAttribute('aria-label', 'Timeline controls');

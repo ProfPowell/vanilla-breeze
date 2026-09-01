@@ -13,6 +13,10 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 
 class CommentWC extends VBElement {
   setup() {
+    // Reconnect guard: VBElement re-runs setup() on every reconnect, which
+    // would append a second button. Skip if ours is already in place.
+    if (this.querySelector(':scope > button')) return;
+
     const btn = document.createElement('button');
     btn.type = 'button';
     const icon = document.createElement('icon-wc');

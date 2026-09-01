@@ -70,6 +70,9 @@ class ContentLens extends VBElement {
 
   #renderControls() {
     if (this.getAttribute('data-lens-controls') === 'off') return;
+    // Reconnect guard: VBElement re-runs setup() on every reconnect, which
+    // would prepend a second <nav>. Skip if ours is already in place.
+    if (this.#controls?.parentNode === this) return;
 
     const nav = document.createElement('nav');
     nav.setAttribute('data-content-lens-controls', '');

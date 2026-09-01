@@ -22,6 +22,10 @@ const CASES = [
   { demo: 'version-switcher-modes.html', selector: 'version-switcher' },
   { demo: 'time-picker-basic.html', selector: 'time-picker' },
   { demo: 'reaction-bar-comment.html', selector: 'reaction-bar' },
+  // 3pyj: the two components the September re-audit caught duplicating live.
+  // comment-wc has the same guard but no built demo upgrades it yet (aynl).
+  { demo: 'content-lens.html', selector: 'content-lens' },
+  { demo: 'timeline-changelog.html', selector: 'time-index' },
 ];
 
 for (const { demo, selector } of CASES) {
