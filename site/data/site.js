@@ -10,7 +10,7 @@ const isDev = process.env.ELEVENTY_ENV === 'development';
 export default {
   title: 'Vanilla Breeze',
   description: 'A layered HTML component system extending HTML\'s native model',
-  url: 'https://profpowell.github.io/vanilla-breeze',
+  url: 'https://vanilla-breeze.com',
   isDev,
 
   // CSS entry point (core — no decorative themes, no charts, no dev utils)

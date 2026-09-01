@@ -9,8 +9,8 @@
 # a new build step, put it here and commit it — don't edit the dashboard
 # in isolation or the repo and deploy will drift.
 #
-# Why this exists: the GitHub Pages workflow at .github/workflows/deploy.yml
-# runs one chain; CF's dashboard-configured build ran a subset; result was
+# Why this exists: the (since retired) GitHub Pages workflow ran one
+# chain; CF's dashboard-configured build ran a subset; result was
 # /docs/alpenglow/ and other assemble-site.js-produced assets missing on
 # production even though they were present locally. Locking this into the
 # repo means CF drift becomes a PR, not a silent deploy surprise.

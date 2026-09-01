@@ -1,26 +1,23 @@
-# Deploy to GitHub Pages
-name: Deploy to GitHub Pages
+# CI quality gate. Production deploys are Cloudflare Pages, connected
+# directly to this repo (see admin/reference/build-and-deploy.md) — this
+# workflow deploys nothing, it only decides whether main is healthy.
+name: CI
 
 on:
-  # Run on pushes to main branch
   push:
     branches: [main]
-  # Allow manual trigger
+  pull_request:
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# Allow only one concurrent deployment
 concurrency:
-  group: "pages"
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # GATES — must pass to deploy
+  # GATES — a red run here means main is unhealthy
   quality-gate:
     runs-on: ubuntu-latest
     steps:
@@ -65,7 +62,7 @@ jobs:
       - name: Bundle size budget check
         run: npm run budget
 
-  # REPORTS — informational, don't block deployment
+  # REPORTS — informational, never fail the run
   quality-report:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -107,68 +104,3 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
-
-  build:
-    # needs: quality-gate  # Bypassed so a failing lint/typecheck can't block
-    #                       a deploy. The test-glob issue that originally
-    #                       forced this bypass is now fixed (Node 22 supports
-    #                       globs in `node --test`). Re-enable once all gate
-    #                       checks (lint:js, lint:html, typecheck,
-    #                       conformance, theme-tokens, budget) are known
-    #                       to pass consistently on main.
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install root dependencies
-        run: npm ci
-
-      - name: Install site dependencies
-        run: cd site && npm ci
-
-      - name: Build CDN bundles
-        run: npm run build:cdn
-
-      - name: Build doc-extras bundle
-        run: cd site && npm run build:doc-extras 2>/dev/null || true
-
-      - name: Build site with Cook
-        run: cd site && npm run build
-
-      - name: Run template audit
-        run: cd site && npm run audit:templates
-
-      - name: Assemble site assets (CDN, icons, src, demos)
-        run: npm run build:site-assets
-
-      - name: Fix paths for GitHub Pages
-        run: npm run build:fix-paths
-        env:
-          BASE_URL: /vanilla-breeze/
-          DIST_DIR: site/dist/pages
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site/dist/pages
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

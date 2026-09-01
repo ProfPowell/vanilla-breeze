@@ -2,13 +2,15 @@
 
 A layered HTML component system extending HTML's native model. Build accessible, themeable interfaces with semantic HTML, CSS cascade layers, and progressive enhancement — no build step required.
 
+Docs, interactive demos, and examples: **[vanilla-breeze.com](https://vanilla-breeze.com/)**
+
 ## Features
 
 - **Zero-class styling** — native HTML elements styled through cascade layers, not utility classes
 - **Layout attributes** — responsive layouts via `data-layout="stack | cluster | sidebar | grid"` instead of wrapper divs
-- **30+ web components** — accordion, tabs, carousel, data-table, command-palette, combo-box, toast, tooltip, drag-surface, and more
+- **90+ web components** — accordion, tabs, carousel, data-table, command-palette, combo-box, toast, tooltip, drag-surface, and more
 - **Design tokens** — spacing, typography, colors, sizing, borders, shadows, motion
-- **Theme engine** — 40+ themes as tiny à-la-carte token files (1–4 KB each), plus dark/light mode; only core themes ship in the main bundle
+- **Theme engine** — 50+ themes as tiny à-la-carte token files (1–4 KB each), plus dark/light mode; only core themes ship in the main bundle
 - **Progressive enhancement** — everything works without JavaScript; JS adds interactivity
 
 ## Quick Start
@@ -30,6 +32,8 @@ npm install vanilla-breeze
 import 'vanilla-breeze';
 import 'vanilla-breeze/css';
 ```
+
+Smaller entry points are exported too: `vanilla-breeze/core-js` + `vanilla-breeze/core-css` for the foundation only, and `vanilla-breeze/ui-js`, `effects-js`, `icons-js`, and friends for individual packs. See the `exports` map in `package.json`.
 
 ### Themes
 
@@ -69,9 +73,23 @@ Or via npm: `import 'vanilla-breeze/themes/nord';`. Runtime switching (`<theme-p
 
 No classes needed — elements are styled through cascade layers.
 
-## Documentation
+## Companion packs
 
-Full docs, interactive demos, and examples at **[profpowell.github.io/vanilla-breeze](https://profpowell.github.io/vanilla-breeze/)**.
+Two component families ship as separate packages that read Vanilla Breeze tokens and adopt the active theme automatically:
+
+- [`@profpowell/vb-design-system`](https://www.npmjs.com/package/@profpowell/vb-design-system) — specimens, palette and gradient builders, font pairing, theme catalog/import/export
+- [`@profpowell/vb-project-planning`](https://www.npmjs.com/package/@profpowell/vb-project-planning) — kanban, gantt, roadmap, story map, personas, risk register, and other planning surfaces
+
+## Development
+
+```bash
+npm install
+npm run build      # CDN bundles + doc site into site/dist/pages
+npm test           # unit tests
+npm run conformance
+```
+
+The doc site is built with Cook SSG and deployed to Cloudflare Pages from this repo. See `admin/reference/build-and-deploy.md` for the full pipeline and [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## License
 

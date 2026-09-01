@@ -29,7 +29,7 @@ Regular paragraph with **bold**, *italic*, ~~strikethrough~~, and `inline code`.
 
 ## Links and Images
 
-Visit [Vanilla Breeze](https://profpowell.github.io/vanilla-breeze/) for more info.
+Visit [Vanilla Breeze](https://vanilla-breeze.com/) for more info.
 
 ## Blockquote
 

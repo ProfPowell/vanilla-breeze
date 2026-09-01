@@ -1,6 +1,6 @@
 # Build & Deploy Process
 
-Three deploys live off this repo. Each is locked to a specific script or
+Two deploys live off this repo. Each is locked to a specific script or
 workflow file — do not edit their build command outside of what's
 committed here or drift will land on production silently.
 
@@ -51,12 +51,16 @@ Skipping step 7 is why `/docs/alpenglow/` returned the home page on
 production while it worked locally — alpenglow lives in `demos/alpenglow/`
 and is only placed into the deploy tree by `build:site-assets`.
 
-## 3. GitHub Pages (`profpowell.github.io/vanilla-breeze`)
+## Retired: GitHub Pages mirror
 
-Deployed by `.github/workflows/deploy.yml`. Runs the same chain plus
-`build:fix-paths` with `BASE_URL=/vanilla-breeze/` to rewrite absolute
-URLs for the sub-path host. GitHub Pages is the mirror target; Cloudflare
-is primary.
+`profpowell.github.io/vanilla-breeze` was a sub-path mirror deployed by the
+old `deploy.yml` workflow with a `build:fix-paths` URL rewrite. It was
+retired in September 2026: it broke visibly on GitHub whenever a gate
+failed, while Cloudflare kept serving the real site, and it leaked into
+`site.url` (canonical + `og:url` on vanilla-breeze.com itself). The
+workflow is now `.github/workflows/ci.yml` — quality gate and reports
+only, no deploy. Public references (README, `package.json` homepage,
+`site/data/site.js`) point at `https://vanilla-breeze.com`.
 
 ## Caching strategy
 
