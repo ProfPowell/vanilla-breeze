@@ -22,8 +22,8 @@ mechanics change. Last rewritten **2026-09-02**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 54 open, 48 ready, nothing in progress. The active thread is
-  the epic **3lac** "Quality tightening: layout + core", 12 of 26 done.
+- **Beads:** 52 open, 46 ready, nothing in progress. The active thread is
+  the epic **3lac** "Quality tightening: layout + core", 14 of 26 done.
 
 ### Landed this session
 
@@ -40,13 +40,16 @@ mechanics change. Last rewritten **2026-09-02**.
 | aoku | 8 layouts + typographic core merged to one `:is(element, attribute)` rule set each; 509 lines out of `layout-attributes.css`; drift fixed both ways (cover dvh/only-child, center `prose` + gap-guard overflow, cluster gaps, semantic sidebar, container fallbacks dropped); 12 visual baselines refreshed on purpose |
 | 1v63 | Menu-item theme resets moved from JS inline styles to component CSS `!important`; nav `!important` kept with corrected rationale (38 themes colour bare links); neumorphism `!important` dropped |
 | ijls | Every `display:` in every theme inventoried; NES/Win9x redundant summary/dialog display rules dropped; bauhaus/editorial/dyslexia exemptions documented; rule 3 clarified for pseudo boxes |
+| vqw8 | Layout API consistency, decided with the user: full gap scale everywhere, 16rem sidebar everywhere, `narrow\|normal\|wide\|prose` max keywords, flow = `data-layout-*` / surfaces = bare `data-*` (canvas → `data-max`/`data-padding`), `data-layout-min` kept per axis. Spec amendment recorded |
+| n3ky | wizard/contact code examples corrected to `data-max` on layout-card |
+| qoi8 | api.json for all 14 layouts, CSS-derived and gated (`layout-manifests.test.js`); 12 wrong overrides entries removed; registry emits `omit: true`; all 14 doc tables regenerated; the now-correct registry caught 42 imposter `data-position`/`data-margin` sites (fixed) |
 
 ## Resume in five minutes
 
 ```bash
 cd ~/src/vanilla-breeze
 git checkout work/next && git pull --rebase
-bd ready                 # 48 ready; see Queue below for the order
+bd ready                 # 46 ready; see Queue below for the order
 npm ci && (cd site && npm ci)
 npm run build            # CDN bundles + doc site → site/dist/pages
 npm test                 # 968 unit tests, ~12s
@@ -59,12 +62,13 @@ starts it). Never run two Playwright invocations at once.
 ## Queue (recommended order)
 
 1. The epic's P3s: 6xxy, jhku, tfcw, dtw6, 822u, 7371, iocg, j1hi,
-   p0wn, hl9c, vqw8, qoi8, vjpn. Natural next ones: **qoi8** (layout
-   api.json + doc pages — was blocked on aoku, now free), **dtw6** (selector
-   rules out of the tokens layer), **iocg** (charts-standalone unlayered —
-   reuse the CDN layer-order prefix from `scripts/build-cdn.js`), **vqw8**
-   (layout attribute naming — `data-layout-measure` vs `data-layout-max`
-   both work now, pick one there).
+   p0wn, hl9c, vjpn. Natural next ones: **butz** (per-layout vocabulary
+   keying for vb/layout-attr-value — the layout api.json manifests now give
+   it the per-element map), **iocg** (charts-standalone unlayered — reuse the
+   CDN layer-order prefix from `scripts/build-cdn.js`), **dtw6** (selector
+   rules out of the tokens layer), **vjpn** (theme cursor hook). Small:
+   **zzdy** (tab-set api.json claims aria-selected; `check:api-drift` is
+   red on it and is not in the CI gate).
 2. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
    (theme visual coverage), d2wz (mobile-menu nav-bar redeploy — verify it
    is not already moot now that main deploys), 7yiy (GoodURL phase 1).
@@ -113,6 +117,14 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
   To prove a cascade change safe, capture before/after in one session by
   serving the old CSS from git through Playwright route interception, then
   diff computed styles for anything that differs (memory note has the recipe).
+- **Layout manifests.** `src/custom-elements/layout-*/api.json` are derived
+  from the CSS (`readLayoutVocabularyByElement` in
+  `scripts/quality/layout-vocabulary.js`) with hand-written descriptions;
+  `tests/unit/layout-manifests.test.js` fails on drift. `""` in an enum =
+  bare form allowed (registry → html-validate `omit: true`). The overrides
+  file must carry no `layout-*` entries. Doc attribute tables were
+  regenerated from the manifests once; regenerate again after a vocabulary
+  change rather than hand-editing.
 - **Layouts live once.** `src/custom-elements/layout-<name>/styles.css`
   holds `:is(layout-x, [data-layout="x"])` for the 8 dual-form layouts;
   `layout-attributes.css` keeps only attribute-only layouts, grid identity
