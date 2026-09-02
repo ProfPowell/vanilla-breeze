@@ -236,6 +236,25 @@ describe('the tokens layer holds custom properties only', () => {
   }
 });
 
+describe('the web-components barrels are pure import manifests', () => {
+  // index.css and core.css carried 1477 and 650 lines of inline rules,
+  // hand-copied between them; 96 of core's 103 rules were verbatim copies
+  // and the rest had drifted (a data-copy selector still naming components
+  // moved to packs in 0.3.0). Shared rules live once under
+  // src/web-components/_shared/ and are imported by both (jhku).
+  for (const barrel of ['src/web-components/index.css', 'src/web-components/core.css']) {
+    it(`${barrel} contains only @import statements`, () => {
+      const stray = topLevel(barrel).filter((s) => !s.startsWith('@import '));
+      assert.deepEqual(
+        stray,
+        [],
+        `Inline rules in a barrel drift from the other barrel — move them to a ` +
+          `_shared/*.css file imported by both:\n  ${stray.join('\n  ')}`,
+      );
+    });
+  }
+});
+
 describe('@property registration parity', () => {
   const entries = ['src/main.css', 'src/main-core.css'];
 

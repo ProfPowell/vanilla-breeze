@@ -78,6 +78,18 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Internal
 
+- **The web-components CSS barrels are pure import manifests** (jhku).
+  `index.css` and `core.css` carried 1477 and 650 lines of inline rules,
+  hand-copied between them; 96 of core's 103 rules were verbatim copies and
+  the rest had drifted (core's `data-copy` selector still named components
+  moved to packs in 0.3.0; its gradient-text and shimmer rules predated the
+  composable animation slots). The rules live once under
+  `src/web-components/_shared/` (data utilities, form enhancements, effects,
+  math) and geo-map's no-JS fallback in `geo-map/styles.css`; core imports
+  the core subset. Core therefore adopts the slot design for gradient-text
+  and shimmer, and both bundles now clear those effects' decoration slot
+  under reduced motion (only core did before). A gate rejects inline rules
+  in either barrel.
 - Stale headers corrected: the core and extras JS barrels state their real
   counts (29 + 27 and 29 + 9 modules); `pointer.css` no longer re-sets
   `--size-touch-min` under `(pointer: coarse)` to the value sizing.css

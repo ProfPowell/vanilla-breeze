@@ -1,0 +1,225 @@
+/* ==========================================================================
+   Text visual effects (core)
+   The composable animation slots plus the CSS-only effects that ship in
+   core: gradient-text, shimmer, reveal, highlight.
+   Lives in @layer web-components: imported by web-components/index.css and
+   (where noted) core.css. Both barrels used to carry a hand-copied inline tail
+   of these rules, which drifted (jhku) — now one copy, here.
+   ========================================================================== */
+
+/* ==========================================================================
+   Text Visual Effects
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Composable animation slots
+
+   Every animated data-effect publishes into one of four named slots
+   (entrance, attention, decoration, exit) via a CSS custom property.
+   The composer rule below reads all four slots into a single multi-value
+   `animation` declaration so cross-category pairs (e.g. pop + neon) all run
+   simultaneously instead of clobbering each other.
+
+   Intra-slot collisions (e.g. two entrance effects) are still single-slot
+   and need a merged keyframe — see [data-effect~="fade-in"][data-effect~="slide-up"].
+
+   Static paint (text-shadow, color, -webkit-text-stroke) MUST live on the
+   selector, not inside @keyframes, so decoration visuals survive when the
+   animation slot is stolen.
+   -------------------------------------------------------------------------- */
+
+/* --vb-neon-intensity / --vb-outline-intensity / --vb-rainbow-hue are
+   registered in src/properties.css. They cannot be registered here: this file
+   is imported via layer(web-components), and @property is ignored inside a
+   cascade layer. */
+
+[data-effect] {
+  animation:
+    var(--vb-anim-entrance,   none),
+    var(--vb-anim-attention,  none),
+    var(--vb-anim-decoration, none),
+    var(--vb-anim-exit,       none);
+}
+
+/* --------------------------------------------------------------------------
+   data-effect~="gradient-text": Gradient text coloring (CSS-only)
+   -------------------------------------------------------------------------- */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  [data-effect~="gradient-text"] {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Shrink-wrap the element to the text so the gradient paints across
+       the glyphs, not the full line-box. Without this, block-level headings
+       span the content column and the gradient's last color falls in the
+       empty space to the right of the text — users see only the first
+       color. `max-width: 100%` preserves wrapping for long headings. */
+    width: fit-content;
+    max-width: 100%;
+    /* Default uses primary → accent so the gradient is always visible in
+       any theme. Themes are designed with accent as the "pop" complement
+       to primary, so the hue spread is reliable. Secondary often sits in
+       the same hue family as primary in many themes and produces a
+       washed-out single-tone gradient (e.g. blue → muted teal). The named
+       variants below (.sunset, .ocean, .forest, .neon) override with
+       multi-stop ramps for stronger statements. */
+    background-image: linear-gradient(
+      135deg,
+      var(--color-primary, oklch(55% 0.2 260)),
+      var(--color-accent, oklch(65% 0.22 30))
+    );
+  }
+
+  [data-effect~="gradient-text"].sunset {
+    background-image: linear-gradient(135deg, oklch(70% 0.22 30), oklch(65% 0.2 350), oklch(55% 0.18 310));
+  }
+
+  [data-effect~="gradient-text"].ocean {
+    background-image: linear-gradient(135deg, oklch(70% 0.15 200), oklch(55% 0.2 260), oklch(50% 0.18 280));
+  }
+
+  [data-effect~="gradient-text"].forest {
+    background-image: linear-gradient(135deg, oklch(65% 0.18 145), oklch(55% 0.15 160), oklch(50% 0.12 180));
+  }
+
+  [data-effect~="gradient-text"].neon {
+    background-image: linear-gradient(135deg, oklch(75% 0.25 330), oklch(70% 0.3 290), oklch(75% 0.25 180));
+  }
+
+  [data-effect~="gradient-text"].animate {
+    background-size: 200% 200%;
+    --vb-anim-decoration: vb-gradient-flow 4s var(--ease-default, ease) infinite;
+  }
+}
+
+@keyframes vb-gradient-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* --------------------------------------------------------------------------
+   data-effect~="shimmer": Shimmering text highlight (CSS-only)
+   -------------------------------------------------------------------------- */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  [data-effect~="shimmer"] {
+    --vb-shimmer-duration: 2s;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(
+      110deg,
+      currentColor 35%,
+      oklch(85% 0.05 90) 50%,
+      currentColor 65%
+    );
+    background-size: 200% 100%;
+    color: var(--color-text);
+    --vb-anim-decoration: vb-shimmer var(--vb-shimmer-duration) linear infinite;
+  }
+
+  [data-effect~="shimmer"].slow { --vb-shimmer-duration: 4s; }
+  [data-effect~="shimmer"].fast { --vb-shimmer-duration: 1s; }
+}
+
+@keyframes vb-shimmer {
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
+}
+
+/* Reduced motion for the two core decoration effects. The old core barrel
+   carried these (as `animation: none`); index never did. Under the slot design
+   the decoration slot is cleared instead, so a composed entrance still snaps
+   to its rest state. */
+@media (prefers-reduced-motion: reduce) {
+  [data-effect~="gradient-text"].animate,
+  [data-effect~="shimmer"] {
+    --vb-anim-decoration: none;
+  }
+}
+:root[data-motion-reduced] [data-effect~="gradient-text"].animate,
+:root[data-motion-reduced] [data-effect~="shimmer"] {
+  --vb-anim-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   data-effect~="reveal": Word/line reveal entrance
+   -------------------------------------------------------------------------- */
+[data-effect~="reveal"][data-effect-reveal-init] .vb-reveal-chunk {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.5em);
+  transition:
+    opacity var(--reveal-duration, 400ms) var(--ease-out, ease-out),
+    transform var(--reveal-duration, 400ms) var(--ease-out, ease-out);
+  transition-delay: calc(var(--i, 0) * var(--reveal-delay, 80ms));
+}
+
+[data-effect~="reveal"][data-effect-reveal-init][data-effect-active] .vb-reveal-chunk {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   data-effect~="highlight": Draw-in underline / box / circle
+   -------------------------------------------------------------------------- */
+
+/* Underline (default) */
+[data-effect~="highlight"][data-effect-highlight-init],
+[data-effect~="highlight"].underline[data-effect-highlight-init] {
+  background-image: linear-gradient(
+    var(--highlight-color, currentColor),
+    var(--highlight-color, currentColor)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  transition: background-size 0.6s var(--ease-out, ease-out);
+  padding-block-end: 2px;
+}
+
+[data-effect~="highlight"][data-effect-highlight-init][data-effect-active],
+[data-effect~="highlight"].underline[data-effect-highlight-init][data-effect-active] {
+  background-size: 100% 2px;
+}
+
+/* Box highlight */
+[data-effect~="highlight"].box[data-effect-highlight-init] {
+  background-image: linear-gradient(
+    color-mix(in oklch, var(--highlight-color, currentColor) 20%, transparent),
+    color-mix(in oklch, var(--highlight-color, currentColor) 20%, transparent)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
+  transition: background-size 0.6s var(--ease-out, ease-out);
+  padding-inline: 0.15em;
+}
+
+[data-effect~="highlight"].box[data-effect-highlight-init][data-effect-active] {
+  background-size: 100% 100%;
+}
+
+/* Circle highlight */
+[data-effect~="highlight"].circle[data-effect-highlight-init] {
+  position: relative;
+  display: inline-block;
+}
+
+[data-effect~="highlight"].circle[data-effect-highlight-init]::after {
+  content: '';
+  position: absolute;
+  inset: -0.15em -0.3em;
+  border: 2px solid var(--highlight-color, currentColor);
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0;
+  transition:
+    transform 0.5s var(--ease-out, ease-out),
+    opacity 0.3s var(--ease-out, ease-out);
+  pointer-events: none;
+}
+
+[data-effect~="highlight"].circle[data-effect-highlight-init][data-effect-active]::after {
+  transform: scale(1);
+  opacity: 1;
+}
