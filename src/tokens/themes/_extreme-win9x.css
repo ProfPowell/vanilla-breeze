@@ -215,7 +215,9 @@
       }
     }
 
-    /* Window title bar */
+    /* Window title bar. dialog > header is already display: flex in core
+       (rule 3: themes don't set display on framework elements); the skin
+       class needs it itself. */
     & dialog header,
     & .win9x-titlebar {
       background: linear-gradient(90deg, var(--_win9x-title-active), oklch(50% 0.1 250));
@@ -224,11 +226,14 @@
       font-family: var(--font-sans);
       font-size: 0.6875rem;
       font-weight: 700;
-      display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 0.5rem;
       user-select: none;
+    }
+
+    & .win9x-titlebar {
+      display: flex;
     }
 
     /* Inactive title bar */
@@ -283,14 +288,17 @@
       padding: 0.5rem;
     }
 
-    /* Dialog footer / button bar */
+    /* Dialog footer / button bar (dialog > footer is flex in core) */
     & dialog footer,
     & .win9x-footer {
       padding: 0.75rem 1rem;
-      display: flex;
       gap: 0.5rem;
       justify-content: center;
       background: var(--_win9x-bg);
+    }
+
+    & .win9x-footer {
+      display: flex;
     }
 
     /* Menu bar */
@@ -391,13 +399,10 @@
       font-family: var(--font-sans);
       font-size: 0.6875rem;
       list-style: none;
-      display: flex;
       align-items: center;
       gap: 0.5rem;
 
-      &::-webkit-details-marker {
-        display: none;
-      }
+      /* summary is display: flex with the marker hidden in core */
 
       /* Expand/collapse indicator */
       &::before {
