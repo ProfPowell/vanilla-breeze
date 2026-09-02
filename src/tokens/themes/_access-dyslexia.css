@@ -19,146 +19,148 @@
 /* ===== FONT: Atkinson Hyperlegible ===== */
 @import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 
-:root[data-theme~="a11y-dyslexia"],
-[data-theme~="a11y-dyslexia"] {
-  /* ===== FONT FAMILY ===== */
-  /* Atkinson Hyperlegible with robust fallbacks */
-  --font-sans: "Atkinson Hyperlegible", "Segoe UI", Verdana, Tahoma, sans-serif;
-  --font-serif: "Atkinson Hyperlegible", Georgia, "Times New Roman", serif;
+@layer bundle-theme {
+  :root[data-theme~="a11y-dyslexia"],
+  [data-theme~="a11y-dyslexia"] {
+    /* ===== FONT FAMILY ===== */
+    /* Atkinson Hyperlegible with robust fallbacks */
+    --font-sans: "Atkinson Hyperlegible", "Segoe UI", Verdana, Tahoma, sans-serif;
+    --font-serif: "Atkinson Hyperlegible", Georgia, "Times New Roman", serif;
 
-  /* Keep monospace separate for code */
-  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+    /* Keep monospace separate for code */
+    --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
 
-  /* ===== LETTER SPACING ===== */
-  /* Wider letter spacing helps distinguish similar characters */
-  --letter-spacing-tight: 0;
-  --letter-spacing-normal: 0.05em;
-  --letter-spacing-wide: 0.08em;
-  --letter-spacing-wider: 0.12em;
+    /* ===== LETTER SPACING ===== */
+    /* Wider letter spacing helps distinguish similar characters */
+    --letter-spacing-tight: 0;
+    --letter-spacing-normal: 0.05em;
+    --letter-spacing-wide: 0.08em;
+    --letter-spacing-wider: 0.12em;
 
-  /* ===== WORD SPACING ===== */
-  /* Extra space between words aids word recognition */
-  --word-spacing: 0.16em;
+    /* ===== WORD SPACING ===== */
+    /* Extra space between words aids word recognition */
+    --word-spacing: 0.16em;
 
-  /* ===== LINE HEIGHT ===== */
-  /* Generous line height prevents line-skipping */
-  --line-height-none: 1.2;
-  --line-height-tight: 1.5;
-  --line-height-snug: 1.65;
-  --line-height-normal: 1.8;
-  --line-height-relaxed: 2;
-  --line-height-loose: 2.2;
+    /* ===== LINE HEIGHT ===== */
+    /* Generous line height prevents line-skipping */
+    --line-height-none: 1.2;
+    --line-height-tight: 1.5;
+    --line-height-snug: 1.65;
+    --line-height-normal: 1.8;
+    --line-height-relaxed: 2;
+    --line-height-loose: 2.2;
 
-  /* ===== LINE LENGTH ===== */
-  /* Shorter lines are easier to track */
-  --measure-narrow: 40ch;
-  --measure-normal: 55ch;
-  --measure-wide: 65ch;
+    /* ===== LINE LENGTH ===== */
+    /* Shorter lines are easier to track */
+    --measure-narrow: 40ch;
+    --measure-normal: 55ch;
+    --measure-wide: 65ch;
 
-  /* Content width follows suit */
-  --content-narrow: 35rem;
-  --content-normal: 50rem;
-  --content-wide: 65rem;
+    /* Content width follows suit */
+    --content-narrow: 35rem;
+    --content-normal: 50rem;
+    --content-wide: 65rem;
 
-  /* ===== FONT WEIGHT ===== */
-  /* Slightly bolder text for better character definition */
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-}
-
-/* ===== TYPOGRAPHY ADJUSTMENTS ===== */
-:root[data-theme~="a11y-dyslexia"],
-[data-theme~="a11y-dyslexia"] {
-  /* Apply word-spacing to body text */
-  & p,
-  & li,
-  & dd,
-  & td,
-  & th,
-  & label,
-  & span:not([class]) {
-    word-spacing: var(--word-spacing);
-    letter-spacing: var(--letter-spacing-normal);
+    /* ===== FONT WEIGHT ===== */
+    /* Slightly bolder text for better character definition */
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
   }
 
-  /* Ensure no justified text - left-align only */
-  /* !important so this lower layer beats native-elements p.justify */
-  & p,
-  & li,
-  & blockquote {
-    text-align: left !important;
-    hyphens: none !important;
+  /* ===== TYPOGRAPHY ADJUSTMENTS ===== */
+  :root[data-theme~="a11y-dyslexia"],
+  [data-theme~="a11y-dyslexia"] {
+    /* Apply word-spacing to body text */
+    & p,
+    & li,
+    & dd,
+    & td,
+    & th,
+    & label,
+    & span:not([class]) {
+      word-spacing: var(--word-spacing);
+      letter-spacing: var(--letter-spacing-normal);
+    }
+
+    /* Ensure no justified text - left-align only. bundle-theme sits above
+       native-elements, so this beats p.justify without !important. */
+    & p,
+    & li,
+    & blockquote {
+      text-align: left;
+      hyphens: none;
+    }
+
+    /* Avoid all-caps for extended text */
+    & :is(main, article) :is(h1, h2, h3, h4, h5, h6) {
+      text-transform: none;
+      letter-spacing: var(--letter-spacing-normal);
+    }
+
+    /* Avoid italics for emphasis - use bold instead */
+    & em {
+      font-style: normal;
+      font-weight: var(--font-weight-semibold);
+    }
+
+    /* Make strong even more distinct */
+    & strong {
+      font-weight: var(--font-weight-bold);
+    }
+
+    /* Links should be clearly distinguishable */
+    & :is(main, article) a:not([class]) {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+    }
+
+    /* Lists with more spacing */
+    & :is(main, article) :is(ul, ol) {
+      padding-inline-start: 1.5em;
+    }
+
+    & :is(main, article) li {
+      margin-block-end: 0.5em;
+    }
+
+    /* Blockquotes clearly separated */
+    & :is(main, article) blockquote {
+      padding-inline-start: 1.5em;
+      border-inline-start-width: 4px;
+    }
+
+    /* Tables with better cell spacing */
+    & td,
+    & th {
+      padding: 0.75em 1em;
+    }
+
+    /* Form labels clearly associated */
+    & label {
+      display: block;
+      margin-block-end: 0.5em;
+      font-weight: var(--font-weight-medium);
+    }
   }
 
-  /* Avoid all-caps for extended text */
-  & :is(main, article) :is(h1, h2, h3, h4, h5, h6) {
-    text-transform: none;
-    letter-spacing: var(--letter-spacing-normal);
+  /* ===== SURFACE & TEXT TOKENS ===== */
+  /* Warm cream tones reduce visual stress for dyslexia */
+  :root[data-theme~="a11y-dyslexia"],
+  [data-theme~="a11y-dyslexia"] {
+    --color-background: oklch(98% 0.008 80);
+    --color-surface: oklch(97.5% 0.008 80);
+    --color-surface-raised: oklch(99% 0.005 80);
+    --color-surface-sunken: oklch(96% 0.01 80);
+    --color-surface-alt: oklch(97% 0.008 80);
+    --color-text: oklch(18% 0.01 80);
+    --color-text-muted: oklch(40% 0.01 80);
+    --color-border: oklch(65% 0.01 80);
+    --color-border-strong: oklch(45% 0.01 80);
+    --color-border-muted: oklch(75% 0.008 80);
+    --shadow-sm: 0 1px 3px 0 oklch(0% 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px oklch(0% 0 0 / 0.1);
   }
-
-  /* Avoid italics for emphasis - use bold instead */
-  & em {
-    font-style: normal;
-    font-weight: var(--font-weight-semibold);
-  }
-
-  /* Make strong even more distinct */
-  & strong {
-    font-weight: var(--font-weight-bold);
-  }
-
-  /* Links should be clearly distinguishable */
-  & :is(main, article) a:not([class]) {
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 3px;
-  }
-
-  /* Lists with more spacing */
-  & :is(main, article) :is(ul, ol) {
-    padding-inline-start: 1.5em;
-  }
-
-  & :is(main, article) li {
-    margin-block-end: 0.5em;
-  }
-
-  /* Blockquotes clearly separated */
-  & :is(main, article) blockquote {
-    padding-inline-start: 1.5em;
-    border-inline-start-width: 4px;
-  }
-
-  /* Tables with better cell spacing */
-  & td,
-  & th {
-    padding: 0.75em 1em;
-  }
-
-  /* Form labels clearly associated */
-  & label {
-    display: block;
-    margin-block-end: 0.5em;
-    font-weight: var(--font-weight-medium);
-  }
-}
-
-/* ===== SURFACE & TEXT TOKENS ===== */
-/* Warm cream tones reduce visual stress for dyslexia */
-:root[data-theme~="a11y-dyslexia"],
-[data-theme~="a11y-dyslexia"] {
-  --color-background: oklch(98% 0.008 80);
-  --color-surface: oklch(97.5% 0.008 80);
-  --color-surface-raised: oklch(99% 0.005 80);
-  --color-surface-sunken: oklch(96% 0.01 80);
-  --color-surface-alt: oklch(97% 0.008 80);
-  --color-text: oklch(18% 0.01 80);
-  --color-text-muted: oklch(40% 0.01 80);
-  --color-border: oklch(65% 0.01 80);
-  --color-border-strong: oklch(45% 0.01 80);
-  --color-border-muted: oklch(75% 0.008 80);
-  --shadow-sm: 0 1px 3px 0 oklch(0% 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px oklch(0% 0 0 / 0.1);
 }

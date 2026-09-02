@@ -60,6 +60,109 @@ describe('core ⊆ full barrel parity', () => {
   }
 });
 
+/**
+ * Top-level statements of a stylesheet with comments stripped: each `@import`
+ * (or other prelude ending in `;`) and each block's prelude. Nested content is
+ * skipped by brace depth.
+ */
+const topLevel = (rel) => {
+  const css = read(rel).replace(/\/\*[\s\S]*?\*\//g, '');
+  const out = [];
+  let depth = 0;
+  let cur = '';
+  let quote = null;
+  for (const ch of css) {
+    // Font @import URLs carry `;` inside their quotes (wght@400;700).
+    if (quote) {
+      cur += ch;
+      if (ch === quote) quote = null;
+    } else if (ch === '"' || ch === "'") {
+      cur += ch;
+      quote = ch;
+    } else if (ch === '{') {
+      if (depth === 0) out.push(`${cur.trim()} {`);
+      depth++;
+      cur = '';
+    } else if (ch === '}') {
+      depth--;
+      cur = '';
+    } else if (ch === ';' && depth === 0) {
+      out.push(`${cur.trim()};`);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  return out;
+};
+
+describe('themes live in the bundle-theme layer', () => {
+  // The cascade contract (src/main.css) reserves bundle-theme for themes, above
+  // every framework layer and below packs. That only holds if every theme file
+  // self-declares the layer: the bundled ones used to reach the bundle through
+  // tokens/index.css (landing in the lowest layer) and the standalone CDN files
+  // carried no @layer at all (landing above everything, packs included), so
+  // the layer was declared everywhere and populated nowhere. Self-declaring
+  // keeps dev (raw source links) and prod (esbuild output) identical.
+  const themesDir = 'src/tokens/themes';
+  const themeFiles = readdirSync(resolve(root, themesDir))
+    .filter((name) => name.startsWith('_') && name.endsWith('.css'))
+    .map((name) => `${themesDir}/${name}`);
+
+  it('finds the theme files', () => {
+    assert.ok(themeFiles.length > 40, `only ${themeFiles.length} theme files found`);
+  });
+
+  for (const file of themeFiles) {
+    it(`${file} holds only @import lines and one @layer bundle-theme block at top level`, () => {
+      const statements = topLevel(file);
+      // _theme-template.css is documentation: every rule sits inside a comment.
+      if (statements.length === 0) return;
+      const layerBlocks = statements.filter((s) => s === '@layer bundle-theme {');
+      const stray = statements.filter(
+        (s) => s !== '@layer bundle-theme {' && !s.startsWith('@import '),
+      );
+      assert.equal(
+        layerBlocks.length,
+        1,
+        `${file} must wrap its rules in exactly one top-level @layer bundle-theme { } block ` +
+          `(found ${layerBlocks.length}). Font @imports stay above it.`,
+      );
+      assert.deepEqual(
+        stray,
+        [],
+        `${file} has rules outside the bundle-theme layer — linked standalone they ` +
+          `would be unlayered and beat every layer, packs included:\n  ${stray.join('\n  ')}`,
+      );
+    });
+  }
+
+  it('the bundled-theme barrel is imported by both entries without a layer() directive', () => {
+    // Themes self-declare @layer bundle-theme, so importing the barrel with
+    // layer(x) would nest them as x.bundle-theme — and importing it through
+    // tokens/index.css is how they landed in the tokens layer before.
+    for (const entry of ['src/main.css', 'src/main-core.css']) {
+      const line = read(entry)
+        .split('\n')
+        .find((l) => /@import\s+["']\.\/tokens\/themes\/index\.css["']/.test(l));
+      assert.ok(line, `${entry} must @import "./tokens/themes/index.css" directly.`);
+      assert.doesNotMatch(
+        line,
+        /layer\s*\(/,
+        `${entry} imports the theme barrel into a layer — that nests bundle-theme: ${line.trim()}`,
+      );
+    }
+    assert.ok(
+      !imports('src/tokens/index.css').some((spec) => spec.includes('themes/')),
+      'src/tokens/index.css must not import the theme barrel — that puts themes in layer(tokens).',
+    );
+    const barrelStray = topLevel('src/tokens/themes/index.css').filter(
+      (s) => !/^@import\s+["']\.\/_[\w-]+\.css["'];$/.test(s),
+    );
+    assert.deepEqual(barrelStray, [], 'src/tokens/themes/index.css must hold only theme @imports.');
+  });
+});
+
 describe('@property registration parity', () => {
   const entries = ['src/main.css', 'src/main-core.css'];
 

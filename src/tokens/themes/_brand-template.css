@@ -18,8 +18,10 @@
  *    - 240-300: Blue/Purple
  *    - 300-360: Purple/Red
  * 4. Set lightness and chroma seeds for each color
- * 5. Add import to themes/index.css
- * 6. Register in theme-picker (optional)
+ * 5. Keep the @layer bundle-theme wrapper — every theme self-declares it,
+ *    and the barrel is imported without a layer() directive
+ * 6. Add import to themes/index.css
+ * 7. Register in theme-picker (optional)
  *
  * SEED-AND-DERIVE ARCHITECTURE:
  * Core derives hover/active/subtle/interactive states from your seeds.
@@ -28,28 +30,30 @@
  * (e.g., lightening instead of darkening for very dark primaries).
  */
 
-:root[data-theme="THEME_SLUG"],
-[data-theme="THEME_SLUG"] {
-  /* Set your hue values (0-360) */
-  --hue-primary: 200;
-  --hue-secondary: 180;
-  --hue-accent: 45;
+@layer bundle-theme {
+  :root[data-theme="THEME_SLUG"],
+  [data-theme="THEME_SLUG"] {
+    /* Set your hue values (0-360) */
+    --hue-primary: 200;
+    --hue-secondary: 180;
+    --hue-accent: 45;
 
-  /* Set lightness (0-100%) and chroma (0-0.37) seeds */
-  /* Core derives --color-primary, hover, active, subtle from these */
-  --lightness-primary: 50%;
-  --chroma-primary: 0.15;
-  --lightness-secondary: 50%;
-  --chroma-secondary: 0.10;
-  --lightness-accent: 65%;
-  --chroma-accent: 0.15;
-}
+    /* Set lightness (0-100%) and chroma (0-0.37) seeds */
+    /* Core derives --color-primary, hover, active, subtle from these */
+    --lightness-primary: 50%;
+    --chroma-primary: 0.15;
+    --lightness-secondary: 50%;
+    --chroma-secondary: 0.10;
+    --lightness-accent: 65%;
+    --chroma-accent: 0.15;
+  }
 
-/* Theme + Dark mode combination */
-/* Core provides hue-tinted surfaces, text, borders, and shadows */
-/* Only override seeds here — set --chroma-surface-tint for surface tint control */
-:root[data-theme="THEME_SLUG"][data-mode="dark"],
-[data-theme="THEME_SLUG"][data-mode="dark"] {
-  --lightness-primary: 60%;
-  --chroma-primary: 0.12;
+  /* Theme + Dark mode combination */
+  /* Core provides hue-tinted surfaces, text, borders, and shadows */
+  /* Only override seeds here — set --chroma-surface-tint for surface tint control */
+  :root[data-theme="THEME_SLUG"][data-mode="dark"],
+  [data-theme="THEME_SLUG"][data-mode="dark"] {
+    --lightness-primary: 60%;
+    --chroma-primary: 0.12;
+  }
 }

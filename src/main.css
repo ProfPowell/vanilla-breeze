@@ -12,15 +12,24 @@
  * - custom-elements:   Lightweight custom elements (layout-*, form-field, etc.).
  * - web-components:    Full web components with JS logic (carousel-wc, tab-set, etc.).
  * - utils:             Single-purpose helpers (visually-hidden, print styles, etc.).
- * - bundle-theme:      Theme overrides — color, typography, and surface tokens ONLY.
- *                      Themes MUST NOT change layout, spacing structure, or display.
+ * - bundle-theme:      Theme overrides — color, typography, and surface tokens,
+ *                      plus element rules a theme needs for its look. Every
+ *                      file in tokens/themes/ self-declares this layer, so the
+ *                      bundled themes and the standalone CDN theme files cascade
+ *                      identically: above every framework layer, below packs,
+ *                      below unlayered author CSS.
  * - bundle-effects:    Visual effects (glassmorphism, gradients, shapes, etc.).
  * - bundle-components: Pack-specific component extensions and overrides.
  *
  * Rules:
- * 1. Layer order is declared ONLY here — no other file may redeclare order.
+ * 1. Layer order is declared ONLY here (main-core.css mirrors it for the slim
+ *    entry). The CDN build copies this statement verbatim into standalone
+ *    files (themes) so a <link> that precedes the bundle still slots its
+ *    layer in the right place instead of declaring it first, and lowest.
  * 2. All stylesheets append to one of these declared layers.
- * 3. Themes must not alter layout or display values — only visual tokens.
+ * 3. Themes must not alter the layout or display of framework elements —
+ *    only visual tokens and appearance. Layout on a theme's own skin classes
+ *    (e.g. .win9x-toolbar) is the theme's business.
  * 4. Components must not use @layer bundle-theme or bundle-effects.
  */
 @layer tokens, reset, native-elements, custom-elements, web-components, utils, bundle-theme, bundle-effects, bundle-components;
@@ -31,6 +40,13 @@
 @import "./custom-elements/index.css" layer(custom-elements);
 @import "./web-components/index.css" layer(web-components);
 @import "./utils/index.css" layer(utils);
+
+/* Bundled themes (personality + accessibility) — imported WITHOUT a layer()
+   directive because every theme file self-declares @layer bundle-theme, the
+   same convention the standalone CDN themes and pack .theme.css files use.
+   Importing through tokens/index.css used to drop them into layer(tokens),
+   the lowest layer, where any element rule lost to native-elements. */
+@import "./tokens/themes/index.css";
 
 /* data-border-effect attribute rules — imported WITHOUT a layer() directive
    because the file self-declares @layer bundle-effects internally. Importing

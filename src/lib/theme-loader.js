@@ -122,7 +122,9 @@ function isPackTheme(themeName) {
 }
 
 function getThemeHref(themeName, base) {
-  // Always load from themes/ — unlayered CSS wins the cascade.
+  // Always load from themes/. Each file self-declares @layer bundle-theme and
+  // the CDN build prefixes the layer-order statement, so the link slots in
+  // above the framework layers and below packs wherever it lands in <head>.
   // Pack JS effects are loaded separately via ensurePackScriptLoaded().
   return `${base}/themes/${themeName}.css`;
 }
