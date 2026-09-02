@@ -49,6 +49,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   (`color-scheme`, `interpolate-size` and the root token transition are the
   documented exceptions).
 
+- **Theme cursors now apply to every control** (vjpn). The reset wires
+  `cursor: var(--cursor-custom-pointer)` so a theme can ship its own
+  pointer, but 169 component rules hardcoded `cursor: pointer` in higher
+  layers, so the theme cursor only ever reached bare links. Every one now
+  reads `var(--cursor-custom-pointer, pointer)`; a gate keeps it that way.
+  Also: backdrop's mobile breakpoint moves from 640px to the contract's
+  `--bp-sm` (37.5rem / 600px), and heading weights use the
+  `--font-weight-*` tokens.
+
 ### Internal
 
 - `vb/layout-attr-value` now validates each `data-layout-*` value against
