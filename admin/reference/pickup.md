@@ -22,7 +22,7 @@ mechanics change. Last rewritten **2026-09-02**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 52 open, 46 ready, nothing in progress. The active thread is
+- **Beads:** 49 open, 43 ready, nothing in progress. The active thread is
   the epic **3lac** "Quality tightening: layout + core", 14 of 26 done.
 
 ### Landed this session
@@ -43,13 +43,16 @@ mechanics change. Last rewritten **2026-09-02**.
 | vqw8 | Layout API consistency, decided with the user: full gap scale everywhere, 16rem sidebar everywhere, `narrow\|normal\|wide\|prose` max keywords, flow = `data-layout-*` / surfaces = bare `data-*` (canvas → `data-max`/`data-padding`), `data-layout-min` kept per axis. Spec amendment recorded |
 | n3ky | wizard/contact code examples corrected to `data-max` on layout-card |
 | qoi8 | api.json for all 14 layouts, CSS-derived and gated (`layout-manifests.test.js`); 12 wrong overrides entries removed; registry emits `omit: true`; all 14 doc tables regenerated; the now-correct registry caught 42 imposter `data-position`/`data-margin` sites (fixed) |
+| butz | `vb/layout-attr-value` keyed per layout (element's own tag, across lines, escaped markup ignored); found 30 `data-layout-ratio` no-ops on `[data-media]` (reads `data-ratio`), fixed |
+| zzdy | drift check's hardcoded ARIA table expected `aria-selected` on tab-set; it manages `aria-expanded` by design |
+| lp55 | meta/link, output and svg conformance guards scoped to the examined tag; every class attribute on a line is now checked (+5 real warnings) |
 
 ## Resume in five minutes
 
 ```bash
 cd ~/src/vanilla-breeze
 git checkout work/next && git pull --rebase
-bd ready                 # 46 ready; see Queue below for the order
+bd ready                 # 43 ready; see Queue below for the order
 npm ci && (cd site && npm ci)
 npm run build            # CDN bundles + doc site → site/dist/pages
 npm test                 # 968 unit tests, ~12s
@@ -62,13 +65,11 @@ starts it). Never run two Playwright invocations at once.
 ## Queue (recommended order)
 
 1. The epic's P3s: 6xxy, jhku, tfcw, dtw6, 822u, 7371, iocg, j1hi,
-   p0wn, hl9c, vjpn. Natural next ones: **butz** (per-layout vocabulary
-   keying for vb/layout-attr-value — the layout api.json manifests now give
-   it the per-element map), **iocg** (charts-standalone unlayered — reuse the
-   CDN layer-order prefix from `scripts/build-cdn.js`), **dtw6** (selector
-   rules out of the tokens layer), **vjpn** (theme cursor hook). Small:
-   **zzdy** (tab-set api.json claims aria-selected; `check:api-drift` is
-   red on it and is not in the CI gate).
+   p0wn, hl9c, vjpn. Natural next ones: **iocg** (charts-standalone
+   unlayered — reuse the CDN layer-order prefix from `scripts/build-cdn.js`),
+   **dtw6** (selector rules out of the tokens layer), **vjpn** (theme cursor
+   hook). Consider adding `check:api-drift` to the CI gate now that it is
+   green (2 calendar-wc `data-size` warnings remain).
 2. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
    (theme visual coverage), d2wz (mobile-menu nav-bar redeploy — verify it
    is not already moot now that main deploys), 7yiy (GoodURL phase 1).
@@ -117,6 +118,12 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
   To prove a cascade change safe, capture before/after in one session by
   serving the old CSS from git through Playwright route interception, then
   diff computed styles for anything that differs (memory note has the recipe).
+- **Conformance scanner.** `scripts/quality/vb-conformance.js` is
+  line-based; rules needing element context read the opening tag with
+  `tagAround(offset)`, which only resolves when the match sits inside a real
+  tag (escaped samples in `<pre>`/`<code-block>` fall back to the merged
+  vocabulary). `vb/layout-attr-value` validates per layout via
+  `readLayoutVocabularyByLayout()`. Never write a "line contains <x>" guard.
 - **Layout manifests.** `src/custom-elements/layout-*/api.json` are derived
   from the CSS (`readLayoutVocabularyByElement` in
   `scripts/quality/layout-vocabulary.js`) with hand-written descriptions;
