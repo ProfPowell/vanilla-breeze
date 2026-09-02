@@ -22,8 +22,8 @@ mechanics change. Last rewritten **2026-09-02**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 47 open, 41 ready, nothing in progress. The active thread is
-  the epic **3lac** "Quality tightening: layout + core", 17 of 26 done.
+- **Beads:** 44 open, 38 ready, nothing in progress. The active thread is
+  the epic **3lac** "Quality tightening: layout + core", 20 of 26 done.
 
 ### Landed this session
 
@@ -49,13 +49,16 @@ mechanics change. Last rewritten **2026-09-02**.
 | iocg | charts add-on layered into `web-components` (layer() on every import, CDN prefix via shared `prefixLayerOrder()`); chart-wc hidden-table overrides locked against utils; a sparkline demo's own height rule finally wins |
 | dtw6 | tokens graph is custom-properties only, gated; backdrop/scrollbars/border-styles/spotlight split into tokens + `src/utils/` application files, opentype moved, external-components imported from utils; backdrop regions now render centered with the canvas gap |
 | vjpn | 169 hardcoded `cursor: pointer` → `var(--cursor-custom-pointer, pointer)` (gate: `cursor-hook.test.js`); backdrop breakpoint → `--bp-sm`; heading weights tokenised. Follow-up s3hy for 6 other px media queries |
+| tfcw | `layout-attributes.css` 1294 → 760 lines: density → `utils/density.css`, scroll effects → `utils/scroll-driven.css`, canvas → `layout-canvas/styles.css`; legacy `data-layout="body-*"` deleted (demo migrated, region container names re-pointed to page-layout); dormant identity rules scoped. layout-badge keeps its tag |
+| 822u | Dead files deleted (`charts/index.css`, `vb-extensions.js`), `data-hero-overlay` + `data-layout-nospace` removed, stale barrel headers / pointer no-op / build comment fixed |
+| jhku | Both web-components CSS barrels are import-only (gate); shared rules once in `web-components/_shared/`; core's 7 drifted rules reconciled to index; built-bundle declaration diff proved it |
 
 ## Resume in five minutes
 
 ```bash
 cd ~/src/vanilla-breeze
 git checkout work/next && git pull --rebase
-bd ready                 # 41 ready; see Queue below for the order
+bd ready                 # 38 ready; see Queue below for the order
 npm ci && (cd site && npm ci)
 npm run build            # CDN bundles + doc site → site/dist/pages
 npm test                 # 968 unit tests, ~12s
@@ -67,15 +70,15 @@ starts it). Never run two Playwright invocations at once.
 
 ## Queue (recommended order)
 
-1. The epic's remaining P3s: 6xxy, jhku, tfcw, 822u, 7371, j1hi, p0wn,
-   hl9c. The cascade/theme-contract thread is closed (t8ao, 1v63, ijls,
-   iocg, dtw6, vjpn). Natural next ones: **tfcw** (split the non-layout
-   concerns out of `layout-attributes.css`, now ~1290 lines: grid identity
-   and container plumbing are the obvious cuts), **822u** (dead code sweep —
-   `charts/index.css` is dead), **jhku** (de-duplicate the web-components
-   barrels, same shape as the layout merge). Hygiene: add `check:api-drift`
-   to the CI gate (green; 2 calendar-wc `data-size` warnings remain);
-   **s3hy** (P4, 6 px media queries off the breakpoint contract).
+1. The epic's remaining P3s: 6xxy (effects double-bundling / per-component
+   chunk dedup), 7371 (strip redundant `@layer web-components{}` wrappers in
+   youtube-player and social-embed), j1hi (token scale naming s/m/l vs
+   sm/md/lg), p0wn (dead token set), hl9c (native-elements "no classes"
+   contract). The cascade, layout, barrel and docs threads are closed.
+   Hygiene: add `check:api-drift` to the CI gate (green; 2 calendar-wc
+   `data-size` warnings remain); **s3hy** (P4, 6 px media queries off the
+   breakpoint contract); the native-elements sub-index chained imports
+   (article → highlights, hr → shapes) noted in jhku.
 2. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
    (theme visual coverage), d2wz (mobile-menu nav-bar redeploy — verify it
    is not already moot now that main deploys), 7yiy (GoodURL phase 1).
@@ -124,6 +127,12 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
   To prove a cascade change safe, capture before/after in one session by
   serving the old CSS from git through Playwright route interception, then
   diff computed styles for anything that differs (memory note has the recipe).
+- **Barrels are import-only.** `web-components/index.css` and `core.css`
+  hold `@import` lines only (gate in `bundle-parity.test.js`); shared rule
+  sets live in `src/web-components/_shared/` and core imports the core
+  subset. To prove a barrel or bundle refactor is a no-op, build both
+  entries in memory from HEAD (`git stash -u`) and from the tree, strip
+  comments, diff the declaration sets.
 - **Cascade gates now in `bundle-parity.test.js`:** themes self-declare
   `bundle-theme`; charts imports carry `layer(web-components)`; the tokens
   import graph holds custom properties only (exceptions: `color-scheme`,
