@@ -2,9 +2,9 @@
 
 Living doc. Rewrite the **Status** and **Queue** sections at the end of every
 working session; keep **Resume** and **How the repo works** current as the
-mechanics change. Last rewritten **2026-09-01**.
+mechanics change. Last rewritten **2026-09-02**.
 
-## Status (2026-09-01)
+## Status (2026-09-02)
 
 - **Version:** 0.3.1 on npm (published 2026-07-07). Nothing released since;
   the 0.3.x → next changes are all on `main` unreleased.
@@ -22,8 +22,8 @@ mechanics change. Last rewritten **2026-09-01**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 57 open, 50 ready, nothing in progress. The active thread is
-  the epic **3lac** "Quality tightening: layout + core", 11 of 26 done.
+- **Beads:** 54 open, 48 ready, nothing in progress. The active thread is
+  the epic **3lac** "Quality tightening: layout + core", 12 of 26 done.
 
 ### Landed this session
 
@@ -37,13 +37,16 @@ mechanics change. Last rewritten **2026-09-01**.
 | Admin tidy | Shipped layout-vocabulary plan moved to `shipped/`; CLAUDE.md doc paths fixed; stale r-n-d copies removed |
 | aynl (closed, not a bug) | comment-wc does autoload on built pages, locally and live; the reconnect spec now covers it (12/12) and waits for `attached`, not visible |
 | t8ao | All 55 theme files in `@layer bundle-theme`; entries import the barrel unlayered; CDN themes carry the layer-order prefix; dyslexia `!important` dropped; `demos/docs.css` moved to `@layer utils`; gate test; 68/70 like-for-like screenshots identical (2 dyslexia diffs intended). Follow-ups 1v63, ijls |
+| aoku | 8 layouts + typographic core merged to one `:is(element, attribute)` rule set each; 509 lines out of `layout-attributes.css`; drift fixed both ways (cover dvh/only-child, center `prose` + gap-guard overflow, cluster gaps, semantic sidebar, container fallbacks dropped); 12 visual baselines refreshed on purpose |
+| 1v63 | Menu-item theme resets moved from JS inline styles to component CSS `!important`; nav `!important` kept with corrected rationale (38 themes colour bare links); neumorphism `!important` dropped |
+| ijls | Every `display:` in every theme inventoried; NES/Win9x redundant summary/dialog display rules dropped; bauhaus/editorial/dyslexia exemptions documented; rule 3 clarified for pseudo boxes |
 
 ## Resume in five minutes
 
 ```bash
 cd ~/src/vanilla-breeze
 git checkout work/next && git pull --rebase
-bd ready                 # 50 ready; see Queue below for the order
+bd ready                 # 48 ready; see Queue below for the order
 npm ci && (cd site && npm ci)
 npm run build            # CDN bundles + doc site → site/dist/pages
 npm test                 # 968 unit tests, ~12s
@@ -55,16 +58,14 @@ starts it). Never run two Playwright invocations at once.
 
 ## Queue (recommended order)
 
-1. **aoku** (P2) — merge the 8 element/attribute layout CSS forks via
-   `:is()`. Watch specificity: `:is()` takes the max of its arguments (bit
-   the `[data-container]` override once already).
-2. Then the epic's P3s: 6xxy, jhku, tfcw, dtw6, 822u, 7371, iocg, j1hi,
-   p0wn, hl9c, vqw8, qoi8, vjpn. Plus the t8ao follow-ups: **1v63** (sweep
-   the component-side `!important` / "reset theme button styles" defenses
-   now that themes are layered) and **ijls** (P4, extreme themes that set
-   layout on framework elements). iocg (charts-standalone unlayered) can
-   reuse the CDN layer-order prefix from `scripts/build-cdn.js`.
-3. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
+1. The epic's P3s: 6xxy, jhku, tfcw, dtw6, 822u, 7371, iocg, j1hi,
+   p0wn, hl9c, vqw8, qoi8, vjpn. Natural next ones: **qoi8** (layout
+   api.json + doc pages — was blocked on aoku, now free), **dtw6** (selector
+   rules out of the tokens layer), **iocg** (charts-standalone unlayered —
+   reuse the CDN layer-order prefix from `scripts/build-cdn.js`), **vqw8**
+   (layout attribute naming — `data-layout-measure` vs `data-layout-max`
+   both work now, pick one there).
+2. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
    (theme visual coverage), d2wz (mobile-menu nav-bar redeploy — verify it
    is not already moot now that main deploys), 7yiy (GoodURL phase 1).
 
@@ -112,6 +113,16 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
   To prove a cascade change safe, capture before/after in one session by
   serving the old CSS from git through Playwright route interception, then
   diff computed styles for anything that differs (memory note has the recipe).
+- **Layouts live once.** `src/custom-elements/layout-<name>/styles.css`
+  holds `:is(layout-x, [data-layout="x"])` for the 8 dual-form layouts;
+  `layout-attributes.css` keeps only attribute-only layouts, grid identity
+  and container plumbing. Do not add `[data-layout="x"]` blocks there for a
+  layout that has an element file. `layout-*/` inside a CSS comment closes
+  the comment (esbuild only warns) — write `layout-<name>/`. Verify layout
+  or cascade changes by running `tests/visual/demos.spec.js` before and
+  after and diffing the failing sets (4 baselines were already stale:
+  calendar-wc-multi-month, effects-kitchen-sink, layout-attributes-refactored,
+  layout-comparison), then like-for-like captures for the delta.
 - **Typecheck runs three tsconfigs** (`src`, `scripts`, `tests`) chained
   with `&&`; an error in the first hides the rest.
 
