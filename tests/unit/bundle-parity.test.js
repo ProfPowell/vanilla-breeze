@@ -163,6 +163,22 @@ describe('themes live in the bundle-theme layer', () => {
   });
 });
 
+describe('standalone add-ons are layered', () => {
+  // src/charts-standalone.css becomes /cdn/vanilla-breeze-charts.css, which
+  // pages <link> beside the bundle. Unlayered it outranked every layer,
+  // themes included (iocg); every import now lands in web-components. Order
+  // safety across <link> positions comes from the CDN build's layer-order
+  // prefix, the same mechanism the themes use.
+  it('every import in src/charts-standalone.css lands in layer(web-components)', () => {
+    const lines = read('src/charts-standalone.css')
+      .split('\n')
+      .filter((l) => /^@import\s/.test(l));
+    assert.ok(lines.length >= 10, `only ${lines.length} imports found`);
+    const unlayered = lines.filter((l) => !/layer\(web-components\)\s*;\s*$/.test(l));
+    assert.deepEqual(unlayered, [], 'These charts imports would ship unlayered and beat every layer.');
+  });
+});
+
 describe('@property registration parity', () => {
   const entries = ['src/main.css', 'src/main-core.css'];
 

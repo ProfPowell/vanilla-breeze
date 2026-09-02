@@ -49,10 +49,11 @@ chart-wc [data-chart-svg] svg {
 
    Fix: switch the hidden table to `display: block` so it respects
    block-size, then re-apply the visually-hidden box dimensions to the
-   tbody/thead too in case anything inside resists. Unlayered + scoped
-   to chart-wc so it wins the cascade against the @utils-layer rule.
-   This rule is intentionally narrow: only fires when the table is
-   already marked visually-hidden by chart-wc's replace mode. */
+   tbody/thead too in case anything inside resists. The box dimensions
+   are !important because .visually-hidden lives in @layer utils, above
+   this file's web-components layer (charts used to be unlayered and won
+   by accident). This rule is intentionally narrow: only fires when the
+   table is already marked visually-hidden by chart-wc's replace mode. */
 chart-wc > table.visually-hidden {
   display: block;
   block-size: 1px !important;
@@ -64,17 +65,19 @@ chart-wc > table.visually-hidden > * {
   display: none;
 }
 
-/* Print: show the data table, hide the SVG. The print override is
-   unlayered and chart-wc-scoped, so it wins over the layered utility. */
+/* Print: show the data table, hide the SVG. Every property .visually-hidden
+   sets is re-asserted with !important: the utility sits in @layer utils,
+   above this file's layer, and an important declaration in a lower layer
+   is what beats it. */
 @media print {
   chart-wc > table.visually-hidden {
-    position: static;
-    inline-size: auto;
-    block-size: auto;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
+    position: static !important;
+    inline-size: auto !important;
+    block-size: auto !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
   }
 
   chart-wc [data-chart-svg] {

@@ -24,6 +24,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   `[data-media]`, which reads `data-ratio`; the aspect ratio never applied.
   Found by the per-layout conformance check below.
 
+### Changed (breaking)
+
+- **The charts add-on is layered.** `vanilla-breeze-charts.css` now lands in
+  `@layer web-components` like any bundled component, below utils, themes
+  and your own CSS; it used to be unlayered and outranked everything. The
+  file carries the layer-order prefix so it is order-safe in `<head>`.
+  chart-wc's hidden-table overrides lock the properties the
+  `.visually-hidden` utility sets. Visible effect: an author rule such as
+  `.tall-spark { block-size: 120px }` on a sparkline now applies.
+
 ### Internal
 
 - `vb/layout-attr-value` now validates each `data-layout-*` value against

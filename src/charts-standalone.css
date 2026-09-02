@@ -4,17 +4,25 @@
  * CSS-only charting system built on semantic HTML tables.
  * Add this <link> alongside the core CSS for chart functionality:
  *   <link rel="stylesheet" href="/cdn/vanilla-breeze-charts.css">
+ *
+ * Cascade: everything here lands in @layer web-components, the same layer
+ * the bundled components use, so a linked charts file cascades exactly like
+ * a bundled component would — below utils, below themes, below unlayered
+ * author CSS. It used to be unlayered and outranked every layer, themes
+ * included. The CDN build prefixes the layer-order statement from main.css
+ * so the link is order-safe wherever it sits in <head>.
+ * tests/unit/bundle-parity.test.js enforces the layer() on every import.
  */
 
-@import "./charts/tokens.css";
-@import "./charts/base.css";
-@import "./charts/bar.css";
-@import "./charts/column.css";
-@import "./charts/line.css";
-@import "./charts/area.css";
-@import "./charts/pie.css";
-@import "./charts/legend.css";
-@import "./charts/tooltip.css";
+@import "./charts/tokens.css" layer(web-components);
+@import "./charts/base.css" layer(web-components);
+@import "./charts/bar.css" layer(web-components);
+@import "./charts/column.css" layer(web-components);
+@import "./charts/line.css" layer(web-components);
+@import "./charts/area.css" layer(web-components);
+@import "./charts/pie.css" layer(web-components);
+@import "./charts/legend.css" layer(web-components);
+@import "./charts/tooltip.css" layer(web-components);
 
 /* Web component wrapper styles */
-@import "./web-components/chart-wc/styles.css";
+@import "./web-components/chart-wc/styles.css" layer(web-components);

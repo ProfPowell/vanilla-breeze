@@ -143,6 +143,23 @@ function layerOrderStatement() {
   return match[0].replace(/\s+/g, ' ');
 }
 
+/**
+ * Prefix a built standalone stylesheet with the layer-order statement, after
+ * any font import statements esbuild hoisted to the top (a layer statement may not
+ * precede an import). Used for the theme files and the charts add-on — any
+ * self-layered file a page may <link> before the bundle.
+ *
+ * @param {string} outPath
+ * @param {string} layerOrder
+ */
+function prefixLayerOrder(outPath, layerOrder) {
+  const built = readFileSync(outPath, 'utf-8');
+  // Font URLs carry `;` inside their quotes (wght@400;700), so match the
+  // quoted string as a unit rather than scanning for the first `;`.
+  const leadingImports = built.match(/^(?:@import\s*(?:url\()?\s*(?:"[^"]*"|'[^']*')[^;]*;\s*)*/)?.[0] ?? '';
+  writeFileSync(outPath, `${leadingImports}${layerOrder}${built.slice(leadingImports.length)}`);
+}
+
 async function buildThemes() {
   const themesDir = join(SRC, 'tokens', 'themes');
   const outDir = join(CDN, 'themes');
@@ -185,14 +202,8 @@ async function buildThemes() {
     });
 
     const outPath = join(outDir, name);
-    // Order-safety prefix — see layerOrderStatement(). esbuild hoists the
-    // theme's font @imports to the top of its output, and @layer statements
-    // may not precede @import, so the prefix goes after them.
-    // Font URLs carry `;` inside their quotes (wght@400;700), so match the
-    // quoted string as a unit rather than scanning for the first `;`.
-    const built = readFileSync(outPath, 'utf-8');
-    const leadingImports = built.match(/^(?:@import\s*(?:url\()?\s*(?:"[^"]*"|'[^']*')[^;]*;\s*)*/)?.[0] ?? '';
-    writeFileSync(outPath, `${leadingImports}${layerOrder}${built.slice(leadingImports.length)}`);
+    // Order-safety prefix — see layerOrderStatement() / prefixLayerOrder().
+    prefixLayerOrder(outPath, layerOrder);
 
     const size = statSync(outPath).size;
     const entry = {
@@ -532,6 +543,8 @@ async function buildCDN() {
       outfile: join(CDN, 'vanilla-breeze-charts.css'),
       logLevel: 'info',
     });
+    // Self-layered (web-components) standalone file: order-safe like themes.
+    prefixLayerOrder(join(CDN, 'vanilla-breeze-charts.css'), layerOrderStatement());
   }
 
   // Build charts JS bundle (optional, includes SVC engine)
