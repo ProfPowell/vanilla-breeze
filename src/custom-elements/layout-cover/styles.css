@@ -1,77 +1,81 @@
-/* layout-cover: Full-height container with vertically centered principal element */
+/* layout-cover: Full-height container with vertically centered principal element
+ *
+ * One rule set for <layout-cover> and [data-layout="cover"]. */
 
 /* xl is 100dvh, not 100vh — dvh accounts for mobile browser chrome, so
    covers stop being cropped on phones. See the spec's rationale. */
-layout-cover {
+:is(layout-cover, [data-layout="cover"]) {
   --_min-height: var(--layout-min, var(--_min-height-token, 100dvh));
 
   display: flex;
   flex-direction: column;
   min-block-size: var(--_min-height);
   padding: var(--_padding, var(--size-m));
-}
 
-layout-cover[data-layout-min="s"]    { --_min-height-token: 50vh; }
-layout-cover[data-layout-min="m"]    { --_min-height-token: 70vh; }
-layout-cover[data-layout-min="l"]    { --_min-height-token: 80vh; }
-layout-cover[data-layout-min="xl"]   { --_min-height-token: 100dvh; }
-layout-cover[data-layout-min="auto"] { --_min-height-token: auto; }
+  &[data-layout-min="s"]    { --_min-height-token: 50vh; }
+  &[data-layout-min="m"]    { --_min-height-token: 70vh; }
+  &[data-layout-min="l"]    { --_min-height-token: 80vh; }
+  &[data-layout-min="xl"]   { --_min-height-token: 100dvh; }
+  &[data-layout-min="auto"] { --_min-height-token: auto; }
 
-/* Padding variants */
-layout-cover[data-layout-padding="none"] { --_padding: 0; }
-layout-cover[data-layout-padding="s"]    { --_padding: var(--size-s); }
-layout-cover[data-layout-padding="m"]    { --_padding: var(--size-m); }
-layout-cover[data-layout-padding="l"]    { --_padding: var(--size-l); }
-layout-cover[data-layout-padding="xl"]   { --_padding: var(--size-xl); }
+  &[data-layout-padding="none"] { --_padding: 0; }
+  &[data-layout-padding="s"]    { --_padding: var(--size-s); }
+  &[data-layout-padding="m"]    { --_padding: var(--size-m); }
+  &[data-layout-padding="l"]    { --_padding: var(--size-l); }
+  &[data-layout-padding="xl"]   { --_padding: var(--size-xl); }
 
-/* Gap between non-centered elements */
-layout-cover[data-layout-gap="s"]  { gap: var(--size-s); }
-layout-cover[data-layout-gap="m"]  { gap: var(--size-m); }
-layout-cover[data-layout-gap="l"]  { gap: var(--size-l); }
+  /* Gap between non-centered elements */
+  &[data-layout-gap="s"] { gap: var(--size-s); }
+  &[data-layout-gap="m"] { gap: var(--size-m); }
+  &[data-layout-gap="l"] { gap: var(--size-l); }
 
-/* The principal (centered) element - use data-layout-principal on the child */
-layout-cover > [data-layout-principal] {
-  margin-block: auto;
-}
+  /* The principal (centered) element - use data-layout-principal on the child */
+  & > [data-layout-principal] {
+    margin-block: auto;
+  }
 
-/* Header element (top-aligned) */
-layout-cover > header,
-layout-cover > [data-layout-cover-top] {
-  margin-block-end: auto;
-}
+  /* Header element (top-aligned) */
+  & > header,
+  & > [data-layout-cover-top] {
+    margin-block-end: auto;
+  }
 
-/* Footer element (bottom-aligned) */
-layout-cover > footer,
-layout-cover > [data-layout-cover-bottom] {
-  margin-block-start: auto;
-}
+  /* Footer element (bottom-aligned) */
+  & > footer,
+  & > [data-layout-cover-bottom] {
+    margin-block-start: auto;
+  }
 
-/* No nesting padding */
-layout-cover[data-layout-nospace] {
-  padding: 0;
-}
+  /* Single child auto-centers (the element fork lacked this) */
+  & > :only-child {
+    margin-block: auto;
+  }
 
-/* Center text content */
-layout-cover[data-layout-centered] {
-  align-items: center;
-  text-align: center;
-}
+  &[data-layout-nospace] {
+    padding: 0;
+  }
 
-/* Hero overlay — cinematic gradient for text legibility over images */
-layout-cover[data-hero-overlay] {
-  position: relative;
-}
+  &[data-layout-centered] {
+    align-items: center;
+    text-align: center;
+  }
 
-layout-cover[data-hero-overlay]::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 30%, oklch(0% 0 0 / 0.6));
-  pointer-events: none;
-  z-index: 0;
-}
+  /* Hero overlay — cinematic gradient for text legibility over images */
+  &[data-hero-overlay] {
+    position: relative;
 
-layout-cover[data-hero-overlay] > * {
-  position: relative;
-  z-index: 1;
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 30%, oklch(0% 0 0 / 0.6));
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    & > * {
+      position: relative;
+      z-index: 1;
+    }
+  }
 }

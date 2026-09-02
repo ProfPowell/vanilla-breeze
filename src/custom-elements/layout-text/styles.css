@@ -1,44 +1,86 @@
-/* layout-text: Content container with typographic spacing */
+/* layout-text: Content container with typographic spacing
+ *
+ * This file also owns the TYPOGRAPHIC CORE shared by every text container:
+ * <layout-text>, <layout-columns>, [data-layout="columns"] and
+ * [data-layout="prose"]. Rhythm and measure used to exist as three verbatim
+ * copies (text, columns element, columns attribute) while prose had measure
+ * but no rhythm and text had rhythm but no measure variants. One core, four
+ * containers. layout-columns/styles.css adds only the column-specific rules. */
 
-layout-text {
+/* ── Measure ──
+   Both attribute spellings map to the same token: data-layout-measure
+   (columns) and data-layout-max (prose). */
+:is(layout-text, layout-columns, [data-layout="columns"], [data-layout="prose"]) {
   display: block;
-  max-inline-size: var(--measure-normal, 65ch);
+  max-inline-size: var(--_measure, var(--measure-normal, 65ch));
   line-height: var(--prose-line-height, 1.6);
+
+  &[data-layout-measure="narrow"],
+  &[data-layout-max="narrow"] { --_measure: var(--measure-narrow, 45ch); }
+  &[data-layout-measure="normal"],
+  &[data-layout-max="normal"] { --_measure: var(--measure-normal, 65ch); }
+  &[data-layout-measure="wide"],
+  &[data-layout-max="wide"]   { --_measure: var(--measure-wide, 80ch); }
+
+  /* Inherit position by default; opt in to centering */
+  &[data-layout-centered] {
+    margin-inline: auto;
+  }
+
+  /* ── Vertical rhythm ── */
+  & > * + * {
+    margin-block-start: var(--size-m);
+  }
+
+  /* Larger spacing before major headings */
+  & > * + h2 {
+    margin-block-start: var(--size-2xl);
+  }
+
+  & > * + h3 {
+    margin-block-start: var(--size-xl);
+  }
+
+  & > * + :is(h4, h5, h6) {
+    margin-block-start: var(--size-l);
+  }
+
+  /* Tighter spacing after headings (proximity principle) */
+  & > :is(h2, h3, h4, h5, h6) + * {
+    margin-block-start: var(--size-s);
+  }
+
+  /* Adjacent lists */
+  & > :is(ul, ol) + :is(ul, ol) {
+    margin-block-start: var(--size-s);
+  }
+
+  /* Figure and pre blocks get more breathing room */
+  & > * + :is(figure, pre) {
+    margin-block-start: var(--size-l);
+  }
+
+  & > :is(figure, pre) + * {
+    margin-block-start: var(--size-l);
+  }
 }
 
-/* Vertical rhythm between elements */
-layout-text > * + * {
-  margin-block-start: var(--size-m);
+/* ── Narrow containers: let the measure fill the available width ── */
+@container (width < 30rem) {
+  :is(layout-text, layout-columns, [data-layout="columns"], [data-layout="prose"]) {
+    max-inline-size: 100%;
+  }
 }
 
-/* Larger spacing before major headings */
-layout-text > * + h2 {
-  margin-block-start: var(--size-2xl);
+/* ── Full-width breakout inside any measure-constrained context ── */
+:is(layout-text, layout-columns, [data-layout="columns"], [data-layout="prose"], article[data-measure]) > [data-bleed] {
+  max-inline-size: none;
+  inline-size: 100vw;
+  margin-inline: calc(50% - 50vw);
 }
 
-layout-text > * + h3 {
-  margin-block-start: var(--size-xl);
-}
-
-layout-text > * + :is(h4, h5, h6) {
-  margin-block-start: var(--size-l);
-}
-
-/* Tighter spacing after headings (proximity principle) */
-layout-text > :is(h2, h3, h4, h5, h6) + * {
-  margin-block-start: var(--size-s);
-}
-
-/* List and blockquote spacing */
-layout-text > :is(ul, ol) + :is(ul, ol) {
-  margin-block-start: var(--size-s);
-}
-
-/* Figure and pre blocks get more breathing room */
-layout-text > * + :is(figure, pre) {
-  margin-block-start: var(--size-l);
-}
-
-layout-text > :is(figure, pre) + * {
-  margin-block-start: var(--size-l);
-}
+/* ── data-measure on article: reading width only, no rhythm ──
+   Uses the same measure tokens as the containers above. */
+article[data-measure]          { max-inline-size: var(--measure-normal, 65ch); margin-inline: auto; }
+article[data-measure="narrow"] { max-inline-size: var(--measure-narrow, 45ch); }
+article[data-measure="wide"]   { max-inline-size: var(--measure-wide, 80ch); }

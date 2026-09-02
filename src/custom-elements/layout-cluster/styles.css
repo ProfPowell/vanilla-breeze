@@ -1,55 +1,58 @@
-/* layout-cluster: Horizontal flex layout with wrapping */
+/* layout-cluster: Horizontal flex layout with wrapping
+ *
+ * One rule set for <layout-cluster> and [data-layout="cluster"].
+ * The flex-collapse antidote for semantic children lives in
+ * layout-attributes.css (it spans cluster and reel). */
 
-layout-cluster {
+:is(layout-cluster, [data-layout="cluster"]) {
   display: flex;
   flex-wrap: wrap;
   gap: var(--_gap, var(--size-s));
   align-items: var(--_align, center);
-}
 
-/* Gap variants */
-layout-cluster[data-layout-gap="xs"] { --_gap: var(--size-xs); }
-layout-cluster[data-layout-gap="s"] { --_gap: var(--size-s); }
-layout-cluster[data-layout-gap="m"] { --_gap: var(--size-m); }
-layout-cluster[data-layout-gap="l"] { --_gap: var(--size-l); }
-layout-cluster[data-layout-gap="xl"] { --_gap: var(--size-xl); }
+  /* Gap variants — the element fork stopped at xl and the attribute fork
+     had no `none`; both forms now take the full set. */
+  &[data-layout-gap="none"] { --_gap: 0; }
+  &[data-layout-gap="xs"]   { --_gap: var(--size-xs); }
+  &[data-layout-gap="s"]    { --_gap: var(--size-s); }
+  &[data-layout-gap="m"]    { --_gap: var(--size-m); }
+  &[data-layout-gap="l"]    { --_gap: var(--size-l); }
+  &[data-layout-gap="xl"]   { --_gap: var(--size-xl); }
+  &[data-layout-gap="2xl"]  { --_gap: var(--size-2xl); }
 
-/* Justify variants */
-layout-cluster[data-layout-justify="start"] { justify-content: flex-start; }
-layout-cluster[data-layout-justify="end"] { justify-content: flex-end; }
-layout-cluster[data-layout-justify="center"] { justify-content: center; }
-layout-cluster[data-layout-justify="between"] { justify-content: space-between; }
+  &[data-layout-justify="start"]   { justify-content: flex-start; }
+  &[data-layout-justify="end"]     { justify-content: flex-end; }
+  &[data-layout-justify="center"]  { justify-content: center; }
+  &[data-layout-justify="between"] { justify-content: space-between; }
 
-/* Align variants */
-layout-cluster[data-layout-align="start"] { --_align: flex-start; }
-layout-cluster[data-layout-align="end"] { --_align: flex-end; }
-layout-cluster[data-layout-align="center"] { --_align: center; }
-layout-cluster[data-layout-align="stretch"] { --_align: stretch; }
-layout-cluster[data-layout-align="baseline"] { --_align: baseline; }
+  &[data-layout-align="start"]    { --_align: flex-start; }
+  &[data-layout-align="end"]      { --_align: flex-end; }
+  &[data-layout-align="center"]   { --_align: center; }
+  &[data-layout-align="stretch"]  { --_align: stretch; }
+  &[data-layout-align="baseline"] { --_align: baseline; }
 
-/* No-wrap variant */
-layout-cluster[data-layout-nowrap] {
-  flex-wrap: nowrap;
-}
-
-/* Overlap variant - for stacked/overlapping items like avatar groups */
-layout-cluster[data-layout-overlap] {
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-  gap: 0;
-
-  & > * {
-    margin-inline-start: var(--_overlap, -0.5rem);
-    box-shadow: 0 0 0 2px var(--color-surface);
+  &[data-layout-nowrap] {
+    flex-wrap: nowrap;
   }
 
-  & > :last-child {
-    margin-inline-start: 0;
-  }
-}
+  /* Overlap variant - for stacked/overlapping items like avatar groups */
+  &[data-layout-overlap] {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 0;
 
-/* Overlap amount variants */
-layout-cluster[data-layout-overlap="xs"] { --_overlap: -0.25rem; }
-layout-cluster[data-layout-overlap="s"] { --_overlap: -0.5rem; }
-layout-cluster[data-layout-overlap="m"] { --_overlap: -0.75rem; }
-layout-cluster[data-layout-overlap="l"] { --_overlap: -1rem; }
+    & > * {
+      margin-inline-start: var(--_overlap, -0.5rem);
+      box-shadow: 0 0 0 2px var(--color-surface);
+    }
+
+    & > :last-child {
+      margin-inline-start: 0;
+    }
+  }
+
+  &[data-layout-overlap="xs"] { --_overlap: -0.25rem; }
+  &[data-layout-overlap="s"]  { --_overlap: -0.5rem; }
+  &[data-layout-overlap="m"]  { --_overlap: -0.75rem; }
+  &[data-layout-overlap="l"]  { --_overlap: -1rem; }
+}

@@ -1,56 +1,56 @@
-/* layout-center: Centered content container */
+/* layout-center: Centered content container
+ *
+ * One rule set for <layout-center> and [data-layout="center"]. */
 
-layout-center {
+:is(layout-center, [data-layout="center"]) {
+  --_gutter: var(--size-m);
+
   display: block;
   box-sizing: content-box;
   max-inline-size: var(--_max, var(--content-normal, 60rem));
   margin-inline: auto;
-  padding-inline: var(--size-m);
+  padding-inline: var(--_gutter);
+
+  &[data-layout-max="narrow"] { --_max: var(--content-narrow, 45rem); }
+  &[data-layout-max="normal"] { --_max: var(--content-normal, 60rem); }
+  &[data-layout-max="wide"]   { --_max: var(--content-wide, 80rem); }
+  &[data-layout-max="prose"]  { --_max: 65ch; }
+
+  /* Intrinsic centering - centers content that is narrower than max-width */
+  &[data-layout-intrinsic] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &[data-layout-text] {
+    text-align: center;
+  }
+
+  &[data-layout-gutter="none"] { --_gutter: 0px; }
+  &[data-layout-gutter="s"]    { --_gutter: var(--size-s); }
+  &[data-layout-gutter="l"]    { --_gutter: var(--size-l); }
+
+  /* Gap support - center becomes flex-column when gap is present.
+     An explicit inline-size prevents collapse when nested in a flex parent
+     (e.g. cover), where margin-inline: auto would otherwise shrink the
+     element to content width. The element fork lacked this guard, and the
+     attribute fork's `inline-size: 100%` overflowed by the padding on a
+     content-box element — subtract the gutter so the box fills exactly. */
+  &[data-layout-gap] {
+    display: flex;
+    flex-direction: column;
+    inline-size: calc(100% - 2 * var(--_gutter));
+  }
+
+  &[data-layout-gap="none"]  { gap: 0; }
+  &[data-layout-gap="3xs"]   { gap: var(--size-3xs); }
+  &[data-layout-gap="2xs"]   { gap: var(--size-2xs); }
+  &[data-layout-gap="xs"]    { gap: var(--size-xs); }
+  &[data-layout-gap="s"]     { gap: var(--size-s); }
+  &[data-layout-gap="m"]     { gap: var(--size-m); }
+  &[data-layout-gap="l"]     { gap: var(--size-l); }
+  &[data-layout-gap="xl"]    { gap: var(--size-xl); }
+  &[data-layout-gap="2xl"]   { gap: var(--size-2xl); }
+  &[data-layout-gap="3xl"]   { gap: var(--size-3xl); }
 }
-
-/* Width variants */
-layout-center[data-layout-max="narrow"] { --_max: var(--content-narrow, 45rem); }
-layout-center[data-layout-max="normal"] { --_max: var(--content-normal, 60rem); }
-layout-center[data-layout-max="wide"] { --_max: var(--content-wide, 80rem); }
-
-/* Intrinsic centering - centers content that is narrower than max-width */
-layout-center[data-layout-intrinsic] {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Text centering */
-layout-center[data-layout-text] {
-  text-align: center;
-}
-
-/* No padding variant (for nested centers) */
-layout-center[data-layout-gutter="none"] {
-  padding-inline: 0;
-}
-
-layout-center[data-layout-gutter="s"] {
-  padding-inline: var(--size-s);
-}
-
-layout-center[data-layout-gutter="l"] {
-  padding-inline: var(--size-l);
-}
-
-/* Gap support - center becomes flex-column when gap is present */
-layout-center[data-layout-gap] {
-  display: flex;
-  flex-direction: column;
-}
-
-layout-center[data-layout-gap="none"]  { gap: 0; }
-layout-center[data-layout-gap="3xs"]   { gap: var(--size-3xs); }
-layout-center[data-layout-gap="2xs"]   { gap: var(--size-2xs); }
-layout-center[data-layout-gap="xs"]    { gap: var(--size-xs); }
-layout-center[data-layout-gap="s"]     { gap: var(--size-s); }
-layout-center[data-layout-gap="m"]     { gap: var(--size-m); }
-layout-center[data-layout-gap="l"]     { gap: var(--size-l); }
-layout-center[data-layout-gap="xl"]    { gap: var(--size-xl); }
-layout-center[data-layout-gap="2xl"]   { gap: var(--size-2xl); }
-layout-center[data-layout-gap="3xl"]   { gap: var(--size-3xl); }

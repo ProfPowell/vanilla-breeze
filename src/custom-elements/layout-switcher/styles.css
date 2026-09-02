@@ -1,52 +1,57 @@
-/* layout-switcher: Flexbox that switches direction at a threshold */
+/* layout-switcher: Flexbox that switches direction at a threshold
+ *
+ * One rule set for <layout-switcher> and [data-layout="switcher"]. */
 
-layout-switcher {
+:is(layout-switcher, [data-layout="switcher"]) {
   --_threshold: var(--layout-threshold, var(--_threshold-token, 30rem));
 
   display: flex;
   flex-wrap: wrap;
   gap: var(--_gap, var(--size-m));
+
+  & > * {
+    flex-grow: 1;
+    flex-basis: calc((var(--_threshold) - 100%) * 999);
+  }
+
+  &[data-layout-gap="none"] { --_gap: 0; }
+  &[data-layout-gap="xs"]   { --_gap: var(--size-xs); }
+  &[data-layout-gap="s"]    { --_gap: var(--size-s); }
+  &[data-layout-gap="m"]    { --_gap: var(--size-m); }
+  &[data-layout-gap="l"]    { --_gap: var(--size-l); }
+  &[data-layout-gap="xl"]   { --_gap: var(--size-xl); }
+
+  /* Threshold variants - point at which layout switches */
+  &[data-layout-threshold="s"] { --_threshold-token: 25rem; }
+  &[data-layout-threshold="m"] { --_threshold-token: 30rem; }
+  &[data-layout-threshold="l"] { --_threshold-token: 40rem; }
+
+  /* Limit number of items before forcing vertical */
+  &[data-layout-limit="2"] > :nth-last-child(n+3),
+  &[data-layout-limit="2"] > :nth-last-child(n+3) ~ * {
+    flex-basis: 100%;
+  }
+
+  &[data-layout-limit="3"] > :nth-last-child(n+4),
+  &[data-layout-limit="3"] > :nth-last-child(n+4) ~ * {
+    flex-basis: 100%;
+  }
+
+  &[data-layout-limit="4"] > :nth-last-child(n+5),
+  &[data-layout-limit="4"] > :nth-last-child(n+5) ~ * {
+    flex-basis: 100%;
+  }
+
+  /* Reverse order when stacked */
+  &[data-layout-reverse] {
+    flex-direction: row-reverse;
+  }
+
+  &[data-layout-reverse][data-layout-threshold] {
+    flex-wrap: wrap-reverse;
+  }
 }
 
-layout-switcher > * {
-  flex-grow: 1;
-  flex-basis: calc((var(--_threshold) - 100%) * 999);
-}
-
-/* Gap variants */
-layout-switcher[data-layout-gap="none"] { --_gap: 0; }
-layout-switcher[data-layout-gap="xs"] { --_gap: var(--size-xs); }
-layout-switcher[data-layout-gap="s"] { --_gap: var(--size-s); }
-layout-switcher[data-layout-gap="m"] { --_gap: var(--size-m); }
-layout-switcher[data-layout-gap="l"] { --_gap: var(--size-l); }
-layout-switcher[data-layout-gap="xl"] { --_gap: var(--size-xl); }
-
-/* Threshold variants - point at which layout switches */
-layout-switcher[data-layout-threshold="s"] { --_threshold-token: 25rem; }
-layout-switcher[data-layout-threshold="m"] { --_threshold-token: 30rem; }
-layout-switcher[data-layout-threshold="l"] { --_threshold-token: 40rem; }
-
-/* Limit number of items before forcing vertical */
-layout-switcher[data-layout-limit="2"] > :nth-last-child(n+3),
-layout-switcher[data-layout-limit="2"] > :nth-last-child(n+3) ~ * {
-  flex-basis: 100%;
-}
-
-layout-switcher[data-layout-limit="3"] > :nth-last-child(n+4),
-layout-switcher[data-layout-limit="3"] > :nth-last-child(n+4) ~ * {
-  flex-basis: 100%;
-}
-
-layout-switcher[data-layout-limit="4"] > :nth-last-child(n+5),
-layout-switcher[data-layout-limit="4"] > :nth-last-child(n+5) ~ * {
-  flex-basis: 100%;
-}
-
-/* Reverse order when stacked */
-layout-switcher[data-layout-reverse] {
-  flex-direction: row-reverse;
-}
-
-layout-switcher[data-layout-reverse][data-layout-threshold] {
-  flex-wrap: wrap-reverse;
-}
+/* No container-query fallback: the flex-basis formula above already switches
+   on the switcher's own width, so a fixed `< 30rem` container rule only
+   overrode data-layout-threshold="s". The attribute fork used to carry it. */

@@ -1,47 +1,79 @@
-/* layout-sidebar: Sidebar layout with flexible main content */
+/* layout-sidebar: Sidebar layout with flexible main content
+ *
+ * One rule set for <layout-sidebar> and [data-layout="sidebar"].
+ *
+ * Semantic-aware: <nav> and <aside> children are the sidebar, every other
+ * child is content. That allows natural DOM order — write <main> before
+ * <aside> for a right-hand sidebar and set data-layout-side="end". When no
+ * nav/aside child exists, the position-based fallback applies: first child
+ * is the sidebar, last child the content. The element fork used to be
+ * position-based only, so <main><aside> + side="end" mirrored the wrong way. */
 
-layout-sidebar {
+:is(layout-sidebar, [data-layout="sidebar"]) {
   --_content-min: var(--layout-content-min, var(--_content-min-token, 50%));
 
   display: flex;
   flex-wrap: wrap;
   gap: var(--_gap, var(--size-m));
+
+  /* --- Semantic sidebar elements --- */
+  & > :is(nav, aside) {
+    flex-basis: var(--_sidebar-width, 15rem);
+    flex-grow: 1;
+  }
+
+  /* --- Content: every child that is neither a sidebar element nor an
+     injected helper. Content is not limited to main/article/section — the
+     docs nest a <layout-sidebar> as the content child — but the splitter's
+     div[role="separator"] and similar helpers must not become content. --- */
+  &:has(> :is(nav, aside)) > :not(nav, aside, hr, [role="separator"], template, script, style) {
+    flex-basis: 0;
+    flex-grow: 999;
+    min-inline-size: var(--_content-min);
+  }
+
+  /* --- Position-based fallback when there is no nav/aside child --- */
+  &:not(:has(> :is(nav, aside))) > :first-child {
+    flex-basis: var(--_sidebar-width, 15rem);
+    flex-grow: 1;
+  }
+
+  &:not(:has(> :is(nav, aside))) > :last-child {
+    flex-basis: 0;
+    flex-grow: 999;
+    min-inline-size: var(--_content-min);
+  }
+
+  &[data-layout-gap="xs"]  { --_gap: var(--size-xs); }
+  &[data-layout-gap="s"]   { --_gap: var(--size-s); }
+  &[data-layout-gap="m"]   { --_gap: var(--size-m); }
+  &[data-layout-gap="l"]   { --_gap: var(--size-l); }
+  &[data-layout-gap="xl"]  { --_gap: var(--size-xl); }
+  &[data-layout-gap="2xl"] { --_gap: var(--size-2xl); }
+
+  /* --- Sidebar on the end (right in LTR) --- */
+  /* Semantic elements: order keeps natural DOM order */
+  &[data-layout-side="end"] > :is(nav, aside) {
+    order: 1;
+  }
+
+  /* Position-based fallback: reverse the row */
+  &[data-layout-side="end"]:not(:has(> :is(nav, aside))) {
+    flex-direction: row-reverse;
+  }
+
+  &[data-layout-sidebar-width="narrow"] { --_sidebar-width: 12rem; }
+  &[data-layout-sidebar-width="normal"] { --_sidebar-width: 15rem; }
+  &[data-layout-sidebar-width="wide"]   { --_sidebar-width: 20rem; }
+
+  &[data-layout-content-min="s"] { --_content-min-token: 40%; }
+  &[data-layout-content-min="m"] { --_content-min-token: 50%; }
+  &[data-layout-content-min="l"] { --_content-min-token: 60%; }
+
+  &[data-layout-nowrap] {
+    flex-wrap: nowrap;
+  }
 }
-
-/* Sidebar (first child by default) */
-layout-sidebar > :first-child {
-  flex-basis: var(--_sidebar-width, 15rem);
-  flex-grow: 1;
-}
-
-/* Main content (last child by default) */
-layout-sidebar > :last-child {
-  flex-basis: 0;
-  flex-grow: 999;
-  min-inline-size: var(--_content-min);
-}
-
-/* Gap variants */
-layout-sidebar[data-layout-gap="xs"] { --_gap: var(--size-xs); }
-layout-sidebar[data-layout-gap="s"] { --_gap: var(--size-s); }
-layout-sidebar[data-layout-gap="m"] { --_gap: var(--size-m); }
-layout-sidebar[data-layout-gap="l"] { --_gap: var(--size-l); }
-layout-sidebar[data-layout-gap="xl"] { --_gap: var(--size-xl); }
-
-/* Sidebar on the end (right in LTR) */
-layout-sidebar[data-layout-side="end"] {
-  flex-direction: row-reverse;
-}
-
-/* Sidebar width variants */
-layout-sidebar[data-layout-sidebar-width="narrow"] { --_sidebar-width: 12rem; }
-layout-sidebar[data-layout-sidebar-width="normal"] { --_sidebar-width: 15rem; }
-layout-sidebar[data-layout-sidebar-width="wide"] { --_sidebar-width: 20rem; }
-
-/* Content minimum width variants */
-layout-sidebar[data-layout-content-min="s"] { --_content-min-token: 40%; }
-layout-sidebar[data-layout-content-min="m"] { --_content-min-token: 50%; }
-layout-sidebar[data-layout-content-min="l"] { --_content-min-token: 60%; }
 
 /* Sticky sidebar — only active when smart sticky system is enabled on :root.
    Always constrain to remaining viewport so the sidebar sticks cleanly and
@@ -52,7 +84,7 @@ layout-sidebar[data-layout-content-min="l"] { --_content-min-token: 60%; }
    page-toc and page-tools without the aside's overflow:auto clipping
    their soft edges. On flat themes this is ~2px of dead margin — small
    enough not to matter, large enough to hold the shadow corners. */
-:root[data-sticky] layout-sidebar > :is(nav, aside)[data-layout-sticky] {
+:root[data-sticky] :is(layout-sidebar, [data-layout="sidebar"]) > :is(nav, aside)[data-layout-sticky] {
   position: sticky;
   top: calc(var(--sticky-offset, 0px) + var(--sticky-gap, 0px));
   align-self: start;
@@ -70,13 +102,8 @@ layout-sidebar[data-layout-content-min="l"] { --_content-min-token: 60%; }
    !important is needed because inner sticky rules (e.g. page-toc's own
    wide-screen rule) live in the component's own stylesheet and win via
    source order or layer precedence even when specificity favours us. */
-:root[data-sticky] layout-sidebar > :is(nav, aside)[data-layout-sticky] :is(page-toc, page-tools) {
+:root[data-sticky] :is(layout-sidebar, [data-layout="sidebar"]) > :is(nav, aside)[data-layout-sticky] :is(page-toc, page-tools) {
   position: static !important;
   inset-block-start: auto !important;
   max-block-size: none !important;
-}
-
-/* No wrap - sidebar always visible */
-layout-sidebar[data-layout-nowrap] {
-  flex-wrap: nowrap;
 }
