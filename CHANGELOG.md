@@ -34,6 +34,21 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   `.visually-hidden` utility sets. Visible effect: an author rule such as
   `.tall-spark { block-size: 120px }` on a sparkline now applies.
 
+### Fixed
+
+- **The tokens layer holds custom properties only** (dtw6). Backdrop's
+  application rules (body padding, region elevation, chrome modes, the
+  mobile flush breakpoint), the `[data-scrollbar]`, `[data-border-style]`
+  and `[data-spotlight]` rules, the OpenType utility classes and the
+  external-component token bridge all lived in `@layer tokens` — the lowest
+  layer — where any component rule beat them. They now live in
+  `src/utils/` in `@layer utils`; their custom properties stay in
+  `src/tokens/`. Visible effect: with `data-backdrop`, regions are centered
+  to the canvas width and separated by the canvas gap as documented. A gate
+  in bundle-parity keeps selector rules out of the tokens graph
+  (`color-scheme`, `interpolate-size` and the root token transition are the
+  documented exceptions).
+
 ### Internal
 
 - `vb/layout-attr-value` now validates each `data-layout-*` value against

@@ -1,0 +1,189 @@
+/**
+ * Canvas backdrop — application rules
+ *
+ * Moved out of src/tokens/backdrop.css (dtw6): the tokens layer holds custom
+ * properties only — rules there sit in the LOWEST layer and lose to every
+ * component rule, which is not what an opt-in attribute system wants. The
+ * tokens this file reads stay in src/tokens/backdrop.css.
+ */
+
+/* ========================================
+ * Body padding — background peeks around region edges
+ * ======================================== */
+:root[data-backdrop] > body {
+  padding: var(--canvas-gap);
+}
+
+/* ========================================
+ * Grid gap — increase when backdrop is active
+ * Layouts with explicit gap: 0 (app-shell, dashboard) are unaffected
+ * because they set the gap property directly, bypassing this variable.
+ * Explicit data-layout-gap modifiers set --_layout-gap on the body,
+ * which overrides this inherited value.
+ * ======================================== */
+[data-backdrop] {
+  --_layout-gap: var(--canvas-gap);
+}
+
+/* ========================================
+ * Elevation styles on all semantic regions
+ * Each region is an independent card: background, full radius, padding.
+ * Per-region: shadow level, main also gets block padding.
+ * ======================================== */
+:root[data-backdrop] > body > :is(main, header, footer, nav, aside) {
+  background: var(--canvas-bg);
+  border-radius: var(--canvas-radius);
+  padding-inline: var(--canvas-padding-inline);
+}
+
+/* Main: prominent shadow + vertical padding (primary reading surface) */
+:root[data-backdrop] > body > main {
+  box-shadow: var(--canvas-shadow);
+  padding-block: var(--canvas-padding-block);
+}
+
+/* Header, Footer: subtle shadow (chrome, not content) */
+:root[data-backdrop] > body > header,
+:root[data-backdrop] > body > footer {
+  box-shadow: var(--canvas-shadow-subtle);
+}
+
+/* Nav, Aside: medium shadow (secondary panels) */
+:root[data-backdrop] > body > nav,
+:root[data-backdrop] > body > aside {
+  box-shadow: var(--canvas-shadow-medium);
+}
+
+/* ========================================
+ * Centering for non-grid layouts
+ * Without page-layout: regions are in normal flow — center them.
+ * ======================================== */
+:root[data-backdrop] > body:not([data-page-layout]) > :is(main, header, footer) {
+  width: 100%;
+  max-inline-size: var(--canvas-width);
+  margin-inline: auto;
+}
+
+/* ========================================
+ * Vertical spacing for non-grid layouts
+ * Adjacent regions get gap via margin (grid layouts use gap instead)
+ * ======================================== */
+:root[data-backdrop] > body:not([data-page-layout]) > :is(header, main, footer, nav, aside) + :is(header, main, footer, nav, aside) {
+  margin-block-start: var(--canvas-gap);
+}
+
+/* ========================================
+ * Integrated mode (opt-in): connected surface
+ * data-backdrop-chrome~="integrated" joins ALL regions into one
+ * continuous shape. Zeroes gaps, flattens interior corners.
+ * Only header top and footer bottom keep radius.
+ * ======================================== */
+
+/* Flatten all regions first */
+:root[data-backdrop-chrome~="integrated"] > body > :is(main, header, footer, nav, aside) {
+  border-radius: 0;
+}
+
+/* Header: only top corners rounded */
+:root[data-backdrop-chrome~="integrated"] > body > header {
+  border-radius: var(--canvas-radius) var(--canvas-radius) 0 0;
+}
+
+/* Footer: only bottom corners rounded */
+:root[data-backdrop-chrome~="integrated"] > body > footer {
+  border-radius: 0 0 var(--canvas-radius) var(--canvas-radius);
+}
+
+/* Integrated: collapse all gaps so regions touch */
+:root[data-backdrop-chrome~="integrated"] > body > :is(header, main, footer, nav, aside) + :is(header, main, footer, nav, aside) {
+  margin-block-start: 0;
+}
+
+:root[data-backdrop-chrome~="integrated"] > body {
+  row-gap: 0;
+  column-gap: 0;
+}
+
+/* ========================================
+ * Stretch mode: traditional web layout
+ * Full-width header/footer, centered main card.
+ * ======================================== */
+
+/* Remove body padding — regions go edge-to-edge */
+:root[data-backdrop-chrome~="stretch"] > body {
+  padding-inline: 0;
+  padding-block: 0;
+}
+
+/* Header/footer: full-width, no card styling */
+:root[data-backdrop-chrome~="stretch"] > body > header,
+:root[data-backdrop-chrome~="stretch"] > body > footer {
+  max-inline-size: none;
+  margin-inline: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:root[data-backdrop-chrome~="stretch"] > body > header {
+  border-block-end: var(--border-width-thin) solid var(--color-border);
+}
+
+:root[data-backdrop-chrome~="stretch"] > body > footer {
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+}
+
+/* Main keeps card styling, centered */
+:root[data-backdrop-chrome~="stretch"] > body > main {
+  width: 100%;
+  max-inline-size: var(--canvas-width);
+  margin-inline: auto;
+}
+
+/* ========================================
+ * Fixed mode (composable): sticky header with depth
+ * Combines with any chrome mode via space-separated values.
+ * ======================================== */
+
+:root[data-backdrop-chrome~="fixed"] > body > header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-sticky, 100);
+}
+
+/* Depth shadow when fixed + card/integrated (content scrolls under) */
+:root[data-backdrop-chrome~="fixed"]:not([data-backdrop-chrome~="stretch"]) > body > header {
+  box-shadow: var(--canvas-shadow-subtle);
+}
+
+/* Depth shadow when fixed + stretch */
+:root[data-backdrop-chrome~="stretch"][data-backdrop-chrome~="fixed"] > body > header {
+  box-shadow: var(--canvas-shadow-subtle);
+}
+
+/* ========================================
+ * Mobile: flush regardless of preset or chrome mode
+ * All regions go edge-to-edge, no body padding
+ * ======================================== */
+@media (max-width: 640px) {
+  :root[data-backdrop] > body {
+    padding: 0;
+  }
+
+  :root[data-backdrop] > body > :is(main, header, footer, nav, aside) {
+    max-inline-size: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  :root[data-backdrop] > body > main {
+    padding-inline: var(--size-m, 1rem);
+  }
+
+  :root[data-backdrop] > body:not([data-page-layout]) > :is(header, main, footer, nav, aside) + :is(header, main, footer, nav, aside) {
+    margin-block-start: 0;
+  }
+
+  :root[data-backdrop] > body[data-page-layout] {
+    gap: var(--_layout-gap, var(--size-m));
+  }
+}

@@ -10,6 +10,8 @@
  *   <html data-border-style="kawaii">
  *
  * Requires rough-borders.css for border-image values and SVG filters.
+  *
+ * The [data-border-style] application rules live in src/utils/border-styles.css.
  */
 
 /* ========================================
@@ -218,50 +220,6 @@
 [data-mode="dark"] [data-border-style="organic"],
 [data-mode="dark"][data-border-style="organic"] {
   --vb-border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M3,8 C12,3 22,6 30,3 C38,0 48,5 57,8 M3,52 C10,55 22,50 30,57 C38,54 48,58 57,52 M8,3 C5,12 6,22 3,30 C0,38 5,48 8,57 M52,3 C55,10 50,22 57,30 C54,38 58,48 52,57' fill='none' stroke='%23aaa' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 14 stretch;
-}
-
-/* ========================================
- * Auto-apply border tokens to common elements
- * within a [data-border-style] context
- * ======================================== */
-[data-border-style]:not([data-border-style="clean"]) :is(
-  .card, blockquote, form,
-  .preview-card, .preview-form, .preview-table,
-  .preview-code, .preview-list,
-  .border-card, .vignette
-) {
-  border-width: var(--vb-border-width);
-  border-style: var(--vb-border-style);
-  border-image: var(--vb-border-image);
-  filter: var(--vb-border-filter);
-  box-shadow: var(--vb-border-glow);
-}
-
-/* Radius override — separate because border-image disables border-radius per spec,
-   so only apply when there's no border-image in use */
-[data-border-style]:not([data-border-style="clean"]) :is(
-  .card, blockquote, form,
-  .preview-card, .preview-form, .preview-table,
-  .preview-code, .preview-list,
-  .border-card, .vignette
-) {
-  border-radius: var(--vb-border-radius-override);
-}
-
-/* Prevent border doubling when containers are nested (e.g. form inside details).
-   Must include .card in the target :is() to match auto-apply specificity (0,3,0 → 0,3,1). */
-[data-border-style]:not([data-border-style="clean"]) :is(details) :is(
-  .card, blockquote, form,
-  .preview-card, .preview-form, .preview-table,
-  .preview-code, .preview-list,
-  .border-card, .vignette
-) {
-  border-width: 0;
-  border-style: none;
-  border-image: none;
-  box-shadow: none;
-  filter: none;
-  border-radius: 0;
 }
 
 /* prefers-color-scheme fallbacks */

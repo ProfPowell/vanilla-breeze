@@ -1,0 +1,52 @@
+/**
+ * Border styles — application rules
+ *
+ * Moved out of src/tokens/extensions/border-styles.css (dtw6): the tokens layer holds custom
+ * properties only — rules there sit in the LOWEST layer and lose to every
+ * component rule, which is not what an opt-in attribute system wants. The
+ * tokens this file reads stay in src/tokens/extensions/border-styles.css.
+ */
+
+/* ========================================
+ * Auto-apply border tokens to common elements
+ * within a [data-border-style] context
+ * ======================================== */
+[data-border-style]:not([data-border-style="clean"]) :is(
+  .card, blockquote, form,
+  .preview-card, .preview-form, .preview-table,
+  .preview-code, .preview-list,
+  .border-card, .vignette
+) {
+  border-width: var(--vb-border-width);
+  border-style: var(--vb-border-style);
+  border-image: var(--vb-border-image);
+  filter: var(--vb-border-filter);
+  box-shadow: var(--vb-border-glow);
+}
+
+/* Radius override — separate because border-image disables border-radius per spec,
+   so only apply when there's no border-image in use */
+[data-border-style]:not([data-border-style="clean"]) :is(
+  .card, blockquote, form,
+  .preview-card, .preview-form, .preview-table,
+  .preview-code, .preview-list,
+  .border-card, .vignette
+) {
+  border-radius: var(--vb-border-radius-override);
+}
+
+/* Prevent border doubling when containers are nested (e.g. form inside details).
+   Must include .card in the target :is() to match auto-apply specificity (0,3,0 → 0,3,1). */
+[data-border-style]:not([data-border-style="clean"]) :is(details) :is(
+  .card, blockquote, form,
+  .preview-card, .preview-form, .preview-table,
+  .preview-code, .preview-list,
+  .border-card, .vignette
+) {
+  border-width: 0;
+  border-style: none;
+  border-image: none;
+  box-shadow: none;
+  filter: none;
+  border-radius: 0;
+}

@@ -1,0 +1,21 @@
+/**
+ * Spotlight — application rules
+ *
+ * Moved out of src/tokens/extensions/cursors.css (dtw6): the tokens layer holds custom
+ * properties only — rules there sit in the LOWEST layer and lose to every
+ * component rule, which is not what an opt-in attribute system wants. The
+ * tokens this file reads stay in src/tokens/extensions/cursors.css.
+ */
+
+[data-spotlight] { position: relative; }
+
+[data-spotlight]::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(circle var(--spotlight-size) at var(--spotlight-x) var(--spotlight-y),
+    color-mix(in oklab, var(--spotlight-color) 35%, transparent) 0%, transparent 70%);
+  transition: --spotlight-x 60ms linear, --spotlight-y 60ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) { [data-spotlight]::before { transition: none; } }
+
+:root[data-motion-reduced] [data-spotlight]::before { transition: none; }

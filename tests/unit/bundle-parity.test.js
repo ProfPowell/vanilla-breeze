@@ -23,7 +23,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -177,6 +177,63 @@ describe('standalone add-ons are layered', () => {
     const unlayered = lines.filter((l) => !/layer\(web-components\)\s*;\s*$/.test(l));
     assert.deepEqual(unlayered, [], 'These charts imports would ship unlayered and beat every layer.');
   });
+});
+
+describe('the tokens layer holds custom properties only', () => {
+  // main.css: "tokens: Design system variables. No selectors." Rules in the
+  // tokens layer sit in the LOWEST layer and lose to every component rule —
+  // backdrop's body padding and region elevation lived there for a year
+  // (dtw6). Every file reachable from src/tokens/index.css may declare only
+  // custom properties, plus the three root-level switches below.
+  const ALLOWED = new Set([
+    'color-scheme', // :root / [data-mode] light-dark hint
+    'interpolate-size', // :root feature switch for animating to auto
+    'transition', // :root transitions on the theme seed custom properties
+  ]);
+  const EXEMPT_AT = /^@(font-face|property|keyframes|counter-style|font-feature-values)\b/;
+
+  /** Every file reachable from a barrel through relative @imports. */
+  const reachable = (rel, seen = new Set()) => {
+    if (seen.has(rel)) return seen;
+    seen.add(rel);
+    for (const spec of imports(rel)) {
+      const target = resolve(dirname(resolve(root, rel)), spec);
+      reachable(relative(root, target), seen);
+    }
+    return seen;
+  };
+  const files = [...reachable('src/tokens/index.css')];
+
+  it('reaches the token files', () => {
+    assert.ok(files.length > 15, `only ${files.length} files reachable from src/tokens/index.css`);
+    assert.ok(!files.some((f) => f.includes('/themes/')), 'themes must not be reached from the tokens barrel');
+  });
+
+  for (const file of files) {
+    it(`${file} declares no non-custom property in a selector rule`, () => {
+      const css = read(file).replace(/\/\*[\s\S]*?\*\//g, '');
+      const stack = [];
+      let buf = '';
+      const offenders = [];
+      for (const ch of css) {
+        if (ch === '{') { stack.push(buf.trim().replace(/\s+/g, ' ')); buf = ''; }
+        else if (ch === '}') { stack.pop(); buf = ''; }
+        else if (ch === ';') {
+          const decl = buf.trim();
+          const prop = /^([a-z-]+)\s*:/.exec(decl)?.[1];
+          if (prop && !prop.startsWith('--') && !ALLOWED.has(prop) && !stack.some((s) => EXEMPT_AT.test(s))) {
+            offenders.push(`${stack.join(' > ')} :: ${decl.slice(0, 60)}`);
+          }
+          buf = '';
+        } else buf += ch;
+      }
+      assert.deepEqual(
+        offenders,
+        [],
+        `${file} carries application rules in the tokens layer — move them to src/utils/ (see dtw6):\n  ${offenders.join('\n  ')}`,
+      );
+    });
+  }
 });
 
 describe('@property registration parity', () => {
