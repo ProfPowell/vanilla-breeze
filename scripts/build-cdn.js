@@ -124,10 +124,30 @@ function getThemeTier(themeId) {
   return 'community';
 }
 
+/**
+ * The cascade-layer order statement from src/main.css, verbatim.
+ *
+ * Standalone theme files self-declare @layer bundle-theme. A layer is ordered
+ * by its FIRST appearance in the document, so a theme <link> that precedes
+ * the bundle (the docs boot script document.writes the saved theme before
+ * the core stylesheet to avoid a flash) would otherwise declare bundle-theme
+ * first — and lowest. Prefixing the same order statement makes the file
+ * order-safe; a later identical statement in the bundle is a no-op.
+ *
+ * @returns {string}
+ */
+function layerOrderStatement() {
+  const main = readFileSync(join(SRC, 'main.css'), 'utf-8');
+  const match = main.match(/^@layer\s+[^;{]+;/m);
+  if (!match) throw new Error('src/main.css: layer order statement not found');
+  return match[0].replace(/\s+/g, ' ');
+}
+
 async function buildThemes() {
   const themesDir = join(SRC, 'tokens', 'themes');
   const outDir = join(CDN, 'themes');
   const manifest = {};
+  const layerOrder = layerOrderStatement();
 
   // DTCG sibling artifacts share the same loop. Imported lazily so a
   // serializer change doesn't reach build until the theme step runs.
@@ -165,6 +185,15 @@ async function buildThemes() {
     });
 
     const outPath = join(outDir, name);
+    // Order-safety prefix — see layerOrderStatement(). esbuild hoists the
+    // theme's font @imports to the top of its output, and @layer statements
+    // may not precede @import, so the prefix goes after them.
+    // Font URLs carry `;` inside their quotes (wght@400;700), so match the
+    // quoted string as a unit rather than scanning for the first `;`.
+    const built = readFileSync(outPath, 'utf-8');
+    const leadingImports = built.match(/^(?:@import\s*(?:url\()?\s*(?:"[^"]*"|'[^']*')[^;]*;\s*)*/)?.[0] ?? '';
+    writeFileSync(outPath, `${leadingImports}${layerOrder}${built.slice(leadingImports.length)}`);
+
     const size = statSync(outPath).size;
     const entry = {
       file: name,
