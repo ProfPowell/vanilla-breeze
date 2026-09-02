@@ -1,539 +1,758 @@
 /* ===========================================
    Docs Page Layout
    Scoped styles for data-page="docs"
+
+   Cascade: this file is site-level author CSS for the docs. It sits in
+   @layer utils — above every framework component layer, BELOW
+   @layer bundle-theme — so themes keep skinning the docs chrome
+   (heading rules, spacing, browser-window frames). Unlayered CSS would
+   beat the themes instead. The one deliberate theme override lives at
+   the end of the file, outside the layer.
    =========================================== */
 
-@scope ([data-page="docs"]) {
-  :scope {
-    overflow-x: clip;
-  }
+@layer utils {
+  @scope ([data-page="docs"]) {
+    :scope {
+      overflow-x: clip;
+    }
 
-  body {
-    min-block-size: 100dvh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    overflow-x: clip;
+    body {
+      min-block-size: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow-x: clip;
 
-    & > * {
+      & > * {
+        min-inline-size: 0;
+      }
+
+      /* Main content is width-constrained and centered */
+      & > main {
+        max-inline-size: min(var(--canvas-width, 100%), 100%);
+        justify-self: center;
+      }
+
+      /* Header stretches full viewport with edge padding */
+      & > header {
+        inline-size: 100%;
+        padding-inline: var(--size-l);
+      }
+
+      /* Footer content centered within canvas width */
+      & > footer {
+        inline-size: 100%;
+        padding-inline: max(var(--size-l), calc(50% - var(--canvas-width, 72rem) / 2));
+      }
+    }
+
+    body > header.site {
+      z-index: 1000;
+      flex-wrap: nowrap;
+
+      & theme-picker [data-trigger] {
+        padding: var(--size-xs) var(--size-s);
+        font-size: var(--font-size-sm);
+      }
+    }
+
+    /* Nav compresses gap and padding before wrapping */
+    body > header > nav {
+      flex: 1 1 0;
       min-inline-size: 0;
     }
 
-    /* Main content is width-constrained and centered */
-    & > main {
-      max-inline-size: min(var(--canvas-width, 100%), 100%);
-      justify-self: center;
+    body > header > nav > ul {
+      flex-wrap: nowrap;
+      gap: 0;
     }
 
-    /* Header stretches full viewport with edge padding */
-    & > header {
-      inline-size: 100%;
-      padding-inline: var(--size-l);
+    body > header > nav a {
+      padding-inline: var(--size-s);
+      white-space: nowrap;
     }
 
-    /* Footer content centered within canvas width */
-    & > footer {
+    /* Compress nav at intermediate widths before mobile kicks in */
+    @media (max-width: 60rem) {
+      body > header {
+        gap: var(--size-xs);
+      }
+      body > header > nav a {
+        padding-inline: var(--size-xs);
+      }
+      body > header site-tools {
+        gap: var(--size-2xs);
+      }
+    }
+
+    main {
+      padding: var(--size-xl) var(--size-l);
+      max-inline-size: min(var(--canvas-width, var(--content-wide)), 100%);
+      margin-inline: auto;
       inline-size: 100%;
-      padding-inline: max(var(--size-l), calc(50% - var(--canvas-width, 72rem) / 2));
+      box-sizing: border-box;
+      /* Keep horizontal clipping without turning main into a sticky-breaking scroll container. */
+      overflow-x: clip;
+
+      /* Reset content headers so they don't interfere with site header dropdowns */
+      & header {
+        position: static;
+        z-index: auto;
+      }
+
+      & > h1 {
+        margin-block-end: var(--size-s);
+      }
+
+      & > .lead {
+        font-size: var(--font-size-lg);
+        color: var(--color-text-muted);
+        margin-block-end: var(--size-xl);
+      }
+
+      & > section,
+      & > heading-links > section {
+        margin-block-start: var(--size-2xl);
+        padding-block-start: var(--size-xl);
+        border-block-start: var(--border-width-thin) solid var(--color-border-muted, var(--color-border));
+
+        &:first-of-type {
+          margin-block-start: 0;
+          padding-block-start: 0;
+          border-block-start: none;
+        }
+
+        & > h2 {
+          margin-block-end: var(--size-m);
+        }
+
+        & > h3 {
+          margin-block-start: var(--size-xl);
+          margin-block-end: var(--size-s);
+        }
+
+        & > h4 {
+          margin-block-start: var(--size-l);
+          margin-block-end: var(--size-s);
+        }
+
+        & > h5,
+        & > h6 {
+          margin-block-start: var(--size-m);
+          margin-block-end: var(--size-2xs);
+        }
+
+        & > p,
+        & > ul,
+        & > ol {
+          margin-block-end: var(--size-m);
+        }
+      }
+    }
+
+    /* Integration pages mix prose, card grids, tables, and embedded demos.
+       Without a unified width the page jumps between the full fluid canvas
+       (grids/tables ~1380px) and the narrow layout-text measure (~654px),
+       reading erratically. Pin one consistent content column so every block
+       aligns to the same edges. Scoped via the layout's data-path hook. */
+    main[data-path^="/docs/integrations/"] {
+      --canvas-width: var(--content-normal);
+
+      /* layout-text otherwise clamps prose to --measure-normal (65ch), far
+         narrower than the column — let it fill the shared column instead. */
+      & layout-text {
+        max-inline-size: none;
+      }
+    }
+
+    footer.minimal {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--size-xs);
+      padding-block: var(--size-xl);
+      border-block-start: var(--border-width-thin) solid var(--color-border);
+
+      & > nav {
+        display: flex;
+        align-items: center;
+        gap: var(--size-m);
+      }
+
+      & a:not(.button) {
+        color: var(--color-text-muted);
+        text-decoration: none;
+      }
+
+      & a:not(.button):hover {
+        color: var(--color-interactive);
+        text-decoration: underline;
+      }
+    }
+
+    pre {
+      max-inline-size: 100%;
+      overflow-x: auto;
+    }
+
+    article {
+      /* Reset border-styles.css auto-apply — this is layout chrome, not a content card */
+      border: none;
+      border-image: none;
+      box-shadow: none;
+      filter: none;
+      border-radius: 0;
+
+      & > h1 {
+        margin-block-end: var(--size-s);
+      }
+
+      & > .lead {
+        font-size: var(--font-size-lg);
+        color: var(--color-text-muted);
+        margin-block-end: var(--size-xl);
+      }
+
+      & section {
+        margin-block-start: var(--size-2xl);
+        padding-block-start: var(--size-xl);
+        border-block-start: var(--border-width-thin) solid var(--color-border-muted, var(--color-border));
+
+        &:first-of-type {
+          margin-block-start: 0;
+          padding-block-start: 0;
+          border-block-start: none;
+        }
+
+        & > h2 {
+          margin-block-end: var(--size-m);
+        }
+
+        & > h3 {
+          margin-block-start: var(--size-xl);
+          margin-block-end: var(--size-s);
+        }
+
+        & > h4 {
+          margin-block-start: var(--size-l);
+          margin-block-end: var(--size-s);
+        }
+
+        & > h5,
+        & > h6 {
+          margin-block-start: var(--size-m);
+          margin-block-end: var(--size-2xs);
+        }
+
+        & > p,
+        & > ul,
+        & > ol {
+          margin-block-end: var(--size-m);
+        }
+      }
+
+      /* Bare headings in heading-links (pages without section wrappers) */
+      & heading-links > h2 {
+        margin-block-start: var(--size-2xl);
+        padding-block-start: var(--size-xl);
+        border-block-start: var(--border-width-thin) solid var(--color-border-muted, var(--color-border));
+        margin-block-end: var(--size-m);
+
+        &:first-child {
+          margin-block-start: 0;
+          padding-block-start: 0;
+          border-block-start: none;
+        }
+      }
+
+      & heading-links > h3 {
+        margin-block-start: var(--size-xl);
+        margin-block-end: var(--size-s);
+      }
+
+      & heading-links > h4 {
+        margin-block-start: var(--size-l);
+        margin-block-end: var(--size-s);
+      }
+
+      & heading-links > h5,
+      & heading-links > h6 {
+        margin-block-start: var(--size-m);
+        margin-block-end: var(--size-2xs);
+      }
+
+      & heading-links > p,
+      & heading-links > ul,
+      & heading-links > ol {
+        margin-block-end: var(--size-m);
+      }
     }
   }
 
-  body > header.site {
-    z-index: 1000;
-    flex-wrap: nowrap;
+  /* ===========================================
+     Canvas Backdrop Fixes for Doc Pages
+     (Outside @scope — :root selectors need document-level matching)
+     =========================================== */
 
-    & theme-picker [data-trigger] {
-      padding: var(--size-xs) var(--size-s);
+  /* Alignment: center header/footer to match centered main */
+  :root[data-page="docs"][data-backdrop] > body > header,
+  :root[data-page="docs"][data-backdrop] > body > footer {
+    max-inline-size: var(--canvas-width, 72rem);
+    justify-self: center;
+  }
+
+  /* Fixed header: make body the scroll container so sticky works across grid rows */
+  :root[data-page="docs"][data-backdrop-chrome~="fixed"] > body {
+    overflow-y: auto;
+    max-block-size: 100dvh;
+  }
+
+  :root[data-page="docs"][data-backdrop-chrome~="fixed"] > body > header {
+    position: sticky;
+    inset-block-start: 0;
+  }
+
+  /* Smart sticky: override position:relative when sticky system is active */
+  :root[data-sticky][data-page="docs"] > body {
+    overflow-y: auto;
+    max-block-size: 100dvh;
+    scroll-padding-block-start: calc(var(--sticky-offset, 0px) + var(--sticky-gap, 0px));
+  }
+
+  :root[data-sticky][data-page="docs"] > body > header {
+    position: sticky;
+    inset-block-start: 0;
+    /* Themes can opt into a more opaque or frosted header. Defaults preserve
+       the prior translucent --color-surface look but expose --header-bg and
+       --header-backdrop hooks so themes like glassmorphism can apply
+       backdrop-filter without losing legibility against gradient bodies. */
+    background: var(--header-bg, var(--color-surface));
+    backdrop-filter: var(--header-backdrop, none);
+    -webkit-backdrop-filter: var(--header-backdrop, none);
+    border-block-end: var(--header-border-block-end, none);
+  }
+
+  /* ===========================================
+     Reusable Documentation Components
+     =========================================== */
+
+  .section-card {
+    display: block;
+    padding: var(--size-l);
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:hover {
+      border-color: var(--color-interactive);
+      box-shadow: 0 4px 12px oklch(0% 0 0 / 0.1);
+    }
+
+    & h2,
+    & h3 {
+      font-size: var(--font-size-lg);
+      margin-block-end: var(--size-xs);
+    }
+
+    & p {
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+  }
+
+  .section-card.featured {
+    border: 2px solid var(--color-primary);
+  }
+
+  .feature-box {
+    padding: var(--size-l);
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-m);
+    border: var(--border-width-thin) solid var(--color-border);
+
+    & h3 {
+      font-size: var(--font-size-lg);
+      margin-block-end: var(--size-s);
+    }
+
+    & ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    & li {
+      padding-block: var(--size-2xs);
       font-size: var(--font-size-sm);
     }
   }
 
-  /* Nav compresses gap and padding before wrapping */
-  body > header > nav {
-    flex: 1 1 0;
-    min-inline-size: 0;
-  }
+  .breadcrumb {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-block-end: var(--size-m);
 
-  body > header > nav > ul {
-    flex-wrap: nowrap;
-    gap: 0;
-  }
-
-  body > header > nav a {
-    padding-inline: var(--size-s);
-    white-space: nowrap;
-  }
-
-  /* Compress nav at intermediate widths before mobile kicks in */
-  @media (max-width: 60rem) {
-    body > header {
-      gap: var(--size-xs);
-    }
-    body > header > nav a {
-      padding-inline: var(--size-xs);
-    }
-    body > header site-tools {
-      gap: var(--size-2xs);
-    }
-  }
-
-  main {
-    padding: var(--size-xl) var(--size-l);
-    max-inline-size: min(var(--canvas-width, var(--content-wide)), 100%);
-    margin-inline: auto;
-    inline-size: 100%;
-    box-sizing: border-box;
-    /* Keep horizontal clipping without turning main into a sticky-breaking scroll container. */
-    overflow-x: clip;
-
-    /* Reset content headers so they don't interfere with site header dropdowns */
-    & header {
-      position: static;
-      z-index: auto;
-    }
-
-    & > h1 {
-      margin-block-end: var(--size-s);
-    }
-
-    & > .lead {
-      font-size: var(--font-size-lg);
-      color: var(--color-text-muted);
-      margin-block-end: var(--size-xl);
-    }
-
-    & > section,
-    & > heading-links > section {
-      margin-block-start: var(--size-2xl);
-      padding-block-start: var(--size-xl);
-      border-block-start: var(--border-width-thin) solid var(--color-border-muted, var(--color-border));
-
-      &:first-of-type {
-        margin-block-start: 0;
-        padding-block-start: 0;
-        border-block-start: none;
-      }
-
-      & > h2 {
-        margin-block-end: var(--size-m);
-      }
-
-      & > h3 {
-        margin-block-start: var(--size-xl);
-        margin-block-end: var(--size-s);
-      }
-
-      & > h4 {
-        margin-block-start: var(--size-l);
-        margin-block-end: var(--size-s);
-      }
-
-      & > h5,
-      & > h6 {
-        margin-block-start: var(--size-m);
-        margin-block-end: var(--size-2xs);
-      }
-
-      & > p,
-      & > ul,
-      & > ol {
-        margin-block-end: var(--size-m);
-      }
-    }
-  }
-
-  /* Integration pages mix prose, card grids, tables, and embedded demos.
-     Without a unified width the page jumps between the full fluid canvas
-     (grids/tables ~1380px) and the narrow layout-text measure (~654px),
-     reading erratically. Pin one consistent content column so every block
-     aligns to the same edges. Scoped via the layout's data-path hook. */
-  main[data-path^="/docs/integrations/"] {
-    --canvas-width: var(--content-normal);
-
-    /* layout-text otherwise clamps prose to --measure-normal (65ch), far
-       narrower than the column — let it fill the shared column instead. */
-    & layout-text {
-      max-inline-size: none;
-    }
-  }
-
-  footer.minimal {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--size-xs);
-    padding-block: var(--size-xl);
-    border-block-start: var(--border-width-thin) solid var(--color-border);
-
-    & > nav {
-      display: flex;
-      align-items: center;
-      gap: var(--size-m);
-    }
-
-    & a:not(.button) {
+    & a {
+      display: inline;
+      padding: 0;
       color: var(--color-text-muted);
       text-decoration: none;
+
+      &:hover {
+        color: var(--color-text);
+      }
     }
 
-    & a:not(.button):hover {
-      color: var(--color-interactive);
-      text-decoration: underline;
+    & span {
+      display: inline;
     }
   }
 
-  pre {
-    max-inline-size: 100%;
-    overflow-x: auto;
-  }
-
-  article {
-    /* Reset border-styles.css auto-apply — this is layout chrome, not a content card */
-    border: none;
-    border-image: none;
-    box-shadow: none;
-    filter: none;
-    border-radius: 0;
-
-    & > h1 {
-      margin-block-end: var(--size-s);
-    }
-
-    & > .lead {
-      font-size: var(--font-size-lg);
-      color: var(--color-text-muted);
-      margin-block-end: var(--size-xl);
-    }
-
-    & section {
-      margin-block-start: var(--size-2xl);
-      padding-block-start: var(--size-xl);
-      border-block-start: var(--border-width-thin) solid var(--color-border-muted, var(--color-border));
-
-      &:first-of-type {
-        margin-block-start: 0;
-        padding-block-start: 0;
-        border-block-start: none;
-      }
-
-      & > h2 {
-        margin-block-end: var(--size-m);
-      }
-
-      & > h3 {
-        margin-block-start: var(--size-xl);
-        margin-block-end: var(--size-s);
-      }
-
-      & > h4 {
-        margin-block-start: var(--size-l);
-        margin-block-end: var(--size-s);
-      }
-
-      & > h5,
-      & > h6 {
-        margin-block-start: var(--size-m);
-        margin-block-end: var(--size-2xs);
-      }
-
-      & > p,
-      & > ul,
-      & > ol {
-        margin-block-end: var(--size-m);
-      }
-    }
-
-    /* Bare headings in heading-links (pages without section wrappers) */
-    & heading-links > h2 {
-      margin-block-start: var(--size-2xl);
-      padding-block-start: var(--size-xl);
-      border-block-start: var(--border-width-thin) solid var(--color-border-muted, var(--color-border));
-      margin-block-end: var(--size-m);
-
-      &:first-child {
-        margin-block-start: 0;
-        padding-block-start: 0;
-        border-block-start: none;
-      }
-    }
-
-    & heading-links > h3 {
-      margin-block-start: var(--size-xl);
-      margin-block-end: var(--size-s);
-    }
-
-    & heading-links > h4 {
-      margin-block-start: var(--size-l);
-      margin-block-end: var(--size-s);
-    }
-
-    & heading-links > h5,
-    & heading-links > h6 {
-      margin-block-start: var(--size-m);
-      margin-block-end: var(--size-2xs);
-    }
-
-    & heading-links > p,
-    & heading-links > ul,
-    & heading-links > ol {
-      margin-block-end: var(--size-m);
-    }
-  }
-}
-
-/* ===========================================
-   Canvas Backdrop Fixes for Doc Pages
-   (Outside @scope — :root selectors need document-level matching)
-   =========================================== */
-
-/* Alignment: center header/footer to match centered main */
-:root[data-page="docs"][data-backdrop] > body > header,
-:root[data-page="docs"][data-backdrop] > body > footer {
-  max-inline-size: var(--canvas-width, 72rem);
-  justify-self: center;
-}
-
-/* Fixed header: make body the scroll container so sticky works across grid rows */
-:root[data-page="docs"][data-backdrop-chrome~="fixed"] > body {
-  overflow-y: auto;
-  max-block-size: 100dvh;
-}
-
-:root[data-page="docs"][data-backdrop-chrome~="fixed"] > body > header {
-  position: sticky;
-  inset-block-start: 0;
-}
-
-/* Smart sticky: override position:relative when sticky system is active */
-:root[data-sticky][data-page="docs"] > body {
-  overflow-y: auto;
-  max-block-size: 100dvh;
-  scroll-padding-block-start: calc(var(--sticky-offset, 0px) + var(--sticky-gap, 0px));
-}
-
-:root[data-sticky][data-page="docs"] > body > header {
-  position: sticky;
-  inset-block-start: 0;
-  /* Themes can opt into a more opaque or frosted header. Defaults preserve
-     the prior translucent --color-surface look but expose --header-bg and
-     --header-backdrop hooks so themes like glassmorphism can apply
-     backdrop-filter without losing legibility against gradient bodies. */
-  background: var(--header-bg, var(--color-surface));
-  backdrop-filter: var(--header-backdrop, none);
-  -webkit-backdrop-filter: var(--header-backdrop, none);
-  border-block-end: var(--header-border-block-end, none);
-}
-
-/* ===========================================
-   Reusable Documentation Components
-   =========================================== */
-
-.section-card {
-  display: block;
-  padding: var(--size-l);
-  background: var(--color-surface);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-m);
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
-
-  &:hover {
-    border-color: var(--color-interactive);
-    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.1);
-  }
-
-  & h2,
-  & h3 {
+  .step-intro {
     font-size: var(--font-size-lg);
-    margin-block-end: var(--size-xs);
-  }
-
-  & p {
     color: var(--color-text-muted);
-    margin: 0;
-  }
-}
-
-.section-card.featured {
-  border: 2px solid var(--color-primary);
-}
-
-.feature-box {
-  padding: var(--size-l);
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-m);
-  border: var(--border-width-thin) solid var(--color-border);
-
-  & h3 {
-    font-size: var(--font-size-lg);
-    margin-block-end: var(--size-s);
+    margin-block-end: var(--size-l);
   }
 
-  & ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  .example {
+    padding: var(--size-l);
+    background: var(--color-surface-raised);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-m);
+    margin-block: var(--size-m);
+
+    & + .example {
+      margin-block-start: var(--size-s);
+    }
   }
 
-  & li {
-    padding-block: var(--size-2xs);
+  .code-block {
+    background: var(--color-gray-900);
+    color: var(--color-gray-100);
+    padding: var(--size-m);
+    border-radius: var(--radius-m);
+    overflow-x: auto;
+    font-family: var(--font-mono);
     font-size: var(--font-size-sm);
   }
-}
 
-.breadcrumb {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  margin-block-end: var(--size-m);
+  .props-table {
+    inline-size: 100%;
+    margin-block: var(--size-l);
 
-  & a {
-    display: inline;
-    padding: 0;
-    color: var(--color-text-muted);
-    text-decoration: none;
+    & th {
+      text-align: start;
+      font-weight: 600;
+    }
 
-    &:hover {
-      color: var(--color-text);
+    & td code {
+      background: var(--color-surface-raised);
+      padding: var(--size-3xs) var(--size-2xs);
+      border-radius: var(--radius-s);
+      font-size: var(--font-size-sm);
     }
   }
 
-  & span {
-    display: inline;
+  .subnav {
+    margin-block-end: var(--size-xl);
+    padding-block-end: var(--size-m);
+    border-block-end: var(--border-width-thin) solid var(--color-border);
+
+    & ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--size-xs);
+      list-style: none;
+      padding: 0;
+    }
+
+    & a {
+      display: block;
+      padding: var(--size-xs) var(--size-s);
+      border-radius: var(--radius-s);
+      text-decoration: none;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+
+      &:hover {
+        background: var(--color-surface-raised);
+        color: var(--color-text);
+      }
+
+      &[aria-current="page"] {
+        background: var(--color-interactive);
+        color: white;
+      }
+    }
   }
-}
 
-.step-intro {
-  font-size: var(--font-size-lg);
-  color: var(--color-text-muted);
-  margin-block-end: var(--size-l);
-}
+  /* ===========================================
+     Demo Component Spacing
+     =========================================== */
 
-.example {
-  padding: var(--size-l);
-  background: var(--color-surface-raised);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-m);
-  margin-block: var(--size-m);
+  browser-window {
+    display: flex;
+    flex-direction: column;
+    margin-block: var(--size-m);
+  }
 
-  & + .example {
+  code-block {
+    display: block;
+    margin-block: var(--size-m);
+  }
+
+  /* Make browser-window demos resizable for responsive testing */
+  browser-window {
+    resize: both;
+    overflow: hidden;
+    min-inline-size: 280px;
+    min-block-size: 150px;
+    max-inline-size: 100%;
+  }
+
+  browser-window + code-block {
     margin-block-start: var(--size-s);
   }
-}
 
-.code-block {
-  background: var(--color-gray-900);
-  color: var(--color-gray-100);
-  padding: var(--size-m);
-  border-radius: var(--radius-m);
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
-}
-
-.props-table {
-  inline-size: 100%;
-  margin-block: var(--size-l);
-
-  & th {
-    text-align: start;
-    font-weight: 600;
+  /* Browser-window maximize — escape container-type stacking contexts
+     container-type: inline-size (from layout-attributes.css) creates stacking
+     contexts on main/article/section, trapping the maximized browser-window's
+     z-index: 9999 inside them. This breaks the overlay + maximize pattern. */
+  main:has(.browser-window-maximized),
+  article:has(.browser-window-maximized),
+  section:has(.browser-window-maximized) {
+    container-type: normal;
   }
 
-  & td code {
-    background: var(--color-surface-raised);
-    padding: var(--size-3xs) var(--size-2xs);
-    border-radius: var(--radius-s);
-    font-size: var(--font-size-sm);
+  body:has(.browser-window-maximized) > header {
+    z-index: auto;
   }
-}
 
-.subnav {
-  margin-block-end: var(--size-xl);
-  padding-block-end: var(--size-m);
-  border-block-end: var(--border-width-thin) solid var(--color-border);
+  browser-window.browser-window-maximized {
+    overflow: visible;
+  }
 
-  & ul {
-    display: flex;
-    flex-wrap: wrap;
+  /* External component token bridge is now in src/utils/external-components.css.
+   * Site-level overrides should go in theme files, not here. */
+
+  /* ===========================================
+     Mobile Menu — doc site overrides
+     (base styles are in the mobile-menu custom element)
+     =========================================== */
+
+  /* ===========================================
+     Nav Drawer Component
+     Checkbox-based drawer for sidebar navigation
+     =========================================== */
+
+  .nav-drawer-checkbox {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .nav-drawer-toggle {
+    display: none;
+    align-items: center;
     gap: var(--size-xs);
-    list-style: none;
-    padding: 0;
-  }
-
-  & a {
-    display: block;
     padding: var(--size-xs) var(--size-s);
+    margin-block-end: var(--size-m);
+    background: var(--color-surface);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-s);
-    text-decoration: none;
-    color: var(--color-text-muted);
     font-size: var(--font-size-sm);
+    color: var(--color-text);
+    cursor: pointer;
 
     &:hover {
       background: var(--color-surface-raised);
-      color: var(--color-text);
+      border-color: var(--color-interactive);
+    }
+  }
+
+  .nav-drawer-close {
+    display: none;
+  }
+
+  .nav-drawer-backdrop {
+    display: none;
+  }
+
+  /* ===========================================
+     Mobile Responsive
+     =========================================== */
+
+  @media (max-width: 52rem) { /* 832px — switch to mobile menu */
+    @scope ([data-page="docs"]) {
+      body > header {
+        flex-wrap: nowrap;
+        padding: var(--size-s) var(--size-m);
+      }
+
+      main {
+        padding: var(--size-l) var(--size-m);
+      }
     }
 
-    &[aria-current="page"] {
-      background: var(--color-interactive);
-      color: white;
+    /* Nav drawer mobile behavior */
+    .nav-drawer-toggle {
+      display: inline-flex;
     }
+
+    #nav-drawer {
+      position: fixed;
+      inset-block: 0;
+      inset-inline-start: 0;
+      inset-inline-end: auto;
+      inline-size: min(80vw, 300px);
+      background: var(--color-surface);
+      border-inline-end: var(--border-width-thin) solid var(--color-border);
+      box-shadow: 4px 0 24px oklch(0% 0 0 / 0.15);
+      overflow-y: auto;
+      padding: var(--size-m);
+      padding-block-start: var(--size-3xl);
+      z-index: 1001;
+      transform: translateX(-100%);
+      transition: transform var(--duration-normal) var(--ease-out);
+    }
+
+    .nav-drawer-close {
+      display: flex;
+      position: absolute;
+      inset-block-start: var(--size-s);
+      inset-inline-end: var(--size-s);
+      padding: var(--size-xs);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-s);
+      cursor: pointer;
+      color: var(--color-text-muted);
+
+      &:hover {
+        background: var(--color-surface-raised);
+        color: var(--color-text);
+      }
+    }
+
+    .nav-drawer-backdrop {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: oklch(0% 0 0 / 0.4);
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--duration-normal) var(--ease-out);
+    }
+
+    /* Checkbox state changes */
+    .nav-drawer-checkbox:checked {
+      & ~ layout-sidebar #nav-drawer {
+        transform: translateX(0);
+      }
+
+      & ~ .nav-drawer-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      & ~ .nav-drawer-toggle {
+        opacity: 0.5;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #nav-drawer,
+    .nav-drawer-backdrop {
+      transition: none;
+    }
+  }
+
+  /* ===========================================
+     Mobile Menu Sections
+     Nested navigation for mobile
+     =========================================== */
+
+  .mobile-menu .mobile-section {
+    margin-block: var(--size-xs);
+  }
+
+  .mobile-menu .mobile-section-title {
+    display: block;
+    padding: var(--size-xs) var(--size-m);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .mobile-menu .mobile-section-title[aria-current="true"] {
+    color: var(--color-interactive);
+  }
+
+  .mobile-menu .mobile-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .mobile-menu .mobile-section a {
+    padding-inline-start: var(--size-l);
+    font-size: var(--font-size-sm);
+  }
+
+  /* Pack badges — icon + text, outline style (distinct from solid category badges) */
+  .pack-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: var(--size-3xs) var(--size-xs);
+    border: var(--border-width-thin) solid var(--color-border-strong, oklch(60% 0 0));
+    border-radius: var(--radius-pill, 100px);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted);
+    background: transparent;
+    text-decoration: none;
+    vertical-align: middle;
+    white-space: nowrap;
+    transition: border-color 0.15s, color 0.15s;
+
+    & icon-wc {
+      --icon-size: 0.9em;
+    }
+  }
+
+  a.pack-badge:hover {
+    border-color: var(--color-interactive);
+    color: var(--color-interactive);
+  }
+
+  /* Pack badge in h1 context — slightly larger */
+  h1 .pack-badge {
+    font-size: var(--font-size-sm);
+    padding: var(--size-2xs) var(--size-s);
+  }
+
+  /* In card/entry contexts, don't stretch to full width */
+  .element-entry .pack-badge,
+  .attribute-entry .pack-badge {
+    align-self: flex-start;
   }
 }
 
 /* ===========================================
-   Demo Component Spacing
-   =========================================== */
-
-browser-window {
-  display: flex;
-  flex-direction: column;
-  margin-block: var(--size-m);
-}
-
-code-block {
-  display: block;
-  margin-block: var(--size-m);
-}
-
-/* Make browser-window demos resizable for responsive testing */
-browser-window {
-  resize: both;
-  overflow: hidden;
-  min-inline-size: 280px;
-  min-block-size: 150px;
-  max-inline-size: 100%;
-}
-
-browser-window + code-block {
-  margin-block-start: var(--size-s);
-}
-
-/* Browser-window maximize — escape container-type stacking contexts
-   container-type: inline-size (from layout-attributes.css) creates stacking
-   contexts on main/article/section, trapping the maximized browser-window's
-   z-index: 9999 inside them. This breaks the overlay + maximize pattern. */
-main:has(.browser-window-maximized),
-article:has(.browser-window-maximized),
-section:has(.browser-window-maximized) {
-  container-type: normal;
-}
-
-body:has(.browser-window-maximized) > header {
-  z-index: auto;
-}
-
-browser-window.browser-window-maximized {
-  overflow: visible;
-}
-
-/* External component token bridge is now in src/utils/external-components.css.
- * Site-level overrides should go in theme files, not here. */
-
-/* ===========================================
    Protect structural components from theme heading overrides.
-   Theme selectors [data-theme~="X"] :is(main, article) h3
-   have specificity (0,1,2). The [data-theme] prefix here
-   gives (0,2,1+) so these resets always win.
+   Deliberately UNLAYERED: themes live in @layer bundle-theme, so
+   unlayered author CSS beats them regardless of specificity. This
+   block is the one place the docs site overrides a theme on
+   purpose; everything else in this file sits in @layer utils so
+   themes can skin it.
    =========================================== */
 
 [data-theme] :is(.feature-card, .section-card, .feature-box) :is(h1, h2, h3, h4) {
@@ -566,212 +785,4 @@ browser-window.browser-window-maximized {
 [data-theme] .breadcrumb li::before {
   content: none;
   counter-increment: none;
-}
-
-/* ===========================================
-   Mobile Menu — doc site overrides
-   (base styles are in the mobile-menu custom element)
-   =========================================== */
-
-/* ===========================================
-   Nav Drawer Component
-   Checkbox-based drawer for sidebar navigation
-   =========================================== */
-
-.nav-drawer-checkbox {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.nav-drawer-toggle {
-  display: none;
-  align-items: center;
-  gap: var(--size-xs);
-  padding: var(--size-xs) var(--size-s);
-  margin-block-end: var(--size-m);
-  background: var(--color-surface);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-s);
-  font-size: var(--font-size-sm);
-  color: var(--color-text);
-  cursor: pointer;
-
-  &:hover {
-    background: var(--color-surface-raised);
-    border-color: var(--color-interactive);
-  }
-}
-
-.nav-drawer-close {
-  display: none;
-}
-
-.nav-drawer-backdrop {
-  display: none;
-}
-
-/* ===========================================
-   Mobile Responsive
-   =========================================== */
-
-@media (max-width: 52rem) { /* 832px — switch to mobile menu */
-  @scope ([data-page="docs"]) {
-    body > header {
-      flex-wrap: nowrap;
-      padding: var(--size-s) var(--size-m);
-    }
-
-    main {
-      padding: var(--size-l) var(--size-m);
-    }
-  }
-
-  /* Nav drawer mobile behavior */
-  .nav-drawer-toggle {
-    display: inline-flex;
-  }
-
-  #nav-drawer {
-    position: fixed;
-    inset-block: 0;
-    inset-inline-start: 0;
-    inset-inline-end: auto;
-    inline-size: min(80vw, 300px);
-    background: var(--color-surface);
-    border-inline-end: var(--border-width-thin) solid var(--color-border);
-    box-shadow: 4px 0 24px oklch(0% 0 0 / 0.15);
-    overflow-y: auto;
-    padding: var(--size-m);
-    padding-block-start: var(--size-3xl);
-    z-index: 1001;
-    transform: translateX(-100%);
-    transition: transform var(--duration-normal) var(--ease-out);
-  }
-
-  .nav-drawer-close {
-    display: flex;
-    position: absolute;
-    inset-block-start: var(--size-s);
-    inset-inline-end: var(--size-s);
-    padding: var(--size-xs);
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-s);
-    cursor: pointer;
-    color: var(--color-text-muted);
-
-    &:hover {
-      background: var(--color-surface-raised);
-      color: var(--color-text);
-    }
-  }
-
-  .nav-drawer-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: oklch(0% 0 0 / 0.4);
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--duration-normal) var(--ease-out);
-  }
-
-  /* Checkbox state changes */
-  .nav-drawer-checkbox:checked {
-    & ~ layout-sidebar #nav-drawer {
-      transform: translateX(0);
-    }
-
-    & ~ .nav-drawer-backdrop {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    & ~ .nav-drawer-toggle {
-      opacity: 0.5;
-    }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #nav-drawer,
-  .nav-drawer-backdrop {
-    transition: none;
-  }
-}
-
-/* ===========================================
-   Mobile Menu Sections
-   Nested navigation for mobile
-   =========================================== */
-
-.mobile-menu .mobile-section {
-  margin-block: var(--size-xs);
-}
-
-.mobile-menu .mobile-section-title {
-  display: block;
-  padding: var(--size-xs) var(--size-m);
-  font-weight: 600;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.mobile-menu .mobile-section-title[aria-current="true"] {
-  color: var(--color-interactive);
-}
-
-.mobile-menu .mobile-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.mobile-menu .mobile-section a {
-  padding-inline-start: var(--size-l);
-  font-size: var(--font-size-sm);
-}
-
-/* Pack badges — icon + text, outline style (distinct from solid category badges) */
-.pack-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-  padding: var(--size-3xs) var(--size-xs);
-  border: var(--border-width-thin) solid var(--color-border-strong, oklch(60% 0 0));
-  border-radius: var(--radius-pill, 100px);
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: var(--color-text-muted);
-  background: transparent;
-  text-decoration: none;
-  vertical-align: middle;
-  white-space: nowrap;
-  transition: border-color 0.15s, color 0.15s;
-
-  & icon-wc {
-    --icon-size: 0.9em;
-  }
-}
-
-a.pack-badge:hover {
-  border-color: var(--color-interactive);
-  color: var(--color-interactive);
-}
-
-/* Pack badge in h1 context — slightly larger */
-h1 .pack-badge {
-  font-size: var(--font-size-sm);
-  padding: var(--size-2xs) var(--size-s);
-}
-
-/* In card/entry contexts, don't stretch to full width */
-.element-entry .pack-badge,
-.attribute-entry .pack-badge {
-  align-self: flex-start;
 }
