@@ -111,3 +111,13 @@ Severity is **error**, matching `no-inline-style`. It can only go to error once 
 5. `qoi8` — layout `api.json` + doc pages, documenting the settled vocabulary.
 
 `syntax.md:741` and `syntax.md:1344` must be corrected as part of step 2 — the misleading ellipsis is what taught authors the API was open.
+
+## Amendment 2026-09-02 (vanilla-breeze-vqw8)
+
+The attribute-name questions this spec scoped out were decided:
+
+- `data-layout-min` keeps its per-axis meaning on grid and cover (this spec's table stands).
+- Gap vocabulary is the full scale — `none`, `3xs` … `3xl` — on every gap-bearing layout.
+- `--sidebar-width` defaults to `16rem`; `data-layout-sidebar-width` is `12 / 16 / 20rem` in every context.
+- Max-width keywords are `narrow | normal | wide | prose` on center, card and canvas (`content` removed).
+- Prefix rule: flow primitives take `data-layout-*`; surfaces (card, badge, canvas) take bare `data-*`.

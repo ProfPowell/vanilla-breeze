@@ -17,6 +17,25 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed (breaking)
 
+- **Layout attribute API made consistent** (vqw8):
+  - One gap scale everywhere: `none`, `3xs` … `3xl` on every gap-bearing
+    layout (cluster, grid, cover, sidebar, switcher, reel, split, media,
+    page-layout, body regions). Previously each layout accepted a random
+    subset.
+  - One sidebar width: `--sidebar-width` defaults to `16rem` and
+    `data-layout-sidebar-width` is `12 / 16 / 20rem` in every context
+    (layout-sidebar and page-layout `normal` were 15rem, grid identity 280px,
+    the page templates 250px).
+  - One max-width keyword set: `narrow | normal | wide | prose` on
+    layout-center, layout-card and canvas, mapped to `--content-*` tokens.
+    `content` is gone (card's read a token that never existed; card `wide`
+    was 90rem, now the shared 80rem).
+  - Prefix rule: flow primitives use `data-layout-*`; surfaces use bare
+    `data-*`. Canvas moves from `data-layout-max` / `data-layout-padding` to
+    `data-max` / `data-padding` to match card and badge.
+  - `data-layout-min` stays on both grid (column minimum) and cover (block
+    minimum), as the vocabulary spec already defines: the minimum on that
+    layout's principal axis.
 - **Layout element and attribute forms now share one rule set.** Eight
   layouts existed twice, as `layout-x/styles.css` and as a `[data-layout="x"]`
   block in `layout-attributes.css`, and the copies had drifted. Each now lives

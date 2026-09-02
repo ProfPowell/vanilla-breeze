@@ -723,7 +723,7 @@ Horizontal flexbox with wrapping.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-gap` | `none`, `xs`, `s`, `m`, `l`, `xl`, `2xl` | Gap between items |
+| `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between items |
 | `data-layout-justify` | `start`, `end`, `center`, `between` | Horizontal alignment |
 | `data-layout-align` | `start`, `end`, `center`, `stretch`, `baseline` | Vertical alignment |
 | `data-layout-nowrap` | (boolean) | Disable wrapping |
@@ -746,7 +746,7 @@ Auto-fit responsive grid.
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-layout-min` | `xs` \| `s` \| `m` \| `l` \| `xl` | Minimum column width (8/10/15/20/25rem). One-off: `style="--layout-min: 220px"` |
-| `data-layout-gap` | `none`, `xs`, `s`, `m`, `l`, `xl` | Gap between items |
+| `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between items |
 
 #### `<layout-cover>`
 Full-height container with centered principal element.
@@ -755,7 +755,7 @@ Full-height container with centered principal element.
 |-----------|--------|-------------|
 | `data-layout-min` | `s` \| `m` \| `l` \| `xl` \| `auto` | Minimum block size (50/70/80vh, 100dvh). One-off: `style="--layout-min: 65vh"` |
 | `data-layout-padding` | `none`, `s`, `m`, `l`, `xl` | Padding |
-| `data-layout-gap` | `s`, `m`, `l` | Gap between items |
+| `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between items |
 | `data-layout-nospace` | (boolean) | Remove padding |
 | `data-layout-centered` | (boolean) | Center items horizontally |
 
@@ -766,9 +766,9 @@ Two-column layout (sidebar + content).
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-gap` | `xs`, `s`, `m`, `l`, `xl`, `2xl` | Gap between columns |
+| `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between columns |
 | `data-layout-side` | `end` | Sidebar on right. `nav`/`aside` children are the sidebar and keep DOM order; with no `nav`/`aside` child the first child is the sidebar and the row is reversed |
-| `data-layout-sidebar-width` | `narrow`, `normal`, `wide` | Sidebar width |
+| `data-layout-sidebar-width` | `narrow`, `normal`, `wide` | Sidebar width (12 / 16 / 20rem — the same three values in every sidebar context; `--sidebar-width` token default 16rem) |
 | `data-layout-content-min` | `s` \| `m` \| `l` | Min content width (40/50/60%). One-off: `style="--layout-content-min: 45%"` |
 | `data-layout-nowrap` | (boolean) | Prevent stacking |
 
@@ -777,7 +777,7 @@ Flexbox that flips horizontal↔vertical based on available space.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-gap` | `none`, `xs`, `s`, `m`, `l`, `xl` | Gap |
+| `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap |
 | `data-layout-threshold` | `s` \| `m` \| `l` | Switch threshold (25/30/40rem). One-off: `style="--layout-threshold: 35rem"` |
 | `data-layout-limit` | `2`, `3`, `4` | Max items before vertical |
 | `data-layout-reverse` | (boolean) | Reverse when stacked |
@@ -787,7 +787,7 @@ Horizontal scrolling container with snap.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-gap` | `none`, `xs`, `s`, `m`, `l`, `xl` | Gap |
+| `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap |
 | `data-layout-padding` | `none`, `s`, `m`, `l` | Container padding |
 | `data-layout-item-width` | `auto`, `s`, `m`, `l`, `xl`, `full` | Item width |
 | `data-layout-align` | `start`, `center`, `end`, `stretch` | Vertical alignment |
@@ -824,7 +824,7 @@ Block container by default. Add `<header>`, `<section>`, or `<footer>` children 
 |-----------|--------|-------------|
 | `data-variant` | `elevated`, `outlined`, `ghost` | Visual style |
 | `data-padding` | `none`, `s`, `m`, `l`, `xl` | Internal padding (applies to grid area children in grid mode) |
-| `data-max` | `narrow`, `content`, `wide` | Max-width constraint |
+| `data-max` | `narrow`, `normal`, `wide`, `prose` | Max-width constraint (same keyword set as `layout-center` / canvas). Surfaces — card, badge, canvas — use bare `data-*`; flow primitives use `data-layout-*` |
 
 Grid mode children: `<header>`, `<section>`, `<footer>` map to grid areas. Use `slot="content"` for non-semantic elements.
 
