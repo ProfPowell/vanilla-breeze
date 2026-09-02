@@ -274,3 +274,100 @@ export function readLayoutVocabularyByElement(root = DEFAULT_ROOT) {
   }
   return out;
 }
+
+/**
+ * Vocabulary keyed by LAYOUT, for cross-context validation.
+ *
+ * readLayoutVocabulary() merges every layout's value set for an attribute
+ * into one — so data-layout-min="auto" passes on a grid because cover reads
+ * auto (vanilla-breeze-butz). This reader keeps the layout: it walks the
+ * same files, and for every rule whose host compound names a layout —
+ * `layout-grid`, `[data-layout="grid"]`, the prefix form
+ * `[data-layout^="body-"]` (key "body-*"), or `[data-page-layout]` (key
+ * "page-layout") — records the data-layout-* attributes read on that host.
+ *
+ * Child attributes (`> [data-layout-principal]`) are returned separately:
+ * they are read on a child of the layout, so they must not be validated
+ * against the child's own layout.
+ *
+ * @param {string} [root]
+ * @returns {{ byLayout: Map<string, Map<string, {values: Set<string>, bare: boolean}>>, childAttrs: Set<string> }}
+ *   byLayout keys are layout names without any prefix ("grid", "split",
+ *   "body-*", "page-layout"); inner keys are attribute names without the
+ *   "data-layout-" prefix, matching readLayoutVocabulary().
+ */
+export function readLayoutVocabularyByLayout(root = DEFAULT_ROOT) {
+  const byLayout = new Map();
+  const childAttrs = new Set();
+  const record = (layout, attr, value) => {
+    if (!byLayout.has(layout)) byLayout.set(layout, new Map());
+    const m = byLayout.get(layout);
+    if (!m.has(attr)) m.set(attr, { values: new Set(), bare: false });
+    if (value == null) m.get(attr).bare = true;
+    else m.get(attr).values.add(value);
+  };
+  const layoutAttrsIn = (text) =>
+    [...text.matchAll(/\[data-layout-([a-z-]+)(?:="([^"]*)")?\]/g)].map((m) => [m[1], m[2]]);
+  const layoutsIn = (compound) => {
+    const found = new Set();
+    for (const [, name] of compound.matchAll(/\[data-layout="([a-z-]+)"\]/g)) found.add(name);
+    for (const [, prefix] of compound.matchAll(/\[data-layout\^="([a-z-]+)"\]/g)) found.add(`${prefix}*`);
+    for (const [, name] of compound.matchAll(/(?:^|[\s(,])layout-([a-z]+)(?=$|[\[\s,:)>])/g)) found.add(name);
+    if (/\[data-page-layout(?:=|\])/.test(compound)) found.add('page-layout');
+    return found;
+  };
+  const splitTop = (text, seps) => {
+    const parts = [];
+    let depth = 0; let cur = '';
+    for (const ch of text) {
+      if (ch === '(' || ch === '[') depth++;
+      else if (ch === ')' || ch === ']') depth--;
+      if (depth === 0 && seps.includes(ch)) { parts.push(cur); cur = ''; continue; }
+      cur += ch;
+    }
+    parts.push(cur);
+    return parts.map((p) => p.trim()).filter(Boolean);
+  };
+  const compounds = (sel) => splitTop(sel.replace(/\s*([>+~])\s*/g, ' $1 '), [' '])
+    .filter((c) => !['>', '+', '~'].includes(c));
+
+  for (const file of vocabularyFiles(root)) {
+    const css = stripComments(readFileSync(file, 'utf8'));
+    const stack = [];
+    let buf = '';
+    for (const ch of css) {
+      if (ch === '{') {
+        const raw = buf.trim().replace(/\s+/g, ' ');
+        buf = '';
+        if (raw.startsWith('@')) { stack.push(null); continue; }
+        const parents = stack.filter(Boolean).at(-1) ?? [''];
+        const resolved = [];
+        for (const parent of parents) {
+          for (const part of splitTop(raw, [','])) {
+            resolved.push(part.includes('&') ? part.replaceAll('&', parent) : (parent ? `${parent} ${part}` : part));
+          }
+        }
+        stack.push(resolved);
+        for (const sel of resolved) {
+          const comps = compounds(sel);
+          const hostIdx = comps.findIndex((c) => layoutsIn(c).size);
+          if (hostIdx === -1) continue;
+          for (const layout of layoutsIn(comps[hostIdx])) {
+            for (const [a, v] of layoutAttrsIn(comps[hostIdx])) record(layout, a, v);
+          }
+          for (const c of comps.slice(hostIdx + 1)) {
+            for (const [a] of layoutAttrsIn(c)) childAttrs.add(a);
+          }
+        }
+      } else if (ch === '}') {
+        stack.pop();
+        buf = '';
+      } else if (ch === ';' && !buf.includes('{')) {
+        buf = '';
+      } else {
+        buf += ch;
+      }
+    }
+  }
+  return { byLayout, childAttrs };
+}

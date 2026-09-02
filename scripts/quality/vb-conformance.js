@@ -25,7 +25,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, resolve, relative, extname } from 'path';
 import { execSync } from 'child_process';
 import { parseHTML } from 'linkedom';
-import { readLayoutVocabulary, readPresenceAttrs, ESCAPE_HATCH_PROPS } from './layout-vocabulary.js';
+import { readLayoutVocabulary, readLayoutVocabularyByLayout, readPresenceAttrs, ESCAPE_HATCH_PROPS } from './layout-vocabulary.js';
 
 const args = process.argv.slice(2);
 const ciMode = args.includes('--ci');
@@ -55,6 +55,41 @@ const layoutVocabulary = readLayoutVocabulary(projectRoot);
 // [data-layout-centered], with no ="..."). No value is a no-op for these —
 // skip vocabulary validation for them entirely. See layout-vocabulary.js.
 const presenceLayoutAttrs = readPresenceAttrs(projectRoot);
+
+// Per-layout vocabulary (vanilla-breeze-butz). The merged map above accepts
+// any value some layout reads: data-layout-min="auto" passes on a grid because
+// cover reads auto, and grid's CSS silently falls back to its default. When an
+// element's layout can be resolved from its own tag, validate against that
+// layout's value set instead. Child attributes (data-layout-principal, …) are
+// read on a child of some other layout, so they always use the merged check.
+const { byLayout: layoutVocabularyByLayout, childAttrs: layoutChildAttrs } =
+  readLayoutVocabularyByLayout(projectRoot);
+
+/**
+ * The layout keys an element belongs to, from its own tag text: <layout-x>
+ * is "x"; data-layout="x" is "x" plus any prefix key it matches ("body-*"
+ * for the body region layouts, whose exact key holds the template and the
+ * prefix key holds the shared gap rules); a data-page-layout host is
+ * "page-layout". Empty when the tag names no layout the CSS knows, in which
+ * case the merged vocabulary applies.
+ *
+ * @param {string} tag - the opening tag text, `<` through `>`
+ * @returns {string[]}
+ */
+function resolveLayouts(tag) {
+  const keys = [];
+  const name = /^<layout-([a-z]+)/.exec(tag)?.[1];
+  if (name && layoutVocabularyByLayout.has(name)) keys.push(name);
+  const value = /\sdata-layout="([a-z-]+)"/.exec(tag)?.[1];
+  if (value) {
+    if (layoutVocabularyByLayout.has(value)) keys.push(value);
+    for (const k of layoutVocabularyByLayout.keys()) {
+      if (k.endsWith('*') && value.startsWith(k.slice(0, -1))) keys.push(k);
+    }
+  }
+  if (/\sdata-page-layout(?:=|\s|>|\/)/.test(tag)) keys.push('page-layout');
+  return keys;
+}
 
 // Check if file is tracked in git (existing) vs untracked (new)
 function isNewFile(filePath) {
@@ -117,6 +152,26 @@ function checkFile(filePath) {
 
   const lines = content.split('\n');
   const issues = [];
+  // Absolute offset of each line start, for reading a whole opening tag
+  // (which may span lines) around a match found on one line.
+  const lineOffsets = [];
+  for (let i = 0, off = 0; i < lines.length; i++) {
+    lineOffsets.push(off);
+    off += lines[i].length + 1;
+  }
+  /** The opening tag `<…>` that contains the given absolute offset, or ''. */
+  const tagAround = (offset) => {
+    const start = content.lastIndexOf('<', offset);
+    if (start === -1) return '';
+    const end = content.indexOf('>', start);
+    // The match must sit INSIDE the tag: if the nearest `<` closed before the
+    // match, the match is text content — typically escaped markup in a
+    // <pre>/<code-block> (`&lt;section data-layout="grid"&gt;`), where the
+    // nearest real tag is the <pre> itself and would resolve to nonsense.
+    if (end === -1 || end < offset) return '';
+    const tag = content.slice(start, end + 1);
+    return /^<[a-zA-Z]/.test(tag) ? tag : '';
+  };
   const isNew = isNewFile(filePath);
   const relPath = relative(projectRoot, resolve(filePath));
 
@@ -206,8 +261,13 @@ function checkFile(filePath) {
     // element wrapping a styled child), and a bare `.match()` here used to
     // return only the first, so an exempt first style attribute silently
     // exempted the rest of the line too.
-    if (!/<(meta|link)/i.test(line)) {
-      for (const styleMatch of line.matchAll(/\sstyle="([^"]+)"/gi)) {
+    // The <meta>/<link> exemption is scoped to the tag carrying the style
+    // attribute, not the whole line: a line-level guard let any element that
+    // shared a line with a <link> carry inline styles unreported (lp55).
+    for (const styleMatch of line.matchAll(/\sstyle="([^"]+)"/gi)) {
+      {
+        const tag = tagAround(lineOffsets[lineNum - 1] + styleMatch.index);
+        if (/^<(meta|link)\b/i.test(tag)) continue;
         const declarations = styleMatch[1]
           .split(';')
           .map((d) => d.trim())
@@ -243,6 +303,51 @@ function checkFile(filePath) {
       // exactly as valid as bare data-layout-centered. See
       // readPresenceAttrs for why this isn't just "no CSS uses ="".
       if (presenceLayoutAttrs.has(attr)) continue;
+
+      // Prefer the vocabulary of THIS element's layout. Falls back to the
+      // merged map for child attributes and for elements whose layout the
+      // tag does not name.
+      const layouts = layoutChildAttrs.has(attr)
+        ? []
+        : resolveLayouts(tagAround(lineOffsets[lineNum - 1] + m.index));
+      if (layouts.length) {
+        // The first candidate that reads this attribute wins; the accepted
+        // attribute list in the message is the union across candidates.
+        const layout = layouts.find((k) => layoutVocabularyByLayout.get(k)?.has(attr)) ?? layouts[0];
+        const scoped = new Map(layouts.flatMap((k) => [...(layoutVocabularyByLayout.get(k) ?? [])]));
+        const entry = layoutVocabularyByLayout.get(layout)?.get(attr);
+        if (entry && entry.values.size === 0) continue; // presence-only on this layout
+        if (!entry) {
+          const others = [...layoutVocabularyByLayout.entries()]
+            .filter(([, attrs]) => attrs.has(attr))
+            .map(([name]) => name);
+          issues.push({
+            line: lineNum,
+            col: line.indexOf(m[0]) + 1,
+            rule: 'vb/layout-attr-value',
+            severity: severity('vb/layout-attr-value', 'error-new'),
+            message:
+              `data-layout-${attr} is not read by the ${layout} layout` +
+              (others.length ? ` (it belongs to ${others.sort().join(', ')})` : '') +
+              `. It does nothing here; ${layout} accepts: ${[...scoped.keys()].sort().map((a) => `data-layout-${a}`).join(', ')}.`,
+          });
+          continue;
+        }
+        if (!entry.values.has(value)) {
+          const hasEscapeHatch = ESCAPE_HATCH_PROPS.has(`--layout-${attr}`);
+          issues.push({
+            line: lineNum,
+            col: line.indexOf(m[0]) + 1,
+            rule: 'vb/layout-attr-value',
+            severity: severity('vb/layout-attr-value', 'error-new'),
+            message:
+              `data-layout-${attr}="${value}" is not in the ${layout} vocabulary (${[...entry.values].sort().join(', ')}). ` +
+              `Unknown values fall back to the default silently.` +
+              (hasEscapeHatch ? ` For a one-off, use style="--layout-${attr}: ${value}".` : ''),
+          });
+        }
+        continue;
+      }
 
       const known = layoutVocabulary.get(attr);
       // Only three attributes have a documented custom-property escape
@@ -280,14 +385,18 @@ function checkFile(filePath) {
     // documented form-field contract — form-field's logic.js looks for
     // output.error to identify the validation message element. Those are
     // discriminator classes, not state classes. Skip <output> entirely.
-    const classAttrMatch = !/<output\b/i.test(line) && line.match(/\bclass="([^"]+)"/);
-    if (classAttrMatch) {
+    // Every class attribute on the line, each judged by its own tag: the
+    // <output> exemption used to test the whole line, and only the first
+    // class attribute was ever examined (lp55).
+    for (const classAttrMatch of line.matchAll(/\bclass="([^"]+)"/g)) {
+      const tag = tagAround(lineOffsets[lineNum - 1] + classAttrMatch.index);
+      if (/^<output\b/i.test(tag)) continue;
       const tokens = classAttrMatch[1].split(/\s+/).filter(Boolean);
       const stateClass = tokens.find(t => STATE_CLASSES.includes(t.toLowerCase()));
       if (stateClass) {
         issues.push({
           line: lineNum,
-          col: line.indexOf(stateClass),
+          col: line.indexOf(stateClass, classAttrMatch.index),
           rule: 'vb/no-class-for-state',
           severity: severity('vb/no-class-for-state', 'warn'),
           message: `Class "${stateClass}" represents state. Use data-${stateClass} or data-state="${stateClass}" instead.`
@@ -316,10 +425,15 @@ function checkFile(filePath) {
     // or aria-hidden="true" (declares "this is decorative, no AT involvement").
     // Both signal the author knows what they're doing with this SVG; the rule
     // is only there to nudge people away from inlining icons.
-    if (/<svg[\s>]/i.test(line) && !/<svg[^>]*role="img"/i.test(line) && !/<svg[^>]*aria-hidden="true"/i.test(line)) {
+    // Each <svg> on the line is judged by its own opening tag (which may
+    // continue on following lines), not by whether any svg on the line
+    // carries the opt-out (lp55).
+    for (const svgMatch of line.matchAll(/<svg[\s>]/gi)) {
+      const tag = tagAround(lineOffsets[lineNum - 1] + svgMatch.index + 1);
+      if (/\srole="img"/i.test(tag) || /\saria-hidden="true"/i.test(tag)) continue;
       issues.push({
         line: lineNum,
-        col: line.indexOf('<svg') + 1,
+        col: svgMatch.index + 1,
         rule: 'vb/icon-wc-required',
         severity: severity('vb/icon-wc-required', 'error-new'),
         message: 'Use <icon-wc name="..."/> instead of inline SVG.'

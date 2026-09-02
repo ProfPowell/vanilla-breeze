@@ -18,8 +18,24 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   badges using `data-variant` for a color. Every layout element's doc page
   attribute table is regenerated from its manifest.
 
+### Fixed
+
+- 30 media containers in demos and docs used `data-layout-ratio` on
+  `[data-media]`, which reads `data-ratio`; the aspect ratio never applied.
+  Found by the per-layout conformance check below.
+
 ### Internal
 
+- `vb/layout-attr-value` now validates each `data-layout-*` value against
+  the vocabulary of the element's own layout (resolved from `<layout-x>`,
+  `data-layout="x"` or `data-page-layout`), instead of the union across all
+  layouts — `data-layout-min="auto"` on a grid is now caught. Child
+  attributes and elements naming no layout fall back to the merged check.
+- Conformance guards that tested a whole line now judge the tag they
+  examine: a styled element sharing a line with a `<link>`, a state class
+  beside an `<output>`, or a second `<svg>` on a line are no longer exempt.
+- `check:api-drift` no longer claims tab-set manages `aria-selected`; it
+  manages `aria-expanded` on its summaries by design.
 - `context-menu` and `drop-down` reset themed button styling on their items
   through their own stylesheets (`!important` in the component layer) instead
   of inline styles written by JavaScript. The nav active-item `!important`

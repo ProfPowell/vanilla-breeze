@@ -62,6 +62,55 @@ describe('vb/layout-attr-value', () => {
   });
 });
 
+describe('vb/layout-attr-value is keyed per layout (butz)', () => {
+  // data-layout-min is read by grid (xs…xl) AND cover (s…xl, auto). The
+  // merged vocabulary accepted auto on a grid, where the CSS has no auto
+  // branch and silently falls back to 15rem.
+  it('rejects a value another layout reads but this one does not', () => {
+    const out = check('<section data-layout="grid" data-layout-min="auto">x</section>');
+    assert.match(out, /vb\/layout-attr-value/, out);
+    assert.match(out, /grid vocabulary/, out);
+  });
+  it('accepts the same value on the layout that reads it', () => {
+    const out = check('<section data-layout="cover" data-layout-min="auto">x</section>');
+    assert.ok(!out.includes('vb/layout-attr-value'), out);
+  });
+  it('resolves the layout from the custom element name too', () => {
+    const bad = check('<layout-grid data-layout-min="auto">x</layout-grid>');
+    assert.match(bad, /vb\/layout-attr-value/, bad);
+    const good = check('<layout-cover data-layout-min="auto">x</layout-cover>');
+    assert.ok(!good.includes('vb/layout-attr-value'), good);
+  });
+  it('flags an attribute this layout never reads, naming who does', () => {
+    const out = check('<section data-layout="stack" data-layout-justify="center">x</section>');
+    assert.match(out, /not read by the stack layout/, out);
+    assert.match(out, /cluster/, out);
+  });
+  it('reads the whole opening tag when it spans lines', () => {
+    const out = check('<section\n  data-layout="grid"\n  data-layout-min="auto">x</section>');
+    assert.match(out, /vb\/layout-attr-value/, out);
+  });
+  it('does not validate a child attribute against the child\'s own layout', () => {
+    // data-layout-principal is read by the parent cover on its child; the
+    // child being a stack must not turn it into "not read by stack".
+    const out = check('<section data-layout="cover"><section data-layout="stack" data-layout-principal>x</section></section>');
+    assert.ok(!out.includes('vb/layout-attr-value'), out);
+  });
+  it('falls back to the merged vocabulary when the tag names no layout', () => {
+    // A child attribute on a plain element: known attribute, no layout.
+    const good = check('<section data-layout="sidebar"><nav data-layout-sticky>x</nav><main>y</main></section>');
+    assert.ok(!good.includes('vb/layout-attr-value'), good);
+    const bad = check('<section data-layout-gap="huge">x</section>');
+    assert.match(bad, /vb\/layout-attr-value/, bad);
+  });
+  it('maps body region layouts onto the body-* prefix rules', () => {
+    const good = check('<body data-layout="body-holy-grail" data-layout-gap="m">x</body>');
+    assert.ok(!good.includes('vb/layout-attr-value'), good);
+    const bad = check('<body data-layout="body-holy-grail" data-layout-gap="huge">x</body>');
+    assert.match(bad, /vb\/layout-attr-value/, bad);
+  });
+});
+
 describe('vb/layout-attr-value presence-only attributes', () => {
   it('accepts a presence attribute with no value at all', () => {
     const out = check('<section data-layout="cover" data-layout-centered>x</section>');
