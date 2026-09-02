@@ -723,7 +723,7 @@ Horizontal flexbox with wrapping.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-gap` | `xs`, `s`, `m`, `l`, `xl` | Gap between items |
+| `data-layout-gap` | `none`, `xs`, `s`, `m`, `l`, `xl`, `2xl` | Gap between items |
 | `data-layout-justify` | `start`, `end`, `center`, `between` | Horizontal alignment |
 | `data-layout-align` | `start`, `end`, `center`, `stretch`, `baseline` | Vertical alignment |
 | `data-layout-nowrap` | (boolean) | Disable wrapping |
@@ -766,8 +766,8 @@ Two-column layout (sidebar + content).
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-gap` | `xs`, `s`, `m`, `l`, `xl` | Gap between columns |
-| `data-layout-side` | `end` | Sidebar on right |
+| `data-layout-gap` | `xs`, `s`, `m`, `l`, `xl`, `2xl` | Gap between columns |
+| `data-layout-side` | `end` | Sidebar on right. `nav`/`aside` children are the sidebar and keep DOM order; with no `nav`/`aside` child the first child is the sidebar and the row is reversed |
 | `data-layout-sidebar-width` | `narrow`, `normal`, `wide` | Sidebar width |
 | `data-layout-content-min` | `s` \| `m` \| `l` | Min content width (40/50/60%). One-off: `style="--layout-content-min: 45%"` |
 | `data-layout-nowrap` | (boolean) | Prevent stacking |
@@ -806,7 +806,14 @@ Positioning helper for overlays.
 #### `<layout-text>`
 Content container with optimal line-length and vertical rhythm. Default max-width: 65ch.
 
-No data attributes — applies typographic spacing rules automatically.
+`layout-text/styles.css` owns the typographic core shared with `<layout-columns>`, `[data-layout="columns"]` and `[data-layout="prose"]`: measure, `--prose-line-height`, vertical rhythm, `[data-bleed]` breakout and the narrow-container width release.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-layout-measure` / `data-layout-max` | `narrow`, `normal`, `wide` | Measure (`--measure-narrow` 45ch / `--measure-normal` 65ch / `--measure-wide` 80ch). Both spellings accepted on every text container |
+| `data-layout-centered` | (boolean) | `margin-inline: auto` |
+
+Child attribute: `data-bleed` — full-viewport-width breakout.
 
 ### Card Elements
 

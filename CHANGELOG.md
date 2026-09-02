@@ -8,6 +8,40 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed (breaking)
 
+- **Layout element and attribute forms now share one rule set.** Eight
+  layouts existed twice, as `layout-x/styles.css` and as a `[data-layout="x"]`
+  block in `layout-attributes.css`, and the copies had drifted. Each now lives
+  once, selected via `:is(layout-x, [data-layout="x"])`. Where the forks
+  disagreed, the better behaviour wins on both sides:
+  - `layout-cover` defaults to `100dvh` (was `100vh`) and auto-centers a sole
+    child; `layout-center` honours the documented `data-layout-max="prose"`
+    (65ch; the element form silently fell back to `normal`) and its
+    `[data-layout-gap]` flex-collapse guard now fills the parent exactly
+    (the attribute form's `inline-size: 100%` overflowed by the padding);
+    `layout-cluster` accepts `data-layout-gap="none"`
+    and `"2xl"`; `layout-sidebar` is now semantic-aware like the attribute
+    form (`nav`/`aside` are the sidebar, `data-layout-side="end"` keeps DOM
+    order via `order`; position-based fallback when no `nav`/`aside` child);
+    the attribute forms lose their blanket container-query fallbacks
+    (`grid` to one column under 400px, `switcher` stacking under 30rem):
+    auto-fit and the threshold formula already do that job, and the
+    fallbacks overrode `data-layout-min="xs|s"` and
+    `data-layout-threshold="s"` inside any section on a phone.
+  - **Typographic containers share one core** (`layout-text/styles.css`):
+    `layout-text`, `layout-columns`, `[data-layout="columns"]` and
+    `[data-layout="prose"]` all get the same measure variants
+    (`data-layout-measure` or `data-layout-max`: narrow/normal/wide, mapped
+    to `--measure-*`), vertical rhythm, `data-layout-centered`, the
+    `[data-bleed]` breakout and the narrow-container width release. Notable
+    shifts: `data-layout="prose"` gains rhythm; `layout-columns` line-height
+    moves from `--line-height-relaxed` (1.625) to `--prose-line-height`
+    (1.6); `article[data-measure="narrow"]` is `--measure-narrow` (45ch),
+    was 55ch.
+  - Selector specificity for the element forms rises from (0,0,1) to
+    (0,1,0), matching the attribute forms. Author rules that relied on
+    out-specifying `layout-x {}` with a bare element selector will need the
+    attribute form's specificity; layered author CSS is unaffected.
+
 - **Themes now live in the `bundle-theme` cascade layer.** Every file in
   `src/tokens/themes/` wraps its rules in `@layer bundle-theme { }`, and the
   entries import the bundled themes directly instead of through the tokens
