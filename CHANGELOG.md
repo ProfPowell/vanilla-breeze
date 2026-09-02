@@ -6,6 +6,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Internal
+
+- `context-menu` and `drop-down` reset themed button styling on their items
+  through their own stylesheets (`!important` in the component layer) instead
+  of inline styles written by JavaScript. The nav active-item `!important`
+  rules stay, with their rationale corrected: themes sit above
+  `native-elements` by contract and most of them color bare links.
+  `_extreme-neumorphism` dropped an unneeded `!important`.
+
 ### Changed (breaking)
 
 - **Layout element and attribute forms now share one rule set.** Eight

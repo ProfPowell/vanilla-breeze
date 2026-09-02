@@ -90,8 +90,6 @@ class ContextMenuWc extends VBElement {
     this.#items.forEach(item => {
       item.setAttribute('role', 'menuitem');
       item.setAttribute('tabindex', '-1');
-      // Reset theme button styles (border/shadow leak from unlayered theme rules)
-      item.style.cssText += ';border:none;box-shadow:none;transform:none;border-radius:0;';
       this.listen(item, 'click', this.#handleItemClick);
 
       // Shortcut badges + real bindings

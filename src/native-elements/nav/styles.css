@@ -49,9 +49,11 @@ nav a:focus-visible {
   border-radius: var(--radius-s);
 }
 
-/* Current page indicator — color uses !important to override theme
-   link rules (e.g. Swiss a:not([class]) { color: var(--color-primary) })
-   that would make text invisible on colored pill backgrounds.
+/* Current page indicator — color uses !important on purpose. Themes live in
+   @layer bundle-theme, which outranks native-elements by contract, and ~38
+   themes color `a:not([class])` without excluding nav; without !important
+   the theme's link color lands on the filled pill and the text vanishes.
+   An !important in this lower layer beats even an !important in a theme.
    Supports both aria-current (semantic) and .active (build-system). */
 nav a[aria-current="page"],
 nav [aria-current="page"] > a,
