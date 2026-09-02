@@ -22,8 +22,8 @@ mechanics change. Last rewritten **2026-09-01**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 56 open, 49 ready, nothing in progress. The active thread is
-  the epic **3lac** "Quality tightening: layout + core", 10 of 25 done.
+- **Beads:** 57 open, 50 ready, nothing in progress. The active thread is
+  the epic **3lac** "Quality tightening: layout + core", 11 of 26 done.
 
 ### Landed this session
 
@@ -36,13 +36,14 @@ mechanics change. Last rewritten **2026-09-01**.
 | 3pyj | Reconnect DOM duplication: guards in content-lens, time-index, comment-wc; reconnect spec extended (10/10) |
 | Admin tidy | Shipped layout-vocabulary plan moved to `shipped/`; CLAUDE.md doc paths fixed; stale r-n-d copies removed |
 | aynl (closed, not a bug) | comment-wc does autoload on built pages, locally and live; the reconnect spec now covers it (12/12) and waits for `attached`, not visible |
+| t8ao | All 55 theme files in `@layer bundle-theme`; entries import the barrel unlayered; CDN themes carry the layer-order prefix; dyslexia `!important` dropped; `demos/docs.css` moved to `@layer utils`; gate test; 68/70 like-for-like screenshots identical (2 dyslexia diffs intended). Follow-ups 1v63, ijls |
 
 ## Resume in five minutes
 
 ```bash
 cd ~/src/vanilla-breeze
 git checkout work/next && git pull --rebase
-bd ready                 # 49 ready; see Queue below for the order
+bd ready                 # 50 ready; see Queue below for the order
 npm ci && (cd site && npm ci)
 npm run build            # CDN bundles + doc site → site/dist/pages
 npm test                 # 968 unit tests, ~12s
@@ -54,14 +55,16 @@ starts it). Never run two Playwright invocations at once.
 
 ## Queue (recommended order)
 
-1. **t8ao** (P2, design) — themes are unlayered / in the tokens layer; make
-   them use the `bundle-theme` layer. Load-bearing for everything after.
-2. **aoku** (P2) — merge the 8 element/attribute layout CSS forks via
+1. **aoku** (P2) — merge the 8 element/attribute layout CSS forks via
    `:is()`. Watch specificity: `:is()` takes the max of its arguments (bit
    the `[data-container]` override once already).
-3. Then the epic's P3s: 6xxy, jhku, tfcw, dtw6, 822u, 7371, iocg, j1hi,
-   p0wn, hl9c, vqw8, qoi8, vjpn.
-4. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
+2. Then the epic's P3s: 6xxy, jhku, tfcw, dtw6, 822u, 7371, iocg, j1hi,
+   p0wn, hl9c, vqw8, qoi8, vjpn. Plus the t8ao follow-ups: **1v63** (sweep
+   the component-side `!important` / "reset theme button styles" defenses
+   now that themes are layered) and **ijls** (P4, extreme themes that set
+   layout on framework elements). iocg (charts-standalone unlayered) can
+   reuse the CDN layer-order prefix from `scripts/build-cdn.js`.
+3. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
    (theme visual coverage), d2wz (mobile-menu nav-bar redeploy — verify it
    is not already moot now that main deploys), 7yiy (GoodURL phase 1).
 
@@ -98,6 +101,17 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
   that registers a tag, and the autoloader fetches on demand. A component
   hidden until interaction (comment-wc inside selection-menu's pop-over)
   is upgraded but not visible, so probe with `state: 'attached'`.
+- **Theme cascade.** Every `src/tokens/themes/_*.css` self-declares
+  `@layer bundle-theme`; the barrel is imported by both entries WITHOUT a
+  `layer()` directive, and `tokens/index.css` must not import it. The CDN
+  build prefixes each standalone theme with the layer-order statement
+  because the docs boot script links the saved theme BEFORE core.css and
+  first appearance sets layer order. Unlayered site CSS beats themes, so
+  docs chrome lives in `@layer utils` (`demos/docs.css`);
+  `demos/homepage.css` is still unlayered. Gate: `bundle-parity.test.js`.
+  To prove a cascade change safe, capture before/after in one session by
+  serving the old CSS from git through Playwright route interception, then
+  diff computed styles for anything that differs (memory note has the recipe).
 - **Typecheck runs three tsconfigs** (`src`, `scripts`, `tests`) chained
   with `&&`; an error in the first hides the rest.
 
