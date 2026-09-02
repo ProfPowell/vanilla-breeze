@@ -166,7 +166,10 @@ function checkDemoFiles(shadowMap) {
 function checkAriaContracts(manifests) {
   const ariaPromises = [
     // [element, attr, file to search, description]
-    ['tab-set', 'aria-selected', 'src/web-components/tab-set/logic.js', 'managed on summary elements'],
+    // tab-set is built on <details>/<summary>: summary exposes an implicit
+    // button role, whose state attribute is aria-expanded. aria-selected
+    // belongs to role=tab, which this component deliberately does not claim.
+    ['tab-set', 'aria-expanded', 'src/web-components/tab-set/logic.js', 'managed on summary elements'],
     ['data-table', 'aria-sort', 'src/web-components/data-table/logic.js', 'managed on sortable th elements'],
     ['site-search', 'aria-activedescendant', 'src/web-components/site-search/logic.js', 'managed on input for active result'],
     ['context-menu', 'aria-expanded', 'src/web-components/context-menu/logic.js', 'managed on trigger element'],
