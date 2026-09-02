@@ -79,7 +79,6 @@ Located in `/src/tokens/`. All use CSS custom properties.
 
 T-shirt sizing with base unit of 0.25rem (4px):
 - `--size-3xs` (2px) through `--size-3xl` (64px)
-- Open Props numeric aliases: `--size-1` through `--size-10`
 
 ### Other Tokens
 
@@ -280,7 +279,7 @@ Web components support both modes:
 --size-m
 --duration-fast
 --ease-out
---font-size-lg
+--font-size-l
 ```
 
 ### Accessibility Patterns

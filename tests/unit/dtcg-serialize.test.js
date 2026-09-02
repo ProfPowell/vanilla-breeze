@@ -123,11 +123,11 @@ describe('serializeDTCG — typography', () => {
 
   it('emits font sizes as DTCG dimensions', () => {
     const out = serializeDTCG([
-      ['--font-size-md', '1rem'],
+      ['--font-size-m', '1rem'],
       ['--font-size-xs', '0.75rem'],
     ]);
-    assert.deepEqual(out.typography.size.md.$value, { value: 1, unit: 'rem' });
-    assert.equal(out.typography.size.md.$type, 'dimension');
+    assert.deepEqual(out.typography.size.m.$value, { value: 1, unit: 'rem' });
+    assert.equal(out.typography.size.m.$type, 'dimension');
     assert.deepEqual(out.typography.size.xs.$value, { value: 0.75, unit: 'rem' });
   });
 
@@ -199,9 +199,9 @@ describe('serializeDTCG — spacing, border, motion', () => {
 describe('serializeDTCG — shadows', () => {
   it('parses a single-stop shadow into DTCG shadow object', () => {
     const out = serializeDTCG([
-      ['--shadow-sm', '0 1px 2px rgba(0, 0, 0, 0.08)'],
+      ['--shadow-s', '0 1px 2px rgba(0, 0, 0, 0.08)'],
     ]);
-    const tok = out.effect.shadow.sm;
+    const tok = out.effect.shadow.s;
     assert.equal(tok.$type, 'shadow');
     assert.deepEqual(tok.$value.offsetX, { value: 0, unit: 'px' });
     assert.deepEqual(tok.$value.offsetY, { value: 1, unit: 'px' });
@@ -212,9 +212,9 @@ describe('serializeDTCG — shadows', () => {
 
   it('parses multi-stop shadows into a DTCG shadow array', () => {
     const out = serializeDTCG([
-      ['--shadow-md', '0 4px 6px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)'],
+      ['--shadow-m', '0 4px 6px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)'],
     ]);
-    const tok = out.effect.shadow.md;
+    const tok = out.effect.shadow.m;
     assert.ok(Array.isArray(tok.$value));
     assert.equal(tok.$value.length, 2);
   });

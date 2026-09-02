@@ -81,7 +81,7 @@ export function readMermaidTokens(el) {
   const muted      = rgbify(el, tok(cs, '--color-text-muted',     tok(cs, '--color-text', '#1a1a1a')));
 
   const fontFamily = tok(cs, '--font-sans',            'system-ui, -apple-system, "Segoe UI", sans-serif');
-  const fontSize   = tok(cs, '--font-size-md',         '14px');
+  const fontSize   = tok(cs, '--font-size-m',         '14px');
 
   // Mindmap and gitGraph branches use cScale0..cScale11 to color each
   // depth/branch. Mermaid's default derivation produces unreadable

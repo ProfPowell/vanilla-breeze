@@ -355,7 +355,7 @@ class AudioPlayerElement extends VBElement {
         border-radius: var(--radius-full, 50%);
         background: var(--_accent);
         border: var(--border-width-medium, 2px) solid var(--_bg);
-        box-shadow: var(--shadow-sm, 0 1px 3px oklch(0% 0 0 / 0.2));
+        box-shadow: var(--shadow-s, 0 1px 3px oklch(0% 0 0 / 0.2));
         cursor: pointer;
         margin-top: -4px;
         transition: transform var(--duration-fast, 100ms) var(--ease-default, ease);
@@ -371,7 +371,7 @@ class AudioPlayerElement extends VBElement {
         border-radius: var(--radius-full, 50%);
         background: var(--_accent);
         border: var(--border-width-medium, 2px) solid var(--_bg);
-        box-shadow: var(--shadow-sm, 0 1px 3px oklch(0% 0 0 / 0.2));
+        box-shadow: var(--shadow-s, 0 1px 3px oklch(0% 0 0 / 0.2));
         cursor: pointer;
       }
 

@@ -186,11 +186,11 @@ describe('deserializeDTCG — typography', () => {
   it('reverses typography/size back to --font-size-* with unit', () => {
     const out = deserializeDTCG(wrap({
       typography: {
-        size: { md: { $type: 'dimension', $value: { value: 1, unit: 'rem' } } },
+        size: { m: { $type: 'dimension', $value: { value: 1, unit: 'rem' } } },
       },
     }));
     const [name, value] = out.tokens[0];
-    assert.equal(name, '--font-size-md');
+    assert.equal(name, '--font-size-m');
     assert.equal(value, '1rem');
   });
 
@@ -297,7 +297,7 @@ describe('deserializeDTCG — shadows', () => {
     const out = deserializeDTCG(wrap({
       effect: {
         shadow: {
-          sm: {
+          s: {
             $type: 'shadow',
             $value: {
               offsetX: { value: 0, unit: 'px' },
@@ -310,7 +310,7 @@ describe('deserializeDTCG — shadows', () => {
       },
     }));
     const [name, value] = out.tokens[0];
-    assert.equal(name, '--shadow-sm');
+    assert.equal(name, '--shadow-s');
     assert.match(value, /^0px 1px 2px /);
   });
 

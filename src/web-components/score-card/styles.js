@@ -15,8 +15,8 @@ const styles = `
     --_gap:             var(--score-card-gap, var(--size-s, 0.75rem));
     --_value-size:      var(--score-card-value-size, var(--font-size-3xl, 2rem));
     --_value-weight:    var(--score-card-value-weight, var(--font-weight-bold, 700));
-    --_title-size:      var(--score-card-title-size, var(--font-size-sm, 0.875rem));
-    --_meta-size:       var(--score-card-meta-size, var(--font-size-sm, 0.875rem));
+    --_title-size:      var(--score-card-title-size, var(--font-size-s, 0.875rem));
+    --_meta-size:       var(--score-card-meta-size, var(--font-size-s, 0.875rem));
     --_sparkline-h:     var(--score-card-sparkline-height, 40px);
     --_surface:         var(--score-card-surface, var(--color-surface, #fff));
     --_border:          var(--score-card-border, 1px solid var(--color-border-subtle, var(--color-border, #e5e7eb)));

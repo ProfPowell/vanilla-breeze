@@ -59,8 +59,8 @@ const REQUIRED_TOKENS = [
   "--color-border",
   "--color-border-strong",
   "--color-border-muted",
-  "--shadow-sm",
-  "--shadow-md",
+  "--shadow-s",
+  "--shadow-m",
 ];
 
 // ── Mode-sensitive token detection ────────────────────────────────────

@@ -48,7 +48,7 @@ Every effect is a static CSS declaration. A custom element would wrap *nothing*.
 
 ## What shipped
 
-1. A **realism upgrade** to the elevation ramp (`--shadow-lg/xl/2xl` enriched to layered, multi-stop shadows, in place).
+1. A **realism upgrade** to the elevation ramp (`--shadow-l/xl/2xl` enriched to layered, multi-stop shadows, in place).
 2. A **`data-shadow` effects layer** — `tint`, `material`, `shape`, `glow` (with an optional gated `flicker`).
 3. A **demo** and a **concept doc**.
 
@@ -59,7 +59,7 @@ The scale already existed in `src/tokens/shadows.css` as a t-shirt ramp. The rea
 ```css
 /* src/tokens/shadows.css — low steps unchanged, high steps layered */
 --shadow-xs:  0 1px 2px 0 oklch(0 0 0 / 0.05);
---shadow-md:  0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
+--shadow-m:  0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
 --shadow-2xl: 0 1px 2px 0 oklch(0 0 0 / 0.05),
               0 4px 8px -2px oklch(0 0 0 / 0.06),
               0 10px 20px -4px oklch(0 0 0 / 0.08),
@@ -69,7 +69,7 @@ The scale already existed in `src/tokens/shadows.css` as a t-shirt ramp. The rea
 
 The numeric aliases `--shadow-1`…`--shadow-6` map onto the t-shirt names for Open Props compatibility and are left untouched.
 
-> 🚨 **Do not** add a separate `--shadow-1..6` "photographic" ramp (as the original draft proposed). Those names already exist as aliases, so a parallel definition collides; and they have **zero consumers**, so there is nothing to gain. Enrich the t-shirt tokens in place instead — every `var(--shadow-lg/xl/2xl)` consumer benefits automatically. Themes override these tokens, so per-pack shadow languages (brutalist, clay, neumorphism, …) are unaffected.
+> 🚨 **Do not** add a separate `--shadow-1..6` "photographic" ramp (as the original draft proposed). Those names already exist as aliases, so a parallel definition collides; and they have **zero consumers**, so there is nothing to gain. Enrich the t-shirt tokens in place instead — every `var(--shadow-l/xl/2xl)` consumer benefits automatically. Themes override these tokens, so per-pack shadow languages (brutalist, clay, neumorphism, …) are unaffected.
 
 ## The data-shadow effects
 
@@ -78,7 +78,7 @@ Opt-in, composable, theme-aware — the depth-layer sibling of `data-border-effe
 | Token | Essence |
 |-------|---------|
 | `tint` | Luminous drop shadow from `--color-accent` via `color-mix` (≥ ~50% transparent so the hue survives busy backgrounds). Re-tints with the theme. |
-| `material` | Rests at `--shadow-md`, raises to `--shadow-xl` + `translateY(-4px)` on `:hover`/`:focus-visible`. Reduced-motion drops the lift/transition, keeps the elevation feedback. |
+| `material` | Rests at `--shadow-m`, raises to `--shadow-xl` + `translateY(-4px)` on `:hover`/`:focus-visible`. Reduced-motion drops the lift/transition, keeps the elevation feedback. |
 | `shape` | `filter: drop-shadow()` — alpha-true, not the border-box rectangle. Apply directly to a transparent PNG/SVG/text; for a `clip-path` shape apply it to a **wrapper** (see clangs). |
 | `glow` | Soft accent halo. Static by default; add `flicker` for a pulse gated behind `prefers-reduced-motion: no-preference`. |
 
@@ -90,7 +90,7 @@ Opt-in, composable, theme-aware — the depth-layer sibling of `data-border-effe
       0 10px 26px color-mix(in oklch, var(--color-accent), transparent 55%),
       0 3px 7px   color-mix(in oklch, var(--color-accent), transparent 66%);
   }
-  [data-shadow~="material"] { box-shadow: var(--shadow-md); transition: box-shadow .25s, transform .25s; }
+  [data-shadow~="material"] { box-shadow: var(--shadow-m); transition: box-shadow .25s, transform .25s; }
   [data-shadow~="material"]:hover { box-shadow: var(--shadow-xl); transform: translateY(-4px); }
   [data-shadow~="shape"] { filter: drop-shadow(0 4px 6px oklch(0 0 0 / 0.34)); }
 }
@@ -127,7 +127,7 @@ site/src/pages/docs/concepts/index.html        # + Shadows card
 
 ## Acceptance
 
-- [x] `--shadow-lg/xl/2xl` are layered ramps; `xs/sm/md` unchanged; `--shadow-1..6` aliases intact.
+- [x] `--shadow-l/xl/2xl` are layered ramps; `xs/sm/md` unchanged; `--shadow-1..6` aliases intact.
 - [x] `data-shadow="tint"` derives from `--color-accent` and re-tints when it changes.
 - [x] `material` raises on hover; `shape` uses `drop-shadow`; `glow` flicker gated by `prefers-reduced-motion`.
 - [x] Effect rules land in `@layer bundle-effects`. No JavaScript, no custom element.
@@ -138,3 +138,7 @@ site/src/pages/docs/concepts/index.html        # + Shadows card
 - **Tinted shadows can muddy on busy backgrounds.** `color-mix` transparency over a textured surface loses the hue; keep transparency ≥ ~50%.
 - **`clip-path` clips its own `drop-shadow`.** `clip-path` is applied *after* the filter in the render pipeline, so a `filter: drop-shadow()` on the same clipped element gets cut away (the shape shows no shadow). Apply `data-shadow="shape"` to a **wrapper** of the clipped element. Transparent PNG/SVG/text carry intrinsic alpha and take it directly. (This was a real bug in the first demo/doc draft.)
 - **`drop-shadow` and an SVG-overlay border don't compose.** A `clip-path`'d element has no border box for an overlay to stroke — shape-shadow and border-wc overlays are mutually exclusive.
+
+## Amendment 2026-09-02 (vanilla-breeze-p0wn)
+
+The `--shadow-1`…`--shadow-6` numeric aliases referenced above were removed: nothing in the framework, demos, docs, themes or packs read them. The t-shirt scale is the only shadow API.

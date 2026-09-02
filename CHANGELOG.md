@@ -88,6 +88,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Internal
 
+- The native-elements layer contract now admits element-scoped semantic
+  modifier classes (`p.lead`, `section.hero`, `article.card`) and classes
+  the framework's own init modules write, instead of claiming "no classes"
+  while defining 147 of them (hl9c). Seven classes nothing used were
+  removed (`.hn-action-remove`, `.hn-swatch`, `fieldset.code-inputs`,
+  `img.ratio-landscape`, `.changelog-year/-month`, `video.ultrawide`); the
+  hex fallbacks inside `var()` and the Tailwind-palette highlight colours
+  are gone (tokens are always loaded; the highlight colours are oklch); a
+  gate (`tests/unit/native-element-classes.test.js`) rejects dead classes.
 - youtube-player and social-embed no longer wrap themselves in
   `@layer web-components` (the entry owns the layer; they nested as
   `web-components.web-components`) (7371).
@@ -136,6 +145,25 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed (breaking)
 
+- **One scale spelling: `s` / `m` / `l` everywhere** (j1hi). `--font-size-sm/md/lg`
+  are now `--font-size-s/m/l`, `--shadow-sm/md/lg` are `--shadow-s/m/l`, and
+  the breakpoint references `--bp-sm/md/lg` are `--bp-s/m/l`, matching
+  `--size-*` and `--radius-*`. No aliases: the two-letter names are gone.
+  Every usage in the framework, themes, packs, demos and docs was renamed
+  by codemod; downstream consumers rename the same three families.
+- **72 dead core tokens removed** (p0wn): the Open Props numeric aliases
+  (`--size-1..10`, `--gray-0..9`, `--radius-1..6`, `--shadow-1/3..6`,
+  `--font-size-00/2..8`, `--ease-1/2/4/5`), the unused easings
+  (`--ease-in-*`, `--ease-out-*`, `--ease-squish-*`), the colour harmonics
+  (`--color-complement`, `--color-triad-*`, `--color-analog-*`), the
+  surface gradient/texture tokens nothing rendered, `--cursor-grab/grabbing`,
+  `--font-weight-light/range`, `--filter-rough-heavy`, `--opacity-60`,
+  `--prose-font-size`, `--page-bg-overlay`, the animated-border duration
+  tokens, and `--color-secondary-active` / `--color-accent-active`. Nothing
+  in the framework, demos, docs, themes or packs read any of them. A gate
+  (`tests/unit/token-usage.test.js`) rejects new unread tokens; 28 tokens
+  that themes set or the docs list but nothing reads are tracked there for
+  a wire-or-prune decision.
 - **Layout attribute API made consistent** (vqw8):
   - One gap scale everywhere: `none`, `3xs` … `3xl` on every gap-bearing
     layout (cluster, grid, cover, sidebar, switcher, reel, split, media,

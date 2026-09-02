@@ -28,7 +28,6 @@ All tokens are CSS custom properties on `:root`. Override any token to customize
 | `--size-xl` | `2rem` | 32px |
 | `--size-2xl` | `3rem` | 48px |
 | `--size-3xl` | `4rem` | 64px |
-| `--size-1` … `--size-10` | Numeric aliases | Open Props compatible (0.25rem–5rem) |
 
 Legacy aliases: `--space-unit`, `--space-3xs` … `--space-3xl` map to `--size-*`.
 
@@ -40,15 +39,14 @@ Legacy aliases: `--space-unit`, `--space-3xs` … `--space-3xl` map to `--size-*
 | `--font-serif` | Charter stack | Serif fonts |
 | `--font-mono` | ui-monospace stack | Monospace fonts |
 | `--font-size-xs` | `0.75rem` | 12px |
-| `--font-size-sm` | `0.875rem` | 14px |
-| `--font-size-md` | `1rem` | 16px (base) |
-| `--font-size-lg` | `1.125rem` | 18px |
+| `--font-size-s` | `0.875rem` | 14px |
+| `--font-size-m` | `1rem` | 16px (base) |
+| `--font-size-l` | `1.125rem` | 18px |
 | `--font-size-xl` | `1.25rem` | 20px |
 | `--font-size-2xl` | `1.5rem` | 24px |
 | `--font-size-3xl` | `1.875rem` | 30px |
 | `--font-size-4xl` | `2.25rem` | 36px |
 | `--font-size-5xl` | `3rem` | 48px |
-| `--font-size-00` … `--font-size-8` | Numeric aliases | Open Props compatible |
 | `--line-height-none` | `1` | No leading |
 | `--line-height-tight` | `1.25` | Tight |
 | `--line-height-snug` | `1.375` | Snug |
@@ -58,7 +56,6 @@ Legacy aliases: `--space-unit`, `--space-3xs` … `--space-3xl` map to `--size-*
 | `--measure-narrow` | `45ch` | Narrow line length |
 | `--measure-normal` | `65ch` | Standard line length |
 | `--measure-wide` | `80ch` | Wide line length |
-| `--font-weight-light` | `300` | Light |
 | `--font-weight-normal` | `400` | Normal |
 | `--font-weight-medium` | `500` | Medium |
 | `--font-weight-semibold` | `600` | Semibold |
@@ -79,7 +76,6 @@ Legacy aliases: `--space-unit`, `--space-3xs` … `--space-3xl` map to `--size-*
 | `--color-gray-50` … `--color-gray-950` | OKLCH neutral ramp | 50=lightest, 950=darkest |
 | `--color-white` | `oklch(100% 0 0)` | Pure white |
 | `--color-black` | `oklch(0% 0 0)` | Pure black |
-| `--gray-0` … `--gray-9` | Numeric aliases | Open Props compatible |
 | **Brand** | | |
 | `--color-primary` | oklch(50% 0.2 hue-primary) | Primary brand |
 | `--color-primary-hover` | Calculated | Hover state |
@@ -171,9 +167,9 @@ Legacy aliases: `--space-unit`, `--space-3xs` … `--space-3xl` map to `--size-*
 | Property | Description |
 |----------|-------------|
 | `--shadow-xs` | Extra small (1px blur) |
-| `--shadow-sm` | Small (3px blur) |
-| `--shadow-md` | Medium (6px blur) |
-| `--shadow-lg` | Large (15px blur) |
+| `--shadow-s` | Small (3px blur) |
+| `--shadow-m` | Medium (6px blur) |
+| `--shadow-l` | Large (15px blur) |
 | `--shadow-xl` | Extra large (25px blur) |
 | `--shadow-2xl` | Dramatic (50px blur) |
 | `--shadow-1` … `--shadow-6` | Numeric aliases |

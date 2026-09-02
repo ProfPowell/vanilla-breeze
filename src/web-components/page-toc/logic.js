@@ -131,7 +131,7 @@ class PageToc extends VBElement {
    * Handle responsive behavior: details open on wide screens, hash sync on resize
    */
   #setupResponsive() {
-    this.#mediaQuery = window.matchMedia('(min-width: 64rem)'); /* --bp-lg */
+    this.#mediaQuery = window.matchMedia('(min-width: 64rem)'); /* --bp-l */
     this.listen(this.#mediaQuery, 'change', this.#handleMediaChange);
     this.listen(window, 'resize', this.#handleResize);
   }
