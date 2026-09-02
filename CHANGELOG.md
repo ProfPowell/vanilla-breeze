@@ -70,8 +70,19 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   layout value and named areas no template defined, are scoped to the
   `main[data-layout="sidebar-*"]` templates that use them.
 
+### Removed
+
+- `layout-cover`'s `data-hero-overlay` and `data-layout-nospace` (zero
+  usages; `data-layout-padding="none"` is the latter). `src/charts/index.css`
+  and `markdown-viewer/vb-extensions.js`, both imported by nothing (822u).
+
 ### Internal
 
+- Stale headers corrected: the core and extras JS barrels state their real
+  counts (29 + 27 and 29 + 9 modules); `pointer.css` no longer re-sets
+  `--size-touch-min` under `(pointer: coarse)` to the value sizing.css
+  already sets; the CDN build comment no longer claims the slim bundle has
+  no themes (822u).
 - `layout-attributes.css` is layout again (tfcw, 1294 → 760 lines):
   density modes moved to `src/utils/density.css`, the scroll-driven header
   shrink / `data-animate` reveals / `data-parallax` to

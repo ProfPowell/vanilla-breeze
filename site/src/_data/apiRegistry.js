@@ -492,25 +492,11 @@ export default {
         "description": "Gap between the non-centered elements, on the shared size scale."
       },
       {
-        "name": "data-layout-nospace",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean",
-        "description": "Remove all padding."
-      },
-      {
         "name": "data-layout-centered",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
         "description": "Center children and text horizontally."
-      },
-      {
-        "name": "data-hero-overlay",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean",
-        "description": "Cinematic bottom gradient for text legibility over a background image."
       }
     ],
     "childAttributes": [

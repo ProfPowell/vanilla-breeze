@@ -85,9 +85,7 @@ module.exports = {
       "data-layout-min": { enum: ["s", "m", "l", "xl", "auto"] },
       "data-layout-padding": { enum: ["none", "s", "m", "l", "xl"] },
       "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
-      "data-layout-nospace": { boolean: true },
-      "data-layout-centered": { boolean: true },
-      "data-hero-overlay": { boolean: true }
+      "data-layout-centered": { boolean: true }
     }
   },
 

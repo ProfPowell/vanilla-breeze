@@ -1,7 +1,8 @@
 /**
  * Core Web Components — essential components loaded eagerly
  *
- * ~17 components that most sites will use. This is the slim JS entry point.
+ * 29 components (plus 27 utility/effect modules) that most sites will use.
+ * This is the slim JS entry point.
  * For niche/heavy components, add extras.js separately.
  * For text effects, star-rating, and theme-picker, load the appropriate pack.
  */

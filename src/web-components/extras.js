@@ -1,7 +1,8 @@
 /**
  * Extra Web Components — niche/heavy components loaded separately
  *
- * ~11 components for specialized use cases (maps, emoji, drag-n-drop, etc.).
+ * 29 components (plus 9 utility/effect modules) for specialized use cases
+ * (maps, emoji, drag-n-drop, markdown, annotation, etc.).
  * Load alongside core.js for full functionality:
  *   <script type="module" src="/cdn/vanilla-breeze-extras.js"></script>
  */

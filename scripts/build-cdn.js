@@ -525,7 +525,9 @@ async function buildCDN() {
   });
   fixAtPropertyLeadingZeros(join(CDN, 'vanilla-breeze.css'));
 
-  // Build core CSS bundle (slim — no decorative themes, no pack CSS)
+  // Build core CSS bundle (slim — core components only, no pack CSS). The
+  // bundled personality + accessibility themes ride in both entries via
+  // tokens/themes/index.css; decorative themes load à la carte from cdn/themes/.
   await esbuild.build({
     ...CSS_DEFAULTS,
     entryPoints: [join(SRC, 'main-core.css')],
