@@ -222,16 +222,18 @@ window.addEventListener('vb:theme-change', (e) => {
     <code-block language="bash" show-lines label="Copy the theme template" data-escape># Copy the template
 cp src/tokens/themes/_brand-template.css src/tokens/themes/_brand-coral.css</code-block>
 
-    <p>Edit the hue values (0-360):</p>
-    <code-block language="css" show-lines label="Define custom hue values" data-escape>:root[data-theme="coral"],
-[data-theme="coral"] {
-  --hue-primary: 15;    /* coral orange */
-  --hue-secondary: 350; /* pink */
-  --hue-accent: 180;    /* teal contrast */
+    <p>Edit the hue values (0-360). Keep the <code>@layer bundle-theme</code> wrapper: every theme self-declares that layer, which places it above the framework layers, below packs, and below your own unlayered CSS.</p>
+    <code-block language="css" show-lines label="Define custom hue values" data-escape>@layer bundle-theme {
+  :root[data-theme="coral"],
+  [data-theme="coral"] {
+    --hue-primary: 15;    /* coral orange */
+    --hue-secondary: 350; /* pink */
+    --hue-accent: 180;    /* teal contrast */
 
-  /* Colors are auto-calculated from hues */
-  --color-primary: oklch(50% 0.15 var(--hue-primary));
-  /* ... */
+    /* Colors are auto-calculated from hues */
+    --color-primary: oklch(50% 0.15 var(--hue-primary));
+    /* ... */
+  }
 }</code-block>
 
     <p>Register in <code>src/tokens/themes/index.css</code>:</p>

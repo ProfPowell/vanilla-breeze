@@ -4,6 +4,27 @@ All notable changes to Vanilla Breeze will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed (breaking)
+
+- **Themes now live in the `bundle-theme` cascade layer.** Every file in
+  `src/tokens/themes/` wraps its rules in `@layer bundle-theme { }`, and the
+  entries import the bundled themes directly instead of through the tokens
+  barrel. Before, the bundled themes sat in the lowest layer (`tokens`) and
+  the standalone CDN theme files were unlayered, so a linked theme beat every
+  framework layer, packs included, and beat your own unlayered CSS.
+  - **What changes for you:** unlayered author CSS now overrides theme rules,
+    as it already did for every other part of the framework. Packs
+    (`bundle-effects`, `bundle-components`) now sit above themes as
+    documented. A theme's element rules now beat `native-elements` without
+    `!important`.
+  - The CDN build prefixes each standalone theme file with the layer-order
+    statement from `main.css`, so a theme `<link>` placed before the bundle
+    still slots in correctly.
+  - `_access-dyslexia` dropped its three `!important` declarations; the layer
+    now does that job.
+
 ## [0.3.1] - 2026-07-07
 
 ### Removed
