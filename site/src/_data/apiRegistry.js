@@ -1,8 +1,10 @@
 // @generated from api.json manifests — do not edit by hand
 export default {
   "layout-badge": {
+    "$schema": "../../schemas/api.schema.json",
     "element": "layout-badge",
     "type": "custom-element",
+    "description": "Small inline status or count badge. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "phrasing": true,
@@ -14,73 +16,59 @@ export default {
       {
         "name": "data-size",
         "kind": "data",
-        "purpose": "visual-variant",
+        "purpose": "config",
         "type": "enum",
         "values": [
           "sm",
           "lg"
-        ]
+        ],
+        "description": "Size: sm or lg (default medium)."
       },
       {
         "name": "data-color",
         "kind": "data",
-        "purpose": "visual-variant",
+        "purpose": "config",
         "type": "enum",
         "values": [
           "primary",
           "success",
           "warning",
-          "danger",
-          "info"
-        ]
+          "error",
+          "info",
+          "brand",
+          "secondary",
+          "accent"
+        ],
+        "description": "Semantic or brand color."
       },
       {
         "name": "data-variant",
-        "kind": "data",
-        "purpose": "visual-variant",
-        "type": "string"
-      }
-    ]
-  },
-  "layout-card": {
-    "element": "layout-card",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "data-variant",
-        "kind": "data",
-        "purpose": "visual-variant",
-        "type": "enum",
-        "values": [
-          "elevated",
-          "outlined",
-          "ghost"
-        ]
-      },
-      {
-        "name": "data-padding",
         "kind": "data",
         "purpose": "config",
         "type": "enum",
         "values": [
-          "none",
-          "s",
-          "m",
-          "l",
-          "xl"
-        ]
+          "subtle",
+          "outlined"
+        ],
+        "description": "subtle (tinted) or outlined instead of filled."
+      },
+      {
+        "name": "data-shape",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "square"
+        ],
+        "description": "square corners instead of a pill."
       }
     ]
   },
-  "layout-center": {
-    "element": "layout-center",
+  "layout-canvas": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-canvas",
     "type": "custom-element",
+    "description": "Elevated content surface (a raised panel with radius and shadow). Attribute form: data-canvas on a semantic element. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -88,6 +76,17 @@ export default {
       ]
     },
     "attributes": [
+      {
+        "name": "data-variant",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "flush",
+          "elevated"
+        ],
+        "description": "flush (no radius or shadow) or elevated (larger radius and shadow)."
+      },
       {
         "name": "data-max",
         "kind": "data",
@@ -96,207 +95,10 @@ export default {
         "values": [
           "narrow",
           "normal",
-          "wide"
-        ]
-      },
-      {
-        "name": "data-intrinsic",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean"
-      },
-      {
-        "name": "data-text",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean"
-      },
-      {
-        "name": "data-gutter",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "none",
-          "s",
-          "l"
-        ]
-      }
-    ]
-  },
-  "layout-cluster": {
-    "element": "layout-cluster",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "data-gap",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "xs",
-          "s",
-          "m",
-          "l",
-          "xl"
-        ]
-      },
-      {
-        "name": "data-justify",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "start",
-          "end",
-          "center",
-          "between"
-        ]
-      },
-      {
-        "name": "data-align",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "start",
-          "end",
-          "center",
-          "stretch",
-          "baseline"
-        ]
-      },
-      {
-        "name": "data-nowrap",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean"
-      }
-    ]
-  },
-  "layout-cover": {
-    "element": "layout-cover",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "data-min-block",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string"
-      },
-      {
-        "name": "data-gap",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "none",
-          "xs",
-          "s",
-          "m",
-          "l",
-          "xl"
-        ]
-      },
-      {
-        "name": "data-npad",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean"
-      }
-    ]
-  },
-  "layout-grid": {
-    "element": "layout-grid",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "data-min",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string"
-      },
-      {
-        "name": "data-gap",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "none",
-          "xs",
-          "s",
-          "m",
-          "l",
-          "xl"
-        ]
-      }
-    ]
-  },
-  "layout-imposter": {
-    "element": "layout-imposter",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "data-fixed",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean"
-      },
-      {
-        "name": "data-contain",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean"
-      }
-    ]
-  },
-  "layout-reel": {
-    "element": "layout-reel",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "data-gap",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "none",
-          "xs",
-          "s",
-          "m",
-          "l",
-          "xl"
-        ]
+          "wide",
+          "prose"
+        ],
+        "description": "Max inline size, centered: narrow / normal / wide (--content-* tokens) or prose (65ch)."
       },
       {
         "name": "data-padding",
@@ -307,46 +109,30 @@ export default {
           "none",
           "s",
           "m",
-          "l"
-        ]
-      },
-      {
-        "name": "data-item-width",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "auto",
-          "s",
-          "m",
           "l",
-          "xl",
-          "full"
-        ]
+          "xl"
+        ],
+        "default": "l",
+        "description": "Padding on all sides."
       },
       {
-        "name": "data-align",
+        "name": "data-canvas-depth",
         "kind": "data",
         "purpose": "config",
         "type": "enum",
         "values": [
-          "start",
-          "center",
-          "end",
-          "stretch"
-        ]
-      },
-      {
-        "name": "data-scrollbar",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean"
+          "1",
+          "2"
+        ],
+        "description": "Stacked-paper effect with 1 or 2 sheets behind the surface."
       }
     ]
   },
-  "layout-sidebar": {
-    "element": "layout-sidebar",
+  "layout-card": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-card",
     "type": "custom-element",
+    "description": "Card surface. A plain padded block by default; header / section / footer children switch it into a named-area grid. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -355,61 +141,52 @@ export default {
     },
     "attributes": [
       {
-        "name": "data-gap",
+        "name": "data-variant",
         "kind": "data",
         "purpose": "config",
         "type": "enum",
         "values": [
-          "xs",
+          "elevated",
+          "outlined",
+          "ghost"
+        ],
+        "description": "Visual style: elevated (shadow), outlined (border), ghost (no surface)."
+      },
+      {
+        "name": "data-padding",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
           "s",
           "m",
           "l",
           "xl"
-        ]
+        ],
+        "default": "m",
+        "description": "Internal padding (applies to grid-area children in grid mode)."
       },
       {
-        "name": "data-side",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "start",
-          "end"
-        ]
-      },
-      {
-        "name": "data-sidebar-width",
+        "name": "data-max",
         "kind": "data",
         "purpose": "config",
         "type": "enum",
         "values": [
           "narrow",
           "normal",
-          "wide"
-        ]
-      },
-      {
-        "name": "data-content-min",
-        "kind": "data",
-        "purpose": "config",
-        "type": "enum",
-        "values": [
-          "40",
-          "50",
-          "60"
-        ]
-      },
-      {
-        "name": "data-nowrap",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean"
+          "wide",
+          "prose"
+        ],
+        "description": "Max inline size, centered: --content-narrow / --content-normal / --content-wide, or prose (65ch). Same keyword set as layout-center and canvas."
       }
     ]
   },
-  "layout-stack": {
-    "element": "layout-stack",
+  "layout-center": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-center",
     "type": "custom-element",
+    "description": "Horizontally centered, max-width-constrained container with side gutters. Attribute form: data-layout=\"center\".",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -418,7 +195,82 @@ export default {
     },
     "attributes": [
       {
-        "name": "data-gap",
+        "name": "data-layout-max",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "narrow",
+          "normal",
+          "wide",
+          "prose"
+        ],
+        "default": "normal",
+        "description": "Max inline size: --content-narrow / --content-normal / --content-wide, or prose (65ch)."
+      },
+      {
+        "name": "data-layout-intrinsic",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Center narrower-than-max content intrinsically (flex column, align center)."
+      },
+      {
+        "name": "data-layout-text",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Center the text as well."
+      },
+      {
+        "name": "data-layout-gutter",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
+          "s",
+          "l"
+        ],
+        "default": "m",
+        "description": "Inline padding: none, s or l (default m)."
+      },
+      {
+        "name": "data-layout-gap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "",
+          "none",
+          "3xs",
+          "2xs",
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl",
+          "2xl",
+          "3xl"
+        ],
+        "description": "Become a flex column with this gap between children, on the shared size scale."
+      }
+    ]
+  },
+  "layout-cluster": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-cluster",
+    "type": "custom-element",
+    "description": "Horizontal wrapping flex row for groups of short items — tags, buttons, metadata. Attribute form: data-layout=\"cluster\".",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-layout-gap",
         "kind": "data",
         "purpose": "config",
         "type": "enum",
@@ -433,25 +285,76 @@ export default {
           "xl",
           "2xl",
           "3xl"
-        ]
+        ],
+        "default": "s",
+        "description": "Gap between items, on the shared size scale."
       },
       {
-        "name": "data-align",
+        "name": "data-layout-justify",
         "kind": "data",
         "purpose": "config",
         "type": "enum",
         "values": [
           "start",
-          "center",
           "end",
-          "stretch"
-        ]
+          "center",
+          "between"
+        ],
+        "default": "start",
+        "description": "Main-axis distribution."
+      },
+      {
+        "name": "data-layout-align",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "start",
+          "end",
+          "center",
+          "stretch",
+          "baseline"
+        ],
+        "default": "center",
+        "description": "Cross-axis alignment."
+      },
+      {
+        "name": "data-layout-nowrap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Keep everything on one line; no wrapping."
+      },
+      {
+        "name": "data-layout-overlap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "",
+          "xs",
+          "s",
+          "m",
+          "l"
+        ],
+        "default": "s",
+        "description": "Overlap items in reverse order (avatar groups). Bare attribute = s."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-container",
+        "on": "main, article, section, aside",
+        "description": "Opt a semantic child back into container queries. The layout removes container-type from such children so they size to content; this restores it.",
+        "type": "boolean"
       }
     ]
   },
-  "layout-switcher": {
-    "element": "layout-switcher",
+  "layout-columns": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-columns",
     "type": "custom-element",
+    "description": "Multi-column text flow with a readable measure, vertical rhythm, column rules and break hygiene. Attribute form: data-layout=\"columns\".",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -460,49 +363,657 @@ export default {
     },
     "attributes": [
       {
-        "name": "data-threshold",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string"
-      },
-      {
-        "name": "data-gap",
+        "name": "data-layout-align",
         "kind": "data",
         "purpose": "config",
         "type": "enum",
         "values": [
-          "none",
-          "xs",
-          "s",
-          "m",
-          "l",
-          "xl"
-        ]
+          "justify"
+        ],
+        "description": "justify: justified text with automatic hyphenation."
       },
       {
-        "name": "data-limit",
+        "name": "data-layout-column-count",
         "kind": "data",
         "purpose": "config",
         "type": "enum",
         "values": [
+          "1",
           "2",
           "3",
-          "4",
-          "5"
-        ]
+          "auto"
+        ],
+        "default": "1",
+        "description": "Number of columns; auto derives columns from --column-min-width above 48rem."
+      },
+      {
+        "name": "data-layout-measure",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "narrow",
+          "normal",
+          "wide"
+        ],
+        "default": "normal",
+        "description": "Line measure: --measure-narrow / --measure-normal / --measure-wide."
+      },
+      {
+        "name": "data-layout-max",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "narrow",
+          "normal",
+          "wide"
+        ],
+        "default": "normal",
+        "description": "Same as data-layout-measure."
+      },
+      {
+        "name": "data-layout-centered",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Center the container (columns are centered by default)."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-bleed",
+        "on": "any child",
+        "description": "Break out to the full viewport width.",
+        "type": "boolean"
       }
     ]
   },
-  "layout-text": {
-    "element": "layout-text",
+  "layout-cover": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-cover",
     "type": "custom-element",
+    "description": "Full-height (min-block-size) container that vertically centers a principal element, with optional top and bottom elements. Attribute form: data-layout=\"cover\".",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
         "@flow"
       ]
     },
-    "attributes": []
+    "attributes": [
+      {
+        "name": "data-layout-min",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "s",
+          "m",
+          "l",
+          "xl",
+          "auto"
+        ],
+        "default": "xl",
+        "description": "Minimum block size: 50 / 70 / 80vh, xl = 100dvh, auto = none. One-off: style=\"--layout-min: 65vh\"."
+      },
+      {
+        "name": "data-layout-padding",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
+          "s",
+          "m",
+          "l",
+          "xl"
+        ],
+        "default": "m",
+        "description": "Padding on all sides."
+      },
+      {
+        "name": "data-layout-gap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
+          "3xs",
+          "2xs",
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl",
+          "2xl",
+          "3xl"
+        ],
+        "default": "none",
+        "description": "Gap between the non-centered elements, on the shared size scale."
+      },
+      {
+        "name": "data-layout-nospace",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Remove all padding."
+      },
+      {
+        "name": "data-layout-centered",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Center children and text horizontally."
+      },
+      {
+        "name": "data-hero-overlay",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Cinematic bottom gradient for text legibility over a background image."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-layout-principal",
+        "on": "any child",
+        "description": "The vertically centered principal element. A sole child auto-centers without it.",
+        "type": "boolean"
+      },
+      {
+        "name": "data-layout-cover-top",
+        "on": "any child",
+        "description": "Pin to the top (a <header> child is pinned automatically).",
+        "type": "boolean"
+      },
+      {
+        "name": "data-layout-cover-bottom",
+        "on": "any child",
+        "description": "Pin to the bottom (a <footer> child is pinned automatically).",
+        "type": "boolean"
+      }
+    ]
+  },
+  "layout-grid": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-grid",
+    "type": "custom-element",
+    "description": "Auto-fit responsive grid: as many columns as fit the minimum width, then wrap. Attribute form: data-layout=\"grid\".",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-layout-min",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl"
+        ],
+        "default": "m",
+        "description": "Minimum column width before wrapping: 8 / 10 / 15 / 20 / 25rem. One-off lengths: style=\"--layout-min: 220px\"."
+      },
+      {
+        "name": "data-layout-gap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
+          "3xs",
+          "2xs",
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl",
+          "2xl",
+          "3xl"
+        ],
+        "default": "m",
+        "description": "Gap between cells, on the shared size scale."
+      },
+      {
+        "name": "data-layout-subgrid",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "",
+          "2",
+          "4"
+        ],
+        "default": "3",
+        "description": "Children become subgrid rows so header/content/footer align across cells. Bare = span 3 rows; 2 or 4 for other card shapes."
+      }
+    ]
+  },
+  "layout-imposter": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-imposter",
+    "type": "custom-element",
+    "description": "Positioned overlay centered over (or pinned to an edge of) its containing block. The container needs position: relative.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-layout-fixed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Position relative to the viewport instead of the containing block."
+      },
+      {
+        "name": "data-layout-margin",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "s",
+          "m",
+          "l",
+          "xl"
+        ],
+        "description": "Inset from the edges when pinned to one."
+      },
+      {
+        "name": "data-layout-position",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "center",
+          "top",
+          "bottom",
+          "start",
+          "end",
+          "top-start",
+          "top-end",
+          "bottom-start",
+          "bottom-end"
+        ],
+        "default": "center",
+        "description": "Where to place the overlay."
+      },
+      {
+        "name": "data-layout-contain",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Keep the overlay within the viewport, minus the margin, when fixed."
+      }
+    ]
+  },
+  "layout-reel": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-reel",
+    "type": "custom-element",
+    "description": "Horizontal scrolling strip with snap points and optional scrollbar and edge hints.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-layout-scrollbar",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Show a thin scrollbar (hidden by default)."
+      },
+      {
+        "name": "data-layout-gap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
+          "3xs",
+          "2xs",
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl",
+          "2xl",
+          "3xl"
+        ],
+        "default": "m",
+        "description": "Gap between items, on the shared size scale."
+      },
+      {
+        "name": "data-layout-padding",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
+          "s",
+          "m",
+          "l"
+        ],
+        "default": "s",
+        "description": "Inline padding and scroll padding."
+      },
+      {
+        "name": "data-layout-item-width",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "auto",
+          "s",
+          "m",
+          "l",
+          "xl",
+          "full"
+        ],
+        "default": "auto",
+        "description": "Item width: auto (content), s / m / l / xl tokens, or full (100%)."
+      },
+      {
+        "name": "data-layout-align",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "start",
+          "center",
+          "end",
+          "stretch"
+        ],
+        "default": "stretch",
+        "description": "Cross-axis alignment of items."
+      },
+      {
+        "name": "data-scroll-hint",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "",
+          "start"
+        ],
+        "description": "Fade both edges to hint at overflow; start fades only the end edge."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-container",
+        "on": "main, article, section, aside",
+        "description": "Opt a semantic child back into container queries (the reel removes container-type from such children so they size to content).",
+        "type": "boolean"
+      }
+    ]
+  },
+  "layout-sidebar": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-sidebar",
+    "type": "custom-element",
+    "description": "Two-column layout: a fixed-basis sidebar beside a flexible content column that wraps below it when there is no room. nav and aside children are the sidebar; every other child is content; without nav/aside the first child is the sidebar. Attribute form: data-layout=\"sidebar\".",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-layout-gap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
+          "3xs",
+          "2xs",
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl",
+          "2xl",
+          "3xl"
+        ],
+        "default": "m",
+        "description": "Gap between the columns, on the shared size scale."
+      },
+      {
+        "name": "data-layout-side",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "end"
+        ],
+        "description": "end: put the sidebar on the end side. nav/aside children keep DOM order (order: 1); the positional fallback reverses the row."
+      },
+      {
+        "name": "data-layout-sidebar-width",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "narrow",
+          "normal",
+          "wide"
+        ],
+        "default": "normal",
+        "description": "Sidebar basis: 12 / 16 / 20rem (the same three values in every sidebar context)."
+      },
+      {
+        "name": "data-layout-content-min",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "s",
+          "m",
+          "l"
+        ],
+        "default": "m",
+        "description": "Content column floor before wrapping: 40 / 50 / 60%. One-off: style=\"--layout-content-min: 45%\"."
+      },
+      {
+        "name": "data-layout-nowrap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Never wrap; the sidebar stays beside the content."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-layout-sticky",
+        "on": "nav, aside",
+        "description": "Sticky sidebar with its own scroll, active when the page opts into the smart sticky system (:root[data-sticky]).",
+        "type": "boolean"
+      }
+    ]
+  },
+  "layout-stack": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-stack",
+    "type": "custom-element",
+    "description": "Vertical flex stack with a consistent gap between children. Attribute form: any semantic element with data-layout=\"stack\".",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-layout-gap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
+          "3xs",
+          "2xs",
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl",
+          "2xl",
+          "3xl"
+        ],
+        "default": "m",
+        "description": "Gap between children, on the shared size scale."
+      },
+      {
+        "name": "data-layout-align",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "start",
+          "center",
+          "end",
+          "stretch"
+        ],
+        "default": "stretch",
+        "description": "Cross-axis (inline) alignment of children."
+      }
+    ]
+  },
+  "layout-switcher": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-switcher",
+    "type": "custom-element",
+    "description": "Flex row that switches to a column once the container is narrower than the threshold. Attribute form: data-layout=\"switcher\".",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-layout-gap",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none",
+          "3xs",
+          "2xs",
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl",
+          "2xl",
+          "3xl"
+        ],
+        "default": "m",
+        "description": "Gap between items, on the shared size scale."
+      },
+      {
+        "name": "data-layout-threshold",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "",
+          "s",
+          "m",
+          "l"
+        ],
+        "default": "m",
+        "description": "Container width at which the row becomes a column: 25 / 30 / 40rem. One-off: style=\"--layout-threshold: 35rem\"."
+      },
+      {
+        "name": "data-layout-limit",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "2",
+          "3",
+          "4"
+        ],
+        "description": "Force the column layout once there are more than this many items."
+      },
+      {
+        "name": "data-layout-reverse",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Reverse the visual order when stacked."
+      }
+    ]
+  },
+  "layout-text": {
+    "$schema": "../../schemas/api.schema.json",
+    "element": "layout-text",
+    "type": "custom-element",
+    "description": "Long-form reading container: a readable measure plus vertical rhythm between block children. Owns the typographic core shared with layout-columns and data-layout=\"columns\" / \"prose\".",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
+    "attributes": [
+      {
+        "name": "data-layout-measure",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "narrow",
+          "normal",
+          "wide"
+        ],
+        "default": "normal",
+        "description": "Line measure: --measure-narrow / --measure-normal / --measure-wide."
+      },
+      {
+        "name": "data-layout-max",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "narrow",
+          "normal",
+          "wide"
+        ],
+        "default": "normal",
+        "description": "Same as data-layout-measure (the prose attribute form spells it this way)."
+      },
+      {
+        "name": "data-layout-centered",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Center the container (margin-inline: auto)."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-bleed",
+        "on": "any child",
+        "description": "Break out to the full viewport width.",
+        "type": "boolean"
+      }
+    ]
   },
   "brand-mark": {
     "element": "brand-mark",

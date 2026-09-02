@@ -155,3 +155,122 @@ export function readPresenceAttrs(root = DEFAULT_ROOT) {
   }
   return presenceAttrs;
 }
+
+/**
+ * Per-element vocabulary: which data-* attributes each layout element's CSS
+ * actually reads, on the host and on its children, with their value sets.
+ *
+ * This is what a layout's api.json must match (tests/unit/layout-manifests
+ * .test.js). It walks every vocabulary file, flattens CSS nesting (`&`), splits
+ * each selector into compounds, finds the compound that names the element
+ * (`layout-x`, or its attribute form `[data-layout="x"]`), and then reads
+ * attribute selectors from that compound (host) and from the compounds after
+ * it (children). Compounds before the host — `:root[data-sticky]`,
+ * `[data-layout-subgrid] > layout-card` — are context, not API, and are
+ * ignored. `:is()` / `:has()` groups inside the host compound are stripped
+ * before reading host attributes so `article[data-measure]` listed as a
+ * sibling arm does not leak into layout-text's API.
+ *
+ * @param {string} [root]
+ * @returns {Map<string, {host: Map<string, {values: Set<string>, bare: boolean}>, child: Map<string, {values: Set<string>, bare: boolean}>}>}
+ *   keyed by element name (e.g. "layout-stack")
+ */
+export function readLayoutVocabularyByElement(root = DEFAULT_ROOT) {
+  const elements = readdirSync(join(root, 'src', 'custom-elements'), { withFileTypes: true })
+    .filter((e) => e.isDirectory() && e.name.startsWith('layout-'))
+    .map((e) => e.name);
+  const out = new Map(elements.map((el) => [el, { host: new Map(), child: new Map() }]));
+
+  const record = (map, attr, value) => {
+    if (!map.has(attr)) map.set(attr, { values: new Set(), bare: false });
+    if (value == null) map.get(attr).bare = true;
+    else map.get(attr).values.add(value);
+  };
+  const attrsIn = (text) =>
+    [...text.matchAll(/\[(data-[a-z0-9-]+)(?:="([^"]*)")?\]/g)].map((m) => [m[1], m[2]]);
+  const stripGroups = (text) => {
+    // remove :is(...) / :has(...) / :not(...) / :where(...) with nesting
+    let out = '';
+    let depth = 0;
+    for (let i = 0; i < text.length; i++) {
+      const m = /^:(is|has|not|where)\(/.exec(text.slice(i));
+      if (depth === 0 && m) { depth = 1; i += m[0].length - 1; continue; }
+      if (depth > 0) { if (text[i] === '(') depth++; else if (text[i] === ')') depth--; continue; }
+      out += text[i];
+    }
+    return out;
+  };
+  const splitTop = (text, seps) => {
+    const parts = [];
+    let depth = 0; let cur = '';
+    for (const ch of text) {
+      if (ch === '(' || ch === '[') depth++;
+      else if (ch === ')' || ch === ']') depth--;
+      if (depth === 0 && seps.includes(ch)) { parts.push(cur); cur = ''; continue; }
+      cur += ch;
+    }
+    parts.push(cur);
+    return parts.map((p) => p.trim()).filter(Boolean);
+  };
+  const compounds = (sel) => splitTop(sel.replace(/\s*([>+~])\s*/g, ' $1 '), [' '])
+    .filter((c) => !['>', '+', '~'].includes(c));
+  const names = (compound) => {
+    const found = new Set();
+    for (const el of elements) {
+      const bare = el;
+      if (new RegExp(`(^|[\\s(,])${bare}(?=$|[\\[\\s,:)>])`).test(compound)) found.add(el);
+      const attrForm = `[data-layout="${el.replace(/^layout-/, '')}"]`;
+      if (compound.includes(attrForm)) found.add(el);
+    }
+    return found;
+  };
+
+  for (const file of vocabularyFiles(root)) {
+    const css = stripComments(readFileSync(file, 'utf8'));
+    // Walk braces, keeping a stack of resolved selectors (nesting flattened).
+    const stack = [];
+    let buf = '';
+    for (const ch of css) {
+      if (ch === '{') {
+        const raw = buf.trim().replace(/\s+/g, ' ');
+        buf = '';
+        if (raw.startsWith('@')) { stack.push(null); continue; }
+        const parents = stack.filter(Boolean).at(-1) ?? [''];
+        const resolved = [];
+        for (const parent of parents) {
+          for (const part of splitTop(raw, [','])) {
+            resolved.push(part.includes('&') ? part.replaceAll('&', parent) : (parent ? `${parent} ${part}` : part));
+          }
+        }
+        stack.push(resolved);
+        for (const sel of resolved) {
+          const comps = compounds(sel);
+          const hostIdx = comps.findIndex((c) => names(c).size);
+          if (hostIdx === -1) continue;
+          for (const el of names(comps[hostIdx])) {
+            const rec = out.get(el);
+            if (!rec) continue;
+            for (const [a, v] of attrsIn(stripGroups(comps[hostIdx]))) {
+              if (a === 'data-layout' || a === 'data-canvas') continue;
+              record(rec.host, a, v);
+            }
+            for (const c of comps.slice(hostIdx + 1)) {
+              for (const [a, v] of attrsIn(c)) {
+                if (a === 'data-layout' || a === 'data-canvas') continue;
+                record(rec.child, a, v);
+              }
+            }
+          }
+        }
+      } else if (ch === '}') {
+        stack.pop();
+        buf = '';
+      } else if (ch === ';' && !buf.includes('{')) {
+        buf = '';
+      } else {
+        buf += ch;
+      }
+    }
+  }
+  return out;
+}

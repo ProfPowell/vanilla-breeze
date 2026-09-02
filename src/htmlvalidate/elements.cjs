@@ -4,16 +4,22 @@ module.exports = {
 
   "layout-text": {
     flow: true,
-    permittedContent: ["@flow"]
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-layout-measure": { enum: ["narrow", "normal", "wide"] },
+      "data-layout-max": { enum: ["narrow", "normal", "wide"] },
+      "data-layout-centered": { boolean: true }
+    }
   },
 
   "layout-switcher": {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-threshold": {},
-      "data-gap": { enum: ["none", "xs", "s", "m", "l", "xl"] },
-      "data-limit": { enum: ["2", "3", "4", "5"] }
+      "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
+      "data-layout-threshold": { enum: ["s", "m", "l"], omit: true },
+      "data-layout-limit": { enum: ["2", "3", "4"] },
+      "data-layout-reverse": { boolean: true }
     }
   },
 
@@ -21,8 +27,8 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
-      "data-align": { enum: ["start", "center", "end", "stretch"] }
+      "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
+      "data-layout-align": { enum: ["start", "center", "end", "stretch"] }
     }
   },
 
@@ -30,11 +36,11 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-gap": { enum: ["xs", "s", "m", "l", "xl"] },
-      "data-side": { enum: ["start", "end"] },
-      "data-sidebar-width": { enum: ["narrow", "normal", "wide"] },
-      "data-content-min": { enum: ["40", "50", "60"] },
-      "data-nowrap": { boolean: true }
+      "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
+      "data-layout-side": { enum: ["end"] },
+      "data-layout-sidebar-width": { enum: ["narrow", "normal", "wide"] },
+      "data-layout-content-min": { enum: ["s", "m", "l"] },
+      "data-layout-nowrap": { boolean: true }
     }
   },
 
@@ -42,11 +48,12 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-gap": { enum: ["none", "xs", "s", "m", "l", "xl"] },
-      "data-padding": { enum: ["none", "s", "m", "l"] },
-      "data-item-width": { enum: ["auto", "s", "m", "l", "xl", "full"] },
-      "data-align": { enum: ["start", "center", "end", "stretch"] },
-      "data-scrollbar": { boolean: true }
+      "data-layout-scrollbar": { boolean: true },
+      "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
+      "data-layout-padding": { enum: ["none", "s", "m", "l"] },
+      "data-layout-item-width": { enum: ["auto", "s", "m", "l", "xl", "full"] },
+      "data-layout-align": { enum: ["start", "center", "end", "stretch"] },
+      "data-scroll-hint": { enum: ["start"], omit: true }
     }
   },
 
@@ -54,8 +61,10 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-fixed": { boolean: true },
-      "data-contain": { boolean: true }
+      "data-layout-fixed": { boolean: true },
+      "data-layout-margin": { enum: ["s", "m", "l", "xl"] },
+      "data-layout-position": { enum: ["center", "top", "bottom", "start", "end", "top-start", "top-end", "bottom-start", "bottom-end"] },
+      "data-layout-contain": { boolean: true }
     }
   },
 
@@ -63,8 +72,9 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-min": {},
-      "data-gap": { enum: ["none", "xs", "s", "m", "l", "xl"] }
+      "data-layout-min": { enum: ["xs", "s", "m", "l", "xl"] },
+      "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
+      "data-layout-subgrid": { enum: ["2", "4"], omit: true }
     }
   },
 
@@ -72,9 +82,24 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-min-block": {},
-      "data-gap": { enum: ["none", "xs", "s", "m", "l", "xl"] },
-      "data-npad": { boolean: true }
+      "data-layout-min": { enum: ["s", "m", "l", "xl", "auto"] },
+      "data-layout-padding": { enum: ["none", "s", "m", "l", "xl"] },
+      "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
+      "data-layout-nospace": { boolean: true },
+      "data-layout-centered": { boolean: true },
+      "data-hero-overlay": { boolean: true }
+    }
+  },
+
+  "layout-columns": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-layout-align": { enum: ["justify"] },
+      "data-layout-column-count": { enum: ["1", "2", "3", "auto"] },
+      "data-layout-measure": { enum: ["narrow", "normal", "wide"] },
+      "data-layout-max": { enum: ["narrow", "normal", "wide"] },
+      "data-layout-centered": { boolean: true }
     }
   },
 
@@ -82,10 +107,11 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-gap": { enum: ["xs", "s", "m", "l", "xl"] },
-      "data-justify": { enum: ["start", "end", "center", "between"] },
-      "data-align": { enum: ["start", "end", "center", "stretch", "baseline"] },
-      "data-nowrap": { boolean: true }
+      "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
+      "data-layout-justify": { enum: ["start", "end", "center", "between"] },
+      "data-layout-align": { enum: ["start", "end", "center", "stretch", "baseline"] },
+      "data-layout-nowrap": { boolean: true },
+      "data-layout-overlap": { enum: ["xs", "s", "m", "l"], omit: true }
     }
   },
 
@@ -93,10 +119,11 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-max": { enum: ["narrow", "normal", "wide"] },
-      "data-intrinsic": { boolean: true },
-      "data-text": { boolean: true },
-      "data-gutter": { enum: ["none", "s", "l"] }
+      "data-layout-max": { enum: ["narrow", "normal", "wide", "prose"] },
+      "data-layout-intrinsic": { boolean: true },
+      "data-layout-text": { boolean: true },
+      "data-layout-gutter": { enum: ["none", "s", "l"] },
+      "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"], omit: true }
     }
   },
 
@@ -105,7 +132,19 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "data-variant": { enum: ["elevated", "outlined", "ghost"] },
-      "data-padding": { enum: ["none", "s", "m", "l", "xl"] }
+      "data-padding": { enum: ["none", "s", "m", "l", "xl"] },
+      "data-max": { enum: ["narrow", "normal", "wide", "prose"] }
+    }
+  },
+
+  "layout-canvas": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-variant": { enum: ["flush", "elevated"] },
+      "data-max": { enum: ["narrow", "normal", "wide", "prose"] },
+      "data-padding": { enum: ["none", "s", "m", "l", "xl"] },
+      "data-canvas-depth": { enum: ["1", "2"] }
     }
   },
 
@@ -115,8 +154,9 @@ module.exports = {
     permittedContent: ["@phrasing"],
     attributes: {
       "data-size": { enum: ["sm", "lg"] },
-      "data-color": { enum: ["primary", "success", "warning", "danger", "info"] },
-      "data-variant": {}
+      "data-color": { enum: ["primary", "success", "warning", "error", "info", "brand", "secondary", "accent"] },
+      "data-variant": { enum: ["subtle", "outlined"] },
+      "data-shape": { enum: ["square"] }
     }
   },
 

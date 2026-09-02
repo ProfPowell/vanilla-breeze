@@ -279,7 +279,13 @@ function generateElementsCjs(manifests) {
         const obj = {};
         if (attr.required) obj.required = true;
         if (attr.type === 'boolean') obj.boolean = true;
-        if (attr.type === 'enum' && attr.values) obj.enum = attr.values;
+        if (attr.type === 'enum' && attr.values) {
+          // "" in a manifest enum means the bare (valueless) form is allowed
+          // too — data-layout-overlap alone means "s". html-validate spells
+          // that `omit: true`; an empty string in `enum` does not cover it.
+          obj.enum = attr.values.filter(v => v !== '');
+          if (attr.values.includes('')) obj.omit = true;
+        }
 
         const keys = Object.keys(obj);
         if (keys.length === 0) {
@@ -289,6 +295,7 @@ function generateElementsCjs(manifests) {
           if (obj.required) parts.push('required: true');
           if (obj.boolean) parts.push('boolean: true');
           if (obj.enum) parts.push(`enum: [${obj.enum.map(v => `"${v}"`).join(', ')}]`);
+          if (obj.omit) parts.push('omit: true');
           attrLines.push(`      "${attr.name}": { ${parts.join(', ')} }`);
         }
       }

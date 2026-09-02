@@ -6,6 +6,18 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **api.json manifests for all 14 layout elements**, generated from and
+  gated against the CSS (`tests/unit/layout-manifests.test.js`). The
+  html-validate registry previously carried layout manifests with attribute
+  names the CSS never read (`data-gap` for `data-layout-gap`), so it now
+  validates the real layout API — which immediately caught `layout-imposter`
+  demos using `data-position` / `data-margin` (the CSS reads
+  `data-layout-position` / `data-layout-margin`; 42 sites migrated) and two
+  badges using `data-variant` for a color. Every layout element's doc page
+  attribute table is regenerated from its manifest.
+
 ### Internal
 
 - `context-menu` and `drop-down` reset themed button styling on their items
