@@ -22,8 +22,10 @@ mechanics change. Last rewritten **2026-09-02**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 44 open, 38 ready, nothing in progress. The active thread is
-  the epic **3lac** "Quality tightening: layout + core", 20 of 26 done.
+- **Beads:** 40 open, 34 ready, nothing in progress. The epic **3lac**
+  "Quality tightening: layout + core" is complete (25 of 25 children
+  done); close the epic itself next session after a last read of its
+  description.
 
 ### Landed this session
 
@@ -52,13 +54,18 @@ mechanics change. Last rewritten **2026-09-02**.
 | tfcw | `layout-attributes.css` 1294 → 760 lines: density → `utils/density.css`, scroll effects → `utils/scroll-driven.css`, canvas → `layout-canvas/styles.css`; legacy `data-layout="body-*"` deleted (demo migrated, region container names re-pointed to page-layout); dormant identity rules scoped. layout-badge keeps its tag |
 | 822u | Dead files deleted (`charts/index.css`, `vb-extensions.js`), `data-hero-overlay` + `data-layout-nospace` removed, stale barrel headers / pointer no-op / build comment fixed |
 | jhku | Both web-components CSS barrels are import-only (gate); shared rules once in `web-components/_shared/`; core's 7 drifted rules reconciled to index; built-bundle declaration diff proved it |
+| 7371 | youtube-player / social-embed self-declared layer wrappers stripped |
+| 6xxy | VB effects runtime is a per-document singleton that boots its own observer (core-only pages now activate late effects; Playwright spec); chunk splitting measured and rejected (standalone files are a contract) |
+| j1hi | Scale spelling normalised to `s/m/l` (font-size, shadow, bp), 1394 occurrences in 484 files, no aliases; DTCG fixtures + vendored catalogs follow |
+| p0wn | 72 dead tokens pruned (all Open Props numeric aliases); `token-usage.test.js` gate; 28 unread-but-set/documented tokens tracked (z1im) |
+| hl9c | native-elements contract amended (element-scoped modifier classes + init-module classes); 7 dead classes pruned; hex fallbacks dropped, highlight colours oklch; `native-element-classes.test.js` gate |
 
 ## Resume in five minutes
 
 ```bash
 cd ~/src/vanilla-breeze
 git checkout work/next && git pull --rebase
-bd ready                 # 38 ready; see Queue below for the order
+bd ready                 # 34 ready; see Queue below for the order
 npm ci && (cd site && npm ci)
 npm run build            # CDN bundles + doc site → site/dist/pages
 npm test                 # 968 unit tests, ~12s
@@ -70,15 +77,16 @@ starts it). Never run two Playwright invocations at once.
 
 ## Queue (recommended order)
 
-1. The epic's remaining P3s: 6xxy (effects double-bundling / per-component
-   chunk dedup), 7371 (strip redundant `@layer web-components{}` wrappers in
-   youtube-player and social-embed), j1hi (token scale naming s/m/l vs
-   sm/md/lg), p0wn (dead token set), hl9c (native-elements "no classes"
-   contract). The cascade, layout, barrel and docs threads are closed.
-   Hygiene: add `check:api-drift` to the CI gate (green; 2 calendar-wc
-   `data-size` warnings remain); **s3hy** (P4, 6 px media queries off the
-   breakpoint contract); the native-elements sub-index chained imports
-   (article → highlights, hr → shapes) noted in jhku.
+1. Close the **3lac** epic (all children done). Then the follow-ups it
+   spawned: **z1im** (28 unread-but-set tokens: wire or prune), **s3hy**
+   (6 px media queries), add `check:api-drift` to the CI gate, the
+   native-elements sub-index chained imports (jhku note), a base
+   `--page-bg-color` definition and the spacing/sizing filename swap (p0wn
+   notes).
+2. Outside the epic, the P2s: **iwuq** (theme visual coverage — the
+   capture/diff recipe has now been rebuilt five times; make it a spec),
+   **kdkb** (vendor `marked`), **d2wz** (verify and close), **7yiy**
+   (GoodURL phase 1).
 2. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
    (theme visual coverage), d2wz (mobile-menu nav-bar redeploy — verify it
    is not already moot now that main deploys), 7yiy (GoodURL phase 1).
@@ -127,6 +135,13 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
   To prove a cascade change safe, capture before/after in one session by
   serving the old CSS from git through Playwright route interception, then
   diff computed styles for anything that differs (memory note has the recipe).
+- **Token gates.** Scale spelling is `s/m/l` everywhere. `token-usage.test.js`
+  rejects unread core tokens (allowlist `UNREAD_BUT_KEPT`, tracked by z1im);
+  `native-element-classes.test.js` rejects dead classes in native-elements
+  (a class counts as used if corpus HTML has it or a framework JS module
+  writes it). A token rename must also update the DTCG test fixtures and
+  `src/data/theme-catalog/*.json` keys. Verifying a rename needs a full HEAD
+  site build served on a second port, not the CSS route-interception trick.
 - **Barrels are import-only.** `web-components/index.css` and `core.css`
   hold `@import` lines only (gate in `bundle-parity.test.js`); shared rule
   sets live in `src/web-components/_shared/` and core imports the core
