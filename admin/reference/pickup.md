@@ -22,8 +22,8 @@ mechanics change. Last rewritten **2026-09-02**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 49 open, 43 ready, nothing in progress. The active thread is
-  the epic **3lac** "Quality tightening: layout + core", 14 of 26 done.
+- **Beads:** 47 open, 41 ready, nothing in progress. The active thread is
+  the epic **3lac** "Quality tightening: layout + core", 17 of 26 done.
 
 ### Landed this session
 
@@ -46,13 +46,16 @@ mechanics change. Last rewritten **2026-09-02**.
 | butz | `vb/layout-attr-value` keyed per layout (element's own tag, across lines, escaped markup ignored); found 30 `data-layout-ratio` no-ops on `[data-media]` (reads `data-ratio`), fixed |
 | zzdy | drift check's hardcoded ARIA table expected `aria-selected` on tab-set; it manages `aria-expanded` by design |
 | lp55 | meta/link, output and svg conformance guards scoped to the examined tag; every class attribute on a line is now checked (+5 real warnings) |
+| iocg | charts add-on layered into `web-components` (layer() on every import, CDN prefix via shared `prefixLayerOrder()`); chart-wc hidden-table overrides locked against utils; a sparkline demo's own height rule finally wins |
+| dtw6 | tokens graph is custom-properties only, gated; backdrop/scrollbars/border-styles/spotlight split into tokens + `src/utils/` application files, opentype moved, external-components imported from utils; backdrop regions now render centered with the canvas gap |
+| vjpn | 169 hardcoded `cursor: pointer` → `var(--cursor-custom-pointer, pointer)` (gate: `cursor-hook.test.js`); backdrop breakpoint → `--bp-sm`; heading weights tokenised. Follow-up s3hy for 6 other px media queries |
 
 ## Resume in five minutes
 
 ```bash
 cd ~/src/vanilla-breeze
 git checkout work/next && git pull --rebase
-bd ready                 # 43 ready; see Queue below for the order
+bd ready                 # 41 ready; see Queue below for the order
 npm ci && (cd site && npm ci)
 npm run build            # CDN bundles + doc site → site/dist/pages
 npm test                 # 968 unit tests, ~12s
@@ -64,12 +67,15 @@ starts it). Never run two Playwright invocations at once.
 
 ## Queue (recommended order)
 
-1. The epic's P3s: 6xxy, jhku, tfcw, dtw6, 822u, 7371, iocg, j1hi,
-   p0wn, hl9c, vjpn. Natural next ones: **iocg** (charts-standalone
-   unlayered — reuse the CDN layer-order prefix from `scripts/build-cdn.js`),
-   **dtw6** (selector rules out of the tokens layer), **vjpn** (theme cursor
-   hook). Consider adding `check:api-drift` to the CI gate now that it is
-   green (2 calendar-wc `data-size` warnings remain).
+1. The epic's remaining P3s: 6xxy, jhku, tfcw, 822u, 7371, j1hi, p0wn,
+   hl9c. The cascade/theme-contract thread is closed (t8ao, 1v63, ijls,
+   iocg, dtw6, vjpn). Natural next ones: **tfcw** (split the non-layout
+   concerns out of `layout-attributes.css`, now ~1290 lines: grid identity
+   and container plumbing are the obvious cuts), **822u** (dead code sweep —
+   `charts/index.css` is dead), **jhku** (de-duplicate the web-components
+   barrels, same shape as the layout merge). Hygiene: add `check:api-drift`
+   to the CI gate (green; 2 calendar-wc `data-size` warnings remain);
+   **s3hy** (P4, 6 px media queries off the breakpoint contract).
 2. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
    (theme visual coverage), d2wz (mobile-menu nav-bar redeploy — verify it
    is not already moot now that main deploys), 7yiy (GoodURL phase 1).
@@ -118,6 +124,13 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
   To prove a cascade change safe, capture before/after in one session by
   serving the old CSS from git through Playwright route interception, then
   diff computed styles for anything that differs (memory note has the recipe).
+- **Cascade gates now in `bundle-parity.test.js`:** themes self-declare
+  `bundle-theme`; charts imports carry `layer(web-components)`; the tokens
+  import graph holds custom properties only (exceptions: `color-scheme`,
+  `interpolate-size`, `:root` token `transition`). `cursor-hook.test.js`:
+  no hardcoded `cursor: pointer` in framework CSS — write
+  `var(--cursor-custom-pointer, pointer)`. Standalone CSS artifacts get the
+  layer-order prefix from `prefixLayerOrder()` in `scripts/build-cdn.js`.
 - **Conformance scanner.** `scripts/quality/vb-conformance.js` is
   line-based; rules needing element context read the opening tag with
   `tagAround(offset)`, which only resolves when the match sits inside a real
