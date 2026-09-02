@@ -56,7 +56,19 @@ const KEYFRAME_PHASE = new Map([
   ['vb-float', 'decoration'],
 ])
 
-const VB = {
+/**
+ * One VB per document. Two bundles that both include this module (extras.js
+ * and the effects pack share five effects; a page can legitimately load
+ * both) used to create two VB objects with two registries and two observers,
+ * so an element could be activated twice or, if its effect was registered in
+ * the copy whose observer never ran, not at all. The first copy to evaluate
+ * owns the instance; later copies register into it (6xxy).
+ */
+const VB_SINGLETON_KEY = '__vbEffectsRuntime'
+/** @type {any} */
+const g = globalThis
+
+const VB = g[VB_SINGLETON_KEY] ?? {
   _effects: new Map(),
   _triggers: new Map(),
   _transitions: new Map(),
@@ -68,6 +80,8 @@ const VB = {
   _observer: null,
   /** @type {((e: AnimationEvent) => void) | null} */
   _animationEndHandler: null,
+  /** Set once the module has scheduled observe() for this document. */
+  _autoBooted: false,
 
   /**
    * Register an effect handler.
@@ -599,7 +613,21 @@ const VB = {
   },
 }
 
+g[VB_SINGLETON_KEY] = VB
+
 // Expose globally for non-module scripts and DevTools console
 if (typeof window !== 'undefined') window.VB = VB
+
+// Self-boot the observer once per document. main.js and main-autoload.js call
+// VB.observe() explicitly, but main-core.js never did, so on a core-only page
+// (the production docs) an element inserted after load never activated —
+// VB.effect() only scans at registration. observe() is idempotent, so the
+// explicit calls stay harmless. The observer targets document.body, hence the
+// DOMContentLoaded wait when this module evaluates in <head>.
+if (typeof document !== 'undefined' && !VB._autoBooted) {
+  VB._autoBooted = true
+  if (document.body) VB.observe()
+  else document.addEventListener('DOMContentLoaded', () => VB.observe(), { once: true })
+}
 
 export { VB }

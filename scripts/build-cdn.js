@@ -292,6 +292,16 @@ function extractTagNames(source) {
 
 /**
  * Build individual component JS files and manifest
+ *
+ * Each chunk is self-contained: every one re-bundles vb-element,
+ * bundle-registry and whatever shared libs it touches (94 of 95 do), which
+ * is ~1.3 MB / 300 KB gz across all chunks versus 775 KB / 258 KB with
+ * esbuild code splitting. Splitting was measured and rejected (6xxy): the
+ * per-component files are a documented contract for cherry-picking a single
+ * component (<script type="module" src="/cdn/components/x.js">) and for
+ * copying one file elsewhere; hashed shared chunks with relative imports would
+ * break the second. A page pays the duplication only per autoloaded
+ * component, and the autoloader fetches one file per tag.
  */
 async function buildComponents() {
   const wcDir = join(SRC, 'web-components');

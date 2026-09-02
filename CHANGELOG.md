@@ -76,8 +76,24 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   usages; `data-layout-padding="none"` is the latter). `src/charts/index.css`
   and `markdown-viewer/vb-extensions.js`, both imported by nothing (822u).
 
+### Fixed
+
+- **Effects activate on elements added after load on core-only pages**
+  (6xxy). `VB.observe()` was only called from the full and autoload entries;
+  the production docs load the core entry, so a `data-effect` element
+  inserted later never activated. The runtime now boots its own observer
+  once the DOM is ready, and is one instance per document, so a page that
+  loads both extras and the effects pack (five shared effect modules) no
+  longer gets two registries and two observers.
+
 ### Internal
 
+- youtube-player and social-embed no longer wrap themselves in
+  `@layer web-components` (the entry owns the layer; they nested as
+  `web-components.web-components`) (7371).
+- Per-component autoload chunks stay self-contained: code splitting was
+  measured (1.3 MB → 775 KB raw across all chunks) and rejected because a
+  single component file is a documented cherry-pick contract (6xxy).
 - **The web-components CSS barrels are pure import manifests** (jhku).
   `index.css` and `core.css` carried 1477 and 650 lines of inline rules,
   hand-copied between them; 96 of core's 103 rules were verbatim copies and
