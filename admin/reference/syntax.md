@@ -1336,14 +1336,16 @@ Apply `data-layout="value"` on any element. Shared CSS in `src/custom-elements/l
 
 | Value | Description |
 |-------|-------------|
-| `body-stack` | Simple vertical stack |
-| `body-sidebar-left` | Left sidebar layout |
-| `body-sidebar-right` | Right sidebar layout |
-| `body-holy-grail` | Three-column holy grail |
-| `body-app-shell` | App shell with sidebar |
-| `body-dashboard` | Dashboard layout |
-| `body-article` | Article/reading layout |
-| `body-landing` | Landing page layout |
+| `stack` | Simple vertical stack (also the bare `data-page-layout` default) |
+| `sidebar-left` | Left sidebar layout |
+| `sidebar-right` | Right sidebar layout |
+| `holy-grail` | Three-column holy grail |
+| `app-shell` | App shell with sidebar |
+| `dashboard` | Dashboard layout |
+| `article` | Article/reading layout |
+| `landing` | Landing page layout |
+
+The old `data-layout="body-*"` spellings of these templates were removed (tfcw).
 
 ### Shared Layout Modifier Attributes
 

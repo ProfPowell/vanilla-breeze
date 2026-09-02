@@ -58,8 +58,26 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   `--bp-sm` (37.5rem / 600px), and heading weights use the
   `--font-weight-*` tokens.
 
+### Removed
+
+- **`data-layout="body-*"` page templates** (tfcw). They were a
+  line-for-line legacy copy of `data-page-layout` and used by one demo;
+  use `data-page-layout="stack | sidebar-left | sidebar-right | holy-grail |
+  app-shell | dashboard | article | landing"`. The page regions keep their
+  named containers (`region-main` / `region-nav` / `region-aside`) under
+  `data-page-layout`. The dormant `main[data-layout] > *` and
+  `article[data-layout] > *` grid-area rules, which fired for every
+  layout value and named areas no template defined, are scoped to the
+  `main[data-layout="sidebar-*"]` templates that use them.
+
 ### Internal
 
+- `layout-attributes.css` is layout again (tfcw, 1294 → 760 lines):
+  density modes moved to `src/utils/density.css`, the scroll-driven header
+  shrink / `data-animate` reveals / `data-parallax` to
+  `src/utils/scroll-driven.css`, and the canvas surface into
+  `layout-canvas/styles.css`. `<layout-badge>` keeps its tag; it is
+  documented as a surface element rather than a layout primitive.
 - `vb/layout-attr-value` now validates each `data-layout-*` value against
   the vocabulary of the element's own layout (resolved from `<layout-x>`,
   `data-layout="x"` or `data-page-layout`), instead of the union across all

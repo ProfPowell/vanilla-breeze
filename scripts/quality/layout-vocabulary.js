@@ -71,6 +71,10 @@ function vocabularyFiles(root) {
   }
 
   const files = [requiredFile];
+  // data-layout-density is defined with the other utilities (tfcw), not in a
+  // layout-* directory, but it is a data-layout-* attribute with a vocabulary.
+  const densityFile = join(root, 'src', 'utils', 'density.css');
+  if (existsSync(densityFile)) files.push(densityFile);
   for (const entry of readdirSync(base, { withFileTypes: true })) {
     if (entry.isDirectory() && entry.name.startsWith('layout-')) {
       const styleFile = join(base, entry.name, 'styles.css');

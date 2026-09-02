@@ -15,8 +15,16 @@
    flex-collapse guard on center, cluster gap stopping at xl, a position-only
    sidebar). Do not add [data-layout="x"] rules here for a layout that has an
    element file. What stays here: the attribute-only layouts (page-stack,
-   split, holy-grail, dashboard), the grid-identity system, and the
+   split, holy-grail, dashboard, data-page-layout, regions, media), the
+   grid-identity system, the staged presentation pattern, and the
    container-query plumbing shared across layouts.
+
+   NOT here (tfcw): density modes → src/utils/density.css; scroll-driven
+   header shrink, data-animate reveals and data-parallax →
+   src/utils/scroll-driven.css; the canvas surface →
+   layout-canvas/styles.css. The legacy data-layout="body-*" templates were
+   a line-for-line copy of data-page-layout and are gone — use
+   data-page-layout="…".
    ========================================================================== */
 
 /* ==========================================================================
@@ -244,7 +252,6 @@
   }
 }
 
-
 /* ==========================================================================
    PHASE 5: GRID IDENTITY SYSTEM (Zen Garden Patterns)
    Semantic elements auto-register grid areas based on DOM position.
@@ -326,51 +333,23 @@
 
 /* --------------------------------------------------------------------------
    Grid Identity Layer
-   Semantic elements auto-register their grid areas.
-   Works on any container with body-* layouts (not just <body>).
+   Semantic elements auto-register their grid areas (see PAGE LAYOUTS).
    -------------------------------------------------------------------------- */
 
-/* Body-level landmarks (for any container with body-* layouts) */
-[data-layout^="body-"] > header,
-[data-layout^="body-"] > .demo-header { grid-area: body-header; }
+/* Named containers for targeted @container queries on the page regions.
+   (data-page-layout's grid-area assignments live in the PAGE LAYOUTS section.) */
+[data-page-layout] > main  { container-name: region-main; }
+[data-page-layout] > nav   { container-name: region-nav; }
+[data-page-layout] > aside { container-name: region-aside; }
 
-[data-layout^="body-"] > nav,
-[data-layout^="body-"] > .demo-nav { grid-area: body-nav; }
-
-[data-layout^="body-"] > main,
-[data-layout^="body-"] > .demo-main { grid-area: body-main; }
-
-[data-layout^="body-"] > aside,
-[data-layout^="body-"] > .demo-aside { grid-area: body-aside; }
-
-[data-layout^="body-"] > footer,
-[data-layout^="body-"] > .demo-footer { grid-area: body-footer; }
-
-/* Named containers for targeted @container queries */
-[data-layout^="body-"] > main,
-[data-layout^="body-"] > .demo-main  { container-name: region-main; }
-[data-layout^="body-"] > nav,
-[data-layout^="body-"] > .demo-nav   { container-name: region-nav; }
-[data-layout^="body-"] > aside,
-[data-layout^="body-"] > .demo-aside { container-name: region-aside; }
-
-/* Secondary nav (if present) */
-[data-layout^="body-"] > nav:nth-of-type(2) { grid-area: body-nav-secondary; }
-
-/* Main-level structure (for nested layouts) */
-main[data-layout] > header { grid-area: main-header; }
-main[data-layout] > nav { grid-area: main-nav; }
-main[data-layout] > article { grid-area: main-article; }
-main[data-layout] > section { grid-area: main-section; }
-main[data-layout] > aside { grid-area: main-aside; }
-main[data-layout] > footer { grid-area: main-footer; }
-
-/* Article-level structure */
-article[data-layout] > header { grid-area: article-header; }
-article[data-layout] > nav { grid-area: article-nav; }
-article[data-layout] > section { grid-area: article-content; }
-article[data-layout] > aside { grid-area: article-aside; }
-article[data-layout] > footer { grid-area: article-footer; }
+/* Main-level structure — only the main[data-layout="sidebar-*"] templates
+   below define main-* areas, so only they assign them. The old
+   main[data-layout] > * and article[data-layout] > * rules fired for EVERY
+   data-layout value (inert on flex layouts, an overlap risk on grids) and
+   named areas no template defined. */
+main[data-layout^="sidebar-"] > nav     { grid-area: main-nav; }
+main[data-layout^="sidebar-"] > article { grid-area: main-article; }
+main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
 
 /* Explicit grid area overrides via data attribute */
 [data-layout-area="hero"] { grid-area: hero; }
@@ -540,7 +519,6 @@ article[data-layout] > footer { grid-area: article-footer; }
   }
 }
 
-
 /* ==========================================================================
    PHASE 6: COMPONENT-LEVEL REGIONS & NESTED TEMPLATES
    Generalized header/content/footer grid, media object pattern,
@@ -663,219 +641,12 @@ main[data-layout="sidebar-right"] > aside  { container-name: region-main-aside; 
   }
 }
 
-
-/* ==========================================================================
-   LEGACY: data-layout="body-*" (backwards compatibility)
-
-   Prefer data-page-layout for new projects.
-   These patterns work on any container, not just <body>.
-   ========================================================================== */
-
-/* Base grid setup for body-* layouts (any container) */
-[data-layout^="body-"] {
-  display: grid;
-  gap: var(--_layout-gap, var(--size-m));
-}
-
-/* Full viewport height when applied to body */
-body[data-layout^="body-"] {
-  min-height: 100dvh;
-}
-
-/* Stack layout (mobile-first default) */
-[data-layout="body-stack"] {
-  grid-template: var(--tpl-stack);
-}
-
-/* Sidebar Left */
-[data-layout="body-sidebar-left"] {
-  grid-template: var(--tpl-sidebar-left);
-}
-
-/* Sidebar Right */
-[data-layout="body-sidebar-right"] {
-  grid-template: var(--tpl-sidebar-right);
-}
-
-/* Holy Grail (3-column) */
-[data-layout="body-holy-grail"] {
-  grid-template: var(--tpl-holy-grail);
-}
-
-/* App Shell */
-[data-layout="body-app-shell"] {
-  grid-template: var(--tpl-app-shell);
-  gap: 0;
-}
-
-/* Dashboard */
-[data-layout="body-dashboard"] {
-  grid-template: var(--tpl-dashboard);
-  gap: 0;
-}
-
-/* Article (centered content) */
-[data-layout="body-article"] {
-  grid-template: var(--tpl-article);
-  justify-content: center;
-}
-
-/* Landing page */
-[data-layout="body-landing"] {
-  grid-template: var(--tpl-landing);
-}
-
-/* Gap modifiers for body layouts */
-[data-layout^="body-"][data-layout-gap="none"]  { --_layout-gap: 0; }
-[data-layout^="body-"][data-layout-gap="3xs"]   { --_layout-gap: var(--size-3xs); }
-[data-layout^="body-"][data-layout-gap="2xs"]   { --_layout-gap: var(--size-2xs); }
-[data-layout^="body-"][data-layout-gap="xs"]    { --_layout-gap: var(--size-xs); }
-[data-layout^="body-"][data-layout-gap="s"]     { --_layout-gap: var(--size-s); }
-[data-layout^="body-"][data-layout-gap="m"]     { --_layout-gap: var(--size-m); }
-[data-layout^="body-"][data-layout-gap="l"]     { --_layout-gap: var(--size-l); }
-[data-layout^="body-"][data-layout-gap="xl"]    { --_layout-gap: var(--size-xl); }
-[data-layout^="body-"][data-layout-gap="2xl"]   { --_layout-gap: var(--size-2xl); }
-[data-layout^="body-"][data-layout-gap="3xl"]   { --_layout-gap: var(--size-3xl); }
-
 /* --------------------------------------------------------------------------
-   Content-Aware Layouts (:has() powered adaptations)
-   CSS reads HTML structure and adapts automatically
+   Order utilities
    -------------------------------------------------------------------------- */
-
-/* Adjust sidebar-left when nav is absent */
-[data-layout="body-sidebar-left"]:not(:has(> nav)):not(:has(> .demo-nav)) {
-  grid-template-columns: 1fr;
-}
-
-/* Adjust sidebar-right when aside is absent */
-[data-layout="body-sidebar-right"]:not(:has(> aside)):not(:has(> .demo-aside)) {
-  grid-template-columns: 1fr;
-}
-
-/* Holy grail without aside becomes two-column */
-[data-layout="body-holy-grail"]:not(:has(> aside)):not(:has(> .demo-aside)) {
-  grid-template:
-    "body-header body-header" auto
-    "body-nav    body-main"   1fr
-    "body-footer body-footer" auto
-    / var(--_sidebar-width) 1fr;
-}
-
-/* Holy grail without nav becomes two-column (aside on right) */
-[data-layout="body-holy-grail"]:not(:has(> nav)):not(:has(> .demo-nav)) {
-  grid-template:
-    "body-header body-header" auto
-    "body-main   body-aside"  1fr
-    "body-footer body-footer" auto
-    / 1fr var(--_sidebar-width);
-}
-
-/* Holy grail without both becomes single column */
-[data-layout="body-holy-grail"]:not(:has(> nav)):not(:has(> .demo-nav)):not(:has(> aside)):not(:has(> .demo-aside)) {
-  grid-template: var(--tpl-stack);
-}
-
-/* Main adapts when aside is present - only for legacy body-* layouts */
-main[data-layout^="body-"]:has(> aside),
-[data-layout^="body-"] > main:has(> aside) {
-  display: grid;
-  grid-template-columns: 1fr var(--_sidebar-width);
-  gap: var(--size-m);
-}
-
-/* --------------------------------------------------------------------------
-   Body Layout Utilities
-   -------------------------------------------------------------------------- */
-
-/* Full-bleed: span all columns */
-[data-layout^="body-"] > [data-layout-bleed] {
-  grid-column: 1 / -1;
-}
-
-/* Sticky positioning for nav/aside */
-:root[data-sticky] [data-layout^="body-"] > nav[data-layout-sticky],
-:root[data-sticky] [data-layout^="body-"] > aside[data-layout-sticky] {
-  position: sticky;
-  top: calc(var(--sticky-offset, 0px) + var(--sticky-gap, 0px));
-  align-self: start;
-  max-height: calc(100dvh - var(--sticky-offset, 0px) - var(--sticky-gap, 0px));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-/* Sticky header */
-:root[data-sticky] [data-layout^="body-"] > header[data-layout-sticky] {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky, 100);
-}
-
-/* Sidebar state modifiers */
-[data-layout^="body-"][data-sidebar="collapsed"] {
-  --_sidebar-width: var(--_sidebar-collapsed);
-}
-
-[data-layout^="body-"][data-sidebar="hidden"] > nav {
-  display: none;
-}
-
-/* Order utilities */
 [data-layout-order="-1"] { order: -1; }
 [data-layout-order="1"] { order: 1; }
 [data-layout-order="99"] { order: 99; }
-
-/* --------------------------------------------------------------------------
-   Responsive Adaptations for Body Layouts
-   -------------------------------------------------------------------------- */
-
-@media (width < 48rem) { /* --bp-md */
-  /* Only collapse if data-layout-nowrap is NOT present */
-  [data-layout="body-sidebar-left"]:not([data-layout-nowrap]),
-  [data-layout="body-sidebar-right"]:not([data-layout-nowrap]),
-  [data-layout="body-holy-grail"]:not([data-layout-nowrap]),
-  [data-layout="body-dashboard"]:not([data-layout-nowrap]) {
-    grid-template: var(--tpl-stack);
-  }
-
-  [data-layout="body-app-shell"]:not([data-layout-nowrap]) {
-    grid-template:
-      "body-header" auto
-      "body-main"   1fr
-      "body-nav"    auto
-      / 1fr;
-  }
-
-  /* Safe area padding on bottom nav for notch/home-indicator devices */
-  [data-layout="body-app-shell"]:not([data-layout-nowrap]) > nav {
-    padding-block-end: var(--safe-bottom, 0px);
-  }
-
-  /* Main with aside stacks on mobile (unless nowrap) */
-  main:has(> aside):not([data-layout-nowrap]) {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Wide screens: constrain max width (only for body) */
-@media (width >= 87.5rem) { /* --bp-xl */
-  body[data-layout="body-holy-grail"],
-  body[data-layout="body-dashboard"] {
-    max-width: 87.5rem;
-    margin-inline: auto;
-  }
-}
-
-/* Print: simplify to single column */
-@media print {
-  [data-layout^="body-"] {
-    display: block;
-  }
-
-  [data-layout^="body-"] > nav,
-  [data-layout^="body-"] > aside {
-    display: none;
-  }
-}
 
 /* --------------------------------------------------------------------------
    Container Queries for Component-Level Responsiveness
@@ -929,183 +700,6 @@ main, article, section, aside:not(.float):not(.sidenote) {
 [data-container="panel"] { container-name: panel; }
 [data-container="media"] { container-name: media; }
 
-
-/* ==========================================================================
-   DENSITY MODES
-   Contextual spacing adjustment for different information density needs.
-   Cascades to all children — set once on a container.
-   ========================================================================== */
-
-/* Compact: tighter spacing for dashboards, data tables, admin UIs */
-[data-layout-density="compact"] {
-  --size-3xs: 1px;
-  --size-2xs: 2px;
-  --size-xs: 4px;
-  --size-s: 8px;
-  --size-m: 12px;
-  --size-l: 16px;
-  --size-xl: 24px;
-  --size-2xl: 32px;
-  --size-3xl: 48px;
-  --font-size-s: 0.75rem;
-  --font-size-sm: 0.8125rem;
-  line-height: 1.4;
-}
-
-/* Spacious: generous spacing for marketing pages, landing pages */
-[data-layout-density="spacious"] {
-  --size-3xs: 4px;
-  --size-2xs: 8px;
-  --size-xs: 12px;
-  --size-s: 16px;
-  --size-m: 24px;
-  --size-l: 32px;
-  --size-xl: 48px;
-  --size-2xl: 64px;
-  --size-3xl: 96px;
-  line-height: 1.8;
-}
-
-
-/* ==========================================================================
-   SCROLL-DRIVEN ANIMATIONS
-   Opt-in via data-scroll-shrink on sticky headers within page layouts.
-   ========================================================================== */
-
-@supports (animation-timeline: scroll()) {
-  @keyframes shrink-header {
-    to {
-      padding-block: var(--size-2xs);
-      font-size: var(--font-size-sm);
-      box-shadow: 0 1px 3px oklch(0% 0 0 / 0.1);
-    }
-  }
-
-  [data-page-layout] > header[data-layout-sticky][data-scroll-shrink],
-  [data-layout^="body-"] > header[data-layout-sticky][data-scroll-shrink] {
-    animation: shrink-header linear both;
-    animation-timeline: scroll();
-    animation-range: 0 200px;
-  }
-}
-
-
-/* ==========================================================================
-   SCROLL-DRIVEN REVEAL ANIMATIONS
-   Opt-in via data-animate on any element within a page layout.
-   Animations fire as elements enter the viewport via animation-timeline: view().
-   ========================================================================== */
-
-@supports (animation-timeline: view()) {
-  @keyframes vb-fade-up {
-    from { opacity: 0; transform: translateY(2rem); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes vb-fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-
-  @keyframes vb-slide-left {
-    from { opacity: 0; transform: translateX(2rem); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-
-  @keyframes vb-scale-up {
-    from { opacity: 0; transform: scale(0.95); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-
-  [data-animate="fade-up"] {
-    animation: vb-fade-up linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 35%;
-  }
-
-  [data-animate="fade-in"] {
-    animation: vb-fade-in linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 35%;
-  }
-
-  [data-animate="slide-left"] {
-    animation: vb-slide-left linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 35%;
-  }
-
-  [data-animate="scale-up"] {
-    animation: vb-scale-up linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 35%;
-  }
-
-  [data-animate="blur-in"] {
-    animation: vb-blur-in linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 35%;
-  }
-}
-
-/* Fallback: elements remain visible in unsupported browsers */
-@supports not (animation-timeline: view()) {
-  [data-animate] {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-animate] {
-    animation: none !important;
-    opacity: 1;
-    transform: none;
-  }
-}
-
-
-/* ==========================================================================
-   PARALLAX
-   Opt-in via data-parallax. Section-local, transform-only depth motion
-   driven by view-progress timeline. Tune with custom properties:
-     --vb-parallax-from   (default: 0%)
-     --vb-parallax-to     (default: -12%)
-     --vb-parallax-scale  (default: 1)
-   Use `data-parallax-group` as an authoring marker on the section that
-   contains a parallax layer; it has no CSS attached this pass.
-   ========================================================================== */
-
-@supports (animation-timeline: view()) {
-  @keyframes vb-parallax {
-    from {
-      transform:
-        translateY(var(--vb-parallax-from, 0%))
-        scale(var(--vb-parallax-scale, 1));
-    }
-    to {
-      transform:
-        translateY(var(--vb-parallax-to, -12%))
-        scale(var(--vb-parallax-scale, 1));
-    }
-  }
-
-  [data-parallax] {
-    animation: vb-parallax linear both;
-    animation-timeline: view();
-    animation-range: cover 0% cover 100%;
-    will-change: transform;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-parallax] {
-    animation: none !important;
-    transform: none;
-  }
-}
-
-
 /* ==========================================================================
    STAGED PRESENTATION
    Opt-in via data-stage. Two-column layout: pinned visual + sequential
@@ -1144,7 +738,6 @@ main, article, section, aside:not(.float):not(.sidenote) {
   }
 }
 
-
 /* ==========================================================================
    CONTAINER QUERY EXPANSION
    Additional container-based adaptations for page regions.
@@ -1164,131 +757,3 @@ main, article, section, aside:not(.float):not(.sidenote) {
   }
 }
 
-
-/* ==========================================================================
-   CANVAS SURFACE
-   Explicit elevated surface — attribute form or custom element wrapper.
-   Complements data-backdrop (which targets body > regions implicitly).
-   Use data-canvas on semantic elements or <layout-canvas> as a wrapper.
-
-   Usage:
-     <article data-canvas>...</article>
-     <section data-canvas="flush">...</section>
-     <section data-canvas="elevated">...</section>
-     <layout-canvas>...</layout-canvas>
-     <layout-canvas data-variant="elevated">...</layout-canvas>
-   ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   Base canvas surface
-   -------------------------------------------------------------------------- */
-[data-canvas],
-layout-canvas {
-  background: var(--canvas-bg, var(--color-surface));
-  border-radius: var(--canvas-radius, var(--radius-l));
-  box-shadow: var(--canvas-shadow, var(--shadow-lg));
-  padding-inline: var(--canvas-padding-inline, var(--size-l));
-  padding-block: var(--canvas-padding-block, var(--size-l));
-  inline-size: 100%;
-  max-inline-size: var(--canvas-width, min(72rem, 100%));
-  margin-inline: auto;
-}
-
-/* --------------------------------------------------------------------------
-   Variant: flush (no radius, no shadow)
-   -------------------------------------------------------------------------- */
-[data-canvas="flush"],
-layout-canvas[data-variant="flush"] {
-  border-radius: 0;
-  box-shadow: none;
-}
-
-/* --------------------------------------------------------------------------
-   Variant: elevated (larger radius, dramatic shadow)
-   -------------------------------------------------------------------------- */
-[data-canvas="elevated"],
-layout-canvas[data-variant="elevated"] {
-  border-radius: var(--radius-xl, var(--radius-l));
-  box-shadow: var(--shadow-xl, var(--shadow-lg));
-}
-
-/* --------------------------------------------------------------------------
-   Width constraints via data-max — narrow | normal | wide | prose, the
-   same keyword set as layout-center and layout-card. Surfaces (canvas,
-   card, badge) use bare data-* attributes; flow primitives use
-   data-layout-*.
-   -------------------------------------------------------------------------- */
-[data-canvas][data-max="narrow"],
-layout-canvas[data-max="narrow"]  { max-inline-size: var(--content-narrow, 45rem); }
-
-[data-canvas][data-max="normal"],
-layout-canvas[data-max="normal"] { max-inline-size: var(--content-normal, 60rem); }
-
-[data-canvas][data-max="wide"],
-layout-canvas[data-max="wide"]    { max-inline-size: var(--content-wide, 80rem); }
-
-[data-canvas][data-max="prose"],
-layout-canvas[data-max="prose"]   { max-inline-size: 65ch; }
-
-/* --------------------------------------------------------------------------
-   Padding variants
-   -------------------------------------------------------------------------- */
-[data-canvas][data-padding="none"],
-layout-canvas[data-padding="none"] { padding: 0; }
-
-[data-canvas][data-padding="s"],
-layout-canvas[data-padding="s"]    { padding-inline: var(--size-s); padding-block: var(--size-s); }
-
-[data-canvas][data-padding="m"],
-layout-canvas[data-padding="m"]    { padding-inline: var(--size-m); padding-block: var(--size-m); }
-
-[data-canvas][data-padding="l"],
-layout-canvas[data-padding="l"]    { padding-inline: var(--size-l); padding-block: var(--size-l); }
-
-[data-canvas][data-padding="xl"],
-layout-canvas[data-padding="xl"]   { padding-inline: var(--size-xl); padding-block: var(--size-xl); }
-
-/* --------------------------------------------------------------------------
-   Nested canvas: raised surface for visual hierarchy
-   -------------------------------------------------------------------------- */
-[data-canvas] [data-canvas],
-layout-canvas layout-canvas,
-[data-canvas] layout-canvas,
-layout-canvas [data-canvas] {
-  background: var(--color-surface-raised, var(--color-surface));
-}
-
-/* --------------------------------------------------------------------------
-   Canvas depth — ghost cards on canvas elements
-   Same stacked-papers illusion as backdrop-depth.css but for data-canvas.
-   -------------------------------------------------------------------------- */
-[data-canvas][data-canvas-depth="1"]:not([data-canvas="flush"]),
-layout-canvas[data-canvas-depth="1"]:not([data-variant="flush"]) {
-  box-shadow:
-    var(--canvas-shadow, var(--shadow-lg)),
-    0 8px 0 -3px var(--canvas-bg, var(--color-surface, #fff)),
-    0 10px 8px -3px oklch(0% 0 0 / 0.12);
-}
-
-[data-canvas][data-canvas-depth="2"]:not([data-canvas="flush"]),
-layout-canvas[data-canvas-depth="2"]:not([data-variant="flush"]) {
-  box-shadow:
-    var(--canvas-shadow, var(--shadow-lg)),
-    0 8px 0 -3px var(--canvas-bg, var(--color-surface, #fff)),
-    0 10px 8px -3px oklch(0% 0 0 / 0.12),
-    0 16px 0 -6px var(--canvas-bg, var(--color-surface, #fff)),
-    0 18px 8px -6px oklch(0% 0 0 / 0.06);
-}
-
-/* --------------------------------------------------------------------------
-   Mobile: canvas goes flush (matches backdrop behavior)
-   -------------------------------------------------------------------------- */
-@media (max-width: 640px) {
-  [data-canvas],
-  layout-canvas {
-    max-inline-size: none;
-    border-radius: 0;
-    box-shadow: none;
-    padding-inline: var(--size-m, 1rem);
-  }
-}

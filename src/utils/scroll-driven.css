@@ -1,0 +1,144 @@
+/* ==========================================================================
+   SCROLL-DRIVEN EFFECTS
+   Header shrink (data-scroll-shrink), viewport reveals (data-animate) and
+   parallax (data-parallax). Moved out of custom-elements/layout-attributes.css
+   (tfcw): these are motion, not layout. Lives in @layer utils.
+
+   data-animate="blur-in" uses the vb-blur-in keyframes from
+   tokens/extensions/motion-fx.css, which both entries always bundle through
+   the tokens barrel; the other keyframes are defined here.
+   ========================================================================== */
+
+@supports (animation-timeline: scroll()) {
+  @keyframes shrink-header {
+    to {
+      padding-block: var(--size-2xs);
+      font-size: var(--font-size-sm);
+      box-shadow: 0 1px 3px oklch(0% 0 0 / 0.1);
+    }
+  }
+
+  [data-page-layout] > header[data-layout-sticky][data-scroll-shrink] {
+    animation: shrink-header linear both;
+    animation-timeline: scroll();
+    animation-range: 0 200px;
+  }
+}
+
+
+/* ==========================================================================
+   SCROLL-DRIVEN REVEAL ANIMATIONS
+   Opt-in via data-animate on any element within a page layout.
+   Animations fire as elements enter the viewport via animation-timeline: view().
+   ========================================================================== */
+
+@supports (animation-timeline: view()) {
+  @keyframes vb-fade-up {
+    from { opacity: 0; transform: translateY(2rem); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes vb-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes vb-slide-left {
+    from { opacity: 0; transform: translateX(2rem); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes vb-scale-up {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  [data-animate="fade-up"] {
+    animation: vb-fade-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  [data-animate="fade-in"] {
+    animation: vb-fade-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  [data-animate="slide-left"] {
+    animation: vb-slide-left linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  [data-animate="scale-up"] {
+    animation: vb-scale-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  [data-animate="blur-in"] {
+    animation: vb-blur-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+}
+
+/* Fallback: elements remain visible in unsupported browsers */
+@supports not (animation-timeline: view()) {
+  [data-animate] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-animate] {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+/* ==========================================================================
+   PARALLAX
+   Opt-in via data-parallax. Section-local, transform-only depth motion
+   driven by view-progress timeline. Tune with custom properties:
+     --vb-parallax-from   (default: 0%)
+     --vb-parallax-to     (default: -12%)
+     --vb-parallax-scale  (default: 1)
+   Use `data-parallax-group` as an authoring marker on the section that
+   contains a parallax layer; it has no CSS attached this pass.
+   ========================================================================== */
+
+@supports (animation-timeline: view()) {
+  @keyframes vb-parallax {
+    from {
+      transform:
+        translateY(var(--vb-parallax-from, 0%))
+        scale(var(--vb-parallax-scale, 1));
+    }
+    to {
+      transform:
+        translateY(var(--vb-parallax-to, -12%))
+        scale(var(--vb-parallax-scale, 1));
+    }
+  }
+
+  [data-parallax] {
+    animation: vb-parallax linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-parallax] {
+    animation: none !important;
+    transform: none;
+  }
+}
+
+
