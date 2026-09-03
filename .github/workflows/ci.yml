@@ -53,6 +53,12 @@ jobs:
       - name: VB conformance check
         run: npm run conformance
 
+      # The html-validate registry is generated from the api.json manifests, so
+      # a manifest that claims an attribute the code never reads (or vice versa)
+      # silently weakens lint:html. Validate the manifests and check for drift.
+      - name: API manifests validate + drift check
+        run: npm run validate:api && npm run check:api-drift
+
       - name: Theme token coverage
         run: npm run lint:theme-tokens
 

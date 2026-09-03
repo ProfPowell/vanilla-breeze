@@ -430,7 +430,6 @@ module.exports = {
       "data-highlight": {},
       "data-event-count": {},
       "name": {},
-      "size": {},
       "data-event-dot": {},
       "title": {}
     }

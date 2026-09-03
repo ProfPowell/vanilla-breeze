@@ -2384,11 +2384,6 @@ export default {
         "description": "Form participation name. Enables ElementInternals form value sync on selection."
       },
       {
-        "name": "size",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
         "name": "data-event-dot",
         "kind": "data",
         "purpose": "config"
