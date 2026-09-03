@@ -255,6 +255,32 @@ describe('the web-components barrels are pure import manifests', () => {
   }
 });
 
+describe('media queries use the breakpoint contract', () => {
+  // tokens/breakpoints.css: "All media queries MUST use these exact rem
+  // values" (--bp-s 37.5rem, --bp-m 48rem, --bp-l 64rem, --bp-xl 87.5rem).
+  // Width queries in px drifted off the scale (640px, 900px). Height queries
+  // are not on the contract and stay free. Themes and packs are exempt.
+  it('no width media query in src/ uses a px value', () => {
+    const offenders = [];
+    const walk = (dir) => {
+      for (const entry of readdirSync(resolve(root, dir), { withFileTypes: true })) {
+        const rel = `${dir}/${entry.name}`;
+        if (entry.isDirectory()) {
+          if (rel.startsWith('src/tokens/themes') || rel.startsWith('src/packs')) continue;
+          walk(rel);
+        } else if (entry.name.endsWith('.css')) {
+          const css = read(rel).replace(/\/\*[\s\S]*?\*\//g, '');
+          for (const m of css.matchAll(/@media[^{]*\b(?:min-|max-)?width\s*[:<>=]+\s*[0-9.]+px/g)) {
+            offenders.push(`${rel}: ${m[0].trim()}`);
+          }
+        }
+      }
+    };
+    walk('src');
+    assert.deepEqual(offenders, [], 'Use the --bp-* rem values with the (width < X) syntax.');
+  });
+});
+
 describe('@property registration parity', () => {
   const entries = ['src/main.css', 'src/main-core.css'];
 
