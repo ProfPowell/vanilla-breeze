@@ -202,7 +202,6 @@ Legacy aliases: `--space-unit`, `--space-3xs` … `--space-3xl` map to `--size-*
 |----------|-------|-------------|
 | `--motion-hover-lift` | `translateY(-2px)` | Hover lift transform |
 | `--motion-hover-scale` | `scale(1.02)` | Hover scale transform |
-| `--motion-hover-glow` | 4px primary glow | Hover glow shadow |
 | `--motion-stagger-delay` | `50ms` | Stagger animation delay |
 | `--motion-bounce` | cubic-bezier | Bouncy easing |
 | `--motion-snappy` | cubic-bezier | Snappy easing |
@@ -227,7 +226,6 @@ Keyframe animations: `vb-fade-in`, `vb-fade-out`, `vb-slide-up`, `vb-slide-down`
 | `--glass-opacity` | Glass opacity (default 0.15) |
 | `--glass-bg` | Glass background |
 | `--glass-border` | Glass border |
-| `--gradient-subtle` | 2-color linear gradient |
 | `--gradient-radial` | Radial gradient |
 | `--gradient-mesh` | 3-layer mesh gradient |
 
@@ -244,7 +242,6 @@ Keyframe animations: `vb-fade-in`, `vb-fade-out`, `vb-slide-up`, `vb-slide-down`
 
 | Property | Description |
 |----------|-------------|
-| `--border-roughness` | 0–3 intensity (0=none) |
 | `--filter-rough-none/light/medium/heavy` | SVG filter refs |
 | `--filter-rough` | Active filter (default none) |
 | `--shadow-sketch` | Sketch-style offset shadow |
