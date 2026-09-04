@@ -26,24 +26,6 @@ const demos = readdirSync(demosDir)
   .filter(f => f.endsWith('.html') && !f.startsWith('_') && !SKIP.has(f))
   .sort();
 
-// picsum.photos serves a different random photo per request — substitute a
-// deterministic SVG at the requested size so screenshots are stable.
-// (Migrating demos to local placeholders is tracked separately.)
-test.beforeEach(async ({ page }) => {
-  await page.route('**://*.picsum.photos/**', fulfillPlaceholder);
-  await page.route('**://picsum.photos/**', fulfillPlaceholder);
-});
-
-function fulfillPlaceholder(route) {
-  const m = /picsum\.photos\/(?:seed\/[\w-]+\/)?(\d+)(?:\/(\d+))?/.exec(route.request().url());
-  const w = m?.[1] ?? 300;
-  const h = m?.[2] ?? m?.[1] ?? 200;
-  route.fulfill({
-    contentType: 'image/svg+xml',
-    body: `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#b8bcc9"/><line x1="0" y1="0" x2="${w}" y2="${h}" stroke="#8e93a3"/><line x1="${w}" y1="0" x2="0" y2="${h}" stroke="#8e93a3"/></svg>`,
-  });
-}
-
 for (const demo of demos) {
   test(`visual: ${demo}`, async ({ page }) => {
     await page.goto(`/docs/examples/demos/${demo}`);

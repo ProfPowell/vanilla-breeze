@@ -4,7 +4,7 @@ Living doc. Rewrite the **Status** and **Queue** sections at the end of every
 working session; keep **Resume** and **How the repo works** current as the
 mechanics change. Last rewritten **2026-09-02**.
 
-## Status (2026-09-02)
+## Status (2026-09-04)
 
 - **Version:** 0.3.1 on npm (published 2026-07-07). Nothing released since;
   the 0.3.x → next changes are all on `main` unreleased.
@@ -22,7 +22,7 @@ mechanics change. Last rewritten **2026-09-02**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 37 open, 31 ready, nothing in progress. The epic **3lac** is
+- **Beads:** 37 open, 31 ready, nothing in progress. New: **t5r2** (13 stale demo baselines to triage; see below). The epic **3lac** is
   closed. Follow-ups it spawned that remain: **o4tj** (components derive
   hover/active/subtle states locally instead of reading the theme-set
   `--color-*-hover/-active/-subtle` tokens — wire or prune, verify with the
@@ -64,6 +64,7 @@ mechanics change. Last rewritten **2026-09-02**.
 | s3hy | 5 px width media queries → `--bp-s/l`; gate against px widths |
 | z1im | 28 unread tokens decided: 19 kept as categorised public API, 5 theme-state tokens tracked in o4tj, 4 pruned everywhere |
 | iwuq | `theme-surfaces.spec.js`: surfaces demo under all 55 themes light+dark + form-validation per theme, 156 desktop baselines; old themes.spec.js retired |
+| uz4f | 145 picsum hot-links (27 demos, 5 docs pages, image-gallery static) → deterministic local SVGs in `src/assets/placeholders/` (manifest + `scripts/generate-placeholders.mjs`); assemble-site copies `src/assets`; visual-suite picsum shim removed, 11 demo baselines refreshed |
 
 ## Resume in five minutes
 
@@ -85,13 +86,12 @@ starts it). Never run two Playwright invocations at once.
 1. **o4tj** (P3, design) — wire the theme-set state colours into the
    components that map to a semantic colour, or prune them; the new
    theme-surfaces spec shows the blast radius per theme.
-2. The P2s: **kdkb** (vendor `marked`), **d2wz** (verify and close),
+2. **t5r2** (P2) — triage the 13 stale demos baselines with the
+   like-for-like recipe; until then the demos suite is a noise floor.
+3. The P2s: **kdkb** (vendor `marked`), **d2wz** (verify and close),
    **7yiy** (GoodURL phase 1). Small leftovers: native-elements sub-index
    chained imports (jhku note), a base `--page-bg-color` definition and the
    spacing/sizing filename swap (p0wn notes).
-2. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
-   (theme visual coverage), d2wz (mobile-menu nav-bar redeploy — verify it
-   is not already moot now that main deploys), 7yiy (GoodURL phase 1).
 
 Alternative thread if the quality epic feels done enough: the analytics
 work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
@@ -182,9 +182,11 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
   layout that has an element file. `layout-*/` inside a CSS comment closes
   the comment (esbuild only warns) — write `layout-<name>/`. Verify layout
   or cascade changes by running `tests/visual/demos.spec.js` before and
-  after and diffing the failing sets (4 baselines were already stale:
-  calendar-wc-multi-month, effects-kitchen-sink, layout-attributes-refactored,
-  layout-comparison), then like-for-like captures for the delta.
+  after and diffing the failing sets, then like-for-like captures for the
+  delta. As of 2026-09-04 the desktop demos suite has 17 stale baselines
+  (4 old ones plus 13 from the token/theme commits) — tracked in **t5r2**;
+  they fail identically before and after uz4f, so treat them as the noise
+  floor until that bead lands.
 - **Typecheck runs three tsconfigs** (`src`, `scripts`, `tests`) chained
   with `&&`; an error in the first hides the rest.
 
