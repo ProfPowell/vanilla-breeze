@@ -109,6 +109,7 @@ const srcDirs = [
   'data',      // emoji-picker dynamic imports (emoji-data-extended.js)
   'labs',      // labs.css referenced by lab demos
   'packs',     // design-system / icons / kawaii / memphis / fonts demos
+  'assets',    // local placeholder images the demos and docs reference (uz4f)
 ];
 for (const d of srcDirs) {
   copyDir(join('src', d), join(pagesDir, 'src', d));
