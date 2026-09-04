@@ -22,10 +22,11 @@ mechanics change. Last rewritten **2026-09-02**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 40 open, 34 ready, nothing in progress. The epic **3lac**
-  "Quality tightening: layout + core" is complete (25 of 25 children
-  done); close the epic itself next session after a last read of its
-  description.
+- **Beads:** 36 open, 31 ready, nothing in progress. The epic **3lac** is
+  closed. Follow-ups it spawned that remain: **o4tj** (components derive
+  hover/active/subtle states locally instead of reading the theme-set
+  `--color-*-hover/-active/-subtle` tokens — wire or prune, verify with the
+  theme-surfaces spec).
 
 ### Landed this session
 
@@ -59,13 +60,17 @@ mechanics change. Last rewritten **2026-09-02**.
 | j1hi | Scale spelling normalised to `s/m/l` (font-size, shadow, bp), 1394 occurrences in 484 files, no aliases; DTCG fixtures + vendored catalogs follow |
 | p0wn | 72 dead tokens pruned (all Open Props numeric aliases); `token-usage.test.js` gate; 28 unread-but-set/documented tokens tracked (z1im) |
 | hl9c | native-elements contract amended (element-scoped modifier classes + init-module classes); 7 dead classes pruned; hex fallbacks dropped, highlight colours oklch; `native-element-classes.test.js` gate |
+| CI | `validate:api` + `check:api-drift` in the quality gate; calendar-wc's phantom `size` manifest entry removed |
+| s3hy | 5 px width media queries → `--bp-s/l`; gate against px widths |
+| z1im | 28 unread tokens decided: 19 kept as categorised public API, 5 theme-state tokens tracked in o4tj, 4 pruned everywhere |
+| iwuq | `theme-surfaces.spec.js`: surfaces demo under all 55 themes light+dark + form-validation per theme, 156 desktop baselines; old themes.spec.js retired |
 
 ## Resume in five minutes
 
 ```bash
 cd ~/src/vanilla-breeze
 git checkout work/next && git pull --rebase
-bd ready                 # 34 ready; see Queue below for the order
+bd ready                 # 31 ready; see Queue below for the order
 npm ci && (cd site && npm ci)
 npm run build            # CDN bundles + doc site → site/dist/pages
 npm test                 # 968 unit tests, ~12s
@@ -77,16 +82,13 @@ starts it). Never run two Playwright invocations at once.
 
 ## Queue (recommended order)
 
-1. Close the **3lac** epic (all children done). Then the follow-ups it
-   spawned: **z1im** (28 unread-but-set tokens: wire or prune), **s3hy**
-   (6 px media queries), add `check:api-drift` to the CI gate, the
-   native-elements sub-index chained imports (jhku note), a base
-   `--page-bg-color` definition and the spacing/sizing filename swap (p0wn
-   notes).
-2. Outside the epic, the P2s: **iwuq** (theme visual coverage — the
-   capture/diff recipe has now been rebuilt five times; make it a spec),
-   **kdkb** (vendor `marked`), **d2wz** (verify and close), **7yiy**
-   (GoodURL phase 1).
+1. **o4tj** (P3, design) — wire the theme-set state colours into the
+   components that map to a semantic colour, or prune them; the new
+   theme-surfaces spec shows the blast radius per theme.
+2. The P2s: **kdkb** (vendor `marked`), **d2wz** (verify and close),
+   **7yiy** (GoodURL phase 1). Small leftovers: native-elements sub-index
+   chained imports (jhku note), a base `--page-bg-color` definition and the
+   spacing/sizing filename swap (p0wn notes).
 2. Outside the epic, the P2s worth a look: kdkb (vendor `marked`), iwuq
    (theme visual coverage), d2wz (mobile-menu nav-bar redeploy — verify it
    is not already moot now that main deploys), 7yiy (GoodURL phase 1).
@@ -135,6 +137,10 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
   To prove a cascade change safe, capture before/after in one session by
   serving the old CSS from git through Playwright route interception, then
   diff computed styles for anything that differs (memory note has the recipe).
+- **Theme visual suite.** `tests/visual/theme-surfaces.spec.js` runs the
+  surfaces demo under every theme in light and dark (desktop only, 156
+  baselines). Run it before and after any cascade, theme or token change
+  and refresh only the intended diffs with `--update-snapshots -g`.
 - **Token gates.** Scale spelling is `s/m/l` everywhere. `token-usage.test.js`
   rejects unread core tokens (allowlist `UNREAD_BUT_KEPT`, tracked by z1im);
   `native-element-classes.test.js` rejects dead classes in native-elements
