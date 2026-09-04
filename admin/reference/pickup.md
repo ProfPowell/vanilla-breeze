@@ -22,7 +22,7 @@ mechanics change. Last rewritten **2026-09-02**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 36 open, 31 ready, nothing in progress. The epic **3lac** is
+- **Beads:** 37 open, 31 ready, nothing in progress. The epic **3lac** is
   closed. Follow-ups it spawned that remain: **o4tj** (components derive
   hover/active/subtle states locally instead of reading the theme-set
   `--color-*-hover/-active/-subtle` tokens — wire or prune, verify with the
