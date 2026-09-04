@@ -88,6 +88,20 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Internal
 
+- **Per-theme visual regression is back** (iwuq): `tests/visual/theme-surfaces.spec.js`
+  screenshots a purpose-built surfaces page (`demos/examples/demos/theme-surfaces.html`:
+  typography, actions, forms, cards, table, details) under all 48 CDN
+  themes plus the bundled seven, in light and dark, and the form-validation
+  demo per theme — replacing the theme-lab coverage lost in the pack
+  decomposition. Desktop only.
+- The CI quality gate now runs `validate:api` and `check:api-drift`; the
+  registry that lint:html validates against is generated from the manifests.
+- Width media queries in `src/` use the breakpoint contract (`--bp-s/l`)
+  and a gate rejects px widths (s3hy). Four documented-but-wired-to-nothing
+  extension tokens removed: `--motion-hover-glow`, `--border-roughness`,
+  `--gradient-subtle`, `--page-bg-type` (z1im); the remaining unread tokens
+  are categorised in the token gate, and the seed-derived state colours
+  themes override but components never read are tracked as o4tj.
 - The native-elements layer contract now admits element-scoped semantic
   modifier classes (`p.lead`, `section.hero`, `article.card`) and classes
   the framework's own init modules write, instead of claiming "no classes"
