@@ -20,6 +20,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Demos and docs no longer hot-link picsum.photos** (uz4f). 145 image
+  references across 27 demos, 5 docs pages and image-gallery's static
+  example pointed at picsum, so every page load fetched random third-party
+  photos and screenshots were never reproducible. They now use deterministic
+  local SVG placeholders under `src/assets/placeholders/`, generated from a
+  manifest by `scripts/generate-placeholders.mjs` and served at the same
+  `/src/assets/…` path in dev and on the built site. The visual suite's
+  picsum interception shim is gone. `data-mock="photo"` and
+  `mock.imageUrl()` still name picsum as their documented opt-in service.
+
 - 30 media containers in demos and docs used `data-layout-ratio` on
   `[data-media]`, which reads `data-ratio`; the aspect ratio never applied.
   Found by the per-layout conformance check below.
