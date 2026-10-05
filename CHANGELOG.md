@@ -20,6 +20,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **A page-pinned `<html data-theme>` is now that page's default** (psme).
+  ThemeManager used to replace it on load in two cases: any saved
+  preference, even a light/dark toggle or a `default` picked on another
+  page of the same origin, resolved the brand to `default`; and a brand VB
+  has no CSS file for (a site's own theme) failed to load and was reset to
+  `default` on every first visit. Now only a saved preference naming a
+  different, explicit brand replaces the pin, a pinned brand that fails to
+  load is kept (the page supplies its CSS), cross-document sync applies the
+  same precedence, and `reset()` returns to the pin.
+
 - **Demos and docs no longer hot-link picsum.photos** (uz4f). 145 image
   references across 27 demos, 5 docs pages and image-gallery's static
   example pointed at picsum, so every page load fetched random third-party

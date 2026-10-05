@@ -4,7 +4,7 @@ Living doc. Rewrite the **Status** and **Queue** sections at the end of every
 working session; keep **Resume** and **How the repo works** current as the
 mechanics change. Last rewritten **2026-09-02**.
 
-## Status (2026-09-04)
+## Status (2026-10-05)
 
 - **Version:** 0.3.1 on npm (published 2026-07-07). Nothing released since;
   the 0.3.x → next changes are all on `main` unreleased.
@@ -22,7 +22,7 @@ mechanics change. Last rewritten **2026-09-02**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 37 open, 31 ready, nothing in progress. New: **t5r2** (13 stale demo baselines to triage; see below). The epic **3lac** is
+- **Beads:** 38 open, 32 ready, nothing in progress. New: **t5r2** (13 stale demo baselines to triage; see below) and **s3e3** (themes colour links inside nav, so nav's active-link colour needs `!important`; gate + drop it, document `--color-active-text/-bg` as the override). The epic **3lac** is
   closed. Follow-ups it spawned that remain: **o4tj** (components derive
   hover/active/subtle states locally instead of reading the theme-set
   `--color-*-hover/-active/-subtle` tokens — wire or prune, verify with the
@@ -64,6 +64,7 @@ mechanics change. Last rewritten **2026-09-02**.
 | s3hy | 5 px width media queries → `--bp-s/l`; gate against px widths |
 | z1im | 28 unread tokens decided: 19 kept as categorised public API, 5 theme-state tokens tracked in o4tj, 4 pruned everywhere |
 | iwuq | `theme-surfaces.spec.js`: surfaces demo under all 55 themes light+dark + form-validation per theme, 156 desktop baselines; old themes.spec.js retired |
+| psme | ThemeManager: a page-pinned `<html data-theme>` is the page's default — only an explicit, different stored brand replaces it; a pinned brand VB has no CSS for (a site's own theme) no longer 404s into `default`; storage sync and `reset()` follow the same rule. Reported from a downstream site build |
 | uz4f | 145 picsum hot-links (27 demos, 5 docs pages, image-gallery static) → deterministic local SVGs in `src/assets/placeholders/` (manifest + `scripts/generate-placeholders.mjs`); assemble-site copies `src/assets`; visual-suite picsum shim removed, 11 demo baselines refreshed |
 
 ## Resume in five minutes

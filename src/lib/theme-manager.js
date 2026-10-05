@@ -43,21 +43,32 @@ const KEY = 'current';
 const DEFAULTS = { mode: 'auto', brand: 'default', accent: 'default', borderStyle: '', iconSet: '', fluid: '', backdrop: '', backdropChrome: '', pageBgType: '', pageBgColor: '', pageBgGradStart: '', pageBgGradEnd: '', pageBgGradDir: '' };
 
 /**
- * Resolve the brand to apply on init(). A stored user preference always wins
- * (even a partial one without a `brand` resolves to the default, never falling
- * through to the page); otherwise honor a brand the page pinned via
- * `<html data-theme="…">` (e.g.
- * theme-showcase demos) so init() doesn't clobber it with the default;
- * otherwise fall back to the default brand. Pure (no DOM) for unit testing.
+ * The brand token a page pinned via `<html data-theme="…">`, ignoring a11y
+ * modifiers. Empty string when nothing is pinned. Pure (no DOM).
+ *
+ * @param {string} [domTheme] - the authored `data-theme` attribute value
+ * @returns {string}
+ */
+export function pinnedBrandFrom(domTheme) {
+  return (domTheme || '').split(/\s+/).find((t) => t && !t.startsWith('a11y-')) || '';
+}
+
+/**
+ * Resolve the brand to apply on init(). A brand the page pinned via
+ * `<html data-theme="…">` (theme-showcase demos, a site built on one theme)
+ * is that page's default: it is replaced only by a stored preference that
+ * names a different, explicit brand. A stored preference with no brand (a
+ * visitor only toggled light/dark) or with the generic `default` (a reset,
+ * or a pick made on another page of the same origin) falls through to the
+ * pin, then to the framework default. Pure (no DOM) for unit testing.
  *
  * @param {Partial<VBThemePrefs>|null} stored - persisted prefs, or null if none
- * @param {string} [domTheme] - the current `data-theme` attribute value
+ * @param {string} [domTheme] - the authored `data-theme` attribute value
  * @returns {string} the brand id to apply
  */
 export function resolveInitialBrand(stored, domTheme) {
-  if (stored) return stored.brand || DEFAULTS.brand;
-  const pinned = (domTheme || '').split(/\s+/).find((t) => t && !t.startsWith('a11y-'));
-  return pinned || DEFAULTS.brand;
+  if (stored?.brand && stored.brand !== DEFAULTS.brand) return stored.brand;
+  return pinnedBrandFrom(domTheme) || DEFAULTS.brand;
 }
 
 const SEED_PROPERTIES = [
@@ -69,6 +80,9 @@ const SEED_PROPERTIES = [
 
 /** @type {VBThemePrefs|null} In-memory cache populated on init() */
 let _state = null;
+
+/** Brand the page pinned via `<html data-theme>` before init() rewrote it. */
+let _pinnedBrand = '';
 
 export const ThemeManager = {
   /**
@@ -87,16 +101,20 @@ export const ThemeManager = {
     this._initPromise = (async () => {
       const stored = /** @type {Partial<VBThemePrefs>|null} */ (await VBStore.get(NS, KEY));
       _state = stored ? { ...DEFAULTS, ...stored } : { ...DEFAULTS };
-      // With no saved preference, honor a brand the page pinned via
-      // <html data-theme="…"> (theme-showcase demos) instead of clobbering it.
-      _state.brand = resolveInitialBrand(stored, document.documentElement.dataset.theme);
+      // A brand the page pinned via <html data-theme="…"> is this page's
+      // default; only an explicit, different stored brand replaces it.
+      _pinnedBrand = pinnedBrandFrom(document.documentElement.dataset.theme);
+      _state.brand = resolveInitialBrand(stored, _pinnedBrand);
 
       // Load saved brand CSS before applying
       try {
         await ensureThemeLoaded(_state.brand);
       } catch {
-        // Network error — fall back to default
-        _state.brand = 'default';
+        // Load failed. A pinned brand stays: the page ships its own CSS for
+        // it (a site theme VB has no file for would 404 here and used to
+        // lose its data-theme on every first load). A stored brand that
+        // fails is a network error — fall back to the pin, then default.
+        if (_state.brand !== _pinnedBrand) _state.brand = _pinnedBrand || DEFAULTS.brand;
       }
 
       this.apply(_state);
@@ -140,16 +158,19 @@ export const ThemeManager = {
       if (!next || typeof next !== 'object') return;
 
       const merged = { ...DEFAULTS, ..._state, ...next };
+      // Same precedence as init(): this document's pinned brand beats a
+      // sibling's `default` or a mode-only change.
+      merged.brand = resolveInitialBrand(next, _pinnedBrand);
 
       /* Brand CSS pack may not be loaded in this document yet — fetch
          before applying so the new tokens land before the data-theme
-         attribute swap. Failures fall back to default to avoid leaving
-         the document in a half-themed state. */
+         attribute swap. Failures fall back to the pin, then default, to
+         avoid leaving the document in a half-themed state. */
       if (merged.brand && merged.brand !== _state?.brand) {
         try {
           await ensureThemeLoaded(merged.brand);
         } catch {
-          merged.brand = 'default';
+          merged.brand = _pinnedBrand || DEFAULTS.brand;
         }
       }
 
@@ -386,10 +407,11 @@ export const ThemeManager = {
   },
 
   /**
-   * Reset to default theme
+   * Reset to the default theme — for a page that pinned a brand via
+   * `<html data-theme>`, that pin is its default.
    */
   reset() {
-    _state = { ...DEFAULTS };
+    _state = { ...DEFAULTS, brand: _pinnedBrand || DEFAULTS.brand };
     VBStore.remove(NS, KEY).catch(() => { /* ignore */ });
     const root = document.documentElement;
     root.style.removeProperty('--page-bg-color');
@@ -398,7 +420,7 @@ export const ThemeManager = {
     for (const prop of SEED_PROPERTIES) {
       root.style.removeProperty(prop);
     }
-    this.apply(DEFAULTS);
+    this.apply(_state);
   },
 
   /**
