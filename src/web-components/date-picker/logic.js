@@ -14,6 +14,11 @@
  *
  * The wrapped <input type="date"> provides min, max, and value.
  *
+ * Typed input accepts ISO (2026-04-15, 2026/04/15), month names in English
+ * or the document language (April 15, 2026 / 15 Apr 2026 / April 2026),
+ * CJK numeric dates (2026年4月15日) and Japanese era dates (令和8年4月15日,
+ * 令和元年5月1日, R8/4/15). Full-width digits are accepted in the CJK forms.
+ *
  * @example
  * <date-picker name="dob">
  *   <input type="date" min="1920-01-01" max="2025-12-31">
@@ -23,7 +28,7 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { supportsPopover } from '../../utils/popover-support.js';
-import { parseCJKNumeric } from '../../lib/date-japanese.js';
+import { parseWareki, parseCJKNumeric } from '../../lib/date-japanese.js';
 import { getLocale } from '../../lib/i18n.js';
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -129,6 +134,10 @@ function parseUserDate(text) {
     const d = fromISO(t.replace(/\//g, '-'));
     return d && !isNaN(d.getTime()) ? { date: d, partial: null } : { date: null, partial: null };
   }
+
+  // 2a. Japanese era: 令和8年10月21日, R8/10/21
+  const wareki = parseWareki(t);
+  if (wareki) return { date: wareki, partial: null };
 
   // 2b. CJK numeric: 2026年10月21日
   const cjk = parseCJKNumeric(t);
