@@ -23,6 +23,7 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { supportsPopover } from '../../utils/popover-support.js';
+import { parseCJKNumeric } from '../../lib/date-japanese.js';
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const DAYS_ABBR = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -127,6 +128,10 @@ function parseUserDate(text) {
     const d = fromISO(t.replace(/\//g, '-'));
     return d && !isNaN(d.getTime()) ? { date: d, partial: null } : { date: null, partial: null };
   }
+
+  // 2b. CJK numeric: 2026年10月21日
+  const cjk = parseCJKNumeric(t);
+  if (cjk) return { date: cjk, partial: null };
 
   // 3. Month-name formats: "Apr 15 2026", "April 15, 2026", "15 Apr 2026"
   // Pattern A: Month Day Year
