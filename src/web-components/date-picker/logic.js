@@ -24,6 +24,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { supportsPopover } from '../../utils/popover-support.js';
 import { parseCJKNumeric } from '../../lib/date-japanese.js';
+import { getLocale } from '../../lib/i18n.js';
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const DAYS_ABBR = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -65,7 +66,7 @@ function getFirstDayOfWeek() {
 /** Format a date for display using Intl */
 function formatDisplay(date) {
   try {
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat(getLocale(), {
       year: 'numeric', month: 'long', day: 'numeric',
     }).format(date);
   } catch {
@@ -95,9 +96,9 @@ function buildMonthMap() {
   // Add locale-specific names
   try {
     for (let m = 0; m < 12; m++) {
-      const long = new Intl.DateTimeFormat(undefined, { month: 'long' })
+      const long = new Intl.DateTimeFormat(getLocale(), { month: 'long' })
         .format(new Date(2000, m, 1)).toLowerCase();
-      const short = new Intl.DateTimeFormat(undefined, { month: 'short' })
+      const short = new Intl.DateTimeFormat(getLocale(), { month: 'short' })
         .format(new Date(2000, m, 1)).toLowerCase().replace('.', '');
       map.set(long, m);
       map.set(short, m);
@@ -436,7 +437,7 @@ class DatePicker extends VBElement {
   #renderMonth() {
     // Update month label
     try {
-      this.#monthLabel.textContent = new Intl.DateTimeFormat(undefined, { month: 'long' })
+      this.#monthLabel.textContent = new Intl.DateTimeFormat(getLocale(), { month: 'long' })
         .format(new Date(this.#viewYear, this.#viewMonth, 1));
     } catch {
       this.#monthLabel.textContent = EN_MONTHS[this.#viewMonth].charAt(0).toUpperCase()

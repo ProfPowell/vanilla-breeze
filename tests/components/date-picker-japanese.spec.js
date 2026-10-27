@@ -69,3 +69,25 @@ test.describe('date-picker — CJK numeric entry', () => {
     await expect(native).toHaveValue('2026-10-21');
   });
 });
+
+test.describe('date-picker — locale follows <html lang>', () => {
+  test.use({ locale: 'de-DE' });
+
+  test('displays in the document language, not the browser language', async ({ page }) => {
+    const { box } = await render(page, 'ja');
+    await expect(box).toHaveValue('2026年4月15日');
+  });
+
+  test('calendar month label follows the document language', async ({ page }) => {
+    const { box } = await render(page, 'ja');
+    await box.press('ArrowDown');
+    await expect(page.locator('date-picker').getByText('4月', { exact: true })).toBeVisible();
+  });
+
+  test('parses month names in the document language', async ({ page }) => {
+    const { box, native } = await render(page, 'fr');
+    await box.fill('21 octobre 2026');
+    await box.press('Enter');
+    await expect(native).toHaveValue('2026-10-21');
+  });
+});
