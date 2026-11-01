@@ -35,3 +35,28 @@ test('the runtime is a single shared instance', async ({ page }) => {
   const same = await page.evaluate(() => window.VB === globalThis.__vbEffectsRuntime && window.VB._autoBooted === true);
   expect(same).toBe(true);
 });
+
+/**
+ * The self-booted observer runs while vb.js evaluates — before
+ * vb-triggers.js and the effect modules register (vanilla-breeze-t5r2).
+ * Elements processed in that window must still get their trigger wired and
+ * their effect's DOM must survive the observer seeing it move.
+ */
+test('data-trigger="scroll" elements processed before the trigger registered still activate', async ({ page }) => {
+  await page.goto('/docs/examples/demos/slide-in-basic.html');
+  await page.waitForFunction(() => Boolean(window.VB?._triggers?.size));
+  const inView = page.locator('[data-trigger="scroll"]').first();
+  await inView.scrollIntoViewIfNeeded();
+  await expect(inView).toHaveAttribute('data-effect-active', '');
+  // The hidden pre-state (translateX(-40px)) must not widen the document.
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBe(0);
+});
+
+test('an effect that wraps its element keeps its control after the observer sees the move', async ({ page }) => {
+  await page.goto('/docs/examples/demos/animate-image-basic.html');
+  await page.waitForFunction(() => Boolean(window.VB?._effects?.has('animate-image')));
+  await page.waitForTimeout(200);
+  await expect(page.locator('.animate-image-toggle')).toHaveCount(2);
+  await expect(page.locator('.animate-image-wrapper > img[data-effect~="animate-image"]')).toHaveCount(2);
+});

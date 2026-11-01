@@ -74,6 +74,7 @@ const VB = g[VB_SINGLETON_KEY] ?? {
   _transitions: new Map(),
   _instances: new WeakMap(),    // el → Map<effectName, { activate, cleanup }>
   _triggerCleanups: new WeakMap(), // el → cleanup function
+  _wiredTriggers: new WeakMap(),   // el → Set<triggerName> already wired
   _transitionCleanups: new WeakMap(), // el → cleanup function
   _keyframePhase: KEYFRAME_PHASE,
   /** @type {MutationObserver | null} */
@@ -90,11 +91,17 @@ const VB = g[VB_SINGLETON_KEY] ?? {
    */
   effect(name, handler) {
     this._effects.set(name, handler)
-    // Initialize on existing matching elements
+    // Initialize on existing matching elements. The observer self-boots when
+    // this module evaluates, so elements are usually processed before the
+    // effect modules register: an element that already activated (no
+    // trigger) gets its activate() now, otherwise the JS half never runs.
     document.querySelectorAll('[data-effect]').forEach(el => {
       const names = (el.getAttribute('data-effect') || '').split(/\s+/)
-      if (names.includes(name)) {
-        this._initEffect(el, name)
+      if (!names.includes(name)) return
+      const fresh = !this._instances.get(el)?.has(name)
+      this._initEffect(el, name)
+      if (fresh && el.hasAttribute('data-effect-active')) {
+        this._instances.get(el)?.get(name)?.activate?.()
       }
     })
   },
@@ -102,9 +109,18 @@ const VB = g[VB_SINGLETON_KEY] ?? {
   /**
    * Register a trigger handler.
    * Handler receives (el, activate) and returns a cleanup function.
+   *
+   * Same late-registration rule as effect(): elements processed before this
+   * trigger existed (the self-booted observer runs before vb-triggers.js
+   * evaluates) are wired now. Without this, every data-trigger="scroll"
+   * element on a built page sat at opacity 0 forever.
    */
   trigger(name, handler) {
     this._triggers.set(name, handler)
+    document.querySelectorAll('[data-effect-processed][data-trigger]').forEach(el => {
+      const effectNames = el.getAttribute('data-effect')?.split(/\s+/).filter(Boolean) || []
+      this._wireTrigger(el, effectNames)
+    })
   },
 
   /**
@@ -254,6 +270,11 @@ const VB = g[VB_SINGLETON_KEY] ?? {
           }
           for (const node of mutation.removedNodes) {
             if (node.nodeType !== Node.ELEMENT_NODE) continue
+            // A node removed and re-inserted in the same batch (an effect
+            // wrapping its own element, a list reorder) is a move, not a
+            // removal: the callback runs after both, so it is connected
+            // again here. Cleaning it up would undo the effect's own DOM.
+            if (node.isConnected) continue
             this._cleanupTree(node)
           }
         }
@@ -429,15 +450,23 @@ const VB = g[VB_SINGLETON_KEY] ?? {
     }
 
     const triggerNames = triggerAttr.split(/\s+/).filter(Boolean)
+    this._wiredTriggers ??= new WeakMap()
+    let wired = this._wiredTriggers.get(el)
+    if (!wired) {
+      wired = new Set()
+      this._wiredTriggers.set(el, wired)
+    }
 
     for (const trigger of triggerNames) {
+      if (wired.has(trigger)) continue
       // Parse trigger name and optional parameter (e.g. "time:2000")
       const colonIdx = trigger.indexOf(':')
       const triggerName = colonIdx > -1 ? trigger.slice(0, colonIdx) : trigger
       const triggerParam = colonIdx > -1 ? trigger.slice(colonIdx + 1) : null
 
       const triggerHandler = this._triggers.get(triggerName)
-      if (!triggerHandler) continue
+      if (!triggerHandler) continue // not registered yet — trigger() wires it later
+      wired.add(trigger)
 
       const cleanup = triggerHandler(el, () => this._activateEffects(el), triggerParam)
 
@@ -480,6 +509,7 @@ const VB = g[VB_SINGLETON_KEY] ?? {
       triggerCleanup()
       this._triggerCleanups.delete(el)
     }
+    this._wiredTriggers?.delete(el)
   },
 
   _reconcileEffects(el) {
@@ -517,6 +547,7 @@ const VB = g[VB_SINGLETON_KEY] ?? {
       cleanup()
       this._triggerCleanups.delete(el)
     }
+    this._wiredTriggers?.delete(el)
 
     // Re-wire
     const effectNames = el.getAttribute('data-effect')?.split(/\s+/).filter(Boolean) || []
