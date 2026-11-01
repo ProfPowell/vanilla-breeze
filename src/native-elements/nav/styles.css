@@ -54,6 +54,9 @@ nav a:focus-visible {
    themes color `a:not([class])` without excluding nav; without !important
    the theme's link color lands on the filled pill and the text vanishes.
    An !important in this lower layer beats even an !important in a theme.
+   Sites change it through --color-active-text / --color-active-bg (documented
+   on the nav page); tests/components/nav-active-link-themes.spec.js renders
+   it under every theme (vanilla-breeze-s3e3).
    Supports both aria-current (semantic) and .active (build-system). */
 nav a[aria-current="page"],
 nav [aria-current="page"] > a,
@@ -98,7 +101,10 @@ nav {
   &.pills {
     --_hover-bg: var(--color-hover-bg);
     --_active-bg: var(--color-interactive);
-    --_active-color: var(--color-text-on-primary, white);
+    /* contrast-color() picks black or white for this theme's pill colour;
+       a fixed white failed in dark themes that lighten primary
+       (vanilla-breeze-s3e3). Falls back where contrast-color() is missing. */
+    --_active-color: var(--color-text-on-interactive-auto, var(--color-text-on-primary, white));
   }
 
 
@@ -255,7 +261,7 @@ nav {
   /* Override --_active-color so the generic nav !important rule
      uses white (not interactive blue) on the colored background */
   &.pagination {
-    --_active-color: var(--color-text-on-primary, white);
+    --_active-color: var(--color-text-on-interactive-auto, var(--color-text-on-primary, white));
   }
 
   &.pagination [aria-current="page"] {

@@ -18,6 +18,20 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   too. Documented at `/docs/concepts/vb-service/` and
   `/docs/concepts/vb-store/`.
 
+### Changed
+
+- **Buttons follow the theme's hover and active colours.** Themes set
+  `--color-primary-hover` / `--color-primary-active`, but `button`
+  computed its own states, so those overrides never showed. A button with
+  no custom colour now uses `--color-interactive-hover` and the new
+  `--color-interactive-active` (both follow primary); a button with
+  `--btn-color` still derives its own states.
+- **`nav.pills` and `nav.pagination` pick readable text for the current
+  item** with `contrast-color()` instead of a fixed white, which failed in
+  dark themes that lighten their primary colour. The current-page tokens
+  (`--color-active-text`, `--color-active-bg`) are now documented on the
+  nav page.
+
 ### Fixed
 
 - **Component transitions animate again.** `tab-set`, `accordion-wc` and

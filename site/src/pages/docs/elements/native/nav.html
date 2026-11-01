@@ -403,6 +403,25 @@ crumbLabel: Native Elements
   </section>
 
   <section>
+    <h2>Styling the current page</h2>
+    <p>The link marked <code>aria-current="page"</code> (or <code>.active</code>) is styled from two tokens. Set them on the <code>nav</code>, or on <code>:root</code> for every nav:</p>
+    <table class="props-table">
+      <thead><tr><th>Token</th><th>Default</th><th>Used by</th></tr></thead>
+      <tbody>
+        <tr><td><code>--color-active-text</code></td><td><code>var(--color-interactive)</code></td><td>Default, <code>.horizontal</code>, <code>.vertical</code>, <code>.tabs</code>, <code>.bottom</code> and dropdown items</td></tr>
+        <tr><td><code>--color-active-bg</code></td><td><code>transparent</code></td><td>Default, <code>.horizontal</code>, <code>.vertical</code>, <code>.bottom</code> (<code>.tabs</code> keeps it transparent and marks the item with a border)</td></tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="A dark nav bar" data-escape>nav.site-bar {
+  background: oklch(20% 0.02 260);
+  --color-active-text: white;
+  --color-active-bg: oklch(35% 0.08 260);
+}</code-block>
+    <p><code>.minimal</code> marks the current item with body text color and weight only. <code>.pills</code> and <code>.pagination</code> fill the current item with <code>--color-interactive</code> and pick black or white text for it automatically (<code>contrast-color()</code>, with <code>--color-text-on-primary</code> as the fallback in older browsers).</p>
+    <p>Why tokens rather than a <code>color</code> rule: many themes color links, and theme styles sit in a higher cascade layer than nav. Nav therefore locks the current item's text color with <code>!important</code> so no theme can make it vanish; that rule reads the tokens above, so they are the way to change it. A test renders the current item under every theme to keep it legible.</p>
+  </section>
+
+  <section>
     <h2>Accessibility</h2>
     <ul>
       <li>Nav creates a navigation landmark for screen reader navigation</li>
