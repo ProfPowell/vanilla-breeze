@@ -15,7 +15,7 @@ const page = `<!doctype html><html data-icon-path="/cdn/icons"><head>
 test.describe('[data-icon] CSS rule', () => {
   test('[data-icon]::before paints a currentColor-tinted em box', async ({ page: p }) => {
     await p.route('**/x.html', (route) => route.fulfill({ contentType: 'text/html', body: page }));
-    await p.goto('https://vb.test/x.html');
+    await p.goto('/x.html');
     const star = p.locator('i[data-icon="star"]').first();
     const box = await star.evaluate((el) => {
       const cs = getComputedStyle(el, '::before');
@@ -34,7 +34,7 @@ test.describe('[data-icon] CSS rule', () => {
 
   test('unresolved [data-icon] renders no visible square', async ({ page: p }) => {
     await p.route('**/x.html', (route) => route.fulfill({ contentType: 'text/html', body: page }));
-    await p.goto('https://vb.test/x.html');
+    await p.goto('/x.html');
     const mask = await p.locator('#bare').evaluate((el) => {
       const cs = getComputedStyle(el, '::before');
       return cs.maskImage || cs.webkitMaskImage;
@@ -64,7 +64,7 @@ const noJsPage = `<!doctype html><html data-icon-path="/cdn/icons"><head>
 test.describe('[data-icon] no-JS generated stylesheet path', () => {
   test('unlayered generated rule wins over the layered --vb-icon:initial reset, with no enhancer loaded', async ({ page: p }) => {
     await p.route('**/nojs.html', r => r.fulfill({ contentType: 'text/html', body: noJsPage }));
-    await p.goto('https://vb.test/nojs.html');
+    await p.goto('/nojs.html');
     const mask = await p.locator('#star').evaluate((el) => {
       const cs = getComputedStyle(el, '::before');
       return cs.maskImage || cs.webkitMaskImage;
@@ -89,7 +89,7 @@ const appPage = `<!doctype html><html data-icon-path="/cdn/icons"><head>
 test.describe('[data-icon] enhancer', () => {
   test('enhancer sets --vb-icon from name + resolved set', async ({ page: p }) => {
     await p.route('**/app.html', r => r.fulfill({ contentType: 'text/html', body: appPage }));
-    await p.goto('https://vb.test/app.html');
+    await p.goto('/app.html');
     const a = await p.locator('#a').evaluate(el => el.style.getPropertyValue('--vb-icon'));
     const c = await p.locator('#c').evaluate(el => el.style.getPropertyValue('--vb-icon'));
     expect(a).toContain('/cdn/icons/lucide/star.svg');
@@ -98,7 +98,7 @@ test.describe('[data-icon] enhancer', () => {
 
   test('icon coexists with button text', async ({ page: p }) => {
     await p.route('**/app.html', r => r.fulfill({ contentType: 'text/html', body: appPage }));
-    await p.goto('https://vb.test/app.html');
+    await p.goto('/app.html');
     await expect(p.locator('#b')).toHaveText('Close');
     const mask = await p.locator('#b').evaluate(el =>
       (getComputedStyle(el, '::before').maskImage || getComputedStyle(el, '::before').webkitMaskImage));
@@ -107,7 +107,7 @@ test.describe('[data-icon] enhancer', () => {
 
   test('dynamically added [data-icon] is enhanced', async ({ page: p }) => {
     await p.route('**/app.html', r => r.fulfill({ contentType: 'text/html', body: appPage }));
-    await p.goto('https://vb.test/app.html');
+    await p.goto('/app.html');
     const val = await p.evaluate(async () => {
       const i = document.createElement('i');
       i.setAttribute('data-icon', 'search');
@@ -125,7 +125,7 @@ test.describe('[data-icon] enhancer', () => {
 <i id="m" data-icon="star"></i>
 </body></html>`;
     await p.route('**/mut.html', r => r.fulfill({ contentType: 'text/html', body: mutPage }));
-    await p.goto('https://vb.test/mut.html');
+    await p.goto('/mut.html');
     const before = await p.locator('#m').evaluate(el => el.style.getPropertyValue('--vb-icon'));
     expect(before).toContain('/cdn/icons/lucide/star.svg');
     const after = await p.evaluate(async () => {
@@ -144,7 +144,7 @@ test.describe('[data-icon] enhancer', () => {
 <i id="s" data-icon="star"></i>
 </body></html>`;
     await p.route('**/setswitch.html', r => r.fulfill({ contentType: 'text/html', body: setSwitchPage }));
-    await p.goto('https://vb.test/setswitch.html');
+    await p.goto('/setswitch.html');
     const before = await p.locator('#s').evaluate(el => el.style.getPropertyValue('--vb-icon'));
     expect(before).toContain('lucide/star.svg');
     const after = await p.evaluate(async () => {
@@ -166,7 +166,7 @@ test.describe('[data-icon] enhancer', () => {
 <i id="outer" data-icon="star" style="--vb-icon:url('/cdn/icons/lucide/star.svg')"><i id="inner" data-icon="pending" style="display:inline-block"></i></i>
 </body></html>`;
     await p.route('**/nested.html', r => r.fulfill({ contentType: 'text/html', body: nestedPage }));
-    await p.goto('https://vb.test/nested.html');
+    await p.goto('/nested.html');
     const mask = await p.locator('#inner').evaluate(el =>
       (getComputedStyle(el, '::before').maskImage || getComputedStyle(el, '::before').webkitMaskImage));
     expect(mask).not.toContain('star.svg');
@@ -193,21 +193,21 @@ const collisionPage = `<!doctype html><html><head>
 test.describe('[data-icon] bare marker does not collide with icon rules', () => {
   test('bare data-icon (no value) generates no ::before content', async ({ page: p }) => {
     await p.route('**/collision.html', r => r.fulfill({ contentType: 'text/html', body: collisionPage }));
-    await p.goto('https://vb.test/collision.html');
+    await p.goto('/collision.html');
     const content = await p.locator('#bare-no-value').evaluate((el) => getComputedStyle(el, '::before').content);
     expect(content).toBe('none');
   });
 
   test('empty data-icon="" generates no ::before content', async ({ page: p }) => {
     await p.route('**/collision.html', r => r.fulfill({ contentType: 'text/html', body: collisionPage }));
-    await p.goto('https://vb.test/collision.html');
+    await p.goto('/collision.html');
     const content = await p.locator('#bare-empty-value').evaluate((el) => getComputedStyle(el, '::before').content);
     expect(content).toBe('none');
   });
 
   test('valued data-icon="star" still generates a ::before box', async ({ page: p }) => {
     await p.route('**/collision.html', r => r.fulfill({ contentType: 'text/html', body: collisionPage }));
-    await p.goto('https://vb.test/collision.html');
+    await p.goto('/collision.html');
     const content = await p.locator('#valued').evaluate((el) => getComputedStyle(el, '::before').content);
     expect(content).toBe('""');
   });
