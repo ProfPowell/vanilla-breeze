@@ -7,7 +7,21 @@
  * cross-document transitions), so component transitions silently did
  * nothing. Keyframes are cheap and opt-in-free, so they ship always;
  * the cross-document @view-transition rule stays opt-in.
+ *
+ * The duration tokens, the view-transition-class presets used by
+ * data-transition, and the reduced-motion rule ship here for the same
+ * reason (vanilla-breeze-4rgo): data-transition="slide" sets the
+ * slide-left class, which did nothing without view-transitions.css.
  */
+
+/* ── Tokens ──────────────────────────────────────────── */
+
+:root {
+  --view-transition-duration: 0.3s;
+  --view-transition-duration-fast: 0.15s;
+  --view-transition-duration-slow: 0.5s;
+}
+
 
 @keyframes vt-slide-out-left {
   to { transform: translateX(-100%); opacity: 0; }
@@ -39,4 +53,72 @@
 
 @keyframes vt-fade-in {
   from { opacity: 0; }
+}
+
+/* ── view-transition-class presets ───────────────────── */
+/* Shared by data-transition (slide → slide-left, fade, scale, none) and
+   data-vt-class in view-transitions.css. */
+
+/* Slide Left */
+
+::view-transition-old(*.slide-left) {
+  animation: vt-slide-out-left var(--view-transition-duration) var(--ease-out);
+}
+
+::view-transition-new(*.slide-left) {
+  animation: vt-slide-in-left var(--view-transition-duration) var(--ease-out);
+}
+
+/* Slide Right */
+
+::view-transition-old(*.slide-right) {
+  animation: vt-slide-out-right var(--view-transition-duration) var(--ease-out);
+}
+
+::view-transition-new(*.slide-right) {
+  animation: vt-slide-in-right var(--view-transition-duration) var(--ease-out);
+}
+
+/* Scale */
+
+::view-transition-old(*.scale) {
+  animation: vt-scale-down var(--view-transition-duration) var(--ease-out);
+}
+
+::view-transition-new(*.scale) {
+  animation: vt-scale-up var(--view-transition-duration) var(--ease-out);
+}
+
+/* Fade (explicit fade-only, no morph) */
+
+::view-transition-old(*.fade) {
+  animation: vt-fade-out var(--view-transition-duration) var(--ease-out);
+}
+
+::view-transition-new(*.fade) {
+  animation: vt-fade-in var(--view-transition-duration) var(--ease-out);
+}
+
+/* None (instant swap, no animation) */
+
+::view-transition-old(*.none),
+::view-transition-new(*.none) {
+  animation-duration: 0s;
+}
+
+/* ── Reduced Motion ──────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* User-toggled motion reduction via theme picker */
+:root[data-motion-reduced] ::view-transition-group(*),
+:root[data-motion-reduced] ::view-transition-old(*),
+:root[data-motion-reduced] ::view-transition-new(*) {
+  animation-duration: 0.01ms !important;
 }

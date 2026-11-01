@@ -10,7 +10,7 @@
  *    <img data-vt-name="product-123" src="..." />
  *
  * Named groups:
- * - data-vt="main"    → main-content (auto-applied to <main>)
+ * - data-vt="main"    → main-content (opt-in; <main> is not auto-named)
  * - data-vt="header"  → page-header
  * - data-vt="nav"     → site-nav
  * - data-vt="sidebar" → page-sidebar
@@ -30,14 +30,6 @@
 /* Enable view transitions for all same-origin navigations */
 @view-transition {
   navigation: auto;
-}
-
-/* ── Tokens ──────────────────────────────────────────── */
-
-:root {
-  --view-transition-duration: 0.3s;
-  --view-transition-duration-fast: 0.15s;
-  --view-transition-duration-slow: 0.5s;
 }
 
 /* ── Named Groups ────────────────────────────────────── */
@@ -78,75 +70,14 @@
 }
 
 /* ── Animation Presets ───────────────────────────────── */
+/* data-vt-class maps an attribute to a view-transition-class; the
+   ::view-transition rules for each class live in vt-keyframes.css. */
 
-/* Slide Left */
 [data-vt-class="slide-left"] { view-transition-class: slide-left; }
-
-::view-transition-old(*.slide-left) {
-  animation: vt-slide-out-left var(--view-transition-duration) var(--ease-out);
-}
-
-::view-transition-new(*.slide-left) {
-  animation: vt-slide-in-left var(--view-transition-duration) var(--ease-out);
-}
-
-/* Slide Right */
 [data-vt-class="slide-right"] { view-transition-class: slide-right; }
-
-::view-transition-old(*.slide-right) {
-  animation: vt-slide-out-right var(--view-transition-duration) var(--ease-out);
-}
-
-::view-transition-new(*.slide-right) {
-  animation: vt-slide-in-right var(--view-transition-duration) var(--ease-out);
-}
-
-/* Scale */
 [data-vt-class="scale"] { view-transition-class: scale; }
-
-::view-transition-old(*.scale) {
-  animation: vt-scale-down var(--view-transition-duration) var(--ease-out);
-}
-
-::view-transition-new(*.scale) {
-  animation: vt-scale-up var(--view-transition-duration) var(--ease-out);
-}
-
-/* Fade (explicit fade-only, no morph) */
 [data-vt-class="fade"] { view-transition-class: fade; }
-
-::view-transition-old(*.fade) {
-  animation: vt-fade-out var(--view-transition-duration) var(--ease-out);
-}
-
-::view-transition-new(*.fade) {
-  animation: vt-fade-in var(--view-transition-duration) var(--ease-out);
-}
-
-/* None (instant swap, no animation) */
 [data-vt-class="none"] { view-transition-class: none; }
 
-::view-transition-old(*.none),
-::view-transition-new(*.none) {
-  animation-duration: 0s;
-}
-
-/* Keyframes (vt-slide-*, vt-scale-*, vt-fade-*) live in vt-keyframes.css,
-   imported above and always shipped in the main bundles. */
-
-/* ── Reduced Motion ──────────────────────────────────── */
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation-duration: 0.01ms !important;
-  }
-}
-
-/* User-toggled motion reduction via theme picker */
-:root[data-motion-reduced] ::view-transition-group(*),
-:root[data-motion-reduced] ::view-transition-old(*),
-:root[data-motion-reduced] ::view-transition-new(*) {
-  animation-duration: 0.01ms !important;
-}
+/* Keyframes, duration tokens, class presets and the reduced-motion rule
+   live in vt-keyframes.css, imported above and always shipped. */

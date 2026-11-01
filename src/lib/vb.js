@@ -76,6 +76,7 @@ const VB = g[VB_SINGLETON_KEY] ?? {
   _triggerCleanups: new WeakMap(), // el → cleanup function
   _wiredTriggers: new WeakMap(),   // el → Set<triggerName> already wired
   _transitionCleanups: new WeakMap(), // el → cleanup function
+  _transitionFallback: new WeakSet(), // els named before their handler registered
   _keyframePhase: KEYFRAME_PHASE,
   /** @type {MutationObserver | null} */
   _observer: null,
@@ -125,11 +126,27 @@ const VB = g[VB_SINGLETON_KEY] ?? {
 
   /**
    * Register a transition handler for data-transition.
-   * Handler receives (el) and should set view-transition-name.
+   * Handler receives (el, param) and should set view-transition-name.
    * Returns a cleanup function.
+   *
+   * Same late-registration rule as effect() and trigger(): the self-booted
+   * runtime processes [data-transition] before vb-transitions.js registers
+   * the presets, so those elements took the unnamed fallback and never got
+   * their view-transition-class (vanilla-breeze-4rgo). Re-run them now.
    */
   transition(name, handler) {
     this._transitions.set(name, handler)
+    document.querySelectorAll('[data-transition-processed][data-transition]').forEach(el => {
+      if (!this._transitionFallback.has(el)) return
+      const attr = el.getAttribute('data-transition') || ''
+      const colonIdx = attr.indexOf(':')
+      if ((colonIdx > -1 ? attr.slice(0, colonIdx) : attr) !== name) return
+      this._transitionFallback.delete(el)
+      const target = /** @type {HTMLElement} */ (el)
+      target.style.viewTransitionName = ''
+      const cleanup = handler(el, colonIdx > -1 ? attr.slice(colonIdx + 1) : null)
+      if (cleanup) this._transitionCleanups.set(el, cleanup)
+    })
   },
 
   /**
@@ -631,6 +648,7 @@ const VB = g[VB_SINGLETON_KEY] ?? {
       // Default behavior: auto-assign view-transition-name from the
       // whole attribute (so legacy `data-transition="foo"` still works).
       el.style.viewTransitionName = `${transitionAttr}-${this.uid(el)}`
+      this._transitionFallback.add(el)
     }
   },
 
@@ -640,6 +658,7 @@ const VB = g[VB_SINGLETON_KEY] ?? {
       cleanup()
       this._transitionCleanups.delete(el)
     }
+    this._transitionFallback.delete(el)
     el.style.viewTransitionName = ''
   },
 }

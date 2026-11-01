@@ -35,12 +35,22 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - **Component transitions animate again.** `tab-set`, `accordion-wc` and
-  `carousel-wc` animate their `data-transition` modes with `vt-*`
+  `carousel-wc` animate their `transition` modes with `vt-*`
   keyframes that only existed in the opt-in `utils/view-transitions.css`,
   which neither bundle imports, so the transitions silently did nothing.
   The keyframes now ship in `vanilla-breeze.css` and
   `vanilla-breeze-core.css`; cross-document `@view-transition` stays
   opt-in.
+
+- **`data-transition` presets animate.** `slide`, `fade`, `scale` and
+  `none` played the browser's plain crossfade, for two reasons: the
+  runtime processed elements before the presets registered, so they never
+  got their `view-transition-class`, and the rules for those classes lived
+  only in the opt-in `utils/view-transitions.css`. Late registrations now
+  re-wire waiting elements, like effects and triggers. The class rules,
+  the `--view-transition-duration` tokens and the reduced-motion rule now
+  ship in every bundle, so content-swap, image-gallery and
+  version-switcher transitions also respect reduced motion.
 
 - **`combo-box` exposes one combobox, the W3C way.** The `combobox` role
   went through `ElementInternals`, which put it on the host in Chromium
