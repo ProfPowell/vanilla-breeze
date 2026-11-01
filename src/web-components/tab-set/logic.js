@@ -147,8 +147,14 @@ class TabSet extends VBElement {
       panel.id = panelId;
       panel.setAttribute('aria-labelledby', tabId);
 
-      // VT click interception — intercepts only when VT is active
       this.listen(summary, 'click', (e) => {
+        // Clicking (or Enter/Space on) the active tab is a no-op. Without
+        // this, the native <summary> toggle closed it and left no panel.
+        if (detail.open) {
+          e.preventDefault();
+          return;
+        }
+        // VT click interception — intercepts only when VT is active
         if (!this.#vtEnabled) return;
         e.preventDefault();
         this.#switchTab(i);

@@ -317,3 +317,16 @@ test.describe('tab-set — author panel styles', () => {
     }
   });
 });
+
+test.describe('tab-set — active tab', () => {
+  test('clicking the active tab keeps its panel open', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('tab-set[data-upgraded]');
+    const first = page.locator('tab-set').first();
+    await first.locator('summary').first().click();
+    await expect(first.locator('details').first()).toHaveAttribute('open', '');
+    await first.locator('summary').nth(1).click();
+    await first.locator('summary').nth(1).click();
+    await expect(first.locator('details').nth(1)).toHaveAttribute('open', '');
+  });
+});
