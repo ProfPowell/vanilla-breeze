@@ -6,66 +6,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-
-- **api.json manifests for all 14 layout elements**, generated from and
-  gated against the CSS (`tests/unit/layout-manifests.test.js`). The
-  html-validate registry previously carried layout manifests with attribute
-  names the CSS never read (`data-gap` for `data-layout-gap`), so it now
-  validates the real layout API — which immediately caught `layout-imposter`
-  demos using `data-position` / `data-margin` (the CSS reads
-  `data-layout-position` / `data-layout-margin`; 42 sites migrated) and two
-  badges using `data-variant` for a color. Every layout element's doc page
-  attribute table is regenerated from its manifest.
-
-### Fixed
-
-- **markdown-viewer and markdown-editor are in the full barrel; `marked` is
-  vendored** (kdkb). Both imported `marked` by bare specifier, which esbuild
-  resolves but a browser cannot, so they were kept out of
-  `src/web-components/index.js` (one unresolvable import kills the whole raw
-  `/src/main.js` graph in dev). `marked` now lives in `src/vendor/marked/`
-  as a verbatim copy of the installed package, imported by relative path;
-  `npm run vendor:marked` refreshes it and a unit gate fails on drift. The
-  eleven demos that carried an esm.sh import map for `marked` no longer hit
-  the network, and the barrel parity test has no exemptions left.
-
-- **Scroll-triggered effects and self-wrapping effects work again on every
-  page** (t5r2). Since the effects runtime began booting its own observer
-  (6xxy), it processed elements while `vb.js` evaluated — before
-  `vb-triggers.js` and the effect modules had registered. Every
-  `data-trigger="scroll"` element sat at opacity 0 forever (the slide-in
-  demo, the effects kitchen-sink hero), and `animate-image` lost its
-  play/pause control because the observer treated the effect wrapping its
-  own image as a removal and unwrapped it. `VB.trigger()` now wires
-  already-processed elements, `VB.effect()` activates an element that
-  activated before the effect existed, and a node that is still connected
-  after a mutation batch is a move, not a removal.
-
-- **A page-pinned `<html data-theme>` is now that page's default** (psme).
-  ThemeManager used to replace it on load in two cases: any saved
-  preference, even a light/dark toggle or a `default` picked on another
-  page of the same origin, resolved the brand to `default`; and a brand VB
-  has no CSS file for (a site's own theme) failed to load and was reset to
-  `default` on every first visit. Now only a saved preference naming a
-  different, explicit brand replaces the pin, a pinned brand that fails to
-  load is kept (the page supplies its CSS), cross-document sync applies the
-  same precedence, and `reset()` returns to the pin.
-
-- **Demos and docs no longer hot-link picsum.photos** (uz4f). 145 image
-  references across 27 demos, 5 docs pages and image-gallery's static
-  example pointed at picsum, so every page load fetched random third-party
-  photos and screenshots were never reproducible. They now use deterministic
-  local SVG placeholders under `src/assets/placeholders/`, generated from a
-  manifest by `scripts/generate-placeholders.mjs` and served at the same
-  `/src/assets/…` path in dev and on the built site. The visual suite's
-  picsum interception shim is gone. `data-mock="photo"` and
-  `mock.imageUrl()` still name picsum as their documented opt-in service.
-
-- 30 media containers in demos and docs used `data-layout-ratio` on
-  `[data-media]`, which reads `data-ratio`; the aspect ratio never applied.
-  Found by the per-layout conformance check below.
-
 ### Changed (breaking)
 
 - **The charts add-on is layered.** `vanilla-breeze-charts.css` now lands in
@@ -75,144 +15,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   chart-wc's hidden-table overrides lock the properties the
   `.visually-hidden` utility sets. Visible effect: an author rule such as
   `.tall-spark { block-size: 120px }` on a sparkline now applies.
-
-### Fixed
-
-- **The tokens layer holds custom properties only** (dtw6). Backdrop's
-  application rules (body padding, region elevation, chrome modes, the
-  mobile flush breakpoint), the `[data-scrollbar]`, `[data-border-style]`
-  and `[data-spotlight]` rules, the OpenType utility classes and the
-  external-component token bridge all lived in `@layer tokens` — the lowest
-  layer — where any component rule beat them. They now live in
-  `src/utils/` in `@layer utils`; their custom properties stay in
-  `src/tokens/`. Visible effect: with `data-backdrop`, regions are centered
-  to the canvas width and separated by the canvas gap as documented. A gate
-  in bundle-parity keeps selector rules out of the tokens graph
-  (`color-scheme`, `interpolate-size` and the root token transition are the
-  documented exceptions).
-
-- **Theme cursors now apply to every control** (vjpn). The reset wires
-  `cursor: var(--cursor-custom-pointer)` so a theme can ship its own
-  pointer, but 169 component rules hardcoded `cursor: pointer` in higher
-  layers, so the theme cursor only ever reached bare links. Every one now
-  reads `var(--cursor-custom-pointer, pointer)`; a gate keeps it that way.
-  Also: backdrop's mobile breakpoint moves from 640px to the contract's
-  `--bp-sm` (37.5rem / 600px), and heading weights use the
-  `--font-weight-*` tokens.
-
-### Removed
-
-- **`data-layout="body-*"` page templates** (tfcw). They were a
-  line-for-line legacy copy of `data-page-layout` and used by one demo;
-  use `data-page-layout="stack | sidebar-left | sidebar-right | holy-grail |
-  app-shell | dashboard | article | landing"`. The page regions keep their
-  named containers (`region-main` / `region-nav` / `region-aside`) under
-  `data-page-layout`. The dormant `main[data-layout] > *` and
-  `article[data-layout] > *` grid-area rules, which fired for every
-  layout value and named areas no template defined, are scoped to the
-  `main[data-layout="sidebar-*"]` templates that use them.
-
-### Removed
-
-- `layout-cover`'s `data-hero-overlay` and `data-layout-nospace` (zero
-  usages; `data-layout-padding="none"` is the latter). `src/charts/index.css`
-  and `markdown-viewer/vb-extensions.js`, both imported by nothing (822u).
-
-### Fixed
-
-- **Effects activate on elements added after load on core-only pages**
-  (6xxy). `VB.observe()` was only called from the full and autoload entries;
-  the production docs load the core entry, so a `data-effect` element
-  inserted later never activated. The runtime now boots its own observer
-  once the DOM is ready, and is one instance per document, so a page that
-  loads both extras and the effects pack (five shared effect modules) no
-  longer gets two registries and two observers.
-
-### Internal
-
-- The demos visual suite pins the clock to 2026-07-06 so calendars and
-  anything rendering "today" stop drifting from their baselines monthly.
-  17 stale desktop baselines triaged: 3 were the regressions above (they
-  match their July baselines again), 1 was the clock, 13 are intended drift
-  (16rem sidebar, the s/m/l rename making demo-CSS token references
-  resolve, the border-style system reaching `form`, the 120px sparkline,
-  the sidebar merge, semantic-HTML rewrites) and were refreshed. The mobile
-  project, not run since July, had 12 stale baselines of the same kinds
-  (mostly horizontal overflow that no longer happens); refreshed. Two demos
-  join the skip list: `effects-kitchen-sink` (live scramble effect, never
-  stable) and `markdown-viewer-mermaid` (loads Mermaid and D3 from esm.sh
-  at runtime).
-
-- **Per-theme visual regression is back** (iwuq): `tests/visual/theme-surfaces.spec.js`
-  screenshots a purpose-built surfaces page (`demos/examples/demos/theme-surfaces.html`:
-  typography, actions, forms, cards, table, details) under all 48 CDN
-  themes plus the bundled seven, in light and dark, and the form-validation
-  demo per theme — replacing the theme-lab coverage lost in the pack
-  decomposition. Desktop only.
-- The CI quality gate now runs `validate:api` and `check:api-drift`; the
-  registry that lint:html validates against is generated from the manifests.
-- Width media queries in `src/` use the breakpoint contract (`--bp-s/l`)
-  and a gate rejects px widths (s3hy). Four documented-but-wired-to-nothing
-  extension tokens removed: `--motion-hover-glow`, `--border-roughness`,
-  `--gradient-subtle`, `--page-bg-type` (z1im); the remaining unread tokens
-  are categorised in the token gate, and the seed-derived state colours
-  themes override but components never read are tracked as o4tj.
-- The native-elements layer contract now admits element-scoped semantic
-  modifier classes (`p.lead`, `section.hero`, `article.card`) and classes
-  the framework's own init modules write, instead of claiming "no classes"
-  while defining 147 of them (hl9c). Seven classes nothing used were
-  removed (`.hn-action-remove`, `.hn-swatch`, `fieldset.code-inputs`,
-  `img.ratio-landscape`, `.changelog-year/-month`, `video.ultrawide`); the
-  hex fallbacks inside `var()` and the Tailwind-palette highlight colours
-  are gone (tokens are always loaded; the highlight colours are oklch); a
-  gate (`tests/unit/native-element-classes.test.js`) rejects dead classes.
-- youtube-player and social-embed no longer wrap themselves in
-  `@layer web-components` (the entry owns the layer; they nested as
-  `web-components.web-components`) (7371).
-- Per-component autoload chunks stay self-contained: code splitting was
-  measured (1.3 MB → 775 KB raw across all chunks) and rejected because a
-  single component file is a documented cherry-pick contract (6xxy).
-- **The web-components CSS barrels are pure import manifests** (jhku).
-  `index.css` and `core.css` carried 1477 and 650 lines of inline rules,
-  hand-copied between them; 96 of core's 103 rules were verbatim copies and
-  the rest had drifted (core's `data-copy` selector still named components
-  moved to packs in 0.3.0; its gradient-text and shimmer rules predated the
-  composable animation slots). The rules live once under
-  `src/web-components/_shared/` (data utilities, form enhancements, effects,
-  math) and geo-map's no-JS fallback in `geo-map/styles.css`; core imports
-  the core subset. Core therefore adopts the slot design for gradient-text
-  and shimmer, and both bundles now clear those effects' decoration slot
-  under reduced motion (only core did before). A gate rejects inline rules
-  in either barrel.
-- Stale headers corrected: the core and extras JS barrels state their real
-  counts (29 + 27 and 29 + 9 modules); `pointer.css` no longer re-sets
-  `--size-touch-min` under `(pointer: coarse)` to the value sizing.css
-  already sets; the CDN build comment no longer claims the slim bundle has
-  no themes (822u).
-- `layout-attributes.css` is layout again (tfcw, 1294 → 760 lines):
-  density modes moved to `src/utils/density.css`, the scroll-driven header
-  shrink / `data-animate` reveals / `data-parallax` to
-  `src/utils/scroll-driven.css`, and the canvas surface into
-  `layout-canvas/styles.css`. `<layout-badge>` keeps its tag; it is
-  documented as a surface element rather than a layout primitive.
-- `vb/layout-attr-value` now validates each `data-layout-*` value against
-  the vocabulary of the element's own layout (resolved from `<layout-x>`,
-  `data-layout="x"` or `data-page-layout`), instead of the union across all
-  layouts — `data-layout-min="auto"` on a grid is now caught. Child
-  attributes and elements naming no layout fall back to the merged check.
-- Conformance guards that tested a whole line now judge the tag they
-  examine: a styled element sharing a line with a `<link>`, a state class
-  beside an `<output>`, or a second `<svg>` on a line are no longer exempt.
-- `check:api-drift` no longer claims tab-set manages `aria-selected`; it
-  manages `aria-expanded` on its summaries by design.
-- `context-menu` and `drop-down` reset themed button styling on their items
-  through their own stylesheets (`!important` in the component layer) instead
-  of inline styles written by JavaScript. The nav active-item `!important`
-  rules stay, with their rationale corrected: themes sit above
-  `native-elements` by contract and most of them color bare links.
-  `_extreme-neumorphism` dropped an unneeded `!important`.
-
-### Changed (breaking)
 
 - **One scale spelling: `s` / `m` / `l` everywhere** (j1hi). `--font-size-sm/md/lg`
   are now `--font-size-s/m/l`, `--shadow-sm/md/lg` are `--shadow-s/m/l`, and
@@ -302,6 +104,201 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     still slots in correctly.
   - `_access-dyslexia` dropped its three `!important` declarations; the layer
     now does that job.
+
+### Added
+
+- **api.json manifests for all 14 layout elements**, generated from and
+  gated against the CSS (`tests/unit/layout-manifests.test.js`). The
+  html-validate registry previously carried layout manifests with attribute
+  names the CSS never read (`data-gap` for `data-layout-gap`), so it now
+  validates the real layout API — which immediately caught `layout-imposter`
+  demos using `data-position` / `data-margin` (the CSS reads
+  `data-layout-position` / `data-layout-margin`; 42 sites migrated) and two
+  badges using `data-variant` for a color. Every layout element's doc page
+  attribute table is regenerated from its manifest.
+
+### Fixed
+
+- **Two dead `exports` entries removed.** `vanilla-breeze/ux-planning-css`
+  and `vanilla-breeze/ux-planning-js` pointed at pack files the Workstream D
+  removal deleted before 0.3.1 shipped, so importing them failed to resolve.
+  A unit gate now checks that every `exports` target exists in `dist/`.
+
+- **markdown-viewer and markdown-editor are in the full barrel; `marked` is
+  vendored** (kdkb). Both imported `marked` by bare specifier, which esbuild
+  resolves but a browser cannot, so they were kept out of
+  `src/web-components/index.js` (one unresolvable import kills the whole raw
+  `/src/main.js` graph in dev). `marked` now lives in `src/vendor/marked/`
+  as a verbatim copy of the installed package, imported by relative path;
+  `npm run vendor:marked` refreshes it and a unit gate fails on drift. The
+  eleven demos that carried an esm.sh import map for `marked` no longer hit
+  the network, and the barrel parity test has no exemptions left.
+
+- **Scroll-triggered effects and self-wrapping effects work again on every
+  page** (t5r2). Since the effects runtime began booting its own observer
+  (6xxy), it processed elements while `vb.js` evaluated — before
+  `vb-triggers.js` and the effect modules had registered. Every
+  `data-trigger="scroll"` element sat at opacity 0 forever (the slide-in
+  demo, the effects kitchen-sink hero), and `animate-image` lost its
+  play/pause control because the observer treated the effect wrapping its
+  own image as a removal and unwrapped it. `VB.trigger()` now wires
+  already-processed elements, `VB.effect()` activates an element that
+  activated before the effect existed, and a node that is still connected
+  after a mutation batch is a move, not a removal.
+
+- **A page-pinned `<html data-theme>` is now that page's default** (psme).
+  ThemeManager used to replace it on load in two cases: any saved
+  preference, even a light/dark toggle or a `default` picked on another
+  page of the same origin, resolved the brand to `default`; and a brand VB
+  has no CSS file for (a site's own theme) failed to load and was reset to
+  `default` on every first visit. Now only a saved preference naming a
+  different, explicit brand replaces the pin, a pinned brand that fails to
+  load is kept (the page supplies its CSS), cross-document sync applies the
+  same precedence, and `reset()` returns to the pin.
+
+- **Demos and docs no longer hot-link picsum.photos** (uz4f). 145 image
+  references across 27 demos, 5 docs pages and image-gallery's static
+  example pointed at picsum, so every page load fetched random third-party
+  photos and screenshots were never reproducible. They now use deterministic
+  local SVG placeholders under `src/assets/placeholders/`, generated from a
+  manifest by `scripts/generate-placeholders.mjs` and served at the same
+  `/src/assets/…` path in dev and on the built site. The visual suite's
+  picsum interception shim is gone. `data-mock="photo"` and
+  `mock.imageUrl()` still name picsum as their documented opt-in service.
+
+- 30 media containers in demos and docs used `data-layout-ratio` on
+  `[data-media]`, which reads `data-ratio`; the aspect ratio never applied.
+  Found by the per-layout conformance check below.
+
+- **The tokens layer holds custom properties only** (dtw6). Backdrop's
+  application rules (body padding, region elevation, chrome modes, the
+  mobile flush breakpoint), the `[data-scrollbar]`, `[data-border-style]`
+  and `[data-spotlight]` rules, the OpenType utility classes and the
+  external-component token bridge all lived in `@layer tokens` — the lowest
+  layer — where any component rule beat them. They now live in
+  `src/utils/` in `@layer utils`; their custom properties stay in
+  `src/tokens/`. Visible effect: with `data-backdrop`, regions are centered
+  to the canvas width and separated by the canvas gap as documented. A gate
+  in bundle-parity keeps selector rules out of the tokens graph
+  (`color-scheme`, `interpolate-size` and the root token transition are the
+  documented exceptions).
+
+- **Theme cursors now apply to every control** (vjpn). The reset wires
+  `cursor: var(--cursor-custom-pointer)` so a theme can ship its own
+  pointer, but 169 component rules hardcoded `cursor: pointer` in higher
+  layers, so the theme cursor only ever reached bare links. Every one now
+  reads `var(--cursor-custom-pointer, pointer)`; a gate keeps it that way.
+  Also: backdrop's mobile breakpoint moves from 640px to the contract's
+  `--bp-sm` (37.5rem / 600px), and heading weights use the
+  `--font-weight-*` tokens.
+
+- **Effects activate on elements added after load on core-only pages**
+  (6xxy). `VB.observe()` was only called from the full and autoload entries;
+  the production docs load the core entry, so a `data-effect` element
+  inserted later never activated. The runtime now boots its own observer
+  once the DOM is ready, and is one instance per document, so a page that
+  loads both extras and the effects pack (five shared effect modules) no
+  longer gets two registries and two observers.
+
+### Removed
+
+- **`data-layout="body-*"` page templates** (tfcw). They were a
+  line-for-line legacy copy of `data-page-layout` and used by one demo;
+  use `data-page-layout="stack | sidebar-left | sidebar-right | holy-grail |
+  app-shell | dashboard | article | landing"`. The page regions keep their
+  named containers (`region-main` / `region-nav` / `region-aside`) under
+  `data-page-layout`. The dormant `main[data-layout] > *` and
+  `article[data-layout] > *` grid-area rules, which fired for every
+  layout value and named areas no template defined, are scoped to the
+  `main[data-layout="sidebar-*"]` templates that use them.
+
+- `layout-cover`'s `data-hero-overlay` and `data-layout-nospace` (zero
+  usages; `data-layout-padding="none"` is the latter). `src/charts/index.css`
+  and `markdown-viewer/vb-extensions.js`, both imported by nothing (822u).
+
+### Internal
+
+- The demos visual suite pins the clock to 2026-07-06 so calendars and
+  anything rendering "today" stop drifting from their baselines monthly.
+  17 stale desktop baselines triaged: 3 were the regressions above (they
+  match their July baselines again), 1 was the clock, 13 are intended drift
+  (16rem sidebar, the s/m/l rename making demo-CSS token references
+  resolve, the border-style system reaching `form`, the 120px sparkline,
+  the sidebar merge, semantic-HTML rewrites) and were refreshed. The mobile
+  project, not run since July, had 12 stale baselines of the same kinds
+  (mostly horizontal overflow that no longer happens); refreshed. Two demos
+  join the skip list: `effects-kitchen-sink` (live scramble effect, never
+  stable) and `markdown-viewer-mermaid` (loads Mermaid and D3 from esm.sh
+  at runtime).
+
+- **Per-theme visual regression is back** (iwuq): `tests/visual/theme-surfaces.spec.js`
+  screenshots a purpose-built surfaces page (`demos/examples/demos/theme-surfaces.html`:
+  typography, actions, forms, cards, table, details) under all 48 CDN
+  themes plus the bundled seven, in light and dark, and the form-validation
+  demo per theme — replacing the theme-lab coverage lost in the pack
+  decomposition. Desktop only.
+- The CI quality gate now runs `validate:api` and `check:api-drift`; the
+  registry that lint:html validates against is generated from the manifests.
+- Width media queries in `src/` use the breakpoint contract (`--bp-s/l`)
+  and a gate rejects px widths (s3hy). Four documented-but-wired-to-nothing
+  extension tokens removed: `--motion-hover-glow`, `--border-roughness`,
+  `--gradient-subtle`, `--page-bg-type` (z1im); the remaining unread tokens
+  are categorised in the token gate, and the seed-derived state colours
+  themes override but components never read are tracked as o4tj.
+- The native-elements layer contract now admits element-scoped semantic
+  modifier classes (`p.lead`, `section.hero`, `article.card`) and classes
+  the framework's own init modules write, instead of claiming "no classes"
+  while defining 147 of them (hl9c). Seven classes nothing used were
+  removed (`.hn-action-remove`, `.hn-swatch`, `fieldset.code-inputs`,
+  `img.ratio-landscape`, `.changelog-year/-month`, `video.ultrawide`); the
+  hex fallbacks inside `var()` and the Tailwind-palette highlight colours
+  are gone (tokens are always loaded; the highlight colours are oklch); a
+  gate (`tests/unit/native-element-classes.test.js`) rejects dead classes.
+- youtube-player and social-embed no longer wrap themselves in
+  `@layer web-components` (the entry owns the layer; they nested as
+  `web-components.web-components`) (7371).
+- Per-component autoload chunks stay self-contained: code splitting was
+  measured (1.3 MB → 775 KB raw across all chunks) and rejected because a
+  single component file is a documented cherry-pick contract (6xxy).
+- **The web-components CSS barrels are pure import manifests** (jhku).
+  `index.css` and `core.css` carried 1477 and 650 lines of inline rules,
+  hand-copied between them; 96 of core's 103 rules were verbatim copies and
+  the rest had drifted (core's `data-copy` selector still named components
+  moved to packs in 0.3.0; its gradient-text and shimmer rules predated the
+  composable animation slots). The rules live once under
+  `src/web-components/_shared/` (data utilities, form enhancements, effects,
+  math) and geo-map's no-JS fallback in `geo-map/styles.css`; core imports
+  the core subset. Core therefore adopts the slot design for gradient-text
+  and shimmer, and both bundles now clear those effects' decoration slot
+  under reduced motion (only core did before). A gate rejects inline rules
+  in either barrel.
+- Stale headers corrected: the core and extras JS barrels state their real
+  counts (29 + 27 and 29 + 9 modules); `pointer.css` no longer re-sets
+  `--size-touch-min` under `(pointer: coarse)` to the value sizing.css
+  already sets; the CDN build comment no longer claims the slim bundle has
+  no themes (822u).
+- `layout-attributes.css` is layout again (tfcw, 1294 → 760 lines):
+  density modes moved to `src/utils/density.css`, the scroll-driven header
+  shrink / `data-animate` reveals / `data-parallax` to
+  `src/utils/scroll-driven.css`, and the canvas surface into
+  `layout-canvas/styles.css`. `<layout-badge>` keeps its tag; it is
+  documented as a surface element rather than a layout primitive.
+- `vb/layout-attr-value` now validates each `data-layout-*` value against
+  the vocabulary of the element's own layout (resolved from `<layout-x>`,
+  `data-layout="x"` or `data-page-layout`), instead of the union across all
+  layouts — `data-layout-min="auto"` on a grid is now caught. Child
+  attributes and elements naming no layout fall back to the merged check.
+- Conformance guards that tested a whole line now judge the tag they
+  examine: a styled element sharing a line with a `<link>`, a state class
+  beside an `<output>`, or a second `<svg>` on a line are no longer exempt.
+- `check:api-drift` no longer claims tab-set manages `aria-selected`; it
+  manages `aria-expanded` on its summaries by design.
+- `context-menu` and `drop-down` reset themed button styling on their items
+  through their own stylesheets (`!important` in the component layer) instead
+  of inline styles written by JavaScript. The nav active-item `!important`
+  rules stay, with their rationale corrected: themes sit above
+  `native-elements` by contract and most of them color bare links.
+  `_extreme-neumorphism` dropped an unneeded `!important`.
 
 ## [0.3.1] - 2026-07-07
 
