@@ -12,7 +12,9 @@
  *   3. Every source page builds with as many <code-block>s as its source.
  *      A cook-ssg bug once ate code-block closers and the HTML after them
  *      on 52 pages; only this count exposed it.
- *   4. --external: also HEAD/GET external URLs from docs pages (off by
+ *   4. The output root has a 404.html, so unknown URLs get HTTP 404
+ *      instead of Cloudflare's home-page fallback with HTTP 200.
+ *   5. --external: also HEAD/GET external URLs from docs pages (off by
  *      default: third-party sites make CI flaky).
  *
  * Usage:
@@ -205,6 +207,11 @@ async function main() {
   if (!existsSync(root)) { console.error(`check-links: ${root} not found — run npm run build first`); process.exit(2); }
 
   const { broken, external, pages } = checkSite(root);
+  // Cloudflare Pages answers unknown URLs with the home page and HTTP 200
+  // unless the output root has a 404.html (vanilla-breeze-f0d6).
+  if (!existsSync(join(root, '404.html'))) {
+    broken.push({ page: '/', kind: 'file', href: '/404.html', why: 'missing' });
+  }
   const mismatches = codeBlockMismatches(srcRoot, root);
   const externalFailures = argv.includes('--external') ? await checkExternal(external) : [];
 

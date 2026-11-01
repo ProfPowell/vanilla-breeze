@@ -63,4 +63,7 @@ export default {
   provenanceHtmlAttrs: '',
   pageInfoBlock: '',
   signableAttr: '',
+  // Search indexing: base.html puts this on <main>. Override with "" in
+  // frontmatter to keep a page out of pagefind (the 404 page).
+  pagefindBodyAttr: 'data-pagefind-body',
 };
