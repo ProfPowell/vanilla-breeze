@@ -59,3 +59,28 @@ test('CHANGELOG.md parses and the /changelog/ page is generated, not hand-writte
   assert.ok(page.includes('<!-- changelog:releases -->'), 'page keeps the generation marker');
   assert.ok(!/<(article|section) id="v\d/.test(page), 'no hand-authored release entries in the page source');
 });
+
+// ── Atom feed (vanilla-breeze-bknc) ─────────────────────────────────────
+import { renderChangelogFeed } from '../../site/plugins/generate-changelog-feed.js';
+import { DOMParser } from 'linkedom';
+
+test('Atom feed: one entry per release, ids match page anchors, Unreleased excluded', () => {
+  const md = SAMPLE.replace('## [Unreleased]\n', '## [Unreleased]\n\n### Added\n\n- not yet\n');
+  const feed = renderChangelogFeed(md, 'https://example.com/');
+  const doc = new DOMParser().parseFromString(feed, 'text/xml');
+  const entries = [...doc.querySelectorAll('entry')];
+  assert.equal(entries.length, 2);
+  assert.equal(entries[0].querySelector('id').textContent, 'https://example.com/changelog/#v1-2-0');
+  assert.equal(entries[0].querySelector('updated').textContent, '2026-10-31T00:00:00Z');
+  assert.equal(doc.querySelector('feed > updated').textContent, '2026-10-31T00:00:00Z');
+  assert.ok(!feed.includes('not yet'), 'Unreleased content leaked into the feed');
+  // Entry HTML is escaped, not raw markup inside the XML
+  assert.match(feed, /&lt;strong&gt;Big thing\.&lt;\/strong&gt;/);
+});
+
+test('Atom feed from the real CHANGELOG.md is well-formed', () => {
+  const feed = renderChangelogFeed(readFileSync(resolve(ROOT, 'CHANGELOG.md'), 'utf-8'), 'https://vanilla-breeze.com');
+  const doc = new DOMParser().parseFromString(feed, 'text/xml');
+  assert.equal(doc.querySelector('feed > title').textContent, 'Vanilla Breeze changelog');
+  assert.ok(doc.querySelectorAll('entry').length >= 6);
+});
