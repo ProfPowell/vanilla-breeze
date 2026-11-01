@@ -52,6 +52,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { viewTransitionSwap } from '../../lib/vb-view-transition.js';
 
 class FlowDiagram extends VBElement {
   static get observedAttributes() { return ['src', 'title', 'compact']; }
@@ -150,9 +151,6 @@ class FlowDiagram extends VBElement {
     this.#nodeCount = 0;
   }
 
-  /** @type {number} */
-  static #vtCounter = 0;
-
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue || !this.isConnected) return;
     if (name === 'src') {
@@ -173,13 +171,8 @@ class FlowDiagram extends VBElement {
       this.removeAttribute('data-upgraded');
       this.setup();
     };
-    if (this.hasAttribute('data-upgraded')
-        && 'startViewTransition' in document
-        && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const name = `fd-vt-${++FlowDiagram.#vtCounter}`;
-      this.style.viewTransitionName = name;
-      const tx = document.startViewTransition(swap);
-      tx.finished.finally(() => { this.style.viewTransitionName = ''; });
+    if (this.hasAttribute('data-upgraded')) {
+      viewTransitionSwap(this, swap, 'fd-vt');
     } else {
       swap();
     }

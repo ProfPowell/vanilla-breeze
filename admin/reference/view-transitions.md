@@ -19,10 +19,11 @@ browser-support table). Keep this file current when a pattern changes.
 
 ## Who does what today
 
-- **Whole-host crossfade:** chart-wc uses `viewTransitionSwap`. diagram-wc,
-  flow-diagram and site-map inline the same logic (written before the
-  helper existed); new code uses the helper, and touching one of those
-  three is a good moment to migrate it. version-switcher awaits
+- **Whole-host crossfade:** chart-wc, diagram-wc, flow-diagram and
+  site-map use `viewTransitionSwap` (the last three migrated in v4m9; each
+  keeps its own "only animate a re-render" guard). site-map chains the
+  returned transition's `updateCallbackDone` to restore scroll position,
+  and handles the `null` fallback return. version-switcher awaits
   `startViewTransition(apply).updateCallbackDone`.
 - **Per-part, author-selectable mode:** tab-set, accordion-wc and
   carousel-wc read a `transition` attribute (`fade` | `slide` | `scale`)

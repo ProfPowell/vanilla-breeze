@@ -7,9 +7,8 @@
  *   - startViewTransition is unavailable (e.g. older browsers),
  *   - prefers-reduced-motion is set.
  *
- * Same pattern used inline by diagram-wc, flow-diagram, gantt-chart,
- * and site-map (vanilla-breeze-4tsb); extracted for the components
- * covered by vanilla-breeze-7ixr.
+ * Used by chart-wc, diagram-wc, flow-diagram and site-map (the last
+ * three migrated from inline copies in vanilla-breeze-v4m9).
  *
  * @param {HTMLElement} host - Element to pin the transition to. The browser
  *   snapshots the host's painted area (including shadow content) and uses

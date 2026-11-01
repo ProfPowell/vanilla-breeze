@@ -55,6 +55,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { viewTransitionSwap } from '../../lib/vb-view-transition.js';
 
 /** Page-type display config */
 const PAGE_TYPES = {
@@ -714,9 +715,6 @@ class SiteMap extends VBElement {
 
   static #DETAIL_LABELS = ['Shape', 'Shape + Title', 'Full', 'Full + Status', 'Wireframe'];
 
-  /** @type {number} */
-  static #vtCounter = 0;
-
   /**
    * Capture the visual anchor state of an existing render so we can restore
    * the user's place after a re-render. We pin the toggled (or focused) node
@@ -876,21 +874,18 @@ class SiteMap extends VBElement {
       }
     };
 
-    if (priorContainer?.isConnected
-        && 'startViewTransition' in document
-        && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const name = `sm-vt-${++SiteMap.#vtCounter}`;
-      priorContainer.style.viewTransitionName = name;
-      newContainer.style.viewTransitionName = name;
-      const tx = document.startViewTransition(swap);
-      tx.finished.finally(() => {
-        newContainer.style.viewTransitionName = '';
-      });
-      // Restore the anchor and focus after the transition finishes so the
-      // user's clicked node lands at the same pixel position.
-      tx.updateCallbackDone.then(() => this.#restoreAnchor(anchor));
+    // Restore the anchor once the new DOM is in, so the user's clicked
+    // node lands at the same pixel position. viewTransitionSwap returns
+    // null when it swapped without a transition.
+    let tx = null;
+    if (priorContainer?.isConnected) {
+      tx = viewTransitionSwap(this, swap, 'sm-vt'); // swaps either way
     } else {
       swap();
+    }
+    if (tx) {
+      tx.updateCallbackDone.then(() => this.#restoreAnchor(anchor));
+    } else {
       this.#restoreAnchor(anchor);
     }
 

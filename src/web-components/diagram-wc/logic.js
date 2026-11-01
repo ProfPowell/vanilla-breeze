@@ -35,6 +35,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { viewTransitionSwap } from '../../lib/vb-view-transition.js';
 import { buildMermaidConfig } from '../../lib/diagram-tokens.js';
 
 /**
@@ -63,7 +64,6 @@ function loadMermaid(url) {
 
 class DiagramWc extends VBElement {
   static #idCounter = 0;
-  static #vtCounter = 0;
 
   /** @type {string|null} */
   #source = null;
@@ -231,19 +231,10 @@ class DiagramWc extends VBElement {
       this.#figure = fig;
     };
 
-    if (prior?.isConnected
-        && 'startViewTransition' in document
-        && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      // Pin the same view-transition-name on prior and new so the browser
-      // captures only this diagram's region, not the whole document.
-      const name = `dwc-vt-${++DiagramWc.#vtCounter}`;
-      prior.style.viewTransitionName = name;
-      fig.style.viewTransitionName = name;
-      const tx = document.startViewTransition(swap);
-      tx.finished.finally(() => {
-        // Clean up so a subsequent transition gets a fresh name.
-        fig.style.viewTransitionName = '';
-      });
+    // Only crossfade a re-render; the first render just appears.
+    // viewTransitionSwap handles support, reduced motion and naming.
+    if (prior?.isConnected) {
+      viewTransitionSwap(this, swap, 'dwc-vt');
     } else {
       swap();
     }
