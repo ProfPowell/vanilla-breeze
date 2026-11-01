@@ -31,7 +31,7 @@ Workflow note: when a `plans/` doc ships, move it to `shipped/`. When a `researc
 | [attribute-explainer.html](./reference/attribute-explainer.html) | Live attribute reference page |
 | [decisions.md](./reference/decisions.md) | Standing decisions on R&D specs (SKOS adoption, etc.) |
 | [form-validation.md](./reference/form-validation.md) | Current state of form validation in VB |
-| [view-transitions.md](./reference/view-transitions.md) | What view-transition support actually does today |
+| [view-transitions.md](./reference/view-transitions.md) | View-transition contract for component authors: helpers, naming, fallbacks, CSS, tests |
 | [touch.md](./reference/touch.md) | Current touch-input behavior |
 
 ## Specs (stable contracts)

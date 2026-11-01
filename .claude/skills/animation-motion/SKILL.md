@@ -398,6 +398,11 @@ Use `will-change` sparingly for known animations:
 
 ## View Transitions API
 
+> **Working on a Vanilla Breeze component?** Read `admin/reference/view-transitions.md`
+> first: use `viewTransitionSwap` from `src/lib/vb-view-transition.js`, keep names
+> unique among rendered elements, reuse the `vt-*` keyframes in
+> `src/utils/vt-keyframes.css`, and test all three fallback branches.
+
 For page transitions (progressive enhancement):
 
 ```css
