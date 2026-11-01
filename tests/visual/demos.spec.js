@@ -22,6 +22,7 @@ const SKIP = new Set([
   'markdown-viewer-mermaid.html',  // loads Mermaid + D3 from esm.sh at runtime
   'scroll-effects-gallery.html',   // scroll-driven animations settle nondeterministically
   'activity-feed-dashboard.html',  // relative-time badges change with the wall clock
+  'mock-portraits.html',           // faces load from a remote portrait CDN; a slow or failed image shifts the page
 ]);
 
 const demos = readdirSync(demosDir)

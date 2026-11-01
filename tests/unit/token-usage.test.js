@@ -43,7 +43,7 @@ const PUBLIC_SCALE_TOKENS = [
   '--color-overlay-subtle',
 ];
 const THEME_STATE_TOKENS = [
-  '--color-primary-active', '--color-secondary-hover', '--color-secondary-subtle',
+  '--color-secondary-hover', '--color-secondary-subtle',
   '--color-accent-hover', '--color-border-focus',
 ];
 const UNREAD_BUT_KEPT = new Set([...PUBLIC_CONTENT_TOKENS, ...PUBLIC_SCALE_TOKENS, ...THEME_STATE_TOKENS]);
