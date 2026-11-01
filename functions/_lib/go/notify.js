@@ -12,6 +12,38 @@
  */
 
 import { json, err, readJson, newId } from './shared.js';
+import bundledFeed from './feed-data.js';
+
+/**
+ * Release notes surfaced in the notification panel. feed-data.js is
+ * regenerated from CHANGELOG.md on every build (scripts/build-feed.js), so
+ * the newest releases appear without a manual KV write; hand-written KV
+ * messages are merged in and win on a shared id. Read state lives in each
+ * visitor's browser (notification-wc's VBStore), not here.
+ */
+const RELEASE_LIMIT = 3;
+
+function releaseMessages() {
+  return (bundledFeed.items ?? []).slice(0, RELEASE_LIMIT).map((r) => ({
+    id: `release-${r.id}`,
+    type: 'update',
+    title: `Vanilla Breeze ${r.title} released`,
+    body: r.body,
+    url: r.url,
+    date: r.date,
+    read: false,
+    dismissed: false,
+    priority: 'normal',
+  }));
+}
+
+/** KV messages plus release notes, newest first. */
+async function allMessages(env) {
+  const stored = await readMessages(env);
+  const ids = new Set(stored.map((m) => m.id));
+  const merged = [...stored, ...releaseMessages().filter((m) => !ids.has(m.id))];
+  return merged.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+}
 
 const MSG_INDEX = 'index:msgs';
 const SUB_INDEX = 'index:subs';
@@ -55,7 +87,7 @@ export async function listMessages(request, env) {
   const unreadOnly = url.searchParams.get('unread') === 'true';
   const limit = Math.max(1, Math.min(500, Number(url.searchParams.get('limit') ?? 50)));
 
-  const all = await readMessages(env);
+  const all = await allMessages(env);
   let items = all.filter(m => !m.dismissed);
   if (since) {
     const cutoff = Date.parse(since);
@@ -76,7 +108,14 @@ export async function patchMessage(request, env, id) {
   if (body === undefined) return err(400, 'invalid_input', 'Body must be valid JSON');
 
   const msg = await env.VB_KV.get(`msg:${id}`, 'json');
-  if (!msg) return err(404, 'not_found', `Notification ${id} not found`);
+  if (!msg) {
+    // Release notes aren't stored; acknowledge without persisting so a
+    // client that PATCHes read state doesn't mark them read for everyone.
+    if (releaseMessages().some((m) => m.id === id)) {
+      return json({ id, read: body?.read === true, dismissed: body?.dismissed === true });
+    }
+    return err(404, 'not_found', `Notification ${id} not found`);
+  }
 
   if (typeof body?.read === 'boolean') msg.read = body.read;
   if (typeof body?.dismissed === 'boolean') msg.dismissed = body.dismissed;
