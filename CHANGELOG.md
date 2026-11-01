@@ -29,6 +29,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **`vanilla-breeze-autoload.js` ships in the npm package.** The
+  autoloader was documented as a loading strategy but excluded from the
+  package. It finds its `components/` chunks next to its own script, so it
+  works from unpkg.
+
 - **Buttons follow the theme's hover and active colours.** Themes set
   `--color-primary-hover` / `--color-primary-active`, but `button`
   computed its own states, so those overrides never showed. A button with
