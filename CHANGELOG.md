@@ -35,6 +35,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   plain `role="combobox"` on the input in every browser, as the docs
   already described.
 
+- **`data-effect="stamp"` is visible on dark surfaces.** It blended with
+  `multiply` and dark ink, which nearly vanished on dark backgrounds. On
+  dark surfaces (nearest `data-mode="dark"`, or the system preference) it
+  now uses `screen` with lighter ink; `--vb-stamp-blend` overrides it for
+  custom stages.
+
 ## [0.4.1] - 2026-10-31
 
 Patch release: the package no longer drags in a runtime dependency, and the
