@@ -20,6 +20,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **markdown-viewer and markdown-editor are in the full barrel; `marked` is
+  vendored** (kdkb). Both imported `marked` by bare specifier, which esbuild
+  resolves but a browser cannot, so they were kept out of
+  `src/web-components/index.js` (one unresolvable import kills the whole raw
+  `/src/main.js` graph in dev). `marked` now lives in `src/vendor/marked/`
+  as a verbatim copy of the installed package, imported by relative path;
+  `npm run vendor:marked` refreshes it and a unit gate fails on drift. The
+  eleven demos that carried an esm.sh import map for `marked` no longer hit
+  the network, and the barrel parity test has no exemptions left.
+
 - **Scroll-triggered effects and self-wrapping effects work again on every
   page** (t5r2). Since the effects runtime began booting its own observer
   (6xxy), it processed elements while `vb.js` evaluated — before

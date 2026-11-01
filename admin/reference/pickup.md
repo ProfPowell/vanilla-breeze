@@ -64,6 +64,7 @@ mechanics change. Last rewritten **2026-09-02**.
 | s3hy | 5 px width media queries → `--bp-s/l`; gate against px widths |
 | z1im | 28 unread tokens decided: 19 kept as categorised public API, 5 theme-state tokens tracked in o4tj, 4 pruned everywhere |
 | iwuq | `theme-surfaces.spec.js`: surfaces demo under all 55 themes light+dark + form-validation per theme, 156 desktop baselines; old themes.spec.js retired |
+| kdkb | `marked` vendored (src/vendor/marked, verbatim copy + `vendor:marked` script + drift gate); markdown-viewer/editor rejoin the full barrel; 11 demo import maps for esm.sh removed; parity test has no exemptions |
 | t5r2 | 17 stale demo baselines triaged: 3 were a real regression (6xxy self-boot processed elements before triggers/effects registered — scroll-triggered effects never fired, animate-image lost its control; fixed in vb.js + component spec), 1 was clock rot (suite now pins the clock), 13 intended drift refreshed; effects-kitchen-sink skipped (live scramble). nnw3 filed: gate for var() references to undefined tokens |
 | psme | ThemeManager: a page-pinned `<html data-theme>` is the page's default — only an explicit, different stored brand replaces it; a pinned brand VB has no CSS for (a site's own theme) no longer 404s into `default`; storage sync and `reset()` follow the same rule. Reported from a downstream site build |
 | uz4f | 145 picsum hot-links (27 demos, 5 docs pages, image-gallery static) → deterministic local SVGs in `src/assets/placeholders/` (manifest + `scripts/generate-placeholders.mjs`); assemble-site copies `src/assets`; visual-suite picsum shim removed, 11 demo baselines refreshed |
@@ -88,7 +89,7 @@ starts it). Never run two Playwright invocations at once.
 1. **o4tj** (P3, design) — wire the theme-set state colours into the
    components that map to a semantic colour, or prune them; the new
    theme-surfaces spec shows the blast radius per theme.
-2. The P2s: **kdkb** (vendor `marked`), **d2wz** (verify and close),
+2. The P2s: **d2wz** (verify and close),
    **7yiy** (GoodURL phase 1). Small leftovers: native-elements sub-index
    chained imports (jhku note), a base `--page-bg-color` definition and the
    spacing/sizing filename swap (p0wn notes).
