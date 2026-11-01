@@ -88,9 +88,10 @@ class TimeIndex extends VBElement {
   }
 
   #filterByVersion(version) {
-    const sections = /** @type {NodeListOf<HTMLElement>} */ (this.querySelectorAll('section[id^="v"]'));
+    const sections = /** @type {NodeListOf<HTMLElement>} */ (this.querySelectorAll(':is(section, article)[id^="v"]'));
+    const target = version.replace(/\./g, '-');
     for (const section of sections) {
-      section.hidden = !!version && section.id !== version.replace(/\./g, '-').replace(/^v/, 'v');
+      section.hidden = !!version && section.id !== target;
     }
 
     if (!sections.length) {

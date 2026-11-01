@@ -4,6 +4,14 @@
  * control-flow instead of simple string substitution.
  */
 
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { marked } from '../../src/vendor/marked/marked.esm.js';
+import { parseChangelog, groupBadge } from '../../scripts/lib/changelog.js';
+
+const CHANGELOG_PATH = resolve(import.meta.dirname, '../../CHANGELOG.md');
+const CHANGELOG_MARKER = '<!-- changelog:releases -->';
+
 function escapeHtml(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;')
@@ -199,6 +207,68 @@ ${notesList}
   };
 }
 
+function formatReleaseDate(release) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(release.rawDate)) return escapeHtml(release.rawDate);
+  return new Date(`${release.rawDate}T00:00:00Z`).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+  });
+}
+
+/**
+ * Render CHANGELOG.md as the /changelog/ timeline. The page source carries
+ * only frontmatter + chrome and a marker comment; every release comes from
+ * the markdown so the page cannot drift from what was published.
+ */
+function renderChangelog(markdown) {
+  const releases = parseChangelog(markdown, { includeUnreleased: true });
+
+  const jumpLinks = releases
+    .filter((r) => r.anchor !== 'unreleased')
+    .map((r) => `<li><a href="#${r.anchor}" class="version-tag">v${escapeHtml(r.version)}</a></li>`)
+    .join('\n        ');
+
+  const articles = releases.map((r) => {
+    const label = r.anchor === 'unreleased' ? 'Unreleased' : `v${escapeHtml(r.version)}`;
+    const headingId = `${r.anchor}-heading`;
+    const badges = [...new Map(
+      r.groups.map((g) => groupBadge(g.heading)).filter(Boolean).map((b) => [b.label, b]),
+    ).values()];
+    const badgeList = badges.length
+      ? `<ul class="inline change-badges" aria-label="What changed">${badges
+        .map((b) => `<li><mark class="${b.cls}">${b.label}</mark></li>`).join('')}</ul>`
+      : '';
+    const released = r.date
+      ? `<p>Released <time datetime="${escapeHtml(r.date)}">${formatReleaseDate(r)}</time></p>`
+      : '<p>Not yet released</p>';
+    const groups = r.groups.map((g) => `<section aria-label="${escapeHtml(g.heading)}">
+            <h3>${escapeHtml(g.heading)}</h3>
+            ${marked.parse(g.markdown)}
+          </section>`).join('\n          ');
+
+    return `<article id="${r.anchor}" aria-labelledby="${headingId}">
+          <header class="version-header">
+            <hgroup>
+              <h2 id="${headingId}"><a href="#${r.anchor}">${label}</a></h2>
+              ${released}
+            </hgroup>
+            ${badgeList}
+          </header>
+          ${r.summary ? marked.parse(r.summary) : ''}
+          ${groups}
+        </article>`;
+  }).join('\n\n        ');
+
+  return `<nav aria-label="Jump to version">
+      <ol class="inline version-list">
+        ${jumpLinks}
+      </ol>
+    </nav>
+
+    <section class="changelog-entries" aria-label="Releases">
+        ${articles}
+    </section>`;
+}
+
 export class RenderDynamicPages {
   constructor({ file, data }) {
     this.file = file;
@@ -223,6 +293,13 @@ export class RenderDynamicPages {
         .replace(/<section>\s*<h2>Component Matrix<\/h2>[\s\S]*?<\/section>/, rendered.matrix)
         .replace(/<section>\s*<h2>Dimensions<\/h2>[\s\S]*?<\/section>/, rendered.dimensions)
         .replace(/<section>\s*<h2>Component Notes<\/h2>[\s\S]*?<\/section>/, rendered.notes);
+    }
+
+    if (this.file.src.includes(CHANGELOG_MARKER)) {
+      this.file.src = this.file.src.replace(
+        CHANGELOG_MARKER,
+        renderChangelog(readFileSync(CHANGELOG_PATH, 'utf-8')),
+      );
     }
 
   }

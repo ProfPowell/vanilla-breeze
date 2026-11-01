@@ -6,7 +6,7 @@ export default {
       "type": "update",
       "title": "v0.4.1",
       "body": "Patch release: the package no longer drags in a runtime dependency, and the npm listing gains an author and keywords. No runtime dependencies. `codex-claude-bridge` (the Codex review tooling) had sat in `dependencies` since 0.1.3, so every install of vanilla-breeze pulled 138…",
-      "url": "https://vanilla-breeze.com/changelog#0.4.1",
+      "url": "https://vanilla-breeze.com/changelog/#v0-4-1",
       "date": "2026-10-31"
     },
     {
@@ -14,7 +14,7 @@ export default {
       "type": "update",
       "title": "v0.4.0",
       "body": "First release since 0.3.1 and breaking in aggregate: themes self-declare the `bundle-theme` cascade layer and the charts add-on is layered, every layout lives once as `:is(layout-x, [data-layout=\"x\"])`, the size scale is spelled `s/m/l` everywhere with no aliases, 76 dead toke…",
-      "url": "https://vanilla-breeze.com/changelog#0.4.0",
+      "url": "https://vanilla-breeze.com/changelog/#v0-4-0",
       "date": "2026-10-31"
     },
     {
@@ -22,7 +22,7 @@ export default {
       "type": "update",
       "title": "v0.3.1",
       "body": "Purged stale build artifacts left over from the 0.3.0 decomposition: the `design-system` + `ux-planning` pack bundles (`dist/cdn/packs/*`) and the individual component bundles for the 36 removed components (`dist/cdn/components/*`). No `package.json` export referenced them — t…",
-      "url": "https://vanilla-breeze.com/changelog#0.3.1",
+      "url": "https://vanilla-breeze.com/changelog/#v0-3-1",
       "date": "2026-07-07"
     },
     {
@@ -30,7 +30,7 @@ export default {
       "type": "update",
       "title": "v0.3.0",
       "body": "Decomposed the design-system and project-planning packs out of core. These 36 components now ship as standalone, token-driven packages and were removed from `vanilla-breeze`: Design system → [`@profpowell/vb-design-system`](https://www.npmjs.com/package/@profpowell/vb-design-s…",
-      "url": "https://vanilla-breeze.com/changelog#0.3.0",
+      "url": "https://vanilla-breeze.com/changelog/#v0-3-0",
       "date": "2026-07-06"
     },
     {
@@ -38,7 +38,7 @@ export default {
       "type": "update",
       "title": "v0.2.0",
       "body": "`[data-icon]` icon primitive — a terse, native way to place a single monochrome icon (`<i data-icon=\"star\">`, or on any element) via a CSS `mask` `::before` plus a tiny core-loaded enhancer, alongside `<icon-wc>`. Ships build-generated per-set no-JS stylesheets and name manife…",
-      "url": "https://vanilla-breeze.com/changelog#0.2.0",
+      "url": "https://vanilla-breeze.com/changelog/#v0-2-0",
       "date": "2026-07-02"
     },
     {
@@ -46,7 +46,7 @@ export default {
       "type": "update",
       "title": "v0.1.0",
       "body": "Initial public release. Tokens — design tokens for spacing, typography, colors, sizing, borders, shadows, motion, and fluid scaling Native element styles — layered CSS for `<nav>`, `<table>`, `<form>`, `<aside>`, `<main>`, `<dialog>`, `<details>`, and more Layout system — `dat…",
-      "url": "https://vanilla-breeze.com/changelog#0.1.0",
+      "url": "https://vanilla-breeze.com/changelog/#v0-1-0",
       "date": "2025-01-01"
     }
   ]

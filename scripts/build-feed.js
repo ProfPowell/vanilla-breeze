@@ -24,6 +24,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { parseChangelog } from './lib/changelog.js';
 
 function parseArgs(argv) {
   const out = {};
@@ -52,49 +53,6 @@ const fnDataPath = args['skip-fn-data']
 const md = readFileSync(inPath, 'utf-8');
 
 /**
- * Split the markdown into release sections. Each section starts at a
- * `## [version] - date` header.
- */
-function parseReleases(text) {
-  const lines = text.split('\n');
-  /** @type {Array<{version: string, rawDate: string, bodyLines: string[]}>} */
-  const releases = [];
-  /** @type {{version: string, rawDate: string, bodyLines: string[]} | null} */
-  let current = null;
-
-  for (const line of lines) {
-    const header = /^##\s+\[([^\]]+)\]\s*-\s*(.+?)\s*$/.exec(line);
-    if (header) {
-      if (current) releases.push(current);
-      current = {
-        version: header[1].trim(),
-        rawDate: header[2].trim(),
-        bodyLines: [],
-      };
-      continue;
-    }
-    if (current) current.bodyLines.push(line);
-  }
-  if (current) releases.push(current);
-
-  return releases;
-}
-
-/**
- * Normalize the raw date string to ISO 8601 YYYY-MM-DD when we can parse
- * it. Fall back to the literal value (e.g. "2025") if it isn't a date.
- */
-function normalizeDate(raw) {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
-  const parsed = Date.parse(raw);
-  if (!Number.isNaN(parsed)) return new Date(parsed).toISOString().slice(0, 10);
-  // Year-only is fine — emit YYYY-01-01 so consumers have a parseable date,
-  // but keep the human label in title.
-  if (/^\d{4}$/.test(raw)) return `${raw}-01-01`;
-  return raw;
-}
-
-/**
  * Squash the release body into a one-paragraph summary suitable for a
  * notification body. Strip markdown bullets/headers, trim whitespace, and
  * cap at ~280 chars so it reads cleanly in a panel row.
@@ -108,14 +66,14 @@ function summarize(bodyLines) {
   return joined.length > 280 ? `${joined.slice(0, 277).trimEnd()}…` : joined;
 }
 
-const releases = parseReleases(md);
+const releases = parseChangelog(md);
 const items = releases.map((r) => ({
   id: r.version,
   type: 'update',
   title: `v${r.version}`,
   body: summarize(r.bodyLines),
-  url: `${siteUrl.replace(/\/$/, '')}/changelog#${r.version.replace(/[^\w.-]/g, '')}`,
-  date: normalizeDate(r.rawDate),
+  url: `${siteUrl.replace(/\/$/, '')}/changelog/#${r.anchor}`,
+  date: r.date,
 }));
 
 const payload = { items };
