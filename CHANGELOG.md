@@ -48,6 +48,18 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Theme text contrast on real pages.** A new themed site-pages suite
+  (5 doc pages × 10 aggressive themes × light/dark, with an AA check on
+  every text node) found 37 failures; all are fixed. Kawaii dark inline
+  code was 1.6:1 (the kawaii pack hardcoded the light-mode colour);
+  brutalist light code inside `<pre>` sat on the inline-code chip (2.4:1)
+  and its links deepen a step; vaporwave light links and code use a
+  deeper `--color-interactive`; win9x dark links, muted text and the
+  active nav link are lighter on the dark window.
+- **win9x puts page content in a window.** Text sat directly on the teal
+  desktop (body ~3:1, links and muted text under 2:1); `main` now has the
+  window surface, framed by the teal desktop.
+
 - **Themes no longer frame every form and blockquote.** Under the ~28
   themes that set a border style (swiss, genai, kawaii, organic, …),
   `data-border-style` auto-applied a full border to bare `form` and
