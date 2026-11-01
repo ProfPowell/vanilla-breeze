@@ -1,8 +1,15 @@
 button, .button {
   /* Color contract: set --btn-color to change the entire button palette */
   --_color: var(--btn-color, var(--color-interactive));
-  --_hover: oklch(from var(--_color) calc(l - 0.08) calc(c + 0.02) h);
-  --_active: oklch(from var(--_color) calc(l - 0.12) c h);
+  /* States: a custom --btn-color derives its own; otherwise the theme's
+     interactive state tokens apply (themes override --color-primary-hover
+     /-active, which these follow). --_btn-* reference --btn-color with no
+     fallback, so they are invalid when it is unset and var() falls through
+     to the theme token (vanilla-breeze-o4tj). */
+  --_btn-hover: oklch(from var(--btn-color) calc(l - 0.08) calc(c + 0.02) h);
+  --_btn-active: oklch(from var(--btn-color) calc(l - 0.12) c h);
+  --_hover: var(--_btn-hover, var(--color-interactive-hover));
+  --_active: var(--_btn-active, var(--color-interactive-active));
   --_ring: oklch(from var(--_color) l c h / 0.3);
   --_subtle: oklch(from var(--_color) l c h / 0.1);
   --_text: var(--color-text-on-primary, white);

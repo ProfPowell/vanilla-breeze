@@ -27,9 +27,13 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
  *    the characters page; content uses them, the framework never will.
  *  - PUBLIC_SCALE_TOKENS: documented members of a scale (duration, line-height,
  *    easing, shadow, overlay). A scale with holes is worse than an unread step.
- *  - THEME_STATE_TOKENS: the seed-and-derive state colours themes override
- *    (--color-accent-hover is set 92 times) but no component reads — components
- *    derive states locally. Wire-or-prune decision: vanilla-breeze-o4tj.
+ *  - THEME_STATE_TOKENS: seed-and-derive state colours themes override but
+ *    no component reads yet. o4tj (2026-11-01) settled the contract: a
+ *    component reads the semantic state token for the colour it actually uses
+ *    (button → --color-interactive-hover/-active, which follow primary), and a
+ *    custom colour (--btn-color) derives its own. Secondary/accent states stay
+ *    theme vocabulary until a component gets a secondary/accent variant;
+ *    --color-border-focus waits on a focus-border consumer.
  * Shrink these lists, never grow them without a reason here.
  */
 const PUBLIC_CONTENT_TOKENS = [
