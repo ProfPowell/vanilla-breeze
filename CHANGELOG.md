@@ -34,6 +34,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Themes no longer frame every form and blockquote.** Under the ~28
+  themes that set a border style (swiss, genai, kawaii, organic, …),
+  `data-border-style` auto-applied a full border to bare `form` and
+  `blockquote` with no padding, so controls and quote text touched the
+  frame. Those rules were inert until 0.4.0 moved them out of the tokens
+  layer. Auto-apply now targets padded containers only (`.card`, the
+  preview panels).
+
 - **`tab-set` panels span the full width.** The open panel sat in the
   first tab's column, which stretched that tab across the component and
   pushed the others to the far edge (off-screen on phones). Chromium and

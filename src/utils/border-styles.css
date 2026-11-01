@@ -8,11 +8,17 @@
  */
 
 /* ========================================
- * Auto-apply border tokens to common elements
+ * Auto-apply border tokens to bordered containers
  * within a [data-border-style] context
+ *
+ * Only targets that bring their own padding (cards, preview panels).
+ * Bare `form` and `blockquote` were in this list but had no effect while
+ * these rules sat in the tokens layer; once dtw6 moved them to utils
+ * (2026-09-01), every form and blockquote under ~28 themes gained a
+ * full border with no padding — text and controls touching the frame.
  * ======================================== */
 [data-border-style]:not([data-border-style="clean"]) :is(
-  .card, blockquote, form,
+  .card,
   .preview-card, .preview-form, .preview-table,
   .preview-code, .preview-list,
   .border-card, .vignette
@@ -27,7 +33,7 @@
 /* Radius override — separate because border-image disables border-radius per spec,
    so only apply when there's no border-image in use */
 [data-border-style]:not([data-border-style="clean"]) :is(
-  .card, blockquote, form,
+  .card,
   .preview-card, .preview-form, .preview-table,
   .preview-code, .preview-list,
   .border-card, .vignette
@@ -38,7 +44,7 @@
 /* Prevent border doubling when containers are nested (e.g. form inside details).
    Must include .card in the target :is() to match auto-apply specificity (0,3,0 → 0,3,1). */
 [data-border-style]:not([data-border-style="clean"]) :is(details) :is(
-  .card, blockquote, form,
+  .card,
   .preview-card, .preview-form, .preview-table,
   .preview-code, .preview-list,
   .border-card, .vignette
