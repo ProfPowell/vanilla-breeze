@@ -18,6 +18,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   too. Documented at `/docs/concepts/vb-service/` and
   `/docs/concepts/vb-store/`.
 
+### Fixed
+
+- **Component transitions animate again.** `tab-set`, `accordion-wc` and
+  `carousel-wc` animate their `data-transition` modes with `vt-*`
+  keyframes that only existed in the opt-in `utils/view-transitions.css`,
+  which neither bundle imports, so the transitions silently did nothing.
+  The keyframes now ship in `vanilla-breeze.css` and
+  `vanilla-breeze-core.css`; cross-document `@view-transition` stays
+  opt-in.
+
 ## [0.4.1] - 2026-10-31
 
 Patch release: the package no longer drags in a runtime dependency, and the
