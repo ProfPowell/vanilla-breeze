@@ -79,6 +79,22 @@ jobs:
       - name: Site link and content check
         run: npm run check:links
 
+      # Component behavior suite (tests/components) against the built site,
+      # served by scripts/test-server.mjs via playwright.config.js. ~4 min.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Component behavior tests
+        run: npm run test:components
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: component-test-failures
+          path: tests/visual/results/
+          retention-days: 7
+
   # REPORTS — informational, never fail the run
   quality-report:
     runs-on: ubuntu-latest
@@ -96,33 +112,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # The doc site has its own package (Cook SSG, pagefind); `npm run build`
-      # shells into it, so it needs its own install or `cook` is not found.
-      - name: Install site dependencies
-        run: cd site && npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Build site (test server serves site/dist/pages)
-        run: npm run build
-
-      - name: Visual regression tests
-        run: npm run test:visual || true
-        continue-on-error: true
-
-      - name: Component behavior tests
-        run: npm run test:components || true
-        continue-on-error: true
-
+      # The visual suite (tests/visual) is not run in CI: its baselines are
+      # rendered on macOS and ~700 of ~950 screenshots differ on Ubuntu from
+      # font rasterization alone. Run `npm run test:visual` locally before a
+      # release and when changing CSS (vanilla-breeze-zf9j).
       - name: Health dashboard
         run: npm run health || true
         continue-on-error: true
-
-      - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
