@@ -17,8 +17,8 @@
 import { test, expect } from 'playwright/test';
 
 /* Every flex/grid layout that can hold semantic-section children. `collapses`
- * marks the two the antidote is actually load-bearing for — cluster and reel
- * genuinely zero out without it; the rest give their items a definite size and
+ * marks the layouts the antidote is load-bearing for — cluster, reel and centered
+ * cover (align-items: center makes items content-sized) collapse without it; the rest give their items a definite size and
  * survive regardless, so they are deliberately NOT in the antidote (see
  * layout-attributes.css). The test asserts non-zero width for all of them
  * either way, which keeps the survivors honest too. */
@@ -29,6 +29,8 @@ const LAYOUTS = [
   { label: 'layout-switcher element', markup: '<layout-switcher>', collapses: false },
   { label: 'data-layout=switcher', markup: '<section data-layout="switcher">', collapses: false },
   { label: 'layout-cover element', markup: '<layout-cover>', collapses: false },
+  { label: 'centered layout-cover element', markup: '<layout-cover data-layout-centered>', collapses: true },
+  { label: 'centered data-layout=cover', markup: '<section data-layout="cover" data-layout-centered>', collapses: true },
   { label: 'data-layout=media', markup: '<section data-layout="media">', collapses: false },
   { label: 'data-layout=split', markup: '<section data-layout="split">', collapses: false },
   { label: 'layout-sidebar element', markup: '<layout-sidebar>', collapses: false },
@@ -66,6 +68,31 @@ test.describe('flex/grid layouts keep section children sized', () => {
       for (const w of widths) expect(w).toBeGreaterThan(0);
     });
   }
+
+  test('centered cover: a principal section keeps its content width (vanilla-breeze-vwez)', async ({ page }) => {
+    // The collapse here is not to zero: a contained, content-sized section
+    // shrinks to its longest word, so a sentence wraps one word per line.
+    const url = '/__cover-centered-fixture.html';
+    await page.route(`**${url}`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body:
+          `<!doctype html><html lang="en"><head><meta charset="utf-8">` +
+          `<link rel="stylesheet" href="/cdn/vanilla-breeze.css">` +
+          `<style>body{inline-size:900px}</style></head><body>` +
+          `<layout-cover data-layout-centered><section data-layout-principal>` +
+          `<p id="lead">The principal content is vertically centered</p></section></layout-cover>` +
+          `</body></html>`,
+      }),
+    );
+    await page.goto(url, { waitUntil: 'load' });
+    const lines = await page.evaluate(() => {
+      const p = document.getElementById('lead');
+      return Math.round(p.getBoundingClientRect().height / parseFloat(getComputedStyle(p).lineHeight));
+    });
+    expect(lines).toBe(1);
+  });
 
   test('an explicit [data-container] child still establishes a container', async ({ page }) => {
     // The antidote's specificity (0,0,2) sits below [data-container] (0,1,0), so

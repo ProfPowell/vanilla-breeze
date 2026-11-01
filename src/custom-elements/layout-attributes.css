@@ -665,17 +665,21 @@ main, article, section, aside:not(.float):not(.sidenote) {
    so a <section>/<article> with no explicit width collapses to nothing.
    See the project gotcha (memory: container_type_flex_item_collapse).
 
-   Scope is deliberately limited to the two layouts that actually collapse:
-   cluster (wrapping, content-sized items) and reel (flex-shrink: 0, content-
-   sized items). This antidote was previously a local copy inside layout-reel;
-   centralizing it also picks up cluster and keeps the element and attribute
-   forms from drifting.
+   Scope is deliberately limited to the layouts whose items are content-sized:
+   cluster (wrapping items), reel (flex-shrink: 0 items) and centered cover
+   (align-items: center shrinks items to their content). This antidote was
+   previously a local copy inside layout-reel; centralizing it also picks up
+   cluster and keeps the element and attribute forms from drifting.
 
-   The other flex/grid layouts (switcher, cover, media, split, sidebar) are
-   NOT included: they give their items a definite size (flex-basis or fr
-   tracks) so their section children never collapse, and stripping their
-   container-type would needlessly disable any container queries an author put
-   on those children — verified: adding cover here shifted cover-basic.
+   The other flex/grid layouts (switcher, plain cover, media, split, sidebar)
+   are NOT included: they give their items a definite size (stretch,
+   flex-basis or fr tracks) so their section children never collapse, and
+   stripping their container-type would needlessly disable any container
+   queries an author put on those children. Centered cover was once left out
+   because adding it "shifted cover-basic", but that baseline was a blank page
+   (an invalid background token hid the white text); the shift was the
+   principal section collapsing to a one-word column being fixed
+   (vanilla-breeze-vwez).
 
    The `:not([data-container])` is the escape hatch: an author who deliberately
    wants container queries on such a child adds `data-container` and is simply
@@ -685,7 +689,8 @@ main, article, section, aside:not(.float):not(.sidenote) {
    which would otherwise tie/beat `[data-container]`.) */
 :is(
   layout-cluster, [data-layout="cluster"],
-  layout-reel
+  layout-reel,
+  :is(layout-cover, [data-layout="cover"])[data-layout-centered]
 ) > :is(main, article, section, aside):not([data-container]) {
   container-type: normal;
 }
