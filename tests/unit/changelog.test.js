@@ -57,5 +57,5 @@ test('CHANGELOG.md parses and the /changelog/ page is generated, not hand-writte
   assert.equal(releases[0].version, pkg.version, 'top CHANGELOG entry matches package.json version');
   const page = readFileSync(resolve(ROOT, 'site/src/pages/changelog/index.html'), 'utf-8');
   assert.ok(page.includes('<!-- changelog:releases -->'), 'page keeps the generation marker');
-  assert.ok(!/<article id="v\d/.test(page), 'no hand-authored release entries in the page source');
+  assert.ok(!/<(article|section) id="v\d/.test(page), 'no hand-authored release entries in the page source');
 });

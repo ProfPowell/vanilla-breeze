@@ -240,12 +240,13 @@ function renderChangelog(markdown) {
     const released = r.date
       ? `<p>Released <time datetime="${escapeHtml(r.date)}">${formatReleaseDate(r)}</time></p>`
       : '<p>Not yet released</p>';
-    const groups = r.groups.map((g) => `<section aria-label="${escapeHtml(g.heading)}">
-            <h3>${escapeHtml(g.heading)}</h3>
-            ${marked.parse(g.markdown)}
-          </section>`).join('\n          ');
+    // Releases are <section>s, not <article>s: several themes (swiss,
+    // editorial, organic) style every article as a prose column with a drop
+    // cap, which a release list is not.
+    const groups = r.groups.map((g) => `<h3>${escapeHtml(g.heading)}</h3>
+          ${marked.parse(g.markdown)}`).join('\n          ');
 
-    return `<article id="${r.anchor}" aria-labelledby="${headingId}">
+    return `<section id="${r.anchor}" aria-labelledby="${headingId}">
           <header class="version-header">
             <hgroup>
               <h2 id="${headingId}"><a href="#${r.anchor}">${label}</a></h2>
@@ -255,7 +256,7 @@ function renderChangelog(markdown) {
           </header>
           ${r.summary ? marked.parse(r.summary) : ''}
           ${groups}
-        </article>`;
+        </section>`;
   }).join('\n\n        ');
 
   return `<nav aria-label="Jump to version">

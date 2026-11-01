@@ -32,7 +32,7 @@ class TimeIndex extends VBElement {
   #addControls() {
     // Reconnect guard: VBElement re-runs setup() on every reconnect, which
     // would prepend a second controls <nav>. Skip if ours is already in place.
-    if (this.querySelector(':scope > [data-timeline-controls]')) return;
+    if (this.querySelector('[data-timeline-controls]')) return;
 
     const controls = document.createElement('nav');
     controls.setAttribute('data-timeline-controls', '');
@@ -61,7 +61,10 @@ class TimeIndex extends VBElement {
       }
     }
 
-    this.prepend(controls);
+    // Sit directly above the entries they act on; fall back to the top.
+    const entries = this.querySelector('.changelog-entries');
+    if (entries) entries.before(controls);
+    else this.prepend(controls);
   }
 
   /** @type {boolean} */

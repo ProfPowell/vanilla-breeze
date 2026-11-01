@@ -13,8 +13,11 @@ export default {
   url: 'https://vanilla-breeze.com',
   isDev,
 
-  // CSS entry point (core — no decorative themes, no charts, no dev utils)
-  css: isDev ? '/src/main.css' : '/cdn/vanilla-breeze-core.css',
+  // CSS entry point: the full component set. The docs autoload chunk-only
+  // components (doc-extras.js), and chunks ship no CSS, so core.css left
+  // page-info, time-index & co. unstyled. Still no decorative themes,
+  // charts or dev utils.
+  css: isDev ? '/src/main.css' : '/cdn/vanilla-breeze.css',
 
   // JS entry point (core components + extras)
   js: isDev ? '/src/main.js' : '/cdn/vanilla-breeze-core.js',

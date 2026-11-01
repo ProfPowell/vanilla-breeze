@@ -18,13 +18,25 @@
 }
 
 /* Each entry */
-.changelog-entries article {
+.changelog-entries > :is(article, section) {
   position: relative;
   padding-block: var(--size-m);
 }
 
+/* Group headings inside an entry (Added / Fixed / …) need room above;
+   section entries get no prose flow spacing from themes. */
+.changelog-entries > :is(article, section) > :is(h3, h4) {
+  margin-block: var(--size-l) var(--size-xs);
+}
+
+/* time-index filters entries with [hidden]; native article styles set
+   display, which beats the UA [hidden] rule, so re-assert it. */
+.changelog-entries > [hidden] {
+  display: none;
+}
+
 /* Timeline dot */
-.changelog-entries article::before {
+.changelog-entries > :is(article, section)::before {
   content: "";
   position: absolute;
   inset-inline-start: calc(-1 * var(--size-xl) + var(--size-xs));
@@ -45,7 +57,7 @@ mark.fix    { background: oklch(from var(--color-info)    l c h / 0.15); }
 mark.remove { background: oklch(from var(--color-error)   l c h / 0.15); }
 
 /* Anchor highlight for deep-linked entries */
-.changelog-entries article:target {
+.changelog-entries > :is(article, section):target {
   background: oklch(from var(--color-interactive) l c h / 0.05);
   border-radius: var(--radius-m);
   padding-inline: var(--size-m);
