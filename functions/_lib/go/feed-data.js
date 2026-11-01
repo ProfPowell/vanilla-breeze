@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.4.1",
+      "type": "update",
+      "title": "v0.4.1",
+      "body": "Patch release: the package no longer drags in a runtime dependency, and the npm listing gains an author and keywords. No runtime dependencies. `codex-claude-bridge` (the Codex review tooling) had sat in `dependencies` since 0.1.3, so every install of vanilla-breeze pulled 138…",
+      "url": "https://vanilla-breeze.com/changelog#0.4.1",
+      "date": "2026-10-31"
+    },
+    {
       "id": "0.4.0",
       "type": "update",
       "title": "v0.4.0",

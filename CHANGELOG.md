@@ -6,6 +6,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-31
+
+Patch release: the package no longer drags in a runtime dependency, and the
+npm listing gains an author and keywords.
+
 ### Fixed
 
 - **No runtime dependencies.** `codex-claude-bridge` (the Codex review
