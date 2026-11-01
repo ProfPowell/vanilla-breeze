@@ -236,7 +236,7 @@ function buildArticleTagsFooter(fm) {
   }).join('\n');
   return `<footer data-article-tags>
   <h2 class="visually-hidden">Topics</h2>
-  <ul>
+  <ul data-layout="cluster" data-layout-gap="xs">
 ${items}
   </ul>
 </footer>`;

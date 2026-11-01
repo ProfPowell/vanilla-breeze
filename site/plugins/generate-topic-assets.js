@@ -106,7 +106,7 @@ const TOPIC_INDEX_CSS = `/* Topic index — sort controls + topic list. Selector
   background: var(--color-surface, #fff);
   color: inherit;
   border: 1px solid var(--color-border, #d0d7de);
-  border-radius: var(--radius-sm, 0.25rem);
+  border-radius: var(--radius-s, 0.25rem);
   padding: 0.35rem 0.75rem;
   cursor: pointer;
 }
@@ -204,20 +204,19 @@ footer[data-article-tags] {
   border-block-start: 1px solid var(--color-border-subtle, #eaeef2);
 }
 
+/* Layout comes from data-layout="cluster" on the <ul>, which also resets
+   the li + li flow spacing that offset the second chip. */
 footer[data-article-tags] ul {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
 }
 
 footer[data-article-tags] li > a {
   display: inline-block;
   padding: 0.2rem 0.6rem;
   border: 1px solid var(--color-border, #d0d7de);
-  border-radius: var(--radius-sm, 0.25rem);
+  border-radius: var(--radius-s, 0.25rem);
   font-size: 0.875rem;
   text-decoration: none;
   color: inherit;
