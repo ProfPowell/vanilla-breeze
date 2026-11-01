@@ -6,7 +6,7 @@ mechanics change. Last rewritten **2026-09-02**.
 
 ## Status (2026-11-01)
 
-- **Version:** 0.4.0 (cut 2026-10-31, tag v0.4.0) — first release since 0.3.1
+- **Version:** 0.4.0 published to npm 2026-10-31 (tag v0.4.0, shasum 55d63b91) — first release since 0.3.1
   on 2026-07-07; everything in the 0.4.0 changelog section is breaking in
   aggregate (theme layering, layout merge, s/m/l tokens, token prune).
 - **Live site:** https://vanilla-breeze.com (Cloudflare Pages, builds from

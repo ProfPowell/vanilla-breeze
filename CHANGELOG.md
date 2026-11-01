@@ -6,6 +6,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **No runtime dependencies.** `codex-claude-bridge` (the Codex review
+  tooling) had sat in `dependencies` since 0.1.3, so every install of
+  vanilla-breeze pulled 138 packages it never used. It is a devDependency
+  now and a unit gate keeps `dependencies` empty.
+
 ## [0.4.0] - 2026-10-31
 
 First release since 0.3.1 and breaking in aggregate: themes self-declare the

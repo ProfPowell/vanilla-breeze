@@ -30,3 +30,10 @@ for (const [key, target] of targets) {
 test('main and module entries exist', () => {
   for (const f of [pkg.main, pkg.module]) assert.ok(existsSync(f), f);
 });
+
+test('the package declares no runtime dependencies', () => {
+  // vanilla-breeze ships prebuilt bundles (marked is vendored). A stray
+  // runtime dependency makes every consumer install it: codex-claude-bridge
+  // sat in `dependencies` from 0.1.3 through 0.4.0 and cost 138 packages.
+  assert.deepEqual(pkg.dependencies ?? {}, {});
+});
