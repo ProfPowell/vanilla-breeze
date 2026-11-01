@@ -9,6 +9,18 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* [hidden] means "not rendered", and nothing should be able to undo that by
+   accident. The UA rule is plain display:none, so any author or component
+   rule that sets display (.slide { display: grid }, article styles, a
+   theme) silently un-hides elements components hide with the attribute.
+   !important in the lowest layer (reset) outranks every normal declaration
+   in every layer and in unlayered author CSS. until-found is excluded: it
+   must stay rendered (content-visibility) so find-in-page can reveal it.
+   Elements that are meant to be shown are shown by removing [hidden]. */
+[hidden]:not([hidden="until-found"]) {
+  display: none !important;
+}
+
 html {
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
