@@ -61,9 +61,12 @@ class TimeIndex extends VBElement {
       }
     }
 
-    // Sit directly above the entries they act on; fall back to the top.
-    const entries = this.querySelector('.changelog-entries');
-    if (entries) entries.before(controls);
+    // Sit above the entries they act on: before the top-level child that
+    // holds the first .changelog-entries (the container itself, or the first
+    // release section when each release has its own). Fall back to the top.
+    let anchor = this.querySelector('.changelog-entries');
+    while (anchor && anchor.parentElement !== this) anchor = anchor.parentElement;
+    if (anchor) anchor.before(controls);
     else this.prepend(controls);
   }
 
