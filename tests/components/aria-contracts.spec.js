@@ -140,20 +140,21 @@ test.describe('drop-down reflected state', () => {
 test.describe('combo-box ARIA contracts', () => {
   const page_url = '/docs/examples/demos/combobox-basic.html';
 
-  test('input carries the combobox ARIA contract (role via ElementInternals)', async ({ page }) => {
+  test('input carries the W3C combobox contract: role and states together', async ({ page }) => {
     await page.goto(page_url);
     await page.waitForSelector('combo-box[data-upgraded]');
 
-    // The combobox role is set through ElementInternals.role on the host
-    // (setRole in utils/form-internals.js), not as a role attribute, so it
-    // is invisible to attribute assertions and Playwright's role engine.
-    // Assert the author-facing ARIA attributes that drive screen-reader
-    // behavior on the focused input (mirrors combo-box.spec.js baseline).
+    // Role and states live on the focused input in every browser
+    // (vanilla-breeze-tnmf). Before, the role went through ElementInternals:
+    // on the host in Chromium, on the input in Firefox.
     const input = page.locator('combo-box input[type="text"]').first();
-    await expect(input).not.toHaveAttribute('role', /.+/);
+    await expect(input).toHaveAttribute('role', 'combobox');
     await expect(input).toHaveAttribute('aria-expanded', 'false');
     await expect(input).toHaveAttribute('aria-autocomplete', 'list');
     await expect(input).toHaveAttribute('aria-controls', /combobox-listbox-/);
+    // Now visible to role queries, and exactly one combobox per component
+    // (no second one exposed on the host).
+    await expect(page.getByRole('combobox')).toHaveCount(await page.locator('combo-box').count());
   });
 
   test('aria-expanded becomes true when listbox opens', async ({ page }) => {

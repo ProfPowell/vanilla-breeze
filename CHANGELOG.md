@@ -28,6 +28,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   `vanilla-breeze-core.css`; cross-document `@view-transition` stays
   opt-in.
 
+- **`combo-box` exposes one combobox, the W3C way.** The `combobox` role
+  went through `ElementInternals`, which put it on the host in Chromium
+  while `aria-expanded`, `aria-controls` and `aria-activedescendant` sat on
+  the inner input (Firefox put everything on the input). The role is now a
+  plain `role="combobox"` on the input in every browser, as the docs
+  already described.
+
 ## [0.4.1] - 2026-10-31
 
 Patch release: the package no longer drags in a runtime dependency, and the

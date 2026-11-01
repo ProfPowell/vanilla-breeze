@@ -24,7 +24,6 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  */
 
 import { VBElement } from '../../lib/vb-element.js';
-import { setRole } from '../../utils/form-internals.js';
 // Ensure <pop-over> is registered — combo-box composes it for its listbox surface.
 import '../pop-over/logic.js';
 
@@ -111,7 +110,11 @@ class ComboBox extends VBElement {
     if (!this.#listbox.id) this.#listbox.id = `combobox-listbox-${uid}`;
 
     // ARIA
-    setRole(this.#input, this.#internals, 'combobox');
+    // W3C combobox pattern (ARIA 1.2): role and states on the same focusable
+    // input. The role used to go through ElementInternals, which put it on
+    // the host in Chromium (states on the input) and on the input in Firefox,
+    // so the two browsers exposed different trees (vanilla-breeze-tnmf).
+    this.#input.setAttribute('role', 'combobox');
     this.#input.setAttribute('aria-expanded', 'false');
     this.#input.setAttribute('aria-autocomplete', 'list');
     this.#input.setAttribute('aria-controls', this.#listbox.id);
