@@ -34,7 +34,7 @@ async function page404(page, manifestThemes) {
 // Theme palettes whose link colour itself is under 3:1 on their light page
 // background (all links, not just nav). Tracked in vanilla-breeze-h887; delete an entry when
 // its theme is fixed. Anything new failing here is a regression.
-const KNOWN_LOW_CONTRAST = new Set(['brutalist/light/plain', 'dawn/light/plain', 'win9x/light/plain']);
+const KNOWN_LOW_CONTRAST = new Set(['win9x/light/plain']);
 
 test('every theme keeps nav active links legible and on the active tokens', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'colour check is viewport-independent');
