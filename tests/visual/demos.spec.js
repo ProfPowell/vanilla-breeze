@@ -17,7 +17,9 @@ const demosDir = join(import.meta.dirname, '../../demos/examples/demos');
 // is meaningless for them; behavior is covered by tests/components/.
 const SKIP = new Set([
   'scramble-basic.html',           // rAF text-scramble animation
+  'effects-kitchen-sink.html',     // contains a live scramble effect (same reason)
   'content-lens.html',             // renders from fetched /pages.json
+  'markdown-viewer-mermaid.html',  // loads Mermaid + D3 from esm.sh at runtime
   'scroll-effects-gallery.html',   // scroll-driven animations settle nondeterministically
   'activity-feed-dashboard.html',  // relative-time badges change with the wall clock
 ]);
@@ -28,6 +30,10 @@ const demos = readdirSync(demosDir)
 
 for (const demo of demos) {
   test(`visual: ${demo}`, async ({ page }) => {
+    // Pin the clock: calendars and anything that renders "today" otherwise
+    // drift away from their baseline every month (t5r2). The date is the
+    // one the original baselines were captured on.
+    await page.clock.setFixedTime(new Date('2026-07-06T12:00:00'));
     await page.goto(`/docs/examples/demos/${demo}`);
     await page.waitForLoadState('networkidle');
 
