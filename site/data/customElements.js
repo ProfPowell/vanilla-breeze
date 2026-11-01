@@ -1,5 +1,5 @@
 const all = [
-  { name: 'brand-mark', href: '/docs/elements/custom-elements/brand-mark/', desc: 'Brand/logo display element' },
+  { name: 'brand-mark', href: '/docs/elements/web-components/brand-mark/', desc: 'Brand/logo display element' },
   { name: 'chat-bubble', href: '/docs/elements/custom-elements/chat-bubble/', desc: 'Chat bubble speech container' },
   { name: 'chat-message', href: '/docs/elements/custom-elements/chat-message/', desc: 'Individual chat message wrapper' },
   { name: 'chat-thread', href: '/docs/elements/custom-elements/chat-thread/', desc: 'Threaded chat conversation container' },
@@ -20,7 +20,7 @@ const all = [
   { name: 'layout-switcher', href: '/docs/elements/custom-elements/switcher/', desc: 'Responsive row/column switching' },
   { name: 'layout-text', href: '/docs/elements/custom-elements/layout-text/', desc: 'Readable text measure container' },
   { name: 'loading-spinner', href: '/docs/elements/custom-elements/loading-spinner/', desc: 'CSS-only loading spinner for async operations' },
-  { name: 'progress-ring', href: '/docs/elements/custom-elements/progress-ring/', desc: 'CSS-only circular progress indicator' },
+  { name: 'progress-ring', href: '/docs/elements/native/progress/', desc: 'CSS-only circular progress indicator' },
   { name: 'status-message', href: '/docs/elements/custom-elements/status-message/', desc: 'Status feedback messages' },
   { name: 'text-divider', href: '/docs/elements/custom-elements/text-divider/', desc: 'Horizontal divider with centered text' },
   { name: 'user-avatar', href: '/docs/elements/custom-elements/user-avatar/', desc: 'User avatar display' },

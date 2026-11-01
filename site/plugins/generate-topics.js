@@ -27,6 +27,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const SITE_ROOT = resolve(__dirname, '..');
 const PAGES_SRC = resolve(SITE_ROOT, 'src/pages');
 const TOPICS_OUT = resolve(SITE_ROOT, 'src/pages/topics');
+const TOPICS_DIST = resolve(SITE_ROOT, 'dist/pages/topics');
 const VOCAB_PATH = resolve(SITE_ROOT, 'src/_data/vocabulary.json');
 const ANALYTICS_PATH = resolve(SITE_ROOT, 'src/_data/views.json');
 
@@ -276,7 +277,17 @@ ${items}
 `;
 }
 
-function renderTopicDetailBody(topic, conceptById) {
+/* Only concepts with tagged content get a /topics/{id}/ page. Link those;
+   name the rest as plain text so the SKOS relation still reads without
+   pointing at a page that is never generated. */
+function conceptRef(id, conceptById, hasPage, attrs) {
+  const label = escHtml(conceptById.get(id)['skos:prefLabel']);
+  return hasPage.has(id)
+    ? `<a href="/topics/${escHtml(id)}/"${attrs} data-concept="${escHtml(id)}">${label}</a>`
+    : `<span data-concept="${escHtml(id)}">${label}</span>`;
+}
+
+function renderTopicDetailBody(topic, conceptById, hasPage) {
   const articleListItems = topic.articles.map((a) => {
     const dateAttr = a.date || '';
     const dateHuman = dateAttr ? fmtDateLong(dateAttr) : '';
@@ -294,22 +305,16 @@ function renderTopicDetailBody(topic, conceptById) {
   }).join('\n');
 
   const broaderLink = topic.broader && conceptById.has(topic.broader)
-    ? `<a href="/topics/${escHtml(topic.broader)}/" rel="up" data-relation="skos:broader" data-concept="${escHtml(topic.broader)}">${escHtml(conceptById.get(topic.broader)['skos:prefLabel'])}</a>`
+    ? conceptRef(topic.broader, conceptById, hasPage, ' rel="up" data-relation="skos:broader"')
     : '';
 
   const relatedLinks = topic.related
     .filter((id) => conceptById.has(id))
-    .map((id) => {
-      const c = conceptById.get(id);
-      return `<a href="/topics/${escHtml(id)}/" rel="related" data-relation="skos:related" data-concept="${escHtml(id)}">${escHtml(c['skos:prefLabel'])}</a>`;
-    });
+    .map((id) => conceptRef(id, conceptById, hasPage, ' rel="related" data-relation="skos:related"'));
 
   const narrowerLinks = topic.narrower
     .filter((id) => conceptById.has(id))
-    .map((id) => {
-      const c = conceptById.get(id);
-      return `<a href="/topics/${escHtml(id)}/" data-relation="skos:narrower" data-concept="${escHtml(id)}">${escHtml(c['skos:prefLabel'])}</a>`;
-    });
+    .map((id) => conceptRef(id, conceptById, hasPage, ' data-relation="skos:narrower"'));
 
   const relationsParts = [];
   if (broaderLink) relationsParts.push(`Part of: ${broaderLink}`);
@@ -473,33 +478,30 @@ export class GenerateTopics {
     /* Stash on data context for the after-pass plugin. */
     this.data.topicIndex = index;
 
-    /* 5. Reset and rewrite the topics output dir. */
-    if (existsSync(TOPICS_OUT)) {
-      await rm(TOPICS_OUT, { recursive: true, force: true });
-    }
-    await mkdir(TOPICS_OUT, { recursive: true });
-
-    /* 6. Write /topics/index.html. */
+    /* 5-7. Write /topics/index.html and /topics/{slug}/index.html.
+       Cook copies src/ to dist/ BEFORE before-pass plugins run and then
+       builds from dist/, so writing only into src/ left the build one run
+       stale, and a clean checkout (Cloudflare Pages) shipped no topic pages
+       at all. Write both trees: dist/ feeds this build, src/ keeps dev and
+       the next copy consistent. */
     const conceptById = new Map(
       (vocabulary.concepts || []).map((c) => [c['@id'], c])
     );
-    const indexBody = renderTopicIndexBody(index, conceptById);
-    await writeFile(
-      join(TOPICS_OUT, 'index.html'),
-      indexFrontmatter() + '\n' + indexBody,
-      'utf-8'
-    );
-
-    /* 7. Write /topics/{slug}/index.html for each concept-with-content. */
-    for (const topic of index.topics) {
-      const dir = join(TOPICS_OUT, topic.slug);
-      await mkdir(dir, { recursive: true });
-      const body = renderTopicDetailBody(topic, conceptById);
-      await writeFile(
-        join(dir, 'index.html'),
-        detailFrontmatter(topic) + '\n' + body,
-        'utf-8'
-      );
+    const hasPage = new Set(index.topics.map((t) => t.id));
+    const files = [
+      ['index.html', indexFrontmatter() + '\n' + renderTopicIndexBody(index, conceptById)],
+      ...index.topics.map((topic) => [
+        join(topic.slug, 'index.html'),
+        detailFrontmatter(topic) + '\n' + renderTopicDetailBody(topic, conceptById, hasPage),
+      ]),
+    ];
+    for (const outDir of [TOPICS_OUT, TOPICS_DIST]) {
+      if (existsSync(outDir)) await rm(outDir, { recursive: true, force: true });
+      for (const [rel, content] of files) {
+        const target = join(outDir, rel);
+        await mkdir(dirname(target), { recursive: true });
+        await writeFile(target, content, 'utf-8');
+      }
     }
 
     console.log(`  ✓ Generated topics index + ${index.topics.length} detail pages`);
