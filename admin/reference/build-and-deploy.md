@@ -33,6 +33,31 @@ The CF Pages project is connected to this git repo. **Build command is
 shows a different build command, update it — do not edit the script
 behaviour in the dashboard.
 
+### Production deploys wait for green CI
+
+Cloudflare's **production branch is `production`**, not `main`
+(dashboard: Workers & Pages → vanilla-breeze → Settings → Builds &
+deployments → Production branch). Every other branch, `main` included,
+builds as a preview deployment, so `main` is always viewable at
+`https://main.vanilla-breeze.pages.dev` before it is live.
+
+Nobody pushes `production` by hand. The `promote` job in
+`.github/workflows/ci.yml` runs after `quality-gate` passes on a push to
+`main` and fast-forwards `production` to that commit; Cloudflare then
+builds production from it. A red gate means production stays where it
+was. Pushing to `main` means "ship once CI is green" (about 10 minutes),
+not "ship now".
+
+- **Older run finishing late:** if `production` already contains the
+  commit, promote skips with a notice.
+- **Diverged `production`:** promote fails loudly rather than overwrite it.
+- **Rollback:** point `production` at an earlier `main` commit:
+  `git push --force-with-lease origin <good-sha>:production`. The next
+  green `main` push fast-forwards it again (it is still an ancestor).
+- **Urgent fix that can't wait for CI:** push the fix to `main`, then fast
+  -forward `production` by hand (`git push origin main:production`).
+  Use sparingly; it skips the gate.
+
 `scripts/cf-pages-build.sh` runs the full chain:
 
 1. `npm ci` (+ `cd site && npm ci`)

@@ -1,6 +1,9 @@
-# CI quality gate. Production deploys are Cloudflare Pages, connected
-# directly to this repo (see admin/reference/build-and-deploy.md) — this
-# workflow deploys nothing, it only decides whether main is healthy.
+# CI quality gate and production promotion.
+# Cloudflare Pages builds production from the `production` branch and every
+# other branch (including main) as a preview deployment. A push to main runs
+# quality-gate; only if it passes does the promote job fast-forward
+# `production` to that commit, which triggers the production deploy.
+# See admin/reference/build-and-deploy.md (vanilla-breeze-d7v8).
 name: CI
 
 on:
@@ -94,6 +97,35 @@ jobs:
           name: component-test-failures
           path: tests/visual/results/
           retention-days: 7
+
+  # PROMOTE — the only thing that moves production. Fast-forward only:
+  # an older run finishing after a newer one was promoted skips; a
+  # `production` that no longer lines up with main fails loudly instead of
+  # being overwritten.
+  promote:
+    needs: quality-gate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fast-forward production to this commit
+        run: |
+          git fetch origin production
+          if git merge-base --is-ancestor "$GITHUB_SHA" origin/production; then
+            echo "::notice::production already contains $GITHUB_SHA (a newer commit was promoted); nothing to do."
+          elif git merge-base --is-ancestor origin/production "$GITHUB_SHA"; then
+            git push origin "$GITHUB_SHA:refs/heads/production"
+            echo "::notice::Promoted $GITHUB_SHA to production."
+          else
+            echo "::error::origin/production has diverged from main; refusing to overwrite it. Reset production to a main commit by hand."
+            exit 1
+          fi
 
   # REPORTS — informational, never fail the run
   quality-report:
