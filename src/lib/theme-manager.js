@@ -435,33 +435,25 @@ export const ThemeManager = {
   },
 
   /**
-   * Apply color accent seeds to :root inline styles
+   * Apply a colour accent by setting data-accent on <html>. The seeds and
+   * their dark-mode variants live in src/tokens/themes/_accents.css
+   * (generated from COLOR_ACCENTS), so the same accent also works on any
+   * element (vanilla-breeze-5z8i). Inline seeds from older versions are
+   * cleared.
    * @param {string} accentId - Accent ID from COLOR_ACCENTS
    * @private
    */
   _applyAccent(accentId) {
     const root = document.documentElement;
-    const entry = COLOR_ACCENTS.find(a => a.id === accentId);
-
-    // Clear all seed inline styles first
     for (const prop of SEED_PROPERTIES) {
       root.style.removeProperty(prop);
     }
-
-    // 'default' or unknown: just clear — let CSS defaults or theme values apply
-    if (!entry || !entry.seeds || Object.keys(entry.seeds).length === 0) return;
-
-    // Apply light mode seeds
-    for (const [prop, value] of Object.entries(entry.seeds)) {
-      root.style.setProperty(prop, String(value));
+    const entry = COLOR_ACCENTS.find(a => a.id === accentId);
+    if (!entry || !entry.seeds || Object.keys(entry.seeds).length === 0) {
+      delete root.dataset.accent;
+      return;
     }
-
-    // Apply dark mode overrides if in dark mode
-    if (entry.seedsDark && this.getEffectiveMode() === 'dark') {
-      for (const [prop, value] of Object.entries(entry.seedsDark)) {
-        root.style.setProperty(prop, String(value));
-      }
-    }
+    root.dataset.accent = entry.id;
   },
 
   /**

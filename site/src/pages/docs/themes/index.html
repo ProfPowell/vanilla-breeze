@@ -94,19 +94,24 @@ currentPath: /docs/themes/
 
 <!-- Color Accents Section -->
 <section id="color-themes">
-  <h2>Color Accents</h2>
-  <p>Color accents override hue values to change the brand palette. They preserve the default shape, shadows, and typography. Unlike personality themes which use <code>data-theme</code>, accents are applied programmatically via <code>ThemeManager.setAccent()</code>.</p>
+  <h2 id="accents">Color Accents</h2>
+  <p>Color accents swap the brand hues (primary, secondary, accent) while keeping everything else: shape, shadows, typography. They are a separate axis from <code>data-theme</code>, set with <code>data-accent</code> on <code>&lt;html&gt;</code> or on any element.</p>
+  <p>Accents tint the themes that derive their colours from hue seeds: the default theme and the <a href="#personality">personality themes</a> (modern, minimal, classic). Themes with their own fixed palette, such as the extreme themes, keep their colours.</p>
 
-  <code-block language="javascript" label="Applying color accents" data-escape>// Apply a color accent
-ThemeManager.setAccent('ocean');
+  <code-block language="html" label="Applying color accents" data-escape><!-- Whole page -->
+<html data-accent="ocean">
 
-// Reset to default palette
-ThemeManager.setAccent('default');</code-block>
+<!-- One section, combined with a personality theme -->
+<html data-theme="modern">
+  <section data-accent="forest">...</section>
+
+<!-- From script (what <theme-picker> does) -->
+<script type="module">ThemeManager.setAccent('sunset');</script></code-block>
 
   <h3 id="ocean">Ocean</h3>
   <p>A calm, professional teal-blue palette.</p>
 
-  <div class="example" style="--hue-primary: 200; --hue-secondary: 180; --hue-accent: 45; --lightness-primary: 50%; --chroma-primary: 0.15; --lightness-secondary: 45%; --chroma-secondary: 0.10; --lightness-accent: 70%; --chroma-accent: 0.15; padding: var(--size-l); background: var(--color-background); color: var(--color-text); border-radius: var(--radius-l);">
+  <div class="example" data-accent="ocean" style="padding: var(--size-l); background: var(--color-background); color: var(--color-text); border-radius: var(--radius-l);">
     <layout-stack data-layout-gap="m">
       <layout-cluster data-layout-gap="m">
         <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-primary); color: white; border-radius: var(--radius-m);">Primary (Hue 200)</span>
@@ -138,11 +143,11 @@ ThemeManager.setAccent('default');</code-block>
   <h3 id="forest">Forest</h3>
   <p>Natural, earthy green palette.</p>
 
-  <div class="example" data-theme="forest" style="padding: var(--size-l); background: var(--color-background); color: var(--color-text); border-radius: var(--radius-l);">
+  <div class="example" data-accent="forest" style="padding: var(--size-l); background: var(--color-background); color: var(--color-text); border-radius: var(--radius-l);">
     <layout-stack data-layout-gap="m">
       <layout-cluster data-layout-gap="m">
         <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-primary); color: white; border-radius: var(--radius-m);">Primary (Hue 145)</span>
-        <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-secondary); color: white; border-radius: var(--radius-m);">Secondary (Hue 120)</span>
+        <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-secondary); color: white; border-radius: var(--radius-m);">Secondary (Hue 90)</span>
         <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-accent); border-radius: var(--radius-m);">Accent (Hue 30)</span>
       </layout-cluster>
       <layout-cluster data-layout-gap="s">
@@ -170,12 +175,12 @@ ThemeManager.setAccent('default');</code-block>
   <h3 id="sunset">Sunset</h3>
   <p>Warm, vibrant orange-red palette.</p>
 
-  <div class="example" data-theme="sunset" style="padding: var(--size-l); background: var(--color-background); color: var(--color-text); border-radius: var(--radius-l);">
+  <div class="example" data-accent="sunset" style="padding: var(--size-l); background: var(--color-background); color: var(--color-text); border-radius: var(--radius-l);">
     <layout-stack data-layout-gap="m">
       <layout-cluster data-layout-gap="m">
         <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-primary); color: white; border-radius: var(--radius-m);">Primary (Hue 25)</span>
-        <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-secondary); color: white; border-radius: var(--radius-m);">Secondary (Hue 350)</span>
-        <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-accent); border-radius: var(--radius-m);">Accent (Hue 50)</span>
+        <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-secondary); color: white; border-radius: var(--radius-m);">Secondary (Hue 0)</span>
+        <span style="display: inline-block; padding: var(--size-s) var(--size-m); background: var(--color-accent); border-radius: var(--radius-m);">Accent (Hue 280)</span>
       </layout-cluster>
       <layout-cluster data-layout-gap="s">
         <button type="button">Primary Button</button>
@@ -202,7 +207,7 @@ ThemeManager.setAccent('default');</code-block>
 
 <!-- Personality Themes Section -->
 <section id="personality-themes">
-  <h2>Personality Themes</h2>
+  <h2 id="personality">Personality Themes</h2>
   <p>Personality themes transform the entire design system, overriding colors, border radius, shadows, typography, and motion.</p>
 
   <h3 id="modern">Modern</h3>

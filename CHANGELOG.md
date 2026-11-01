@@ -8,6 +8,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **`data-accent` for colour accents.** Accent presets (ocean, forest,
+  sunset, …) were inline seeds ThemeManager wrote on `<html>`, and the
+  themes page's `data-theme="forest"` examples did nothing. `data-accent`
+  now applies them on `<html>` or any element, as a separate axis from
+  `data-theme`: accents tint the default and personality themes (modern,
+  minimal, classic); fixed-palette themes keep their colours.
+  `ThemeManager.setAccent()` sets the attribute. The CSS is generated from
+  `src/lib/theme-data.js` (`scripts/generate-accent-css.mjs`).
+
 - **`VB.store` and `VB.service` are public.** The storage and fetch layers
   VB's components already used are now on `window.VB` and exported by name
   from the main, core and autoload bundles (`import { VBStore, VBService,

@@ -179,6 +179,7 @@ const dataAttributes = {
       { name: 'data-ornament', type: 'styling', href: '/docs/elements/native/hr/', description: 'Custom symbol or text ornament for horizontal rules' },
       { name: 'data-badge', type: 'styling', href: '/docs/elements/native/time/', description: 'Pill-shaped badge styling for time elements' },
       { name: 'data-striped', type: 'styling', href: '/docs/elements/native/dl/', description: 'Alternating row backgrounds for definition lists' },
+      { name: 'data-accent', type: 'styling', href: '/docs/themes/#accents', description: 'Colour accent (ocean, forest, sunset, …) on <html> or any element; tints the default and personality themes' },
     ],
   },
   shapes: {
