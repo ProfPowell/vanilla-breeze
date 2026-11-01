@@ -191,8 +191,16 @@ async function signPage(html, opts) {
     bytes: data.byteLength,
     hash,
     signature,
-    html: document.toString()
+    // linkedom always writes <!DOCTYPE html>; keep the doctype as authored
+    // (lowercase across the site) so signing doesn't change it.
+    html: restoreDoctype(html, document.toString())
   };
+}
+
+/** Put back the source's doctype exactly as written (linkedom uppercases it). */
+function restoreDoctype(source, out) {
+  const doctype = /^\s*(<!doctype\b[^>]*>)/i.exec(source)?.[1];
+  return doctype ? out.replace(/^<!doctype\b[^>]*>/i, doctype) : out;
 }
 
 /* ─────────────────────────────────────────── walker ── */
