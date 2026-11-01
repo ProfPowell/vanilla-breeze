@@ -45,8 +45,8 @@ test('Unreleased is included only when asked and non-empty', () => {
 
 test('anchors and badges', () => {
   assert.equal(versionAnchor('v0.4.1'), 'v0-4-1');
-  assert.equal(groupBadge('Changed (breaking)').label, 'breaking');
-  assert.equal(groupBadge('Added').cls, 'new');
+  assert.equal(groupBadge('Changed (breaking)')?.label, 'breaking');
+  assert.equal(groupBadge('Added')?.cls, 'new');
   assert.equal(groupBadge('Internal'), null);
 });
 

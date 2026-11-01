@@ -47,8 +47,9 @@ export function normalizeDate(raw) {
  * @returns {ChangelogRelease[]}
  */
 export function parseChangelog(md, { includeUnreleased = false } = {}) {
-  /** @type {ChangelogRelease[]} */
+  /** @type {{ version: string, rawDate: string, bodyLines: string[] }[]} */
   const releases = [];
+  /** @type {{ version: string, rawDate: string, bodyLines: string[] } | null} */
   let current = null;
 
   for (const line of md.split('\n')) {
@@ -62,7 +63,8 @@ export function parseChangelog(md, { includeUnreleased = false } = {}) {
   }
   if (current) releases.push(current);
 
-  return releases
+  /** @type {ChangelogRelease[]} */
+  const parsed = releases
     .map((r) => {
       const summaryLines = [];
       /** @type {ChangelogGroup[]} */
@@ -87,8 +89,9 @@ export function parseChangelog(md, { includeUnreleased = false } = {}) {
     })
     .filter((r) => {
       if (r.anchor !== 'unreleased') return true;
-      return includeUnreleased && (r.summary || r.groups.length);
+      return includeUnreleased && Boolean(r.summary || r.groups.length);
     });
+  return parsed;
 }
 
 /** Map a ### heading to the timeline badge class + label it renders as. */
