@@ -62,11 +62,22 @@ jobs:
       - name: Theme token coverage
         run: npm run lint:theme-tokens
 
-      - name: Build CDN bundles (for budget check)
-        run: npm run build:cdn
+      # Full site build (includes build:cdn for the budget check). The doc
+      # site has its own package, so it needs its own install.
+      - name: Install site dependencies
+        run: cd site && npm ci
+
+      - name: Build site
+        run: npm run build
 
       - name: Bundle size budget check
         run: npm run budget
+
+      # Internal links, asset refs, #fragments and code-block integrity on
+      # the built site (scripts/check-links.mjs). External URLs are not
+      # checked here; run `npm run check:links -- --external` locally.
+      - name: Site link and content check
+        run: npm run check:links
 
   # REPORTS — informational, never fail the run
   quality-report:
