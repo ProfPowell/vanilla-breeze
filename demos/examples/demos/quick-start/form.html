@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Sign-up Form — Quick Start</title>
+  <title>Sign-up form starter — Vanilla Breeze</title>
+  <!--
+    Starter template, linked from docs/quick-start/#next. Copy the file and
+    point the stylesheet and script at the CDN files from the Quick Start
+    install step. <form-field> is a CSS-only custom element: hints and errors are
+    native <output> elements driven by HTML validation, no JS required.
+  -->
   <link rel="stylesheet" href="/src/main.css"/>
   <style>body { padding: var(--size-l); }</style>
 </head>
@@ -17,12 +23,17 @@
 
     <form-field>
       <label for="qs-form-name">Full name</label>
-      <input id="qs-form-name" name="name" type="text" required/>
+      <input id="qs-form-name" name="name" type="text" autocomplete="name" required
+             aria-describedby="qs-form-name-error"/>
+      <output id="qs-form-name-error" class="error" for="qs-form-name" aria-live="polite">Please enter your name.</output>
     </form-field>
 
     <form-field>
       <label for="qs-form-email">Email</label>
-      <input id="qs-form-email" name="email" type="email" required/>
+      <input id="qs-form-email" name="email" type="email" autocomplete="email" required
+             aria-describedby="qs-form-email-hint qs-form-email-error"/>
+      <output id="qs-form-email-hint" class="hint" for="qs-form-email">We'll send a confirmation link.</output>
+      <output id="qs-form-email-error" class="error" for="qs-form-email" aria-live="polite">Please enter a valid email address.</output>
     </form-field>
 
     <form-field>
@@ -43,31 +54,11 @@
 
     <footer data-layout="cluster" data-layout-gap="s">
       <button type="submit">Create account</button>
-      <button type="button" class="ghost">Cancel</button>
+      <button type="reset" class="ghost">Cancel</button>
     </footer>
   </form>
 </main>
 
 <script type="module" src="/src/main.js"></script>
-<script type="module">
-  import { ThemeManager } from '/src/lib/theme-manager.js';
-  import { ensureThemeLoaded } from '/src/lib/theme-loader.js';
-  await ThemeManager.init();
-  const params = new URLSearchParams(location.search);
-  const theme = params.get('theme');
-  if (theme) {
-    await ensureThemeLoaded(theme);
-    ThemeManager.apply({ brand: theme, mode: params.get('mode') || 'auto' });
-  }
-</script>
-<script>
-  if (window.parent !== window) {
-    const report = () => window.parent.postMessage(
-      { type: 'surface-height', height: document.documentElement.scrollHeight }, '*'
-    );
-    addEventListener('load', () => setTimeout(report, 200));
-    new ResizeObserver(report).observe(document.documentElement);
-  }
-</script>
 </body>
 </html>
