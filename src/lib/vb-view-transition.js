@@ -4,7 +4,7 @@
  *
  * Falls back to a plain swap when:
  *   - the host is not connected,
- *   - startViewTransition is unavailable (e.g. Firefox today),
+ *   - startViewTransition is unavailable (e.g. older browsers),
  *   - prefers-reduced-motion is set.
  *
  * Same pattern used inline by diagram-wc, flow-diagram, gantt-chart,

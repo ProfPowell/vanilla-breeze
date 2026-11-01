@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "View Transitions"
-description: "CSS-only page transition effects with named groups, shared element morphing, animation presets, and a declarative init script."
+description: "Cross-page (MPA) view transitions: an opt-in stylesheet, named groups, shared element morphing, animation presets, and a declarative init script."
 attributeName: view-transitions
 category: infrastructure
 attributeType: data
@@ -33,7 +33,7 @@ crumbLabel: Data Attributes
 
         <code-block language="css" label="Import view transitions" data-escape>@import "vanilla-breeze/utils/view-transitions.css";</code-block>
 
-    <p>That&rsquo;s it for basic crossfade. The <code>&lt;main&gt;</code> element automatically gets a named transition group (<code>main-content</code>) so content fades smoothly between pages.</p>
+    <p>That&rsquo;s it for basic crossfade: the whole page fades between same-origin navigations. To give the main content its own transition group, mark it with <code>data-vt="main"</code> (see <a href="#named-groups">Named Groups</a>). VB does not name <code>&lt;main&gt;</code> automatically, because a <code>view-transition-name</code> on it traps <code>position: fixed</code> children such as a maximized <code>&lt;browser-window&gt;</code>.</p>
 
     <p>For shared element morphing, add <code>data-vt-name</code> to elements that should animate between pages:</p>
 
@@ -48,6 +48,8 @@ crumbLabel: Data Attributes
 <h1 data-vt-name="title-123">Product Name</h1></code-block>
 
     <p>The <code>data-vt-name</code> attribute requires the init script (included in all doc site layouts, or import <code>view-transition-init.js</code>).</p>
+
+    <p><strong>Changing content without leaving the page?</strong> That&rsquo;s a same-document transition, and it needs none of this page&rsquo;s setup. Tabs, accordions, carousels, galleries, charts and diagrams already animate their own changes, and <a href="/docs/attributes/data-transition/"><code>data-transition</code></a> with <code>VB.swap()</code> covers your own content. See <a href="/docs/attributes/data-transition/#components">Built into components</a>.</p>
   </section>
 
   <!-- Named Groups -->
@@ -64,7 +66,7 @@ crumbLabel: Data Attributes
         </tr>
       </thead>
       <tbody>
-        <tr><td><code>data-vt="main"</code></td><td><code>main-content</code></td><td>Main content area (auto-applied to <code>&lt;main&gt;</code>)</td></tr>
+        <tr><td><code>data-vt="main"</code></td><td><code>main-content</code></td><td>Main content area (put it on <code>&lt;main&gt;</code> yourself)</td></tr>
         <tr><td><code>data-vt="header"</code></td><td><code>page-header</code></td><td>Site header &mdash; persists across pages</td></tr>
         <tr><td><code>data-vt="nav"</code></td><td><code>site-nav</code></td><td>Primary navigation</td></tr>
         <tr><td><code>data-vt="sidebar"</code></td><td><code>page-sidebar</code></td><td>Sidebar navigation &mdash; stays in place within sections</td></tr>
@@ -75,8 +77,8 @@ crumbLabel: Data Attributes
 
         <code-block language="html" label="Named groups in layout" data-escape><header data-vt="header">...</header>
 <nav data-vt="sidebar">...</nav>
-<main> <!-- auto-named as main-content -->
-  <div data-vt="hero">...</div>
+<main data-vt="main">
+  <section data-vt="hero">...</section>
   ...
 </main>
 <footer data-vt="footer">...</footer></code-block>
@@ -139,7 +141,7 @@ import 'vanilla-breeze/utils/view-transition-init.js';</code-block>
 <main data-vt-class="slide-left">...</main>
 
 <!-- Scale the hero section -->
-<div data-vt="hero" data-vt-class="scale">...</div>
+<section data-vt="hero" data-vt-class="scale">...</section>
 
 <!-- No animation for footer -->
 <footer data-vt="footer" data-vt-class="none">...</footer></code-block>
@@ -148,7 +150,7 @@ import 'vanilla-breeze/utils/view-transition-init.js';</code-block>
   <!-- Tokens -->
   <section id="tokens">
     <h2>Tokens</h2>
-    <p>Custom properties control transition duration:</p>
+    <p>Custom properties control transition duration. They ship in every VB bundle, so they also time <code>data-transition</code> presets:</p>
 
     <table class="props-table">
       <thead>
@@ -210,14 +212,14 @@ import 'vanilla-breeze/utils/view-transition-init.js';</code-block>
     <p>The browser automatically triggers transitions on same-origin navigations. No JavaScript needed.</p>
 
     <h3>Single-Page Applications (SPA)</h3>
-    <p>For SPA routing (client-side navigation), use the JavaScript API:</p>
+    <p>For SPA routing (client-side navigation), wrap the DOM update in <code>VB.swap()</code>. It calls <code>document.startViewTransition()</code> when available, runs the update directly when not, and fires the <code>vb:vt-update-done</code> lifecycle that <code>data-trigger="vt"</code> entrances listen for:</p>
 
-        <code-block language="js" label="SPA transitions" data-escape>document.startViewTransition(() => {
+        <code-block language="js" label="SPA transitions" data-escape>VB.swap(() => {
   // Update the DOM here
   updateContent(newContent);
 });</code-block>
 
-    <p>The same CSS transition names and animation presets work with both approaches.</p>
+    <p>The same transition names and animation presets work with both approaches. Mark same-document participants with <a href="/docs/attributes/data-transition/"><code>data-transition</code></a>.</p>
   </section>
 
   <!-- Browser Support -->
@@ -234,19 +236,21 @@ import 'vanilla-breeze/utils/view-transition-init.js';</code-block>
       </thead>
       <tbody>
         <tr><td>Chrome / Edge</td><td>111+</td><td>126+</td></tr>
-        <tr><td>Safari</td><td>18+</td><td>18+</td></tr>
-        <tr><td>Firefox</td><td>Pending</td><td>Pending</td></tr>
+        <tr><td>Safari</td><td>18+</td><td>18.2+</td></tr>
+        <tr><td>Firefox</td><td>144+</td><td>Not yet</td></tr>
       </tbody>
     </table>
 
-    <p>In unsupported browsers, pages load normally without transitions. No errors, no broken functionality &mdash; true progressive enhancement.</p>
+    <p>Same-document transitions, including <code>view-transition-class</code> (which the presets use), became Baseline in October 2025 when Firefox 144 shipped them. Cross-document transitions are an Interop 2026 focus area but are not yet in Firefox. This is the canonical support table: other VB pages link here.</p>
+
+    <p>In unsupported browsers, pages load normally without transitions and components swap content instantly. No errors, no broken functionality &mdash; true progressive enhancement.</p>
   </section>
 
   <!-- Accessibility -->
   <section id="accessibility">
     <h2>Accessibility</h2>
     <ul>
-      <li><strong>Reduced motion:</strong> All transitions are disabled when <code>prefers-reduced-motion: reduce</code> is active (animation duration set to <code>0.01ms</code>)</li>
+      <li><strong>Reduced motion:</strong> Every view transition, page-level or component, is shortened to <code>0.01ms</code> when <code>prefers-reduced-motion: reduce</code> is active or the theme picker&rsquo;s reduced-motion setting is on. This rule ships in every bundle, not only with the opt-in stylesheet.</li>
       <li><strong>No content loss:</strong> View transitions are purely visual &mdash; content is always accessible regardless of browser support</li>
       <li><strong>Focus management:</strong> The browser handles focus during cross-document navigations</li>
       <li><strong>Performance:</strong> Transitions run on the compositor thread and don&rsquo;t block the main thread</li>

@@ -220,7 +220,7 @@ class DiagramWc extends VBElement {
     // pixels, performs the DOM swap, captures the new pixels, and
     // crossfades between them — no flash or layout thrash during theme
     // changes or content edits. Falls through to a plain swap on browsers
-    // without view-transition support (e.g. Firefox today).
+    // without view-transition support (e.g. older browsers).
     const swap = () => {
       if (prior && prior.isConnected) {
         prior.replaceWith(fig);

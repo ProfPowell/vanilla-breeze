@@ -14,7 +14,8 @@ crumbLabel: Data Attributes
 <section>
   <h2>Overview</h2>
   <p>The <code>data-transition</code> attribute marks elements that participate in <a href="https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API">View Transitions</a>. Unlike <code>data-effect</code> (ambient animation), <code>data-transition</code> describes <strong>state-change moments</strong> — navigation, DOM swaps, route changes.</p>
-  <p>VB auto-assigns <code>view-transition-name</code> and optional <code>view-transition-class</code> so the browser's View Transition API handles the animation.</p>
+  <p>VB auto-assigns <code>view-transition-name</code> and optional <code>view-transition-class</code> so the browser's View Transition API handles the animation. The names are set once, when the element is found, so they take part in every view transition on the page: a <a href="#vb-swap"><code>VB.swap()</code></a> call, a component's own transition, or a cross-page navigation.</p>
+  <p><strong>Which page do I want?</strong> <code>data-transition</code> covers <em>same-document</em> changes: content swapped in place by script. For transitions <em>between pages</em> (the browser's cross-document navigation), see <a href="/docs/attributes/view-transitions/">View Transitions</a>, which also owns the <a href="/docs/attributes/view-transitions/#browser-support">browser support table</a>.</p>
 
   <browser-window src="/docs/examples/demos/transition-morph.html" url="https://vanilla-breeze.dev/transitions" title="View Transitions" shadow></browser-window>
 </section>
@@ -39,6 +40,24 @@ crumbLabel: Data Attributes
 &lt;main data-transition="slide"&gt;
 &lt;ul data-transition="stagger"&gt;
   </code-block>
+</section>
+
+<section id="components">
+  <h2>Built into components</h2>
+  <p>Several components already wrap their own state changes in a same-document view transition, so you don't need <code>data-transition</code> or <code>VB.swap()</code> for them. Components use a plain <code>transition</code> attribute (custom elements take un-prefixed attributes).</p>
+  <table class="props-table">
+    <thead><tr><th>Component</th><th>How to turn it on</th><th>Values</th></tr></thead>
+    <tbody>
+      <tr><td><a href="/docs/elements/web-components/tabs/"><code>&lt;tab-set&gt;</code></a></td><td><code>transition</code> attribute</td><td><code>fade</code> (default), <code>slide</code>, <code>scale</code></td></tr>
+      <tr><td><a href="/docs/elements/web-components/accordion/"><code>&lt;accordion-wc&gt;</code></a></td><td><code>transition</code> attribute</td><td><code>fade</code> (default), <code>slide</code>, <code>scale</code></td></tr>
+      <tr><td><a href="/docs/elements/web-components/carousel/"><code>&lt;carousel-wc&gt;</code></a></td><td><code>transition</code> attribute</td><td><code>fade</code> (default), <code>slide</code>, <code>scale</code></td></tr>
+      <tr><td><a href="/docs/elements/web-components/image-gallery/"><code>&lt;image-gallery&gt;</code></a></td><td>On by default</td><td><code>morph</code> (default), <code>fade</code>, <code>none</code></td></tr>
+      <tr><td><a href="/docs/elements/web-components/content-swap/"><code>&lt;content-swap&gt;</code></a></td><td><code>transition</code> (or <code>data-transition</code> on <code>[data-swap]</code>)</td><td><code>flip</code> (default), <code>flip-vertical</code>, <code>fade</code>, <code>slide-left</code>, <code>slide-up</code>, <code>scale</code></td></tr>
+      <tr><td><a href="/docs/elements/web-components/chart-wc/"><code>&lt;chart-wc&gt;</code></a>, <a href="/docs/elements/web-components/diagram-wc/"><code>&lt;diagram-wc&gt;</code></a>, <a href="/docs/elements/web-components/flow-diagram/"><code>&lt;flow-diagram&gt;</code></a>, <a href="/docs/elements/web-components/site-map/"><code>&lt;site-map&gt;</code></a>, <a href="/docs/elements/web-components/version-switcher/"><code>&lt;version-switcher&gt;</code></a></td><td>Automatic</td><td>Crossfade when their data or view changes</td></tr>
+    </tbody>
+  </table>
+  <p>All of them make the change without animation when the browser lacks <code>startViewTransition</code>. Under reduced motion, VB's always-shipped CSS shortens every view transition to an instant swap.</p>
+  <p>On a <code>[data-swap]</code> element, <code>data-transition</code> holds the swap's effect name (the values in the <code>&lt;content-swap&gt;</code> row), not one of the presets below.</p>
 </section>
 
 <section id="morph">
@@ -113,7 +132,7 @@ crumbLabel: Data Attributes
 
 <section id="vb-swap">
   <h2>VB.swap()</h2>
-  <p>Wrap any DOM mutation in a View Transition. Falls back gracefully when the API isn't supported.</p>
+  <p>Wrap any DOM mutation in a View Transition; this is what makes the presets above animate. Without browser support, the update runs immediately and nothing errors. Under <code>prefers-reduced-motion: reduce</code> (or the theme picker's reduced-motion setting) the transition still runs, but VB's CSS shortens it to an instant swap.</p>
 
   <code-block language="js" label="Programmatic swap">
 VB.swap(() => {
@@ -121,6 +140,11 @@ VB.swap(() => {
   document.querySelector('main').innerHTML = newContent;
 });
   </code-block>
+</section>
+
+<section id="other-values">
+  <h2>Other values</h2>
+  <p>A value with no registered handler still gets a unique <code>view-transition-name</code> (<code><var>value</var>-<var>uid</var></code>), so the element morphs with the browser's default crossfade. Register a handler, below, to give it a class.</p>
 </section>
 
 <section id="custom">
@@ -181,7 +205,8 @@ VB.transition('flip', (el) => {
 
 <section id="browser-support">
   <h2>Browser support</h2>
-  <p>View Transitions require Chrome 111+ or Safari 18+. In unsupported browsers, <code>VB.swap()</code> falls back to calling the update function directly — the DOM change happens instantly, no error.</p>
+  <p>Same-document view transitions work in all current major browsers. See the <a href="/docs/attributes/view-transitions/#browser-support">support table on the View Transitions page</a> for versions. Where they aren't supported, <code>VB.swap()</code> calls the update function directly: the DOM changes instantly, with no error.</p>
+  <p>The preset animations (<code>slide</code>, <code>fade</code>, <code>scale</code>, <code>none</code>) ship in every VB bundle. You do not need to import <code>view-transitions.css</code> for them; that file only opts the site into cross-page transitions.</p>
 </section>
 
 <section id="api">
