@@ -23,18 +23,19 @@ async function page404(page, manifestThemes) {
       <link rel="stylesheet" href="/cdn/vanilla-breeze.css">
       <style>*, *::before, *::after { transition: none !important; animation: none !important; }</style>
       ${manifestThemes.map((t) => `<link rel="stylesheet" href="/cdn/themes/${t.file}">`).join('\n')}
-      </head><body>
+      </head><body><main>
       <nav id="plain" aria-label="Plain"><ul><li><a href="/a/">Home</a></li><li><a href="/b/" aria-current="page">Docs</a></li></ul></nav>
       <nav id="pills" class="pills" aria-label="Pills"><ul><li><a href="/a/">Home</a></li><li><a href="/b/" aria-current="page">Docs</a></li></ul></nav>
-      </body></html>`,
+      </main></body></html>`,
   }));
   await page.goto(url, { waitUntil: 'networkidle' });
 }
 
-// Theme palettes whose link colour itself is under 3:1 on their light page
-// background (all links, not just nav). Tracked in vanilla-breeze-h887; delete an entry when
-// its theme is fixed. Anything new failing here is a regression.
-const KNOWN_LOW_CONTRAST = new Set(['win9x/light/plain']);
+// Theme palettes whose link colour is under 3:1 on their page surface.
+// Empty since h887 (brutalist and dawn deepened their light-mode link colour;
+// win9x puts main content on a window surface). The navs sit in <main>, where
+// content navs live. Anything failing here is a regression.
+const KNOWN_LOW_CONTRAST = new Set([]);
 
 test('every theme keeps nav active links legible and on the active tokens', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'colour check is viewport-independent');
