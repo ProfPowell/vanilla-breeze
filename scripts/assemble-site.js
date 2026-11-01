@@ -141,6 +141,12 @@ copyDir('dist/demos/snippets/demos', join(pagesDir, 'docs', 'snippets', 'demos')
 copyDir('dist/demos/patterns/demos', join(pagesDir, 'docs', 'patterns', 'demos'));
 copyFile('demos/docs.css', join(pagesDir, 'docs', 'docs.css'));
 copyFile('demos/homepage.css', join(pagesDir, 'docs', 'homepage.css'));
+// Favicons. setup-preview.js also copies these, but it only runs in the
+// local `npm run build`, not in cf-pages-build.sh, so production served
+// 404s for every icon <link> while local builds looked fine.
+for (const icon of ['favicon.svg', 'favicon-32x32.png', 'apple-touch-icon.png']) {
+  copyFile(`demos/${icon}`, join(pagesDir, icon));
+}
 copyDir('dist/demos/tools', join(pagesDir, 'docs', 'tools'), { optional: true });
 copyDir('dist/demos/examples', join(pagesDir, 'docs', 'examples'), { optional: true });
 

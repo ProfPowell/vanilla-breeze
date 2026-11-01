@@ -34,6 +34,21 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **`tab-set` panels span the full width.** The open panel sat in the
+  first tab's column, which stretched that tab across the component and
+  pushed the others to the far edge (off-screen on phones). Chromium and
+  Safari wrap `<details>` content in a `::details-content` box that became
+  the grid item; tab-set now flattens it and gives the grid one explicit
+  column per tab.
+
+- **`data-page-layout="sidebar-right"` stacks on phones.** The mobile stack
+  template had no `body-aside` area, so the aside got an implicit column
+  beside the stack and overflowed the viewport.
+
+- **Print styles and two themes match the current effect syntax.** They
+  still targeted `[data-gradient-text]`, `[data-shimmer]` and friends,
+  which became `data-effect` tokens.
+
 - **Component transitions animate again.** `tab-set`, `accordion-wc` and
   `carousel-wc` animate their `transition` modes with `vt-*`
   keyframes that only existed in the opt-in `utils/view-transitions.css`,
