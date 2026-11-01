@@ -16,6 +16,11 @@ class TabSet extends VBElement {
 
     if (this.#details.length === 0) return false;
 
+    // Explicit columns so the panel's grid-column: 1 / -1 spans every tab.
+    // With only implicit columns, -1 is the end of column 1, so the first
+    // tab stretched to the panel's width.
+    this.style.setProperty('--_tab-count', String(this.#details.length));
+
     this.#setup();
     this.#ensureOneOpen();
     this.#initVT();
@@ -23,6 +28,7 @@ class TabSet extends VBElement {
   }
 
   teardown() {
+    this.style.removeProperty('--_tab-count');
     this.#details = [];
     this.#summaries = [];
     this.#vtEnabled = false;

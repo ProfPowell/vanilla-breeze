@@ -8,11 +8,24 @@ tab-set:not(:defined) {
 tab-set {
   display: grid;
   grid-template-rows: auto 1fr;
+  /* One auto column per tab (count set by logic.js) plus a filler, so the
+     panel's grid-column: 1 / -1 spans the full width instead of only the
+     first tab's implicit column. */
+  grid-template-columns: repeat(var(--_tab-count, 1), auto) 1fr;
   border-block-end: var(--border-width-thin) solid var(--color-border);
 }
 
 /* Details elements use display:contents to let children participate in grid */
 tab-set > details {
+  display: contents;
+}
+
+/* Chromium (131+) and Safari wrap <details> content in a ::details-content
+   box. With the details at display: contents, that box became the grid item
+   and auto-placed into one cell, so the panel's grid-column was ignored.
+   Flatten it too so the panel itself is the grid item. Closed panels stay
+   hidden by the display: none rule below. */
+tab-set > details::details-content {
   display: contents;
 }
 

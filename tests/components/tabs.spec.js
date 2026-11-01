@@ -279,3 +279,21 @@ test.describe('tab-set — lifecycle', () => {
   });
 
 });
+
+test.describe('tab-set — layout', () => {
+  // The panel used grid-column: 1 / -1 against implicit columns, so it
+  // spanned only the first tab's column and that tab stretched to the
+  // panel's width (pushing the rest to the far edge).
+  test('open panel spans the full width; tabs stay content-sized', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('tab-set[data-upgraded]');
+    const m = await page.locator('tab-set').first().evaluate((ts) => {
+      const host = ts.getBoundingClientRect().width;
+      const panel = ts.querySelector(':scope > details[open] > :not(summary)').getBoundingClientRect().width;
+      const tabs = [...ts.querySelectorAll(':scope > details > summary')].map((s) => s.getBoundingClientRect().width);
+      return { host, panel, tabs };
+    });
+    expect(m.panel).toBeGreaterThan(m.host - 2);
+    for (const w of m.tabs) expect(w).toBeLessThan(m.host / 2);
+  });
+});
