@@ -13,7 +13,7 @@
  * from site/config/main.js.
  */
 
-import { readdirSync, statSync, writeFileSync, existsSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync, writeFileSync, existsSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,7 +29,7 @@ const EXCLUDE = [
   /^\/src\//,                  // VB raw source served for dev refs
   /^\/pagefind\//,             // search index assets
   /^\/_/,                      // _headers, _routes.json, etc.
-  /^\/404\b/,                  // error page
+  /(^|\/)404(\/|\.html|$)/,   // error pages (site and demo 404s)
   /^\/docs\/snippets\/[^/]+\//, // demo embeds (snippets index itself stays)
   /^\/docs\/examples\/demos\//, // demo embed pages
   /^\/docs\/patterns\/demos\//, // demo embed pages
@@ -57,6 +57,9 @@ const urls = new Set();
 for (const path of walk(pagesDir)) {
   const rel = '/' + relative(pagesDir, path).split('\\').join('/');
   if (EXCLUDE.some(rx => rx.test(rel))) continue;
+  // Redirect stubs and noindex pages are not pages a crawler should list
+  const head = readFileSync(path, 'utf8').slice(0, 4096);
+  if (/http-equiv=["']refresh["']/i.test(head) || /name=["']robots["'][^>]*noindex/i.test(head)) continue;
   // Canonicalise: index.html → trailing-slash URL; foo.html → /foo/
   const url = rel.endsWith('/index.html')
     ? rel.replace(/\/index\.html$/, '/')
