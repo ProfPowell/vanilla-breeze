@@ -4,7 +4,7 @@ Living doc. Rewrite the **Status** and **Queue** sections at the end of every
 working session; keep **Resume** and **How the repo works** current as the
 mechanics change. Last rewritten **2026-09-02**.
 
-## Status (2026-10-05)
+## Status (2026-11-01)
 
 - **Version:** 0.3.1 on npm (published 2026-07-07). Nothing released since;
   the 0.3.x → next changes are all on `main` unreleased.
@@ -22,7 +22,7 @@ mechanics change. Last rewritten **2026-09-02**.
 - **Branches:** `work/next` is the working branch and is level with `main`.
   All other local and remote branches were deleted (all merged). Stash is
   empty. Tree is clean.
-- **Beads:** 38 open, 32 ready, nothing in progress. New: **t5r2** (13 stale demo baselines to triage; see below) and **s3e3** (themes colour links inside nav, so nav's active-link colour needs `!important`; gate + drop it, document `--color-active-text/-bg` as the override). The epic **3lac** is
+- **Beads:** 38 open, 32 ready, nothing in progress. New: **nnw3** (gate for `var()` references to tokens nothing defines — 143 found, 35 used bare) and **s3e3** (themes colour links inside nav, so nav's active-link colour needs `!important`; gate + drop it, document `--color-active-text/-bg` as the override). The epic **3lac** is
   closed. Follow-ups it spawned that remain: **o4tj** (components derive
   hover/active/subtle states locally instead of reading the theme-set
   `--color-*-hover/-active/-subtle` tokens — wire or prune, verify with the
@@ -64,6 +64,7 @@ mechanics change. Last rewritten **2026-09-02**.
 | s3hy | 5 px width media queries → `--bp-s/l`; gate against px widths |
 | z1im | 28 unread tokens decided: 19 kept as categorised public API, 5 theme-state tokens tracked in o4tj, 4 pruned everywhere |
 | iwuq | `theme-surfaces.spec.js`: surfaces demo under all 55 themes light+dark + form-validation per theme, 156 desktop baselines; old themes.spec.js retired |
+| t5r2 | 17 stale demo baselines triaged: 3 were a real regression (6xxy self-boot processed elements before triggers/effects registered — scroll-triggered effects never fired, animate-image lost its control; fixed in vb.js + component spec), 1 was clock rot (suite now pins the clock), 13 intended drift refreshed; effects-kitchen-sink skipped (live scramble). nnw3 filed: gate for var() references to undefined tokens |
 | psme | ThemeManager: a page-pinned `<html data-theme>` is the page's default — only an explicit, different stored brand replaces it; a pinned brand VB has no CSS for (a site's own theme) no longer 404s into `default`; storage sync and `reset()` follow the same rule. Reported from a downstream site build |
 | uz4f | 145 picsum hot-links (27 demos, 5 docs pages, image-gallery static) → deterministic local SVGs in `src/assets/placeholders/` (manifest + `scripts/generate-placeholders.mjs`); assemble-site copies `src/assets`; visual-suite picsum shim removed, 11 demo baselines refreshed |
 
@@ -87,9 +88,7 @@ starts it). Never run two Playwright invocations at once.
 1. **o4tj** (P3, design) — wire the theme-set state colours into the
    components that map to a semantic colour, or prune them; the new
    theme-surfaces spec shows the blast radius per theme.
-2. **t5r2** (P2) — triage the 13 stale demos baselines with the
-   like-for-like recipe; until then the demos suite is a noise floor.
-3. The P2s: **kdkb** (vendor `marked`), **d2wz** (verify and close),
+2. The P2s: **kdkb** (vendor `marked`), **d2wz** (verify and close),
    **7yiy** (GoodURL phase 1). Small leftovers: native-elements sub-index
    chained imports (jhku note), a base `--page-bg-color` definition and the
    spacing/sizing filename swap (p0wn notes).
@@ -184,10 +183,11 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
   the comment (esbuild only warns) — write `layout-<name>/`. Verify layout
   or cascade changes by running `tests/visual/demos.spec.js` before and
   after and diffing the failing sets, then like-for-like captures for the
-  delta. As of 2026-09-04 the desktop demos suite has 17 stale baselines
-  (4 old ones plus 13 from the token/theme commits) — tracked in **t5r2**;
-  they fail identically before and after uz4f, so treat them as the noise
-  floor until that bead lands.
+  delta. The demos suite is green on both projects as of 2026-11-01 (t5r2)
+  and pins the clock to 2026-07-06; pages with a live scramble effect are
+  in its SKIP set. To triage a stale baseline, build the commit that wrote
+  it in a worktree and compare computed styles (recipe in memory:
+  effects_runtime_boot_order).
 - **Typecheck runs three tsconfigs** (`src`, `scripts`, `tests`) chained
   with `&&`; an error in the first hides the rest.
 

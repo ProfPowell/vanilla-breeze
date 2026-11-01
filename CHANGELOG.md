@@ -20,6 +20,18 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Scroll-triggered effects and self-wrapping effects work again on every
+  page** (t5r2). Since the effects runtime began booting its own observer
+  (6xxy), it processed elements while `vb.js` evaluated — before
+  `vb-triggers.js` and the effect modules had registered. Every
+  `data-trigger="scroll"` element sat at opacity 0 forever (the slide-in
+  demo, the effects kitchen-sink hero), and `animate-image` lost its
+  play/pause control because the observer treated the effect wrapping its
+  own image as a removal and unwrapped it. `VB.trigger()` now wires
+  already-processed elements, `VB.effect()` activates an element that
+  activated before the effect existed, and a node that is still connected
+  after a mutation batch is a move, not a removal.
+
 - **A page-pinned `<html data-theme>` is now that page's default** (psme).
   ThemeManager used to replace it on load in two cases: any saved
   preference, even a light/dark toggle or a `default` picked on another
@@ -107,6 +119,19 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   longer gets two registries and two observers.
 
 ### Internal
+
+- The demos visual suite pins the clock to 2026-07-06 so calendars and
+  anything rendering "today" stop drifting from their baselines monthly.
+  17 stale desktop baselines triaged: 3 were the regressions above (they
+  match their July baselines again), 1 was the clock, 13 are intended drift
+  (16rem sidebar, the s/m/l rename making demo-CSS token references
+  resolve, the border-style system reaching `form`, the 120px sparkline,
+  the sidebar merge, semantic-HTML rewrites) and were refreshed. The mobile
+  project, not run since July, had 12 stale baselines of the same kinds
+  (mostly horizontal overflow that no longer happens); refreshed. Two demos
+  join the skip list: `effects-kitchen-sink` (live scramble effect, never
+  stable) and `markdown-viewer-mermaid` (loads Mermaid and D3 from esm.sh
+  at runtime).
 
 - **Per-theme visual regression is back** (iwuq): `tests/visual/theme-surfaces.spec.js`
   screenshots a purpose-built surfaces page (`demos/examples/demos/theme-surfaces.html`:
