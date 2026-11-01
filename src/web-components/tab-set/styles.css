@@ -20,13 +20,19 @@ tab-set > details {
   display: contents;
 }
 
-/* Chromium (131+) and Safari wrap <details> content in a ::details-content
-   box. With the details at display: contents, that box became the grid item
-   and auto-placed into one cell, so the panel's grid-column was ignored.
-   Flatten it too so the panel itself is the grid item. Closed panels stay
-   hidden by the display: none rule below. */
-tab-set > details::details-content {
+/* Chromium (131+), Safari and Firefox wrap <details> content in a
+   ::details-content box. With the details at display: contents, that box
+   became the grid item and auto-placed into one cell, so the panel's
+   grid-column was ignored. Flatten it for the OPEN tab so the panel itself
+   is the grid item. Closed tabs are hidden at the same box: the browser
+   hid them there before, and author CSS that gives panels a display value
+   (unlayered, so it beats the layered rule below) must not reveal them. */
+tab-set > details[open]::details-content {
   display: contents;
+}
+
+tab-set > details:not([open])::details-content {
+  display: none;
 }
 
 /* Remove default details styling when inside tab-set */

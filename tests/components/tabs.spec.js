@@ -297,3 +297,23 @@ test.describe('tab-set — layout', () => {
     for (const w of m.tabs) expect(w).toBeLessThan(m.host / 2);
   });
 });
+
+test.describe('tab-set — author panel styles', () => {
+  // The homepage styles its panels with an unlayered `display: grid`, which
+  // beats tab-set's layered display: none. Closed tabs must stay hidden
+  // anyway (they're hidden at ::details-content), or every panel stacks.
+  test('closed panels stay hidden when author CSS sets a panel display', async ({ page }) => {
+    await page.goto(demoPage);
+    await page.waitForSelector('tab-set[data-upgraded]');
+    await page.addStyleTag({ content: 'tab-set > details > :not(summary) { display: grid; }' });
+    const sizes = await page.locator('tab-set').first().evaluate((ts) =>
+      [...ts.querySelectorAll(':scope > details')].map((d) => {
+        const r = d.querySelector(':scope > :not(summary)').getBoundingClientRect();
+        return { open: d.open, h: r.height, w: r.width };
+      }));
+    for (const s of sizes) {
+      if (s.open) expect(s.h).toBeGreaterThan(0);
+      else expect(s.h * s.w).toBe(0);
+    }
+  });
+});
