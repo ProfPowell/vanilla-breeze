@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.4.0",
+      "type": "update",
+      "title": "v0.4.0",
+      "body": "First release since 0.3.1 and breaking in aggregate: themes self-declare the `bundle-theme` cascade layer and the charts add-on is layered, every layout lives once as `:is(layout-x, [data-layout=\"x\"])`, the size scale is spelled `s/m/l` everywhere with no aliases, 76 dead toke…",
+      "url": "https://vanilla-breeze.com/changelog#0.4.0",
+      "date": "2026-10-31"
+    },
+    {
       "id": "0.3.1",
       "type": "update",
       "title": "v0.3.1",

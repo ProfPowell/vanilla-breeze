@@ -6,8 +6,9 @@ mechanics change. Last rewritten **2026-09-02**.
 
 ## Status (2026-11-01)
 
-- **Version:** 0.3.1 on npm (published 2026-07-07). Nothing released since;
-  the 0.3.x → next changes are all on `main` unreleased.
+- **Version:** 0.4.0 (cut 2026-10-31, tag v0.4.0) — first release since 0.3.1
+  on 2026-07-07; everything in the 0.4.0 changelog section is breaking in
+  aggregate (theme layering, layout merge, s/m/l tokens, token prune).
 - **Live site:** https://vanilla-breeze.com (Cloudflare Pages, builds from
   `main` via `scripts/cf-pages-build.sh`). Serving the current tree as of
   this session, with its own canonical URLs (they pointed at the old GitHub
@@ -197,5 +198,5 @@ work is fully specced in `admin/plans/analytics/` (v0.4, Cloudflare Pages
 - `admin/INDEX.md` — topic map of plans / research / shipped / reference
 - `admin/reference/build-and-deploy.md` — the deploy chain, byte for byte
 - `admin/reference/syntax.md` — element / attribute catalog
-- `CHANGELOG.md` — release notes; 0.3.1 is the top entry
+- `CHANGELOG.md` — release notes; 0.4.0 is the top entry
 - Claude memory for this project: `~/.claude/projects/-Users-tpowell-src-vanilla-breeze/memory/MEMORY.md`

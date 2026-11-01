@@ -6,6 +6,17 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-31
+
+First release since 0.3.1 and breaking in aggregate: themes self-declare the
+`bundle-theme` cascade layer and the charts add-on is layered, every layout
+lives once as `:is(layout-x, [data-layout="x"])`, the size scale is spelled
+`s/m/l` everywhere with no aliases, 76 dead tokens are gone, and the tokens
+layer holds custom properties only. Also in this release: generated and gated
+api.json manifests for all 14 layouts, a vendored `marked`, local placeholder
+images, a page-pinned `data-theme` that survives saved preferences, and the
+effects runtime fix for scroll-triggered effects. Details below.
+
 ### Changed (breaking)
 
 - **The charts add-on is layered.** `vanilla-breeze-charts.css` now lands in
