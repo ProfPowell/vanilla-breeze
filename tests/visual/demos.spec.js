@@ -6,9 +6,9 @@
  * Update baselines: npx playwright test tests/visual/demos.spec.js --update-snapshots
  */
 
-import { test, expect } from 'playwright/test';
+import { test, expect } from './pinned-fonts.js';
 import { readdirSync } from 'fs';
-import { join } from 'path';
+import { basename, join, sep } from 'path';
 
 const demosDir = join(import.meta.dirname, '../../demos/examples/demos');
 
@@ -25,9 +25,16 @@ const SKIP = new Set([
   'mock-portraits.html',           // faces load from a remote portrait CDN; a slow or failed image shifts the page
 ]);
 
-const demos = readdirSync(demosDir)
-  .filter(f => f.endsWith('.html') && !f.startsWith('_') && !SKIP.has(f))
+// Recursive: tutorial/, view-transitions/, quick-start/ and raw-layouts/
+// were invisible to the suite before vanilla-breeze-lmyl. Paths use '/'
+// on every platform so test titles and SKIP entries are stable.
+const demos = readdirSync(demosDir, { recursive: true })
+  .map(f => String(f).split(sep).join('/'))
+  .filter(f => f.endsWith('.html') && !basename(f).startsWith('_') && !SKIP.has(f))
   .sort();
+
+// Baselines stay flat: 'tutorial/dashboard.html' → 'tutorial--dashboard.html.png'.
+const baselineName = (demo) => `${demo.replaceAll('/', '--')}.png`;
 
 for (const demo of demos) {
   test(`visual: ${demo}`, async ({ page }) => {
@@ -45,7 +52,7 @@ for (const demo of demos) {
     // Wait for web components to initialize
     await page.waitForTimeout(500);
 
-    await expect(page).toHaveScreenshot(`${demo}.png`, {
+    await expect(page).toHaveScreenshot(baselineName(demo), {
       fullPage: true,
       maxDiffPixelRatio: 0.01,
     });

@@ -5,7 +5,7 @@
  * data-theme/data-mode on the document element, and asserts the resolved tokens.
  * Lightness is parsed from the oklch() value so the checks survive minor tuning.
  */
-import { test, expect } from 'playwright/test';
+import { test, expect } from './pinned-fonts.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

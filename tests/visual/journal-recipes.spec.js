@@ -4,7 +4,7 @@
  * data-theme="journal" on the document element, renders markup, and asserts the
  * recipes' computed styles (including pseudo-elements).
  */
-import { test, expect } from 'playwright/test';
+import { test, expect } from './pinned-fonts.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

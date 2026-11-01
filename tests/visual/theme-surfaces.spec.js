@@ -17,7 +17,7 @@
  * Update: npx playwright test tests/visual/theme-surfaces.spec.js --update-snapshots
  */
 
-import { test, expect } from 'playwright/test';
+import { test, expect } from './pinned-fonts.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 

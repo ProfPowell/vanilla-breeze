@@ -8,7 +8,7 @@
  * Update baselines: add --update-snapshots
  */
 
-import { test, expect } from 'playwright/test';
+import { test, expect } from '../visual/pinned-fonts.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

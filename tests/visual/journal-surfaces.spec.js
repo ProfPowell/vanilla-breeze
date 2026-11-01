@@ -5,7 +5,7 @@
  * disk and injects them, then verifies each [data-surface] journal substrate
  * resolves to a real background and that the dot grid uses the 22px tile.
  */
-import { test, expect } from 'playwright/test';
+import { test, expect } from './pinned-fonts.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

@@ -9,7 +9,7 @@
  * Part B (wiring): statically reads the showcase HTML and asserts it wires the
  * theme, pack, border-wc, rough filters, and the key recipes — no server needed.
  */
-import { test, expect } from 'playwright/test';
+import { test, expect } from './pinned-fonts.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
