@@ -28,6 +28,9 @@ const SAFE_PATH_REGEX = /^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[
 
 /**
  * Validate that a path is safe (no expressions, only property access)
+ *
+ * @param {*} path - Candidate property path.
+ * @returns {boolean} True when the path is a safe property-access path.
  */
 function isValidPath(path) {
   if (!path || typeof path !== 'string') return false;
@@ -37,6 +40,10 @@ function isValidPath(path) {
 /**
  * Safely get a value from an object using a property path
  * Returns undefined for invalid paths or missing properties
+ *
+ * @param {*} obj - Source object.
+ * @param {string} path - Property path (dot and/or bracket-index notation).
+ * @returns {*} The resolved value, or undefined.
  */
 function getValueByPath(obj, path) {
   if (!isValidPath(path)) {
@@ -262,6 +269,8 @@ class CardList extends VBElement {
   /**
    * The current items array. After upgrade, reflects the parsed
    * data-items / src JSON; after assignment, reflects what was passed in.
+   *
+   * @returns {any[]} The items array.
    */
   get items() {
     return this.#items;
@@ -283,7 +292,10 @@ class CardList extends VBElement {
     this.items = items;
   }
 
-  /** @deprecated use `.items` getter instead. */
+  /**
+   * @deprecated use `.items` getter instead.
+   * @returns {any[]} A shallow copy of the items array.
+   */
   getItems() {
     return [...this.#items];
   }

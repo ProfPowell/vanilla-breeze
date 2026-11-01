@@ -599,7 +599,7 @@ class SiteMap extends VBElement {
   /**
    * Parse the nav tree into a node hierarchy for layout.
    * @param {Element} ul
-   * @returns {Object[]}
+   * @returns {object[]}
    */
   #parseVisualTree(ul) {
     const nodes = [];
@@ -622,7 +622,7 @@ class SiteMap extends VBElement {
 
   /**
    * Compute subtree widths bottom-up, then assign x,y positions top-down.
-   * @param {Object[]} nodes
+   * @param {object[]} nodes
    * @param {number} depth
    */
   #layoutTree(nodes, depth = 0) {
@@ -646,7 +646,7 @@ class SiteMap extends VBElement {
 
   /**
    * Count all descendants of a node.
-   * @param {Object} node
+   * @param {object} node
    * @returns {number}
    */
   #countDescendants(node) {
@@ -659,7 +659,7 @@ class SiteMap extends VBElement {
 
   /**
    * Assign absolute x,y positions.
-   * @param {Object[]} nodes
+   * @param {object[]} nodes
    * @param {number} x - left edge of available space
    * @param {number} y - top of this row
    */
@@ -695,7 +695,7 @@ class SiteMap extends VBElement {
     this.#renderSvg();
   }
 
-  /** @type {Object[]|null} */
+  /** @type {object[] | null} */
   #visualData = null;
   /** @type {number} zoom scale (1 = 100%) */
   #zoom = 1;
@@ -1042,7 +1042,7 @@ class SiteMap extends VBElement {
 
   /**
    * Get flat list of visible node IDs in depth-first order.
-   * @param {Object[]} nodes
+   * @param {object[]} nodes
    * @param {string} [parentId]
    * @returns {string[]}
    */
@@ -1300,7 +1300,7 @@ class SiteMap extends VBElement {
 
   /**
    * Get bounding box of all positioned nodes.
-   * @param {Object[]} nodes
+   * @param {object[]} nodes
    * @returns {{ maxX: number, maxY: number }}
    */
   #calcBounds(nodes) {
@@ -1320,7 +1320,7 @@ class SiteMap extends VBElement {
   /**
    * Render connecting edges (lines from parent bottom-center to child top-center).
    * @param {SVGElement} svg
-   * @param {Object[]} nodes
+   * @param {object[]} nodes
    */
   #renderEdges(svg, nodes) {
     const NS = SiteMap.#NS;
@@ -1354,7 +1354,7 @@ class SiteMap extends VBElement {
    * Render node rectangles with labels, badges, and collapse toggles.
    * Respects detail level: 0=shape, 1=+title, 2=+badge+template, 3=+status, 4=wireframe
    * @param {SVGElement|Element} svg
-   * @param {Object[]} nodes
+   * @param {object[]} nodes
    * @param {string} [parentId]
    */
   #renderNodes(svg, nodes, parentId = '') {
@@ -1514,8 +1514,8 @@ class SiteMap extends VBElement {
   /**
    * Find node by path ID.
    * @param {string} id
-   * @param {Object[]|null} nodes
-   * @returns {Object|null}
+   * @param {object[] | null} nodes
+   * @returns {object | null}
    */
   #findNodeById(id, nodes) {
     if (!nodes) return null;
@@ -1552,6 +1552,8 @@ class SiteMap extends VBElement {
   /**
    * Read the current page tree as a nested array.
    * Each page: `{ label, href?, pageType?, template?, status?, children? }`.
+   *
+   * @returns {any[]} The nested page records.
    */
   get pages() {
     const nav = this.querySelector(':scope > nav');

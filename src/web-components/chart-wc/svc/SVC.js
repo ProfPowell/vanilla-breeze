@@ -6,7 +6,7 @@ import {deepAssign} from './utils/Utils.js';
  * Safely embed a value in a script context by JSON-stringifying it
  * and escaping sequences that could break out of CDATA or script tags.
  * @param {*} value
- * @return {string}
+ * @returns {string}
  */
 function _safeJsonEmbed(value) {
   return JSON.stringify(value)
@@ -18,7 +18,7 @@ function _safeJsonEmbed(value) {
 
 /**
  * Base class for all charts, contains public interface and data handling methods
- * @constructor
+ * @class
  */
 class SVC {
   /** @type {Hooks} */
@@ -60,7 +60,7 @@ class SVC {
    * @param {boolean} [options.prerendered] - Adds a tag in the SVG element to designate that this is a
    * prerendered chart. Used for re-hydration strategies.
    * @param {boolean} [options.includeScripts] - Adds inline scripts to bake in interactivity.
-   * @return {string}
+   * @returns {string}
    */
   toFile(options = {}) {
     const opts = normalizeFileOptions(options);
@@ -105,7 +105,7 @@ class SVC {
 
   /**
    * Returns the SVG string without the XML header.
-   * @return {string} The chart as a string
+   * @returns {string} The chart as a string
    */
   toString() {
     return this.structure ? this.compile(this.structure.root) : '';
@@ -116,9 +116,9 @@ class SVC {
    * The output is a `<figure>` containing HTML chrome (title, legend,
    * axis labels) with SVG islands for data visualization. Suitable for
    * embedding in HTML pages via SSG/SSR, and for hydration on the client.
-   * @param {Object} [options]
+   * @param {object} [options]
    * @param {boolean} [options.prerendered] - Mark as prerendered for hydration.
-   * @return {string} The chart as an HTML string
+   * @returns {string} The chart as an HTML string
    */
   toHTML({prerendered} = {}) {
     return this.compileHTML(this.structure, {prerendered});
@@ -128,10 +128,10 @@ class SVC {
    * Export the chart as a Blob. Supports 'image/svg+xml' and 'image/png'.
    * PNG export requires a browser environment (uses Canvas).
    * @param {string} [type='image/svg+xml'] - MIME type.
-   * @param {Object} [options] - Export options.
+   * @param {object} [options] - Export options.
    * @param {number} [options.width=800] - PNG width in pixels.
    * @param {number} [options.height=600] - PNG height in pixels.
-   * @return {Promise<Blob>}
+   * @returns {Promise<Blob>}
    */
   async toBlob(type = 'image/svg+xml', {width = 800, height = 600} = {}) {
     if (typeof Blob === 'undefined') {
@@ -158,8 +158,8 @@ class SVC {
   /**
    * Export the chart as a data URL string.
    * @param {string} [type='image/svg+xml'] - MIME type.
-   * @param {Object} [options] - Export options (see toBlob).
-   * @return {Promise<string>}
+   * @param {object} [options] - Export options (see toBlob).
+   * @returns {Promise<string>}
    */
   async toDataURL(type = 'image/svg+xml', options) {
     if (typeof FileReader === 'undefined') {
@@ -179,8 +179,8 @@ class SVC {
   /**
    * Trigger a file download in the browser.
    * @param {string} [filename='chart.svg'] - Download filename.
-   * @param {Object} [options] - Export options (see toBlob).
-   * @return {Promise<void>}
+   * @param {object} [options] - Export options (see toBlob).
+   * @returns {Promise<void>}
    */
   async download(filename = 'chart.svg', options) {
     if (typeof document === 'undefined') {
@@ -204,7 +204,7 @@ class SVC {
    * @param {string} svgString
    * @param {number} width
    * @param {number} height
-   * @return {Promise<Blob>}
+   * @returns {Promise<Blob>}
    * @private
    */
   _svgToPngBlob(svgString, width, height) {
@@ -240,7 +240,7 @@ class SVC {
   /**
    * Inserts the chart SVG into a DOM container and hydrates it with event handlers.
    * @param {Element} container - A DOM element to render the chart into.
-   * @return {object|null} The interaction state, or null if container is missing.
+   * @returns {object|null} The interaction state, or null if container is missing.
    */
   mount(container) {
     if (!container || typeof document === 'undefined') {
@@ -258,7 +258,7 @@ class SVC {
   /**
    * @deprecated Use mount(container) instead.
    * Creates a DOM element dynamically with the chart inside. Attaches event listeners to the Element.
-   * @return {Element | null} A DOM element with the svg chart inside.
+   * @returns {Element | null} A DOM element with the svg chart inside.
    */
   createElement() {
     if (typeof document === 'undefined') {
@@ -272,7 +272,7 @@ class SVC {
   /**
    * Attaches interaction handlers to a pre-rendered chart.
    * @param {Element} container - A DOM element that contains the SVG chart.
-   * @return {object|null} The interaction state or null if no container was provided.
+   * @returns {object|null} The interaction state or null if no container was provided.
    */
   hydrate(container) {
     if (!container) {
@@ -294,10 +294,10 @@ class SVC {
 
   /**
    * Update the chart with new data and/or config. Re-renders in place.
-   * @param {Object} options
-   * @param {Array|Object} [options.data] - New data (replaces existing)
-   * @param {Object} [options.config] - Config overrides (merged with existing)
-   * @return {object|null} The new interaction state, or null if not mounted.
+   * @param {object} options
+   * @param {Array | object} [options.data] - New data (replaces existing)
+   * @param {object} [options.config] - Config overrides (merged with existing)
+   * @returns {object|null} The new interaction state, or null if not mounted.
    */
   update({data, config} = {}) {
     if (!this._container) return null;
@@ -375,7 +375,7 @@ class SVC {
    * Creates stringified javascript event handlers for the chart.
    * Used when creating .svg files to bake in interactivity.
    * @param {*} _structure
-   * @return {object} A VElement object containing stringified javascript
+   * @returns {object} A VElement object containing stringified javascript
    */
   _createScripts(_structure) {
     const script = new VElement('script', {

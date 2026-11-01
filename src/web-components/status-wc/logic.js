@@ -106,7 +106,11 @@ class StatusWc extends VBElement {
     }
   }
 
-  /** Read-only accessor for the current variant. */
+  /**
+   * Read-only accessor for the current variant.
+   *
+   * @returns {string|null} The data-variant value, or null.
+   */
   get variant() { return this.getAttribute('data-variant'); }
   set variant(v) { v ? this.setAttribute('data-variant', v) : this.removeAttribute('data-variant'); }
 }

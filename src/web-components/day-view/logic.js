@@ -199,6 +199,8 @@ class DayView extends VBElement {
    * Read the day's events as a plain data array. Each entry:
    * `{ time, text, category?, duration?, href? }`. Reflects whatever
    * <calendar-event> children currently exist.
+   *
+   * @returns {Array<{ time?: string, text: string, category?: string, duration?: string, href?: string }>} Event records.
    */
   get events() {
     return [...this.querySelectorAll('calendar-event')].map((/** @type {Element} */ rawEl) => {

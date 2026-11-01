@@ -258,7 +258,7 @@ class PollWc extends VBElement {
   /**
    * Bulk-update counts. `mine` may be a string (single-choice) or string[] (multi).
    *
-   * @param {Object<string, number>} counts
+   * @param {Record<string, number>} counts
    * @param {{ mine?: string|string[] }} [opts]
    */
   setCounts(counts, opts = {}) {

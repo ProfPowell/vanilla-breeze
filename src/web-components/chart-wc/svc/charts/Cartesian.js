@@ -13,7 +13,7 @@ import {createScale} from '../scales/index.js';
 class Cartesian extends Chart {
   /**
    * Returns the default object configuration for the chart type
-   * @return {object} Returns the defaults objct
+   * @returns {object} Returns the defaults objct
    */
   static get defaults() {
     const sparkline = {
@@ -99,7 +99,7 @@ class Cartesian extends Chart {
 
   /**
    * Returns the name of the chart
-   * @return {string}
+   * @returns {string}
    */
   getName() {
     // @ts-ignore — getName is defined on chart subclasses, not on base Chart
@@ -108,8 +108,8 @@ class Cartesian extends Chart {
 
   /**
    * Parses the configuration object and applies it to the virtual DOM structure
-   * @param {Object} structure - An object containing virtual dom elements
-   * @return {Object} The Structure
+   * @param {object} structure - An object containing virtual dom elements
+   * @returns {object} The Structure
    */
   parse(structure) {
     structure = super.parse(structure);
@@ -335,7 +335,7 @@ class Cartesian extends Chart {
 
   /**
    * Create the tooltip script code
-   * @return {object} Containing the tooltip element
+   * @returns {object} Containing the tooltip element
    */
   createScript() {
     return (new Tooltip({
@@ -347,8 +347,9 @@ class Cartesian extends Chart {
 
   /**
    * Creates a virtual dom element for either the x or y axis.
-   * @param {object} obj.type - Which axis to create
-   * @return {object} virtual dom element
+   * @param {object} obj - Axis options
+   * @param {string} obj.type - Which axis to create ('x' or 'y')
+   * @returns {object} virtual dom element
    */
   createAxis({type}) {
     if (type === 'x') {
@@ -376,9 +377,9 @@ class Cartesian extends Chart {
  * Detect the appropriate scale type for an axis.
  * Checks explicit config override, then falls back to auto-detection.
  * @param {string} axisType - 'x' or 'y'
- * @param {Object} stats - computed chart stats
- * @param {Object} config - chart configuration
- * @return {string} scale type name ('linear' or 'category')
+ * @param {object} stats - computed chart stats
+ * @param {object} config - chart configuration
+ * @returns {string} scale type name ('linear' or 'category')
  */
 function detectScaleType(axisType, stats, config) {
   // Allow explicit override via config

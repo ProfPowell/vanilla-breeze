@@ -118,7 +118,11 @@ class CompareSurface extends VBElement {
     }));
   }
 
-  /** Get current position (0-100) */
+  /**
+   * Get current position (0-100)
+   *
+   * @returns {number} Divider position as a percentage.
+   */
   get position() {
     return Number(this.getAttribute('position')) || 0;
   }

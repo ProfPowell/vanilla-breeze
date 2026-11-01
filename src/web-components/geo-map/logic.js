@@ -81,6 +81,8 @@ class GeoMap extends VBElement {
      * URL template for first-party tile proxying. When set, `provider`
      * is ignored and `getTileUrl()` substitutes {z}/{x}/{y} into this
      * template instead.
+     *
+     * @returns {string} The tile URL template, or ''.
      */
     get tileUrl() {
         return this.getAttribute('tile-url') || '';
@@ -237,6 +239,8 @@ class GeoMap extends VBElement {
 
     /**
      * Read the current map state as `{ lat, lng, zoom, marker, markerColor }`.
+     *
+     * @returns {{ lat?: number, lng?: number, zoom: number, marker: boolean, markerColor: string }} Map state.
      */
     get data() {
         return {
@@ -272,6 +276,8 @@ class GeoMap extends VBElement {
      * Read the markers as a single-element array `[{ lat, lng, color }]`
      * if coordinates are set, else `[]`. Multi-marker support is on the
      * roadmap; today the component is single-point.
+     *
+     * @returns {Array<{ lat: number, lng: number, color: string }>} Marker records.
      */
     get markers() {
         const c = this.#resolveCoordinates();

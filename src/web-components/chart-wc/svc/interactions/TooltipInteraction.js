@@ -2,9 +2,9 @@
  * Shared tooltip interaction handler for all chart types.
  * Self-contained named function — compatible with SVC._createScripts() stringification.
  *
- * @param {Object} state - internal interaction state
+ * @param {object} state - internal interaction state
  * @param {Element|Document} instance - the chart container or document
- * @param {Object} chart - the chart instance (stats, data, config, hooks)
+ * @param {object} chart - the chart instance (stats, data, config, hooks)
  */
 export function tooltipInteraction(state, instance, chart) {
   let HIDE_DELAY_MS = (chart.config && chart.config.tooltip &&
@@ -85,7 +85,7 @@ export function tooltipInteraction(state, instance, chart) {
 
   /**
    * The event handler for tooltips.
-   * @param {Object} e - the Event object
+   * @param {object} e - the Event object
    */
   function execute(e) {
     resetHideTimer();

@@ -244,6 +244,8 @@ class CarouselWc extends VBElement {
   /**
    * The current slides as a plain data array.
    * Each entry: `{ id?, html, label? }`.
+   *
+   * @returns {Array<{ id?: string, html: string, label?: string }>} Slide records.
    */
   get slides() {
     return this.#slides.map((s, i) => ({

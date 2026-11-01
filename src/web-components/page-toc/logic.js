@@ -51,6 +51,8 @@ class PageToc extends VBElement {
    * Read the current TOC entries as a plain data array. Each entry:
    * `{ id, text, level }`. Auto-derived from page headings by the
    * scope= attribute; there is no setter.
+   *
+   * @returns {Array<{ id?: string, text: string, level: number }>} TOC entry records.
    */
   get entries() {
     return this.#headings.map(h => ({

@@ -286,6 +286,7 @@ class ActivityFeed extends VBElement {
    *
    * @param {{ time: string, html: string, avatar?: string, icon?: string }} data
    * @param {{ prepend?: boolean }} [opts]
+   * @returns {HTMLElement} The created entry <article>.
    */
   addEntry(data, opts = {}) {
     const article = document.createElement('article');
@@ -318,7 +319,11 @@ class ActivityFeed extends VBElement {
     this.#scanEntries().forEach((e) => e.remove());
   }
 
-  /** Convenience getter. */
+  /**
+   * Convenience getter.
+   *
+   * @returns {HTMLElement[]} Current entry <article> elements.
+   */
   get entries() { return this.#scanEntries(); }
 }
 

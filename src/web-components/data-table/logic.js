@@ -170,6 +170,8 @@ class DataTable extends VBElement {
    * The current rows. After upgrade this is seeded from existing <tr>s
    * (each row carries an `id` from its data-id attribute). After
    * assignment, it reflects whatever the consumer last passed in.
+   *
+   * @returns {any[]} The row records.
    */
   get rows() { return this.#rows; }
 
@@ -203,6 +205,8 @@ class DataTable extends VBElement {
   /**
    * Read the column spec derived from <thead> on upgrade, or whatever was
    * last assigned. Each entry is `{ key, label, sort? }`.
+   *
+   * @returns {any[]} The column spec.
    */
   get columns() { return this.#columnSpec; }
 
@@ -210,6 +214,9 @@ class DataTable extends VBElement {
    * Default row renderer. Override in a subclass or replace via .renderRow.
    * Builds a <tr> with one <td> per column in #columnSpec, populated from
    * `row[column.key]`. Sets data-id from row.id for diff stability.
+   *
+   * @param {Record<string, any>} row - Row record; `row.id` is the diff key.
+   * @returns {Element} The rendered row element.
    */
   _renderRow(row) {
     const self = /** @type {any} */ (this);

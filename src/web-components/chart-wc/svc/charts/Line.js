@@ -20,7 +20,7 @@ import {CURVE_TENSION, CURVE_SMOOTHNESS} from '../constants.js';
 class LineChart extends Cartesian {
   /**
    * Returns the stringified name of the chart type
-   * @return {string} The type of the chart
+   * @returns {string} The type of the chart
    */
   static get type() {
     return 'line';
@@ -28,7 +28,7 @@ class LineChart extends Cartesian {
 
   /**
    * Returns the default object configuration for the chart type
-   * @return {object} Returns the defaults objct
+   * @returns {object} Returns the defaults objct
    */
   static get defaults() {
     return {
@@ -59,7 +59,7 @@ class LineChart extends Cartesian {
    * Return the specifications object for the chart. Used to apply styling
    * such as fills and strokes to different parts of the SVG
    * @param {object} config - the configuration object, used to determine plot node styling
-   * @return {object}
+   * @returns {object}
    */
   static specs(config) {
     const specs = {
@@ -91,7 +91,7 @@ class LineChart extends Cartesian {
   /**
    * Returns an array of CSS classes for the specific plot index
    * @param {number} index - the plot index
-   * @return {array}
+   * @returns {Array}
    */
   getPlotClass(index) {
     return ['plot', `plot-${index}`];
@@ -100,7 +100,7 @@ class LineChart extends Cartesian {
   /**
   * Creates the plot line from the user provided data.
   * @param {object} values - the user supplied data
-  * @return {array} - An array of line paths
+  * @returns {Array} - An array of line paths
   */
   createPlotLine(values) {
     const stats = this.stats;
@@ -254,7 +254,7 @@ class LineChart extends Cartesian {
    * @param {*} state
    * @param {*} instance
    * @param {*} chart
-   * @return {object} Tooltip Object
+   * @returns {object} Tooltip Object
    */
   tooltipLocation(state, instance, chart) {
     return function tooltipLocation(e) {

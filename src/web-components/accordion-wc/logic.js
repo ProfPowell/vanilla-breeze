@@ -61,6 +61,8 @@ class AccordionWc extends VBElement {
    * `{ id?, summary, content, open? }`. After upgrade reflects the
    * authored <details>/<summary> children; after assignment reflects
    * what was passed in.
+   *
+   * @returns {Array<{ id?: string, summary: string, content: string, open?: boolean }>} Panel records.
    */
   get panels() {
     return this.#details.map((d, i) => ({

@@ -73,7 +73,11 @@ class MarkdownEditor extends VBElement {
 
   // ── Public API ──────────────────────────────────────────────
 
-  /** Get the current markdown value. */
+  /**
+   * Get the current markdown value.
+   *
+   * @returns {string} The markdown source.
+   */
   get value() {
     return this.#textarea?.value ?? '';
   }
@@ -96,7 +100,11 @@ class MarkdownEditor extends VBElement {
     }));
   }
 
-  /** The textarea element (for form integration). */
+  /**
+   * The textarea element (for form integration).
+   *
+   * @returns {HTMLTextAreaElement|null} The backing <textarea>, or null before build.
+   */
   get textarea() {
     return this.#textarea;
   }

@@ -13,38 +13,38 @@ import {
 } from '../interactions/index.js';
 
 /**
- * @typedef {Object} SVCConfig
+ * @typedef {object} SVCConfig
  * @property {string[]} [palette] - Array of color strings used for series.
- * @property {Object} [style] - Root CSS style properties (font-family, color, etc.).
- * @property {Object} [title] - Title configuration.
+ * @property {object} [style] - Root CSS style properties (font-family, color, etc.).
+ * @property {object} [title] - Title configuration.
  * @property {string} [title.text] - The title text. Enables the title when set.
  * @property {boolean} [title.enabled=true] - Whether to show the title.
- * @property {Object} [legend] - Legend configuration.
+ * @property {object} [legend] - Legend configuration.
  * @property {boolean} [legend.enabled=true] - Whether to show the legend.
- * @property {Object} [tooltip] - Tooltip configuration.
+ * @property {object} [tooltip] - Tooltip configuration.
  * @property {boolean} [tooltip.enabled=true] - Whether to show the tooltip.
  * @property {Function} [tooltip.format] - Custom formatter: `(label, value) => string`.
  *   For Line/Area/Column/Bar: label is the category key or index, value is numeric.
  *   For Scatter/Bubble: label is the series name, value is the raw data point array.
- * @property {Object} [plot] - Plot area configuration.
+ * @property {object} [plot] - Plot area configuration.
  * @property {boolean} [plot.vertical=true] - Orientation (Cartesian charts only).
  * @property {number} [plot.spacing=10] - Bar/column spacing as a percentage.
- * @property {Object} [plot.node] - Data-point node styling.
+ * @property {object} [plot.node] - Data-point node styling.
  * @property {boolean} [plot.node.enabled=true] - Whether to render data-point markers.
- * @property {Object} [plot.node.label] - Node label configuration.
+ * @property {object} [plot.node.label] - Node label configuration.
  * @property {boolean} [plot.node.label.enabled=false] - Whether to show value labels on nodes.
  * @property {boolean} [plot.ring=false] - Render as a donut/ring chart (Pie only).
- * @property {Object} [axis] - Axis configuration (Cartesian charts only).
- * @property {Object} [axis.x] - X-axis options.
+ * @property {object} [axis] - Axis configuration (Cartesian charts only).
+ * @property {object} [axis.x] - X-axis options.
  * @property {boolean} [axis.x.enabled=true] - Whether to show the x-axis.
- * @property {Object} [axis.y] - Y-axis options.
+ * @property {object} [axis.y] - Y-axis options.
  * @property {boolean} [axis.y.enabled=true] - Whether to show the y-axis.
- * @property {Object} [axis.label] - Axis label text configuration.
- * @property {Object} [guides] - Grid guide line configuration.
- * @property {Object} [scale] - Scale configuration.
+ * @property {object} [axis.label] - Axis label text configuration.
+ * @property {object} [guides] - Grid guide line configuration.
+ * @property {object} [scale] - Scale configuration.
  * @property {boolean} [scale.sorted=false] - Whether to sort associative keys.
  * @property {number} [scale.maxItems=15] - Max number of scale labels to display.
- * @property {Object} [center] - Center/donut hole configuration (Pie only).
+ * @property {object} [center] - Center/donut hole configuration (Pie only).
  */
 
 /**
@@ -70,9 +70,9 @@ class Chart extends SVC {
 
   /**
    * Creates the instance of a chart. Can be used directly in Node.js.
-   * @param {Object} options - The options object.
+   * @param {object} options - The options object.
    * @param {SVCConfig} [options.config={}] - The configuration object.
-   * @param {Array<Object>|Object} options.data - Series array (Cartesian) or key-value object (Pie).
+   * @param {Array<object> | object} options.data - Series array (Cartesian) or key-value object (Pie).
    * @throws {Error} If `data` is not provided.
    */
   constructor({config = {}, data}) {
@@ -126,7 +126,7 @@ class Chart extends SVC {
   /**
    * Walk the class inheritance tree and grab each defaults object and apply it to the user's config
    * @param {*} config - the user supplied configuration object
-   * @return {object} the defaults object
+   * @returns {object} the defaults object
    */
   applyConfigToDefaults(config) {
     let defaultObjs = [];
@@ -171,7 +171,7 @@ class Chart extends SVC {
 
   /**
   * Contains the main chart default object, that all charts will override.
-  * @return {object} The base defaults
+  * @returns {object} The base defaults
   */
   static get defaults() {
     return {
@@ -230,7 +230,7 @@ class Chart extends SVC {
   /**
    * Return the specifications object for the chart. Used to apply styling
    * such as fills and strokes to different parts of the SVG
-   * @return {object}
+   * @returns {object}
    */
   static specs() {
     return {
@@ -298,8 +298,8 @@ class Chart extends SVC {
 
   /**
    * Parses the configuration object and applies it to the virtual DOM structure
-   * @param {Object} structure - An object containing virtual dom elements
-   * @return {Object} The Structure
+   * @param {object} structure - An object containing virtual dom elements
+   * @returns {object} The Structure
    */
   parse(structure) {
     const {layoutChart} = structure;
@@ -317,8 +317,8 @@ class Chart extends SVC {
 
   /**
    * Parses components such as title, tooltip, and legend
-   * @param {Object} structure - An object containing virtual dom elements
-   * @return {Object} The structure
+   * @param {object} structure - An object containing virtual dom elements
+   * @returns {object} The structure
    */
   parseComponents(structure) {
     const {body, top, layoutChart} = structure;
@@ -358,9 +358,9 @@ class Chart extends SVC {
 
   /**
     * Generate CSS, compile virtualDOM into a stringified DOM element
-    * @param {Object} root - The top level element object.
+    * @param {object} root - The top level element object.
     * @param {boolean} [_isSparkline]
-    * @return {string} - The stringified SVC output
+    * @returns {string} - The stringified SVC output
     */
   compile(root, _isSparkline) {
     // Remove previously compiled style element to prevent duplication
@@ -378,10 +378,10 @@ class Chart extends SVC {
   /**
    * Compile the chart as HTML (no foreignObject wrapper).
    * Outputs a `<figure>` with SVG islands for data visualization.
-   * @param {Object} structure - The chart's virtual DOM structure.
-   * @param {Object} [options]
+   * @param {object} structure - The chart's virtual DOM structure.
+   * @param {object} [options]
    * @param {boolean} [options.prerendered] - Add prerendered marker.
-   * @return {string} The chart as an HTML string
+   * @returns {string} The chart as an HTML string
    */
   compileHTML(structure, {prerendered} = {}) {
     const wrap = structure.wrap;
@@ -443,7 +443,7 @@ class Chart extends SVC {
   // Returns a style vDOM element
   /**
    * Creates a style element to hold all chart styling.
-   * @return {Object} A style VElement
+   * @returns {object} A style VElement
    */
   compileStyles() {
     const style = new VElement('style');
@@ -456,9 +456,10 @@ class Chart extends SVC {
   // SUB ROUTINES
   /**
    * Create a graph virtual element
-   * @param {object} obj.stretch - Boolean to determine if the chart should have
+   * @param {object} obj - Graph options
+   * @param {boolean} obj.stretch - Boolean to determine if the chart should have
    * the preserveAspectRatio property present.
-   * @return {object} The virtual element for the graph
+   * @returns {object} The virtual element for the graph
    */
   createGraph({
     stretch,
@@ -488,7 +489,7 @@ class Chart extends SVC {
 
   /**
    * Creates a SVG rect for the background
-   * @return {object}
+   * @returns {object}
    */
   createBackground() {
     // Create chart background
@@ -503,8 +504,9 @@ class Chart extends SVC {
 
   /**
    * Creates a SVG rect for the plot area
-   * @param {object} obj.config - the user's config
-   * @return {object} The plot area element
+   * @param {object} obj - Plot area options
+   * @param {object} obj.config - the user's config (unused)
+   * @returns {object} The plot area element
    */
   createPlotArea({
     config: _config,

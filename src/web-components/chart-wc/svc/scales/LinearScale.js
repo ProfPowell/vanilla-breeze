@@ -16,7 +16,7 @@ class LinearScale {
 
   /**
    * Renders ticks, guides, and labels for a linear numeric scale.
-   * @return {Object} {ticks: VElement[], labels: VElement[], guides: VElement[]}
+   * @returns {object} {ticks: VElement[], labels: VElement[], guides: VElement[]}
    */
   render() {
     const {type, config, stats} = this;
@@ -55,7 +55,7 @@ class LinearScale {
  * Create a tick VElement.
  * @param {string} type - 'x' or 'y'
  * @param {number} position - percentage position
- * @return {VElement}
+ * @returns {VElement}
  */
 function createTick(type, position) {
   if (type === 'x') {
@@ -78,8 +78,8 @@ function createTick(type, position) {
  * @param {number} index - tick index
  * @param {number} ticks - total tick count
  * @param {number} position - percentage position
- * @param {Object} config
- * @return {VElement|null}
+ * @param {object} config
+ * @returns {VElement|null}
  */
 function createGuide(type, index, ticks, position, config) {
   if (type === 'x') {
@@ -107,7 +107,7 @@ function createGuide(type, index, ticks, position, config) {
  * @param {string} type - 'x' or 'y'
  * @param {number} position - percentage position
  * @param {string} text - label text
- * @return {VElement}
+ * @returns {VElement}
  */
 function createLabel(type, position, text) {
   const prop = type === 'x' ? 'left' : 'top';
@@ -123,8 +123,8 @@ function createLabel(type, position, text) {
  * Apply user-provided label format callback if configured.
  * @param {string} labelText
  * @param {string} type - 'x' or 'y'
- * @param {Object} config
- * @return {string}
+ * @param {object} config
+ * @returns {string}
  */
 function applyLabelFormat(labelText, type, config) {
   if (type === 'x' && Util.propertyExists(config, 'scale.label.x.format')) {

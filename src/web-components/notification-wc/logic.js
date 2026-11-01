@@ -101,6 +101,8 @@ class NotificationWc extends VBElement {
    * Read the current notification list (panel mode). Each entry mirrors
    * what was assigned via the setter or fetched from the configured
    * source. Banner mode returns an empty array.
+   *
+   * @returns {any[]} A copy of the notification records.
    */
   get notifications() {
     return [...this.#dynamic];

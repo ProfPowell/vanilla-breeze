@@ -198,6 +198,8 @@ class CalendarWc extends VBElement {
    *   - A flat array of events: `[{ id, date: "2026-04-10", label, ... }]`
    *     Flat arrays are grouped by `date` automatically.
    * Reading always returns the date-keyed object.
+   *
+   * @returns {object} Date-keyed events map (`{ [isoDate]: event[] }`).
    */
   get events() { return this.#events; }
   set events(value) {
@@ -216,6 +218,9 @@ class CalendarWc extends VBElement {
    * Normalize either a date-keyed object or a flat event array into
    * the internal date-keyed shape. Flat arrays group entries by `date`,
    * preserving array order within a date.
+   *
+   * @param {*} value - Date-keyed object, flat event array, or anything else (treated as empty).
+   * @returns {object} Date-keyed events map (`{ [isoDate]: event[] }`).
    */
   _normalizeEventsInput(value) {
     if (!value) return {};
@@ -479,7 +484,11 @@ class CalendarWc extends VBElement {
     }
   }
 
-  /** Return the current selection as a serializable value */
+  /**
+   * Return the current selection as a serializable value
+   *
+   * @returns {string|null} ISO date, `start/end` range, space-separated dates, or null.
+   */
   get value() {
     switch (this.#selectionMode) {
       case 'single':

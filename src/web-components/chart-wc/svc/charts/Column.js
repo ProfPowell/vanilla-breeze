@@ -16,7 +16,7 @@ import {escapeHtml} from '../utils/Utils.js';
 class ColumnChart extends Cartesian {
   /**
    * Returns the stringified name of the chart type
-   * @return {string} The type of the chart
+   * @returns {string} The type of the chart
    */
   static get type() {
     return 'column';
@@ -24,7 +24,7 @@ class ColumnChart extends Cartesian {
 
   /**
    * Returns the default object configuration for the chart type
-   * @return {object} Returns the defaults objct
+   * @returns {object} Returns the defaults objct
    */
   static get defaults() {
     return {
@@ -43,7 +43,7 @@ class ColumnChart extends Cartesian {
   /**
    * Return the specifications object for the chart. Used to apply styling
    * such as fills and strokes to different parts of the SVG
-   * @return {object}
+   * @returns {object}
    */
   static specs() {
     return {
@@ -300,7 +300,13 @@ class ColumnChart extends Cartesian {
 
   /**
    * Renders value labels above/beside each bar.
-   * @param {Object} opts
+   * @param {object} opts
+   * @param {object[]} opts.data - the user supplied data series
+   * @param {object} opts.stats - the computed constraints of the chart
+   * @param {object} [opts.subchartNoStretch] - the non-stretched VElement container; labels are skipped when absent
+   * @param {number} opts.scaleX - x-axis scale factor
+   * @param {number} opts.scaleY - y-axis scale factor
+   * @param {number} opts.barSpacing - fractional spacing between bars
    */
   _renderDataLabels({data, stats, subchartNoStretch, scaleX, scaleY, barSpacing}) {
     if (!subchartNoStretch) return;
@@ -363,7 +369,11 @@ class ColumnChart extends Cartesian {
   /**
    * Renders series with `type: 'line'` as line overlays on the chart.
    * Line points are centered on category positions to align with bars.
-   * @param {Object} opts
+   * @param {object} opts
+   * @param {object[]} opts.data - the user supplied data series
+   * @param {object} opts.stats - the computed constraints of the chart
+   * @param {object} opts.subchartStretch - the stretched VElement container
+   * @param {object} [opts.subchartNoStretch] - the non-stretched VElement container
    */
   _renderLineSeries({data, stats, subchartStretch, subchartNoStretch}) {
     const isAssociative = !Array.isArray(data[0].values);
@@ -444,7 +454,14 @@ class ColumnChart extends Cartesian {
 
   /**
    * Creates stacked bars/columns. Each series stacks on top of the previous.
-   * @param {Object} opts
+   * @param {object} opts
+   * @param {object[]} opts.data - the user supplied data series
+   * @param {object} opts.stats - the computed constraints of the chart
+   * @param {object} opts.subchartStretch - the stretched VElement container
+   * @param {number} opts.scaleX - x-axis scale factor
+   * @param {number} opts.scaleY - y-axis scale factor
+   * @param {number} opts.barSpacing - fractional spacing between bars
+   * @param {number} opts.originPoint - position of the value-axis origin
    */
   _createStackedPlot({
     data, stats, subchartStretch,
@@ -561,7 +578,7 @@ class ColumnChart extends Cartesian {
    * @param {*} state
    * @param {*} instance
    * @param {*} chart
-   * @return {object} the tooltip info object
+   * @returns {object} the tooltip info object
    */
   tooltipLocation(state, instance, chart) {
     return function tooltipLocation(e) {

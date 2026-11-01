@@ -2,8 +2,9 @@
  * Creates responsive queries for scale label density.
  * X-axis: uses @container queries (responds to chart-canvas width).
  * Y-axis: uses @media queries (height containment would break grid).
- * @param {object} obj.config - the user supplied config
- * @return {string} CSS queries as a string
+ * @param {{config: object, stats?: object}} obj - Query options: `config` is the user supplied
+ *   config; `stats` is accepted from callers but unused
+ * @returns {string} CSS queries as a string
  */
 function createMediaQueries({config}) {
   const minFontSize = config.scale.minFontSize;

@@ -115,7 +115,11 @@ class FormField extends VBElement {
     if (this.#output) this.#output.textContent = '';
   }
 
-  /** Human-readable field name for error summaries. */
+  /**
+   * Human-readable field name for error summaries.
+   *
+   * @returns {string} The field's label text, or a fallback.
+   */
   get fieldName() {
     return this.querySelector('label')?.textContent?.trim()
       ?? this.#input?.getAttribute('aria-label')
@@ -124,7 +128,11 @@ class FormField extends VBElement {
       ?? 'Field';
   }
 
-  /** The controlled input element. */
+  /**
+   * The controlled input element.
+   *
+   * @returns {HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement|null} The input, textarea, or select element, or null.
+   */
   get input() {
     return this.#input;
   }

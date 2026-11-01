@@ -53,7 +53,7 @@ class Hooks {
    * Run all registered callbacks for a hook synchronously.
    * Client-only hooks are skipped when no DOM is available.
    * @param {string} hookName
-   * @param {Object} context - data passed to each callback
+   * @param {object} context - data passed to each callback
    */
   run(hookName, context) {
     if (CLIENT_ONLY_HOOKS.has(hookName) && typeof document === 'undefined') {
@@ -68,9 +68,9 @@ class Hooks {
 
   /**
    * Register a plugin object. A plugin has a name and a hooks map.
-   * @param {Object} plugin
+   * @param {object} plugin
    * @param {string} plugin.name
-   * @param {Object.<string, Function>} plugin.hooks
+   * @param {Record<string, Function>} plugin.hooks
    */
   registerPlugin(plugin) {
     if (!plugin || !plugin.hooks) return;

@@ -114,7 +114,12 @@ class QrCodeWc extends VBElement {
     this.appendChild(caption);
   }
 
-  /** Get the QR code as a data URL */
+  /**
+   * Get the QR code as a data URL
+   *
+   * @param {string} [type='image/png'] - Image MIME type.
+   * @returns {string} The data URL, or '' before render.
+   */
   toDataURL(type = 'image/png') {
     return this.#canvas?.toDataURL(type) ?? '';
   }

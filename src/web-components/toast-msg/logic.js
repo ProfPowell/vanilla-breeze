@@ -92,6 +92,8 @@ class ToastMsg extends VBElement {
    * entry: `{ message, variant, state }` where state is 'visible' or
    * 'queued'. Toast-msg is intentionally imperative — there is no
    * `.queue` setter; use `.show(...)` to add a toast.
+   *
+   * @returns {Array<{ message: string, variant: string, state: string }>} Toast records.
    */
   get queue() {
     const visible = this.#visible.map(t => ({

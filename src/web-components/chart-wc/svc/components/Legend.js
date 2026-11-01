@@ -18,6 +18,7 @@ class Legend {
 
   /**
    * Returns the defaults for the legend object
+   * @returns {object} Legend config defaults
    */
   static get defaults() {
     const breakpoint = {
@@ -58,7 +59,7 @@ class Legend {
    * @param {*} _structure
    * @param {*} type
    * @param {*} _scopeId
-   * @return {object} virtual dom of legend
+   * @returns {object} virtual dom of legend
    */
   render(_stylesheet, _structure, type, _scopeId) {
     return this.createLegend(type);
@@ -69,7 +70,7 @@ class Legend {
    * Uses --_series-color custom property for checkbox coloring
    * instead of per-series addRule() calls.
    * @param {string} chartType
-   * @return {VElement} the legend <ul> element
+   * @returns {VElement} the legend <ul> element
    */
   createLegend(chartType) {
     const legend = new VElement('ul', {
@@ -119,7 +120,7 @@ class Legend {
   /**
    * Resolve the series color from the palette config.
    * @param {number} index
-   * @return {string} CSS color value
+   * @returns {string} CSS color value
    */
   _getSeriesColor(index) {
     let plotColors;

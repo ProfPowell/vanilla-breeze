@@ -24,6 +24,7 @@ import { diffByKey } from './diff-by-key.js';
 /**
  * @template {new (...args: any[]) => HTMLElement} TBase
  * @param {TBase} Base
+ * @returns {new (...args: any[]) => any} Mixin class: Base extended with keyed-collection rendering.
  */
 export function VBCollection(Base) {
   const BaseAny = /** @type {any} */ (Base);

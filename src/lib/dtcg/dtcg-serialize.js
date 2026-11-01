@@ -25,6 +25,7 @@ const SPEC = '2025.10';
 /**
  * @param {Entry[]} entries
  * @param {SerializeOptions} [options]
+ * @returns {Record<string, any>} DTCG token tree with VB metadata under `$extensions`.
  */
 export function serializeDTCG(entries, options = {}) {
   /** @type {Record<string, any>} */

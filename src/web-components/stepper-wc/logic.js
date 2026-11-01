@@ -629,7 +629,11 @@ class StepperWc extends VBElement {
 
   // --- Public property API ---
 
-  /** The user-visible formatted string (e.g. "$5.00", "2.05 KB", "Medium"). */
+  /**
+   * The user-visible formatted string (e.g. "$5.00", "2.05 KB", "Medium").
+   *
+   * @returns {string} The displayed text.
+   */
   get displayText() { return this.#displayEl?.textContent ?? ''; }
 
   get value() { return this.#value == null ? '' : String(this.#value); }

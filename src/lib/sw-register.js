@@ -24,6 +24,7 @@ let registrationPromise = null;
 
 /**
  * Get the current VB version (build-injected)
+ * @returns {string} The injected version, or 'dev' when unbuilt.
  */
 export function getVBVersion() {
   return typeof __VB_VERSION__ !== 'undefined' ? __VB_VERSION__ : 'dev';
@@ -91,6 +92,7 @@ function doSend(sw, type, resolve, reject) {
 
 /**
  * Get SW status: version, cache name, cached URLs
+ * @returns {Promise<any>} The status payload the service worker replies with.
  */
 export async function getSWStatus() {
   return sendMessage('GET_STATUS');
@@ -98,6 +100,7 @@ export async function getSWStatus() {
 
 /**
  * Clear all VB caches
+ * @returns {Promise<any>} The service worker's reply.
  */
 export async function clearSWCache() {
   return sendMessage('CLEAR_CACHE');
@@ -105,6 +108,7 @@ export async function clearSWCache() {
 
 /**
  * Check for a SW update
+ * @returns {Promise<{updated: boolean}>} Whether a new worker is waiting.
  */
 export async function checkForUpdate() {
   const reg = await getRegistration();

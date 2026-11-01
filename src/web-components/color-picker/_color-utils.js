@@ -5,6 +5,11 @@
 
 /**
  * HSL (h: 0-360, s: 0-100, l: 0-100) → RGB (r,g,b: 0-255)
+ *
+ * @param {number} h - Hue, 0-360.
+ * @param {number} s - Saturation, 0-100.
+ * @param {number} l - Lightness, 0-100.
+ * @returns {{ r: number, g: number, b: number }} RGB channels, 0-255.
  */
 export function hslToRgb(h, s, l) {
   s /= 100;
@@ -21,6 +26,11 @@ export function hslToRgb(h, s, l) {
 
 /**
  * RGB (r,g,b: 0-255) → HSL (h: 0-360, s: 0-100, l: 0-100)
+ *
+ * @param {number} r - Red, 0-255.
+ * @param {number} g - Green, 0-255.
+ * @param {number} b - Blue, 0-255.
+ * @returns {{ h: number, s: number, l: number }} HSL components.
  */
 export function rgbToHsl(r, g, b) {
   r /= 255;
@@ -51,6 +61,9 @@ export function rgbToHsl(r, g, b) {
 
 /**
  * Hex string → RGB
+ *
+ * @param {string} hex - 3- or 6-digit hex color, with or without '#'.
+ * @returns {{ r: number, g: number, b: number }} RGB channels, 0-255.
  */
 export function hexToRgb(hex) {
   hex = hex.replace(/^#/, '');
@@ -67,6 +80,11 @@ export function hexToRgb(hex) {
 
 /**
  * RGB → Hex string (with #)
+ *
+ * @param {number} r - Red, 0-255.
+ * @param {number} g - Green, 0-255.
+ * @param {number} b - Blue, 0-255.
+ * @returns {string} Hex color string such as '#ff8800'.
  */
 export function rgbToHex(r, g, b) {
   return '#' + [r, g, b].map(v =>
@@ -76,6 +94,9 @@ export function rgbToHex(r, g, b) {
 
 /**
  * Hex → HSL
+ *
+ * @param {string} hex - 3- or 6-digit hex color, with or without '#'.
+ * @returns {{ h: number, s: number, l: number }} HSL components.
  */
 export function hexToHsl(hex) {
   const { r, g, b } = hexToRgb(hex);
@@ -84,6 +105,11 @@ export function hexToHsl(hex) {
 
 /**
  * HSL → Hex
+ *
+ * @param {number} h - Hue, 0-360.
+ * @param {number} s - Saturation, 0-100.
+ * @param {number} l - Lightness, 0-100.
+ * @returns {string} Hex color string with leading '#'.
  */
 export function hslToHex(h, s, l) {
   const { r, g, b } = hslToRgb(h, s, l);
@@ -92,6 +118,11 @@ export function hslToHex(h, s, l) {
 
 /**
  * Clamp a value between min and max
+ *
+ * @param {number} val - Value to clamp.
+ * @param {number} min - Lower bound.
+ * @param {number} max - Upper bound.
+ * @returns {number} The clamped value.
  */
 export function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
@@ -113,6 +144,11 @@ function linearToSrgb(c) {
 
 /**
  * RGB (0-255) → OkLCH (L: 0-1, C: 0+, H: 0-360)
+ *
+ * @param {number} r - Red, 0-255.
+ * @param {number} g - Green, 0-255.
+ * @param {number} b - Blue, 0-255.
+ * @returns {{ L: number, C: number, H: number }} OkLCH components.
  */
 export function rgbToOklch(r, g, b) {
   const lr = srgbToLinear(r);
@@ -143,6 +179,11 @@ export function rgbToOklch(r, g, b) {
 
 /**
  * OkLCH → RGB (0-255). Out-of-gamut colors are clamped to sRGB.
+ *
+ * @param {number} L - Lightness, 0-1.
+ * @param {number} C - Chroma, 0+.
+ * @param {number} H - Hue, 0-360.
+ * @returns {{ r: number, g: number, b: number }} RGB channels, 0-255.
  */
 export function oklchToRgb(L, C, H) {
   const rad = H * Math.PI / 180;
@@ -198,6 +239,10 @@ export function formatOklch(h, s, l) {
 /**
  * Format the current HSL state as the requested CSS color string.
  * @param {'hex'|'rgb'|'hsl'|'oklch'} format
+ * @param {number} h - Hue, 0-360.
+ * @param {number} s - Saturation, 0-100.
+ * @param {number} l - Lightness, 0-100.
+ * @returns {string} CSS color string in the requested format.
  */
 export function formatColor(format, h, s, l) {
   switch (format) {

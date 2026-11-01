@@ -379,6 +379,8 @@ class ChatWindow extends VBElement {
    * `{ id, role, content, from? }`. After upgrade reflects whatever
    * <chat-message> children exist; after assignment reflects what was
    * passed in via the setter.
+   *
+   * @returns {Array<{ id?: string, role: string, content: string, from?: string }>} Message records.
    */
   get messages() {
     if (!this.#thread) return [];

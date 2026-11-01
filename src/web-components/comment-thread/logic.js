@@ -268,6 +268,7 @@ class CommentThread extends VBElement {
    *   mine?: boolean,
    *   edited?: string,
    * }} data
+   * @returns {HTMLElement} The created comment <article>.
    */
   addComment(data) {
     const article = document.createElement('article');

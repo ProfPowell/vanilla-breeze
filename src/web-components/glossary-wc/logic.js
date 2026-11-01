@@ -129,6 +129,8 @@ class GlossaryWc extends VBElement {
   /**
    * Read the glossary terms as a plain data array. Each entry:
    * `{ id, term, definition, category }`.
+   *
+   * @returns {any[]} Term records.
    */
   get terms() {
     return this.#terms.map(t => ({

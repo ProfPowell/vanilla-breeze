@@ -53,6 +53,8 @@ class CommandPalette extends VBElement {
    * `{ value, label, hotkey?, group?, icon? }`. Reading reflects either
    * the parsed <command-group>/<command-item> children or what was last
    * assigned via the setter.
+   *
+   * @returns {Array<{ value: string, label: string, hotkey?: string, group?: string, icon?: string }>} Command records.
    */
   get commands() {
     const result = [];

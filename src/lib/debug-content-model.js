@@ -21,6 +21,7 @@ const CONTENT_MODELS = {
 
 /**
  * Check if debug mode is enabled
+ * @returns {boolean} True when data-debug or the localStorage flag is set.
  */
 function isDebugEnabled() {
   return (

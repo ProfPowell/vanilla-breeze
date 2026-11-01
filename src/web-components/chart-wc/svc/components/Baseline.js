@@ -19,7 +19,7 @@ class Baseline {
   }
   /**
    * Creates a baseline for either the x or y.
-   * @return {object} The virtual dom element for the baseline
+   * @returns {object} The virtual dom element for the baseline
    */
   render() {
     const {type, stats, stroke, width} = this;

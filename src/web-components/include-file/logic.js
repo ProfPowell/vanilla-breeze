@@ -64,7 +64,11 @@ class IncludeFile extends VBElement {
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
 
-  /** The current src URL (mirror of the `src` attribute). */
+  /**
+   * The current src URL (mirror of the `src` attribute).
+   *
+   * @returns {string} The src URL, or ''.
+   */
   get src() { return this.getAttribute('src') || ''; }
 
   /**

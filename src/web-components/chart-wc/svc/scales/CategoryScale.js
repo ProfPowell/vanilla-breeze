@@ -17,7 +17,7 @@ class CategoryScale {
 
   /**
    * Renders ticks, guides, and labels for a category scale.
-   * @return {Object} {ticks: VElement[], labels: VElement[], guides: VElement[]}
+   * @returns {object} {ticks: VElement[], labels: VElement[], guides: VElement[]}
    */
   render() {
     const {type, config, stats} = this;

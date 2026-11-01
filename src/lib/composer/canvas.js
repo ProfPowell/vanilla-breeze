@@ -48,7 +48,10 @@ class VbCanvas extends HTMLElement {
     this.#observer?.disconnect();
   }
 
-  /** The currently selected block element, or null. */
+  /**
+   * The currently selected block element, or null.
+   * @returns {HTMLElement|null} The selected block, or null.
+   */
   get selected() { return this.#selected; }
 
   /** Select a block programmatically. */

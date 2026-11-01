@@ -16,7 +16,7 @@ import {escapeHtml, isPlainObject} from '../utils/Utils.js';
 class PieChart extends Chart {
   /**
    * Returns the stringified name of the chart type
-   * @return {string} The type of the chart
+   * @returns {string} The type of the chart
    */
   static get type() {
     return 'pie';
@@ -24,7 +24,7 @@ class PieChart extends Chart {
 
   /**
    * Returns the default object configuration for the chart type
-   * @return {object} Returns the defaults objct
+   * @returns {object} Returns the defaults objct
    */
   static get defaults() {
     return {
@@ -75,7 +75,7 @@ class PieChart extends Chart {
   /**
    * Return the specifications object for the chart. Used to apply styling
    * such as fills and strokes to different parts of the SVG
-   * @return {object}
+   * @returns {object}
    */
   static specs() {
     return {
@@ -90,8 +90,8 @@ class PieChart extends Chart {
 
   /**
    * Parses the configuration object and applies it to the virtual DOM structure
-   * @param {Object} structure - An object containing virtual dom elements
-   * @return {Object} The Structure
+   * @param {object} structure - An object containing virtual dom elements
+   * @returns {object} The Structure
    */
   parse(structure) {
     structure = super.parse(structure);
@@ -130,7 +130,7 @@ class PieChart extends Chart {
 
   /**
    * Create the tooltip script code
-   * @return {object} Containing the tooltip element
+   * @returns {object} Containing the tooltip element
    */
   createScript() {
     return (new Tooltip({
@@ -240,7 +240,7 @@ class PieChart extends Chart {
    * Calculates the size of each pie slce
    * @param {*} fractionOfPie
    * @param {*} startPosition
-   * @return {object} Each slice dimensions
+   * @returns {object} Each slice dimensions
    */
   calculateSlice(fractionOfPie, startPosition) {
     const radius = 50;
@@ -286,7 +286,7 @@ class PieChart extends Chart {
    * @param {*} value
    * @param {*} sum
    * @param {*} key
-   * @return {object} the virtual svg element
+   * @returns {object} the virtual svg element
    */
   createSlice(coords, color, index, value, sum, key) {
     const {radius, start, end, center, degreeLength} = coords;
@@ -388,10 +388,10 @@ class PieChart extends Chart {
   /**
    * Tooltip location for pie/ring charts.
    * Detects hovered slice by mouse angle relative to pie center.
-   * @param {Object} state
+   * @param {object} state
    * @param {Element} instance
-   * @param {Object} chart
-   * @return {Function} event handler returning tooltip info
+   * @param {object} chart
+   * @returns {Function} event handler returning tooltip info
    */
   tooltipLocation(state, instance, chart) {
     return function tooltipLocation(e) {

@@ -116,7 +116,11 @@ class AudioPlayerElement extends VBElement {
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
 
-  /** The audio source URL (mirror of the inner <audio src> attribute). */
+  /**
+   * The audio source URL (mirror of the inner <audio src> attribute).
+   *
+   * @returns {string} The source URL, or '' when none.
+   */
   get src() {
     return this.#audio?.getAttribute('src') || this.#audio?.currentSrc || '';
   }
@@ -138,7 +142,11 @@ class AudioPlayerElement extends VBElement {
     }));
   }
 
-  /** Current playback position in seconds. */
+  /**
+   * Current playback position in seconds.
+   *
+   * @returns {number} Playback position in seconds.
+   */
   get currentTime() { return this.#audio?.currentTime ?? 0; }
   set currentTime(value) {
     if (this.#audio) this.#audio.currentTime = Number(value) || 0;

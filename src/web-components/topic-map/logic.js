@@ -48,6 +48,8 @@ class TopicMap extends VBElement {
    * Read the in-memory payloads if they were assigned via .data, else
    * `null`. (When loaded from src, the rendered tree IS the source of
    * truth — there's no JSON to round-trip.)
+   *
+   * @returns {{ pages: any[], vocabulary: object }|null} The `{ pages, vocabulary }` payload, or null.
    */
   get data() { return this.__data || null; }
 

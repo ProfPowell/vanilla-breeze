@@ -24,7 +24,10 @@ export function resolveIconSet(el, doc = document) {
   return doc.documentElement.dataset.iconSet || 'lucide';
 }
 
-/** @param {Document} [doc] */
+/**
+ * @param {Document} [doc]
+ * @returns {string} Icon base path from `data-icon-path`, or '/cdn/icons'.
+ */
 export function resolveIconBase(doc = document) {
   return doc.documentElement.dataset.iconPath || '/cdn/icons';
 }

@@ -39,6 +39,8 @@ class RecentlyVisited extends VBElement {
    * Frameworks can observe via the `recently-visited:refreshed` event
    * which fires after every internal re-render (storage event from
    * another tab, or local write).
+   *
+   * @returns {any[]} Visit records, or [] when storage is empty or unreadable.
    */
   get entries() {
     try {

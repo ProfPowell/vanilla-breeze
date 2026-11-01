@@ -209,6 +209,8 @@ class ImageMapWc extends VBElement {
   /**
    * Read the current map regions as plain data. Each entry mirrors a
    * `<map-area>` child: `{ shape, coords, label?, href?, target? }`.
+   *
+   * @returns {Array<{ shape?: string, coords?: string, label?: string, href?: string, target?: string }>} Region records.
    */
   get regions() {
     return [...this.querySelectorAll(':scope > map-area')].map(a => ({

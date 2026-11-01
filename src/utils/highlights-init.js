@@ -353,6 +353,8 @@ class HighlightController {
   /**
    * Resolve the first viewport rect for a highlight by id. Used by
    * <note-wc> to align its panel with the highlighted text.
+   * @param {string} id - Highlight id.
+   * @returns {DOMRect|null} First client rect, or null if not found.
    */
   findHighlightRect(id) {
     const hl = this.#highlights.find(h => h.id === id);

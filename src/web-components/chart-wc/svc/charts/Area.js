@@ -3,7 +3,7 @@ import {formatNumber} from '../utils/Utils.js';
 
 /**
  * Area Chart
- * @extends LineChart
+ * @augments LineChart
  * @example
  * const chart = new AreaChart({
  *   data: [
@@ -16,7 +16,7 @@ import {formatNumber} from '../utils/Utils.js';
 class AreaChart extends LineChart {
   /**
    * Returns the stringified name of the chart type
-   * @return {string} The type of the chart
+   * @returns {string} The type of the chart
    */
   static get type() {
     return 'area';
@@ -24,7 +24,7 @@ class AreaChart extends LineChart {
 
   /**
    * Returns the default object configuration for the chart type
-   * @return {object} Returns the defaults objct
+   * @returns {object} Returns the defaults objct
    */
   static get defaults() {
     return {
@@ -52,7 +52,7 @@ class AreaChart extends LineChart {
   /**
    * Return the specifications object for the chart. Used to apply styling
    * such as fills and strokes to different parts of the SVG
-   * @return {object}
+   * @returns {object}
    */
   static specs() {
     return {
@@ -69,7 +69,7 @@ class AreaChart extends LineChart {
   /**
    * Returns an array of CSS classes for the specific plot index
    * @param {number} index - the plot index
-   * @return {array}
+   * @returns {Array}
    */
   getPlotClass(index) {
     return ['plot', `plot-${index}`, 'plot-area', `plot-area-${index}`];
@@ -77,8 +77,8 @@ class AreaChart extends LineChart {
 
   /**
    * Modifies the line plot to add a closing line. This allows for the "area plot" to be filled.
-   * @param {array} values
-   * @return {array} Array of svg path directions
+   * @param {Array} values
+   * @returns {Array} Array of svg path directions
    */
   createPlotLine(values) {
     // Close the line path to create an area fill

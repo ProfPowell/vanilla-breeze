@@ -90,6 +90,8 @@ class ImageGallery extends VBElement {
    * Read the current image set as a plain data array. Each entry is
    * `{ href, thumbSrc, alt, caption }` mirroring what was either parsed
    * from <a><img></a> markup at upgrade or assigned via the setter.
+   *
+   * @returns {any[]} Image records.
    */
   get images() {
     return this.#items.map(it => ({

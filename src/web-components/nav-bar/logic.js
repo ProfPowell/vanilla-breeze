@@ -52,6 +52,8 @@ class NavBar extends VBElement {
    * Read the link list. Returns the last assigned array (round-trip)
    * if `.items` was set, otherwise infers `{ href, label }` from
    * current `<a>` children.
+   *
+   * @returns {any[]} Link records.
    */
   get items() {
     if (this.#items) return this.#items.map(i => ({ ...i }));
@@ -85,6 +87,8 @@ class NavBar extends VBElement {
    * Read the current route. Returns the explicit value if one was
    * assigned, otherwise the `data-route` (or `href`) of the link
    * currently carrying `aria-current="page"`, or null.
+   *
+   * @returns {string|null} The current route string, or null.
    */
   get current() {
     if (this.#explicit) return this.#current;

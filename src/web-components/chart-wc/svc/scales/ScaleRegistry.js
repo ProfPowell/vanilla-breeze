@@ -16,8 +16,8 @@ export function registerScale(name, ScaleClass) {
 /**
  * Create a scale instance by type name.
  * @param {string} type - registered scale type name
- * @param {Object} options - constructor options (type, config, stats, data, chartType)
- * @return {Object} scale instance with a render() method
+ * @param {object} options - constructor options (type, config, stats, data, chartType)
+ * @returns {object} scale instance with a render() method
  */
 export function createScale(type, options) {
   const ScaleClass = registry.get(type);

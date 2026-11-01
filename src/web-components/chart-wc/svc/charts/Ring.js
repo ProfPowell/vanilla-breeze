@@ -17,7 +17,7 @@ class RingChart extends PieChart {
    * Keep type as 'pie' so SVC's internal pie branches (Legend, Tooltip,
    * instance counting in Chart.compileStyles) match without modification.
    * The user-facing data-type="ring" is resolved at the chart-wc layer.
-   * @return {string}
+   * @returns {string}
    */
   static get type() {
     return 'pie';
@@ -26,7 +26,7 @@ class RingChart extends PieChart {
   /**
    * Defaults merge over PieChart's via Chart.applyConfigToDefaults's
    * prototype-chain walk. We only need to flip plot.ring on.
-   * @return {object}
+   * @returns {object}
    */
   static get defaults() {
     return {

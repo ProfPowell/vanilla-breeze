@@ -5,9 +5,9 @@
  * Arrow keys navigate between data points. Escape blurs.
  * Focused data points get a visual focus ring and announce via aria-live.
  *
- * @param {Object} state - internal interaction state
+ * @param {object} state - internal interaction state
  * @param {Element|Document} instance - the chart container or document
- * @param {Object} _chart - the chart instance
+ * @param {object} _chart - the chart instance
  */
 export function keyboardNavigation(state, instance, _chart) {
   let nodes = instance.querySelectorAll('[role="graphics-symbol"]');

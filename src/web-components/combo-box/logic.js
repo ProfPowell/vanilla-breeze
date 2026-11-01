@@ -435,7 +435,10 @@ class ComboBox extends VBElement {
 
   // --- Selection (single mode) ---
 
-  /** @param {Element} option */
+  /**
+   * @param {Element} option
+   * @param {string} [source='internal'] - Origin of the change, reported in the change event.
+   */
   #selectOption(option, source = 'internal') {
     const value = option.getAttribute('data-value') || '';
     const label = option.textContent.trim();

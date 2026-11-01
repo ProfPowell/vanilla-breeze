@@ -4,7 +4,7 @@ const CLASS_PREFIX = 'svc';
 /**
  * Escapes HTML special characters to prevent XSS
  * @param {*} str - value to escape
- * @return {string} escaped string
+ * @returns {string} escaped string
  */
 function escapeHtml(str) {
   const s = String(str);
@@ -21,7 +21,7 @@ function escapeHtml(str) {
  * Supports: **bold**, *italic*, `code`, \n (line break).
  * All text is HTML-escaped first, then markdown patterns are applied.
  * @param {string} str - markdown-flavored text
- * @return {string} safe HTML string
+ * @returns {string} safe HTML string
  */
 function miniMarkdown(str) {
   let s = escapeHtml(String(str));
@@ -39,7 +39,7 @@ function miniMarkdown(str) {
 /**
  * Checks if a value is a plain object (not an array, class instance, or null)
  * @param {*} value
- * @return {boolean}
+ * @returns {boolean}
  */
 function isPlainObject(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -52,7 +52,7 @@ function isPlainObject(value) {
 /**
  * Formats to 2 decimal places, and drops trailing 0
  * @param {*} value
- * @return {number} the floating point value
+ * @returns {number} the floating point value
  */
 function formatNumber(value) {
   const val = value.toFixed(2);
@@ -62,14 +62,14 @@ function formatNumber(value) {
 /**
  * Takes a Virtual DOM root and compiles it to a string
  * @param {*} svg - the virtual dom root
- * @return {string} The SVG output
+ * @returns {string} The SVG output
  */
 function compileDOM(svg) {
   return (compile(svg));
   /**
    * The helper function for recursive actions
    * @param {*} element - a parent node
-   * @return {string}
+   * @returns {string}
    */
   function compile(element) {
     let attrs = '';
@@ -105,7 +105,7 @@ function compileDOM(svg) {
   /**
    * Adds a space padding if attrs exists
    * @param {*} attrs
-   * @return {string}
+   * @returns {string}
    */
   function fmtAttrs(attrs) {
     return (attrs === '') ? attrs : ' ' + attrs;
@@ -116,14 +116,14 @@ function compileDOM(svg) {
  * Deep assign an object
  * @param {object} dest
  * @param {object} source
- * @return {object}
+ * @returns {object}
  */
 function deepAssign(dest, source) {
   return mergeDeep(dest, source);
   /**
    * Simple object check and ensures the object is not a Class
    * @param {*} item
-   * @return {boolean}
+   * @returns {boolean}
    */
   function isObject(item) {
     return isPlainObject(item);
@@ -133,7 +133,7 @@ function deepAssign(dest, source) {
    * Deep merge two objects.
    * @param {*} target
    * @param  {...any} sources
-   * @return {object}
+   * @returns {object}
    */
   function mergeDeep(target, ...sources) {
     if (!sources.length) return target;
@@ -156,7 +156,7 @@ function deepAssign(dest, source) {
 /**
  * Escapes less than and greater than brackets for script tags.
  * @param {*} str
- * @return {string}
+ * @returns {string}
  */
 function escapeCarets(str) {
   str = str.replace(/</g, '&lt;');
@@ -167,7 +167,7 @@ function escapeCarets(str) {
 /**
  * Converts a semi-colon delimited list into an object (inline-styles)
  * @param {*} str
- * @return {object}
+ * @returns {object}
  */
 function stringToObject(str) {
   const attrs = str.split(';');
@@ -184,7 +184,7 @@ function stringToObject(str) {
  * Determines if the object has an embedded object path.
  * @param {object} obj - The object to detect a path
  * @param {*} path - a '.' delimited object path
- * @return {boolean} if the object has a value in the object path given.
+ * @returns {boolean} if the object has a value in the object path given.
  */
 function propertyExists(obj, path) {
   let currentObj = obj;
@@ -207,7 +207,7 @@ function propertyExists(obj, path) {
  * @param {*} label
  * @param {*} value
  * @param {string} fallback
- * @return {string}
+ * @returns {string}
  */
 function safeFormatTooltip(formatter, label, value, fallback) {
   if (!formatter) return fallback;

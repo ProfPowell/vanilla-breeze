@@ -77,7 +77,11 @@ class MarkdownViewer extends VBElement {
 
   // ── Public API ──────────────────────────────────────────────
 
-  /** Custom parser function. Set to override the default marked parser. */
+  /**
+   * Custom parser function. Set to override the default marked parser.
+   *
+   * @returns {Function|null} The custom parser function, or null.
+   */
   get parser() { return this.#parser; }
   set parser(fn) {
     this.#parser = typeof fn === 'function' ? fn : null;
@@ -90,6 +94,8 @@ class MarkdownViewer extends VBElement {
    * Assigning a string takes over from the slot resolution and triggers
    * an immediate re-render with the new content. Pass `null` or `''` to
    * fall back to the slot pipeline on the next render.
+   *
+   * @returns {string} The markdown source.
    */
   get markdown() { return this.#markdownOverride ?? this.#lastResolved ?? ''; }
   set markdown(value) {

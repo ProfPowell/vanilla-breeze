@@ -192,6 +192,8 @@ class FlowDiagram extends VBElement {
    * `{ type, text, annotation, branches: [{ label, steps }] }`.
    * After upgrade this reflects the parsed <ol> source; after
    * assignment, reflects what was passed in.
+   *
+   * @returns {any[]} The step records.
    */
   get steps() {
     return this.#cachedSteps;

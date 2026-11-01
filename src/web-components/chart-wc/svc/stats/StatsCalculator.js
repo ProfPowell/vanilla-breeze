@@ -9,9 +9,9 @@ import {
  * Calculates information from the data to be used in scaling and plotting data
  * points.
  * @param {Array} data - The user supplied data
- * @param {Object} config - The user supplied configuration object
+ * @param {object} config - The user supplied configuration object
  * @param {string} chartType - The chart type string (e.g. 'line', 'bar')
- * @return {Object} The stats object
+ * @returns {object} The stats object
  * @throws {Error} If `data` is not a non-empty array.
  * @throws {Error} If any series element is missing a `values` property.
  */
@@ -212,8 +212,13 @@ export function calculateStats(data, config, chartType) {
 
 /**
  * Calculates a scale for y, and negative x values when the dataset is non-linear
- * @param {Object} stats - contains min, max, and number of ticks
- * @return {Object} An object containing information about the scales
+ * @param {object} stats - contains min, max, and number of ticks
+ * @param {number} stats.max - the maximum data value
+ * @param {number} stats.min - the minimum data value
+ * @param {number} stats.ticks - the desired number of ticks
+ * @param {object} [options] - scale options
+ * @param {boolean} [options.forceZeroMin=true] - clamp a positive min down to 0
+ * @returns {object} An object containing information about the scales
  */
 export function calculateScale({max, min, ticks: numTicks}, {forceZeroMin = true} = {}) {
   // Add buffer: push max up and min down by 10%
@@ -249,7 +254,7 @@ export function calculateScale({max, min, ticks: numTicks}, {forceZeroMin = true
  * Produces round numbers like 1, 2, 5, 10, 20, 25, 50, 100, etc.
  * @param {number} range - the data range (max - min)
  * @param {number} targetTicks - desired number of tick intervals
- * @return {number} a round step value
+ * @returns {number} a round step value
  */
 export function niceStep(range, targetTicks) {
   const rawStep = range / targetTicks;
@@ -269,7 +274,7 @@ export function niceStep(range, targetTicks) {
  * Gets the min and max for scatter/bubble charts
  * @param {Array} data - the user supplied data
  * @param {string} axis - which axis ('x', 'y', or 'size')
- * @return {Object} contains min and max values
+ * @returns {object} contains min and max values
  */
 export function getScatterInterval(data, axis) {
   let index;

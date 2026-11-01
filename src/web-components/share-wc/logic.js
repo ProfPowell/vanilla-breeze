@@ -327,7 +327,10 @@ class ShareWc extends VBElement {
     }));
   };
 
-  /** @param {Event} _e @param {HTMLElement} [target] */
+  /**
+   * @param {Event} _e
+   * @param {HTMLElement} [target]
+   */
   #handleCopy = async (_e, target) => {
     const btn = target || /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (_e?.target)?.closest('[data-platform="copy"]'));
     if (!btn) return;

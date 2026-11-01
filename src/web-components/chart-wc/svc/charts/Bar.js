@@ -3,7 +3,7 @@ import {escapeHtml} from '../utils/Utils.js';
 
 /**
  * Bar Chart
- * @extends ColumnChart
+ * @augments ColumnChart
  * @example
  * const chart = new BarChart({
  *   data: [
@@ -16,14 +16,14 @@ import {escapeHtml} from '../utils/Utils.js';
 class BarChart extends ColumnChart {
   /**
    * Returns the stringified name of the chart type
-   * @return {string} The type of the chart
+   * @returns {string} The type of the chart
    */
   static get type() {
     return 'bar';
   }
   /**
    * Returns the default object configuration for the chart type
-   * @return {object} Returns the defaults objct
+   * @returns {object} Returns the defaults objct
    */
   static get defaults() {
     return {
@@ -39,7 +39,7 @@ class BarChart extends ColumnChart {
    * @param {*} state
    * @param {*} instance
    * @param {*} chart
-   * @return {object} the tooltip info object
+   * @returns {object} the tooltip info object
    */
   tooltipLocation(state, instance, chart) {
     return function tooltipLocation(e) {

@@ -16,7 +16,7 @@ class LogScale {
 
   /**
    * Renders ticks, guides, and labels for a logarithmic scale.
-   * @return {Object} {ticks: VElement[], labels: VElement[], guides: VElement[]}
+   * @returns {object} {ticks: VElement[], labels: VElement[], guides: VElement[]}
    */
   render() {
     const {type, config, stats} = this;
@@ -64,7 +64,7 @@ class LogScale {
 /**
  * Format a log scale value. Uses compact notation for large numbers.
  * @param {number} value
- * @return {string}
+ * @returns {string}
  */
 function formatLogLabel(value) {
   if (value >= 1000000) return (value / 1000000) + 'M';

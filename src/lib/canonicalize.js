@@ -214,6 +214,25 @@ function getLicense(doc) {
  * Build the canonical document JSON object per §G. Keys inserted in the
  * exact order required — JSON.stringify preserves string-key insertion
  * order in all conforming ES engines.
+ *
+ * @returns {{
+ *   '@context': string,
+ *   '@version': number,
+ *   url: string,
+ *   title: string,
+ *   author: string,
+ *   authorUrl: string,
+ *   published: string,
+ *   modified: string,
+ *   version: string,
+ *   keywords: string[],
+ *   concepts: string[],
+ *   provenance: string,
+ *   review: string,
+ *   status: string,
+ *   license: string,
+ *   content: string
+ * }} The canonical document object, keys in spec order.
  */
 export function buildCanonicalDocument(doc, opts = {}) {
   const url = opts.url ?? doc?.location?.href ?? '';
@@ -243,6 +262,8 @@ export function buildCanonicalDocument(doc, opts = {}) {
 /**
  * Serialize the canonical document to the byte-stable JSON form per §G.
  * No indentation, no trailing newline. Single line of JSON.
+ *
+ * @returns {string} Single-line JSON string.
  */
 export function serializeCanonical(canonical) {
   return JSON.stringify(canonical);
@@ -252,6 +273,8 @@ export function serializeCanonical(canonical) {
  * SHA-256 of the canonical JSON. Returns base64 (no `sha256-` prefix —
  * callers prepend that when emitting the meta tag). Uses Web Crypto,
  * which is global in browsers and Node ≥20.
+ *
+ * @returns {Promise<string>} Base64-encoded SHA-256 digest.
  */
 export async function canonicalHash(canonicalJson) {
   const data = new TextEncoder().encode(canonicalJson);

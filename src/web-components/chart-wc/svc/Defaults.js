@@ -4,7 +4,7 @@ import { VElement } from './DOM/VElement.js';
 
 /**
  * Creates the default configuration object for every chart.
- * @constructor
+ * @class
  */
 let _gradientIdCounter = 0;
 
@@ -40,7 +40,7 @@ class Defaults {
 
   /**
    * CSS styling for the SVC structure
-   * @return {object} a configuration object with structure styling
+   * @returns {object} a configuration object with structure styling
    */
   static layoutProperties() {
     return {
@@ -100,7 +100,7 @@ class Defaults {
 
   /**
    * Returns a default palette object
-   * @return {array} An array of objects with primary and secondary colors.
+   * @returns {Array} An array of objects with primary and secondary colors.
    */
   static defaultPalette() {
     return [{
@@ -127,7 +127,7 @@ class Defaults {
 
   /**
    * Creates defs elements for gradients, and in the future patterns.
-   * @return {Array} - An array of def elements
+   * @returns {Array} - An array of def elements
    */
   createDefs() {
     const defs = [];
@@ -161,7 +161,7 @@ class Defaults {
    *  }
    * @param {number} index - The plotindex
    * @param {string} type - primary, secondary, ...
-   * @return {object} - contains the url and the def Element
+   * @returns {object} - contains the url and the def Element
    */
   generateGradient(color, index, type) {
     const orientation = (color['orientation']) || 'vertical';
@@ -190,7 +190,7 @@ class Defaults {
 
   /**
    * Apply the palette to the default object.
-   * @param {Object} specs - An object containing a key of an object path,
+   * @param {object} specs - An object containing a key of an object path,
    *  and directions of what colors should go where.
    *  e.g. { 'plot.node.label': { fill: 'primary'} } means that the object in the properties
    *  plot -> node -> label, will have a fill color from the 'primary' color in the palette.
@@ -248,7 +248,7 @@ class Defaults {
      * Takes a stringified path and an object, traverses through the object.
      * @param {*} pathStr - a stringified object path, delimited by '.'
      * @param {*} target - the object to traverse through
-     * @return {object} Returns the requested object, or null if not found
+     * @returns {object} Returns the requested object, or null if not found
      */
     function getObject(pathStr, target) {
       const paths = pathStr.split('.');

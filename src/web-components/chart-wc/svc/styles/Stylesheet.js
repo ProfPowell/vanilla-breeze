@@ -37,10 +37,10 @@ class Stylesheet {
   /**
    * Create CSS rules from the config object's style and instances.
    * Generates per-series palette rules and breakpoint hide rules.
-   * @param {Object} styles - The merged config object
+   * @param {object} styles - The merged config object
    * @param {number} plotLength - Number of series/instances
    * @param {string} scopeId - Chart instance scope ID
-   * @return {string} CSS rules string
+   * @returns {string} CSS rules string
    */
   convertconfig(styles, plotLength, scopeId) {
     const breakpoints = {

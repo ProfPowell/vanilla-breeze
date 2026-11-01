@@ -3,9 +3,9 @@
  * Fires the chart's onClick hook when a data point is clicked.
  * Self-contained named function — compatible with SVC._createScripts().
  *
- * @param {Object} state - internal interaction state
+ * @param {object} state - internal interaction state
  * @param {Element|Document} instance - the chart container
- * @param {Object} chart - the chart instance
+ * @param {object} chart - the chart instance
  */
 export function dataClickInteraction(
   state, instance, chart,

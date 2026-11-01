@@ -16,7 +16,7 @@ import {escapeHtml} from '../utils/Utils.js';
 class ScatterChart extends Cartesian {
   /**
    * Returns the stringified name of the chart type
-   * @return {string} The type of the chart
+   * @returns {string} The type of the chart
    */
   static get type() {
     return 'scatter';
@@ -24,7 +24,7 @@ class ScatterChart extends Cartesian {
 
   /**
    * Returns the default object configuration for the chart type
-   * @return {object} Returns the defaults objct
+   * @returns {object} Returns the defaults objct
    */
   static get defaults() {
     return {
@@ -37,7 +37,7 @@ class ScatterChart extends Cartesian {
   /**
    * Return the specifications object for the chart. Used to apply styling
    * such as fills and strokes to different parts of the SVG
-   * @return {object}
+   * @returns {object}
    */
   static specs() {
     return {
@@ -53,7 +53,7 @@ class ScatterChart extends Cartesian {
    * @param {*} state
    * @param {*} instance
    * @param {*} chart
-   * @return {Function} the tooltip location function
+   * @returns {Function} the tooltip location function
    */
   tooltipLocation(state, instance, chart) {
     return function tooltipLocation(e) {
@@ -186,7 +186,7 @@ class ScatterChart extends Cartesian {
 /**
  * Creates a fuzzy region map for mouse over events to detect nearby nodes.
  * @param {Element} instance - the chart container
- * @return {Array} A 3D array of nodes in proximity
+ * @returns {Array} A 3D array of nodes in proximity
  */
 function createNodeMap(instance) {
   /** @type {any[][][]} */

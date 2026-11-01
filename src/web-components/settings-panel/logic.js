@@ -73,6 +73,8 @@ class SettingsPanel extends VBElement {
    * Read the current settings as a plain data object combining all the
    * VBStore-backed state the panel manages. Reactive consumers can use
    * this to mirror the user's settings into framework state.
+   *
+   * @returns {{ a11yThemes: any[], extensions: Record<string, any>, sticky: boolean }} Settings snapshot.
    */
   get data() {
     return {

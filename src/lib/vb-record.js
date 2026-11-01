@@ -50,6 +50,7 @@ function shallowEqual(a, b) {
 /**
  * @template {new (...args: any[]) => HTMLElement} TBase
  * @param {TBase} Base
+ * @returns {new (...args: any[]) => any} Mixin class: Base extended with schema-backed `data` record behavior.
  */
 export function VBRecord(Base) {
   const BaseAny = /** @type {any} */ (Base);

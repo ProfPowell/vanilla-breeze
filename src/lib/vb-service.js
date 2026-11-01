@@ -130,6 +130,7 @@ export class VBService {
    * GET request. Appends params as a query string.
    * @param {string} path
    * @param {Record<string, string | number | boolean>} [params]
+   * @returns {Promise<any>} Parsed response body (JSON, text, or null).
    */
   async get(path, params) {
     return this.#send('GET', path, { params });
@@ -139,6 +140,7 @@ export class VBService {
    * POST JSON body.
    * @param {string} path
    * @param {unknown} [body]
+   * @returns {Promise<any>} Parsed response body (JSON, text, or null).
    */
   async post(path, body) {
     return this.#send('POST', path, { body });
@@ -148,6 +150,7 @@ export class VBService {
    * PATCH JSON body.
    * @param {string} path
    * @param {unknown} [body]
+   * @returns {Promise<any>} Parsed response body (JSON, text, or null).
    */
   async patch(path, body) {
     return this.#send('PATCH', path, { body });
@@ -156,6 +159,7 @@ export class VBService {
   /**
    * DELETE request.
    * @param {string} path
+   * @returns {Promise<any>} Parsed response body (JSON, text, or null).
    */
   async delete(path) {
     return this.#send('DELETE', path, {});

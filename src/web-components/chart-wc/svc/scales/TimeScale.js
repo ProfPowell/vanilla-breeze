@@ -20,7 +20,7 @@ class TimeScale {
 
   /**
    * Renders ticks, guides, and labels for a time scale.
-   * @return {Object} {ticks: VElement[], labels: VElement[], guides: VElement[]}
+   * @returns {object} {ticks: VElement[], labels: VElement[], guides: VElement[]}
    */
   render() {
     const {type, config, stats} = this;
@@ -63,7 +63,7 @@ class TimeScale {
 /**
  * Convert a value to a Unix timestamp in milliseconds.
  * @param {number|string|Date} value
- * @return {number}
+ * @returns {number}
  */
 function toTimestamp(value) {
   if (typeof value === 'number') return value;
@@ -74,7 +74,7 @@ function toTimestamp(value) {
 /**
  * Pick an appropriate date formatter based on the time range.
  * @param {number} rangeMs - total range in milliseconds
- * @return {Function} formatter(date) => string
+ * @returns {Function} formatter(date) => string
  */
 function pickFormatter(rangeMs) {
   const DAY = 86400000;

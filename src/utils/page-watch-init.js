@@ -83,7 +83,10 @@ function pageKey() {
   return location.pathname || '/';
 }
 
-/** Hash the current content root's text. */
+/**
+ * Hash the current content root's text.
+ * @returns {string} Content hash, or '' when no content root exists.
+ */
 function currentHash() {
   const root = findContentRoot();
   return root ? fnv1a(root.textContent || '') : '';

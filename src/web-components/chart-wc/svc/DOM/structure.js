@@ -24,9 +24,9 @@ import { VElement } from './VElement.js';
   HTML mode (toHTML/mount):
   Same tree from chart-figure down, no svg/foreignObject wrapper.
 
-  @param {Object} options
+  @param {object} options
   @param {boolean} [options.interactive=false]
-  @return {Object} Structure object with named references to key elements
+  @returns {object} Structure object with named references to key elements
 */
 function createSVGContainer({interactive = false} = {}) {
   // SVG root for toString()/toFile() path

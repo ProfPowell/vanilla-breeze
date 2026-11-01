@@ -76,7 +76,11 @@ class SiteSearch extends VBElement {
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
 
-  /** Read the current search query string. */
+  /**
+   * Read the current search query string.
+   *
+   * @returns {string} The query string.
+   */
   get value() { return this.#input?.value ?? ''; }
 
   /**
@@ -99,6 +103,8 @@ class SiteSearch extends VBElement {
   /**
    * Read the current results as a plain array. Reflects whatever
    * pagefind / the underlying search produced.
+   *
+   * @returns {any[]} A copy of the result records.
    */
   get results() { return [...this.#results]; }
 

@@ -125,7 +125,7 @@ export function getVBChartConfig(element) {
  * Create an SVC plugin that reads VB theme tokens at config resolution time.
  * Use this with SVC's plugin system: config.plugins = [createThemePlugin(element)]
  * @param {Element} element - The element to read computed styles from
- * @returns {Object} SVC plugin object
+ * @returns {object} SVC plugin object
  */
 export function createThemePlugin(element) {
   return {

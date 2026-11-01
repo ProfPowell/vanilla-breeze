@@ -91,6 +91,8 @@ class WeekView extends VBElement {
   /**
    * Read the week's events as a plain data array. Each entry:
    * `{ date, time, text, category?, duration? }`.
+   *
+   * @returns {Array<{ date?: string, time?: string, text: string, category?: string, duration?: string }>} Event records.
    */
   get events() {
     return [...this.querySelectorAll('calendar-event')].map((/** @type {Element} */ rawEl) => {

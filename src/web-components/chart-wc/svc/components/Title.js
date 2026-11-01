@@ -20,6 +20,7 @@ class Title {
   }
   /**
    * Returns the default config for the Title
+   * @returns {object} Title config defaults
    */
   static get defaults() {
     return {
@@ -56,7 +57,7 @@ class Title {
 
   /**
    * Render the title object
-   * @return {object} a virtual dom object of the title
+   * @returns {object} a virtual dom object of the title
    */
   render() {
     const titleConfig = this.config.title;
@@ -88,7 +89,7 @@ class Title {
 /**
  * Detect if a string contains markdown patterns (**bold**, *italic*, `code`, \n).
  * @param {string} str
- * @return {boolean}
+ * @returns {boolean}
  */
 function hasMarkdown(str) {
   return /\*\*.+?\*\*|\*.+?\*|`.+?`|\n/.test(String(str));
@@ -98,7 +99,7 @@ function hasMarkdown(str) {
  * Escape subtitle text, using markdown if the title uses it.
  * @param {string} text
  * @param {boolean} useMarkdown
- * @return {string}
+ * @returns {string}
  */
 function escapeSubtitle(text, useMarkdown) {
   return useMarkdown ? miniMarkdown(text) : escapeHtml(text);

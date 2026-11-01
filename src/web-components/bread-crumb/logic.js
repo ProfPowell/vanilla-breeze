@@ -17,7 +17,7 @@
  * @attr {boolean} data-collapsed      - Hide middle items.
  * @attr {string}  data-jsonld         - 'on' (default) | 'off'.
  *
- * @prop {Object<string,string>} labels
+ * @property {Record<string, string>} labels
  *   Map of pathname-segment → display label. Keys can be a full
  *   pathname ('/docs/elements/') or a single segment ('elements').
  *

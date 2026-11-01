@@ -49,6 +49,8 @@ class ShortCuts extends VBElement {
    *
    * Reading returns the override or `null` if the registry default is
    * in effect.
+   *
+   * @returns {Record<string, Array<{ label: string, shortcut: string }>>|null} The override map, or null.
    */
   get shortcuts() { return this.__shortcuts || null; }
 

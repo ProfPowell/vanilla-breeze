@@ -84,7 +84,11 @@ class PageTools extends VBElement {
     this.#popover = null;
   }
 
-  /** Tools = direct children that are not internal infrastructure */
+  /**
+   * Tools = direct children that are not internal infrastructure
+   *
+   * @returns {Element[]} The tool child elements.
+   */
   get tools() {
     return Array.from(this.children).filter(
       el => !el.hasAttribute('data-page-tools-internal')

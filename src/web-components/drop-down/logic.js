@@ -141,6 +141,8 @@ class DropDown extends VBElement {
    * The current menu items as a plain data array.
    *   { label, value?, href?, disabled? }   — action item
    *   { separator: true }                    — divider
+   *
+   * @returns {any[]} Menu item records.
    */
   get items() {
     if (!this.#menu) return [];

@@ -4,7 +4,7 @@ import {BUBBLE_SIZE_DIVISOR, BUBBLE_DEFAULT_OPACITY} from '../constants.js';
 
 /**
  * Bubble Chart
- * @extends ScatterChart
+ * @augments ScatterChart
  * @example
  * const chart = new BubbleChart({
  *   data: [
@@ -17,7 +17,7 @@ import {BUBBLE_SIZE_DIVISOR, BUBBLE_DEFAULT_OPACITY} from '../constants.js';
 class BubbleChart extends ScatterChart {
   /**
    * Returns the stringified name of the chart type
-   * @return {string} The type of the chart
+   * @returns {string} The type of the chart
    */
   static get type() {
     return 'bubble';
@@ -25,7 +25,7 @@ class BubbleChart extends ScatterChart {
 
   /**
    * Returns the default object configuration for the chart type
-   * @return {object} Returns the defaults objct
+   * @returns {object} Returns the defaults objct
    */
   static get defaults() {
     return {
@@ -39,7 +39,7 @@ class BubbleChart extends ScatterChart {
   /**
    * Return the specifications object for the chart. Used to apply styling
    * such as fills and strokes to different parts of the SVG
-   * @return {object}
+   * @returns {object}
    */
   static specs() {
     return {

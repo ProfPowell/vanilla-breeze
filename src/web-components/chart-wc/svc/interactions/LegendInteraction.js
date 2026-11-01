@@ -5,9 +5,9 @@
  * Handles both Cartesian charts (toggles plot path + nodes) and Pie charts (nodes only)
  * by checking whether the plot path element exists before toggling.
  *
- * @param {Object} state - internal interaction state
+ * @param {object} state - internal interaction state
  * @param {Element|Document} instance - the chart container or document
- * @param {Object} chart - the chart instance (hooks)
+ * @param {object} chart - the chart instance (hooks)
  */
 export function legendInteraction(state, instance, chart) {
   state.toggles = Array.from(instance.querySelectorAll('chart-legend input'));

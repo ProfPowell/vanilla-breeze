@@ -7,6 +7,10 @@ class Tooltip {
   /**
    * Creates the tooltip object
    * @param {object} obj
+   * @param {object} obj.stats - the computed constraints of the chart (unused for pie)
+   * @param {object} obj.data - the user supplied data
+   * @param {object} obj.config - the user config object
+   * @param {string} [obj.type] - the chart type (e.g. 'pie')
    */
   constructor({stats, data, config, type}) {
     this.data = data;
@@ -21,7 +25,7 @@ class Tooltip {
 
   /**
    * Returns the defaults of the Tooltip class
-   * @return {object} Tooltip config
+   * @returns {object} Tooltip config
    */
   static get defaults() {
     return {
@@ -59,7 +63,7 @@ class Tooltip {
 
   /**
    * Renders the tooltip VElement
-   * @return {object}
+   * @returns {object}
    */
   render() {
     return {
@@ -70,7 +74,7 @@ class Tooltip {
 
   /**
    * Creates a tooltip element
-   * @return {object} VElement
+   * @returns {object} VElement
    */
   createDOM() {
     // All chart types get the standard tooltip (including pie and ring)
@@ -115,6 +119,7 @@ class Tooltip {
   /**
    * Creates an HTML tooltip overlay (no foreignObject).
    * Returns { crosshair: VElement, tooltipBox: VElement }.
+   * @returns {{crosshair: VElement, tooltipBox: VElement}} The crosshair line and tooltip box
    */
   _createHTMLTooltip() {
     // Crosshair stays as SVG line inside the plotarea SVG
