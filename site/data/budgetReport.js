@@ -12,7 +12,9 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPORT_PATH = join(__dirname, '..', '..', '..', 'dist', 'cdn', 'budget-report.json');
+// site/data → repo root (was one level too many, so the performance page
+// always showed 'No data available').
+const REPORT_PATH = join(__dirname, '..', '..', 'dist', 'cdn', 'budget-report.json');
 
 export default function () {
   if (!existsSync(REPORT_PATH)) {
