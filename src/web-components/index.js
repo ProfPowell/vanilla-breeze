@@ -116,16 +116,11 @@ import './recently-visited/logic.js';
 import './popularity-index/logic.js';
 import './page-tour/logic.js';
 // Annotation stack — extras.js ships these, so the full barrel must too or
-// they are inert in dev demos loading /src/main.js.
-//
-// markdown-viewer and markdown-editor are deliberately NOT here: markdown-
-// viewer imports the bare specifier 'marked', which esbuild resolves for the
-// bundles but a browser cannot. This barrel is also loaded raw over HTTP by
-// dev demos (/src/main.js), where an unresolvable specifier kills the whole
-// module graph — every component on the page stops registering, not just the
-// viewer. They rejoin this list once 'marked' is vendored or an import map
-// ships (vanilla-breeze-kdkb). Until then they reach pages through the
-// bundles and the autoloader only.
+// they are inert in dev demos loading /src/main.js. markdown-viewer imports
+// the vendored marked (src/vendor/marked) by relative path, so this barrel
+// stays loadable raw over HTTP (kdkb).
+import './markdown-viewer/logic.js';
+import './markdown-editor/logic.js';
 import './highlight-wc/logic.js';
 import './selection-menu/logic.js';
 import './note-wc/logic.js';

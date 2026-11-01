@@ -22,7 +22,7 @@
  */
 
 import { registerInit } from './_init-registry.js';
-import { marked } from 'marked';
+import { marked } from '../vendor/marked/marked.esm.js';
 import { sanitizeHTML } from '../lib/sanitize-html.js';
 
 const SELECTOR = '[data-markdown-editable]';

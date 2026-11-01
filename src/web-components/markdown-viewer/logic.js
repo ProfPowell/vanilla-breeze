@@ -5,7 +5,7 @@
  * (in priority order): `src` attribute, `<script type="text/markdown">`,
  * `<template data-md>`, or `<pre>` (recommended for progressive enhancement).
  *
- * The default parser is `marked` (loaded lazily via dynamic import). Supply a
+ * The default parser is the vendored `marked` (src/vendor/marked). Supply a
  * custom parser via the `.parser` property to bypass the default entirely.
  *
  * Trust boundary: this component injects parsed HTML via innerHTML. It is
@@ -41,7 +41,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
-import { marked as markedLib } from 'marked';
+import { marked as markedLib } from '../../vendor/marked/marked.esm.js';
 
 class MarkdownViewer extends VBElement {
   /** @type {Function|null} Custom parser override (md string → html string) */

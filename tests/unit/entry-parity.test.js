@@ -233,29 +233,13 @@ describe('guard table health', () => {
   });
 });
 
-/**
- * Modules that legitimately ship in a CDN bundle without reaching src/main.js.
- *
- * src/web-components/index.js is loaded raw over HTTP by dev demos, so every
- * specifier in its graph has to be browser-resolvable. markdown-viewer imports
- * the bare specifier 'marked' — fine for esbuild, fatal in the browser, where
- * one unresolvable static import stops the whole graph and every component on
- * the page fails to register. markdown-editor composes a <markdown-viewer> at
- * runtime, so it comes along. Tracked in vanilla-breeze-kdkb; delete this list
- * when 'marked' is vendored or an import map ships.
- */
-const FULL_BARREL_EXEMPT = new Set([
-  'src/web-components/markdown-viewer/logic.js',
-  'src/web-components/markdown-editor/logic.js',
-]);
-
 describe('core ⊆ full JS graph parity', () => {
   const full = graph('src/main.js', ['src/web-components/index.js']);
 
   it('no module reaches src/main.js through a bare specifier', () => {
-    // The exemption above exists because of exactly this hazard, so assert the
-    // hazard itself: anything statically reachable from the full barrel must be
-    // resolvable by a browser with no import map.
+    // src/web-components/index.js is loaded raw over HTTP by dev demos, so
+    // anything statically reachable from the full barrel must be resolvable by
+    // a browser with no import map. (marked is vendored for this reason, kdkb.)
     const bare = [...full].filter(
       (spec) => !spec.startsWith('src/') && !spec.startsWith('node:'),
     );
@@ -277,8 +261,7 @@ describe('core ⊆ full JS graph parity', () => {
       const orphans = [...graph(rel, expand)].filter(
         (spec) =>
           !full.has(spec) &&
-          !spec.startsWith('src/lib/lazy-guards') &&
-          !FULL_BARREL_EXEMPT.has(spec),
+          !spec.startsWith('src/lib/lazy-guards'),
       );
       assert.deepEqual(
         orphans,
