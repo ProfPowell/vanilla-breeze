@@ -14,7 +14,7 @@ crumbLabel: Data Attributes
 <section>
   <h2>Overview</h2>
   <p>The <code>data-sticky</code> attribute on <code>&lt;html&gt;</code> turns on VB's sticky coordination system. Behind it, <code>StickyManager</code> measures the live sticky-header height and writes it to <code>--sticky-offset</code> on <code>:root</code>. Every sticky sidebar, TOC, scroll-padding setting, and "scroll into view" behavior reads that variable, so they all line up correctly without you hardcoding a header offset anywhere.</p>
-  <p>On other elements, <code>data-sticky</code> marks the element as a sticky participant. The first <code>&lt;header&gt;</code> in the document picks it up automatically when the system is active; other elements opt in explicitly.</p>
+  <p>On <code>&lt;header&gt;</code> and <code>&lt;footer&gt;</code>, <code>data-sticky</code> marks the element as sticky. The first <code>&lt;header&gt;</code> in the document picks it up automatically when the system is active. Sidebars opt in with <a href="/docs/attributes/data-page-layout/"><code>data-layout-sticky</code></a> instead. Nothing sticks unless <code>&lt;html&gt;</code> has <code>data-sticky</code>: sticky is an enhancement, not a default.</p>
 </section>
 
 <section>
@@ -28,12 +28,19 @@ crumbLabel: Data Attributes
   </body>
 </html></code-block>
 
-  <code-block language="html" show-lines label="Mark a custom element as sticky" data-escape><body>
-  <header data-sticky>...</header>
-  <aside data-sticky class="page-toc">
-    <!-- Constrained by max-block-size: calc(100dvh - var(--sticky-offset) - var(--sticky-gap)) -->
-  </aside>
-</body></code-block>
+  <code-block language="html" show-lines label="A sticky header with a sticky sidebar" data-escape><html lang="en" data-sticky>
+  <body>
+    <header data-sticky>...</header>
+    <layout-sidebar>
+      <nav data-layout-sticky>
+        <!-- Sticks below the header; scrolls on its own when taller than the viewport -->
+      </nav>
+      <article>...</article>
+    </layout-sidebar>
+  </body>
+</html></code-block>
+
+  <p>Toggle the whole system from script with <code>document.documentElement.toggleAttribute('data-sticky')</code>. The <a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> has a Sticky Navigation toggle that does this and remembers the choice.</p>
 </section>
 
 <section>
@@ -50,12 +57,12 @@ crumbLabel: Data Attributes
         <td>Header opts in (or is auto-applied). Becomes <code>position: sticky</code> at <code>top: 0</code>; its height is what <code>StickyManager</code> measures.</td>
       </tr>
       <tr>
-        <td><code>&lt;aside data-sticky&gt;</code> / <code>&lt;nav data-sticky&gt;</code></td>
-        <td>Marked as a sticky region. CSS in <code>src/utils/sticky.css</code> applies <code>position: sticky</code> with <code>top: var(--sticky-offset)</code> and a height constraint so the region can scroll independently if its content exceeds the viewport.</td>
+        <td><code>&lt;footer data-sticky&gt;</code></td>
+        <td>Sticks to the bottom of the viewport.</td>
       </tr>
       <tr>
-        <td><code>&lt;footer data-sticky&gt;</code></td>
-        <td>Sticky-to-bottom variant; styles in <code>src/native-elements/footer/styles.css</code>.</td>
+        <td><code>&lt;nav data-layout-sticky&gt;</code> / <code>&lt;aside data-layout-sticky&gt;</code></td>
+        <td>Not <code>data-sticky</code>: sidebars use <code>data-layout-sticky</code>, as direct children of a <code>data-page-layout</code> body or a <code>sidebar</code> layout. They stick at <code>var(--sticky-offset) + var(--sticky-gap)</code>, are capped at the remaining viewport height, and scroll on their own when their content is taller.</td>
       </tr>
     </tbody>
   </table>
@@ -66,8 +73,10 @@ crumbLabel: Data Attributes
   <table class="prose">
     <thead><tr><th>Variable</th><th>Set by</th><th>Use for</th></tr></thead>
     <tbody>
-      <tr><td><code>--sticky-offset</code></td><td>StickyManager (px)</td><td>Top offset for any other sticky element so it stays below the header.</td></tr>
-      <tr><td><code>--sticky-gap</code></td>   <td>theme / authors</td>   <td>Gap to leave above the bottom of the viewport when constraining sticky region height.</td></tr>
+      <tr><td><code>--sticky-offset</code></td><td>StickyManager (px; <code>0px</code> until measured)</td><td>Top offset for any other sticky element so it stays below the header.</td></tr>
+      <tr><td><code>--sticky-gap</code></td>   <td>theme / authors (default <code>var(--size-2xs)</code>)</td><td>Breathing room between the header and sticky sidebars or TOC.</td></tr>
+      <tr><td><code>--z-sticky-header</code></td><td>tokens (default <code>200</code>)</td><td>Header stacking, above other sticky elements so dropdowns are not clipped by the TOC.</td></tr>
+      <tr><td><code>--z-sticky</code></td><td>tokens (default <code>100</code>)</td><td>Footer and other sticky regions.</td></tr>
     </tbody>
   </table>
 
@@ -93,8 +102,9 @@ crumbLabel: Data Attributes
   <h2>Composition</h2>
   <ul>
     <li><a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a> &mdash; the TOC sidebar reads <code>--sticky-offset</code> for its own positioning.</li>
-    <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; the <code>app-shell</code> and <code>dashboard</code> templates assume a sticky header.</li>
-    <li><code>scroll-padding-block-start</code> on <code>:root</code> &mdash; set to <code>var(--sticky-offset)</code> so anchor-link jumps land below the sticky header.</li>
+    <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; its <code>nav</code> / <code>aside</code> regions take <code>data-layout-sticky</code>.</li>
+    <li><code>scroll-padding-block-start</code> on <code>:root</code> &mdash; set to <code>var(--sticky-offset) + var(--sticky-gap)</code> while the system is on, so anchor-link jumps land below the sticky header.</li>
+    <li>Below 48rem the sticky header is switched off (back to <code>position: static</code>) to save screen space.</li>
     <li>Print stylesheet &mdash; <code>src/utils/print.css</code> disables sticky behavior automatically.</li>
   </ul>
 </section>
@@ -104,5 +114,6 @@ crumbLabel: Data Attributes
   <ul>
     <li>Pages with no sticky chrome &mdash; the system measures and sets variables every resize; that's cheap but pointless if nothing's sticky.</li>
     <li>Inside scrollable subregions &mdash; <code>data-sticky</code> on a child of an overflowing container won't measure correctly; coordinate with the parent's scroll state instead.</li>
+    <li>Tables &mdash; <code>&lt;table data-sticky="header|column|both"&gt;</code> is a separate attribute for sticky rows and columns; see <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a>.</li>
   </ul>
 </section>

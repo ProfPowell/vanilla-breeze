@@ -44,8 +44,10 @@ crumbLabel: Data Attributes
       <tr><td><code>sidebar-left</code></td>   <td>Header / nav-on-left + main / footer</td>          <td>Docs sites, blogs.</td></tr>
       <tr><td><code>sidebar-right</code></td>  <td>Header / main + aside-on-right / footer</td>       <td>Articles with TOC.</td></tr>
       <tr><td><code>holy-grail</code></td>     <td>Header / nav-left + main + aside-right / footer</td><td>Classic three-column.</td></tr>
-      <tr><td><code>app-shell</code></td>      <td>Sticky header + sidebar + scrolling main</td>      <td>Application chrome (gap: 0).</td></tr>
-      <tr><td><code>dashboard</code></td>      <td>Sticky header + nav + main grid</td>               <td>Admin / data-heavy UIs (gap: 0).</td></tr>
+      <tr><td><code>app-shell</code></td>      <td>Vertical nav bar beside header + main</td>          <td>Application chrome (gap: 0). On mobile the nav moves to the bottom.</td></tr>
+      <tr><td><code>dashboard</code></td>      <td>Header across the top, nav + main below</td>       <td>Admin / data-heavy UIs (gap: 0). Capped at 87.5rem wide on large screens.</td></tr>
+      <tr><td><code>article</code></td>        <td>Header / main / footer in one centered reading column</td><td>Long-form pages.</td></tr>
+      <tr><td><code>landing</code></td>        <td>Header / nav / hero / main / feature / cta / footer</td><td>Marketing pages; see <a href="#named-areas">named areas</a>.</td></tr>
     </tbody>
   </table>
 </section>
@@ -65,6 +67,45 @@ crumbLabel: Data Attributes
       <tr><td><code>&lt;nav class="bottom"&gt;</code></td><td><code>auto</code> (escape hatch — flows naturally)</td></tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>Missing regions and small screens</h2>
+  <ul>
+    <li><code>sidebar-left</code> without a <code>&lt;nav&gt;</code>, or <code>sidebar-right</code> without an <code>&lt;aside&gt;</code>, becomes one column.</li>
+    <li><code>holy-grail</code> without one side becomes two columns, and without both becomes one.</li>
+    <li>Below 48rem, <code>sidebar-left</code>, <code>sidebar-right</code>, <code>holy-grail</code> and <code>dashboard</code> collapse to the <code>stack</code> shape; <code>app-shell</code> moves its nav to the bottom (with safe-area padding). <code>data-layout-nowrap</code> on the body opts out.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Modifiers and utilities</h2>
+  <table class="prose">
+    <thead><tr><th>Attribute</th><th>On</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-layout-gap</code></td><td>body</td><td>Gap between regions, <code>none</code> &hellip; <code>xl</code> (default <code>m</code>; <code>app-shell</code> and <code>dashboard</code> use 0).</td></tr>
+      <tr><td><code>data-layout-nowrap</code></td><td>body</td><td>Keep the multi-column shape on small screens.</td></tr>
+      <tr><td><code>data-sidebar="collapsed"</code></td><td>body</td><td>Narrow the sidebar to <code>--sidebar-collapsed</code> (default 64px).</td></tr>
+      <tr><td><code>data-sidebar="hidden"</code></td><td>body</td><td>Hide the <code>&lt;nav&gt;</code> region.</td></tr>
+      <tr><td><code>data-layout-sticky</code></td><td>header, nav, aside</td><td>Stick the region while scrolling. Requires <code>data-sticky</code> on <code>&lt;html&gt;</code>.</td></tr>
+      <tr><td><code>data-layout-bleed</code></td><td>any region</td><td>Span every grid column.</td></tr>
+      <tr><td><code>data-layout-area</code></td><td>any child</td><td>Place a child in a named area (see below).</td></tr>
+      <tr><td><code>data-layout-order</code></td><td>any child</td><td><code>-1</code>, <code>1</code> or <code>99</code> to reorder.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="named-areas">
+  <h2>Named areas</h2>
+  <p><code>data-layout-area</code> places a child in a named area: <code>hero</code>, <code>banner</code>, <code>sidebar</code>, <code>content</code>, <code>feature</code>, <code>cta</code> or <code>toc</code>. The <code>landing</code> template has rows for <code>hero</code>, <code>feature</code> and <code>cta</code>. See <a href="/docs/grid-identity/">Grid Identity</a> and the <a href="/docs/examples/demos/page-layout-landing.html">landing page demo</a>.</p>
+  <code-block language="html" show-lines data-escape><body data-page-layout="landing">
+  <header>...</header>
+  <section data-layout-area="hero">...</section>
+  <main>...</main>
+  <section data-layout-area="feature">...</section>
+  <section data-layout-area="cta">...</section>
+  <footer>...</footer>
+</body></code-block>
 </section>
 
 <section>
