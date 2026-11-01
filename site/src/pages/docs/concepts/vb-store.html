@@ -1,0 +1,101 @@
+---
+layout: guide
+title: "VBStore"
+description: "VB's client-side storage API: namespaced, async, timestamped values with expiry. Available as window.VB.store and as a named export."
+guideGroup: Concepts
+currentPath: /docs/concepts/vb-store/
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">VBStore</span></li>
+  </ol>
+</nav>
+</template>
+
+<p class="lead"><code>VBStore</code> is the storage layer VB's own components use for preferences and dismissals. Values are namespaced, wrapped with a timestamp so they can expire, and read and written through an async API so the backend can change without touching callers.</p>
+
+<section>
+  <h2>Getting it</h2>
+  <code-block language="js" label="Global or import" data-escape>// Any page that loads Vanilla Breeze
+await VB.store.set('my-app', 'tour-seen', true);
+
+// Or as a module
+import { VBStore } from 'vanilla-breeze/js'; // also exported by core-js
+const seen = await VBStore.get('my-app', 'tour-seen');</code-block>
+  <p>Every bundled copy shares one store, so values written through <code>VB.store</code> are the ones components read.</p>
+</section>
+
+<section>
+  <h2>API</h2>
+  <table class="prose">
+    <thead><tr><th>Method</th><th>Returns</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>set(namespace, key, value)</code></td><td><code>Promise&lt;void&gt;</code></td><td>Stores any JSON-serializable value with the current time.</td></tr>
+      <tr><td><code>get(namespace, key, { maxAge }?)</code></td><td><code>Promise&lt;value | null&gt;</code></td><td><code>null</code> if missing, unreadable, or older than <code>maxAge</code> milliseconds.</td></tr>
+      <tr><td><code>remove(namespace, key)</code></td><td><code>Promise&lt;void&gt;</code></td><td>Deletes one entry.</td></tr>
+      <tr><td><code>list(namespace)</code></td><td><code>Promise&lt;{ key, data, timestamp }[]&gt;</code></td><td>Every readable entry in the namespace.</td></tr>
+      <tr><td><code>setMany(namespace, [[key, value], …])</code></td><td><code>Promise&lt;void&gt;</code></td><td>Several <code>set</code> calls in one.</td></tr>
+      <tr><td><code>clear(namespace)</code></td><td><code>Promise&lt;void&gt;</code></td><td>Removes one namespace.</td></tr>
+      <tr><td><code>clearAll()</code></td><td><code>Promise&lt;void&gt;</code></td><td>Removes every <code>vb:*</code> key and leaves the rest of storage alone.</td></tr>
+      <tr><td><code>configure({ backend })</code></td><td>&mdash;</td><td>Swap the backend (see below). <code>null</code> restores the default.</td></tr>
+    </tbody>
+  </table>
+  <p>Namespace and key must be non-empty strings; anything else throws a <code>TypeError</code>.</p>
+</section>
+
+<section>
+  <h2>Storage format</h2>
+  <p>The default backend is <code>localStorage</code>. An entry is stored under <code>vb:{namespace}:{key}</code> as JSON:</p>
+  <code-block language="json" label="localStorage['vb:consent:banner']" data-escape>{ "data": { "analytics": true }, "timestamp": 1761955200000 }</code-block>
+  <p>Writes are not caught: if storage is full or blocked, <code>set</code> rejects with the browser's error. If <code>localStorage</code> doesn't exist at all, the first call throws.</p>
+</section>
+
+<section>
+  <h2>Namespaces VB uses</h2>
+  <table class="prose">
+    <thead><tr><th>Namespace</th><th>Written by</th></tr></thead>
+    <tbody>
+      <tr><td><code>theme</code></td><td>Theme manager (theme, mode, accent and other appearance choices)</td></tr>
+      <tr><td><code>settings</code></td><td><a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a>, <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a></td></tr>
+      <tr><td><code>environment</code></td><td>Environment manager</td></tr>
+      <tr><td><code>consent</code></td><td><a href="/docs/elements/web-components/consent-banner/"><code>&lt;consent-banner&gt;</code></a></td></tr>
+      <tr><td><code>notifications</code></td><td><a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> (dismissed banners)</td></tr>
+      <tr><td><code>watches</code></td><td><a href="/docs/attributes/data-watch-page/"><code>data-watch-page</code></a> and <code>&lt;notification-wc&gt;</code></td></tr>
+      <tr><td><code>autosave</code></td><td><a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a> form drafts</td></tr>
+      <tr><td><code>highlights</code></td><td><a href="/docs/concepts/highlights/">Highlights &amp; annotations</a></td></tr>
+      <tr><td><code>layout</code></td><td><a href="/docs/elements/web-components/splitter/"><code>&lt;split-surface&gt;</code></a> pane sizes</td></tr>
+    </tbody>
+  </table>
+  <p>Use your own namespace for app data so <code>clear()</code> on it can't touch VB's.</p>
+</section>
+
+<section>
+  <h2>Recipes</h2>
+  <code-block language="js" label="A 'reset my preferences' button" data-escape>document.querySelector('#reset').addEventListener('click', async () => {
+  await VB.store.clearAll(); // every vb:* key, nothing else
+  location.reload();
+});</code-block>
+  <code-block language="js" label="Remember something for a week" data-escape>const WEEK = 7 * 24 * 60 * 60 * 1000;
+if (!(await VB.store.get('my-app', 'promo-dismissed', { maxAge: WEEK }))) {
+  showPromo();
+}</code-block>
+  <code-block language="js" label="A custom backend (tests, sessionStorage, IndexedDB)" data-escape>VB.store.configure({
+  backend: {
+    async getRaw(key) { return sessionStorage.getItem(key); },
+    async setRaw(key, value) { sessionStorage.setItem(key, value); },
+    async removeRaw(key) { sessionStorage.removeItem(key); },
+    async keys(prefix) { return Object.keys(sessionStorage).filter((k) => k.startsWith(prefix)); },
+  },
+});</code-block>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/concepts/vb-service/">VBService</a> &mdash; the matching fetch layer for <code>/go/</code> endpoints.</li>
+  </ul>
+</section>

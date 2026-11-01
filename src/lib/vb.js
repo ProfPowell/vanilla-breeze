@@ -646,8 +646,15 @@ const VB = g[VB_SINGLETON_KEY] ?? {
 
 g[VB_SINGLETON_KEY] = VB
 
-// Expose globally for non-module scripts and DevTools console
-if (typeof window !== 'undefined') window.VB = VB
+// Expose globally for non-module scripts and DevTools console. Keep anything
+// another module already hung on window.VB (VB.store, VB.service).
+if (typeof window !== 'undefined') {
+  const prior = /** @type {any} */ (window).VB
+  if (prior && prior !== VB) {
+    for (const key of Object.keys(prior)) if (!(key in VB)) VB[key] = prior[key]
+  }
+  window.VB = VB
+}
 
 // Self-boot the observer once per document. main.js and main-autoload.js call
 // VB.observe() explicitly, but main-core.js never did, so on a core-only page

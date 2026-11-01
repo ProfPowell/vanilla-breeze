@@ -60,12 +60,18 @@ function createLocalStorageBackend() {
   };
 }
 
-/** @type {Backend | null} */
-let backend = null;
+/**
+ * The backend lives on globalThis so every bundled copy of this module
+ * (autoloaded component chunks carry their own) shares one store.
+ */
+const BACKEND_KEY = '__vbStoreBackend';
+/** @type {any} */
+const g = globalThis;
 
+/** @returns {Backend} */
 function getBackend() {
-  if (!backend) backend = createLocalStorageBackend();
-  return backend;
+  if (!g[BACKEND_KEY]) g[BACKEND_KEY] = createLocalStorageBackend();
+  return g[BACKEND_KEY];
 }
 
 function fullKey(namespace, key) {
@@ -108,7 +114,7 @@ export const VBStore = {
    * @param {{ backend?: Backend | null }} [config]
    */
   configure(config = {}) {
-    backend = config.backend ?? null;
+    g[BACKEND_KEY] = config.backend ?? null;
   },
 
   /**
@@ -198,3 +204,10 @@ export const VBStore = {
     }
   },
 };
+
+// Public entry point for sites: window.VB.store (vb.js keeps it when it
+// installs the effects runtime on window.VB).
+if (typeof window !== 'undefined') {
+  const ns = /** @type {any} */ (window).VB ?? (/** @type {any} */ (window).VB = {});
+  ns.store ??= VBStore;
+}

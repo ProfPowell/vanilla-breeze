@@ -6,6 +6,18 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **`VB.store` and `VB.service` are public.** The storage and fetch layers
+  VB's components already used are now on `window.VB` and exported by name
+  from the main, core and autoload bundles (`import { VBStore, VBService,
+  VBServiceError } from 'vanilla-breeze/js'`). `VB.service.configure({
+  baseUrl })` points every `/go/` role (notify, email, newsletter) at your
+  own backend; `VB.store.clearAll()` clears every `vb:*` key. Their state
+  is shared across bundles, so configuration reaches autoloaded components
+  too. Documented at `/docs/concepts/vb-service/` and
+  `/docs/concepts/vb-store/`.
+
 ## [0.4.1] - 2026-10-31
 
 Patch release: the package no longer drags in a runtime dependency, and the

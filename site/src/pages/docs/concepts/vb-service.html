@@ -1,0 +1,96 @@
+---
+layout: guide
+title: "VBService"
+description: "VB's JSON fetch layer: components call endpoints by role, and one configure() call points every role at your backend. Available as window.VB.service and as a named export."
+guideGroup: Concepts
+currentPath: /docs/concepts/vb-service/
+---
+
+<template slot="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/docs/concepts/">Concepts</a></li>
+    <li><span aria-current="page">VBService</span></li>
+  </ol>
+</nav>
+</template>
+
+<p class="lead"><code>VBService</code> is how VB components talk to servers. A component asks for a <em>role</em> (<code>notify</code>, <code>email</code>, <code>newsletter</code>); <code>VBService</code> turns the role into a URL. By default every role lives under <a href="/docs/concepts/go-convention/"><code>/go/</code></a>, and one <code>configure()</code> call moves any of them to your own backend.</p>
+
+<section>
+  <h2>Getting it</h2>
+  <code-block language="js" label="Global or import" data-escape>// Any page that loads Vanilla Breeze
+VB.service.configure({ baseUrl: '/api' });
+
+// Or as a module
+import { VBService, VBServiceError } from 'vanilla-breeze/js'; // also exported by core-js</code-block>
+  <p>Configuration is shared by every bundled copy, including the ones inside autoloaded components, so configure once, early, before components fetch.</p>
+</section>
+
+<section>
+  <h2>Pointing VB at your backend</h2>
+  <code-block language="html" label="Before components load their data" data-escape><script type="module">
+  VB.service.configure({
+    baseUrl: '/api',                                  // notify → /api/notify
+    headers: { 'X-App': 'shop' },                     // sent with every request
+    services: { email: 'https://mail.example.com/v1' } // one role elsewhere
+  });
+</script></code-block>
+
+  <h3>How a role becomes a URL</h3>
+  <ol>
+    <li><code>services[role]</code>, if set (trailing slash removed).</li>
+    <li>Otherwise <code>{baseUrl}/{role}</code>. The default <code>baseUrl</code> is <code>/go</code>.</li>
+  </ol>
+  <p><code>configure()</code> merges: unspecified options keep their values, and <code>headers</code> and <code>services</code> are merged key by key. <code>VB.service.resolve('notify')</code> shows the URL a role resolves to.</p>
+</section>
+
+<section>
+  <h2>Making requests</h2>
+  <code-block language="js" label="Instance methods" data-escape>const notify = new VB.service('notify');
+
+const page2 = await notify.get('/messages', { page: 2 }); // GET  {base}/messages?page=2
+await notify.post('/read', { ids: ['msg-1'] });            // POST JSON
+await notify.patch('/prefs', { digest: 'weekly' });        // PATCH JSON
+await notify.delete('/messages/msg-1');                    // DELETE</code-block>
+  <ul>
+    <li>Paths are relative to the role's URL; a missing leading slash is added. Query parameters with <code>null</code> or <code>undefined</code> values are dropped.</li>
+    <li>Bodies are sent as JSON with <code>content-type: application/json</code>.</li>
+    <li>The resolved value is the parsed JSON when the response is <code>application/json</code>, otherwise the response text.</li>
+  </ul>
+
+  <h3>Errors</h3>
+  <p>Any non-2xx response rejects with a <code>VBServiceError</code> carrying <code>status</code>, <code>body</code> (parsed like a success), <code>role</code> and <code>path</code>. Network failures reject with the browser's own error.</p>
+  <code-block language="js" label="Handling errors" data-escape>try {
+  await new VB.service('newsletter').post('/subscribe', { email });
+} catch (err) {
+  if (err instanceof VB.ServiceError && err.status === 409) {
+    showMessage('Already subscribed');
+  } else {
+    throw err;
+  }
+}</code-block>
+</section>
+
+<section>
+  <h2>Roles VB uses</h2>
+  <table class="prose">
+    <thead><tr><th>Role</th><th>Used by</th><th>Contract</th></tr></thead>
+    <tbody>
+      <tr><td><code>notify</code></td><td><a href="/docs/elements/web-components/notification-wc/"><code>&lt;notification-wc&gt;</code></a> (when <code>src</code> is a role name), <a href="/docs/attributes/data-watch-page/"><code>data-watch-page</code></a></td><td rowspan="3"><a href="/docs/concepts/service-contracts/">Service contracts</a></td></tr>
+      <tr><td><code>email</code></td><td><a href="/docs/attributes/data-vb-email-form/"><code>data-vb-email-form</code></a></td></tr>
+      <tr><td><code>newsletter</code></td><td><a href="/docs/attributes/data-vb-newsletter-form/"><code>data-vb-newsletter-form</code></a></td></tr>
+    </tbody>
+  </table>
+  <p>A component given a full URL (for example <code>&lt;notification-wc src="/api/notify"&gt;</code>) fetches it directly and skips role resolution.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/concepts/go-convention/">The /go/ convention</a> &mdash; why roles default to <code>/go/{role}</code>.</li>
+    <li><a href="/docs/concepts/service-contracts/">Service contracts</a> &mdash; request and response shapes for each role.</li>
+    <li><a href="/docs/concepts/vb-store/">VBStore</a> &mdash; the matching client-side storage layer.</li>
+  </ul>
+</section>

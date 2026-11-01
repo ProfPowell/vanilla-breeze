@@ -28,6 +28,9 @@ import './lib/sw-register.js';
 import { Analytics } from './lib/analytics.js';
 import { wireAnalyticsEvents } from './utils/analytics-init.js';
 export { Analytics } from './lib/analytics.js';
+// Public storage and service APIs (also on window.VB.store / VB.service)
+export { VBStore } from './lib/vb-store.js';
+export { VBService, VBServiceError } from './lib/vb-service.js';
 
 // Initialize theme system early to prevent FOUC
 await ThemeManager.init();

@@ -21,6 +21,9 @@ import { Analytics } from './lib/analytics.js';
 import { wireAnalyticsEvents } from './utils/analytics-init.js';
 export { registerEffect, registerComponent, activateBundle } from './lib/bundle-registry.js';
 export { Analytics } from './lib/analytics.js';
+// Public storage and service APIs (also on window.VB.store / VB.service)
+export { VBStore } from './lib/vb-store.js';
+export { VBService, VBServiceError } from './lib/vb-service.js';
 
 // VB effects system — unified data-effect API
 import { VB } from './lib/vb.js';

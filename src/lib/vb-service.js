@@ -22,12 +22,21 @@
  * Spec: admin/plans/april13-plan/vb-service.md
  */
 
-/** @type {{ baseUrl: string, headers: Record<string, string>, services: Record<string, string> }} */
-let config = {
-  baseUrl: '/go',
-  headers: {},
-  services: {},
-};
+/** @typedef {{ baseUrl: string, headers: Record<string, string>, services: Record<string, string> }} ServiceConfig */
+
+/**
+ * Configuration lives on globalThis, not in module scope: autoloaded
+ * component chunks each bundle their own copy of this module, and a site's
+ * VB.service.configure() call must reach all of them.
+ */
+const CONFIG_KEY = '__vbServiceConfig';
+/** @type {any} */
+const g = globalThis;
+/** @returns {ServiceConfig} */
+const defaults = () => ({ baseUrl: '/go', headers: {}, services: {} });
+if (!g[CONFIG_KEY]) g[CONFIG_KEY] = defaults();
+/** @returns {ServiceConfig} */
+const getConfig = () => g[CONFIG_KEY];
 
 /** Non-2xx responses throw a VBServiceError with a consistent shape. */
 export class VBServiceError extends Error {
@@ -79,7 +88,8 @@ export class VBService {
    * @param {Partial<{ baseUrl: string, headers: Record<string, string>, services: Record<string, string> }>} next
    */
   static configure(next = {}) {
-    config = {
+    const config = getConfig();
+    g[CONFIG_KEY] = {
       baseUrl: next.baseUrl ?? config.baseUrl,
       headers: { ...config.headers, ...(next.headers ?? {}) },
       services: { ...config.services, ...(next.services ?? {}) },
@@ -95,6 +105,7 @@ export class VBService {
     if (!role || typeof role !== 'string') {
       throw new TypeError('VBService: role must be a non-empty string');
     }
+    const config = getConfig();
     if (config.services[role]) return stripTrailingSlash(config.services[role]);
     if (config.baseUrl) return `${stripTrailingSlash(config.baseUrl)}/${role}`;
     return `/go/${role}`;
@@ -104,7 +115,7 @@ export class VBService {
    * Reset to defaults. Testing helper.
    */
   static _reset() {
-    config = { baseUrl: '/go', headers: {}, services: {} };
+    g[CONFIG_KEY] = defaults();
   }
 
   /** @param {string} role */
@@ -165,7 +176,7 @@ export class VBService {
     /** @type {RequestInit} */
     const init = {
       method,
-      headers: { ...config.headers },
+      headers: { ...getConfig().headers },
     };
 
     if (options.body !== undefined) {
@@ -187,4 +198,12 @@ export class VBService {
 /** @param {string} url */
 function stripTrailingSlash(url) {
   return url.endsWith('/') ? url.slice(0, -1) : url;
+}
+
+// Public entry point for sites: window.VB.service (vb.js keeps these when it
+// installs the effects runtime on window.VB).
+if (typeof window !== 'undefined') {
+  const ns = /** @type {any} */ (window).VB ?? (/** @type {any} */ (window).VB = {});
+  ns.service ??= VBService;
+  ns.ServiceError ??= VBServiceError;
 }

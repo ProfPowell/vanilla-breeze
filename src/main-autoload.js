@@ -23,6 +23,10 @@ import { initBotProtection } from './lib/bot-protection.js';
 import { initAutoloader } from './lib/autoloader.js';
 import './lib/sw-register.js';
 
+// Public storage and service APIs (also on window.VB.store / VB.service)
+export { VBStore } from './lib/vb-store.js';
+export { VBService, VBServiceError } from './lib/vb-service.js';
+
 // VB effects system — unified data-effect API
 import { VB } from './lib/vb.js';
 import './lib/vb-triggers.js';
