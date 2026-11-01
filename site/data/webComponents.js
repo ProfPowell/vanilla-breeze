@@ -39,12 +39,14 @@ export default {
     { name: 'nav-bar', href: '/docs/elements/web-components/nav-bar/', desc: 'Top-level site/app nav primitive with auto aria-current sync (HTML-first or .items setter)' },
     { name: 'page-toc', href: '/docs/elements/web-components/page-toc/', desc: 'Table of contents generator' },
     { name: 'page-tour', href: '/docs/elements/web-components/page-tour/', desc: 'Progressive-enhancement guided tour with spotlight overlay and action gating' },
+    { name: 'pager-wc', href: '/docs/elements/web-components/pager-wc/', desc: 'Pagination controls for any [data-paged] container' },
     { name: 'pop-over', href: '/docs/elements/web-components/pop-over/', desc: 'General-purpose anchored popover container with CSS Anchor Positioning + JS fallback' },
     { name: 'short-cuts', href: '/docs/elements/web-components/shortcuts/', desc: 'Keyboard shortcuts help overlay' },
     { name: 'site-search', href: '/docs/elements/web-components/site-search/', desc: 'Search dialog component' },
   ],
 
   'Data & Visualization': [
+    { name: 'analytics-panel', href: '/docs/elements/web-components/analytics-panel/', desc: 'On-device view of captured analytics with Pause and Clear controls' },
     { name: 'chart-wc', href: '/docs/elements/web-components/chart-wc/', desc: 'SVG chart component with progressive table-to-SVG enhancement' },
     { name: 'data-table', href: '/docs/elements/web-components/data-table/', desc: 'Enhanced data tables with sorting and filtering' },
     { name: 'diagram-wc', href: '/docs/elements/web-components/diagram-wc/', desc: 'Mermaid diagram renderer with VB token theming and lazy loading' },
@@ -52,6 +54,7 @@ export default {
     { name: 'geo-map', href: '/docs/elements/web-components/geo-map/', desc: 'Static map tiles with marker and address caption' },
     { name: 'image-map', href: '/docs/elements/web-components/image-map/', desc: 'Interactive image map with hotspots' },
     { name: 'qr-code', href: '/docs/elements/web-components/qr-code/', desc: 'QR code generator with progressive enhancement' },
+    { name: 'score-card', href: '/docs/elements/web-components/score-card/', desc: 'KPI tile: headline value, change indicator and optional sparkline' },
   ],
 
   'Calendar & Scheduling': [
@@ -61,6 +64,7 @@ export default {
   ],
 
   'Text & Annotation': [
+    { name: 'ai-summary', href: '/docs/elements/web-components/ai-summary/', desc: 'Summarize wrapped content with the browser Summarizer API and fallbacks' },
     { name: 'comment-wc', href: '/docs/elements/web-components/comment-wc/', desc: 'Collaborative commenting component for text annotations' },
     { name: 'foot-notes', href: '/docs/elements/web-components/footnotes/', desc: 'Inline footnotes with popup' },
     { name: 'heading-links', href: '/docs/elements/web-components/heading-links/', desc: 'Auto-generate heading anchors' },
@@ -69,6 +73,7 @@ export default {
     { name: 'markdown-viewer', href: '/docs/elements/web-components/markdown-viewer/', desc: 'Render markdown with progressive enhancement and theme integration' },
     { name: 'note-wc', href: '/docs/elements/web-components/note-wc/', desc: 'Annotation note component for selection-menu and page-level contexts' },
     { name: 'reader-view', href: '/docs/elements/web-components/reader-view/', desc: 'Immersive reading shell with scroll and paged modes' },
+    { name: 'reading-progress', href: '/docs/elements/web-components/reading-progress/', desc: 'Fixed scroll-progress bar for long pages' },
     { name: 'selection-menu', href: '/docs/elements/web-components/selection-menu/', desc: 'Floating toolbar on text selection for highlighting, sharing, and annotating' },
     { name: 'text-reader', href: '/docs/elements/web-components/text-reader/', desc: 'Text-to-speech reader with word-level highlighting' },
   ],
@@ -82,20 +87,26 @@ export default {
   ],
 
   'Chat & Communication': [
+    { name: 'ai-chat', href: '/docs/elements/web-components/ai-chat/', desc: 'On-device chat via the browser LanguageModel API, optionally page-aware' },
     { name: 'chat-input', href: '/docs/elements/web-components/chat-input/', desc: 'Chat message input with send button' },
     { name: 'chat-window', href: '/docs/elements/web-components/chat-window/', desc: 'Chat conversation window' },
   ],
 
   'Feedback & Notifications': [
     { name: 'consent-banner', href: '/docs/elements/web-components/consent-banner/', desc: 'Cookie consent banner with accept/decline' },
+    { name: 'notification-wc', href: '/docs/elements/web-components/notification-wc/', desc: 'Dismissible banner or bell-icon panel with notification history and read tracking' },
     { name: 'status-wc', href: '/docs/elements/web-components/status-wc/', desc: 'Visual state indicator: live/recording (pulse), online/offline/away/busy, running/paused/stopped, error. 11 built-in variants + CSS-only extension surface.' },
     { name: 'toast-msg', href: '/docs/elements/web-components/toast/', desc: 'Non-blocking notifications' },
     { name: 'tool-tip', href: '/docs/elements/web-components/tooltip/', desc: 'Contextual tooltips' },
   ],
 
   'Site Infrastructure': [
+    { name: 'author-index', href: '/docs/elements/web-components/author-index/', desc: 'Author-grouped view of site content' },
     { name: 'brand-mark', href: '/docs/elements/web-components/brand-mark/', desc: 'Logo display with dark mode, compact variant, and stacked layout' },
     { name: 'change-set', href: '/docs/elements/web-components/change-set/', desc: 'Change tracking group with toggle between tracking, final, and original views' },
+    { name: 'comment-box', href: '/docs/elements/web-components/comment-box/', desc: 'Form-associated comment form composing markdown-editor + Submit/Cancel; presentational with respect to persistence' },
+    { name: 'comment-thread', href: '/docs/elements/web-components/comment-thread/', desc: 'Threaded discussion container; decorates author-rendered <article data-comment> children with header, action row, threaded indentation; composes comment-box for reply form' },
+    { name: 'content-lens', href: '/docs/elements/web-components/content-lens/', desc: 'Universal switchable host for VB lens components' },
     { name: 'glossary-index', href: '/docs/elements/web-components/glossary-index/', desc: 'Interactive glossary with live search and scroll-spy letter tracking' },
     { name: 'glossary-wc', href: '/docs/elements/web-components/glossary-wc/', desc: 'Alphabetical glossary with search filtering and jump navigation' },
     { name: 'icon-wc', href: '/docs/elements/web-components/icons/', desc: 'Icon component with Lucide, Phosphor, Tabler, Bold, and Mage icon sets' },
@@ -103,22 +114,19 @@ export default {
     { name: 'page-info', href: '/docs/elements/web-components/page-info/', desc: 'Document provenance disclosure with trust badges and authorship' },
     { name: 'page-stats', href: '/docs/elements/web-components/page-stats/', desc: 'Reading statistics with word count, reading time, and last-modified date' },
     { name: 'page-tools', href: '/docs/elements/web-components/page-tools/', desc: 'Configurable toolbar for page-level utilities with responsive FAB collapse' },
+    { name: 'popularity-index', href: '/docs/elements/web-components/popularity-index/', desc: 'Aggregated most-visited lens (degrades when endpoint unavailable)' },
     { name: 'print-page', href: '/docs/elements/web-components/print-page/', desc: 'Print button with raw-mode toggle' },
-    { name: 'settings-panel', href: '/docs/elements/web-components/settings-panel/', desc: 'Theme/settings panel with gear trigger and details accordion' },
-    { name: 'comment-box', href: '/docs/elements/web-components/comment-box/', desc: 'Form-associated comment form composing markdown-editor + Submit/Cancel; presentational with respect to persistence' },
-    { name: 'comment-thread', href: '/docs/elements/web-components/comment-thread/', desc: 'Threaded discussion container; decorates author-rendered <article data-comment> children with header, action row, threaded indentation; composes comment-box for reply form' },
     { name: 'reaction-bar', href: '/docs/elements/web-components/reaction-bar/', desc: 'GitHub-style emoji reaction picker with persistent chips and a curated palette popover' },
+    { name: 'recently-visited', href: '/docs/elements/web-components/recently-visited/', desc: 'Device-local reader history (localStorage, never aggregated)' },
+    { name: 'settings-panel', href: '/docs/elements/web-components/settings-panel/', desc: 'Theme/settings panel with gear trigger and details accordion' },
     { name: 'share-wc', href: '/docs/elements/web-components/share/', desc: 'Social share with native Web Share API and platform fallbacks' },
     { name: 'site-index', href: '/docs/elements/web-components/site-index/', desc: 'Site keyword index with search filtering' },
     { name: 'site-map', href: '/docs/elements/web-components/site-map/', desc: 'Sitemap enhancer (expand/collapse) or interactive IA tree via mode="ia-tree"' },
     { name: 'theme-picker', href: '/docs/elements/web-components/theme-picker/', desc: 'Theme picker for colors, typography, and accessibility settings' },
     { name: 'time-index', href: '/docs/elements/web-components/time-index/', desc: 'Changelog/timeline with relative dates and version filtering' },
-    { name: 'content-lens', href: '/docs/elements/web-components/content-lens/', desc: 'Universal switchable host for VB lens components' },
-    { name: 'author-index', href: '/docs/elements/web-components/author-index/', desc: 'Author-grouped view of site content' },
     { name: 'topic-map', href: '/docs/elements/web-components/topic-map/', desc: 'SKOS-aware concept tree from vocabulary.json + pages.json' },
     { name: 'trust-filter', href: '/docs/elements/web-components/trust-filter/', desc: 'Filter pages by provenance, review level, status, and signed state' },
     { name: 'version-switcher', href: '/docs/elements/web-components/version-switcher/', desc: 'Surface and switch between versions of a page over time. Two modes (release versions / per-page history); navigate action (Phase 1)' },
-    { name: 'recently-visited', href: '/docs/elements/web-components/recently-visited/', desc: 'Device-local reader history (localStorage, never aggregated)' },
-    { name: 'popularity-index', href: '/docs/elements/web-components/popularity-index/', desc: 'Aggregated most-visited lens (degrades when endpoint unavailable)' },
+    { name: 'watch-wc', href: '/docs/elements/web-components/watch-wc/', desc: 'Watch-this-page toggle (icon, compact or full button) wrapping data-watch-page' },
   ],
 };
