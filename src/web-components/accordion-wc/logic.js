@@ -105,10 +105,9 @@ class AccordionWc extends VBElement {
       this.appendChild(details);
     }
 
-    // Re-run setup so panel refs / VT / listeners reattach.
-    this.teardown();
-    this.removeAttribute('data-upgraded');
-    this.setup();
+    // Re-run the lifecycle so panel refs / VT / listeners reattach once.
+    // Before connection this only resets; connectedCallback does setup.
+    this._reinit();
 
     this.dispatchEvent(new CustomEvent('accordion-wc:panels-changed', {
       detail: { panels: next, source: 'property' },
@@ -118,7 +117,8 @@ class AccordionWc extends VBElement {
 
   /**
    * Ensure each <details> has a single panel wrapper after <summary>.
-   * If there are multiple siblings after summary, wrap them in a <div>.
+   * Unless the only sibling after summary is already a <div>, wrap the
+   * content in one.
    * This gives VT and ARIA a stable single target per panel.
    */
   #ensurePanelWrappers() {
@@ -128,13 +128,15 @@ class AccordionWc extends VBElement {
 
       const afterSummary = [...detail.children].filter(c => c !== summary);
 
-      if (afterSummary.length === 1) {
-        // Already a single wrapper — use it
+      // Reuse an authored <div> wrapper. Anything else (a <p>, <ul>,
+      // <table>…) is content, not a wrapper: wrapping it keeps its own
+      // semantics instead of overwriting them with role="region".
+      if (afterSummary.length === 1 && afterSummary[0].localName === 'div') {
         return afterSummary[0];
       }
 
-      if (afterSummary.length > 1) {
-        // Multiple siblings — wrap them
+      if (afterSummary.length >= 1) {
+        // Content siblings — wrap them
         const wrapper = document.createElement('div');
         for (const child of afterSummary) {
           wrapper.appendChild(child);

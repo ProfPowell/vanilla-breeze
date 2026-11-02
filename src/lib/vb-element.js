@@ -64,6 +64,21 @@ class VBElement extends HTMLElement {
   }
 
   /**
+   * Re-run the lifecycle in place: release listeners, teardown(), then
+   * setup() again and restore data-upgraded. For data setters that rebuild
+   * children (e.g. accordion-wc's `panels`). Before the element is connected
+   * it only resets; connectedCallback will run setup() normally.
+   */
+  _reinit() {
+    for (const fn of this.#cleanups) fn();
+    this.#cleanups = [];
+    this.teardown();
+    this.removeAttribute('data-upgraded');
+    if (!this.isConnected) return;
+    if (this.setup() !== false) this.setAttribute('data-upgraded', '');
+  }
+
+  /**
    * Override in subclass. Return false to abort upgrade.
    * @returns {boolean | void}
    */
