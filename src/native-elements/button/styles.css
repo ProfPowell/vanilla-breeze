@@ -22,19 +22,19 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
   align-items: center;
   justify-content: center;
   gap: var(--size-xs);
-  /* Padding gives back the border width so the outer size is unchanged
-     by the transparent border below. */
-  padding-block: calc(var(--btn-padding-block, var(--size-s)) - var(--border-width-thin));
-  padding-inline-start: calc(var(--btn-padding-inline-start, var(--btn-padding-inline, var(--size-m))) - var(--border-width-thin));
-  padding-inline-end: calc(var(--btn-padding-inline-end, var(--btn-padding-inline, var(--size-m))) - var(--border-width-thin));
+  /* --_bw is the border VB itself draws (secondary, forced colours). The
+     padding gives it back so every variant keeps the same outer size.
+     Themes that set their own button border are left alone: their
+     padding is the unadjusted --btn-padding-* value. */
+  --_bw: 0px;
+  padding-block: calc(var(--btn-padding-block, var(--size-s)) - var(--_bw));
+  padding-inline-start: calc(var(--btn-padding-inline-start, var(--btn-padding-inline, var(--size-m))) - var(--_bw));
+  padding-inline-end: calc(var(--btn-padding-inline-end, var(--btn-padding-inline, var(--size-m))) - var(--_bw));
   min-block-size: var(--size-touch-min);
   min-inline-size: var(--size-touch-min);
   background: var(--_color);
   color: var(--_text);
-  /* Transparent base border on every variant: primary, secondary and ghost
-     stay the same height, and forced-colors mode paints it so the button
-     keeps a visible boundary. */
-  border: var(--border-width-thin) solid transparent;
+  border: var(--_bw) solid transparent;
   border-radius: var(--radius-m);
   font: inherit;
   font-weight: var(--btn-font-weight, 500);
@@ -78,10 +78,11 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
      padding. The name is required because :only-child ignores text nodes,
      so <button><icon-wc></icon-wc> Save</button> would match on its own. */
   &:is([aria-label], [aria-labelledby], [title]):has(> icon-wc:only-child) {
-    padding-inline: calc(var(--btn-padding-block, var(--size-s)) - var(--border-width-thin));
+    padding-inline: calc(var(--btn-padding-block, var(--size-s)) - var(--_bw));
   }
 
   &.secondary {
+    --_bw: var(--border-width-thin);
     background: transparent;
     color: var(--_color);
     border-color: currentColor;
@@ -128,14 +129,14 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
   }
 
   &.small {
-    padding-block: calc(var(--size-xs) - var(--border-width-thin));
-    padding-inline: calc(var(--size-s) - var(--border-width-thin));
+    padding-block: calc(var(--size-xs) - var(--_bw));
+    padding-inline: calc(var(--size-s) - var(--_bw));
     font-size: var(--font-size-s);
   }
 
   &.large {
-    padding-block: calc(var(--size-m) - var(--border-width-thin));
-    padding-inline: calc(var(--size-l) - var(--border-width-thin));
+    padding-block: calc(var(--size-m) - var(--_bw));
+    padding-inline: calc(var(--size-l) - var(--_bw));
     font-size: var(--font-size-l);
   }
 
@@ -188,6 +189,7 @@ button[aria-busy="true"],
   button,
   .button,
   input:where([type="submit" i], [type="button" i], [type="reset" i]) {
+    --_bw: var(--border-width-thin);
     border-color: ButtonBorder;
 
     &:is(:disabled, [aria-disabled="true"]) {
