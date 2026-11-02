@@ -13,8 +13,12 @@ import { registerComponent } from '../../lib/bundle-registry.js';
  * (popover_display_gotcha). combo-box keeps ARIA, filtering, keyboard
  * navigation, ElementInternals form integration, and tag management.
  *
- * @attr {string} name - Form field name
+ * @attr {string} name - Form field name. A `name` on the inner input (the
+ *   no-JS submission path) moves to the host on upgrade so exactly one
+ *   value submits.
  * @attr {boolean} required - Makes selection required
+ * @attr {boolean} disabled - Disables the input and closes the listbox
+ *   (also follows a disabled <fieldset> via formDisabledCallback)
  * @attr {string} filter - Filter mode: "startsWith" | "contains" (default: "contains")
  * @attr {string} value - Get/set selected value programmatically (single mode)
  * @attr {string} placeholder - Input placeholder text
@@ -44,7 +48,10 @@ class ComboBox extends VBElement {
   // Single mode state
   #selectedValue = '';
   #selectedLabel = '';
-  #initialValue = '';
+  /** Form-reset target, captured on first setup only (the value attribute
+   *  reflects the live selection, so re-reading it on reconnect drifts). */
+  /** @type {string | undefined} */ #initialValue;
+  #disabled = false;
 
   // Multi mode state
   /** @type {HTMLElement} */ #inputArea;
@@ -68,6 +75,16 @@ class ComboBox extends VBElement {
     );
     if (!input) return false;
     this.#input = input;
+
+    // PE submission path: without JS the inner input submits its own name
+    // (the typed text). Upgraded, the host submits the option value via
+    // ElementInternals, so move the name to the host (host wins if both are
+    // set) and strip it from the input — exactly one value is submitted.
+    const innerName = this.#input.getAttribute('name');
+    if (innerName) {
+      if (!this.hasAttribute('name')) this.setAttribute('name', innerName);
+      this.#input.removeAttribute('name');
+    }
 
     // Find listbox (may already be wrapped in pop-over from a prior upgrade)
     const listbox = /** @type {HTMLElement | null} */ (this.querySelector('ul, ol'));
@@ -154,7 +171,7 @@ class ComboBox extends VBElement {
     if (!this.#isMultiple) {
       const initialValue = this.getAttribute('value');
       if (initialValue) this.#selectByValue(initialValue, false);
-      this.#initialValue = this.#selectedValue;
+      if (this.#initialValue === undefined) this.#initialValue = this.#selectedValue;
     }
 
     this.listen(this.#input, 'input', this.#handleInput);
@@ -167,14 +184,40 @@ class ComboBox extends VBElement {
 
     // Sync close state if pop-over hides (e.g. external .hide() call).
     this.listen(this.#popover, 'pop-over:hide', this.#handlePopoverHide);
+    // Mirror validity onto the focusable input once the browser reports it
+    // invalid (submit / checkValidity) — not on load, which would announce
+    // "invalid" before the user has touched the field.
+    this.listen(this, 'invalid', this.#handleInvalid);
 
     this.#syncFormValue();
     this.#validate();
     this.#close();
+    this.#applyDisabled(this.matches(':disabled'));
     return true;
   }
 
   teardown() {}
+
+  #handleInvalid = () => {
+    this.#input.setAttribute('aria-invalid', 'true');
+  };
+
+  formDisabledCallback(disabled) {
+    if (this.#input) this.#applyDisabled(disabled);
+  }
+
+  #applyDisabled(disabled) {
+    this.#disabled = disabled;
+    if (disabled) this.#close();
+    const max = this.#getMax();
+    const atMax = this.#isMultiple && max > 0 && this.#selectedTags.length >= max;
+    this.#input.disabled = disabled || atMax;
+    if (this.#inputArea) {
+      for (const btn of this.#inputArea.querySelectorAll('.tag button')) {
+        /** @type {HTMLButtonElement} */ (btn).disabled = disabled;
+      }
+    }
+  }
 
   #collectOptions() {
     this.#options = /** @type {HTMLElement[]} */ (Array.from(this.#listbox.querySelectorAll(':scope > li[data-value]')));
@@ -205,6 +248,7 @@ class ComboBox extends VBElement {
     removeBtn.type = 'button';
     removeBtn.setAttribute('aria-label', `Remove ${label}`);
     removeBtn.innerHTML = '&times;';
+    removeBtn.disabled = this.#disabled;
     removeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       this.#removeTag(value);
@@ -245,7 +289,7 @@ class ComboBox extends VBElement {
     this.#announce(`${removed.label} removed`);
 
     const max = this.#getMax();
-    if (max && this.#input.disabled) this.#input.disabled = false;
+    if (max && this.#input.disabled) this.#input.disabled = this.#disabled;
 
     this.#filterOptions(this.#input.value.trim());
     this.#syncFormValue();
@@ -442,7 +486,14 @@ class ComboBox extends VBElement {
   #selectOption(option, source = 'internal') {
     const value = option.getAttribute('data-value') || '';
     const label = option.textContent.trim();
-    if (this.#selectedValue === value) return;
+    if (this.#selectedValue === value) {
+      // Re-choosing the current option: nothing changes, but the user's
+      // pick must still close the list and restore the input text.
+      this.#input.value = label;
+      this.#close();
+      this.#input.focus();
+      return;
+    }
 
     this.#options.forEach(opt => opt.setAttribute('aria-selected', 'false'));
     option.setAttribute('aria-selected', 'true');
@@ -468,6 +519,7 @@ class ComboBox extends VBElement {
       if (fireEvent) {
         this.#selectOption(option, source);
       } else {
+        this.#options.forEach(opt => opt.setAttribute('aria-selected', 'false'));
         option.setAttribute('aria-selected', 'true');
         this.#selectedValue = value;
         this.#selectedLabel = option.textContent.trim();
@@ -480,7 +532,7 @@ class ComboBox extends VBElement {
   // --- Open / Close ---
 
   #open() {
-    if (this.#isOpen) return;
+    if (this.#isOpen || this.#disabled) return;
 
     this.#isOpen = true;
     this.setAttribute('open', '');
@@ -552,6 +604,7 @@ class ComboBox extends VBElement {
     } else {
       this.#internals.setValidity({});
     }
+    if (this.#internals.validity.valid) this.#input.removeAttribute('aria-invalid');
   }
 
   #fireChange() {
@@ -560,6 +613,7 @@ class ComboBox extends VBElement {
       detail: {
         values: this.#selectedTags.map(t => t.value),
         labels: this.#selectedTags.map(t => t.label),
+        source: 'internal',
       }
     }));
   }
@@ -569,7 +623,7 @@ class ComboBox extends VBElement {
       this.#inputArea.querySelectorAll('.tag').forEach(t => t.remove());
       this.#selectedTags = [];
       this.#input.value = '';
-      this.#input.disabled = false;
+      this.#input.disabled = this.#disabled;
     } else {
       this.#selectedValue = '';
       this.#selectedLabel = '';
@@ -586,6 +640,7 @@ class ComboBox extends VBElement {
     this.#clearActiveDescendant();
     this.#close();
 
+    this.#input.removeAttribute('aria-invalid');
     if (!this.#isMultiple && this.#initialValue) {
       this.#selectByValue(this.#initialValue, false);
     }
@@ -607,17 +662,18 @@ class ComboBox extends VBElement {
   get value() { return this.#selectedValue; }
 
   set value(val) {
-    if (val) {
-      this.#selectByValue(val);
-    } else {
-      this.#options.forEach(opt => opt.setAttribute('aria-selected', 'false'));
-      this.#selectedValue = '';
-      this.#selectedLabel = '';
-      this.#input.value = '';
-      this.removeAttribute('value');
-      this.#syncFormValue();
-      this.#validate();
-    }
+    if (val) this.#selectByValue(val);
+    else this.#clearSelection();
+  }
+
+  #clearSelection() {
+    this.#options.forEach(opt => opt.setAttribute('aria-selected', 'false'));
+    this.#selectedValue = '';
+    this.#selectedLabel = '';
+    if (this.#input) this.#input.value = '';
+    this.removeAttribute('value');
+    this.#syncFormValue();
+    this.#validate();
   }
 
   get label() { return this.#selectedLabel; }
@@ -625,15 +681,24 @@ class ComboBox extends VBElement {
   get labels() { return this.#selectedTags.map(t => t.label); }
 
   static get observedAttributes() {
-    return ['value'];
+    return ['value', 'disabled'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'value' && this.#input && newValue !== this.#selectedValue) {
-      if (newValue) {
-        this.#selectByValue(newValue, false);
+    if (!this.#input) return;
+    if (name === 'disabled') {
+      this.#applyDisabled(this.matches(':disabled'));
+      return;
+    }
+    // removeAttribute('value') arrives as null — treat it like value="".
+    const next = newValue ?? '';
+    if (name === 'value' && next !== this.#selectedValue) {
+      if (next) {
+        this.#selectByValue(next, false);
         this.#syncFormValue();
         this.#validate();
+      } else {
+        this.#clearSelection();
       }
     }
   }

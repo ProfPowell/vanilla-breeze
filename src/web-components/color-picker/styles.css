@@ -15,9 +15,12 @@ color-picker {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    /* visibility flips instantly on open: a transitioned hidden→visible is
+       still hidden on the first frame, which made the rAF focus() into the
+       colour area a no-op. */
     transition:
       opacity var(--motion-enter-duration, 200ms) var(--ease-out),
-      visibility var(--motion-enter-duration, 200ms) var(--ease-out),
+      visibility 0s,
       transform var(--motion-enter-duration, 200ms) var(--ease-out);
   }
 }
@@ -101,8 +104,9 @@ color-picker {
     overflow: visible;
     position: fixed;
     inset: unset;
-    inset-block-start: var(--panel-top, 0);
-    inset-inline-start: var(--panel-left, 0);
+    /* Physical: positionPanel() computes viewport (left/top) coordinates */
+    top: var(--panel-top, 0);
+    left: var(--panel-left, 0);
   }
 
   .color-panel[popover]::backdrop {
@@ -345,10 +349,14 @@ color-picker {
     outline-offset: 2px;
   }
 
-  /* Disabled state */
-  :scope[data-disabled] {
+  /* Disabled state — the trigger is a real disabled button */
+  .color-trigger:disabled {
     opacity: 0.4;
-    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  .color-trigger:disabled:hover {
+    border-color: var(--color-border);
   }
 }
 

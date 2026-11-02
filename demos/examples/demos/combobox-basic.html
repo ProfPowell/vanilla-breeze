@@ -5,53 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Combobox Demo</title>
   <link rel="stylesheet" href="/src/main.css" />
-  <style>
-    body {
-      padding: var(--size-m);
-      background: var(--color-surface);
-    }
-
-    .demo-grid {
-      display: grid;
-      gap: var(--size-2xl);
-      max-width: 500px;
-    }
-
-    h2 {
-      margin-block-end: var(--size-s);
-    }
-
-    h3 {
-      margin-block-end: var(--size-xs);
-      color: var(--color-text-muted);
-      font-size: var(--font-size-s);
-    }
-
-    combo-box {
-      inline-size: 100%;
-    }
-
-    .form-output {
-      margin-block-start: var(--size-m);
-      padding: var(--size-m);
-      background: var(--color-surface-alt);
-      border-radius: var(--radius-m);
-      font-family: var(--font-mono);
-      font-size: var(--font-size-s);
-      white-space: pre-wrap;
-      min-height: 2em;
-    }
-  </style>
 </head>
 <body>
   <h1>Combobox Demo</h1>
-  <section class="demo-grid">
+  <layout-center data-layout-max="narrow">
+  <section data-layout="grid" data-layout-min="xl" data-layout-gap="2xl">
     <!-- Basic -->
     <section>
       <h2>Basic Combobox</h2>
       <h3>Type to filter, arrow keys to navigate, Enter to select</h3>
+      <label for="country-input">Country</label>
       <combo-box name="country">
-        <input type="text" placeholder="Search countries..." aria-label="Country" />
+        <input type="text" id="country-input" placeholder="Search countries..." />
         <ul>
           <li data-value="au">Australia</li>
           <li data-value="br">Brazil</li>
@@ -79,9 +44,9 @@
           </form-field>
 
           <form-field>
-            <label>Favorite Fruit</label>
-            <combo-box name="fruit">
-              <input type="text" placeholder="Pick a fruit..." aria-label="Favorite fruit" />
+            <label for="fruit-input">Favorite Fruit</label>
+            <combo-box>
+              <input type="text" id="fruit-input" name="fruit" placeholder="Pick a fruit..." />
               <ul>
                 <li data-value="apple">Apple</li>
                 <li data-value="banana">Banana</li>
@@ -101,7 +66,7 @@
           </layout-cluster>
         </layout-stack>
       </form>
-      <section class="form-output" id="form-output">Submit the form to see data here</section>
+      <output id="form-output" for="demo-form">Submit the form to see data here</output>
     </section>
 
     <!-- Required Validation -->
@@ -111,9 +76,9 @@
       <form id="required-form">
         <layout-stack data-layout-gap="m">
           <form-field>
-            <label>Language (required)</label>
+            <label for="language-input">Language (required)</label>
             <combo-box name="language" required>
-              <input type="text" placeholder="Select a language..." aria-label="Language" />
+              <input type="text" id="language-input" placeholder="Select a language..." />
               <ul>
                 <li data-value="en">English</li>
                 <li data-value="es">Spanish</li>
@@ -129,15 +94,16 @@
           <button type="submit">Submit</button>
         </layout-stack>
       </form>
-      <section class="form-output" id="required-output">Submit the form to see data here</section>
+      <output id="required-output" for="required-form">Submit the form to see data here</output>
     </section>
 
     <!-- startsWith filter mode -->
     <section>
       <h2>Starts-With Filter</h2>
       <h3>filter="startsWith" — only matches from the beginning</h3>
+      <label for="color-input">Color</label>
       <combo-box name="color" filter="startsWith">
-        <input type="text" placeholder="Type a color..." aria-label="Color" />
+        <input type="text" id="color-input" placeholder="Type a color..." />
         <ul>
           <li data-value="red">Red</li>
           <li data-value="orange">Orange</li>
@@ -196,9 +162,10 @@
           </layout-cluster>
         </layout-stack>
       </form>
-      <section class="form-output" id="multi-output">Submit the form to see data here</section>
+      <output id="multi-output" for="multi-form">Submit the form to see data here</output>
     </section>
   </section>
+  </layout-center>
 
   <script type="module" src="/src/main.js"></script>
   <script type="module">
@@ -206,21 +173,21 @@
     document.getElementById('demo-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const data = new FormData(e.target);
-      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
+      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join(', ');
       document.getElementById('form-output').textContent = entries || '(no data)';
     });
 
     document.getElementById('required-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const data = new FormData(e.target);
-      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
+      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join(', ');
       document.getElementById('required-output').textContent = entries || '(no data)';
     });
 
     document.getElementById('multi-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const data = new FormData(e.target);
-      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
+      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join(', ');
       document.getElementById('multi-output').textContent = entries || '(no data)';
     });
   </script>

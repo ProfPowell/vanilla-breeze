@@ -30,9 +30,11 @@ export function hslToRgb(h, s, l) {
  * @param {number} r - Red, 0-255.
  * @param {number} g - Green, 0-255.
  * @param {number} b - Blue, 0-255.
+ * @param {boolean} [precise=false] - Skip rounding. The picker keeps its
+ *   state unrounded so a hex → HSL → hex round trip is lossless.
  * @returns {{ h: number, s: number, l: number }} HSL components.
  */
-export function rgbToHsl(r, g, b) {
+export function rgbToHsl(r, g, b, precise = false) {
   r /= 255;
   g /= 255;
   b /= 255;
@@ -52,6 +54,7 @@ export function rgbToHsl(r, g, b) {
     }
   }
 
+  if (precise) return { h: h * 360, s: s * 100, l: l * 100 };
   return {
     h: Math.round(h * 360),
     s: Math.round(s * 100),
@@ -96,11 +99,12 @@ export function rgbToHex(r, g, b) {
  * Hex → HSL
  *
  * @param {string} hex - 3- or 6-digit hex color, with or without '#'.
+ * @param {boolean} [precise=false] - Skip rounding (see rgbToHsl).
  * @returns {{ h: number, s: number, l: number }} HSL components.
  */
-export function hexToHsl(hex) {
+export function hexToHsl(hex, precise = false) {
   const { r, g, b } = hexToRgb(hex);
-  return rgbToHsl(r, g, b);
+  return rgbToHsl(r, g, b, precise);
 }
 
 /**
@@ -210,9 +214,9 @@ export function hslToOklch(h, s, l) {
   return rgbToOklch(rgb.r, rgb.g, rgb.b);
 }
 
-export function oklchToHsl(L, C, H) {
+export function oklchToHsl(L, C, H, precise = false) {
   const { r, g, b } = oklchToRgb(L, C, H);
-  return rgbToHsl(r, g, b);
+  return rgbToHsl(r, g, b, precise);
 }
 
 // ── CSS color-string formatters ───────────────────────────────────────
@@ -228,7 +232,7 @@ export function formatRgb(h, s, l) {
 }
 
 export function formatHsl(h, s, l) {
-  return `hsl(${h}deg ${s}% ${l}%)`;
+  return `hsl(${Math.round(h)}deg ${Math.round(s)}% ${Math.round(l)}%)`;
 }
 
 export function formatOklch(h, s, l) {

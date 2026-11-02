@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "color-picker",
   "type": "web-component",
-  "description": "Form-associated color picker with HSL color space",
+  "description": "Form-associated color picker with saturation/lightness area, hue slider, HEX/RGB/HSL/OKLCH inputs, preset swatches, Copy and EyeDropper",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -15,86 +15,14 @@
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Form field name"
+      "description": "Form field name. A name on the inner input (the no-JS path) moves here on upgrade so exactly one value submits."
     },
     {
       "name": "disabled",
       "kind": "native",
-      "purpose": "config",
+      "purpose": "semantic-state",
       "type": "boolean",
-      "description": "Disables the picker"
-    },
-    {
-      "name": "required",
-      "kind": "native",
-      "purpose": "config",
-      "type": "boolean",
-      "description": "Makes selection required"
-    },
-    {
-      "name": "data-disabled",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-haspopup",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-valuemin",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-valuemax",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "data-color",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-channel",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "maxlength",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "spellcheck",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "autocomplete",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-valuetext",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-valuenow",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "open",
-      "kind": "native",
-      "purpose": "config"
+      "description": "Disables the trigger, closes the panel and drops the value from submission. A disabled ancestor fieldset has the same effect."
     },
     {
       "name": "format",
@@ -108,20 +36,50 @@
         "oklch"
       ],
       "default": "hex",
-      "description": "Initial input/copy format. Selector inside the picker lets users switch at runtime."
+      "description": "Initial input/copy format. The Format selector inside the panel switches it at runtime."
+    },
+    {
+      "name": "open",
+      "kind": "host-api",
+      "purpose": "output-state",
+      "type": "boolean",
+      "direction": "output",
+      "public": false,
+      "description": "Reflected while the panel is open"
+    }
+  ],
+  "structure": [
+    {
+      "element": "<input type=\"color\">",
+      "description": "Supplies the initial value (its value attribute is the form-reset target) and the no-JS fallback. Its <label for> names the trigger."
+    },
+    {
+      "element": "<datalist>",
+      "required": false,
+      "description": "Preset swatches — one <option value=\"#hex\">Name</option> per swatch"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "name",
+      "on": "input",
+      "type": "string",
+      "description": "Submission name for the no-JS fallback. Moved to the host on upgrade (the host's own name wins if both are set)."
     }
   ],
   "events": [
     {
-      "name": "color-picker:change"
+      "name": "color-picker:change",
+      "detail": "{ hex, rgb: { r, g, b }, hsl: { h, s, l }, source: 'pointer' | 'keyboard' | 'api' | 'internal' }",
+      "description": "Fired when the color changes. source is 'api' for .value assignments, 'pointer'/'keyboard' for the area and hue slider, 'internal' for text inputs, swatches and the EyeDropper."
     },
     {
-      "name": "color-picker:open"
+      "name": "color-picker:open",
+      "description": "Fired when the panel opens"
     },
     {
-      "name": "color-picker:close"
+      "name": "color-picker:close",
+      "description": "Fired when the panel closes"
     }
-  ],
-  "childAttributes": [],
-  "structure": []
+  ]
 }

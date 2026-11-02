@@ -6,16 +6,21 @@
  * hue slider, text inputs (hex/RGB), preset swatches, and EyeDropper.
  * Participates in native form submission via ElementInternals.
  *
- * @attr {string}  name     - Form field name
- * @attr {boolean} disabled - Disables the picker
- * @attr {boolean} required - Makes selection required
+ * @attr {string}  name     - Form field name. A `name` on the inner input
+ *                            (the no-JS submission path) moves to the host
+ *                            on upgrade so exactly one value submits.
+ * @attr {boolean} disabled - Disables the picker (also follows a disabled
+ *                            <fieldset> via formDisabledCallback)
+ * @attr {string}  format   - Initial format: hex | rgb | hsl | oklch
  *
- * The wrapped <input type="color"> provides the initial value.
- * An optional <datalist> provides preset swatches.
+ * The wrapped <input type="color"> provides the initial value (its `value`
+ * attribute is the form-reset target). Labels pointing at the input name the
+ * trigger button. An optional <datalist> provides preset swatches.
  *
  * @example
- * <color-picker name="brand">
- *   <input type="color" value="#6366f1">
+ * <label for="brand">Brand color</label>
+ * <color-picker>
+ *   <input type="color" id="brand" name="brand" value="#6366f1">
  *   <datalist>
  *     <option value="#ef4444">Red</option>
  *     <option value="#3b82f6">Blue</option>
@@ -34,6 +39,10 @@ import {
 
 const FORMATS = ['hex', 'rgb', 'hsl', 'oklch'];
 const DEFAULT_FORMAT = 'hex';
+const HEX6 = /^#[0-9a-fA-F]{6}$/;
+const VIEWPORT_GAP = 8;
+
+let colorPickerSeq = 0;
 
 class ColorPicker extends VBElement {
   static formAssociated = true;
@@ -43,6 +52,7 @@ class ColorPicker extends VBElement {
   #trigger;
   #triggerSwatch;
   #triggerHex;
+  #triggerName;
   #panel;
   #colorArea;
   #colorAreaThumb;
@@ -56,12 +66,20 @@ class ColorPicker extends VBElement {
   #copyBtn;
   #isOpen = false;
   #usePopover = false;
+  #formatInitialised = false;
+  #uid = `cp${++colorPickerSeq}`;
 
   // Internal HSL state
   #h = 0;
   #s = 100;
   #l = 50;
+  /** Form-reset target. Captured once: the inner input's value is synced on
+   *  every commit, so re-reading it on reconnect would drift. */
   #initialValue;
+
+  static get observedAttributes() {
+    return ['disabled'];
+  }
 
   constructor() {
     super();
@@ -73,23 +91,47 @@ class ColorPicker extends VBElement {
     this.#input = this.querySelector(':scope > input[type="color"]');
     if (!this.#input) return false;
 
-    // Initial format (default hex). Reflected from the format attribute so
-    // authors can land users in HSL or OkLCH directly.
-    const fmtAttr = this.getAttribute('format');
-    if (fmtAttr && FORMATS.includes(fmtAttr)) this.#activeFormat = fmtAttr;
+    // Initial format (default hex). Read once so a user's runtime choice
+    // survives a move/reconnect.
+    if (!this.#formatInitialised) {
+      const fmtAttr = this.getAttribute('format');
+      if (fmtAttr && FORMATS.includes(fmtAttr)) this.#activeFormat = fmtAttr;
+      this.#formatInitialised = true;
+    }
 
-    // Parse initial value
-    const initHex = this.#input.value || '#000000';
-    this.#initialValue = initHex;
-    const hsl = hexToHsl(initHex);
+    // Reset target: the input's value ATTRIBUTE (defaultValue), never the
+    // synced .value. Current colour comes from .value, which carries the
+    // live state across a reconnect.
+    if (this.#initialValue === undefined) {
+      const def = this.#input.defaultValue;
+      this.#initialValue = HEX6.test(def) ? def.toLowerCase() : (this.#input.value || '#000000');
+    }
+    const hsl = hexToHsl(this.#input.value || this.#initialValue, true);
     this.#h = hsl.h;
     this.#s = hsl.s;
     this.#l = hsl.l;
+
+    // PE submission path: the no-JS form submits the inner input's name.
+    // Once upgraded the host submits via ElementInternals, so move the name
+    // (host wins if both are set) and strip it from the input — exactly one
+    // value is submitted. Same for an authored `disabled`.
+    const innerName = this.#input.getAttribute('name');
+    if (innerName) {
+      if (!this.hasAttribute('name')) this.setAttribute('name', innerName);
+      this.#input.removeAttribute('name');
+    }
+    if (this.#input.hasAttribute('disabled')) {
+      this.#input.removeAttribute('disabled');
+      if (!this.hasAttribute('disabled')) this.setAttribute('disabled', '');
+    }
 
     // Hide native input
     this.#input.setAttribute('tabindex', '-1');
     this.#input.setAttribute('aria-hidden', 'true');
     this.#input.style.cssText = 'position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    // A <label for> click activates the hidden input (opening the OS
+    // picker); send it to the trigger instead.
+    this.listen(this.#input, 'click', this.#handleInputClick);
 
     this.#buildTrigger();
     this.#buildPanel();
@@ -102,17 +144,48 @@ class ColorPicker extends VBElement {
     }
 
     this.listen(document, 'click', this.#handleOutsideClick);
+    this.listen(this, 'keydown', this.#handleKeydown);
 
-    if (this.#input.disabled || this.hasAttribute('disabled')) {
-      this.setAttribute('data-disabled', '');
-    }
+    this.#applyDisabled(this.matches(':disabled'));
     return true;
   }
 
   teardown() {
+    // Built UI is removed so the next setup() (move/reconnect, _reinit)
+    // rebuilds exactly one trigger + panel with fresh listeners.
+    this.#isOpen = false;
+    this.removeAttribute('open');
     window.removeEventListener('scroll', this.#onReposition, { capture: true });
     window.removeEventListener('resize', this.#onReposition);
+    this.#trigger?.remove();
+    this.#panel?.remove();
   }
+
+  attributeChangedCallback(name) {
+    if (name === 'disabled' && this.#trigger) this.#applyDisabled(this.matches(':disabled'));
+  }
+
+  formDisabledCallback(disabled) {
+    if (this.#trigger) this.#applyDisabled(disabled);
+  }
+
+  #applyDisabled(disabled) {
+    this.#trigger.disabled = disabled;
+    if (disabled) this.#close();
+  }
+
+  #handleInputClick = (e) => {
+    e.preventDefault();
+    if (!this.#trigger.disabled) this.#trigger.focus();
+  };
+
+  #handleKeydown = (e) => {
+    if (e.key !== 'Escape' || !this.#isOpen) return;
+    e.preventDefault();
+    e.stopPropagation();
+    this.#close();
+    this.#trigger.focus();
+  };
 
   // --- Build UI ---
 
@@ -128,9 +201,30 @@ class ColorPicker extends VBElement {
 
     this.#triggerHex = document.createElement('span');
     this.#triggerHex.className = 'color-hex';
+    this.#triggerHex.id = `${this.#uid}-value`;
 
     this.#trigger.appendChild(this.#triggerSwatch);
     this.#trigger.appendChild(this.#triggerHex);
+
+    // Accessible name: the author's label(s) for the inner input + the
+    // current value ("Brand color #6366f1"). The input itself is
+    // aria-hidden after upgrade, so its labels would otherwise name nothing.
+    const labelIds = [];
+    for (const label of Array.from(this.#input.labels || [])) {
+      if (!label.id) label.id = `${this.#uid}-label-${labelIds.length}`;
+      labelIds.push(label.id);
+    }
+    if (labelIds.length === 0) {
+      this.#triggerName = document.createElement('span');
+      this.#triggerName.className = 'visually-hidden';
+      this.#triggerName.id = `${this.#uid}-name`;
+      this.#triggerName.textContent = this.#input.getAttribute('aria-label')
+        || this.getAttribute('aria-label') || 'Color';
+      this.#trigger.prepend(this.#triggerName);
+      labelIds.push(this.#triggerName.id);
+    }
+    this.#trigger.setAttribute('aria-labelledby', [...labelIds, this.#triggerHex.id].join(' '));
+
     this.appendChild(this.#trigger);
 
     this.listen(this.#trigger, 'click', () => {
@@ -139,6 +233,8 @@ class ColorPicker extends VBElement {
   }
 
   #buildPanel() {
+    this.#swatchBar = undefined;
+    this.#eyedropperBtn = undefined;
     this.#panel = document.createElement('div');
     this.#panel.className = 'color-panel';
     this.#panel.setAttribute('role', 'dialog');
@@ -147,8 +243,13 @@ class ColorPicker extends VBElement {
     // Saturation/Lightness area
     this.#colorArea = document.createElement('div');
     this.#colorArea.className = 'color-area';
+    // One slider (APG has no 2-D slider pattern): aria-valuenow tracks
+    // saturation on the horizontal axis, Up/Down adjust lightness, and
+    // aria-valuetext announces both on every change.
     this.#colorArea.setAttribute('role', 'slider');
     this.#colorArea.setAttribute('aria-label', 'Saturation and lightness');
+    this.#colorArea.setAttribute('aria-valuemin', '0');
+    this.#colorArea.setAttribute('aria-valuemax', '100');
     this.#colorArea.setAttribute('tabindex', '0');
 
     this.#colorAreaThumb = document.createElement('div');
@@ -224,13 +325,13 @@ class ColorPicker extends VBElement {
     if (datalist) {
       this.#swatchBar = document.createElement('div');
       this.#swatchBar.className = 'color-swatches';
-      this.#swatchBar.setAttribute('role', 'listbox');
+      this.#swatchBar.setAttribute('role', 'group');
       this.#swatchBar.setAttribute('aria-label', 'Preset colors');
 
       for (const opt of /** @type {NodeListOf<HTMLOptionElement>} */ (datalist.querySelectorAll('option[value]'))) {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.setAttribute('role', 'option');
+        btn.setAttribute('aria-pressed', 'false');
         btn.style.background = opt.value;
         btn.setAttribute('aria-label', opt.textContent || opt.value);
         btn.setAttribute('data-color', opt.value);
@@ -355,11 +456,13 @@ class ColorPicker extends VBElement {
     const y = clamp((e.clientY - rect.top) / rect.height, 0, 1);
     this.#s = Math.round(x * 100);
     this.#l = Math.round((1 - y) * 100);
-    this.#commit();
+    this.#commit('pointer');
   }
 
   #handleAreaKeydown = (e) => {
     const step = e.shiftKey ? 10 : 1;
+    this.#s = Math.round(this.#s);
+    this.#l = Math.round(this.#l);
     switch (e.key) {
       case 'ArrowRight': e.preventDefault(); this.#s = clamp(this.#s + step, 0, 100); break;
       case 'ArrowLeft':  e.preventDefault(); this.#s = clamp(this.#s - step, 0, 100); break;
@@ -367,7 +470,7 @@ class ColorPicker extends VBElement {
       case 'ArrowDown':  e.preventDefault(); this.#l = clamp(this.#l - step, 0, 100); break;
       default: return;
     }
-    this.#commit();
+    this.#commit('keyboard');
   };
 
   // --- Hue Strip ---
@@ -392,11 +495,12 @@ class ColorPicker extends VBElement {
     const rect = this.#hueStrip.getBoundingClientRect();
     const x = clamp((e.clientX - rect.left) / rect.width, 0, 1);
     this.#h = Math.round(x * 360);
-    this.#commit();
+    this.#commit('pointer');
   }
 
   #handleHueKeydown = (e) => {
     const step = e.shiftKey ? 10 : 1;
+    this.#h = Math.round(this.#h);
     switch (e.key) {
       case 'ArrowRight': case 'ArrowUp':
         e.preventDefault();
@@ -408,7 +512,7 @@ class ColorPicker extends VBElement {
         break;
       default: return;
     }
-    this.#commit();
+    this.#commit('keyboard');
   };
 
   // --- Text Input Handlers ---
@@ -423,7 +527,7 @@ class ColorPicker extends VBElement {
     let val = inp.value.trim();
     if (!val.startsWith('#')) val = '#' + val;
     if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val)) {
-      const hsl = hexToHsl(val);
+      const hsl = hexToHsl(val, true);
       this.#h = hsl.h;
       this.#s = hsl.s;
       this.#l = hsl.l;
@@ -435,7 +539,7 @@ class ColorPicker extends VBElement {
     const r = clamp(Number(this.#channelInput('rgb', 'r').value) || 0, 0, 255);
     const g = clamp(Number(this.#channelInput('rgb', 'g').value) || 0, 0, 255);
     const b = clamp(Number(this.#channelInput('rgb', 'b').value) || 0, 0, 255);
-    const hsl = rgbToHsl(r, g, b);
+    const hsl = rgbToHsl(r, g, b, true);
     this.#h = hsl.h;
     this.#s = hsl.s;
     this.#l = hsl.l;
@@ -456,7 +560,7 @@ class ColorPicker extends VBElement {
     const L = clamp(Number(this.#channelInput('oklch', 'oL').value) || 0, 0, 100) / 100;
     const C = clamp(Number(this.#channelInput('oklch', 'oC').value) || 0, 0, 0.4);
     const H = clamp(Number(this.#channelInput('oklch', 'oH').value) || 0, 0, 360);
-    const hsl = oklchToHsl(L, C, H);
+    const hsl = oklchToHsl(L, C, H, true);
     this.#h = hsl.h;
     this.#s = hsl.s;
     this.#l = hsl.l;
@@ -469,7 +573,7 @@ class ColorPicker extends VBElement {
     const btn = e.target.closest('button[data-color]');
     if (!btn) return;
     const hex = btn.getAttribute('data-color');
-    const hsl = hexToHsl(hex);
+    const hsl = hexToHsl(hex, true);
     this.#h = hsl.h;
     this.#s = hsl.s;
     this.#l = hsl.l;
@@ -482,7 +586,7 @@ class ColorPicker extends VBElement {
     try {
       const dropper = new (/** @type {any} */ (window).EyeDropper)();
       const result = await dropper.open();
-      const hsl = hexToHsl(result.sRGBHex);
+      const hsl = hexToHsl(result.sRGBHex, true);
       this.#h = hsl.h;
       this.#s = hsl.s;
       this.#l = hsl.l;
@@ -502,8 +606,10 @@ class ColorPicker extends VBElement {
   /**
    * Commit the current HSL state and emit a tagged change event.
    * @param {'internal' | 'api' | 'pointer' | 'keyboard'} [source='internal']
-   *   Where the change originated. Lets framework consumers filter their
-   *   own .value assignments out of the event stream.
+   *   Where the change originated: pointer/keyboard on the area or hue
+   *   strip, api for .value, internal for text inputs, swatches and the
+   *   EyeDropper. Lets framework consumers filter their own .value
+   *   assignments out of the event stream.
    */
   #commit(source = 'internal') {
     this.#updateAll();
@@ -516,7 +622,7 @@ class ColorPicker extends VBElement {
       detail: {
         hex,
         rgb: { r: rgb.r, g: rgb.g, b: rgb.b },
-        hsl: { h: this.#h, s: this.#s, l: this.#l },
+        hsl: { h: Math.round(this.#h), s: Math.round(this.#s), l: Math.round(this.#l) },
         source,
       },
     }));
@@ -534,19 +640,27 @@ class ColorPicker extends VBElement {
     // Color area background
     this.#colorArea.style.setProperty('--area-hue', pureHue);
 
-    // Area thumb position (x=saturation, y=inverse lightness)
-    this.#colorAreaThumb.style.insetInlineStart = `${this.#s}%`;
-    this.#colorAreaThumb.style.insetBlockStart = `${100 - this.#l}%`;
+    // Area thumb position (x=saturation, y=inverse lightness). Physical
+    // left/top: the gradients and the pointer math are physical too, so
+    // the thumb stays under the pointer in RTL.
+    this.#colorAreaThumb.style.left = `${this.#s}%`;
+    this.#colorAreaThumb.style.top = `${100 - this.#l}%`;
     this.#colorAreaThumb.style.background = hex;
 
+    // State is unrounded (lossless hex round trip); expose integers.
+    const h = Math.round(this.#h);
+    const sat = Math.round(this.#s);
+    const lig = Math.round(this.#l);
+
     // Area ARIA
+    this.#colorArea.setAttribute('aria-valuenow', String(sat));
     this.#colorArea.setAttribute('aria-valuetext',
-      `Saturation ${this.#s}%, Lightness ${this.#l}%`);
+      `Saturation ${sat}%, lightness ${lig}%`);
 
     // Hue thumb
-    this.#hueThumb.style.insetInlineStart = `${(this.#h / 360) * 100}%`;
-    this.#hueStrip.setAttribute('aria-valuenow', String(this.#h));
-    this.#hueStrip.setAttribute('aria-valuetext', `Hue ${this.#h}°`);
+    this.#hueThumb.style.left = `${(this.#h / 360) * 100}%`;
+    this.#hueStrip.setAttribute('aria-valuenow', String(h));
+    this.#hueStrip.setAttribute('aria-valuetext', `Hue ${h}°`);
 
     // Text inputs — populate every format group so switching formats
     // immediately shows the right channel values for the current color.
@@ -558,26 +672,34 @@ class ColorPicker extends VBElement {
     setVal('rgb', 'r', rgb.r);
     setVal('rgb', 'g', rgb.g);
     setVal('rgb', 'b', rgb.b);
-    setVal('hsl', 'h', this.#h);
-    setVal('hsl', 's', this.#s);
-    setVal('hsl', 'l', this.#l);
+    setVal('hsl', 'h', h);
+    setVal('hsl', 's', sat);
+    setVal('hsl', 'l', lig);
     const oklch = hslToOklch(this.#h, this.#s, this.#l);
     setVal('oklch', 'oL', (oklch.L * 100).toFixed(1));
     setVal('oklch', 'oC', oklch.C.toFixed(3));
     setVal('oklch', 'oH', oklch.H.toFixed(1));
+
+    // Swatches: aria-pressed marks the one matching the current colour.
+    if (this.#swatchBar) {
+      for (const btn of this.#swatchBar.querySelectorAll('button[data-color]')) {
+        const match = (btn.getAttribute('data-color') || '').toLowerCase() === hex.toLowerCase();
+        btn.setAttribute('aria-pressed', String(match));
+      }
+    }
   }
 
   // --- Open/Close ---
 
   #open() {
-    if (this.#isOpen) return;
+    if (this.#isOpen || this.#trigger.disabled) return;
     this.#isOpen = true;
     this.setAttribute('open', '');
     this.#trigger.setAttribute('aria-expanded', 'true');
 
     if (this.#usePopover) {
-      this.#positionPanel();
       try { this.#panel.showPopover(); } catch { /* already open */ }
+      this.#positionPanel();
       window.addEventListener('scroll', this.#onReposition, { capture: true, passive: true });
       window.addEventListener('resize', this.#onReposition, { passive: true });
     }
@@ -601,11 +723,33 @@ class ColorPicker extends VBElement {
     this.dispatchEvent(new CustomEvent('color-picker:close', { bubbles: true }));
   }
 
+  /**
+   * Place the fixed (popover) panel in physical viewport coordinates:
+   * below the trigger, aligned to its start edge (right edge in RTL),
+   * flipped above when there is no room below, and clamped inside the
+   * viewport on both axes.
+   */
   #positionPanel() {
     if (!this.#usePopover) return;
     const rect = this.#trigger.getBoundingClientRect();
-    this.#panel.style.setProperty('--panel-top', `${rect.bottom + 4}px`);
-    this.#panel.style.setProperty('--panel-left', `${rect.left}px`);
+    const w = this.#panel.offsetWidth;
+    const h = this.#panel.offsetHeight;
+    const vw = document.documentElement.clientWidth;
+    const vh = document.documentElement.clientHeight;
+    const rtl = getComputedStyle(this).direction === 'rtl';
+
+    let left = rtl ? rect.right - w : rect.left;
+    left = Math.min(left, vw - w - VIEWPORT_GAP);
+    left = Math.max(left, VIEWPORT_GAP);
+
+    let top = rect.bottom + 4;
+    if (top + h > vh - VIEWPORT_GAP && rect.top - h - 4 >= VIEWPORT_GAP) {
+      top = rect.top - h - 4;
+    }
+    top = Math.max(VIEWPORT_GAP, Math.min(top, vh - h - VIEWPORT_GAP));
+
+    this.#panel.style.setProperty('--panel-top', `${Math.round(top)}px`);
+    this.#panel.style.setProperty('--panel-left', `${Math.round(left)}px`);
   }
 
   #onReposition = () => {
@@ -628,7 +772,8 @@ class ColorPicker extends VBElement {
   }
 
   formResetCallback() {
-    const hsl = hexToHsl(this.#initialValue);
+    if (!this.#trigger) return;
+    const hsl = hexToHsl(this.#initialValue, true);
     this.#h = hsl.h;
     this.#s = hsl.s;
     this.#l = hsl.l;
@@ -637,8 +782,8 @@ class ColorPicker extends VBElement {
   }
 
   formStateRestoreCallback(state) {
-    if (!state) return;
-    const hsl = hexToHsl(state);
+    if (!state || !this.#trigger) return;
+    const hsl = hexToHsl(state, true);
     this.#h = hsl.h;
     this.#s = hsl.s;
     this.#l = hsl.l;
@@ -656,7 +801,7 @@ class ColorPicker extends VBElement {
     const currentHex = hslToHex(this.#h, this.#s, this.#l).toLowerCase();
     const incoming = val.toLowerCase();
     if (currentHex === incoming || currentHex === incoming.toLowerCase()) return;
-    const hsl = hexToHsl(val);
+    const hsl = hexToHsl(val, true);
     this.#h = hsl.h;
     this.#s = hsl.s;
     this.#l = hsl.l;

@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "color-picker"
-description: "Form-associated color picker with HSL color space, hue slider, hex/RGB inputs, preset swatches, and EyeDropper API."
+description: "Form-associated color picker with a saturation/lightness area, hue slider, HEX/RGB/HSL/OKLCH inputs, Copy button, preset swatches, and EyeDropper API."
 elementName: color-picker
 category: component
 currentPath: /docs/elements/web-components/color-picker/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;color-picker&gt;</code> component wraps a native <code>&lt;input type="color"&gt;</code> and replaces the limited browser picker with a full color space UI. It features a saturation/lightness area, hue slider, hex and RGB text inputs, preset swatches from a <code>&lt;datalist&gt;</code>, and EyeDropper API integration.</p>
+    <p>The <code>&lt;color-picker&gt;</code> component wraps a native <code>&lt;input type="color"&gt;</code> and replaces the limited browser picker with a full color space UI: a saturation/lightness area, a hue slider, a format selector with HEX, RGB, HSL and OKLCH inputs, a Copy button, preset swatches from a <code>&lt;datalist&gt;</code>, and EyeDropper API integration.</p>
 
     <browser-window
       src="/docs/examples/demos/color-picker-basic.html"
@@ -23,13 +23,15 @@ crumbLabel: Web Components
 
     <code-block language="html" show-lines label="Basic color picker" data-escape><form-field>
   <label for="brand">Brand color</label>
-  <color-picker name="brand">
-    <input type="color" id="brand" value="#6366f1">
+  <color-picker>
+    <input type="color" id="brand" name="brand" value="#6366f1">
   </color-picker>
 </form-field></code-block>
 
+    <p>Point the <code>&lt;label for&gt;</code> at the inner input. After upgrade the native input is hidden from assistive technology, so the component reuses its label to name the trigger button together with the current value (&ldquo;Brand color #6366f1&rdquo;). Clicking the label focuses the trigger.</p>
+
     <aside class="note">
-      <strong>Progressive enhancement:</strong> Without JavaScript, the native <code>&lt;input type="color"&gt;</code> provides an OS-level color picker. The full UI only appears after the component upgrades.
+      <strong>Progressive enhancement:</strong> Without JavaScript, the native <code>&lt;input type="color"&gt;</code> provides an OS-level color picker and submits under its own <code>name</code>. On upgrade the component moves that <code>name</code> to itself (if the host has a <code>name</code> too, the host wins) and removes it from the input, so the form always submits exactly one value.
     </aside>
 
     <aside class="note">
@@ -37,46 +39,67 @@ crumbLabel: Web Components
     </aside>
   </section>
 
+  {% from "partials/attribute-table.njk" import attributeTable, structureTable, childAttributeTable, eventsTable %}
   <section>
     <h2>Attributes</h2>
+    {{ attributeTable("color-picker", apiRegistry) }}
+
+    <h3>Required Structure</h3>
+    {{ structureTable("color-picker", apiRegistry) }}
+
+    <h3>Child Attributes</h3>
+    {{ childAttributeTable("color-picker", apiRegistry) }}
+  </section>
+
+  <section>
+    <h2>Formats and Copy</h2>
+    <p>The <strong>Format</strong> selector in the panel switches the text inputs between HEX, RGB, HSL and OKLCH. All four stay in sync with the color; only the active one is shown. The <strong>Copy</strong> button writes the current color to the clipboard in the active format, using modern CSS Color 4 syntax:</p>
     <table class="props-table">
       <thead>
         <tr>
-          <th>Attribute</th>
-          <th>Type</th>
-          <th>Default</th>
-          <th>Description</th>
+          <th>Format</th>
+          <th>Inputs</th>
+          <th>Copied as</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>name</code></td>
-          <td>string</td>
-          <td>&mdash;</td>
-          <td>Form field name for submission.</td>
+          <td><code>hex</code></td>
+          <td>Hex</td>
+          <td><code>#6366f1</code></td>
         </tr>
         <tr>
-          <td><code>disabled</code></td>
-          <td>boolean</td>
-          <td><code>false</code></td>
-          <td>Disables the picker.</td>
+          <td><code>rgb</code></td>
+          <td>R, G, B (0&ndash;255)</td>
+          <td><code>rgb(99 102 241)</code></td>
         </tr>
         <tr>
-          <td><code>required</code></td>
-          <td>boolean</td>
-          <td><code>false</code></td>
-          <td>Marks the field as required for form validation.</td>
+          <td><code>hsl</code></td>
+          <td>H (0&ndash;360), S, L (0&ndash;100)</td>
+          <td><code>hsl(239deg 84% 67%)</code></td>
+        </tr>
+        <tr>
+          <td><code>oklch</code></td>
+          <td>L%, C (0&ndash;0.4), H&deg;</td>
+          <td><code>oklch(58.5% 0.204 277.1deg)</code></td>
         </tr>
       </tbody>
     </table>
+    <p>Set the <code>format</code> attribute to open the picker in a particular format. The user&rsquo;s choice at runtime is kept for the life of the element.</p>
+    <code-block language="html" show-lines label="Start in OKLCH" data-escape><label for="accent-oklch">Accent</label>
+<color-picker format="oklch">
+  <input type="color" id="accent-oklch" name="accent" value="#3b82f6">
+</color-picker></code-block>
+    <p>The submitted form value and the <code>value</code> property are always a 7-character hex string, whatever format is displayed.</p>
   </section>
 
   <section>
     <h2>Preset Swatches</h2>
-    <p>Add a <code>&lt;datalist&gt;</code> child with <code>&lt;option&gt;</code> elements to provide a row of preset color swatches.</p>
+    <p>Add a <code>&lt;datalist&gt;</code> child with <code>&lt;option&gt;</code> elements to provide a row of preset color swatches. The option text is the swatch&rsquo;s accessible name.</p>
 
-    <code-block language="html" show-lines label="With preset swatches" data-escape><color-picker name="accent">
-  <input type="color" value="#3b82f6">
+    <code-block language="html" show-lines label="With preset swatches" data-escape><label for="accent">Accent color</label>
+<color-picker>
+  <input type="color" id="accent" name="accent" value="#3b82f6">
   <datalist>
     <option value="#ef4444">Red</option>
     <option value="#f97316">Orange</option>
@@ -90,27 +113,71 @@ crumbLabel: Web Components
 
   <section>
     <h2>EyeDropper</h2>
-    <p>On supported browsers, a pipette button appears that opens the EyeDropper API to pick any color from the screen. The button is hidden on browsers that don&rsquo;t support the API.</p>
+    <p>On supported browsers, a pipette button appears that opens the EyeDropper API to pick any color from the screen. The button is omitted on browsers that don&rsquo;t support the API.</p>
   </section>
 
   <section>
     <h2>Form Integration</h2>
-    <p>The component is form-associated via <code>ElementInternals</code> and works inside <code>&lt;form-field&gt;</code> for validation. The submitted value is always a 7-character hex string (e.g. <code>#6366f1</code>).</p>
+    <p>The component is form-associated via <code>ElementInternals</code>. The submitted value is always a 7-character hex string (e.g. <code>#6366f1</code>). A color picker always holds a color, so there is no <code>required</code> state.</p>
+    <ul>
+      <li><strong>Reset</strong> restores the inner input&rsquo;s <code>value</code> attribute, even after the element has been moved in the DOM.</li>
+      <li><strong>Disabled</strong>: the <code>disabled</code> attribute, or a disabled ancestor <code>&lt;fieldset&gt;</code>, disables the trigger, closes the panel, and leaves the value out of the submitted <code>FormData</code>.</li>
+    </ul>
 
-    <code-block language="html" show-lines label="With form-field validation" data-escape><form>
-  <form-field>
+    <code-block language="html" show-lines label="Disabled by a fieldset" data-escape><form>
+  <fieldset disabled>
+    <legend>Theme (locked)</legend>
     <label for="theme">Theme color</label>
-    <color-picker name="theme" required>
-      <input type="color" id="theme" value="#6366f1">
+    <color-picker>
+      <input type="color" id="theme" name="theme" value="#6366f1">
     </color-picker>
-    <output class="error" for="theme" aria-live="polite"></output>
-  </form-field>
-  <button type="submit">Save</button>
+  </fieldset>
 </form></code-block>
   </section>
 
   <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>element.value</code></td><td>string</td><td>Current color as <code>#rrggbb</code> (read/write). Accepts 3- or 6-digit hex; anything else is ignored. Assigning fires <code>color-picker:change</code> with <code>source: 'api'</code> unless the color is unchanged.</td></tr>
+      </tbody>
+    </table>
+    <code-block language="javascript" show-lines label="Reading and setting the value" data-escape>const picker = document.querySelector('color-picker');
+
+picker.value;             // "#6366f1"
+picker.value = '#22c55e'; // updates UI + form value, fires change (source: 'api')
+
+picker.addEventListener('color-picker:change', (e) => {
+  if (e.detail.source === 'api') return; // ignore our own assignments
+  console.log(e.detail.hex, e.detail.rgb, e.detail.hsl);
+});</code-block>
+  </section>
+
+  <section>
     <h2>Keyboard</h2>
+    <h3>Trigger and panel</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Open or close the panel (focus moves to the color area on open).</td>
+        </tr>
+        <tr>
+          <td><kbd>Escape</kbd></td>
+          <td>Close the panel and return focus to the trigger.</td>
+        </tr>
+      </tbody>
+    </table>
+
     <h3>Color area (saturation/lightness)</h3>
     <table class="props-table">
       <thead>
@@ -141,7 +208,7 @@ crumbLabel: Web Components
       </thead>
       <tbody>
         <tr>
-          <td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td>
+          <td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd> (or Down / Up)</td>
           <td>Adjust hue by 1&deg; (Shift: 10&deg;).</td>
         </tr>
       </tbody>
@@ -150,35 +217,18 @@ crumbLabel: Web Components
 
   <section>
     <h2>Events</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Event</th>
-          <th>Detail</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>color-picker:change</code></td>
-          <td><code>{ hex, rgb, hsl }</code></td>
-          <td>Fired when the color changes. <code>rgb</code> is <code>{ r, g, b }</code> (0&ndash;255). <code>hsl</code> is <code>{ h, s, l }</code> (h: 0&ndash;360, s/l: 0&ndash;100).</td>
-        </tr>
-        <tr>
-          <td><code>color-picker:open</code></td>
-          <td>&mdash;</td>
-          <td>Fired when the panel opens.</td>
-        </tr>
-        <tr>
-          <td><code>color-picker:close</code></td>
-          <td>&mdash;</td>
-          <td>Fired when the panel closes.</td>
-        </tr>
-      </tbody>
-    </table>
+    {{ eventsTable("color-picker", apiRegistry) }}
+    <p><code>rgb</code> is <code>{ r, g, b }</code> (0&ndash;255); <code>hsl</code> is <code>{ h, s, l }</code> (h: 0&ndash;360, s/l: 0&ndash;100, rounded).</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p>The trigger button uses <code>aria-haspopup="dialog"</code> and <code>aria-expanded</code>. The panel is <code>role="dialog"</code> with an accessible label. The color area uses <code>role="slider"</code> with <code>aria-valuetext</code> describing saturation and lightness percentages. The hue strip uses <code>role="slider"</code> with <code>aria-valuenow</code> for the hue degree. Preset swatches use <code>role="listbox"</code> with individual <code>role="option"</code> buttons. Text inputs provide direct numeric entry for users who prefer precision over the visual interface.</p>
+    <ul>
+      <li>The trigger is a <code>&lt;button&gt;</code> with <code>aria-haspopup="dialog"</code> and <code>aria-expanded</code>, named by the inner input&rsquo;s <code>&lt;label&gt;</code> plus the current hex value via <code>aria-labelledby</code>. Without a label it falls back to the input&rsquo;s <code>aria-label</code>, the host&rsquo;s <code>aria-label</code>, or &ldquo;Color&rdquo;.</li>
+      <li>The panel is <code>role="dialog"</code> with an accessible label. <kbd>Escape</kbd> closes it and returns focus to the trigger; closing by clicking elsewhere leaves focus where the user clicked.</li>
+      <li>The color area is a single <code>role="slider"</code>. There is no APG pattern for a two-dimensional slider, so <code>aria-valuenow</code> (0&ndash;100) tracks saturation on the horizontal axis, <kbd>Arrow Up</kbd>/<kbd>Arrow Down</kbd> adjust lightness, and <code>aria-valuetext</code> announces both (&ldquo;Saturation 84%, lightness 67%&rdquo;) on every change. The HSL inputs give a dedicated one-dimensional control for each channel.</li>
+      <li>The hue strip is <code>role="slider"</code> with <code>aria-valuenow</code> 0&ndash;360 and <code>aria-valuetext</code> in degrees.</li>
+      <li>Preset swatches are plain buttons in a <code>role="group"</code> labelled &ldquo;Preset colors&rdquo;; the swatch matching the current color has <code>aria-pressed="true"</code>.</li>
+      <li>Text inputs provide direct numeric entry for users who prefer precision over the visual interface.</li>
+    </ul>
   </section>
