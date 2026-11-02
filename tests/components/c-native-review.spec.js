@@ -49,9 +49,9 @@ test.describe('code / pre / i18n', () => {
     expect(await css(page, '#s', 'fontSize')).toBe(await css(page, '#p', 'fontSize'));
   });
 
-  test('inline code breaks anywhere; code in pre does not', async ({ page }) => {
+  test('inline code wraps overlong words; code in pre does not', async ({ page }) => {
     await load(page, '<p><code id="i">averyveryverylongidentifier</code></p><pre><code id="b">x</code></pre>');
-    expect(await css(page, '#i', 'overflowWrap')).toBe('anywhere');
+    expect(await css(page, '#i', 'overflowWrap')).toBe('break-word');
     expect(await css(page, '#b', 'overflowWrap')).toBe('normal');
   });
 });
