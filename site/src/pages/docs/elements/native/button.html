@@ -40,17 +40,17 @@ crumbLabel: Native Elements
     <tbody>
       <tr>
         <td>(default / primary)</td>
-        <td>Solid <code>--color-interactive</code> background, white text</td>
+        <td>Solid <code>--btn-color</code> background (defaults to <code>--color-interactive</code>); text colour picked with <code>contrast-color()</code> where supported, else <code>--color-text-on-primary</code></td>
         <td>Primary action. Use sparingly, typically once per section</td>
       </tr>
       <tr>
         <td><code>.secondary</code></td>
-        <td>Transparent with colored border and text</td>
+        <td>Transparent with a <code>--btn-color</code> border and text</td>
         <td>Supporting action that pairs with primary</td>
       </tr>
       <tr>
         <td><code>.ghost</code></td>
-        <td>No background or border, text-only</td>
+        <td>No background, transparent border, text-only</td>
         <td>Tertiary or de-emphasized actions</td>
       </tr>
     </tbody>
@@ -108,9 +108,67 @@ crumbLabel: Native Elements
 <button type="button" class="full-width">Full Width</button></code-block>
 </section>
 
+<section id="custom-colour">
+  <h2>Custom Colour</h2>
+  <p>Set <code>--btn-color</code> to recolour a button. Hover and active shades are derived from it, the secondary and ghost variants follow it, and on browsers with <code>contrast-color()</code> the primary text switches between black and white to stay readable. The same contract applies to <code>&lt;a class="button"&gt;</code> and <code>&lt;input type="submit"&gt;</code>.</p>
+
+  <code-block language="html" label="Custom button colour" data-escape><button type="button" style="--btn-color: gold">Gold</button>
+<button type="button" class="secondary" style="--btn-color: var(--color-error)">Delete</button>
+<a href="/upgrade" class="button" style="--btn-color: oklch(55% 0.2 150)">Upgrade</a></code-block>
+
+  <table class="props-table">
+    <caption>Custom properties</caption>
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Default</th>
+        <th>Effect</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>--btn-color</code></td>
+        <td><code>var(--color-interactive)</code></td>
+        <td>Base colour for every variant; hover and active shades derive from it</td>
+      </tr>
+      <tr>
+        <td><code>--btn-padding-block</code></td>
+        <td><code>var(--size-s)</code></td>
+        <td>Top and bottom padding (also the side padding of icon-only buttons)</td>
+      </tr>
+      <tr>
+        <td><code>--btn-padding-inline</code></td>
+        <td><code>var(--size-m)</code></td>
+        <td>Left and right padding</td>
+      </tr>
+      <tr>
+        <td><code>--btn-padding-inline-start</code> / <code>--btn-padding-inline-end</code></td>
+        <td><code>var(--btn-padding-inline)</code></td>
+        <td>Override one side, e.g. to balance a leading icon</td>
+      </tr>
+      <tr>
+        <td><code>--btn-font-weight</code></td>
+        <td><code>500</code></td>
+        <td>Label weight</td>
+      </tr>
+      <tr>
+        <td><code>--btn-text-transform</code></td>
+        <td><code>none</code></td>
+        <td>Label case, e.g. <code>uppercase</code></td>
+      </tr>
+      <tr>
+        <td><code>--btn-letter-spacing</code></td>
+        <td><code>normal</code></td>
+        <td>Label tracking</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>The <code>.small</code> and <code>.large</code> classes set padding directly, so the padding properties apply to the default size.</p>
+</section>
+
 <section>
   <h2>Button Types</h2>
-  <p>The <code>type</code> attribute determines the button's behavior within a <a href="/docs/elements/native/form/">form</a>.</p>
+  <p>The <code>type</code> attribute determines the button's behavior within a <a href="/docs/elements/native/form/">form</a>. A button with no <code>type</code>, or an unrecognised value, is a <strong>submit</strong> button: put a type-less button inside a form and clicking it submits the form. Always write <code>type="button"</code> for buttons that run scripts or open dialogs.</p>
 
   <table class="props-table">
     <thead>
@@ -128,7 +186,7 @@ crumbLabel: Native Elements
       </tr>
       <tr>
         <td><code>submit</code></td>
-        <td>Submits the parent form (default in forms)</td>
+        <td>Submits the form it belongs to. The default when <code>type</code> is missing or invalid</td>
         <td>Form submission</td>
       </tr>
       <tr>
@@ -146,13 +204,62 @@ crumbLabel: Native Elements
 <button type="submit">Submit</button>
 
 <!-- Form reset -->
-<button type="reset">Reset</button></code-block>
+<button type="reset">Reset</button>
+
+<!-- No type: this submits the form -->
+<form>
+  <button>Also submits</button>
+</form></code-block>
+
+  <p><code>&lt;input type="submit"&gt;</code>, <code>&lt;input type="button"&gt;</code> and <code>&lt;input type="reset"&gt;</code> get the same styling and variant classes as <code>&lt;button&gt;</code>. Prefer <code>&lt;button&gt;</code>, which can hold icons and markup.</p>
+</section>
+
+<section>
+  <h2>Attributes</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>form</code></td>
+        <td>Associates the button with a form by <code>id</code>, so it can sit outside the <code>&lt;form&gt;</code> element</td>
+      </tr>
+      <tr>
+        <td><code>formaction</code>, <code>formmethod</code>, <code>formenctype</code>, <code>formtarget</code></td>
+        <td>Override the form's <code>action</code>, <code>method</code>, <code>enctype</code> and <code>target</code> for this submit button only</td>
+      </tr>
+      <tr>
+        <td><code>formnovalidate</code></td>
+        <td>Skip constraint validation when this button submits (e.g. "Save draft")</td>
+      </tr>
+      <tr>
+        <td><code>name</code>, <code>value</code></td>
+        <td>Sent with the form data when this button submits it, so the server knows which button was used. With <code>command="close"</code> on a dialog, <code>value</code> becomes the dialog's <code>returnValue</code></td>
+      </tr>
+      <tr>
+        <td><code>popovertarget</code>, <code>popovertargetaction</code></td>
+        <td>Toggle, show or hide a <code>[popover]</code> element by <code>id</code> (<code>toggle</code> is the default action)</td>
+      </tr>
+      <tr>
+        <td><code>commandfor</code>, <code>command</code></td>
+        <td>Invoker commands: run <code>command</code> on the element named by <code>commandfor</code>. Built-in values: <code>show-modal</code>, <code>close</code>, <code>request-close</code> (dialogs) and <code>toggle-popover</code>, <code>show-popover</code>, <code>hide-popover</code> (popovers). Custom commands start with <code>--</code> (e.g. <code>--rotate</code>) and fire a <code>command</code> event on the target for your script to handle</td>
+      </tr>
+      <tr>
+        <td><code>disabled</code></td>
+        <td>Not focusable and not clickable. See <a href="#aria-disabled">aria-disabled</a> for a focusable alternative</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
 <section>
   <h2>Buttons with Icons</h2>
   <p>Buttons can include icons using the <a href="/docs/elements/web-components/icons/">icon-wc</a> component. The button's <code>inline-flex</code> layout with <code>gap: var(--size-xs)</code> automatically handles alignment.</p>
-  <p>For icon-only buttons, always include <code>aria-label</code> to provide an accessible name.</p>
+  <p>For icon-only buttons, always include <code>aria-label</code> to provide an accessible name. An icon-only button (an <code>&lt;icon-wc&gt;</code> as its only child, plus <code>aria-label</code>, <code>aria-labelledby</code> or <code>title</code>) gets equal padding on all sides so it renders square.</p>
 
   <code-block language="html" label="Buttons with icons" data-escape><button type="button">
   <icon-wc name="plus"></icon-wc>
@@ -196,6 +303,16 @@ crumbLabel: Native Elements
     <button type="button" commandfor="my-dialog" command="close">OK</button>
   </footer>
 </dialog></code-block>
+
+  <p><code>command="request-close"</code> fires the dialog's <code>cancel</code> event first, so a script can stop it closing. A <code>close</code> button with a <code>value</code> sets the dialog's <code>returnValue</code>, which you can read in the <code>close</code> event:</p>
+
+  <code-block language="html" label="Returning a value from a dialog" data-escape><button type="button" commandfor="confirm" command="close" value="cancel">Cancel</button>
+<button type="button" commandfor="confirm" command="close" value="delete">Delete</button>
+<!-- confirm.returnValue is "cancel" or "delete" after it closes --></code-block>
+
+  <aside class="note">
+    <p><strong>Browser support:</strong> invoker commands (<code>commandfor</code> / <code>command</code>) are a recent addition to the platform. Check current support before relying on them. In a browser without them the button does nothing, and Vanilla Breeze does not ship a polyfill. For older browsers, <code>popovertarget</code> covers popovers, or wire dialogs up with a few lines of script.</p>
+  </aside>
 </section>
 
 <section>
@@ -216,6 +333,32 @@ crumbLabel: Native Elements
 </section>
 
 <section>
+  <h2>Loading State</h2>
+  <p>Add <a href="/docs/attributes/data-loading/"><code>data-loading</code></a> to show a spinner, set <code>aria-busy</code> and block double submits while an action runs. Without JavaScript the button behaves normally.</p>
+
+  <code-block language="html" label="Loading button" data-escape><form>
+  <button type="submit" data-loading="Saving...">Save Changes</button>
+</form></code-block>
+</section>
+
+<section id="aria-disabled">
+  <h2>aria-disabled</h2>
+  <p>The <code>disabled</code> attribute removes a button from the tab order, so keyboard and screen reader users may never learn it exists or why it is unavailable. <code>aria-disabled="true"</code> keeps the button focusable and announced as disabled; Vanilla Breeze styles it exactly like <code>:disabled</code> and turns off its hover and active states.</p>
+  <p><code>aria-disabled</code> does not stop clicks. Your script must ignore activation while it is set.</p>
+
+  <code-block language="html" label="Focusable disabled button" data-escape><button type="submit" aria-disabled="true" aria-describedby="why">Place order</button>
+<p id="why">Add a shipping address to continue.</p></code-block>
+</section>
+
+<section>
+  <h2>aria-pressed (Toggle Buttons)</h2>
+  <p>A button with <code>aria-pressed</code> is a toggle. When <code>aria-pressed="true"</code>, a primary button shows its active shade with an inset shadow, and secondary and ghost buttons fill with <code>--btn-color</code>. Toggle the attribute from your script; the label should stay the same in both states.</p>
+
+  <code-block language="html" label="Toggle button" data-escape><button type="button" class="secondary" aria-pressed="false">Bold</button>
+<button type="button" class="secondary" aria-pressed="true">Italic</button></code-block>
+</section>
+
+<section>
   <h2>Button-Styled Links</h2>
   <p>Need a link that looks like a button? Use <code>class="button"</code> on an <code>&lt;a&gt;</code> element. All variants and sizes apply: <code>.secondary</code>, <code>.ghost</code>, <code>.small</code>, <code>.large</code>, <code>.full-width</code>.</p>
 
@@ -231,76 +374,57 @@ crumbLabel: Native Elements
   <ul>
     <li><strong>Always include text</strong>: Buttons should have visible text. For icon-only buttons, add <code>aria-label</code></li>
     <li><strong>Use native buttons</strong>: Avoid <code>&lt;div onclick&gt;</code> patterns. Native buttons are keyboard accessible by default</li>
-    <li><strong>Visible focus</strong>: The <code>:focus-visible</code> outline is essential for keyboard navigation. Do not remove it</li>
-    <li><strong>Disabled state</strong>: Disabled buttons are not focusable. Consider keeping buttons enabled with validation messages instead</li>
+    <li><strong>Visible focus</strong>: The <code>:focus-visible</code> outline is essential for keyboard navigation. Do not remove it. Its width and offset follow <code>--focus-ring-width</code> and <code>--focus-ring-offset</code>, which grow under <code>prefers-contrast: more</code></li>
+    <li><strong>Disabled state</strong>: Disabled buttons are not focusable. Use <a href="#aria-disabled"><code>aria-disabled="true"</code></a> or keep buttons enabled with validation messages instead</li>
+    <li><strong>Forced colors</strong>: In Windows High Contrast every variant keeps a system-coloured border, disabled buttons use <code>GrayText</code> and pressed buttons use the selection colours</li>
+    <li><strong>Touch</strong>: Hover styles only apply on devices that can hover, so they do not stick after a tap</li>
     <li><strong>Minimum touch target</strong>: Buttons enforce a minimum size of <code>var(--size-touch-min)</code> (44x44px) for touch accessibility</li>
   </ul>
 </section>
 
 <section>
   <h2>CSS Reference</h2>
-  <code-block language="css" label="Complete button CSS reference" data-escape>button, .button {
+  <p>The full stylesheet is <code>src/native-elements/button/styles.css</code>. The rules apply to <code>button</code>, <code>.button</code> and <code>input[type="submit" | "button" | "reset"]</code>. Customise buttons through the <a href="#custom-colour">custom properties</a> rather than overriding these rules.</p>
+  <code-block language="css" label="Button CSS (abridged)" data-escape>button, .button,
+input:where([type="submit" i], [type="button" i], [type="reset" i]) {
+  --_color: var(--btn-color, var(--color-interactive));
+  --_text: var(--color-text-on-primary, white); /* contrast-color(var(--_color)) where supported */
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--size-xs);
-  padding-block: var(--size-s);
-  padding-inline: var(--size-m);
+  padding-block: var(--btn-padding-block, var(--size-s));
+  padding-inline: var(--btn-padding-inline, var(--size-m));
   min-block-size: var(--size-touch-min);
   min-inline-size: var(--size-touch-min);
-  background: var(--color-interactive);
-  color: white;
-  border: none;
+  background: var(--_color);
+  color: var(--_text);
+  border: var(--border-width-thin) solid transparent;
   border-radius: var(--radius-m);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-default);
+  font-weight: var(--btn-font-weight, 500);
+
+  @media (hover: hover) {
+    &:hover:where(:not(:disabled, [aria-disabled="true"])) { background: var(--_hover); }
+  }
+  &:active:where(:not(:disabled, [aria-disabled="true"])) { background: var(--_active); }
+  &[aria-pressed="true"] { background: var(--_active); box-shadow: var(--shadow-inner); }
+  &:focus-visible {
+    outline: var(--focus-ring-width) solid var(--_color);
+    outline-offset: var(--focus-ring-offset);
+  }
+  &:is(:disabled, [aria-disabled="true"]) { opacity: 0.5; cursor: not-allowed; }
+
+  &.secondary { background: transparent; color: var(--_color); border-color: currentColor; }
+  &.ghost { background: transparent; color: var(--color-text); }
+  &.small { padding-block: var(--size-xs); padding-inline: var(--size-s); font-size: var(--font-size-s); }
+  &.large { padding-block: var(--size-m); padding-inline: var(--size-l); font-size: var(--font-size-l); }
+  &.full-width { inline-size: 100%; }
 }
 
-button:hover {
-  background: var(--color-interactive-hover);
-}
-
-button:focus-visible {
-  outline: var(--border-width-medium) solid var(--color-interactive);
-  outline-offset: var(--border-width-medium);
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* --- Variants --- */
-
-button.secondary {
-  background: transparent;
-  color: var(--color-interactive);
-  border: var(--border-width-thin) solid currentColor;
-}
-
-button.ghost {
-  background: transparent;
-  color: var(--color-text);
-}
-
-/* --- Sizes --- */
-
-button.small {
-  padding-block: var(--size-xs);
-  padding-inline: var(--size-s);
-  font-size: var(--font-size-s);
-}
-
-button.large {
-  padding-block: var(--size-m);
-  padding-inline: var(--size-l);
-  font-size: var(--font-size-l);
-}
-
-button.full-width {
-  inline-size: 100%;
+@media (forced-colors: active) {
+  button, .button { border-color: ButtonBorder; }
+  button:disabled { color: GrayText; border-color: GrayText; opacity: 1; }
 }</code-block>
 </section>
 

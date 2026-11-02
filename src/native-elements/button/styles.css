@@ -1,4 +1,8 @@
-button, .button {
+/* <input type="submit|button|reset"> share the button look. The input part
+   is wrapped in :where() so it adds no specificity over plain `button`. */
+button,
+.button,
+input:where([type="submit" i], [type="button" i], [type="reset" i]) {
   /* Color contract: set --btn-color to change the entire button palette */
   --_color: var(--btn-color, var(--color-interactive));
   /* States: a custom --btn-color derives its own; otherwise the theme's
@@ -25,7 +29,10 @@ button, .button {
   min-inline-size: var(--size-touch-min);
   background: var(--_color);
   color: var(--_text);
-  border: none;
+  /* Transparent base border on every variant: primary, secondary and ghost
+     stay the same height, and forced-colors mode paints it so the button
+     keeps a visible boundary. */
+  border: var(--border-width-thin) solid transparent;
   border-radius: var(--radius-m);
   font: inherit;
   font-weight: var(--btn-font-weight, 500);
@@ -34,31 +41,64 @@ button, .button {
   cursor: var(--cursor-custom-pointer, pointer);
   transition: background var(--duration-fast) var(--ease-default);
 
-  &:hover {
-    background: var(--_hover);
+  /* Hover only where hover exists (no sticky hover on touch). Disabled and
+     aria-disabled buttons never react. The :where() guard adds no
+     specificity, so existing overrides keep winning. */
+  @media (hover: hover) {
+    &:hover:where(:not(:disabled, [aria-disabled="true"])) {
+      background: var(--_hover);
+    }
   }
 
-  &:active {
+  &:active:where(:not(:disabled, [aria-disabled="true"])) {
     background: var(--_active);
   }
 
-  &:focus-visible {
-    outline: var(--border-width-medium) solid var(--_color);
-    outline-offset: var(--border-width-medium);
+  /* Toggle buttons */
+  &[aria-pressed="true"] {
+    background: var(--_active);
+    box-shadow: var(--shadow-inner);
   }
 
-  &:disabled {
+  &:focus-visible {
+    outline: var(--focus-ring-width, var(--border-width-medium)) solid var(--_color);
+    outline-offset: var(--focus-ring-offset, var(--border-width-medium));
+  }
+
+  /* aria-disabled="true" is the focusable-but-inert pattern: it looks
+     disabled but stays in the tab order (the page must block activation). */
+  &:is(:disabled, [aria-disabled="true"]) {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  /* Icon-only (an icon plus an accessible name, no visible text): square
+     padding. The name is required because :only-child ignores text nodes,
+     so <button><icon-wc></icon-wc> Save</button> would match on its own. */
+  &:is([aria-label], [aria-labelledby], [title]):has(> icon-wc:only-child) {
+    padding-inline: var(--btn-padding-block, var(--size-s));
   }
 
   &.secondary {
     background: transparent;
     color: var(--_color);
-    border: var(--border-width-thin) solid currentColor;
+    border-color: currentColor;
 
-    &:hover {
+    @media (hover: hover) {
+      &:hover:where(:not(:disabled, [aria-disabled="true"])) {
+        background: var(--_subtle);
+      }
+    }
+
+    &:active:where(:not(:disabled, [aria-disabled="true"])) {
       background: var(--_subtle);
+    }
+
+    &[aria-pressed="true"] {
+      background: var(--_color);
+      color: var(--_text);
+      border-color: var(--_color);
+      box-shadow: none;
     }
   }
 
@@ -66,9 +106,22 @@ button, .button {
     background: transparent;
     color: var(--color-text);
 
-    &:hover {
+    @media (hover: hover) {
+      &:hover:where(:not(:disabled, [aria-disabled="true"])) {
+        background: var(--color-hover-bg);
+        color: var(--color-hover-text);
+      }
+    }
+
+    &:active:where(:not(:disabled, [aria-disabled="true"])) {
       background: var(--color-hover-bg);
       color: var(--color-hover-text);
+    }
+
+    &[aria-pressed="true"] {
+      background: var(--_subtle);
+      color: var(--_color);
+      box-shadow: none;
     }
   }
 
@@ -119,7 +172,33 @@ button[aria-busy="true"],
 }
 
 @supports (color: contrast-color(red)) {
-  button, .button {
+  button,
+  .button,
+  input:where([type="submit" i], [type="button" i], [type="reset" i]) {
     --_text: contrast-color(var(--_color));
+  }
+}
+
+/* Forced colors (Windows High Contrast): every variant keeps a system
+   border, disabled reads as GrayText (opacity is not a forced-colors
+   signal) and pressed uses the selection colours. */
+@media (forced-colors: active) {
+  button,
+  .button,
+  input:where([type="submit" i], [type="button" i], [type="reset" i]) {
+    border-color: ButtonBorder;
+
+    &:is(:disabled, [aria-disabled="true"]) {
+      opacity: 1;
+      color: GrayText;
+      border-color: GrayText;
+    }
+
+    &[aria-pressed="true"] {
+      forced-color-adjust: none;
+      background: SelectedItem;
+      color: SelectedItemText;
+      border-color: SelectedItem;
+    }
   }
 }
