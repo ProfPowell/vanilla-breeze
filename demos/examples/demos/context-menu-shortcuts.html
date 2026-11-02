@@ -17,19 +17,31 @@
       text-align: center;
       color: var(--color-text-muted);
     }
+    #cm-output {
+      display: block;
+      margin-block-start: var(--size-m);
+      color: var(--color-text-muted);
+    }
   </style>
 </head>
 <body>
   <context-menu>
-    <p data-trigger class="cm-trigger">Right-click for shortcut badges</p>
+    <p data-trigger class="cm-trigger">Right-click (or focus and press Shift+F10) for shortcut badges</p>
     <menu>
-      <li><button type="button" data-shortcut="meta+x"><icon-wc name="scissors"></icon-wc> Cut</button></li>
-      <li><button type="button" data-shortcut="meta+c"><icon-wc name="copy"></icon-wc> Copy</button></li>
-      <li><button type="button" data-shortcut="meta+v"><icon-wc name="clipboard"></icon-wc> Paste</button></li>
+      <li><button type="button" data-value="rename" data-shortcut="f2"><icon-wc name="pencil"></icon-wc> Rename</button></li>
+      <li><button type="button" data-value="duplicate" data-shortcut="shift+d"><icon-wc name="copy-plus"></icon-wc> Duplicate</button></li>
+      <li><button type="button" data-value="archive" data-shortcut="shift+e"><icon-wc name="archive"></icon-wc> Archive</button></li>
       <li role="separator"></li>
-      <li><button type="button" data-shortcut="meta+a">Select All</button></li>
+      <li><button type="button" class="danger" data-value="delete" data-shortcut="delete"><icon-wc name="trash-2"></icon-wc> Delete</button></li>
     </menu>
   </context-menu>
+  <output id="cm-output" aria-live="polite"></output>
   <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const output = document.getElementById('cm-output');
+    document.querySelector('context-menu').addEventListener('context-menu:select', (e) => {
+      output.textContent = `Selected: ${e.detail.value}`;
+    });
+  </script>
 </body>
 </html>

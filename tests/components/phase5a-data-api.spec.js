@@ -21,18 +21,24 @@ test('command-palette: .commands setter rebuilds groups + items', async ({ page 
       { value: 'close', label: 'Close', group: 'File' },
       { value: 'help',  label: 'Help' },
     ];
+    // A second assignment must not stack another <dialog> (vanilla-breeze-5ac4).
+    cp.commands = cp.commands;
     return {
       fired,
       groupCount: cp.querySelectorAll('command-group').length,
       itemCount: cp.querySelectorAll('command-item').length,
       gettable: cp.commands.length,
+      dialogs: cp.querySelectorAll('dialog').length,
+      options: cp.querySelectorAll('dialog [role="option"]').length,
     };
   });
 
-  expect(result.fired).toEqual([{ source: 'property', count: 4 }]);
+  expect(result.fired[0]).toEqual({ source: 'property', count: 4 });
   expect(result.groupCount).toBe(2); // File + unlabeled
   expect(result.itemCount).toBe(4);
   expect(result.gettable).toBe(4);
+  expect(result.dialogs).toBe(1);
+  expect(result.options).toBe(4);
 });
 
 test('selection-menu: .actions setter replaces toolbar children', async ({ page }) => {
@@ -84,15 +90,16 @@ test('context-menu: .items setter rebuilds menu with groups + separators', async
       ':scope > pop-over[data-context-menu-host] > menu, :scope > pop-over[data-context-menu-host] > ul[role="menu"]');
     return {
       fired,
-      liCount: menu?.querySelectorAll(':scope > li').length,
-      hasGroup: !!menu?.querySelector('li[data-group]'),
+      rowCount: cm.items.length,
+      hasGroup: !!menu?.querySelector('li[role="group"] > ul > li[data-group]'),
       hasSeparator: !!menu?.querySelector('li[role="separator"]'),
-      hasDisabled: !!menu?.querySelector('button:disabled'),
+      // data-disabled, not native disabled: stays focusable per APG (i89g).
+      hasDisabled: !!menu?.querySelector('button[aria-disabled="true"]'),
     };
   });
 
   expect(result.fired).toEqual([{ source: 'property', count: 5 }]);
-  expect(result.liCount).toBe(5);
+  expect(result.rowCount).toBe(5);
   expect(result.hasGroup).toBe(true);
   expect(result.hasSeparator).toBe(true);
   expect(result.hasDisabled).toBe(true);

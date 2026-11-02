@@ -27,23 +27,23 @@
 </head>
 <body>
   <h1>Command Palette</h1>
-  <p>Press <span class="hotkey-hint">&#8984;K</span> or click the button below to open the command palette.</p>
+  <p>Press <span class="hotkey-hint">&#8984;K</span> or click the button below to open the command palette. Item shortcuts (<kbd>Shift+H</kbd>, <kbd>Shift+D</kbd>, <kbd>Shift+P</kbd>) run their command directly while focus is not in a text field.</p>
 
-  <button type="button" onclick="document.querySelector('command-palette').open()" class="mb-m">
+  <button type="button" id="open-palette" class="mb-m">
     Open Command Palette
   </button>
 
   <command-palette hotkey="meta+k" placeholder="Search commands..." discover>
     <command-group label="Navigation">
-      <command-item value="home" data-hotkey="meta+h">Go Home</command-item>
+      <command-item value="home" data-hotkey="shift+h">Go Home</command-item>
       <command-item value="docs">Documentation</command-item>
       <command-item value="examples">Examples</command-item>
       <command-item value="settings">Settings</command-item>
     </command-group>
     <command-group label="Actions">
-      <command-item value="theme" data-hotkey="meta+shift+t">Toggle Dark Mode</command-item>
+      <command-item value="theme" data-hotkey="shift+d">Toggle Dark Mode</command-item>
       <command-item value="copy">Copy Current URL</command-item>
-      <command-item value="print" data-hotkey="meta+p">Print Page</command-item>
+      <command-item value="print" data-hotkey="shift+p">Print Page</command-item>
     </command-group>
     <command-group label="Help">
       <command-item value="shortcuts">Keyboard Shortcuts</command-item>
@@ -71,7 +71,9 @@
   <script type="module" src="/src/main.js"></script>
   <script type="module">
     const output = document.getElementById('output');
-    document.querySelector('command-palette').addEventListener('command-palette:select', (e) => {
+    const palette = document.querySelector('command-palette');
+    document.getElementById('open-palette').addEventListener('click', () => palette.open());
+    palette.addEventListener('command-palette:select', (e) => {
       const p = document.createElement('p');
       p.textContent = `Selected: ${e.detail.value}`;
       output.prepend(p);

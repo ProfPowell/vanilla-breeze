@@ -87,6 +87,14 @@ command-item {
     min-block-size: 0;
   }
 
+  /* The input is the only focus stop in the dialog (options are reached
+     with aria-activedescendant), so keyboard focus must stay visible.
+     Mark the search row rather than the borderless input itself. */
+  .command-search:has(input:focus-visible) {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-focus-ring));
+    outline-offset: calc(-1 * var(--focus-ring-width, 2px));
+  }
+
   .command-search input::placeholder {
     color: var(--color-text-muted);
   }
@@ -108,10 +116,22 @@ command-item {
     letter-spacing: 0.05em;
   }
 
-  .command-group-header:not(:first-child) {
+  /* Groups (role="group") wrap their header + options */
+  .command-group[hidden] {
+    display: none;
+  }
+
+  .command-group:not(:first-child) {
     margin-block-start: var(--size-2xs);
     border-block-start: 1px solid var(--color-border);
+  }
+
+  .command-group:not(:first-child) > .command-group-header {
     padding-block-start: var(--size-s);
+  }
+
+  .command-group-header[hidden] {
+    display: none;
   }
 
   /* Command option */

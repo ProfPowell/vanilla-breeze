@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "context-menu",
   "type": "web-component",
-  "description": "Right-click context menu with keyboard navigation and shortcut bindings",
+  "description": "Right-click (and Shift+F10 / ContextMenu key) menu with keyboard navigation and shortcut bindings",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": ["@flow"]
@@ -11,16 +11,27 @@
     { "name": "data-open", "kind": "data", "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Reflected when context menu is visible. Uses data-open because the host is not a native dialog/details — open would be semantically misleading." }
   ],
   "structure": [
-    { "element": "any element with data-trigger", "description": "Element defining the right-click target area" },
-    { "element": "<menu>",                                        "description": "Context menu with <li> items holding <button> actions" }
+    { "element": "any element with data-trigger", "description": "Right-click target area. Made focusable (tabindex=\"0\") when it is not already, and given aria-haspopup=\"menu\", aria-expanded and aria-controls" },
+    { "element": "<menu>",                        "description": "Context menu with <li> items holding <button> or <a> actions; <li data-group> labels and <li role=\"separator\"> rows" }
   ],
   "childAttributes": [
-    { "name": "data-trigger",  "on": "*", "type": "boolean", "required": true, "description": "Element defining the right-click target area" },
-    { "name": "data-shortcut", "on": "button",        "type": "string",                    "description": "Keyboard shortcut to bind, e.g. 'meta+c'. Displayed as formatted hint." }
+    { "name": "data-trigger",  "on": "*",               "type": "boolean", "required": true, "description": "Element defining the right-click target area" },
+    { "name": "data-group",    "on": "li",              "type": "boolean", "description": "Group label row. It and the items after it (up to the next label or separator) are wrapped in role=\"group\" named by the label" },
+    { "name": "data-shortcut", "on": "button, a",       "type": "string",  "description": "Keyboard shortcut bound page-wide (hotkey-bind, preventDefault) and shown as a badge, e.g. 'f2' or 'shift+d'. Never use clipboard combos." },
+    { "name": "data-disabled", "on": "button, a",       "type": "boolean", "description": "Disabled item: aria-disabled=\"true\", stays in the arrow-key order, cannot be activated" },
+    { "name": "data-value",    "on": "button, a",       "type": "string",  "description": "Value reported in context-menu:select detail.value and the items property" }
   ],
   "events": [
-    { "name": "context-menu:open",   "description": "Fired when the menu opens" },
-    { "name": "context-menu:close",  "description": "Fired when the menu closes" },
-    { "name": "context-menu:select", "detail": "{ item }", "description": "Fired when a menu item is selected" }
+    { "name": "context-menu:open",          "description": "Fired when the menu opens" },
+    { "name": "context-menu:close",         "description": "Fired when the menu closes" },
+    { "name": "context-menu:select",        "detail": "{ item, value }", "description": "Fired when an item is activated by click, keyboard or its shortcut (not for disabled items)" },
+    { "name": "context-menu:items-changed", "detail": "{ items, source: 'property' }", "description": "Fired after the items property rebuilds the menu" }
+  ],
+  "methods": [
+    { "name": "close()", "description": "Close the menu" }
+  ],
+  "properties": [
+    { "name": "items",  "type": "Array<{ label, value?, href?, shortcut?, disabled? } | { group } | { separator: true }>", "description": "Get the menu as data, or assign to rebuild it" },
+    { "name": "isOpen", "type": "boolean", "description": "Read-only. Whether the menu is open" }
   ]
 }

@@ -32,9 +32,21 @@ context-menu {
     min-inline-size: 10rem;
 
     /* Items */
-    & > li {
+    & li {
       margin: 0;
       padding: 0;
+    }
+
+    /* Group wrapper built by logic.js (<li role="group"><ul role="none">)
+       so role="group" contains the items it labels. Lays out exactly like
+       the flat authored list. */
+    & > li[data-ctx-group] > ul {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+      list-style: none;
     }
 
     /* Menu items are plain rows, never themed buttons. Themes live in
@@ -43,7 +55,7 @@ context-menu {
        reset has to be !important (an important declaration in a lower layer
        beats the theme, important or not). This used to be an inline style
        written by logic.js. */
-    & > li > :is(button, a),
+    & li > :is(button, a),
     & [role="menuitem"] {
       border: none !important;
       box-shadow: none !important;
@@ -51,8 +63,8 @@ context-menu {
       border-radius: 0 !important;
     }
 
-    & > li > button,
-    & > li > a {
+    & li > button,
+    & li > a {
       all: unset;
       display: flex;
       align-items: center;
@@ -78,16 +90,25 @@ context-menu {
         box-shadow: none;
       }
 
-      &[data-disabled] {
+      /* Keyboard focus needs more than a tint: draw the focus ring inside
+         the row (the surface clips overflow). Important for the same
+         reason as the reset above — themes style button:focus-visible. */
+      &:focus-visible {
+        outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-focus-ring)) !important;
+        outline-offset: calc(-1 * var(--focus-ring-width, 2px)) !important;
+      }
+
+      &:is([data-disabled], [aria-disabled="true"], :disabled) {
         color: var(--color-text-muted);
         cursor: not-allowed;
 
-        &:hover {
+        &:hover,
+        &:focus {
           background: transparent;
         }
       }
 
-      &.danger {
+      &.danger:not([aria-disabled="true"], :disabled) {
         color: var(--color-error);
 
         &:hover,
@@ -108,14 +129,14 @@ context-menu {
     }
 
     /* Separator */
-    & > [role="separator"] {
+    & [role="separator"] {
       block-size: 1px;
       margin: var(--size-2xs) 0;
       background: var(--color-border);
     }
 
     /* Group label */
-    & > li[data-group] {
+    & li[data-group] {
       padding: var(--size-xs) var(--size-m) var(--size-xs) var(--size-s);
       font-size: var(--font-size-xs, 0.75rem);
       font-weight: 600;
@@ -124,9 +145,16 @@ context-menu {
       letter-spacing: 0.05em;
     }
 
-    & > li[data-group]:not(:first-child) {
+    /* Non-first groups get a top border (on the wrapper once upgraded;
+       the bare label before upgrade). */
+    & > li[data-group]:not(:first-child),
+    & > li[data-ctx-group]:not(:first-child) {
       margin-block-start: var(--size-2xs);
       border-block-start: 1px solid var(--color-border);
+    }
+
+    & > li[data-group]:not(:first-child),
+    & > li[data-ctx-group]:not(:first-child) li[data-group] {
       padding-block-start: var(--size-s);
     }
 

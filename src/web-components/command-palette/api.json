@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "command-palette",
   "type": "web-component",
-  "description": "Command palette / Cmd+K launcher",
+  "description": "Command palette / Cmd+K launcher (modal dialog, combobox + listbox)",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -15,59 +15,116 @@
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Global keyboard shortcut to open (default: \"meta+k\")"
+      "default": "meta+k",
+      "description": "Global keyboard shortcut that toggles the palette (fires even in text fields)"
     },
     {
       "name": "placeholder",
       "kind": "native",
       "purpose": "config",
       "type": "string",
+      "default": "Type a command...",
       "description": "Search input placeholder text"
+    },
+    {
+      "name": "label",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "string",
+      "default": "Command palette",
+      "description": "Accessible name of the dialog"
     },
     {
       "name": "discover",
       "kind": "host-api",
       "purpose": "config",
-      "type": "boolean",
-      "description": "When present, auto-populate from [data-command] registry"
+      "type": "enum",
+      "values": [
+        "",
+        "auto"
+      ],
+      "description": "Present: add commands from [data-command] / [commandfor] elements. \"auto\": also scan nav links and headings"
+    }
+  ],
+  "structure": [
+    {
+      "element": "<command-group>",
+      "description": "Group of commands; rendered as a role=\"group\" named by its label"
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
+      "element": "<command-item>",
+      "description": "One command inside a <command-group>; its text is the label, an element with slot=\"icon\" the icon"
+    }
+  ],
+  "childAttributes": [
     {
       "name": "label",
-      "kind": "host-api",
-      "purpose": "config"
+      "on": "command-group",
+      "type": "string",
+      "description": "Group header text"
     },
     {
       "name": "value",
-      "kind": "native",
-      "purpose": "config"
+      "on": "command-item",
+      "type": "string",
+      "description": "Value passed in command-palette:select detail.value"
     },
     {
       "name": "data-hotkey",
-      "kind": "data",
-      "purpose": "config"
+      "on": "command-item",
+      "type": "string",
+      "description": "Shortcut shown as a badge and bound page-wide while connected; fires command-palette:select without opening the palette (not in text fields)"
     },
     {
-      "name": "name",
-      "kind": "native",
-      "purpose": "config"
+      "name": "slot",
+      "on": "command-item > *",
+      "type": "enum",
+      "values": [
+        "icon"
+      ],
+      "description": "slot=\"icon\" marks the item's icon (cloned into the option)"
     }
   ],
   "events": [
     {
-      "name": "command-palette:select"
+      "name": "command-palette:select",
+      "detail": "{ value }",
+      "description": "Fired when a declared command is chosen from the list or by its data-hotkey"
     },
     {
-      "name": "command-palette:open"
+      "name": "command-palette:open",
+      "description": "Fired when the palette opens"
     },
     {
-      "name": "command-palette:close"
+      "name": "command-palette:close",
+      "description": "Fired once whenever the dialog closes (close(), selection, Escape, backdrop click)"
+    },
+    {
+      "name": "command-palette:commands-changed",
+      "detail": "{ commands, source: 'property' }",
+      "description": "Fired after the commands property rebuilds the palette"
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "methods": [
+    {
+      "name": "open()",
+      "description": "Open the palette and focus the search input"
+    },
+    {
+      "name": "close()",
+      "description": "Close the palette"
+    }
+  ],
+  "properties": [
+    {
+      "name": "commands",
+      "type": "Array<{ value, label, hotkey?, group?, icon? }>",
+      "description": "Get the declared commands as data, or assign to rebuild the groups"
+    },
+    {
+      "name": "isOpen",
+      "type": "boolean",
+      "description": "Read-only. Whether the dialog is open"
+    }
+  ]
 }

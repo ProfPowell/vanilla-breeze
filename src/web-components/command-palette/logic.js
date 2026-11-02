@@ -7,7 +7,16 @@
  *
  * @attr {string} hotkey - Global keyboard shortcut to open (default: "meta+k")
  * @attr {string} placeholder - Search input placeholder text
- * @attr {boolean} discover - When present, auto-populate from [data-command] registry
+ * @attr {string} label - Accessible name of the dialog (default: "Command palette")
+ * @attr {boolean|"auto"} discover - When present, auto-populate from [data-command] registry;
+ *   "auto" also scans nav links and headings
+ *
+ * A command-item's data-hotkey is shown as a badge AND bound page-wide while
+ * the palette is connected: pressing it dispatches command-palette:select
+ * without opening the palette.
+ *
+ * A11y: combobox + listbox pattern — focus stays in the search input, the
+ * active option is exposed with aria-activedescendant / aria-selected.
  *
  * @example
  * <command-palette hotkey="meta+k" discover>
@@ -23,27 +32,48 @@ import { bindHotkey } from '../../utils/hotkey-bind.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 
+let paletteSeq = 0;
+
 class CommandPalette extends VBElement {
-  #dialog;
+  /** @type {HTMLDialogElement | null} */
+  #dialog = null;
+  /** @type {HTMLInputElement} */
   #input;
+  /** @type {HTMLElement} */
   #list;
+  /** @type {Array<{ btn: HTMLButtonElement, group: HTMLElement, source: Element | null, discovered?: boolean }>} */
   #items = [];
   #activeIndex = -1;
+  /** @type {Element[]} */
   #groups = [];
-  /** @type {(() => void) | null} */
-  #unbindHotkey = null;
-  #discoveredHeaders = [];
+  /** @type {Array<() => void>} */
+  #unbindFns = [];
+  /** @type {HTMLElement[]} */
+  #discoveredGroups = [];
+  #idBase = '';
+  #optionSeq = 0;
 
   setup() {
+    this.#idBase = `cmdp-${++paletteSeq}`;
+    this.#optionSeq = 0;
     this.#build();
-    this.#registerHotkey();
+    this.#registerHotkeys();
     if (this.hasAttribute('discover')) {
       this.#listenForRegistryChanges();
     }
   }
 
   teardown() {
-    this.#unbindHotkey?.();
+    this.#unbindFns.forEach(fn => fn());
+    this.#unbindFns = [];
+    // setup() builds a fresh dialog on every connect / data change; drop the
+    // old one so reconnects and .commands assignments never stack dialogs.
+    this.#dialog?.remove();
+    this.#dialog = null;
+    this.#items = [];
+    this.#groups = [];
+    this.#discoveredGroups = [];
+    this.#activeIndex = -1;
   }
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
@@ -58,7 +88,8 @@ class CommandPalette extends VBElement {
    */
   get commands() {
     const result = [];
-    for (const group of this.#groups) {
+    // Read the light-DOM source (not #groups) so this works while disconnected.
+    for (const group of this.querySelectorAll('command-group')) {
       const groupLabel = group.getAttribute('label') || '';
       for (const item of group.querySelectorAll('command-item')) {
         result.push({
@@ -124,10 +155,9 @@ class CommandPalette extends VBElement {
       this.appendChild(group);
     }
 
-    // Re-run setup so the dialog rebuilds against the new children.
-    this.teardown();
-    this.removeAttribute('data-upgraded');
-    this.setup();
+    // Re-run the lifecycle so the dialog rebuilds against the new children
+    // (listeners released first; only re-binds while connected).
+    this._reinit();
 
     this.dispatchEvent(new CustomEvent('command-palette:commands-changed', {
       detail: { commands: next, source: 'property' },
@@ -139,77 +169,65 @@ class CommandPalette extends VBElement {
     // Create dialog shell
     this.#dialog = document.createElement('dialog');
     this.#dialog.className = 'command-dialog';
+    this.#dialog.setAttribute('aria-label', this.getAttribute('label') || 'Command palette');
     this.#dialog.addEventListener('click', (e) => {
       if (e.target === this.#dialog) this.close();
+    });
+    // One close event for every way the dialog closes: close(), a selection,
+    // Escape (native cancel), or a backdrop click.
+    this.#dialog.addEventListener('close', () => {
+      this.#input?.setAttribute('aria-expanded', 'false');
+      this.#input?.removeAttribute('aria-activedescendant');
+      this.dispatchEvent(new CustomEvent('command-palette:close', { bubbles: true }));
     });
 
     // Search input
     const searchWrap = document.createElement('div');
     searchWrap.className = 'command-search';
 
+    // Command list
+    this.#list = document.createElement('div');
+    this.#list.className = 'command-list';
+    this.#list.id = `${this.#idBase}-list`;
+    this.#list.setAttribute('role', 'listbox');
+    this.#list.setAttribute('aria-label', 'Commands');
+
     this.#input = document.createElement('input');
     this.#input.type = 'search';
     this.#input.placeholder = this.getAttribute('placeholder') || 'Type a command...';
     this.#input.setAttribute('aria-label', 'Search commands');
     this.#input.autocomplete = 'off';
+    // Combobox + listbox: focus stays in the input, the active option is
+    // announced through aria-activedescendant (see #focusItem).
+    this.#input.setAttribute('role', 'combobox');
+    this.#input.setAttribute('aria-autocomplete', 'list');
+    this.#input.setAttribute('aria-controls', this.#list.id);
+    this.#input.setAttribute('aria-expanded', 'false');
     this.#input.addEventListener('input', this.#handleInput);
     this.#input.addEventListener('keydown', this.#handleKeyDown);
 
     searchWrap.appendChild(this.#input);
 
-    // Command list
-    this.#list = document.createElement('div');
-    this.#list.className = 'command-list';
-    this.#list.setAttribute('role', 'listbox');
-
     // Parse command-group and command-item children
     this.#groups = Array.from(this.querySelectorAll('command-group'));
-    this.#groups.forEach(group => {
-      const header = document.createElement('div');
-      header.className = 'command-group-header';
-      header.textContent = group.getAttribute('label') || '';
-      header.setAttribute('role', 'presentation');
+    this.#groups.forEach(source => {
+      const group = this.#createGroup(source.getAttribute('label') || '');
+      this.#list.appendChild(group);
 
-      const items = Array.from(group.querySelectorAll('command-item'));
-      this.#list.appendChild(header);
-
-      items.forEach(item => {
-        const btn = document.createElement('button');
-        btn.className = 'command-option';
-        btn.setAttribute('role', 'option');
-        btn.dataset.value = item.getAttribute('value') || '';
-        btn.dataset.searchText = item.textContent.toLowerCase().trim();
-
-        // Icon slot
+      source.querySelectorAll('command-item').forEach(item => {
         const icon = item.querySelector('[slot="icon"]');
-        if (icon) {
-          const iconWrap = document.createElement('span');
-          iconWrap.className = 'command-icon';
-          iconWrap.appendChild(icon.cloneNode(true));
-          btn.appendChild(iconWrap);
-        }
-
-        // Label
-        const label = document.createElement('span');
-        label.className = 'command-label';
-        label.textContent = item.textContent.trim();
-        btn.appendChild(label);
-
-        // Hotkey badge
-        const hotkey = item.getAttribute('data-hotkey');
-        if (hotkey) {
-          const badge = document.createElement('kbd');
-          badge.className = 'command-kbd';
-          badge.textContent = formatHotkey(hotkey);
-          btn.appendChild(badge);
-        }
+        const btn = this.#createOptionButton(
+          item.textContent.trim(),
+          icon ? icon.cloneNode(true) : null,
+          item.getAttribute('data-hotkey'));
+        btn.dataset.value = item.getAttribute('value') || '';
 
         btn.addEventListener('click', () => {
           this.#select(btn.dataset.value);
         });
 
-        this.#list.appendChild(btn);
-        this.#items.push({ btn, header, group });
+        group.appendChild(btn);
+        this.#items.push({ btn, group, source: item });
       });
     });
 
@@ -225,42 +243,78 @@ class CommandPalette extends VBElement {
     this.appendChild(this.#dialog);
   }
 
-  #registerHotkey() {
+  /**
+   * A listbox group: role="group" named by its (aria-hidden) header, so
+   * options are announced with their group and the header is not an option.
+   * @param {string} labelText
+   */
+  #createGroup(labelText) {
+    const group = document.createElement('div');
+    group.className = 'command-group';
+    group.setAttribute('role', 'group');
+    const header = document.createElement('div');
+    header.className = 'command-group-header';
+    header.id = `${this.#idBase}-g${++this.#optionSeq}`;
+    // Names the group via aria-labelledby; hidden from the tree itself so
+    // the listbox only exposes options.
+    header.setAttribute('aria-hidden', 'true');
+    header.textContent = labelText;
+    if (labelText) group.setAttribute('aria-labelledby', header.id);
+    else header.hidden = true;
+    group.appendChild(header);
+    return group;
+  }
+
+  #registerHotkeys() {
     const combo = this.getAttribute('hotkey') || 'meta+k';
-    this.#unbindHotkey = /** @type {() => void} */ (bindHotkey(combo, () => {
-      if (this.#dialog.open) {
+    this.#unbindFns.push(/** @type {() => void} */ (bindHotkey(combo, () => {
+      if (this.#dialog?.open) {
         this.close();
       } else {
         this.open();
       }
-    }, { global: true }));
+    }, { global: true })));
+
+    // data-hotkey on a declared command runs it directly (no palette).
+    // Not global: never fires while typing, including in the palette input.
+    for (const { btn, source } of this.#items) {
+      const hotkey = source?.getAttribute('data-hotkey');
+      if (!hotkey || hotkey.toLowerCase() === combo.toLowerCase()) continue;
+      const value = btn.dataset.value;
+      this.#unbindFns.push(/** @type {() => void} */ (bindHotkey(hotkey, () => this.#select(value))));
+    }
   }
 
   #handleInput = () => {
     const query = this.#input.value.toLowerCase().trim();
     let visibleCount = 0;
-    const visibleHeaders = new Set();
+    const visibleGroups = new Set();
 
-    this.#items.forEach(({ btn, header }) => {
-      const match = !query || btn.dataset.searchText.includes(query);
+    this.#items.forEach(({ btn, group }) => {
+      const match = !query || (btn.dataset.searchText ?? '').includes(query);
       btn.hidden = !match;
       if (match) {
         visibleCount++;
-        visibleHeaders.add(header);
+        visibleGroups.add(group);
       }
     });
 
-    // Show/hide group headers
-    this.#list.querySelectorAll('.command-group-header').forEach(h => {
-      h.hidden = !visibleHeaders.has(h);
+    // Show/hide whole groups (header included)
+    this.#list.querySelectorAll(':scope > .command-group').forEach(g => {
+      /** @type {HTMLElement} */ (g).hidden = !visibleGroups.has(/** @type {HTMLElement} */ (g));
     });
 
     // Empty state
-    const empty = this.#list.querySelector('.command-empty');
+    const empty = /** @type {HTMLElement | null} */ (this.#list.querySelector('.command-empty'));
     if (empty) empty.hidden = visibleCount > 0;
 
     // Reset active index and highlight first visible
     this.#activeIndex = -1;
+    this.#items.forEach(({ btn }) => {
+      btn.removeAttribute('data-active');
+      btn.setAttribute('aria-selected', 'false');
+    });
+    this.#input.removeAttribute('aria-activedescendant');
     if (visibleCount > 0) {
       this.#focusItem(0);
     }
@@ -300,7 +354,10 @@ class CommandPalette extends VBElement {
     if (visible.length === 0) return;
 
     // Remove previous active
-    visible.forEach(({ btn }) => btn.removeAttribute('data-active'));
+    visible.forEach(({ btn }) => {
+      btn.removeAttribute('data-active');
+      btn.setAttribute('aria-selected', 'false');
+    });
 
     if (index < 0) index = visible.length - 1;
     if (index >= visible.length) index = 0;
@@ -308,6 +365,8 @@ class CommandPalette extends VBElement {
     this.#activeIndex = index;
     const { btn } = visible[index];
     btn.setAttribute('data-active', '');
+    btn.setAttribute('aria-selected', 'true');
+    this.#input.setAttribute('aria-activedescendant', btn.id);
     btn.scrollIntoView({ block: 'nearest' });
   }
 
@@ -338,21 +397,18 @@ class CommandPalette extends VBElement {
     const { getRegisteredCommands, scanAutoDiscoverable } = window.__commandRegistry || {};
     if (!getRegisteredCommands) return;
 
-    // Remove previously added discovered items and headers
+    // Remove previously added discovered items and groups
     this.#items = this.#items.filter(item => !item.discovered);
-    this.#discoveredHeaders.forEach(h => h.remove());
-    this.#discoveredHeaders = [];
+    this.#discoveredGroups.forEach(g => g.remove());
+    this.#discoveredGroups = [];
 
     const empty = this.#list.querySelector('.command-empty');
     const grouped = getRegisteredCommands();
 
     for (const [groupName, entries] of grouped) {
-      const header = document.createElement('div');
-      header.className = 'command-group-header';
-      header.textContent = groupName;
-      header.setAttribute('role', 'presentation');
-      this.#list.insertBefore(header, empty);
-      this.#discoveredHeaders.push(header);
+      const group = this.#createGroup(groupName);
+      this.#list.insertBefore(group, empty);
+      this.#discoveredGroups.push(group);
 
       for (const entry of entries) {
         // Skip if the element is inside this command-palette (avoid duplicating declarative items)
@@ -366,8 +422,8 @@ class CommandPalette extends VBElement {
           /** @type {HTMLElement} */ (entry.element).click();
         });
 
-        this.#list.insertBefore(btn, empty);
-        this.#items.push({ btn, header, group: null, discovered: true });
+        group.appendChild(btn);
+        this.#items.push({ btn, group, source: null, discovered: true });
       }
     }
 
@@ -383,12 +439,9 @@ class CommandPalette extends VBElement {
       }
 
       for (const [groupName, entries] of autoGroups) {
-        const header = document.createElement('div');
-        header.className = 'command-group-header';
-        header.textContent = groupName;
-        header.setAttribute('role', 'presentation');
-        this.#list.insertBefore(header, empty);
-        this.#discoveredHeaders.push(header);
+        const group = this.#createGroup(groupName);
+        this.#list.insertBefore(group, empty);
+        this.#discoveredGroups.push(group);
 
         for (const entry of entries) {
           if (this.contains(entry.element)) continue;
@@ -406,25 +459,39 @@ class CommandPalette extends VBElement {
             }
           });
 
-          this.#list.insertBefore(btn, empty);
-          this.#items.push({ btn, header, group: null, discovered: true });
+          group.appendChild(btn);
+          this.#items.push({ btn, group, source: null, discovered: true });
         }
       }
     }
   }
 
+  /**
+   * @param {string} labelText
+   * @param {Node | string | null | undefined} icon - cloned slot content, or an icon-wc name
+   * @param {string | null | undefined} shortcut
+   */
   #createOptionButton(labelText, icon, shortcut) {
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.className = 'command-option';
+    btn.id = `${this.#idBase}-opt-${++this.#optionSeq}`;
     btn.setAttribute('role', 'option');
+    btn.setAttribute('aria-selected', 'false');
+    // Options are never Tab stops: focus stays in the combobox input.
+    btn.tabIndex = -1;
     btn.dataset.searchText = labelText.toLowerCase();
 
     if (icon) {
       const iconWrap = document.createElement('span');
       iconWrap.className = 'command-icon';
-      const iconEl = document.createElement('icon-wc');
-      iconEl.setAttribute('name', icon);
-      iconWrap.appendChild(iconEl);
+      if (typeof icon === 'string') {
+        const iconEl = document.createElement('icon-wc');
+        iconEl.setAttribute('name', icon);
+        iconWrap.appendChild(iconEl);
+      } else {
+        iconWrap.appendChild(icon);
+      }
       btn.appendChild(iconWrap);
     }
 
@@ -436,28 +503,31 @@ class CommandPalette extends VBElement {
     if (shortcut) {
       const badge = document.createElement('kbd');
       badge.className = 'command-kbd';
+      badge.setAttribute('aria-hidden', 'true');
       badge.textContent = formatHotkey(shortcut);
       btn.appendChild(badge);
+      btn.setAttribute('aria-keyshortcuts', shortcut);
     }
 
     return btn;
   }
 
   open() {
-    if (this.#dialog.open) return;
+    if (!this.#dialog || this.#dialog.open) return;
     // Refresh discovered commands each time we open
     this.#populateDiscovered();
     this.#dialog.showModal();
+    this.#input.setAttribute('aria-expanded', 'true');
     this.#input.value = '';
     this.#handleInput(); // Reset filter
     this.#input.focus();
     this.dispatchEvent(new CustomEvent('command-palette:open', { bubbles: true }));
   }
 
+  /** Close the palette. command-palette:close fires from the dialog's close event. */
   close() {
-    if (!this.#dialog.open) return;
+    if (!this.#dialog?.open) return;
     this.#dialog.close();
-    this.dispatchEvent(new CustomEvent('command-palette:close', { bubbles: true }));
   }
 
   get isOpen() {

@@ -13,11 +13,12 @@ crumbLabel: Web Components
 <section>
     <h2>Description</h2>
     <p>The <code>&lt;context-menu&gt;</code> component provides a custom right-click menu that opens at the cursor position. It supports keyboard navigation, separators, danger items, and disabled states. Shares menu styling patterns with <code>&lt;drop-down&gt;</code>.</p>
+    <p>It is keyboard-operable too: a trigger that is not already focusable gets <code>tabindex="0"</code>, and <kbd>Shift+F10</kbd> or the <kbd>ContextMenu</kbd> key opens the menu at the trigger. Focus returns to the trigger when the menu closes. Any action in a context menu should still be reachable another way &mdash; a toolbar button or inline control &mdash; because touch users and many screen reader users never right-click.</p>
   </section>
 
   <section>
     <h2>Basic Usage</h2>
-    <browser-window src="/docs/examples/demos/context-menu-basic.html" style="min-height: 16rem;" shadow></browser-window>
+    <browser-window src="/docs/examples/demos/context-menu-basic.html" url="https://vanilla-breeze.dev/context-menu" title="context-menu — basic" shadow></browser-window>
 
     <code-block language="html" show-lines label="Basic context menu" data-escape><context-menu>
   <p data-trigger>Right-click anywhere here</p>
@@ -42,6 +43,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Disabled Items</h2>
+    <p>Mark an item <code>data-disabled</code>. It gets <code>aria-disabled="true"</code>, stays in the arrow-key order (so screen reader users learn it exists, per the APG menu pattern), and cannot be activated: no click handlers run, the menu stays open, and its shortcut does nothing. A native <code>disabled</code> button is skipped by the arrow keys because it cannot take focus.</p>
     <code-block language="html" show-lines label="Disabled and danger items" data-escape><menu>
   <li><button>Open</button></li>
   <li><button data-disabled>Share (disabled)</button></li>
@@ -54,7 +56,7 @@ crumbLabel: Web Components
     <h2>With Icons</h2>
     <p>Add <code>&lt;icon-wc&gt;</code> or inline <code>&lt;svg&gt;</code> inside buttons. The existing flex layout handles alignment automatically.</p>
 
-    <browser-window src="/docs/examples/demos/context-menu-icons.html" style="min-height: 14rem;" shadow></browser-window>
+    <browser-window src="/docs/examples/demos/context-menu-icons.html" url="https://vanilla-breeze.dev/context-menu/icons" title="context-menu — icons" shadow></browser-window>
 
     <code-block language="html" show-lines label="Icons in menu items" data-escape><context-menu>
   <p data-trigger>Right-click here</p>
@@ -68,24 +70,25 @@ crumbLabel: Web Components
 
   <section>
     <h2>Keyboard Shortcuts</h2>
-    <p>Add <code>data-shortcut</code> to any button to display a keyboard shortcut badge <strong>and bind a real global keyboard shortcut</strong>. Pressing the shortcut anywhere on the page triggers the button's click. The format is platform-aware — it shows <kbd>&#x2318;</kbd> symbols on Mac and <kbd>Ctrl</kbd> text on other platforms. Shortcuts are automatically cleaned up when the component disconnects.</p>
+    <p>Add <code>data-shortcut</code> to any button to display a keyboard shortcut badge <strong>and bind a real global keyboard shortcut</strong>. Pressing the shortcut anywhere on the page (outside text fields) triggers the button's click. The badge is platform-aware — <code>meta</code> shows <kbd>&#x2318;</kbd> on Mac and <kbd>Ctrl</kbd> elsewhere &mdash; and the item gets a matching <code>aria-keyshortcuts</code>. Shortcuts are cleaned up when the component disconnects.</p>
+    <p><strong>Warning:</strong> the binding is page-wide and calls <code>preventDefault()</code>. Binding <code>meta+c</code>, <code>meta+x</code>, <code>meta+v</code> or <code>meta+a</code> would break native copy, cut, paste and select-all everywhere on the page. Choose combos that do not shadow browser or OS shortcuts (function keys and <code>shift+</code> letters are safe choices).</p>
 
-    <browser-window src="/docs/examples/demos/context-menu-shortcuts.html" style="min-height: 18rem;" shadow></browser-window>
+    <browser-window src="/docs/examples/demos/context-menu-shortcuts.html" url="https://vanilla-breeze.dev/context-menu/shortcuts" title="context-menu — shortcuts" shadow></browser-window>
 
     <code-block language="html" show-lines label="Shortcut badges" data-escape><menu>
-  <li><button data-shortcut="meta+x"><icon-wc name="scissors"></icon-wc> Cut</button></li>
-  <li><button data-shortcut="meta+c"><icon-wc name="copy"></icon-wc> Copy</button></li>
-  <li><button data-shortcut="meta+v"><icon-wc name="clipboard"></icon-wc> Paste</button></li>
+  <li><button data-shortcut="f2"><icon-wc name="pencil"></icon-wc> Rename</button></li>
+  <li><button data-shortcut="shift+d"><icon-wc name="copy-plus"></icon-wc> Duplicate</button></li>
+  <li><button data-shortcut="shift+e"><icon-wc name="archive"></icon-wc> Archive</button></li>
   <li role="separator"></li>
-  <li><button data-shortcut="meta+a">Select All</button></li>
+  <li><button class="danger" data-shortcut="delete"><icon-wc name="trash-2"></icon-wc> Delete</button></li>
 </menu></code-block>
   </section>
 
   <section>
     <h2>Group Labels</h2>
-    <p>Use <code>&lt;li data-group&gt;</code> to create labeled sections within the menu. Group labels are non-interactive and visually separated from items. Non-first groups automatically get a top border.</p>
+    <p>Use <code>&lt;li data-group&gt;</code> to create labeled sections within the menu. Group labels are non-interactive and visually separated from items. Non-first groups automatically get a top border. On upgrade, each label and the items after it (up to the next label or separator) are wrapped in <code>&lt;li role="group" aria-labelledby&gt;</code> so assistive technology announces the group name; the authored flat list is restored on disconnect, and the <code>items</code> property reads through the wrapper.</p>
 
-    <browser-window src="/docs/examples/demos/context-menu-groups.html" style="min-height: 22rem;" shadow></browser-window>
+    <browser-window src="/docs/examples/demos/context-menu-groups.html" url="https://vanilla-breeze.dev/context-menu/groups" title="context-menu — groups" shadow></browser-window>
 
     <code-block language="html" show-lines label="Group labels" data-escape><menu>
   <li data-group>Edit</li>
@@ -102,17 +105,19 @@ crumbLabel: Web Components
     <table class="props-table">
       <thead>
         <tr>
-          <th>Key</th>
-          <th>Action</th>
+          <th scope="col">Key</th>
+          <th scope="col">Action</th>
         </tr>
       </thead>
       <tbody>
+        <tr><td><kbd>Shift+F10</kbd> / <kbd>ContextMenu</kbd></td><td>Open the menu at the focused trigger</td></tr>
         <tr><td><kbd>Arrow Down</kbd></td><td>Move to next item</td></tr>
         <tr><td><kbd>Arrow Up</kbd></td><td>Move to previous item</td></tr>
         <tr><td><kbd>Home</kbd></td><td>Move to first item</td></tr>
         <tr><td><kbd>End</kbd></td><td>Move to last item</td></tr>
         <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Activate focused item</td></tr>
-        <tr><td><kbd>Escape</kbd></td><td>Close menu</td></tr>
+        <tr><td><kbd>Escape</kbd></td><td>Close menu and return focus to the trigger</td></tr>
+        <tr><td><kbd>Tab</kbd></td><td>Close menu</td></tr>
       </tbody>
     </table>
   </section>
@@ -120,12 +125,35 @@ crumbLabel: Web Components
   <section>
     <h2>JavaScript API</h2>
 
+    <h3>Properties</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Property</th>
+          <th scope="col">Type</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>items</code></td>
+          <td><code>Array</code></td>
+          <td>Get or replace the menu as data. Entries are <code>{ label, value?, href?, shortcut?, disabled? }</code>, <code>{ group }</code> or <code>{ separator: true }</code>. Setting it rebuilds the menu and fires <code>context-menu:items-changed</code>.</td>
+        </tr>
+        <tr>
+          <td><code>isOpen</code></td>
+          <td><code>boolean</code></td>
+          <td>Read-only. Whether the menu is open.</td>
+        </tr>
+      </tbody>
+    </table>
+
     <h3>Methods</h3>
     <table class="props-table">
       <thead>
         <tr>
-          <th>Method</th>
-          <th>Description</th>
+          <th scope="col">Method</th>
+          <th scope="col">Description</th>
         </tr>
       </thead>
       <tbody>
@@ -140,8 +168,8 @@ crumbLabel: Web Components
     <table class="props-table">
       <thead>
         <tr>
-          <th>Event</th>
-          <th>Description</th>
+          <th scope="col">Event</th>
+          <th scope="col">Description</th>
         </tr>
       </thead>
       <tbody>
@@ -155,7 +183,11 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><code>context-menu:select</code></td>
-          <td>Fired when an item is selected (<code>detail.item</code>)</td>
+          <td>Fired when an item is activated by click, keyboard or its shortcut. <code>detail.item</code> is the activated element, <code>detail.value</code> its <code>data-value</code>. Not fired for disabled items.</td>
+        </tr>
+        <tr>
+          <td><code>context-menu:items-changed</code></td>
+          <td>Fired after the <code>items</code> setter rebuilds the menu (<code>detail: { items, source: 'property' }</code>)</td>
         </tr>
       </tbody>
     </table>
@@ -163,8 +195,17 @@ crumbLabel: Web Components
     <code-block language="javascript" show-lines label="JavaScript API" data-escape>const menu = document.querySelector('context-menu');
 
 menu.addEventListener('context-menu:select', (e) => {
-  console.log('Selected:', e.detail.item);
+  console.log('Selected:', e.detail.value, e.detail.item);
 });
+
+// Replace the menu from data
+menu.items = [
+  { group: 'File' },
+  { label: 'Rename', value: 'rename', shortcut: 'f2' },
+  { label: 'Share', value: 'share', disabled: true },
+  { separator: true },
+  { label: 'Delete', value: 'delete' },
+];
 
 menu.addEventListener('context-menu:open', () => {
   console.log('Menu opened');
@@ -174,9 +215,13 @@ menu.addEventListener('context-menu:open', () => {
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Full keyboard navigation (Arrow keys, Home/End, Enter, Escape)</li>
-      <li>Menu items have <code>role="menuitem"</code></li>
-      <li>Separators have <code>role="separator"</code></li>
+      <li>Opens from the keyboard: the trigger is made focusable when needed, and <kbd>Shift+F10</kbd> / <kbd>ContextMenu</kbd> open the menu at the trigger</li>
+      <li>The trigger carries <code>aria-haspopup="menu"</code>, <code>aria-expanded</code> and <code>aria-controls</code></li>
+      <li>Full keyboard navigation (Arrow keys, Home/End, Enter, Escape); focus returns to the trigger on close</li>
+      <li>Menu items have <code>role="menuitem"</code>, their <code>&lt;li&gt;</code> wrappers <code>role="none"</code>, separators <code>role="separator"</code></li>
+      <li>Group labels name a <code>role="group"</code> through <code>aria-labelledby</code></li>
+      <li><code>data-disabled</code> items expose <code>aria-disabled="true"</code> and stay reachable but inert</li>
+      <li>Keyboard focus shows a focus ring, not only a background tint</li>
       <li>Closes on click outside, Escape, or scroll</li>
       <li>Menu is positioned within viewport bounds</li>
     </ul>

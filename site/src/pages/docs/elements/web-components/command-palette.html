@@ -18,11 +18,11 @@ crumbLabel: Web Components
   <section>
     <h2>Basic Usage</h2>
 
-    <browser-window src="/docs/examples/demos/command-palette-basic.html" style="min-height: 18rem;" shadow></browser-window>
+    <browser-window src="/docs/examples/demos/command-palette-basic.html" url="https://vanilla-breeze.dev/command-palette" title="command-palette — basic" shadow></browser-window>
 
     <code-block language="html" show-lines label="Command palette" data-escape><command-palette hotkey="meta+k">
   <command-group label="Navigation">
-    <command-item value="home" data-hotkey="meta+h">
+    <command-item value="home" data-hotkey="shift+h">
       Go Home
     </command-item>
     <command-item value="settings">
@@ -41,9 +41,9 @@ crumbLabel: Web Components
     <table class="props-table">
       <thead>
         <tr>
-          <th>Attribute</th>
-          <th>On</th>
-          <th>Description</th>
+          <th scope="col">Attribute</th>
+          <th scope="col">On</th>
+          <th scope="col">Description</th>
         </tr>
       </thead>
       <tbody>
@@ -58,9 +58,14 @@ crumbLabel: Web Components
           <td>Search input placeholder text</td>
         </tr>
         <tr>
+          <td><code>label</code></td>
+          <td><code>command-palette</code></td>
+          <td>Accessible name of the dialog (default: <code>"Command palette"</code>)</td>
+        </tr>
+        <tr>
           <td><code>discover</code></td>
           <td><code>command-palette</code></td>
-          <td>Auto-populate from <code>[data-command]</code> elements on the page</td>
+          <td>Auto-populate from <code>[data-command]</code> elements on the page. <code>discover="auto"</code> also scans nav links and headings.</td>
         </tr>
         <tr>
           <td><code>label</code></td>
@@ -75,10 +80,15 @@ crumbLabel: Web Components
         <tr>
           <td><code>data-hotkey</code></td>
           <td><code>command-item</code></td>
-          <td>Display keyboard shortcut badge on item</td>
+          <td>Shortcut shown as a badge <strong>and</strong> bound page-wide while the palette is connected. Pressing it fires <code>command-palette:select</code> with the item's value without opening the palette. It does not fire while typing in a text field.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Item Shortcuts</h2>
+    <p>Bindings are page-wide and call <code>preventDefault()</code>, so pick combos that do not shadow browser or OS shortcuts. Avoid <code>meta+h</code> (hides the app on macOS), <code>meta+p</code> (print), <code>meta+t</code>/<code>meta+shift+t</code> (tabs) and the clipboard keys. <code>shift+</code> letters and function keys are safe choices. An item whose <code>data-hotkey</code> equals the palette's own <code>hotkey</code> is not bound; the palette toggle wins.</p>
   </section>
 
   <section>
@@ -101,10 +111,15 @@ crumbLabel: Web Components
   <section>
     <h2>Trigger Button</h2>
     <p>You can add a visual trigger button that opens the palette:</p>
-    <code-block language="html" show-lines label="Trigger button" data-escape><!-- Trigger button -->
-<button onclick="document.querySelector('command-palette').open()">
+    <code-block language="html" show-lines label="Trigger button" data-escape><button type="button" id="open-palette">
   Search commands... <kbd>&#x2318;K</kbd>
-</button></code-block>
+</button>
+
+<script type="module">
+  const palette = document.querySelector('command-palette');
+  document.getElementById('open-palette')
+    .addEventListener('click', () => palette.open());
+</script></code-block>
   </section>
 
   <section>
@@ -131,8 +146,8 @@ crumbLabel: Web Components
     <table class="props-table">
       <thead>
         <tr>
-          <th>Attribute</th>
-          <th>Description</th>
+          <th scope="col">Attribute</th>
+          <th scope="col">Description</th>
         </tr>
       </thead>
       <tbody>
@@ -174,9 +189,9 @@ crumbLabel: Web Components
     <table class="props-table">
       <thead>
         <tr>
-          <th>Source</th>
-          <th>Palette label</th>
-          <th>Group</th>
+          <th scope="col">Source</th>
+          <th scope="col">Palette label</th>
+          <th scope="col">Group</th>
         </tr>
       </thead>
       <tbody>
@@ -217,8 +232,8 @@ crumbLabel: Web Components
     <table class="props-table">
       <thead>
         <tr>
-          <th>Key</th>
-          <th>Action</th>
+          <th scope="col">Key</th>
+          <th scope="col">Action</th>
         </tr>
       </thead>
       <tbody>
@@ -226,6 +241,7 @@ crumbLabel: Web Components
         <tr><td><kbd>Arrow Down</kbd></td><td>Move to next item</td></tr>
         <tr><td><kbd>Arrow Up</kbd></td><td>Move to previous item</td></tr>
         <tr><td><kbd>Enter</kbd></td><td>Select active item</td></tr>
+        <tr><td>An item's <code>data-hotkey</code></td><td>Run that command directly (palette closed, focus outside text fields)</td></tr>
         <tr><td><kbd>Escape</kbd></td><td>Close palette</td></tr>
       </tbody>
     </table>
@@ -234,12 +250,35 @@ crumbLabel: Web Components
   <section>
     <h2>JavaScript API</h2>
 
+    <h3>Properties</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Property</th>
+          <th scope="col">Type</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>commands</code></td>
+          <td><code>Array</code></td>
+          <td>Get or replace the declared commands as <code>{ value, label, hotkey?, group?, icon? }</code>. Setting it rebuilds the groups and fires <code>command-palette:commands-changed</code>.</td>
+        </tr>
+        <tr>
+          <td><code>isOpen</code></td>
+          <td><code>boolean</code></td>
+          <td>Read-only. Whether the palette dialog is open.</td>
+        </tr>
+      </tbody>
+    </table>
+
     <h3>Methods</h3>
     <table class="props-table">
       <thead>
         <tr>
-          <th>Method</th>
-          <th>Description</th>
+          <th scope="col">Method</th>
+          <th scope="col">Description</th>
         </tr>
       </thead>
       <tbody>
@@ -258,14 +297,14 @@ crumbLabel: Web Components
     <table class="props-table">
       <thead>
         <tr>
-          <th>Event</th>
-          <th>Description</th>
+          <th scope="col">Event</th>
+          <th scope="col">Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td><code>command-palette:select</code></td>
-          <td>Fired when an item is selected (<code>detail.value</code>)</td>
+          <td>Fired when a declared item is selected from the list or by its <code>data-hotkey</code> (<code>detail.value</code>). Discovered commands click their source element instead.</td>
         </tr>
         <tr>
           <td><code>command-palette:open</code></td>
@@ -273,7 +312,11 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><code>command-palette:close</code></td>
-          <td>Fired when palette closes</td>
+          <td>Fired once whenever the dialog closes: <code>close()</code>, a selection, <kbd>Escape</kbd> or a backdrop click</td>
+        </tr>
+        <tr>
+          <td><code>command-palette:commands-changed</code></td>
+          <td>Fired after the <code>commands</code> setter rebuilds (<code>detail: { commands, source: 'property' }</code>)</td>
         </tr>
       </tbody>
     </table>
@@ -301,10 +344,10 @@ palette.addEventListener('command-palette:select', (e) => {
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Opens as native <code>&lt;dialog&gt;</code> with focus trapping</li>
-      <li>Search input focused on open</li>
-      <li>Full keyboard navigation (Arrow keys, Enter, Escape)</li>
-      <li>Items have <code>role="option"</code> within a <code>role="listbox"</code></li>
+      <li>Opens as a native modal <code>&lt;dialog&gt;</code>, named by <code>label</code> (default "Command palette")</li>
+      <li>Combobox pattern: the search input has <code>role="combobox"</code>, <code>aria-controls</code>, <code>aria-expanded</code> and <code>aria-activedescendant</code>. Focus stays in the input while the arrow keys move the active option, which gets <code>aria-selected="true"</code></li>
+      <li>Options have <code>role="option"</code> and <code>tabindex="-1"</code> inside a <code>role="listbox"</code>. Each group is a <code>role="group"</code> named by its header.</li>
+      <li>Full keyboard navigation (Arrow keys, Enter, Escape); the search input shows a focus ring</li>
       <li>Active item scrolls into view</li>
       <li>Platform-aware keyboard shortcut display (&#x2318; on Mac, Ctrl on others)</li>
     </ul>
