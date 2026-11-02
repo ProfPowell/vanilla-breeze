@@ -15,7 +15,12 @@ crumbLabel: Web Components
   <p>The <code>&lt;analytics-panel&gt;</code> component shows visitors what Vanilla Breeze analytics is doing on the current page: whether it is running, why it is off, which fields an event carries, and how many events this page has sent. Visitors can pause collection for the tab and resume it.</p>
   <p>Everything the panel shows comes from the live runtime through <code>Analytics.getStatus()</code>. Nothing is hardcoded, so the panel cannot drift from what the runtime actually sends.</p>
 
-  <analytics-panel title="Your analytics data"></analytics-panel>
+  <browser-window
+    src="/docs/snippets/demos/analytics-panel-basic.html"
+    url="https://vanilla-breeze.dev/privacy"
+    title="Analytics panel demo"
+    shadow>
+  </browser-window>
 </section>
 
 <section>
@@ -27,16 +32,34 @@ crumbLabel: Web Components
 
 <section>
   <h2>Compact Mode</h2>
-  <p>Add <code>compact</code> for a tighter layout when embedding alongside other UI.</p>
+  <p>Add <code>compact</code> for a tighter layout when embedding alongside other UI: smaller text, heading and buttons, and less spacing.</p>
 
-  <code-block language="html" label="Compact mode" data-escape><analytics-panel title="Your data" compact></analytics-panel></code-block>
+  <browser-window
+    src="/docs/snippets/demos/analytics-panel-compact.html"
+    url="https://vanilla-breeze.dev/settings"
+    title="Compact analytics panel"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" label="Compact mode" data-escape><analytics-panel heading="Your analytics data" compact></analytics-panel></code-block>
 </section>
 
 <section>
-  <h2>Custom Title</h2>
-  <p>Override the default <q>Analytics on this page</q> heading with <code>title</code>.</p>
+  <h2>Heading Text and Level</h2>
+  <p>Override the default <q>Analytics on this page</q> heading text with <code>heading</code>. The panel heading is an <code>h2</code> by default, which suits a panel placed directly under the page&rsquo;s <code>h1</code>. Inside a section that already has an <code>h2</code>, set <code>heading-level="3"</code> so the outline stays in order; the panel&rsquo;s field-list subheading is always one level below (at most <code>h6</code>). Values outside 1&ndash;6 fall back to 2.</p>
+  <p>The attribute is <code>heading</code>, not <code>title</code>: the global <code>title</code> attribute would also show a tooltip over the whole panel.</p>
 
-  <code-block language="html" label="Custom title" data-escape><analytics-panel title="What we send"></analytics-panel></code-block>
+  <browser-window
+    src="/docs/snippets/demos/analytics-panel-heading.html"
+    url="https://vanilla-breeze.dev/privacy-policy"
+    title="Analytics panel heading level"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" label="Heading text and level" data-escape><section>
+  <h2>Data we collect</h2>
+  <analytics-panel heading="What we send from this page" heading-level="3"></analytics-panel>
+</section></code-block>
 </section>
 
 <section>
@@ -128,6 +151,8 @@ const s = Analytics.getStatus();
     <li>The toggle exposes its state with <code>aria-pressed</code>, and uses <code>aria-disabled</code> rather than <code>disabled</code> when Resume is unavailable, so it stays focusable and its explanation stays reachable.</li>
     <li>Colours come from VB tokens (<code>--color-surface-raised</code>, <code>--color-text</code>, <code>--color-text-muted</code>), which keep 4.5:1 contrast in light and dark modes.</li>
     <li>The field readout uses a <code>&lt;dl&gt;</code> so screen readers announce labels with their values.</li>
+    <li>Set <code>heading-level</code> so the panel&rsquo;s headings fit the page outline.</li>
+    <li>Runtime values (endpoint, path, referrer, context keys) are written as text, never parsed as HTML, so a crafted URL or referrer cannot inject markup.</li>
   </ul>
 </section>
 

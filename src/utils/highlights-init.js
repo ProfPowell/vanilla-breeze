@@ -51,38 +51,105 @@ function newId() {
   return 'hn-' + crypto.randomUUID().slice(0, 8);
 }
 
-// ---------- Resolve computed color from element ----------
+// ---------- Colour names ----------
+//
+// Colour names come from data-highlights-colors and from stored records,
+// and are written into generated CSS (::highlight rules, var() references).
+// Only plain identifier characters are accepted, so neither source can
+// inject CSS.
 
-function resolveColor(element, colorName) {
-  return getComputedStyle(element).getPropertyValue(`--highlight-${colorName}`).trim();
+const COLOR_NAME = /^[a-z0-9_-]+$/i;
+
+/** @param {unknown} name */
+function isColorName(name) {
+  return typeof name === 'string' && COLOR_NAME.test(name);
 }
 
-// ---------- Shared stylesheet (injected once) ----------
+// ---------- Shared paint registry (Highlight API) ----------
+//
+// Every article shares one adopted stylesheet and one CSS.highlights
+// registry, so both are built from ALL live articles, not the first:
+//   - the stylesheet holds a ::highlight(hn-{name}) rule for every colour
+//     any article's palette lists (refcounted per palette registration);
+//   - each hn-{name} Highlight carries the ranges of every article that
+//     paints that colour, so two articles using "yellow" both show.
+// The --highlight-{name} property read by a ::highlight rule resolves against the
+// highlighted text, so a palette defined on one article only applies there.
 
+/** @type {CSSStyleSheet|null} */
 let sharedSheet = null;
-let sharedSheetRefCount = 0;
+/** @type {Map<string, number>} colour name -> number of palettes listing it */
+const paletteColors = new Map();
+/** @type {Map<string, Map<object, Range[]>>} colour name -> controller -> ranges */
+const rangesByColor = new Map();
 
-function injectSharedSheet(colors) {
-  if (sharedSheet) {
-    sharedSheetRefCount++;
+function writeSharedSheet() {
+  if (paletteColors.size === 0) {
+    if (sharedSheet) {
+      document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== sharedSheet);
+      sharedSheet = null;
+    }
     return;
   }
-  sharedSheet = new CSSStyleSheet();
+  if (!sharedSheet) {
+    sharedSheet = new CSSStyleSheet();
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sharedSheet];
+  }
   // ::highlight() only supports: background-color, color, text-decoration, text-shadow
-  const rules = colors.map(c =>
+  const rules = [...paletteColors.keys()].map(c =>
     `::highlight(hn-${c}) { background-color: var(--highlight-${c}); text-decoration-line: underline; text-decoration-color: var(--highlight-${c}); text-underline-offset: 2px; }`
   ).join('\n');
   sharedSheet.replaceSync(rules);
-  document.adoptedStyleSheets = [...document.adoptedStyleSheets, sharedSheet];
-  sharedSheetRefCount = 1;
 }
 
-function removeSharedSheet() {
-  sharedSheetRefCount--;
-  if (sharedSheetRefCount <= 0 && sharedSheet) {
-    document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== sharedSheet);
-    sharedSheet = null;
-    sharedSheetRefCount = 0;
+/** @param {string[]} colors */
+function registerPalette(colors) {
+  for (const c of colors) paletteColors.set(c, (paletteColors.get(c) ?? 0) + 1);
+  writeSharedSheet();
+}
+
+/** @param {string[]} colors */
+function unregisterPalette(colors) {
+  for (const c of colors) {
+    const n = (paletteColors.get(c) ?? 0) - 1;
+    if (n > 0) paletteColors.set(c, n);
+    else paletteColors.delete(c);
+  }
+  writeSharedSheet();
+}
+
+/** Rebuild the hn-{color} Highlight from every article's ranges. */
+function paintColor(color) {
+  const owners = rangesByColor.get(color);
+  const ranges = owners ? [...owners.values()].flat() : [];
+  if (ranges.length === 0) {
+    CSS.highlights.delete(`hn-${color}`);
+    rangesByColor.delete(color);
+  } else {
+    CSS.highlights.set(`hn-${color}`, new Highlight(...ranges));
+  }
+}
+
+/**
+ * Replace one controller's ranges for every colour it paints or painted.
+ * @param {object} owner
+ * @param {Map<string, Range[]>} groups - colour -> ranges (empty map clears)
+ */
+function setOwnerRanges(owner, groups) {
+  const touched = new Set(groups.keys());
+  for (const [color, owners] of rangesByColor) {
+    if (owners.has(owner)) touched.add(color);
+  }
+  for (const color of touched) {
+    const ranges = groups.get(color) ?? [];
+    let owners = rangesByColor.get(color);
+    if (ranges.length) {
+      if (!owners) rangesByColor.set(color, owners = new Map());
+      owners.set(owner, ranges);
+    } else {
+      owners?.delete(owner);
+    }
+    paintColor(color);
   }
 }
 
@@ -187,13 +254,14 @@ class HighlightController {
 
     // Colors
     const colorAttr = element.dataset.highlightsColors;
-    this.#colors = colorAttr
-      ? colorAttr.split(',').map(c => c.trim()).filter(Boolean)
+    const listed = colorAttr
+      ? colorAttr.split(',').map(c => c.trim()).filter(isColorName)
       : [...DEFAULT_COLORS];
+    this.#colors = [...new Set(listed)];
 
-    // Inject shared stylesheet if using Highlight API
+    // Add this palette's ::highlight rules to the shared stylesheet
     if (!this.#useFallback) {
-      injectSharedSheet(this.#colors);
+      registerPalette(this.#colors);
     }
 
     // Initial render with empty highlights, then async-load and re-render.
@@ -273,10 +341,8 @@ class HighlightController {
 
     // Clear CSS highlights
     if (!this.#useFallback) {
-      for (const color of this.#colors) {
-        CSS.highlights.delete(`hn-${color}`);
-      }
-      removeSharedSheet();
+      setOwnerRanges(this, new Map());
+      unregisterPalette(this.#colors);
     } else {
       this.#element.querySelectorAll('mark[data-hn-id]').forEach(mark => {
         const parent = mark.parentNode;
@@ -494,14 +560,7 @@ class HighlightController {
       groups.get(hl.color).push(range);
     }
 
-    for (const [color, ranges] of groups) {
-      const name = `hn-${color}`;
-      if (ranges.length === 0) {
-        CSS.highlights.delete(name);
-      } else {
-        CSS.highlights.set(name, new Highlight(...ranges));
-      }
-    }
+    setOwnerRanges(this, groups);
   }
 
   #renderMarks() {
@@ -517,13 +576,14 @@ class HighlightController {
       const range = findRangeFromOffsets(this.#element, hl.startOffset, hl.endOffset);
       if (!range) continue;
 
-      const resolved = resolveColor(this.#element, hl.color);
       const mark = document.createElement('mark');
       mark.dataset.hnId = hl.id;
-      mark.dataset.hnColor = hl.color;
-      if (resolved) {
-        mark.style.backgroundColor = resolved;
-        mark.style.textDecorationColor = resolved;
+      // Point the mark at the palette's custom property rather than a
+      // resolved snapshot, so any colour name works and the value follows
+      // the article's (or theme's) --highlight-{name} live.
+      if (isColorName(hl.color)) {
+        mark.dataset.hnColor = hl.color;
+        mark.style.setProperty('--_hn-color', `var(--highlight-${hl.color})`);
       }
 
       try {

@@ -16,7 +16,10 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
  * @param {import('playwright/test').Page} page
  * @param {{ init?: object | null, htmlAttrs?: string, gpc?: boolean }} [opts]
  */
-async function load(page, { init = { transport: 'beacon', siteId: 'test' }, htmlAttrs = '', gpc = false } = {}) {
+async function load(page, {
+  init = { transport: 'beacon', siteId: 'test' }, htmlAttrs = '', gpc = false,
+  panelAttrs = 'heading="Your analytics data"',
+} = {}) {
   if (gpc) {
     await page.addInitScript(() => {
       Object.defineProperty(Navigator.prototype, 'globalPrivacyControl', { get: () => true, configurable: true });
@@ -37,7 +40,7 @@ async function load(page, { init = { transport: 'beacon', siteId: 'test' }, html
     body: `<!doctype html><html lang="en" ${htmlAttrs}><head><meta charset="utf-8">
       <meta name="vb:topic" content="privacy">
       <link rel="stylesheet" href="/src/main.css"></head><body><main>
-      <analytics-panel id="panel" title="Your analytics data"></analytics-panel>
+      <analytics-panel id="panel" ${panelAttrs}></analytics-panel>
       </main>
       <script type="module">
         const { Analytics } = await import('/src/lib/analytics.js');
@@ -148,6 +151,76 @@ test('updates when consent changes through the API', async ({ page }) => {
   await expect(page.locator('#panel')).toHaveAttribute('data-state', 'paused');
 });
 
+test('heading: text from the heading attribute, no host tooltip, level 2 by default', async ({ page }) => {
+  await load(page);
+  const panel = page.locator('#panel');
+  await expect(panel).not.toHaveAttribute('title', /.*/);
+  await expect(panel.getByRole('heading', { level: 2 })).toHaveText('Your analytics data');
+  await expect(panel.getByRole('heading', { level: 3 })).toHaveText('What an event from this page contains');
+  // The field section stays labelled by its (re-levelled) subheading.
+  await expect(panel.getByRole('region', { name: 'What an event from this page contains' })).toHaveCount(1);
+
+  await panel.evaluate((el) => el.removeAttribute('heading'));
+  await expect(panel.getByRole('heading', { level: 2 })).toHaveText('Analytics on this page');
+});
+
+test('heading-level: sets the panel and subheading levels, live and clamped', async ({ page }) => {
+  await load(page, { panelAttrs: 'heading="What we send" heading-level="4"' });
+  const panel = page.locator('#panel');
+  await expect(panel.getByRole('heading', { level: 4 })).toHaveText('What we send');
+  await expect(panel.getByRole('heading', { level: 5 })).toHaveText('What an event from this page contains');
+
+  await panel.evaluate((el) => el.setAttribute('heading-level', '6'));
+  await expect(panel.getByRole('heading', { level: 6 })).toHaveCount(2);
+  await expect(panel.locator('h6[data-part="heading"]')).toHaveText('What we send');
+  await expect(panel.getByRole('region', { name: 'What an event from this page contains' })).toHaveCount(1);
+
+  await panel.evaluate((el) => el.setAttribute('heading-level', 'banana'));
+  await expect(panel.locator('h2[data-part="heading"]')).toHaveText('What we send');
+  await expect(panel.locator('h3[data-part="fields-heading"]')).toHaveCount(1);
+});
+
+test('runtime values are rendered as text, not HTML', async ({ page }) => {
+  const evil = '/x/"><img src=x onerror="window.__xss=1">';
+  await load(page, {
+    init: { transport: 'beacon', siteId: 'test', endpoint: '/api/analytics/<b id="inj">hit</b>' },
+  });
+  const panel = page.locator('#panel');
+  await expect(panel.getByRole('status')).toContainText('<b id="inj">hit</b>');
+  await expect(panel.locator('dt', { hasText: 'Sent to' }).locator('xpath=following-sibling::dd[1]'))
+    .toContainText('/api/analytics/<b id="inj">hit</b>');
+  await expect(panel.locator('#inj')).toHaveCount(0);
+  await page.evaluate((p) => history.replaceState(null, '', p), evil);
+  await panel.locator('[data-analytics-action="refresh"]').click();
+  await expect(panel.locator('img')).toHaveCount(0);
+  expect(await page.evaluate(() => window.__xss)).toBeUndefined();
+});
+
+test('compact: smaller heading, text and buttons than the default panel', async ({ page }) => {
+  await load(page, { panelAttrs: 'heading="Default"' });
+  const measure = () => page.evaluate(() => {
+    const p = document.getElementById('panel');
+    const px = (el, prop) => parseFloat(getComputedStyle(el)[prop]);
+    const btn = p.querySelector('[data-analytics-action="toggle"]');
+    return {
+      heading: px(p.querySelector('[data-part="heading"]'), 'fontSize'),
+      text: px(p.querySelector('dd'), 'fontSize'),
+      button: btn.getBoundingClientRect().height,
+      buttonFont: px(btn, 'fontSize'),
+      padding: px(p, 'paddingTop'),
+    };
+  });
+  const normal = await measure();
+  await page.locator('#panel').evaluate((el) => el.setAttribute('compact', ''));
+  const compact = await measure();
+  expect(compact.heading).toBeLessThan(normal.heading);
+  expect(compact.text).toBeLessThan(normal.text);
+  expect(compact.buttonFont).toBeLessThan(normal.buttonFont);
+  expect(compact.button).toBeLessThan(normal.button);
+  expect(compact.button).toBeGreaterThanOrEqual(24); // WCAG 2.5.8 target size
+  expect(compact.padding).toBeLessThan(normal.padding);
+});
+
 for (const mode of ['dark', 'light']) {
   test(`${mode} mode: text meets 4.5:1 against the panel background`, async ({ page }) => {
     await load(page, { htmlAttrs: `data-mode="${mode}"` });
@@ -170,7 +243,7 @@ for (const mode of ['dark', 'light']) {
         return [255, 255, 255, 255];
       };
       const panel = document.getElementById('panel');
-      const sel = ['h3', '[role="status"] [data-part="status"]', 'h4', 'dt', 'dd',
+      const sel = ['[data-part="heading"]', '[role="status"] [data-part="status"]', '[data-part="fields-heading"]', 'dt', 'dd',
         '.analytics-panel__note', '[data-analytics-action="toggle"]'];
       return sel.map((s) => {
         const el = panel.querySelector(s);

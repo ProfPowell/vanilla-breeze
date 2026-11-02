@@ -13,8 +13,11 @@
  * so the activated button keeps focus and the single role="status" region
  * announces each change.
  *
- * @attr {string} title - Override the heading text (default: "Analytics on this page")
- * @attr {boolean} compact - Tighter layout for embedding alongside other UI
+ * @attr {string} heading - Override the heading text (default: "Analytics on this page")
+ * @attr {number} heading-level - Level of the panel heading, 1-6 (default: 2).
+ *   The "What an event contains" subheading is one level below (max 6).
+ * @attr {boolean} compact - Tighter layout (smaller heading, text and buttons)
+ *   for embedding alongside other UI
  * @attr {string} data-state - Reflected, read-only: active | debug | paused | off
  * @attr {string} data-reason - Reflected, read-only: why analytics is off
  *   (user | gpc | dnt | consent | disabled | iframe | uninitialized)
@@ -26,14 +29,25 @@
  * <analytics-panel></analytics-panel>
  *
  * @example
- * <analytics-panel title="Your data" compact></analytics-panel>
+ * <analytics-panel heading="Your data" heading-level="3" compact></analytics-panel>
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { getAnalyticsRuntime, ANALYTICS_STATUS_EVENT } from '../../lib/analytics.js';
 
-const DEFAULT_TITLE = 'Analytics on this page';
+const DEFAULT_HEADING = 'Analytics on this page';
+const DEFAULT_HEADING_LEVEL = 2;
+
+/**
+ * Pure: clamp a heading-level attribute value to 1-6.
+ * @param {string | null} value
+ * @returns {number}
+ */
+export function headingLevel(value) {
+  const n = Number.parseInt(value ?? '', 10);
+  return Number.isInteger(n) && n >= 1 && n <= 6 ? n : DEFAULT_HEADING_LEVEL;
+}
 
 const SIGNAL_LABELS = {
   gpc: 'your browser sends a Global Privacy Control signal',
@@ -85,7 +99,7 @@ function forcedSignals(s) {
 }
 
 class AnalyticsPanel extends VBElement {
-  static get observedAttributes() { return ['title']; }
+  static get observedAttributes() { return ['heading', 'heading-level']; }
 
   /** @type {Record<string, HTMLElement>} */
   #parts = {};
@@ -100,9 +114,13 @@ class AnalyticsPanel extends VBElement {
   }
 
   attributeChangedCallback(name) {
-    if (name === 'title' && this.#parts.title) {
-      this.#parts.title.textContent = this.getAttribute('title') || DEFAULT_TITLE;
-    }
+    if (!this.#parts.heading) return;
+    if (name === 'heading') this.#parts.heading.textContent = this.#headingText;
+    if (name === 'heading-level') this.#renderHeadings();
+  }
+
+  get #headingText() {
+    return this.getAttribute('heading') || DEFAULT_HEADING;
   }
 
   /** Current runtime status snapshot (null if the runtime has no getStatus). */
@@ -138,7 +156,7 @@ class AnalyticsPanel extends VBElement {
     const uid = `analytics-panel-${Math.random().toString(36).slice(2, 8)}`;
     this.innerHTML = `
       <header class="analytics-panel__header">
-        <h3 data-part="title"></h3>
+        <h2 data-part="heading"></h2>
         <p class="analytics-panel__status" role="status">
           <span class="analytics-panel__dot" aria-hidden="true"></span>
           <span data-part="status"></span>
@@ -146,7 +164,7 @@ class AnalyticsPanel extends VBElement {
       </header>
 
       <section class="analytics-panel__body" aria-labelledby="${uid}-fields">
-        <h4 id="${uid}-fields">What an event from this page contains</h4>
+        <h3 id="${uid}-fields" data-part="fields-heading">What an event from this page contains</h3>
         <dl class="analytics-panel__data" data-part="data"></dl>
         <p class="analytics-panel__empty" data-part="empty" hidden></p>
       </section>
@@ -170,7 +188,26 @@ class AnalyticsPanel extends VBElement {
     for (const el of /** @type {NodeListOf<HTMLElement>} */ (this.querySelectorAll('[data-part]'))) {
       this.#parts[el.dataset.part ?? ''] = el;
     }
-    this.#parts.title.textContent = this.getAttribute('title') || DEFAULT_TITLE;
+    this.#parts.heading.textContent = this.#headingText;
+    this.#renderHeadings();
+  }
+
+  /**
+   * Swap the heading elements to the level heading-level asks for, keeping
+   * their text, id and data-part. The subheading sits one level below.
+   */
+  #renderHeadings() {
+    const level = headingLevel(this.getAttribute('heading-level'));
+    const levels = { heading: level, 'fields-heading': Math.min(level + 1, 6) };
+    for (const [part, n] of Object.entries(levels)) {
+      const old = this.#parts[part];
+      if (!old || old.localName === `h${n}`) continue;
+      const el = document.createElement(`h${n}`);
+      for (const { name, value } of old.attributes) el.setAttribute(name, value);
+      el.textContent = old.textContent;
+      old.replaceWith(el);
+      this.#parts[part] = el;
+    }
   }
 
   /** Re-read the runtime and update the panel in place. */
