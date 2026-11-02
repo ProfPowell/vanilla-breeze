@@ -53,6 +53,17 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **`<brand-mark>` never modifies its content.** Authored children (an
+  `<img>`, an `<svg>`, text, a tagline) are left exactly as written. `src`
+  adds one owned `<picture>`; image-only vs wordmark is CSS, with the
+  authored text kept as the accessible name. `alt` and `height` now work,
+  `src-compact` is implemented (plus `compact-media`), and the host no
+  longer gets an `aria-label`. New `api.json`.
+- **Blockquote attribution belongs outside the quote.** `figure.quote` +
+  `figcaption` is the documented pattern; `blockquote > footer` /
+  `> cite` still style as a legacy attribution line, and only as direct
+  children.
+
 - **`<analytics-panel>` rebuilt on the runtime's real state.** It used to
   read storage keys nothing writes, so it always said "No data stored"
   while page views were being sent, and it reported "active" to visitors
@@ -86,6 +97,30 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   nav page.
 
 ### Fixed
+
+- **`<bdo dir="rtl">` reverses text again.** VB's own `unicode-bidi`
+  rules outranked the element and weakened the browser's isolation on
+  every `[dir]` element; they are removed and the UA defaults apply.
+- **`data-loading` buttons keep the submitter.** The button was disabled
+  inside the submit event, dropping its `name`/`value` from the form data;
+  it now uses `aria-disabled` and swallows repeat activations, only the
+  button that submitted shows the spinner, and spinner-only keeps its
+  label as hidden text.
+- **Buttons.** `a.button` follows `--btn-color` (a gold link button was
+  white on gold); `input[type=submit|button|reset]` match `<button>`; all
+  variants share a transparent border (equal heights, visible in forced
+  colours); disabled buttons ignore hover, hover is skipped on touch;
+  `aria-disabled` and `aria-pressed` are styled; icon-only buttons are
+  square; the focus ring follows the `--focus-ring-*` tokens.
+- **`<bread-crumb>` and `nav.breadcrumb`.** Separators are silent to
+  screen readers, `data-truncated` shows an ellipsis, collapsed trails get
+  a real "Show full path" button, `<nav aria-label="Breadcrumb">` is the
+  canonical markup (no duplicate landmark), JSON-LD resolves relative
+  hrefs, and path segments are decoded.
+- **B-element doc pages.** `<base>` and `<body>` are written (they were
+  placeholders); `<bdi>`/`<bdo>` guidance and demos corrected; `<b>` and
+  `<strong>` no longer claim screen readers announce them; `<br>` and
+  button pages updated.
 
 - **A-element review, batch 5.**
   - `<audio-player>`: the seek slider announces "0:13 of 0:30", mute

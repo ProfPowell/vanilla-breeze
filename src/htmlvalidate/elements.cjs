@@ -158,15 +158,6 @@ module.exports = {
     }
   },
 
-  "brand-mark": {
-    flow: true,
-    permittedContent: ["@flow"],
-    attributes: {
-      "data-size": { enum: ["s", "l", "xl"] },
-      "data-stack": { boolean: true }
-    }
-  },
-
   "dl-item": {
     flow: true,
     permittedContent: ["dt", "dd"]
@@ -222,6 +213,22 @@ module.exports = {
   "user-avatar": {
     flow: true,
     permittedContent: ["@flow"]
+  },
+
+  "brand-mark": {
+    flow: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "src": {},
+      "src-dark": {},
+      "src-compact": {},
+      "compact-media": {},
+      "alt": {},
+      "wordmark": { boolean: true },
+      "height": {},
+      "data-size": { enum: ["s", "l", "xl"] },
+      "data-stack": { boolean: true }
+    }
   },
 
   "dl": {

@@ -1007,35 +1007,6 @@ export default {
       }
     ]
   },
-  "brand-mark": {
-    "element": "brand-mark",
-    "type": "custom-element",
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    },
-    "attributes": [
-      {
-        "name": "data-size",
-        "kind": "data",
-        "purpose": "visual-variant",
-        "type": "enum",
-        "values": [
-          "s",
-          "l",
-          "xl"
-        ]
-      },
-      {
-        "name": "data-stack",
-        "kind": "data",
-        "purpose": "visual-variant",
-        "type": "boolean"
-      }
-    ]
-  },
   "browser-window": {
     "element": "browser-window",
     "type": "custom-element",
@@ -2459,11 +2430,103 @@ export default {
       }
     ]
   },
+  "brand-mark": {
+    "$schema": "../../../schemas/api.schema.json",
+    "element": "brand-mark",
+    "type": "web-component",
+    "description": "Brand/logo display. Authored content is never modified; the src attribute adds one owned <picture data-brand-mark-img> logo with optional dark-mode and compact variants",
+    "attributes": [
+      {
+        "name": "src",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Logo image URL (light mode / default). Inserts an owned <picture data-brand-mark-img>; removing it removes only that element"
+      },
+      {
+        "name": "src-dark",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Dark-mode logo URL; follows <html data-mode>, then the resolved color-scheme, then prefers-color-scheme"
+      },
+      {
+        "name": "src-compact",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Compact/icon logo URL, used while compact-media matches (a <source> in the owned <picture>)"
+      },
+      {
+        "name": "compact-media",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Media query for src-compact (default: (width < 48rem), the --bp-m breakpoint)"
+      },
+      {
+        "name": "alt",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Logo text alternative. Image-only: becomes the accessible name and authored content is hidden from AT. Otherwise used only when there is no authored text"
+      },
+      {
+        "name": "wordmark",
+        "kind": "host-api",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Show authored content alongside the src logo (without it, authored content is visually hidden but stays the accessible name)"
+      },
+      {
+        "name": "height",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Logo height: a number (px) or a CSS length; sets --brand-mark-height"
+      },
+      {
+        "name": "data-size",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "s",
+          "l",
+          "xl"
+        ],
+        "description": "Size variant"
+      },
+      {
+        "name": "data-stack",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Stack logo, name and tagline vertically"
+      },
+      {
+        "name": "data-brand-mark-img",
+        "kind": "data",
+        "purpose": "internal-hook",
+        "public": false,
+        "direction": "output",
+        "description": "Marks the <picture> the component owns (inserted from src)"
+      }
+    ],
+    "childAttributes": [],
+    "structure": [],
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    }
+  },
   "bread-crumb": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "bread-crumb",
     "type": "web-component",
-    "description": "Hierarchical navigation trail. Wraps existing <ol> markup HTML-first, or auto-generates from window.location.pathname. Emits BreadcrumbList JSON-LD for SEO.",
+    "description": "Hierarchical navigation trail. Wraps existing <ol> markup HTML-first (canonical markup: inside <nav aria-label=\"Breadcrumb\">), or auto-generates from window.location.pathname. Emits BreadcrumbList JSON-LD for SEO.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -2476,28 +2539,28 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "When present, auto-generates the trail from window.location.pathname. Each path segment becomes a crumb (Title-Cased by default; override per segment via the .labels property)."
+        "description": "When present, auto-generates the trail from window.location.pathname. Each path segment is URL-decoded and becomes a crumb (Title-Cased by default; override per segment via the .labels property). A leading Home crumb is always added."
       },
       {
         "name": "data-current-label",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Label for the final (current page) crumb when auto-generating. If omitted, the document title or last path segment is used."
+        "description": "Label for the final (current page) crumb when auto-generating. Takes precedence over .labels; if omitted, .labels or the Title-Cased last path segment is used."
       },
       {
         "name": "data-separator",
         "kind": "data",
         "purpose": "visual-variant",
         "type": "string",
-        "description": "Separator glyph variant: 'chevron' (default), 'arrow', 'dot', 'pipe'. Drives the --_separator CSS var."
+        "description": "Separator glyph variant: 'chevron', 'arrow', 'dot', 'pipe'. Unset uses the theme's --sep-breadcrumb token (› by default). Drives the --_separator CSS var; separators are decorative (empty CSS alt text) and not announced."
       },
       {
         "name": "data-collapsed",
         "kind": "data",
         "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Hide middle items, showing only first and last with an ellipsis in between."
+        "description": "Hide middle crumbs, keeping the first crumb, the parent (second-to-last) and the current page. With four or more crumbs the component inserts an ellipsis <button aria-expanded> (accessible name 'Show full path') after the first crumb that reveals the hidden crumbs."
       },
       {
         "name": "data-jsonld",
@@ -2512,10 +2575,41 @@ export default {
         "name": "data-truncated",
         "on": "li",
         "type": "boolean",
-        "description": "Apply to a crumb <li> to truncate long labels with an ellipsis (max-width 10rem)."
+        "description": "Apply to a crumb <li> to truncate its link/label with an ellipsis (max-inline-size 10rem). The full text is still read by screen readers."
       }
     ],
-    "structure": []
+    "structure": [
+      {
+        "element": "<ol>",
+        "description": "The trail; one <li> per crumb containing an <a> (ancestors) or <span> (current page). Generated in data-from-pathname mode."
+      },
+      {
+        "element": "<li data-crumb-toggle>",
+        "description": "Injected by data-collapsed: wraps the 'Show full path' <button aria-expanded>. Excluded from aria-current and JSON-LD."
+      },
+      {
+        "element": "<script type=\"application/ld+json\">",
+        "description": "Appended BreadcrumbList JSON-LD (unless data-jsonld=\"off\"); item URLs are the anchors' resolved hrefs."
+      }
+    ],
+    "events": [
+      {
+        "name": "bread-crumb:upgraded",
+        "description": "Fired after setup completes"
+      },
+      {
+        "name": "bread-crumb:toggle",
+        "detail": "{ expanded }",
+        "description": "Fired when the data-collapsed toggle button expands or collapses the trail"
+      }
+    ],
+    "properties": [
+      {
+        "name": "labels",
+        "type": "Record<string, string>",
+        "description": "Segment → label map for data-from-pathname mode. Keys may be a full pathname ('/docs/elements/'), a pathname without the trailing slash, or a single (decoded or raw) segment; '/' or 'home' relabels the Home crumb. Assigning re-renders the trail."
+      }
+    ]
   },
   "calendar-wc": {
     "$schema": "../../../schemas/api.schema.json",
