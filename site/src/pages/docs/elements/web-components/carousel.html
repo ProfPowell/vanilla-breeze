@@ -24,36 +24,35 @@ crumbLabel: Web Components
 
   <section>
     <h2>Usage</h2>
-    <p>Wrap slide elements inside <code>&lt;carousel-wc&gt;</code>. Each direct child becomes a slide.</p>
+    <p>Wrap slide elements inside <code>&lt;carousel-wc&gt;</code>. Each direct child becomes a slide. Give each carousel a name with <code>aria-label</code> or <code>aria-labelledby</code>: the carousel is a <code>region</code> landmark, and unnamed ones all fall back to "Carousel", which makes several on one page indistinguishable.</p>
 
-    <browser-window
-      src="/docs/examples/demos/carousel-basic.html"
-      url="https://vanilla-breeze.dev/carousel"
-      title="Carousel Usage"
-      shadow>
-    </browser-window>
-
-    <code-block language="html" show-lines label="Basic carousel" data-escape><carousel-wc>
+    <code-block language="html" show-lines label="Basic carousel" data-escape><carousel-wc aria-label="Product photos">
   <div>Slide 1</div>
   <div>Slide 2</div>
   <div>Slide 3</div>
 </carousel-wc></code-block>
 
     <h3>Autoplay with Looping</h3>
-    <p>Add <code>autoplay</code> and <code>loop</code> to cycle slides automatically. Autoplay pauses on hover and focus, and is disabled entirely when <code>prefers-reduced-motion</code> is active.</p>
-    <code-block language="html" show-lines label="Autoplay + loop" data-escape><carousel-wc autoplay loop autoplay-delay="3000">
+    <p>Add <code>autoplay</code> and <code>loop</code> to cycle slides automatically. Autoplay renders a pause/play rotation control as the first control in the carousel. Pausing with it sticks until the user presses play again. While rotation is on, it also pauses while the pointer is over the carousel or keyboard focus is inside it, and resumes when they leave. When <code>prefers-reduced-motion</code> is active, autoplay is off entirely and no rotation control appears.</p>
+    <code-block language="html" show-lines label="Autoplay + loop" data-escape><carousel-wc autoplay loop autoplay-delay="3000" aria-label="Customer stories">
   <div>Slide A</div>
   <div>Slide B</div>
   <div>Slide C</div>
 </carousel-wc></code-block>
 
     <h3>Multi-item Carousel</h3>
-    <p>Set <code>item-width="auto"</code> to show multiple items at once with a gap.</p>
+    <p>Set <code>item-width="auto"</code> to show multiple items at once with a gap. Each item keeps its content width. For equal widths, pass a CSS length such as <code>item-width="18rem"</code> or <code>item-width="40%"</code>.</p>
     <code-block language="html" show-lines label="Multi-item" data-escape><carousel-wc item-width="auto" gap="m" loop>
   <div class="card">Card 1</div>
   <div class="card">Card 2</div>
   <div class="card">Card 3</div>
   <div class="card">Card 4</div>
+</carousel-wc>
+
+<carousel-wc item-width="18rem" gap="m">
+  <div class="card">Card 1</div>
+  <div class="card">Card 2</div>
+  <div class="card">Card 3</div>
 </carousel-wc></code-block>
 
     <h3>No Indicators</h3>
@@ -89,7 +88,12 @@ carousel.addEventListener('carousel-wc:play', () => {
 
 carousel.addEventListener('carousel-wc:pause', () => {
   console.log('Autoplay paused');
+});
+
+carousel.addEventListener('carousel-wc:slides-changed', (e) => {
+  console.log('Rebuilt with', e.detail.slides.length, 'slides');
 });</code-block>
+    <p><code>carousel-wc:play</code> and <code>carousel-wc:pause</code> follow the autoplay timer. They also fire when hover or focus suspends rotation and when rotation resumes afterwards.</p>
   </section>
 
   <section>
@@ -101,12 +105,13 @@ carousel.addEventListener('carousel-wc:pause', () => {
       <tbody>
         <tr><td><code>element.currentIndex</code></td><td>number</td><td>Current slide index (read-only)</td></tr>
         <tr><td><code>element.slideCount</code></td><td>number</td><td>Total number of slides (read-only)</td></tr>
-        <tr><td><code>element.playing</code></td><td>boolean</td><td>Whether autoplay is active (read-only)</td></tr>
+        <tr><td><code>element.playing</code></td><td>boolean</td><td>Whether the autoplay timer is running right now (read-only; <code>false</code> while hover or focus suspends it)</td></tr>
+        <tr><td><code>element.slides</code></td><td>Array</td><td>Get the slides as data, or assign records to rebuild (see Data API)</td></tr>
         <tr><td><code>element.next()</code></td><td>method</td><td>Go to next slide</td></tr>
         <tr><td><code>element.prev()</code></td><td>method</td><td>Go to previous slide</td></tr>
-        <tr><td><code>element.goTo(index)</code></td><td>method</td><td>Jump to specific slide</td></tr>
-        <tr><td><code>element.play()</code></td><td>method</td><td>Start autoplay</td></tr>
-        <tr><td><code>element.pause()</code></td><td>method</td><td>Pause autoplay</td></tr>
+        <tr><td><code>element.goTo(index, smooth)</code></td><td>method</td><td>Jump to specific slide (<code>smooth</code> defaults to <code>true</code>)</td></tr>
+        <tr><td><code>element.play()</code></td><td>method</td><td>Start or resume rotation, adding the rotation control if needed (no-op under reduced motion)</td></tr>
+        <tr><td><code>element.pause()</code></td><td>method</td><td>Stop rotation until <code>play()</code> or the rotation control resumes it</td></tr>
         <tr><td><code>element.reset()</code></td><td>method</td><td>Return to initial slide, clear persistence</td></tr>
       </tbody>
     </table>
@@ -124,6 +129,19 @@ console.log(el.playing);      // Autoplay active?
 el.pause();                 // Pause autoplay
 el.play();                  // Resume autoplay
 el.reset();                 // Return to initial slide</code-block>
+
+    <h3>Data API</h3>
+    <p>The <code>slides</code> property swaps the slide set from data. Each record needs <code>html</code> (the slide content as an HTML string). <code>id</code> becomes the slide element's id. <code>label</code> replaces the default "n of total" slide label. Assigning rebuilds the carousel at slide 0 (or <code>start</code>) and fires <code>carousel-wc:slides-changed</code>. If you assign before the element is in the document, the carousel builds once when it connects.</p>
+    <code-block language="javascript" show-lines label="slides data API" data-escape>const el = document.createElement('carousel-wc');
+el.setAttribute('aria-label', 'Release notes');
+el.slides = [
+  { id: 'v1', html: '<h3>v1.0</h3><p>First release.</p>' },
+  { id: 'v2', html: '<h3>v2.0</h3><p>Rotation control.</p>', label: 'Version 2' },
+];
+document.querySelector('main').append(el);
+
+el.slides; // [{ id: 'v1', html: '…', label: '1 of 2' }, …]</code-block>
+    <p>The data API is HTML-only: content is assigned with <code>innerHTML</code>. Sanitize untrusted strings before you assign them.</p>
   </section>
 
   <section>
@@ -140,24 +158,28 @@ el.reset();                 // Return to initial slide</code-block>
         <tr><td><kbd>End</kbd></td><td>Last slide</td></tr>
       </tbody>
     </table>
+    <p>In right-to-left documents the arrow keys follow the visual direction: <kbd>ArrowLeft</kbd> goes to the next slide, <kbd>ArrowRight</kbd> to the previous one, and the prev/next chevrons are mirrored.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
 
     <h3>ARIA Roles</h3>
-    <p>The component uses <code>role="region"</code> with <code>aria-roledescription="carousel"</code>. Each slide has <code>role="group"</code> with <code>aria-roledescription="slide"</code> and a label like "1 of 4". Dot indicators are simple buttons with <code>aria-current</code> marking the active slide.</p>
+    <p>The component uses <code>role="region"</code> with <code>aria-roledescription="carousel"</code>. An authored <code>aria-label</code> or <code>aria-labelledby</code> names the region; without one it falls back to "Carousel". Each slide has <code>role="group"</code> with <code>aria-roledescription="slide"</code> and a label like "1 of 4", unless the slide already has an <code>aria-label</code>. Dot indicators are simple buttons with <code>aria-current</code> marking the active slide, inside a <code>role="group"</code> named "Slide indicators".</p>
+
+    <h3>Rotation Control</h3>
+    <p>With <code>autoplay</code>, a pause/play button comes first in the carousel's reading order, following the <a href="https://www.w3.org/WAI/ARIA/apg/patterns/carousel/">APG carousel pattern</a> and WCAG 2.2.2 (Pause, Stop, Hide). Its accessible name says what it will do: "Pause automatic slide show" or "Start automatic slide show".</p>
 
     <h3>Live Region</h3>
-    <p>A visually hidden <code>aria-live="polite"</code> region announces slide changes to screen readers.</p>
+    <p>A visually hidden live region announces "Slide n of total". It is <code>aria-live="off"</code> while slides rotate on their own, so screen readers are not interrupted on every tick. It becomes <code>aria-live="polite"</code> when rotation is paused or suspended, and on carousels without autoplay.</p>
 
     <h3>Reduced Motion</h3>
-    <p>When <code>prefers-reduced-motion</code> is active, autoplay is completely disabled and scroll behavior uses instant transitions.</p>
+    <p>When <code>prefers-reduced-motion</code> is active (or the page sets <code>data-motion-reduced</code> on the root element), autoplay is completely disabled, no rotation control is rendered, and scroll behavior uses instant transitions.</p>
   </section>
 
   <section>
     <h2>Styling</h2>
-    <p>Override the button and dot styles using the <code>.carousel-prev</code>, <code>.carousel-next</code>, and <code>.carousel-dot</code> classes.</p>
+    <p>Override the button and dot styles using the <code>.carousel-rotate</code>, <code>.carousel-prev</code>, <code>.carousel-next</code>, and <code>.carousel-dot</code> classes.</p>
     <code-block language="css" show-lines label="Custom styling" data-escape>/* Custom button styling */
 .carousel-prev,
 .carousel-next {

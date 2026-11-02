@@ -12,7 +12,7 @@
  * @attr {number}  autoplay-delay - Autoplay interval in ms (default: 5000)
  * @attr {boolean} loop           - Wrap around at ends
  * @attr {string}  indicators     - Show dot indicators ("true"/"false", default: "true")
- * @attr {string}  item-width     - Slide width: "full", "auto", or CSS length (default: "full")
+ * @attr {string}  item-width     - Slide width: "full", "auto", or a CSS length such as "18rem" (default: "full")
  * @attr {string}  gap            - Gap token: xs, s, m, l, xl
  * @attr {number}  start          - Initial slide index (default: 0)
  * @attr {string}  persist        - localStorage key for slide persistence
@@ -34,6 +34,7 @@ let carouselVtId = 0;
 class CarouselWc extends VBElement {
   #track;
   #slides = [];
+  #rotateBtn;
   #prevBtn;
   #nextBtn;
   #indicators;
@@ -48,6 +49,16 @@ class CarouselWc extends VBElement {
   #vtMode = false;
   /** @type {(() => void) | null} */
   #swipeCleanup = null;
+  /** Rotation is wanted: autoplay set or play() called, not explicitly paused. */
+  #rotating = false;
+  /** An explicit pause (rotation control or pause()) sticks across reconnects. */
+  #userPaused = false;
+  /** Hover/touch suspends rotation while the user is on the carousel. */
+  #hovered = false;
+  /** Keyboard focus inside suspends rotation while it stays inside. */
+  #focused = false;
+  /** Slides whose aria-label setup() generated (removed again on teardown). */
+  #autoLabelled = new WeakSet();
 
   get currentIndex() {
     return this.#currentIndex;
@@ -65,7 +76,8 @@ class CarouselWc extends VBElement {
     const children = [...this.children];
     if (children.length === 0) return false;
 
-    this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || document.documentElement.hasAttribute('data-motion-reduced');
     this.#vtMode = this.hasAttribute('transition') && !!document.startViewTransition;
 
     // If transition requested but VT API unavailable, remove attribute
@@ -74,28 +86,49 @@ class CarouselWc extends VBElement {
       this.removeAttribute('transition');
     }
 
-    // Region ARIA
+    // Region ARIA — an authored aria-label / aria-labelledby wins; the
+    // "Carousel" fallback is only a last resort (pages with several
+    // carousels should label each one so the landmarks are distinguishable).
     this.setAttribute('role', 'region');
     this.setAttribute('aria-roledescription', 'carousel');
-    if (!this.hasAttribute('aria-label')) {
+    if (!this.hasAttribute('aria-label') && !this.hasAttribute('aria-labelledby')) {
       this.setAttribute('aria-label', 'Carousel');
     }
 
-    // Build track
+    // Build track. It is focusable so arrow keys work, but it is a plain
+    // scroll container: no role, so no aria-label (names on generics are
+    // ignored or flagged by assistive tech).
     this.#track = document.createElement('div');
     this.#track.className = 'carousel-track';
     this.#track.setAttribute('tabindex', '0');
-    this.#track.setAttribute('aria-label', 'Slides');
 
-    // Move children into track as slides
+    // item-width as a CSS length → custom property consumed by styles.css
+    const itemWidth = this.getAttribute('item-width');
+    if (itemWidth && itemWidth !== 'auto' && itemWidth !== 'full'
+      && CSS.supports('inline-size', itemWidth)) {
+      this.#track.style.setProperty('--_item-width', itemWidth);
+    }
+
+    // Move children into track as slides. An authored (or `slides` record)
+    // aria-label is kept; otherwise generate "n of total".
     children.forEach((child, i) => {
       child.setAttribute('role', 'group');
       child.setAttribute('aria-roledescription', 'slide');
-      child.setAttribute('aria-label', `${i + 1} of ${children.length}`);
+      if (!child.hasAttribute('aria-label')) {
+        child.setAttribute('aria-label', `${i + 1} of ${children.length}`);
+        this.#autoLabelled.add(child);
+      }
       this.#track.appendChild(child);
     });
 
     this.#slides = [...this.#track.children];
+
+    // Rotation control (WCAG 2.2.2 / APG): first in reading order so a
+    // screen reader or keyboard user reaches it before the moving content.
+    // Not rendered under reduced motion, where autoplay never starts.
+    if (this.hasAttribute('autoplay') && !this.#reducedMotion) {
+      this.#createRotateButton();
+    }
 
     // Prev button
     this.#prevBtn = document.createElement('button');
@@ -114,6 +147,7 @@ class CarouselWc extends VBElement {
     if (showIndicators) {
       this.#indicators = document.createElement('div');
       this.#indicators.className = 'carousel-indicators';
+      this.#indicators.setAttribute('role', 'group');
       this.#indicators.setAttribute('aria-label', 'Slide indicators');
 
       this.#slides.forEach((_, i) => {
@@ -126,13 +160,15 @@ class CarouselWc extends VBElement {
       });
     }
 
-    // Live region for screen readers
+    // Live region for screen readers. Silent ("off") while rotating so every
+    // autoplay tick is not announced; "polite" when paused or manual.
     this.#liveRegion = document.createElement('div');
     this.#liveRegion.className = 'carousel-live';
     this.#liveRegion.setAttribute('aria-live', 'polite');
     this.#liveRegion.setAttribute('aria-atomic', 'true');
 
     // Assemble DOM
+    if (this.#rotateBtn) this.appendChild(this.#rotateBtn);
     this.appendChild(this.#prevBtn);
     this.appendChild(this.#track);
     this.appendChild(this.#nextBtn);
@@ -143,6 +179,18 @@ class CarouselWc extends VBElement {
     this.listen(this.#prevBtn, 'click', () => this.prev());
     this.listen(this.#nextBtn, 'click', () => this.next());
     this.listen(this.#track, 'keydown', this.#onKeyDown);
+
+    // Hover / focus / touch suspend rotation while the user is engaged. They
+    // never change the rotation intent, so an explicit pause sticks.
+    this.listen(this, 'mouseenter', () => { this.#hovered = true; this.#syncTimer(); });
+    this.listen(this, 'mouseleave', () => { this.#hovered = false; this.#syncTimer(); });
+    this.listen(this, 'touchstart', () => { this.#hovered = true; this.#syncTimer(); }, { passive: true });
+    this.listen(this, 'focusin', () => { this.#focused = true; this.#syncTimer(); });
+    this.listen(this, 'focusout', (e) => {
+      if (this.contains(/** @type {Node} */ (/** @type {FocusEvent} */ (e).relatedTarget))) return;
+      this.#focused = false;
+      this.#syncTimer();
+    });
 
     // VT mode: assign view-transition-name/class to track
     if (this.#vtMode) {
@@ -155,10 +203,15 @@ class CarouselWc extends VBElement {
 
     // VT mode: add swipe navigation via gesture module
     if (this.#vtMode) {
+      const track = this.#track;
       import('../../lib/vb-gestures.js').then(({ addSwipeListener }) => {
-        this.#swipeCleanup = /** @type {() => void} */ (addSwipeListener(this.#track, { threshold: 40 }));
-        this.listen(this.#track, 'swipe-left', () => this.next());
-        this.listen(this.#track, 'swipe-right', () => this.prev());
+        // The import resolves async: bail if this setup's track is gone
+        // (disconnected, or torn down and rebuilt by a reconnect/_reinit).
+        if (!this.isConnected || this.#track !== track) return;
+        this.#swipeCleanup = /** @type {() => void} */ (addSwipeListener(track, { threshold: 40 }));
+        // Swipe toward the reading direction's "back" side advances.
+        this.listen(track, 'swipe-left', () => (this.#isRtl() ? this.prev() : this.next()));
+        this.listen(track, 'swipe-right', () => (this.#isRtl() ? this.next() : this.prev()));
       });
     }
 
@@ -200,15 +253,17 @@ class CarouselWc extends VBElement {
 
     this.#updateControls();
 
-    // Autoplay
-    if (this.hasAttribute('autoplay') && !this.#reducedMotion) {
-      this.#setupAutoplay();
-    }
+    // Autoplay (never under reduced motion; an explicit pause survives
+    // reconnects and `slides` rebuilds)
+    this.#hovered = this.#focused = false;
+    this.#rotating = this.hasAttribute('autoplay') && !this.#reducedMotion && !this.#userPaused;
+    this.#syncTimer();
     return true;
   }
 
   teardown() {
-    this.pause();
+    this.#rotating = false;
+    this.#stopTimer();
     if (this.#observer) {
       this.#observer.disconnect();
       this.#observer = null;
@@ -226,12 +281,16 @@ class CarouselWc extends VBElement {
     if (this.#track?.parentElement === this) {
       [...this.#track.children].forEach(child => this.appendChild(child));
     }
+    this.#slides.forEach((slide) => {
+      if (this.#autoLabelled.has(slide)) slide.removeAttribute('aria-label');
+    });
     this.#track?.remove();
+    this.#rotateBtn?.remove();
     this.#prevBtn?.remove();
     this.#nextBtn?.remove();
     this.#indicators?.remove();
     this.#liveRegion?.remove();
-    this.#track = this.#prevBtn = this.#nextBtn = this.#indicators = this.#liveRegion = null;
+    this.#track = this.#rotateBtn = this.#prevBtn = this.#nextBtn = this.#indicators = this.#liveRegion = null;
     this.#slides = [];
     this.#vtMode = false;
     this.#currentIndex = 0;
@@ -261,12 +320,15 @@ class CarouselWc extends VBElement {
    * id; optional `label` overrides the default ARIA label.
    *
    * v1 is record-shaped — full rebuild on assignment. The carousel resets
-   * to slide 0 (or `start` attribute if set).
+   * to slide 0 (or `start` attribute if set). Assigned before the element
+   * is connected, the records are rendered as children and built on connect.
    *
    * Emits carousel-wc:slides-changed { slides, source: 'property' }.
    */
   set slides(value) {
     const next = Array.isArray(value) ? value : [];
+    // Drop rendered chrome and old slides; _reinit's teardown then skips the
+    // child restore because the track is already detached.
     while (this.firstChild) this.firstChild.remove();
     for (const s of next) {
       const div = document.createElement('div');
@@ -276,9 +338,9 @@ class CarouselWc extends VBElement {
       this.appendChild(div);
     }
 
-    this.teardown();
-    this.removeAttribute('data-upgraded');
-    this.setup();
+    // Releases listen() handlers, tears down, and rebuilds only when
+    // connected (otherwise connectedCallback builds once).
+    this._reinit();
 
     this.dispatchEvent(new CustomEvent('carousel-wc:slides-changed', {
       detail: { slides: next, source: 'property' },
@@ -323,9 +385,15 @@ class CarouselWc extends VBElement {
         this.#showSlide(index);
       }
     } else {
-      const target = this.#slides[index].offsetLeft - this.#track.offsetLeft;
+      // Rect delta from the track's start edge: correct for LTR and for RTL
+      // (where scrollLeft runs negative) and for auto/length item widths.
+      const slideRect = this.#slides[index].getBoundingClientRect();
+      const trackRect = this.#track.getBoundingClientRect();
+      const delta = this.#isRtl()
+        ? slideRect.right - trackRect.right
+        : slideRect.left - trackRect.left;
       const behavior = smooth && !this.#reducedMotion ? 'smooth' : 'instant';
-      this.#track.scrollTo({ left: target, behavior });
+      this.#track.scrollTo({ left: this.#track.scrollLeft + delta, behavior });
     }
 
     this.#setCurrentIndex(index);
@@ -337,18 +405,79 @@ class CarouselWc extends VBElement {
     });
   }
 
+  /**
+   * Start (or resume) rotation. An explicit request: it overrides a
+   * hover/focus suspension. No-op under reduced motion. Renders the
+   * rotation control if the carousel did not have one yet.
+   */
   play() {
-    if (this.#autoplayTimer || this.#reducedMotion) return;
+    if (this.#reducedMotion || !this.#track) return;
+    this.#userPaused = false;
+    this.#rotating = true;
+    this.#hovered = this.#focused = false;
+    if (!this.#rotateBtn) {
+      this.#createRotateButton();
+      this.insertBefore(/** @type {HTMLButtonElement} */ (this.#rotateBtn), this.firstChild);
+    }
+    this.#syncTimer();
+  }
+
+  /** Stop rotation until play() / the rotation control resumes it. */
+  pause() {
+    this.#userPaused = true;
+    this.#rotating = false;
+    this.#syncTimer();
+  }
+
+  #createRotateButton() {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'carousel-rotate';
+    this.listen(btn, 'click', () => {
+      if (this.#rotating) this.pause();
+      else this.play();
+    });
+    this.#rotateBtn = btn;
+    this.#updateRotateButton();
+  }
+
+  /** The control names the action it performs (APG rotation control). */
+  #updateRotateButton() {
+    const btn = this.#rotateBtn;
+    if (!btn) return;
+    const label = this.#rotating ? 'Pause automatic slide show' : 'Start automatic slide show';
+    if (btn.getAttribute('aria-label') === label) return;
+    btn.setAttribute('aria-label', label);
+    btn.innerHTML = `<icon-wc name="${this.#rotating ? 'pause' : 'play'}" size="sm"></icon-wc>`;
+  }
+
+  /** Run the timer iff rotation is wanted and the user is not engaged. */
+  #syncTimer() {
+    const run = this.#rotating && !this.#hovered && !this.#focused
+      && !this.#reducedMotion && this.isConnected && !!this.#track;
+    if (run) this.#startTimer();
+    else this.#stopTimer();
+    this.#updateRotateButton();
+  }
+
+  #startTimer() {
+    if (this.#autoplayTimer) return;
     const delay = Number(this.getAttribute('autoplay-delay')) || 5000;
     this.#autoplayTimer = setInterval(() => this.next(), delay);
+    this.#liveRegion?.setAttribute('aria-live', 'off');
     this.dispatchEvent(new CustomEvent('carousel-wc:play', { bubbles: true }));
   }
 
-  pause() {
+  #stopTimer() {
+    this.#liveRegion?.setAttribute('aria-live', 'polite');
     if (!this.#autoplayTimer) return;
     clearInterval(this.#autoplayTimer);
     this.#autoplayTimer = null;
     this.dispatchEvent(new CustomEvent('carousel-wc:pause', { bubbles: true }));
+  }
+
+  #isRtl() {
+    return getComputedStyle(this).direction === 'rtl';
   }
 
   reset() {
@@ -420,14 +549,17 @@ class CarouselWc extends VBElement {
   };
 
   #onKeyDown = (e) => {
+    // Arrow keys follow the visual direction: in RTL the next slide is on
+    // the left.
+    const rtl = (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && this.#isRtl();
     switch (e.key) {
       case 'ArrowLeft':
         e.preventDefault();
-        this.prev();
+        if (rtl) this.next(); else this.prev();
         break;
       case 'ArrowRight':
         e.preventDefault();
-        this.next();
+        if (rtl) this.prev(); else this.next();
         break;
       case 'Home':
         e.preventDefault();
@@ -439,23 +571,6 @@ class CarouselWc extends VBElement {
         break;
     }
   };
-
-  #setupAutoplay() {
-    this.play();
-
-    // Pause on hover/focus/touch — all tracked for cleanup
-    this.listen(this, 'mouseenter', () => this.pause());
-    this.listen(this, 'mouseleave', () => {
-      if (this.hasAttribute('autoplay')) this.play();
-    });
-    this.listen(this, 'focusin', () => this.pause());
-    this.listen(this, 'focusout', (e) => {
-      if (!this.contains(/** @type {Node} */ (/** @type {FocusEvent} */ (e).relatedTarget)) && this.hasAttribute('autoplay')) {
-        this.play();
-      }
-    });
-    this.listen(this, 'touchstart', () => this.pause(), { passive: true });
-  }
 
   #readPersist() {
     const key = this.getAttribute('persist');

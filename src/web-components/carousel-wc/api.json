@@ -8,11 +8,11 @@
     "permittedContent": ["@flow"]
   },
   "attributes": [
-    { "name": "autoplay",       "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Auto-advance slides" },
-    { "name": "autoplay-delay", "kind": "host-api", "purpose": "config", "type": "number",  "description": "Delay between auto-advance in milliseconds" },
+    { "name": "autoplay",       "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Auto-advance slides and render a pause/play rotation control (ignored under reduced motion)" },
+    { "name": "autoplay-delay", "kind": "host-api", "purpose": "config", "type": "number",  "description": "Delay between auto-advance in milliseconds (default 5000)" },
     { "name": "loop",           "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Loop back to start after last slide" },
-    { "name": "indicators",     "kind": "host-api", "purpose": "config", "type": "string",  "description": "Show slide position indicators" },
-    { "name": "item-width",     "kind": "host-api", "purpose": "config", "type": "string",  "description": "CSS width for each slide item" },
+    { "name": "indicators",     "kind": "host-api", "purpose": "config", "type": "string",  "description": "Show dot indicators; \"false\" hides them" },
+    { "name": "item-width",     "kind": "host-api", "purpose": "config", "type": "string",  "description": "Slide width: \"full\" (default), \"auto\" (content width), or a CSS length such as \"18rem\"" },
     { "name": "gap",            "kind": "host-api", "purpose": "config", "type": "enum",    "values": ["xs", "s", "m", "l", "xl"], "description": "Gap between slides" },
     { "name": "start",          "kind": "host-api", "purpose": "config", "type": "number",  "description": "Initial slide index" },
     { "name": "persist",        "kind": "host-api", "purpose": "config", "type": "string",  "description": "localStorage key for position persistence" },
@@ -20,5 +20,25 @@
   ],
   "structure": [
     { "element": "any child elements", "description": "Each direct child becomes a slide" }
+  ],
+  "events": [
+    { "name": "carousel-wc:change",         "detail": "{ index, slide }",                "description": "Fired once per slide change (scroll settling is debounced)" },
+    { "name": "carousel-wc:play",                                                       "description": "Fired when the autoplay timer starts or resumes (including after a hover/focus suspension ends)" },
+    { "name": "carousel-wc:pause",                                                      "description": "Fired when the autoplay timer stops: explicit pause, or a hover/focus/touch suspension" },
+    { "name": "carousel-wc:slides-changed", "detail": "{ slides, source: 'property' }", "description": "Fired after the slides property rebuilds the carousel" }
+  ],
+  "methods": [
+    { "name": "next()",       "description": "Go to the next slide (wraps with loop)" },
+    { "name": "prev()",       "description": "Go to the previous slide (wraps with loop)" },
+    { "name": "goTo(index, smooth = true)", "description": "Jump to a slide; out-of-range indexes are ignored" },
+    { "name": "play()",       "description": "Start or resume rotation; overrides a hover/focus suspension. No-op under reduced motion" },
+    { "name": "pause()",      "description": "Stop rotation until play() or the rotation control resumes it" },
+    { "name": "reset()",      "description": "Return to the start slide and clear persistence" }
+  ],
+  "properties": [
+    { "name": "currentIndex", "type": "number",  "description": "Current slide index (read-only)" },
+    { "name": "slideCount",   "type": "number",  "description": "Number of slides (read-only)" },
+    { "name": "playing",      "type": "boolean", "description": "Whether the autoplay timer is running right now (read-only; false while suspended by hover/focus)" },
+    { "name": "slides",       "type": "Array<{ id?, html, label? }>", "description": "Get the slides as data, or assign records to rebuild the carousel" }
   ]
 }

@@ -40,10 +40,10 @@ The `:not(:defined)` CSS provides `display: flex; overflow-x: auto; scroll-snap-
 
 ## Enhanced Form
 
-After upgrade, the component builds a track, prev/next buttons, dot indicators, and a live region for screen reader announcements.
+After upgrade, the component builds a track, prev/next buttons, dot indicators, and a live region for screen reader announcements. With `autoplay` it also renders a pause/play rotation control, first in reading order.
 
 ```html
-<carousel-wc loop autoplay autoplay-delay="5000">
+<carousel-wc loop autoplay autoplay-delay="5000" aria-label="Customer stories">
   <article>Slide 1</article>
   <article>Slide 2</article>
   <article>Slide 3</article>
@@ -54,19 +54,24 @@ After upgrade, the component builds a track, prev/next buttons, dot indicators, 
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `autoplay` | boolean | -- | Enable autoplay |
+| `autoplay` | boolean | -- | Enable autoplay and render the rotation control (ignored under reduced motion) |
 | `autoplay-delay` | number | 5000 | Autoplay interval in ms |
 | `loop` | boolean | -- | Wrap around at ends |
 | `indicators` | string | "true" | Show dot indicators |
-| `item-width` | string | "full" | Slide width: "full", "auto", or CSS length |
+| `item-width` | string | "full" | Slide width: "full", "auto", or a CSS length (e.g. "18rem", "40%") applied as `flex: 0 0 <length>` |
 | `gap` | string | -- | Gap token: xs, s, m, l, xl |
 | `start` | number | 0 | Initial slide index |
 | `persist` | string | -- | localStorage key for slide persistence |
 | `transition` | string | -- | View Transition type: "fade", "slide", "scale" |
 
-**JS API:** `next()`, `prev()`, `goTo(index)`, `play()`, `pause()`, `reset()`, `currentIndex`, `slideCount`, `playing`
+Name the region with `aria-label` or `aria-labelledby`; without either it falls back to "Carousel".
 
-**Events:** `carousel-wc:change`, `carousel-wc:play`, `carousel-wc:pause`
+**JS API:** `next()`, `prev()`, `goTo(index, smooth = true)`, `play()`, `pause()`, `reset()`, `currentIndex`, `slideCount`, `playing`, `slides`
+
+- `play()` starts/resumes rotation and overrides a hover/focus suspension; `pause()` stops it until `play()` or the rotation control resumes it. `playing` reports whether the timer is running right now.
+- `slides` gets the slides as `{ id?, html, label? }` records, or assigns records to rebuild. Assigned before connection, the carousel builds once on connect.
+
+**Events:** `carousel-wc:change` (`{ index, slide }`), `carousel-wc:play`, `carousel-wc:pause` (both track the timer, including hover/focus suspension), `carousel-wc:slides-changed` (`{ slides, source: 'property' }`)
 
 ## Failure Modes
 
@@ -91,28 +96,28 @@ After upgrade, the component builds a track, prev/next buttons, dot indicators, 
 ### Keyboard Only
 
 - **Behavior:** Full keyboard navigation: Tab to reach carousel, Arrow Left/Right to navigate slides, Home/End to jump to first/last.
-- **Tab order:** Focus moves to track, then prev/next buttons, then indicator dots.
-- **Key bindings:** ArrowLeft (prev), ArrowRight (next), Home (first), End (last)
+- **Tab order:** Rotation control (with autoplay), prev button, track, next button, then indicator dots.
+- **Key bindings:** ArrowLeft (prev), ArrowRight (next), Home (first), End (last); arrows swap in RTL
 - **Acceptable:** Yes
 
 ### Screen Reader
 
-- **ARIA roles:** `region` on carousel, `group` with `aria-roledescription="slide"` on each slide, `tablist` on indicators, `tab` on dots
-- **Live regions:** `aria-live="polite"` region announces "Slide X of Y" on change
+- **ARIA roles:** `region` with `aria-roledescription="carousel"` on the host, `group` with `aria-roledescription="slide"` on each slide, `group` named "Slide indicators" around the dot buttons (which use `aria-current`)
+- **Live regions:** a region announces "Slide X of Y" on change; `aria-live="off"` while rotating, `"polite"` when paused or manual
 - **Announced state changes:** Current slide index announced on navigation, autoplay play/pause via events
 - **Tested with:** VoiceOver (macOS)
 - **Acceptable:** Yes
 
 ### RTL / i18n
 
-- **Behavior:** Layout uses CSS Grid which respects writing direction. Arrow key directions remain physical (Left = previous, Right = next) matching carousel convention.
-- **CSS approach:** Uses logical properties for spacing (`padding-block-start`, `gap`). Grid areas are direction-agnostic. Button sizing uses physical `width`/`height` for the circular shape (intentional exception).
-- **Acceptable:** Partial -- arrow key mapping is physical, not logical.
+- **Behavior:** Layout uses CSS Grid which respects writing direction, so prev sits on the right in RTL. Arrow keys follow the visual direction (in RTL, ArrowLeft = next), VT-mode swipes swap the same way, and the prev/next chevrons are mirrored with `scaleX(-1)` under `:dir(rtl)`.
+- **CSS approach:** Uses logical properties for spacing (`padding-block-start`, `gap`). Grid areas are direction-agnostic.
+- **Acceptable:** Yes. Known gap: the `transition="slide"` animation direction is still physical.
 
 ## Accessibility
 
 - WCAG 2.1 AA compliant
-- Autoplay pauses on hover, focus, and touch (WCAG 2.2.2)
+- Autoplay has a persistent pause/play rotation control (WCAG 2.2.2, APG carousel); an explicit pause sticks, and hover, focus, and touch suspend rotation while it is on
 - Autoplay disabled when `prefers-reduced-motion: reduce` is active
 - All interactive elements meet 44x44px minimum touch target
 - Live region announces slide changes without interrupting user flow
@@ -144,7 +149,7 @@ Basic carousel:
 
 Autoplay with loop:
 ```html
-<carousel-wc autoplay loop autoplay-delay="3000">
+<carousel-wc autoplay loop autoplay-delay="3000" aria-label="Testimonials">
   <article>Testimonial 1</article>
   <article>Testimonial 2</article>
   <article>Testimonial 3</article>

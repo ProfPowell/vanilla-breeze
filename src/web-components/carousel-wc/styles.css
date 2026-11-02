@@ -17,8 +17,8 @@ carousel-wc:not(:defined) > * {
 carousel-wc:defined {
   display: grid;
   grid-template-areas:
-    "prev track next"
-    ".    dots  .";
+    "prev   track next"
+    "rotate dots  .";
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: var(--size-s);
@@ -66,13 +66,20 @@ carousel-wc[gap="xl"] { --_gap: var(--size-xl); }
     flex: 0 0 auto;
   }
 
+  /* Item width: CSS length — logic.js copies a valid length from the
+   * attribute into --_item-width on the track */
+  :scope[item-width]:not([item-width="auto"], [item-width="full"]) .carousel-track > * {
+    flex: 0 0 var(--_item-width, 100%);
+  }
+
   /* Snap alignment: center for full-width slides */
   :scope:not([item-width]) .carousel-track > *,
   :scope[item-width="full"] .carousel-track > * {
     scroll-snap-align: center;
   }
 
-  /* --- Prev / Next buttons --- */
+  /* --- Prev / Next / rotation buttons --- */
+  .carousel-rotate,
   .carousel-prev,
   .carousel-next {
     grid-area: auto;
@@ -95,7 +102,15 @@ carousel-wc[gap="xl"] { --_gap: var(--size-xl); }
 
   .carousel-prev { grid-area: prev; }
   .carousel-next { grid-area: next; }
+  .carousel-rotate { grid-area: rotate; }
 
+  /* RTL: prev sits on the right and next on the left, so the chevrons flip
+   * to point outward (the play/pause glyphs are not mirrored) */
+  :scope:dir(rtl) :is(.carousel-prev, .carousel-next) icon-wc {
+    transform: scaleX(-1);
+  }
+
+  .carousel-rotate:hover,
   .carousel-prev:hover:not(:disabled),
   .carousel-next:hover:not(:disabled) {
     border-color: var(--color-interactive, oklch(55% 0.15 250));
@@ -108,6 +123,7 @@ carousel-wc[gap="xl"] { --_gap: var(--size-xl); }
     cursor: not-allowed;
   }
 
+  .carousel-rotate:focus-visible,
   .carousel-prev:focus-visible,
   .carousel-next:focus-visible {
     outline: 3px solid var(--color-focus, oklch(60% 0.2 260));
@@ -193,6 +209,7 @@ carousel-wc[gap="xl"] { --_gap: var(--size-xl); }
       scroll-behavior: auto;
     }
 
+    .carousel-rotate,
     .carousel-prev,
     .carousel-next,
     .carousel-dot {
