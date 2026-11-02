@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "card-list",
   "type": "web-component",
-  "description": "Template-based list rendering with SAFE data binding",
+  "description": "Template-based list rendering with safe data binding: property paths only, sanitized HTML, and URL-checked attribute bindings",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -13,54 +13,108 @@
     {
       "name": "src",
       "kind": "native",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "description": "URL to fetch JSON items from (an array, or an object with items/data). Fetched once on upgrade and on change; a newer src aborts the older request."
     },
     {
       "name": "data-items",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "description": "Inline JSON array of items. Takes priority over src."
     },
     {
       "name": "data-key",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "id",
+      "description": "Item property used as the unique key for the keyed diff. Missing or duplicated keys fall back to the item index."
     },
     {
       "name": "data-loading",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "boolean",
+      "description": "Present while a src fetch is in flight (with aria-busy=\"true\")."
     },
     {
-      "name": "data-field",
+      "name": "data-error",
       "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-field-attr",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-field-html",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-field-if",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-field-unless",
-      "kind": "data",
-      "purpose": "config"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "string",
+      "description": "Error message of the last failed src fetch; cleared when a new fetch starts. Also announced via the role=\"status\" child."
     }
   ],
   "events": [
     {
-      "name": "card-list:rendered"
+      "name": "card-list:rendered",
+      "detail": "{ count }",
+      "description": "Fired after items are rendered or reconciled."
+    },
+    {
+      "name": "card-list:items-changed",
+      "detail": "{ items, source: 'attribute' | 'api' }",
+      "description": "Fired when the items change. source is 'attribute' for data-items, src and data-key, 'api' for the .items setter."
+    },
+    {
+      "name": "card-list:upgraded",
+      "description": "Fired once the component has found its template and upgraded."
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "childAttributes": [
+    {
+      "name": "data-field",
+      "on": "template descendant",
+      "type": "string",
+      "description": "Set the element's text content from a property path (e.g. user.name)."
+    },
+    {
+      "name": "data-field-attr",
+      "on": "template descendant",
+      "type": "string",
+      "description": "Comma-separated 'attribute: path' pairs. on* attributes, style and srcdoc are refused; URL attributes (href, src, action, formaction, poster, srcset, ...) only accept http(s), mailto, tel, relative or fragment URLs. null/undefined removes the attribute."
+    },
+    {
+      "name": "data-field-html",
+      "on": "template descendant",
+      "type": "string",
+      "description": "Set innerHTML from a property path, passed through the shared sanitizer."
+    },
+    {
+      "name": "data-field-if",
+      "on": "template descendant",
+      "type": "string",
+      "description": "Element is [hidden] unless the property value is truthy."
+    },
+    {
+      "name": "data-field-unless",
+      "on": "template descendant",
+      "type": "string",
+      "description": "Element is [hidden] when the property value is truthy."
+    },
+    {
+      "name": "data-fallback",
+      "on": "direct child",
+      "type": "boolean",
+      "description": "Static no-JS content; removed on the first successful render."
+    }
+  ],
+  "structure": [
+    {
+      "element": "template",
+      "required": true,
+      "description": "Card template cloned per item. A single root element enables the keyed diff."
+    }
+  ],
+  "properties": [
+    {
+      "name": "items",
+      "type": "Array<object>",
+      "description": "Get the current items, or assign an array to re-render via the keyed diff (cancels an in-flight src fetch). setItems()/getItems() were removed."
+    }
+  ]
 }

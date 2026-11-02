@@ -1,12 +1,18 @@
-/* --- Progressive enhancement: no-JS fallback --- */
-card-list:not(:defined) {
+/* card-list: Template-based list rendering component
+ *
+ * Layout comes from the global data-layout system (grid, stack, reel,
+ * cluster, ...) including data-layout-gap / data-layout-min. This file
+ * only supplies the default block display when no data-layout is set:
+ * it sits in the web-components layer, above custom-elements, so an
+ * unscoped `card-list { display: block }` would beat every layout. */
+
+card-list:not([data-layout]) {
   display: block;
 }
 
-/* card-list: Template-based list rendering component */
-
-card-list {
-  display: block;
+/* Hide template from display */
+card-list > template {
+  display: none;
 }
 
 /* Loading state */
@@ -15,55 +21,44 @@ card-list[data-loading] {
   pointer-events: none;
 }
 
-card-list[data-loading]::after {
-  content: "Loading...";
-  display: block;
+/* Live status (loading / error text). Created by logic.js for src
+   fetches. Visually hidden while empty but kept in the accessibility
+   tree so it stays a live region; out of flow so it never takes a grid
+   cell or a reel slot. */
+card-list > [data-card-list-status] {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+card-list > [data-card-list-status]:not(:empty) {
+  position: static;
+  inline-size: auto;
+  block-size: auto;
+  margin: 0 0 var(--size-m);
   padding: var(--size-m);
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
   text-align: center;
   color: var(--color-text-muted);
   font-style: italic;
+
+  /* Span the whole row and sit first in grid / flex layouts. */
+  grid-column: 1 / -1;
+  flex-basis: 100%;
+  order: -1;
 }
 
-/* Error state */
-card-list[data-error]::before {
-  content: "Error: " attr(data-error);
-  display: block;
-  padding: var(--size-m);
-  color: oklch(55% 0.2 25);
-  background: oklch(95% 0.02 25);
+card-list[data-error] > [data-card-list-status]:not(:empty) {
+  text-align: start;
+  font-style: normal;
+  color: var(--color-error-text, var(--color-error));
+  background: var(--color-error-subtle);
   border-radius: var(--radius-m);
-  margin-block-end: var(--size-m);
-}
-
-/* Hide template from display */
-card-list > template {
-  display: none;
-}
-
-/* Default grid layout for rendered items */
-card-list[data-layout="grid"] {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--size-l);
-}
-
-/* Stack layout */
-card-list[data-layout="stack"] {
-  display: flex;
-  flex-direction: column;
-  gap: var(--size-m);
-}
-
-/* Reel/horizontal layout */
-card-list[data-layout="reel"] {
-  display: flex;
-  gap: var(--size-m);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-block: var(--size-s);
-}
-
-card-list[data-layout="reel"] > :not(template) {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
 }

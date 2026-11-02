@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Overview</h2>
-    <p>An SVG chart web component with built-in charting engine. Supports eight chart types with five data source options. Progressive enhancement means a semantic <code>&lt;table&gt;</code> is visible without JavaScript &mdash; with JS, the SVG chart renders and the table becomes screen-reader only.</p>
+    <p>An SVG chart web component with built-in charting engine. Supports eight chart types with five data source options. Progressive enhancement means a semantic <code>&lt;table&gt;</code> is visible without JavaScript &mdash; with JS, the SVG chart renders and the table becomes the screen-reader (and print) version. Every chart has a data table: data supplied as JSON gets one generated. See <a href="#accessibility">Accessibility</a>.</p>
 
     <browser-window
       src="/docs/examples/demos/chart-wc-basic.html"
@@ -95,11 +95,16 @@ crumbLabel: Web Components
     </browser-window>
 
     <code-block language="html" show-lines label="Inline sparkline tile" data-escape><chart-wc
+  class="revenue-trend"
   data-type="line"
   data-size="sparkline"
-  style="block-size: 40px;"
-  data-values='[{"name":"r","values":{"1":120,"2":135,"3":128,"4":150,"5":162,"6":174,"7":190}}]'>
+  data-title="Revenue, last 7 days"
+  data-values='[{"name":"Revenue","values":{"Mon":120,"Tue":135,"Wed":128,"Thu":150,"Fri":162,"Sat":174,"Sun":190}}]'>
 </chart-wc></code-block>
+
+    <code-block language="css" show-lines label="Size the sparkline from CSS" data-escape>.revenue-trend { block-size: 2.5rem; }</code-block>
+
+    <p>A sparkline gets a generated data table like any other chart; <code>data-title</code> becomes its caption, so screen-reader users hear "Revenue, last 7 days" plus the values.</p>
 
     <p>The <code>line</code>, <code>area</code>, and <code>column</code>/<code>bar</code> chart types are the recommended sparkline shapes. <code>pie</code> and <code>ring</code> still render but ignore the chrome-strip (their chrome is the chart). Pair with a CSS custom property override on <code>--chart-series-1</code> to colour the trend by tone:</p>
 
@@ -126,7 +131,7 @@ chart-wc[data-size="sparkline"].trend-flat { --chart-series-1: var(--color-text-
     </table>
 
     <h3>Table Source (Progressive Enhancement)</h3>
-    <p>Wrap a semantic <code>&lt;table&gt;</code> inside <code>&lt;chart-wc&gt;</code>. The chart extracts data from the table and renders SVG. Without JavaScript, the table remains visible.</p>
+    <p>Wrap a semantic <code>&lt;table&gt;</code> inside <code>&lt;chart-wc&gt;</code>. The chart extracts data from the table and renders SVG. Without JavaScript, the table remains visible. The <code>class="vb-chart"</code> CSS-only chart styling (the no-JS layer) comes from the charts CSS bundle, <code>vanilla-breeze-charts.css</code> &mdash; it is not part of the core stylesheet.</p>
 
     <browser-window
       src="/docs/examples/demos/chart-wc-table.html"
@@ -213,7 +218,26 @@ chart.addEventListener('chart-wc:render', (e) => {
 
 chart.addEventListener('chart-wc:error', (e) => {
   console.error('Chart error:', e.detail.message);
+});
+
+// Last-minute engine config tweaks (the object is used for this render)
+chart.addEventListener('chart-wc:config-resolved', (e) => {
+  e.detail.config.legend = { enabled: true };
 });</code-block>
+  </section>
+
+  <section>
+    <h2 id="accessibility">Accessibility</h2>
+    <p>The rendered SVG is decorative to assistive technology (<code>aria-hidden="true"</code>); the chart's text alternative is always a real data table:</p>
+    <ul>
+      <li><strong>Table source:</strong> once the chart has mounted, the authored table gets <code>class="visually-hidden"</code>. It stays in the accessibility tree &mdash; caption, headers and cells are all announced. With <code>data-chart="enhance"</code> it stays visible.</li>
+      <li><strong>JSON sources</strong> (<code>.data</code>, <code>data-values</code>, <code>&lt;script&gt;</code>, <code>&lt;template&gt;</code>): chart-wc generates a visually hidden <code>&lt;table data-chart-generated&gt;</code> from the data and keeps it in sync on every render. Its caption is <code>data-title</code> (plus <code>data-subtitle</code>); <code>data-label-x</code> / <code>data-label-y</code> name the category and value columns. Pie/ring data becomes label/value rows, scatter/bubble data one row per point.</li>
+      <li>If the data can't be tabulated, the SVG is exposed instead as <code>role="img"</code> named by <code>data-title</code>.</li>
+      <li><strong>Keyboard:</strong> the engine's own keyboard navigation (arrow keys between data points when <code>data-tooltip</code> is on, focusable pie slices) lives inside the <code>aria-hidden</code> SVG, so chart-wc removes those elements from the tab order (<code>tabindex="-1"</code>) &mdash; a focusable element inside <code>aria-hidden</code> would be a silent tab stop for screen-reader users. Mouse tooltips still work; keyboard and screen-reader users get the same values from the table. Use <code>data-chart="enhance"</code> when sighted keyboard users need the numbers on screen.</li>
+      <li><strong>Failure:</strong> the table is only hidden after the chart mounts successfully. If rendering throws, <code>chart-wc:error</code> fires and the table stays visible.</li>
+      <li><strong>Print:</strong> the data table prints and the SVG is hidden (sparklines are the exception: they print the trend shape).</li>
+    </ul>
+    <p>The table-hiding and print rules live in the charts CSS bundle. Without <code>vanilla-breeze-charts.css</code> a long hidden table can still extend the page's scroll height.</p>
   </section>
 
   <section>
@@ -282,7 +306,7 @@ chart.addEventListener('chart-wc:data-changed', (e) =&gt; {
         <tr><th>Event</th><th>Detail</th><th>When</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>chart-wc:upgraded</code></td><td>&mdash;</td><td>Once after first connect; safe signal for the first <code>.data</code> assignment.</td></tr>
+        <tr><td><code>chart-wc:upgraded</code></td><td>&mdash;</td><td>After each connect (again after the element is moved); safe signal for the first <code>.data</code> assignment.</td></tr>
         <tr><td><code>chart-wc:data-changed</code></td><td><code>{ data, config, source: 'property' }</code></td><td>Fires when <code>.data</code> or <code>.config</code> is assigned via the property API.</td></tr>
       </tbody>
     </table>
@@ -313,7 +337,7 @@ chart.addEventListener('chart-wc:data-changed', (e) =&gt; {
       </thead>
       <tbody>
         <tr><td>1</td><td>No CSS, no JS</td><td>Plain semantic table</td></tr>
-        <tr><td>2</td><td>CSS only</td><td>CSS chart via <code>.vb-chart</code> class</td></tr>
+        <tr><td>2</td><td>CSS only</td><td>CSS chart via <code>.vb-chart</code> class (needs <code>vanilla-breeze-charts.css</code>)</td></tr>
         <tr><td>3</td><td>CSS + JS</td><td>Full SVG chart with interactivity</td></tr>
       </tbody>
     </table>
@@ -321,6 +345,7 @@ chart.addEventListener('chart-wc:data-changed', (e) =&gt; {
 
   <section>
     <h2>Loading</h2>
-    <p><code>&lt;chart-wc&gt;</code> is part of the optional charts bundle (<code>main-charts.js</code>), not the core bundle. Include it separately:</p>
-    <code-block language="html" show-lines label="Include charts bundle" data-escape><script type="module" src="/cdn/vanilla-breeze-charts.js"></script></code-block>
+    <p><code>&lt;chart-wc&gt;</code> is part of the optional charts bundle (<code>main-charts.js</code>), not the core bundle. Include both its script and its stylesheet &mdash; the CSS carries the <code>.vb-chart</code> CSS-only charts, the chart sizing, and the accessible table-hiding and print rules:</p>
+    <code-block language="html" show-lines label="Include charts bundle" data-escape><link rel="stylesheet" href="/cdn/vanilla-breeze-charts.css">
+<script type="module" src="/cdn/vanilla-breeze-charts.js"></script></code-block>
   </section>

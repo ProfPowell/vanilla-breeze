@@ -38,49 +38,56 @@ chart-wc [data-chart-svg] svg {
   display: block;
 }
 
-/* Source-table hiding: chart-wc's logic.js applies class="visually-hidden"
-   to the data table when chart mode is "replace". The site-wide
-   .visually-hidden utility (src/utils/visually-hidden.css) sets
-   `block-size: 1px`, but <table> elements ignore explicit heights —
-   they size to their content row count. With dense timeseries data
-   (e.g. 5-min buckets over 24h = ~280 rows) the "hidden" table can be
-   8000px+ tall, blowing out document scroll height even though it's
-   visually clipped.
+/* Data-table hiding. chart-wc's logic.js puts class="visually-hidden" on
+   the data table (authored in data-chart="replace" mode, or generated from
+   non-table data) once the SVG has mounted. The table is the chart's text
+   alternative — the SVG is aria-hidden — so it must stay in the
+   accessibility tree: never display:none / visibility:hidden on the table
+   or its rows/cells.
 
-   Fix: switch the hidden table to `display: block` so it respects
-   block-size, then re-apply the visually-hidden box dimensions to the
-   tbody/thead too in case anything inside resists. The box dimensions
-   are !important because .visually-hidden lives in @layer utils, above
-   this file's web-components layer (charts used to be unlayered and won
-   by accident). This rule is intentionally narrow: only fires when the
-   table is already marked visually-hidden by chart-wc's replace mode. */
+   The site-wide .visually-hidden utility sets `block-size: 1px`, but a
+   display:table box ignores explicit heights and sizes to its rows; with
+   dense data (~280 rows) the clipped table was 8000px+ tall and blew out
+   document scroll height. display:block makes the box honour 1x1 and
+   overflow:hidden + contain keep the (anonymous) inner table's height from
+   contributing scrollable overflow. Chromium/WebKit/Gecko keep <table>
+   semantics for a display:block table element (asserted by
+   chart-wc-review.spec.js). Box dimensions are !important because
+   .visually-hidden lives in @layer utils, above this file's layer. */
 chart-wc > table.visually-hidden {
   display: block;
   block-size: 1px !important;
   inline-size: 1px !important;
   overflow: hidden;
-  contain: size;
-}
-chart-wc > table.visually-hidden > * {
-  display: none;
+  contain: strict;
 }
 
-/* Print: show the data table, hide the SVG. Every property .visually-hidden
-   sets is re-asserted with !important: the utility sits in @layer utils,
-   above this file's layer, and an important declaration in a lower layer
-   is what beats it. */
+/* A chart that failed to render hides its empty box (logic.js sets
+   [hidden]); the table is shown instead. */
+
+/* Print: print the data table, not the SVG. The SVG lives in a shadow root
+   sized for the screen and its colours/tooltips don't survive print well;
+   the table is exact. Sparklines are the exception — a table in a tiny
+   inline tile is worse than the trend shape — so they keep the SVG and
+   their table stays hidden. Every property .visually-hidden sets is
+   re-asserted with !important: the utility sits in @layer utils, above this
+   file's layer, and an important declaration in a lower layer beats it. */
 @media print {
-  chart-wc > table.visually-hidden {
+  chart-wc:not([data-size="sparkline"]) > table.visually-hidden {
+    display: table !important;
     position: static !important;
     inline-size: auto !important;
     block-size: auto !important;
     margin: 0 !important;
+    padding: 0 !important;
     overflow: visible !important;
     clip: auto !important;
+    clip-path: none !important;
     white-space: normal !important;
+    contain: none !important;
   }
 
-  chart-wc [data-chart-svg] {
+  chart-wc:not([data-size="sparkline"]) [data-chart-svg] {
     display: none;
   }
 }

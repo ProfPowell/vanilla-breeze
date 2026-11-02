@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "card-list"
-description: "Template-based list rendering with safe data binding. Fetch or inline JSON, bind to templates, and render lists with grid, stack, or reel layouts."
+description: "Template-based list rendering with safe data binding. Fetch or inline JSON, bind to templates, and lay out the cards with the global data-layout system."
 elementName: card-list
 category: component
 currentPath: /docs/elements/web-components/card-list/
@@ -13,7 +13,7 @@ crumbLabel: Web Components
 <section>
     <h2>Overview</h2>
     <p>The <code>&lt;card-list&gt;</code> component renders a list of items from JSON data using an HTML <code>&lt;template&gt;</code>. Data binding uses <code>data-field</code> attributes &mdash; only safe property paths are allowed, no expressions or method calls.</p>
-    <p>Supply data inline via <code>data-items</code> or fetch from a URL via <code>src</code>. Choose a layout with <code>data-layout</code>: grid, stack, or reel.</p>
+    <p>Supply data inline via <code>data-items</code>, fetch from a URL via <code>src</code>, or assign the <code>.items</code> property. Lay the cards out with the global <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> system (<code>grid</code>, <code>stack</code>, <code>reel</code>, &hellip;) &mdash; <code>data-layout-gap</code> and <code>data-layout-min</code> work as on any other element.</p>
 
     <browser-window
       src="/docs/examples/demos/card-list-basic.html"
@@ -70,13 +70,13 @@ crumbLabel: Web Components
           <td><code>data-key</code></td>
           <td>string</td>
           <td><code>id</code></td>
-          <td>Property name to use as the unique key for each item.</td>
+          <td>Property name to use as the unique key for each item. Items whose key is missing or duplicated fall back to their index, so keyless data still renders every item.</td>
         </tr>
         <tr>
           <td><code>data-layout</code></td>
           <td>string</td>
-          <td><code>block</code></td>
-          <td>Layout mode: <code>grid</code> (auto-fit columns), <code>stack</code> (vertical), or <code>reel</code> (horizontal scroll).</td>
+          <td>&mdash; (block)</td>
+          <td>Any global <a href="/docs/attributes/data-layout/">layout value</a>, e.g. <code>grid</code>, <code>stack</code>, <code>reel</code>. Without it the list is <code>display: block</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -97,7 +97,7 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><code>data-field-attr="href: url, title: name"</code></td>
-          <td>Set one or more HTML attributes from property paths. Comma-separated pairs of <code>attribute: path</code>.</td>
+          <td>Set one or more HTML attributes from property paths. Comma-separated pairs of <code>attribute: path</code>. A <code>null</code>/<code>undefined</code> value removes the attribute; <code>true</code>/<code>false</code> add/remove boolean attributes (<code>aria-*</code> get the literal string). Event handlers and unsafe URLs are refused &mdash; see <a href="#security">Security</a>.</td>
         </tr>
         <tr>
           <td><code>data-field-html="path"</code></td>
@@ -105,11 +105,11 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><code>data-field-if="path"</code></td>
-          <td>Keep element only if the property value is truthy. Removed from DOM otherwise.</td>
+          <td>Element is shown only if the property value is truthy; otherwise it gets <code>hidden</code>.</td>
         </tr>
         <tr>
           <td><code>data-field-unless="path"</code></td>
-          <td>Keep element only if the property value is falsy. Removed from DOM otherwise.</td>
+          <td>Element is shown only if the property value is falsy; otherwise it gets <code>hidden</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -122,7 +122,7 @@ crumbLabel: Web Components
     <p>Pass a JSON array directly in the <code>data-items</code> attribute. Good for small, static datasets.</p>
 
     <h3>Remote Data</h3>
-    <p>Set <code>src</code> to fetch JSON from a URL. The component shows a loading state while fetching and an error state on failure.</p>
+    <p>Set <code>src</code> to fetch JSON from a URL. The URL is fetched once when the component upgrades (moving the element in the DOM does not re-fetch) and again whenever <code>src</code> changes; a newer request aborts the older one. The component shows a loading state while fetching and an error state on failure &mdash; see <a href="#states">States</a>.</p>
 
     <code-block language="html" show-lines label="Fetch from URL" data-escape><card-list src="/api/products.json" data-layout="grid" data-key="id">
   <template>
@@ -157,7 +157,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Attribute Binding</h2>
-    <p>Use <code>data-field-attr</code> to set HTML attributes from item properties. Comma-separated pairs map attributes to property paths.</p>
+    <p>Use <code>data-field-attr</code> to set HTML attributes from item properties. Comma-separated pairs map attributes to property paths. URL attributes only accept safe URLs, so a <code>javascript:</code> value in the data leaves the link without an <code>href</code>.</p>
 
     <code-block language="html" show-lines label="Attribute binding" data-escape><card-list data-layout="grid" data-items='[
   {"id": 1, "title": "Getting Started", "url": "#start", "desc": "Learn the basics."},
@@ -174,7 +174,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Conditional Rendering</h2>
-    <p>Use <code>data-field-if</code> and <code>data-field-unless</code> to conditionally include or exclude elements based on item data. Elements are removed from the DOM, not hidden.</p>
+    <p>Use <code>data-field-if</code> and <code>data-field-unless</code> to show or hide elements based on item data. The elements stay in the card and are toggled with the <code>hidden</code> attribute, so when an item's data changes (via <code>.items</code> or <code>data-items</code>) they come back.</p>
 
     <code-block language="html" show-lines label="Conditional elements" data-escape><card-list data-layout="grid" data-items='[
   {"id": 1, "name": "Free", "price": "$0/mo", "featured": false},
@@ -206,45 +206,28 @@ crumbLabel: Web Components
   <template>
     <article>
       <h3 data-field="title"></h3>
-      <div data-field-html="content"></div>
+      <section data-field-html="content"></section>
     </article>
   </template>
 </card-list></code-block>
   </section>
 
   <section>
-    <h2>Layout Modes</h2>
+    <h2>Layout</h2>
+    <p><code>&lt;card-list&gt;</code> has no layout modes of its own: it uses the global <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> attribute like any other container, including its modifiers.</p>
 
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Value</th>
-          <th>Display</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>grid</code></td>
-          <td>CSS Grid</td>
-          <td>Auto-fit columns with <code>minmax(280px, 1fr)</code>. Responsive by default.</td>
-        </tr>
-        <tr>
-          <td><code>stack</code></td>
-          <td>Flex column</td>
-          <td>Vertical stack with gap.</td>
-        </tr>
-        <tr>
-          <td><code>reel</code></td>
-          <td>Flex row</td>
-          <td>Horizontal scroll with snap points.</td>
-        </tr>
-      </tbody>
-    </table>
+    <code-block language="html" show-lines label="Global layout attributes on card-list" data-escape><card-list data-layout="grid" data-layout-min="l" data-layout-gap="xl" src="/api/products.json">
+  <template>...</template>
+</card-list>
+
+<card-list data-layout="reel" data-items='[...]'>
+  <template>...</template>
+</card-list></code-block>
   </section>
 
   <section>
-    <h2>States</h2>
+    <h2 id="states">States</h2>
+    <p>While a <code>src</code> fetch is in flight the list has <code>data-loading</code> and <code>aria-busy="true"</code>. Loading and error text is written into a <code>&lt;p role="status" data-card-list-status&gt;</code> child the component creates, so screen readers hear it; it is visually hidden while empty. The error banner uses the theme's <code>--color-error-*</code> tokens. <code>data-error</code> is cleared as soon as a new fetch starts. A failed fetch leaves any existing cards (or <code>[data-fallback]</code> content) in place.</p>
 
     <table class="props-table">
       <thead>
@@ -258,12 +241,12 @@ crumbLabel: Web Components
         <tr>
           <td><code>data-loading</code></td>
           <td>During <code>src</code> fetch</td>
-          <td>Reduced opacity with "Loading..." message.</td>
+          <td>Reduced opacity, <code>aria-busy="true"</code>, "Loading…" status text.</td>
         </tr>
         <tr>
           <td><code>data-error</code></td>
           <td>Fetch failure</td>
-          <td>Error message banner with the HTTP status.</td>
+          <td>Error banner (status text) with the message, e.g. <code>HTTP 404</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -284,6 +267,16 @@ crumbLabel: Web Components
           <td><code>card-list:rendered</code></td>
           <td><code>{ count: number }</code></td>
           <td>Fired after items are rendered. Bubbles.</td>
+        </tr>
+        <tr>
+          <td><code>card-list:items-changed</code></td>
+          <td><code>{ items, source }</code></td>
+          <td>Fired when the items change. <code>source</code> is <code>'attribute'</code> (from <code>data-items</code>, <code>src</code> or <code>data-key</code>) or <code>'api'</code> (the <code>.items</code> setter), so frameworks can ignore echoes of their own assignments. Bubbles.</td>
+        </tr>
+        <tr>
+          <td><code>card-list:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Fired once the component has found its template. Bubbles.</td>
         </tr>
       </tbody>
     </table>
@@ -306,41 +299,53 @@ list.addEventListener('card-list:rendered', (e) => {
       </thead>
       <tbody>
         <tr>
-          <td><code>setItems(items)</code></td>
-          <td>Replace the item list and re-render.</td>
-        </tr>
-        <tr>
-          <td><code>getItems()</code></td>
-          <td>Returns a shallow copy of the current items array.</td>
+          <td><code>.items</code></td>
+          <td>Get the current items array, or assign a new array. Assignment runs a keyed diff: cards whose key persists are kept (focus and scroll survive) and re-bound with the new data. Assigning cancels an in-flight <code>src</code> fetch. Items assigned before the element is connected render on upgrade.</td>
         </tr>
       </tbody>
     </table>
 
     <code-block language="javascript" show-lines label="Programmatic control" data-escape>const list = document.querySelector('card-list');
 
-// Set items programmatically
-list.setItems([
+list.items = [
   { id: 1, name: 'Item A' },
   { id: 2, name: 'Item B' },
-]);
+];
 
-// Read current items
-const items = list.getItems(); // returns a copy</code-block>
+list.addEventListener('card-list:items-changed', (e) => {
+  if (e.detail.source === 'api') return; // our own assignment
+  store.set(e.detail.items);
+});</code-block>
   </section>
 
   <section>
-    <h2>Security</h2>
+    <h2 id="security">Security</h2>
     <p>All <code>data-field</code> paths are validated against a strict regex. Only simple property access is allowed:</p>
     <ul>
       <li><strong>Allowed:</strong> <code>name</code>, <code>user.email</code>, <code>items[0].title</code></li>
       <li><strong>Rejected:</strong> <code>price.toFixed(2)</code>, <code>`${price}`</code>, <code>price * 1.1</code>, <code>stock > 0 ? 'yes' : 'no'</code></li>
     </ul>
     <p>Invalid paths log a console warning and resolve to empty content.</p>
+    <p><code>data-field-html</code> passes the value through the shared HTML sanitizer. <code>data-field-attr</code> is guarded too:</p>
+    <ul>
+      <li>Event-handler attributes (<code>on*</code>), <code>style</code> and <code>srcdoc</code> are never written from data.</li>
+      <li>URL attributes (<code>href</code>, <code>src</code>, <code>action</code>, <code>formaction</code>, <code>xlink:href</code>, <code>poster</code>, <code>cite</code>, <code>ping</code>, <code>data</code>, <code>srcset</code>, &hellip;) only accept <code>http:</code>, <code>https:</code>, <code>mailto:</code>, <code>tel:</code>, relative URLs and fragments. Anything else (<code>javascript:</code>, <code>data:</code>, <code>vbscript:</code>, &hellip;) is refused with a console warning and the attribute is removed.</li>
+    </ul>
   </section>
 
   <section>
     <h2>Progressive Enhancement</h2>
-    <p>Without JavaScript, the <code>&lt;template&gt;</code> is hidden by default. Consider providing a <code>&lt;noscript&gt;</code> fallback or static content before the template for no-JS contexts.</p>
+    <p>Without JavaScript, the <code>&lt;template&gt;</code> renders nothing. Put static content for no-JS readers in a child marked <code>data-fallback</code>: the component removes it on the first successful render (it stays if the fetch fails).</p>
+
+    <code-block language="html" show-lines label="Static fallback replaced on render" data-escape><card-list src="/api/team.json" data-layout="grid">
+  <ul data-fallback>
+    <li><a href="/team/alice">Alice Johnson</a></li>
+    <li><a href="/team/bob">Bob Martinez</a></li>
+  </ul>
+  <template>
+    <layout-card><h3><a data-field="name" data-field-attr="href: url"></a></h3></layout-card>
+  </template>
+</card-list></code-block>
   </section>
 
   <section>

@@ -11,17 +11,20 @@
     { "name": "data-type",    "kind": "data", "purpose": "config", "type": "enum", "values": ["bar", "column", "line", "area", "pie", "ring", "scatter", "bubble"], "description": "Chart type to render" },
     { "name": "data-values",  "kind": "data", "purpose": "config", "type": "string",  "description": "Chart data as JSON string" },
     { "name": "data-config",  "kind": "data", "purpose": "config", "type": "string",  "description": "Chart config overrides as JSON string" },
-    { "name": "data-title",   "kind": "data", "purpose": "config", "type": "string",  "description": "Chart title text" },
+    { "name": "data-title",   "kind": "data", "purpose": "config", "type": "string",  "description": "Chart title text; also the caption of the generated data table" },
+    { "name": "data-subtitle", "kind": "data", "purpose": "config", "type": "string", "description": "Subtitle shown under data-title (requires data-title)" },
+    { "name": "data-label-x", "kind": "data", "purpose": "config", "type": "string",  "description": "X / category axis label; also the category column header of the generated data table" },
+    { "name": "data-label-y", "kind": "data", "purpose": "config", "type": "string",  "description": "Y / value axis label" },
     { "name": "data-legend",  "kind": "data", "purpose": "config", "type": "boolean", "description": "Show legend (presence enables)" },
     { "name": "data-tooltip", "kind": "data", "purpose": "config", "type": "boolean", "description": "Enable tooltips (presence enables)" },
     { "name": "data-palette", "kind": "data", "purpose": "config", "type": "string",  "description": "Custom color palette as JSON array" },
-    { "name": "data-chart",   "kind": "data", "purpose": "config", "type": "enum", "values": ["replace", "enhance"], "description": "How to handle source table: replace hides table, enhance keeps both" },
+    { "name": "data-chart",   "kind": "data", "purpose": "config", "type": "enum", "values": ["replace", "enhance"], "description": "How to handle an authored source table: replace (default) visually hides it after the chart mounts but keeps it in the accessibility tree; enhance keeps it visible. Also readable from the table's own data-chart." },
     { "name": "data-size",    "kind": "data", "purpose": "visual-variant", "type": "enum", "values": ["sparkline"], "description": "Render mode. sparkline strips all chrome (axes, ticks, gridlines, labels, title, legend, tooltip) for use as an inline trend chart sized by its container." }
   ],
   "structure": [
-    { "element": "<table>",   "description": "Optional source table — data is extracted and table becomes screen-reader accessible" },
-    { "element": "<script type='application/json'>", "description": "Optional inline JSON data source" },
-    { "element": "<template data-chart-data>", "description": "Optional template-based JSON data source" }
+    { "element": "<table>",   "required": false, "description": "Optional source table — data is extracted; the table stays the screen-reader (and print) version of the chart. Without one, chart-wc generates a table[data-chart-generated] from the data." },
+    { "element": "<script type='application/json'>", "required": false, "description": "Optional inline JSON data source" },
+    { "element": "<template data-chart-data>", "required": false, "description": "Optional template-based JSON data source" }
   ],
   "childAttributes": [
     { "name": "data-chart-series", "on": "th", "type": "boolean", "description": "Mark this column as a data series for chart extraction" },
@@ -30,7 +33,10 @@
   ],
   "events": [
     { "name": "chart-wc:render", "detail": "{ type, seriesCount }", "description": "Fired after SVG chart renders successfully" },
-    { "name": "chart-wc:error",  "detail": "{ message }",          "description": "Fired when chart rendering fails" }
+    { "name": "chart-wc:error",  "detail": "{ message }",          "description": "Fired when no data is found or chart rendering fails (the data table is then left visible)" },
+    { "name": "chart-wc:config-resolved", "detail": "{ type, config }", "description": "Fired before each render with the merged engine config (mutable, for last-minute tweaks)" },
+    { "name": "chart-wc:data-changed", "detail": "{ data, config, source: 'property' }", "description": "Fired when .data or .config is assigned" },
+    { "name": "chart-wc:upgraded", "description": "Fired once after the component upgrades; safe signal for the first .data assignment" }
   ],
   "properties": [
     { "name": "data",   "type": "Array|Object", "description": "Get/set chart data programmatically" },

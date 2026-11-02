@@ -139,12 +139,17 @@ test.describe('chart-wc — table source', () => {
     await expect(table).toHaveClass(/visually-hidden/);
   });
 
-  test('source table has aria-hidden=false (still accessible)', async ({page}) => {
+  test('source table stays in the accessibility tree', async ({page}) => {
     await page.goto(tablePage);
     await waitForChart(page);
 
+    // Not aria-hidden and its rows are not display:none — the caption is
+    // exposed as the table's accessible name (see chart-wc-review.spec.js
+    // for the full ariaSnapshot check against the working tree).
     const table = page.locator('chart-wc table').first();
-    await expect(table).toHaveAttribute('aria-hidden', 'false');
+    await expect(table).not.toHaveAttribute('aria-hidden', 'true');
+    const caption = (await table.locator('caption').textContent())?.trim();
+    await expect(page.getByRole('table', {name: caption})).toBeAttached();
   });
 
   test('column chart from table renders', async ({page}) => {

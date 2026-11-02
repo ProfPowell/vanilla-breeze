@@ -26,6 +26,10 @@ import {VBElement} from '../../lib/vb-element.js';
 import {viewTransitionSwap} from '../../lib/vb-view-transition.js';
 import {extractTableData, extractTableConfig} from './table-extractor.js';
 import {getVBChartConfig, createThemePlugin} from './theme-bridge.js';
+import {buildDataTable} from './data-table.js';
+
+/** Author-supplied data table (never the one chart-wc generates). */
+const SOURCE_TABLE = 'table:not([data-chart-generated])';
 
 const CHART_TYPES = {
   line: LineChart,
@@ -79,6 +83,7 @@ class ChartWc extends VBElement {
       'data-label-x',
       'data-label-y',
       'data-size',
+      'data-chart',
     ];
   }
 
@@ -179,7 +184,7 @@ class ChartWc extends VBElement {
   #resolveChartType() {
     let type = (this.dataset.type || '').toLowerCase();
     if (!type) {
-      const table = this.querySelector('table');
+      const table = /** @type {HTMLTableElement | null} */ (this.querySelector(SOURCE_TABLE));
       type = (table?.dataset.type || 'bar').toLowerCase();
     }
     return CHART_TYPES[type] || BarChart;
@@ -215,7 +220,7 @@ class ChartWc extends VBElement {
     }
 
     // 5. Child <table>
-    const table = this.querySelector('table');
+    const table = /** @type {HTMLTableElement | null} */ (this.querySelector(SOURCE_TABLE));
     if (table) {
       const type = (this.dataset.type || table.dataset.type || 'bar').toLowerCase();
       const {data, config: tableDataConfig} = extractTableData(table, type);
@@ -372,23 +377,97 @@ class ChartWc extends VBElement {
   }
 
   /**
-   * Handle the source table: hide it visually but keep it accessible.
+   * After a successful mount: hide the data table visually but keep it in
+   * the accessibility tree (it is the chart's text alternative — the SVG is
+   * aria-hidden). An authored table in data-chart="enhance" mode stays
+   * visible. See styles.css for why the hidden table is display:block.
+   * @param {HTMLTableElement | null} table
    */
-  #processTable(table) {
+  #hideTable(table) {
     if (!table) return;
-
+    const generated = table.hasAttribute('data-chart-generated');
     const mode = this.dataset.chart || table.dataset.chart || 'replace';
-
-    if (mode === 'replace') {
-      /* Use the site-wide .visually-hidden utility from src/utils/visually-hidden.css
-         instead of a chart-wc-scoped sr-only class. The bespoke rule
-         (chart-wc > table.sr-only) was being partially overridden by cascade
-         layers — position/clip/overflow applied but width/height did not, so
-         the table rendered at its natural content size (~270 × 5236 on the
-         /stats/ page) and added phantom scroll past the visible footer. */
-      table.classList.add('visually-hidden');
-      table.setAttribute('aria-hidden', 'false');
+    if (!generated && mode !== 'replace') {
+      this.#showTable(table);
+      return;
     }
+    if (!table.classList.contains('visually-hidden')) {
+      table.classList.add('visually-hidden');
+      table.setAttribute('data-chart-hidden', '');
+    }
+  }
+
+  /**
+   * Undo #hideTable (enhance mode, or the chart failed to render).
+   * @param {HTMLTableElement | null} table
+   */
+  #showTable(table) {
+    if (!table?.hasAttribute('data-chart-hidden')) return;
+    table.classList.remove('visually-hidden');
+    table.removeAttribute('data-chart-hidden');
+  }
+
+  /**
+   * Keep a generated data table in sync with non-table data sources, or
+   * remove it when the data comes from an authored table.
+   * @param {*} data
+   * @param {string} type
+   * @param {any} config
+   * @returns {HTMLTableElement | null}
+   */
+  #syncGeneratedTable(data, type, config) {
+    const old = /** @type {HTMLTableElement | null} */ (this.querySelector(':scope > table[data-chart-generated]'));
+    const caption = [this.dataset.title ?? config?.title?.text, this.dataset.subtitle]
+      .filter(Boolean).join(' — ');
+    const table = buildDataTable({
+      data, type, caption,
+      labelX: this.dataset.labelX, labelY: this.dataset.labelY,
+    });
+    if (!table) {
+      old?.remove();
+      return null;
+    }
+    table.setAttribute('data-chart-generated', '');
+    // Keep the previous hidden state so a re-render doesn't flash the table.
+    if (old?.hasAttribute('data-chart-hidden')) {
+      table.classList.add('visually-hidden');
+      table.setAttribute('data-chart-hidden', '');
+    }
+    if (old) old.replaceWith(table);
+    else this.prepend(table);
+    return table;
+  }
+
+  /**
+   * With a data table present the SVG is aria-hidden (the table is the text
+   * alternative). Without one (data the table builder can't tabulate) the
+   * SVG is exposed as a single image named by the chart title instead.
+   * @param {HTMLTableElement | null} table
+   * @param {any} config
+   */
+  #labelChart(table, config) {
+    const wrapper = this.#shadowWrapper;
+    if (!wrapper) return;
+    if (table) {
+      wrapper.setAttribute('aria-hidden', 'true');
+      wrapper.removeAttribute('role');
+      wrapper.removeAttribute('aria-label');
+    } else {
+      wrapper.removeAttribute('aria-hidden');
+      wrapper.setAttribute('role', 'img');
+      wrapper.setAttribute('aria-label', this.dataset.title || config?.title?.text || 'Chart');
+    }
+  }
+
+  /**
+   * The SVG is aria-hidden (the data table is the accessible version), so
+   * nothing inside it may be focusable: SVC's keyboard navigation
+   * (tabindex=0 on chart-plot) and pie slices are taken out of the tab order.
+   */
+  #removeHiddenFocusables() {
+    this.#svgContainer?.querySelectorAll('[tabindex]').forEach((el) => {
+      el.setAttribute('tabindex', '-1');
+    });
   }
 
   #render() {
@@ -405,7 +484,10 @@ class ChartWc extends VBElement {
 
     const {data, tableConfig} = resolved;
     const config = this.#resolveConfig(tableConfig);
-    const table = this.querySelector('table');
+    const sourceTable = /** @type {HTMLTableElement | null} */ (this.querySelector(SOURCE_TABLE));
+    const typeName = (this.dataset.type || sourceTable?.dataset.type || 'bar').toLowerCase();
+    // Text alternative: the authored table, or one generated from the data.
+    const table = sourceTable || this.#syncGeneratedTable(data, typeName, config);
 
     // The swap: destroy any prior chart and mount the new one. Wrapped in
     // a View Transition on re-renders so the chart crossfades instead of
@@ -413,7 +495,6 @@ class ChartWc extends VBElement {
     const isReRender = this.#chart != null;
     const swap = () => {
       this.#destroyChart();
-      this.#processTable(table);
       this.#ensureSvgContainer();
 
       if (this.#svgContainer) {
@@ -424,22 +505,32 @@ class ChartWc extends VBElement {
 
       try {
         this.dispatchEvent(new CustomEvent('chart-wc:config-resolved', {
-          detail: {type: this.dataset.type || table?.dataset.type || 'bar', config},
+          detail: {type: typeName, config},
           bubbles: true,
         }));
 
         const chart = new ChartType({config, data});
         this.#chart = chart;
         if (this.#svgContainer) chart.mount(this.#svgContainer);
+        this.#removeHiddenFocusables();
+
+        // Only now that the chart is on screen does the table step aside.
+        this.#shadowWrapper?.removeAttribute('hidden');
+        this.#hideTable(table);
+        this.#labelChart(table, config);
 
         this.dispatchEvent(new CustomEvent('chart-wc:render', {
           detail: {
-            type: this.dataset.type || table?.dataset.type || 'bar',
+            type: typeName,
             seriesCount: Array.isArray(data) ? data.length : Object.keys(data).length,
           },
           bubbles: true,
         }));
       } catch (err) {
+        // Chart failed: drop the empty chart box and show the table.
+        this.#destroyChart();
+        this.#shadowWrapper?.setAttribute('hidden', '');
+        this.#showTable(table);
         const msg = err instanceof Error ? err.message : String(err);
         this.dispatchEvent(new CustomEvent('chart-wc:error', {
           detail: {message: msg},
