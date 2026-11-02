@@ -36,11 +36,20 @@ crumbLabel: Native Elements
 
     <browser-window src="/docs/snippets/demos/br-examples.html" url="br-examples.html" title="Line break examples" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Address formatting" data-escape><address>
+    <code-block language="html" show-lines label="Postal address" data-escape><p>
   John Smith<br />
   123 Main Street<br />
   Springfield, IL 62704
-</address></code-block>
+</p></code-block>
+    <p>Use <a href="/docs/elements/native/address/"><code>&lt;address&gt;</code></a> only when the address is contact information for the nearest <code>&lt;article&gt;</code> or for the page as a whole (for example, the author's or organization's contact details). An arbitrary postal address in running content, such as a venue or a shipping address, belongs in a <code>&lt;p&gt;</code>.</p>
+    <code-block language="html" show-lines label="Contact information for the page" data-escape><footer>
+  <address>
+    Example Co.<br />
+    123 Main Street<br />
+    Springfield, IL 62704<br />
+    <a href="mailto:hello@example.com">hello@example.com</a>
+  </address>
+</footer></code-block>
     <code-block language="html" show-lines label="Poetry" data-escape><p>
   Roses are red,<br />
   Violets are blue,<br />
@@ -65,10 +74,23 @@ crumbLabel: Native Elements
   </section>
 
   <section>
+    <h2>CSS and Alternatives</h2>
+    <p>VB adds no styling to <code>&lt;br&gt;</code>. Some alternatives to consider:</p>
+    <ul>
+      <li><strong><code>white-space: pre-line</code>:</strong> preserves the line breaks typed in the source while still collapsing other spaces. Handy for poems or text from a database that already contains newlines, without inserting a <code>&lt;br&gt;</code> per line.</li>
+      <li><strong>Separate elements:</strong> if each line is its own item (a list of features, the stanzas of a poem), <code>&lt;li&gt;</code> or <code>&lt;p&gt;</code> elements are usually more robust than breaks.</li>
+      <li><strong>The <code>clear</code> attribute is obsolete:</strong> <code>&lt;br clear="all"&gt;</code> was used to drop below floats. Use CSS <code>clear: both</code> on the following element instead.</li>
+    </ul>
+    <code-block language="css" label="Preserve source line breaks" data-escape>.poem {
+  white-space: pre-line;
+}</code-block>
+  </section>
+
+  <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Screen readers typically announce a line break as a pause</li>
-      <li>Multiple consecutive <code>&lt;br&gt;</code> elements are confusing for screen reader users &mdash; they may hear multiple pauses with no content</li>
+      <li>Each <code>&lt;br&gt;</code> starts a new line in the reading order, so screen reader users moving line by line hear each address line or verse line separately</li>
+      <li>Consecutive <code>&lt;br&gt;</code> elements produce empty lines, which some screen readers announce as &ldquo;blank&rdquo; &mdash; noise with no content</li>
       <li>Use <code>&lt;p&gt;</code> elements for distinct paragraphs so screen readers can navigate by paragraph</li>
     </ul>
   </section>
@@ -78,7 +100,7 @@ crumbLabel: Native Elements
     <ul>
       <li><a href="/docs/elements/native/p/"><code>&lt;p&gt;</code></a> &mdash; Paragraph element (preferred for content separation)</li>
       <li><a href="/docs/elements/native/hr/"><code>&lt;hr&gt;</code></a> &mdash; Thematic break between sections</li>
-      <li><a href="/docs/elements/native/address/"><code>&lt;address&gt;</code></a> &mdash; Contact information (common br context)</li>
+      <li><a href="/docs/elements/native/address/"><code>&lt;address&gt;</code></a> &mdash; Contact information for the nearest article or page</li>
       <li><a href="/docs/elements/native/wbr/"><code>&lt;wbr&gt;</code></a> &mdash; Word break opportunity (optional break, not forced)</li>
       <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> &mdash; Vertical spacing between elements</li>
     </ul>

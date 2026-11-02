@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "base"
-description: "Specifies the base URL for all relative URLs in the document."
+description: "Sets the base URL that every relative URL in the document resolves against, and a default target for links and forms."
 elementName: base
 category: native
 nativeGroup: Document
@@ -14,29 +14,191 @@ crumbLabel: Native Elements
 <!-- Description Section -->
   <section>
     <h2>Description</h2>
-    <p>The <code>&lt;base&gt;</code> element is part of the Document category in HTML.</p>
+    <p>The <code>&lt;base&gt;</code> element is a void element in <code>&lt;head&gt;</code> that sets two document-wide defaults:</p>
+    <ul>
+      <li><strong><code>href</code></strong>: the base URL that <em>every</em> relative URL in the document resolves against. That covers links, images, scripts, stylesheets, form actions, <code>fetch()</code> calls and fragment-only links like <code>href="#id"</code>.</li>
+      <li><strong><code>target</code></strong>: the default browsing context for links and forms that have no <code>target</code> of their own.</li>
+    </ul>
+    <p>Most sites never need it. It is useful for HTML that will be served from a different location than its links were written for, such as an archived page, an email-style HTML preview or an <code>&lt;iframe srcdoc&gt;</code>. On Vanilla Breeze pages, <code>href</code> has side effects you should know about first: see <a href="#vb-fragment-links">VB components and fragment links</a>.</p>
   </section>
 
   <!-- Basic Example Section -->
   <section>
     <h2>Basic Example</h2>
-    <code-block language="html" label="Basic base example" data-escape><base></code-block>
+    <p>A <code>&lt;base&gt;</code> must have <code>href</code>, <code>target</code> or both. A bare <code>&lt;base&gt;</code> is invalid and does nothing.</p>
+
+    <h3>Base URL</h3>
+    <code-block language="html" label="base href in the head" data-escape><head>
+  <meta charset="UTF-8">
+  <base href="https://example.com/docs/">
+  <title>Guide</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Resolves to https://example.com/docs/getting-started.html -->
+  <a href="getting-started.html">Getting started</a>
+
+  <!-- Root-relative: resolves against the base's origin,
+       https://example.com/about/ -->
+  <a href="/about/">About</a>
+</body></code-block>
+    <p>Here <code>styles.css</code> loads from <code>https://example.com/docs/styles.css</code>, wherever the page itself is served.</p>
+
+    <h3>Default target</h3>
+    <code-block language="html" label="base target" data-escape><base target="_blank"></code-block>
+    <p>Every link and form without its own <code>target</code> now opens in a new tab or window. Read the <a href="#accessibility">Accessibility</a> notes before you use this.</p>
   </section>
 
   <!-- Attributes Section -->
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/attributes/">global attributes</a>.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>href</code></td>
+          <td>The document's base URL. It can itself be relative, in which case it resolves against the document's own URL. <code>data:</code> and <code>javascript:</code> URLs are ignored.</td>
+        </tr>
+        <tr>
+          <td><code>target</code></td>
+          <td>The default browsing context: <code>_self</code>, <code>_blank</code>, <code>_parent</code>, <code>_top</code> or a name. See <a href="/docs/attributes/target/"><code>target</code></a>.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><code>&lt;base&gt;</code> also supports <a href="/docs/attributes/">global attributes</a>, though none of them changes its behavior.</p>
+  </section>
+
+  <!-- Pitfalls Section -->
+  <section>
+    <h2>Pitfalls</h2>
+
+    <h3>Only the first one counts</h3>
+    <p>A document may have only one <code>&lt;base&gt;</code>. If there are more, browsers use the first <code>&lt;base&gt;</code> with an <code>href</code> for the base URL and the first with a <code>target</code> for the default target, and ignore the rest.</p>
+
+    <h3>Put it before anything that uses a URL</h3>
+    <p>The spec requires <code>&lt;base href&gt;</code> to come before every other element with a URL attribute (<code>&lt;link&gt;</code>, <code>&lt;script src&gt;</code>, <code>&lt;meta property="og:url"&gt;</code> and so on). Place it right after <code>&lt;meta charset&gt;</code>.</p>
+    <code-block language="html" label="Order matters" data-escape><!-- Wrong: the stylesheet is listed before the base URL is set -->
+<head>
+  <link rel="stylesheet" href="styles.css">
+  <base href="https://example.com/docs/">
+</head>
+
+<!-- Right -->
+<head>
+  <meta charset="UTF-8">
+  <base href="https://example.com/docs/">
+  <link rel="stylesheet" href="styles.css">
+</head></code-block>
+
+    <h3>Fragment links resolve against the base too</h3>
+    <p>A link like <code>&lt;a href="#install"&gt;</code> is a relative URL, so it resolves to the base URL plus <code>#install</code>. If the base URL is not the current page's URL, the browser goes to that other page instead of scrolling. This breaks skip links, footnote references and hand-written tables of contents.</p>
+    <code-block language="html" label="Fragment link with a base" data-escape><!-- Page URL: https://example.com/docs/guide/install.html -->
+<base href="https://example.com/docs/">
+
+<!-- Goes to https://example.com/docs/#install, not to the
+     #install heading on this page -->
+<a href="#install">Installation</a></code-block>
+
+    <h3>What it does not affect</h3>
+    <ul>
+      <li><code>url()</code> values in an external stylesheet resolve against the stylesheet's own URL. <code>url()</code> values in a <code>&lt;style&gt;</code> element or a <code>style</code> attribute do use the base URL.</li>
+      <li>Absolute URLs (<code>https://…</code>) are never changed. Root-relative URLs (<code>/path</code>) keep their path but take the base's origin.</li>
+    </ul>
+  </section>
+
+  <!-- VB Section -->
+  <section>
+    <h2 id="vb-fragment-links">VB components and fragment links</h2>
+    <p><strong>Avoid <code>&lt;base href&gt;</code> on pages that use VB's navigation components</strong> unless the base URL is exactly the page's own URL. Several components build plain <code>#id</code> links and let the browser follow them, so with a different base URL they leave the page:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Generated links</th>
+          <th>With a different <code>&lt;base href&gt;</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/elements/web-components/footnotes/"><code>&lt;foot-notes&gt;</code></a></td>
+          <td>Reference links (<code>[1]</code>) to notes, and back-links from notes to references</td>
+          <td><strong>Breaks</strong>: the links go to the base URL</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/site-index/"><code>&lt;site-index&gt;</code></a></td>
+          <td>A–Z jump navigation (<code>#index-a</code> and so on)</td>
+          <td><strong>Breaks</strong>: the links go to the base URL</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/glossary-wc/"><code>&lt;glossary-wc&gt;</code></a></td>
+          <td>A–Z jump bar and "See also" links between terms</td>
+          <td><strong>Breaks</strong>: the links go to the base URL</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a></td>
+          <td>Table of contents links to headings</td>
+          <td>Works: clicks are intercepted and the page scrolls to the heading. The URL hash is built from the current page URL.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/heading-links/"><code>&lt;heading-links&gt;</code></a></td>
+          <td>Anchor links on headings</td>
+          <td>Works: clicks are intercepted, and the copied link is built from the current page URL</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The skip-link pattern (<code>&lt;a href="#main"&gt;</code>) and any <code>#id</code> links in your own content break the same way. If your pages are served from more than one location, write absolute or root-relative URLs at build time (for example with your static site generator's URL helper) instead of using <code>&lt;base href&gt;</code>.</p>
+    <p><code>&lt;base target&gt;</code> on its own does not change URLs, so it does not break these components.</p>
+  </section>
+
+  <!-- JavaScript Section -->
+  <section>
+    <h2>JavaScript</h2>
+    <p><code>document.baseURI</code> returns the document's current base URL: the resolved <code>&lt;base href&gt;</code> if there is one, otherwise the document URL. A <code>&lt;base&gt;</code> element's <code>href</code> property returns the resolved URL, while <code>getAttribute('href')</code> returns the value as written.</p>
+    <code-block language="javascript" label="Reading the base URL" data-escape>document.baseURI;
+// "https://example.com/docs/"
+
+// Resolve a path the same way the browser resolves an href
+new URL('images/logo.svg', document.baseURI).href;
+// "https://example.com/docs/images/logo.svg"
+
+// fetch() with a relative URL resolves against the base URL as well
+fetch('data/items.json');</code-block>
+    <p>Read <code>location.href</code> for the page's own URL. When building in-page links in script, start from <code>location.href</code> rather than writing a bare <code>#id</code>, as <code>&lt;page-toc&gt;</code> and <code>&lt;heading-links&gt;</code> do.</p>
   </section>
 
   <!-- Accessibility Section -->
-  <section>
+  <section id="accessibility">
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;base&gt;</code> element will be documented here.</p>
+    <ul>
+      <li><strong><code>&lt;base target="_blank"&gt;</code> opens every link in a new window without warning.</strong> Unexpected new windows disorient screen reader and magnifier users, and break the Back button. WCAG 3.2.5 Change on Request (Level AAA, technique G201) asks you to warn users before a link opens a new window. A document-wide default makes that impractical: the warning would have to be on every link. Set <code>target="_blank"</code> on the few links that need it and label them. See <a href="/docs/attributes/target/"><code>target</code></a> and <a href="/docs/accessibility-utilities/#opens-in-new-tab">Accessibility Utilities &rsaquo; "Opens in new tab"</a>.</li>
+      <li><strong>Inherited targets are invisible to selectors.</strong> A link that gets <code>_blank</code> from <code>&lt;base&gt;</code> has no <code>target</code> attribute, so CSS hints and scripts that look for <code>a[target="_blank"]</code> (including VB's <code>rel="noopener"</code> upgrade) skip it. Browsers still apply implicit <code>noopener</code> to <code>_blank</code> navigation.</li>
+      <li><strong>Broken in-page links</strong> (see <a href="#vb-fragment-links">above</a>) affect keyboard users first: a skip link that loads another page instead of moving focus to <code>&lt;main&gt;</code> fails WCAG 2.4.1 Bypass Blocks.</li>
+    </ul>
+  </section>
+
+  <!-- Security Section -->
+  <section>
+    <h2>Security</h2>
+    <p>An attacker who can inject markup can insert a <code>&lt;base href="https://evil.example/"&gt;</code>. Every later relative <code>&lt;script src&gt;</code> and form action then points at their server, even when script injection is otherwise blocked. Restrict <code>&lt;base&gt;</code> with the Content Security Policy <code>base-uri</code> directive:</p>
+    <code-block language="text" label="CSP base-uri" data-escape>Content-Security-Policy: base-uri 'none';
+# or, if you use <base href> on your own origin:
+Content-Security-Policy: base-uri 'self';</code-block>
+    <p><code>base-uri</code> does not fall back to <code>default-src</code>, so set it explicitly. A <code>&lt;base href&gt;</code> the policy blocks is ignored, and the document keeps its own URL as the base.</p>
   </section>
 
   <!-- Related Section -->
   <section>
     <h2>Related</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> - Where <code>&lt;base&gt;</code> lives, and in what order</li>
+      <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> - External resources whose relative URLs <code>&lt;base&gt;</code> rewrites</li>
+      <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> - Links, including fragment links</li>
+      <li><a href="/docs/attributes/target/"><code>target</code></a> - Browsing-context values shared by <code>&lt;a&gt;</code>, <code>&lt;form&gt;</code> and <code>&lt;base&gt;</code></li>
+      <li><a href="/docs/concepts/link-relations/">Link relations</a> - <code>rel</code> vocabulary, including <code>noopener</code></li>
+    </ul>
   </section>

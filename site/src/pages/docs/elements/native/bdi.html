@@ -14,8 +14,7 @@ crumbLabel: Native Elements
 <section>
     <h2>Description</h2>
     <p>The <code>&lt;bdi&gt;</code> (Bidirectional Isolate) element tells the browser's bidirectional algorithm to treat the text it contains in isolation from its surrounding text. This is essential when embedding user-generated content or any text whose direction is unknown.</p>
-    <p>Without <code>&lt;bdi&gt;</code>, a username in Arabic or Hebrew could cause surrounding punctuation and numbers to display incorrectly due to the Unicode Bidirectional Algorithm treating it as part of a right-to-left sequence.</p>
-    <p>VB's <a href="/docs/i18n/">i18n stylesheet</a> sets <code>unicode-bidi: isolate</code> on <code>[dir="auto"]</code> elements, complementing the native bdi behavior.</p>
+    <p>Without <code>&lt;bdi&gt;</code>, a username in Arabic or Hebrew can pull the punctuation and numbers that follow it into its right-to-left run, so they display in the wrong place. For example, <code>محمد: 12 points</code> renders as &ldquo;12 :محمد points&rdquo;.</p>
   </section>
 
   <section>
@@ -29,7 +28,7 @@ crumbLabel: Native Elements
     </ul>
     <h3>When NOT to Use</h3>
     <ul>
-      <li>For text whose direction you know &mdash; use <a href="/docs/elements/native/bdo/"><code>&lt;bdo dir="..."&gt;</code></a> instead</li>
+      <li>For text whose direction you know &mdash; set it explicitly with <code>dir="rtl"</code> or <code>dir="ltr"</code> on the element (for example <code>&lt;bdi dir="rtl"&gt;</code> or <code>&lt;span dir="rtl" lang="ar"&gt;</code>, which the browser also isolates). <a href="/docs/elements/native/bdo/"><code>&lt;bdo&gt;</code></a> is different: it forces character order and is rarely what you want.</li>
       <li>For entire sections in a different language &mdash; use <code>dir="rtl"</code> or <code>dir="ltr"</code> on the container</li>
     </ul>
   </section>
@@ -39,7 +38,7 @@ crumbLabel: Native Elements
 
     <browser-window src="/docs/snippets/demos/bdi-examples.html" url="bdi-examples.html" title="Bidirectional isolate" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Basic bdi usage" data-escape><p>User <bdi>إيان</bdi> posted 3 comments.</p></code-block>
+    <code-block language="html" show-lines label="Basic bdi usage" data-escape><p><bdi>إيان</bdi>: 3 comments</p></code-block>
     <code-block language="html" show-lines label="Leaderboard with mixed scripts" data-escape><ul>
   <li><bdi>Alice</bdi>: 15 points</li>
   <li><bdi>محمد</bdi>: 12 points</li>
@@ -50,12 +49,13 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Why Use bdi?</h2>
-    <p>The difference becomes clear when RTL text is embedded without isolation. Without <code>&lt;bdi&gt;</code>, the colon and numbers may appear in unexpected positions:</p>
-    <code-block language="html" show-lines label="With vs without bdi" data-escape><!-- Without bdi - text direction issues -->
-<p>User محمد posted 3 comments.</p>
+    <p>The problem appears when right-to-left text is directly followed by neutral characters (punctuation, spaces) and a number. The bidirectional algorithm treats them as part of the right-to-left run. Without <code>&lt;bdi&gt;</code>, the number jumps in front of the name:</p>
+    <code-block language="html" show-lines label="With vs without bdi" data-escape><!-- Without bdi: renders "12 :محمد points" -->
+<p>محمد: 12 points</p>
 
-<!-- With bdi - properly isolated -->
-<p>User <bdi>محمد</bdi> posted 3 comments.</p></code-block>
+<!-- With bdi: renders "محمد: 12 points" -->
+<p><bdi>محمد</bdi>: 12 points</p></code-block>
+    <p>When the RTL text sits between two left-to-right words (<code>User محمد posted 3 comments.</code>), it displays correctly either way. Wrapping dynamic values in <code>&lt;bdi&gt;</code> regardless is the safe default, because you can't know in advance what will follow them.</p>
   </section>
 
   <section>
@@ -105,12 +105,12 @@ crumbLabel: Native Elements
     <code-block language="css" label="bdi CSS (browser default)" data-escape>bdi {
   unicode-bidi: isolate;  /* browser default */
 }</code-block>
-    <p>VB does not add additional styling. The element's value is purely in its Unicode isolation behavior.</p>
+    <p>VB adds no styling and no <code>unicode-bidi</code> rules for <code>&lt;bdi&gt;</code> or <code>[dir]</code> elements; the browser defaults apply. The element's value is purely in its Unicode isolation behavior.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p><code>&lt;bdi&gt;</code> has no special accessibility role. It affects visual rendering only. Screen readers read the content in logical order regardless of visual direction.</p>
+    <p><code>&lt;bdi&gt;</code> has no special accessibility role. It affects visual rendering only. Screen readers read the content in logical (source) order regardless of visual direction. Add <code>lang</code> when you know the language of the isolated text, so screen readers can pronounce it correctly.</p>
   </section>
 
   <section>

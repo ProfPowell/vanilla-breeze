@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "blockquote"
-description: "The blockquote element represents a section quoted from another source, with VB styling for attribution, prose refinement, and academic citation patterns."
+description: "The blockquote element represents a section quoted from another source, with VB styling for figure-based attribution, prose refinement, and academic citation patterns."
 elementName: blockquote
 category: native
 nativeGroup: Text Content
@@ -13,7 +13,8 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;blockquote&gt;</code> element represents an extended quotation from another source. VB styles it with a left border, muted italic text, and automatic em-dash attribution via <code>&lt;footer&gt;</code> or <code>&lt;cite&gt;</code> inside the blockquote.</p>
+    <p>The <code>&lt;blockquote&gt;</code> element represents a section quoted from another source. VB styles it with an inline-start border and muted italic text.</p>
+    <p>The HTML specification is explicit that attribution for the quotation, if any, must be placed <em>outside</em> the <code>&lt;blockquote&gt;</code> element. The recommended pattern is a <a href="/docs/elements/native/figure/"><code>&lt;figure class="quote"&gt;</code></a> that holds the blockquote and a <code>&lt;figcaption&gt;</code> with the attribution. VB prefixes the caption with an em dash that is decorative only (it is not read out by assistive technology).</p>
     <p>VB also adds typographic refinements: <code>hanging-punctuation: first last</code> for Safari, and a de-emphasis reset for <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a>/<a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> inside blockquotes (since the blockquote is already visually offset, double-italic would be redundant).</p>
   </section>
 
@@ -21,14 +22,14 @@ crumbLabel: Native Elements
     <h2>When to Use</h2>
     <ul>
       <li><strong>Extended quotations:</strong> Quotes from books, articles, speeches</li>
-      <li><strong>Testimonials:</strong> Customer quotes and endorsements</li>
-      <li><strong>Pull quotes:</strong> Highlighted excerpts (use <code>&lt;figure class="quote"&gt;</code>)</li>
+      <li><strong>Testimonials:</strong> Customer quotes and endorsements, with the customer named in a <code>&lt;figcaption&gt;</code></li>
       <li><strong>Academic citations:</strong> Referenced passages with source attribution</li>
       <li><strong>Epigraphs:</strong> Opening quotes in articles or chapters</li>
     </ul>
     <h3>When NOT to Use</h3>
     <ul>
       <li>For short inline quotes &mdash; use <a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a></li>
+      <li>For pull quotes that repeat text from your own page &mdash; that is not a quotation from another source; use <a href="/docs/elements/native/aside/"><code>&lt;aside class="float"&gt;</code></a></li>
       <li>For content that isn't a quotation (even if you want the visual style)</li>
       <li>For indenting content &mdash; use CSS margins or <a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a></li>
     </ul>
@@ -40,21 +41,25 @@ crumbLabel: Native Elements
     <browser-window src="/docs/snippets/demos/blockquote-examples.html" url="blockquote-examples.html" title="Blockquote patterns" shadow></browser-window>
 
     <code-block language="html" show-lines label="Simple blockquote" data-escape><blockquote>
-  The best way to predict the future is to invent it.
+  <p>The best way to predict the future is to invent it.</p>
 </blockquote></code-block>
-    <code-block language="html" show-lines label="Footer attribution" data-escape><blockquote>
-  The best way to predict the future is to invent it.
-  <footer>Alan Kay</footer>
-</blockquote></code-block>
-    <code-block language="html" show-lines label="Full attribution with cite" data-escape><blockquote cite="https://example.com/source">
-  Any sufficiently advanced technology is indistinguishable from magic.
-  <footer>Arthur C. Clarke, <cite>Profiles of the Future</cite></footer>
-</blockquote></code-block>
+    <code-block language="html" show-lines label="Attribution with figure (recommended)" data-escape><figure class="quote">
+  <blockquote>
+    <p>The best way to predict the future is to invent it.</p>
+  </blockquote>
+  <figcaption>Alan Kay</figcaption>
+</figure></code-block>
+    <code-block language="html" show-lines label="Author, work title and source URL" data-escape><figure class="quote">
+  <blockquote cite="https://example.com/source">
+    <p>Any sufficiently advanced technology is indistinguishable from magic.</p>
+  </blockquote>
+  <figcaption>Arthur C. Clarke, <cite>Profiles of the Future</cite></figcaption>
+</figure></code-block>
   </section>
 
   <section>
     <h2>Attribution Patterns</h2>
-    <p>VB auto-prepends an em dash (&mdash;) to <code>&lt;footer&gt;</code> or <code>&lt;cite&gt;</code> elements inside a blockquote. Combine both for author + work title:</p>
+    <p>Put the attribution in a <code>&lt;figcaption&gt;</code> next to the blockquote, inside <code>&lt;figure class="quote"&gt;</code>. Use the <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> element for the title of the work, not for the person's name.</p>
 
     <table class="props-table">
       <thead>
@@ -62,61 +67,76 @@ crumbLabel: Native Elements
       </thead>
       <tbody>
         <tr>
-          <td><code>&lt;footer&gt;Author Name&lt;/footer&gt;</code></td>
-          <td>Simple attribution (person)</td>
-        </tr>
-        <tr>
-          <td><code>&lt;cite&gt;Work Title&lt;/cite&gt;</code></td>
-          <td>Work title only</td>
-        </tr>
-        <tr>
-          <td><code>&lt;footer&gt;Author, &lt;cite&gt;Work&lt;/cite&gt;&lt;/footer&gt;</code></td>
+          <td><code>&lt;figcaption&gt;Author, &lt;cite&gt;Work&lt;/cite&gt;&lt;/figcaption&gt;</code></td>
           <td>Author + work (recommended)</td>
         </tr>
         <tr>
-          <td><code>cite="URL"</code> attribute</td>
-          <td>Machine-readable source URL (not displayed)</td>
+          <td><code>&lt;figcaption&gt;Author Name&lt;/figcaption&gt;</code></td>
+          <td>Person only</td>
+        </tr>
+        <tr>
+          <td><code>&lt;figcaption&gt;&lt;cite&gt;Work Title&lt;/cite&gt;&lt;/figcaption&gt;</code></td>
+          <td>Work title only</td>
+        </tr>
+        <tr>
+          <td><code>cite="URL"</code> attribute on <code>&lt;blockquote&gt;</code></td>
+          <td>Machine-readable source URL (not displayed) &mdash; see the <a href="/docs/attributes/cite/"><code>cite</code> attribute</a></td>
         </tr>
       </tbody>
     </table>
+
+    <h3>Legacy: attribution inside the blockquote</h3>
+    <p>Older markup often puts a <code>&lt;footer&gt;</code> or <code>&lt;cite&gt;</code> inside the blockquote. That makes the attribution part of the quoted content, which the specification does not allow, so prefer the figure pattern for new content. VB still styles the legacy form so existing content does not break: a <code>&lt;footer&gt;</code> or <code>&lt;cite&gt;</code> that is a <em>direct child</em> of the blockquote becomes a block-level line with an em dash. A <code>&lt;cite&gt;</code> nested inside that footer, or used inline in the quoted prose, keeps its normal inline styling.</p>
+
+    <code-block language="html" show-lines label="Legacy footer attribution (still styled)" data-escape><blockquote>
+  <p>The best way to predict the future is to invent it.</p>
+  <footer>Alan Kay</footer>
+</blockquote></code-block>
   </section>
 
   <section>
-    <h2>Pull Quote (figure pattern)</h2>
-    <p>Wrap a blockquote in <code>&lt;figure class="quote"&gt;</code> with a <code>&lt;figcaption&gt;</code> for pull quote styling. The figure removes blockquote margins and adds its own em-dash to the caption:</p>
+    <h2>Pull Quotes</h2>
+    <p>A pull quote repeats a line from the article you are already reading to draw the eye. Because it does not come from another source, it is not a <code>&lt;blockquote&gt;</code>. Use <a href="/docs/elements/native/aside/"><code>&lt;aside class="float"&gt;</code></a>, which floats the excerpt beside the text:</p>
 
-    <code-block language="html" show-lines label="Pull quote figure" data-escape><figure class="quote">
-  <blockquote>
-    Good design is as little design as possible.
-  </blockquote>
-  <figcaption>Dieter Rams, <cite>Less and More</cite></figcaption>
-</figure></code-block>
+    <code-block language="html" show-lines label="Pull quote with aside" data-escape><article>
+  <p>Article text&hellip;</p>
+  <aside class="float">
+    <p>Good defaults beat clever configuration.</p>
+  </aside>
+  <p>More article text, including the sentence
+  &ldquo;Good defaults beat clever configuration.&rdquo;</p>
+</article></code-block>
+    <p>Screen reader users will hear the repeated sentence twice. If that is a concern, give the aside <code>aria-hidden="true"</code>, since the same text is in the article body.</p>
   </section>
 
   <section>
     <h2>Academic Citations</h2>
-    <p>For academic and research writing, use the <code>cite</code> attribute with a DOI or URL for machine-readable provenance. The footer can include full bibliographic information:</p>
+    <p>For academic and research writing, use the <code>cite</code> attribute with a DOI or URL for machine-readable provenance, and put the full bibliographic reference in the figcaption:</p>
 
     <browser-window src="/docs/snippets/demos/blockquote-academic.html" url="blockquote-academic.html" title="Academic citations" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Academic citation" data-escape><blockquote cite="https://doi.org/10.1000/example">
-  <p>The results demonstrate a statistically significant correlation
-  between design simplicity and user satisfaction scores (p &lt; 0.01).</p>
-  <footer>Smith &amp; Jones (2025), <cite>Journal of Web Usability</cite>,
-  Vol. 12, pp. 45&ndash;62</footer>
-</blockquote></code-block>
+    <code-block language="html" show-lines label="Academic citation" data-escape><figure class="quote">
+  <blockquote cite="https://doi.org/10.1000/example">
+    <p>The results demonstrate a statistically significant correlation
+    between design simplicity and user satisfaction scores (p &lt; 0.01).</p>
+  </blockquote>
+  <figcaption>Smith &amp; Jones (2025), <cite>Journal of Web Usability</cite>,
+  Vol. 12, pp. 45&ndash;62</figcaption>
+</figure></code-block>
 
-    <p>The <code>cite</code> attribute is not displayed but is available to scripts, search engines, and citation tools. Future VB features may auto-generate bibliography sections from <code>cite</code> attributes.</p>
+    <p>The <code>cite</code> attribute is not displayed, and screen readers do not announce it, but it is available to scripts, search engines, and citation tools. Future VB features may auto-generate bibliography sections from <code>cite</code> attributes.</p>
   </section>
 
   <section>
     <h2>Foreign Language Quotes</h2>
-    <p>Use the <code>lang</code> attribute when quoting in another language. VB's <a href="/docs/i18n/">i18n system</a> will apply appropriate font family and line height:</p>
+    <p>Use the <code>lang</code> attribute when quoting in another language. It lets screen readers switch pronunciation and lets the browser choose the right hyphenation rules. Inside the quote, VB's <a href="/docs/i18n/">i18n system</a> gives <a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> the locale's quotation marks (for example, &laquo;guillemets&raquo; for French). Locale-specific font families and line heights apply only to the scripts that need them: Chinese, Japanese, Korean, Arabic-script languages, Hebrew, Thai and Devanagari languages. A French quote keeps the page's font.</p>
 
-    <code-block language="html" show-lines label="Foreign language quote" data-escape><blockquote lang="fr">
-  Je pense, donc je suis.
-  <footer>René Descartes</footer>
-</blockquote></code-block>
+    <code-block language="html" show-lines label="Foreign language quote" data-escape><figure class="quote">
+  <blockquote lang="fr">
+    <p>Je pense, donc je suis.</p>
+  </blockquote>
+  <figcaption>René Descartes, <cite lang="fr">Discours de la méthode</cite></figcaption>
+</figure></code-block>
   </section>
 
   <section>
@@ -128,9 +148,23 @@ crumbLabel: Native Elements
   font-style: italic;
 }
 
-/* Attribution — auto em-dash prefix */
-blockquote footer,
-blockquote cite {
+/* Recommended attribution: figure.quote > figcaption (figure/styles.css) */
+figure.quote {
+  & > blockquote { margin: 0; }
+
+  & > figcaption {
+    font-style: normal;
+
+    &::before {
+      content: "— ";
+      content: "— " / ""; /* decorative: empty alt text */
+    }
+  }
+}
+
+/* Legacy attribution: direct-child footer or cite only */
+blockquote > footer,
+blockquote > cite {
   display: block;
   margin-block-start: var(--size-s);
   font-style: normal;
@@ -138,6 +172,7 @@ blockquote cite {
 
   &::before {
     content: "— ";
+    content: "— " / "";
   }
 }</code-block>
 
@@ -157,12 +192,12 @@ blockquote { hanging-punctuation: first last; }
       </thead>
       <tbody>
         <tr>
-          <td>Left border</td>
+          <td>Inline-start border</td>
           <td><code>border-inline-start</code> (RTL-safe)</td>
         </tr>
         <tr>
           <td>Em-dash attribution</td>
-          <td><code>::before { content: "— " }</code> on footer/cite</td>
+          <td><code>::before { content: "— " / "" }</code> on <code>figure.quote &gt; figcaption</code> and on direct-child footer/cite (silent alt text)</td>
         </tr>
         <tr>
           <td>Hanging punctuation</td>
@@ -179,10 +214,10 @@ blockquote { hanging-punctuation: first last; }
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Screen readers may announce "blockquote" before reading content</li>
-      <li>Users can navigate between blockquotes on a page</li>
-      <li>The <code>cite</code> attribute is not announced but is available programmatically</li>
-      <li>Always provide attribution for external quotations</li>
+      <li>Blockquotes are exposed with a <code>blockquote</code> role. Some screen readers announce the start and end of a quote, and some offer a shortcut to jump between quotes; others read it as ordinary text.</li>
+      <li>The <a href="/docs/attributes/cite/"><code>cite</code> attribute</a> is not announced, so always give visible attribution for external quotations</li>
+      <li>Keep the attribution in the <code>&lt;figcaption&gt;</code>, outside the quote, so it is not presented as part of the quoted words</li>
+      <li>The em dash before the attribution is decorative and has empty alternative text, so it is not read out</li>
       <li>Use <code>lang</code> for quotes in different languages so screen readers switch pronunciation</li>
     </ul>
   </section>
@@ -191,9 +226,10 @@ blockquote { hanging-punctuation: first last; }
     <h2>Related</h2>
     <ul>
       <li><a href="/docs/elements/native/q/"><code>&lt;q&gt;</code></a> &mdash; Short inline quotations with locale-aware marks</li>
-      <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> &mdash; Title of a creative work (used inside blockquote for source)</li>
-      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> &mdash; Wraps blockquote + figcaption for pull quote pattern</li>
-      <li><a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a> &mdash; Attribution inside blockquote</li>
+      <li><a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> &mdash; Title of a creative work (used in the figcaption)</li>
+      <li><a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a> &mdash; Wraps blockquote + figcaption for attributed quotes</li>
+      <li><a href="/docs/elements/native/aside/"><code>&lt;aside&gt;</code></a> &mdash; Pull quotes that repeat your own text</li>
+      <li><a href="/docs/attributes/cite/"><code>cite</code> attribute</a> &mdash; Machine-readable source URL</li>
       <li><a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> &mdash; De-emphasized inside blockquotes to avoid double-italic</li>
       <li><a href="/docs/i18n/">Internationalization</a> &mdash; Locale-specific font, line height, and hanging punctuation</li>
     </ul>

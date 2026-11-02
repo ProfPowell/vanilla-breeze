@@ -13,7 +13,9 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;b&gt;</code> element draws attention to text without conveying extra importance or urgency. It is styled with <code>font-weight: 600</code> and includes typographic refinements: <code>font-synthesis: none</code> prevents faux bold in fonts that lack a bold weight, and <code>font-optical-sizing: auto</code> enables optical size adjustments.</p>
+    <p>The <code>&lt;b&gt;</code> element draws attention to text without conveying extra importance or urgency. It is styled with <code>font-weight: 600</code> and includes typographic refinements: <code>font-synthesis: none</code> stops the browser from generating faux bold, and <code>font-optical-sizing: auto</code> enables optical size adjustments.</p>
+
+    <p>The trade-off of <code>font-synthesis: none</code>: if your font has no face at weight 600 or heavier (for example, a web font loaded only in its regular weight), <code>&lt;b&gt;</code> renders at the regular weight instead of a smeared faux bold. Load a bold face, or a variable font with a weight axis, when you change the font stack.</p>
 
     <p>In Vanilla Breeze, <code>&lt;b&gt;</code> also has special behavior inside code blocks &mdash; bold text gets a subtle highlight background instead of relying on weight alone, which is more visible in monospace fonts.</p>
   </section>
@@ -24,7 +26,6 @@ crumbLabel: Native Elements
       <li><strong>Product names</strong> in reviews or listings</li>
       <li><strong>Keywords</strong> in paragraph summaries or abstracts</li>
       <li><strong>Lead sentences</strong> in news articles</li>
-      <li><strong>UI labels</strong> that need visual weight without semantic emphasis</li>
     </ul>
     <h3>When NOT to Use</h3>
     <ul>
@@ -44,22 +45,24 @@ crumbLabel: Native Elements
         <tr>
           <th>Element</th>
           <th>Semantics</th>
-          <th>Screen Reader Behavior</th>
+          <th>Accessibility tree</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td><code>&lt;b&gt;</code></td>
           <td>Draw attention &mdash; no extra importance</td>
-          <td>Not announced differently</td>
+          <td>No role (<code>generic</code>)</td>
         </tr>
         <tr>
           <td><code>&lt;strong&gt;</code></td>
           <td>Strong importance or urgency</td>
-          <td>May be announced with emphasis</td>
+          <td><code>strong</code> role</td>
         </tr>
       </tbody>
     </table>
+
+    <p>By default, major screen readers read both elements exactly like the surrounding text; neither is announced or voiced differently unless the user turns on font or emphasis reporting. Choose between them for meaning, and make sure the words themselves carry any warning.</p>
 
     <code-block language="html" show-lines label="b vs strong usage" data-escape><!-- b: draw attention, no semantic importance -->
 <p>Try the <b>Classic Burger</b> — our most popular item.</p>
@@ -88,7 +91,7 @@ console.log(<strong>result</strong>);</code></pre></code-block>
 
   <section>
     <h2>Combined Bold + Italic</h2>
-    <p>When <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> (or <code>&lt;strong&gt;</code> and <code>&lt;em&gt;</code>) are nested, VB ensures the combined style renders correctly with <code>font-synthesis: none</code> to prevent browser-generated faux bold-italic.</p>
+    <p>Nesting <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> (or <code>&lt;strong&gt;</code> and <code>&lt;em&gt;</code>) combines the two through ordinary inheritance: the inner element inherits weight 600 and adds italic. Because both elements set <code>font-synthesis: none</code>, the browser will not fake the combination, so you get true bold italic only if the font has a bold-italic face (or variable weight and italic axes). Otherwise the browser falls back to the nearest face it has.</p>
 
     <code-block language="html" show-lines label="Combined bold and italic" data-escape><p>Nested bold and italic combine properly:</p>
 <p><b><i>bold italic via b+i</i></b></p>
@@ -103,7 +106,8 @@ console.log(<strong>result</strong>);</code></pre></code-block>
   font-optical-sizing: auto;
 }
 
-/* Combined bold + italic */
+/* Nested bold + italic. Re-states values the inner element
+   already inherits, so it has no visual effect on its own. */
 :where(b i, i b, strong em, em strong) {
   font-weight: 600;
   font-style: italic;
@@ -115,12 +119,6 @@ console.log(<strong>result</strong>);</code></pre></code-block>
   background-color: oklch(from var(--color-interactive) l c h / 0.12);
   border-radius: var(--radius-s);
   padding-inline: var(--size-2xs);
-}
-
-/* Italic in blockquote — de-emphasize */
-:where(blockquote) :where(i, em) {
-  font-style: normal;
-  font-weight: var(--font-weight-medium);
 }</code-block>
 
     <h3>Key Styling Features</h3>
@@ -136,7 +134,7 @@ console.log(<strong>result</strong>);</code></pre></code-block>
         <tr>
           <td><code>font-synthesis: none</code></td>
           <td>Applied to b, strong, i, em</td>
-          <td>Prevents browser from generating faux bold/italic glyphs</td>
+          <td>Prevents browser from generating faux bold/italic glyphs (a font without a bold face renders <code>&lt;b&gt;</code> at regular weight)</td>
         </tr>
         <tr>
           <td><code>font-optical-sizing: auto</code></td>
@@ -148,11 +146,6 @@ console.log(<strong>result</strong>);</code></pre></code-block>
           <td><code>background-color</code> in code/pre</td>
           <td>More visible bold in monospace contexts</td>
         </tr>
-        <tr>
-          <td>Blockquote italic reset</td>
-          <td><code>font-style: normal</code> in blockquote</td>
-          <td>Prevents double-emphasis (blockquote offset + italic)</td>
-        </tr>
       </tbody>
     </table>
   </section>
@@ -160,8 +153,8 @@ console.log(<strong>result</strong>);</code></pre></code-block>
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li><code>&lt;b&gt;</code> does not convey importance to screen readers &mdash; it is purely visual</li>
-      <li>For text that must be announced with emphasis, use <code>&lt;strong&gt;</code> instead</li>
+      <li><code>&lt;b&gt;</code> has no role and conveys no importance in the accessibility tree</li>
+      <li>Use <code>&lt;strong&gt;</code> when the text is genuinely important, but do not expect screen readers to voice it differently &mdash; by default they read <code>&lt;strong&gt;</code> and <code>&lt;b&gt;</code> like any other text</li>
       <li>Do not rely on bold alone to convey meaning &mdash; combine with context or additional markup</li>
     </ul>
   </section>
@@ -169,7 +162,7 @@ console.log(<strong>result</strong>);</code></pre></code-block>
   <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> &mdash; Strong importance (announced by screen readers)</li>
+      <li><a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> &mdash; Strong importance, seriousness, or urgency</li>
       <li><a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> &mdash; Emphasis that changes meaning</li>
       <li><a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> &mdash; Alternate voice (technical terms, thoughts, ship names)</li>
       <li><a href="/docs/elements/native/mark/"><code>&lt;mark&gt;</code></a> &mdash; Highlight for relevance (search results, references)</li>

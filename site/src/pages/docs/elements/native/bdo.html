@@ -13,21 +13,20 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;bdo&gt;</code> (Bidirectional Text Override) element forces text to render in a specified direction, regardless of the Unicode Bidirectional Algorithm. The <code>dir</code> attribute is <strong>required</strong>.</p>
-    <p>For isolating text without forcing direction (user-generated content, unknown text), use <a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> instead.</p>
-    <p>VB's <a href="/docs/i18n/">i18n stylesheet</a> sets <code>unicode-bidi: embed</code> on <code>[dir="rtl"]</code> elements, complementing the native bdo behavior.</p>
+    <p>The <code>&lt;bdo&gt;</code> (Bidirectional Text Override) element forces the characters inside it to be laid out in a specified direction, overriding the Unicode Bidirectional Algorithm. The <code>dir</code> attribute is <strong>required</strong> and must be <code>ltr</code> or <code>rtl</code>.</p>
+    <p>You rarely need it. The bidirectional algorithm already displays Hebrew, Arabic and other right-to-left text correctly inside a left-to-right paragraph (and vice versa). <code>&lt;bdo&gt;</code> is only for the uncommon cases where you want to <em>override</em> that and force a character order. For isolating text of unknown direction (user names, user-generated content), use <a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> instead.</p>
   </section>
 
   <section>
     <h2>When to Use</h2>
     <ul>
-      <li><strong>Embedding RTL text</strong> in a left-to-right paragraph (or vice versa)</li>
-      <li><strong>Displaying reversed text</strong> for visual effects</li>
-      <li><strong>Correcting direction</strong> when the algorithm gets it wrong</li>
-      <li><strong>Technical documentation</strong> showing text in specific directions</li>
+      <li><strong>Showing characters in storage order:</strong> displaying how right-to-left text is stored in memory, for teaching or debugging</li>
+      <li><strong>Displaying reversed text</strong> deliberately, such as mirror writing</li>
+      <li><strong>Correcting direction</strong> when the algorithm gets it wrong, typically for text that has lost its directional context (e.g. data from a legacy system stored in visual order)</li>
     </ul>
     <h3>When NOT to Use</h3>
     <ul>
+      <li>To embed right-to-left text in a left-to-right paragraph &mdash; the bidirectional algorithm handles that; mark the text with <code>&lt;span lang="he" dir="rtl"&gt;</code> or <a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a></li>
       <li>For user-generated content &mdash; use <a href="/docs/elements/native/bdi/"><code>&lt;bdi&gt;</code></a> (auto-detection is safer)</li>
       <li>For entire page direction &mdash; use <code>dir="rtl"</code> on <code>&lt;html&gt;</code></li>
     </ul>
@@ -38,14 +37,18 @@ crumbLabel: Native Elements
 
     <browser-window src="/docs/snippets/demos/bdo-examples.html" url="bdo-examples.html" title="Bidirectional override" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Basic bdo example" data-escape><p>Normal text: Hello World</p>
-<p>Reversed: <bdo dir="rtl">Hello World</bdo></p></code-block>
-    <code-block language="html" show-lines label="LTR override in RTL context" data-escape><p dir="rtl">
-  This paragraph is right-to-left, but
-  <bdo dir="ltr">this text is forced left-to-right</bdo>.
+    <code-block language="html" show-lines label="Reversed text" data-escape><p>Normal text: Hello World</p>
+<p>Reversed: <bdo dir="rtl">Hello World</bdo></p>
+<!-- renders: dlroW olleH --></code-block>
+    <code-block language="html" show-lines label="Hebrew shown in storage order" data-escape><p>
+  Displayed normally: <span lang="he" dir="rtl">שלום</span>
+</p>
+<p>
+  Characters in storage order:
+  <bdo dir="ltr" lang="he">שלום</bdo>
 </p></code-block>
-    <code-block language="html" show-lines label="RTL override for Hebrew" data-escape><p>
-  The Hebrew word for "peace" is <bdo dir="rtl">שלום</bdo>.
+    <code-block language="html" show-lines label="RTL text in an LTR paragraph (no bdo needed)" data-escape><p>
+  The Hebrew word for "peace" is <span lang="he" dir="rtl">שלום</span>.
 </p></code-block>
     <code-block language="html" show-lines label="Nested bdo overrides" data-escape><p>
   <bdo dir="rtl">
@@ -54,6 +57,7 @@ crumbLabel: Native Elements
     Back to RTL
   </bdo>
 </p></code-block>
+    <p>Always add <code>lang</code> to text in another language, such as Hebrew (<code>lang="he"</code>), so screen readers pronounce it correctly (WCAG 3.1.2, Language of Parts).</p>
   </section>
 
   <section>
@@ -68,7 +72,7 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>dir</code></td>
-          <td><strong>Required.</strong> Text direction: <code>ltr</code> (left-to-right) or <code>rtl</code> (right-to-left)</td>
+          <td><strong>Required.</strong> Text direction: <code>ltr</code> (left-to-right) or <code>rtl</code> (right-to-left). <code>dir="auto"</code> is not allowed on <code>&lt;bdo&gt;</code>, because an override needs an explicit direction.</td>
         </tr>
       </tbody>
     </table>
@@ -78,14 +82,14 @@ crumbLabel: Native Elements
   <section>
     <h2>CSS</h2>
     <code-block language="css" label="bdo CSS (browser default)" data-escape>bdo {
-  unicode-bidi: bidi-override;  /* browser default */
+  unicode-bidi: isolate-override;  /* UA default */
 }</code-block>
-    <p>VB does not add additional styling. The element's value is in its Unicode override behavior.</p>
+    <p>VB adds no styling and no <code>unicode-bidi</code> rules. The browser's default, <code>isolate-override</code>, forces the direction inside the element and isolates it from the surrounding text.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
-    <p><code>&lt;bdo&gt;</code> affects visual presentation only. Screen readers typically read text in logical order, not visual order. Be cautious using <code>&lt;bdo&gt;</code> purely for visual effects, as the rendered order may confuse users who cannot see it.</p>
+    <p><code>&lt;bdo&gt;</code> affects visual presentation only. Screen readers read the text in its logical (source) order, not the visual order: reversed &ldquo;Hello World&rdquo; is still read as &ldquo;Hello World&rdquo;. Be cautious using <code>&lt;bdo&gt;</code> purely for visual effects, because sighted and non-sighted users get different content.</p>
   </section>
 
   <section>

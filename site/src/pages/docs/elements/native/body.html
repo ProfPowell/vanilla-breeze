@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "body"
-description: "Contains the visible content of the document."
+description: "The document's content: the container for every landmark on the page and the surface VB paints the page background on."
 elementName: body
 category: native
 nativeGroup: Document
@@ -14,29 +14,250 @@ crumbLabel: Native Elements
 <!-- Description Section -->
   <section>
     <h2>Description</h2>
-    <p>The <code>&lt;body&gt;</code> element is part of the Document category in HTML.</p>
+    <p>The <code>&lt;body&gt;</code> element holds the document's content. Everything the user sees or hears goes inside it: one per document, as the second child of <code>&lt;html&gt;</code> after <code>&lt;head&gt;</code>.</p>
+    <p><code>&lt;body&gt;</code> is <strong>not a landmark</strong>. HTML-AAM maps it to the <code>generic</code> role, so screen readers do not announce it and it gives no navigation shortcut. Page structure comes from the landmarks you put inside it: <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code> and <code>&lt;footer&gt;</code>. Make a skip link the first focusable element in the body.</p>
+    <p>In Vanilla Breeze, <code>&lt;body&gt;</code> takes <strong>page structure</strong>: the page grid (<code>data-page-layout</code>) and the page background. <strong>Global configuration</strong> (theme, mode, fluid scaling, backdrop) belongs on <code>&lt;html&gt;</code>. See <a href="#html-vs-body">Theme attributes go on html</a>.</p>
   </section>
 
   <!-- Basic Example Section -->
   <section>
     <h2>Basic Example</h2>
-    <code-block language="html" label="Basic body example" data-escape><body>...</body></code-block>
+    <p>A landmark skeleton: skip link first, then the regions. <code>data-page-layout</code> places each landmark in its grid area by element type.</p>
+
+    <browser-window src="/docs/snippets/demos/body-landmarks.html" url="body-landmarks.html" title="Body landmark skeleton" shadow></browser-window>
+
+    <code-block language="html" label="Landmark skeleton" data-escape><!DOCTYPE html>
+<html lang="en" data-theme="modern" data-fluid>
+  <head>...</head>
+  <body data-page-layout="sidebar-left">
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <header>...</header>
+    <nav aria-label="Primary">...</nav>
+    <main id="main">...</main>
+    <footer>...</footer>
+  </body>
+</html></code-block>
+    <p>VB does not ship a <code>.skip-link</code> class. Copy the pattern from <a href="/docs/accessibility-utilities/#skip-link">Accessibility Utilities</a>. Its styles position the link absolutely, so it stays out of the page grid. An unstyled link that is a direct child of a <code>data-page-layout</code> body would be auto-placed into a grid cell.</p>
+  </section>
+
+  <!-- html vs body Section -->
+  <section>
+    <h2 id="html-vs-body">Theme attributes go on html</h2>
+    <p>Put <code>data-theme</code>, <code>data-mode</code>, <code>data-fluid</code> and <code>data-backdrop</code> on <code>&lt;html&gt;</code>, not on <code>&lt;body&gt;</code>. VB's selectors for them start with <code>:root</code>, and <code>ThemeManager</code> writes them to <code>document.documentElement</code>. That includes the theme picker, the settings panel and saved preferences.</p>
+    <code-block language="html" label="Right and wrong placement" data-escape><!-- Right: global config on html, page structure on body -->
+<html lang="en" data-theme="modern" data-mode="dark">
+  <body data-page-layout="sidebar-left">...</body>
+</html>
+
+<!-- Wrong: the body is treated as a scoped region -->
+<html lang="en">
+  <body data-theme="modern" data-mode="dark">...</body>
+</html></code-block>
+    <p><code>data-theme</code> on <code>&lt;body&gt;</code> causes three problems:</p>
+    <ul>
+      <li>The reset treats any <code>[data-theme]:not(:root)</code> or <code>[data-mode]:not(:root)</code> element as a <a href="/docs/elements/native/html/">scoped override</a> and re-applies <code>color</code> there. The <code>&lt;html&gt;</code> element, its scrollbars and its background (<code>--page-bg-color</code>) stay on the root theme.</li>
+      <li>A theme's dark-mode adjustments are written for both attributes on one element: <code>[data-theme~="modern"][data-mode="dark"]</code>. <code>ThemeManager</code> always puts <code>data-mode</code> on <code>&lt;html&gt;</code>, so with the theme on the body those adjustments never apply.</li>
+      <li>When a user picks a theme, <code>ThemeManager</code> sets it on <code>&lt;html&gt;</code>, but your attribute stays on <code>&lt;body&gt;</code>. Tokens set on the body override the root values for all content, so the user's choice is mostly ignored.</li>
+    </ul>
+    <p>Scoped <code>data-theme</code> and <code>data-mode</code> belong on regions inside the body, such as an <code>&lt;aside data-mode="dark"&gt;</code>, not on the body itself.</p>
+  </section>
+
+  <!-- VB Styling Section -->
+  <section>
+    <h2>VB Styling</h2>
+    <p>The reset (<code>src/base/reset.css</code>) gives <code>&lt;body&gt;</code> these defaults:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>margin</code></td>
+          <td><code>0</code></td>
+          <td>Removes the browser's default 8px body margin. The reset sets <code>margin: 0</code> on every element.</td>
+        </tr>
+        <tr>
+          <td><code>min-block-size</code></td>
+          <td><code>100dvh</code> (with a <code>100vh</code> fallback)</td>
+          <td>The body always fills the viewport, so the page background and a page-layout grid reach the bottom edge on short pages. <code>dvh</code> follows mobile browser toolbars.</td>
+        </tr>
+        <tr>
+          <td><code>font-family</code></td>
+          <td><code>var(--font-sans)</code></td>
+          <td>The theme's body font</td>
+        </tr>
+        <tr>
+          <td><code>line-height</code></td>
+          <td><code>var(--line-height-normal)</code></td>
+          <td>The default reading line height</td>
+        </tr>
+        <tr>
+          <td><code>font-size-adjust</code></td>
+          <td><code>var(--font-size-adjust)</code></td>
+          <td>Keeps the x-height steady when fallback fonts render</td>
+        </tr>
+        <tr>
+          <td><code>color</code></td>
+          <td><code>var(--color-text)</code></td>
+          <td>Theme text color, inherited by all content</td>
+        </tr>
+        <tr>
+          <td><code>-webkit-font-smoothing</code></td>
+          <td><code>antialiased</code></td>
+          <td>Grayscale antialiasing in macOS WebKit and Blink</td>
+        </tr>
+        <tr>
+          <td><code>background-*</code></td>
+          <td>The <code>--page-bg-*</code> hooks</td>
+          <td>See <a href="#page-background">Page Background</a> below</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Page Background Section -->
+  <section>
+    <h2 id="page-background">Page Background</h2>
+    <p>The reset paints the body background from custom properties, so you can restyle the page background without writing a <code>body</code> rule. Set them on <code>:root</code>. The body inherits them, and <code>&lt;html&gt;</code> also reads <code>--page-bg-color</code>, so overscroll areas match.</p>
+
+    <browser-window src="/docs/snippets/demos/body-page-background.html" url="body-page-background.html" title="Page background hooks" shadow></browser-window>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Custom property</th>
+          <th>Default</th>
+          <th>What it does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--page-bg-color</code></td>
+          <td><code>var(--color-surface)</code></td>
+          <td>Background color for both <code>&lt;body&gt;</code> and <code>&lt;html&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>--page-bg-gradient</code></td>
+          <td><em>(unset)</em></td>
+          <td>Any <code>background-image</code> value, usually a gradient. Takes precedence over <code>--page-bg-image</code>.</td>
+        </tr>
+        <tr>
+          <td><code>--page-bg-image</code></td>
+          <td><code>none</code></td>
+          <td>Background image (for example <code>url(texture.png)</code>). Used only when <code>--page-bg-gradient</code> is unset.</td>
+        </tr>
+        <tr>
+          <td><code>--page-bg-attachment</code></td>
+          <td><code>scroll</code></td>
+          <td><code>background-attachment</code>. Use <code>fixed</code> to keep a gradient still while the content scrolls.</td>
+        </tr>
+        <tr>
+          <td><code>--page-bg-size</code></td>
+          <td><code>cover</code></td>
+          <td><code>background-size</code></td>
+        </tr>
+        <tr>
+          <td><code>--page-bg-position</code></td>
+          <td><code>center</code></td>
+          <td><code>background-position</code></td>
+        </tr>
+        <tr>
+          <td><code>--page-bg-blend</code></td>
+          <td><code>normal</code></td>
+          <td><code>background-blend-mode</code>, which blends the image with <code>--page-bg-color</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="Page background tokens" data-escape>:root {
+  --page-bg-gradient: linear-gradient(160deg,
+    color-mix(in oklch, var(--color-surface) 80%, var(--color-primary)),
+    color-mix(in oklch, var(--color-surface) 90%, var(--color-accent)));
+  --page-bg-attachment: fixed;
+}</code-block>
+    <p>Other features set these properties too. <code>ThemeManager</code> writes <code>--page-bg-color</code> or <code>--page-bg-gradient</code> as inline styles on <code>&lt;html&gt;</code> when a user picks a page background in <a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a>. <code>data-backdrop</code> sets its own <code>--page-bg-color</code>, a tint that contrasts with the canvas cards. With <code>data-backdrop-chrome="stretch"</code> it resets the color to the surface and sets <code>--page-bg-gradient</code> to <code>none</code>.</p>
+  </section>
+
+  <!-- Vanilla Breeze Attributes Section -->
+  <section>
+    <h2>Vanilla Breeze Attributes</h2>
+
+    <h3>data-page-layout</h3>
+    <p>Turns the body into a page grid. Direct-child <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code> and <code>&lt;footer&gt;</code> elements go to their grid areas by element type. Values: <code>stack</code>, <code>sidebar-left</code>, <code>sidebar-right</code>, <code>holy-grail</code>, <code>app-shell</code>, <code>dashboard</code>, <code>article</code>, <code>landing</code>. The grid also gets <code>min-height: 100dvh</code>. On wide screens, <code>holy-grail</code> and <code>dashboard</code> bodies are capped at 87.5rem and centered. See <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> for templates, modifiers and small-screen behavior.</p>
+    <code-block language="html" label="Page layout" data-escape><body data-page-layout="holy-grail" data-layout-gap="l">
+  <header>...</header>
+  <nav>...</nav>
+  <main>...</main>
+  <aside>...</aside>
+  <footer>...</footer>
+</body></code-block>
+
+    <h3>data-backdrop (on html) and the body</h3>
+    <p><code>data-backdrop</code> goes on <code>&lt;html&gt;</code>, but its rules all target the body and its direct children through <code>:root[data-backdrop] &gt; body</code>:</p>
+    <ul>
+      <li>The body gets <code>padding: var(--canvas-gap)</code>, so the page background shows around the regions.</li>
+      <li>Each direct-child <code>main</code>, <code>header</code>, <code>footer</code>, <code>nav</code> and <code>aside</code> becomes a card with its own background, radius and shadow.</li>
+      <li>Without <code>data-page-layout</code>, the regions are centered at <code>--canvas-width</code> and spaced with margins. With it, they keep their grid areas and the grid gap grows to <code>--canvas-gap</code>.</li>
+      <li>Below 37.5rem the body padding drops to 0 and the regions go flush.</li>
+    </ul>
+    <p>Because the selectors use the child combinator, only <strong>direct children</strong> of the body become cards. A wrapper element between the body and the landmarks turns the effect off. For canvases on arbitrary elements, use <a href="/docs/elements/custom-elements/layout-canvas/"><code>&lt;layout-canvas&gt;</code> / <code>data-canvas</code></a>.</p>
+
+    <h3>data-canvas-depth</h3>
+    <p>Set on <code>&lt;body&gt;</code> to add one (<code>"1"</code>) or two (<code>"2"</code>) "ghost card" shadows below <code>&lt;main&gt;</code>, like a stack of papers. It only works when <code>&lt;html&gt;</code> has <code>data-backdrop</code> and the chrome is card-style. It does nothing with <code>data-backdrop="flush"</code>, <code>stretch</code> or <code>integrated</code> chrome, or below 37.5rem.</p>
+    <code-block language="html" label="Canvas depth" data-escape><html lang="en" data-backdrop>
+  <body data-canvas-depth="2">
+    <header>...</header>
+    <main>...</main>
+    <footer>...</footer>
+  </body>
+</html></code-block>
+  </section>
+
+  <!-- Behavior Notes Section -->
+  <section>
+    <h2>Behavior Notes</h2>
+    <ul>
+      <li><strong>Scroll lock:</strong> <a href="/docs/elements/web-components/site-search/"><code>&lt;site-search&gt;</code></a> sets <code>document.body.style.overflow = 'hidden'</code> while its overlay is open and clears it on close. Don't rely on an inline <code>overflow</code> style on the body while search is in use.</li>
+      <li><strong>Print:</strong> VB's print styles give the body a white background and black text (<code>body { background: #fff; color: #000; }</code>), unless <code>&lt;html data-print-raw&gt;</code> is set. A <code>data-page-layout</code> body prints as <code>display: block</code> with its <code>nav</code> and <code>aside</code> hidden. See <a href="/docs/printing/">Printing</a>.</li>
+    </ul>
   </section>
 
   <!-- Attributes Section -->
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/attributes/">global attributes</a>.</p>
+    <p><code>&lt;body&gt;</code> supports <a href="/docs/attributes/">global attributes</a>. It has no element-specific attributes beyond:</p>
+    <ul>
+      <li><strong>Window event handlers</strong> such as <code>onload</code>, <code>onhashchange</code>, <code>onpopstate</code> and <code>onbeforeunload</code>. They are registered on <code>window</code>, not on the body. Prefer <code>window.addEventListener()</code> in a module script.</li>
+      <li><strong>Obsolete presentational attributes</strong> (<code>bgcolor</code>, <code>background</code>, <code>text</code>, <code>link</code>, <code>vlink</code>, <code>alink</code>). Don't use them. Use the <code>--page-bg-*</code> hooks and theme tokens instead.</li>
+    </ul>
   </section>
 
   <!-- Accessibility Section -->
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;body&gt;</code> element will be documented here.</p>
+    <ul>
+      <li><strong>Not a landmark:</strong> the body maps to the <code>generic</code> role. Put all content in landmarks (<code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;footer&gt;</code>) so screen reader users can jump between regions. Content outside a landmark is easy to miss.</li>
+      <li><strong>One <code>&lt;main&gt;</code>:</strong> give the main content a single visible <code>&lt;main&gt;</code> landmark with an <code>id</code> the skip link can target.</li>
+      <li><strong>Skip link first:</strong> the first focusable element in the body should be a link to <code>#main</code>, so keyboard users can skip the header and navigation.</li>
+      <li><strong>Don't add a role:</strong> don't put <code>role="application"</code> or <code>role="main"</code> on the body. The first changes how screen readers handle keys for the whole page; the second duplicates <code>&lt;main&gt;</code>.</li>
+    </ul>
   </section>
 
   <!-- Related Section -->
   <section>
     <h2>Related</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> - Root element: theme, mode, fluid and backdrop attributes</li>
+      <li><a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> - Document metadata container</li>
+      <li><a href="/docs/elements/native/main/"><code>&lt;main&gt;</code></a> - The primary content landmark and skip-link target</li>
+      <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> - Page grid templates on the body</li>
+      <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> - Layout by element identity</li>
+      <li><a href="/docs/elements/custom-elements/layout-canvas/"><code>&lt;layout-canvas&gt;</code></a> - Canvas cards on any element; complements <code>data-backdrop</code></li>
+      <li><a href="/docs/accessibility-utilities/#skip-link">Accessibility Utilities &rsaquo; Skip link</a> - Skip link markup and styles</li>
+      <li><a href="/docs/printing/">Printing</a> - VB's print styles</li>
+    </ul>
   </section>

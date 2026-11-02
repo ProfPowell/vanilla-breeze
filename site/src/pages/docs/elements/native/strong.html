@@ -13,7 +13,7 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;strong&gt;</code> element indicates strong importance, seriousness, or urgency. Screen readers may announce it with a change in voice. VB styles it with <code>font-weight: 600</code>, <code>font-synthesis: none</code> (prevents faux bold), and <code>font-optical-sizing: auto</code> for variable fonts.</p>
+    <p>The <code>&lt;strong&gt;</code> element indicates strong importance, seriousness, or urgency. It is exposed with the <code>strong</code> role, but by default major screen readers read it like the surrounding text, without a change in voice. VB styles it with <code>font-weight: 600</code>, <code>font-synthesis: none</code> (prevents faux bold), and <code>font-optical-sizing: auto</code> for variable fonts.</p>
     <p>Inside <code>&lt;code&gt;</code> and <code>&lt;pre&gt;</code>, strong gets a subtle highlight background instead of relying on weight alone.</p>
   </section>
 
@@ -48,12 +48,12 @@ crumbLabel: Native Elements
         <tr>
           <td><code>&lt;strong&gt;</code></td>
           <td>Importance, urgency, seriousness</td>
-          <td>May be announced with emphasis</td>
+          <td>Read like surrounding text by default</td>
         </tr>
         <tr>
           <td><code>&lt;b&gt;</code></td>
           <td>Draw attention &mdash; no extra importance</td>
-          <td>Not announced differently</td>
+          <td>Read like surrounding text</td>
         </tr>
       </tbody>
     </table>
@@ -92,7 +92,8 @@ crumbLabel: Native Elements
   font-optical-sizing: auto;
 }
 
-/* Combined bold + italic */
+/* Nested bold + italic. Re-states values the inner element
+   already inherits, so it has no visual effect on its own. */
 :where(strong em, em strong) {
   font-weight: 600;
   font-style: italic;
@@ -110,8 +111,8 @@ crumbLabel: Native Elements
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Some screen readers announce <code>&lt;strong&gt;</code> with a change in voice tone</li>
-      <li>This distinguishes it from <code>&lt;b&gt;</code> which is not announced differently</li>
+      <li>By default, major screen readers do not announce <code>&lt;strong&gt;</code> or change voice for it; some report emphasis only when the user turns that setting on</li>
+      <li>So the words must carry the urgency themselves &mdash; for example, start with &ldquo;Warning:&rdquo; rather than relying on bold</li>
       <li>Nesting <code>&lt;strong&gt;</code> increases the degree of importance semantically</li>
       <li>Do not use strong for every bold word &mdash; overuse dilutes the signal</li>
     </ul>
