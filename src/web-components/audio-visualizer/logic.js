@@ -33,15 +33,58 @@ function getSharedContext() {
   return audioContextRegistry.get('default')
 }
 
-// Track which audio elements already have a MediaElementSource
+// Track which audio elements already have a MediaElementSource. An element
+// can only ever have one, and once it exists ALL of the element's output is
+// routed through the graph — so the source is wired to the destination exactly
+// once, here. Each visualizer's analyser is a passive tap (source → analyser,
+// output unconnected), so N visualizers on one <audio> don't sum to N× volume.
 const sourceRegistry = new WeakMap()
 
 function getMediaSource(audio, ctx) {
   if (sourceRegistry.has(audio)) return sourceRegistry.get(audio)
   const source = ctx.createMediaElementSource(audio)
+  source.connect(ctx.destination)
   sourceRegistry.set(audio, source)
   return source
 }
+
+/**
+ * Clamp a data-fft-size value to a valid AnalyserNode.fftSize: a power of two
+ * in [32, 32768]. Non-numeric values fall back to 256; others round to the
+ * nearest power of two.
+ * @param {string | null} raw
+ * @returns {number}
+ */
+function normalizeFftSize(raw) {
+  const n = Number.parseInt(raw ?? '', 10)
+  if (!Number.isFinite(n) || n <= 0) return 256
+  const pow = 2 ** Math.round(Math.log2(n))
+  return Math.min(32768, Math.max(32, pow))
+}
+
+/**
+ * True when the audio's source is cross-origin and the element has no
+ * crossorigin attribute. Hooking such an element with createMediaElementSource
+ * makes the browser output silence (the media is CORS-tainted), so the
+ * visualizer must leave it alone.
+ * @param {HTMLAudioElement} audio
+ */
+function isOpaqueCrossOrigin(audio) {
+  if (audio.crossOrigin != null) return false
+  const src = audio.currentSrc || audio.src
+    || /** @type {HTMLSourceElement | null} */ (audio.querySelector('source[src]'))?.src || ''
+  if (!src) return false
+  try {
+    const url = new URL(src, location.href)
+    if (url.protocol === 'data:' || url.protocol === 'blob:') return false
+    return url.origin !== location.origin
+  } catch {
+    return false
+  }
+}
+
+/** Audio elements already warned about, so the console note appears once. */
+const warnedCrossOrigin = new WeakSet()
 
 class AudioVisualizerElement extends VBElement {
 
@@ -66,6 +109,9 @@ class AudioVisualizerElement extends VBElement {
   #reducedMotion = false
   /** @type {(() => void) | null} */
   #onThemeChange = null
+  /** @type {HTMLAudioElement | null} The <audio> currently carrying our play listener */
+  #boundAudio = null
+  #onPlay = () => this.#initAudio()
 
   // ─── Observed attributes ───────────────────────────────────────────────
 
@@ -78,12 +124,17 @@ class AudioVisualizerElement extends VBElement {
   setup() {
     this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    const firstConnect = !this.shadowRoot
     this.#buildShadow()
     this.#findAudio()
-    if (firstConnect) {
-      this.#setupIntersectionObserver()
-      this.#watchMotionPreference()
+    // Both re-run on every connect: teardown disconnects the observer and
+    // listen() drops the media-query listener, so a moved element must
+    // re-arm them or its draw loop never resumes.
+    this.#setupIntersectionObserver()
+    this.#watchMotionPreference()
+
+    // Re-attach the analyser tap removed in teardown (reconnect after a move)
+    if (this.#started && this.#source && this.#analyser) {
+      try { this.#source.connect(this.#analyser) } catch { /* already connected */ }
     }
 
     // Force style recalculation when theme changes (shadow DOM may not re-resolve custom properties)
@@ -101,10 +152,20 @@ class AudioVisualizerElement extends VBElement {
   teardown() {
     this.#stopAnimation()
     this.#observer?.disconnect()
+    this.#boundAudio?.removeEventListener('play', this.#onPlay)
+    this.#boundAudio = null
+    // Drop the analyser tap; the source → destination path stays intact
+    if (this.#source && this.#analyser) {
+      try { this.#source.disconnect(this.#analyser) } catch { /* not connected */ }
+    }
   }
 
   attributeChangedCallback(name) {
+    if (!this.isConnected) return
     if (name === 'for') this.#findAudio()
+    else if (name === 'data-fft-size' && this.#analyser) {
+      this.#analyser.fftSize = normalizeFftSize(this.getAttribute('data-fft-size'))
+    }
   }
 
   // ─── Shadow DOM ────────────────────────────────────────────────────────
@@ -140,35 +201,66 @@ class AudioVisualizerElement extends VBElement {
     const forId = this.getAttribute('for')
     if (!forId) return
 
-    this.#audio = /** @type {HTMLAudioElement} */ (document.getElementById(forId))
-    if (!this.#audio || this.#audio.tagName !== 'AUDIO') return
+    const audio = /** @type {HTMLAudioElement | null} */ (document.getElementById(forId))
+    if (!audio || audio.tagName !== 'AUDIO') return
+    this.#audio = audio
 
-    // Set up AudioContext lazily on first play
-    if (!this.#started) {
-      this.#audio.addEventListener('play', () => this.#initAudio(), { once: true })
+    if (this.#started) return
+
+    // Set up AudioContext lazily on play (a user gesture, so the context can
+    // start). The listener stays armed until setup succeeds, so a skipped
+    // cross-origin source can still be picked up after a src change.
+    if (this.#boundAudio !== audio) {
+      this.#boundAudio?.removeEventListener('play', this.#onPlay)
+      audio.addEventListener('play', this.#onPlay)
+      this.#boundAudio = audio
     }
+    if (!audio.paused) this.#initAudio()
   }
 
   #initAudio() {
-    if (this.#started) return
-    this.#started = true
+    if (this.#started || !this.#audio) return
+    const audio = this.#audio
 
-    this.#audioCtx = getSharedContext()
-    if (!this.#audioCtx) return
-
-    // Resume suspended context
-    if (this.#audioCtx.state === 'suspended') {
-      this.#audioCtx.resume()
+    if (!sourceRegistry.has(audio) && isOpaqueCrossOrigin(audio)) {
+      this.setAttribute('data-state', 'cross-origin')
+      if (!warnedCrossOrigin.has(audio)) {
+        warnedCrossOrigin.add(audio)
+        console.warn('<audio-visualizer>: not visualising a cross-origin <audio> without crossorigin="anonymous" and CORS headers — hooking it would mute playback.', audio)
+      }
+      return
     }
 
-    const fftSize = parseInt(this.getAttribute('data-fft-size') || '256', 10)
-    this.#analyser = this.#audioCtx.createAnalyser()
-    this.#analyser.fftSize = fftSize
-    this.#analyser.smoothingTimeConstant = 0.8
+    const ctx = getSharedContext()
+    if (!ctx) return
 
-    this.#source = getMediaSource(this.#audio, this.#audioCtx)
-    this.#source.connect(this.#analyser)
-    this.#analyser.connect(this.#audioCtx.destination)
+    let analyser
+    let source
+    try {
+      analyser = ctx.createAnalyser()
+      analyser.fftSize = normalizeFftSize(this.getAttribute('data-fft-size'))
+      analyser.smoothingTimeConstant = 0.8
+      source = getMediaSource(audio, ctx)
+      source.connect(analyser)
+    } catch (err) {
+      this.setAttribute('data-state', 'error')
+      console.warn('<audio-visualizer>: could not connect to the audio element.', err)
+      return
+    }
+
+    this.#audioCtx = ctx
+    this.#analyser = analyser
+    this.#source = source
+    this.#started = true
+    if (this.getAttribute('data-state') !== null) this.removeAttribute('data-state')
+    this.#boundAudio?.removeEventListener('play', this.#onPlay)
+    this.#boundAudio = null
+
+    // Resume a suspended context (autoplay policy); a rejection just means no
+    // gesture yet — the next play() will retry via the browser's own unlock.
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {})
+    }
 
     this.#startAnimation()
   }
@@ -176,7 +268,7 @@ class AudioVisualizerElement extends VBElement {
   // ─── Animation loop ────────────────────────────────────────────────────
 
   #startAnimation() {
-    if (this.#reducedMotion) return
+    if (this.#reducedMotion || this.#rafId) return
 
     const draw = () => {
       if (!this.#visible || this.#reducedMotion) {
@@ -286,7 +378,7 @@ class AudioVisualizerElement extends VBElement {
   // ─── Intersection observer ─────────────────────────────────────────────
 
   #setupIntersectionObserver() {
-    this.#observer = new IntersectionObserver(([entry]) => {
+    this.#observer ??= new IntersectionObserver(([entry]) => {
       this.#visible = entry.isIntersecting
       if (this.#visible && this.#started && !this.#rafId && !this.#reducedMotion) {
         this.#startAnimation()
@@ -298,15 +390,15 @@ class AudioVisualizerElement extends VBElement {
   // ─── Reduced motion ────────────────────────────────────────────────────
 
   #watchMotionPreference() {
-    window.matchMedia('(prefers-reduced-motion: reduce)')
-      .addEventListener('change', (e) => {
-        this.#reducedMotion = e.matches
-        if (e.matches) {
-          this.#stopAnimation()
-        } else if (this.#started && this.#visible) {
-          this.#startAnimation()
-        }
-      })
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    this.listen(mq, 'change', (e) => {
+      this.#reducedMotion = /** @type {MediaQueryListEvent} */ (e).matches
+      if (this.#reducedMotion) {
+        this.#stopAnimation()
+      } else if (this.#started && this.#visible && !this.#rafId) {
+        this.#startAnimation()
+      }
+    })
   }
 }
 

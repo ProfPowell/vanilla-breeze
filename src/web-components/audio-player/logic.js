@@ -42,7 +42,14 @@ import { VBElement } from '../../lib/vb-element.js';
  * </audio-player>
  */
 
+/** Real key targets that keep their native keyboard behaviour. */
+const INTERACTIVE = 'input, button, a[href], summary, select, textarea, audio, [contenteditable]:not([contenteditable="false"])'
+
 class AudioPlayerElement extends VBElement {
+
+  static get observedAttributes() {
+    return ['loop']
+  }
 
   // ─── State ─────────────────────────────────────────────────────────────────
 
@@ -69,6 +76,8 @@ class AudioPlayerElement extends VBElement {
   #trackTitleEl = /** @type {*} */ (null)
   /** @type {(() => void) | null} */
   #onThemeChange = null
+  /** True while this component (not the author) owns audio.loop */
+  #ownsLoop = false
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -89,6 +98,7 @@ class AudioPlayerElement extends VBElement {
       this.#attachTrackListEvents()
     }
     this.#updateTrackTitle()
+    this.#syncLoop()
 
     if (this.hasAttribute('autoplay')) {
       this.#audio.play().catch(() => {})
@@ -111,6 +121,27 @@ class AudioPlayerElement extends VBElement {
     // Restore native controls if component is removed
     if (this.#audio) {
       this.#audio.setAttribute('controls', '')
+    }
+  }
+
+  attributeChangedCallback(name) {
+    if (name === 'loop') this.#syncLoop()
+  }
+
+  /**
+   * `loop` on a single track (no track list) maps onto the native audio.loop;
+   * in playlist mode it is handled by #playNext wrapping to the first track.
+   * Only clears audio.loop if this component set it, so an author's own
+   * <audio loop> is left alone.
+   */
+  #syncLoop() {
+    if (!this.#audio) return
+    if (this.hasAttribute('loop') && !this.#trackList) {
+      this.#audio.loop = true
+      this.#ownsLoop = true
+    } else if (this.#ownsLoop) {
+      this.#audio.loop = false
+      this.#ownsLoop = false
     }
   }
 
@@ -595,10 +626,15 @@ class AudioPlayerElement extends VBElement {
       this.#volumeSlider.style.setProperty('--_vol', this.#audio.muted ? '0' : this.#volumeSlider.value)
     })
 
-    // Keyboard shortcuts
+    // Keyboard shortcuts. Events from shadow controls are retargeted to the
+    // host, so e.target is useless here: walk the composed path up to the host
+    // and bail if the real target sits inside an interactive control (volume
+    // or seek slider, mute/play button, playlist <summary>, track links...).
+    // Those keep their native key behaviour; shortcuts only fire when focus is
+    // on the host itself or a non-interactive part.
     this.addEventListener('keydown', (e) => {
-      const target = /** @type {Element | null} */ (e.target)
-      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return
+      if (this.#fromInteractive(e)) return
 
       switch (e.key) {
         case ' ':
@@ -630,6 +666,19 @@ class AudioPlayerElement extends VBElement {
     if (!this.hasAttribute('tabindex')) {
       this.setAttribute('tabindex', '0')
     }
+  }
+
+  /**
+   * True when a key event originated inside an interactive control that lives
+   * within this player (light or shadow DOM), up to but excluding the host.
+   * @param {Event} e
+   */
+  #fromInteractive(e) {
+    for (const node of e.composedPath()) {
+      if (node === this) return false
+      if (node instanceof Element && node.matches(INTERACTIVE)) return true
+    }
+    return false
   }
 
   // ─── Track list events ─────────────────────────────────────────────────────

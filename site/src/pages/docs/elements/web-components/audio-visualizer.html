@@ -76,7 +76,8 @@ crumbLabel: Web Components
     <tbody>
       <tr><td><code>for</code></td><td>Yes</td><td>--</td><td>ID of the target <code>&lt;audio&gt;</code> element</td></tr>
       <tr><td><code>data-mode</code></td><td>No</td><td><code>bars</code></td><td>Visualization style: <code>bars</code>, <code>waveform</code>, <code>circle</code></td></tr>
-      <tr><td><code>data-fft-size</code></td><td>No</td><td><code>256</code></td><td>AnalyserNode FFT size (power of 2, 32-32768)</td></tr>
+      <tr><td><code>data-fft-size</code></td><td>No</td><td><code>256</code></td><td>AnalyserNode FFT size (power of 2, 32-32768). Other values are rounded to the nearest power of two and clamped to that range</td></tr>
+      <tr><td><code>data-state</code></td><td>Set by component</td><td>--</td><td><code>cross-origin</code> when the source is cross-origin without CORS (see below), <code>error</code> if Web Audio could not connect. Absent while visualizing</td></tr>
     </tbody>
   </table>
 </section>
@@ -107,8 +108,19 @@ crumbLabel: Web Components
     <li><strong>Shared AudioContext</strong> — multiple visualizers on one page share a single context (browsers cap at ~6)</li>
     <li><strong>Off-screen pause</strong> — stops canvas rendering via <code>IntersectionObserver</code> when not visible</li>
     <li><strong>Reduced motion</strong> — stops canvas animation when <code>prefers-reduced-motion: reduce</code> is set; audio continues playing</li>
-    <li><strong>Graceful fallback</strong> — if <code>AudioContext</code> is unavailable, renders nothing and throws no errors</li>
+    <li><strong>One output path per audio</strong> — several visualizers can share one <code>&lt;audio&gt;</code>; the element is routed to the speakers once and each visualizer only taps it, so volume is unchanged</li>
+    <li><strong>Survives DOM moves</strong> — moving the element re-arms visibility tracking and resumes drawing</li>
+    <li><strong>Graceful fallback</strong> — if <code>AudioContext</code> is unavailable it renders nothing; if the audio cannot be hooked it sets <code>data-state</code> and logs a console warning instead of throwing, and playback is not interrupted</li>
   </ul>
+</section>
+
+<section>
+  <h2>Cross-Origin Audio (CORS)</h2>
+  <p>Web Audio can only read samples from media the page is allowed to read. Hooking a cross-origin <code>&lt;audio&gt;</code> that was loaded without CORS would make the browser output silence, so the visualizer refuses: it leaves the audio untouched (it keeps playing normally), sets <code>data-state="cross-origin"</code> and logs one console warning.</p>
+  <p>To visualize audio from another origin, add <code>crossorigin="anonymous"</code> to the <code>&lt;audio&gt;</code> and serve the file with an <code>Access-Control-Allow-Origin</code> header that permits your page. Same-origin, <code>data:</code> and <code>blob:</code> sources need nothing extra.</p>
+  <code-block language="html" show-lines label="Cross-origin source" data-escape><audio id="remote" controls crossorigin="anonymous"
+       src="https://media.example.com/track.mp3"></audio>
+<audio-visualizer for="remote"></audio-visualizer></code-block>
 </section>
 
 <section>
