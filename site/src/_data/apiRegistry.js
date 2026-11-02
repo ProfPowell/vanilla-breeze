@@ -1567,7 +1567,7 @@ export default {
         "kind": "host-api",
         "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Remove outer border and padding"
+        "description": "Remove inline padding on summaries and panels so content aligns with surrounding text"
       },
       {
         "name": "compact",

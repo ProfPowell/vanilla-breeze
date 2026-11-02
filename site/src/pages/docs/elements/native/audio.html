@@ -83,7 +83,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Layer 3: Track Listing</h2>
-    <p>HTML + CSS only. <code>&lt;details&gt;/&lt;summary&gt;</code> exposes a track list that shows and hides natively. Without JS, track links navigate to the audio file. With the playlist utility loaded, clicking a track updates the audio source and plays it.</p>
+    <p>The track list itself is HTML + CSS: <code>&lt;details&gt;/&lt;summary&gt;</code> shows and hides it natively, and on its own each track link simply navigates to the audio file. The demo below is wrapped in <code>.audio-standalone</code>, which turns on the playlist utility (JavaScript) &mdash; clicking a track there swaps the audio source and plays it in place. See <a href="#interactive-playlist-with-js">Interactive Playlist</a> for that wrapper; the code sample directly below is the bare, script-free structure.</p>
 
     <browser-window src="/docs/snippets/demos/audio-tracklist.html" url="https://vanilla-breeze.dev/audio/tracklist" title="Audio with track listing" shadow></browser-window>
     <code-block language="html" label="Audio with track listing (CSS-only structure)" data-escape><audio controls>
@@ -114,8 +114,8 @@ crumbLabel: Native Elements
   </ol>
 </details></code-block>
 
-    <h3>Interactive Playlist (with JS)</h3>
-    <p>Wrap the audio and track list in a container with class <code>.audio-standalone</code> to enable click-to-play behavior via the playlist utility.</p>
+    <h3 id="interactive-playlist-with-js">Interactive Playlist (with JS)</h3>
+    <p>Wrap the audio and track list in a container with class <code>.audio-standalone</code> to enable click-to-play behavior via the playlist utility (<code>src/utils/audio-playlist-init.js</code>). If the script does not run, the links fall back to navigating to each file.</p>
     <code-block language="html" label="Standalone interactive playlist" data-escape><section class="audio-standalone">
   <audio controls>
     <source src="tracks/01-opening.mp3" type="audio/mpeg">
@@ -153,11 +153,29 @@ crumbLabel: Native Elements
     <h2>Text Tracks</h2>
 
     <h3>Captions</h3>
-    <code-block language="html" label="Audio with captions track" data-escape><audio controls>
+    <p><code>&lt;audio&gt;</code> accepts <code>&lt;track&gt;</code> children, but browsers <strong>do not render text tracks for audio</strong> &mdash; there is no video surface to draw cues on, so a <code>kind=&quot;captions&quot;</code> track is parsed and then never shown. The cues are still available through the <code>textTracks</code> API, so displaying them requires a custom renderer that listens for <code>cuechange</code> and writes the active cue into the page.</p>
+    <p>For most content, prefer one of these instead:</p>
+    <ul>
+      <li>A full <a href="#transcripts">text transcript</a> next to the player (the most robust option, and what WCAG asks for prerecorded audio)</li>
+      <li>A <a href="/docs/elements/native/video/"><code>&lt;video&gt;</code></a> element, which does render caption tracks natively, if synchronised on-screen captions are required</li>
+    </ul>
+    <code-block language="html" label="Captions track on audio (needs a custom renderer)" data-escape><audio controls>
   <source src="podcast.mp3" type="audio/mpeg">
+  <!-- Parsed but not displayed by the browser -->
   <track kind="captions" src="captions.vtt" srclang="en" label="English" default>
   <p><a href="podcast.mp3" download>Download podcast</a></p>
-</audio></code-block>
+</audio>
+<p aria-live="polite" class="caption-output"></p>
+
+<script>
+  const audio = document.querySelector('audio');
+  const out = document.querySelector('.caption-output');
+  const track = audio.textTracks[0];
+  track.mode = 'hidden'; // load cues without the UA trying to render them
+  track.addEventListener('cuechange', () => {
+    out.textContent = track.activeCues[0]?.text ?? '';
+  });
+</script></code-block>
 
     <h3>Chapters</h3>
     <code-block language="html" label="Audio with chapter markers" data-escape><audio controls>
@@ -231,7 +249,7 @@ crumbLabel: Native Elements
   <section>
     <h2>Accessibility</h2>
 
-    <h3>Transcripts</h3>
+    <h3 id="transcripts">Transcripts</h3>
     <p>Provide text transcripts for audio content so deaf users and those who cannot play audio can access the information.</p>
     <code-block language="html" label="Audio with transcript link for accessibility" data-escape><figure>
   <audio controls>

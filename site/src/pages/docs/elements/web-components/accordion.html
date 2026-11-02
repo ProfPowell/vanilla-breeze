@@ -16,7 +16,7 @@ crumbLabel: Web Components
 
     <browser-window
       src="/docs/examples/demos/accordion-basic.html"
-      url="https://vanilla-breeze.dev/accordion"
+      url="https://vanilla-breeze.com/docs/examples/demos/accordion-basic.html"
       title="Accordion FAQ"
       shadow>
     </browser-window>
@@ -50,7 +50,7 @@ crumbLabel: Web Components
     <h2>Single-Open Mode</h2>
     <p>Add <code>single</code> to allow only one panel to be open at a time. When a panel opens, any other open panel will close automatically.</p>
 
-    <div class="example">
+    <figure class="example">
       <accordion-wc single>
         <details name="single-demo" open>
           <summary>First Panel (open by default)</summary>
@@ -71,7 +71,7 @@ crumbLabel: Web Components
           </div>
         </details>
       </accordion-wc>
-    </div>
+    </figure>
 
     <code-block language="html" show-lines label="Single-open mode accordion" data-escape><accordion-wc single>
   <details name="faq" open>
@@ -93,7 +93,7 @@ crumbLabel: Web Components
     <h2>Bordered Variant</h2>
     <p>Add <code>bordered</code> to wrap the accordion in a border with dividers between items.</p>
 
-    <div class="example">
+    <figure class="example">
       <accordion-wc bordered>
         <details>
           <summary>Bordered Style</summary>
@@ -114,7 +114,7 @@ crumbLabel: Web Components
           </div>
         </details>
       </accordion-wc>
-    </div>
+    </figure>
 
     <code-block language="html" show-lines label="Bordered accordion variant" data-escape><accordion-wc bordered>
   <details>
@@ -129,7 +129,7 @@ crumbLabel: Web Components
     <h2>Compact Variant</h2>
     <p>Add <code>compact</code> for tighter spacing, useful in sidebars or when displaying many items.</p>
 
-    <div class="example">
+    <figure class="example">
       <accordion-wc compact>
         <details>
           <summary>Compact Item 1</summary>
@@ -144,7 +144,7 @@ crumbLabel: Web Components
           <div><p>Great for navigation menus.</p></div>
         </details>
       </accordion-wc>
-    </div>
+    </figure>
 
     <code-block language="html" show-lines label="Compact accordion variant" data-escape><accordion-wc compact>
   <details>
@@ -156,10 +156,23 @@ crumbLabel: Web Components
   </section>
 
   <section>
+    <h2>Flush Variant</h2>
+    <p>Add <code>flush</code> to remove the inline (left/right) padding from each summary and panel so the text lines up with surrounding content. Block padding is kept, and it does not remove any border &mdash; combined with <code>bordered</code>, the container border and dividers still render.</p>
+
+    <code-block language="html" show-lines label="Flush accordion variant" data-escape><accordion-wc flush>
+  <details>
+    <summary>Aligned with body text</summary>
+    <p>No inline padding on the summary or panel.</p>
+  </details>
+  ...
+</accordion-wc></code-block>
+  </section>
+
+  <section>
     <h2>Combined Variants</h2>
     <p>Variants can be combined for different visual styles.</p>
 
-    <div class="example">
+    <figure class="example">
       <layout-stack data-layout-gap="xl">
         <layout-stack data-layout-gap="s">
           <strong>Bordered + Single</strong>
@@ -203,14 +216,14 @@ crumbLabel: Web Components
           </accordion-wc>
         </layout-stack>
       </layout-stack>
-    </div>
+    </figure>
   </section>
 
   <section>
     <h2>Indicator Styles</h2>
-    <p>Use <code>indicator</code> to change the open/close indicator. Four styles are available: <code>chevron</code> (default), <code>plus-minus</code>, <code>custom</code>, and <code>none</code>.</p>
+    <p>Omit <code>indicator</code> to get the default chevron (pointing right when closed, rotating down when open). Set <code>indicator</code> to one of <code>plus-minus</code>, <code>custom</code>, or <code>none</code> to change it. There is no <code>chevron</code> value &mdash; the chevron is simply what you get without the attribute.</p>
 
-    <div class="example">
+    <figure class="example">
       <layout-stack data-layout-gap="xl">
         <layout-stack data-layout-gap="s">
           <strong>Chevron (default)</strong>
@@ -254,7 +267,7 @@ crumbLabel: Web Components
           </accordion-wc>
         </layout-stack>
       </layout-stack>
-    </div>
+    </figure>
 
     <code-block language="html" show-lines label="Indicator style variants" data-escape><!-- Default chevron (right/down) -->
 <accordion-wc>...</accordion-wc>
@@ -262,22 +275,26 @@ crumbLabel: Web Components
 <!-- Plus-minus indicator -->
 <accordion-wc indicator="plus-minus">...</accordion-wc>
 
-<!-- Custom indicators with arrows -->
-<accordion-wc
-  indicator="custom"
-  style="--indicator-closed: '\\2192'; --indicator-open: '\\2193';">
-  ...
-</accordion-wc>
-
-<!-- Custom indicators with emoji -->
-<accordion-wc
-  indicator="custom"
-  style="--indicator-closed: '\u{1F534}'; --indicator-open: '\u{1F7E2}';">
-  ...
-</accordion-wc>
+<!-- Custom indicators (glyphs set in CSS, see below) -->
+<accordion-wc indicator="custom" class="arrows">...</accordion-wc>
+<accordion-wc indicator="custom" class="dots">...</accordion-wc>
 
 <!-- No indicator -->
 <accordion-wc indicator="none">...</accordion-wc></code-block>
+
+    <p>With <code>indicator="custom"</code>, the glyphs come from the <code>--indicator-closed</code> and <code>--indicator-open</code> custom properties (defaulting to &#x25B8; and &#x25BE;). Their values are CSS strings, so use CSS escapes such as <code>'\2192'</code>, not JavaScript-style <code>\u{...}</code> escapes.</p>
+
+    <code-block language="css" show-lines label="Custom indicator glyphs" data-escape>/* Arrows: → closed, ↓ open */
+accordion-wc.arrows {
+  --indicator-closed: '\2192';
+  --indicator-open: '\2193';
+}
+
+/* Emoji: red circle closed, green circle open */
+accordion-wc.dots {
+  --indicator-closed: '\1F534';
+  --indicator-open: '\1F7E2';
+}</code-block>
   </section>
 
   <section>
@@ -318,7 +335,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Events</h2>
-    <p>The component dispatches events when panels are toggled.</p>
+    <p>The component dispatches bubbling events when panels are toggled and when the panel set is replaced through the <code>panels</code> property.</p>
 
     <table class="props-table">
       <thead>
@@ -332,7 +349,12 @@ crumbLabel: Web Components
         <tr>
           <td><code>accordion-wc:toggle</code></td>
           <td><code>{ index: number, open: boolean }</code></td>
-          <td>Fired when a panel is opened or closed.</td>
+          <td>Fired when a panel is opened or closed. <code>index</code> is the panel's 0-based position.</td>
+        </tr>
+        <tr>
+          <td><code>accordion-wc:panels-changed</code></td>
+          <td><code>{ panels: Array, source: 'property' }</code></td>
+          <td>Fired after <code>panels</code> is assigned and the accordion has been rebuilt. <code>panels</code> is the array that was assigned.</td>
         </tr>
       </tbody>
     </table>
@@ -347,7 +369,7 @@ accordion.addEventListener('accordion-wc:toggle', (event) => {
 
   <section>
     <h2>JavaScript API</h2>
-    <p>The component exposes methods for programmatic control.</p>
+    <p>The component exposes methods for programmatic control. Out-of-range indexes are ignored. When <code>transition</code> is set, <code>open()</code>, <code>close()</code> and <code>toggle()</code> run inside a View Transition; <code>openAll()</code> and <code>closeAll()</code> do not.</p>
 
     <table class="props-table">
       <thead>
@@ -376,7 +398,7 @@ accordion.addEventListener('accordion-wc:toggle', (event) => {
         <tr>
           <td><code>openAll()</code></td>
           <td>-</td>
-          <td>Open all panels (only works when not in single mode).</td>
+          <td>Open all panels. Does nothing when <code>single</code> is set.</td>
         </tr>
         <tr>
           <td><code>closeAll()</code></td>
@@ -402,6 +424,51 @@ accordion.openAll();
 
 // Close all panels
 accordion.closeAll();</code-block>
+
+    <h3>Data API: <code>panels</code></h3>
+    <p>The <code>panels</code> property reads and writes the panel set as plain data, so the same accordion can be authored in HTML or driven from JavaScript.</p>
+
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>panels</code> (get)</td>
+          <td><code>Array&lt;{ id?, summary, content, open }&gt;</code></td>
+          <td>One record per <code>&lt;details&gt;</code>: its <code>id</code> (if any), the trimmed summary text, the panel's <code>innerHTML</code> as <code>content</code>, and whether it is <code>open</code>.</td>
+        </tr>
+        <tr>
+          <td><code>panels</code> (set)</td>
+          <td><code>Array&lt;{ id?, summary, content, open? }&gt;</code></td>
+          <td>Removes all children and rebuilds one <code>&lt;details&gt;</code> per record. <code>summary</code> is set as text; <code>content</code> is inserted as HTML into a panel wrapper. <code>id</code> becomes the <code>&lt;details&gt;</code> id and <code>open: true</code> opens it. With <code>single</code>, the rebuilt panels share a generated <code>name</code>. Open/closed state is not preserved across assignments. Dispatches <code>accordion-wc:panels-changed</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <aside class="note">
+      <strong>Note:</strong> <code>content</code> is assigned with <code>innerHTML</code>. Only pass trusted or sanitised HTML.
+    </aside>
+
+    <code-block language="javascript" show-lines label="Reading and replacing panels" data-escape>const accordion = document.querySelector('accordion-wc');
+
+// Read the authored panels
+console.log(accordion.panels);
+// [{ id: undefined, summary: 'What is Vanilla Breeze?', content: '<p>…</p>', open: false }, …]
+
+accordion.addEventListener('accordion-wc:panels-changed', (event) => {
+  console.log(`Rebuilt with ${event.detail.panels.length} panels`);
+});
+
+// Replace the panel set
+accordion.panels = [
+  { id: 'shipping', summary: 'Shipping', content: '<p>Ships in 2–3 days.</p>', open: true },
+  { id: 'returns', summary: 'Returns', content: '<p>30-day returns.</p>' },
+];</code-block>
   </section>
 
   <section>
@@ -413,8 +480,9 @@ accordion.closeAll();</code-block>
       <li><code>aria-expanded</code> on each summary indicates open/closed state</li>
       <li><code>aria-controls</code> links summaries to their panels</li>
       <li><code>aria-labelledby</code> links panels back to their summaries</li>
-      <li><code>role="region"</code> on panels for landmark navigation</li>
+      <li><code>role="region"</code> on each panel, named by its summary via <code>aria-labelledby</code></li>
     </ul>
+    <p>Because each region has an accessible name, screen readers may expose open panels as region landmarks. The <a href="https://www.w3.org/WAI/ARIA/apg/patterns/accordion/">WAI-ARIA Authoring Practices</a> caution against the region role when many panels can be open at once, since it adds landmark clutter. The component applies it to every panel unconditionally, so prefer <code>single</code> or a small number of panels where that matters.</p>
 
     <h3>Screen Reader Announcements</h3>
     <p>Screen readers will announce the expanded/collapsed state when panels are toggled. The keyboard navigation allows users to move between headers without expanding panels.</p>
@@ -438,7 +506,7 @@ accordion.closeAll();</code-block>
       </tbody>
     </table>
 
-    <div class="example">
+    <figure class="example">
       <accordion-wc transition="fade" bordered>
         <details>
           <summary>What makes this different?</summary>
@@ -453,7 +521,16 @@ accordion.closeAll();</code-block>
           <div><p>Animations are disabled when <code>prefers-reduced-motion</code> is active or <code>data-motion-reduced</code> is set on the root element.</p></div>
         </details>
       </accordion-wc>
-    </div>
+    </figure>
+
+    <p>The standalone demo shows all three transition types side by side.</p>
+
+    <browser-window
+      src="/docs/examples/demos/accordion-transitions.html"
+      url="https://vanilla-breeze.com/docs/examples/demos/accordion-transitions.html"
+      title="Accordion View Transitions"
+      shadow>
+    </browser-window>
 
     <aside class="note">
       <strong>Progressive enhancement:</strong> View Transitions work in Chrome 111+, Safari 18+ and Firefox 144+ (<a href="/docs/attributes/view-transitions/#browser-support">support table</a>). In unsupported browsers, panels open and close with the existing CSS height animation only.
@@ -464,7 +541,7 @@ accordion.closeAll();</code-block>
     <h2>FAQ Example</h2>
     <p>A common use case for accordions is FAQ sections.</p>
 
-    <div class="example">
+    <figure class="example">
       <accordion-wc bordered single>
         <details name="faq-example">
           <summary>How do I get started?</summary>
@@ -491,7 +568,7 @@ accordion.closeAll();</code-block>
           </div>
         </details>
       </accordion-wc>
-    </div>
+    </figure>
   </section>
 
   <section>

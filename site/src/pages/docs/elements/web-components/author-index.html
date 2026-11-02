@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>Reads <code>pages.json</code> via <code>data-lens-src</code> and groups by author. Provides search and per-author counts. If the source request fails, falls back to whatever light-DOM markup the author wrote inside the host.</p>
+  <p>Reads <code>pages.json</code> via <code>data-lens-src</code> and groups by author. Provides search and per-author counts. If the source request fails, any light-DOM markup the author wrote inside the host is left in place (without the search filter); if the host was empty, an error message is shown instead.</p>
 
   <browser-window
     src="/docs/examples/demos/author-index.html"
@@ -40,7 +40,7 @@ crumbLabel: Web Components
 <section>
   <h2>Source contract</h2>
   <p>The component expects either a JSON array of records or an object with a <code>pages</code> array, where each record carries at minimum:</p>
-  <code-block language="json"><![CDATA[{
+  <code-block language="json" label="pages.json record" data-escape>{
   "url": "/docs/concepts/document-provenance/",
   "title": "Document Provenance",
   "author": "Thomas A. Powell",
@@ -48,6 +48,21 @@ crumbLabel: Web Components
   "modified": "2026-04-24",
   "provenance": "ai-assisted",
   "signed": true
-}]]></code-block>
+}</code-block>
   <p>VB's Cook SSG plugin <code>generate-pages-json</code> emits this shape automatically.</p>
+</section>
+
+<section>
+  <h2>Fallback markup and accessibility</h2>
+  <p>Without <code>data-lens-src</code> or <code>src</code>, nothing is fetched. The component keeps the light-DOM markup you author and prepends a search input that filters it. Each group to be filtered must carry <code>data-author-group</code>; a group is hidden when its text does not contain the query. Native <code>&lt;details&gt;</code> elements keep the groups usable and keyboard-accessible without JavaScript.</p>
+  <code-block language="html" label="Authored fallback (no src)" data-escape><author-index placeholder="Filter authors">
+  <details data-author-group id="author-thomas-a-powell">
+    <summary>Thomas A. Powell (2)</summary>
+    <ul>
+      <li><a href="/docs/concepts/document-provenance/">Document Provenance</a></li>
+      <li><a href="/docs/concepts/data-api/">Data API</a></li>
+    </ul>
+  </details>
+</author-index></code-block>
+  <p>The search input is labelled with <code>aria-label</code> set to the <code>placeholder</code> text. When rendering from a source, each author's page count is given an <code>aria-label</code> such as &ldquo;3 pages&rdquo;.</p>
 </section>

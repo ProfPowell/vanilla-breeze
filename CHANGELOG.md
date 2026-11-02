@@ -29,6 +29,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Legacy link and abbr classes removed.** `a.muted`, `a.plain` and
+  `a.external` are gone (use `data-variant="muted"` / `"plain"` and
+  `rel="external"`), and `abbr.plain` is now `abbr[data-variant="plain"]`,
+  matching the link API.
+
 - **`vanilla-breeze-autoload.js` ships in the npm package.** The
   autoloader was documented as a loading strategy but excluded from the
   package. It finds its `components/` chunks next to its own script, so it
@@ -47,6 +52,25 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   nav page.
 
 ### Fixed
+
+- **Link auto-icons.** A `download` link to a PDF shows the download
+  arrow instead of the PDF badge; links in `nav`, `header` and `footer` and
+  button-styled links suppress every auto-icon (some slipped through
+  before); an authored `<icon-wc>` replaces the auto glyph instead of
+  doubling it; the glyphs carry empty alternative text, so screen readers
+  read only the link text. `<abbr>` gets the dotted underline and help
+  cursor only when it has a `title`.
+- **A-element doc pages corrected** after a quality review: `article`
+  highlights (the toolbar is `<selection-menu>`; no `initHighlights`
+  export; real colour defaults and events), `article.compact` no longer
+  collapses its text column, `data-drop-cap` no longer applies twice,
+  `address.inline` sample is valid HTML and `.compact` separators are
+  CSS-generated and silent, `aside.float` un-floats below 40rem, wrong
+  landmark/screen-reader claims fixed on `article`, `aside` and `address`,
+  `area` (`shape` is optional; coordinates; document order), `audio`
+  captions, the accordion custom-indicator escapes and `flush` wording,
+  the author-index JSON sample, and stray parsed placeholders on the AI
+  component pages.
 
 - **Theme text contrast on real pages.** A new themed site-pages suite
   (5 doc pages × 10 aggressive themes × light/dark, with an AA check on

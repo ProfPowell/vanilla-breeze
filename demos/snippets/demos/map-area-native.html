@@ -2,30 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Native Image Map</title>
+  <link rel="stylesheet" href="/src/main.css" />
   <style>
-    * { margin: 0; box-sizing: border-box; }
-    body {
-      font-family: system-ui, sans-serif;
-      background: #f5f6f8;
-      color: #1a1a2e;
-    }
-    figure { line-height: 0; }
+    body { padding: var(--size-l); background: var(--color-surface); }
+    /* Native <area> coords are CSS pixels on the rendered image and never
+       scale, so keep the image at its 800x500 size and scroll instead of
+       letting the reset's max-inline-size: 100% shrink it. */
+    figure { overflow-x: auto; }
+    img[usemap] { inline-size: 800px; block-size: 500px; max-inline-size: none; }
     figcaption {
-      line-height: 1.5;
-      padding: 0.75rem 1rem;
-      font-size: 0.85rem;
-      color: #555;
-      background: #eef0f3;
+      padding: var(--size-xs) var(--size-s);
+      font-size: var(--font-size-s);
+      color: var(--color-text-muted);
     }
-    #status {
-      padding: 0.5rem 1rem;
-      font-size: 0.85rem;
-      background: #1a1a2e;
-      color: #ddd;
-      min-height: 2rem;
+    output {
+      display: block;
+      min-block-size: var(--size-xl);
+      padding: var(--size-xs) var(--size-s);
+      font-size: var(--font-size-s);
+      background: var(--color-surface-raised);
+      border-radius: var(--radius-s);
     }
-    #status strong { color: #7eb8f7; }
   </style>
 </head>
 <body>
@@ -40,16 +39,16 @@
     </map>
     <figcaption>Hover over a room to see its <code>title</code> tooltip. Click to navigate.</figcaption>
   </figure>
-  <div id="status">Click a room&hellip;</div>
+  <output aria-live="polite">Click a room&hellip;</output>
   <script>
-    const status = document.getElementById('status');
-    const areas = document.querySelectorAll('area');
-    areas.forEach(a => {
-      a.addEventListener('click', (e) => {
+    const status = document.querySelector('output');
+    document.querySelectorAll('area').forEach((area) => {
+      area.addEventListener('click', (e) => {
         e.preventDefault();
-        status.innerHTML = 'Clicked: <strong>' + a.alt + '</strong> &mdash; ' + a.title;
+        status.replaceChildren('Clicked: ', Object.assign(document.createElement('strong'), { textContent: area.alt }), ' — ' + area.title);
       });
     });
   </script>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>

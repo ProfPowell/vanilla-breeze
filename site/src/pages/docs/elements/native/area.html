@@ -21,15 +21,9 @@ crumbLabel: Native Elements
 <section>
   <h2>Live Demo</h2>
 
-  <p>Hover over a room to see its <code>title</code> tooltip. Click to see the area name. The image renders at its native 800&times;500 pixels so the pixel-based coordinates align correctly.</p>
+  <p>Hover over a room to see its <code>title</code> tooltip. Click to see the area name. The image is kept at its 800&times;500 pixel size (the demo scrolls sideways if the window is narrower) so the pixel-based coordinates line up with the drawing.</p>
 
-  <iframe
-    src="/docs/snippets/demos/map-area-native.html"
-    width="800" height="540"
-    style="border: 1px solid var(--color-border, #ddd); border-radius: var(--radius-m, 8px); max-inline-size: 100%;"
-    loading="lazy"
-    title="Native area shapes demo">
-  </iframe>
+  <browser-window src="/docs/snippets/demos/map-area-native.html" url="map-area-native.html" title="Native area shapes demo" shadow></browser-window>
 
   <code-block language="html" show-lines label="Complete image map with all shape types" data-escape><img src="floor-plan.jpg" alt="Office floor plan"
   usemap="#office" width="800" height="500" />
@@ -54,7 +48,10 @@ crumbLabel: Native Elements
 
 <section>
   <h2>Shape Types</h2>
-  <p>The <code>shape</code> attribute determines how <code>coords</code> are interpreted. All coordinate values are in <strong>absolute pixels</strong> relative to the image&rsquo;s natural dimensions.</p>
+  <p>The <code>shape</code> attribute determines how <code>coords</code> are interpreted. All coordinate values are <strong>CSS pixels measured from the top-left corner of the rendered image</strong>. They do not scale: if the image is drawn at a different size from the one the coordinates were written for, the regions stay put and stop matching the picture.</p>
+
+  <h3>Overlapping areas</h3>
+  <p>Areas are hit-tested in document order. Where two areas overlap, the first one in the <code>&lt;map&gt;</code> wins. Put smaller, more specific regions before larger ones, and always put <code>shape=&quot;default&quot;</code> last &mdash; placed first, it would capture every click.</p>
 
   <h3>Rectangle</h3>
   <p>Defined by the top-left and bottom-right corners: <code>left, top, right, bottom</code>.</p>
@@ -79,7 +76,7 @@ crumbLabel: Native Elements
 <!-- coords: x1,y1, x2,y2, x3,y3, ... (pixels) --></code-block>
 
   <h3>Default</h3>
-  <p>Covers the entire image surface not claimed by other areas. Useful as a catch-all link.</p>
+  <p>Covers the whole image. Because earlier areas win, it only receives clicks that no other area claims &mdash; so it must be the last <code>&lt;area&gt;</code> in the map. Useful as a catch-all link.</p>
   <code-block language="html" show-lines label="Default area" data-escape><area shape="default"
   href="/rooms/overview" alt="View building overview" />
 
@@ -108,8 +105,8 @@ crumbLabel: Native Elements
       <tr>
         <td><code>shape</code></td>
         <td>string</td>
-        <td>Yes</td>
-        <td><code>rect</code>, <code>circle</code>, <code>poly</code>, or <code>default</code></td>
+        <td>No</td>
+        <td><code>rect</code>, <code>circle</code>, <code>poly</code>, or <code>default</code>. Defaults to <code>rect</code> when omitted.</td>
       </tr>
       <tr>
         <td><code>coords</code></td>
@@ -130,22 +127,34 @@ crumbLabel: Native Elements
         <td>Accessible text label. Required when <code>href</code> is present.</td>
       </tr>
       <tr>
-        <td><code>target</code></td>
+        <td><a href="/docs/attributes/target/"><code>target</code></a></td>
         <td>string</td>
         <td>No</td>
         <td>Link target: <code>_self</code>, <code>_blank</code>, <code>_parent</code>, <code>_top</code></td>
       </tr>
       <tr>
-        <td><code>download</code></td>
+        <td><a href="/docs/attributes/download/"><code>download</code></a></td>
         <td>string</td>
         <td>No</td>
-        <td>Triggers a download instead of navigation. Value sets the filename.</td>
+        <td>Triggers a download instead of navigation. Value suggests the filename. Only honoured for same-origin URLs (and <code>blob:</code>/<code>data:</code>); cross-origin links navigate normally.</td>
       </tr>
       <tr>
-        <td><code>rel</code></td>
+        <td><a href="/docs/attributes/rel/"><code>rel</code></a></td>
         <td>string</td>
         <td>No</td>
         <td>Link relationship (<code>noopener</code>, <code>noreferrer</code>, etc.)</td>
+      </tr>
+      <tr>
+        <td><a href="/docs/attributes/ping/"><code>ping</code></a></td>
+        <td>string</td>
+        <td>No</td>
+        <td>Space-separated URLs that receive a POST notification when the area is followed.</td>
+      </tr>
+      <tr>
+        <td><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a></td>
+        <td>string</td>
+        <td>No</td>
+        <td>How much referrer information to send when following the area (<code>no-referrer</code>, <code>origin</code>, <code>strict-origin-when-cross-origin</code>, etc.)</td>
       </tr>
       <tr>
         <td><code>title</code></td>
@@ -159,8 +168,8 @@ crumbLabel: Native Elements
 
 <section>
   <h2>The Responsive Problem</h2>
-  <p>The <code>&lt;area&gt;</code> coordinate system uses <strong>absolute pixel values</strong> matching the image&rsquo;s natural dimensions. When the image scales responsively (as it does in every modern layout), the clickable regions no longer align with the visual regions.</p>
-  <p>For example, an area defined at <code>coords=&quot;40,40,320,220&quot;</code> targets pixels 40&ndash;320 horizontally. If the image renders at half width (400px instead of 800px), those coordinates still reference the 800px space, and clicks land in the wrong place.</p>
+  <p>The <code>&lt;area&gt;</code> coordinate system uses <strong>fixed CSS pixel values</strong> measured from the top-left of the rendered image. When the image scales responsively (as it does in every modern layout), the clickable regions no longer align with the visual regions.</p>
+  <p>For example, an area defined at <code>coords=&quot;40,40,320,220&quot;</code> targets pixels 40&ndash;320 horizontally. If the image renders at half width (400px instead of 800px), the area still covers pixels 40&ndash;320 of the rendered image &mdash; now most of its width &mdash; so clicks land on the wrong room.</p>
 
   <aside class="note">
     <strong>Use <code>&lt;image-map&gt;</code> instead.</strong> The <a href="/docs/elements/web-components/image-map/"><code>&lt;image-map&gt;</code></a> component solves this with percentage-based coordinates that scale with the image. It also adds rich HTML tooltips, keyboard arrow-key navigation, and a visible SVG overlay for hover feedback.
@@ -190,7 +199,7 @@ crumbLabel: Native Elements
     <li>Every <code>&lt;area&gt;</code> with an <code>href</code> <strong>must</strong> have an <code>alt</code> attribute</li>
     <li>Screen readers announce <code>alt</code> text as the link label</li>
     <li>Users navigate between areas with <kbd>Tab</kbd></li>
-    <li>No visible focus indicator exists on native areas &mdash; keyboard users cannot see which region has focus</li>
+    <li>Browsers draw their default focus ring around the area&rsquo;s shape, but it is the UA outline &mdash; theme-unaware and easy to miss against a busy image. VB does not restyle it.</li>
     <li>The <code>title</code> attribute provides hover tooltips but is not reliably announced by screen readers &mdash; do not use it as the sole accessible name</li>
   </ul>
 </section>

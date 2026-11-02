@@ -40,7 +40,7 @@ crumbLabel: Native Elements
 </article></code-block>
 
     <h3>.blog</h3>
-    <p>Optimized for long-form reading with constrained width (65ch).</p>
+    <p>Optimized for long-form reading. The article is centred and capped at <code>--prose-measure</code> (default <code>65ch</code>), the header gets extra space below it, and the footer is separated by a top border. It also gets the prose typography described under <a href="#prose-typography">Prose typography</a>.</p>
     <browser-window src="/docs/snippets/demos/article-blog.html" url="https://vanilla-breeze.dev/article/blog" title="Blog article" shadow></browser-window>
     <code-block language="html" label="Blog article" data-escape><article class="blog">
   <header>
@@ -79,7 +79,7 @@ crumbLabel: Native Elements
 </article></code-block>
 
     <h3>.compact</h3>
-    <p>Compact list-item style for article listings.</p>
+    <p>Compact list-item style for article listings: a horizontal flex row with a bottom border (dropped on the last article). A leading image, picture, SVG or video keeps its size and gets a small radius; the other child (typically a <code>&lt;section&gt;</code> or <code>&lt;header&gt;</code>) fills the remaining width.</p>
     <browser-window src="/docs/snippets/demos/article-compact.html" url="https://vanilla-breeze.dev/article/compact" title="Compact article" shadow></browser-window>
     <code-block language="html" label="Compact article" data-escape><article class="compact">
   <img src="thumb.jpg" alt="Thumbnail" />
@@ -123,8 +123,48 @@ crumbLabel: Native Elements
   </figure>
 </article></code-block>
 
+    <h4>Labels, listings and subfigures</h4>
+    <p>The caption labels come from custom properties set on <code>article[data-numbered]</code>, so a locale or theme can translate them:</p>
+    <ul>
+      <li><code>--label-figure</code> (default <code>"Figure"</code>): prefixes <code>figure &gt; figcaption</code></li>
+      <li><code>--label-table</code> (default <code>"Table"</code>): prefixes <code>table caption</code></li>
+      <li><code>--label-listing</code> (default <code>"Listing"</code>): prefixes the caption of <code>figure.code</code>, which is counted separately as "Listing N"</li>
+    </ul>
+    <p>A <code>&lt;figure&gt;</code> nested directly in another figure is a subfigure: subfigures sit inline side by side and their captions are lettered (a), (b), and so on.</p>
+    <code-block language="html" label="Listings, subfigures and translated labels" data-escape><article data-numbered lang="de">
+  <figure class="code">
+    <pre><code>display: grid;</code></pre>
+    <figcaption>A minimal grid.</figcaption>
+  </figure>
+  <figure>
+    <figure>
+      <img src="before.jpg" alt="Before" />
+      <figcaption>Before</figcaption>
+    </figure>
+    <figure>
+      <img src="after.jpg" alt="After" />
+      <figcaption>After</figcaption>
+    </figure>
+    <figcaption>Before and after.</figcaption>
+  </figure>
+</article></code-block>
+    <code-block language="css" label="Translating the labels">article[data-numbered]:lang(de) {
+  --label-figure: "Abbildung";
+  --label-table: "Tabelle";
+  --label-listing: "Listing";
+}</code-block>
+
+    <h3>data-section-numbers</h3>
+    <p>Section-sign numbering for legal and policy documents, separate from the outline numbering of <code>data-numbered</code>. Each <code>h2</code> is prefixed <code>§ 1</code>, <code>§ 2</code>, and each <code>h3</code> beneath it <code>§ 1a</code>, <code>§ 1b</code>, in the interactive colour. Set <code>--sep-section</code> to replace the <code>§</code> sign.</p>
+    <code-block language="html" label="Section-sign numbering" data-escape><article data-section-numbers>
+  <h2>Definitions</h2>
+  <h3>Service</h3>
+  <h3>User</h3>
+  <h2>Acceptable use</h2>
+</article></code-block>
+
     <h3>data-drop-cap</h3>
-    <p>Adds a large decorative initial letter to the opening paragraph, a convention borrowed from illuminated manuscripts and editorial print design.</p>
+    <p>Adds a large decorative initial letter to the opening paragraph, a convention borrowed from illuminated manuscripts and editorial print design. The drop cap goes on the article's first direct <code>&lt;p&gt;</code>; if the article has no direct paragraph, it goes on the first paragraph of the first direct <code>&lt;section&gt;</code>. Uses <code>initial-letter: 3</code> where supported, with a floated fallback. <code>data-drop-cap</code> also works on a single <code>&lt;p&gt;</code>.</p>
     <browser-window src="/docs/snippets/demos/article-drop-cap.html" url="https://vanilla-breeze.dev/article/drop-cap" title="Drop cap article" shadow></browser-window>
     <code-block language="html" label="Drop cap article" data-escape><article data-drop-cap>
   <p>When the first rays of morning light crept through
@@ -133,7 +173,7 @@ crumbLabel: Native Elements
 </article></code-block>
 
     <h3>data-prose</h3>
-    <p>Automatically floats images that appear inside paragraphs to the inline-end, sized to half the content width. Ideal for markdown or CMS-generated content where images are placed directly within paragraph text.</p>
+    <p>Floats images that sit inside a paragraph alongside text to the inline-end, capped at half the content width. An image that is the only child of its paragraph is left in the flow. Ideal for markdown or CMS-generated content where images are placed directly within paragraph text. <code>data-prose</code> also applies the prose typography below, without the width cap of <code>.blog</code>.</p>
     <browser-window src="/docs/snippets/demos/article-prose.html" url="https://vanilla-breeze.dev/article/prose" title="Prose mode article" shadow></browser-window>
     <code-block language="html" label="Prose mode article" data-escape><article data-prose>
   <p>
@@ -144,28 +184,49 @@ crumbLabel: Native Elements
   </p>
 </article></code-block>
 
+    <h3 id="prose-typography">Prose typography (.blog and data-prose)</h3>
+    <p>Both <code>.blog</code> and <code>data-prose</code> apply the same reading typography:</p>
+    <ul>
+      <li>Line height of <code>--prose-line-height</code> (default <code>1.6</code>)</li>
+      <li>Old-style, proportional numerals (<code>font-variant-numeric: oldstyle-nums proportional-nums</code>)</li>
+      <li>Body text stepped up to <code>--font-size-l</code> at viewports of <code>64rem</code> and wider</li>
+      <li>Automatic hyphenation with conservative limits. This needs a <code>lang</code> attribute on <code>&lt;html&gt;</code></li>
+    </ul>
+
     <h3>data-highlights</h3>
-    <p>Enables Medium-style text highlighting and private notes. Select text to see a floating toolbar with color swatches. Click an existing highlight to change color, add a note, or remove it. Highlights persist in localStorage.</p>
+    <p>Enables Medium-style text highlighting and private notes. <code>data-highlights</code> turns on the engine, which stores, restores and paints highlights. It renders no UI of its own: the selection toolbar comes from a <a href="/docs/elements/web-components/selection-menu/"><code>&lt;selection-menu&gt;</code></a> pointed at the article, holding a <a href="/docs/elements/web-components/highlight-wc/"><code>&lt;highlight-wc&gt;</code></a> (colour palette) and a <a href="/docs/elements/web-components/note-wc/"><code>&lt;note-wc&gt;</code></a> (notes). Select text, pick a colour, and the highlight is saved to localStorage. Highlights with notes get a margin annotation; click it to open or edit the note.</p>
     <browser-window src="/docs/snippets/demos/article-highlights.html" url="https://vanilla-breeze.dev/article/highlights" title="Article with highlights" shadow></browser-window>
-    <code-block language="html" label="Article with highlights" data-escape><article data-highlights>
+    <code-block language="html" label="Article with highlights" data-escape><article id="essay" data-highlights>
   <p>Select any text in this article to highlight it.
   Choose a color from the toolbar that appears above
   your selection.</p>
-</article></code-block>
+</article>
+
+<selection-menu for="essay">
+  <highlight-wc></highlight-wc>
+  <note-wc></note-wc>
+</selection-menu></code-block>
 
     <h3>data-highlights (custom colors)</h3>
-    <p>Use <code>data-highlights-colors</code> to provide a custom palette and define matching <code>--highlight-{name}</code> custom properties.</p>
+    <p>List the palette in <code>data-highlights-colors</code> (which colours the engine paints) and in the <code>colors</code> attribute of <code>&lt;highlight-wc&gt;</code> (which swatches the toolbar offers), then define a <code>--highlight-{name}</code> custom property for each name in your stylesheet.</p>
     <browser-window src="/docs/snippets/demos/article-highlights-colors.html" url="https://vanilla-breeze.dev/article/highlights/colors" title="Custom highlight colors" shadow></browser-window>
-    <code-block language="html" label="Custom highlight colors" data-escape><article data-highlights data-highlights-colors="yellow,green,blue,pink">
-  <!-- Define custom property for each color name -->
-  <style>
-    article { --highlight-yellow: #fef08a; }
-  </style>
+    <code-block language="html" label="Custom highlight colors" data-escape><article id="review" class="custom-colors"
+         data-highlights data-highlights-colors="red,orange,teal">
   <p>Custom highlight palette.</p>
-</article></code-block>
+</article>
+
+<selection-menu for="review">
+  <highlight-wc colors="red,orange,teal"></highlight-wc>
+  <note-wc></note-wc>
+</selection-menu></code-block>
+    <code-block language="css" label="Custom highlight colors (CSS)">.custom-colors {
+  --highlight-red: oklch(89% 0.06 18);
+  --highlight-orange: oklch(91% 0.07 62);
+  --highlight-teal: oklch(91% 0.08 180);
+}</code-block>
 
     <h3>data-highlights (readonly)</h3>
-    <p>Add <code>data-highlights-readonly</code> to render stored highlights without allowing new ones.</p>
+    <p>Add <code>data-highlights-readonly</code> to render stored highlights without allowing new ones. No <code>&lt;selection-menu&gt;</code> is needed.</p>
     <browser-window src="/docs/snippets/demos/article-highlights-readonly.html" url="https://vanilla-breeze.dev/article/highlights/readonly" title="Readonly highlights" shadow></browser-window>
     <code-block language="html" label="Readonly highlights" data-escape><article data-highlights data-highlights-readonly>
   <p>Renders stored highlights without allowing new ones.</p>
@@ -184,7 +245,7 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>.blog</code></td>
-          <td>Long-form reading layout with 65ch max-width, spaced header/footer</td>
+          <td>Long-form reading layout with 65ch max-width, spaced header/footer, prose typography</td>
         </tr>
         <tr>
           <td><code>.card</code></td>
@@ -196,7 +257,7 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>.compact</code></td>
-          <td>Flexbox horizontal layout for article listings</td>
+          <td>Flexbox horizontal layout for article listings; media keeps its size, text fills the rest</td>
         </tr>
         <tr>
           <td><code>.nested</code></td>
@@ -212,11 +273,15 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>data-prose</code></td>
-          <td>Auto-float images inside paragraphs for markdown/CMS content</td>
+          <td>Prose typography plus auto-floated images inside paragraphs for markdown/CMS content</td>
         </tr>
         <tr>
           <td><code>data-highlights</code></td>
-          <td>Text highlighting and private notes with localStorage persistence</td>
+          <td>Text highlighting and private notes with localStorage persistence (UI via <code>&lt;selection-menu&gt;</code>)</td>
+        </tr>
+        <tr>
+          <td><code>data-section-numbers</code></td>
+          <td>Section-sign (§ 1, § 1a) numbering for h2 and h3</td>
         </tr>
       </tbody>
     </table>
@@ -225,7 +290,7 @@ crumbLabel: Native Elements
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Articles create landmark regions that screen readers can navigate to</li>
+      <li><code>&lt;article&gt;</code> has the <code>article</code> role, a document-structure role rather than a landmark. It does not appear in landmark navigation, though some screen readers let users move between articles and announce their boundaries. Use <code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code> and similar elements for landmarks</li>
       <li>Always include a heading (h1-h6) to label the article content</li>
       <li>Use <code>&lt;header&gt;</code> and <code>&lt;footer&gt;</code> within articles for structured metadata</li>
       <li>Include <code>&lt;time&gt;</code> elements with <code>datetime</code> attributes for publication dates</li>
@@ -235,7 +300,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Highlights API</h2>
-    <p>The <code>data-highlights</code> attribute activates a JavaScript controller that provides a programmatic API for managing highlights.</p>
+    <p>The highlights engine initialises itself on every <code>[data-highlights]</code> element when the page loads, and on matching elements added later. It is included in the full bundle (<code>main.js</code>) and is lazy-loaded by the autoload bundle when a <code>[data-highlights]</code> element is present.</p>
 
     <h3>Attributes</h3>
     <table class="props-table">
@@ -248,11 +313,11 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>data-highlights</code></td>
-          <td>Enables highlighting. Optional string value becomes the localStorage key suffix (default: page pathname).</td>
+          <td>Enables highlighting. An optional value becomes the storage key (default: the page pathname). Highlights are stored in localStorage under <code>vb:highlights:{key}</code>.</td>
         </tr>
         <tr>
           <td><code>data-highlights-colors</code></td>
-          <td>Comma-separated color names. Each maps to a <code>--highlight-{name}</code> CSS custom property. Default: <code>yellow,green,blue,pink</code></td>
+          <td>Comma-separated color names the engine paints. Each maps to a <code>--highlight-{name}</code> CSS custom property. Default: <code>yellow,green,blue,pink</code>. Match it with <code>&lt;highlight-wc colors&gt;</code>.</td>
         </tr>
         <tr>
           <td><code>data-highlights-readonly</code></td>
@@ -272,14 +337,19 @@ crumbLabel: Native Elements
       </thead>
       <tbody>
         <tr>
+          <td><code>highlights:selected</code></td>
+          <td><code>{ text, rect }</code></td>
+          <td>Fired when the user finishes a non-empty text selection inside the article (not in readonly mode). <code>rect</code> is the selection's bounding <code>DOMRect</code>. Use it to wire your own UI instead of <code>&lt;selection-menu&gt;</code></td>
+        </tr>
+        <tr>
           <td><code>highlights:added</code></td>
           <td><code>{ id, text, color, note }</code></td>
-          <td>Fired when a new highlight is created</td>
+          <td>Fired when a new highlight is created (<code>note</code> is always empty here)</td>
         </tr>
         <tr>
           <td><code>highlights:removed</code></td>
           <td><code>{ id }</code></td>
-          <td>Fired when a highlight is deleted</td>
+          <td>Fired when a highlight is deleted with <code>removeHighlight()</code> (not by <code>clearAll()</code>)</td>
         </tr>
         <tr>
           <td><code>highlights:note-changed</code></td>
@@ -288,22 +358,28 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>highlights:clicked</code></td>
-          <td><code>{ id }</code></td>
-          <td>Fired when an existing highlight is clicked</td>
+          <td><code>{ id, highlight }</code></td>
+          <td>Fired when an existing highlight or its margin annotation is clicked. <code>highlight</code> is a copy of the stored record (<code>id</code>, <code>text</code>, <code>color</code>, <code>note</code>, <code>startOffset</code>, <code>endOffset</code>, <code>created</code>)</td>
+        </tr>
+        <tr>
+          <td><code>highlights:request-note</code></td>
+          <td><code>{ id, highlight, controller }</code></td>
+          <td>Fired when a margin annotation is clicked, asking for the note editor. <code>&lt;note-wc&gt;</code> listens for this; <code>controller</code> is the article's highlights controller</td>
         </tr>
       </tbody>
     </table>
 
-    <h3>JavaScript API</h3>
-    <code-block language="js" label="Programmatic control" data-escape>import { initHighlights } from 'vanilla-breeze';
+    <p>All events are dispatched on the article and bubble.</p>
 
-const ctrl = initHighlights(document.querySelector('[data-highlights]'));
-ctrl.getHighlights();        // Array of highlight objects
-ctrl.removeHighlight(id);    // Remove by ID
-ctrl.clearAll();             // Remove all
-ctrl.exportHighlights();     // JSON string
-ctrl.importHighlights(json); // Restore from backup
-ctrl.destroy();              // Cleanup listeners</code-block>
+    <h3>JavaScript API</h3>
+    <p>The package does not export the highlights controller and it is not on <code>window.VB</code>. Programmatic access goes through <code>&lt;highlight-wc&gt;</code>, whose methods delegate to the article's controller. A standalone <code>&lt;highlight-wc for="…"&gt;</code> binds as soon as it connects; one inside a <code>&lt;selection-menu&gt;</code> binds when it creates its first highlight. The controller also arrives as <code>detail.controller</code> on <code>highlights:request-note</code>.</p>
+    <code-block language="js" label="Programmatic control" data-escape>const hl = document.querySelector('highlight-wc');
+
+hl.getHighlights();        // Array of highlight records
+hl.removeHighlight(id);    // Remove by ID
+hl.clearAll();             // Remove all
+hl.exportHighlights();     // JSON string: { version: 1, highlights: [...] }
+hl.importHighlights(json); // Restore from an export (string or object)</code-block>
 
     <h3>CSS Custom Properties</h3>
     <table class="props-table">
@@ -317,40 +393,30 @@ ctrl.destroy();              // Cleanup listeners</code-block>
       <tbody>
         <tr>
           <td><code>--highlight-yellow</code></td>
-          <td><code>#fef08a</code></td>
+          <td><code>oklch(95% 0.12 102)</code></td>
           <td>Yellow highlight color</td>
         </tr>
         <tr>
           <td><code>--highlight-green</code></td>
-          <td><code>#bbf7d0</code></td>
+          <td><code>oklch(93% 0.08 156)</code></td>
           <td>Green highlight color</td>
         </tr>
         <tr>
           <td><code>--highlight-blue</code></td>
-          <td><code>#bfdbfe</code></td>
+          <td><code>oklch(88% 0.06 254)</code></td>
           <td>Blue highlight color</td>
         </tr>
         <tr>
           <td><code>--highlight-pink</code></td>
-          <td><code>#fbcfe8</code></td>
+          <td><code>oklch(90% 0.06 343)</code></td>
           <td>Pink highlight color</td>
-        </tr>
-        <tr>
-          <td><code>--highlight-toolbar-bg</code></td>
-          <td><code>var(--color-surface-raised)</code></td>
-          <td>Toolbar background</td>
-        </tr>
-        <tr>
-          <td><code>--highlight-toolbar-shadow</code></td>
-          <td><code>var(--shadow-m)</code></td>
-          <td>Toolbar box shadow</td>
         </tr>
       </tbody>
     </table>
 
     <h3>Progressive Enhancement</h3>
     <ul>
-      <li><strong>No JS</strong> — <code>data-highlights</code> is inert; article renders normally</li>
+      <li><strong>No JS</strong> — <code>data-highlights</code> is inert and the toolbar elements render nothing; the article reads normally</li>
       <li><strong>No CSS Highlight API</strong> — falls back to <code>&lt;mark&gt;</code> wrapping</li>
       <li><strong>No localStorage</strong> — highlights work for the current session but are not persisted</li>
     </ul>

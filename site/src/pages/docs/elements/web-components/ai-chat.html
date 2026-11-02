@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Overview</h2>
-    <p>An on-device chat component built on <a href="/docs/elements/web-components/chat-window/"><code>&lt;chat-window&gt;</code></a> + <a href="/docs/elements/web-components/chat-input/"><code>&lt;chat-input&gt;</code></a>. Without a <code>context</code> attribute, behaves as a general assistant. With <code>context="<selector>"</code>, the targeted region's text is folded into the system prompt so the model can answer questions about the surrounding article — no retrieval plumbing required.</p>
+    <p>An on-device chat component built on <a href="/docs/elements/web-components/chat-window/"><code>&lt;chat-window&gt;</code></a> + <a href="/docs/elements/web-components/chat-input/"><code>&lt;chat-input&gt;</code></a>. Without a <code>context</code> attribute, behaves as a general assistant. With <code>context="&lt;selector&gt;"</code>, the targeted region's text is folded into the system prompt so the model can answer questions about the surrounding article — no retrieval plumbing required.</p>
     <p>The configured providers (local Chrome <code>LanguageModel</code>, your <code>endpoint</code>, your <code>fallback-url</code>) are surfaced as options in the <code>chat-window</code> header's model select. Users can see what's running and switch on the fly. Auto-selection prefers <strong>local → endpoint → deep-link</strong>; unavailable options stay disabled.</p>
 
     <browser-window
@@ -72,7 +72,8 @@ crumbLabel: Web Components
 
   <section>
     <h2>External deep-link fallback</h2>
-    <p>Configure <code>fallback-url="…"</code> and the Send button opens the configured URL in a new tab when neither on-device AI nor an inline endpoint is configured. The current draft message is folded into the deep-link <code>{prompt}</code> so the external tool picks up where the user left off.</p>
+    <p>Configure <code>fallback-url="…"</code> and the Send button opens the configured URL in a new tab when neither on-device AI nor an inline endpoint is configured. The current draft message is appended to the <code>fallback-prompt</code> text (default &ldquo;Help me explore this article: {title} ({url})&rdquo;) and the result fills the deep-link <code>{prompt}</code> token, so the external tool picks up where the user left off.</p>
+    <p>Tokens in <code>fallback-url</code> are URL-encoded on substitution. <code>{prompt}</code>, <code>{url}</code> (the page URL) and <code>{title}</code> (the document title) are supported. <code>{content}</code> is <strong>not yet supported</strong>: it currently expands to an empty string.</p>
 
     <code-block language="html" show-lines label="Deep-link only" data-escape><ai-chat
     fallback-url="https://claude.ai/new?q={prompt}"
@@ -84,7 +85,7 @@ crumbLabel: Web Components
     <h2>State and events</h2>
     <p>Lifecycle on <code>data-state</code>: <code>checking</code>, <code>ready</code>, <code>downloading</code>, <code>streaming</code>, <code>error</code>, <code>unavailable</code>. Provider switching emits <code>chat-window:model-change</code> from the inner chat-window — listen there to react to in-page provider swaps.</p>
 
-    <code-block language="js" show-lines label="Listen for events"><script type="module">
+    <code-block language="js" show-lines label="Listen for events" data-escape><script type="module">
 const chat = document.querySelector('ai-chat');
 chat.addEventListener('ai-chat:state',            e => console.log(e.detail.state, e.detail.provider));
 chat.addEventListener('ai-chat:message',          e => console.log(e.detail.role, e.detail.text.length));

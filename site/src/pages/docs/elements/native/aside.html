@@ -32,7 +32,7 @@ crumbLabel: Native Elements
     <p>Basic aside without additional styling.</p>
     <browser-window src="/docs/snippets/demos/aside-default.html" url="https://vanilla-breeze.dev/aside/default" title="Default aside" shadow></browser-window>
     <code-block language="html" label="Default aside" data-escape><aside>
-  <h4>Did you know?</h4>
+  <h2>Did you know?</h2>
   <p>The aside element was introduced in HTML5 to provide
   semantic meaning for content that is tangentially
   related to the main content.</p>
@@ -42,7 +42,7 @@ crumbLabel: Native Elements
     <p>Panel style with background for sidebar layouts.</p>
     <browser-window src="/docs/snippets/demos/aside-sidebar.html" url="https://vanilla-breeze.dev/aside/sidebar" title="Sidebar aside" shadow></browser-window>
     <code-block language="html" label="Sidebar aside" data-escape><aside class="sidebar">
-  <h4>Quick Links</h4>
+  <h2>Quick Links</h2>
   <ul>
     <li><a href="#">Getting Started</a></li>
     <li><a href="#">Documentation</a></li>
@@ -60,7 +60,7 @@ crumbLabel: Native Elements
 </aside></code-block>
 
     <h3>.float</h3>
-    <p>Floating aside for pull quotes that flow with text.</p>
+    <p>Floating aside for pull quotes that flow with text. It floats to the inline end at 40% of the container's inline size. Below 40rem it un-floats and spans the full width, so the quote never gets too narrow to read.</p>
     <browser-window src="/docs/snippets/demos/aside-float.html" url="https://vanilla-breeze.dev/aside/float" title="Float aside" shadow></browser-window>
     <code-block language="html" label="Float aside" data-escape><article>
   <p>Lorem ipsum dolor sit amet, consectetur
@@ -73,10 +73,20 @@ crumbLabel: Native Elements
   <p>Ut enim ad minim veniam, quis nostrud
   exercitation ullamco laboris...</p>
 </article></code-block>
+    <p>Content after a floated aside wraps around it. If a following block (a heading, a figure, a new section) must start below the quote, give it <code>clear: both</code>.</p>
 
     <h3>.sidenote</h3>
     <p>Margin annotation that floats alongside text on wide viewports. On narrow viewports, collapses to a bordered inline block. Requires the parent container to have margin space (e.g., inside <code>&lt;layout-text&gt;</code>).</p>
     <browser-window src="/docs/examples/demos/sidenote-css.html" url="https://vanilla-breeze.dev/aside/sidenote" title="Sidenote" shadow></browser-window>
+    <p>Place the aside <em>before</em> the paragraph it annotates. A float starts at its own position in the flow, so putting it first lines the note up with the top of that paragraph.</p>
+    <code-block language="html" label="Sidenote aside" data-escape><layout-text>
+  <aside class="sidenote">
+    1831–1836. The ship was a Cherokee-class 10-gun
+    brig-sloop commanded by Captain Robert FitzRoy.
+  </aside>
+  <p>Darwin's voyage on the Beagle lasted nearly
+  five years...</p>
+</layout-text></code-block>
 
     <aside class="note">
       <strong>Tip:</strong> For automated sidenotes with numbering and progressive enhancement, use <a href="/docs/elements/web-components/footnotes/"><code>&lt;foot-notes data-mode="sidenotes"&gt;</code></a> instead. The <code>.sidenote</code> class is for manual, CSS-only placement.
@@ -103,7 +113,7 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>.float</code></td>
-          <td>Floats to the right with max-width of 40% for pull quotes</td>
+          <td>Pull quote: <code>float: inline-end</code> with <code>inline-size: 40%</code>; un-floats to full width below 40rem</td>
         </tr>
         <tr>
           <td><code>.sidenote</code></td>
@@ -116,10 +126,11 @@ crumbLabel: Native Elements
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Aside creates a complementary landmark that screen readers can navigate to</li>
-      <li>Include a heading to label the aside content, especially for longer asides</li>
+      <li>An aside is a <code>complementary</code> landmark only when it is scoped to <code>&lt;body&gt;</code> or <code>&lt;main&gt;</code>, or when it has an accessible name. Inside <code>&lt;article&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;nav&gt;</code> or another <code>&lt;aside&gt;</code>, an unnamed aside is exposed as a generic element and does not appear in landmark navigation.</li>
+      <li>When you want the aside to be a landmark (for example a page sidebar), name it with <code>aria-labelledby</code> pointing at its heading, or with <code>aria-label</code>. Give each landmark aside a distinct name.</li>
+      <li>Small inline asides such as pull quotes, notes and sidenotes do not need to be landmarks. Leave them unnamed rather than adding a label that means nothing.</li>
+      <li>Include a heading to label longer asides</li>
       <li>Keep aside content concise and focused on a single topic</li>
-      <li>Floating asides should use <code>clear: both</code> on following content to prevent layout issues</li>
     </ul>
   </section>
 

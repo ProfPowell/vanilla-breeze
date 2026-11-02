@@ -67,6 +67,23 @@ article.compact {
   &:last-child {
     border-block-end: none;
   }
+
+  /* Thumbnail keeps its size and gets a soft corner */
+  & > :is(img, picture, svg, video) {
+    flex-shrink: 0;
+    border-radius: var(--radius-s);
+  }
+
+  /* Text column fills the remaining space. A <section>/<article> child has
+     container-type: inline-size (layout-attributes.css), which zeroes its
+     intrinsic width — as a content-sized flex item it would collapse to
+     nothing. A definite flex-basis sidesteps that without disabling the
+     child's container queries (and without fighting the higher
+     custom-elements layer that sets container-type). */
+  & > :not(img, picture, svg, video) {
+    flex: 1 1 0;
+    min-inline-size: 0;
+  }
 }
 
 /* Nested article (comments, replies) */
@@ -76,9 +93,11 @@ article.nested {
   border-inline-start: var(--border-width-medium) solid var(--color-border);
 }
 
-/* Drop cap — large first letter for editorial content */
+/* Drop cap — large first letter for editorial content.
+   The section arm applies only when the article has no direct <p>, so an
+   article with both an intro paragraph and sections gets one drop cap. */
 article[data-drop-cap] > p:first-of-type::first-letter,
-article[data-drop-cap] > section:first-of-type > p:first-of-type::first-letter,
+article[data-drop-cap]:not(:has(> p)) > section:first-of-type > p:first-of-type::first-letter,
 p[data-drop-cap]::first-letter {
   font-size: 3.5em;
   float: inline-start;
@@ -101,7 +120,7 @@ article[data-prose] p > img:not(:only-child) {
 /* Drop cap upgrade — use initial-letter when supported */
 @supports (initial-letter: 3) {
   article[data-drop-cap] > p:first-of-type::first-letter,
-  article[data-drop-cap] > section:first-of-type > p:first-of-type::first-letter,
+  article[data-drop-cap]:not(:has(> p)) > section:first-of-type > p:first-of-type::first-letter,
   p[data-drop-cap]::first-letter {
     initial-letter: 3;
     float: none;
