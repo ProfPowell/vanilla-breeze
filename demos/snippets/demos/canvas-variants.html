@@ -14,86 +14,150 @@
   <layout-stack data-layout-gap="xl">
     <section>
       <h2>Default</h2>
-      <canvas id="c-default" width="300" height="120" role="img" aria-label="Blue gradient rectangle"></canvas>
+      <canvas id="c-default" width="300" height="120" role="img" aria-label="Gradient rectangle labelled Canvas Drawing"></canvas>
     </section>
     <section>
       <h2>.bordered</h2>
-      <canvas id="c-bordered" class="bordered" width="300" height="120" role="img" aria-label="Circles on bordered canvas"></canvas>
+      <canvas id="c-bordered" class="bordered" width="300" height="120" role="img" aria-label="Five coloured circles on a bordered canvas"></canvas>
     </section>
     <section>
       <h2>.loading (placeholder state)</h2>
-      <canvas class="bordered loading" width="300" height="120" role="img" aria-label="Loading placeholder"></canvas>
+      <canvas class="bordered loading" width="300" height="120" aria-hidden="true"></canvas>
     </section>
     <section>
-      <h2>.interactive (crosshair cursor — hover to see)</h2>
-      <canvas id="c-interactive" class="bordered interactive" width="300" height="120" role="img" aria-label="Interactive canvas with hover tracking"></canvas>
+      <h2>.interactive (crosshair cursor)</h2>
+      <!-- Interactive: no role="img" (it would hide the interaction). Focusable,
+           arrow keys move the dot, and the position is mirrored in text. -->
+      <canvas id="c-interactive" class="bordered interactive" width="300" height="120" tabindex="0" aria-describedby="c-interactive-help">
+        Pointer tracker: move the pointer over the canvas or use the arrow keys.
+      </canvas>
+      <p id="c-interactive-help"><small>Hover, or focus and press the arrow keys. Position: <output id="c-interactive-pos">150, 60</output></small></p>
     </section>
     <section>
       <h2>.drawing (draw with mouse/touch)</h2>
-      <canvas id="c-drawing" class="bordered drawing" width="300" height="150" role="img" aria-label="Drawing canvas"></canvas>
+      <canvas id="c-drawing" class="bordered drawing" width="300" height="150">
+        Freehand drawing area (pointer only).
+      </canvas>
       <p><small>Click and drag to draw</small></p>
     </section>
   </layout-stack>
   <script type="module" src="/src/main.js"></script>
   <script>
+    // Resolve theme tokens to concrete colours for the 2D context.
+    const probe = document.createElement('span');
+    probe.hidden = true;
+    document.body.append(probe);
+    function token(name) {
+      probe.style.color = `var(${name})`;
+      return getComputedStyle(probe).color;
+    }
+
     // Default: gradient
     const c1 = document.getElementById('c-default');
     const ctx1 = c1.getContext('2d');
-    const grad = ctx1.createLinearGradient(0, 0, 300, 0);
-    grad.addColorStop(0, '#4a90d9');
-    grad.addColorStop(1, '#8b5cf6');
-    ctx1.fillStyle = grad;
-    ctx1.fillRect(0, 0, 300, 120);
-    ctx1.fillStyle = 'white';
-    ctx1.font = '16px system-ui';
-    ctx1.fillText('Canvas Drawing', 90, 65);
+    function drawDefault() {
+      const grad = ctx1.createLinearGradient(0, 0, 300, 0);
+      grad.addColorStop(0, token('--color-primary'));
+      grad.addColorStop(1, token('--color-secondary'));
+      ctx1.fillStyle = grad;
+      ctx1.fillRect(0, 0, 300, 120);
+      ctx1.fillStyle = token('--color-text-on-primary');
+      ctx1.font = '16px system-ui';
+      ctx1.fillText('Canvas Drawing', 90, 65);
+    }
 
     // Bordered: circles
     const c2 = document.getElementById('c-bordered');
     const ctx2 = c2.getContext('2d');
-    const colors = ['#4a90d9', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
-    colors.forEach((color, i) => {
-      ctx2.beginPath();
-      ctx2.arc(50 + i * 55, 60, 20, 0, Math.PI * 2);
-      ctx2.fillStyle = color;
-      ctx2.fill();
-    });
+    function drawCircles() {
+      ctx2.clearRect(0, 0, 300, 120);
+      ['--color-primary', '--color-secondary', '--color-accent', '--color-warning', '--color-success']
+        .forEach((name, i) => {
+          ctx2.beginPath();
+          ctx2.arc(50 + i * 55, 60, 20, 0, Math.PI * 2);
+          ctx2.fillStyle = token(name);
+          ctx2.fill();
+        });
+    }
 
-    // Interactive: follow mouse
+    // Interactive: follow pointer or arrow keys
     const c3 = document.getElementById('c-interactive');
     const ctx3 = c3.getContext('2d');
-    function drawInteractive(x, y) {
+    const pos3 = document.getElementById('c-interactive-pos');
+    let px = 150;
+    let py = 60;
+    function drawInteractive() {
       ctx3.clearRect(0, 0, 300, 120);
-      ctx3.fillStyle = 'oklch(90% 0.02 250)';
+      ctx3.fillStyle = token('--color-surface-raised');
       ctx3.fillRect(0, 0, 300, 120);
       ctx3.beginPath();
-      ctx3.arc(x, y, 15, 0, Math.PI * 2);
-      ctx3.fillStyle = '#4a90d9';
+      ctx3.arc(px, py, 15, 0, Math.PI * 2);
+      ctx3.fillStyle = token('--color-interactive');
       ctx3.fill();
-      ctx3.fillStyle = '#666';
+      ctx3.fillStyle = token('--color-text');
       ctx3.font = '12px system-ui';
-      ctx3.fillText(`${x}, ${y}`, x + 20, y + 5);
+      ctx3.fillText(`${px}, ${py}`, px + 20, py + 5);
+      pos3.value = `${px}, ${py}`;
     }
-    drawInteractive(150, 60);
     c3.addEventListener('pointermove', e => {
       const r = c3.getBoundingClientRect();
-      drawInteractive(Math.round(e.clientX - r.left), Math.round(e.clientY - r.top));
+      px = Math.round(e.clientX - r.left);
+      py = Math.round(e.clientY - r.top);
+      drawInteractive();
+    });
+    c3.addEventListener('keydown', e => {
+      const step = e.shiftKey ? 20 : 5;
+      const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+      const m = moves[e.key];
+      if (!m) return;
+      e.preventDefault();
+      px = Math.min(300, Math.max(0, px + m[0]));
+      py = Math.min(120, Math.max(0, py + m[1]));
+      drawInteractive();
     });
 
-    // Drawing: freehand
+    // Drawing: freehand (strokes are kept as points so a theme change
+    // can repaint them in the new colours)
     const c4 = document.getElementById('c-drawing');
     const ctx4 = c4.getContext('2d');
-    ctx4.fillStyle = 'oklch(97% 0.01 250)';
-    ctx4.fillRect(0, 0, 300, 150);
-    ctx4.strokeStyle = '#4a90d9';
-    ctx4.lineWidth = 3;
-    ctx4.lineCap = 'round';
-    ctx4.lineJoin = 'round';
-    let drawing = false;
-    c4.addEventListener('pointerdown', e => { drawing = true; ctx4.beginPath(); const r = c4.getBoundingClientRect(); ctx4.moveTo(e.clientX - r.left, e.clientY - r.top); });
-    c4.addEventListener('pointermove', e => { if (!drawing) return; const r = c4.getBoundingClientRect(); ctx4.lineTo(e.clientX - r.left, e.clientY - r.top); ctx4.stroke(); });
-    c4.addEventListener('pointerup', () => { drawing = false; });
-    c4.addEventListener('pointerleave', () => { drawing = false; });
+    const strokes = [];
+    let current = null;
+    function paintDrawing() {
+      ctx4.fillStyle = token('--color-surface-raised');
+      ctx4.fillRect(0, 0, 300, 150);
+      ctx4.strokeStyle = token('--color-interactive');
+      ctx4.lineWidth = 3;
+      ctx4.lineCap = 'round';
+      ctx4.lineJoin = 'round';
+      strokes.forEach(points => {
+        ctx4.beginPath();
+        points.forEach(([x, y], i) => (i ? ctx4.lineTo(x, y) : ctx4.moveTo(x, y)));
+        ctx4.stroke();
+      });
+    }
+    function point(e) {
+      const r = c4.getBoundingClientRect();
+      return [e.clientX - r.left, e.clientY - r.top];
+    }
+    c4.addEventListener('pointerdown', e => { current = [point(e)]; strokes.push(current); });
+    c4.addEventListener('pointermove', e => { if (!current) return; current.push(point(e)); paintDrawing(); });
+    c4.addEventListener('pointerup', () => { current = null; });
+    c4.addEventListener('pointerleave', () => { current = null; });
+
+    function drawAll() {
+      drawDefault();
+      drawCircles();
+      drawInteractive();
+      paintDrawing();
+    }
+    drawAll();
+
+    // Repaint when the colour scheme, mode or theme changes.
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawAll);
+    new MutationObserver(drawAll).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-mode', 'data-theme', 'class', 'style'],
+    });
   </script>
 </body>
 </html>

@@ -84,10 +84,12 @@ table[data-density="comfortable"] :is(th, td) {
   padding: var(--size-m) var(--size-l);
 }
 
-/* Cell alignment (works on th, td, or col) */
-[data-align="start"] { text-align: start; }
-[data-align="center"] { text-align: center; }
-[data-align="end"] { text-align: end; }
+/* Cell alignment (th and td only). <col> cannot carry text-align —
+   cells are not descendants of col, and CSS ignores text properties on
+   table columns — so set data-align on the cells themselves. */
+:is(th, td)[data-align="start"] { text-align: start; }
+:is(th, td)[data-align="center"] { text-align: center; }
+:is(th, td)[data-align="end"] { text-align: end; }
 
 /* Row states */
 tr[data-selected] {

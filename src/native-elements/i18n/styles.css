@@ -121,21 +121,23 @@
    CSS quotes property adapts to language convention.
    ============================================================ */
 
-q { quotes: "\201C" "\201D" "\2018" "\2019"; }                   /* English "..." */
-:lang(en-GB) q, :lang(en-AU) q, :lang(en-NZ) q {
+/* cite.quoted (inline-semantics) uses open-quote/close-quote too, so it
+   shares the locale table. */
+:is(q, cite.quoted) { quotes: "\201C" "\201D" "\2018" "\2019"; }                   /* English "..." */
+:lang(en-GB) :is(q, cite.quoted), :lang(en-AU) :is(q, cite.quoted), :lang(en-NZ) :is(q, cite.quoted) {
   quotes: "\2018" "\2019" "\201C" "\201D";                       /* 'single' "double" */
 }
-:lang(de) q { quotes: "\201E" "\201C" "\201A" "\2018"; }         /* German  „..." */
-:lang(fr) q { quotes: "\00AB\202F" "\202F\00BB" "\2039\202F" "\202F\203A"; } /* French «...» (narrow NBSP) */
-:lang(it) q, :lang(es) q, :lang(pt) q {
+:lang(de) :is(q, cite.quoted) { quotes: "\201E" "\201C" "\201A" "\2018"; }         /* German  „..." */
+:lang(fr) :is(q, cite.quoted) { quotes: "\00AB\202F" "\202F\00BB" "\2039\202F" "\202F\203A"; } /* French «...» (narrow NBSP) */
+:lang(it) :is(q, cite.quoted), :lang(es) :is(q, cite.quoted), :lang(pt) :is(q, cite.quoted) {
   quotes: "\00AB" "\00BB" "\201C" "\201D";
 }
-:lang(pl) q { quotes: "\00AB" "\00BB" "\201E" "\201C"; }
-:lang(ja) q { quotes: "\300C" "\300D" "\300E" "\300F"; }         /* Japanese「...」*/
-:lang(zh) q { quotes: "\300C" "\300D" "\300E" "\300F"; }         /* Chinese 「...」*/
-:lang(ko) q { quotes: "\201C" "\201D" "\2018" "\2019"; }         /* Korean */
-:lang(ru) q { quotes: "\00AB" "\00BB" "\201E" "\201C"; }         /* Russian «...» */
-:lang(ar) q { quotes: "\00AB" "\00BB" "\2018" "\2019"; }         /* Arabic */
+:lang(pl) :is(q, cite.quoted) { quotes: "\00AB" "\00BB" "\201E" "\201C"; }
+:lang(ja) :is(q, cite.quoted) { quotes: "\300C" "\300D" "\300E" "\300F"; }         /* Japanese「...」*/
+:lang(zh) :is(q, cite.quoted) { quotes: "\300C" "\300D" "\300E" "\300F"; }         /* Chinese 「...」*/
+:lang(ko) :is(q, cite.quoted) { quotes: "\201C" "\201D" "\2018" "\2019"; }         /* Korean */
+:lang(ru) :is(q, cite.quoted) { quotes: "\00AB" "\00BB" "\201E" "\201C"; }         /* Russian «...» */
+:lang(ar) :is(q, cite.quoted) { quotes: "\00AB" "\00BB" "\2018" "\2019"; }         /* Arabic */
 
 q::before { content: open-quote; }
 q::after  { content: close-quote; }
@@ -145,17 +147,11 @@ blockquote { hanging-punctuation: first last; }
 
 /* ============================================================
    4. UNTRANSLATABLE CONTENT
-   Elements that should not be modified by browser/machine
-   translation tools.
+   No rules on purpose. Machine-translation opt-out is the HTML
+   translate="no" attribute — there is no CSS equivalent (the CSS
+   `translate` property is a transform). Authors mark code, kbd, samp,
+   pre and var content with translate="no" in markup.
    ============================================================ */
-
-code,
-kbd,
-samp,
-pre,
-var {
-  translate: no;
-}
 
 /* ============================================================
    5. READING DIRECTION

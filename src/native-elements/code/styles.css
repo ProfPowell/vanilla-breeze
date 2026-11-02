@@ -6,28 +6,31 @@ code {
   background: var(--color-surface-raised);
   padding-inline: var(--size-2xs);
   border-radius: var(--radius-s);
+  /* Long identifiers and URLs in running text break instead of
+     overflowing the line box. Reset inside pre below. */
+  overflow-wrap: anywhere;
 }
 
+/* Bare pre (ASCII art, poetry, tabular plain text): whitespace and line
+   breaks are significant, so never reflow — scroll instead. */
 pre {
   font-family: var(--font-mono);
   font-size: var(--font-size-s);
   overflow-x: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  white-space: pre;
 }
 
-/* Code blocks: pre containing code gets full treatment */
-pre:has(code) {
+/* Code and output blocks: pre containing code or samp gets full treatment */
+pre:has(code, samp) {
   background: var(--color-surface-raised);
   padding: var(--size-m);
   border-radius: var(--radius-m);
-  white-space: pre;
-  word-wrap: normal;
 
-  & code {
+  & :is(code, samp) {
     background: transparent;
     padding: 0;
     font-size: inherit;
+    overflow-wrap: normal;
   }
 }
 

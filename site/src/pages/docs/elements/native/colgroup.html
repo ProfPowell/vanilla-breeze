@@ -34,50 +34,58 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Examples</h2>
-    <p>This demo shows a table with alternating column backgrounds applied via <code>&lt;col&gt;</code> elements inside a <code>&lt;colgroup&gt;</code>.</p>
+    <p>A multi-level header: each quarter is a real <code>&lt;colgroup span="2"&gt;</code>, and its header cell uses <code>scope="colgroup"</code> with a matching <code>colspan</code>. That pairing is what tells assistive technology the &ldquo;Q1&rdquo; header applies to both Revenue and Profit below it. The Q2 group gets a token-relative tint and both groups a dividing border.</p>
 
-    <browser-window src="/docs/snippets/demos/table-colgroup.html" url="table-colgroup.html" title="Table with colgroup column highlighting" shadow></browser-window>
-    <code-block language="html" show-lines label="Colgroup with col elements" data-escape><table>
-  <caption>Team Schedule</caption>
-  <colgroup>
-    <col />
-    <col style="background: oklch(from var(--color-interactive) l c h / 0.05);" />
-    <col />
-    <col style="background: oklch(from var(--color-interactive) l c h / 0.05);" />
-  </colgroup>
+    <browser-window src="/docs/snippets/demos/table-colgroup-scope.html" url="table-colgroup-scope.html" title="Colgroup with group headers" shadow></browser-window>
+    <code-block language="html" show-lines label="colgroup span + th scope=colgroup" data-escape><table>
+  <caption>Revenue and profit by region, first half 2025</caption>
+  <colgroup span="1"></colgroup>
+  <colgroup class="q1" span="2"></colgroup>
+  <colgroup class="q2" span="2"></colgroup>
   <thead>
     <tr>
-      <th scope="col">Name</th>
-      <th scope="col">Monday</th>
-      <th scope="col">Tuesday</th>
-      <th scope="col">Wednesday</th>
+      <th scope="col" rowspan="2">Region</th>
+      <th scope="colgroup" colspan="2">Q1</th>
+      <th scope="colgroup" colspan="2">Q2</th>
+    </tr>
+    <tr>
+      <th scope="col" data-numeric>Revenue</th>
+      <th scope="col" data-numeric>Profit</th>
+      <th scope="col" data-numeric>Revenue</th>
+      <th scope="col" data-numeric>Profit</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Alice</td><td>9am-5pm</td><td>Remote</td><td>9am-5pm</td>
+      <th scope="row">North</th>
+      <td data-numeric>$120k</td><td data-numeric>$18k</td>
+      <td data-numeric>$134k</td><td data-numeric>$21k</td>
     </tr>
     <!-- More rows... -->
   </tbody>
 </table></code-block>
+    <code-block language="css" label="Group tint and divider" data-escape>colgroup.q2 {
+  background: oklch(from var(--color-success) l c h / 0.12);
+}
 
-    <h3>Using <code>span</code></h3>
-    <p>The <code>span</code> attribute applies properties to multiple consecutive columns without individual <code>&lt;col&gt;</code> elements.</p>
-    <code-block language="html" show-lines label="Colgroup with span attribute" data-escape><table>
-  <colgroup span="1"></colgroup>
-  <colgroup span="3" style="background: oklch(95% 0.02 200);">
-  </colgroup>
-  <!-- Spans 3 columns with a tinted background -->
-</table></code-block>
+colgroup.q1,
+colgroup.q2 {
+  border-inline-start: var(--border-width-medium) solid var(--color-border);
+}</code-block>
+    <p>See <a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a> for the full set of <code>scope</code> values, and <a href="/docs/elements/native/col/"><code>&lt;col&gt;</code></a> for per-column styling with <code>&lt;col&gt;</code> children.</p>
+
+    <h3><code>span</code> or <code>&lt;col&gt;</code> children</h3>
+    <p>Use <code>span</code> when the whole group is treated alike (as above). Use <code>&lt;col&gt;</code> children when columns inside the group need different widths or backgrounds. You cannot mix them: with <code>&lt;col&gt;</code> children present, the group's <code>span</code> is ignored.</p>
 
     <h3>Column Widths</h3>
     <p>Set proportional or fixed widths on <code>&lt;col&gt;</code> elements for consistent column sizing.</p>
-    <code-block language="html" show-lines label="Setting column widths" data-escape><table>
+    <code-block language="css" label="Column width rules" data-escape>.budget col:nth-child(1) { inline-size: 30%; }
+.budget col:nth-child(2),
+.budget col:nth-child(3) { inline-size: 25%; }
+.budget col:nth-child(4) { inline-size: 20%; }</code-block>
+    <code-block language="html" show-lines label="Setting column widths" data-escape><table class="budget">
   <colgroup>
-    <col style="width: 30%;" />
-    <col style="width: 25%;" />
-    <col style="width: 25%;" />
-    <col style="width: 20%;" />
+    <col /><col /><col /><col />
   </colgroup>
   <!-- Column widths are proportional -->
 </table></code-block>
@@ -109,7 +117,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>border</code></td>
           <td>Partial</td>
-          <td>Only with <code>border-collapse: collapse</code> (VB default)</td>
+          <td>Only with <code>border-collapse: collapse</code> (VB default). Conflicting borders are resolved by width, then style, then origin: a cell border beats a row, row group, column, column group and finally table border of the same width and style</td>
         </tr>
         <tr>
           <td><code>visibility</code></td>
@@ -124,7 +132,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>text-align</code></td>
           <td>No</td>
-          <td>Use <code>data-numeric</code> or target cells with CSS</td>
+          <td>Use <code>data-numeric</code> / <code>data-align</code> on cells, or target cells with CSS</td>
         </tr>
       </tbody>
     </table>
@@ -166,9 +174,10 @@ th:nth-child(2) {
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li><strong>Visual distinction:</strong> column background colors help users track data across rows, but ensure sufficient contrast</li>
-      <li><strong>Not a replacement for headers:</strong> <code>&lt;colgroup&gt;</code> does not replace proper <a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a> headers with <code>scope</code> attributes</li>
-      <li><strong>Column relationships:</strong> helps assistive technologies understand column groupings in complex tables</li>
+      <li><strong>No role:</strong> <code>&lt;colgroup&gt;</code> and <code>&lt;col&gt;</code> are not exposed to assistive technology. Tints and borders are visual only</li>
+      <li><strong>The one AT effect:</strong> a <a href="/docs/elements/native/th/"><code>&lt;th scope="colgroup"&gt;</code></a> applies to every cell in the column group it heads, so a real <code>&lt;colgroup&gt;</code> makes group headers announce correctly</li>
+      <li><strong>Not a replacement for headers:</strong> <code>&lt;colgroup&gt;</code> does not replace proper <code>&lt;th&gt;</code> headers with <code>scope</code> attributes</li>
+      <li><strong>Contrast:</strong> keep text readable against column tints in every color scheme</li>
     </ul>
   </section>
 

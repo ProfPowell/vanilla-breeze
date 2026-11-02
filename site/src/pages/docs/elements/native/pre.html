@@ -15,10 +15,12 @@ crumbLabel: Native Elements
     <h2>Description</h2>
     <p>The <code>&lt;pre&gt;</code> element preserves whitespace and line breaks exactly as written in the HTML source. VB makes an important distinction:</p>
     <ul>
-      <li><strong><code>&lt;pre&gt;&lt;code&gt;</code></strong> (code blocks) &mdash; Full treatment with background, padding, border-radius, and <code>white-space: pre</code> with horizontal scroll</li>
-      <li><strong>Bare <code>&lt;pre&gt;</code></strong> (no <code>&lt;code&gt;</code> child) &mdash; Lighter treatment with <code>pre-wrap</code> and no background, for ASCII art, poetry, or other preformatted text that isn't code</li>
+      <li><strong><code>&lt;pre&gt;&lt;code&gt;</code></strong> and <strong><code>&lt;pre&gt;&lt;samp&gt;</code></strong> (code and output blocks) &mdash; Full treatment with background, padding and border-radius</li>
+      <li><strong>Bare <code>&lt;pre&gt;</code></strong> (no <code>&lt;code&gt;</code> or <code>&lt;samp&gt;</code> child) &mdash; Lighter treatment with no background, for ASCII art, poetry, or other preformatted text that isn't code</li>
     </ul>
-    <p>This distinction uses <code>pre:has(code)</code> &mdash; no classes needed.</p>
+    <p>Both keep <code>white-space: pre</code> and scroll horizontally when a line is too long &mdash; lines never reflow, so character alignment in ASCII art and code survives narrow viewports. The distinction uses <code>pre:has(code, samp)</code> &mdash; no classes needed.</p>
+    <p>Machine translation tools will happily translate code and ASCII art. Add the HTML <code>translate="no"</code> attribute to opt a block out:</p>
+    <code-block language="html" label="Opt out of machine translation" data-escape><pre translate="no"><code>const total = items.length;</code></pre></code-block>
   </section>
 
   <section>
@@ -46,7 +48,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Code Blocks (pre + code)</h2>
-    <p>The canonical pattern for displaying source code. VB detects the <code>&lt;code&gt;</code> child via <code>pre:has(code)</code> and applies full code-block styling:</p>
+    <p>The canonical pattern for displaying source code. VB detects the <code>&lt;code&gt;</code> child via <code>pre:has(code, samp)</code> and applies full code-block styling:</p>
 
     <code-block language="html" show-lines label="Code block" data-escape><pre><code>function greet(name) {
   return `Hello, ${name}!`;
@@ -65,7 +67,7 @@ console.log(greet('World'));</code></pre></code-block>
 }</code-block>
 
     <h3>Syntax Highlighting</h3>
-    <p>For colored syntax highlighting, VB provides the <code>&lt;code-block&gt;</code> web component (used throughout this documentation site). For external tools, add <code>class="language-*"</code> to the <code>&lt;code&gt;</code> element and integrate Prism.js or highlight.js.</p>
+    <p>For colored syntax highlighting, use the <a href="/docs/integrations/web-components/code-block/"><code>&lt;code-block&gt;</code></a> web component (used throughout this documentation site). <code>class="language-*"</code> on a plain <code>&lt;code&gt;</code> has no VB effect (except <code>language-math</code>, which loads the MathML enhancement); it is only a hook for external highlighters such as Prism.js or highlight.js.</p>
   </section>
 
   <section>
@@ -81,7 +83,7 @@ Build completed successfully.</samp></pre></code-block>
 
   <section>
     <h2>Bare Pre (No Code Child)</h2>
-    <p>Without a <code>&lt;code&gt;</code> or <code>&lt;samp&gt;</code> child, <code>&lt;pre&gt;</code> gets lighter styling &mdash; no background, no padding, and <code>white-space: pre-wrap</code> so long lines wrap rather than scroll. This is appropriate for ASCII art, poetry, and other preformatted text that isn't code.</p>
+    <p>Without a <code>&lt;code&gt;</code> or <code>&lt;samp&gt;</code> child, <code>&lt;pre&gt;</code> gets lighter styling &mdash; no background and no padding. It keeps <code>white-space: pre</code> and scrolls horizontally rather than wrapping, because reflowing would break the alignment ASCII art depends on. This is appropriate for ASCII art, poetry, and other preformatted text that isn't code.</p>
 
     <code-block language="html" show-lines label="ASCII art" data-escape><pre>    *
    ***
@@ -96,28 +98,7 @@ And that has made all the difference.</pre></code-block>
 
   <section>
     <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="pre CSS" data-escape>pre {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-s);
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-/* Code blocks: pre containing code gets full treatment */
-pre:has(code) {
-  background: var(--color-surface-raised);
-  padding: var(--size-m);
-  border-radius: var(--radius-m);
-  white-space: pre;
-  word-wrap: normal;
-
-  & code {
-    background: transparent;
-    padding: 0;
-    font-size: inherit;
-  }
-}</code-block>
+    <p>See <code>src/native-elements/code/styles.css</code> for the full rules.</p>
 
     <table class="props-table">
       <thead>
@@ -125,7 +106,7 @@ pre:has(code) {
       </thead>
       <tbody>
         <tr>
-          <td><code>pre:has(code)</code></td>
+          <td><code>pre:has(code, samp)</code></td>
           <td><code>var(--color-surface-raised)</code></td>
           <td><code>pre</code> (exact)</td>
           <td>Horizontal</td>
@@ -133,8 +114,8 @@ pre:has(code) {
         <tr>
           <td>Bare <code>pre</code></td>
           <td>None</td>
-          <td><code>pre-wrap</code> (wraps)</td>
-          <td>None</td>
+          <td><code>pre</code> (exact)</td>
+          <td>Horizontal</td>
         </tr>
       </tbody>
     </table>
@@ -152,7 +133,8 @@ pre:has(code) {
       <li>Screen readers read <code>&lt;pre&gt;</code> content in its linear order</li>
       <li>Add <code>tabindex="0"</code> to scrollable code blocks so keyboard users can scroll with arrow keys</li>
       <li>Add <code>role="region"</code> and <code>aria-label</code> for complex code blocks that benefit from a landmark</li>
-      <li>ASCII art is inaccessible to screen readers &mdash; add <code>aria-label</code> or <code>alt</code> text describing what it depicts</li>
+      <li>ASCII art is inaccessible to screen readers &mdash; wrap it in a <code>&lt;figure&gt;</code> with <code>role="img"</code> and an <code>aria-label</code> describing what it depicts (<code>&lt;pre&gt;</code> itself has no <code>alt</code>, and <code>aria-label</code> is not allowed on its generic role)</li>
+      <li>Add <code>translate="no"</code> to code, output and ASCII art so browser translation leaves it intact</li>
     </ul>
   </section>
 

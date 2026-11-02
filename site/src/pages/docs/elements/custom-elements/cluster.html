@@ -57,7 +57,7 @@ crumbLabel: Custom Elements
           <td><code>data-layout-overlap</code></td>
           <td>(bare), <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code></td>
           <td><code>s</code></td>
-          <td>Overlap items in reverse order (avatar groups). Bare attribute = s.</td>
+          <td>Overlap items (avatar groups) in DOM order, later items on top, each with a surface-coloured ring. Forces gap 0. Bare attribute = s.</td>
         </tr>
         <tr>
           <td><code>data-container</code> <small>(on main, article, section, aside)</small></td>
@@ -67,6 +67,16 @@ crumbLabel: Custom Elements
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>Element or Attribute</h2>
+    <p>The same layout is available as <code>data-layout="cluster"</code> on any element. Prefer the attribute when a semantic element already wraps the items &mdash; a <code>&lt;nav&gt;</code>, <code>&lt;ul&gt;</code>, <code>&lt;footer&gt;</code> or <code>&lt;menu&gt;</code> &mdash; so you don't add a wrapper just for layout. Use <code>&lt;layout-cluster&gt;</code> when there is no meaningful element to carry it. All <code>data-layout-*</code> modifiers work on both forms. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison.</p>
+    <code-block language="html" show-lines label="Attribute form on a list" data-escape><ul data-layout="cluster" data-layout-gap="xs">
+  <li><span class="tag">HTML</span></li>
+  <li><span class="tag">CSS</span></li>
+  <li><span class="tag">JavaScript</span></li>
+</ul></code-block>
   </section>
 
   <section>
@@ -140,7 +150,11 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Overlap Variant</h2>
-    <p>The <code>data-layout-overlap</code> attribute creates overlapping items - useful for avatar groups and stacked card effects.</p>
+    <p>The <code>data-layout-overlap</code> attribute creates overlapping items &mdash; useful for avatar groups and stacked card effects. Items stay in DOM order, so what sighted users see matches reading and focus order; each later item stacks above the one before it, and a hovered or focused item is lifted to the top.</p>
+    <ul>
+      <li><strong>Gap is forced to 0.</strong> The overlap comes from negative inline margins, so <code>data-layout-gap</code> has no effect.</li>
+      <li><strong>Surface-coloured ring.</strong> Each item gets a 2px <code>box-shadow</code> ring in <code>var(--color-surface)</code> to separate it from its neighbour. On a different background, override the ring colour on the items.</li>
+    </ul>
 
     <browser-window
       src="/docs/snippets/demos/cluster-overlap.html"
@@ -218,15 +232,16 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Navigation bar" data-escape><layout-cluster data-layout-gap="l" data-layout-justify="between">
-  <span class="logo">Logo</span>
-  <layout-cluster data-layout-gap="m">
+    <code-block language="html" show-lines label="Navigation bar" data-escape><header data-layout="cluster" data-layout-gap="l" data-layout-justify="between">
+  <a href="/" class="logo">Logo</a>
+  <nav aria-label="Main" data-layout="cluster" data-layout-gap="m">
     <a href="#">Home</a>
     <a href="#">About</a>
     <a href="#">Services</a>
     <a href="#">Contact</a>
-  </layout-cluster>
-</layout-cluster></code-block>
+  </nav>
+</header></code-block>
+    <p>The navigation is a real <code>&lt;nav&gt;</code> landmark carrying the layout through <code>data-layout="cluster"</code> &mdash; no extra wrapper.</p>
   </section>
 
   <section>

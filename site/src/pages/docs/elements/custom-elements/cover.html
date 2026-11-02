@@ -33,7 +33,7 @@ crumbLabel: Custom Elements
           <td><code>data-layout-min</code></td>
           <td><code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>auto</code></td>
           <td><code>xl</code></td>
-          <td>Minimum block size: 50 / 70 / 80vh, xl = 100dvh, auto = none. One-off: style=&quot;--layout-min: 65vh&quot;.</td>
+          <td>Minimum block size: 50 / 70 / 80vh, xl = 100dvh, auto = none. One-off: set <code>--layout-min</code> in a stylesheet rule (see <a href="#custom-height">Custom height</a>).</td>
         </tr>
         <tr>
           <td><code>data-layout-padding</code></td>
@@ -45,13 +45,13 @@ crumbLabel: Custom Elements
           <td><code>data-layout-gap</code></td>
           <td><code>none</code>, <code>3xs</code>, <code>2xs</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>2xl</code>, <code>3xl</code></td>
           <td><code>none</code></td>
-          <td>Gap between the non-centered elements, on the shared size scale.</td>
+          <td>Minimum space between all children (top, principal, bottom), on the shared size scale. The principal's auto margins still centre it.</td>
         </tr>
         <tr>
           <td><code>data-layout-centered</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Center children and text horizontally.</td>
+          <td>Center the principal and text horizontally; header/footer (and <code>data-layout-cover-top</code>/<code>-bottom</code>) children still span the full width.</td>
         </tr>
         <tr>
           <td><code>data-layout-principal</code> <small>(on any child)</small></td>
@@ -71,10 +71,29 @@ crumbLabel: Custom Elements
           <td>&mdash;</td>
           <td>Pin to the bottom (a &lt;footer&gt; child is pinned automatically).</td>
         </tr>
+        <tr>
+          <td><code>data-container</code> <small>(on main, article, section, aside)</small></td>
+          <td>(boolean)</td>
+          <td>&mdash;</td>
+          <td>With <code>data-layout-centered</code>, the layout removes container-type from semantic children so they size to their content instead of collapsing; this opts one back into container queries.</td>
+        </tr>
       </tbody>
     </table>
 
 </section>
+
+  <section>
+    <h2>Element or Attribute</h2>
+    <p>The same layout is available as <code>data-layout="cover"</code>. Prefer the attribute when a semantic element is already the full-height region &mdash; usually the page's <code>&lt;main&gt;</code> or a hero <code>&lt;section&gt;</code> &mdash; so you don't wrap it in an extra element. Use <code>&lt;layout-cover&gt;</code> when there is no such element. All <code>data-layout-*</code> modifiers and child attributes work on both forms. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison.</p>
+    <code-block language="html" show-lines label="Attribute form on main" data-escape><main data-layout="cover" data-layout-padding="l" data-layout-centered>
+  <header>...</header>
+  <hgroup data-layout-principal>
+    <h1>Launching soon</h1>
+    <p>Sign up to hear when we open.</p>
+  </hgroup>
+  <footer>...</footer>
+</main></code-block>
+  </section>
 
   <section>
     <h2>Basic Usage</h2>
@@ -89,10 +108,10 @@ crumbLabel: Custom Elements
 
     <code-block language="html" show-lines label="Basic layout-cover with header, principal, and footer" data-escape><layout-cover data-layout-min="xl" data-layout-padding="m" data-layout-centered>
   <header>Header content</header>
-  <div data-layout-principal>
+  <hgroup data-layout-principal>
     <h1>Principal Content</h1>
     <p>This is vertically centered</p>
-  </div>
+  </hgroup>
   <footer>Footer content</footer>
 </layout-cover></code-block>
   </section>
@@ -108,11 +127,18 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Height variant examples using data-layout-min attribute" data-escape><layout-cover data-layout-min="auto">...</layout-cover>
-<layout-cover data-layout-min="s">...</layout-cover>
-<layout-cover data-layout-min="l">...</layout-cover>
-<layout-cover data-layout-min="xl">...</layout-cover>
-<layout-cover data-layout-min="xl">...</layout-cover></code-block>
+    <code-block language="html" show-lines label="Height variant examples using data-layout-min attribute" data-escape><layout-cover data-layout-min="auto">...</layout-cover> <!-- fits content -->
+<layout-cover data-layout-min="s">...</layout-cover>    <!-- 50vh -->
+<layout-cover data-layout-min="m">...</layout-cover>    <!-- 70vh -->
+<layout-cover data-layout-min="l">...</layout-cover>    <!-- 80vh -->
+<layout-cover data-layout-min="xl">...</layout-cover>   <!-- 100dvh (default) --></code-block>
+    <p>The demo omits <code>xl</code> because a full-viewport cover fills the whole preview frame.</p>
+
+    <h3 id="custom-height">Custom height</h3>
+    <p>For a one-off height, set <code>--layout-min</code> in a stylesheet rule rather than an inline style. It wins over <code>data-layout-min</code>:</p>
+    <code-block language="css" label="Custom minimum height" data-escape>.hero {
+  --layout-min: 65vh;
+}</code-block>
   </section>
 
   <section>
@@ -125,6 +151,13 @@ crumbLabel: Custom Elements
       title="Padding variant examples"
       shadow>
     </browser-window>
+
+    <code-block language="html" show-lines label="Padding variants" data-escape><layout-cover data-layout-min="auto" data-layout-padding="none" data-layout-centered>
+  <p data-layout-principal><code>padding="none"</code></p>
+</layout-cover>
+<layout-cover data-layout-min="auto" data-layout-padding="s" data-layout-centered>...</layout-cover>
+<layout-cover data-layout-min="auto" data-layout-padding="l" data-layout-centered>...</layout-cover>
+<layout-cover data-layout-min="auto" data-layout-padding="xl" data-layout-centered>...</layout-cover></code-block>
   </section>
 
   <section>
@@ -139,14 +172,13 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
+    <p>With <code>data-layout-centered</code> the principal shrinks to its content and centres, while the <code>&lt;header&gt;</code> and <code>&lt;footer&gt;</code> keep the full width &mdash; so the brand/nav row inside the header can still spread with <code>justify="between"</code>.</p>
     <code-block language="html" show-lines label="Hero section with cover layout" data-escape><layout-cover data-layout-min="xl" data-layout-padding="xl" data-layout-centered>
-  <header>
-    <layout-cluster data-layout-gap="m" data-layout-justify="between">
-      <strong>Brand</strong>
-      <nav>...</nav>
-    </layout-cluster>
+  <header data-layout="cluster" data-layout-gap="m" data-layout-justify="between">
+    <strong>Brand</strong>
+    <nav aria-label="Main" data-layout="cluster" data-layout-gap="m">...</nav>
   </header>
-  <div data-layout-principal>
+  <section data-layout-principal>
     <layout-stack data-layout-gap="l" data-layout-align="center">
       <h1>Welcome to Our Platform</h1>
       <p>Build amazing experiences with our tools.</p>
@@ -155,7 +187,7 @@ crumbLabel: Custom Elements
         <button type="button" class="secondary">Learn More</button>
       </layout-cluster>
     </layout-stack>
-  </div>
+  </section>
   <footer>
     <small>Scroll down to explore</small>
   </footer>
@@ -170,18 +202,27 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
+    <code-block language="css" label="Login card width" data-escape>.login-card {
+  inline-size: 100%;
+  max-inline-size: 22rem;
+}</code-block>
+
     <code-block language="html" show-lines label="Login page with cover layout" data-escape><layout-cover data-layout-min="xl" data-layout-padding="l" data-layout-centered>
   <header>
     <strong>Brand Logo</strong>
   </header>
-  <div data-layout-principal>
-    <layout-card style="max-inline-size: 22rem;">
-      <layout-stack data-layout-gap="m">
+  <section data-layout-principal>
+    <layout-card class="login-card">
+      <form data-layout="stack" data-layout-gap="m" action="/login" method="post">
         <h2>Sign In</h2>
-        <form>...</form>
-      </layout-stack>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" required />
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required />
+        <button type="submit">Sign In</button>
+      </form>
     </layout-card>
-  </div>
+  </section>
   <footer>
     <small>Don't have an account? <a href="#">Sign up</a></small>
   </footer>
@@ -195,6 +236,17 @@ crumbLabel: Custom Elements
       title="Error page with cover layout"
       shadow>
     </browser-window>
+
+    <code-block language="html" show-lines label="Error page with cover layout" data-escape><main data-layout="cover" data-layout-padding="l" data-layout-centered>
+  <section data-layout-principal>
+    <layout-stack data-layout-gap="m" data-layout-align="center">
+      <p class="error-code">404</p>
+      <h1>Page Not Found</h1>
+      <p>The page you're looking for doesn't exist.</p>
+      <a href="/" class="button">Go Home</a>
+    </layout-stack>
+  </section>
+</main></code-block>
 
     <h3>With Custom Top/Bottom Elements</h3>
 
@@ -213,13 +265,13 @@ crumbLabel: Custom Elements
       <li><span aria-current="page">Item</span></li>
     </ol>
   </nav>
-  <div data-layout-principal>
+  <section data-layout-principal>
     <layout-stack data-layout-gap="s">
       <strong>Product Details</strong>
       <p>Main content centered vertically.</p>
     </layout-stack>
-  </div>
-  <div data-layout-cover-bottom>
+  </section>
+  <section data-layout-cover-bottom>
     <layout-cluster data-layout-gap="s" data-layout-justify="between">
       <span>Step 2 of 4</span>
       <layout-cluster data-layout-gap="s">
@@ -227,7 +279,7 @@ crumbLabel: Custom Elements
         <button type="button">Next</button>
       </layout-cluster>
     </layout-cluster>
-  </div>
+  </section>
 </layout-cover></code-block>
   </section>
 

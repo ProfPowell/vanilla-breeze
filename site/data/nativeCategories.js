@@ -40,7 +40,7 @@ export default {
     { name: 'bdi', href: '/docs/elements/native/bdi/', desc: 'Bidirectional isolate' },
     { name: 'bdo', href: '/docs/elements/native/bdo/', desc: 'Bidirectional override' },
     { name: 'br', href: '/docs/elements/native/br/', desc: 'Line break' },
-    { name: 'cite', href: '/docs/elements/native/cite/', desc: 'Citation' },
+    { name: 'cite', href: '/docs/elements/native/cite/', desc: 'Title of a work' },
     { name: 'code', href: '/docs/elements/native/code/', desc: 'Code fragment' },
     { name: 'data', href: '/docs/elements/native/data/', desc: 'Machine-readable value' },
     { name: 'dfn', href: '/docs/elements/native/dfn/', desc: 'Definition term' },

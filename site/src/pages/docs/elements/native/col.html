@@ -13,7 +13,8 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;col&gt;</code> element is a void element (self-closing) that must be placed inside a <a href="/docs/elements/native/colgroup/"><code>&lt;colgroup&gt;</code></a>. It represents one or more columns in the table and allows you to apply styles to all cells in those columns without repeating attributes on each cell.</p>
+    <p>The <code>&lt;col&gt;</code> element is a void element that lives inside a <a href="/docs/elements/native/colgroup/"><code>&lt;colgroup&gt;</code></a>. It represents one or more columns in the table and allows you to apply a few styles (background, width, border, <code>visibility: collapse</code>) to all cells in those columns without repeating attributes on each cell.</p>
+    <p>You may write <code>&lt;col&gt;</code> elements directly after the caption without a <code>&lt;colgroup&gt;</code> tag: the parser creates the colgroup for you (its start and end tags are optional). A <code>&lt;colgroup&gt;</code> either has <code>&lt;col&gt;</code> children <em>or</em> a <code>span</code> attribute, never both &mdash; when <code>&lt;col&gt;</code> children are present, the group's <code>span</code> is ignored.</p>
     <p>The most common uses are setting consistent column widths and applying background colors to entire columns for visual grouping or emphasis.</p>
   </section>
 
@@ -36,9 +37,9 @@ crumbLabel: Native Elements
   <caption>Team Schedule</caption>
   <colgroup>
     <col />
-    <col style="background: oklch(from var(--color-interactive) l c h / 0.05);" />
+    <col class="tinted" />
     <col />
-    <col style="background: oklch(from var(--color-interactive) l c h / 0.05);" />
+    <col class="tinted" />
   </colgroup>
   <thead>
     <tr>
@@ -55,17 +56,22 @@ crumbLabel: Native Elements
     <!-- More rows... -->
   </tbody>
 </table></code-block>
+    <code-block language="css" label="Column tint class" data-escape>col.tinted {
+  background: oklch(from var(--color-interactive) l c h / 0.08);
+}</code-block>
   </section>
 
   <section>
     <h2>The <code>span</code> Attribute</h2>
     <p>The <code>span</code> attribute applies the same properties to multiple consecutive columns from a single <code>&lt;col&gt;</code> element, avoiding repetition.</p>
     <code-block language="html" show-lines label="Col with span attribute" data-escape><colgroup>
-  <col style="width: 25%;" />
-  <col span="4" style="width: 18.75%;" />
+  <col class="name-col" />
+  <col span="4" class="day-col" />
 </colgroup>
 <!-- First col covers 1 column at 25% width,
      second col covers 4 columns each at 18.75% --></code-block>
+    <code-block language="css" label="Column width classes" data-escape>col.name-col { inline-size: 25%; }
+col.day-col  { inline-size: 18.75%; }</code-block>
 
     <table>
       <thead>
@@ -88,24 +94,32 @@ crumbLabel: Native Elements
   <section>
     <h2>Column Widths</h2>
     <p>Set fixed pixel widths, percentages, or <code>auto</code> to control column sizing.</p>
-    <code-block language="html" show-lines label="Fixed and auto column widths" data-escape><colgroup>
-  <col style="width: 150px;" />
-  <col style="width: auto;" />
-  <col style="width: 100px;" />
-</colgroup>
-<!-- Fixed-auto-fixed column layout --></code-block>
+    <code-block language="css" label="Fixed and auto column widths" data-escape>.schedule col:nth-child(1) { inline-size: 150px; }
+.schedule col:nth-child(2) { inline-size: auto; }
+.schedule col:nth-child(3) { inline-size: 100px; }</code-block>
+    <code-block language="html" show-lines label="Fixed-auto-fixed column layout" data-escape><table class="schedule">
+  <colgroup>
+    <col /><col /><col />
+  </colgroup>
+  <!-- ... -->
+</table></code-block>
   </section>
 
   <section>
     <h2>Column Highlighting</h2>
-    <p>Apply a subtle background to draw attention to a specific column, such as a recommended option in a comparison table.</p>
+    <p>Apply a subtle background to draw attention to a specific column, such as a recommended option in a comparison table. Derive the tint from a theme token so it works in dark mode and every theme.</p>
+    <code-block language="css" label="Token-relative column tint" data-escape>col.recommended {
+  background: oklch(from var(--color-success) l c h / 0.15);
+}</code-block>
     <code-block language="html" show-lines label="Highlighting a single column" data-escape><colgroup>
   <col />
   <col />
-  <col style="background: oklch(95% 0.05 140);" />
+  <col class="recommended" />
   <col />
 </colgroup>
 <!-- Third column highlighted --></code-block>
+    <h3>Painting order</h3>
+    <p>Column backgrounds sit at the bottom of the table's painting layers: table, column groups, columns, row groups, rows, then cells. VB gives every <code>&lt;th&gt;</code> a raised background and <code>tbody tr:hover</code>, <code>.striped</code>, <code>data-selected</code> and <code>data-highlight</code> paint row backgrounds, so all of these cover the column tint. Expect the tint to show only on plain <code>&lt;td&gt;</code> cells.</p>
   </section>
 
   <section>
@@ -117,7 +131,7 @@ crumbLabel: Native Elements
       <li><strong>Not supported:</strong> <code>padding</code>, <code>text-align</code>, <code>color</code>, <code>font</code> properties</li>
     </ul>
 
-    <p>For unsupported properties, target cells directly with CSS selectors or use VB's <code>data-numeric</code> attribute for right-aligned numeric columns.</p>
+    <p>For unsupported properties, target cells directly with CSS selectors, or use VB's <code>data-numeric</code> (right-aligned numbers) and <code>data-align</code> attributes on the <code>&lt;th&gt;</code>/<code>&lt;td&gt;</code> cells. <code>data-align</code> has no effect on <code>&lt;col&gt;</code>.</p>
     <code-block language="css" show-lines label="Targeting cells when col properties are limited" data-escape>/* When col doesn't support the property you need,
    target cells directly: */
 td:nth-child(3),

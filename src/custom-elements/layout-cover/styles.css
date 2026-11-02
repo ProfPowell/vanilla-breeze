@@ -24,7 +24,8 @@
   &[data-layout-padding="l"]    { --_padding: var(--size-l); }
   &[data-layout-padding="xl"]   { --_padding: var(--size-xl); }
 
-  /* Gap between non-centered elements */
+  /* Minimum space between all children; the principal's auto margins
+     still centre it in whatever space is left. */
   &[data-layout-gap="none"]  { gap: 0; }
   &[data-layout-gap="3xs"]   { gap: var(--size-3xs); }
   &[data-layout-gap="2xs"]   { gap: var(--size-2xs); }
@@ -61,5 +62,12 @@
   &[data-layout-centered] {
     align-items: center;
     text-align: center;
+
+    /* Pinned edges keep the full inline size: shrink-wrapping a header
+       made inner layouts (a justify="between" brand/nav row) collapse to
+       content width. Only the principal and other children centre. */
+    & > :is(header, footer, [data-layout-cover-top], [data-layout-cover-bottom]) {
+      align-self: stretch;
+    }
   }
 }
