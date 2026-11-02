@@ -666,8 +666,8 @@ Separator: `<li role="separator">`
 | Class | Element | Description |
 |-------|---------|-------------|
 | `mark.success/warning/error` | mark | Colored highlights |
-| `abbr.plain` | abbr | No underline |
-| `cite.quoted` | cite | Auto-add quotes |
+| `abbr[data-variant="plain"]` | abbr | No underline |
+| `cite[data-variant="quoted"]` | cite | Title in locale quotation marks instead of italics |
 | `del.diff`, `ins.diff` | del/ins | Diff display |
 | `time.relative`, `time.datetime` | time | Time variants |
 | `sup.footnote-ref` | sup | Footnote styling |

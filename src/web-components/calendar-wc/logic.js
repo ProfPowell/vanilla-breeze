@@ -23,6 +23,7 @@
  * @attr {string}  data-disabled-dates  - Comma-separated ISO dates to disable
  * @attr {string}  data-highlight-dates - Comma-separated ISO dates to highlight (optionally with :category)
  * @attr {string}  data-months          - Number of adjacent months to show (1-12). Defaults to 1.
+ * @attr {string}  data-year-range      - Years listed either side of the current year in the year select (default 10, max 200). data-min-date / data-max-date bound a side instead; the displayed year is always listed.
  * @attr {string}  data-heading-level   - Multi-month titles render as <h1>-<h6> at this level. Default: plain text (no heading).
  * @attr {string}  data-label-prev      - Accessible name for the previous-month button (default "Previous month")
  * @attr {string}  data-label-next      - Accessible name for the next-month button (default "Next month")
@@ -489,12 +490,19 @@ class CalendarWc extends VBElement {
     }
   }
 
+  /** Years listed either side of the current year when no min/max date bounds that side (data-year-range, default 10). */
+  #yearRange() {
+    const n = parseInt(this.getAttribute('data-year-range') ?? '', 10);
+    return Number.isFinite(n) && n >= 0 ? Math.min(n, 200) : 10;
+  }
+
   #buildYearOptions() {
     this.#yearSelect.innerHTML = '';
     const currentYear = new Date().getFullYear();
+    const span = this.#yearRange();
     // Always include the displayed year, even when it is far from today.
-    const minYear = Math.min(this.#viewYear, this.#minDate ? this.#minDate.getFullYear() : currentYear - 10);
-    const maxYear = Math.max(this.#viewYear, this.#maxDate ? this.#maxDate.getFullYear() : currentYear + 10);
+    const minYear = Math.min(this.#viewYear, this.#minDate ? this.#minDate.getFullYear() : currentYear - span);
+    const maxYear = Math.max(this.#viewYear, this.#maxDate ? this.#maxDate.getFullYear() : currentYear + span);
     for (let y = minYear; y <= maxYear; y++) {
       const opt = document.createElement('option');
       opt.value = String(y);

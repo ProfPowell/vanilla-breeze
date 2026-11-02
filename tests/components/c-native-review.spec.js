@@ -69,11 +69,21 @@ test.describe('cite', () => {
     expect(await css(page, '#attr', 'textTransform')).toBe('uppercase');
   });
 
-  test('cite.quoted: quotes instead of italics, locale-aware marks', async ({ page }) => {
-    await load(page, '<p><cite id="q" class="quoted">Song</cite></p><p lang="de"><cite id="de" class="quoted">Lied</cite></p>');
+  test('cite[data-variant=quoted]: quotes instead of italics, locale-aware marks', async ({ page }) => {
+    await load(page, '<p><cite id="q" data-variant="quoted">Song</cite></p><p lang="de"><cite id="de" data-variant="quoted">Lied</cite></p>');
     expect(await css(page, '#q', 'fontStyle')).toBe('normal');
     expect(await css(page, '#q', 'content', '::before')).toBe('open-quote');
     expect(await css(page, '#de', 'quotes')).toContain('„');
+  });
+
+  test('cite[data-variant=quoted] follows the element language; the old class is inert', async ({ page }) => {
+    await load(page, `<p lang="fr"><cite id="fr" data-variant="quoted">Le Petit Prince</cite></p>
+      <p lang="ja"><cite id="ja" data-variant="quoted">雪国</cite></p>
+      <p><cite id="old" class="quoted">Song</cite></p>`);
+    expect(await css(page, '#fr', 'quotes')).toContain('«');
+    expect(await css(page, '#ja', 'quotes')).toContain('「');
+    expect(await css(page, '#old', 'fontStyle')).toBe('italic');
+    expect(await css(page, '#old', 'content', '::before')).not.toBe('open-quote');
   });
 });
 

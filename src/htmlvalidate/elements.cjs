@@ -428,6 +428,7 @@ module.exports = {
       "data-disabled-dates": {},
       "data-highlight-dates": {},
       "data-months": {},
+      "data-year-range": {},
       "data-heading-level": {},
       "data-label-prev": {},
       "data-label-next": {},

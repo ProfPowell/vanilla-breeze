@@ -202,6 +202,24 @@ test('the year select includes the configured year', async ({ page }) => {
   await expect(page.locator('calendar-wc select')).toHaveValue('1990');
 });
 
+test('year select spans ±10 years by default; data-year-range widens it', async ({ page }) => {
+  await load(page, `
+    <calendar-wc id="d" data-month="4" data-year="2026"></calendar-wc>
+    <calendar-wc id="w" data-month="4" data-year="2026" data-year-range="100"></calendar-wc>
+    <calendar-wc id="z" data-month="4" data-year="2026" data-year-range="0"></calendar-wc>
+    <calendar-wc id="b" data-month="4" data-year="2026" data-year-range="100" data-max-date="2026-12-31"></calendar-wc>`);
+  const r = await page.evaluate(() => Object.fromEntries(['d', 'w', 'z', 'b'].map((id) => {
+    const o = [...document.querySelectorAll(`#${id} select.calendar-year option`)].map((x) => Number(x.value));
+    return [id, [o[0], o.at(-1), o.length]];
+  })));
+  expect(r).toEqual({
+    d: [2016, 2036, 21],
+    w: [1926, 2126, 201],
+    z: [2026, 2026, 1],
+    b: [1926, 2026, 101],
+  });
+});
+
 test('multi-month titles are plain text unless data-heading-level is set', async ({ page }) => {
   await load(page, `
     <calendar-wc id="a" data-month="4" data-year="2026" data-months="2"></calendar-wc>

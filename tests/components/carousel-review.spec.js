@@ -10,6 +10,7 @@
  */
 import { test, expect } from 'playwright/test';
 import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
 
 const REPO = join(import.meta.dirname, '..', '..');
 
@@ -234,4 +235,62 @@ test('swipe import resolving after a reconnect binds swipe once', async ({ page 
     return c.currentIndex;
   }, SLIDES);
   expect(index).toBe(1);
+});
+
+// ── carousel-transitions demo: slide text contrast ──────────────────
+
+/** WCAG relative luminance of an `oklch(L% C H)` / `rgb()` colour string (sRGB, clipped). */
+function luminance(str) {
+  let rgb;
+  const ok = str.match(/oklch\(\s*([\d.]+)(%?)\s+([\d.]+)\s+([\d.]+)/);
+  if (ok) {
+    const L = Number(ok[1]) / (ok[2] ? 100 : 1);
+    const C = Number(ok[3]);
+    const h = (Number(ok[4]) * Math.PI) / 180;
+    const a = C * Math.cos(h); const b = C * Math.sin(h);
+    const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+    const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+    const s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3;
+    rgb = [
+      4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+      -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+      -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+    ].map((v) => Math.min(1, Math.max(0, v)));
+  } else {
+    const [r, g, b] = str.match(/[\d.]+/g).slice(0, 3).map((v) => Number(v) / 255);
+    rgb = [r, g, b].map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+  }
+  return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+}
+const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+
+test('carousel-transitions demo: slide text is ≥ 4.5:1 against both gradient stops', async ({ page }) => {
+  await page.route('**/src/**', (route) => route.fulfill({
+    path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
+  }));
+  const url = '/__carousel-transitions-demo.html';
+  await page.route(`**${url}`, (route) => route.fulfill({
+    status: 200,
+    contentType: 'text/html; charset=utf-8',
+    body: readFileSync(join(REPO, 'demos/examples/demos/carousel-transitions.html'), 'utf8'),
+  }));
+  await page.goto(url, { waitUntil: 'load' });
+  const slides = await page.locator('.slide').evaluateAll((els) => els.map((el) => ({
+    bg: el.dataset.bg,
+    image: getComputedStyle(el).backgroundImage,
+    text: [...el.querySelectorAll('h3, p')].map((t) => getComputedStyle(t).color),
+  })));
+  expect(slides.length).toBeGreaterThan(10);
+  const failures = [];
+  for (const s of slides) {
+    const stops = s.image.match(/oklch\([^)]*\)/g) ?? [];
+    expect(stops.length, `${s.bg} gradient stops`).toBe(2);
+    for (const stop of stops) {
+      for (const fg of s.text) {
+        const r = ratio(luminance(stop), luminance(fg));
+        if (r < 4.5) failures.push(`${s.bg}: ${fg} on ${stop} = ${r.toFixed(2)}`);
+      }
+    }
+  }
+  expect(failures).toEqual([]);
 });

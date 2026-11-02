@@ -8,6 +8,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **`--btn-border-width` button hook.** Themes set the border width through it
+  (plus `border-color`/`border-style`) instead of a `border` shorthand. The
+  padding gives the width back, so primary, secondary and ghost buttons are the
+  same height in every theme. All bordered themes and packs use it.
+
 - **Stop buttons and history for the AI components.** `<ai-chat>` and
   `<ai-summary>` show a Stop button while a reply streams (plus a public
   `stop()`); endpoint mode sends prior turns as `messages[]`
@@ -74,6 +79,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   - **`<calendar-wc>`:** month titles are plain text unless `data-heading-level` is set.
   - **`<calendar-event>`:** is a block (titles ellipsize). It shows a pointer only when it contains a link or button.
   - **Overlapping clusters:** `data-layout-overlap` keeps source order (the "+N" chip comes last).
+  - **`<cite>`:** the quoted variant is `data-variant="quoted"` (was `class="quoted"`), matching `a` and `abbr`. Its quotation marks follow the language, as `<q>` does: «…» in French, „…" in German.
 
 - **`<brand-mark>` never modifies its content.** Authored children (an
   `<img>`, an `<svg>`, text, a tagline) are left exactly as written. `src`
@@ -120,6 +126,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Themes.**
+  - Links, outline buttons and primary-button labels reach 4.5:1 contrast in every theme and accent, in both modes (anthropic, ibm, mcdonalds, starbucks, art-deco, claymorphism, cyber, journal, nord, solarized, super2026, tokyo-night, dusk, bauhaus, high-noon, dawn, cottagecore; forest, sunset, coral and amber accents). Brand primaries keep their brand value; only `--color-interactive` changed.
+  - Theme blockquote glyphs are silent to screen readers and sit on the inline-start side in right-to-left text, with logical padding.
+  - A breadcrumb's linked current crumb is plain current text, not the nav current-page pill (starbucks pill, neumorphism inset, wrong colour elsewhere).
+- **Range sliders.** The value bubble and datalist labels are positioned in CSS, so they track the thumb after late layout changes and resizes. The chat `[data-bubble]` shape no longer narrows range inputs to 75%.
+
 - **Security and data loss.**
   - `<card-list>` no longer writes `javascript:` URLs from data.
   - `<comment-thread>` no longer injects unsanitized HTML or `javascript:` author links.
@@ -144,6 +156,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     - Arrow keys move from the focused day.
     - The day detail opens from the keyboard.
     - Multi-day events no longer lose a day across daylight-saving changes.
+    - `data-year-range` sets how many years the year select lists either side of the current year (default 10).
   - **`<carousel-wc>`:**
     - Autoplay has a pause/play button.
     - It stops announcing every slide while rotating.
@@ -165,6 +178,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   - Removed false screen-reader claims (cite, code, colgroup, caption, chat-thread, comment-thread).
   - Layout pages show the `data-layout` attribute form.
   - Canvas demos follow the theme.
+  - The carousel transitions demo meets 4.5:1 text contrast on every slide.
   - colgroup documents `scope="colgroup"`.
   - Every C component's `api.json` now matches its runtime.
 

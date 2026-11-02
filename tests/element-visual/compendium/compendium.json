@@ -847,6 +847,7 @@
       "category": "forms",
       "cssFile": "src/web-components/index.css",
       "jsRequired": true,
+      "readySelector": "input[data-range-init]",
       "variants": [
         {
           "id": "default",
@@ -1602,10 +1603,18 @@
         {
           "id": "quoted",
           "name": "Quoted",
-          "classes": [
-            "quoted"
-          ],
-          "html": "<p>I recently read <cite class=\"quoted\">Thinking, Fast and Slow</cite> by Daniel Kahneman.</p>"
+          "html": "<p>I recently read <cite data-variant=\"quoted\">Thinking, Fast and Slow</cite> by Daniel Kahneman.</p>",
+          "attributes": {
+            "data-variant": "quoted"
+          }
+        },
+        {
+          "id": "quoted-locales",
+          "name": "Quoted (French and German marks)",
+          "attributes": {
+            "data-variant": "quoted"
+          },
+          "html": "<p lang=\"fr\">Elle a lu <cite data-variant=\"quoted\">Le Petit Prince</cite> hier.</p>\n<p lang=\"de\">Er hat <cite data-variant=\"quoted\">Der Prozess</cite> gelesen.</p>"
         }
       ]
     },
@@ -4267,6 +4276,11 @@
           "id": "colgroup-scope",
           "name": "Column groups with scope=colgroup",
           "html": "<table><caption>Revenue by region</caption><colgroup span=\"1\"></colgroup><colgroup span=\"2\"></colgroup><colgroup span=\"2\"></colgroup><thead><tr><th scope=\"col\" rowspan=\"2\">Region</th><th scope=\"colgroup\" colspan=\"2\">Q1</th><th scope=\"colgroup\" colspan=\"2\">Q2</th></tr><tr><th scope=\"col\">Rev</th><th scope=\"col\">Profit</th><th scope=\"col\">Rev</th><th scope=\"col\">Profit</th></tr></thead><tbody><tr><th scope=\"row\">North</th><td data-numeric>$120k</td><td data-numeric>$18k</td><td data-numeric>$134k</td><td data-numeric>$21k</td></tr></tbody></table>"
+        },
+        {
+          "id": "col-caption",
+          "name": "Caption with col elements",
+          "html": "<table><caption>Plan limits</caption><colgroup><col><col span=\"2\"></colgroup><thead><tr><th scope=\"col\">Plan</th><th scope=\"col\" data-numeric>Seats</th><th scope=\"col\" data-numeric>Storage</th></tr></thead><tbody><tr><th scope=\"row\">Team</th><td data-numeric>10</td><td data-numeric>50 GB</td></tr><tr><th scope=\"row\">Business</th><td data-numeric>50</td><td data-numeric>500 GB</td></tr></tbody></table>"
         }
       ]
     },
@@ -4823,6 +4837,58 @@
           "id": "disabled",
           "name": "Disabled",
           "html": "<label for=\"cp-locked\">Locked color</label>\n<color-picker disabled>\n  <input type=\"color\" id=\"cp-locked\" name=\"locked\" value=\"#22c55e\">\n</color-picker>"
+        }
+      ]
+    },
+    {
+      "id": "chat-input",
+      "tag": "chat-input",
+      "type": "web-component",
+      "category": "forms",
+      "cssFile": "src/web-components/chat-input/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Default",
+          "html": "<chat-input name=\"message\">\n  <textarea data-grow rows=\"1\" aria-label=\"Message\" placeholder=\"Type a message…\"></textarea>\n  <footer><button type=\"submit\" class=\"small\" data-send>Send</button></footer>\n</chat-input>"
+        },
+        {
+          "id": "disabled",
+          "name": "Disabled",
+          "html": "<chat-input name=\"message\" disabled>\n  <textarea data-grow rows=\"1\" aria-label=\"Message\" placeholder=\"Type a message…\"></textarea>\n  <footer><button type=\"submit\" class=\"small\" data-send>Send</button></footer>\n</chat-input>"
+        }
+      ]
+    },
+    {
+      "id": "chat-window",
+      "tag": "chat-window",
+      "type": "web-component",
+      "category": "feedback",
+      "cssFile": "src/web-components/chat-window/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Conversation with input",
+          "fixtureWidth": "wide",
+          "html": "<chat-window>\n  <script type=\"application/json\" data-participants>{\"user\":{\"name\":\"You\",\"role\":\"user\"},\"sarah\":{\"name\":\"Sarah Chen\",\"role\":\"agent\"}}</script>\n  <header><h3>Support Chat</h3></header>\n  <chat-thread role=\"log\" aria-label=\"Support conversation\" aria-live=\"polite\">\n    <chat-message data-role=\"agent\" data-from=\"sarah\"><chat-bubble><p>Welcome! How can I help?</p></chat-bubble></chat-message>\n    <chat-message data-role=\"user\" data-from=\"user\"><chat-bubble><p>My order hasn't arrived yet.</p></chat-bubble></chat-message>\n  </chat-thread>\n  <chat-input name=\"message\">\n    <textarea data-grow rows=\"1\" aria-label=\"Message\" placeholder=\"Type a message…\"></textarea>\n    <footer><button type=\"submit\" class=\"small\" data-send>Send</button></footer>\n  </chat-input>\n</chat-window>"
+        }
+      ]
+    },
+    {
+      "id": "comment-thread",
+      "tag": "comment-thread",
+      "type": "web-component",
+      "category": "feedback",
+      "cssFile": "src/web-components/comment-thread/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Thread with a reply",
+          "fixtureWidth": "wide",
+          "html": "<comment-thread aria-label=\"Comments on issue 482\">\n  <article data-comment id=\"ct-c1\" data-author=\"Ada Lovelace\" data-mine>\n    <p data-comment-body>Looks great — ship it.</p>\n  </article>\n  <article data-comment id=\"ct-c2\" data-author=\"Bob\" data-parent=\"ct-c1\">\n    <p data-comment-body>Agreed!</p>\n  </article>\n  <article data-comment id=\"ct-c3\" data-author=\"Carol\">\n    <p data-comment-body>One nit: please double-check the migration script.</p>\n  </article>\n  <template data-reply-form>\n    <comment-box submit-label=\"Reply\" data-show-cancel></comment-box>\n  </template>\n</comment-thread>"
         }
       ]
     }
