@@ -8,6 +8,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **`Analytics.getStatus()`** — a read-only snapshot of the analytics
+  runtime: whether it is running, why it is off (user, GPC, DNT, consent),
+  the fields an event carries, and per-page send counts. A
+  `vb:analytics-status` event fires when it changes.
+- **`<markdown-viewer sanitize>`** — parsed markdown now goes through the
+  shared sanitizer by default; `sanitize="off"` opts out for trusted
+  content.
+
 - **`data-accent` for colour accents.** Accent presets (ocean, forest,
   sunset, …) were inline seeds ThemeManager wrote on `<html>`, and the
   themes page's `data-theme="forest"` examples did nothing. `data-accent`
@@ -28,6 +36,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   `/docs/concepts/vb-store/`.
 
 ### Changed
+
+- **`<analytics-panel>` rebuilt on the runtime's real state.** It used to
+  read storage keys nothing writes, so it always said "No data stored"
+  while page views were being sent, and it reported "active" to visitors
+  whose Global Privacy Control or Do Not Track kept analytics off. It now
+  shows what is actually sent and why analytics is off, Pause/Resume go
+  through `setConsent()`, "Clear my data" is gone (there was nothing local
+  to clear), it renders once and keeps focus, and it uses VB tokens, so it
+  is readable in dark mode. The unused `--font-size-0`/`--font-size-1`
+  Open Props aliases are removed.
 
 - **Legacy link and abbr classes removed.** `a.muted`, `a.plain` and
   `a.external` are gone (use `data-variant="muted"` / `"plain"` and
@@ -52,6 +70,30 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   nav page.
 
 ### Fixed
+
+- **`<ai-summary>` XSS.** Model or endpoint output rendered through
+  `<markdown-viewer>` was inserted as raw HTML; it is now sanitized.
+- **`<activity-feed>` froze grouped feeds.** Any child change on a
+  `data-group` feed started an endless regroup loop. Moving the feed no
+  longer stacks infinite-scroll sentinels, and keyboard navigation now
+  works (a single Tab stop with a roving tabindex; keys work from links
+  inside an entry).
+- **`<audio-player>` keyboard.** Shortcuts were bound on the host and
+  could not see past the shadow boundary, so arrow keys on the volume
+  slider seeked the track and Space on the playlist started playback.
+  Focused controls now keep their own keys. `loop` now loops a single
+  track.
+- **`<audio-visualizer>`** restarts after a DOM move, no longer silences
+  cross-origin audio (it skips hooking and sets `data-state`), no longer
+  doubles the volume when two visualizers share an `<audio>`, and clamps
+  bad `data-fft-size` values instead of throwing.
+- **`<ai-chat>` / `<ai-summary>`** no longer duplicate their UI when
+  moved; `<ai-chat>` ignores a send while a reply is streaming (Escape to
+  stop keeps working), and streaming output is `aria-busy`.
+- **`<accordion-wc>` `panels` setter** bound listeners twice when assigned
+  before connection (with `transition`, a click never opened the panel)
+  and dropped `data-upgraded` when assigned later. A lone `<p>` or `<ul>`
+  answer is now wrapped instead of being turned into `role="region"`.
 
 - **Link auto-icons.** A `download` link to a PDF shows the download
   arrow instead of the PDF badge; links in `nav`, `header` and `footer` and
