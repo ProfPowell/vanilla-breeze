@@ -1508,6 +1508,13 @@
           "interactive": true,
           "setup": "await new Promise(r => setTimeout(r, 500));",
           "html": "<card-list data-items='[{\"id\":1,\"name\":\"Design System\",\"description\":\"Component library\"},{\"id\":2,\"name\":\"Documentation\",\"description\":\"API reference\"},{\"id\":3,\"name\":\"Examples\",\"description\":\"Code samples\"}]' data-key=\"id\">\n  <template>\n    <article class=\"card\">\n      <h3 data-field=\"name\"></h3>\n      <p data-field=\"description\"></p>\n    </article>\n  </template>\n</card-list>"
+        },
+        {
+          "id": "grid-gap",
+          "name": "Global data-layout grid",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 500));",
+          "html": "<card-list data-layout=\"grid\" data-layout-gap=\"xs\" data-items='[{\"id\":1,\"name\":\"One\"},{\"id\":2,\"name\":\"Two\"},{\"id\":3,\"name\":\"Three\"}]' data-key=\"id\">\n  <template><layout-card><h3 data-field=\"name\"></h3></layout-card></template>\n</card-list>"
         }
       ]
     },
@@ -1523,13 +1530,25 @@
           "id": "default",
           "name": "Default Carousel",
           "fixtureWidth": "wide",
-          "html": "<carousel-wc>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Slide 1</div>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Slide 2</div>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Slide 3</div>\n</carousel-wc>"
+          "html": "<carousel-wc aria-label=\"Default carousel\">\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Slide 1</div>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Slide 2</div>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Slide 3</div>\n</carousel-wc>"
         },
         {
           "id": "loop",
           "name": "Loop with Indicators",
           "fixtureWidth": "wide",
-          "html": "<carousel-wc loop indicators=\"true\">\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">First Slide</div>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Second Slide</div>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Third Slide</div>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Fourth Slide</div>\n</carousel-wc>"
+          "html": "<carousel-wc aria-label=\"Looping carousel\" loop indicators=\"true\">\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">First Slide</div>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Second Slide</div>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Third Slide</div>\n  <div style=\"background: var(--color-surface-alt); padding: var(--size-xl); text-align: center;\">Fourth Slide</div>\n</carousel-wc>"
+        },
+        {
+          "id": "autoplay",
+          "name": "Autoplay with Rotation Control",
+          "fixtureWidth": "wide",
+          "html": "<carousel-wc autoplay autoplay-delay=\"600000\" loop aria-label=\"Autoplay carousel\">\n  <article><p>First slide</p></article>\n  <article><p>Second slide</p></article>\n  <article><p>Third slide</p></article>\n</carousel-wc>"
+        },
+        {
+          "id": "item-width-length",
+          "name": "Fixed Item Width",
+          "fixtureWidth": "wide",
+          "html": "<carousel-wc item-width=\"12rem\" gap=\"m\" aria-label=\"Fixed width carousel\">\n  <article><p>Card 1</p></article>\n  <article><p>Card 2</p></article>\n  <article><p>Card 3</p></article>\n  <article><p>Card 4</p></article>\n</carousel-wc>"
         }
       ]
     },
@@ -1626,12 +1645,17 @@
         {
           "id": "single",
           "name": "Single Select",
-          "html": "<combo-box name=\"country\" filter=\"contains\">\n  <input type=\"text\" placeholder=\"Search countries...\">\n  <ul>\n    <li data-value=\"us\">United States</li>\n    <li data-value=\"gb\">United Kingdom</li>\n    <li data-value=\"ca\">Canada</li>\n    <li data-value=\"au\">Australia</li>\n    <li data-value=\"de\">Germany</li>\n  </ul>\n</combo-box>"
+          "html": "<label for=\"cb-country\">Country</label>\n<combo-box filter=\"contains\">\n  <input type=\"text\" id=\"cb-country\" name=\"country\" placeholder=\"Search countries...\">\n  <ul>\n    <li data-value=\"us\">United States</li>\n    <li data-value=\"gb\">United Kingdom</li>\n    <li data-value=\"ca\">Canada</li>\n  </ul>\n</combo-box>"
         },
         {
           "id": "multi",
           "name": "Multi-Select Tags",
           "html": "<combo-box name=\"skills\" multiple max=\"5\" filter=\"contains\">\n  <input type=\"text\" placeholder=\"Add skills...\">\n  <ul>\n    <li data-value=\"js\">JavaScript</li>\n    <li data-value=\"css\">CSS</li>\n    <li data-value=\"html\">HTML</li>\n    <li data-value=\"react\">React</li>\n    <li data-value=\"node\">Node.js</li>\n  </ul>\n</combo-box>"
+        },
+        {
+          "id": "disabled",
+          "name": "Disabled",
+          "html": "<label for=\"cb-locked\">Country</label>\n<combo-box name=\"country\" value=\"ca\" disabled>\n  <input type=\"text\" id=\"cb-locked\">\n  <ul>\n    <li data-value=\"us\">United States</li>\n    <li data-value=\"ca\">Canada</li>\n  </ul>\n</combo-box>"
         }
       ]
     },
@@ -1648,7 +1672,7 @@
           "name": "Open Command Palette",
           "interactive": true,
           "screenshotTarget": "page",
-          "html": "<command-palette>\n  <command-group label=\"Navigation\">\n    <command-item value=\"home\" data-hotkey=\"alt+h\">Go Home</command-item>\n    <command-item value=\"docs\" data-hotkey=\"alt+d\">Documentation</command-item>\n    <command-item value=\"examples\">Examples</command-item>\n  </command-group>\n  <command-group label=\"Actions\">\n    <command-item value=\"search\" data-hotkey=\"meta+k\">Search</command-item>\n    <command-item value=\"theme\" data-hotkey=\"alt+t\">Toggle Theme</command-item>\n  </command-group>\n</command-palette>",
+          "html": "<command-palette label=\"Site commands\">\n  <command-group label=\"Navigation\">\n    <command-item value=\"home\" data-hotkey=\"shift+h\">Go Home</command-item>\n    <command-item value=\"docs\" data-hotkey=\"shift+o\">Documentation</command-item>\n    <command-item value=\"examples\">Examples</command-item>\n  </command-group>\n  <command-group label=\"Actions\">\n    <command-item value=\"search\" data-hotkey=\"shift+t\">Search</command-item>\n    <command-item value=\"theme\" data-hotkey=\"alt+t\">Toggle Theme</command-item>\n  </command-group>\n</command-palette>",
           "setup": "await new Promise(r => setTimeout(r, 500));\ndocument.querySelector('command-palette').open();\nawait new Promise(r => setTimeout(r, 300));"
         }
       ]
@@ -1666,6 +1690,11 @@
           "name": "Before/After Comparison",
           "html": "<compare-surface position=\"50\" style=\"height: 200px; display: block; border: 1px solid var(--color-border); border-radius: var(--radius-m);\">\n  <div style=\"background: linear-gradient(135deg, oklch(70% 0.12 40), oklch(60% 0.15 40)); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;\">Before</div>\n  <div style=\"background: linear-gradient(135deg, oklch(70% 0.15 260), oklch(60% 0.15 260)); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;\">After</div>\n</compare-surface>",
           "fixtureWidth": "wide"
+        },
+        {
+          "id": "rtl",
+          "name": "Right-to-left at 30%",
+          "html": "<compare-surface dir=\"rtl\" position=\"30\" label=\"Before and after\">\n  <article><p>Before</p></article>\n  <article><p>After</p></article>\n</compare-surface>"
         }
       ]
     },
@@ -1681,13 +1710,13 @@
           "id": "simple",
           "name": "Simple Accept/Reject",
           "screenshotTarget": "dialog",
-          "html": "<consent-banner persist=\"demo-simple\">\n  <dialog>\n    <p>We use cookies to improve your experience.</p>\n    <footer>\n      <button value=\"reject\" class=\"secondary\">Reject</button>\n      <button value=\"accept\">Accept All</button>\n    </footer>\n  </dialog>\n</consent-banner>"
+          "html": "<consent-banner persist=\"demo-simple\">\n  <dialog>\n    <p>We use cookies to improve your experience.</p>\n    <footer>\n      <button value=\"reject\">Reject</button>\n      <button value=\"accept\">Accept All</button>\n    </footer>\n  </dialog>\n</consent-banner>"
         },
         {
           "id": "granular",
           "name": "Granular Preferences",
           "screenshotTarget": "dialog",
-          "html": "<consent-banner persist=\"demo-granular\">\n  <dialog>\n    <h3>Cookie Preferences</h3>\n    <fieldset>\n      <label><input type=\"checkbox\" name=\"necessary\" checked disabled> Necessary</label>\n      <label><input type=\"checkbox\" name=\"analytics\"> Analytics</label>\n      <label><input type=\"checkbox\" name=\"marketing\"> Marketing</label>\n    </fieldset>\n    <footer>\n      <button value=\"reject\" class=\"secondary\">Reject All</button>\n      <button value=\"save\">Save Preferences</button>\n      <button value=\"accept\">Accept All</button>\n    </footer>\n  </dialog>\n</consent-banner>"
+          "html": "<consent-banner persist=\"demo-granular\">\n  <dialog>\n    <h3>Cookie Preferences</h3>\n    <fieldset>\n      <legend class=\"visually-hidden\">Cookie categories</legend>\n      <label><input type=\"checkbox\" name=\"necessary\" checked disabled> Necessary</label>\n      <label><input type=\"checkbox\" name=\"analytics\"> Analytics</label>\n      <label><input type=\"checkbox\" name=\"marketing\"> Marketing</label>\n    </fieldset>\n    <footer>\n      <button value=\"reject\">Reject All</button>\n      <button value=\"save\">Save Preferences</button>\n      <button value=\"accept\">Accept All</button>\n    </footer>\n  </dialog>\n</consent-banner>"
         }
       ]
     },
@@ -1707,7 +1736,7 @@
         {
           "id": "card",
           "name": "Card Variant",
-          "html": "<content-swap transition=\"fade\" card>\n  <div data-face=\"front\" style=\"padding: var(--size-l);\">\n    <p><strong>Product Info</strong></p>\n    <p>Hover or click to see details</p>\n  </div>\n  <div data-face=\"back\" style=\"padding: var(--size-l);\">\n    <p><strong>Details</strong></p>\n    <p>More information about this item</p>\n  </div>\n</content-swap>"
+          "html": "<content-swap transition=\"fade\" card>\n  <section data-face=\"front\">\n    <p><strong>Product Info</strong></p>\n    <p>Click to see details</p>\n  </section>\n  <section data-face=\"back\">\n    <p><strong>Details</strong></p>\n    <p>More information about this item</p>\n  </section>\n</content-swap>"
         }
       ]
     },
@@ -1726,6 +1755,14 @@
           "screenshotTarget": "page",
           "setup": "await new Promise(r => setTimeout(r, 300));\n    const trigger = document.querySelector('[data-trigger]');\n    trigger.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 200, clientY: 150 }));\n    await new Promise(r => setTimeout(r, 500));",
           "html": "<context-menu>\n  <div data-trigger style=\"border: 2px dashed var(--color-border); border-radius: var(--radius-m); padding: var(--size-l); text-align: center; color: var(--color-text-muted);\">Right-click area</div>\n  <menu>\n    <li><button type=\"button\">Cut</button></li>\n    <li><button type=\"button\">Copy</button></li>\n    <li><button type=\"button\">Paste</button></li>\n    <li role=\"separator\"></li>\n    <li><button type=\"button\" class=\"danger\">Delete</button></li>\n  </menu>\n</context-menu>"
+        },
+        {
+          "id": "grouped",
+          "name": "Groups and Disabled Item",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "await new Promise(r => setTimeout(r, 300));\n    const trigger = document.querySelector('[data-trigger]');\n    trigger.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 200, clientY: 150 }));\n    await new Promise(r => setTimeout(r, 500));",
+          "html": "<context-menu>\n  <p data-trigger>Right-click area</p>\n  <menu>\n    <li data-group>Edit</li>\n    <li><button type=\"button\" data-shortcut=\"f2\">Rename</button></li>\n    <li><button type=\"button\" data-disabled>Share</button></li>\n    <li role=\"separator\"></li>\n    <li data-group>Danger</li>\n    <li><button type=\"button\" class=\"danger\" data-shortcut=\"delete\">Delete</button></li>\n  </menu>\n</context-menu>"
         }
       ]
     },
@@ -2764,13 +2801,18 @@
           "id": "narrow",
           "name": "Narrow",
           "fixtureWidth": "wide",
-          "html": "<layout-center data-layout-max=\"narrow\"><p>Narrow centered content at 45rem max-width for compact layouts.</p></layout-center>"
+          "html": "<layout-center data-layout-max=\"narrow\"><p>Narrow centered content at 40rem max-width for compact layouts.</p></layout-center>"
         },
         {
           "id": "intrinsic",
           "name": "Intrinsic",
           "fixtureWidth": "wide",
           "html": "<layout-center data-layout-intrinsic><button>Centered Button</button></layout-center>"
+        },
+        {
+          "id": "narrow-gap",
+          "name": "Narrow with bare gap",
+          "html": "<layout-center data-layout-max=\"narrow\" data-layout-gap><h2>Narrow (40rem)</h2><p>Bare gap = m.</p></layout-center>"
         }
       ]
     },
@@ -2801,6 +2843,16 @@
           "id": "gap-xs",
           "name": "Gap XS",
           "html": "<layout-cluster data-layout-gap=\"xs\"><layout-badge data-color=\"primary\">HTML</layout-badge><layout-badge data-color=\"success\">CSS</layout-badge><layout-badge data-color=\"warning\">JS</layout-badge></layout-cluster>"
+        },
+        {
+          "id": "overlap-attr",
+          "name": "Overlap (attribute form)",
+          "html": "<ul data-layout=\"cluster\" data-layout-overlap><li><user-avatar><img src=\"/src/assets/placeholders/photo-reel-team-members-1-100x100.svg\" alt=\"User 1\"></user-avatar></li><li><user-avatar><img src=\"/src/assets/placeholders/photo-reel-team-members-2-100x100.svg\" alt=\"User 2\"></user-avatar></li><li><user-avatar><span data-fallback>+3</span></user-avatar></li></ul>"
+        },
+        {
+          "id": "nav-attr",
+          "name": "Navigation (attribute form)",
+          "html": "<header data-layout=\"cluster\" data-layout-justify=\"between\"><a href=\"#\">Logo</a><nav aria-label=\"Main\" data-layout=\"cluster\" data-layout-gap=\"m\"><a href=\"#\">Home</a><a href=\"#\">About</a></nav></header>"
         }
       ]
     },
@@ -2817,6 +2869,12 @@
           "name": "Centered Hero",
           "fixtureWidth": "wide",
           "html": "<layout-cover data-layout-min=\"s\" data-layout-padding=\"xl\" data-layout-centered>\n  <header><small>Welcome</small></header>\n  <div data-layout-principal>\n    <h2>Centered Hero Content</h2>\n    <p>Vertically centered principal element</p>\n  </div>\n  <footer><a href=\"#\" class=\"button\">Get Started</a></footer>\n</layout-cover>"
+        },
+        {
+          "id": "hero-semantic",
+          "name": "Hero with stretched header",
+          "fixtureWidth": "wide",
+          "html": "<layout-cover data-layout-min=\"auto\" data-layout-padding=\"l\" data-layout-centered><header data-layout=\"cluster\" data-layout-justify=\"between\"><strong>Brand</strong><nav aria-label=\"Main\">Links</nav></header><hgroup data-layout-principal><h2>Welcome</h2><p>Centered principal</p></hgroup><footer><small>Footer</small></footer></layout-cover>"
         }
       ]
     },
@@ -4204,6 +4262,11 @@
             "compact"
           ],
           "html": "<table class=\"striped compact\"><thead><tr><th>Code</th><th>Description</th><th data-numeric>Count</th></tr></thead><tbody><tr><td>200</td><td>OK</td><td data-numeric>14,523</td></tr><tr><td>301</td><td>Redirect</td><td data-numeric>842</td></tr><tr><td>404</td><td>Not Found</td><td data-numeric>156</td></tr><tr><td>500</td><td>Server Error</td><td data-numeric>12</td></tr></tbody></table>"
+        },
+        {
+          "id": "colgroup-scope",
+          "name": "Column groups with scope=colgroup",
+          "html": "<table><caption>Revenue by region</caption><colgroup span=\"1\"></colgroup><colgroup span=\"2\"></colgroup><colgroup span=\"2\"></colgroup><thead><tr><th scope=\"col\" rowspan=\"2\">Region</th><th scope=\"colgroup\" colspan=\"2\">Q1</th><th scope=\"colgroup\" colspan=\"2\">Q2</th></tr><tr><th scope=\"col\">Rev</th><th scope=\"col\">Profit</th><th scope=\"col\">Rev</th><th scope=\"col\">Profit</th></tr></thead><tbody><tr><th scope=\"row\">North</th><td data-numeric>$120k</td><td data-numeric>$18k</td><td data-numeric>$134k</td><td data-numeric>$21k</td></tr></tbody></table>"
         }
       ]
     },
@@ -4620,6 +4683,146 @@
           "fixtureWidth": "wide",
           "html": "<reader-view mode=\"pages\" columns=\"auto\"><article data-prose><h2>Article Title</h2><p>Content flows into columns and pages. Navigate with arrow keys or the prev/next controls. Font size is adjustable. State persists across sessions.</p><p>The browser determines column count based on available width.</p></article></reader-view>",
           "interactive": true
+        }
+      ]
+    },
+    {
+      "id": "chat-message",
+      "tag": "chat-message",
+      "type": "custom",
+      "category": "feedback",
+      "cssFile": "src/custom-elements/chat-message/styles.css",
+      "jsRequired": false,
+      "variants": [
+        {
+          "id": "user",
+          "name": "User",
+          "html": "<chat-message data-role=\"user\" data-from-label=\"You\"><chat-bubble><p>I need help with my order.</p></chat-bubble></chat-message>"
+        },
+        {
+          "id": "agent",
+          "name": "Agent",
+          "html": "<chat-message data-role=\"agent\" data-from-label=\"Sarah Chen\"><chat-bubble><p>Happy to help. What's the order number?</p></chat-bubble></chat-message>"
+        },
+        {
+          "id": "system",
+          "name": "System",
+          "html": "<chat-message data-role=\"system\"><chat-bubble>Sarah Chen joined the conversation.</chat-bubble></chat-message>"
+        },
+        {
+          "id": "typing",
+          "name": "Typing",
+          "html": "<chat-message data-role=\"agent\" data-status=\"typing\" data-from-label=\"Sarah Chen\"><chat-bubble><span class=\"visually-hidden\" data-chat-typing>Sarah Chen is typing</span></chat-bubble></chat-message>"
+        },
+        {
+          "id": "error",
+          "name": "Error",
+          "html": "<chat-message data-role=\"agent\" data-status=\"error\" data-from-label=\"Assistant\"><chat-bubble><p>Sorry, something went wrong.</p></chat-bubble></chat-message>"
+        }
+      ]
+    },
+    {
+      "id": "change-set",
+      "tag": "change-set",
+      "type": "web-component",
+      "category": "text",
+      "cssFile": "src/web-components/change-set/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Tracking with caption",
+          "html": "<change-set datetime=\"2026-02-20\" author=\"tpowell\"><p>Send requests to <del>/api/v1/upload</del> <ins>/api/v2/ingest</ins>.</p></change-set>"
+        },
+        {
+          "id": "final-fixed",
+          "name": "Final, no controls",
+          "html": "<change-set view=\"final\" controls=\"none\"><p>Send requests to <del>/api/v1/upload</del> <ins>/api/v2/ingest</ins>.</p></change-set>"
+        }
+      ]
+    },
+    {
+      "id": "comment-box",
+      "tag": "comment-box",
+      "type": "web-component",
+      "category": "forms",
+      "cssFile": "src/web-components/comment-box/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Default",
+          "html": "<comment-box label=\"New comment\" placeholder=\"Add a comment…\"></comment-box>"
+        },
+        {
+          "id": "limited",
+          "name": "Counter + tools",
+          "html": "<comment-box label=\"Short comment\" data-max-length=\"280\" data-show-cancel><button slot=\"toolbar\" type=\"button\">Attach</button></comment-box>"
+        }
+      ]
+    },
+    {
+      "id": "calendar-event",
+      "tag": "calendar-event",
+      "type": "custom",
+      "category": "data",
+      "cssFile": "src/custom-elements/calendar-event/styles.css",
+      "jsRequired": false,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Default",
+          "html": "<calendar-event><time datetime=\"09:00\">9:00</time> Sprint standup</calendar-event>"
+        },
+        {
+          "id": "deadline",
+          "name": "Deadline",
+          "html": "<calendar-event data-category=\"deadline\"><time datetime=\"16:00\">4:00</time> Submit report</calendar-event>"
+        },
+        {
+          "id": "with-link",
+          "name": "Actionable (link)",
+          "html": "<calendar-event data-category=\"meeting\"><time datetime=\"10:00\">10:00</time> <a href=\"#review\">Design review</a></calendar-event>"
+        },
+        {
+          "id": "with-details",
+          "name": "With details",
+          "html": "<calendar-event data-category=\"meeting\"><time datetime=\"09:00\">9:00</time> Standup<details><summary>Details</summary><p>Room B, daily sync.</p></details></calendar-event>"
+        }
+      ]
+    },
+    {
+      "id": "content-lens",
+      "tag": "content-lens",
+      "type": "web-component",
+      "category": "interactive",
+      "cssFile": "src/web-components/content-lens/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Default",
+          "html": "<content-lens data-lens-default=\"list\" data-lens-storage=\"compendium\">\n  <section data-lens-name=\"list\" data-lens-label=\"As List\"><ul><li>Alpha</li><li>Beta</li></ul></section>\n  <section data-lens-name=\"summary\" data-lens-label=\"As Summary\"><p>Two items: Alpha and Beta.</p></section>\n</content-lens>"
+        }
+      ]
+    },
+    {
+      "id": "color-picker",
+      "tag": "color-picker",
+      "type": "web-component",
+      "category": "forms",
+      "cssFile": "src/web-components/color-picker/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "labelled",
+          "name": "Labelled (name on input)",
+          "html": "<label for=\"cp-brand\">Brand color</label>\n<color-picker>\n  <input type=\"color\" id=\"cp-brand\" name=\"brand\" value=\"#6366f1\">\n</color-picker>"
+        },
+        {
+          "id": "disabled",
+          "name": "Disabled",
+          "html": "<label for=\"cp-locked\">Locked color</label>\n<color-picker disabled>\n  <input type=\"color\" id=\"cp-locked\" name=\"locked\" value=\"#22c55e\">\n</color-picker>"
         }
       ]
     }

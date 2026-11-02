@@ -53,6 +53,28 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Breaking API changes from the C-element review.**
+  - **`<comment-thread>`:** `addComment()`/`updateComment()` take `bodyText` (set as text) or `bodyHtml` (sanitized) instead of `body`. Author links are kept only for http(s) and relative URLs.
+  - **`<comment-box>` submit:** the event detail offers `waitUntil(promise)`. The box stays busy, clears when the promise resolves and keeps the text when it rejects. `comment-thread:reply` follows the same pattern and is now cancelable.
+  - **`<chat-input>`:**
+    - Inside a form it now submits the form (Enter or the send button) instead of firing `chat-input:send`.
+    - The send detail is `{ message }`.
+    - `--chat-input-radius` is removed.
+  - **`<chat-window>`:** user messages are always shown as plain text. `resolveTyping()` fills a typing placeholder.
+  - **`<card-list>`:**
+    - `setItems()`/`getItems()` are removed; use `.items`.
+    - URL attributes bound from data must be safe URLs, and `on*`/`style` are never written.
+    - It follows the global `data-layout` system.
+  - **`<popularity-index>`:** the analytics endpoint moves to `analytics-src`.
+  - **Change events:** `<compare-surface>` and `<content-lens>` no longer fire them during setup or when changed from script.
+  - **`<content-swap>`:** without explicit triggers, it adds a real toggle button instead of turning the container into a button.
+  - **`<color-picker>`:** `required` is removed. `name` and `disabled` on the inner input move to the host.
+  - **`<context-menu>`:** `select` detail is `{ item, value }`.
+  - **`<change-set>`:** gains `controls="none"`.
+  - **`<calendar-wc>`:** month titles are plain text unless `data-heading-level` is set.
+  - **`<calendar-event>`:** is a block (titles ellipsize). It shows a pointer only when it contains a link or button.
+  - **Overlapping clusters:** `data-layout-overlap` keeps source order (the "+N" chip comes last).
+
 - **`<brand-mark>` never modifies its content.** Authored children (an
   `<img>`, an `<svg>`, text, a tagline) are left exactly as written. `src`
   adds one owned `<picture>`; image-only vs wordmark is CSS, with the
@@ -97,6 +119,54 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   nav page.
 
 ### Fixed
+
+- **Security and data loss.**
+  - `<card-list>` no longer writes `javascript:` URLs from data.
+  - `<comment-thread>` no longer injects unsanitized HTML or `javascript:` author links.
+  - `<chat-window>` no longer parses typed text as HTML.
+  - `ConsentBanner.getConsent()` honours expiry and the docs await it. Before, the sample never started analytics.
+- **Components that broke when moved or re-populated.** These now rebuild cleanly on reconnect and on data setters: `<calendar-wc>`, `<color-picker>`, `<command-palette>`, `<context-menu>`, `<comment-thread>`, `<comment-box>`, `<carousel-wc>` and `<card-list>`. Before, they duplicated their UI, doubled their listeners, or left actions dead.
+- **Keyboard and screen-reader access in the C components.**
+  - **`<content-swap>`:** explicit triggers work.
+  - **`<chat-input>`:**
+    - Confirming input-method composition with Enter no longer sends.
+    - It has a focus ring.
+    - `disabled` and `maxlength` are enforced.
+  - **`<context-menu>`:**
+    - Opens with Shift+F10 or the Menu key.
+    - Reports the chosen item.
+    - Uses correct menu roles.
+  - **`<command-palette>`:** announces the active option.
+  - **`<color-picker>`:**
+    - Its button is named by the field's label.
+    - Escape closes it.
+  - **`<calendar-wc>`:**
+    - Arrow keys move from the focused day.
+    - The day detail opens from the keyboard.
+    - Multi-day events no longer lose a day across daylight-saving changes.
+  - **`<carousel-wc>`:**
+    - Autoplay has a pause/play button.
+    - It stops announcing every slide while rotating.
+  - **`<chart-wc>`:**
+    - The fallback table stays available to screen readers.
+    - Charts print as a table.
+    - Charts built from data get a generated table.
+- **CSS for the C elements.**
+  - **Invalid rule removed:** the `translate: no` rule did nothing; use the HTML `translate="no"` attribute.
+  - **`<pre>`:**
+    - Bare `<pre>` no longer wraps ASCII art.
+    - `<pre><samp>` gets the code-block treatment.
+  - **Inline `<code>`:** wraps long identifiers.
+  - **Editorial theme:** no longer turns inline citations into block lines.
+  - **Cover hero:** headers span the full width.
+  - **`<compare-surface>`:** works in right-to-left layouts and reacts to `position` changes.
+  - **`<content-lens>`:** chips show keyboard focus.
+- **C element doc pages.**
+  - Removed false screen-reader claims (cite, code, colgroup, caption, chat-thread, comment-thread).
+  - Layout pages show the `data-layout` attribute form.
+  - Canvas demos follow the theme.
+  - colgroup documents `scope="colgroup"`.
+  - Every C component's `api.json` now matches its runtime.
 
 - **`<bdo dir="rtl">` reverses text again.** VB's own `unicode-bidi`
   rules outranked the element and weakened the browser's isolation on

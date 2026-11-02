@@ -206,7 +206,7 @@ export default {
           "prose"
         ],
         "default": "normal",
-        "description": "Max inline size: --content-narrow / --content-normal / --content-wide, or prose (65ch)."
+        "description": "Max inline size: narrow (--content-narrow, 40rem), normal (--content-normal, 60rem), wide (--content-wide, 80rem) or prose (65ch)."
       },
       {
         "name": "data-layout-intrinsic",
@@ -253,7 +253,8 @@ export default {
           "2xl",
           "3xl"
         ],
-        "description": "Become a flex column with this gap between children, on the shared size scale."
+        "default": "m",
+        "description": "Become a flex column with this gap between children, on the shared size scale. Bare attribute = m."
       }
     ]
   },
@@ -338,7 +339,7 @@ export default {
           "l"
         ],
         "default": "s",
-        "description": "Overlap items in reverse order (avatar groups). Bare attribute = s."
+        "description": "Overlap items (avatar groups) in DOM order, later items on top, each with a surface-coloured ring. Forces gap 0. Bare attribute = s."
       }
     ],
     "childAttributes": [
@@ -454,7 +455,7 @@ export default {
           "auto"
         ],
         "default": "xl",
-        "description": "Minimum block size: 50 / 70 / 80vh, xl = 100dvh, auto = none. One-off: style=\"--layout-min: 65vh\"."
+        "description": "Minimum block size: 50 / 70 / 80vh, xl = 100dvh, auto = none. One-off: set --layout-min in a stylesheet rule (e.g. .hero { --layout-min: 65vh; })."
       },
       {
         "name": "data-layout-padding",
@@ -489,14 +490,14 @@ export default {
           "3xl"
         ],
         "default": "none",
-        "description": "Gap between the non-centered elements, on the shared size scale."
+        "description": "Minimum space between all children (top, principal, bottom), on the shared size scale. The principal's auto margins still centre it."
       },
       {
         "name": "data-layout-centered",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Center children and text horizontally."
+        "description": "Center the principal and text horizontally; header/footer (and data-layout-cover-top/-bottom) children still span the full width."
       }
     ],
     "childAttributes": [
@@ -1044,8 +1045,10 @@ export default {
     ]
   },
   "calendar-event": {
+    "$schema": "../../../schemas/api.schema.json",
     "element": "calendar-event",
     "type": "custom-element",
+    "description": "CSS-only event block for <day-view>, <week-view> and the <calendar-wc> day detail: category colour, inline-start accent bar, half-hour placement. Multi-hour spans are positioned by the parent view's JavaScript.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -1056,20 +1059,50 @@ export default {
       {
         "name": "data-category",
         "kind": "data",
-        "purpose": "config",
-        "type": "string"
+        "purpose": "visual-variant",
+        "type": "string",
+        "description": "Sets --event-color. Built in: meeting, deadline, personal, focus; any other value works with your own [data-category] rule."
       },
       {
         "name": "data-start",
         "kind": "data",
         "purpose": "config",
-        "type": "string"
+        "type": "enum",
+        "values": [
+          "30"
+        ],
+        "description": "Minute offset within the hour row. \"30\" places a single-hour event in the bottom half; day-view and week-view auto mode set it from the <time> when minutes >= 30."
       },
       {
         "name": "data-duration",
         "kind": "data",
         "purpose": "config",
-        "type": "string"
+        "type": "string",
+        "description": "Length of a spanning event as hours and/or minutes, e.g. 2h, 45m, 1h30m, 90m. Read by <day-view>/<week-view> JS, which positions the event absolutely across hour rows. Unparseable values fall back to 1 hour."
+      },
+      {
+        "name": "data-date",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "ISO date (YYYY-MM-DD) of the event. Required for <week-view> auto mode, which places the event in that day's column; ignored by <day-view>."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<time datetime=\"HH:MM\">",
+        "required": false,
+        "description": "Start time label. The first <time datetime> is what day-view/week-view auto mode use to place the event; without one, day-view auto mode moves the event to its all-day list and week-view auto mode skips it."
+      },
+      {
+        "element": "<time datetime=\"PT…\">",
+        "required": false,
+        "description": "Optional human-readable duration. Visually hidden, still read by assistive tech. Not used for positioning: use data-duration."
+      },
+      {
+        "element": "<a href> or <button>",
+        "required": false,
+        "description": "Put interactive content inside when the event is actionable; the block shows a pointer cursor and hover tint only then. The event element itself is not interactive."
       }
     ]
   },
@@ -2628,35 +2661,50 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Initial month (1-12). Defaults to current."
+        "description": "Month to display (1-12). Defaults to the current month. Observed; reflected back as the view changes.",
+        "direction": "both"
       },
       {
         "name": "data-year",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Initial year. Defaults to current."
+        "description": "Year to display. Defaults to the current year. Observed; reflected back as the view changes.",
+        "direction": "both"
       },
       {
         "name": "data-events",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "JSON: events keyed by start ISO date. Values may be a string, an object, or an array of events. Each event accepts optional `end` (ISO date, inclusive) or `days` (count) to span multiple days; spans render as continuous bars in data-size=\"large\"."
+        "description": "JSON: events keyed by start ISO date. Values may be a string, an object, or an array of events. Each event accepts optional `end` (ISO date, inclusive) or `days` (count) to span multiple days; spans render as continuous bars in data-size=\"large\". Observed: changes re-render and fire calendar-wc:events-changed with source \"attribute\"."
       },
       {
         "name": "data-selection",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "Selection mode: \"none\" (default), \"single\", \"range\", \"multi\""
+        "type": "enum",
+        "description": "Selection mode: \"none\" (default), \"single\", \"range\", \"multi\"",
+        "values": [
+          "none",
+          "single",
+          "range",
+          "multi"
+        ],
+        "default": "none"
       },
       {
         "name": "data-size",
         "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "description": "Size: \"compact\", \"default\", \"large\""
+        "purpose": "visual-variant",
+        "type": "enum",
+        "description": "Size: \"compact\", \"default\", \"large\"",
+        "values": [
+          "compact",
+          "default",
+          "large"
+        ],
+        "default": "default"
       },
       {
         "name": "data-min-date",
@@ -2690,68 +2738,55 @@ export default {
         "name": "data-months",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
+        "type": "number",
         "description": "Number of adjacent months to display side by side (1-12). Defaults to 1."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "description": "Multi-month views: render each month title as <h1>-<h6> at this level. Default: plain text (no heading)."
       },
       {
-        "name": "data-date",
+        "name": "data-label-prev",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Previous month",
+        "description": "Accessible name override (default \"Previous month\")."
       },
       {
-        "name": "data-selected",
+        "name": "data-label-next",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Next month",
+        "description": "Accessible name override (default \"Next month\")."
       },
       {
-        "name": "data-range-start",
+        "name": "data-label-year",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Year",
+        "description": "Accessible name override (default \"Year\")."
       },
       {
-        "name": "data-range-end",
+        "name": "data-label-close",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Close",
+        "description": "Accessible name override (default \"Close\")."
       },
       {
-        "name": "data-in-range",
+        "name": "data-label-more",
         "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-week",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-outside-month",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-day",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-today",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-highlight",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-event-count",
-        "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "+{n} more",
+        "description": "Large-view overflow text; {n} is replaced with the hidden event count."
       },
       {
         "name": "name",
@@ -2761,35 +2796,194 @@ export default {
         "description": "Form participation name. Enables ElementInternals form value sync on selection."
       },
       {
-        "name": "data-event-dot",
+        "name": "data-tentative",
         "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "title",
-        "kind": "native",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "string",
+        "description": "Range mode: the ISO start date while the second click is pending. Removed when the range completes."
       }
     ],
     "events": [
       {
-        "name": "calendar:navigate"
+        "name": "calendar:select",
+        "detail": "{ value, date } (single) | { value, start, end, startDate, endDate } (range) | { values, dates } (multi)",
+        "description": "Fired when the selection changes"
       },
       {
-        "name": "calendar:select"
+        "name": "calendar:navigate",
+        "detail": "{ year, month }",
+        "description": "Fired on month/year navigation"
       },
       {
-        "name": "calendar:day-open"
+        "name": "calendar:day-open",
+        "detail": "{ date, events }",
+        "description": "Fired when the day-detail dialog opens (display mode)"
+      },
+      {
+        "name": "calendar-wc:events-changed",
+        "detail": "{ events, source: 'property' | 'attribute' }",
+        "description": "Fired after the event data changes via the events property or the data-events attribute"
       }
     ],
-    "childAttributes": [],
+    "properties": [
+      {
+        "name": "value",
+        "type": "string | null",
+        "description": "Read-only selection: ISO date (single), ISO interval start/end (range), space-separated ISO dates (multi), or null"
+      },
+      {
+        "name": "events",
+        "type": "{ [isoDate]: Event[] } | Array<Event & { date }>",
+        "description": "Get the date-keyed event map, or assign a date-keyed object or flat array (grouped by date) to re-render; fires calendar-wc:events-changed with source 'property'"
+      },
+      {
+        "name": "isDateDisallowed",
+        "type": "((date: Date) => boolean) | null",
+        "description": "Callback; return true to disable a date. Additive with data-min/max-date and data-disabled-dates"
+      },
+      {
+        "name": "getDayParts",
+        "type": "((date: Date) => string | string[] | null) | null",
+        "description": "Callback; returned tokens are set as data-day-part on the cell's <td>"
+      }
+    ],
+    "methods": [
+      {
+        "name": "refresh()",
+        "description": "Re-render the current view (e.g. after data read by a callback changes)"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-date",
+        "on": "button",
+        "type": "string",
+        "description": "ISO date of an in-month day button (runtime)"
+      },
+      {
+        "name": "data-day",
+        "on": "button",
+        "type": "number",
+        "description": "Day-of-month number on every day button, including outside-month ones (runtime)"
+      },
+      {
+        "name": "data-highlight",
+        "on": "button",
+        "type": "string",
+        "description": "Highlight category from data-highlight-dates (runtime)"
+      },
+      {
+        "name": "aria-current",
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "date"
+        ],
+        "description": "Marks today (runtime)"
+      },
+      {
+        "name": "aria-selected",
+        "on": "td",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "description": "Selection state of the gridcell in selection modes (runtime)"
+      },
+      {
+        "name": "data-selected",
+        "on": "td",
+        "type": "boolean",
+        "description": "Selected day (single/multi) — styling hook (runtime)"
+      },
+      {
+        "name": "data-range-start",
+        "on": "td",
+        "type": "boolean",
+        "description": "First day of the range (runtime)"
+      },
+      {
+        "name": "data-range-end",
+        "on": "td",
+        "type": "boolean",
+        "description": "Last day of the range (runtime)"
+      },
+      {
+        "name": "data-in-range",
+        "on": "td",
+        "type": "boolean",
+        "description": "Day inside the range, inclusive (runtime)"
+      },
+      {
+        "name": "data-today",
+        "on": "td",
+        "type": "boolean",
+        "description": "Today's cell (runtime)"
+      },
+      {
+        "name": "data-outside-month",
+        "on": "td",
+        "type": "boolean",
+        "description": "Leading/trailing day from an adjacent month (runtime)"
+      },
+      {
+        "name": "data-events",
+        "on": "td",
+        "type": "boolean",
+        "description": "Cell has at least one event (runtime)"
+      },
+      {
+        "name": "data-event-count",
+        "on": "td",
+        "type": "number",
+        "description": "Number of events covering the day, spans included (runtime)"
+      },
+      {
+        "name": "data-day-part",
+        "on": "td",
+        "type": "string",
+        "description": "Space-separated tokens returned by getDayParts (runtime)"
+      },
+      {
+        "name": "data-week",
+        "on": "tr",
+        "type": "number",
+        "description": "1-based week row index (runtime)"
+      },
+      {
+        "name": "data-row-lanes",
+        "on": "tr",
+        "type": "number",
+        "description": "Large view: number of span-bar lanes in the row (runtime)"
+      },
+      {
+        "name": "data-event-dot",
+        "on": "span",
+        "type": "boolean",
+        "description": "One event dot in compact/default views (runtime)"
+      },
+      {
+        "name": "data-continues-start",
+        "on": "span.event-span",
+        "type": "boolean",
+        "description": "Span bar continues from the previous row (runtime)"
+      },
+      {
+        "name": "data-continues-end",
+        "on": "span.event-span",
+        "type": "boolean",
+        "description": "Span bar continues into the next row (runtime)"
+      }
+    ],
     "structure": []
   },
   "card-list": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "card-list",
     "type": "web-component",
-    "description": "Template-based list rendering with SAFE data binding",
+    "description": "Template-based list rendering with safe data binding: property paths only, sanitized HTML, and URL-checked attribute bindings",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -2800,56 +2994,110 @@ export default {
       {
         "name": "src",
         "kind": "native",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "URL to fetch JSON items from (an array, or an object with items/data). Fetched once on upgrade and on change; a newer src aborts the older request."
       },
       {
         "name": "data-items",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Inline JSON array of items. Takes priority over src."
       },
       {
         "name": "data-key",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "id",
+        "description": "Item property used as the unique key for the keyed diff. Missing or duplicated keys fall back to the item index."
       },
       {
         "name": "data-loading",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Present while a src fetch is in flight (with aria-busy=\"true\")."
       },
       {
-        "name": "data-field",
+        "name": "data-error",
         "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-field-attr",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-field-html",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-field-if",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-field-unless",
-        "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "string",
+        "description": "Error message of the last failed src fetch; cleared when a new fetch starts. Also announced via the role=\"status\" child."
       }
     ],
     "events": [
       {
-        "name": "card-list:rendered"
+        "name": "card-list:rendered",
+        "detail": "{ count }",
+        "description": "Fired after items are rendered or reconciled."
+      },
+      {
+        "name": "card-list:items-changed",
+        "detail": "{ items, source: 'attribute' | 'api' }",
+        "description": "Fired when the items change. source is 'attribute' for data-items, src and data-key, 'api' for the .items setter."
+      },
+      {
+        "name": "card-list:upgraded",
+        "description": "Fired once the component has found its template and upgraded."
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "data-field",
+        "on": "template descendant",
+        "type": "string",
+        "description": "Set the element's text content from a property path (e.g. user.name)."
+      },
+      {
+        "name": "data-field-attr",
+        "on": "template descendant",
+        "type": "string",
+        "description": "Comma-separated 'attribute: path' pairs. on* attributes, style and srcdoc are refused; URL attributes (href, src, action, formaction, poster, srcset, ...) only accept http(s), mailto, tel, relative or fragment URLs. null/undefined removes the attribute."
+      },
+      {
+        "name": "data-field-html",
+        "on": "template descendant",
+        "type": "string",
+        "description": "Set innerHTML from a property path, passed through the shared sanitizer."
+      },
+      {
+        "name": "data-field-if",
+        "on": "template descendant",
+        "type": "string",
+        "description": "Element is [hidden] unless the property value is truthy."
+      },
+      {
+        "name": "data-field-unless",
+        "on": "template descendant",
+        "type": "string",
+        "description": "Element is [hidden] when the property value is truthy."
+      },
+      {
+        "name": "data-fallback",
+        "on": "direct child",
+        "type": "boolean",
+        "description": "Static no-JS content; removed on the first successful render."
+      }
+    ],
+    "structure": [
+      {
+        "element": "template",
+        "required": true,
+        "description": "Card template cloned per item. A single root element enables the keyed diff."
+      }
+    ],
+    "properties": [
+      {
+        "name": "items",
+        "type": "Array<object>",
+        "description": "Get the current items, or assign an array to re-render via the keyed diff (cancels an in-flight src fetch). setItems()/getItems() were removed."
+      }
+    ]
   },
   "carousel-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -2868,14 +3116,14 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Auto-advance slides"
+        "description": "Auto-advance slides and render a pause/play rotation control (ignored under reduced motion)"
       },
       {
         "name": "autoplay-delay",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Delay between auto-advance in milliseconds"
+        "description": "Delay between auto-advance in milliseconds (default 5000)"
       },
       {
         "name": "loop",
@@ -2889,14 +3137,14 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Show slide position indicators"
+        "description": "Show dot indicators; \"false\" hides them"
       },
       {
         "name": "item-width",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "CSS width for each slide item"
+        "description": "Slide width: \"full\" (default), \"auto\" (content width), or a CSS length such as \"18rem\""
       },
       {
         "name": "gap",
@@ -2944,57 +3192,181 @@ export default {
         "element": "any child elements",
         "description": "Each direct child becomes a slide"
       }
+    ],
+    "events": [
+      {
+        "name": "carousel-wc:change",
+        "detail": "{ index, slide }",
+        "description": "Fired once per slide change (scroll settling is debounced)"
+      },
+      {
+        "name": "carousel-wc:play",
+        "description": "Fired when the autoplay timer starts or resumes (including after a hover/focus suspension ends)"
+      },
+      {
+        "name": "carousel-wc:pause",
+        "description": "Fired when the autoplay timer stops: explicit pause, or a hover/focus/touch suspension"
+      },
+      {
+        "name": "carousel-wc:slides-changed",
+        "detail": "{ slides, source: 'property' }",
+        "description": "Fired after the slides property rebuilds the carousel"
+      }
+    ],
+    "methods": [
+      {
+        "name": "next()",
+        "description": "Go to the next slide (wraps with loop)"
+      },
+      {
+        "name": "prev()",
+        "description": "Go to the previous slide (wraps with loop)"
+      },
+      {
+        "name": "goTo(index, smooth = true)",
+        "description": "Jump to a slide; out-of-range indexes are ignored"
+      },
+      {
+        "name": "play()",
+        "description": "Start or resume rotation; overrides a hover/focus suspension. No-op under reduced motion"
+      },
+      {
+        "name": "pause()",
+        "description": "Stop rotation until play() or the rotation control resumes it"
+      },
+      {
+        "name": "reset()",
+        "description": "Return to the start slide and clear persistence"
+      }
+    ],
+    "properties": [
+      {
+        "name": "currentIndex",
+        "type": "number",
+        "description": "Current slide index (read-only)"
+      },
+      {
+        "name": "slideCount",
+        "type": "number",
+        "description": "Number of slides (read-only)"
+      },
+      {
+        "name": "playing",
+        "type": "boolean",
+        "description": "Whether the autoplay timer is running right now (read-only; false while suspended by hover/focus)"
+      },
+      {
+        "name": "slides",
+        "type": "Array<{ id?, html, label? }>",
+        "description": "Get the slides as data, or assign records to rebuild the carousel"
+      }
     ]
   },
   "change-set": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "change-set",
     "type": "web-component",
-    "description": "Interactive change tracking group",
+    "description": "Interactive change tracking group: a caption from author/datetime plus Tracking / Final / Original toggles over its <ins> / <del> descendants",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "view",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "'final' | 'original' | omitted (tracking)"
+        "direction": "both",
+        "type": "enum",
+        "values": [
+          "final",
+          "original"
+        ],
+        "description": "Which text is visible: final (insertions only), original (deletions only); omitted = tracking (both, with announced markers). Observed; works without JS"
       },
       {
         "name": "datetime",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "ISO date of the change set"
+        "description": "ISO date of the change set; rendered in the caption and the controls' name"
       },
       {
         "name": "author",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Author of the changes"
+        "description": "Author of the changes; rendered in the caption and the controls' name"
       },
       {
-        "name": "data-controls",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-pressed",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "controls",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "none"
+        ],
+        "description": "\"none\" renders no toggle controls (fixed view)"
       }
     ],
     "events": [
       {
-        "name": "change-set:view"
+        "name": "change-set:view",
+        "detail": "{ view: 'tracking' | 'final' | 'original', source?: 'api' }",
+        "description": "View changed via the toggles (no source) or the view property (source: 'api'). Bubbles"
       }
     ],
-    "childAttributes": [],
+    "properties": [
+      {
+        "name": "view",
+        "type": "'tracking' | 'final' | 'original'",
+        "description": "Get / set the view. Setting the current view is a no-op; unknown values are ignored"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-controls",
+        "on": "div",
+        "type": "boolean",
+        "description": "Set by the component on the role=\"group\" toggle container"
+      },
+      {
+        "name": "data-action",
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "tracking",
+          "final",
+          "original"
+        ],
+        "description": "Set by the component: the view a toggle selects"
+      },
+      {
+        "name": "aria-pressed",
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "description": "Set by the component: true on the toggle matching the current view"
+      },
+      {
+        "name": "data-change-caption",
+        "on": "p",
+        "type": "boolean",
+        "description": "Set by the component on the author/datetime caption"
+      }
+    ],
     "structure": [],
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
+    "css": {
+      "tokens": [
+        "--change-set-ins-start",
+        "--change-set-ins-end",
+        "--change-set-del-start",
+        "--change-set-del-end"
       ]
     }
   },
@@ -3046,7 +3418,28 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Chart title text"
+        "description": "Chart title text; also the caption of the generated data table"
+      },
+      {
+        "name": "data-subtitle",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Subtitle shown under data-title (requires data-title)"
+      },
+      {
+        "name": "data-label-x",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "X / category axis label; also the category column header of the generated data table"
+      },
+      {
+        "name": "data-label-y",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Y / value axis label"
       },
       {
         "name": "data-legend",
@@ -3078,7 +3471,7 @@ export default {
           "replace",
           "enhance"
         ],
-        "description": "How to handle source table: replace hides table, enhance keeps both"
+        "description": "How to handle an authored source table: replace (default) visually hides it after the chart mounts but keeps it in the accessibility tree; enhance keeps it visible. Also readable from the table's own data-chart."
       },
       {
         "name": "data-size",
@@ -3094,14 +3487,17 @@ export default {
     "structure": [
       {
         "element": "<table>",
-        "description": "Optional source table — data is extracted and table becomes screen-reader accessible"
+        "required": false,
+        "description": "Optional source table — data is extracted; the table stays the screen-reader (and print) version of the chart. Without one, chart-wc generates a table[data-chart-generated] from the data."
       },
       {
         "element": "<script type='application/json'>",
+        "required": false,
         "description": "Optional inline JSON data source"
       },
       {
         "element": "<template data-chart-data>",
+        "required": false,
         "description": "Optional template-based JSON data source"
       }
     ],
@@ -3134,7 +3530,21 @@ export default {
       {
         "name": "chart-wc:error",
         "detail": "{ message }",
-        "description": "Fired when chart rendering fails"
+        "description": "Fired when no data is found or chart rendering fails (the data table is then left visible)"
+      },
+      {
+        "name": "chart-wc:config-resolved",
+        "detail": "{ type, config }",
+        "description": "Fired before each render with the merged engine config (mutable, for last-minute tweaks)"
+      },
+      {
+        "name": "chart-wc:data-changed",
+        "detail": "{ data, config, source: 'property' }",
+        "description": "Fired when .data or .config is assigned"
+      },
+      {
+        "name": "chart-wc:upgraded",
+        "description": "Fired once after the component upgrades; safe signal for the first .data assignment"
       }
     ],
     "properties": [
@@ -3165,7 +3575,8 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "chat-input",
     "type": "web-component",
-    "description": "Form-associated chat input with auto-growing textarea",
+    "description": "Form-associated chat input with auto-growing textarea; submits its form, or fires chat-input:send when standalone",
+    "formAssociated": true,
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -3178,28 +3589,30 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Form field name (default: \"message\")"
+        "description": "Form field name; required for the value to appear in FormData (no default)"
       },
       {
         "name": "maxlength",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Character limit (default: 4000)"
+        "default": 4000,
+        "description": "Character limit; over it the element is invalid (tooLong) and sending is blocked"
       },
       {
         "name": "minlength",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Minimum length to send (default: 1)"
+        "default": 1,
+        "description": "Minimum trimmed length to send"
       },
       {
         "name": "disabled",
         "kind": "native",
         "purpose": "config",
         "type": "boolean",
-        "description": "Disables input and controls"
+        "description": "Disables the textarea and send button (an ancestor fieldset[disabled] does the same)"
       },
       {
         "name": "autofocus",
@@ -3211,14 +3624,96 @@ export default {
     ],
     "events": [
       {
-        "name": "chat-input:input"
+        "name": "chat-input:send",
+        "detail": "{ message }",
+        "description": "Enter or send button when not inside a form; message is trimmed and the input clears afterwards"
       },
       {
-        "name": "chat-input:send"
+        "name": "chat-input:input",
+        "detail": "{ value, length }",
+        "description": "Keystroke, debounced 100ms"
+      },
+      {
+        "name": "chat-input:change",
+        "detail": "{ value, source: 'api' }",
+        "description": "The value property was set to a new value"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "properties": [
+      {
+        "name": "value",
+        "type": "string",
+        "description": "Current textarea content (get/set; setting fires chat-input:change)"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "description": "Reflects the disabled attribute"
+      },
+      {
+        "name": "form",
+        "type": "HTMLFormElement | null",
+        "description": "The associated form (read-only)"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "The name attribute (read-only)"
+      },
+      {
+        "name": "validity",
+        "type": "ValidityState",
+        "description": "Constraint validation state (read-only)"
+      },
+      {
+        "name": "validationMessage",
+        "type": "string",
+        "description": "Current validation message (read-only)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "focus()",
+        "description": "Focus the textarea"
+      },
+      {
+        "name": "reset()",
+        "description": "Clear the value and resize"
+      },
+      {
+        "name": "checkValidity()",
+        "description": "Native constraint validation check"
+      },
+      {
+        "name": "reportValidity()",
+        "description": "Check validity and show the browser message on the textarea"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-send",
+        "on": "button",
+        "type": "boolean",
+        "description": "Marks the send button; submits the form or fires chat-input:send"
+      },
+      {
+        "name": "data-grow",
+        "on": "textarea",
+        "type": "boolean",
+        "description": "Auto-resize the textarea (VB textarea-grow utility)"
+      }
+    ],
+    "structure": [
+      {
+        "element": "textarea",
+        "description": "The message field; give it an accessible name (aria-label=\"Message\" is added when it has none)"
+      },
+      {
+        "element": "button[data-send]",
+        "required": false,
+        "description": "Send button"
+      }
+    ]
   },
   "chat-window": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3237,7 +3732,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "API endpoint for chat requests (omit for custom transport)"
+        "description": "API endpoint; POSTs { message, model } (latest message only) and reads html/message/content from the JSON reply. Omit for custom transport"
       },
       {
         "name": "model",
@@ -3251,58 +3746,154 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Empty thread placeholder text"
-      },
-      {
-        "name": "data-from",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-from-label",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-status",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-role",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-model",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-chat-empty",
-        "kind": "data",
-        "purpose": "config"
+        "description": "Empty thread placeholder text",
+        "default": "Send a message to start."
       }
     ],
     "events": [
       {
-        "name": "chat-window:error"
+        "name": "chat-window:send",
+        "detail": "{ message, typingElement }",
+        "description": "A message was sent and no endpoint is set; finish with resolveTyping(typingElement, html)"
       },
       {
-        "name": "chat-window:send"
+        "name": "chat-window:error",
+        "detail": "{ error, status }",
+        "description": "The built-in fetch transport failed"
       },
       {
-        "name": "chat-window:model-change"
+        "name": "chat-window:model-change",
+        "detail": "{ model }",
+        "description": "The model selector changed"
+      },
+      {
+        "name": "chat-window:messages-changed",
+        "detail": "{ messages, source: 'property' }",
+        "description": "The messages setter updated the thread"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "data-participants",
+        "on": "script",
+        "type": "boolean",
+        "description": "JSON participant map: { id: { name, role } }"
+      },
+      {
+        "name": "data-model-select",
+        "on": "select",
+        "type": "boolean",
+        "description": "Model selector inside the header; synced with model"
+      },
+      {
+        "name": "data-role",
+        "on": "chat-message",
+        "type": "enum",
+        "values": [
+          "user",
+          "agent",
+          "system"
+        ],
+        "description": "Message role; user content is always text"
+      },
+      {
+        "name": "data-from",
+        "on": "chat-message",
+        "type": "string",
+        "description": "Participant id, resolved to data-from-label"
+      },
+      {
+        "name": "data-from-label",
+        "on": "chat-message",
+        "type": "string",
+        "description": "Sender name (written by the runtime from participants)"
+      },
+      {
+        "name": "data-status",
+        "on": "chat-message",
+        "type": "enum",
+        "values": [
+          "typing",
+          "error"
+        ],
+        "description": "Typing placeholder or failed reply"
+      },
+      {
+        "name": "data-model",
+        "on": "chat-message",
+        "type": "string",
+        "description": "Model attribution on agent replies"
+      },
+      {
+        "name": "data-chat-typing",
+        "on": "span",
+        "type": "boolean",
+        "description": "Visually hidden typing label inside a typing chat-bubble (runtime)"
+      },
+      {
+        "name": "data-chat-empty",
+        "on": "p",
+        "type": "boolean",
+        "description": "Empty-thread placeholder inside chat-thread (runtime)"
+      }
+    ],
+    "structure": [
+      {
+        "element": "chat-thread[role=log]",
+        "description": "Message list; always rendered"
+      },
+      {
+        "element": "chat-input",
+        "required": false,
+        "description": "Composer; its chat-input:send drives the send cycle"
+      },
+      {
+        "element": "header",
+        "required": false,
+        "description": "Title and optional select[data-model-select]"
+      }
+    ],
+    "properties": [
+      {
+        "name": "messages",
+        "type": "Array<{ id, role, content, from? }>",
+        "description": "Get the thread as data, or assign to replace the whole thread (keyed diff by id); content is text for role user, sanitized HTML otherwise"
+      },
+      {
+        "name": "model",
+        "type": "string",
+        "description": "Active model; syncs with select[data-model-select]"
+      },
+      {
+        "name": "participants",
+        "type": "Map<string, { name, role }>",
+        "description": "Participant registry; setting re-resolves data-from-label"
+      }
+    ],
+    "methods": [
+      {
+        "name": "appendMessage(role, content, from?)",
+        "description": "Append and return a chat-message; user content is text, other roles sanitized HTML"
+      },
+      {
+        "name": "resolveTyping(el, content, { error? })",
+        "description": "Finish a typing placeholder: fill its bubble, clear data-status (or set error) and the typing label"
+      },
+      {
+        "name": "clearThread()",
+        "description": "Remove all messages"
+      },
+      {
+        "name": "scrollToBottom()",
+        "description": "Scroll the thread to the newest message"
+      }
+    ]
   },
   "color-picker": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "color-picker",
     "type": "web-component",
-    "description": "Form-associated color picker with HSL color space",
+    "description": "Form-associated color picker with saturation/lightness area, hue slider, HEX/RGB/HSL/OKLCH inputs, preset swatches, Copy and EyeDropper",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -3315,86 +3906,14 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Form field name"
+        "description": "Form field name. A name on the inner input (the no-JS path) moves here on upgrade so exactly one value submits."
       },
       {
         "name": "disabled",
         "kind": "native",
-        "purpose": "config",
+        "purpose": "semantic-state",
         "type": "boolean",
-        "description": "Disables the picker"
-      },
-      {
-        "name": "required",
-        "kind": "native",
-        "purpose": "config",
-        "type": "boolean",
-        "description": "Makes selection required"
-      },
-      {
-        "name": "data-disabled",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-haspopup",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuemin",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuemax",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "data-color",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-channel",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "maxlength",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "spellcheck",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "autocomplete",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuetext",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuenow",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "open",
-        "kind": "native",
-        "purpose": "config"
+        "description": "Disables the trigger, closes the panel and drops the value from submission. A disabled ancestor fieldset has the same effect."
       },
       {
         "name": "format",
@@ -3408,22 +3927,52 @@ export default {
           "oklch"
         ],
         "default": "hex",
-        "description": "Initial input/copy format. Selector inside the picker lets users switch at runtime."
+        "description": "Initial input/copy format. The Format selector inside the panel switches it at runtime."
+      },
+      {
+        "name": "open",
+        "kind": "host-api",
+        "purpose": "output-state",
+        "type": "boolean",
+        "direction": "output",
+        "public": false,
+        "description": "Reflected while the panel is open"
+      }
+    ],
+    "structure": [
+      {
+        "element": "<input type=\"color\">",
+        "description": "Supplies the initial value (its value attribute is the form-reset target) and the no-JS fallback. Its <label for> names the trigger."
+      },
+      {
+        "element": "<datalist>",
+        "required": false,
+        "description": "Preset swatches — one <option value=\"#hex\">Name</option> per swatch"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "name",
+        "on": "input",
+        "type": "string",
+        "description": "Submission name for the no-JS fallback. Moved to the host on upgrade (the host's own name wins if both are set)."
       }
     ],
     "events": [
       {
-        "name": "color-picker:change"
+        "name": "color-picker:change",
+        "detail": "{ hex, rgb: { r, g, b }, hsl: { h, s, l }, source: 'pointer' | 'keyboard' | 'api' | 'internal' }",
+        "description": "Fired when the color changes. source is 'api' for .value assignments, 'pointer'/'keyboard' for the area and hue slider, 'internal' for text inputs, swatches and the EyeDropper."
       },
       {
-        "name": "color-picker:open"
+        "name": "color-picker:open",
+        "description": "Fired when the panel opens"
       },
       {
-        "name": "color-picker:close"
+        "name": "color-picker:close",
+        "description": "Fired when the panel closes"
       }
-    ],
-    "childAttributes": [],
-    "structure": []
+    ]
   },
   "combo-box": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3442,7 +3991,7 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Form field name"
+        "description": "Form field name. A name on the inner input (the no-JS path) moves here on upgrade so exactly one value submits."
       },
       {
         "name": "required",
@@ -3450,6 +3999,13 @@ export default {
         "purpose": "semantic-state",
         "type": "boolean",
         "description": "Require a selection for form validation"
+      },
+      {
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "semantic-state",
+        "type": "boolean",
+        "description": "Disables the input and tag remove buttons, closes the listbox and drops the value from submission. A disabled ancestor fieldset has the same effect."
       },
       {
         "name": "filter",
@@ -3512,7 +4068,7 @@ export default {
     "structure": [
       {
         "element": "<input type=\"text\">",
-        "description": "Text input for filtering and display"
+        "description": "Text input for filtering and display. Give it an id and point a <label for> at it — the id and labels are preserved and name the combobox."
       },
       {
         "element": "<ul> or <ol>",
@@ -3530,13 +4086,19 @@ export default {
         "type": "string",
         "required": true,
         "description": "Option value identifier placed on each <li> in the options list"
+      },
+      {
+        "name": "name",
+        "on": "input",
+        "type": "string",
+        "description": "Submission name for the no-JS fallback (submits the typed text). Moved to the host on upgrade (the host's own name wins if both are set)."
       }
     ],
     "events": [
       {
         "name": "combo-box:change",
-        "detail": "{ value, label } | { values[], labels[] }",
-        "description": "Fired when selection changes"
+        "detail": "{ value, label, source } | { values[], labels[], source }",
+        "description": "Fired when selection changes. source is 'api' for .value assignments, 'internal' for user picks. Re-choosing the current option closes the list without firing."
       },
       {
         "name": "combo-box:open",
@@ -3594,7 +4156,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "command-palette",
     "type": "web-component",
-    "description": "Command palette / Cmd+K launcher",
+    "description": "Command palette / Cmd+K launcher (modal dialog, combobox + listbox)",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -3607,61 +4169,118 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Global keyboard shortcut to open (default: \"meta+k\")"
+        "default": "meta+k",
+        "description": "Global keyboard shortcut that toggles the palette (fires even in text fields)"
       },
       {
         "name": "placeholder",
         "kind": "native",
         "purpose": "config",
         "type": "string",
+        "default": "Type a command...",
         "description": "Search input placeholder text"
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Command palette",
+        "description": "Accessible name of the dialog"
       },
       {
         "name": "discover",
         "kind": "host-api",
         "purpose": "config",
-        "type": "boolean",
-        "description": "When present, auto-populate from [data-command] registry"
+        "type": "enum",
+        "values": [
+          "",
+          "auto"
+        ],
+        "description": "Present: add commands from [data-command] / [commandfor] elements. \"auto\": also scan nav links and headings"
+      }
+    ],
+    "structure": [
+      {
+        "element": "<command-group>",
+        "description": "Group of commands; rendered as a role=\"group\" named by its label"
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
+        "element": "<command-item>",
+        "description": "One command inside a <command-group>; its text is the label, an element with slot=\"icon\" the icon"
+      }
+    ],
+    "childAttributes": [
       {
         "name": "label",
-        "kind": "host-api",
-        "purpose": "config"
+        "on": "command-group",
+        "type": "string",
+        "description": "Group header text"
       },
       {
         "name": "value",
-        "kind": "native",
-        "purpose": "config"
+        "on": "command-item",
+        "type": "string",
+        "description": "Value passed in command-palette:select detail.value"
       },
       {
         "name": "data-hotkey",
-        "kind": "data",
-        "purpose": "config"
+        "on": "command-item",
+        "type": "string",
+        "description": "Shortcut shown as a badge and bound page-wide while connected; fires command-palette:select without opening the palette (not in text fields)"
       },
       {
-        "name": "name",
-        "kind": "native",
-        "purpose": "config"
+        "name": "slot",
+        "on": "command-item > *",
+        "type": "enum",
+        "values": [
+          "icon"
+        ],
+        "description": "slot=\"icon\" marks the item's icon (cloned into the option)"
       }
     ],
     "events": [
       {
-        "name": "command-palette:select"
+        "name": "command-palette:select",
+        "detail": "{ value }",
+        "description": "Fired when a declared command is chosen from the list or by its data-hotkey"
       },
       {
-        "name": "command-palette:open"
+        "name": "command-palette:open",
+        "description": "Fired when the palette opens"
       },
       {
-        "name": "command-palette:close"
+        "name": "command-palette:close",
+        "description": "Fired once whenever the dialog closes (close(), selection, Escape, backdrop click)"
+      },
+      {
+        "name": "command-palette:commands-changed",
+        "detail": "{ commands, source: 'property' }",
+        "description": "Fired after the commands property rebuilds the palette"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "methods": [
+      {
+        "name": "open()",
+        "description": "Open the palette and focus the search input"
+      },
+      {
+        "name": "close()",
+        "description": "Close the palette"
+      }
+    ],
+    "properties": [
+      {
+        "name": "commands",
+        "type": "Array<{ value, label, hotkey?, group?, icon? }>",
+        "description": "Get the declared commands as data, or assign to rebuild the groups"
+      },
+      {
+        "name": "isOpen",
+        "type": "boolean",
+        "description": "Read-only. Whether the dialog is open"
+      }
+    ]
   },
   "comment-box": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3680,7 +4299,7 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Form field name (submitted with parent form)"
+        "description": "Form field name (submitted with parent form). Stays on the host; the inner textarea is not named, so the value submits once."
       },
       {
         "name": "value",
@@ -3694,7 +4313,15 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Editor placeholder text"
+        "description": "Editor placeholder text (forwarded to the inner <markdown-editor>)"
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "Comment",
+        "description": "Accessible name for the editor textarea. Falls back to an associated <label>'s text, then \"Comment\"."
       },
       {
         "name": "submit-label",
@@ -3729,26 +4356,36 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "number",
-        "description": "Maximum character length for validation; also shows a counter"
+        "description": "Maximum character length for validation; also shows a counter that announces only near or over the limit"
       },
       {
         "name": "required",
         "kind": "native",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Requires a non-empty value; a blocked submit reports the validation message"
       },
       {
         "name": "disabled",
         "kind": "native",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Disables the editor and buttons (a disabled ancestor <fieldset> does the same)"
+      },
+      {
+        "name": "aria-busy",
+        "kind": "aria",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "string",
+        "description": "\"true\" while a comment-box:submit waitUntil() promise is pending"
       }
     ],
     "events": [
       {
         "name": "comment-box:submit",
-        "detail": "{ value }",
-        "description": "Bubbles. Cancellable via preventDefault() — preserves the value for failure-recovery flows. On success the value is cleared automatically."
+        "detail": "{ value, waitUntil(promise) }",
+        "description": "Bubbles, cancelable, dispatched synchronously. Do nothing: the value clears. waitUntil(promise): the box is busy until it settles; resolve clears, reject keeps the value. preventDefault() (during the handler, not after an await): the value is kept and nothing else happens. An invalid value does not fire this; it reports the validation message instead."
       },
       {
         "name": "comment-box:cancel",
@@ -3758,7 +4395,7 @@ export default {
       {
         "name": "comment-box:input",
         "detail": "{ value, length }",
-        "description": "Fires on every keystroke"
+        "description": "Fires on every keystroke and after clear()"
       }
     ],
     "properties": [
@@ -3768,23 +4405,67 @@ export default {
         "description": "Get/set the current markdown content"
       },
       {
+        "name": "busy",
+        "type": "boolean",
+        "description": "Read-only. True while a submit waitUntil() promise is pending"
+      },
+      {
         "name": "form",
         "type": "HTMLFormElement | null",
         "description": "The associated form"
       },
       {
+        "name": "name",
+        "type": "string | null",
+        "description": "The name attribute"
+      },
+      {
         "name": "validity",
-        "type": "ValidityState"
+        "type": "ValidityState",
+        "description": "Current validity"
+      },
+      {
+        "name": "validationMessage",
+        "type": "string",
+        "description": "Current validation message"
       }
     ],
-    "childAttributes": [],
+    "methods": [
+      {
+        "name": "clear()",
+        "description": "Clear the value and emit comment-box:input"
+      },
+      {
+        "name": "focus()",
+        "description": "Focus the editor textarea"
+      },
+      {
+        "name": "checkValidity()",
+        "description": "Standard form-associated validity check"
+      },
+      {
+        "name": "reportValidity()",
+        "description": "Check validity and show the message"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "slot",
+        "on": "*",
+        "type": "string",
+        "values": [
+          "toolbar"
+        ],
+        "description": "slot=\"toolbar\" children move into the tool group left of the buttons (kept across reconnects)"
+      }
+    ],
     "structure": []
   },
   "comment-thread": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "comment-thread",
     "type": "web-component",
-    "description": "Persistent threaded-discussion container. Author renders <article data-comment> children with metadata; component decorates each with author header, relative timestamp, action row (Reply / Edit / Delete) + threaded indentation. Composes <comment-box> (reply form template), <markdown-viewer> (body rendering by author), and bubbles <reaction-bar> events naturally.",
+    "description": "Persistent threaded-discussion container. Author renders <article data-comment> children with metadata; component decorates each with author header, relative timestamp, action row (Reply / Edit / Delete) + threaded indentation. Composes <comment-box> (reply form template) and bubbles <reaction-bar> events naturally. Bodies added through the API are text or sanitized HTML.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -3810,19 +4491,19 @@ export default {
         "name": "role",
         "kind": "aria",
         "purpose": "config",
-        "description": "Set to \"region\""
+        "description": "Set to \"region\" when absent"
       }
     ],
     "events": [
       {
         "name": "comment-thread:reply",
-        "detail": "{ parentId, value }",
-        "description": "Reply form submitted; author should POST and call addComment"
+        "detail": "{ parentId, value, waitUntil(promise) }",
+        "description": "Reply form submitted. Cancelable, same contract as comment-box:submit: do nothing and the form closes; waitUntil(promise) keeps it busy, closing on resolve and keeping the text on reject; preventDefault() during the handler keeps it open. Focus returns to the comment's Reply button when it closes."
       },
       {
         "name": "comment-thread:edit-request",
         "detail": "{ commentId, value }",
-        "description": "Edit clicked; author renders an inline editor or replaces the body"
+        "description": "Edit clicked; value is the body's text. Author renders an editor and calls updateComment"
       },
       {
         "name": "comment-thread:delete-request",
@@ -3830,20 +4511,17 @@ export default {
         "description": "Delete clicked; author confirms + calls removeComment"
       }
     ],
-    "properties": [
+    "methods": [
       {
-        "name": "addComment",
-        "type": "(data) => HTMLElement",
-        "description": "Insert a new comment from server data"
+        "name": "addComment(data)",
+        "description": "Insert a comment: data { id, author, time, bodyText? | bodyHtml?, parentId?, mine?, authorHref?, authorAvatar?, edited? }. bodyText is set as text; bodyHtml is sanitized. A reply goes after its parent's last descendant. Returns the <article>"
       },
       {
-        "name": "updateComment",
-        "type": "(id, patch) => void",
-        "description": "Patch an existing comment after edit"
+        "name": "updateComment(id, patch)",
+        "description": "Patch a comment: patch { bodyText? | bodyHtml?, author?, edited? }"
       },
       {
-        "name": "removeComment",
-        "type": "(id) => void",
+        "name": "removeComment(id)",
         "description": "Remove a comment from the thread"
       }
     ],
@@ -3865,7 +4543,7 @@ export default {
         "name": "data-author-href",
         "on": "article",
         "type": "string",
-        "description": "Optional link to the author's profile"
+        "description": "Optional link to the author's profile. Only http(s) and relative URLs become a link; anything else renders as text"
       },
       {
         "name": "data-author-avatar",
@@ -3877,7 +4555,7 @@ export default {
         "name": "data-time",
         "on": "article",
         "type": "string",
-        "description": "ISO-8601 timestamp"
+        "description": "ISO-8601 timestamp; rendered relative (Intl.RelativeTimeFormat in the element's lang) with the absolute time in title. Unparseable values render as-is"
       },
       {
         "name": "data-mine",
@@ -3899,16 +4577,22 @@ export default {
       },
       {
         "name": "data-comment-body",
-        "on": "div",
+        "on": "*",
         "type": "boolean",
         "required": true,
-        "description": "Wraps the rendered comment body"
+        "description": "Marks the comment body (any element, e.g. <section> or <div>)"
       },
       {
         "name": "data-reply-form",
         "on": "template",
         "type": "boolean",
         "description": "Marks the template whose content is cloned for the reply form"
+      },
+      {
+        "name": "aria-labelledby",
+        "on": "article",
+        "type": "string",
+        "description": "Set by the component: names each comment from its author and time"
       }
     ],
     "structure": []
@@ -3917,7 +4601,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "comment-wc",
     "type": "web-component",
-    "description": "Inline comment action button for use inside selection-menu (stub — future feature)",
+    "description": "EXPERIMENTAL / STUB: inline \"Add comment\" action for selection-menu. Pins to a <review-surface>, which Vanilla Breeze does not ship; without one the button is aria-disabled with a described reason.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -3925,6 +4609,27 @@ export default {
       ]
     },
     "attributes": [],
+    "events": [
+      {
+        "name": "comment-wc:created",
+        "detail": "{ text, x, y }",
+        "description": "A pin was added to the resolved review-surface (x / y are percentages of its box)"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "aria-disabled",
+        "on": "button",
+        "type": "string",
+        "description": "Set by the component to \"true\" when no review-surface is found (resolved again on every click)"
+      },
+      {
+        "name": "aria-describedby",
+        "on": "button",
+        "type": "string",
+        "description": "Set by the component while disabled; points at the visually-hidden reason text"
+      }
+    ],
     "structure": [],
     "css": {
       "tokens": []
@@ -3934,7 +4639,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "compare-surface",
     "type": "web-component",
-    "description": "Before/after image comparison slider",
+    "description": "Before/after comparison slider: two overlaid children with a draggable, keyboard-operable divider (side by side without JS)",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -3947,36 +4652,47 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Slider position (0-100), default 50. Reflected on change."
+        "description": "Divider position 0-100 measured from the inline-start edge (right in RTL), default 50. Observed; user drags and key presses reflect the integer value back."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name for the slider handle, default \"Comparison slider\". Observed."
       },
       {
-        "name": "aria-valuemin",
+        "name": "aria-label",
         "kind": "aria",
-        "purpose": "config"
+        "purpose": "config",
+        "description": "Used as the slider handle's accessible name when label is absent"
+      }
+    ],
+    "structure": [
+      {
+        "element": "First child (any element)",
+        "description": "Shown on the inline-start side of the divider (the \"before\" view)"
       },
       {
-        "name": "aria-valuemax",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuenow",
-        "kind": "aria",
-        "purpose": "config"
+        "element": "Second child (any element)",
+        "description": "Shown on the inline-end side of the divider (the \"after\" view). Further children are hidden once upgraded."
       }
     ],
     "events": [
       {
-        "name": "compare-surface:change"
+        "name": "compare-surface:change",
+        "detail": "{ position: number }",
+        "description": "Fired when the user drags or uses the keyboard and the integer position changes. Not fired on upgrade or for attribute/property writes."
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "properties": [
+      {
+        "name": "position",
+        "type": "number",
+        "description": "Get or set the integer position (0-100). Setting clamps, rounds and reflects to the attribute without firing compare-surface:change."
+      }
+    ],
+    "childAttributes": []
   },
   "consent-banner": {
     "$schema": "../../../schemas/api.schema.json",
@@ -3996,7 +4712,7 @@ export default {
         "purpose": "config",
         "type": "string",
         "default": "banner",
-        "description": "VBStore key under namespace 'consent' for storing consent"
+        "description": "VBStore key under namespace 'consent'. Stored in localStorage as vb:consent:<persist>."
       },
       {
         "name": "position",
@@ -4024,13 +4740,13 @@ export default {
         "purpose": "config",
         "type": "string",
         "default": "365",
-        "description": "Days until consent expires. 0 or 'never' disables expiry."
+        "description": "Days until stored consent expires (banner and getConsent). 0 or 'never' disables expiry."
       }
     ],
     "structure": [
       {
         "element": "<dialog>",
-        "description": "Banner container — shown until consent is given"
+        "description": "Banner container — shown until consent is given. Named from its first heading (aria-labelledby) or aria-label=\"Cookie consent\" unless the author names it."
       },
       {
         "element": "<button value=\"accept\">",
@@ -4069,22 +4785,27 @@ export default {
         "name": "name",
         "on": "input[type=checkbox]",
         "type": "string",
-        "description": "Preference category name stored in the consent cookie"
+        "description": "Preference category name; becomes a key in the stored and emitted preferences object"
       }
     ],
     "events": [
       {
-        "name": "consent-banner:accept",
-        "description": "Fired when user accepts all"
+        "name": "consent-banner:change",
+        "detail": "{ preferences: Record<string, boolean>, action: 'accept' | 'reject' | 'save' }",
+        "description": "Fired when the user clicks an accept, reject, or save button. preferences maps checkbox names to booleans; action is the button's value."
+      }
+    ],
+    "properties": [],
+    "methods": [
+      {
+        "name": "ConsentBanner.getConsent(key?, options?)",
+        "returns": "Promise<{ preferences, action } | null>",
+        "description": "Static. Read stored consent for key (default 'banner'). Honours expiry: options.expires (days), else the expires attribute of an in-document banner with the same persist key, else 365. Resolves null when missing, expired, or storage is unavailable."
       },
       {
-        "name": "consent-banner:reject",
-        "description": "Fired when user rejects all"
-      },
-      {
-        "name": "consent-banner:save",
-        "detail": "{ preferences }",
-        "description": "Fired when user saves granular preferences"
+        "name": "ConsentBanner.reset(key?)",
+        "returns": "Promise<void>",
+        "description": "Static. Clear stored consent for key (default 'banner') so the banner reappears on the next load."
       }
     ]
   },
@@ -4092,7 +4813,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "content-lens",
     "type": "web-component",
-    "description": "Universal switchable host for VB lens components",
+    "description": "Universal switchable host for VB lens components; JS API: activeLens (read-only), setLens(name)",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -4119,7 +4840,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Shared JSON source URL forwarded to children"
+        "description": "Shared JSON source URL forwarded to lens children lacking their own data-lens-src/src (order-independent; already-upgraded children are re-initialised)"
       },
       {
         "name": "data-lens-storage",
@@ -4140,7 +4861,22 @@ export default {
       {
         "name": "content-lens:change",
         "detail": "{ lens: string }",
-        "description": "Fires when the reader switches lenses"
+        "description": "Fires when the reader or setLens() changes the active lens; not on the initial/restored selection"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-lens-name",
+        "on": "direct lens child",
+        "type": "string",
+        "required": true,
+        "description": "Registers the child as a switchable lens; value used by data-lens-default, setLens() and the event detail"
+      },
+      {
+        "name": "data-lens-label",
+        "on": "direct lens child",
+        "type": "string",
+        "description": "Chip text (default: humanised data-lens-name)"
       }
     ],
     "slots": [
@@ -4148,13 +4884,28 @@ export default {
         "name": "default",
         "description": "Lens components, each with data-lens-name"
       }
+    ],
+    "properties": [
+      {
+        "name": "activeLens",
+        "type": "string",
+        "readonly": true,
+        "description": "data-lens-name of the visible lens ('' before upgrade)."
+      }
+    ],
+    "methods": [
+      {
+        "name": "setLens(name)",
+        "returns": "void",
+        "description": "Switch to the named lens (ignored if unknown). Persists the choice; fires content-lens:change only when the lens actually changes."
+      }
     ]
   },
   "content-swap": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "content-swap",
     "type": "web-component",
-    "description": "Two-face content toggle with accessible state management",
+    "description": "Two-face content toggle with accessible state management. The hidden face is made inert; with no [data-swap] triggers a real toggle button is generated (visually hidden until focused) and surface clicks swap for pointer users. Also available as the [data-swap] attribute form on any element with [data-face] children.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -4165,62 +4916,100 @@ export default {
       {
         "name": "transition",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Transition type: \"flip\" (default), \"flip-vertical\", \"fade\", \"slide-left\", \"slide-up\", \"scale\""
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "flip",
+          "flip-vertical",
+          "fade",
+          "slide-left",
+          "slide-up",
+          "scale"
+        ],
+        "default": "flip",
+        "description": "Transition effect between faces. The attribute form uses data-transition."
       },
       {
         "name": "swapped",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "semantic-state",
+        "direction": "both",
         "type": "boolean",
-        "description": "Reflects swap state"
+        "description": "Showing the back face. Reflected by the runtime; may be set or removed by authors at any time and inert follows it. The attribute form uses data-swapped."
       },
       {
         "name": "card",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Apply layout-card visual shell"
-      },
-      {
-        "name": "data-face",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "description": "\"front\" or \"back\" on child elements"
-      },
-      {
-        "name": "data-swap",
-        "kind": "data",
-        "purpose": "config",
-        "type": "boolean",
-        "description": "Marks an element as a swap trigger (on children),"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-swap-init",
-        "kind": "data",
-        "purpose": "config"
+        "description": "Apply layout-card visual shell (pair with data-variant: elevated, outlined, ghost)"
       }
     ],
     "events": [
       {
-        "name": "content-swap:swap"
+        "name": "content-swap:swap",
+        "detail": "{ swapped: boolean, source: 'pointer' | 'keyboard' | 'api' }",
+        "description": "Fired after the faces swap; source is what caused it"
       }
     ],
-    "childAttributes": [],
+    "methods": [
+      {
+        "name": "flip()",
+        "description": "Show the back face"
+      },
+      {
+        "name": "unflip()",
+        "description": "Show the front face"
+      },
+      {
+        "name": "toggle()",
+        "description": "Toggle between faces"
+      }
+    ],
+    "properties": [
+      {
+        "name": "swapped",
+        "type": "boolean",
+        "description": "Get or set whether the back face is showing"
+      },
+      {
+        "name": "flipped",
+        "type": "boolean",
+        "description": "Alias for swapped"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-face",
+        "on": "direct child",
+        "type": "enum",
+        "values": [
+          "front",
+          "back"
+        ],
+        "required": true,
+        "description": "Marks the front and back faces"
+      },
+      {
+        "name": "data-swap",
+        "on": "button (any descendant)",
+        "type": "boolean",
+        "description": "Explicit swap trigger. When present, the surface is not clickable and no toggle is generated."
+      },
+      {
+        "name": "data-swap-toggle",
+        "on": "button (direct child)",
+        "type": "boolean",
+        "description": "Toggle used when there are no data-swap triggers; generated with the text \"Show back\" if absent. Author one to set the label. Receives aria-pressed."
+      }
+    ],
     "structure": []
   },
   "context-menu": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "context-menu",
     "type": "web-component",
-    "description": "Right-click context menu with keyboard navigation and shortcut bindings",
+    "description": "Right-click (and Shift+F10 / ContextMenu key) menu with keyboard navigation and shortcut bindings",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -4241,11 +5030,11 @@ export default {
     "structure": [
       {
         "element": "any element with data-trigger",
-        "description": "Element defining the right-click target area"
+        "description": "Right-click target area. Made focusable (tabindex=\"0\") when it is not already, and given aria-haspopup=\"menu\", aria-expanded and aria-controls"
       },
       {
         "element": "<menu>",
-        "description": "Context menu with <li> items holding <button> actions"
+        "description": "Context menu with <li> items holding <button> or <a> actions; <li data-group> labels and <li role=\"separator\"> rows"
       }
     ],
     "childAttributes": [
@@ -4257,10 +5046,28 @@ export default {
         "description": "Element defining the right-click target area"
       },
       {
+        "name": "data-group",
+        "on": "li",
+        "type": "boolean",
+        "description": "Group label row. It and the items after it (up to the next label or separator) are wrapped in role=\"group\" named by the label"
+      },
+      {
         "name": "data-shortcut",
-        "on": "button",
+        "on": "button, a",
         "type": "string",
-        "description": "Keyboard shortcut to bind, e.g. 'meta+c'. Displayed as formatted hint."
+        "description": "Keyboard shortcut bound page-wide (hotkey-bind, preventDefault) and shown as a badge, e.g. 'f2' or 'shift+d'. Never use clipboard combos."
+      },
+      {
+        "name": "data-disabled",
+        "on": "button, a",
+        "type": "boolean",
+        "description": "Disabled item: aria-disabled=\"true\", stays in the arrow-key order, cannot be activated"
+      },
+      {
+        "name": "data-value",
+        "on": "button, a",
+        "type": "string",
+        "description": "Value reported in context-menu:select detail.value and the items property"
       }
     ],
     "events": [
@@ -4274,8 +5081,31 @@ export default {
       },
       {
         "name": "context-menu:select",
-        "detail": "{ item }",
-        "description": "Fired when a menu item is selected"
+        "detail": "{ item, value }",
+        "description": "Fired when an item is activated by click, keyboard or its shortcut (not for disabled items)"
+      },
+      {
+        "name": "context-menu:items-changed",
+        "detail": "{ items, source: 'property' }",
+        "description": "Fired after the items property rebuilds the menu"
+      }
+    ],
+    "methods": [
+      {
+        "name": "close()",
+        "description": "Close the menu"
+      }
+    ],
+    "properties": [
+      {
+        "name": "items",
+        "type": "Array<{ label, value?, href?, shortcut?, disabled? } | { group } | { separator: true }>",
+        "description": "Get the menu as data, or assign to rebuild it"
+      },
+      {
+        "name": "isOpen",
+        "type": "boolean",
+        "description": "Read-only. Whether the menu is open"
       }
     ]
   },
@@ -6937,11 +7767,11 @@ export default {
     "description": "Aggregated most-visited lens (degrades gracefully when endpoint is unavailable)",
     "attributes": [
       {
-        "name": "data-lens-src",
-        "kind": "data",
+        "name": "analytics-src",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Endpoint URL (default \"/api/analytics/popular\")"
+        "description": "Popularity endpoint URL (default \"/api/analytics/popular\")"
       },
       {
         "name": "data-meta-src",
@@ -6949,6 +7779,13 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Optional pages.json URL for metadata enrichment"
+      },
+      {
+        "name": "data-lens-src",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Shared lens pages.json URL (forwarded by content-lens); metadata fallback when data-meta-src is unset"
       },
       {
         "name": "limit",
