@@ -17,7 +17,7 @@ crumbLabel: Native Elements
     <ul>
       <li><strong>HTML-first:</strong> Links function without any styling &mdash; the browser provides default blue/purple colors and underlines</li>
       <li><strong>CSS-enhanced:</strong> Vanilla Breeze adds interactive colors, hover effects, auto-detected link-type indicators, and focus rings</li>
-      <li><strong>No JavaScript required:</strong> All link functionality is native browser behavior</li>
+      <li><strong>Works without JavaScript:</strong> Styling and auto-detection are CSS; the only script is the optional <code>noopener</code> upgrade for new-tab links</li>
     </ul>
   </section>
 
@@ -39,7 +39,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Auto-Detection</h2>
-    <p>Vanilla Breeze automatically detects and adds visual indicators to special link types using CSS only &mdash; no JavaScript required.</p>
+    <p>Vanilla Breeze automatically detects and adds visual indicators to special link types using CSS only. The glyphs are decorative: they carry empty alternative text, so screen readers read only the link text.</p>
 
     <browser-window src="/docs/snippets/demos/a-auto-detect.html" url="a-auto-detect.html" title="Auto-detected link types" shadow></browser-window>
 
@@ -54,8 +54,8 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td>External</td>
-          <td><code>href^="http"</code></td>
-          <td>&uarr; arrow after text</td>
+          <td><code>href^="http"</code> or <code>href^="//"</code></td>
+          <td>&#x2197; arrow after text</td>
         </tr>
         <tr>
           <td>Download</td>
@@ -75,16 +75,18 @@ crumbLabel: Native Elements
         <tr>
           <td>PDF</td>
           <td><code>href$=".pdf"</code></td>
-          <td><small>PDF</small> badge after text</td>
+          <td><small>PDF</small> badge after text (a <code>download</code> link to a PDF shows the download arrow instead)</td>
         </tr>
       </tbody>
     </table>
+
+    <p>External detection is a string match on the URL, so an absolute link to your own site (<code>https://your-site.com/…</code>) also gets the arrow. Use root-relative URLs for internal links, or add <code>data-no-icon</code>.</p>
 
     <code-block language="html" label="External link (auto-detected)" data-escape><a href="https://example.com">Example.com</a></code-block>
     <code-block language="html" label="Download link (auto-detected)" data-escape><a href="/files/report.pdf" download>Download the PDF</a></code-block>
 
     <h3>Custom Link Icons</h3>
-    <p>Use <a href="/docs/elements/web-components/icons/">icon-wc</a> inside links for custom icons. Add <code>data-no-icon</code> to suppress the auto-inserted indicator when using your own.</p>
+    <p>Use <a href="/docs/elements/web-components/icons/">icon-wc</a> inside links for custom icons. A link with an <code>&lt;icon-wc&gt;</code> child drops its auto-detected glyph, so you never get two icons. <code>data-no-icon</code> suppresses the indicator explicitly.</p>
 
     <browser-window src="/docs/snippets/demos/a-custom-icons.html" url="a-custom-icons.html" title="Custom link icons" shadow></browser-window>
 
@@ -97,7 +99,7 @@ crumbLabel: Native Elements
 </a></code-block>
 
     <h3>Suppressing Auto-Icons</h3>
-    <p>Use <code>data-no-icon</code> to suppress automatic icons. Links inside <code>&lt;nav&gt;</code>, <code>&lt;header&gt;</code>, and <code>&lt;footer&gt;</code> automatically suppress icons &mdash; no attribute needed.</p>
+    <p>Use <code>data-no-icon</code> to suppress automatic icons. Links inside <code>&lt;nav&gt;</code>, <code>&lt;header&gt;</code>, and <code>&lt;footer&gt;</code>, and button-styled links, suppress every auto-icon &mdash; no attribute needed.</p>
 
     <code-block language="html" label="Suppress auto-icon" data-escape><a href="https://example.com" data-no-icon>Example.com</a></code-block>
   </section>
@@ -111,6 +113,8 @@ crumbLabel: Native Elements
     <code-block language="html" label="Default link" data-escape><a href="#">default link</a></code-block>
     <code-block language="html" label="Muted link" data-escape><a href="#" data-variant="muted">muted link</a></code-block>
     <code-block language="html" label="Plain link" data-escape><a href="#" data-variant="plain">plain link</a></code-block>
+
+    <p><strong>Use <code>plain</code> sparingly.</strong> Without an underline, a link inside running text is distinguished by colour alone, which fails <a href="https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html">WCAG 1.4.1</a>. Keep it for places where context already says "this is a link": card titles, lists of links, navigation.</p>
   </section>
 
   <section>
@@ -150,16 +154,46 @@ crumbLabel: Native Elements
     <h2>Context Overrides</h2>
     <p>Auto-icons are suppressed in certain contexts to keep UI clean:</p>
 
-    <code-block language="css" show-lines label="Context-specific icon suppression" data-escape>/* Links in nav/header/footer suppress auto-icons */
-nav a[href^="http"]::after { content: none; }
-header a[href^="http"]::after { content: none; }
-footer a[href^="http"]::after { content: none; }
+    <code-block language="css" show-lines label="Context-specific icon suppression" data-escape>/* Links in nav/header/footer suppress every auto-icon */
+:is(nav, header, footer) a:is([href^="http"], [href^="//"], [download], [href$=".pdf"])::after,
+:is(nav, header, footer) a:is([href^="mailto"], [href^="tel"])::before {
+  content: none;
+}
 
-/* Icon-only links suppress indicators */
-a:has(> icon-wc:only-child)::after { content: none; }
+/* An authored <icon-wc> replaces the auto-detected glyph */
+a:is([href^="mailto"], [href^="tel"]):has(> icon-wc)::before,
+a:is([href^="http"], [href^="//"], [download], [href$=".pdf"]):has(> icon-wc)::after {
+  content: none;
+}
 
-/* Button-styled links suppress auto-icons */
-a.button[href^="http"]::after { content: none; }</code-block>
+/* Button-styled links suppress every auto-icon */
+a.button:is([href^="http"], [href^="//"], [download], [href$=".pdf"])::after,
+a.button:is([href^="mailto"], [href^="tel"])::before {
+  content: none;
+}</code-block>
+  </section>
+
+  <section>
+    <h2>Link Relations</h2>
+    <p>The <code>rel</code> attribute is styled too, through <code>src/utils/links.css</code>. See <a href="/docs/concepts/link-relations/">Link relations</a> for the full vocabulary.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th><code>rel</code> value</th>
+          <th>Presentation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>external</code></td><td>&#x2197; arrow after text (replaces the <code>href</code>-based detection, so there is only one arrow)</td></tr>
+        <tr><td><code>help</code></td><td>Dotted underline</td></tr>
+        <tr><td><code>tag</code></td><td>Pill chip</td></tr>
+        <tr><td><code>prev</code> / <code>next</code></td><td>&larr; before / &rarr; after the text</td></tr>
+        <tr><td><code>license</code>, <code>privacy-policy</code>, <code>terms-of-service</code></td><td>Muted, slightly smaller</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Safe new-tab links</h3>
+    <p>When a page contains <code>&lt;a target="_blank"&gt;</code>, a small enhancement loads and adds <code>rel="noopener"</code> to any such link that doesn't already declare an opener policy. Add <code>data-link-privacy="strict"</code> to <code>&lt;html&gt;</code> to also add <code>noreferrer</code>. It is opt-in because referral analytics depend on the <code>Referer</code> header.</p>
   </section>
 
   <section>
@@ -177,20 +211,28 @@ a.button[href^="http"]::after { content: none; }</code-block>
           <td>The URL the link points to (required for a functional link)</td>
         </tr>
         <tr>
-          <td><code>target</code></td>
+          <td><a href="/docs/attributes/target/"><code>target</code></a></td>
           <td>Where to open the link (<code>_blank</code> for new tab)</td>
         </tr>
         <tr>
-          <td><code>rel</code></td>
-          <td>Relationship between pages (<code>noopener</code>, <code>noreferrer</code>)</td>
+          <td><a href="/docs/attributes/rel/"><code>rel</code></a></td>
+          <td>Relationship to the linked resource (<code>noopener</code>, <code>external</code>, <code>help</code>&hellip;)</td>
         </tr>
         <tr>
-          <td><code>download</code></td>
-          <td>Prompts download instead of navigation</td>
+          <td><a href="/docs/attributes/download/"><code>download</code></a></td>
+          <td>Prompts download instead of navigation (same-origin URLs only)</td>
         </tr>
         <tr>
           <td><code>hreflang</code></td>
           <td>Language of the linked document</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/ping/"><code>ping</code></a></td>
+          <td>URLs notified with a POST when the link is followed</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a></td>
+          <td>How much referrer information to send</td>
         </tr>
         <tr>
           <td><code>data-variant</code></td>
@@ -248,7 +290,7 @@ a.button[href^="http"]::after { content: none; }</code-block>
     <p>A visible focus ring appears when navigating via keyboard (uses <code>:focus-visible</code> with <code>var(--color-interactive)</code> outline).</p>
 
     <h3>Visited</h3>
-    <p>Vanilla Breeze deliberately does not style <code>:visited</code> links. This is a privacy decision &mdash; browsers restrict what CSS properties can be applied to visited links to prevent history sniffing attacks.</p>
+    <p>Vanilla Breeze deliberately does not style <code>:visited</code> links, so links look the same wherever they appear. This is a design choice: browsers already limit which properties <code>:visited</code> can change, to prevent history sniffing, whether or not a stylesheet uses it.</p>
   </section>
 
   <section id="accessibility">

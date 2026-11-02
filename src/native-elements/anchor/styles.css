@@ -50,23 +50,6 @@ a[data-variant="plain"] {
   }
 }
 
-/* Legacy class support (backwards compatibility) */
-a.muted {
-  color: var(--color-text-muted);
-
-  &:hover {
-    color: var(--color-text);
-  }
-}
-
-a.plain {
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 /* ===========================================
    Auto-Detect Link Types
    Use data-no-icon to suppress auto-icons
@@ -79,17 +62,7 @@ a.plain {
 a[href^="http"]:where(:not([data-no-icon]):not([rel~="external"]))::after,
 a[href^="//"]:where(:not([data-no-icon]):not([rel~="external"]))::after {
   content: "↗";
-  font-size: 0.9em;
-  font-style: normal;
-  opacity: 0.7;
-  display: inline-block;
-  text-decoration: none;
-  padding-inline-start: 0.5em;
-}
-
-/* Legacy .external class support */
-a.external::after {
-  content: "↗";
+  content: "↗" / "";
   font-size: 0.9em;
   font-style: normal;
   opacity: 0.7;
@@ -101,6 +74,7 @@ a.external::after {
 /* Download links */
 a[download]:where(:not([data-no-icon]))::after {
   content: "↓";
+  content: "↓" / "";
   font-size: 0.9em;
   font-style: normal;
   opacity: 0.7;
@@ -112,6 +86,7 @@ a[download]:where(:not([data-no-icon]))::after {
 /* Email links */
 a[href^="mailto"]:where(:not([data-no-icon]))::before {
   content: "\2709\00A0"; /* envelope + NBSP */
+  content: "\2709\00A0" / "";
   font-style: normal;
   opacity: 0.7;
 }
@@ -119,12 +94,13 @@ a[href^="mailto"]:where(:not([data-no-icon]))::before {
 /* Phone links */
 a[href^="tel"]:where(:not([data-no-icon]))::before {
   content: "\260E\00A0"; /* phone + NBSP */
+  content: "\260E\00A0" / "";
   font-style: normal;
   opacity: 0.7;
 }
 
-/* PDF links */
-a[href$=".pdf"]:where(:not([data-no-icon]))::after {
+/* PDF links (a download link to a PDF keeps the download arrow) */
+a[href$=".pdf"]:where(:not([data-no-icon]):not([download]))::after {
   content: "PDF";
   font-size: 0.7em;
   font-weight: 600;
@@ -158,21 +134,15 @@ a > icon-wc:last-child {
    Links in navigation contexts don't show icons
    =========================================== */
 
-nav a[href^="http"]::after,
-nav a[href^="//"]::after,
-nav a[download]::after,
-header a[href^="http"]::after,
-header a[href^="//"]::after,
-footer a[href^="http"]::after,
-footer a[href^="//"]::after,
-footer a[download]::after {
+/* Auto-detect selectors, wrapped in :is() so the override outranks them */
+:is(nav, header, footer) a:is([href^="http"], [href^="//"], [download], [href$=".pdf"])::after,
+:is(nav, header, footer) a:is([href^="mailto"], [href^="tel"])::before {
   content: none;
 }
 
-nav a[href^="mailto"]::before,
-nav a[href^="tel"]::before,
-header a[href^="mailto"]::before,
-footer a[href^="mailto"]::before {
+/* An authored <icon-wc> replaces the auto-detected glyph */
+a:is([href^="mailto"], [href^="tel"]):has(> icon-wc)::before,
+a:is([href^="http"], [href^="//"], [download], [href$=".pdf"]):has(> icon-wc)::after {
   content: none;
 }
 
@@ -202,9 +172,8 @@ a.button {
   }
 
   /* Suppress auto-icons on button-styled links */
-  &[href^="http"]::after,
-  &[href^="//"]::after,
-  &[download]::after {
+  &:is([href^="http"], [href^="//"], [download], [href$=".pdf"])::after,
+  &:is([href^="mailto"], [href^="tel"])::before {
     content: none;
   }
 }

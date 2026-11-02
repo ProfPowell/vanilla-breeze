@@ -1,7 +1,8 @@
 /* inline-semantics: Specialized inline text elements */
 
-/* Abbreviation with tooltip hint */
-abbr {
+/* Abbreviation with an expansion: dotted underline + help cursor.
+ * An <abbr> without a title has nothing to reveal, so it stays plain. */
+abbr[title] {
   text-decoration: underline dotted;
   text-decoration-color: var(--color-text-muted);
   cursor: help;
@@ -9,6 +10,12 @@ abbr {
 
 abbr[title]:hover {
   text-decoration-color: var(--color-interactive);
+}
+
+/* An abbreviation wrapping a link (glossary mentions): the link's own
+ * underline is the affordance, so skip the dotted one to avoid two. */
+abbr[title]:has(> a:only-child) {
+  text-decoration: none;
 }
 
 /* Citation for work titles */
@@ -140,7 +147,7 @@ mark.error {
 }
 
 /* Abbreviation without underline */
-abbr.plain {
+abbr[data-variant="plain"] {
   text-decoration: none;
 }
 

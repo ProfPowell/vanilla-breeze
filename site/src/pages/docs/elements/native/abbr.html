@@ -26,7 +26,6 @@ crumbLabel: Native Elements
     <ul>
       <li><strong>Technical terms:</strong> HTML, CSS, API, DOM</li>
       <li><strong>Organization names:</strong> NASA, NATO, IEEE</li>
-      <li><strong>Common abbreviations:</strong> etc., e.g., i.e.</li>
       <li><strong>Industry jargon:</strong> SEO, UX, CMS</li>
       <li><strong>First occurrence:</strong> Mark the first use of an abbreviation on a page</li>
     </ul>
@@ -43,10 +42,10 @@ crumbLabel: Native Elements
     <browser-window src="/docs/snippets/demos/abbr-examples.html" url="abbr-examples.html" title="Abbreviation examples" shadow></browser-window>
 
     <code-block language="html" label="Abbreviation with title" data-escape><abbr title="HyperText Markup Language">HTML</abbr></code-block>
-    <code-block language="html" label="Plain abbreviation (.plain)" data-escape><abbr class="plain" title="Cascading Style Sheets">CSS</abbr></code-block>
+    <code-block language="html" label="Plain abbreviation" data-escape><abbr data-variant="plain" title="Cascading Style Sheets">CSS</abbr></code-block>
 
     <h3>With &lt;dfn&gt; (First Definition)</h3>
-    <p>Combine with <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> when first defining a term. This signals to screen readers and search engines that this is the defining instance.</p>
+    <p>Combine with <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> when first defining a term. This marks the defining instance of the term in the document.</p>
     <code-block language="html" label="First-use pattern with dfn" data-escape><p>
   <dfn><abbr title="Application Programming Interface">API</abbr></dfn>
   (Application Programming Interface) is a set of protocols
@@ -61,17 +60,17 @@ crumbLabel: Native Elements
     <table class="props-table">
       <thead>
         <tr>
-          <th>Class</th>
+          <th>Attribute</th>
           <th>Effect</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>(default)</td>
-          <td>Dotted underline + help cursor. Underline color changes to interactive on hover.</td>
+          <td>(default, with <code>title</code>)</td>
+          <td>Dotted underline + help cursor. Underline color changes to interactive on hover. An <code>&lt;abbr&gt;</code> without a <code>title</code> has nothing to reveal, so it gets no underline.</td>
         </tr>
         <tr>
-          <td><code>.plain</code></td>
+          <td><code>data-variant="plain"</code></td>
           <td>No underline. Title tooltip still works on hover.</td>
         </tr>
       </tbody>
@@ -80,7 +79,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="Abbreviation CSS" data-escape>abbr {
+    <code-block language="css" show-lines label="Abbreviation CSS" data-escape>abbr[title] {
   text-decoration: underline dotted;
   text-decoration-color: var(--color-text-muted);
   cursor: help;
@@ -91,7 +90,7 @@ abbr[title]:hover {
 }
 
 /* Remove underline */
-abbr.plain {
+abbr[data-variant="plain"] {
   text-decoration: none;
 }</code-block>
   </section>
@@ -100,6 +99,7 @@ abbr.plain {
     <h2>Accessibility</h2>
     <ul>
       <li><strong>Title attribute limitations:</strong> Touch devices cannot hover, so title tooltips are inaccessible. Consider spelling out the full term on first use.</li>
+      <li><strong>Keyboard users:</strong> <code>&lt;abbr&gt;</code> is not focusable, so keyboard users cannot open the <code>title</code> tooltip either. Another reason to expand on first use.</li>
       <li><strong>Screen reader support:</strong> Some screen readers can be configured to announce abbreviation expansions</li>
       <li><strong>Visual indicator:</strong> The dotted underline signals to sighted users that additional information is available</li>
     </ul>
