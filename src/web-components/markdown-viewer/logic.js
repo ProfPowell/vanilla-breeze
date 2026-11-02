@@ -8,12 +8,17 @@
  * The default parser is the vendored `marked` (src/vendor/marked). Supply a
  * custom parser via the `.parser` property to bypass the default entirely.
  *
- * Trust boundary: this component injects parsed HTML via innerHTML. It is
- * designed for rendering trusted markdown content. Do not use it with
- * untrusted or user-generated markdown from third-party sources without
- * enabling the `sanitize` attribute (Phase 3).
+ * Trust boundary: parsed HTML (from marked or a custom `.parser`) is passed
+ * through the shared sanitizer (src/lib/sanitize-html.js) before it is
+ * written via innerHTML — script/iframe/object/embed/form/base/link/meta/
+ * noscript elements, on* handlers and javascript:/data:text/html URLs are
+ * stripped. Sanitising is ON by default because the viewer renders model
+ * output (ai-summary) and user comments (comment-box → markdown-editor).
+ * Set `sanitize="off"` only for fully trusted first-party markdown that
+ * genuinely needs raw embeds (iframes, forms).
  *
  * @attr {string} src - URL of external markdown file
+ * @attr {string} sanitize - Sanitise rendered HTML. On by default (bare attribute or any value); "off"/"false" disables
  * @attr {string} loading - "eager" (default) or "lazy" (Phase 3)
  * @attr {boolean} highlight - Fire per-block highlight events after render
  * @attr {string} ping - URL to ping with render metadata
@@ -42,6 +47,7 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { marked as markedLib } from '../../vendor/marked/marked.esm.js';
+import { sanitizeHTML } from '../../lib/sanitize-html.js';
 
 class MarkdownViewer extends VBElement {
   /** @type {Function|null} Custom parser override (md string → html string) */
@@ -203,7 +209,7 @@ class MarkdownViewer extends VBElement {
       this.#contentEl.setAttribute('part', 'content');
       this.appendChild(this.#contentEl);
     }
-    this.#contentEl.innerHTML = html;
+    this.#contentEl.innerHTML = this.#shouldSanitize() ? sanitizeHTML(String(html ?? '')) : html;
 
     // Theme propagation
     this.#propagateTheme();
@@ -234,6 +240,13 @@ class MarkdownViewer extends VBElement {
   async #getParser() {
     if (this.#parser) return this.#parser;
     return (md) => markedLib.parse(md, { gfm: true });
+  }
+
+  /** Sanitising is on unless explicitly disabled with sanitize="off"|"false". */
+  #shouldSanitize() {
+    const v = this.getAttribute('sanitize');
+    if (v == null) return true;
+    return !/^(off|false)$/i.test(v.trim());
   }
 
   // ── Theme ───────────────────────────────────────────────────

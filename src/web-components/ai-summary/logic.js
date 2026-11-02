@@ -64,6 +64,14 @@ class AISummary extends VBElement {
   // ── UI ──────────────────────────────────────────────────────────
 
   #renderUI() {
+    // setup() re-runs on every reconnect (VBElement lifecycle), e.g. when the
+    // element is moved. Re-bind to the existing UI instead of prepending a
+    // second one; listen() handlers were cleaned up on disconnect.
+    const existing = this.querySelector(':scope > .ais-ui');
+    if (existing) {
+      this.#bindUI(/** @type {HTMLElement} */ (existing));
+      return;
+    }
     const ui = document.createElement('div');
     ui.className = 'ais-ui';
     ui.innerHTML = `
@@ -76,7 +84,11 @@ class AISummary extends VBElement {
       <div class="ais-output" hidden aria-live="polite"></div>
     `;
     this.prepend(ui);
+    this.#bindUI(ui);
+  }
 
+  /** @param {HTMLElement} ui */
+  #bindUI(ui) {
     this.#button = /** @type {HTMLButtonElement} */ (ui.querySelector('.ais-trigger'));
     this.#status = /** @type {HTMLElement}        */ (ui.querySelector('.ais-status'));
     this.#output = /** @type {HTMLElement}        */ (ui.querySelector('.ais-output'));
@@ -154,19 +166,21 @@ class AISummary extends VBElement {
     this.#output.hidden = false;
     this.#output.textContent = '';
     this.#button.disabled = true;
+    this.#output.setAttribute('aria-busy', 'true');
     this.#setState('streaming');
-    this.#abortCtl = new AbortController();
+    const ctl = new AbortController();
+    this.#abortCtl = ctl;
 
     try {
       const text = this.#extractContent();
       let result = '';
       const stream = this.#provider === 'local'
-        ? await this.#localStream(text)
+        ? await this.#localStream(text, ctl.signal)
         : callEndpoint(this.getAttribute('endpoint') || '', {
             prompt: this.#composePrompt(),
             content: text,
             mode: 'summarize',
-            signal: this.#abortCtl.signal,
+            signal: ctl.signal,
           });
 
       for await (const chunk of stream) {
@@ -192,16 +206,18 @@ class AISummary extends VBElement {
         bubbles: true,
       }));
     } finally {
-      this.#abortCtl = null;
+      this.#output.removeAttribute('aria-busy');
+      if (this.#abortCtl === ctl) this.#abortCtl = null;
       this.#button.disabled = false;
     }
   }
 
   /**
    * @param {string} text
+   * @param {AbortSignal} signal
    * @returns {Promise<AsyncIterable<string>>}
    */
-  async #localStream(text) {
+  async #localStream(text, signal) {
     // @ts-expect-error — Summarizer is a Chrome built-in not in the TS lib.
     const summarizer = await Summarizer.create({
       type:           this.getAttribute('type')           || 'key-points',
@@ -219,7 +235,6 @@ class AISummary extends VBElement {
         });
       },
     });
-    const signal = this.#abortCtl?.signal;
     const stream = typeof summarizer.summarizeStreaming === 'function'
       ? summarizer.summarizeStreaming(text, { signal })
       : (async function* () { yield await summarizer.summarize(text, { signal }); })();
@@ -252,11 +267,18 @@ class AISummary extends VBElement {
     });
   }
 
-  /** @param {string} markdown */
+  /**
+   * Model / endpoint output is untrusted (prompt injection, compromised
+   * endpoint), so the viewer is told to sanitise explicitly — independent of
+   * markdown-viewer's default. If markdown-viewer isn't registered the <pre>
+   * stays as inert text.
+   * @param {string} markdown
+   */
   #renderMarkdown(markdown) {
     if (!this.#output) return;
     if (!markdown) { this.#output.textContent = ''; return; }
     const viewer = document.createElement('markdown-viewer');
+    viewer.setAttribute('sanitize', '');
     const pre = document.createElement('pre');
     pre.textContent = markdown;
     viewer.appendChild(pre);

@@ -83,7 +83,10 @@ class AIChat extends VBElement {
   static get observedAttributes() { return ['placeholder']; }
 
   setup() {
-    this.#renderShell();
+    // VBElement re-runs setup() on every reconnect (e.g. when the element is
+    // moved). Build the shell once and re-bind to it afterwards, so a move
+    // keeps the thread and doesn't stack a second chat-window.
+    if (!this.#adoptShell()) this.#renderShell();
     this.#renderStarters();
     this.#wireEvents();
     this.#refreshContextRibbon();
@@ -92,6 +95,7 @@ class AIChat extends VBElement {
 
   teardown() {
     this.#abortCtl?.abort();
+    this.#abortCtl = null;
     this.#session?.destroy?.();
     this.#session = null;
   }
@@ -107,6 +111,7 @@ class AIChat extends VBElement {
 
   async reset() {
     this.#abortCtl?.abort();
+    this.#abortCtl = null;
     this.#session?.destroy?.();
     this.#session = null;
     /** @type {any} */ (this.#window)?.clearThread?.();
@@ -115,6 +120,21 @@ class AIChat extends VBElement {
   }
 
   /* ---------- rendering ---------- */
+
+  /**
+   * Re-bind private refs to a shell built by an earlier setup().
+   * @returns {boolean} true when an existing shell was found.
+   */
+  #adoptShell() {
+    const win = this.querySelector(':scope > chat-window');
+    if (!win) return false;
+    this.#window   = /** @type {HTMLElement}        */ (win);
+    this.#select   = /** @type {HTMLSelectElement} */  (win.querySelector('.ai-chat-provider'));
+    this.#ribbon   = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-ribbon'));
+    this.#notice   = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-notice'));
+    this.#starters = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-starters'));
+    return true;
+  }
 
   #renderShell() {
     const placeholder = this.getAttribute('placeholder') || 'Type a message…';
@@ -175,6 +195,19 @@ class AIChat extends VBElement {
 
   #wireEvents() {
     if (!this.#window) return;
+    /* One request at a time. chat-window re-enables the input as soon as it
+       has dispatched chat-window:send (ai-chat streams asynchronously), so a
+       second send could otherwise start while the first is still streaming.
+       Intercept chat-input:send in the capture phase — before chat-window
+       appends a user bubble and typing indicator — and drop it. chat-input
+       clears its value right after dispatching, so put the text back. */
+    this.listen(this, 'chat-input:send', (/** @type {any} */ e) => {
+      if (!this.#abortCtl) return;
+      e.stopImmediatePropagation();
+      const input = /** @type {any} */ (e.target);
+      const text = e.detail?.message ?? '';
+      queueMicrotask(() => { if (input && 'value' in input) input.value = text; });
+    }, { capture: true });
     this.listen(this.#window, 'chat-window:send', (/** @type {any} */ e) => {
       e.stopPropagation();
       this.#handleSend(e.detail.message, e.detail.typingElement);
@@ -189,9 +222,10 @@ class AIChat extends VBElement {
         this.#syncNoticeForProvider();
       }
     });
-    /* Escape on the host aborts an in-flight stream. The Send button
-       and textarea are disabled while chat-window awaits a response, so
-       keyboard focus is the reliable abort path. */
+    /* Escape anywhere inside the host aborts the in-flight stream. The
+       textarea stays enabled while streaming (chat-window re-enables it right
+       after dispatching chat-window:send; further sends are dropped above),
+       so focus is normally still in the textarea and Escape reaches us. */
     this.listen(this, 'keydown', (/** @type {KeyboardEvent} */ e) => {
       if (e.key === 'Escape' && this.#abortCtl) {
         e.preventDefault();
@@ -286,8 +320,10 @@ class AIChat extends VBElement {
 
     this.#populateSelect(opts);
 
-    // Pick the first non-disabled option as the active provider.
-    const initial = opts.find(o => !o.disabled);
+    // Keep the current provider if it is still offered (reconnect after a
+    // move); otherwise pick the first non-disabled option.
+    const initial = opts.find(o => !o.disabled && o.value === this.#provider)
+      ?? opts.find(o => !o.disabled);
     this.#provider = /** @type {'local'|'endpoint'|'deep-link'|'unavailable'} */ (initial?.value ?? 'unavailable');
     if (this.#select && initial) this.#select.value = initial.value;
     if (this.#window) /** @type {any} */ (this.#window).model = this.#provider;
@@ -373,6 +409,13 @@ class AIChat extends VBElement {
    * @param {HTMLElement} typingElement
    */
   async #handleSend(message, typingElement) {
+    // Defensive: the capture-phase chat-input:send guard normally prevents
+    // this, but a programmatic send must not start a concurrent stream.
+    if (this.#abortCtl) {
+      typingElement.remove();
+      return;
+    }
+
     this.dispatchEvent(new CustomEvent('ai-chat:message', { detail: { role: 'user', text: message }, bubbles: true }));
 
     if (this.#provider === 'deep-link') {
@@ -385,21 +428,23 @@ class AIChat extends VBElement {
       return;
     }
 
-    this.#setState('streaming');
-    this.#abortCtl = new AbortController();
-
     const bubble = typingElement.querySelector('chat-bubble');
     if (!bubble) return;
+
+    const ctl = new AbortController();
+    this.#abortCtl = ctl;
+    this.#setState('streaming');
+    typingElement.setAttribute('aria-busy', 'true');
 
     let acc = '';
     try {
       const stream = this.#provider === 'local'
-        ? await this.#localStream(message)
+        ? await this.#localStream(message, ctl.signal)
         : callEndpoint(this.getAttribute('endpoint') || '', {
             prompt: message,
             content: this.#extractContext() || undefined,
             mode: 'chat',
-            signal: this.#abortCtl.signal,
+            signal: ctl.signal,
           });
 
       for await (const chunk of stream) {
@@ -422,17 +467,20 @@ class AIChat extends VBElement {
       this.#setState('error');
       this.dispatchEvent(new CustomEvent('ai-chat:error', { detail: { error: err }, bubbles: true }));
     } finally {
-      this.#abortCtl = null;
+      typingElement.removeAttribute('aria-busy');
+      // Only clear the controller if it is still ours (teardown/reset may
+      // have replaced or cleared it meanwhile).
+      if (this.#abortCtl === ctl) this.#abortCtl = null;
     }
   }
 
   /**
    * @param {string} text
+   * @param {AbortSignal} signal
    * @returns {Promise<AsyncIterable<string>>}
    */
-  async #localStream(text) {
+  async #localStream(text, signal) {
     const session = await this.#ensureSession();
-    const signal = this.#abortCtl?.signal;
     const stream = session.promptStreaming(text, { signal });
     return (async function* () {
       for await (const chunk of stream) yield chunk;

@@ -23,6 +23,7 @@
  * ### Current consumers
  *
  * - `chat-window` — sanitizes endpoint responses before rendering bubbles
+ * - `markdown-viewer` — sanitizes parsed markdown by default (`sanitize="off"` opts out); covers ai-summary output and comment-box content
  * - `card-list`   — sanitizes `data-field-html` bindings from JSON data
  * - `include-file` — strips scripts unless `allow-scripts` is set
  *
