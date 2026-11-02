@@ -323,8 +323,10 @@ class DayView extends VBElement {
         event.style.position = 'absolute';
         event.style.top = top + 'px';
         event.style.height = height + 'px';
-        event.style.left = (labelWidth + 4) + 'px';
-        event.style.right = '4px';
+        // Logical insets: the hour labels sit at inline-start, which is
+        // the right edge in RTL.
+        event.style.insetInlineStart = (labelWidth + 4) + 'px';
+        event.style.insetInlineEnd = '4px';
         event.classList.add('dv-spanning');
       });
     });

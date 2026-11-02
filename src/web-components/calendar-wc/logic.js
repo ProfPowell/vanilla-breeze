@@ -23,7 +23,16 @@
  * @attr {string}  data-disabled-dates  - Comma-separated ISO dates to disable
  * @attr {string}  data-highlight-dates - Comma-separated ISO dates to highlight (optionally with :category)
  * @attr {string}  data-months          - Number of adjacent months to show (1-12). Defaults to 1.
+ * @attr {string}  data-heading-level   - Multi-month titles render as <h1>-<h6> at this level. Default: plain text (no heading).
+ * @attr {string}  data-label-prev      - Accessible name for the previous-month button (default "Previous month")
+ * @attr {string}  data-label-next      - Accessible name for the next-month button (default "Next month")
+ * @attr {string}  data-label-year      - Accessible name for the year select (default "Year")
+ * @attr {string}  data-label-close     - Accessible name for the day-detail close button (default "Close")
+ * @attr {string}  data-label-more      - Large-view overflow text; {n} is replaced by the count (default "+{n} more")
  * @attr {string}  name                - Form participation name (enables ElementInternals form value)
+ *
+ * data-month, data-year and data-events are observed: changing them re-renders.
+ * The other attributes are read on connect (and again on reconnect).
  *
  * @example
  * <calendar-wc data-size="large"
@@ -87,13 +96,22 @@ function resolveRange(evt, keyISO) {
   return { start, end, startISO: keyISO, endISO: toISO(end), days: Math.round((end.getTime() - start.getTime()) / 86400000) + 1 };
 }
 
-function getFirstDayOfWeek() {
+/**
+ * First day of the week (0 = Sunday) for a BCP 47 locale. Uses
+ * Intl.Locale#getWeekInfo() where shipped, falling back to the older
+ * `weekInfo` accessor.
+ * @param {string} localeTag
+ */
+function getFirstDayOfWeek(localeTag) {
   try {
-    const locale = /** @type {Intl.Locale & { weekInfo?: { firstDay: number } }} */ (new Intl.Locale(navigator.language));
-    if (locale.weekInfo) return locale.weekInfo.firstDay % 7;
+    const locale = /** @type {Intl.Locale & { getWeekInfo?: () => { firstDay: number }, weekInfo?: { firstDay: number } }} */ (new Intl.Locale(localeTag));
+    const info = locale.getWeekInfo?.() ?? locale.weekInfo;
+    if (info) return info.firstDay % 7;
   } catch { /* fallback */ }
   return 0;
 }
+
+let detailIdCounter = 0;
 
 /** Normalize event data to always be an array of event objects */
 function normalizeEvents(data) {
@@ -178,6 +196,42 @@ class CalendarWc extends VBElement {
   #selectionMode = 'none';
   #size = 'default';
   #monthCount = 1;
+  /** ISO date that owns the roving tabindex="0" across all visible months. */
+  /** @type {string | null} */
+  #focusISO = null;
+  /** True once .events was assigned, so a reconnect does not re-read data-events over it. */
+  #eventsFromProperty = false;
+  /** Set while #renderMonth reflects data-month/data-year, to ignore our own writes. */
+  #reflecting = false;
+
+  static get observedAttributes() { return ['data-month', 'data-year', 'data-events']; }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (!this.#built || this.#reflecting || oldValue === newValue) return;
+    if (name === 'data-events') {
+      /** @type {Record<string, any[]>} */
+      let next = {};
+      if (newValue) {
+        try { next = JSON.parse(newValue); } catch { return; }
+      }
+      this.#eventsFromProperty = false;
+      this.#events = next;
+      this.#renderMonth();
+      this.dispatchEvent(new CustomEvent('calendar-wc:events-changed', {
+        detail: { events: next, source: 'attribute' },
+        bubbles: true,
+      }));
+      return;
+    }
+    const month = parseInt(this.getAttribute('data-month') ?? '', 10) - 1;
+    const year = parseInt(this.getAttribute('data-year') ?? '', 10);
+    const nextMonth = month >= 0 && month <= 11 ? month : this.#viewMonth;
+    const nextYear = Number.isFinite(year) ? year : this.#viewYear;
+    if (nextMonth === this.#viewMonth && nextYear === this.#viewYear) return;
+    this.#viewMonth = nextMonth;
+    this.#viewYear = nextYear;
+    this.#renderMonth();
+  }
 
   /** JS-only callback: (date: Date) => boolean. If it returns true, the date is disabled. */
   /** @type {((date: Date) => boolean) | null} */
@@ -207,6 +261,7 @@ class CalendarWc extends VBElement {
     // Identity short-circuit on object reference
     if (this.#events === next) return;
     this.#events = next;
+    this.#eventsFromProperty = true;
     if (this.#built) this.#renderMonth();
     this.dispatchEvent(new CustomEvent('calendar-wc:events-changed', {
       detail: { events: next, source: 'property' },
@@ -250,6 +305,11 @@ class CalendarWc extends VBElement {
   #monthsWrap;
   #prevBtn;
   #nextBtn;
+  /** @type {HTMLElement | null} */
+  #banner = null;
+  /** Element to return focus to when the day detail closes. */
+  /** @type {HTMLElement | null} */
+  #detailReturnFocus = null;
   /** @type {HTMLDivElement | null} */
   #detailOverlay = null;
   /** @type {(() => void) | null} */
@@ -272,14 +332,14 @@ class CalendarWc extends VBElement {
     if (isNaN(this.#viewMonth)) this.#viewMonth = today.getMonth();
     this.#viewYear = parseInt(this.getAttribute('data-year') ?? '', 10);
     if (isNaN(this.#viewYear)) this.#viewYear = today.getFullYear();
-    this.#firstDayOfWeek = getFirstDayOfWeek();
+    this.#firstDayOfWeek = getFirstDayOfWeek(this.#locale);
     this.#selectionMode = this.getAttribute('data-selection') || 'none';
     this.#size = this.getAttribute('data-size') || 'default';
     this.#monthCount = Math.max(1, Math.min(12, parseInt(this.dataset.months ?? '', 10) || 1));
 
-    // Parse events
+    // Parse events (unless the .events property already owns them)
     const eventsAttr = this.getAttribute('data-events');
-    if (eventsAttr) {
+    if (eventsAttr && !this.#eventsFromProperty) {
       try { this.#events = JSON.parse(eventsAttr); } catch { /* ignore */ }
     }
 
@@ -288,6 +348,8 @@ class CalendarWc extends VBElement {
     this.#maxDate = fromISO(this.dataset.maxDate);
 
     // Parse disabled dates
+    this.#disabledDates.clear();
+    this.#highlightDates.clear();
     const disabled = this.getAttribute('data-disabled-dates');
     if (disabled) {
       disabled.split(',').forEach(d => this.#disabledDates.add(d.trim()));
@@ -310,13 +372,22 @@ class CalendarWc extends VBElement {
   /** Force a re-render of the current view. Useful after setting JS-only properties. */
   refresh() { if (this.#built) this.#renderMonth(); }
 
+  /**
+   * Author-overridable UI string from a data-label-* attribute.
+   * @param {string} key  dataset key suffix, e.g. 'Prev' for data-label-prev
+   * @param {string} fallback
+   */
+  #label(key, fallback) {
+    return this.dataset[`label${key}`] || fallback;
+  }
+
   #build() {
     // Header
     this.#header = document.createElement('header');
 
     this.#prevBtn = document.createElement('button');
     this.#prevBtn.type = 'button';
-    this.#prevBtn.setAttribute('aria-label', 'Previous month');
+    this.#prevBtn.setAttribute('aria-label', this.#label('Prev', 'Previous month'));
     this.#prevBtn.textContent = '\u2039';
     this.listen(this.#prevBtn, 'click', () => this.#navigate(-1));
 
@@ -330,7 +401,7 @@ class CalendarWc extends VBElement {
 
     this.#yearSelect = document.createElement('select');
     this.#yearSelect.className = 'calendar-year';
-    this.#yearSelect.setAttribute('aria-label', 'Year');
+    this.#yearSelect.setAttribute('aria-label', this.#label('Year', 'Year'));
     this.listen(this.#yearSelect, 'change', () => {
       this.#viewYear = parseInt(this.#yearSelect.value, 10);
       this.#renderMonth();
@@ -346,7 +417,7 @@ class CalendarWc extends VBElement {
 
     this.#nextBtn = document.createElement('button');
     this.#nextBtn.type = 'button';
-    this.#nextBtn.setAttribute('aria-label', 'Next month');
+    this.#nextBtn.setAttribute('aria-label', this.#label('Next', 'Next month'));
     this.#nextBtn.textContent = '\u203A';
     this.listen(this.#nextBtn, 'click', () => this.#navigate(1));
 
@@ -358,6 +429,7 @@ class CalendarWc extends VBElement {
     banner.className = 'calendar-banner';
     banner.setAttribute('aria-hidden', 'true');
     this.appendChild(banner);
+    this.#banner = banner;
 
     // Months wrapper — holds 1..N month grids side by side
     this.#monthsWrap = document.createElement('div');
@@ -382,8 +454,27 @@ class CalendarWc extends VBElement {
       }
     });
 
-    // Keyboard navigation — delegated on the wrapper
-    this.listen(this.#monthsWrap, 'keydown', (e) => this.#handleKey(e));
+    // Keyboard navigation — delegated on the wrapper. Enter/Space are left
+    // to the native <button>, whose activation fires the click handler
+    // above: the same select / open-day-detail path as a pointer click.
+    this.listen(this.#monthsWrap, 'keydown', (e) => this.#handleKey(/** @type {KeyboardEvent} */ (e)));
+
+    // Roving tabindex follows focus (keyboard or pointer).
+    this.listen(this.#monthsWrap, 'focusin', (e) => {
+      const target = /** @type {Element | null} */ (e.target);
+      const btn = /** @type {HTMLButtonElement | null} */ (target?.closest?.('button[data-date]'));
+      if (!btn) return;
+      this.#focusISO = btn.getAttribute('data-date');
+      this.#applyRovingTabindex();
+    });
+
+    // Escape closes the day detail — scoped to this calendar, not the document.
+    this.listen(this, 'keydown', (e) => {
+      if (/** @type {KeyboardEvent} */ (e).key === 'Escape' && this.#detailOverlay) {
+        e.stopPropagation();
+        this.#closeDayDetail(true);
+      }
+    });
 
     // Hover for range preview — in-place attribute update, no re-render
     if (this.#selectionMode === 'range') {
@@ -401,8 +492,9 @@ class CalendarWc extends VBElement {
   #buildYearOptions() {
     this.#yearSelect.innerHTML = '';
     const currentYear = new Date().getFullYear();
-    const minYear = this.#minDate ? this.#minDate.getFullYear() : currentYear - 10;
-    const maxYear = this.#maxDate ? this.#maxDate.getFullYear() : currentYear + 10;
+    // Always include the displayed year, even when it is far from today.
+    const minYear = Math.min(this.#viewYear, this.#minDate ? this.#minDate.getFullYear() : currentYear - 10);
+    const maxYear = Math.max(this.#viewYear, this.#maxDate ? this.#maxDate.getFullYear() : currentYear + 10);
     for (let y = minYear; y <= maxYear; y++) {
       const opt = document.createElement('option');
       opt.value = String(y);
@@ -440,14 +532,14 @@ class CalendarWc extends VBElement {
         this.#rangeStart = date;
         this.#rangeEnd = null;
         this.#hoverDate = null;
-        this.dataset.tentative = toISO(this.#rangeStart);
+        this.setAttribute('data-tentative', toISO(this.#rangeStart));
       } else {
         this.#rangeEnd = date;
         if (this.#rangeStart && this.#rangeStart > this.#rangeEnd) {
           [this.#rangeStart, this.#rangeEnd] = [this.#rangeEnd, this.#rangeStart];
         }
         this.#hoverDate = null;
-        delete this.dataset.tentative;
+        this.removeAttribute('data-tentative');
         const startISO = toISO(this.#rangeStart);
         const endISO = toISO(this.#rangeEnd);
         this.dispatchEvent(new CustomEvent('calendar:select', {
@@ -527,18 +619,15 @@ class CalendarWc extends VBElement {
       td.removeAttribute('data-range-start');
       td.removeAttribute('data-range-end');
       td.removeAttribute('data-in-range');
-      btn.removeAttribute('aria-selected');
 
       // Single selection
       if (this.#selectionMode === 'single' && sameDay(cellDate, this.#selectedDate)) {
         td.setAttribute('data-selected', '');
-        btn.setAttribute('aria-selected', 'true');
       }
 
       // Multi selection
       if (this.#selectionMode === 'multi' && this.#selectedDates.has(iso)) {
         td.setAttribute('data-selected', '');
-        btn.setAttribute('aria-selected', 'true');
       }
 
       // Range selection
@@ -553,7 +642,42 @@ class CalendarWc extends VBElement {
           td.setAttribute('data-range-start', '');
         }
       }
+
+      this.#syncAriaSelected(td);
     }
+  }
+
+  /**
+   * aria-selected lives on the gridcell (<td>), not the <button>: buttons
+   * do not support it. Selected = data-selected, or inside a range
+   * (start/end/in-range). In a selectable grid every in-month cell gets an
+   * explicit true/false; display-only grids carry none.
+   * @param {HTMLTableCellElement} td
+   */
+  #syncAriaSelected(td) {
+    if (this.#selectionMode === 'none') { td.removeAttribute('aria-selected'); return; }
+    const selected = td.hasAttribute('data-selected') || td.hasAttribute('data-in-range') ||
+      td.hasAttribute('data-range-start') || td.hasAttribute('data-range-end');
+    td.setAttribute('aria-selected', String(selected));
+  }
+
+  /**
+   * Exactly one enabled day button across all visible months gets
+   * tabindex="0": the last focused day, else the selection, else today,
+   * else the first enabled day.
+   */
+  #applyRovingTabindex() {
+    if (!this.#monthsWrap) return;
+    const buttons = /** @type {HTMLButtonElement[]} */ ([...this.#monthsWrap.querySelectorAll('button[data-date]')]);
+    const enabled = buttons.filter(b => !b.disabled);
+    const byISO = (/** @type {string | null} */ iso) => (iso ? enabled.find(b => b.getAttribute('data-date') === iso) : undefined);
+    let selectedISO = null;
+    if (this.#selectionMode === 'single' && this.#selectedDate) selectedISO = toISO(this.#selectedDate);
+    else if (this.#selectionMode === 'range' && this.#rangeStart) selectedISO = toISO(this.#rangeStart);
+    else if (this.#selectionMode === 'multi' && this.#selectedDates.size) selectedISO = [...this.#selectedDates].sort()[0];
+    const target = byISO(this.#focusISO) || byISO(selectedISO) ||
+      enabled.find(b => b.getAttribute('aria-current') === 'date') || enabled[0];
+    for (const b of buttons) b.setAttribute('tabindex', b === target ? '0' : '-1');
   }
 
   /** Compute (year, month) for a given offset from the current view */
@@ -578,9 +702,10 @@ class CalendarWc extends VBElement {
         if (!range) continue;
         const isSpan = range.days > 1;
         if (isSpan) spans.push({ evt, range });
-        const oneDay = 86400000;
-        for (let t = range.start.getTime(); t <= range.end.getTime(); t += oneDay) {
-          const iso = toISO(new Date(t));
+        // Step by calendar day (setDate), not by 24h of milliseconds: a
+        // span across a DST change would otherwise duplicate or drop days.
+        for (let d = new Date(range.start), guard = 0; guard < range.days; d = addDays(d, 1), guard++) {
+          const iso = toISO(d);
           const entry = {
             evt, range, isSpan,
             isStart: iso === range.startISO,
@@ -634,9 +759,11 @@ class CalendarWc extends VBElement {
       (lastVis.year === this.#maxDate.getFullYear() &&
        lastVis.month >= this.#maxDate.getMonth())));
 
-    // Sync host attributes for theme CSS selectors
+    // Sync host attributes for theme CSS selectors (ignored by attributeChangedCallback)
+    this.#reflecting = true;
     this.setAttribute('data-month', String(this.#viewMonth + 1));
     this.setAttribute('data-year', String(this.#viewYear));
+    this.#reflecting = false;
 
     // ── Build month grids ──
     this.#monthsWrap.innerHTML = '';
@@ -645,10 +772,13 @@ class CalendarWc extends VBElement {
       const { year, month } = this.#offsetMonth(i);
 
       if (n > 1) {
-        // Per-month title centered above each grid
+        // Per-month title centered above each grid. The component cannot
+        // know the page outline, so it is plain text unless the author sets
+        // data-heading-level (1-6). Each table is labelled either way.
         const monthHeader = document.createElement('div');
         monthHeader.className = 'cal-month-column';
-        const title = document.createElement('h4');
+        const level = parseInt(this.getAttribute('data-heading-level') ?? '', 10);
+        const title = document.createElement(level >= 1 && level <= 6 ? `h${level}` : 'span');
         title.className = 'cal-month-title';
         title.textContent = fmtMonthYear.format(new Date(year, month, 1));
         monthHeader.appendChild(title);
@@ -663,6 +793,7 @@ class CalendarWc extends VBElement {
 
     // Keep #grid pointing at the first table for keyboard nav compatibility
     this.#grid = this.#monthsWrap.querySelector('table');
+    this.#applyRovingTabindex();
   }
 
   /** Build a complete month table (thead + tbody) for the given year/month */
@@ -673,10 +804,13 @@ class CalendarWc extends VBElement {
 
     const table = document.createElement('table');
     table.setAttribute('role', 'grid');
+    if (this.#selectionMode === 'multi' || this.#selectionMode === 'range') {
+      table.setAttribute('aria-multiselectable', 'true');
+    }
     try {
       const titleDate = new Date(year, month, 1);
-      const monthName = new Intl.DateTimeFormat(undefined, { month: 'long' }).format(titleDate);
-      table.setAttribute('aria-label', `${monthName} ${year}`);
+      table.setAttribute('aria-label',
+        new Intl.DateTimeFormat(this.#locale, { month: 'long', year: 'numeric' }).format(titleDate));
     } catch { /* fallback — no label */ }
 
     // Weekday headers
@@ -749,13 +883,11 @@ class CalendarWc extends VBElement {
 
       // Selected
       if (this.#selectionMode === 'single' && sameDay(cellDate, this.#selectedDate)) {
-        btn.setAttribute('aria-selected', 'true');
         td.setAttribute('data-selected', '');
       }
 
       // Multi selection
       if (this.#selectionMode === 'multi' && this.#selectedDates.has(iso)) {
-        btn.setAttribute('aria-selected', 'true');
         td.setAttribute('data-selected', '');
       }
 
@@ -769,6 +901,7 @@ class CalendarWc extends VBElement {
       } else if (this.#selectionMode === 'range' && rangeA && sameDay(cellDate, rangeA)) {
         td.setAttribute('data-range-start', '');
       }
+      this.#syncAriaSelected(td);
 
       // Disabled — explicit list, outside min/max range, or isDateDisallowed callback
       const beforeMin = this.#minDate && cellDate < this.#minDate;
@@ -827,7 +960,8 @@ class CalendarWc extends VBElement {
             if (cellEntries.length > maxShow) {
               const more = document.createElement('span');
               more.className = 'event-more';
-              more.textContent = `+${cellEntries.length - maxShow} more`;
+              more.textContent = this.#label('More', '+{n} more')
+                .replace('{n}', String(cellEntries.length - maxShow));
               eventList.appendChild(more);
             }
             btn.appendChild(eventList);
@@ -852,9 +986,9 @@ class CalendarWc extends VBElement {
         btn.setAttribute('title', titles.join('\n'));
       }
 
-      // Focus management
-      const isFocusTarget = day === 1 || sameDay(cellDate, today);
-      btn.setAttribute('tabindex', isFocusTarget ? '0' : '-1');
+      // Focus management — the single roving tabindex="0" is assigned
+      // across all months by #applyRovingTabindex() after rendering.
+      btn.setAttribute('tabindex', '-1');
 
       td.insertBefore(btn, td.firstChild);
       row.appendChild(td);
@@ -988,16 +1122,20 @@ class CalendarWc extends VBElement {
     this.#closeDayDetail();
 
     const date = fromISO(iso) ?? new Date();
+    // Non-modal dialog: focus moves in on open and returns to the day on
+    // close; the page stays operable, so no aria-modal.
     const overlay = document.createElement('div');
     overlay.className = 'day-detail';
     overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-label', `Events for ${iso}`);
+    const titleId = `calendar-wc-detail-${++detailIdCounter}`;
+    overlay.setAttribute('aria-labelledby', titleId);
 
     // Header
     const header = document.createElement('header');
     const title = document.createElement('h3');
+    title.id = titleId;
     try {
-      title.textContent = new Intl.DateTimeFormat(undefined, {
+      title.textContent = new Intl.DateTimeFormat(this.#locale, {
         weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
       }).format(date);
     } catch {
@@ -1006,9 +1144,9 @@ class CalendarWc extends VBElement {
 
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.setAttribute('aria-label', this.#label('Close', 'Close'));
     closeBtn.textContent = '\u00D7';
-    closeBtn.addEventListener('click', () => this.#closeDayDetail());
+    closeBtn.addEventListener('click', () => this.#closeDayDetail(true));
 
     header.append(title, closeBtn);
     overlay.appendChild(header);
@@ -1087,27 +1225,25 @@ class CalendarWc extends VBElement {
       overlay.appendChild(list);
     }
 
+    this.#detailReturnFocus = /** @type {HTMLElement | null} */ (
+      this.#monthsWrap.querySelector(`button[data-date="${iso}"]`));
     this.appendChild(overlay);
     this.#detailOverlay = overlay;
+    closeBtn.focus();
 
-    // Close on Escape
-    const onKey = (e) => {
-      if (e.key === 'Escape') this.#closeDayDetail();
-    };
-
-    // Close on click outside the overlay
+    // Close on click outside the overlay (Escape is handled on the host,
+    // see #build — scoped to this calendar). Outside clicks do not pull
+    // focus back: the user is moving elsewhere.
     const onClick = (e) => {
-      if (!overlay.contains(e.target)) this.#closeDayDetail();
+      if (!overlay.contains(e.target)) this.#closeDayDetail(false);
     };
-
+    let raf = 0;
     this._detailCleanup = () => {
-      document.removeEventListener('keydown', onKey);
+      cancelAnimationFrame(raf);
       document.removeEventListener('mousedown', onClick);
     };
-
-    document.addEventListener('keydown', onKey);
     // Use mousedown + rAF to skip the current event that opened the overlay
-    requestAnimationFrame(() => {
+    raf = requestAnimationFrame(() => {
       document.addEventListener('mousedown', onClick);
     });
 
@@ -1116,70 +1252,80 @@ class CalendarWc extends VBElement {
     }));
   }
 
-  #closeDayDetail() {
+  /** @param {boolean} [restoreFocus] Return focus to the day that opened the detail. */
+  #closeDayDetail(restoreFocus = false) {
     if (this.#detailOverlay) {
       this._detailCleanup?.();
       this._detailCleanup = null;
       this.#detailOverlay.remove();
       this.#detailOverlay = null;
+      const back = this.#detailReturnFocus;
+      this.#detailReturnFocus = null;
+      if (restoreFocus && back?.isConnected) back.focus();
     }
   }
 
   teardown() {
-    delete this.dataset.tentative;
+    this.removeAttribute('data-tentative');
     this.#closeDayDetail();
+    // Remove everything #build() appended so a reconnect (setup() runs
+    // again) rebuilds once instead of duplicating the header and grid.
+    this.#header?.remove();
+    this.#banner?.remove();
+    this.#monthsWrap?.remove();
+    this.#header = this.#banner = this.#monthsWrap = null;
+    this.#built = false;
   }
 
   // ── Keyboard navigation ───────────────────────────────────────────
 
+  /** @param {KeyboardEvent} e */
   #handleKey(e) {
-    const focused = this.#monthsWrap.querySelector('button[tabindex="0"]');
-    if (!focused) return;
+    const steps = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 7, ArrowUp: -7 };
+    let step = steps[/** @type {keyof typeof steps} */ (e.key)];
+    if (!step) return;
 
-    const iso = focused.getAttribute('data-date');
-    const date = fromISO(iso);
+    // Start from the day that has focus, not the first tabindex="0".
+    const target = /** @type {Element | null} */ (e.target);
+    const focused = /** @type {HTMLButtonElement | null} */ (target?.closest?.('button[data-date]'));
+    if (!focused || !this.#monthsWrap.contains(focused)) return;
+    const date = fromISO(focused.getAttribute('data-date'));
     if (!date) return;
-
-    let newDate;
-    switch (e.key) {
-      case 'ArrowRight': newDate = new Date(date); newDate.setDate(date.getDate() + 1); break;
-      case 'ArrowLeft': newDate = new Date(date); newDate.setDate(date.getDate() - 1); break;
-      case 'ArrowDown': newDate = new Date(date); newDate.setDate(date.getDate() + 7); break;
-      case 'ArrowUp': newDate = new Date(date); newDate.setDate(date.getDate() - 7); break;
-      case 'Enter':
-      case ' ':
-        e.preventDefault();
-        if (!focused.disabled) this.#handleSelect(iso);
-        return;
-      default: return;
-    }
 
     e.preventDefault();
 
-    // Block keyboard navigation outside min/max bounds
-    if (this.#minDate && newDate < this.#minDate) return;
-    if (this.#maxDate && newDate > this.#maxDate) return;
+    // Columns run right-to-left in RTL: mirror the horizontal arrows.
+    if (Math.abs(step) === 1 && getComputedStyle(this).direction === 'rtl') step = -step;
 
-    // Check if the new date is within the currently visible months
-    const newM = newDate.getMonth();
-    const newY = newDate.getFullYear();
-    const lastVis = this.#offsetMonth(this.#monthCount - 1);
-    const inView = (newY > this.#viewYear || (newY === this.#viewYear && newM >= this.#viewMonth)) &&
-                   (newY < lastVis.year || (newY === lastVis.year && newM <= lastVis.month));
+    // Walk in the arrow's direction, skipping disabled days, until an
+    // enabled day is found or a min/max bound is hit.
+    let newDate = addDays(date, step);
+    for (let tries = 0; tries < 366; tries++, newDate = addDays(newDate, step)) {
+      if (this.#minDate && newDate < this.#minDate) return;
+      if (this.#maxDate && newDate > this.#maxDate) return;
 
-    if (!inView) {
-      // Shift view so the new date is visible
-      this.#viewMonth = newM;
-      this.#viewYear = newY;
-      this.#renderMonth();
-    }
+      const newM = newDate.getMonth();
+      const newY = newDate.getFullYear();
+      const lastVis = this.#offsetMonth(this.#monthCount - 1);
+      const inView = (newY > this.#viewYear || (newY === this.#viewYear && newM >= this.#viewMonth)) &&
+                     (newY < lastVis.year || (newY === lastVis.year && newM <= lastVis.month));
+      const newISO = toISO(newDate);
+      if (!inView) {
+        // Shift view so the new date is visible
+        this.#viewMonth = newM;
+        this.#viewYear = newY;
+        this.#focusISO = newISO;
+        this.#renderMonth();
+      }
 
-    const newISO = toISO(newDate);
-    const newBtn = this.#monthsWrap.querySelector(`button[data-date="${newISO}"]`);
-    if (newBtn) {
-      this.#monthsWrap.querySelectorAll('button[tabindex="0"]').forEach(b => b.setAttribute('tabindex', '-1'));
-      newBtn.setAttribute('tabindex', '0');
-      newBtn.focus();
+      const newBtn = /** @type {HTMLButtonElement | null} */ (
+        this.#monthsWrap.querySelector(`button[data-date="${newISO}"]`));
+      if (newBtn && !newBtn.disabled) {
+        this.#focusISO = newISO;
+        this.#applyRovingTabindex();
+        newBtn.focus();
+        return;
+      }
     }
   }
 }

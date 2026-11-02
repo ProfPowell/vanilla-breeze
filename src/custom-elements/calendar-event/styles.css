@@ -1,16 +1,15 @@
 /* calendar-event: styled event block for day/hour/week schedule views */
 
 calendar-event {
-  display: flex;
-  align-items: start;
-  gap: var(--size-3xs, 2px);
+  /* Block, not flex: text-overflow only ellipsizes inline content of a
+     block container, and event titles are usually bare text nodes. */
+  display: block;
   padding: 2px var(--size-xs, 4px);
   font-size: var(--font-size-s, 0.875rem);
   line-height: 1.3;
   border-radius: var(--radius-s, 4px);
   border-inline-start: 3px solid var(--event-color, var(--color-primary));
   background: oklch(from var(--event-color, var(--color-primary)) l c h / 0.1);
-  cursor: var(--cursor-custom-pointer, pointer);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -19,8 +18,18 @@ calendar-event {
   align-self: stretch;
 }
 
-calendar-event:hover {
+/* The event itself is not interactive. Put an <a href> (or <button>)
+   inside for an action; only then does the block advertise it. */
+calendar-event:has(a[href], button) {
+  cursor: var(--cursor-custom-pointer, pointer);
+}
+
+calendar-event:has(a[href], button):hover {
   background: oklch(from var(--event-color, var(--color-primary)) l c h / 0.18);
+}
+
+calendar-event > a[href] {
+  color: inherit;
 }
 
 /* :30 start — bottom half of the hour */
@@ -38,25 +47,37 @@ calendar-event > time:first-of-type {
   font-weight: 600;
   color: var(--color-text-muted, #666);
   font-size: 0.9em;
-  flex-shrink: 0;
 }
 
-/* Hide duration <time> */
+calendar-event > time:first-of-type,
+calendar-event > icon-wc {
+  margin-inline-end: var(--size-3xs, 2px);
+}
+
+/* Duration <time datetime="PT…">: hidden visually, still read by AT */
 calendar-event > time[datetime^="PT"] {
-  display: none;
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Icons */
 calendar-event > icon-wc {
-  flex-shrink: 0;
   opacity: 0.7;
+  vertical-align: middle;
 }
 
 /* Category colors */
 calendar-event[data-category="meeting"]  { --event-color: var(--color-primary); }
 calendar-event[data-category="deadline"] { --event-color: var(--color-error); }
 calendar-event[data-category="personal"] { --event-color: var(--color-success); }
-calendar-event[data-category="focus"]    { --event-color: oklch(55% 0.15 80); }
+calendar-event[data-category="focus"]    { --event-color: var(--color-warning); }
 
 /* Details inside events */
 calendar-event details {
@@ -79,9 +100,4 @@ hour-view[data-overlap] > calendar-event {
 calendar-event:focus-visible {
   outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
   outline-offset: -1px;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  calendar-event { transition: none; }
 }

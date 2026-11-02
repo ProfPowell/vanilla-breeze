@@ -22,6 +22,7 @@ crumbLabel: Web Components
     </browser-window>
 
     <code-block language="html" show-lines label="Basic calendar with events" data-escape><calendar-wc
+  data-month="4" data-year="2026"
   data-events='{"2026-04-10":"Sprint review","2026-04-15":"Deadline"}'
   data-selection="single">
 </calendar-wc></code-block>
@@ -43,19 +44,19 @@ crumbLabel: Web Components
           <td><code>data-month</code></td>
           <td>number (1-12)</td>
           <td>current</td>
-          <td>Initial month to display.</td>
+          <td>Month to display. Observed: changing it re-renders. The component reflects the visible month back here as you navigate.</td>
         </tr>
         <tr>
           <td><code>data-year</code></td>
           <td>number</td>
           <td>current</td>
-          <td>Initial year to display.</td>
+          <td>Year to display. Observed, and reflected like <code>data-month</code>.</td>
         </tr>
         <tr>
           <td><code>data-events</code></td>
           <td>JSON</td>
           <td>&mdash;</td>
-          <td>Event data keyed by ISO date. Values: string, object <code>{ label, color, icon, time }</code>, or array.</td>
+          <td>Event data keyed by start ISO date. Values: string, object <code>{ label, color, icon, time, end, days }</code>, or array. See <a href="#multi-day-events">Multi-day events</a>. Observed: changing it re-renders and fires <code>calendar-wc:events-changed</code> with <code>source: 'attribute'</code>.</td>
         </tr>
         <tr>
           <td><code>data-selection</code></td>
@@ -100,6 +101,24 @@ crumbLabel: Web Components
           <td>Number of months to display side by side.</td>
         </tr>
         <tr>
+          <td><code>data-heading-level</code></td>
+          <td>number (1-6)</td>
+          <td>&mdash;</td>
+          <td>In multi-month views, render each month title as <code>&lt;h1&gt;</code>&ndash;<code>&lt;h6&gt;</code> at this level. Without it the titles are plain text (each grid is still labelled by its month), because the component cannot know where it sits in your page outline.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-prev</code>, <code>data-label-next</code>, <code>data-label-year</code>, <code>data-label-close</code></td>
+          <td>string</td>
+          <td>English</td>
+          <td>Accessible names for the previous/next buttons, the year select, and the day-detail close button. See <a href="#localization">Localization</a>.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-more</code></td>
+          <td>string</td>
+          <td><code>"+{n} more"</code></td>
+          <td>Large-view overflow text; <code>{n}</code> is replaced with the hidden event count.</td>
+        </tr>
+        <tr>
           <td><code>name</code></td>
           <td>string</td>
           <td>&mdash;</td>
@@ -107,6 +126,7 @@ crumbLabel: Web Components
         </tr>
       </tbody>
     </table>
+    <p><code>data-month</code>, <code>data-year</code> and <code>data-events</code> are observed. The other attributes are read when the element connects (and again if it is moved or re-inserted); change them, then call <code>refresh()</code> or re-insert the element.</p>
   </section>
 
   <section>
@@ -246,7 +266,18 @@ crumbLabel: Web Components
         <tr>
           <td><code>.events</code></td>
           <td><code>{ [iso]: Event[] } | Event[]</code></td>
-          <td>Live event data. Accepts the date-keyed object that <code>data-events</code> uses, OR a flat array of events with a <code>date</code> field (auto-grouped). Triggers re-render. Reading always returns the date-keyed shape.</td>
+          <td>Live event data. Accepts the date-keyed object that <code>data-events</code> uses, OR a flat array of events with a <code>date</code> field (auto-grouped). Triggers re-render and fires <code>calendar-wc:events-changed</code> with <code>source: 'property'</code>. Reading always returns the date-keyed shape. Once set, a later reconnect does not re-read <code>data-events</code> over it.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Methods</h3>
+    <table class="props-table">
+      <thead><tr><th>Method</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>refresh()</code></td>
+          <td>Re-render the current view. Setting <code>.isDateDisallowed</code>, <code>.getDayParts</code> or <code>.events</code> already re-renders; call this when the data a callback reads has changed.</td>
         </tr>
       </tbody>
     </table>
@@ -263,8 +294,10 @@ cal.events = [
   { id: 'mtg-3', date: '2026-04-12', label: 'All-hands', time: '15:30' },
 ];
 
+// source is 'property' for .events assignments, 'attribute' when
+// data-events changes. Skip your own writes to avoid a feedback loop.
 cal.addEventListener('calendar-wc:events-changed', (e) =&gt; {
-  if (e.detail.source !== 'property') syncStore(e.detail.events);
+  if (e.detail.source === 'attribute') syncStore(e.detail.events);
 });</code-block>
 
     <p>See the <a href="/docs/concepts/data-api/">Data API concepts guide</a> for the dual-mode contract.</p>
@@ -327,6 +360,16 @@ calendar-wc td[data-day-part~="payday"] button {
           <td><code>{ date, events }</code></td>
           <td>Fired when day detail overlay opens (display-only mode).</td>
         </tr>
+        <tr>
+          <td><code>calendar-wc:events-changed</code></td>
+          <td><code>{ events, source }</code></td>
+          <td>Fired after the event data changes. <code>source</code> is <code>'property'</code> (the <code>.events</code> setter) or <code>'attribute'</code> (<code>data-events</code> changed).</td>
+        </tr>
+        <tr>
+          <td><code>calendar-wc:upgraded</code></td>
+          <td>&mdash;</td>
+          <td>Fired once the calendar has rendered (every connect).</td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -370,7 +413,7 @@ calendar-wc td[data-day-part~="payday"] button {
 }'></calendar-wc></code-block>
 
     <h3>Day Detail Overlay</h3>
-    <p>In display-only mode (<code>data-selection="none"</code>), clicking a date with events opens a positioned dialog showing the full event list. If any events have a <code>time</code> property, an hour-grid timeline renders alongside. Close with <kbd>Escape</kbd> or by clicking outside.</p>
+    <p>In display-only mode (<code>data-selection="none"</code>), clicking a date with events &mdash; or pressing <kbd>Enter</kbd> / <kbd>Space</kbd> on it &mdash; opens a positioned, non-modal dialog showing the full event list. If any events have a <code>time</code> property, an hour-grid timeline (<a href="/docs/elements/web-components/day-view/"><code>&lt;day-view&gt;</code></a> of <a href="/docs/elements/custom-elements/calendar-event/"><code>&lt;calendar-event&gt;</code></a>s) renders instead. Focus moves to the dialog's close button when it opens. <kbd>Escape</kbd> (while focus is inside the calendar) or the close button closes it and returns focus to the day; clicking outside closes it without moving focus.</p>
 
     <h3>Watermark Day Numbers</h3>
     <p>Large cells display a subtle background day number (watermark) via <code>::before</code>. Control its appearance with these tokens:</p>
@@ -383,6 +426,15 @@ calendar-wc td[data-day-part~="payday"] button {
         <tr><td><code>--cal-watermark-weight</code></td><td><code>800</code></td><td>Background number font weight</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <section id="multi-day-events">
+    <h2>Multi-day Events</h2>
+    <p>Add <code>end</code> (inclusive ISO date) or <code>days</code> (a count of 1 or more) to an event object to make it span several days. <code>end</code> wins if both are present. In <code>data-size="large"</code> spans render as continuous bars across each week row; in compact and default sizes they add a dot to every day they cover, and every covered day opens the span in the day detail.</p>
+    <code-block language="html" show-lines label="Spanning events" data-escape><calendar-wc data-size="large" data-month="4" data-year="2026" data-events='{
+  "2026-04-06": { "label": "Sprint 12", "end": "2026-04-17" },
+  "2026-04-13": { "label": "QA conference", "days": 3 }
+}'></calendar-wc></code-block>
   </section>
 
   <section>
@@ -399,12 +451,18 @@ calendar-wc td[data-day-part~="payday"] button {
 }'></calendar-wc></code-block>
   </section>
 
-  <section>
+  <section id="localization">
     <h2>Localization</h2>
-    <p>Weekday headers, month names, and hour labels are rendered via <code>Intl.DateTimeFormat</code>, automatically matching the user's locale. Override by setting <code>lang</code> on the element or an ancestor.</p>
+    <p>The locale is the nearest <code>lang</code> attribute (on the element or an ancestor), falling back to the browser language. It drives weekday headers, month names, grid labels, the day-detail title, time labels, and the first day of the week (from <code>Intl.Locale</code> week info).</p>
 
-    <code-block language="html" show-lines label="French locale" data-escape><calendar-wc lang="fr"></calendar-wc>
-<!-- Weekdays: lun. mar. mer. jeu. ven. sam. dim. --></code-block>
+    <code-block language="html" show-lines label="French locale" data-escape><calendar-wc lang="fr"
+  data-label-prev="Mois précédent"
+  data-label-next="Mois suivant"
+  data-label-year="Année"
+  data-label-close="Fermer"
+  data-label-more="+{n} de plus"></calendar-wc>
+<!-- Weeks start on Monday: lun. mar. mer. jeu. ven. sam. dim. --></code-block>
+    <p>The few built-in UI strings (button names, the "+N more" overflow) default to English; translate them with the <code>data-label-*</code> attributes.</p>
   </section>
 
   <section>
@@ -412,10 +470,10 @@ calendar-wc td[data-day-part~="payday"] button {
     <table class="props-table">
       <thead><tr><th>Key</th><th>Action</th></tr></thead>
       <tbody>
-        <tr><td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td><td>Move focus one day.</td></tr>
+        <tr><td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td><td>Move focus one day (mirrored in right-to-left layouts). Disabled days are skipped; the view follows into adjacent months.</td></tr>
         <tr><td><kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd></td><td>Move focus one week.</td></tr>
-        <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Select the focused date.</td></tr>
-        <tr><td><kbd>Escape</kbd></td><td>Close day detail overlay.</td></tr>
+        <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Select the focused date, or in display mode open its day detail.</td></tr>
+        <tr><td><kbd>Escape</kbd></td><td>Close the day detail and return focus to the day.</td></tr>
       </tbody>
     </table>
   </section>
@@ -509,12 +567,22 @@ calendar-wc td[data-day-part~="payday"] button {
 
   <section>
     <h2>Accessibility</h2>
-    <p>The grid uses <code>role="grid"</code> with individual day buttons. Today is marked with <code>aria-current="date"</code>, selected dates with <code>aria-selected="true"</code>, and disabled dates with <code>aria-disabled="true"</code>. The month header uses <code>aria-live="polite"</code> for navigation announcements. Arrow keys navigate the grid; Enter/Space selects.</p>
+    <ul>
+      <li>Each month is a <code>&lt;table role="grid"&gt;</code> labelled with its localized month and year; each day is a <code>&lt;button&gt;</code> inside the gridcell.</li>
+      <li>Exactly one day button across all visible months is in the tab order (roving <code>tabindex</code>): the last focused day, else the selection, else today, else the first enabled day.</li>
+      <li>Today carries <code>aria-current="date"</code>; disabled days are disabled buttons with <code>aria-disabled="true"</code>.</li>
+      <li>In selection modes, <code>aria-selected</code> is set on the gridcell (<code>&lt;td&gt;</code>) &mdash; <code>true</code> for selected or in-range days, <code>false</code> otherwise &mdash; and multi/range grids carry <code>aria-multiselectable="true"</code>. Display-only grids have no selection state.</li>
+      <li>The month header uses <code>aria-live="polite"</code> for navigation announcements.</li>
+      <li>The day detail is a non-modal <code>role="dialog"</code> named by its date heading; focus moves in on open and back to the day on close.</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related</h2>
     <ul>
       <li><a href="/docs/elements/web-components/date-picker/"><code>&lt;date-picker&gt;</code></a> &mdash; Popover date input for forms</li>
+      <li><a href="/docs/elements/web-components/day-view/"><code>&lt;day-view&gt;</code></a> &mdash; Hour grid used by the day detail</li>
+      <li><a href="/docs/elements/web-components/week-view/"><code>&lt;week-view&gt;</code></a> &mdash; Seven-day time grid</li>
+      <li><a href="/docs/elements/custom-elements/calendar-event/"><code>&lt;calendar-event&gt;</code></a> &mdash; Event block rendered in the day detail</li>
     </ul>
   </section>

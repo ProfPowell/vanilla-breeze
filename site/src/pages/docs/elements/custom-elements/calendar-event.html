@@ -12,8 +12,20 @@ crumbLabel: Custom Elements
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;calendar-event&gt;</code> element is a CSS-only custom element for displaying events inside schedule views. It provides category-based color theming, icon support, half-hour positioning, and expandable details &mdash; all without JavaScript.</p>
-    <p>Used as a child of <code>&lt;hour-view&gt;</code> inside <code>&lt;day-view&gt;</code>.</p>
+    <p>The <code>&lt;calendar-event&gt;</code> element is a CSS-only custom element for displaying events inside schedule views. Its own styling &mdash; category colors, the inline-start accent bar, icons, half-hour placement, and expandable details &mdash; needs no JavaScript. Events that span several hours (<code>data-duration</code>) are positioned by the parent view's JavaScript.</p>
+    <p>Used by:</p>
+    <ul>
+      <li><a href="/docs/elements/web-components/day-view/"><code>&lt;day-view&gt;</code></a>, inside an <a href="/docs/elements/custom-elements/hour-view/"><code>&lt;hour-view&gt;</code></a> per hour, or as loose children in auto mode (<code>data-start-hour="auto"</code>).</li>
+      <li><a href="/docs/elements/web-components/week-view/"><code>&lt;week-view&gt;</code></a>, as loose children with <code>data-date</code>; the component builds the table.</li>
+      <li><a href="/docs/elements/web-components/calendar-wc/"><code>&lt;calendar-wc&gt;</code></a>, which builds them for its day-detail timeline from timed events.</li>
+    </ul>
+
+    <browser-window
+      src="/docs/examples/demos/calendar-event-basic.html"
+      url="https://vanilla-breeze.dev/calendar-event"
+      title="Calendar Event"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Basic event" data-escape><calendar-event data-category="meeting">
   <time datetime="09:00">9:00</time>
@@ -29,18 +41,23 @@ crumbLabel: Custom Elements
       <tbody>
         <tr>
           <td><code>data-category</code></td>
-          <td><code>meeting</code>, <code>deadline</code>, <code>personal</code>, <code>focus</code></td>
+          <td><code>meeting</code>, <code>deadline</code>, <code>personal</code>, <code>focus</code>, or your own</td>
           <td>Sets <code>--event-color</code> for the accent bar and background tint.</td>
         </tr>
         <tr>
           <td><code>data-start</code></td>
           <td><code>30</code></td>
-          <td>Places the event in the bottom half of its hour row (half-hour start).</td>
+          <td>Places a single-hour event in the bottom half of its hour row. Auto modes set it for you when the start <code>&lt;time&gt;</code> is at :30 or later.</td>
         </tr>
         <tr>
           <td><code>data-duration</code></td>
-          <td><code>1h</code>, <code>1h30m</code>, <code>2h</code>, <code>3h</code></td>
-          <td>Multi-hour events. JS positions them absolutely to span across hour rows.</td>
+          <td>Hours and/or minutes: <code>2h</code>, <code>45m</code>, <code>1h30m</code>, <code>90m</code></td>
+          <td>Event length. <code>&lt;day-view&gt;</code> and <code>&lt;week-view&gt;</code> read it and position the event absolutely across hour rows. Any combination of a number followed by <code>h</code> and/or a number followed by <code>m</code> works; anything else falls back to one hour. Without the parent view's JavaScript the event stays in its starting hour.</td>
+        </tr>
+        <tr>
+          <td><code>data-date</code></td>
+          <td>ISO date, e.g. <code>2026-04-07</code></td>
+          <td>Day the event belongs to. Required for <code>&lt;week-view&gt;</code> auto mode, which places the event in that day's column. Ignored by <code>&lt;day-view&gt;</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -52,18 +69,20 @@ crumbLabel: Custom Elements
     <table class="props-table">
       <thead><tr><th>Element</th><th>Purpose</th></tr></thead>
       <tbody>
-        <tr><td><code>&lt;time datetime="HH:MM"&gt;</code></td><td>Event start time (displayed as label)</td></tr>
-        <tr><td><code>&lt;time datetime="PT1H"&gt;</code></td><td>Duration (hidden visually, used for positioning)</td></tr>
+        <tr><td><code>&lt;time datetime="HH:MM"&gt;</code></td><td>Start time, shown as a label. The first <code>&lt;time datetime&gt;</code> is what auto modes use to place the event in its hour.</td></tr>
+        <tr><td><code>&lt;time datetime="PT1H"&gt;</code></td><td>Optional human-readable duration. Hidden visually but still read by screen readers. It does not position anything &mdash; use <code>data-duration</code> for that.</td></tr>
         <tr><td><code>&lt;icon-wc&gt;</code></td><td>Event icon</td></tr>
-        <tr><td><code>&lt;details&gt;</code></td><td>Expandable extra information</td></tr>
-        <tr><td>Text content</td><td>Event title/description</td></tr>
+        <tr><td><code>&lt;a href&gt;</code> or <code>&lt;button&gt;</code></td><td>The action, when the event is actionable (see <a href="#interaction">Interaction</a>).</td></tr>
+        <tr><td><code>&lt;details&gt;</code></td><td>Expandable extra information, on its own line</td></tr>
+        <tr><td>Text content</td><td>Event title. It stays on one line and ends in an ellipsis when it does not fit.</td></tr>
       </tbody>
     </table>
 
     <code-block language="html" show-lines label="Full event with all features" data-escape><calendar-event data-category="meeting" data-duration="2h">
   <time datetime="10:00">10:00</time>
+  <time datetime="PT2H">2 hours</time>
   <icon-wc name="palette" size="sm"></icon-wc>
-  Design review
+  <a href="/events/design-review">Design review</a>
   <details>
     <summary>Details</summary>
     <p>Conference Room A, review Q3 mockups.</p>
@@ -72,18 +91,33 @@ crumbLabel: Custom Elements
   </section>
 
   <section>
+    <h2>Events Without a Time</h2>
+    <p>In <code>&lt;day-view&gt;</code> auto mode, an event with no <code>&lt;time datetime&gt;</code> is moved into an all-day list (<code>&lt;ul class="all-day-events"&gt;</code>) above the hour grid. In <code>&lt;week-view&gt;</code> auto mode, events need both <code>data-date</code> and a start <code>&lt;time&gt;</code>; others are left out of the table.</p>
+  </section>
+
+  <section id="interaction">
+    <h2>Interaction</h2>
+    <p>The event block itself is not a control. <code>&lt;day-view&gt;</code> and <code>&lt;week-view&gt;</code> make events focusable for arrow-key browsing and emit an <code>event-click</code> event on pointer clicks, but a keyboard user cannot activate a bare <code>&lt;calendar-event&gt;</code>. When an event should do something, put an <code>&lt;a href&gt;</code> or <code>&lt;button&gt;</code> inside it: only then does the block show a pointer cursor and hover tint.</p>
+  </section>
+
+  <section>
     <h2>Category Colors</h2>
-    <p>Each category sets a <code>--event-color</code> custom property that controls the left accent bar and background tint.</p>
+    <p>Each category sets a <code>--event-color</code> custom property that controls the inline-start accent bar (left in left-to-right text, right in right-to-left) and the background tint.</p>
     <table class="props-table">
       <thead><tr><th>Category</th><th>Color</th></tr></thead>
       <tbody>
-        <tr><td><code>meeting</code></td><td>Primary (blue/interactive)</td></tr>
-        <tr><td><code>deadline</code></td><td>Error (red)</td></tr>
-        <tr><td><code>personal</code></td><td>Success (green)</td></tr>
-        <tr><td><code>focus</code></td><td>Amber/olive</td></tr>
+        <tr><td><code>meeting</code></td><td><code>--color-primary</code></td></tr>
+        <tr><td><code>deadline</code></td><td><code>--color-error</code></td></tr>
+        <tr><td><code>personal</code></td><td><code>--color-success</code></td></tr>
+        <tr><td><code>focus</code></td><td><code>--color-warning</code></td></tr>
       </tbody>
     </table>
     <p>Add custom categories via CSS: <code>calendar-event[data-category="workshop"] { --event-color: purple; }</code></p>
+  </section>
+
+  <section>
+    <h2>Right-to-Left</h2>
+    <p>The accent bar and spanning-event positions use logical properties, so events mirror correctly under <code>dir="rtl"</code>.</p>
   </section>
 
   <section>
@@ -91,5 +125,7 @@ crumbLabel: Custom Elements
     <ul>
       <li><a href="/docs/elements/custom-elements/hour-view/"><code>&lt;hour-view&gt;</code></a> &mdash; Container for events within an hour</li>
       <li><a href="/docs/elements/web-components/day-view/"><code>&lt;day-view&gt;</code></a> &mdash; Full day schedule using these events</li>
+      <li><a href="/docs/elements/web-components/week-view/"><code>&lt;week-view&gt;</code></a> &mdash; Seven-day time grid using these events</li>
+      <li><a href="/docs/elements/web-components/calendar-wc/"><code>&lt;calendar-wc&gt;</code></a> &mdash; Month calendar whose day detail renders these events</li>
     </ul>
   </section>

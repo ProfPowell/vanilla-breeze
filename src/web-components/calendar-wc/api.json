@@ -15,35 +15,50 @@
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Initial month (1-12). Defaults to current."
+      "description": "Month to display (1-12). Defaults to the current month. Observed; reflected back as the view changes.",
+      "direction": "both"
     },
     {
       "name": "data-year",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Initial year. Defaults to current."
+      "description": "Year to display. Defaults to the current year. Observed; reflected back as the view changes.",
+      "direction": "both"
     },
     {
       "name": "data-events",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "JSON: events keyed by start ISO date. Values may be a string, an object, or an array of events. Each event accepts optional `end` (ISO date, inclusive) or `days` (count) to span multiple days; spans render as continuous bars in data-size=\"large\"."
+      "description": "JSON: events keyed by start ISO date. Values may be a string, an object, or an array of events. Each event accepts optional `end` (ISO date, inclusive) or `days` (count) to span multiple days; spans render as continuous bars in data-size=\"large\". Observed: changes re-render and fire calendar-wc:events-changed with source \"attribute\"."
     },
     {
       "name": "data-selection",
       "kind": "data",
       "purpose": "config",
-      "type": "string",
-      "description": "Selection mode: \"none\" (default), \"single\", \"range\", \"multi\""
+      "type": "enum",
+      "description": "Selection mode: \"none\" (default), \"single\", \"range\", \"multi\"",
+      "values": [
+        "none",
+        "single",
+        "range",
+        "multi"
+      ],
+      "default": "none"
     },
     {
       "name": "data-size",
       "kind": "data",
-      "purpose": "config",
-      "type": "string",
-      "description": "Size: \"compact\", \"default\", \"large\""
+      "purpose": "visual-variant",
+      "type": "enum",
+      "description": "Size: \"compact\", \"default\", \"large\"",
+      "values": [
+        "compact",
+        "default",
+        "large"
+      ],
+      "default": "default"
     },
     {
       "name": "data-min-date",
@@ -77,68 +92,55 @@
       "name": "data-months",
       "kind": "data",
       "purpose": "config",
-      "type": "string",
+      "type": "number",
       "description": "Number of adjacent months to display side by side (1-12). Defaults to 1."
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
+      "name": "data-heading-level",
+      "kind": "data",
+      "purpose": "config",
+      "type": "number",
+      "description": "Multi-month views: render each month title as <h1>-<h6> at this level. Default: plain text (no heading)."
     },
     {
-      "name": "data-date",
+      "name": "data-label-prev",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Previous month",
+      "description": "Accessible name override (default \"Previous month\")."
     },
     {
-      "name": "data-selected",
+      "name": "data-label-next",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Next month",
+      "description": "Accessible name override (default \"Next month\")."
     },
     {
-      "name": "data-range-start",
+      "name": "data-label-year",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Year",
+      "description": "Accessible name override (default \"Year\")."
     },
     {
-      "name": "data-range-end",
+      "name": "data-label-close",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Close",
+      "description": "Accessible name override (default \"Close\")."
     },
     {
-      "name": "data-in-range",
+      "name": "data-label-more",
       "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-week",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-outside-month",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-day",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-today",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-highlight",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-event-count",
-      "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "+{n} more",
+      "description": "Large-view overflow text; {n} is replaced with the hidden event count."
     },
     {
       "name": "name",
@@ -148,27 +150,186 @@
       "description": "Form participation name. Enables ElementInternals form value sync on selection."
     },
     {
-      "name": "data-event-dot",
+      "name": "data-tentative",
       "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "title",
-      "kind": "native",
-      "purpose": "config"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "string",
+      "description": "Range mode: the ISO start date while the second click is pending. Removed when the range completes."
     }
   ],
   "events": [
     {
-      "name": "calendar:navigate"
+      "name": "calendar:select",
+      "detail": "{ value, date } (single) | { value, start, end, startDate, endDate } (range) | { values, dates } (multi)",
+      "description": "Fired when the selection changes"
     },
     {
-      "name": "calendar:select"
+      "name": "calendar:navigate",
+      "detail": "{ year, month }",
+      "description": "Fired on month/year navigation"
     },
     {
-      "name": "calendar:day-open"
+      "name": "calendar:day-open",
+      "detail": "{ date, events }",
+      "description": "Fired when the day-detail dialog opens (display mode)"
+    },
+    {
+      "name": "calendar-wc:events-changed",
+      "detail": "{ events, source: 'property' | 'attribute' }",
+      "description": "Fired after the event data changes via the events property or the data-events attribute"
     }
   ],
-  "childAttributes": [],
+  "properties": [
+    {
+      "name": "value",
+      "type": "string | null",
+      "description": "Read-only selection: ISO date (single), ISO interval start/end (range), space-separated ISO dates (multi), or null"
+    },
+    {
+      "name": "events",
+      "type": "{ [isoDate]: Event[] } | Array<Event & { date }>",
+      "description": "Get the date-keyed event map, or assign a date-keyed object or flat array (grouped by date) to re-render; fires calendar-wc:events-changed with source 'property'"
+    },
+    {
+      "name": "isDateDisallowed",
+      "type": "((date: Date) => boolean) | null",
+      "description": "Callback; return true to disable a date. Additive with data-min/max-date and data-disabled-dates"
+    },
+    {
+      "name": "getDayParts",
+      "type": "((date: Date) => string | string[] | null) | null",
+      "description": "Callback; returned tokens are set as data-day-part on the cell's <td>"
+    }
+  ],
+  "methods": [
+    {
+      "name": "refresh()",
+      "description": "Re-render the current view (e.g. after data read by a callback changes)"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-date",
+      "on": "button",
+      "type": "string",
+      "description": "ISO date of an in-month day button (runtime)"
+    },
+    {
+      "name": "data-day",
+      "on": "button",
+      "type": "number",
+      "description": "Day-of-month number on every day button, including outside-month ones (runtime)"
+    },
+    {
+      "name": "data-highlight",
+      "on": "button",
+      "type": "string",
+      "description": "Highlight category from data-highlight-dates (runtime)"
+    },
+    {
+      "name": "aria-current",
+      "on": "button",
+      "type": "enum",
+      "values": [
+        "date"
+      ],
+      "description": "Marks today (runtime)"
+    },
+    {
+      "name": "aria-selected",
+      "on": "td",
+      "type": "enum",
+      "values": [
+        "true",
+        "false"
+      ],
+      "description": "Selection state of the gridcell in selection modes (runtime)"
+    },
+    {
+      "name": "data-selected",
+      "on": "td",
+      "type": "boolean",
+      "description": "Selected day (single/multi) — styling hook (runtime)"
+    },
+    {
+      "name": "data-range-start",
+      "on": "td",
+      "type": "boolean",
+      "description": "First day of the range (runtime)"
+    },
+    {
+      "name": "data-range-end",
+      "on": "td",
+      "type": "boolean",
+      "description": "Last day of the range (runtime)"
+    },
+    {
+      "name": "data-in-range",
+      "on": "td",
+      "type": "boolean",
+      "description": "Day inside the range, inclusive (runtime)"
+    },
+    {
+      "name": "data-today",
+      "on": "td",
+      "type": "boolean",
+      "description": "Today's cell (runtime)"
+    },
+    {
+      "name": "data-outside-month",
+      "on": "td",
+      "type": "boolean",
+      "description": "Leading/trailing day from an adjacent month (runtime)"
+    },
+    {
+      "name": "data-events",
+      "on": "td",
+      "type": "boolean",
+      "description": "Cell has at least one event (runtime)"
+    },
+    {
+      "name": "data-event-count",
+      "on": "td",
+      "type": "number",
+      "description": "Number of events covering the day, spans included (runtime)"
+    },
+    {
+      "name": "data-day-part",
+      "on": "td",
+      "type": "string",
+      "description": "Space-separated tokens returned by getDayParts (runtime)"
+    },
+    {
+      "name": "data-week",
+      "on": "tr",
+      "type": "number",
+      "description": "1-based week row index (runtime)"
+    },
+    {
+      "name": "data-row-lanes",
+      "on": "tr",
+      "type": "number",
+      "description": "Large view: number of span-bar lanes in the row (runtime)"
+    },
+    {
+      "name": "data-event-dot",
+      "on": "span",
+      "type": "boolean",
+      "description": "One event dot in compact/default views (runtime)"
+    },
+    {
+      "name": "data-continues-start",
+      "on": "span.event-span",
+      "type": "boolean",
+      "description": "Span bar continues from the previous row (runtime)"
+    },
+    {
+      "name": "data-continues-end",
+      "on": "span.event-span",
+      "type": "boolean",
+      "description": "Span bar continues into the next row (runtime)"
+    }
+  ],
   "structure": []
 }

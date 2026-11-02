@@ -323,8 +323,13 @@ class WeekView extends VBElement {
         event.style.position = 'absolute';
         event.style.top = top + 'px';
         event.style.height = height + 'px';
-        event.style.left = (tdRect.left - tbodyRect.left + 2) + 'px';
-        event.style.right = (tbodyRect.right - tdRect.right + 2) + 'px';
+        // Measured rects are physical; map them to logical insets so the
+        // event stays over its day column in RTL.
+        const fromLeft = tdRect.left - tbodyRect.left + 2;
+        const fromRight = tbodyRect.right - tdRect.right + 2;
+        const rtl = getComputedStyle(tbody).direction === 'rtl';
+        event.style.insetInlineStart = (rtl ? fromRight : fromLeft) + 'px';
+        event.style.insetInlineEnd = (rtl ? fromLeft : fromRight) + 'px';
         event.classList.add('wv-spanning');
       });
     });
