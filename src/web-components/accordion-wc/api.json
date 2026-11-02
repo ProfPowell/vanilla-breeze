@@ -5,18 +5,113 @@
   "description": "Accordion built on native details/summary with exclusive mode and transitions",
   "htmlvalidate": {
     "flow": true,
-    "permittedContent": ["details"]
+    "permittedContent": [
+      "details"
+    ]
   },
   "attributes": [
-    { "name": "single",     "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Only allow one panel open at a time" },
-    { "name": "bordered",   "kind": "host-api", "purpose": "visual-variant", "type": "boolean", "description": "Add borders between panels" },
-    { "name": "flush",      "kind": "host-api", "purpose": "visual-variant", "type": "boolean", "description": "Remove inline padding on summaries and panels so content aligns with surrounding text" },
-    { "name": "compact",    "kind": "host-api", "purpose": "visual-variant", "type": "boolean", "description": "Reduce spacing" },
-    { "name": "indicator",  "kind": "host-api", "purpose": "config", "type": "enum", "values": ["plus-minus", "none", "custom"], "description": "Expand/collapse indicator style" },
-    { "name": "transition", "kind": "host-api", "purpose": "config", "type": "enum", "values": ["fade", "slide", "scale"], "description": "Panel transition animation" }
+    {
+      "name": "single",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "boolean",
+      "description": "Only allow one panel open at a time"
+    },
+    {
+      "name": "bordered",
+      "kind": "host-api",
+      "purpose": "visual-variant",
+      "type": "boolean",
+      "description": "Add borders between panels"
+    },
+    {
+      "name": "flush",
+      "kind": "host-api",
+      "purpose": "visual-variant",
+      "type": "boolean",
+      "description": "Remove inline padding on summaries and panels so content aligns with surrounding text"
+    },
+    {
+      "name": "compact",
+      "kind": "host-api",
+      "purpose": "visual-variant",
+      "type": "boolean",
+      "description": "Reduce spacing"
+    },
+    {
+      "name": "indicator",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "plus-minus",
+        "none",
+        "custom"
+      ],
+      "description": "Expand/collapse indicator style"
+    },
+    {
+      "name": "transition",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "fade",
+        "slide",
+        "scale"
+      ],
+      "description": "Panel transition animation"
+    }
   ],
   "structure": [
-    { "element": "<details>",  "description": "One per accordion panel — native disclosure element" },
-    { "element": "<summary>",  "description": "Panel heading inside each <details>" }
+    {
+      "element": "<details>",
+      "description": "One per accordion panel — native disclosure element"
+    },
+    {
+      "element": "<summary>",
+      "description": "Panel heading inside each <details>"
+    }
+  ],
+  "events": [
+    {
+      "name": "accordion-wc:toggle",
+      "detail": "{ index, open }",
+      "description": "Fired when a panel opens or closes"
+    },
+    {
+      "name": "accordion-wc:panels-changed",
+      "detail": "{ panels, source: 'property' }",
+      "description": "Fired after the panels property rebuilds the accordion"
+    }
+  ],
+  "methods": [
+    {
+      "name": "open(index)",
+      "description": "Open the panel at index (out-of-range indexes are ignored)"
+    },
+    {
+      "name": "close(index)",
+      "description": "Close the panel at index"
+    },
+    {
+      "name": "toggle(index)",
+      "description": "Toggle the panel at index"
+    },
+    {
+      "name": "openAll()",
+      "description": "Open every panel (no-op in single mode)"
+    },
+    {
+      "name": "closeAll()",
+      "description": "Close every panel"
+    }
+  ],
+  "properties": [
+    {
+      "name": "panels",
+      "type": "Array<{ id?, summary, content, open? }>",
+      "description": "Get the panel set as data, or assign one to rebuild the accordion"
+    }
   ]
 }
