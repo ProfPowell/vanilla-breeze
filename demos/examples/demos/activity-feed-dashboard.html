@@ -6,13 +6,12 @@
   <title>activity-feed — Dashboard Demo</title>
   <link rel="stylesheet" href="/src/main.css" />
   <script type="module" src="/src/main.js"></script>
-  <script type="module" src="/src/web-components/activity-feed/logic.js"></script>
   <style>
     body { padding: var(--size-l); background: var(--color-surface); }
-    pre { font-size: 0.8rem; color: var(--color-text-muted); background: var(--color-surface-sunken, oklch(94% 0 0)); padding: var(--size-s); border-radius: var(--radius-s); min-block-size: 4rem; max-block-size: 12rem; overflow: auto; }
-    .panel { border: 1px solid var(--color-border); border-radius: var(--radius-m); padding: var(--size-s); }
+    pre { font-size: var(--font-size-xs); color: var(--color-text-muted); background: var(--color-surface-sunken); padding: var(--size-s); border-radius: var(--radius-s); min-block-size: 4rem; max-block-size: 12rem; overflow: auto; }
+    .panel { border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); padding: var(--size-s); }
     .panel-scroll { max-block-size: 18rem; overflow-y: auto; }
-    h2 { font-size: 1rem; color: var(--color-text-muted); margin-block: var(--size-m) var(--size-xs); }
+    h2 { font-size: var(--font-size-m); color: var(--color-text-muted); margin-block: var(--size-m) var(--size-xs); }
   </style>
 </head>
 <body>
@@ -25,32 +24,32 @@
       <h2>Day-grouped feed with avatars</h2>
       <section class="panel">
         <activity-feed id="grouped" aria-label="Recent activity" data-group="day">
-          <article data-activity data-time="2026-05-14T11:00:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=1">
+          <article data-activity data-time="2026-05-14T11:00:00Z" data-activity-avatar="/src/assets/placeholders/photo-reel-team-members-1-100x100.svg">
             <a data-activity-actor href="/users/ada">Ada</a>
             <span data-activity-verb>commented on</span>
             <a data-activity-object href="/issues/482">issue #482</a>
           </article>
-          <article data-activity data-time="2026-05-14T10:30:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=2">
+          <article data-activity data-time="2026-05-14T10:30:00Z" data-activity-avatar="/src/assets/placeholders/photo-reel-team-members-2-100x100.svg">
             <a data-activity-actor href="/users/bob">Bob</a>
             <span data-activity-verb>opened</span>
             <a data-activity-object href="/issues/485">issue #485</a>
           </article>
-          <article data-activity data-time="2026-05-14T09:15:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=3">
+          <article data-activity data-time="2026-05-14T09:15:00Z" data-activity-avatar="/src/assets/placeholders/photo-reel-team-members-3-100x100.svg">
             <a data-activity-actor href="/users/carol">Carol</a>
             <span data-activity-verb>reviewed</span>
             <a data-activity-object href="/pull/120">PR #120</a>
           </article>
-          <article data-activity data-time="2026-05-13T17:00:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=4">
+          <article data-activity data-time="2026-05-13T17:00:00Z" data-activity-avatar="/src/assets/placeholders/photo-reel-team-members-4-100x100.svg">
             <a data-activity-actor href="/users/dan">Dan</a>
             <span data-activity-verb>merged</span>
             <a data-activity-object href="/pull/120">PR #120</a>
           </article>
-          <article data-activity data-time="2026-05-13T14:00:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=5">
+          <article data-activity data-time="2026-05-13T14:00:00Z" data-activity-avatar="/src/assets/placeholders/photo-article-compact-1-80x80.svg">
             <a data-activity-actor href="/users/eve">Eve</a>
             <span data-activity-verb>closed</span>
             <a data-activity-object href="/issues/479">issue #479</a>
           </article>
-          <article data-activity data-time="2026-05-12T11:00:00Z" data-activity-avatar="https://i.pravatar.cc/64?img=6">
+          <article data-activity data-time="2026-05-12T11:00:00Z" data-activity-avatar="/src/assets/placeholders/photo-article-compact-2-80x80.svg">
             <a data-activity-actor href="/users/frank">Frank</a>
             <span data-activity-verb>opened</span>
             <a data-activity-object href="/issues/471">issue #471</a>
@@ -61,14 +60,17 @@
       <h2>Infinite-scroll feed (with mocked load-more)</h2>
       <section class="panel panel-scroll">
         <activity-feed id="infinite" aria-label="Live activity" data-infinite>
-          <article data-activity data-time="2026-05-14T11:00:00Z">
+          <article data-activity>
             <strong>Initial entry 1</strong> — wired up
+            <time datetime="2026-05-14T11:00:00Z">May 14, 11:00 UTC</time>
           </article>
-          <article data-activity data-time="2026-05-14T10:55:00Z">
+          <article data-activity>
             <strong>Initial entry 2</strong> — wired up
+            <time datetime="2026-05-14T10:55:00Z">May 14, 10:55 UTC</time>
           </article>
-          <article data-activity data-time="2026-05-14T10:50:00Z">
+          <article data-activity>
             <strong>Initial entry 3</strong> — wired up
+            <time datetime="2026-05-14T10:50:00Z">May 14, 10:50 UTC</time>
           </article>
         </activity-feed>
       </section>
@@ -91,10 +93,16 @@
     const infinite = document.getElementById('infinite');
     let next = 4;
     let loadCount = 0;
-    infinite.addEventListener('activity-feed:load-more', () => {
-      if (loadCount++ > 3) { append('load-more: stopped (4 loads max in demo)'); return; }
-      append(`load-more: appending 3 more entries`);
-      // Mocked backend: append 3 entries after 200ms.
+    infinite.addEventListener('activity-feed:load-more', (event) => {
+      if (++loadCount > 4) {
+        // No more pages: removing data-infinite ends the feed (sentinel gone,
+        // aria-setsize becomes the real count) and clears aria-busy.
+        infinite.removeAttribute('data-infinite');
+        append('load-more: end of feed (4 loads max in demo)');
+        return;
+      }
+      append(`load-more: appending 3 more entries (aria-busy="${infinite.getAttribute('aria-busy')}")`);
+      // Mocked backend: append 3 entries after 200ms, then signal done().
       setTimeout(() => {
         for (let i = 0; i < 3; i++) {
           const t = new Date(Date.now() - (next * 60_000)).toISOString();
@@ -104,6 +112,7 @@
           });
           next++;
         }
+        event.detail.done();
       }, 200);
     });
   </script>

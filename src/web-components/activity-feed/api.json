@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "activity-feed",
   "type": "web-component",
-  "description": "WAI-ARIA Feed timeline of user actions. Author renders <article data-activity data-time=ISO> children; component decorates with relative-time badges, optional date grouping, optional infinite-scroll sentinel, and per-entry avatar / icon left-rail.",
+  "description": "WAI-ARIA Feed timeline of user actions. Author renders <article data-activity> children timestamped with data-time or an authored <time datetime> child; component decorates with relative-time badges, optional date grouping, optional infinite-scroll sentinel (aria-busy + done() handshake), and per-entry avatar / icon left-rail.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -29,7 +29,7 @@
       "kind": "data",
       "purpose": "config",
       "type": "boolean",
-      "description": "Adds an IntersectionObserver sentinel; emits activity-feed:load-more when reached"
+      "description": "Adds an IntersectionObserver sentinel; emits activity-feed:load-more when reached and sets aria-setsize=\"-1\" on entries. Remove the attribute to end the feed (sentinel removed, real aria-setsize, aria-busy cleared)."
     },
     {
       "name": "data-empty-text",
@@ -42,18 +42,21 @@
       "name": "role",
       "kind": "aria",
       "purpose": "config",
-      "description": "Set to \"feed\" per WAI-ARIA Feed pattern"
+      "description": "Managed: \"feed\" while the feed has entries, \"group\" while empty (so the empty-state text is a valid child). An author-set role other than feed/group is left alone."
     },
     {
       "name": "aria-busy",
       "kind": "aria",
-      "purpose": "config"
+      "purpose": "config",
+      "description": "Managed: \"true\" from activity-feed:load-more until detail.done() is called, new entries arrive, or data-infinite is removed.",
+      "type": "string"
     }
   ],
   "events": [
     {
       "name": "activity-feed:load-more",
-      "description": "Fires when the infinite-scroll sentinel enters the viewport"
+      "description": "Fires when the infinite-scroll sentinel comes into view (at most one outstanding request). detail.done() ends the busy state and re-arms the sentinel; appending entries or removing data-infinite also ends it.",
+      "detail": "{ done: () => void }"
     }
   ],
   "properties": [
@@ -75,7 +78,12 @@
     {
       "name": "entries",
       "type": "HTMLElement[]",
-      "description": "Live list of decorated entry elements"
+      "description": "Snapshot array of the current entry elements (a new array on each read, not live)"
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "description": "Read-only. True while a load-more is outstanding (mirrors aria-busy)"
     }
   ],
   "childAttributes": [
@@ -90,8 +98,8 @@
       "name": "data-time",
       "on": "article",
       "type": "string",
-      "required": true,
-      "description": "ISO-8601 timestamp; renders as relative time"
+      "required": false,
+      "description": "ISO-8601 timestamp; renders as relative time. Alternatively author a direct-child <time datetime> (works without JS and is upgraded in place); data-time wins if both are present"
     },
     {
       "name": "data-activity-avatar",

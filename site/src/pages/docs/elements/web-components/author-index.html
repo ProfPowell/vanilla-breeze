@@ -12,7 +12,8 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>Reads <code>pages.json</code> via <code>data-lens-src</code> and groups by author. Provides search and per-author counts. If the source request fails, any light-DOM markup the author wrote inside the host is left in place (without the search filter); if the host was empty, an error message is shown instead.</p>
+  <p>Reads <code>pages.json</code> via <code>data-lens-src</code> (or <code>src</code>) and groups pages by author. It adds a filter input, a live result count and per-author page counts. If the source request fails, any light-DOM markup you wrote inside the host stays in place and still gets the filter; if the host was empty, an error message is shown instead. See <a href="#fallback">Fallback markup</a>.</p>
+  <p>The demo loads a local fixture with several authors, shown twice: sorted alphabetically and with <code>sort="count"</code>.</p>
 
   <browser-window
     src="/docs/examples/demos/author-index.html"
@@ -32,7 +33,8 @@ crumbLabel: Web Components
       <tr><td><code>data-lens-src</code></td><td>string</td><td>&mdash;</td><td>URL to <code>pages.json</code> or compatible source</td></tr>
       <tr><td><code>src</code></td><td>string</td><td>&mdash;</td><td>Alias for <code>data-lens-src</code></td></tr>
       <tr><td><code>placeholder</code></td><td>string</td><td>&quot;Filter authors&hellip;&quot;</td><td>Search input placeholder</td></tr>
-      <tr><td><code>sort</code></td><td><code>"alpha" | "count"</code></td><td><code>"alpha"</code></td><td>Group sort order</td></tr>
+      <tr><td><code>sort</code></td><td><code>"alpha" | "count"</code></td><td><code>"alpha"</code></td><td>Group order for fetched data: alphabetical by author, or by page count (most first; ties alphabetical). Any other value falls back to <code>alpha</code>.</td></tr>
+      <tr><td><code>heading-level</code></td><td><code>1</code>&ndash;<code>6</code></td><td><code>2</code></td><td>Level of the generated <q>Authors (N)</q> heading. Set it to fit the page outline, for example <code>3</code> when the index sits under an <code>&lt;h2&gt;</code>.</td></tr>
     </tbody>
   </table>
 </section>
@@ -53,9 +55,16 @@ crumbLabel: Web Components
 </section>
 
 <section>
-  <h2>Fallback markup and accessibility</h2>
-  <p>Without <code>data-lens-src</code> or <code>src</code>, nothing is fetched. The component keeps the light-DOM markup you author and prepends a search input that filters it. Each group to be filtered must carry <code>data-author-group</code>; a group is hidden when its text does not contain the query. Native <code>&lt;details&gt;</code> elements keep the groups usable and keyboard-accessible without JavaScript.</p>
-  <code-block language="html" label="Authored fallback (no src)" data-escape><author-index placeholder="Filter authors">
+  <h2 id="fallback">Fallback markup</h2>
+  <p>Light-DOM markup inside the host is the no-JS rendering, and it is never thrown away for nothing:</p>
+  <ul>
+    <li><strong>No <code>src</code>:</strong> nothing is fetched. The component keeps your markup and adds the filter input and live status.</li>
+    <li><strong><code>src</code> succeeds:</strong> the fetched data replaces the markup.</li>
+    <li><strong><code>src</code> fails</strong> (network error, non-2xx status, or invalid JSON): your markup stays and is enhanced exactly as if there were no <code>src</code>. An error message appears only if the host was empty.</li>
+  </ul>
+  <p>Each group to be filtered must carry <code>data-author-group</code>. A group is hidden when its visible text does not contain the query. Matching ignores case and diacritics, so <q>zoe</q> finds <q>Zoë</q>. Native <code>&lt;details&gt;</code> elements keep the groups usable and keyboard-accessible without JavaScript.</p>
+  <code-block language="html" label="Authored fallback with a source" data-escape><author-index src="/pages.json" placeholder="Filter authors">
+  <h2>Authors <small>(1)</small></h2>
   <details data-author-group id="author-thomas-a-powell">
     <summary>Thomas A. Powell (2)</summary>
     <ul>
@@ -64,5 +73,28 @@ crumbLabel: Web Components
     </ul>
   </details>
 </author-index></code-block>
-  <p>The search input is labelled with <code>aria-label</code> set to the <code>placeholder</code> text. When rendering from a source, each author's page count is given an <code>aria-label</code> such as &ldquo;3 pages&rdquo;.</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Filter:</strong> a <code>type="search"</code> input whose accessible name is the <code>placeholder</code> text.</li>
+    <li><strong>Result count:</strong> a polite live region (<code>role="status"</code>) after the input announces results as you type, such as <q>2 of 5 authors match &ldquo;zo&rdquo;</q> or <q>Showing all 5 authors</q>. It is visually hidden while there are results. When nothing matches, it becomes the visible <q>No authors match &hellip;</q> message.</li>
+    <li><strong>Page counts:</strong> the visible <q>(3)</q> is <code>aria-hidden</code>. Screen readers hear real visually-hidden text instead (<q>Ada Lovelace, 3 pages</q>), because an <code>aria-label</code> on a generic <code>&lt;span&gt;</code> is ignored.</li>
+    <li><strong>Heading:</strong> the generated heading defaults to <code>&lt;h2&gt;</code>. Use <code>heading-level</code> to keep the page outline correct.</li>
+    <li><strong>Provenance colours</strong> use the VB status tokens (<code>--color-success-text</code>, <code>--color-warning-text</code>, <code>--color-error-text</code>), so they follow the theme and keep text contrast. The provenance word is always shown as text, so colour is never the only signal.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Ids and links</h2>
+  <ul>
+    <li><strong>Group ids</strong> (<code>author-&lt;slug&gt;</code>) are stable link targets. The slug is the author name, NFKD-normalised, with diacritics stripped and lowercased. Letters and digits of any script are kept, so <q>Zoë Ng</q> becomes <code>author-zoe-ng</code> and <q>李明</q> becomes <code>author-李明</code>. A name with nothing usable left falls back to <code>author</code>. On a collision, either within one index or with an id already on the page (for example two indexes), the slug gets a <code>-2</code>, <code>-3</code>, &hellip; suffix. Ids are never empty and never shared.</li>
+    <li><strong>Links from the source</strong> (<code>url</code>, <code>authorUrl</code>) are only rendered when they are <code>http:</code>, <code>https:</code> or relative. Values such as <code>javascript:</code> or <code>data:</code> are dropped. The page title is then shown as plain text, and the profile link is omitted.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Lifecycle</h2>
+  <p>The fetch uses an <code>AbortController</code> that is aborted when the element is removed, so a detached index never renders late. Once the index is rendered, moving it in the DOM re-wires the filter without refetching or rebuilding.</p>
 </section>

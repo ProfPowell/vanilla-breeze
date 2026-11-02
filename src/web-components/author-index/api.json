@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "author-index",
   "type": "web-component",
-  "description": "Author-grouped view of site content",
+  "description": "Author-grouped view of site content. Fetches a pages.json-shaped source (or enhances authored fallback markup, including when the fetch fails) and adds a diacritic-insensitive filter with a polite live result count.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -15,28 +15,48 @@
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "URL to pages.json (or compatible source)"
+      "description": "URL to pages.json (or compatible source). On failure, authored light-DOM markup is kept and enhanced; an empty host shows an error"
     },
     {
       "name": "src",
-      "kind": "native",
+      "kind": "host-api",
       "purpose": "config",
       "type": "string",
       "description": "Alias for data-lens-src"
     },
     {
       "name": "placeholder",
-      "kind": "native",
+      "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Search input placeholder (default \"Filter authors…\")"
+      "default": "Filter authors…",
+      "description": "Search input placeholder; also the input's accessible name"
     },
     {
       "name": "sort",
-      "kind": "native",
+      "kind": "host-api",
       "purpose": "config",
-      "type": "string",
-      "description": "Sort mode: \"alpha\" (default) | \"count\""
+      "type": "enum",
+      "values": ["alpha", "count"],
+      "default": "alpha",
+      "description": "Group order: alphabetical by author, or by page count (descending, ties alphabetical). Applies to fetched data only"
+    },
+    {
+      "name": "heading-level",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "enum",
+      "values": ["1", "2", "3", "4", "5", "6"],
+      "default": "2",
+      "description": "Level of the generated \"Authors (N)\" heading (fetched data only)"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-author-group",
+      "on": "details",
+      "type": "boolean",
+      "description": "Marks an authored fallback group as filterable; hidden when its visible text does not contain the query"
     }
   ]
 }

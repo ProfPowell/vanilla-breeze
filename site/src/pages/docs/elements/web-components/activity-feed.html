@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p><code>&lt;activity-feed&gt;</code> renders a vertical timeline of user actions ("Ada commented on issue #482, 2 hours ago"). Read-only and immutable per entry. Authors render entries as <code>&lt;article data-activity data-time=ISO&gt;</code> children; the component decorates each with a relative-time badge, optional date headings, and optional avatar / icon left-rail.</p>
+  <p><code>&lt;activity-feed&gt;</code> renders a vertical timeline of user actions ("Ada commented on issue #482, 2 hours ago"). Read-only and immutable per entry. Authors render entries as <code>&lt;article data-activity&gt;</code> children, timestamped with <code>data-time</code> or an authored <code>&lt;time datetime&gt;</code>; the component decorates each with a relative-time badge, optional date headings, and optional avatar / icon left-rail.</p>
 
   <browser-window
     src="/docs/examples/demos/activity-feed-dashboard.html"
@@ -38,7 +38,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Author surface</h2>
-  <p>Each entry is a direct <code>&lt;article data-activity&gt;</code> child with a required <code>data-time</code> attribute (ISO-8601). Inside the entry, you author the content however you like &mdash; the component does not dictate the verb vocabulary or object shape.</p>
+  <p>Each entry is a direct <code>&lt;article data-activity&gt;</code> child timestamped with an ISO-8601 <code>data-time</code> attribute. Inside the entry, you author the content however you like &mdash; the component does not dictate the verb vocabulary or object shape.</p>
 
   <code-block language="html" show-lines label="Plain feed" data-escape><activity-feed aria-label="Recent activity">
   <article data-activity data-time="2026-05-14T10:00:00Z">
@@ -48,6 +48,16 @@ crumbLabel: Web Components
     <a href="/users/bob">Bob</a> opened <a href="/issues/485">issue #485</a>
   </article>
 </activity-feed></code-block>
+</section>
+
+<section>
+  <h2>Times without JavaScript</h2>
+  <p>Instead of <code>data-time</code>, an entry can carry its timestamp as a <code>&lt;time datetime&gt;</code> <em>direct child</em>. Without JavaScript the authored text (for example <q>May 13, 2026</q>) is what readers see; once the component upgrades, that same element moves to the time column, its text becomes relative (<q>2 days ago</q>), and its <code>title</code> shows the absolute time. If both are present, <code>data-time</code> wins. Only a direct child counts, so a <code>&lt;time&gt;</code> nested inside the sentence is left alone.</p>
+
+  <code-block language="html" show-lines label="Authored time" data-escape><article data-activity>
+  <a href="/users/carol">Carol</a> merged <a href="/pull/120">PR #120</a>
+  <time datetime="2026-05-13T17:00:00Z">May 13, 2026</time>
+</article></code-block>
 </section>
 
 <section>
@@ -75,28 +85,40 @@ crumbLabel: Web Components
 </section>
 
 <section>
-  <h2>Infinite scroll</h2>
-  <p>Set <code>data-infinite</code> to add an <code>IntersectionObserver</code> sentinel at the end of the feed. When the sentinel enters the viewport, <code>activity-feed:load-more</code> fires; the author appends new entries (via <code>addEntry</code> or direct DOM insertion) and the sentinel re-arms automatically.</p>
+  <h2 id="infinite-scroll">Infinite scroll</h2>
+  <p>Set <code>data-infinite</code> to add an <code>IntersectionObserver</code> sentinel at the end of the feed. When the sentinel comes into view, <code>activity-feed:load-more</code> fires and the feed sets <code>aria-busy="true"</code>. Only one request is outstanding at a time: no further <code>load-more</code> fires until the busy state ends.</p>
+  <p>The busy state ends when any of these happens:</p>
+  <ul>
+    <li>you call <code>event.detail.done()</code> (do this in a <code>finally</code> so a failed request does not leave the feed busy);</li>
+    <li>new entries arrive (via <code>addEntry</code> or direct DOM insertion);</li>
+    <li>you remove <code>data-infinite</code>, which also ends the feed.</li>
+  </ul>
+  <p>When the busy state ends, the sentinel re-arms. If it is still in view because the batch did not fill the viewport, another <code>load-more</code> fires. When there is nothing left to load, remove <code>data-infinite</code>: the sentinel goes away and <code>aria-setsize</code> switches from <code>-1</code> (unknown) to the real count.</p>
 
   <code-block language="javascript" show-lines label="Wiring load-more" data-escape>const feed = document.querySelector('activity-feed');
 let cursor = null;
 
-feed.addEventListener('activity-feed:load-more', async () => {
-  const { entries, next } = await api.getActivity({ cursor });
-  for (const entry of entries) {
-    feed.addEntry({
-      time: entry.timestamp,
-      html: entry.bodyHtml,
-      avatar: entry.avatarUrl,
-    });
+feed.addEventListener('activity-feed:load-more', async (event) => {
+  try {
+    const { entries, next } = await api.getActivity({ cursor });
+    for (const entry of entries) {
+      feed.addEntry({
+        time: entry.timestamp,
+        html: entry.bodyHtml,
+        avatar: entry.avatarUrl,
+      });
+    }
+    cursor = next;
+    if (!next) feed.removeAttribute('data-infinite'); // end of feed
+  } finally {
+    event.detail.done(); // clears aria-busy
   }
-  cursor = next;
 });</code-block>
 </section>
 
 <section>
   <h2>Empty state</h2>
-  <p>When the feed has zero entries, the component renders <code>data-empty-text</code> (default <q>No recent activity</q>). The empty state is auto-removed when the first entry is added.</p>
+  <p>When the feed has zero entries, the component renders <code>data-empty-text</code> (default <q>No recent activity</q>). The empty state is auto-removed when the first entry is added. While empty, the host's role is <code>group</code> rather than <code>feed</code>, because a feed may only contain articles.</p>
 
   <code-block language="html" show-lines label="Empty placeholder" data-escape><activity-feed data-empty-text="No activity yet — check back later."></activity-feed></code-block>
 </section>
@@ -104,11 +126,19 @@ feed.addEventListener('activity-feed:load-more', async () => {
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li><strong>Host:</strong> <code>role="feed"</code> per the <a href="https://www.w3.org/WAI/ARIA/apg/patterns/feed/">WAI-ARIA Feed pattern</a>.</li>
-    <li><strong>Each entry:</strong> native <code>article</code> role with <code>aria-posinset</code> / <code>aria-setsize</code> set automatically (so AT can announce "article 3 of 50").</li>
-    <li><strong>Date headings:</strong> <code>role="heading"</code> at <code>aria-level="3"</code>.</li>
+    <li><strong>Host:</strong> <code>role="feed"</code> per the <a href="https://www.w3.org/WAI/ARIA/apg/patterns/feed/">WAI-ARIA Feed pattern</a>, labelled by <code>aria-label</code> (default <q>Recent activity</q>). While the feed is empty the role is <code>group</code>. If you set a role other than <code>feed</code> or <code>group</code>, the component leaves it alone.</li>
+    <li><strong>Only articles are feed children:</strong> date headings and the infinite-scroll sentinel are in the DOM but carry <code>aria-hidden="true"</code>. A heading's text instead becomes part of the description of the first article in its group. This means screen-reader heading navigation does not stop at date headings. The feed's own article navigation replaces it.</li>
+    <li><strong>Each entry:</strong> native <code>article</code> role. <code>aria-labelledby</code> points at the entry's content (the <q>actor verb object</q> sentence) and <code>aria-describedby</code> points at its time, plus the date heading for the first entry of a group. Both use generated ids. If you set <code>aria-label</code> or <code>aria-labelledby</code> on an entry yourself, the component keeps it.</li>
+    <li><strong>Position:</strong> <code>aria-posinset</code> is always set. <code>aria-setsize</code> is the real count, or <code>-1</code> (unknown) while <code>data-infinite</code> is on, because more entries may load.</li>
+    <li><strong>Loading:</strong> <code>aria-busy="true"</code> while a <code>load-more</code> request is outstanding. See <a href="#infinite-scroll">Infinite scroll</a> for how it ends.</li>
     <li><strong>Times:</strong> <code>&lt;time datetime&gt;</code> with the absolute timestamp in <code>title</code>; relative text auto-refreshes every 60s.</li>
-    <li><strong>Keyboard:</strong> the feed is a single Tab stop (roving <code>tabindex</code>): Tab lands on the current entry, which starts as the first. ArrowDown / ArrowUp move focus between entries; PageDown / PageUp jump 5 at a time; Home / End jump to first / last. These keys also work while focus is on a link or button inside an entry, and focusing anything inside an entry makes it the current one.</li>
+    <li><strong>Keyboard:</strong> the feed is a single Tab stop (roving <code>tabindex</code>). Tab lands on the current entry, which starts as the first, and focusing anything inside an entry makes it the current one.
+      <ul>
+        <li><kbd>Page Down</kbd> / <kbd>Page Up</kbd>: next / previous article. These work while focus is on the article or on a link or button inside it (APG).</li>
+        <li><kbd>Ctrl</kbd>+<kbd>End</kbd> / <kbd>Ctrl</kbd>+<kbd>Home</kbd>: move focus to the first focusable element after the feed, or the last one before it (APG).</li>
+        <li><kbd>&darr;</kbd> / <kbd>&uarr;</kbd>, <kbd>Home</kbd> / <kbd>End</kbd>: extra shortcuts that work <em>only while the article itself has focus</em>. On an inner link they are left alone, so they do not take over page scrolling or screen-reader browse-mode reading.</li>
+      </ul>
+    </li>
     <li><strong>Reduced motion:</strong> no entrance animations.</li>
   </ul>
 </section>
@@ -120,7 +150,7 @@ feed.addEventListener('activity-feed:load-more', async () => {
     <tbody>
       <tr><td><code>aria-label</code></td><td>string</td><td><code>Recent activity</code></td><td>Region label.</td></tr>
       <tr><td><code>data-group</code></td><td>string</td><td><code>none</code></td><td><code>none</code> | <code>day</code> | <code>week</code> &mdash; date headings between entries.</td></tr>
-      <tr><td><code>data-infinite</code></td><td>boolean</td><td><code>false</code></td><td>Adds an IntersectionObserver sentinel; emits <code>activity-feed:load-more</code>.</td></tr>
+      <tr><td><code>data-infinite</code></td><td>boolean</td><td><code>false</code></td><td>Adds an IntersectionObserver sentinel; emits <code>activity-feed:load-more</code>; <code>aria-setsize="-1"</code>. Remove it to end the feed.</td></tr>
       <tr><td><code>data-empty-text</code></td><td>string</td><td><code>No recent activity</code></td><td>Empty-state text.</td></tr>
     </tbody>
   </table>
@@ -129,7 +159,7 @@ feed.addEventListener('activity-feed:load-more', async () => {
   <table class="props-table">
     <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>data-time</code></td><td>ISO-8601 timestamp; required.</td></tr>
+      <tr><td><code>data-time</code></td><td>ISO-8601 timestamp. Or author a direct-child <code>&lt;time datetime&gt;</code> instead (works without JS).</td></tr>
       <tr><td><code>data-activity-avatar</code></td><td>Avatar URL (renders <code>&lt;user-avatar&gt;</code>).</td></tr>
       <tr><td><code>data-activity-icon</code></td><td><code>icon-wc</code> name (alternative to avatar).</td></tr>
     </tbody>
@@ -141,7 +171,7 @@ feed.addEventListener('activity-feed:load-more', async () => {
   <table class="props-table">
     <thead><tr><th>Event</th><th>Bubbles</th><th>Detail</th></tr></thead>
     <tbody>
-      <tr><td><code>activity-feed:load-more</code></td><td>yes</td><td>&mdash;</td></tr>
+      <tr><td><code>activity-feed:load-more</code></td><td>yes</td><td><code>{ done() }</code> &mdash; call <code>done()</code> to clear <code>aria-busy</code> and re-arm the sentinel.</td></tr>
     </tbody>
   </table>
 </section>
@@ -154,7 +184,8 @@ feed.addEventListener('activity-feed:load-more', async () => {
       <tr><td><code>addEntry(data, opts?)</code></td><td>Insert an entry. <code>data: { time, html, avatar?, icon? }</code>; <code>opts: { prepend? }</code>.</td></tr>
       <tr><td><code>removeEntry(entry)</code></td><td>Remove a single entry element.</td></tr>
       <tr><td><code>clear()</code></td><td>Remove every entry (empty-state will appear).</td></tr>
-      <tr><td><code>entries</code></td><td>Live list of decorated entry elements.</td></tr>
+      <tr><td><code>entries</code></td><td>Snapshot array of the current entry elements (a new array on each read, not live).</td></tr>
+      <tr><td><code>loading</code></td><td>Read-only boolean: <code>true</code> while a load-more is outstanding (mirrors <code>aria-busy</code>).</td></tr>
     </tbody>
   </table>
 
