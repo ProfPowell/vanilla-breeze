@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "comment-wc"
-description: "Collaborative comment action for selection-menu. Bridges to review-surface for threaded, shareable comments."
+description: "Experimental stub: collaborative comment action for selection-menu. Pins to a review-surface, which Vanilla Breeze does not ship."
 elementName: comment-wc
 category: component
 currentPath: /docs/elements/web-components/comment-wc/
@@ -12,8 +12,11 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;comment-wc&gt;</code> component provides collaborative commenting inside <code>&lt;selection-menu&gt;</code>. It bridges to <code>&lt;review-surface&gt;</code> for threaded, shareable comments — creating a pin at the selection's position.</p>
-  <p>If no <code>&lt;review-surface&gt;</code> is available, the button appears dimmed with a tooltip explaining comments aren't enabled.</p>
+  <callout-wc tone="warning">
+    <p><strong>Experimental stub.</strong> <code>&lt;comment-wc&gt;</code> pins comments to a <code>&lt;review-surface&gt;</code>, and Vanilla Breeze does not ship <code>&lt;review-surface&gt;</code>. Unless your page defines one (an element with an <code>addPin({ x, y, text })</code> method), the action is always unavailable. The API may change or the element may be removed. For a working discussion UI today, use <a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a>.</p>
+  </callout-wc>
+  <p>The <code>&lt;comment-wc&gt;</code> component is an &ldquo;Add comment&rdquo; action for <code>&lt;selection-menu&gt;</code>. It looks for a <code>&lt;review-surface&gt;</code> (an ancestor, or the one whose <code>for</code> matches the menu's <code>for</code>) each time it is clicked and adds a pin at the selection's position.</p>
+  <p>If no <code>&lt;review-surface&gt;</code> is found, the button is marked <code>aria-disabled="true"</code>, styled as inert, and described by visually-hidden text explaining why. It stays focusable so that explanation can be reached.</p>
   <p>For private reader notes (not shared), use <code>&lt;note-wc&gt;</code> instead.</p>
   <aside class="note">
     <strong>Looking for a full threaded discussion container?</strong> Use <a href="/docs/elements/web-components/comment-thread/"><code>&lt;comment-thread&gt;</code></a> instead. <code>&lt;comment-wc&gt;</code> is a single inline action button used inside a <code>&lt;selection-menu&gt;</code> toolbar &mdash; <code>&lt;comment-thread&gt;</code> is the persistent multi-comment container with replies, reactions, and edit/delete.
@@ -22,7 +25,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Usage</h2>
-<code-block language="html" label="With review-surface" data-escape><review-surface editable>
+<code-block language="html" label="With a page-provided review-surface" data-escape><review-surface editable>
   <selection-menu for="my-article">
     <highlight-wc></highlight-wc>
     <note-wc></note-wc>
@@ -34,7 +37,7 @@ crumbLabel: Web Components
   </article>
 </review-surface></code-block>
 
-<code-block language="html" label="Without review-surface (disabled)" data-escape><!-- comment-wc appears dimmed when no review-surface exists -->
+<code-block language="html" label="Without review-surface (unavailable)" data-escape><!-- comment-wc is aria-disabled when no review-surface exists -->
 <selection-menu for="my-article">
   <highlight-wc></highlight-wc>
   <note-wc></note-wc>
@@ -59,7 +62,7 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Event</th><th>Detail</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>comment-wc:created</code></td><td><code>{ text, x, y }</code></td><td>Pin created on review-surface</td></tr>
+      <tr><td><code>comment-wc:created</code></td><td><code>{ text, x, y }</code></td><td>Pin created on the review-surface (<code>x</code> / <code>y</code> are percentages of its box)</td></tr>
     </tbody>
   </table>
 </section>
@@ -67,8 +70,8 @@ crumbLabel: Web Components
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Button has <code>aria-label="Add comment"</code> (or "Comments not available" when disabled)</li>
-    <li>Disabled state uses <code>title</code> tooltip explaining how to enable</li>
+    <li>Button is named &ldquo;Add comment&rdquo; in both states.</li>
+    <li>Unavailable state: <code>aria-disabled="true"</code> (not <code>disabled</code>, so it stays focusable) plus <code>aria-describedby</code> pointing at visually-hidden text (&ldquo;Comments are unavailable: this content has no review surface.&rdquo;). No <code>title</code> tooltip.</li>
   </ul>
 </section>
 
@@ -76,7 +79,7 @@ crumbLabel: Web Components
   <h2>Related</h2>
   <ul>
     <li><a href="/docs/elements/web-components/selection-menu/">selection-menu</a> &mdash; Parent floating toolbar</li>
-    <li><a href="https://profpowell.github.io/vb-project-planning/elements/review-surface/">review-surface</a> &mdash; Pin-based design review</li>
+    <li><a href="https://profpowell.github.io/vb-project-planning/elements/review-surface/">review-surface (planning notes, external site)</a> &mdash; proposed pin-based design review; not shipped in Vanilla Breeze</li>
     <li><a href="/docs/elements/web-components/note-wc/">note-wc</a> &mdash; Private reader notes</li>
   </ul>
 </section>

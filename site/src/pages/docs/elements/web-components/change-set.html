@@ -13,7 +13,7 @@ crumbLabel: Web Components
 <section>
   <h2>Overview</h2>
   <p>The <code>&lt;change-set&gt;</code> element groups related <code>&lt;ins&gt;</code> and <code>&lt;del&gt;</code> elements into a reviewable unit. Users can toggle between three views: tracked changes (both visible), final text (only insertions), or original text (only deletions).</p>
-  <p>The view states are CSS-only via the <code>view</code> attribute. JavaScript adds interactive toggle buttons.</p>
+  <p>The view states are CSS-only via the <code>view</code> attribute. JavaScript adds a caption built from <code>author</code> / <code>datetime</code> (&ldquo;Changes by tpowell, Feb 20, 2026&rdquo;) and Tracking / Final / Original toggle buttons.</p>
 
   <aside class="note">
     <strong>Looking for "diff display"?</strong> See the <a href="/docs/concepts/diff-display/">diff-display recipe</a> &mdash; <code>&lt;change-set&gt;</code> handles the inline-tracking case, while <code>&lt;compare-surface&gt;</code> / <code>&lt;review-surface&gt;</code> / <code>&lt;version-switcher&gt;</code> / the <code>text-diff</code> utility cover the other shapes.
@@ -67,17 +67,17 @@ crumbLabel: Web Components
 
 <section>
   <h2>Static View (No JS)</h2>
-  <p>Set <code>view</code> directly in markup for server-rendered or static pages. No JavaScript is needed for the visual states.</p>
+  <p>Set <code>view</code> directly in markup for server-rendered or static pages. No JavaScript is needed for the visual states. Add <code>controls="none"</code> when readers should not switch views; the toggle buttons are then not rendered.</p>
 
   <code-block language="html" show-lines label="Static views" data-escape><!-- Server-rendered final view (no JS needed) -->
-<change-set view="final">
+<change-set view="final" controls="none">
   <p>
     <del>Old API endpoint</del>
     <ins>New API endpoint</ins> is now live.
   </p>
 </change-set>
 
-<!-- Original view -->
+<!-- Original view (toggles still offered after upgrade) -->
 <change-set view="original">
   <p>
     <del>Old API endpoint</del>
@@ -126,19 +126,25 @@ crumbLabel: Web Components
         <td><code>view</code></td>
         <td><code>final</code>, <code>original</code></td>
         <td>Omitted (tracking)</td>
-        <td>Controls which content is visible</td>
+        <td>Controls which content is visible. Observed: changing it updates the toggles' pressed state.</td>
       </tr>
       <tr>
         <td><code>datetime</code></td>
         <td>ISO 8601 date</td>
         <td>&mdash;</td>
-        <td>Date of the change set</td>
+        <td>Date of the change set. Rendered in the caption and in the toggle group's accessible name.</td>
       </tr>
       <tr>
         <td><code>author</code></td>
         <td>String</td>
         <td>&mdash;</td>
-        <td>Author of the changes</td>
+        <td>Author of the changes. Rendered in the caption and in the toggle group's accessible name.</td>
+      </tr>
+      <tr>
+        <td><code>controls</code></td>
+        <td><code>none</code></td>
+        <td>Omitted (toggles shown)</td>
+        <td><code>none</code> renders no toggle buttons (fixed view)</td>
       </tr>
     </tbody>
   </table>
@@ -156,7 +162,8 @@ document.addEventListener('change-set:view', (e) => {
 const cs = document.querySelector('change-set');
 cs.view = 'final';    // Show only insertions
 cs.view = 'original'; // Show only deletions
-cs.view = 'tracking'; // Show both</code-block>
+cs.view = 'tracking'; // Show both
+// Assigning the current view is a no-op; unknown values are ignored.</code-block>
 </section>
 
 <section>
@@ -168,8 +175,8 @@ cs.view = 'tracking'; // Show both</code-block>
     <tbody>
       <tr>
         <td><code>change-set:view</code></td>
-        <td><code>{ view: string }</code></td>
-        <td>Fired when the view mode changes. Bubbles.</td>
+        <td><code>{ view: 'tracking' | 'final' | 'original', source?: 'api' }</code></td>
+        <td>Fired when the view mode changes. Bubbles. <code>source: 'api'</code> when set through the <code>view</code> property; absent for toggle clicks.</td>
       </tr>
     </tbody>
   </table>
@@ -178,8 +185,9 @@ cs.view = 'tracking'; // Show both</code-block>
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Toggle buttons use <code>aria-pressed</code> to indicate the active view</li>
-    <li>The controls <code>&lt;nav&gt;</code> has <code>aria-label="Change view controls"</code></li>
+    <li>Toggle buttons use <code>aria-pressed</code> to indicate the active view, starting from the <code>view</code> attribute</li>
+    <li>The toggles sit in a <code>role="group"</code> (not a landmark &mdash; a page can hold many change sets) named &ldquo;Change view&rdquo; plus the caption, e.g. &ldquo;Change view, Changes by tpowell, Feb 20, 2026&rdquo;</li>
+    <li>In tracking view each <code>&lt;ins&gt;</code> / <code>&lt;del&gt;</code> gets visually-hidden start / end markers (&ldquo;[insertion start]&rdquo; &hellip; &ldquo;[insertion end]&rdquo;) as generated content, because screen readers do not reliably announce those elements. Localize them with <code>--change-set-ins-start</code>, <code>--change-set-ins-end</code>, <code>--change-set-del-start</code>, <code>--change-set-del-end</code> (CSS strings).</li>
     <li>In final and original views, hidden content uses <code>display: none</code> &mdash; it is removed from both the visual and accessibility trees</li>
     <li>Without JavaScript, all content is visible in tracking view</li>
   </ul>

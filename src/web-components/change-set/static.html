@@ -4,22 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Change Set (Static Fallback)</title>
-  <style>
-    /*
-      Minimal baseline styling for the no-JS fallback.
-      A production page would load the project stylesheet instead;
-      these rules exist only so the file is self-contained.
-    */
-    *, *::before, *::after { box-sizing: border-box; }
-
-    body {
-      font-family: system-ui, sans-serif;
-      line-height: 1.5;
-      max-inline-size: 40rem;
-      margin-inline: auto;
-      padding: 2rem 1rem;
-    }
-  </style>
 </head>
 <body>
 
@@ -28,20 +12,36 @@
     ====================
     This static HTML IS the baseline that <change-set> enhances.
 
-    When JavaScript loads and the <change-set> custom element is
-    defined, the markup is progressively enhanced with additional
-    interactivity, ARIA attributes, and keyboard navigation.
+    Without JavaScript the native <ins> / <del> elements carry the change
+    (styled by the native-element CSS), and the CSS-only `view` attribute
+    still switches a set to its final or original text. The JavaScript adds
+    a caption built from author / datetime and Tracking / Final / Original
+    toggle buttons (a labelled button group with aria-pressed).
 
-    Without JS the core content remains accessible and functional.
+    Before upgrade the author / datetime attributes are metadata only (the
+    per-edit datetime on <ins> / <del> is native). If the who / when must be
+    visible without JavaScript, put it in surrounding text outside the set,
+    since the upgraded caption would otherwise repeat it.
   -->
 
   <h1>Change Set</h1>
 
-  <noscript>
-    <p>This component works best with JavaScript enabled.</p>
-  </noscript>
+  <change-set datetime="2026-02-20" author="tpowell">
+    <p>
+      Send requests to
+      <del datetime="2026-02-20">/api/v1/upload</del>
+      <ins datetime="2026-02-20">/api/v2/ingest</ins>
+      with a
+      <del>Content-Type: application/xml</del>
+      <ins>Content-Type: application/json</ins>
+      header.
+    </p>
+  </change-set>
 
-  <!-- TODO: Add meaningful static fallback markup for <change-set> -->
+  <h2>Server-rendered final text</h2>
+  <change-set view="final" controls="none">
+    <p>Requests go to <del>/api/v1/upload</del><ins>/api/v2/ingest</ins>.</p>
+  </change-set>
 
 </body>
 </html>

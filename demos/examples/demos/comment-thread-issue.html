@@ -84,24 +84,26 @@
     thread.addEventListener('comment-thread:reply', (e) => {
       const { parentId, value } = e.detail;
       append(`reply to ${parentId}: "${value.slice(0, 60)}"`);
-      // Mock backend: insert the new comment after a short delay.
-      setTimeout(() => {
+      // Mock backend: the reply form stays busy until this settles.
+      const request = new Promise((resolve) => setTimeout(resolve, 300)).then(() => {
         thread.addComment({
           id: `c${++nextId}`,
           author: 'You',
           time: new Date().toISOString(),
-          body: `<p>${value.replace(/[<>&]/g, (c) => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p>`,
+          bodyText: value, // plain text: never parsed as HTML
           parentId,
           mine: true,
         });
-      }, 150);
+      });
+      e.detail.waitUntil(request);
     });
     thread.addEventListener('comment-thread:edit-request', (e) => {
       append(`edit-request: ${e.detail.commentId} (current value: "${e.detail.value.slice(0, 40)}")`);
       // Mock: prompt for new content.
       const next = prompt('Edit body:', e.detail.value);
       if (next != null) {
-        thread.updateComment(e.detail.commentId, { body: `<p>${next}</p>`, edited: new Date().toISOString() });
+        // bodyText: the prompt input is set as text, so markup in it is inert.
+        thread.updateComment(e.detail.commentId, { bodyText: next, edited: new Date().toISOString() });
       }
     });
     thread.addEventListener('comment-thread:delete-request', (e) => {

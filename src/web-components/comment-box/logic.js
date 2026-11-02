@@ -6,14 +6,24 @@
  * as the reply-form template inside <comment-thread>.
  *
  * Presentational with respect to persistence: the component fires
- * `comment-box:submit` (cancellable) and lets the author make the network
- * call. On success, the value is cleared automatically; if the author
- * preventDefault()s, the value is preserved (useful for client-side
- * validation flows).
+ * `comment-box:submit` and lets the author make the network call. The
+ * submit contract (dispatch is synchronous, so decide during the handler):
+ *
+ *   - Do nothing → the value clears right after the event.
+ *   - Call `e.detail.waitUntil(promise)` → the box goes busy (aria-busy,
+ *     Submit aria-disabled, editor read-only) until the promise settles.
+ *     Resolve → the value clears. Reject → the value is kept for a retry.
+ *   - Call `e.preventDefault()` synchronously → the value is kept and the
+ *     box does nothing more; call `clear()` yourself when appropriate.
+ *
+ * `preventDefault()` after an `await` is too late — the event has finished
+ * dispatching. Use waitUntil() for async work.
  *
  * @attr {string}  name             - Form field name (submitted with parent form)
  * @attr {string}  value            - Pre-filled markdown content (e.g. for edit mode)
  * @attr {string}  placeholder      - Editor placeholder text
+ * @attr {string}  label            - Accessible name for the editor (default: an
+ *                                    associated <label>'s text, else "Comment")
  * @attr {string}  submit-label     - Submit button label (default "Comment")
  * @attr {string}  cancel-label     - Cancel button label (default "Cancel")
  * @attr {boolean} data-show-cancel - Render the Cancel button
@@ -22,8 +32,8 @@
  * @attr {boolean} required
  * @attr {boolean} disabled
  *
- * @fires comment-box:submit - detail: { value }. Bubbles. Cancellable —
- *        preventDefault() preserves the value (cancel network failure recovery).
+ * @fires comment-box:submit - detail: { value, waitUntil(promise) }. Bubbles,
+ *        cancelable. See the submit contract above.
  * @fires comment-box:cancel - detail: { value }
  * @fires comment-box:input  - detail: { value, length }. Bubbles, fires on every keystroke.
  *
@@ -42,18 +52,32 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 
+/** Remaining-character threshold at which the counter starts announcing. */
+const announceThreshold = (/** @type {number} */ max) => Math.max(10, Math.ceil(max * 0.1));
+
 class CommentBox extends VBElement {
   static formAssociated = true;
-  static observedAttributes = ['value', 'disabled', 'placeholder', 'submit-label', 'cancel-label', 'data-show-cancel'];
+  static observedAttributes = ['value', 'disabled', 'placeholder', 'label', 'submit-label', 'cancel-label', 'data-show-cancel'];
 
   #internals;
-  #editor;       // <markdown-editor>
-  #actionsRow;   // .comment-box-actions
-  #toolbar;      // .comment-box-toolbar
-  #submitBtn;
-  #cancelBtn;
-  #counter;      // optional length counter shown when data-max-length is set
+  /** @type {any} */
+  #editor = null;       // <markdown-editor>
+  /** @type {HTMLElement | null} */
+  #actionsRow = null;   // .comment-box-actions
+  /** @type {HTMLElement | null} */
+  #toolbar = null;      // .comment-box-toolbar
+  /** @type {HTMLButtonElement | null} */
+  #submitBtn = null;
+  /** @type {HTMLButtonElement | null} */
+  #cancelBtn = null;
+  /** @type {HTMLElement | null} */
+  #counter = null;      // visible length counter (data-max-length)
+  /** @type {HTMLElement | null} */
+  #counterStatus = null; // visually-hidden live region, only speaks near/over the limit
+  /** @type {HTMLTextAreaElement | null} */
   #wiredTextarea = null; // last textarea we attached input listeners to (re-wires after editor upgrades)
+  #busy = false;
+  #formDisabled = false;
 
   constructor() {
     super();
@@ -70,19 +94,26 @@ class CommentBox extends VBElement {
     import('../markdown-viewer/logic.js').catch(() => console.warn('[VB] comment-box: markdown-viewer failed to load (missing importmap for "marked"?)'));
     import('../markdown-editor/logic.js').catch(() => console.warn('[VB] comment-box: markdown-editor failed to load'));
 
-    // Capture toolbar-slot children before we rebuild the DOM.
-    const toolbarChildren = [...this.querySelectorAll(':scope > [slot="toolbar"]')];
+    // Capture toolbar-slot children before we rebuild the DOM. On a
+    // reconnect they already live inside our previous toolbar.
+    const toolbarChildren = [
+      ...this.querySelectorAll(':scope > [slot="toolbar"]'),
+      ...this.querySelectorAll(':scope > .comment-box-actions > .comment-box-toolbar > *'),
+    ];
 
     // Reuse author-provided <markdown-editor> if present; otherwise create one.
     let existingEditor = this.querySelector(':scope > markdown-editor');
     if (!existingEditor) {
       existingEditor = document.createElement('markdown-editor');
       const ta = document.createElement('textarea');
-      if (this.hasAttribute('placeholder')) ta.placeholder = this.getAttribute('placeholder') || '';
       if (this.hasAttribute('value')) ta.value = this.getAttribute('value') || '';
       existingEditor.appendChild(ta);
     }
     this.#editor = existingEditor;
+    // markdown-editor builds its own textarea from ITS placeholder attribute.
+    // `name` deliberately stays on the host: the host is form-associated, so
+    // naming the inner textarea too would submit the value twice.
+    if (this.hasAttribute('placeholder')) this.#editor.setAttribute('placeholder', this.getAttribute('placeholder') || '');
 
     // Build action row.
     this.#actionsRow = document.createElement('div');
@@ -90,18 +121,21 @@ class CommentBox extends VBElement {
 
     this.#toolbar = document.createElement('div');
     this.#toolbar.className = 'comment-box-toolbar';
-    this.#toolbar.setAttribute('role', 'toolbar');
-    toolbarChildren.forEach((el) => this.#toolbar.appendChild(el));
+    toolbarChildren.forEach((el) => this.#toolbar?.appendChild(el));
+    // No arrow-key roving here, so no role="toolbar"; a labelled group only
+    // when there is something in it.
+    if (toolbarChildren.length) {
+      this.#toolbar.setAttribute('role', 'group');
+      this.#toolbar.setAttribute('aria-label', 'Comment tools');
+    }
     this.#actionsRow.appendChild(this.#toolbar);
 
     const buttons = document.createElement('div');
     buttons.className = 'comment-box-buttons';
 
+    this.#cancelBtn = null;
     if (this.hasAttribute('data-show-cancel')) {
-      this.#cancelBtn = document.createElement('button');
-      this.#cancelBtn.type = 'button';
-      this.#cancelBtn.className = 'comment-box-cancel';
-      this.#cancelBtn.textContent = this.getAttribute('cancel-label') || 'Cancel';
+      this.#cancelBtn = this.#makeCancel();
       buttons.appendChild(this.#cancelBtn);
     }
 
@@ -113,12 +147,19 @@ class CommentBox extends VBElement {
 
     this.#actionsRow.appendChild(buttons);
 
-    // Optional length counter when data-max-length is set.
+    // Optional length counter when data-max-length is set. The visible count
+    // is silent; a separate status region speaks only near / over the limit.
+    this.#counter = null;
+    this.#counterStatus = null;
     if (this.hasAttribute('data-max-length')) {
       this.#counter = document.createElement('span');
       this.#counter.className = 'comment-box-counter';
-      this.#counter.setAttribute('aria-live', 'polite');
+      this.#counter.setAttribute('aria-hidden', 'true');
       this.#actionsRow.appendChild(this.#counter);
+      this.#counterStatus = document.createElement('span');
+      this.#counterStatus.className = 'comment-box-status visually-hidden';
+      this.#counterStatus.setAttribute('role', 'status');
+      this.#actionsRow.appendChild(this.#counterStatus);
     }
 
     // Mount: editor first, then actions.
@@ -129,17 +170,21 @@ class CommentBox extends VBElement {
     if (this.#cancelBtn) this.listen(this.#cancelBtn, 'click', this.#onCancel);
 
     // Wire textarea events. markdown-editor REPLACES the original textarea
-    // with its own internal one during its setup, so we re-bind to the live
-    // textarea once that's available.
+    // with its own internal one during its setup (and again when it is
+    // reconnected), so we re-bind to the live textarea once that's available.
     this.#wireTextarea();
-    if (!this.#editor.hasAttribute('data-upgraded')) {
-      this.listen(this.#editor, 'markdown-editor:upgraded', () => this.#wireTextarea(), { once: true });
-    }
+    this.listen(this.#editor, 'markdown-editor:upgraded', () => this.#wireTextarea());
 
     this.#updateDisabled();
     this.#syncFormValue();
     this.#validate();
     this.#refreshCounter();
+  }
+
+  teardown() {
+    // Listeners were released by VBElement; forget the textarea so the next
+    // setup() re-binds even when markdown-editor keeps the same node.
+    this.#wiredTextarea = null;
   }
 
   /** Currently-live textarea inside the editor. Re-queried on demand because
@@ -148,12 +193,32 @@ class CommentBox extends VBElement {
     return this.#editor?.textarea ?? this.#editor?.querySelector('textarea') ?? null;
   }
 
+  #makeCancel() {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'comment-box-cancel';
+    btn.textContent = this.getAttribute('cancel-label') || 'Cancel';
+    return btn;
+  }
+
   #wireTextarea() {
     const ta = this.#ta;
-    if (!ta || ta === this.#wiredTextarea) return;
+    if (!ta) return;
+    this.#applyLabel(ta);
+    this.#updateDisabled();
+    this.#validate();
+    if (ta === this.#wiredTextarea) return;
     this.#wiredTextarea = ta;
     this.listen(ta, 'input', this.#onInput);
     this.listen(ta, 'keydown', this.#onKeydown);
+  }
+
+  /** Accessible name for the editor textarea. */
+  #applyLabel(ta = this.#ta) {
+    if (!ta) return;
+    const assoc = /** @type {HTMLLabelElement | undefined} */ (this.#internals.labels?.[0]);
+    const name = this.getAttribute('label') || assoc?.textContent?.trim() || 'Comment';
+    ta.setAttribute('aria-label', name);
   }
 
   attributeChangedCallback(name, _old, next) {
@@ -161,23 +226,23 @@ class CommentBox extends VBElement {
     if (name === 'value') {
       this.value = next ?? '';
     } else if (name === 'placeholder') {
-      const ta = this.#ta;
-      if (ta) ta.placeholder = next ?? '';
+      if (next == null) this.#editor.removeAttribute('placeholder');
+      else this.#editor.setAttribute('placeholder', next);
+    } else if (name === 'label') {
+      this.#applyLabel();
     } else if (name === 'disabled') {
       this.#updateDisabled();
     } else if (name === 'submit-label') {
-      this.#submitBtn.textContent = next || 'Comment';
+      if (this.#submitBtn) this.#submitBtn.textContent = next || 'Comment';
     } else if (name === 'cancel-label') {
       if (this.#cancelBtn) this.#cancelBtn.textContent = next || 'Cancel';
     } else if (name === 'data-show-cancel') {
       // Toggle cancel button visibility. Re-running setup is overkill — just toggle.
-      if (this.hasAttribute('data-show-cancel') && !this.#cancelBtn) {
-        this.#cancelBtn = document.createElement('button');
-        this.#cancelBtn.type = 'button';
-        this.#cancelBtn.className = 'comment-box-cancel';
-        this.#cancelBtn.textContent = this.getAttribute('cancel-label') || 'Cancel';
-        this.#submitBtn.parentNode.insertBefore(this.#cancelBtn, this.#submitBtn);
+      if (this.hasAttribute('data-show-cancel') && !this.#cancelBtn && this.#submitBtn) {
+        this.#cancelBtn = this.#makeCancel();
+        this.#submitBtn.before(this.#cancelBtn);
         this.listen(this.#cancelBtn, 'click', this.#onCancel);
+        this.#updateDisabled();
       } else if (!this.hasAttribute('data-show-cancel') && this.#cancelBtn) {
         this.#cancelBtn.remove();
         this.#cancelBtn = null;
@@ -206,13 +271,42 @@ class CommentBox extends VBElement {
   };
 
   #onSubmit = () => {
-    if (this.#disabledOrInvalid()) return;
+    if (this.#busy || this.#isDisabled()) return;
+    // validity.valid, not checkValidity(): that would fire a second `invalid`.
+    if (!this.#internals.validity.valid) {
+      // Say why instead of silently ignoring the click.
+      this.#internals.reportValidity();
+      this.#ta?.focus();
+      return;
+    }
     const value = this.value;
+    /** @type {Promise<unknown>[]} */
+    const pending = [];
+    let dispatching = true;
     const evt = new CustomEvent('comment-box:submit', {
-      bubbles: true, cancelable: true, detail: { value },
+      bubbles: true,
+      cancelable: true,
+      detail: {
+        value,
+        /** @param {Promise<unknown>} promise */
+        waitUntil(promise) {
+          if (!dispatching) throw new DOMException('waitUntil() must be called while comment-box:submit is dispatching', 'InvalidStateError');
+          pending.push(Promise.resolve(promise));
+        },
+      },
     });
     const proceed = this.dispatchEvent(evt);
-    if (proceed) this.clear();
+    dispatching = false;
+    if (!proceed) return;
+    if (!pending.length) {
+      this.clear();
+      return;
+    }
+    this.#setBusy(true);
+    Promise.all(pending).then(
+      () => { this.#setBusy(false); this.clear(); },
+      () => { this.#setBusy(false); this.#ta?.focus(); },
+    );
   };
 
   #onCancel = () => {
@@ -224,16 +318,30 @@ class CommentBox extends VBElement {
 
   // ── Validation & form participation ────────────────────────────────
 
-  #disabledOrInvalid() {
-    if (this.hasAttribute('disabled')) return true;
-    return !this.#internals.checkValidity();
+  #isDisabled() {
+    return this.hasAttribute('disabled') || this.#formDisabled;
+  }
+
+  #setBusy(on) {
+    this.#busy = on;
+    if (on) this.setAttribute('aria-busy', 'true');
+    else this.removeAttribute('aria-busy');
+    this.#updateDisabled();
   }
 
   #updateDisabled() {
-    const disabled = this.hasAttribute('disabled');
+    const disabled = this.#isDisabled();
     const ta = this.#ta;
-    if (ta) ta.disabled = disabled;
-    this.#submitBtn.disabled = disabled;
+    if (ta) {
+      ta.disabled = disabled;
+      ta.readOnly = this.#busy;
+    }
+    if (this.#submitBtn) {
+      this.#submitBtn.disabled = disabled;
+      // Busy keeps the button focusable (focus stays put) but inert.
+      if (this.#busy) this.#submitBtn.setAttribute('aria-disabled', 'true');
+      else this.#submitBtn.removeAttribute('aria-disabled');
+    }
     if (this.#cancelBtn) this.#cancelBtn.disabled = disabled;
   }
 
@@ -273,6 +381,12 @@ class CommentBox extends VBElement {
     const v = this.value.length;
     this.#counter.textContent = max ? `${v} / ${max}` : String(v);
     this.#counter.classList.toggle('is-over', max > 0 && v > max);
+    if (!this.#counterStatus) return;
+    const remaining = max - v;
+    let msg = '';
+    if (max && remaining < 0) msg = `${-remaining} characters over the limit`;
+    else if (max && remaining <= announceThreshold(max)) msg = `${remaining} characters remaining`;
+    if (this.#counterStatus.textContent !== msg) this.#counterStatus.textContent = msg;
   }
 
   // ── Public API ─────────────────────────────────────────────────────
@@ -285,6 +399,12 @@ class CommentBox extends VBElement {
     this.#validate();
     this.#refreshCounter();
   }
+
+  /**
+   * Whether a comment-box:submit waitUntil() promise is pending.
+   * @returns {boolean}
+   */
+  get busy() { return this.#busy; }
 
   clear() {
     this.value = '';
@@ -300,6 +420,10 @@ class CommentBox extends VBElement {
   // Form-associated lifecycle
   formResetCallback() { this.value = this.getAttribute('value') ?? ''; }
   formStateRestoreCallback(state) { if (state != null) this.value = state; }
+  formDisabledCallback(disabled) {
+    this.#formDisabled = disabled;
+    this.#updateDisabled();
+  }
 
   get form() { return this.#internals.form; }
   get name() { return this.getAttribute('name'); }

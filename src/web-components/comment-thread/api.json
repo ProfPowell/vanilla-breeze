@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "comment-thread",
   "type": "web-component",
-  "description": "Persistent threaded-discussion container. Author renders <article data-comment> children with metadata; component decorates each with author header, relative timestamp, action row (Reply / Edit / Delete) + threaded indentation. Composes <comment-box> (reply form template), <markdown-viewer> (body rendering by author), and bubbles <reaction-bar> events naturally.",
+  "description": "Persistent threaded-discussion container. Author renders <article data-comment> children with metadata; component decorates each with author header, relative timestamp, action row (Reply / Edit / Delete) + threaded indentation. Composes <comment-box> (reply form template) and bubbles <reaction-bar> events naturally. Bodies added through the API are text or sanitized HTML.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -28,19 +28,19 @@
       "name": "role",
       "kind": "aria",
       "purpose": "config",
-      "description": "Set to \"region\""
+      "description": "Set to \"region\" when absent"
     }
   ],
   "events": [
     {
       "name": "comment-thread:reply",
-      "detail": "{ parentId, value }",
-      "description": "Reply form submitted; author should POST and call addComment"
+      "detail": "{ parentId, value, waitUntil(promise) }",
+      "description": "Reply form submitted. Cancelable, same contract as comment-box:submit: do nothing and the form closes; waitUntil(promise) keeps it busy, closing on resolve and keeping the text on reject; preventDefault() during the handler keeps it open. Focus returns to the comment's Reply button when it closes."
     },
     {
       "name": "comment-thread:edit-request",
       "detail": "{ commentId, value }",
-      "description": "Edit clicked; author renders an inline editor or replaces the body"
+      "description": "Edit clicked; value is the body's text. Author renders an editor and calls updateComment"
     },
     {
       "name": "comment-thread:delete-request",
@@ -48,20 +48,17 @@
       "description": "Delete clicked; author confirms + calls removeComment"
     }
   ],
-  "properties": [
+  "methods": [
     {
-      "name": "addComment",
-      "type": "(data) => HTMLElement",
-      "description": "Insert a new comment from server data"
+      "name": "addComment(data)",
+      "description": "Insert a comment: data { id, author, time, bodyText? | bodyHtml?, parentId?, mine?, authorHref?, authorAvatar?, edited? }. bodyText is set as text; bodyHtml is sanitized. A reply goes after its parent's last descendant. Returns the <article>"
     },
     {
-      "name": "updateComment",
-      "type": "(id, patch) => void",
-      "description": "Patch an existing comment after edit"
+      "name": "updateComment(id, patch)",
+      "description": "Patch a comment: patch { bodyText? | bodyHtml?, author?, edited? }"
     },
     {
-      "name": "removeComment",
-      "type": "(id) => void",
+      "name": "removeComment(id)",
       "description": "Remove a comment from the thread"
     }
   ],
@@ -83,7 +80,7 @@
       "name": "data-author-href",
       "on": "article",
       "type": "string",
-      "description": "Optional link to the author's profile"
+      "description": "Optional link to the author's profile. Only http(s) and relative URLs become a link; anything else renders as text"
     },
     {
       "name": "data-author-avatar",
@@ -95,7 +92,7 @@
       "name": "data-time",
       "on": "article",
       "type": "string",
-      "description": "ISO-8601 timestamp"
+      "description": "ISO-8601 timestamp; rendered relative (Intl.RelativeTimeFormat in the element's lang) with the absolute time in title. Unparseable values render as-is"
     },
     {
       "name": "data-mine",
@@ -117,16 +114,22 @@
     },
     {
       "name": "data-comment-body",
-      "on": "div",
+      "on": "*",
       "type": "boolean",
       "required": true,
-      "description": "Wraps the rendered comment body"
+      "description": "Marks the comment body (any element, e.g. <section> or <div>)"
     },
     {
       "name": "data-reply-form",
       "on": "template",
       "type": "boolean",
       "description": "Marks the template whose content is cloned for the reply form"
+    },
+    {
+      "name": "aria-labelledby",
+      "on": "article",
+      "type": "string",
+      "description": "Set by the component: names each comment from its author and time"
     }
   ],
   "structure": []

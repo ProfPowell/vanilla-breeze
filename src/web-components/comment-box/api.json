@@ -15,7 +15,7 @@
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Form field name (submitted with parent form)"
+      "description": "Form field name (submitted with parent form). Stays on the host; the inner textarea is not named, so the value submits once."
     },
     {
       "name": "value",
@@ -29,7 +29,15 @@
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Editor placeholder text"
+      "description": "Editor placeholder text (forwarded to the inner <markdown-editor>)"
+    },
+    {
+      "name": "label",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "string",
+      "default": "Comment",
+      "description": "Accessible name for the editor textarea. Falls back to an associated <label>'s text, then \"Comment\"."
     },
     {
       "name": "submit-label",
@@ -64,26 +72,36 @@
       "kind": "data",
       "purpose": "config",
       "type": "number",
-      "description": "Maximum character length for validation; also shows a counter"
+      "description": "Maximum character length for validation; also shows a counter that announces only near or over the limit"
     },
     {
       "name": "required",
       "kind": "native",
       "purpose": "config",
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Requires a non-empty value; a blocked submit reports the validation message"
     },
     {
       "name": "disabled",
       "kind": "native",
       "purpose": "config",
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Disables the editor and buttons (a disabled ancestor <fieldset> does the same)"
+    },
+    {
+      "name": "aria-busy",
+      "kind": "aria",
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "string",
+      "description": "\"true\" while a comment-box:submit waitUntil() promise is pending"
     }
   ],
   "events": [
     {
       "name": "comment-box:submit",
-      "detail": "{ value }",
-      "description": "Bubbles. Cancellable via preventDefault() — preserves the value for failure-recovery flows. On success the value is cleared automatically."
+      "detail": "{ value, waitUntil(promise) }",
+      "description": "Bubbles, cancelable, dispatched synchronously. Do nothing: the value clears. waitUntil(promise): the box is busy until it settles; resolve clears, reject keeps the value. preventDefault() (during the handler, not after an await): the value is kept and nothing else happens. An invalid value does not fire this; it reports the validation message instead."
     },
     {
       "name": "comment-box:cancel",
@@ -93,7 +111,7 @@
     {
       "name": "comment-box:input",
       "detail": "{ value, length }",
-      "description": "Fires on every keystroke"
+      "description": "Fires on every keystroke and after clear()"
     }
   ],
   "properties": [
@@ -103,15 +121,59 @@
       "description": "Get/set the current markdown content"
     },
     {
+      "name": "busy",
+      "type": "boolean",
+      "description": "Read-only. True while a submit waitUntil() promise is pending"
+    },
+    {
       "name": "form",
       "type": "HTMLFormElement | null",
       "description": "The associated form"
     },
     {
+      "name": "name",
+      "type": "string | null",
+      "description": "The name attribute"
+    },
+    {
       "name": "validity",
-      "type": "ValidityState"
+      "type": "ValidityState",
+      "description": "Current validity"
+    },
+    {
+      "name": "validationMessage",
+      "type": "string",
+      "description": "Current validation message"
     }
   ],
-  "childAttributes": [],
+  "methods": [
+    {
+      "name": "clear()",
+      "description": "Clear the value and emit comment-box:input"
+    },
+    {
+      "name": "focus()",
+      "description": "Focus the editor textarea"
+    },
+    {
+      "name": "checkValidity()",
+      "description": "Standard form-associated validity check"
+    },
+    {
+      "name": "reportValidity()",
+      "description": "Check validity and show the message"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "slot",
+      "on": "*",
+      "type": "string",
+      "values": [
+        "toolbar"
+      ],
+      "description": "slot=\"toolbar\" children move into the tool group left of the buttons (kept across reconnects)"
+    }
+  ],
   "structure": []
 }

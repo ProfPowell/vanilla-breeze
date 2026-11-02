@@ -20,21 +20,21 @@
     <layout-stack data-layout-gap="m">
 
       <h1>comment-box</h1>
-      <p>Form-associated comment form composing <code>&lt;markdown-editor&gt;</code>. Submit fires <code>comment-box:submit</code> (cancellable); on success the value clears automatically.</p>
+      <p>Form-associated comment form composing <code>&lt;markdown-editor&gt;</code>. Submit fires <code>comment-box:submit</code>; the first box hands a mock request to <code>waitUntil()</code>, which fails every other time so you can see the text kept for a retry.</p>
 
       <section>
         <h2>Default — top-level comment form</h2>
-        <comment-box id="top" name="comment" placeholder="Add a comment…"></comment-box>
+        <comment-box id="top" name="comment" label="New comment" placeholder="Add a comment…"></comment-box>
       </section>
 
       <section>
         <h2>Edit mode — pre-filled value, with Cancel</h2>
-        <comment-box id="edit" value="Looks great — ship it." submit-label="Save" data-show-cancel></comment-box>
+        <comment-box id="edit" label="Edit comment" value="Looks great — ship it." submit-label="Save" data-show-cancel></comment-box>
       </section>
 
       <section>
         <h2>Length-limited (280 chars) with toolbar slot</h2>
-        <comment-box id="limited" placeholder="Up to 280 characters…" data-max-length="280">
+        <comment-box id="limited" label="Short comment" placeholder="Up to 280 characters…" data-max-length="280">
           <button slot="toolbar" type="button" aria-label="Attach file">📎</button>
           <button slot="toolbar" type="button" aria-label="Mention">@</button>
         </comment-box>
@@ -44,7 +44,8 @@
         <h2>Inside a parent &lt;form&gt; (form-associated)</h2>
         <form id="hostForm">
           <form-field>
-            <comment-box name="body" placeholder="Comment body…" data-min-length="3" required></comment-box>
+            <label for="body-box">Comment body</label>
+            <comment-box id="body-box" name="body" placeholder="Comment body…" data-min-length="3" required></comment-box>
           </form-field>
           <button type="submit">Submit form</button>
         </form>
@@ -60,9 +61,24 @@
     const log = document.getElementById('log');
     const append = (msg) => { log.textContent = msg + '\n' + log.textContent; };
 
+    // Mock backend: resolves after 600ms, rejects every second call.
+    let calls = 0;
+    const mockPost = () => new Promise((resolve, reject) => {
+      const ok = ++calls % 2 === 1;
+      setTimeout(() => (ok ? resolve() : reject(new Error('Network error'))), 600);
+    });
+
     document.querySelectorAll('comment-box').forEach((box) => {
       box.addEventListener('comment-box:submit', (e) => {
         append(`submit (${box.id}): "${e.detail.value.slice(0, 60)}${e.detail.value.length > 60 ? '…' : ''}"`);
+        if (box.id !== 'top') return;
+        // Must be called synchronously, inside the handler.
+        const request = mockPost();
+        e.detail.waitUntil(request);
+        request.then(
+          () => append('top: saved, value cleared'),
+          () => append('top: failed, value kept for retry'),
+        );
       });
       box.addEventListener('comment-box:cancel', (e) => {
         append(`cancel (${box.id}): ${e.detail.value.length} chars`);

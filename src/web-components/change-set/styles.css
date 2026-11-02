@@ -33,6 +33,48 @@
     border: none;
   }
 
+  /* --- Tracking view: announce insertions / deletions ---
+     ins/del carry no role screen readers reliably announce, so in the
+     tracking view (both visible) each one gets start/end markers as real,
+     visually-hidden generated text. Content alt text (`content: "x" / ""`)
+     would do the opposite (hide visible text from AT), so the text itself
+     is clipped instead; generated content is exposed to the accessibility
+     tree. Override the custom properties to localize. */
+
+  :scope:not([view="final"], [view="original"]) :is(ins, del)::before,
+  :scope:not([view="final"], [view="original"]) :is(ins, del)::after {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  :scope:not([view="final"], [view="original"]) ins::before {
+    content: var(--change-set-ins-start, " [insertion start] ");
+  }
+
+  :scope:not([view="final"], [view="original"]) ins::after {
+    content: var(--change-set-ins-end, " [insertion end] ");
+  }
+
+  :scope:not([view="final"], [view="original"]) del::before {
+    content: var(--change-set-del-start, " [deletion start] ");
+  }
+
+  :scope:not([view="final"], [view="original"]) del::after {
+    content: var(--change-set-del-end, " [deletion end] ");
+  }
+
+  /* --- Caption (from author / datetime, injected by JS) --- */
+
+  [data-change-caption] {
+    margin-block: 0 var(--size-2xs);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
   /* --- Toggle controls (injected by JS) --- */
 
   [data-controls] {

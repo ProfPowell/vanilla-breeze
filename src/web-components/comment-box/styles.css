@@ -37,10 +37,6 @@ comment-box .comment-box-toolbar {
   min-inline-size: 0;
 }
 
-comment-box .comment-box-toolbar:empty {
-  /* Keep the row's flex layout balanced even with no toolbar children. */
-}
-
 comment-box .comment-box-buttons {
   display: inline-flex;
   align-items: center;
@@ -83,7 +79,7 @@ comment-box button.comment-box-submit {
   border: var(--border-width-thin, 1px) solid var(--color-interactive);
 }
 
-comment-box button.comment-box-submit:hover:not(:disabled) {
+comment-box button.comment-box-submit:hover:not(:disabled, [aria-disabled="true"]) {
   background: var(--color-interactive-hover, oklch(from var(--color-interactive) calc(l * 0.92) c h));
   border-color: var(--color-interactive-hover, oklch(from var(--color-interactive) calc(l * 0.92) c h));
 }
@@ -98,6 +94,12 @@ comment-box button.comment-box-submit:disabled,
 comment-box button.comment-box-cancel:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+/* Busy: a comment-box:submit waitUntil() promise is pending. */
+comment-box button.comment-box-submit[aria-disabled="true"] {
+  cursor: progress;
+  opacity: 0.6;
 }
 
 comment-box button.comment-box-cancel {

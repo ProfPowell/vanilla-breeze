@@ -2,51 +2,107 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "change-set",
   "type": "web-component",
-  "description": "Interactive change tracking group",
+  "description": "Interactive change tracking group: a caption from author/datetime plus Tracking / Final / Original toggles over its <ins> / <del> descendants",
+  "htmlvalidate": {
+    "flow": true,
+    "permittedContent": [
+      "@flow"
+    ]
+  },
   "attributes": [
     {
       "name": "view",
       "kind": "host-api",
       "purpose": "config",
-      "type": "string",
-      "description": "'final' | 'original' | omitted (tracking)"
+      "direction": "both",
+      "type": "enum",
+      "values": [
+        "final",
+        "original"
+      ],
+      "description": "Which text is visible: final (insertions only), original (deletions only); omitted = tracking (both, with announced markers). Observed; works without JS"
     },
     {
       "name": "datetime",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "ISO date of the change set"
+      "description": "ISO date of the change set; rendered in the caption and the controls' name"
     },
     {
       "name": "author",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Author of the changes"
+      "description": "Author of the changes; rendered in the caption and the controls' name"
     },
     {
-      "name": "data-controls",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-pressed",
-      "kind": "aria",
-      "purpose": "config"
+      "name": "controls",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "none"
+      ],
+      "description": "\"none\" renders no toggle controls (fixed view)"
     }
   ],
   "events": [
     {
-      "name": "change-set:view"
+      "name": "change-set:view",
+      "detail": "{ view: 'tracking' | 'final' | 'original', source?: 'api' }",
+      "description": "View changed via the toggles (no source) or the view property (source: 'api'). Bubbles"
     }
   ],
-  "childAttributes": [],
+  "properties": [
+    {
+      "name": "view",
+      "type": "'tracking' | 'final' | 'original'",
+      "description": "Get / set the view. Setting the current view is a no-op; unknown values are ignored"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-controls",
+      "on": "div",
+      "type": "boolean",
+      "description": "Set by the component on the role=\"group\" toggle container"
+    },
+    {
+      "name": "data-action",
+      "on": "button",
+      "type": "enum",
+      "values": [
+        "tracking",
+        "final",
+        "original"
+      ],
+      "description": "Set by the component: the view a toggle selects"
+    },
+    {
+      "name": "aria-pressed",
+      "on": "button",
+      "type": "enum",
+      "values": [
+        "true",
+        "false"
+      ],
+      "description": "Set by the component: true on the toggle matching the current view"
+    },
+    {
+      "name": "data-change-caption",
+      "on": "p",
+      "type": "boolean",
+      "description": "Set by the component on the author/datetime caption"
+    }
+  ],
   "structure": [],
-  "htmlvalidate": {
-    "flow": true,
-    "permittedContent": [
-      "@flow"
+  "css": {
+    "tokens": [
+      "--change-set-ins-start",
+      "--change-set-ins-end",
+      "--change-set-del-start",
+      "--change-set-del-end"
     ]
   }
 }

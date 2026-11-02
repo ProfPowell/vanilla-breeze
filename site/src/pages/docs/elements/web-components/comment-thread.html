@@ -39,7 +39,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Author surface</h2>
-  <p>Render comments as direct <code>&lt;article data-comment&gt;</code> children. Put the rendered body in <code>&lt;div data-comment-body&gt;</code>. Provide a <code>&lt;template data-reply-form&gt;</code> that wraps a <code>&lt;comment-box&gt;</code> &mdash; the component clones it under whichever comment is being replied to.</p>
+  <p>Render comments as direct <code>&lt;article data-comment&gt;</code> children. Put the rendered body in an element marked <code>data-comment-body</code> (any element: <code>&lt;section&gt;</code>, <code>&lt;div&gt;</code>, &hellip;). Provide a <code>&lt;template data-reply-form&gt;</code> that wraps a <code>&lt;comment-box&gt;</code> &mdash; the component clones it under whichever comment is being replied to.</p>
 
   <code-block language="html" show-lines label="Author markup" data-escape><comment-thread aria-label="Comments on issue 482">
   <article data-comment id="c1" data-author="Ada Lovelace" data-time="2026-05-14T10:00:00Z" data-mine>
@@ -71,9 +71,9 @@ crumbLabel: Web Components
     <tbody>
       <tr><td><code>id</code></td><td>Stable comment id (used in events + parent refs).</td></tr>
       <tr><td><code>data-author</code></td><td>Display name.</td></tr>
-      <tr><td><code>data-author-href</code></td><td>Optional link to the author's profile.</td></tr>
+      <tr><td><code>data-author-href</code></td><td>Optional link to the author's profile. Only <code>http(s)</code> and relative URLs become a link; anything else (e.g. <code>javascript:</code>) renders as plain text.</td></tr>
       <tr><td><code>data-author-avatar</code></td><td>Optional avatar URL (renders <code>&lt;user-avatar&gt;</code>).</td></tr>
-      <tr><td><code>data-time</code></td><td>ISO-8601 timestamp; rendered as relative ("2 hours ago") with absolute on hover.</td></tr>
+      <tr><td><code>data-time</code></td><td>ISO-8601 timestamp; rendered as relative ("2 hours ago", localized with <code>Intl.RelativeTimeFormat</code> in the element's <code>lang</code>) with the absolute time on hover. An unparseable value is shown as written.</td></tr>
       <tr><td><code>data-mine</code></td><td>Current user authored this &mdash; enables Edit / Delete actions and accent styling.</td></tr>
       <tr><td><code>data-parent</code></td><td>Id of the parent comment for nested replies (drives indent depth).</td></tr>
       <tr><td><code>data-edited</code></td><td>Optional ISO timestamp; renders an "(edited)" badge with the absolute time on hover.</td></tr>
@@ -87,13 +87,19 @@ crumbLabel: Web Components
 
   <code-block language="javascript" show-lines label="Reply / Edit / Delete" data-escape>const thread = document.querySelector('comment-thread');
 
-thread.addEventListener('comment-thread:reply', async (e) => {
+thread.addEventListener('comment-thread:reply', (e) => {
   const { parentId, value } = e.detail;
-  const saved = await api.postComment({ parentId, body: value });
-  thread.addComment({
-    id: saved.id, author: saved.author, time: saved.time,
-    body: saved.bodyHtml, parentId, mine: true,
+  const request = api.postComment({ parentId, body: value }).then((saved) => {
+    thread.addComment({
+      id: saved.id, author: saved.author, time: saved.time,
+      bodyHtml: saved.bodyHtml, // sanitized by the component
+      parentId, mine: true,
+    });
   });
+  // Synchronously: keep the reply form busy until the POST settles.
+  // Resolve closes it; reject keeps the text so the user can retry.
+  e.detail.waitUntil(request);
+  request.catch(() => showToast('Reply failed — try again'));
 });
 
 thread.addEventListener('comment-thread:edit-request', async (e) => {
@@ -101,7 +107,7 @@ thread.addEventListener('comment-thread:edit-request', async (e) => {
   // Render your own inline editor, then on save:
   const next = await showEditor(value);
   const saved = await api.updateComment(commentId, next);
-  thread.updateComment(commentId, { body: saved.bodyHtml, edited: saved.editedAt });
+  thread.updateComment(commentId, { bodyHtml: saved.bodyHtml, edited: saved.editedAt });
 });
 
 thread.addEventListener('comment-thread:delete-request', async (e) => {
@@ -109,6 +115,19 @@ thread.addEventListener('comment-thread:delete-request', async (e) => {
   await api.deleteComment(e.detail.commentId);
   thread.removeComment(e.detail.commentId);
 });</code-block>
+
+  <h3>Reply contract</h3>
+  <p><code>comment-thread:reply</code> is cancelable and follows <a href="/docs/elements/web-components/comment-box/#submit-contract"><code>&lt;comment-box&gt;</code>'s submit contract</a>. Decide inside the handler (it is dispatched synchronously):</p>
+  <ul>
+    <li><strong>Do nothing</strong> &mdash; the reply form closes and focus returns to the comment's Reply button.</li>
+    <li><strong><code>e.detail.waitUntil(promise)</code></strong> &mdash; the form stays open and busy; it closes when the promise resolves and keeps the text when it rejects.</li>
+    <li><strong><code>e.preventDefault()</code></strong> &mdash; the form stays open with its text.</li>
+  </ul>
+  <p>New replies are inserted after the parent's last descendant, so a thread reads in order without re-sorting.</p>
+
+  <aside class="note">
+    <strong>Treat comment bodies as untrusted.</strong> <code>addComment</code> and <code>updateComment</code> take <code>bodyText</code> (set as text, never parsed) or <code>bodyHtml</code> (passed through VB's <code>sanitizeHTML</code>, which strips scripts, event handlers and <code>javascript:</code> URLs). Prefer <code>bodyText</code> for plain input. The sanitizer covers common XSS vectors but is not a full DOMPurify replacement &mdash; render user-generated HTML on the server with a vetted sanitizer and treat <code>bodyHtml</code> as a second line of defense. The old <code>body</code> field was removed.
+  </aside>
 
   <p>Per-comment reactions bubble up as <code>reaction-bar:toggle</code> events &mdash; the thread doesn't intercept them. Wire them once at the thread level.</p>
 </section>
@@ -128,10 +147,10 @@ thread.addEventListener('comment-thread:delete-request', async (e) => {
   <h2>Accessibility</h2>
   <ul>
     <li><strong>Thread:</strong> <code>role="region"</code> with the host's <code>aria-label</code> ("Comments" by default).</li>
-    <li><strong>Comments:</strong> native <code>&lt;article&gt;</code> role; nested replies get <code>aria-level</code> matching their depth.</li>
-    <li><strong>Action buttons:</strong> labelled per target ("Reply to Ada Lovelace", "Edit your comment", "Delete your comment").</li>
+    <li><strong>Comments:</strong> native <code>&lt;article&gt;</code> role, each named from its author and time via <code>aria-labelledby</code> (e.g. &ldquo;Ada Lovelace, 2 hours ago&rdquo;) so article navigation lists something meaningful. Nesting depth is visual only (indentation); the article role does not expose a level, so write reply context into the content if it matters.</li>
+    <li><strong>Action buttons:</strong> in a labelled group (&ldquo;Comment actions&rdquo;), each named for its comment with author and absolute time (&ldquo;Reply to Ada Lovelace from May 14, 2026, 8:00 AM&rdquo;, &ldquo;Edit your comment from &hellip;&rdquo;), so repeated buttons are distinguishable.</li>
     <li><strong>Times:</strong> <code>&lt;time datetime&gt;</code> with the absolute timestamp in <code>title</code>; component refreshes the relative text every 60s.</li>
-    <li><strong>Reply form:</strong> focus moves into the editor when shown; Cancel removes the form. (<code>&lt;comment-box&gt;</code> handles its own keyboard.)</li>
+    <li><strong>Reply form:</strong> focus moves into the editor when shown; when the form closes (Cancel or a successful reply) focus returns to that comment's Reply button. The editor is named &ldquo;Reply to &lt;author&gt;&rdquo; unless the template's <code>&lt;comment-box&gt;</code> sets <code>label</code>. (<code>&lt;comment-box&gt;</code> handles its own keyboard.)</li>
   </ul>
 </section>
 
@@ -151,7 +170,7 @@ thread.addEventListener('comment-thread:delete-request', async (e) => {
   <table class="props-table">
     <thead><tr><th>Event</th><th>Bubbles</th><th>Detail</th></tr></thead>
     <tbody>
-      <tr><td><code>comment-thread:reply</code></td><td>yes</td><td><code>{ parentId, value }</code></td></tr>
+      <tr><td><code>comment-thread:reply</code></td><td>yes (cancelable)</td><td><code>{ parentId, value, waitUntil(promise) }</code></td></tr>
       <tr><td><code>comment-thread:edit-request</code></td><td>yes</td><td><code>{ commentId, value }</code></td></tr>
       <tr><td><code>comment-thread:delete-request</code></td><td>yes</td><td><code>{ commentId }</code></td></tr>
     </tbody>
@@ -164,8 +183,8 @@ thread.addEventListener('comment-thread:delete-request', async (e) => {
   <table class="props-table">
     <thead><tr><th>Method</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>addComment(data)</code></td><td>Insert a new comment. <code>data: { id, author, time, body, parentId?, mine?, authorHref?, authorAvatar?, edited? }</code>.</td></tr>
-      <tr><td><code>updateComment(id, patch)</code></td><td>Patch a comment. <code>patch: { body?, author?, edited? }</code>.</td></tr>
+      <tr><td><code>addComment(data)</code></td><td>Insert a new comment. <code>data: { id, author, time, bodyText? | bodyHtml?, parentId?, mine?, authorHref?, authorAvatar?, edited? }</code>. A reply goes after its parent's last descendant. Returns the <code>&lt;article&gt;</code>.</td></tr>
+      <tr><td><code>updateComment(id, patch)</code></td><td>Patch a comment. <code>patch: { bodyText? | bodyHtml?, author?, edited? }</code>.</td></tr>
       <tr><td><code>removeComment(id)</code></td><td>Remove a comment from the thread.</td></tr>
     </tbody>
   </table>

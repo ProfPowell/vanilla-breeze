@@ -17,11 +17,12 @@ const YEAR = 31536000;
 /**
  * Format a date as a relative time string.
  * @param {Date} date
- * @returns {string|null}
+ * @returns {string|null} null for future or invalid dates
  */
 export function formatRelative(date) {
   const diff = (Date.now() - date.getTime()) / 1000;
-  if (diff < 0) return null;
+  // Invalid Date → NaN; without this it fell through to "NaN years ago".
+  if (Number.isNaN(diff) || diff < 0) return null;
 
   if (diff < MINUTE) return 'just now';
   if (diff < HOUR) {
