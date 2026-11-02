@@ -39,13 +39,15 @@ export const COLOR_ACCENTS = [
       '--lightness-secondary': '55%', '--chroma-secondary': 0.12,
       '--lightness-accent': '65%', '--chroma-accent': 0.16
     },
-    seedsDark: { '--lightness-primary': '55%', '--chroma-primary': 0.12 }
+    // 58%: 55% was 4.3:1 for links on the dark ground (ky97)
+    seedsDark: { '--lightness-primary': '58%', '--chroma-primary': 0.12 }
   },
   {
     id: 'sunset', name: 'Sunset', swatchBg: '#ea580c',
     seeds: {
       '--hue-primary': 25, '--hue-secondary': 0, '--hue-accent': 280,
-      '--lightness-primary': '60%', '--chroma-primary': 0.20,
+      // 57% (was 60%): links and outline buttons reach 4.5:1 on white (ky97)
+      '--lightness-primary': '57%', '--chroma-primary': 0.20,
       '--lightness-secondary': '55%', '--chroma-secondary': 0.18,
       '--lightness-accent': '55%', '--chroma-accent': 0.18
     },
@@ -75,7 +77,8 @@ export const COLOR_ACCENTS = [
     id: 'coral', name: 'Coral', swatchBg: '#f97316',
     seeds: {
       '--hue-primary': 15, '--hue-secondary': 25, '--hue-accent': 180,
-      '--lightness-primary': '60%', '--chroma-primary': 0.18,
+      // 57% (was 60%): links and outline buttons reach 4.5:1 on white (ky97)
+      '--lightness-primary': '57%', '--chroma-primary': 0.18,
       '--lightness-secondary': '55%', '--chroma-secondary': 0.15,
       '--lightness-accent': '55%', '--chroma-accent': 0.12
     },
@@ -105,7 +108,8 @@ export const COLOR_ACCENTS = [
     id: 'amber', name: 'Amber', swatchBg: '#f59e0b',
     seeds: {
       '--hue-primary': 45, '--hue-secondary': 30, '--hue-accent': 240,
-      '--lightness-primary': '60%', '--chroma-primary': 0.16,
+      // 56% (was 60%): links and outline buttons reach 4.5:1 on white (ky97)
+      '--lightness-primary': '56%', '--chroma-primary': 0.16,
       '--lightness-secondary': '55%', '--chroma-secondary': 0.15,
       '--lightness-accent': '52%', '--chroma-accent': 0.14
     },

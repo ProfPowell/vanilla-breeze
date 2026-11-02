@@ -22,11 +22,12 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
   align-items: center;
   justify-content: center;
   gap: var(--size-xs);
-  /* --_bw is the border VB itself draws (secondary, forced colours). The
-     padding gives it back so every variant keeps the same outer size.
-     Themes that set their own button border are left alone: their
-     padding is the unadjusted --btn-padding-* value. */
-  --_bw: 0px;
+  /* --_bw is the border width every variant draws. The padding gives it
+     back, so the outer size is the same whatever the border. Themes set
+     the public --btn-border-width hook (plus border-color/-style) rather
+     than a border shorthand: one width for every variant, still
+     compensated. Unset, only .secondary (and forced colours) draw one. */
+  --_bw: var(--btn-border-width, 0px);
   padding-block: calc(var(--btn-padding-block, var(--size-s)) - var(--_bw));
   padding-inline-start: calc(var(--btn-padding-inline-start, var(--btn-padding-inline, var(--size-m))) - var(--_bw));
   padding-inline-end: calc(var(--btn-padding-inline-end, var(--btn-padding-inline, var(--size-m))) - var(--_bw));
@@ -82,7 +83,7 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
   }
 
   &.secondary {
-    --_bw: var(--border-width-thin);
+    --_bw: var(--btn-border-width, var(--border-width-thin));
     background: transparent;
     color: var(--_color);
     border-color: currentColor;
@@ -189,8 +190,12 @@ button[aria-busy="true"],
   button,
   .button,
   input:where([type="submit" i], [type="button" i], [type="reset" i]) {
-    --_bw: var(--border-width-thin);
     border-color: ButtonBorder;
+
+    &,
+    &.secondary {
+      --_bw: max(var(--btn-border-width, 0px), var(--border-width-thin));
+    }
 
     &:is(:disabled, [aria-disabled="true"]) {
       opacity: 1;

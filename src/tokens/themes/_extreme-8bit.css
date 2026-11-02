@@ -256,7 +256,8 @@
     & .button {
       background: var(--color-primary);
       color: oklch(10% 0 0);
-      border: var(--_8bit-border-pixel) solid oklch(0% 0 0);
+      --btn-border-width: var(--_8bit-border-pixel);
+      border-color: oklch(0% 0 0);
       box-shadow: var(--shadow-s);
       text-transform: uppercase;
       font-size: var(--font-size-xs);
@@ -401,13 +402,17 @@
       padding: 1rem;
       position: relative;
 
+      /* Decorative speech bubble: empty alt text keeps it out of the a11y tree */
       &::before {
-        content: "💬";
+        content: "💬" / "";
         position: absolute;
-        top: -1rem;
-        left: 1rem;
+        inset-block-start: -1rem;
+        inset-inline-start: 1rem;
         font-size: 1.5rem;
       }
+
+      /* Mirror the bubble tail toward the inline-start edge */
+      &:dir(rtl)::before { transform: scaleX(-1); }
     }
 
     }

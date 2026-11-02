@@ -170,7 +170,8 @@
       /* Enhanced embossed blockquote */
       & blockquote {
         border-inline-start: none;
-        padding: 1.25rem 1.5rem 1.25rem 2.5rem;
+        padding-block: 1.25rem;
+        padding-inline: 2.5rem 1.5rem;
         color: oklch(30% 0.01 250);
         box-shadow:
           inset 4px 4px 8px var(--_neu-dark),
@@ -179,11 +180,12 @@
         background: var(--color-background);
         position: relative;
 
+        /* Decorative glyph: empty alt text keeps it out of the a11y tree */
         &::before {
-          content: "\201C";
+          content: "\201C" / "";
           position: absolute;
-          top: -0.5rem;
-          left: 1rem;
+          inset-block-start: -0.5rem;
+          inset-inline-start: 1rem;
           width: 2rem;
           height: 2rem;
           border-radius: var(--radius-full);
@@ -199,13 +201,15 @@
           font-weight: 700;
           line-height: 1;
         }
+
+        &:dir(rtl)::before { content: "\201D" / ""; }
       }
 
       /* Raised buttons with press interaction */
       & button,
       & .button {
         background: var(--color-background);
-        border: none;
+        --btn-border-width: 0px;
         color: var(--color-primary);
         font-weight: 600;
         letter-spacing: 0.01em;
@@ -724,7 +728,8 @@
           inset -2px -2px 4px var(--_neu-light);
       }
 
-      &[aria-current="page"] {
+      /* Breadcrumb current crumbs stay plain text, not a sunken tile */
+      &[aria-current="page"]:not(:is(nav.breadcrumb, bread-crumb) *) {
         box-shadow:
           inset 2px 2px 4px var(--_neu-dark),
           inset -2px -2px 4px var(--_neu-light);

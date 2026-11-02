@@ -71,7 +71,13 @@ test('every theme keeps nav active links legible and on the active tokens', asyn
           const r = ratio(fg, effectiveBg(a));
           if (r < 3) out.push(`${id}/${mode}/${navId}: contrast ${r.toFixed(2)}`);
           if (navId === 'plain') {
-            const token = rgba(cs.getPropertyValue('--color-active-text').trim() || cs.color);
+            // Resolve the token through a probe's used colour: canvas can't
+            // parse light-dark(), which brand themes use for --color-interactive.
+            const probe = document.createElement('span');
+            probe.style.color = 'var(--color-active-text)';
+            a.parentElement.append(probe);
+            const token = rgba(getComputedStyle(probe).color);
+            probe.remove();
             if (token.slice(0, 3).join() !== fg.slice(0, 3).join()) out.push(`${id}/${mode}/plain: not using --color-active-text`);
           }
         }

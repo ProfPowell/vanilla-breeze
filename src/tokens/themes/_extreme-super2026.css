@@ -29,6 +29,9 @@
       --caret-color: var(--color-primary);
     --color-primary-hover:    oklch(58% 0.28 18);
     --color-primary-active:   oklch(44% 0.24 18);
+    /* Links and outline buttons: 4.4:1 on paper at 52%; 50% reaches 4.5:1 (ky97) */
+    --color-interactive: oklch(50% 0.27 18);
+    --color-interactive-hover: oklch(45% 0.28 18);
     --color-primary-subtle:   oklch(94% 0.04 18);
 
     --color-secondary:        oklch(44% 0.22 256);
@@ -176,6 +179,8 @@
     --color-primary:          oklch(62% 0.28 18);
     --color-primary-hover:    oklch(68% 0.28 18);
     --color-primary-active:   oklch(54% 0.24 18);
+    --color-interactive: var(--color-primary);
+    --color-interactive-hover: var(--color-primary-hover);
     --color-primary-subtle:   oklch(22% 0.08 18);
 
     --color-secondary:        oklch(60% 0.22 256);
@@ -328,7 +333,7 @@
 
       /* Links: primary red, thick underline, bold hover (exclude nav to prevent hover shift) */
       & a:not([class]):not(nav a) {
-        color: var(--color-primary);
+        color: var(--color-interactive);
         text-decoration: underline;
         text-decoration-thickness: 2px;
         text-underline-offset: 3px;
@@ -352,7 +357,7 @@
         font-weight: 900;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        border-width: 2px;
+        --btn-border-width: 2px;
         transition:
           transform var(--duration-fast) var(--motion-bounce),
           box-shadow var(--duration-fast) var(--motion-snappy);
@@ -387,7 +392,6 @@
       & button.secondary,
       & .button.secondary {
         border-color: var(--_sg2-ink);
-        border-width: 2px;
 
         &::before { background: var(--_sg2-blue); }
 
@@ -452,8 +456,9 @@
         padding-inline-start: 1.5rem;
         font-style: normal;
 
+        /* Decorative glyph: empty alt text keeps it out of the a11y tree */
         &::before {
-          content: "\0022";
+          content: "\0022" / "";
           font-family: var(--font-display);
           font-size: 4rem;
           font-weight: 900;

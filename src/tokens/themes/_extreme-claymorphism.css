@@ -45,6 +45,9 @@
 
     --color-primary: oklch(62% 0.2 350);                    /* Soft pink #FF6B9D */
     --color-primary-hover: oklch(57% 0.22 350);
+    /* Text-bearing pink: 3.6:1 on the clay grey at 62%; 56% reaches 4.5:1 (ky97) */
+    --color-interactive: oklch(56% 0.2 350);
+    --color-interactive-hover: oklch(51% 0.22 350);
     --color-primary-subtle: oklch(93% 0.03 350);
 
     --color-accent: oklch(62% 0.12 240);                    /* Soft blue */
@@ -178,11 +181,12 @@
           inset -3px -3px 6px var(--_clay-shadow-light);
         position: relative;
 
+        /* Decorative glyph: empty alt text keeps it out of the a11y tree */
         &::before {
-          content: "\201C";
+          content: "\201C" / "";
           position: absolute;
-          top: -0.5rem;
-          left: 1.25rem;
+          inset-block-start: -0.5rem;
+          inset-inline-start: 1.25rem;
           width: 2rem;
           height: 2rem;
           border-radius: var(--radius-full);
@@ -198,16 +202,18 @@
           font-weight: 700;
           line-height: 1;
         }
+
+        &:dir(rtl)::before { content: "\201D" / ""; }
       }
 
       /* Soft shadow links */
       & a:not([class]) {
-        color: var(--color-primary);
+        color: var(--color-interactive);
         text-decoration: none;
         transition: color 250ms var(--ease-default);
 
         &:hover {
-          color: var(--color-primary-hover);
+          color: var(--color-interactive-hover);
         }
       }
 
@@ -215,8 +221,8 @@
       & button,
       & .button {
         background: oklch(96% 0.008 280);
-        border: none;
-        color: oklch(62% 0.2 350);
+        --btn-border-width: 0px;
+        color: var(--color-interactive);
         font-weight: 600;
         border-radius: var(--radius-l);
         box-shadow: var(--shadow-m);
@@ -329,6 +335,8 @@
 
     --color-primary: oklch(70% 0.18 350);
     --color-primary-hover: oklch(75% 0.2 350);
+    --color-interactive: var(--color-primary);
+    --color-interactive-hover: var(--color-primary-hover);
     --color-primary-subtle: oklch(28% 0.04 350);
 
     --color-accent: oklch(70% 0.12 240);

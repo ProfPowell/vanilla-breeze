@@ -161,9 +161,20 @@ crumbLabel: Native Elements
         <td><code>normal</code></td>
         <td>Label tracking</td>
       </tr>
+      <tr>
+        <td><code>--btn-border-width</code></td>
+        <td>unset: <code>0</code>, <code>.secondary</code> <code>var(--border-width-thin)</code></td>
+        <td>One border width for every variant. The padding subtracts it, so primary, secondary and ghost keep the same outer size</td>
+      </tr>
     </tbody>
   </table>
-  <p>The <code>.small</code> and <code>.large</code> classes set padding directly, so the padding properties apply to the default size.</p>
+  <p>The <code>.small</code> and <code>.large</code> classes set padding directly, so the padding properties apply to the default size. Both still subtract the border width.</p>
+  <p>Themes that want bordered buttons set <code>--btn-border-width</code> (plus <code>border-color</code> or <code>border-style</code>) instead of a <code>border</code> shorthand. A shorthand changes the width behind the padding's back, so bordered variants end up a different height from the rest.</p>
+
+  <code-block language="css" label="Theme button border" data-escape>[data-theme~="my-theme"] :is(button, .button) {
+  --btn-border-width: 2px;
+  border-color: currentColor;
+}</code-block>
 </section>
 
 <section>
@@ -394,13 +405,14 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
   align-items: center;
   justify-content: center;
   gap: var(--size-xs);
-  padding-block: var(--btn-padding-block, var(--size-s));
-  padding-inline: var(--btn-padding-inline, var(--size-m));
+  --_bw: var(--btn-border-width, 0px);
+  padding-block: calc(var(--btn-padding-block, var(--size-s)) - var(--_bw));
+  padding-inline: calc(var(--btn-padding-inline, var(--size-m)) - var(--_bw));
   min-block-size: var(--size-touch-min);
   min-inline-size: var(--size-touch-min);
   background: var(--_color);
   color: var(--_text);
-  border: var(--border-width-thin) solid transparent;
+  border: var(--_bw) solid transparent;
   border-radius: var(--radius-m);
   font-weight: var(--btn-font-weight, 500);
 
@@ -415,10 +427,10 @@ input:where([type="submit" i], [type="button" i], [type="reset" i]) {
   }
   &:is(:disabled, [aria-disabled="true"]) { opacity: 0.5; cursor: not-allowed; }
 
-  &.secondary { background: transparent; color: var(--_color); border-color: currentColor; }
+  &.secondary { --_bw: var(--btn-border-width, var(--border-width-thin)); background: transparent; color: var(--_color); border-color: currentColor; }
   &.ghost { background: transparent; color: var(--color-text); }
-  &.small { padding-block: var(--size-xs); padding-inline: var(--size-s); font-size: var(--font-size-s); }
-  &.large { padding-block: var(--size-m); padding-inline: var(--size-l); font-size: var(--font-size-l); }
+  &.small { padding-block: calc(var(--size-xs) - var(--_bw)); padding-inline: calc(var(--size-s) - var(--_bw)); font-size: var(--font-size-s); }
+  &.large { padding-block: calc(var(--size-m) - var(--_bw)); padding-inline: calc(var(--size-l) - var(--_bw)); font-size: var(--font-size-l); }
   &.full-width { inline-size: 100%; }
 }
 

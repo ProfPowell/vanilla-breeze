@@ -217,7 +217,7 @@
   [data-theme~="kawaii"] :is(main, article) .button {
     border-radius: var(--radius-full);
     background: linear-gradient(135deg, var(--color-primary), var(--_kawaii-lavender, oklch(55% 0.12 290)));
-    border: none;
+    --btn-border-width: 0px;
     color: white;
     font-weight: 700;
     box-shadow: var(--shadow-m);
@@ -278,12 +278,17 @@
     -webkit-mask-size: cover;
   }
 
+  /* Decorative thought bubble: empty alt text keeps it out of the a11y tree */
   [data-theme~="kawaii"] :is(main, article) blockquote:not([data-callout])::before {
-    content: "\1F4AD";
+    content: "\1F4AD" / "";
     position: absolute;
-    top: -1rem;
-    left: 1.5rem;
+    inset-block-start: -1rem;
+    inset-inline-start: 1.5rem;
     font-size: 2rem;
+  }
+
+  [data-theme~="kawaii"] :is(main, article) blockquote:not([data-callout]):dir(rtl)::before {
+    transform: scaleX(-1);
   }
 
   /* Selection */

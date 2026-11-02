@@ -287,11 +287,12 @@
     position: relative;
   }
 
+  /* Decorative quotation mark: empty alt text keeps it out of the a11y tree */
   [data-theme~="memphis"] :is(main, article) blockquote:not([data-callout])::before {
-    content: "\275D";
+    content: "\275D" / "";
     position: absolute;
-    top: -0.75rem;
-    left: 1rem;
+    inset-block-start: -0.75rem;
+    inset-inline-start: 1rem;
     background: var(--m-pink);
     color: white;
     width: 1.75rem;
@@ -302,6 +303,10 @@
     font-size: 1rem;
     font-weight: 800;
     line-height: 1;
+  }
+
+  [data-theme~="memphis"] :is(main, article) blockquote:not([data-callout]):dir(rtl)::before {
+    content: "\275E" / "";
   }
 
   /* Links — bold underline */
@@ -321,7 +326,8 @@
   /* Buttons — bold border, offset shadow, interactive press */
   [data-theme~="memphis"] :is(main, article) button,
   [data-theme~="memphis"] :is(main, article) .button {
-    border: 2.5px solid var(--m-black);
+    --btn-border-width: 2.5px;
+    border-color: var(--m-black);
     background: var(--m-red);
     color: white;
     font-family: var(--font-display, var(--font-sans));
