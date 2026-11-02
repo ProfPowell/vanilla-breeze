@@ -86,29 +86,47 @@ function isOpaqueCrossOrigin(audio) {
 /** Audio elements already warned about, so the console note appears once. */
 const warnedCrossOrigin = new WeakSet()
 
+const MODES = new Set(['bars', 'waveform', 'circle'])
+
+/** @param {string | null} raw */
+function normalizeMode(raw) {
+  return raw && MODES.has(raw) ? raw : 'bars'
+}
+
+const FALLBACK_COLOR = 'oklch(55% 0.2 260)'
+
+/** Silence, for the idle / reduced-motion baseline frame */
+const SILENT_TIME = new Uint8Array(256).fill(128)
+const SILENT_FREQ = new Uint8Array(128)
+
 class AudioVisualizerElement extends VBElement {
 
   /** @type {HTMLCanvasElement} */
   #canvas = /** @type {*} */ (null)
-  /** @type {CanvasRenderingContext2D} */
-  #ctx = /** @type {*} */ (null)
-  /** @type {HTMLAudioElement} */
-  #audio = /** @type {*} */ (null)
-  /** @type {AudioContext} */
-  #audioCtx = /** @type {*} */ (null)
-  /** @type {AnalyserNode} */
-  #analyser = /** @type {*} */ (null)
-  /** @type {MediaElementAudioSourceNode} */
-  #source = /** @type {*} */ (null)
+  /** @type {CanvasRenderingContext2D | null} Cached 2D context */
+  #ctx = null
+  /** @type {HTMLAudioElement | null} */
+  #audio = null
+  /** @type {AnalyserNode | null} */
+  #analyser = null
+  /** @type {MediaElementAudioSourceNode | null} */
+  #source = null
+  /** Reused sample buffers: frequency (frequencyBinCount) and time domain (fftSize) */
+  #freqData = new Uint8Array(0)
+  #timeData = new Uint8Array(0)
+  /** Cached resolved colours (refreshed on theme / colour-scheme change) */
+  #color = FALLBACK_COLOR
+  #bg = ''
+  #mode = 'bars'
   /** @type {number | null} */
   #rafId = null
   /** @type {IntersectionObserver | null} */
   #observer = null
+  /** @type {ResizeObserver | null} */
+  #resizeObserver = null
   #visible = true
   #started = false
   #reducedMotion = false
-  /** @type {(() => void) | null} */
-  #onThemeChange = null
   /** @type {HTMLAudioElement | null} The <audio> currently carrying our play listener */
   #boundAudio = null
   #onPlay = () => this.#initAudio()
@@ -123,48 +141,57 @@ class AudioVisualizerElement extends VBElement {
 
   setup() {
     this.#reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    this.#mode = normalizeMode(this.getAttribute('data-mode'))
 
     this.#buildShadow()
+    this.#readColors()
     this.#findAudio()
-    // Both re-run on every connect: teardown disconnects the observer and
-    // listen() drops the media-query listener, so a moved element must
+    // Re-run on every connect: teardown disconnects the observers and
+    // listen() drops the media-query listeners, so a moved element must
     // re-arm them or its draw loop never resumes.
     this.#setupIntersectionObserver()
+    this.#setupResizeObserver()
     this.#watchMotionPreference()
 
     // Re-attach the analyser tap removed in teardown (reconnect after a move)
     if (this.#started && this.#source && this.#analyser) {
       try { this.#source.connect(this.#analyser) } catch { /* already connected */ }
+      this.#startAnimation()
     }
 
-    // Force style recalculation when theme changes (shadow DOM may not re-resolve custom properties)
-    this.#onThemeChange = () => {
-      const canvas = this.shadowRoot?.querySelector('canvas')
-      if (canvas) {
-        canvas.style.display = 'none'
-        canvas.offsetHeight
-        canvas.style.display = ''
-      }
-    }
-    this.listen(window, 'vb:theme-change', this.#onThemeChange)
+    // Colours come from custom properties: re-resolve them when the theme or
+    // colour scheme changes instead of calling getComputedStyle every frame.
+    const recolor = () => requestAnimationFrame(() => {
+      this.#readColors()
+      if (!this.#rafId) this.#drawFrame()
+    })
+    this.listen(window, 'vb:theme-change', recolor)
+    this.listen(window.matchMedia('(prefers-color-scheme: dark)'), 'change', recolor)
   }
 
   teardown() {
     this.#stopAnimation()
     this.#observer?.disconnect()
+    this.#resizeObserver?.disconnect()
     this.#boundAudio?.removeEventListener('play', this.#onPlay)
     this.#boundAudio = null
     // Drop the analyser tap; the source → destination path stays intact
-    if (this.#source && this.#analyser) {
-      try { this.#source.disconnect(this.#analyser) } catch { /* not connected */ }
-    }
+    this.#untap()
   }
 
-  attributeChangedCallback(name) {
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) return
+    if (name === 'data-mode') {
+      this.#mode = normalizeMode(newValue)
+      if (this.isConnected && !this.#rafId) this.#drawFrame()
+      return
+    }
     if (!this.isConnected) return
     if (name === 'for') this.#findAudio()
     else if (name === 'data-fft-size' && this.#analyser) {
-      this.#analyser.fftSize = normalizeFftSize(this.getAttribute('data-fft-size'))
+      this.#analyser.fftSize = normalizeFftSize(newValue)
+      this.#allocBuffers()
+      if (!this.#rafId) this.#drawFrame()
     }
   }
 
@@ -177,7 +204,7 @@ class AudioVisualizerElement extends VBElement {
       <style>
         :host {
           display: block;
-          --_color: var(--audio-visualizer-color, var(--color-primary, oklch(55% 0.2 260)));
+          --_color: var(--audio-visualizer-color, var(--color-primary, ${FALLBACK_COLOR}));
           --_bg: var(--audio-visualizer-bg, var(--color-surface-sunken, transparent));
           --_height: var(--audio-visualizer-height, 80px);
           --_radius: var(--audio-visualizer-radius, var(--radius-m, 0.5rem));
@@ -193,29 +220,57 @@ class AudioVisualizerElement extends VBElement {
       <canvas aria-hidden="true"></canvas>
     `
     this.#canvas = /** @type {HTMLCanvasElement} */ (shadow.querySelector('canvas'))
+    this.#ctx = this.#canvas.getContext('2d')
+  }
+
+  #readColors() {
+    const style = getComputedStyle(this)
+    this.#color = style.getPropertyValue('--_color').trim() || FALLBACK_COLOR
+    this.#bg = style.getPropertyValue('--_bg').trim()
   }
 
   // ─── Audio connection ──────────────────────────────────────────────────
 
   #findAudio() {
     const forId = this.getAttribute('for')
-    if (!forId) return
+    const audio = /** @type {HTMLAudioElement | null} */ (forId ? document.getElementById(forId) : null)
+    const target = audio?.tagName === 'AUDIO' ? audio : null
 
-    const audio = /** @type {HTMLAudioElement | null} */ (document.getElementById(forId))
-    if (!audio || audio.tagName !== 'AUDIO') return
-    this.#audio = audio
+    // `for` now points somewhere else: drop the tap on the old audio and
+    // start over (the old element keeps its source → destination path).
+    if (this.#audio && this.#audio !== target) {
+      this.#stopAnimation()
+      this.#untap()
+      this.#analyser = null
+      this.#source = null
+      this.#started = false
+      if (this.getAttribute('data-state') !== null) this.removeAttribute('data-state')
+      this.#drawFrame()
+    }
+    this.#audio = target
+    if (!target) {
+      this.#boundAudio?.removeEventListener('play', this.#onPlay)
+      this.#boundAudio = null
+      return
+    }
 
     if (this.#started) return
 
     // Set up AudioContext lazily on play (a user gesture, so the context can
     // start). The listener stays armed until setup succeeds, so a skipped
     // cross-origin source can still be picked up after a src change.
-    if (this.#boundAudio !== audio) {
+    if (this.#boundAudio !== target) {
       this.#boundAudio?.removeEventListener('play', this.#onPlay)
-      audio.addEventListener('play', this.#onPlay)
-      this.#boundAudio = audio
+      target.addEventListener('play', this.#onPlay)
+      this.#boundAudio = target
     }
-    if (!audio.paused) this.#initAudio()
+    if (!target.paused) this.#initAudio()
+  }
+
+  #untap() {
+    if (this.#source && this.#analyser) {
+      try { this.#source.disconnect(this.#analyser) } catch { /* not connected */ }
+    }
   }
 
   #initAudio() {
@@ -248,9 +303,9 @@ class AudioVisualizerElement extends VBElement {
       return
     }
 
-    this.#audioCtx = ctx
     this.#analyser = analyser
     this.#source = source
+    this.#allocBuffers()
     this.#started = true
     if (this.getAttribute('data-state') !== null) this.removeAttribute('data-state')
     this.#boundAudio?.removeEventListener('play', this.#onPlay)
@@ -265,10 +320,26 @@ class AudioVisualizerElement extends VBElement {
     this.#startAnimation()
   }
 
+  /** Size the sample buffers to the analyser: they are reused every frame. */
+  #allocBuffers() {
+    if (!this.#analyser) return
+    if (this.#freqData.length !== this.#analyser.frequencyBinCount) {
+      this.#freqData = new Uint8Array(this.#analyser.frequencyBinCount)
+    }
+    if (this.#timeData.length !== this.#analyser.fftSize) {
+      this.#timeData = new Uint8Array(this.#analyser.fftSize)
+    }
+  }
+
   // ─── Animation loop ────────────────────────────────────────────────────
 
   #startAnimation() {
-    if (this.#reducedMotion || this.#rafId) return
+    if (this.#rafId) return
+    // Reduced motion: one static frame, no loop
+    if (this.#reducedMotion) {
+      this.#drawFrame()
+      return
+    }
 
     const draw = () => {
       if (!this.#visible || this.#reducedMotion) {
@@ -288,66 +359,72 @@ class AudioVisualizerElement extends VBElement {
     }
   }
 
+  /** Match the canvas backing store to its CSS box (device pixels). */
+  #resize() {
+    const dpr = window.devicePixelRatio || 1
+    const w = Math.round(this.#canvas.clientWidth * dpr)
+    const h = Math.round(this.#canvas.clientHeight * dpr)
+    if (this.#canvas.width !== w) this.#canvas.width = w
+    if (this.#canvas.height !== h) this.#canvas.height = h
+  }
+
+  /**
+   * Draw one frame. While animating it reads the analyser; otherwise (not
+   * started yet, reduced motion before playback) it draws a flat baseline so
+   * the box is never blank. Under reduced motion the analyser snapshot is
+   * drawn once, as a static frame.
+   */
   #drawFrame() {
-    const canvas = this.#canvas
-    const ctx = canvas.getContext('2d')
+    const ctx = this.#ctx
     if (!ctx) return
-    const W = canvas.width = canvas.offsetWidth * (window.devicePixelRatio || 1)
-    const H = canvas.height = canvas.offsetHeight * (window.devicePixelRatio || 1)
+    const W = this.#canvas.width
+    const H = this.#canvas.height
+    if (!W || !H) return
 
-    const style = getComputedStyle(this)
-    const color = style.getPropertyValue('--_color').trim() || 'oklch(55% 0.2 260)'
-    const bg = style.getPropertyValue('--_bg').trim()
-
-    // Clear and fill background
     ctx.clearRect(0, 0, W, H)
-    if (bg && bg !== 'transparent') {
-      ctx.fillStyle = bg
+    if (this.#bg && this.#bg !== 'transparent') {
+      ctx.fillStyle = this.#bg
       ctx.fillRect(0, 0, W, H)
     }
 
-    if (!this.#analyser) return
-
-    const mode = this.getAttribute('data-mode') || 'bars'
-    const bufferLength = this.#analyser.frequencyBinCount
-    const dataArray = new Uint8Array(bufferLength)
-
+    const analyser = this.#started ? this.#analyser : null
+    const mode = this.#mode
     if (mode === 'waveform') {
-      this.#analyser.getByteTimeDomainData(dataArray)
-      this.#drawWaveform(ctx, W, H, color, dataArray)
-    } else if (mode === 'circle') {
-      this.#analyser.getByteFrequencyData(dataArray)
-      this.#drawCircle(ctx, W, H, color, dataArray)
-    } else {
-      this.#analyser.getByteFrequencyData(dataArray)
-      this.#drawBars(ctx, W, H, color, dataArray)
+      // Time-domain data: fftSize samples, into a buffer of exactly that size
+      if (analyser) analyser.getByteTimeDomainData(this.#timeData)
+      this.#drawWaveform(ctx, W, H, this.#color, analyser ? this.#timeData : SILENT_TIME)
+      return
     }
+    if (analyser) analyser.getByteFrequencyData(this.#freqData)
+    const data = analyser ? this.#freqData : SILENT_FREQ
+    if (mode === 'circle') this.#drawCircle(ctx, W, H, this.#color, data)
+    else this.#drawBars(ctx, W, H, this.#color, data)
   }
 
   // ─── Visualization modes ───────────────────────────────────────────────
 
   #drawBars(ctx, W, H, color, data) {
     const count = Math.min(data.length, 64)
-    const barW = (W / count) - 1
+    const step = W / count
+    const barW = Math.max(1, step - 1)
+    // Silent bins still show a thin baseline rather than nothing
+    const minH = Math.max(1, Math.round(H * 0.03))
     ctx.fillStyle = color
 
     for (let i = 0; i < count; i++) {
-      const pct = data[i] / 255
-      const barH = pct * H
-      const x = i * (W / count)
-      ctx.fillRect(x, H - barH, barW, barH)
+      const barH = Math.max(minH, (data[i] / 255) * H)
+      ctx.fillRect(i * step, H - barH, barW, barH)
     }
   }
 
   #drawWaveform(ctx, W, H, color, data) {
-    const sliceW = W / data.length
+    const sliceW = W / Math.max(1, data.length - 1)
     ctx.strokeStyle = color
-    ctx.lineWidth = 2
+    ctx.lineWidth = 2 * (window.devicePixelRatio || 1)
     ctx.beginPath()
 
     for (let i = 0; i < data.length; i++) {
-      const v = data[i] / 128
-      const y = (v * H) / 2
+      const y = (data[i] / 255) * H
       i === 0 ? ctx.moveTo(0, y) : ctx.lineTo(i * sliceW, y)
     }
     ctx.stroke()
@@ -360,7 +437,7 @@ class AudioVisualizerElement extends VBElement {
     const count = data.length
 
     ctx.strokeStyle = color
-    ctx.lineWidth = 2
+    ctx.lineWidth = 2 * (window.devicePixelRatio || 1)
     ctx.beginPath()
 
     for (let i = 0; i < count; i++) {
@@ -375,7 +452,7 @@ class AudioVisualizerElement extends VBElement {
     ctx.stroke()
   }
 
-  // ─── Intersection observer ─────────────────────────────────────────────
+  // ─── Observers ─────────────────────────────────────────────────────────
 
   #setupIntersectionObserver() {
     this.#observer ??= new IntersectionObserver(([entry]) => {
@@ -387,6 +464,15 @@ class AudioVisualizerElement extends VBElement {
     this.#observer.observe(this)
   }
 
+  #setupResizeObserver() {
+    this.#resizeObserver ??= new ResizeObserver(() => {
+      this.#resize()
+      // A resize clears the canvas: repaint when the loop isn't running
+      if (!this.#rafId) this.#drawFrame()
+    })
+    this.#resizeObserver.observe(this.#canvas)
+  }
+
   // ─── Reduced motion ────────────────────────────────────────────────────
 
   #watchMotionPreference() {
@@ -395,6 +481,7 @@ class AudioVisualizerElement extends VBElement {
       this.#reducedMotion = /** @type {MediaQueryListEvent} */ (e).matches
       if (this.#reducedMotion) {
         this.#stopAnimation()
+        this.#drawFrame()
       } else if (this.#started && this.#visible && !this.#rafId) {
         this.#startAnimation()
       }

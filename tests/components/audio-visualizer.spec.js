@@ -31,7 +31,24 @@ const WAV = silentWav();
 function installSpies() {
   const spy = (window.__spy = {
     observe: 0, mqAdd: 0, mqRemove: 0, sources: 0, analysers: [], toDestination: 0, fromAnalyser: 0,
+    getContext: 0, computed: 0, clears: 0, widthWrites: 0, timeReads: [], freqBuffers: new Set(), timeBuffers: new Set(),
   });
+  const gc = HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function (...a) { spy.getContext++; return gc.apply(this, a); };
+  const gcs = window.getComputedStyle;
+  window.getComputedStyle = function (...a) { if (a[0]?.localName === 'audio-visualizer') spy.computed++; return gcs.apply(this, a); };
+  const clear = CanvasRenderingContext2D.prototype.clearRect;
+  CanvasRenderingContext2D.prototype.clearRect = function (...a) { spy.clears++; return clear.apply(this, a); };
+  const width = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'width');
+  Object.defineProperty(HTMLCanvasElement.prototype, 'width', {
+    ...width, set(v) { spy.widthWrites++; width.set.call(this, v); },
+  });
+  const td = AnalyserNode.prototype.getByteTimeDomainData;
+  AnalyserNode.prototype.getByteTimeDomainData = function (arr) {
+    spy.timeReads.push([arr.length, this.fftSize]); spy.timeBuffers.add(arr); return td.call(this, arr);
+  };
+  const fd = AnalyserNode.prototype.getByteFrequencyData;
+  AnalyserNode.prototype.getByteFrequencyData = function (arr) { spy.freqBuffers.add(arr); return fd.call(this, arr); };
   const io = IntersectionObserver.prototype.observe;
   IntersectionObserver.prototype.observe = function (...a) { spy.observe++; return io.apply(this, a); };
   const add = MediaQueryList.prototype.addEventListener;
@@ -51,8 +68,9 @@ function installSpies() {
   };
 }
 
-async function load(page, body) {
+async function load(page, body, { reducedMotion = 'no-preference' } = {}) {
   const errors = [];
+  await page.emulateMedia({ reducedMotion });
   page.on('pageerror', (e) => errors.push(e.message));
   await page.addInitScript(installSpies);
   await page.route('**/src/**', (route) => {
@@ -82,49 +100,51 @@ async function load(page, body) {
 }
 
 /** Start playback from a real user gesture (autoplay / AudioContext policy). */
-async function play(page) {
-  await page.evaluate(() => {
-    document.getElementById('gesture').addEventListener('click', () => document.getElementById('a').play(), { once: true });
-  });
+async function play(page, id = 'a') {
+  await page.evaluate((id) => {
+    document.getElementById('gesture').addEventListener('click', () => document.getElementById(id).play(), { once: true });
+  }, id);
   await page.click('#gesture');
-  await page.waitForFunction(() => !document.getElementById('a').paused);
+  await page.waitForFunction((id) => !document.getElementById(id).paused, id);
 }
 
 const SAME = '<audio id="a" src="/__media/one.wav"></audio>';
 const spy = (page) => page.evaluate(() => {
   const s = window.__spy;
-  return { ...s, analysers: s.analysers.map((n) => n.fftSize) };
+  return {
+    ...s,
+    analysers: s.analysers.map((n) => n.fftSize),
+    timeReads: s.timeReads.slice(-3),
+    freqBuffers: s.freqBuffers.size,
+    timeBuffers: s.timeBuffers.size,
+  };
 });
 
 test('re-observes visibility and re-registers the motion listener after a DOM move', async ({ page }) => {
   await load(page, `${SAME}<section id="one"><audio-visualizer for="a"></audio-visualizer></section><section id="two"></section>`);
   const before = await spy(page);
   expect(before.observe).toBe(1);
-  expect(before.mqAdd).toBe(1);
+  // Two media-query listeners per connect: reduced motion + colour scheme
+  expect(before.mqAdd).toBe(2);
 
   await page.evaluate(() => document.getElementById('two').append(document.querySelector('audio-visualizer')));
   const after = await spy(page);
   expect(after.observe).toBe(2);
-  // Old listener removed, a fresh one added — no leak across moves
-  expect(after.mqRemove).toBe(1);
-  expect(after.mqAdd).toBe(2);
+  // Old listeners removed, fresh ones added — no leak across moves
+  expect(after.mqRemove).toBe(2);
+  expect(after.mqAdd).toBe(4);
 
   await page.evaluate(() => document.querySelector('audio-visualizer').remove());
-  expect((await spy(page)).mqRemove).toBe(2);
+  expect((await spy(page)).mqRemove).toBe(4);
 });
 
 test('draw loop resumes after a move once playing', async ({ page }) => {
   await load(page, `${SAME}<section id="one"><audio-visualizer for="a"></audio-visualizer></section><section id="two"></section>`);
   await play(page);
-  // Count canvas draws: the loop calls getContext('2d') every frame
-  await page.evaluate(() => {
-    window.__frames = 0;
-    const gc = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = function (...a) { window.__frames++; return gc.apply(this, a); };
-    document.getElementById('two').append(document.querySelector('audio-visualizer'));
-  });
-  const n0 = await page.evaluate(() => window.__frames);
-  await expect.poll(() => page.evaluate(() => window.__frames), { timeout: 3000 }).toBeGreaterThan(n0 + 5);
+  // Count canvas draws: every frame starts with clearRect
+  await page.evaluate(() => document.getElementById('two').append(document.querySelector('audio-visualizer')));
+  const n0 = (await spy(page)).clears;
+  await expect.poll(async () => (await spy(page)).clears, { timeout: 3000 }).toBeGreaterThan(n0 + 5);
 });
 
 test('two visualizers on one <audio> route it to the destination once', async ({ page }) => {
@@ -158,4 +178,76 @@ test('an invalid data-fft-size is clamped to a power of two instead of throwing'
   await expect.poll(async () => (await spy(page)).analysers.length).toBe(3);
   expect((await spy(page)).analysers).toEqual([128, 256, 32768]);
   expect(errors).toEqual([]);
+});
+
+test('frames reuse the cached context, colours, canvas size and sample buffer', async ({ page }) => {
+  await load(page, `${SAME}<audio-visualizer for="a"></audio-visualizer>`);
+  await play(page);
+  const s0 = await spy(page);
+  await expect.poll(async () => (await spy(page)).clears, { timeout: 3000 }).toBeGreaterThan(s0.clears + 20);
+  const s1 = await spy(page);
+  expect(s1.getContext - s0.getContext).toBe(0);
+  expect(s1.computed - s0.computed).toBe(0);
+  expect(s1.widthWrites - s0.widthWrites).toBe(0);
+  expect(s1.freqBuffers).toBe(1);
+});
+
+test('resizing the element resizes the canvas backing store', async ({ page }) => {
+  await load(page, `${SAME}<audio-visualizer for="a"></audio-visualizer>`);
+  const width = () => page.evaluate(() => document.querySelector('audio-visualizer').shadowRoot.querySelector('canvas').width);
+  await page.evaluate(() => { document.querySelector('audio-visualizer').style.inlineSize = '200px'; });
+  await expect.poll(width).toBe(200 * await page.evaluate(() => devicePixelRatio));
+});
+
+test('waveform reads fftSize time-domain samples into a buffer of that size', async ({ page }) => {
+  await load(page, `${SAME}<audio-visualizer for="a" data-mode="waveform" data-fft-size="512"></audio-visualizer>`);
+  await play(page);
+  await expect.poll(async () => (await spy(page)).timeReads.length).toBeGreaterThan(2);
+  const s = await spy(page);
+  for (const [len, fft] of s.timeReads) expect([len, fft]).toEqual([512, 512]);
+  expect(s.timeBuffers).toBe(1);
+});
+
+test('data-mode changes after start switch the drawing mode', async ({ page }) => {
+  await load(page, `${SAME}<audio-visualizer for="a"></audio-visualizer>`);
+  await play(page);
+  await expect.poll(async () => (await spy(page)).freqBuffers).toBe(1);
+  expect((await spy(page)).timeReads).toHaveLength(0);
+  await page.evaluate(() => document.querySelector('audio-visualizer').setAttribute('data-mode', 'waveform'));
+  await expect.poll(async () => (await spy(page)).timeReads.length).toBeGreaterThan(0);
+});
+
+test('reduced motion draws a static frame instead of a blank box, and does not animate', async ({ page }) => {
+  await load(page, `${SAME}<audio-visualizer for="a"></audio-visualizer>`, { reducedMotion: 'reduce' });
+  // A baseline frame is painted before playback...
+  await expect.poll(async () => (await spy(page)).clears).toBeGreaterThan(0);
+  const painted = await page.evaluate(() => {
+    const c = document.querySelector('audio-visualizer').shadowRoot.querySelector('canvas');
+    const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    for (let i = 3; i < px.length; i += 4) if (px[i]) return true;
+    return false;
+  });
+  expect(painted).toBe(true);
+  // ...and playing does not start a draw loop
+  await play(page);
+  await expect.poll(async () => (await spy(page)).analysers.length).toBe(1);
+  const n0 = (await spy(page)).clears;
+  await page.waitForTimeout(500);
+  expect((await spy(page)).clears - n0).toBeLessThanOrEqual(1);
+});
+
+test('changing `for` after start rebinds to the new audio', async ({ page }) => {
+  await load(page, `${SAME}<audio id="b" src="/__media/two.wav"></audio><audio-visualizer for="a"></audio-visualizer>`);
+  await play(page);
+  await expect.poll(async () => (await spy(page)).sources).toBe(1);
+  await page.evaluate(() => {
+    document.getElementById('a').pause();
+    document.querySelector('audio-visualizer').setAttribute('for', 'b');
+  });
+  await play(page, 'b');
+  await expect.poll(async () => (await spy(page)).sources).toBe(2);
+  expect((await spy(page)).analysers).toHaveLength(2);
+  // Still drawing from the new analyser
+  const n0 = (await spy(page)).clears;
+  await expect.poll(async () => (await spy(page)).clears, { timeout: 3000 }).toBeGreaterThan(n0 + 5);
 });

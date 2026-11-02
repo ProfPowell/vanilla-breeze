@@ -42,7 +42,7 @@ function serveWav(route) {
   });
 }
 
-async function load(page, body) {
+async function load(page, body, { waitMetadata = true } = {}) {
   await page.route('**/src/**', (route) => {
     const path = join(REPO, new URL(route.request().url()).pathname);
     try {
@@ -51,7 +51,9 @@ async function load(page, body) {
       route.fulfill({ status: 404, body: '' });
     }
   });
-  await page.route('**/__media/*.wav', serveWav);
+  await page.route('**/__media/*.wav', (route) => (route.request().url().includes('missing')
+    ? route.fulfill({ status: 404, body: '' })
+    : serveWav(route)));
   const url = `/__audio-player-${Math.random().toString(36).slice(2)}.html`;
   await page.route(`**${url}`, (route) => route.fulfill({
     status: 200,
@@ -64,7 +66,7 @@ async function load(page, body) {
   await page.goto(url, { waitUntil: 'load' });
   await page.waitForSelector('audio-player[data-upgraded]');
   // Wait for metadata so duration is known (seek clamps to it)
-  await page.waitForFunction(() => document.querySelector('audio-player audio').readyState >= 1);
+  if (waitMetadata) await page.waitForFunction(() => document.querySelector('audio-player audio').readyState >= 1);
 }
 
 const PLAYLIST = `
@@ -155,5 +157,154 @@ test.describe('audio-player loop', () => {
   test('playlist mode leaves audio.loop off (loop wraps the list instead)', async ({ page }) => {
     await load(page, PLAYLIST.replace('<audio-player>', '<audio-player loop>'));
     expect(await page.evaluate(() => document.querySelector('audio-player audio').loop)).toBe(false);
+  });
+});
+
+const shadow = (page, sel, fn) => page.evaluate(
+  ([sel, fn]) => (0, eval)(fn)(document.querySelector('audio-player').shadowRoot.querySelector(sel)),
+  [sel, fn.toString()],
+);
+
+test.describe('audio-player accessibility', () => {
+  test('seek slider speaks the position as "m:ss of m:ss"', async ({ page }) => {
+    await load(page, PLAYLIST);
+    const valuetext = () => shadow(page, 'input.timeline', (el) => el.getAttribute('aria-valuetext'));
+    await expect.poll(valuetext).toBe('0:00 of 0:30');
+    await page.evaluate(() => { document.querySelector('audio-player audio').currentTime = 65 / 5; });
+    await expect.poll(valuetext).toBe('0:13 of 0:30');
+  });
+
+  test('mute button toggles aria-pressed and keeps the label "Mute"', async ({ page }) => {
+    await load(page, PLAYLIST);
+    const btn = () => shadow(page, '.mute-btn', (el) => ({ pressed: el.getAttribute('aria-pressed'), label: el.getAttribute('aria-label') }));
+    expect(await btn()).toEqual({ pressed: 'false', label: 'Mute' });
+    await shadow(page, '.mute-btn', (el) => el.click());
+    expect(await btn()).toEqual({ pressed: 'true', label: 'Mute' });
+    await expect(page.locator('audio-player')).toHaveAttribute('muted', '');
+    // The M shortcut and programmatic changes stay in sync too
+    await page.locator('audio-player').focus();
+    await page.keyboard.press('m');
+    expect(await btn()).toEqual({ pressed: 'false', label: 'Mute' });
+    await page.evaluate(() => { document.querySelector('audio-player audio').muted = true; });
+    await expect.poll(btn).toEqual({ pressed: 'true', label: 'Mute' });
+  });
+
+  test('the focusable host is a named group', async ({ page }) => {
+    await load(page, PLAYLIST);
+    const host = page.locator('audio-player');
+    await expect(host).toHaveAttribute('tabindex', '0');
+    await expect(host).toHaveAttribute('role', 'group');
+    await expect(host).toHaveAttribute('aria-label', 'Audio player');
+  });
+});
+
+test.describe('audio-player scrubbing', () => {
+  test('timeupdate does not move the slider while :state(scrub-active)', async ({ page }) => {
+    await load(page, PLAYLIST);
+    const sliderValue = () => shadow(page, 'input.timeline', (el) => Number(el.value));
+    await shadow(page, 'input.timeline', (el) => el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
+    await page.evaluate(() => { document.querySelector('audio-player audio').currentTime = 15; });
+    // The readout follows playback...
+    await expect.poll(() => shadow(page, '.current-time', (el) => el.textContent)).toBe('0:15');
+    // ...but the slider under the pointer is left alone
+    expect(await sliderValue()).toBe(0);
+    const scrubbing = () => page.evaluate(() => document.querySelector('audio-player').matches(':state(scrub-active)'));
+    expect(await scrubbing()).toBe(true);
+    await shadow(page, 'input.timeline', (el) => el.dispatchEvent(new PointerEvent('pointerup', { bubbles: true })));
+    expect(await scrubbing()).toBe(false);
+    await page.evaluate(() => { document.querySelector('audio-player audio').currentTime = 6; });
+    await expect.poll(sliderValue).toBe(20);
+  });
+});
+
+test.describe('audio-player load errors', () => {
+  test('a failing src sets data-state="error" and shows a polite message', async ({ page }) => {
+    await load(page, '<audio-player><audio controls src="/__media/missing.wav"></audio></audio-player>', { waitMetadata: false });
+    await expect(page.locator('audio-player')).toHaveAttribute('data-state', 'error');
+    const msg = await shadow(page, '.error', (el) => ({ hidden: el.hidden, role: el.getAttribute('role'), text: el.textContent }));
+    expect(msg.hidden).toBe(false);
+    expect(msg.role).toBe('status');
+    expect(msg.text).toContain('could not be loaded');
+  });
+
+  test('all <source> children failing is an error too; a good src clears it', async ({ page }) => {
+    await load(page, '<audio-player><audio controls><source src="/__media/missing.wav" type="audio/wav"></audio></audio-player>', { waitMetadata: false });
+    await expect(page.locator('audio-player')).toHaveAttribute('data-state', 'error');
+    await page.evaluate(() => { document.querySelector('audio-player').src = '/__media/good.wav'; });
+    await expect(page.locator('audio-player')).not.toHaveAttribute('data-state', 'error');
+    expect(await shadow(page, '.error', (el) => el.hidden)).toBe(true);
+  });
+});
+
+test.describe('audio-player src property', () => {
+  test('setting src refreshes the title (filename fallback)', async ({ page }) => {
+    await load(page, '<audio-player><audio controls src="/__media/one.wav"></audio></audio-player>');
+    const title = () => shadow(page, '.track-title', (el) => el.textContent);
+    expect(await title()).toBe('one');
+    await page.evaluate(() => { document.querySelector('audio-player').src = '/__media/second_song.wav'; });
+    expect(await title()).toBe('second song');
+  });
+
+  test('in playlist mode src moves data-audio-active to the matching track', async ({ page }) => {
+    await load(page, PLAYLIST);
+    await page.evaluate(() => { document.querySelector('audio-player').src = '/__media/two.wav'; });
+    expect(await shadow(page, '.track-title', (el) => el.textContent)).toBe('02. Two');
+    expect(await page.locator('li[data-audio-active]').textContent()).toContain('02. Two');
+  });
+});
+
+const LIST = (attrs, n) => `
+  <audio-player ${attrs}>
+    <audio controls><source src="/__media/t0.wav" type="audio/wav"></audio>
+    <details><summary>Tracks</summary><ol class="track-list">
+      ${Array.from({ length: n }, (_, i) => `<li${i ? '' : ' data-audio-active'}><a href="/__media/t${i}.wav">Track ${i}</a></li>`).join('')}
+    </ol></details>
+  </audio-player>`;
+
+/** Fire `ended` n times; return the active track index after each. */
+const endTimes = (page, n) => page.evaluate((n) => {
+  const audio = document.querySelector('audio-player audio');
+  const items = [...document.querySelectorAll('.track-list li')];
+  const seq = [];
+  for (let i = 0; i < n; i++) {
+    audio.dispatchEvent(new Event('ended'));
+    seq.push(items.findIndex((li) => li.hasAttribute('data-audio-active')));
+  }
+  return seq;
+}, n);
+
+test.describe('audio-player playlist advance', () => {
+  test('ended marks the track played, keeps it active, and advances', async ({ page }) => {
+    await load(page, PLAYLIST);
+    await page.evaluate(() => document.querySelector('audio-player audio').dispatchEvent(new Event('ended')));
+    const flags = await page.evaluate(() => [...document.querySelectorAll('.track-list li')]
+      .map((li) => [li.hasAttribute('data-audio-played'), li.hasAttribute('data-audio-active')]));
+    expect(flags).toEqual([[true, false], [false, true]]);
+    // At the end of the list (no loop) the last track stays active
+    expect(await endTimes(page, 1)).toEqual([1]);
+  });
+
+  test('shuffle without loop plays each track once, never back-to-back, then stops', async ({ page }) => {
+    await load(page, LIST('shuffle', 4));
+    for (let round = 0; round < 5; round++) {
+      await page.evaluate(() => {
+        const items = [...document.querySelectorAll('.track-list li')];
+        items.forEach((li, i) => li.toggleAttribute('data-audio-active', i === 0));
+        const ap = document.querySelector('audio-player');
+        ap.removeAttribute('shuffle'); ap.setAttribute('shuffle', ''); // fresh cycle
+      });
+      const seq = await endTimes(page, 4);
+      // Three advances cover the remaining tracks, the fourth ended stops
+      expect(new Set([0, ...seq.slice(0, 3)]).size).toBe(4);
+      expect(seq[3]).toBe(seq[2]);
+    }
+  });
+
+  test('shuffle with loop starts a new cycle without repeating the last track', async ({ page }) => {
+    await load(page, LIST('shuffle loop', 3));
+    const seq = [0, ...await endTimes(page, 30)];
+    for (let i = 1; i < seq.length; i++) expect(seq[i]).not.toBe(seq[i - 1]);
+    // Each cycle of three is a permutation
+    for (let c = 0; c + 3 <= seq.length; c += 3) expect(new Set(seq.slice(c, c + 3)).size).toBe(3);
   });
 });

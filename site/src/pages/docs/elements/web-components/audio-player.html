@@ -36,7 +36,14 @@ crumbLabel: Web Components
 
 <section>
   <h2>Playlist Mode</h2>
-  <p>Include a <code>&lt;details&gt;</code> with <code>&lt;ol class="track-list"&gt;</code> inside the component. Clicking a track updates the audio source and plays it.</p>
+  <p>Include a <code>&lt;details&gt;</code> with <code>&lt;ol class="track-list"&gt;</code> inside the component. Clicking a track updates the audio source and plays it. When a track ends it is marked <code>data-audio-played</code>, keeps <code>data-audio-active</code> until the next track starts, and playback advances in list order, stopping after the last track (or wrapping with <code>loop</code>).</p>
+
+  <browser-window
+    src="/docs/snippets/demos/audio-player-playlist.html"
+    url="https://vanilla-breeze.dev/audio-player/playlist"
+    title="Audio player playlist, shuffle and loop"
+    shadow>
+  </browser-window>
   <code-block language="html" show-lines label="Audio player with playlist" data-escape><audio-player>
   <audio controls>
     <source src="tracks/01-opening.mp3" type="audio/mpeg">
@@ -64,6 +71,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Shuffle and Loop</h2>
+  <p>With <code>shuffle</code>, the next track is picked at random from the tracks not yet played in the current cycle, so a track never plays twice in a row. Without <code>loop</code> playback stops once every track has played; with <code>loop</code> a new shuffled cycle starts. Clicking a track counts it as played for the cycle, and toggling <code>shuffle</code> starts a fresh cycle.</p>
   <code-block language="html" show-lines label="Shuffle playlist with loop" data-escape><audio-player shuffle loop>
   <audio controls>
     <source src="tracks/01.mp3" type="audio/mpeg">
@@ -85,8 +93,29 @@ crumbLabel: Web Components
     <thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead>
     <tbody>
       <tr><td><code>autoplay</code></td><td>Boolean</td><td>Start playing on load (subject to browser autoplay policy)</td></tr>
-      <tr><td><code>loop</code></td><td>Boolean</td><td>Loop the track (single-track mode sets the native <code>audio.loop</code>) or wrap the playlist back to the first track</td></tr>
-      <tr><td><code>shuffle</code></td><td>Boolean</td><td>Randomize playlist order on track advance</td></tr>
+      <tr><td><code>loop</code></td><td>Boolean</td><td>Loop the track (single-track mode sets the native <code>audio.loop</code>) or wrap the playlist back to the first track; with <code>shuffle</code>, start a new shuffled cycle</td></tr>
+      <tr><td><code>shuffle</code></td><td>Boolean</td><td>Advance to a random unplayed track (once per cycle, never twice in a row)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Reflected state</h3>
+  <p>Set by the component — read them, style with them, but don't author them.</p>
+  <table>
+    <thead><tr><th>Attribute</th><th>Values</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>state</code></td><td><code>playing</code> | <code>paused</code> | <code>ended</code></td><td>Current playback state</td></tr>
+      <tr><td><code>muted</code></td><td>Boolean</td><td>Mirrors the inner <code>audio.muted</code></td></tr>
+      <tr><td><code>data-state</code></td><td><code>error</code></td><td>The audio (or every <code>&lt;source&gt;</code>) failed to load. The player shows a visible message, announced politely to screen readers. Cleared when a source loads</td></tr>
+    </tbody>
+  </table>
+  <p>The native <code>controls</code> attribute belongs on the inner <code>&lt;audio&gt;</code>: it is the no-JS fallback. The component removes it while upgraded and restores it if the player is removed from the page.</p>
+
+  <h3>Properties</h3>
+  <table>
+    <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>src</code></td><td>String</td><td>Get or set the audio source. Setting it loads the new source, refreshes the title, moves <code>data-audio-active</code> to a matching track link (if any) and fires <code>audio-player:src-changed</code></td></tr>
+      <tr><td><code>currentTime</code></td><td>Number</td><td>Playback position in seconds</td></tr>
     </tbody>
   </table>
 </section>
@@ -118,23 +147,22 @@ crumbLabel: Web Components
 
 <section>
   <h2>Dark Mode</h2>
-  <p>The player adapts automatically to light and dark mode via design tokens. All colors resolve through CSS custom properties that respond to theme changes. Wrap any ancestor in <code>data-mode="dark"</code> or let the system preference apply.</p>
-  <code-block language="html" show-lines label="Dark mode wrapper" data-escape><div data-mode="dark">
-  <audio-player>
-    <audio controls>
-      <source src="track.mp3" type="audio/mpeg">
-    </audio>
-  </audio-player>
-</div></code-block>
+  <p>The player adapts automatically to light and dark mode via design tokens. All colors resolve through CSS custom properties that respond to theme changes. Set <code>data-mode="dark"</code> on the player or any ancestor (such as the <code>&lt;section&gt;</code> it sits in), or let the system preference apply.</p>
+  <code-block language="html" show-lines label="Dark mode on the player" data-escape><audio-player data-mode="dark">
+  <audio controls>
+    <source src="track.mp3" type="audio/mpeg">
+  </audio>
+</audio-player></code-block>
 </section>
 
 <section>
   <h2>Elevated Card Style</h2>
-  <p>Opt in to a shadow with <code>--audio-player-shadow</code> for a raised card look.</p>
-  <code-block language="html" show-lines label="Elevated card variant" data-escape><audio-player style="
+  <p>Opt in to a shadow with <code>--audio-player-shadow</code> for a raised card look. Set the properties in your stylesheet on a class:</p>
+  <code-block language="css" show-lines label="Elevated card styles" data-escape>.player-elevated {
   --audio-player-shadow: var(--shadow-m);
   --audio-player-padding: var(--size-s) var(--size-m);
-">
+}</code-block>
+  <code-block language="html" show-lines label="Elevated card variant" data-escape><audio-player class="player-elevated">
   <audio controls>
     <source src="track.mp3" type="audio/mpeg">
   </audio>
@@ -152,6 +180,7 @@ crumbLabel: Web Components
       <tr><td><code>timeline</code></td><td>Seek range input</td></tr>
       <tr><td><code>volume</code></td><td>Volume range input</td></tr>
       <tr><td><code>track-info</code></td><td>Track title and time display</td></tr>
+      <tr><td><code>error</code></td><td>Load-error message (hidden unless <code>data-state="error"</code>)</td></tr>
     </tbody>
   </table>
 </section>
@@ -165,6 +194,7 @@ crumbLabel: Web Components
       <tr><td><code>audio-player:pause</code></td><td><code>{ currentTime }</code></td></tr>
       <tr><td><code>audio-player:ended</code></td><td><code>{ src }</code></td></tr>
       <tr><td><code>audio-player:track-change</code></td><td><code>{ src, title }</code></td></tr>
+      <tr><td><code>audio-player:src-changed</code></td><td><code>{ src, source: 'property' }</code></td></tr>
     </tbody>
   </table>
   <code-block language="js" show-lines label="Listening for events" data-escape>const player = document.querySelector('audio-player');
@@ -189,7 +219,7 @@ player.addEventListener('audio-player:track-change', (e) => {
       <tr><td><kbd>M</kbd></td><td>Toggle mute</td></tr>
     </tbody>
   </table>
-  <p>Shortcuts apply when the player itself (or a non-interactive part of it) has focus. When focus is on a control — the seek or volume slider, the play or mute button, the playlist <code>&lt;summary&gt;</code> or a track link — keys keep their native behavior, so arrow keys step the focused slider and <kbd>Space</kbd> activates the focused control.</p>
+  <p>The player itself is a tab stop (<code>tabindex="0"</code>, exposed as a group named “Audio player” with <code>aria-keyshortcuts</code>) so the shortcuts have somewhere to live. Shortcuts apply when the player itself (or a non-interactive part of it) has focus. When focus is on a control — the seek or volume slider, the play or mute button, the playlist <code>&lt;summary&gt;</code> or a track link — keys keep their native behavior, so arrow keys step the focused slider and <kbd>Space</kbd> activates the focused control.</p>
 </section>
 
 <section>
@@ -222,7 +252,10 @@ player.addEventListener('audio-player:track-change', (e) => {
   <h2>Accessibility</h2>
   <ul>
     <li>All controls have <code>aria-label</code> attributes</li>
-    <li>Controls group has <code>role="group"</code> with label</li>
+    <li>The focusable host has <code>role="group"</code> and the label “Audio player” (author-supplied <code>role</code>, <code>aria-label</code> or <code>aria-labelledby</code> are kept)</li>
+    <li>The seek slider announces the position as text, e.g. “1:05 of 3:20” (<code>aria-valuetext</code>), updated during playback and seeking</li>
+    <li>The mute button keeps the stable label “Mute” and reports its state with <code>aria-pressed</code></li>
+    <li>Load failures show a visible message in a <code>role="status"</code> region, so screen readers announce it politely</li>
     <li>Keyboard navigable: every control is a native focusable element, and the documented shortcuts never override a focused control's own keys</li>
     <li>Respects <code>prefers-reduced-motion</code></li>
     <li>Falls back to fully accessible native <code>&lt;audio&gt;</code> without JS</li>

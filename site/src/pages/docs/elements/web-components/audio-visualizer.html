@@ -37,7 +37,7 @@ crumbLabel: Web Components
 <audio-visualizer for="demo-track" data-mode="bars"></audio-visualizer></code-block>
 
   <h3>Waveform</h3>
-  <p>Time-domain oscilloscope line.</p>
+  <p>Time-domain oscilloscope line, drawn from all <code>fftSize</code> samples.</p>
   <code-block language="html" show-lines label="Waveform mode" data-escape><audio-player>
   <audio id="wave-track" controls>
     <source src="track.mp3" type="audio/mpeg">
@@ -75,7 +75,7 @@ crumbLabel: Web Components
     <thead><tr><th>Attribute</th><th>Required</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
       <tr><td><code>for</code></td><td>Yes</td><td>--</td><td>ID of the target <code>&lt;audio&gt;</code> element</td></tr>
-      <tr><td><code>data-mode</code></td><td>No</td><td><code>bars</code></td><td>Visualization style: <code>bars</code>, <code>waveform</code>, <code>circle</code></td></tr>
+      <tr><td><code>data-mode</code></td><td>No</td><td><code>bars</code></td><td>Visualization style: <code>bars</code>, <code>waveform</code>, <code>circle</code> (unknown values fall back to <code>bars</code>). This is the visualizer's own drawing mode, not the colour mode</td></tr>
       <tr><td><code>data-fft-size</code></td><td>No</td><td><code>256</code></td><td>AnalyserNode FFT size (power of 2, 32-32768). Other values are rounded to the nearest power of two and clamped to that range</td></tr>
       <tr><td><code>data-state</code></td><td>Set by component</td><td>--</td><td><code>cross-origin</code> when the source is cross-origin without CORS (see below), <code>error</code> if Web Audio could not connect. Absent while visualizing</td></tr>
     </tbody>
@@ -107,8 +107,11 @@ crumbLabel: Web Components
     <li><strong>Lazy AudioContext</strong> — created on first play event, respects browser autoplay policy</li>
     <li><strong>Shared AudioContext</strong> — multiple visualizers on one page share a single context (browsers cap at ~6)</li>
     <li><strong>Off-screen pause</strong> — stops canvas rendering via <code>IntersectionObserver</code> when not visible</li>
-    <li><strong>Reduced motion</strong> — stops canvas animation when <code>prefers-reduced-motion: reduce</code> is set; audio continues playing</li>
-    <li><strong>One output path per audio</strong> — several visualizers can share one <code>&lt;audio&gt;</code>; the element is routed to the speakers once and each visualizer only taps it, so volume is unchanged</li>
+    <li><strong>Reduced motion</strong> — with <code>prefers-reduced-motion: reduce</code> the canvas does not animate: it shows a single static frame (a flat baseline before playback) instead of a blank box, and audio continues playing. Turning the preference off mid-playback resumes the animation</li>
+    <li><strong>Idle baseline</strong> — before playback starts the canvas draws a flat baseline in the current mode, so the box is never empty</li>
+    <li><strong>Cheap frames</strong> — the canvas context, resolved colours and sample buffers are cached. The canvas is resized with a <code>ResizeObserver</code>, and colours are re-read on <code>vb:theme-change</code> and colour-scheme changes rather than every frame</li>
+    <li><strong>Live attributes</strong> — changing <code>data-mode</code> or <code>data-fft-size</code> takes effect immediately; changing <code>for</code> after playback started drops the tap on the old <code>&lt;audio&gt;</code> and binds to the new one on its next play</li>
+    <li><strong>One output path per audio</strong> — several visualizers can share one <code>&lt;audio&gt;</code>; the element is routed to the speakers once and each visualizer only taps it, so volume is unchanged. Hooking is permanent for the page (a Web Audio rule): from the first play the <code>&lt;audio&gt;</code> plays through the shared <code>AudioContext</code>, even after the visualizer is removed or retargeted</li>
     <li><strong>Survives DOM moves</strong> — moving the element re-arms visibility tracking and resumes drawing</li>
     <li><strong>Graceful fallback</strong> — if <code>AudioContext</code> is unavailable it renders nothing; if the audio cannot be hooked it sets <code>data-state</code> and logs a console warning instead of throwing, and playback is not interrupted</li>
   </ul>
@@ -133,7 +136,7 @@ crumbLabel: Web Components
   <h2>Accessibility</h2>
   <ul>
     <li>Canvas is <code>aria-hidden="true"</code> — purely decorative</li>
-    <li>Respects <code>prefers-reduced-motion</code></li>
+    <li>Respects <code>prefers-reduced-motion</code>: a static frame instead of animation</li>
     <li>Does not interfere with audio element controls or keyboard navigation</li>
   </ul>
 </section>

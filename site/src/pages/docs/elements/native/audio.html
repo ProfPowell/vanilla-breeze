@@ -136,14 +136,23 @@ crumbLabel: Native Elements
   </details>
 </section></code-block>
 
+    <h4>The <code>.audio-standalone</code> contract</h4>
+    <ul>
+      <li><strong>Structure</strong> — the container holds one <code>&lt;audio&gt;</code> and one <code>.track-list</code> (usually inside <code>&lt;details&gt;</code>). Each track is an <code>&lt;li&gt;</code> with an <code>&lt;a href&gt;</code> pointing at its audio file. Containers without both are left alone.</li>
+      <li><strong>Click</strong> — clicking a track link sets the audio source to the link's URL, moves <code>data-audio-active</code> to that <code>&lt;li&gt;</code> and starts playback. A refused <code>play()</code> (autoplay policy, unloadable file) is caught, never thrown.</li>
+      <li><strong>Ended</strong> — the finished track gets <code>data-audio-played</code> and keeps <code>data-audio-active</code>; the next track in list order then starts. After the last track playback stops and that track stays active. A native <code>&lt;audio loop&gt;</code> repeats the current track instead (it never ends).</li>
+      <li><strong>Once only</strong> — an enhanced container is marked <code>data-audio-playlist-init</code>. Containers added to the page later are enhanced automatically.</li>
+      <li><strong>Not inside <code>&lt;audio-player&gt;</code></strong> — the component runs its own playlist with the same click and ended behavior (it shares the track-activation code), and adds shuffle and list looping.</li>
+    </ul>
+
     <h3>Track List Data Attributes</h3>
     <table class="props-table">
       <thead>
         <tr><th>Attribute</th><th>Set by</th><th>Meaning</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>data-audio-active</code></td><td>Component + author</td><td>Currently loaded/playing track</td></tr>
-        <tr><td><code>data-audio-played</code></td><td>Component</td><td>Track has been played this session</td></tr>
+        <tr><td><code>data-audio-active</code></td><td>Script + author</td><td>Currently loaded track (stays on a track after it ends)</td></tr>
+        <tr><td><code>data-audio-played</code></td><td>Script</td><td>Track has played to the end this session</td></tr>
         <tr><td><code>data-audio-favorite</code></td><td>Author</td><td>Editorially marked as a highlight</td></tr>
       </tbody>
     </table>
@@ -299,6 +308,10 @@ crumbLabel: Native Elements
         <tr>
           <td><code>.track-list li[data-audio-active]</code></td>
           <td><code>background: color-mix(in oklch, var(--color-primary), transparent 85%);</code></td>
+        </tr>
+        <tr>
+          <td><code>.track-list li[data-audio-played]:not([data-audio-active])</code></td>
+          <td><code>opacity: 0.6;</code> (the loaded track keeps full emphasis)</td>
         </tr>
       </tbody>
     </table>

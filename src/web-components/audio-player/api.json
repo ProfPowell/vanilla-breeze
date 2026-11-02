@@ -22,55 +22,135 @@
       "kind": "host-api",
       "purpose": "config",
       "type": "boolean",
-      "description": "Loop single track or entire playlist"
+      "description": "Single track: sets the native audio.loop. Playlist: wrap to the first track after the last; with shuffle, start a new shuffle cycle"
     },
     {
       "name": "shuffle",
       "kind": "host-api",
       "purpose": "config",
       "type": "boolean",
-      "description": "Randomize playlist order"
-    },
-    {
-      "name": "controls",
-      "kind": "host-api",
-      "purpose": "config"
+      "description": "Advance to a random track: each track plays once per cycle, never twice in a row. Without loop, playback stops at the end of the cycle"
     },
     {
       "name": "state",
       "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "data-audio-played",
-      "kind": "data",
-      "purpose": "semantic-state"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "enum",
+      "values": ["playing", "paused", "ended"],
+      "description": "Reflected playback state, set by the component"
     },
     {
       "name": "muted",
       "kind": "host-api",
-      "purpose": "semantic-state"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "boolean",
+      "description": "Reflects the inner audio.muted (set by the mute button, the M shortcut or script)"
     },
     {
-      "name": "data-audio-active",
+      "name": "data-state",
       "kind": "data",
-      "purpose": "semantic-state"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "enum",
+      "values": ["error"],
+      "description": "\"error\" when the audio (or every <source>) fails to load; a visible, politely announced message is shown. Cleared when a source loads"
+    }
+  ],
+  "properties": [
+    {
+      "name": "src",
+      "type": "string",
+      "description": "Get/set the inner <audio> source. Setting loads it, refreshes the title, moves data-audio-active to a matching track link and fires audio-player:src-changed"
+    },
+    {
+      "name": "currentTime",
+      "type": "number",
+      "description": "Playback position in seconds (proxies audio.currentTime)"
     }
   ],
   "events": [
     {
-      "name": "audio-player:play"
+      "name": "audio-player:play",
+      "detail": "{ currentTime, src }",
+      "description": "Playback started"
     },
     {
-      "name": "audio-player:pause"
+      "name": "audio-player:pause",
+      "detail": "{ currentTime }",
+      "description": "Playback paused"
     },
     {
-      "name": "audio-player:ended"
+      "name": "audio-player:ended",
+      "detail": "{ src }",
+      "description": "A track played to the end"
     },
     {
-      "name": "audio-player:track-change"
+      "name": "audio-player:track-change",
+      "detail": "{ src, title }",
+      "description": "A playlist track was activated (click or auto-advance)"
+    },
+    {
+      "name": "audio-player:src-changed",
+      "detail": "{ src, source: 'property' }",
+      "description": "The src property was set"
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "childAttributes": [
+    {
+      "name": "controls",
+      "on": "audio",
+      "type": "boolean",
+      "description": "Native controls for the no-JS fallback. Removed while the component is upgraded, restored when it disconnects"
+    },
+    {
+      "name": "data-audio-active",
+      "on": "li",
+      "type": "boolean",
+      "description": "The loaded track. Author sets the initial one; the component moves it and keeps it on a track after it ends"
+    },
+    {
+      "name": "data-audio-played",
+      "on": "li",
+      "type": "boolean",
+      "description": "Set by the component when the track plays to the end"
+    },
+    {
+      "name": "data-audio-favorite",
+      "on": "li",
+      "type": "boolean",
+      "description": "Author-set editorial highlight (heart marker)"
+    }
+  ],
+  "structure": [
+    {
+      "element": "audio",
+      "required": true,
+      "description": "The native audio element (light DOM); the component renders custom controls for it"
+    },
+    {
+      "element": "ol.track-list",
+      "required": false,
+      "description": "Optional playlist (usually inside <details>): one <li> per track with an <a href> to the file"
+    }
+  ],
+  "cssProperties": [
+    { "name": "--audio-player-accent", "description": "Play button, slider thumbs and progress fill colour" },
+    { "name": "--audio-player-bg", "description": "Player background and slider thumb border" },
+    { "name": "--audio-player-radius", "description": "Player border radius" },
+    { "name": "--audio-player-text", "description": "Track title and controls text colour" },
+    { "name": "--audio-player-border", "description": "Player border and slider track colour" },
+    { "name": "--audio-player-shadow", "description": "Player box shadow (opt-in, default none)" },
+    { "name": "--audio-player-padding", "description": "Controls row padding" }
+  ],
+  "parts": [
+    { "name": "player", "description": "Outer player container" },
+    { "name": "controls", "description": "Controls row" },
+    { "name": "play-button", "description": "Play/pause button" },
+    { "name": "track-info", "description": "Track title and time display" },
+    { "name": "timeline", "description": "Seek range input" },
+    { "name": "volume", "description": "Volume range input" },
+    { "name": "error", "description": "Load-error message (hidden unless data-state=\"error\")" }
+  ]
 }

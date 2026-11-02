@@ -1,5 +1,6 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { activateTrack, markActivePlayed, nextTrack, trackItems } from '../../lib/audio-tracks.js';
 
 /**
  * audio-player: Platform audio player web component
@@ -16,6 +17,11 @@ import { VBElement } from '../../lib/vb-element.js';
  * @fires audio-player:pause - Audio playback paused
  * @fires audio-player:ended - Audio playback ended
  * @fires audio-player:track-change - Track changed in playlist mode
+ * @fires audio-player:src-changed - `src` property was set
+ *
+ * Reflects `state` (playing | paused | ended) and `muted` on the host, and sets
+ * `data-state="error"` (with a visible, politely announced message) when the
+ * audio fails to load.
  *
  * @example Single track
  * <audio-player>
@@ -48,7 +54,7 @@ const INTERACTIVE = 'input, button, a[href], summary, select, textarea, audio, [
 class AudioPlayerElement extends VBElement {
 
   static get observedAttributes() {
-    return ['loop']
+    return ['loop', 'shuffle']
   }
 
   // ─── State ─────────────────────────────────────────────────────────────────
@@ -74,6 +80,14 @@ class AudioPlayerElement extends VBElement {
   #durationEl = /** @type {*} */ (null)
   /** @type {HTMLElement} */
   #trackTitleEl = /** @type {*} */ (null)
+  /** @type {HTMLButtonElement} */
+  #muteBtn = /** @type {*} */ (null)
+  /** @type {HTMLElement} */
+  #errorEl = /** @type {*} */ (null)
+  /** True while the user drags the seek slider (mirrors :state(scrub-active)) */
+  #scrubbing = false
+  /** Tracks already played in the current shuffle cycle */
+  #shufflePlayed = new Set()
   /** @type {(() => void) | null} */
   #onThemeChange = null
   /** True while this component (not the author) owns audio.loop */
@@ -99,6 +113,18 @@ class AudioPlayerElement extends VBElement {
     }
     this.#updateTrackTitle()
     this.#syncLoop()
+    this.#syncMuted()
+
+    // The load may already have failed before the component upgraded
+    const a = this.#audio
+    if (a.error || (a.networkState === HTMLMediaElement.NETWORK_NO_SOURCE
+      && (a.hasAttribute('src') || a.querySelector('source')))) {
+      this.#showError()
+    }
+    if (a.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      this.#updateDuration()
+      this.#handleTimeUpdate()
+    }
 
     if (this.hasAttribute('autoplay')) {
       this.#audio.play().catch(() => {})
@@ -126,6 +152,8 @@ class AudioPlayerElement extends VBElement {
 
   attributeChangedCallback(name) {
     if (name === 'loop') this.#syncLoop()
+    // Toggling shuffle starts a fresh shuffle cycle
+    else if (name === 'shuffle') this.#shufflePlayed.clear()
   }
 
   /**
@@ -167,6 +195,8 @@ class AudioPlayerElement extends VBElement {
     if (this.#audio.getAttribute('src') === next) return;
     this.#audio.setAttribute('src', next);
     this.#audio.load?.();
+    this.#syncActiveToSrc();
+    this.#updateTrackTitle();
     this.dispatchEvent(new CustomEvent('audio-player:src-changed', {
       detail: { src: next, source: 'property' },
       bubbles: true,
@@ -191,7 +221,7 @@ class AudioPlayerElement extends VBElement {
     shadow.innerHTML = `
       <style>${this.#styles()}</style>
       <div part="player" class="player">
-        <div part="controls" class="controls" role="group" aria-label="Audio controls">
+        <div part="controls" class="controls">
           <button part="play-button" class="play-btn" type="button" aria-label="Play">
             <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
               <path d="M8 5v14l11-7z"/>
@@ -212,12 +242,12 @@ class AudioPlayerElement extends VBElement {
             <div class="timeline-wrap">
               <input part="timeline" type="range" class="timeline"
                      min="0" max="100" value="0" step="0.1"
-                     aria-label="Seek">
+                     aria-label="Seek" aria-valuetext="0:00 of 0:00">
               <div class="timeline-fill"></div>
             </div>
           </div>
           <div class="volume-wrap">
-            <button class="mute-btn" type="button" aria-label="Mute">
+            <button class="mute-btn" type="button" aria-label="Mute" aria-pressed="false">
               <svg class="icon-vol" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="16" height="16">
                 <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
               </svg>
@@ -230,6 +260,7 @@ class AudioPlayerElement extends VBElement {
                    aria-label="Volume">
           </div>
         </div>
+        <p part="error" class="error" role="status" hidden></p>
         <slot></slot>
       </div>
     `
@@ -242,6 +273,8 @@ class AudioPlayerElement extends VBElement {
     this.#currentTimeEl = /** @type {HTMLElement} */ (shadow.querySelector('.current-time'))
     this.#durationEl = /** @type {HTMLElement} */ (shadow.querySelector('.duration'))
     this.#trackTitleEl = /** @type {HTMLElement} */ (shadow.querySelector('.track-title'))
+    this.#muteBtn = /** @type {HTMLButtonElement} */ (shadow.querySelector('.mute-btn'))
+    this.#errorEl = /** @type {HTMLElement} */ (shadow.querySelector('.error'))
   }
 
   // ─── Styles ────────────────────────────────────────────────────────────────
@@ -520,6 +553,15 @@ class AudioPlayerElement extends VBElement {
         border-radius: var(--radius-s, 2px);
       }
 
+      /* ── Load error message ───────────────────── */
+      .error {
+        margin: 0;
+        padding: var(--size-2xs, 4px) var(--size-s, 0.75rem) var(--size-xs, 0.5rem);
+        font-size: var(--font-size-xs, 0.75rem);
+        color: var(--color-error-text, var(--color-error, #b00020));
+      }
+      .error[hidden] { display: none; }
+
       /* ── Slot: hide native audio controls ─────── */
       ::slotted(audio) {
         display: none !important;
@@ -548,7 +590,30 @@ class AudioPlayerElement extends VBElement {
 
   #attachAudioEvents() {
     this.#audio.addEventListener('timeupdate', () => this.#handleTimeUpdate())
-    this.#audio.addEventListener('loadedmetadata', () => this.#updateDuration())
+    this.#audio.addEventListener('loadedmetadata', () => {
+      this.#clearError()
+      this.#updateDuration()
+      this.#handleTimeUpdate()
+    })
+    // A new source was requested: reset the time display until its metadata loads
+    this.#audio.addEventListener('emptied', () => {
+      this.#updateDuration()
+      this.#handleTimeUpdate()
+    })
+    this.#audio.addEventListener('volumechange', () => this.#syncMuted())
+    // `error` does not bubble. With <source> children it fires on each failed
+    // <source> (not the <audio>), so listen in the capture phase and only treat
+    // the last <source> failing as a load error.
+    this.#audio.addEventListener('error', (e) => {
+      const target = /** @type {Element} */ (e.target)
+      if (target !== this.#audio) {
+        if (target.localName !== 'source' || this.#audio.hasAttribute('src')) return
+        let next = target.nextElementSibling
+        while (next && next.localName !== 'source') next = next.nextElementSibling
+        if (next) return
+      }
+      this.#showError()
+    }, true)
     this.#audio.addEventListener('play', () => {
       this.#playing = true
       this.setAttribute('state', 'playing')
@@ -571,17 +636,37 @@ class AudioPlayerElement extends VBElement {
       this.setAttribute('state', 'ended')
       this.#playBtn.setAttribute('aria-label', 'Play')
 
-      // Mark track as played
-      const active = this.#trackList?.querySelector('li[data-audio-active]')
-      if (active) active.setAttribute('data-audio-played', '')
-
-      // Auto-advance to next track
+      // Mark track as played (it stays data-audio-active) and auto-advance
       if (this.#trackList) {
+        markActivePlayed(this.#trackList)
         this.#playNext()
       }
 
       this.#emit('audio-player:ended', { src: this.#audio.currentSrc })
     })
+  }
+
+  /** Visible, politely announced (role=status) load-failure message. */
+  #showError() {
+    this.setAttribute('data-state', 'error')
+    this.#errorEl.textContent = `Audio could not be loaded${this.#trackTitleEl.textContent ? `: ${this.#trackTitleEl.textContent}` : ''}.`
+    this.#errorEl.hidden = false
+  }
+
+  #clearError() {
+    if (this.getAttribute('data-state') === 'error') this.removeAttribute('data-state')
+    this.#errorEl.hidden = true
+    this.#errorEl.textContent = ''
+  }
+
+  /** Mirror audio.muted onto the host attribute, the mute button and the volume track. */
+  #syncMuted() {
+    if (!this.#audio || !this.#muteBtn) return
+    const muted = this.#audio.muted
+    if (muted) this.setAttribute('muted', '')
+    else this.removeAttribute('muted')
+    this.#muteBtn.setAttribute('aria-pressed', String(muted))
+    this.#volumeSlider.style.setProperty('--_vol', muted ? '0' : this.#volumeSlider.value)
   }
 
   // ─── Control events ────────────────────────────────────────────────────────
@@ -598,32 +683,40 @@ class AudioPlayerElement extends VBElement {
 
     // Seek
     this.#timeline.addEventListener('input', () => {
+      const pct = Number(this.#timeline.value)
+      this.#timelineFill.style.width = `${pct}%`
       if (!this.#audio.duration) return
-      this.#audio.currentTime = (Number(this.#timeline.value) / 100) * this.#audio.duration
+      this.#audio.currentTime = (pct / 100) * this.#audio.duration
+      this.#updateValueText(this.#audio.currentTime, this.#audio.duration)
     })
 
     // Internal :state(scrub-active) while the user is dragging the timeline.
-    // Used by component CSS to suppress timeupdate-driven UI flicker during scrub.
-    this.#timeline.addEventListener('pointerdown', () => this.setState('scrub-active', true))
-    const endScrub = () => this.setState('scrub-active', false)
+    // While set, timeupdate leaves the slider value alone so it doesn't fight
+    // the pointer (the time readout keeps updating).
+    this.#timeline.addEventListener('pointerdown', () => {
+      this.#scrubbing = true
+      this.setState('scrub-active', true)
+    })
+    const endScrub = () => {
+      if (!this.#scrubbing) return
+      this.#scrubbing = false
+      this.setState('scrub-active', false)
+    }
     this.#timeline.addEventListener('pointerup', endScrub)
     this.#timeline.addEventListener('pointercancel', endScrub)
+    this.#timeline.addEventListener('change', endScrub)
 
     // Volume
     this.#volumeSlider.addEventListener('input', () => {
       this.#audio.volume = Number(this.#volumeSlider.value)
       this.#audio.muted = false
-      this.removeAttribute('muted')
-      this.#volumeSlider.style.setProperty('--_vol', this.#volumeSlider.value)
+      this.#syncMuted()
     })
 
-    // Mute toggle
-    const muteBtn = /** @type {HTMLButtonElement} */ (this.shadowRoot?.querySelector('.mute-btn'))
-    if (!muteBtn) return
-    muteBtn.addEventListener('click', () => {
+    // Mute toggle (label stays "Mute"; aria-pressed carries the state)
+    this.#muteBtn.addEventListener('click', () => {
       this.#audio.muted = !this.#audio.muted
-      this.toggleAttribute('muted', this.#audio.muted)
-      this.#volumeSlider.style.setProperty('--_vol', this.#audio.muted ? '0' : this.#volumeSlider.value)
+      this.#syncMuted()
     })
 
     // Keyboard shortcuts. Events from shadow controls are retargeted to the
@@ -656,15 +749,22 @@ class AudioPlayerElement extends VBElement {
         case 'm':
         case 'M':
           this.#audio.muted = !this.#audio.muted
-          this.toggleAttribute('muted', this.#audio.muted)
-          this.#volumeSlider.style.setProperty('--_vol', this.#audio.muted ? '0' : this.#volumeSlider.value)
+          this.#syncMuted()
           break
       }
     })
 
-    // Make focusable for keyboard shortcuts
-    if (!this.hasAttribute('tabindex')) {
-      this.setAttribute('tabindex', '0')
+    // The host is the focus target for the shortcuts above (they never fire
+    // from inside a control, so dropping the tab stop would make them
+    // unreachable). Give that tab stop a role and name so it isn't announced
+    // as an anonymous focusable element.
+    if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0')
+    if (!this.hasAttribute('role')) this.setAttribute('role', 'group')
+    if (!this.hasAttribute('aria-label') && !this.hasAttribute('aria-labelledby')) {
+      this.setAttribute('aria-label', 'Audio player')
+    }
+    if (!this.hasAttribute('aria-keyshortcuts')) {
+      this.setAttribute('aria-keyshortcuts', 'Space ArrowLeft ArrowRight M')
     }
   }
 
@@ -689,54 +789,64 @@ class AudioPlayerElement extends VBElement {
     this.#trackList.addEventListener('click', (e) => {
       const target = /** @type {Element | null} */ (e.target)
       const link = /** @type {HTMLAnchorElement | null} */ (target?.closest('a[href]'))
-      if (!link) return
+      const li = link?.closest('li')
+      if (!link || !li) return
       e.preventDefault()
 
-      this.#loadTrack(link.href, link.closest('li'))
+      this.#loadTrack(li)
     })
   }
 
-  #loadTrack(src, li) {
-    // Update active state
+  /** @param {HTMLLIElement} li */
+  #loadTrack(li) {
     if (!this.#trackList) return
-    const items = this.#trackList.querySelectorAll('li')
-    items.forEach(item => item.removeAttribute('data-audio-active'))
-    if (li) li.setAttribute('data-audio-active', '')
-
-    this.#audio.src = src
-    this.#audio.play().catch(() => {})
+    const track = activateTrack(this.#audio, this.#trackList, li)
+    if (!track) return
+    this.#shufflePlayed.add(li)
     this.#updateTrackTitle()
 
-    this.#emit('audio-player:track-change', {
-      src,
-      title: li?.querySelector('a')?.textContent ?? ''
+    this.#emit('audio-player:track-change', track)
+  }
+
+  /**
+   * After `src` is set by property, move data-audio-active to the track whose
+   * link matches the new source (or clear it when none does), so the title and
+   * the highlighted track describe what is actually loaded.
+   */
+  #syncActiveToSrc() {
+    if (!this.#trackList) return
+    const src = this.#audio.src
+    const match = trackItems(this.#trackList)
+      .find((li) => /** @type {HTMLAnchorElement} */ (li.querySelector('a[href]')).href === src)
+    this.#trackList.querySelectorAll('li[data-audio-active]').forEach((li) => {
+      if (li !== match) li.removeAttribute('data-audio-active')
     })
+    match?.setAttribute('data-audio-active', '')
   }
 
   #playNext() {
     if (!this.#trackList) return
+    const loop = this.hasAttribute('loop')
 
-    const items = [...this.#trackList.querySelectorAll('li')]
-    const activeIdx = items.findIndex(li => li.hasAttribute('data-audio-active'))
-
-    if (this.hasAttribute('shuffle')) {
-      const remaining = items.filter((_, i) => i !== activeIdx)
-      if (remaining.length) {
-        const next = remaining[Math.floor(Math.random() * remaining.length)]
-        const link = /** @type {HTMLAnchorElement | null} */ (next.querySelector('a[href]'))
-        if (link) this.#loadTrack(link.href, next)
-      }
+    if (!this.hasAttribute('shuffle')) {
+      const next = nextTrack(this.#trackList, { loop })
+      if (next) this.#loadTrack(next)
       return
     }
 
-    const nextIdx = activeIdx + 1
-    if (nextIdx < items.length) {
-      const link = /** @type {HTMLAnchorElement | null} */ (items[nextIdx].querySelector('a[href]'))
-      if (link) this.#loadTrack(link.href, items[nextIdx])
-    } else if (this.hasAttribute('loop')) {
-      const link = /** @type {HTMLAnchorElement | null} */ (items[0]?.querySelector('a[href]'))
-      if (link) this.#loadTrack(link.href, items[0])
+    // Shuffle: each track plays once per cycle, never the same one twice in a
+    // row. At the end of a cycle, `loop` starts a fresh cycle; otherwise stop.
+    const items = trackItems(this.#trackList)
+    const current = /** @type {HTMLLIElement | null} */ (this.#trackList.querySelector('li[data-audio-active]'))
+    if (current) this.#shufflePlayed.add(current)
+    let pool = items.filter((li) => !this.#shufflePlayed.has(li))
+    if (!pool.length) {
+      this.#shufflePlayed.clear()
+      if (!loop) return
+      pool = items.length > 1 ? items.filter((li) => li !== current) : items
     }
+    const next = pool[Math.floor(Math.random() * pool.length)]
+    if (next) this.#loadTrack(next)
   }
 
   // ─── Time display ──────────────────────────────────────────────────────────
@@ -747,8 +857,16 @@ class AudioPlayerElement extends VBElement {
     const pct = d ? (t / d) * 100 : 0
 
     this.#currentTimeEl.textContent = this.#formatTime(t)
+    this.#updateValueText(t, d)
+    // Leave the slider alone while the user is dragging it
+    if (this.#scrubbing) return
     this.#timeline.value = String(pct)
     this.#timelineFill.style.width = `${pct}%`
+  }
+
+  /** Spoken value for the seek slider, e.g. "1:05 of 3:20". */
+  #updateValueText(t, d) {
+    this.#timeline.setAttribute('aria-valuetext', `${this.#formatTime(t)} of ${this.#formatTime(d)}`)
   }
 
   #updateDuration() {
@@ -768,12 +886,11 @@ class AudioPlayerElement extends VBElement {
       }
     }
 
-    // Fall back to filename from src
-    const src = this.#audio.currentSrc || this.#audio.querySelector('source')?.src || ''
-    if (src) {
-      const file = /** @type {string} */ (src.split('/').pop()).split('?')[0]
-      this.#trackTitleEl.textContent = file.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
-    }
+    // Fall back to filename from src (the attribute first: currentSrc lags
+    // behind a just-set src until the new resource is selected)
+    const src = this.#audio.src || this.#audio.currentSrc || this.#audio.querySelector('source')?.src || ''
+    const file = src ? /** @type {string} */ (src.split('/').pop()).split(/[?#]/)[0] : ''
+    this.#trackTitleEl.textContent = file.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
