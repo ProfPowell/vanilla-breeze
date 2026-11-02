@@ -65,6 +65,11 @@ function dayHeading(key) {
   return date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 }
 
+/** @param {Node} node */
+function isEntry(node) {
+  return node.nodeType === 1 && /** @type {Element} */ (node).matches('article[data-activity]');
+}
+
 function weekHeading(key) {
   return `Week of ${key.replace('-W', ', week ')}`;
 }
@@ -90,20 +95,24 @@ class ActivityFeed extends VBElement {
     this.#regroupAndRenumber();
     this.#updateEmptyState();
 
-    // Watch for newly added entries (server-rendered append, addEntry, etc.).
+    // Watch for added / removed entries (server-rendered append, addEntry,
+    // removeEntry, clear, ...). Only `article[data-activity]` mutations count:
+    // #regroupAndRenumber itself removes and re-inserts the date headings and
+    // moves the sentinel, and reacting to those would regroup forever.
     this.#observer = new MutationObserver((mutations) => {
-      let added = false;
+      let changed = false;
       for (const m of mutations) {
         for (const node of m.addedNodes) {
-          const el = /** @type {Element} */ (node);
-          if (node.nodeType === 1 && el.matches?.('article[data-activity]')) {
-            this.#decorateEntry(/** @type {HTMLElement} */ (el));
-            added = true;
+          if (isEntry(node)) {
+            this.#decorateEntry(/** @type {HTMLElement} */ (node));
+            changed = true;
           }
         }
-        if (m.removedNodes.length) added = true; // re-number after removals too
+        for (const node of m.removedNodes) {
+          if (isEntry(node)) changed = true;
+        }
       }
-      if (added) {
+      if (changed) {
         this.#regroupAndRenumber();
         this.#updateEmptyState();
       }
@@ -117,13 +126,21 @@ class ActivityFeed extends VBElement {
     if (this.hasAttribute('data-infinite')) this.#armInfiniteScroll();
 
     this.listen(this, 'keydown', this.#onKeydown);
+    this.listen(this, 'focusin', this.#onFocusin);
     return true;
   }
 
   teardown() {
     if (this.#refreshTimer !== null) clearInterval(this.#refreshTimer);
+    this.#refreshTimer = null;
     this.#observer?.disconnect();
+    this.#observer = null;
     this.#io?.disconnect();
+    this.#io = null;
+    // Drop the sentinel too: setup() re-arms a fresh one on reconnect, so
+    // leaving it here would stack one extra sentinel per move.
+    this.#ioSentinel?.remove();
+    this.#ioSentinel = null;
   }
 
   // ── Entry decoration ───────────────────────────────────────────────
@@ -221,7 +238,45 @@ class ActivityFeed extends VBElement {
         }
       }
     });
+
+    this.#syncRovingTabindex();
+    this.#keepSentinelLast();
   }
+
+  /** Keep the infinite-scroll sentinel as the last child (entries appended
+   *  directly with appendChild would otherwise land after it). */
+  #keepSentinelLast() {
+    const s = this.#ioSentinel;
+    if (s && s.parentNode === this && this.lastElementChild !== s) this.appendChild(s);
+  }
+
+  // ── Roving tabindex ────────────────────────────────────────────────
+
+  /** Exactly one entry is in the tab order: the current one if it is still
+   *  present, else the first. */
+  #syncRovingTabindex() {
+    const entries = this.#scanEntries();
+    const current = entries.find((e) => e.getAttribute('tabindex') === '0') || entries[0];
+    for (const e of entries) e.setAttribute('tabindex', e === current ? '0' : '-1');
+  }
+
+  /** @param {HTMLElement} entry */
+  #makeCurrent(entry) {
+    for (const e of this.#scanEntries()) e.setAttribute('tabindex', e === entry ? '0' : '-1');
+  }
+
+  /** @param {EventTarget | null} target @returns {HTMLElement | null} */
+  #entryFor(target) {
+    const el = /** @type {Element | null} */ (target instanceof Element ? target : null);
+    const entry = /** @type {HTMLElement | null} */ (el?.closest('article[data-activity]') ?? null);
+    return entry && entry.parentElement === this ? entry : null;
+  }
+
+  /** @type {(e: FocusEvent) => void} */
+  #onFocusin = (e) => {
+    const entry = this.#entryFor(e.target);
+    if (entry && entry.getAttribute('tabindex') !== '0') this.#makeCurrent(entry);
+  };
 
   // ── Empty state ────────────────────────────────────────────────────
 
@@ -233,6 +288,7 @@ class ActivityFeed extends VBElement {
         this.#emptyEl.className = 'activity-empty';
         this.#emptyEl.textContent = this.getAttribute('data-empty-text') || 'No recent activity';
         this.appendChild(this.#emptyEl);
+        this.#keepSentinelLast();
       }
     } else {
       this.#emptyEl?.remove();
@@ -244,9 +300,13 @@ class ActivityFeed extends VBElement {
 
   /** @type {(e: KeyboardEvent) => void} */
   #onKeydown = (e) => {
+    // Don't steal arrow keys from text fields inside an entry.
+    const t = /** @type {HTMLElement} */ (e.target);
+    if (t.isContentEditable || t.matches?.('input, textarea, select')) return;
     const entries = this.#scanEntries();
-    const active = /** @type {HTMLElement | null} */ (document.activeElement);
-    const i = active ? entries.indexOf(active) : -1;
+    // Focus may be on the entry itself or on a link / button inside it.
+    const current = this.#entryFor(e.target);
+    const i = current ? entries.indexOf(current) : -1;
     if (i === -1) return;
     let next = i;
     switch (e.key) {
@@ -258,13 +318,18 @@ class ActivityFeed extends VBElement {
       case 'End':       e.preventDefault(); next = entries.length - 1; break;
       default: return;
     }
-    entries[next]?.focus();
+    const target = entries[next];
+    if (!target) return;
+    this.#makeCurrent(target);
+    target.focus();
   };
 
   // ── Infinite-scroll sentinel ───────────────────────────────────────
 
   #armInfiniteScroll() {
     if (!('IntersectionObserver' in window)) return;
+    // Guard against a stray sentinel (e.g. left from a previous upgrade).
+    this.querySelectorAll(':scope > .activity-sentinel').forEach((n) => n.remove());
     this.#ioSentinel = document.createElement('div');
     this.#ioSentinel.className = 'activity-sentinel';
     this.#ioSentinel.setAttribute('aria-hidden', 'true');
