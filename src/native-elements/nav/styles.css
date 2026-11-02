@@ -147,10 +147,14 @@ nav {
     display: flex;
     align-items: center;
     gap: var(--size-2xs);
+    min-inline-size: 0;
   }
 
+  /* Separators are decoration: alt text "" keeps screen readers quiet.
+     First declaration is the fallback for browsers without alt syntax. */
   &.breadcrumb li:not(:last-child)::after {
     content: var(--_separator, var(--sep-breadcrumb, "/"));
+    content: var(--_separator, var(--sep-breadcrumb, "/")) / "";
     margin-inline-start: var(--size-2xs);
     color: var(--color-text-muted);
     display: inline-flex;
@@ -192,21 +196,27 @@ nav {
     --_separator: "|";
   }
 
-  /* Breadcrumb truncated items */
-  &.breadcrumb [data-truncated] {
-    max-width: 10rem;
+  /* Breadcrumb truncated items — on the link, not the flex <li>, or
+     text-overflow never reaches the text */
+  &.breadcrumb [data-truncated] > :is(a, span) {
+    display: block;
+    max-inline-size: 10rem;
+    min-inline-size: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  /* Breadcrumb collapsed state (hide middle items) */
+  /* Breadcrumb collapsed state: first, parent (second-to-last) and current
+     stay visible. No JS here, so hidden crumbs are not reachable — use
+     <bread-crumb data-collapsed> for an expand button. */
   &.breadcrumb[data-collapsed] li:not(:first-child):not(:last-child):not(:nth-last-child(2)) {
     display: none;
   }
 
-  &.breadcrumb[data-collapsed] li:nth-last-child(2)::before {
-    content: "...";
+  &.breadcrumb[data-collapsed] li:nth-last-child(2):not(:nth-child(2))::before {
+    content: "\2026";
+    content: "\2026" / "";
     margin-inline-end: var(--size-2xs);
     color: var(--color-text-muted);
   }

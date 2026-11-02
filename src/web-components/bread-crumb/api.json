@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "bread-crumb",
   "type": "web-component",
-  "description": "Hierarchical navigation trail. Wraps existing <ol> markup HTML-first, or auto-generates from window.location.pathname. Emits BreadcrumbList JSON-LD for SEO.",
+  "description": "Hierarchical navigation trail. Wraps existing <ol> markup HTML-first (canonical markup: inside <nav aria-label=\"Breadcrumb\">), or auto-generates from window.location.pathname. Emits BreadcrumbList JSON-LD for SEO.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -15,28 +15,28 @@
       "kind": "data",
       "purpose": "config",
       "type": "boolean",
-      "description": "When present, auto-generates the trail from window.location.pathname. Each path segment becomes a crumb (Title-Cased by default; override per segment via the .labels property)."
+      "description": "When present, auto-generates the trail from window.location.pathname. Each path segment is URL-decoded and becomes a crumb (Title-Cased by default; override per segment via the .labels property). A leading Home crumb is always added."
     },
     {
       "name": "data-current-label",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Label for the final (current page) crumb when auto-generating. If omitted, the document title or last path segment is used."
+      "description": "Label for the final (current page) crumb when auto-generating. Takes precedence over .labels; if omitted, .labels or the Title-Cased last path segment is used."
     },
     {
       "name": "data-separator",
       "kind": "data",
       "purpose": "visual-variant",
       "type": "string",
-      "description": "Separator glyph variant: 'chevron' (default), 'arrow', 'dot', 'pipe'. Drives the --_separator CSS var."
+      "description": "Separator glyph variant: 'chevron', 'arrow', 'dot', 'pipe'. Unset uses the theme's --sep-breadcrumb token (› by default). Drives the --_separator CSS var; separators are decorative (empty CSS alt text) and not announced."
     },
     {
       "name": "data-collapsed",
       "kind": "data",
       "purpose": "visual-variant",
       "type": "boolean",
-      "description": "Hide middle items, showing only first and last with an ellipsis in between."
+      "description": "Hide middle crumbs, keeping the first crumb, the parent (second-to-last) and the current page. With four or more crumbs the component inserts an ellipsis <button aria-expanded> (accessible name 'Show full path') after the first crumb that reveals the hidden crumbs."
     },
     {
       "name": "data-jsonld",
@@ -51,8 +51,39 @@
       "name": "data-truncated",
       "on": "li",
       "type": "boolean",
-      "description": "Apply to a crumb <li> to truncate long labels with an ellipsis (max-width 10rem)."
+      "description": "Apply to a crumb <li> to truncate its link/label with an ellipsis (max-inline-size 10rem). The full text is still read by screen readers."
     }
   ],
-  "structure": []
+  "structure": [
+    {
+      "element": "<ol>",
+      "description": "The trail; one <li> per crumb containing an <a> (ancestors) or <span> (current page). Generated in data-from-pathname mode."
+    },
+    {
+      "element": "<li data-crumb-toggle>",
+      "description": "Injected by data-collapsed: wraps the 'Show full path' <button aria-expanded>. Excluded from aria-current and JSON-LD."
+    },
+    {
+      "element": "<script type=\"application/ld+json\">",
+      "description": "Appended BreadcrumbList JSON-LD (unless data-jsonld=\"off\"); item URLs are the anchors' resolved hrefs."
+    }
+  ],
+  "events": [
+    {
+      "name": "bread-crumb:upgraded",
+      "description": "Fired after setup completes"
+    },
+    {
+      "name": "bread-crumb:toggle",
+      "detail": "{ expanded }",
+      "description": "Fired when the data-collapsed toggle button expands or collapses the trail"
+    }
+  ],
+  "properties": [
+    {
+      "name": "labels",
+      "type": "Record<string, string>",
+      "description": "Segment → label map for data-from-pathname mode. Keys may be a full pathname ('/docs/elements/'), a pathname without the trailing slash, or a single (decoded or raw) segment; '/' or 'home' relabels the Home crumb. Assigning re-renders the trail."
+    }
+  ]
 }

@@ -89,7 +89,7 @@ crumbLabel: Native Elements
 </nav></code-block>
 
     <h3>.breadcrumb</h3>
-    <p>Breadcrumb navigation with separator characters. Use <code>&lt;ol&gt;</code> for proper semantics.</p>
+    <p>Breadcrumb navigation with separator characters. Use <code>&lt;ol&gt;</code> for proper semantics, give the <code>&lt;nav&gt;</code> an <code>aria-label</code> and mark the last crumb <code>aria-current="page"</code>. This is the zero-JavaScript breadcrumb; separators are decorative CSS (empty alt text) and are not announced. For JSON-LD, auto-generation from the URL or an expandable collapsed trail, use <a href="/docs/elements/web-components/bread-crumb/"><code>&lt;bread-crumb&gt;</code></a>.</p>
     <browser-window src="/docs/snippets/demos/nav-breadcrumb.html" url="https://vanilla-breeze.dev/nav/breadcrumb" title="Breadcrumb nav" shadow></browser-window>
     <code-block language="html" label="Breadcrumb nav" data-escape><nav class="breadcrumb" aria-label="Breadcrumb">
   <ol>
@@ -113,8 +113,9 @@ crumbLabel: Native Elements
 
 <!-- data-separator values: chevron, arrow, dot, pipe --></code-block>
 
-    <h3>.breadcrumb collapsed</h3>
-    <p>Use <code>data-collapsed</code> to hide middle items for deep hierarchies.</p>
+    <h3>.breadcrumb collapsed and truncated</h3>
+    <p>Use <code>data-collapsed</code> to hide middle items for deep hierarchies: the first crumb, the parent (second-to-last) and the current page stay visible, with a decorative ellipsis before the parent. Without JavaScript the hidden crumbs cannot be reached, so prefer <code>&lt;bread-crumb data-collapsed&gt;</code>, which adds a "Show full path" button. Put <code>data-truncated</code> on an <code>&lt;li&gt;</code> to ellipsize a long label.</p>
+    <browser-window src="/docs/snippets/demos/nav-breadcrumb-collapsed.html" url="https://vanilla-breeze.dev/nav/breadcrumb/collapsed" title="Collapsed and truncated breadcrumbs" shadow></browser-window>
     <code-block language="html" label="Collapsed breadcrumb" data-escape><nav class="breadcrumb" data-collapsed aria-label="Breadcrumb">
   <ol>
     <li><a href="#">Home</a></li>
@@ -122,6 +123,14 @@ crumbLabel: Native Elements
     <li><a href="#">Level 2</a></li>
     <li><a href="#">Level 3</a></li>
     <li><a href="#">Level 4</a></li>
+    <li><span aria-current="page">Current Page</span></li>
+  </ol>
+</nav>
+
+<nav class="breadcrumb" aria-label="Article breadcrumb">
+  <ol>
+    <li><a href="#">Home</a></li>
+    <li data-truncated><a href="#">A very long section title that will not fit</a></li>
     <li><span aria-current="page">Current Page</span></li>
   </ol>
 </nav></code-block>
@@ -325,12 +334,12 @@ crumbLabel: Native Elements
         <tr>
           <td><code>data-collapsed</code></td>
           <td>boolean</td>
-          <td>Hides middle items, shows only first, "...", and last two</td>
+          <td>Hides middle items: shows the first crumb, a decorative ellipsis, the parent and the current page. Hidden crumbs are not reachable without JS; use <code>&lt;bread-crumb&gt;</code> for an expand button.</td>
         </tr>
         <tr>
           <td><code>data-truncated</code></td>
           <td>on item</td>
-          <td>Truncates long labels with ellipsis (max 10rem)</td>
+          <td>On an <code>&lt;li&gt;</code>: truncates its link label with an ellipsis (max 10rem)</td>
         </tr>
       </tbody>
     </table>

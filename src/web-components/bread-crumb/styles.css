@@ -1,5 +1,8 @@
 /* bread-crumb: hierarchical navigation trail.
-   Mirrors nav.breadcrumb token semantics so themes apply identically. */
+   Mirrors nav.breadcrumb token semantics so themes apply identically.
+   Canonical markup wraps it in <nav aria-label="Breadcrumb">; the custom
+   properties below neutralise the plain-nav link pill/padding so the
+   wrapper does not restyle the crumbs. */
 
 bread-crumb:not(:defined) {
   display: block;
@@ -7,6 +10,10 @@ bread-crumb:not(:defined) {
 
 bread-crumb {
   display: block;
+  --_link-padding: var(--size-xs);
+  --_hover-bg: transparent;
+  --_active-bg: transparent;
+  --_active-color: var(--color-text);
 }
 
 @scope (bread-crumb) {
@@ -25,10 +32,15 @@ bread-crumb {
     display: flex;
     align-items: center;
     gap: var(--size-2xs);
+    min-inline-size: 0;
   }
 
+  /* Separators are decoration: alt text "" keeps screen readers from
+     announcing them. The first declaration is the fallback for browsers
+     without the content alt-text syntax. */
   > ol > li:not(:last-child)::after {
     content: var(--_separator, var(--sep-breadcrumb, "/"));
+    content: var(--_separator, var(--sep-breadcrumb, "/")) / "";
     margin-inline-start: var(--size-2xs);
     color: var(--color-text-muted);
     display: inline-flex;
@@ -53,11 +65,40 @@ bread-crumb {
     font-weight: var(--font-weight-medium);
   }
 
-  > ol [data-truncated] {
-    max-width: 10rem;
+  /* Truncation must sit on the link itself: the <li> is a flex container,
+     so text-overflow on it never reaches the (blockified) <a>/<span>. */
+  > ol > [data-truncated] > :is(a, span) {
+    display: block;
+    max-inline-size: 10rem;
+    min-inline-size: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* Collapse toggle (injected by JS when data-collapsed hides crumbs) */
+  > ol > [data-crumb-toggle] > button {
+    appearance: none;
+    margin: 0;
+    padding: var(--size-3xs) var(--size-xs);
+    min-block-size: auto;
+    border: 0;
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--color-text-muted);
+    font: inherit;
+    line-height: 1;
+    cursor: var(--cursor-custom-pointer, pointer);
+  }
+
+  > ol > [data-crumb-toggle] > button:hover {
+    color: var(--color-text);
+    background: var(--color-surface-raised);
+  }
+
+  > ol > [data-crumb-toggle] > button:focus-visible {
+    outline: var(--border-width-medium) solid var(--color-interactive);
+    outline-offset: 0;
   }
 }
 
@@ -66,14 +107,26 @@ bread-crumb[data-separator="arrow"]   { --_separator: "\2192"; }
 bread-crumb[data-separator="dot"]     { --_separator: "\00B7"; }
 bread-crumb[data-separator="pipe"]    { --_separator: "|"; }
 
-@scope (bread-crumb[data-collapsed]) {
-  > ol > li:not(:first-child):not(:last-child):not(:nth-last-child(2)) {
+/* data-collapsed: show the first crumb, the parent (second-to-last) and
+   the current page. Once the toggle is expanded nothing is hidden. */
+@scope (bread-crumb[data-collapsed]:not(:has(> ol > [data-crumb-toggle] > [aria-expanded="true"]))) {
+  > ol > li:not(:first-child, :last-child, :nth-last-child(2), [data-crumb-toggle]) {
     display: none;
   }
+}
 
-  > ol > li:nth-last-child(2)::before {
-    content: "...";
+/* No-JS fallback: a decorative ellipsis before the parent crumb, only when
+   something is actually hidden. Hidden crumbs are unreachable without JS. */
+@scope (bread-crumb[data-collapsed]:not(:has(> ol > [data-crumb-toggle]))) {
+  > ol > li:nth-last-child(2):not(:nth-child(2))::before {
+    content: "\2026";
+    content: "\2026" / "";
     margin-inline-end: var(--size-2xs);
     color: var(--color-text-muted);
   }
+}
+
+/* The toggle only exists while collapse applies */
+bread-crumb:not([data-collapsed]) > ol > [data-crumb-toggle] {
+  display: none;
 }

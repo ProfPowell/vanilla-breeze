@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "bread-crumb"
-description: "Hierarchical navigation trail. Wraps existing <ol> markup HTML-first, or auto-generates from window.location.pathname. Emits BreadcrumbList JSON-LD for SEO."
+description: "Hierarchical navigation trail. Wraps existing <ol> markup HTML-first inside a <nav>, or auto-generates from window.location.pathname. Emits BreadcrumbList JSON-LD for SEO."
 elementName: bread-crumb
 category: component
 currentPath: /docs/elements/web-components/bread-crumb/
@@ -12,9 +12,14 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;bread-crumb&gt;</code> component formalizes the existing <code>&lt;nav class="breadcrumb"&gt;</code> pattern used across VB documentation and snippet pages. It accepts plain <code>&lt;ol&gt;</code> markup as the HTML-first source of truth, applies <code>role="navigation"</code> and <code>aria-label="Breadcrumb"</code>, ensures <code>aria-current="page"</code> on the final crumb, and emits a <code>BreadcrumbList</code> JSON-LD <code>&lt;script&gt;</code> for SEO. With <code>data-from-pathname</code>, it can also auto-generate the trail from <code>window.location.pathname</code>.</p>
+  <p>The <code>&lt;bread-crumb&gt;</code> component formalizes the <a href="/docs/elements/native/nav/"><code>&lt;nav class="breadcrumb"&gt;</code></a> pattern. It takes plain <code>&lt;ol&gt;</code> markup as the HTML-first source of truth, keeps <code>aria-current="page"</code> on the final crumb, emits a <code>BreadcrumbList</code> JSON-LD <code>&lt;script&gt;</code> for SEO, and turns <code>data-collapsed</code> into an expandable trail. With <code>data-from-pathname</code> it can also build the trail from <code>window.location.pathname</code>.</p>
 
-  <browser-window url="bread-crumb" src="/docs/examples/demos/bread-crumb-basic.html"></browser-window>
+  <browser-window
+    src="/docs/examples/demos/bread-crumb-basic.html"
+    url="https://vanilla-breeze.dev/bread-crumb"
+    title="bread-crumb — variants"
+    shadow>
+  </browser-window>
 </section>
 
 <section>
@@ -28,25 +33,25 @@ crumbLabel: Web Components
         <td><code>data-from-pathname</code></td>
         <td>boolean</td>
         <td>—</td>
-        <td>Auto-build the trail from <code>window.location.pathname</code>. Each segment becomes a crumb (Title-Cased fallback).</td>
+        <td>Auto-build the trail from <code>window.location.pathname</code>. A Home crumb comes first; each URL-decoded segment becomes a crumb (Title-Cased fallback).</td>
       </tr>
       <tr>
         <td><code>data-current-label</code></td>
         <td>string</td>
         <td>—</td>
-        <td>Label override for the final (current page) crumb when auto-generating.</td>
+        <td>Label for the final (current page) crumb when auto-generating. Wins over <code>.labels</code>.</td>
       </tr>
       <tr>
         <td><code>data-separator</code></td>
         <td>string</td>
-        <td><code>chevron</code></td>
-        <td>Separator glyph: <code>chevron</code>, <code>arrow</code>, <code>dot</code>, or <code>pipe</code>.</td>
+        <td>theme token (<code>›</code>)</td>
+        <td>Separator glyph: <code>chevron</code>, <code>arrow</code>, <code>dot</code>, or <code>pipe</code>. Unset uses the <code>--sep-breadcrumb</code> token.</td>
       </tr>
       <tr>
         <td><code>data-collapsed</code></td>
         <td>boolean</td>
         <td>—</td>
-        <td>Hide middle items, showing only first and last with an ellipsis between.</td>
+        <td>Hide the middle crumbs, keeping the first crumb, the parent (second-to-last) and the current page. With four or more crumbs an ellipsis button reveals the rest.</td>
       </tr>
       <tr>
         <td><code>data-jsonld</code></td>
@@ -64,7 +69,36 @@ crumbLabel: Web Components
       <tr>
         <td><code>data-truncated</code></td>
         <td><code>&lt;li&gt;</code></td>
-        <td>Truncate a long label with an ellipsis (max-width 10rem).</td>
+        <td>Truncate the crumb's link or label with an ellipsis (max 10rem).</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Properties</h3>
+  <table class="props-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>labels</code></td>
+        <td><code>Record&lt;string, string&gt;</code></td>
+        <td>Segment → label map for <code>data-from-pathname</code>. Keys may be a full pathname (<code>'/docs/elements/'</code>), a pathname without the trailing slash, or a single segment; <code>'/'</code> or <code>'home'</code> relabels Home. Assigning re-renders the trail.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Events</h3>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Detail</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>bread-crumb:upgraded</code></td>
+        <td>—</td>
+        <td>Fired after setup completes.</td>
+      </tr>
+      <tr>
+        <td><code>bread-crumb:toggle</code></td>
+        <td><code>{ expanded }</code></td>
+        <td>Fired when the collapse button expands or collapses the trail.</td>
       </tr>
     </tbody>
   </table>
@@ -74,27 +108,78 @@ crumbLabel: Web Components
   <h2>Usage</h2>
 
   <h3>HTML-first</h3>
-  <p>Wrap an ordered list of links. The last item is treated as the current page:</p>
-  <code-block language="html" data-escape>
-<bread-crumb>
-  <ol>
-    <li><a href="/docs/">Docs</a></li>
-    <li><a href="/docs/elements/">Elements</a></li>
-    <li><span aria-current="page">Bread Crumb</span></li>
-  </ol>
-</bread-crumb>
+  <p>Wrap the component in a <code>&lt;nav&gt;</code> with an <code>aria-label</code> so the landmark exists before (and without) JavaScript. Mark the last crumb <code>aria-current="page"</code>; the component keeps it in sync.</p>
+  <code-block language="html" label="Canonical markup" data-escape>
+<nav aria-label="Breadcrumb">
+  <bread-crumb>
+    <ol>
+      <li><a href="/docs/">Docs</a></li>
+      <li><a href="/docs/elements/">Elements</a></li>
+      <li><span aria-current="page">Bread Crumb</span></li>
+    </ol>
+  </bread-crumb>
+</nav>
+  </code-block>
+
+  <h3>Separators</h3>
+  <code-block language="html" label="Arrow separator" data-escape>
+<nav aria-label="Shop breadcrumb">
+  <bread-crumb data-separator="arrow">
+    <ol>
+      <li><a href="/">Home</a></li>
+      <li><a href="/shop/">Shop</a></li>
+      <li><a href="/shop/jackets/">Jackets</a></li>
+      <li><span aria-current="page">Field Coat</span></li>
+    </ol>
+  </bread-crumb>
+</nav>
+<!-- data-separator values: chevron, arrow, dot, pipe -->
+  </code-block>
+
+  <h3>Truncated crumb</h3>
+  <code-block language="html" label="Truncated middle item" data-escape>
+<nav aria-label="Article breadcrumb">
+  <bread-crumb data-separator="dot">
+    <ol>
+      <li><a href="/">Home</a></li>
+      <li data-truncated><a href="/articles/2025/the-very-long-title-of-some-article/">The very long title of some article</a></li>
+      <li><span aria-current="page">Comments</span></li>
+    </ol>
+  </bread-crumb>
+</nav>
+  </code-block>
+
+  <h3>Collapsed</h3>
+  <p>With <code>data-collapsed</code> the first crumb, the parent and the current page stay visible. The component inserts a <code>&lt;button aria-expanded="false"&gt;</code> named "Show full path" after the first crumb; pressing it reveals the hidden crumbs and pressing it again hides them. Without JavaScript a decorative ellipsis stands in for the hidden crumbs.</p>
+  <code-block language="html" label="Collapsed trail" data-escape>
+<nav aria-label="Deep breadcrumb">
+  <bread-crumb data-collapsed>
+    <ol>
+      <li><a href="/">Home</a></li>
+      <li><a href="/a/">A</a></li>
+      <li><a href="/a/b/">B</a></li>
+      <li><a href="/a/b/c/">C</a></li>
+      <li><a href="/a/b/c/d/">D</a></li>
+      <li><span aria-current="page">Page</span></li>
+    </ol>
+  </bread-crumb>
+</nav>
   </code-block>
 
   <h3>Auto from pathname</h3>
-  <p>Skip the markup and let the component infer the trail. Provide <code>data-current-label</code> for a friendly final-crumb label:</p>
-  <code-block language="html" data-escape>
-<bread-crumb data-from-pathname data-current-label="My Page"></bread-crumb>
+  <p>Skip the markup and let the component infer the trail. <code>data-current-label</code> gives the final crumb a friendly label:</p>
+  <code-block language="html" label="Auto from pathname" data-escape>
+<nav aria-label="Breadcrumb">
+  <bread-crumb data-from-pathname data-current-label="My Page"></bread-crumb>
+</nav>
   </code-block>
 
   <h3>Override segment labels</h3>
   <p>For non-trivial slugs, assign a label map via the <code>.labels</code> property:</p>
-  <code-block language="html" data-escape>
-<bread-crumb id="bc" data-from-pathname></bread-crumb>
+  <code-block language="html" label="Label map" data-escape>
+<nav aria-label="Breadcrumb">
+  <bread-crumb id="bc" data-from-pathname></bread-crumb>
+</nav>
 <script>
   document.getElementById('bc').labels = {
     '/docs/': 'Documentation',
@@ -107,22 +192,25 @@ crumbLabel: Web Components
 <section>
   <h2>Progressive Enhancement</h2>
   <ol>
-    <li><strong>HTML.</strong> The <code>&lt;ol&gt;&lt;li&gt;</code> structure is the semantic anchor. Without JS or CSS, the trail is a navigable list of links.</li>
-    <li><strong>CSS.</strong> VB's <code>bread-crumb</code> styles apply token-driven separators, hover states, and theme-aware colors via the element selector — no class needed.</li>
-    <li><strong>JS.</strong> The component applies missing ARIA attributes, ensures <code>aria-current="page"</code> on the last crumb, supports auto-generation, and emits BreadcrumbList JSON-LD.</li>
+    <li><strong>HTML.</strong> The wrapping <code>&lt;nav aria-label&gt;</code> and the <code>&lt;ol&gt;&lt;li&gt;</code> structure are the semantic anchor. Without JS or CSS, the trail is a labelled landmark containing a navigable list of links.</li>
+    <li><strong>CSS.</strong> VB's <code>bread-crumb</code> styles apply token-driven separators, truncation, collapse, hover states, and theme-aware colors via the element selector — no class needed. The equivalent class-based, zero-JS pattern is <a href="/docs/elements/native/nav/"><code>nav.breadcrumb</code></a>.</li>
+    <li><strong>JS.</strong> The component keeps <code>aria-current="page"</code> on the last crumb, adds the collapse button, supports auto-generation, and emits BreadcrumbList JSON-LD.</li>
   </ol>
 </section>
 
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>The host element gets <code>role="navigation"</code> and <code>aria-label="Breadcrumb"</code> automatically. Override either by setting your own.</li>
-    <li>The final crumb is announced as the current page via <code>aria-current="page"</code>, applied to either an <code>&lt;a&gt;</code> or <code>&lt;span&gt;</code>.</li>
-    <li>Use <code>data-truncated</code> sparingly: while ellipsized text is announced in full by screen readers, ensure the underlying label is still meaningful out of context.</li>
+    <li>The landmark comes from the wrapping <code>&lt;nav aria-label="Breadcrumb"&gt;</code>. If you omit it, the component falls back to <code>role="navigation"</code> and <code>aria-label="Breadcrumb"</code> on itself (only with JavaScript). Inside a <code>&lt;nav&gt;</code> it adds no role, so there is never a nested duplicate landmark.</li>
+    <li>When a page has more than one breadcrumb or navigation landmark, give each a distinct <code>aria-label</code>.</li>
+    <li>The final crumb is announced as the current page via <code>aria-current="page"</code>, on either an <code>&lt;a&gt;</code> or a <code>&lt;span&gt;</code>.</li>
+    <li>Separators and the no-JS collapse ellipsis are CSS-generated with empty alternative text, so screen readers do not announce them.</li>
+    <li>The collapse toggle is a real <code>&lt;button&gt;</code> with <code>aria-expanded</code>, so hidden crumbs stay reachable by keyboard and assistive technology.</li>
+    <li>Use <code>data-truncated</code> sparingly: the full label is still read by screen readers, but sighted users only see the start of it.</li>
   </ul>
 </section>
 
 <section>
   <h2>SEO</h2>
-  <p>By default the component appends a <code>&lt;script type="application/ld+json"&gt;</code> child containing a <a href="https://schema.org/BreadcrumbList">BreadcrumbList</a> object derived from the rendered trail. Set <code>data-jsonld="off"</code> when the document already exposes breadcrumbs through another mechanism.</p>
+  <p>By default the component appends a <code>&lt;script type="application/ld+json"&gt;</code> child containing a <a href="https://schema.org/BreadcrumbList">BreadcrumbList</a> object derived from the rendered trail. Item URLs are each link's resolved <code>href</code>, so relative links (<code>../</code>) and <code>&lt;base&gt;</code> are honoured; the current-page crumb has no URL. Set <code>data-jsonld="off"</code> when the document already exposes breadcrumbs through another mechanism.</p>
 </section>
