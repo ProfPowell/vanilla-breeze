@@ -27,7 +27,7 @@ See [`api.json`](./api.json) for the full attribute / event surface.
 |------------------|----------------------------------|-----------------------------------------|
 | `type`           | `key-points`                     | `tldr` / `teaser` / `headline` also.    |
 | `length`         | `medium`                         | `short` / `long` also.                  |
-| `format`         | `markdown`                       | `plain-text` also.                      |
+| `format`         | `markdown`                       | `plain-text` renders as text, no markdown. |
 | `shared-context` | —                                | Passed to `Summarizer.create()`.        |
 | `endpoint`       | —                                | Inline fallback. POST JSON, stream text. |
 | `fallback-url`   | —                                | Deep-link template. Tokens: `{prompt}`, `{url}`, `{title}`, `{content}`. |

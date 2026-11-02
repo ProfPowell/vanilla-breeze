@@ -61,6 +61,32 @@ describe('callEndpoint — request shape', () => {
   });
 });
 
+describe('callEndpoint — messages[] (v1.1)', () => {
+  it('includes messages when provided, keeping prompt', async () => {
+    let body;
+    globalThis.fetch = async (_url, init) => {
+      body = JSON.parse(init.body);
+      return streamResponse(['x']);
+    };
+    const messages = [
+      { role: 'user', content: 'first' },
+      { role: 'assistant', content: 'reply' },
+    ];
+    await collect(callEndpoint('/api/x', { prompt: 'second', mode: 'chat', messages }));
+    assert.deepEqual(body, { prompt: 'second', mode: 'chat', messages });
+  });
+
+  it('sends an empty messages array as-is', async () => {
+    let body;
+    globalThis.fetch = async (_url, init) => {
+      body = JSON.parse(init.body);
+      return streamResponse(['x']);
+    };
+    await collect(callEndpoint('/api/x', { prompt: 'hi', messages: [] }));
+    assert.deepEqual(body, { prompt: 'hi', messages: [] });
+  });
+});
+
 describe('callEndpoint — text/plain streaming', () => {
   it('yields decoded chunks in order', async () => {
     globalThis.fetch = async () => streamResponse(['Hel', 'lo, ', 'world.']);

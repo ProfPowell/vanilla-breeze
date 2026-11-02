@@ -10,10 +10,10 @@
   "attributes": [
     { "name": "type",            "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["key-points", "tldr", "teaser", "headline"], "default": "key-points", "description": "Summarizer type — passed through to Summarizer.create()." },
     { "name": "length",          "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["short", "medium", "long"], "default": "medium", "description": "Summary length hint." },
-    { "name": "format",          "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["markdown", "plain-text"], "default": "markdown", "description": "Output format." },
+    { "name": "format",          "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["markdown", "plain-text"], "default": "markdown", "description": "Output format. plain-text output is rendered as text (no markdown-viewer)." },
     { "name": "shared-context",  "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Optional shared context passed to Summarizer.create()." },
     { "name": "endpoint",        "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Inline-fallback HTTP URL (POST JSON, streamed text/plain or one-shot application/json). Wire format: admin/specs/ai-page-tools-v1.md §C." },
-    { "name": "fallback-url",    "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Deep-link URL template. Tokens: {prompt} {url} {title} {content}. Provider-neutral." },
+    { "name": "fallback-url",    "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Deep-link URL template. Tokens: {prompt} {url} {title} {content}. {content} is the wrapped text, capped at 1500 characters. Provider-neutral." },
     { "name": "fallback-label",  "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Override the trigger label when in deep-link mode." },
     { "name": "fallback-prompt", "kind": "host-api", "purpose": "config",       "type": "string",  "default": "Summarize this article: {url}", "description": "Override the {prompt} string substituted into fallback-url." },
     { "name": "data-state",      "kind": "data",     "purpose": "output-state", "type": "enum",    "values": ["checking", "ready", "downloading", "streaming", "complete", "error", "unavailable", "deep-link"], "direction": "output", "public": true, "description": "Lifecycle state. Per admin/specs/ai-page-tools-v1.md." }
@@ -24,5 +24,7 @@
     { "name": "ai-summary:error",  "detail": "{ error }",            "description": "Fires on any failure path (network, AI API, parsing)." }
   ],
   "properties": [],
-  "methods": []
+  "methods": [
+    { "name": "stop()", "returns": "void", "description": "Abort the in-flight summary, if any. Same as the Stop button or Escape." }
+  ]
 }

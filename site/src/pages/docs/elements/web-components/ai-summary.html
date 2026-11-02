@@ -26,7 +26,8 @@ crumbLabel: Web Components
 
   <section>
     <h2>Local Chrome Summarizer</h2>
-    <p>In Chrome 138+ on a supported desktop, the component summarises on-device using <code>Summarizer.summarizeStreaming()</code>. The pass-through attributes <code>type</code>, <code>length</code>, and <code>format</code> map 1:1 to <code>Summarizer.create()</code> options.</p>
+    <p>In Chrome 138+ on a supported desktop, the component summarises on-device using <code>Summarizer.summarizeStreaming()</code>. The pass-through attributes <code>type</code>, <code>length</code>, and <code>format</code> map 1:1 to <code>Summarizer.create()</code> options. With <code>format="plain-text"</code> the result is shown as plain text (whitespace preserved) instead of going through <code>&lt;markdown-viewer&gt;</code>.</p>
+    <p>The on-device model accepts a limited amount of input. Where the browser exposes <code>inputQuota</code> and <code>measureInputUsage()</code>, content over the quota is trimmed to fit and a notice says how much was summarised; otherwise content over about 16,000 characters gets a warning that it may exceed the limit.</p>
 
     <code-block language="html" show-lines label="Local-only" data-escape><ai-summary type="key-points" length="medium" format="markdown">
   <article>
@@ -47,7 +48,7 @@ crumbLabel: Web Components
   </article>
 </ai-summary></code-block>
 
-    <p>The wire format is documented in <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/ai-page-tools-v1.md">AI page-tools v1, §C</a>. Implementations on the server side are unconstrained — wrap any AI provider that can produce text from a prompt.</p>
+    <p>The wire format is documented in <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/ai-page-tools-v1.md">AI page-tools v1.1, §C</a>. Implementations on the server side are unconstrained — wrap any AI provider that can produce text from a prompt.</p>
   </section>
 
   <section>
@@ -72,7 +73,7 @@ crumbLabel: Web Components
   <article>…</article>
 </ai-summary></code-block>
 
-    <p>Template tokens (URL-encoded on substitution): <code>{prompt}</code>, <code>{url}</code>, <code>{title}</code>. <code>{content}</code> is <strong>not yet supported</strong>: it currently expands to an empty string. Override the default prompt with <code>fallback-prompt="…"</code>:</p>
+    <p>Template tokens (URL-encoded on substitution): <code>{prompt}</code>, <code>{url}</code>, <code>{title}</code> and <code>{content}</code>, the wrapped text capped at 1,500 characters so the URL stays within what browsers and providers accept. The trigger's accessible name ends in &ldquo;(opens in new tab)&rdquo; in deep-link mode. Override the default prompt with <code>fallback-prompt="…"</code>:</p>
 
     <code-block language="html" show-lines label="Custom prompt" data-escape><ai-summary
     fallback-url="https://claude.ai/new?q={prompt}"
@@ -85,6 +86,7 @@ crumbLabel: Web Components
   <section>
     <h2>State and events</h2>
     <p>The host element reflects lifecycle on <code>data-state</code>: <code>checking</code> → <code>ready</code> → <code>streaming</code> → <code>complete</code>, plus <code>downloading</code>, <code>error</code>, <code>unavailable</code>, and <code>deep-link</code>. Theme via CSS attribute selectors.</p>
+    <p>While a summary streams, a <strong>Stop</strong> button appears next to the trigger. Click it, press <kbd>Escape</kbd> inside the element, or call <code>stop()</code> to end it; what streamed so far is kept, marked &ldquo;(stopped)&rdquo;, and <code>data-state</code> returns to <code>ready</code>.</p>
 
     <code-block language="js" show-lines label="Listen for events" data-escape><script type="module">
 const summary = document.querySelector('ai-summary');

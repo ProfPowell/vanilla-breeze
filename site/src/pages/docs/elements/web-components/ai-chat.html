@@ -59,7 +59,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Inline endpoint fallback</h2>
-    <p>Configure <code>endpoint="…"</code> to route through a server you control when on-device AI isn't available. The component sends <code>{ prompt, content, mode: "chat" }</code> as JSON; the server streams <code>text/plain</code> chunks back (or returns one-shot <code>application/json</code>). The chat UI is identical regardless of provider.</p>
+    <p>Configure <code>endpoint="…"</code> to route through a server you control when on-device AI isn't available. The component sends <code>{ prompt, content, mode: "chat", messages }</code> as JSON, where <code>messages</code> is the conversation so far (<code>[{ role: "user" | "assistant", content }]</code>, oldest first, excluding the current <code>prompt</code>; capped to the most recent turns). A server that ignores <code>messages</code> still works, it just answers each turn on its own. <code>reset()</code> clears the history. The server streams <code>text/plain</code> chunks back (or returns one-shot <code>application/json</code>). The chat UI is identical regardless of provider.</p>
 
     <code-block language="html" show-lines label="With inline endpoint" data-escape><ai-chat
     context="#article"
@@ -67,13 +67,13 @@ crumbLabel: Web Components
     placeholder="Ask about this page…">
 </ai-chat></code-block>
 
-    <p>Wire format documented in <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/ai-page-tools-v1.md">AI page-tools v1, §C</a>.</p>
+    <p>Wire format documented in <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/ai-page-tools-v1.md">AI page-tools v1.1, §C</a>.</p>
   </section>
 
   <section>
     <h2>External deep-link fallback</h2>
     <p>Configure <code>fallback-url="…"</code> and the Send button opens the configured URL in a new tab when neither on-device AI nor an inline endpoint is configured. The current draft message is appended to the <code>fallback-prompt</code> text (default &ldquo;Help me explore this article: {title} ({url})&rdquo;) and the result fills the deep-link <code>{prompt}</code> token, so the external tool picks up where the user left off.</p>
-    <p>Tokens in <code>fallback-url</code> are URL-encoded on substitution. <code>{prompt}</code>, <code>{url}</code> (the page URL) and <code>{title}</code> (the document title) are supported. <code>{content}</code> is <strong>not yet supported</strong>: it currently expands to an empty string.</p>
+    <p>Tokens in <code>fallback-url</code> are URL-encoded on substitution. <code>{prompt}</code>, <code>{url}</code> (the page URL), <code>{title}</code> (the document title) and <code>{content}</code> are supported. <code>{content}</code> is the text of the <code>context</code> region, capped at 1,500 characters so the URL stays within what browsers and providers accept; without a <code>context</code> attribute it is empty, so no page text leaves the page unless you opt in. In deep-link mode the Send button's accessible name becomes &ldquo;Send (opens in new tab)&rdquo;.</p>
 
     <code-block language="html" show-lines label="Deep-link only" data-escape><ai-chat
     fallback-url="https://claude.ai/new?q={prompt}"
@@ -84,7 +84,8 @@ crumbLabel: Web Components
   <section>
     <h2>State and events</h2>
     <p>Lifecycle on <code>data-state</code>: <code>checking</code>, <code>ready</code>, <code>downloading</code>, <code>streaming</code>, <code>error</code>, <code>unavailable</code>. Provider switching emits <code>chat-window:model-change</code> from the inner chat-window — listen there to react to in-page provider swaps.</p>
-    <p>One reply streams at a time. While <code>data-state="streaming"</code>, further sends are ignored and the typed text stays in the textarea; press <kbd>Escape</kbd> inside the chat to stop the current reply. The streaming message carries <code>aria-busy="true"</code> until it finishes.</p>
+    <p>One reply streams at a time. While <code>data-state="streaming"</code>, further sends are ignored and the typed text stays in the textarea. The Send button is swapped for a <strong>Stop</strong> button; click it, press <kbd>Escape</kbd> inside the chat, or call <code>stop()</code> to end the current reply (what streamed so far is kept, marked &ldquo;(stopped)&rdquo;). Stopping during the first on-device reply also cancels the session creation and model download. The streaming message carries <code>aria-busy="true"</code> until it finishes.</p>
+    <p>The page-context ribbon is re-measured when focus enters the chat and on every send, so content that loads after the page (lazy sections, client-rendered articles) is counted.</p>
 
     <code-block language="js" show-lines label="Listen for events" data-escape><script type="module">
 const chat = document.querySelector('ai-chat');

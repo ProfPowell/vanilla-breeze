@@ -12,7 +12,11 @@
  * Request:
  *   POST {endpoint}
  *   Content-Type: application/json
- *   { "prompt": "...", "content": "..." (optional), "mode": "summarize" | "chat" }
+ *   { "prompt": "...", "content": "..." (optional), "mode": "summarize" | "chat",
+ *     "messages": [{ "role": "user" | "assistant", "content": "..." }] (optional, v1.1) }
+ *
+ *   `messages` carries the prior conversation turns (oldest first, excluding
+ *   the current `prompt`). Servers that ignore it still work, single-turn.
  *
  * Response:
  *   200, Content-Type: text/plain  → chunked stream, yielded as decoded chunks
@@ -27,13 +31,17 @@
  * @param {string} [options.prompt]
  * @param {string} [options.content]
  * @param {string} [options.mode]
+ * @param {Array<{ role: 'user'|'assistant', content: string }>} [options.messages]
+ *   Prior turns, oldest first. Omitted from the body when absent.
  * @param {AbortSignal} [options.signal]
  * @returns {AsyncIterable<string>}
  */
-export async function* callEndpoint(url, { prompt = '', content, mode, signal } = {}) {
+export async function* callEndpoint(url, { prompt = '', content, mode, messages, signal } = {}) {
+  /** @type {Record<string, unknown>} */
   const body = { prompt };
   if (content !== undefined) body.content = content;
   if (mode !== undefined) body.mode = mode;
+  if (Array.isArray(messages)) body.messages = messages;
 
   const res = await fetch(url, {
     method: 'POST',

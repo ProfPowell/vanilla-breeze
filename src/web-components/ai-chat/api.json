@@ -12,8 +12,8 @@
     { "name": "context-label",   "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Human-friendly label for the context region (shown in the ribbon and used in the system prompt header)." },
     { "name": "system",          "kind": "host-api", "purpose": "config",       "type": "string",  "description": "System-prompt prefix. May also be supplied via <template data-role='system'>; attribute wins." },
     { "name": "placeholder",     "kind": "host-api", "purpose": "config",       "type": "string",  "default": "Type a message…", "description": "Textarea placeholder text. Reactive via attributeChangedCallback." },
-    { "name": "endpoint",        "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Inline-fallback HTTP URL (POST JSON, streamed text/plain or one-shot application/json)." },
-    { "name": "fallback-url",    "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Deep-link URL template. Tokens: {prompt} {url} {title} {content}. Provider-neutral." },
+    { "name": "endpoint",        "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Inline-fallback HTTP URL (POST JSON, streamed text/plain or one-shot application/json). Sends prior turns as messages[] (admin/specs/ai-page-tools-v1.md §C, v1.1)." },
+    { "name": "fallback-url",    "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Deep-link URL template. Tokens: {prompt} {url} {title} {content}. {content} is the context region's text, capped at 1500 characters (empty without a context attribute). Provider-neutral." },
     { "name": "fallback-label",  "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Override the deep-link option label in the chat-window provider select." },
     { "name": "fallback-prompt", "kind": "host-api", "purpose": "config",       "type": "string",  "default": "Help me explore this article: {title} ({url})", "description": "Override the {prompt} string substituted into fallback-url." },
     { "name": "data-state",         "kind": "data", "purpose": "output-state", "type": "enum",    "values": ["checking", "ready", "downloading", "streaming", "error", "unavailable"], "direction": "output", "public": true,  "description": "Lifecycle state. Per admin/specs/ai-page-tools-v1.md." },
@@ -27,6 +27,7 @@
   ],
   "properties": [],
   "methods": [
-    { "name": "reset()", "returns": "Promise<void>", "description": "Destroy the current session and clear the log." }
+    { "name": "reset()", "returns": "Promise<void>", "description": "Abort any reply, destroy the current session, and clear the log and the conversation history sent to endpoints." },
+    { "name": "stop()",  "returns": "void",          "description": "Abort the in-flight reply, if any. Same as the Stop button or Escape." }
   ]
 }

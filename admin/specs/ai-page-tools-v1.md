@@ -1,6 +1,6 @@
 # Vanilla Breeze AI Page-Tools — v1
 
-> **Status:** stable, 2026-05-08
+> **Status:** stable, 2026-05-08 · **v1.1** 2026-11-01 (§C `messages[]` added; §D `{content}` implemented)
 > **Owner:** VB AI page-tools epic ([`vanilla-breeze-ddm0`](../../.beads/issues.jsonl))
 > **Consumers:** `<ai-summary>`, `<ai-chat>` (Phase 1). Future `ai-*` components must conform unless this spec is bumped to v2.
 > **Source of truth:** this file. Shared implementation in [`src/lib/ai/`](../../src/lib/ai/).
@@ -51,11 +51,19 @@ POST {endpoint}
 Content-Type: application/json
 
 {
-  "prompt":  "<component-composed task prompt>",
-  "content": "<extracted page content>"   // optional
-  "mode":    "summarize" | "chat" | …      // component-specified hint
+  "prompt":   "<component-composed task prompt>",
+  "content":  "<extracted page content>",   // optional
+  "mode":     "summarize" | "chat" | …,     // component-specified hint
+  "messages": [                              // optional, v1.1 — conversational modes
+    { "role": "user",      "content": "…" },
+    { "role": "assistant", "content": "…" }
+  ]
 }
 ```
+
+**`messages` (v1.1).** Conversational components (`<ai-chat>`, `mode: "chat"`) send the prior turns, oldest first, **excluding** the current turn — that is still `prompt`, so the full conversation is `[...messages, { role: "user", content: prompt }]`. On the first turn it is `[]`. The list is a bounded, contiguous tail of the conversation (`<ai-chat>`: at most 20 entries / ~12,000 characters, never opening on an assistant entry; see [`trimHistory`](../../src/lib/ai/budget.js)), so servers must not assume it starts at the beginning. A reply the user stopped is included as the partial text they saw. `reset()` clears it. One-shot components (`<ai-summary>`) omit the field.
+
+Servers that ignore `messages` still work — every turn is then answered on its own, as in v1.0. `prompt` stays required for that reason.
 
 Acceptable response shapes:
 
@@ -79,7 +87,7 @@ When provider is `deep-link`, the component composes a URL by substituting these
 | `{prompt}`  | Component-composed task prompt. Each component ships a sensible default; authors override with `fallback-prompt="…"`. |
 | `{url}`     | `location.href`.                                                         |
 | `{title}`   | `document.title`.                                                        |
-| `{content}` | Extracted page text (length-capped — long URLs may be rejected). Optional. |
+| `{content}` | Extracted page text, capped at 1,500 characters (word boundary + `…`) before encoding. `<ai-summary>`: the wrapped content. `<ai-chat>`: the `context` region, or empty without one (§F). Extracted only when the template uses the token. |
 
 Provider-neutral: the same template syntax works for `claude.ai`, `chatgpt.com`, `perplexity.ai`, `mailto:`, internal tools, and anything else that accepts a URL with a query string.
 
@@ -130,6 +138,11 @@ Components MAY add component-specific events (e.g. `ai-chat:context-overflow`). 
 
 ## Section G — Versioning
 
-This spec is **v1**. Breaking changes (renaming attributes, changing the wire format, changing the resolution order) require bumping to `v2` in a new file (`ai-page-tools-v2.md`) and updating each component's `api.json`. Forward-compatible additions (new optional attributes, new events) can land in `v1.x` revisions in this file.
+This spec is **v1** (current revision **v1.1**). Breaking changes (renaming attributes, changing the wire format, changing the resolution order) require bumping to `v2` in a new file (`ai-page-tools-v2.md`) and updating each component's `api.json`. Forward-compatible additions (new optional attributes, new events) can land in `v1.x` revisions in this file.
+
+Revisions:
+
+- **v1.1** (2026-11-01) — §C: optional `messages[]` conversation history on endpoint requests; servers that ignore it still work. §D: `{content}` implemented with a 1,500-character cap.
+- **v1.0** (2026-05-08) — initial contract.
 
 VB is pre-release. Breaking the spec is permitted while the corpus is still small; it gets harder later.

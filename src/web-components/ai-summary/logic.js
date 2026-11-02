@@ -10,10 +10,12 @@
  *
  * @attr {string} type            - Summarizer type ('key-points'|'tldr'|'teaser'|'headline'). Default 'key-points'.
  * @attr {string} length          - 'short'|'medium'|'long'. Default 'medium'.
- * @attr {string} format          - 'markdown'|'plain-text'. Default 'markdown'.
+ * @attr {string} format          - 'markdown'|'plain-text'. Default 'markdown'. plain-text output
+ *                                  is rendered as text (no markdown-viewer).
  * @attr {string} shared-context  - Optional shared context passed to Summarizer.create().
  * @attr {string} endpoint        - Inline-fallback HTTP URL (POST JSON, streamed text or one-shot JSON).
- * @attr {string} fallback-url    - Deep-link URL template ({prompt}/{url}/{title}/{content} tokens).
+ * @attr {string} fallback-url    - Deep-link URL template ({prompt}/{url}/{title}/{content} tokens;
+ *                                  {content} is the wrapped text, length-capped).
  * @attr {string} fallback-label  - Override trigger label when in deep-link mode.
  * @attr {string} fallback-prompt - Override the default {prompt} text.
  *
@@ -39,8 +41,9 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { checkAvailability, resolveProvider } from '../../lib/ai/availability.js';
 import { extractContextText } from '../../lib/ai/extract.js';
-import { expandFallbackURL } from '../../lib/ai/fallback.js';
+import { expandFallbackURL, usesContentToken } from '../../lib/ai/fallback.js';
 import { callEndpoint } from '../../lib/ai/endpoint.js';
+import { SUMMARIZER_CHAR_BUDGET, fitToQuota } from '../../lib/ai/budget.js';
 
 const DEFAULT_FALLBACK_PROMPT = 'Summarize this article: {url}';
 
@@ -48,6 +51,8 @@ class AISummary extends VBElement {
   /** @type {HTMLButtonElement | null} */ #button = null;
   /** @type {HTMLElement       | null} */ #status = null;
   /** @type {HTMLElement       | null} */ #output = null;
+  /** @type {HTMLButtonElement | null} */ #stop = null;
+  /** @type {HTMLElement       | null} */ #notice = null;
   /** @type {AbortController   | null} */ #abortCtl = null;
   /** @type {'local'|'endpoint'|'deep-link'|'unavailable'} */ #provider = 'unavailable';
 
@@ -59,6 +64,11 @@ class AISummary extends VBElement {
   teardown() {
     this.#abortCtl?.abort();
     this.#abortCtl = null;
+  }
+
+  /** Abort the in-flight summary, if any. Same as pressing Stop or Escape. */
+  stop() {
+    this.#abortCtl?.abort();
   }
 
   // ── UI ──────────────────────────────────────────────────────────
@@ -79,8 +89,10 @@ class AISummary extends VBElement {
         <button type="button" class="ais-trigger small" disabled>
           <span class="ais-label">Summarize</span>
         </button>
+        <button type="button" class="ais-stop small" hidden>Stop</button>
         <span class="ais-status" data-state="checking" role="status">Checking availability…</span>
       </div>
+      <p class="ais-notice" role="status" hidden></p>
       <div class="ais-output" hidden aria-live="polite"></div>
     `;
     this.prepend(ui);
@@ -92,7 +104,16 @@ class AISummary extends VBElement {
     this.#button = /** @type {HTMLButtonElement} */ (ui.querySelector('.ais-trigger'));
     this.#status = /** @type {HTMLElement}        */ (ui.querySelector('.ais-status'));
     this.#output = /** @type {HTMLElement}        */ (ui.querySelector('.ais-output'));
+    this.#stop   = /** @type {HTMLButtonElement|null} */ (ui.querySelector('.ais-stop'));
+    this.#notice = /** @type {HTMLElement|null}       */ (ui.querySelector('.ais-notice'));
     this.listen(this.#button, 'click', () => this.#run());
+    if (this.#stop) this.listen(this.#stop, 'click', () => this.#abortCtl?.abort());
+    this.listen(this, 'keydown', (/** @type {KeyboardEvent} */ e) => {
+      if (e.key === 'Escape' && this.#abortCtl) {
+        e.preventDefault();
+        this.#abortCtl.abort();
+      }
+    });
   }
 
   // ── Availability + provider resolution ─────────────────────────
@@ -111,6 +132,7 @@ class AISummary extends VBElement {
   /** @param {string} availability */
   #applyProvider(availability) {
     if (!this.#button || !this.#status) return;
+    this.#setNewTabHint(this.#provider === 'deep-link');
 
     if (this.#provider === 'local') {
       this.#status.dataset.state = availability;
@@ -165,15 +187,16 @@ class AISummary extends VBElement {
 
     this.#output.hidden = false;
     this.#output.textContent = '';
-    this.#button.disabled = true;
+    this.#hideNotice();
     this.#output.setAttribute('aria-busy', 'true');
     this.#setState('streaming');
     const ctl = new AbortController();
     this.#abortCtl = ctl;
+    this.#setBusy(true);
 
+    let result = '';
     try {
       const text = this.#extractContent();
-      let result = '';
       const stream = this.#provider === 'local'
         ? await this.#localStream(text, ctl.signal)
         : callEndpoint(this.getAttribute('endpoint') || '', {
@@ -183,12 +206,15 @@ class AISummary extends VBElement {
             signal: ctl.signal,
           });
 
+      // A first local run may have passed through 'downloading'.
+      if (this.getAttribute('data-state') !== 'streaming') this.#setState('streaming');
+
       for await (const chunk of stream) {
         result += chunk;
         this.#output.textContent = result;
       }
 
-      this.#renderMarkdown(result);
+      this.#renderResult(result);
       this.#setState('complete');
       this.dispatchEvent(new CustomEvent('ai-summary:result', {
         detail: { text: result, provider: this.#provider },
@@ -196,6 +222,8 @@ class AISummary extends VBElement {
       }));
     } catch (err) {
       if (err && /** @type {Error} */ (err).name === 'AbortError') {
+        // Keep what streamed so far, marked as stopped.
+        this.#output.textContent = result ? `${result} (stopped)` : '(stopped)';
         this.#setState('ready');
         return;
       }
@@ -208,8 +236,23 @@ class AISummary extends VBElement {
     } finally {
       this.#output.removeAttribute('aria-busy');
       if (this.#abortCtl === ctl) this.#abortCtl = null;
-      this.#button.disabled = false;
+      this.#setBusy(false);
     }
+  }
+
+  /**
+   * Swap the trigger for the Stop button while streaming, moving focus along
+   * so keyboard users aren't dropped onto <body> by the disabled trigger.
+   * @param {boolean} busy
+   */
+  #setBusy(busy) {
+    if (!this.#button) return;
+    const active = document.activeElement;
+    this.#button.disabled = busy;
+    if (!this.#stop) return;
+    this.#stop.hidden = !busy;
+    if (busy && active === this.#button) this.#stop.focus();
+    else if (!busy && active === this.#stop) this.#button.focus();
   }
 
   /**
@@ -220,6 +263,9 @@ class AISummary extends VBElement {
   async #localStream(text, signal) {
     // @ts-expect-error — Summarizer is a Chrome built-in not in the TS lib.
     const summarizer = await Summarizer.create({
+      // Writing Assistance APIs: create() honours an AbortSignal, so Stop
+      // also cancels a pending creation / model download.
+      signal,
       type:           this.getAttribute('type')           || 'key-points',
       format:         this.getAttribute('format')         || 'markdown',
       length:         this.getAttribute('length')         || 'medium',
@@ -235,9 +281,17 @@ class AISummary extends VBElement {
         });
       },
     });
+    let input = text;
+    try {
+      input = await this.#fitInput(summarizer, text, signal);
+    } catch (err) {
+      summarizer.destroy?.();
+      throw err;
+    }
+
     const stream = typeof summarizer.summarizeStreaming === 'function'
-      ? summarizer.summarizeStreaming(text, { signal })
-      : (async function* () { yield await summarizer.summarize(text, { signal }); })();
+      ? summarizer.summarizeStreaming(input, { signal })
+      : (async function* () { yield await summarizer.summarize(input, { signal }); })();
 
     return (async function* () {
       try {
@@ -246,6 +300,40 @@ class AISummary extends VBElement {
         summarizer.destroy?.();
       }
     })();
+  }
+
+  /**
+   * Keep the input within the on-device model's quota. Uses the real
+   * `inputQuota` / `measureInputUsage()` when the browser exposes them
+   * (trimming to fit, with a notice); otherwise falls back to a character
+   * budget and only warns, since the true limit is unknown.
+   * @param {any} summarizer
+   * @param {string} text
+   * @param {AbortSignal} signal
+   * @returns {Promise<string>}
+   */
+  async #fitInput(summarizer, text, signal) {
+    const quota = summarizer?.inputQuota;
+    if (typeof summarizer?.measureInputUsage === 'function' && typeof quota === 'number') {
+      let usage;
+      try {
+        usage = await summarizer.measureInputUsage(text, { signal });
+      } catch (err) {
+        if (/** @type {Error} */ (err)?.name === 'AbortError') throw err;
+        usage = undefined; // measurement unsupported for this input — carry on
+      }
+      if (typeof usage === 'number' && usage > quota) {
+        const fitted = fitToQuota(text, usage, quota);
+        const pct = Math.max(1, Math.round((fitted.length / text.length) * 100));
+        this.#showNotice(`This content is longer than the on-device model accepts; summarizing the first ${pct}%.`);
+        return fitted;
+      }
+      return text;
+    }
+    if (text.length > SUMMARIZER_CHAR_BUDGET) {
+      this.#showNotice(`This content is long (${text.length.toLocaleString()} characters) and may exceed the on-device model's limit.`);
+    }
+    return text;
   }
 
   // ── Helpers ────────────────────────────────────────────────────
@@ -262,9 +350,26 @@ class AISummary extends VBElement {
   }
 
   #composeDeepLinkURL() {
-    return expandFallbackURL(this.getAttribute('fallback-url'), {
+    const template = this.getAttribute('fallback-url');
+    return expandFallbackURL(template, {
       prompt: this.#composePrompt(),
+      // Wrapping content is the author's consent to read it (spec §F).
+      content: usesContentToken(template) ? this.#extractContent() : '',
     });
+  }
+
+  /**
+   * format="plain-text" output is shown as text; markdown goes through the
+   * sanitising viewer.
+   * @param {string} text
+   */
+  #renderResult(text) {
+    if (!this.#output) return;
+    if ((this.getAttribute('format') || 'markdown') === 'plain-text') {
+      this.#output.textContent = text;
+      return;
+    }
+    this.#renderMarkdown(text);
   }
 
   /**
@@ -302,6 +407,7 @@ class AISummary extends VBElement {
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
       a.textContent = this.getAttribute('fallback-label') || 'Continue elsewhere';
+      a.append(newTabHint());
       link.append('You can ', a, ' instead.');
       this.#output.appendChild(link);
     }
@@ -321,6 +427,34 @@ class AISummary extends VBElement {
     const el = this.#button?.querySelector('.ais-label');
     if (el) el.textContent = label;
   }
+
+  /** @param {boolean} on */
+  #setNewTabHint(on) {
+    const existing = this.#button?.querySelector('.ais-newtab');
+    if (on && !existing) this.#button?.append(newTabHint());
+    else if (!on) existing?.remove();
+  }
+
+  /** @param {string} text */
+  #showNotice(text) {
+    if (!this.#notice) return;
+    this.#notice.textContent = text;
+    this.#notice.hidden = false;
+  }
+
+  #hideNotice() {
+    if (!this.#notice) return;
+    this.#notice.hidden = true;
+    this.#notice.textContent = '';
+  }
+}
+
+/** Visually hidden " (opens in new tab)" for controls that call window.open. */
+function newTabHint() {
+  const sr = document.createElement('span');
+  sr.className = 'visually-hidden ais-newtab';
+  sr.textContent = ' (opens in new tab)';
+  return sr;
 }
 
 registerComponent('ai-summary', AISummary);

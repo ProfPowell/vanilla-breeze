@@ -64,7 +64,7 @@ ai-summary .ais-output {
   font-size: var(--font-size-m, 1rem);
   white-space: pre-wrap;
 }
-ai-summary[data-state="complete"] .ais-output,
+ai-summary[data-state="complete"]:not([format="plain-text"]) .ais-output,
 ai-summary .ais-output:has(markdown-viewer) {
   white-space: normal;
 }
@@ -79,3 +79,15 @@ ai-summary .ais-fallback {
   color: var(--color-text-muted);
 }
 ai-summary .ais-error { color: var(--color-error); }
+
+/* Stop affordance — only while a summary streams. JS toggles [hidden];
+   re-assert it over button display rules. */
+ai-summary .ais-stop[hidden] { display: none; }
+
+/* Input-budget / quota notice (long content was trimmed or may be). */
+ai-summary .ais-notice {
+  margin: 0;
+  font-size: var(--font-size-s);
+  color: var(--color-warning-text, var(--color-warning));
+}
+ai-summary .ais-notice[hidden] { display: none; }

@@ -42,7 +42,7 @@ See [`api.json`](./api.json).
 | `context-label`  | the selector                     | Friendly label shown in the ribbon.         |
 | `system`         | —                                | System-prompt prefix.                       |
 | `placeholder`    | `Type a message…`                | Textarea placeholder.                       |
-| `endpoint`       | —                                | Inline fallback. POST JSON, stream text.    |
+| `endpoint`       | —                                | Inline fallback. POST JSON (incl. `messages[]` history, spec v1.1), stream text. |
 | `fallback-url`   | —                                | Deep-link template.                         |
 | `fallback-label` | —                                | Trigger label in deep-link mode.            |
 | `fallback-prompt`| `Help me explore this article: {title} ({url})` | Override `{prompt}` substitution. |

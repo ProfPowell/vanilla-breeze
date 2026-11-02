@@ -20,7 +20,8 @@
  * @attr {string} system         - System-prompt prefix. May also live in <template data-role="system">.
  * @attr {string} placeholder    - Textarea placeholder. Default 'Type a message…'.
  * @attr {string} endpoint       - Inline-fallback HTTP URL.
- * @attr {string} fallback-url   - Deep-link URL template ({prompt}/{url}/{title}/{content} tokens).
+ * @attr {string} fallback-url   - Deep-link URL template ({prompt}/{url}/{title}/{content} tokens;
+ *                                 {content} is the `context` region's text, length-capped).
  * @attr {string} fallback-label - Override the deep-link option label in the model select.
  * @attr {string} fallback-prompt - Override the default {prompt} text.
  *
@@ -51,9 +52,9 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { checkAvailability, resolveProvider } from '../../lib/ai/availability.js';
 import { extractContextText } from '../../lib/ai/extract.js';
-import { expandFallbackURL } from '../../lib/ai/fallback.js';
+import { expandFallbackURL, usesContentToken } from '../../lib/ai/fallback.js';
 import { callEndpoint } from '../../lib/ai/endpoint.js';
-import { NANO_CONTEXT_BUDGET, estimateTokens } from '../../lib/ai/budget.js';
+import { NANO_CONTEXT_BUDGET, estimateTokens, trimHistory } from '../../lib/ai/budget.js';
 
 const DEFAULT_FALLBACK_PROMPT = 'Help me explore this article: {title} ({url})';
 
@@ -74,6 +75,12 @@ class AIChat extends VBElement {
   /** @type {HTMLElement|null} */ #ribbon = null;
   /** @type {HTMLElement|null} */ #notice = null;
   /** @type {HTMLElement|null} */ #starters = null;
+  /** @type {HTMLButtonElement|null} */ #sendBtn = null;
+  /** @type {HTMLButtonElement|null} */ #stopBtn = null;
+  /** Completed turns, oldest first. Sent to endpoints as `messages[]`
+   *  (AI page-tools v1.1) and used to seed a fresh local session.
+   *  @type {Array<{ role: 'user'|'assistant', content: string }>} */
+  #history = [];
   /** @type {any} */ #session = null;
   /** @type {AbortController|null} */ #abortCtl = null;
   /** @type {'available'|'downloadable'|'downloading'|'unavailable'|'unsupported'} */
@@ -98,6 +105,7 @@ class AIChat extends VBElement {
     this.#abortCtl = null;
     this.#session?.destroy?.();
     this.#session = null;
+    this.#syncStreamControls();
   }
 
   attributeChangedCallback(name, _old, value) {
@@ -114,9 +122,16 @@ class AIChat extends VBElement {
     this.#abortCtl = null;
     this.#session?.destroy?.();
     this.#session = null;
+    this.#history = [];
+    this.#syncStreamControls();
     /** @type {any} */ (this.#window)?.clearThread?.();
     this.#refreshContextRibbon();
     this.#setState('ready');
+  }
+
+  /** Abort the in-flight reply, if any. Same as pressing Stop or Escape. */
+  stop() {
+    this.#abortCtl?.abort();
   }
 
   /* ---------- rendering ---------- */
@@ -133,7 +148,13 @@ class AIChat extends VBElement {
     this.#ribbon   = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-ribbon'));
     this.#notice   = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-notice'));
     this.#starters = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-starters'));
+    this.#bindButtons();
     return true;
+  }
+
+  #bindButtons() {
+    this.#sendBtn = /** @type {HTMLButtonElement|null} */ (this.querySelector('chat-input [data-send]'));
+    this.#stopBtn = /** @type {HTMLButtonElement|null} */ (this.querySelector('chat-input [data-stop]'));
   }
 
   #renderShell() {
@@ -155,6 +176,9 @@ class AIChat extends VBElement {
             <button type="submit" class="small" data-send aria-label="Send">
               <icon-wc name="send"></icon-wc>
             </button>
+            <button type="button" class="small" data-stop aria-label="Stop generating" hidden>
+              <icon-wc name="square"></icon-wc>
+            </button>
           </footer>
         </chat-input>
       </chat-window>
@@ -166,6 +190,7 @@ class AIChat extends VBElement {
     this.#ribbon   = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-ribbon'));
     this.#notice   = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-notice'));
     this.#starters = /** @type {HTMLElement}        */ (this.querySelector(':scope > .ai-chat-starters'));
+    this.#bindButtons();
 
     const ta = this.querySelector('chat-input textarea');
     if (ta) /** @type {HTMLTextAreaElement} */ (ta).placeholder = placeholder;
@@ -231,6 +256,21 @@ class AIChat extends VBElement {
         e.preventDefault();
         this.#abortCtl.abort();
       }
+    });
+    /* Visible Stop button (swapped in for Send while a reply streams). */
+    if (this.#stopBtn) {
+      this.listen(this.#stopBtn, 'click', () => {
+        this.#abortCtl?.abort();
+        /** @type {HTMLElement|null} */ (this.querySelector('chat-input textarea'))?.focus();
+      });
+    }
+    /* Content loaded after connect (lazy sections, client-rendered articles)
+       must count: re-measure the context region whenever focus enters the
+       chat from outside. #handleSend re-measures too. */
+    this.listen(this, 'focusin', (/** @type {FocusEvent} */ e) => {
+      const from = /** @type {Node|null} */ (e.relatedTarget);
+      if (from && this.contains(from)) return;
+      this.#refreshContextRibbon();
     });
   }
 
@@ -355,6 +395,9 @@ class AIChat extends VBElement {
   }
 
   #syncNoticeForProvider() {
+    // Send opens a new tab in deep-link mode: say so to AT users too.
+    this.#sendBtn?.setAttribute('aria-label',
+      this.#provider === 'deep-link' ? 'Send (opens in new tab)' : 'Send');
     if (this.#provider === 'unavailable') {
       this.#showNotice('On-device AI unavailable and no fallback configured. Set endpoint= or fallback-url= to enable a fallback.');
     } else if (this.#provider === 'deep-link') {
@@ -368,14 +411,24 @@ class AIChat extends VBElement {
 
   /* ---------- session lifecycle ---------- */
 
-  async #ensureSession() {
+  /** @param {AbortSignal} [signal] */
+  async #ensureSession(signal) {
     if (this.#session) return this.#session;
     const systemPrompt = this.#composeSystemPrompt();
-    const initialPrompts = systemPrompt ? [{ role: 'system', content: systemPrompt }] : undefined;
+    /* Seed a fresh session with the conversation so far, so switching
+       provider (which destroys the session) doesn't drop the thread. */
+    const prompts = [
+      ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+      ...trimHistory(this.#history),
+    ];
+    const initialPrompts = prompts.length ? prompts : undefined;
 
     // @ts-expect-error — LanguageModel is a Chrome built-in not in the TS lib.
     this.#session = await LanguageModel.create({
       initialPrompts,
+      // Prompt API: create() honours an AbortSignal, so Stop/Escape also
+      // cancels a pending session creation (incl. the model download).
+      signal,
       expectedInputs:  [{ type: 'text', languages: ['en'] }],
       expectedOutputs: [{ type: 'text', languages: ['en'] }],
       monitor: (m) => {
@@ -434,7 +487,9 @@ class AIChat extends VBElement {
     const ctl = new AbortController();
     this.#abortCtl = ctl;
     this.#setState('streaming');
+    this.#syncStreamControls();
     typingElement.setAttribute('aria-busy', 'true');
+    this.#refreshContextRibbon();
 
     let acc = '';
     try {
@@ -444,8 +499,11 @@ class AIChat extends VBElement {
             prompt: message,
             content: this.#extractContext() || undefined,
             mode: 'chat',
+            messages: trimHistory(this.#history),
             signal: ctl.signal,
           });
+      // A first local send may have passed through 'downloading'.
+      if (this.getAttribute('data-state') !== 'streaming') this.#setState('streaming');
 
       for await (const chunk of stream) {
         acc += chunk;
@@ -454,11 +512,14 @@ class AIChat extends VBElement {
       }
       this.#finishTyping(typingElement, acc || ' ');
       this.#scrollWindowToBottom();
+      this.#remember(message, acc);
       this.dispatchEvent(new CustomEvent('ai-chat:message', { detail: { role: 'assistant', text: acc }, bubbles: true }));
       this.#setState('ready');
     } catch (err) {
       const e = /** @type {Error} */ (err);
       if (e?.name === 'AbortError') {
+        // A partial reply is still part of the conversation the user saw.
+        if (acc) this.#remember(message, acc);
         this.#finishTyping(typingElement, acc ? `${acc} (stopped)` : '(stopped)');
         this.#setState('ready');
         return;
@@ -471,6 +532,32 @@ class AIChat extends VBElement {
       // Only clear the controller if it is still ours (teardown/reset may
       // have replaced or cleared it meanwhile).
       if (this.#abortCtl === ctl) this.#abortCtl = null;
+      this.#syncStreamControls();
+    }
+  }
+
+  /**
+   * Record a completed (or partially streamed) exchange.
+   * @param {string} user
+   * @param {string} assistant
+   */
+  #remember(user, assistant) {
+    this.#history.push({ role: 'user', content: user }, { role: 'assistant', content: assistant });
+  }
+
+  /** Swap Send for Stop while a reply is in flight, keeping focus sane. */
+  #syncStreamControls() {
+    const busy = !!this.#abortCtl;
+    const send = this.#sendBtn;
+    const stop = this.#stopBtn;
+    if (!send || !stop) return;
+    if (stop.hidden === !busy) return;
+    const active = document.activeElement;
+    send.hidden = busy;
+    stop.hidden = !busy;
+    if (busy && active === send) stop.focus();
+    else if (!busy && active === stop) {
+      /** @type {HTMLElement|null} */ (this.querySelector('chat-input textarea'))?.focus();
     }
   }
 
@@ -480,7 +567,7 @@ class AIChat extends VBElement {
    * @returns {Promise<AsyncIterable<string>>}
    */
   async #localStream(text, signal) {
-    const session = await this.#ensureSession();
+    const session = await this.#ensureSession(signal);
     const stream = session.promptStreaming(text, { signal });
     return (async function* () {
       for await (const chunk of stream) yield chunk;
@@ -546,7 +633,11 @@ class AIChat extends VBElement {
       .replace(/\{url\}/g, location.href)
       .replace(/\{title\}/g, document.title);
     const composed = userPrompt ? `${filled}\n\nUser: ${userPrompt}` : filled;
-    return expandFallbackURL(this.getAttribute('fallback-url'), { prompt: composed });
+    const template = this.getAttribute('fallback-url');
+    // {content} is the `context` region only — no context attribute, no
+    // page text leaves the page (spec §F, no extraction without consent).
+    const content = usesContentToken(template) ? this.#extractContext() : '';
+    return expandFallbackURL(template, { prompt: composed, content });
   }
 }
 

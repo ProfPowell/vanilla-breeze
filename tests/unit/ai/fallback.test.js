@@ -7,7 +7,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { expandFallbackURL } from '../../../src/lib/ai/fallback.js';
+import {
+  expandFallbackURL, capContent, usesContentToken, MAX_CONTENT_CHARS,
+} from '../../../src/lib/ai/fallback.js';
 
 describe('expandFallbackURL', () => {
   it('returns empty string for empty templates', () => {
@@ -59,5 +61,46 @@ describe('expandFallbackURL', () => {
   it('expands the same token multiple times', () => {
     const out = expandFallbackURL('{prompt}-{prompt}', { prompt: 'a' });
     assert.equal(out, 'a-a');
+  });
+});
+
+describe('{content} capping', () => {
+  it('caps {content} to MAX_CONTENT_CHARS by default, then encodes it', () => {
+    const long = 'word '.repeat(1000);
+    const out = expandFallbackURL('https://x/?c={content}', { content: long });
+    const decoded = decodeURIComponent(out.slice('https://x/?c='.length));
+    assert.ok(decoded.length <= MAX_CONTENT_CHARS, `got ${decoded.length}`);
+    assert.ok(decoded.endsWith('…'));
+  });
+
+  it('honours a custom contentLimit', () => {
+    const out = expandFallbackURL('{content}', { content: 'abcdefghij' }, { contentLimit: 5 });
+    assert.equal(decodeURIComponent(out), 'abcd…');
+  });
+
+  it('leaves short content intact', () => {
+    assert.equal(expandFallbackURL('{content}', { content: 'a b&c' }), 'a%20b%26c');
+  });
+});
+
+describe('capContent', () => {
+  it('cuts at a word boundary near the limit', () => {
+    assert.equal(capContent('alpha beta gamma delta epsilon', 25), 'alpha beta gamma delta…');
+  });
+
+  it('hard-cuts when no nearby word boundary exists', () => {
+    assert.equal(capContent('abcdefghijkl', 6), 'abcde…');
+  });
+
+  it('treats nullish as empty', () => {
+    assert.equal(capContent(null), '');
+  });
+});
+
+describe('usesContentToken', () => {
+  it('detects the token', () => {
+    assert.equal(usesContentToken('https://x/?q={prompt}&c={content}'), true);
+    assert.equal(usesContentToken('https://x/?q={prompt}'), false);
+    assert.equal(usesContentToken(null), false);
   });
 });
