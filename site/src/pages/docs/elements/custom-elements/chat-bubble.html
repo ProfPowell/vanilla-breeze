@@ -24,7 +24,7 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Content Formatting</h2>
-    <p>Place any HTML content inside the bubble. Paragraphs, inline formatting, and code blocks are all styled.</p>
+    <p>Place any HTML content inside the bubble. Paragraphs, inline formatting, and code blocks are all styled. Long unbroken strings (URLs, tokens) wrap with <code>overflow-wrap: anywhere</code> instead of overflowing the bubble.</p>
     <code-block language="html" show-lines label="Text content" data-escape><chat-bubble>
   <p>Paragraph content with <strong>formatting</strong>.</p>
 </chat-bubble></code-block>
@@ -41,11 +41,11 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Typing Dots</h2>
-    <p>When the parent <code>&lt;chat-message&gt;</code> has <code>data-status="typing"</code> and the bubble is empty, CSS renders three animated bouncing dots via <code>::after</code> with radial gradients.</p>
+    <p>When the parent <code>&lt;chat-message&gt;</code> has <code>data-status="typing"</code> and the bubble has no content yet, CSS draws three animated bouncing dots via <code>::after</code> with radial gradients. "No content" means the bubble is <code>:empty</code> or its only child is a visually hidden <code>[data-chat-typing]</code> label, the text screen readers announce.</p>
     <code-block language="html" show-lines label="Typing indicator" data-escape><chat-message data-role="agent" data-status="typing">
-  <chat-bubble></chat-bubble>
+  <chat-bubble><span class="visually-hidden" data-chat-typing>Assistant is typing</span></chat-bubble>
 </chat-message></code-block>
-    <p>When real content arrives, populate the bubble's innerHTML and remove <code>data-status</code> from the parent. The same DOM node transitions from typing indicator to content — no element swap.</p>
+    <p>When real content arrives, replace the bubble's contents and remove <code>data-status</code> from the parent. The dots stop as soon as the bubble has content, so a streaming transport never shows dots next to text. The same DOM node transitions from typing indicator to content — no element swap.</p>
   </section>
 
   <section>

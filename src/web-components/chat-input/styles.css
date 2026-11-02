@@ -6,7 +6,6 @@ chat-input:not(:defined) {
 chat-input {
   --chat-input-bg:         var(--color-surface);
   --chat-input-border:     var(--border-width-thin) solid var(--color-border);
-  --chat-input-radius:     var(--radius-m);
   --chat-input-padding:    var(--size-s);
   --chat-input-max-height: 12lh;
 
@@ -16,6 +15,13 @@ chat-input {
   padding: var(--chat-input-padding);
   background: var(--chat-input-bg);
   border-block-start: var(--chat-input-border);
+
+  /* The textarea drops its own focus styling (below), so the host carries
+     the ring. Inset so an overflow:hidden parent (chat-window) can't clip it. */
+  &:has(textarea:focus-visible) {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+    outline-offset: calc(var(--focus-ring-width, 2px) * -1);
+  }
 
   /* Override VB's native textarea styles inside chat-input */
   & textarea {
@@ -50,8 +56,10 @@ chat-input {
     flex-shrink: 0;
   }
 
+  /* Children are really disabled by the runtime (attribute, or an ancestor
+     fieldset via formDisabledCallback); this is only the visual cue. */
+  &:disabled,
   &[disabled] {
     opacity: 0.6;
-    pointer-events: none;
   }
 }

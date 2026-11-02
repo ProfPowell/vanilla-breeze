@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "chat-thread"
-description: "Scrollable message container for chat conversations. Grows to fill available height with smooth scrolling and automatic scroll anchoring."
+description: "Scrollable message container for chat conversations. Grows to fill available height; add role=\"log\" for screen reader announcements."
 elementName: chat-thread
 category: custom
 currentPath: /docs/elements/custom-elements/chat-thread/
@@ -19,7 +19,8 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Overview</h2>
-    <p>A flex-column container that holds <code>&lt;chat-message&gt;</code> elements. Handles vertical overflow with smooth scrolling and keeps the view pinned to the latest message via <code>overflow-anchor</code>.</p>
+    <p>A flex-column container that holds <code>&lt;chat-message&gt;</code> elements. It handles vertical overflow, with smooth scrolling unless the user prefers reduced motion.</p>
+    <p>It does not follow new messages by itself. <code>overflow-anchor</code> only keeps content you are reading from jumping when content above it changes; it does not scroll to messages added at the end. Inside <a href="/docs/elements/web-components/chat-window/"><code>&lt;chat-window&gt;</code></a>, sends and replies scroll to the newest message, and a custom transport can call <code>chatWindow.scrollToBottom()</code>. A standalone thread needs its own <code>thread.scrollTop = thread.scrollHeight</code>.</p>
   </section>
 
   <section>
@@ -36,7 +37,7 @@ crumbLabel: Custom Elements
         <tr>
           <td><code>role</code></td>
           <td><code>log</code></td>
-          <td>Required ARIA role — signals live region semantics</td>
+          <td>Required, and you must write it yourself. <code>chat-thread</code> is a CSS-only element and adds no ARIA. <code>log</code> makes it a live region so new messages are announced</td>
         </tr>
         <tr>
           <td><code>aria-label</code></td>
@@ -46,7 +47,12 @@ crumbLabel: Custom Elements
         <tr>
           <td><code>aria-live</code></td>
           <td><code>polite</code></td>
-          <td>Announces new messages to screen readers</td>
+          <td>Announces new messages to screen readers (implied by <code>role="log"</code>; set it explicitly for older AT)</td>
+        </tr>
+        <tr>
+          <td><code>tabindex</code></td>
+          <td><code>0</code></td>
+          <td>Recommended. Makes the scrolling thread reachable from the keyboard, so it can be scrolled with arrow keys</td>
         </tr>
       </tbody>
     </table>
@@ -55,7 +61,7 @@ crumbLabel: Custom Elements
   <section>
     <h2>Usage</h2>
     <p>Place <code>&lt;chat-message&gt;</code> elements inside. The thread scrolls vertically when content overflows.</p>
-    <code-block language="html" show-lines label="Basic chat thread" data-escape><chat-thread role="log" aria-label="Support conversation" aria-live="polite">
+    <code-block language="html" show-lines label="Basic chat thread" data-escape><chat-thread role="log" aria-label="Support conversation" aria-live="polite" tabindex="0">
   <chat-message data-role="agent" data-from-label="Bot">
     <chat-bubble><p>Welcome! How can I help?</p></chat-bubble>
   </chat-message>

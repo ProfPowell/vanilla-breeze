@@ -78,7 +78,7 @@ crumbLabel: Web Components
   <chat-thread role="log" aria-label="AI conversation" aria-live="polite">
   </chat-thread>
   <chat-input name="message">
-    <textarea data-grow rows="1" data-max-rows="8"
+    <textarea data-grow rows="1" data-max-rows="8" aria-label="Message"
               placeholder="Ask anything..."></textarea>
     <footer>
       <button type="submit" class="small" data-send aria-label="Send">
@@ -108,7 +108,7 @@ crumbLabel: Web Components
     </chat-message>
   </chat-thread>
   <chat-input name="message">
-    <textarea data-grow rows="1" placeholder="Type a message..."></textarea>
+    <textarea data-grow rows="1" aria-label="Message" placeholder="Type a message..."></textarea>
     <footer>
       <button type="submit" class="small" data-send aria-label="Send">
         <icon-wc name="send"></icon-wc>
@@ -124,24 +124,46 @@ crumbLabel: Web Components
     <code-block language="html" show-lines label="Participant JSON" data-escape><script type="application/json" data-participants>
 {
   "user":      { "name": "You", "role": "user" },
-  "sarah":     { "name": "Sarah Chen", "role": "agent", "avatar": "/avatars/sarah.jpg" },
-  "assistant": { "name": "Assistant", "role": "agent", "model": "claude-sonnet-4-6" }
+  "sarah":     { "name": "Sarah Chen", "role": "agent" },
+  "assistant": { "name": "Assistant", "role": "agent" }
 }
 </script></code-block>
+    <p>Each participant has a <code>name</code> (written to <code>data-from-label</code>) and a <code>role</code> (the first <code>"agent"</code> answers sends). Other fields are ignored. Add avatars as <code>&lt;user-avatar&gt;</code> children in your own messages, and set the model with the <code>model</code> attribute.</p>
   </section>
 
   <section>
     <h2>Orchestration Flow</h2>
     <p>When <code>chat-input:send</code> fires:</p>
     <ol>
-      <li>Builds <code>chat-message[data-role="user"]</code> and appends to thread</li>
-      <li>Builds <code>chat-message[data-role="agent"][data-status="typing"]</code> with animated dots</li>
-      <li>Disables <code>chat-input</code> during fetch</li>
-      <li>Awaits response from <code>endpoint</code></li>
-      <li>Populates the typing message with real content; removes <code>data-status</code></li>
+      <li>Builds <code>chat-message[data-role="user"]</code> and appends it to the thread. The typed text is inserted as text, never parsed as HTML</li>
+      <li>Builds <code>chat-message[data-role="agent"][data-status="typing"]</code>. The bubble holds a visually hidden "<em>Name</em> is typing" label, which the live log announces, and shows animated dots</li>
+      <li>Disables <code>chat-input</code> during the request</li>
+      <li>With <code>endpoint</code>: awaits the response. Without it: dispatches <code>chat-window:send</code> and re-enables the input right away</li>
+      <li>Fills the typing message with the sanitized reply and removes <code>data-status</code></li>
       <li>Re-enables <code>chat-input</code> and restores focus</li>
     </ol>
-    <p>The typing indicator and the final response share the same DOM node — no element swap, no flicker.</p>
+    <p>The typing indicator and the final response share the same DOM node — no element swap, no flicker. If <code>chat-window</code> disconnects while a request is in flight, the request is aborted and the placeholder removed.</p>
+
+    <h3>Endpoint Contract</h3>
+    <p>The built-in transport sends <code>POST endpoint</code> with a JSON body holding only the latest message. No history is sent. Servers that need context must keep the conversation themselves, or use a custom transport.</p>
+    <code-block language="javascript" label="Request and response" data-escape>// Request body
+{ "message": "What is my order status?", "model": "claude-sonnet-4-6" }  // model omitted when unset
+
+// Response JSON — the first present field is used, as HTML (sanitized)
+{ "html": "<p>It ships tomorrow.</p>" }   // or { "message": "..." } / { "content": "..." }</code-block>
+    <p>A non-2xx status or network error turns the placeholder into an error message (<code>data-status="error"</code>) and fires <code>chat-window:error</code>.</p>
+
+    <h3>Custom Transport</h3>
+    <p>Omit <code>endpoint</code> and listen for <code>chat-window:send</code>. Stream into the typing element's <code>chat-bubble</code> if you like. When the reply is complete, call <code>resolveTyping()</code> so the status and the hidden typing label are cleared.</p>
+    <code-block language="javascript" show-lines label="Custom transport" data-escape>chat.addEventListener('chat-window:send', async (e) => {
+  const { message, typingElement } = e.detail;
+  try {
+    const html = await myTransport(message);
+    chat.resolveTyping(typingElement, html);
+  } catch {
+    chat.resolveTyping(typingElement, 'Sorry, something went wrong.', { error: true });
+  }
+});</code-block>
   </section>
 
   <section>
@@ -151,7 +173,8 @@ crumbLabel: Web Components
 ├── header
 │   ├── h3 (title)
 │   └── select[data-model-select]  (optional)
-├── chat-thread[role="log"]
+├── chat-thread[role="log"]   (always rendered)
+│   ├── p[data-chat-empty]  (runtime, only while there are no messages)
 │   └── chat-message elements
 └── chat-input
     ├── textarea[data-grow]
@@ -180,14 +203,29 @@ crumbLabel: Web Components
           <td>Participant registry</td>
         </tr>
         <tr>
+          <td><code>messages</code></td>
+          <td>Array (get/set)</td>
+          <td><code>{ id, role, content, from? }[]</code>. The getter reads the thread (typing placeholders excluded). The setter replaces the whole thread, server-rendered messages included, with a keyed diff by <code>id</code>. A message whose <code>id</code> survives, including a server-rendered one, keeps its DOM node. <code>content</code> is text for <code>role: "user"</code> and HTML (sanitized) otherwise</td>
+        </tr>
+        <tr>
           <td><code>clearThread()</code></td>
           <td>method</td>
           <td>Remove all messages</td>
         </tr>
         <tr>
-          <td><code>appendMessage(role, html, from?)</code></td>
+          <td><code>appendMessage(role, content, from?)</code></td>
           <td>method</td>
-          <td>Programmatic message append</td>
+          <td>Append a message and return it. User content is inserted as text; other roles are sanitized HTML</td>
+        </tr>
+        <tr>
+          <td><code>resolveTyping(el, content, { error? })</code></td>
+          <td>method</td>
+          <td>Finish a typing placeholder in place: fill its bubble (sanitized HTML), remove <code>data-status</code> (or set <code>error</code>) and the typing label</td>
+        </tr>
+        <tr>
+          <td><code>scrollToBottom()</code></td>
+          <td>method</td>
+          <td>Scroll the thread to the newest message (e.g. while streaming)</td>
         </tr>
       </tbody>
     </table>
@@ -204,6 +242,12 @@ chat.participants = new Map([
 
 // Append a message
 chat.appendMessage('agent', '<p>Hello from JS!</p>', 'bot');
+
+// Replace the whole thread from data
+chat.messages = [
+  { id: 'm1', role: 'user',  content: 'Hi', from: 'user' },
+  { id: 'm2', role: 'agent', content: '<p>Hello!</p>', from: 'bot' },
+];
 
 // Clear the thread
 chat.clearThread();</code-block>
@@ -223,7 +267,7 @@ chat.clearThread();</code-block>
         <tr>
           <td><code>chat-window:send</code></td>
           <td><code>{ message, typingElement }</code></td>
-          <td>Dispatched when a message is sent and no <code>endpoint</code> is set. Use this for custom transport (WebSocket, worker, etc.). Populate the typing element's <code>chat-bubble</code> with the response.</td>
+          <td>Dispatched when a message is sent and no <code>endpoint</code> is set. Use this for custom transport (WebSocket, worker, etc.). Finish with <code>resolveTyping(typingElement, html)</code>.</td>
         </tr>
         <tr>
           <td><code>chat-window:error</code></td>
@@ -234,6 +278,11 @@ chat.clearThread();</code-block>
           <td><code>chat-window:model-change</code></td>
           <td><code>{ model }</code></td>
           <td>Dispatched when the model selector value changes.</td>
+        </tr>
+        <tr>
+          <td><code>chat-window:messages-changed</code></td>
+          <td><code>{ messages, source: 'property' }</code></td>
+          <td>Dispatched after the <code>messages</code> setter updates the thread.</td>
         </tr>
       </tbody>
     </table>

@@ -15,7 +15,7 @@
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "API endpoint for chat requests (omit for custom transport)"
+      "description": "API endpoint; POSTs { message, model } (latest message only) and reads html/message/content from the JSON reply. Omit for custom transport"
     },
     {
       "name": "model",
@@ -29,50 +29,146 @@
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Empty thread placeholder text"
-    },
-    {
-      "name": "data-from",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-from-label",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-status",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-role",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-model",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-chat-empty",
-      "kind": "data",
-      "purpose": "config"
+      "description": "Empty thread placeholder text",
+      "default": "Send a message to start."
     }
   ],
   "events": [
     {
-      "name": "chat-window:error"
+      "name": "chat-window:send",
+      "detail": "{ message, typingElement }",
+      "description": "A message was sent and no endpoint is set; finish with resolveTyping(typingElement, html)"
     },
     {
-      "name": "chat-window:send"
+      "name": "chat-window:error",
+      "detail": "{ error, status }",
+      "description": "The built-in fetch transport failed"
     },
     {
-      "name": "chat-window:model-change"
+      "name": "chat-window:model-change",
+      "detail": "{ model }",
+      "description": "The model selector changed"
+    },
+    {
+      "name": "chat-window:messages-changed",
+      "detail": "{ messages, source: 'property' }",
+      "description": "The messages setter updated the thread"
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "childAttributes": [
+    {
+      "name": "data-participants",
+      "on": "script",
+      "type": "boolean",
+      "description": "JSON participant map: { id: { name, role } }"
+    },
+    {
+      "name": "data-model-select",
+      "on": "select",
+      "type": "boolean",
+      "description": "Model selector inside the header; synced with model"
+    },
+    {
+      "name": "data-role",
+      "on": "chat-message",
+      "type": "enum",
+      "values": [
+        "user",
+        "agent",
+        "system"
+      ],
+      "description": "Message role; user content is always text"
+    },
+    {
+      "name": "data-from",
+      "on": "chat-message",
+      "type": "string",
+      "description": "Participant id, resolved to data-from-label"
+    },
+    {
+      "name": "data-from-label",
+      "on": "chat-message",
+      "type": "string",
+      "description": "Sender name (written by the runtime from participants)"
+    },
+    {
+      "name": "data-status",
+      "on": "chat-message",
+      "type": "enum",
+      "values": [
+        "typing",
+        "error"
+      ],
+      "description": "Typing placeholder or failed reply"
+    },
+    {
+      "name": "data-model",
+      "on": "chat-message",
+      "type": "string",
+      "description": "Model attribution on agent replies"
+    },
+    {
+      "name": "data-chat-typing",
+      "on": "span",
+      "type": "boolean",
+      "description": "Visually hidden typing label inside a typing chat-bubble (runtime)"
+    },
+    {
+      "name": "data-chat-empty",
+      "on": "p",
+      "type": "boolean",
+      "description": "Empty-thread placeholder inside chat-thread (runtime)"
+    }
+  ],
+  "structure": [
+    {
+      "element": "chat-thread[role=log]",
+      "description": "Message list; always rendered"
+    },
+    {
+      "element": "chat-input",
+      "required": false,
+      "description": "Composer; its chat-input:send drives the send cycle"
+    },
+    {
+      "element": "header",
+      "required": false,
+      "description": "Title and optional select[data-model-select]"
+    }
+  ],
+  "properties": [
+    {
+      "name": "messages",
+      "type": "Array<{ id, role, content, from? }>",
+      "description": "Get the thread as data, or assign to replace the whole thread (keyed diff by id); content is text for role user, sanitized HTML otherwise"
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "description": "Active model; syncs with select[data-model-select]"
+    },
+    {
+      "name": "participants",
+      "type": "Map<string, { name, role }>",
+      "description": "Participant registry; setting re-resolves data-from-label"
+    }
+  ],
+  "methods": [
+    {
+      "name": "appendMessage(role, content, from?)",
+      "description": "Append and return a chat-message; user content is text, other roles sanitized HTML"
+    },
+    {
+      "name": "resolveTyping(el, content, { error? })",
+      "description": "Finish a typing placeholder: fill its bubble, clear data-status (or set error) and the typing label"
+    },
+    {
+      "name": "clearThread()",
+      "description": "Remove all messages"
+    },
+    {
+      "name": "scrollToBottom()",
+      "description": "Scroll the thread to the newest message"
+    }
+  ]
 }

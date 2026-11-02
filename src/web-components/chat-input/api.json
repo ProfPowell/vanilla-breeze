@@ -2,7 +2,8 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "chat-input",
   "type": "web-component",
-  "description": "Form-associated chat input with auto-growing textarea",
+  "description": "Form-associated chat input with auto-growing textarea; submits its form, or fires chat-input:send when standalone",
+  "formAssociated": true,
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -15,28 +16,30 @@
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Form field name (default: \"message\")"
+      "description": "Form field name; required for the value to appear in FormData (no default)"
     },
     {
       "name": "maxlength",
       "kind": "host-api",
       "purpose": "config",
       "type": "number",
-      "description": "Character limit (default: 4000)"
+      "default": 4000,
+      "description": "Character limit; over it the element is invalid (tooLong) and sending is blocked"
     },
     {
       "name": "minlength",
       "kind": "host-api",
       "purpose": "config",
       "type": "number",
-      "description": "Minimum length to send (default: 1)"
+      "default": 1,
+      "description": "Minimum trimmed length to send"
     },
     {
       "name": "disabled",
       "kind": "native",
       "purpose": "config",
       "type": "boolean",
-      "description": "Disables input and controls"
+      "description": "Disables the textarea and send button (an ancestor fieldset[disabled] does the same)"
     },
     {
       "name": "autofocus",
@@ -48,12 +51,94 @@
   ],
   "events": [
     {
-      "name": "chat-input:input"
+      "name": "chat-input:send",
+      "detail": "{ message }",
+      "description": "Enter or send button when not inside a form; message is trimmed and the input clears afterwards"
     },
     {
-      "name": "chat-input:send"
+      "name": "chat-input:input",
+      "detail": "{ value, length }",
+      "description": "Keystroke, debounced 100ms"
+    },
+    {
+      "name": "chat-input:change",
+      "detail": "{ value, source: 'api' }",
+      "description": "The value property was set to a new value"
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "properties": [
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Current textarea content (get/set; setting fires chat-input:change)"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Reflects the disabled attribute"
+    },
+    {
+      "name": "form",
+      "type": "HTMLFormElement | null",
+      "description": "The associated form (read-only)"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "description": "The name attribute (read-only)"
+    },
+    {
+      "name": "validity",
+      "type": "ValidityState",
+      "description": "Constraint validation state (read-only)"
+    },
+    {
+      "name": "validationMessage",
+      "type": "string",
+      "description": "Current validation message (read-only)"
+    }
+  ],
+  "methods": [
+    {
+      "name": "focus()",
+      "description": "Focus the textarea"
+    },
+    {
+      "name": "reset()",
+      "description": "Clear the value and resize"
+    },
+    {
+      "name": "checkValidity()",
+      "description": "Native constraint validation check"
+    },
+    {
+      "name": "reportValidity()",
+      "description": "Check validity and show the browser message on the textarea"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-send",
+      "on": "button",
+      "type": "boolean",
+      "description": "Marks the send button; submits the form or fires chat-input:send"
+    },
+    {
+      "name": "data-grow",
+      "on": "textarea",
+      "type": "boolean",
+      "description": "Auto-resize the textarea (VB textarea-grow utility)"
+    }
+  ],
+  "structure": [
+    {
+      "element": "textarea",
+      "description": "The message field; give it an accessible name (aria-label=\"Message\" is added when it has none)"
+    },
+    {
+      "element": "button[data-send]",
+      "required": false,
+      "description": "Send button"
+    }
+  ]
 }

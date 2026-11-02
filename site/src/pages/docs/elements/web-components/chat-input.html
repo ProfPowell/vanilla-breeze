@@ -19,7 +19,8 @@ crumbLabel: Web Components
 
   <section>
     <h2>Overview</h2>
-    <p>A form-associated web component that wraps a <code>textarea[data-grow]</code> with send controls. Light DOM, participates in native form submission via <code>ElementInternals</code>. The textarea auto-resizes using VB's existing <code>textarea-grow-init</code> utility.</p>
+    <p>A form-associated web component (<code>static formAssociated = true</code>) that wraps a <code>textarea[data-grow]</code> with send controls. Light DOM, participates in native form submission, validation, reset and <code>&lt;fieldset disabled&gt;</code> via <code>ElementInternals</code>. The textarea auto-resizes using VB's existing <code>textarea-grow-init</code> utility.</p>
+    <p>It has two send paths. Inside a <code>&lt;form&gt;</code>, sending submits the form. Standalone, it dispatches <code>chat-input:send</code>. <a href="/docs/elements/web-components/chat-window/"><code>&lt;chat-window&gt;</code></a> uses the standalone path.</p>
   </section>
 
   <section>
@@ -37,26 +38,26 @@ crumbLabel: Web Components
         <tr>
           <td><code>name</code></td>
           <td>string</td>
-          <td><code>message</code></td>
-          <td>Form field name</td>
+          <td>-</td>
+          <td>Form field name. Required for the value to appear in <code>FormData</code></td>
         </tr>
         <tr>
           <td><code>maxlength</code></td>
           <td>number</td>
           <td><code>4000</code></td>
-          <td>Character limit</td>
+          <td>Character limit. Over the limit the element is invalid (<code>tooLong</code>) and sending is blocked</td>
         </tr>
         <tr>
           <td><code>minlength</code></td>
           <td>number</td>
           <td><code>1</code></td>
-          <td>Prevents empty send</td>
+          <td>Minimum trimmed length to send. Prevents empty sends</td>
         </tr>
         <tr>
           <td><code>disabled</code></td>
           <td>boolean</td>
           <td>-</td>
-          <td>Disables input and controls</td>
+          <td>Disables the textarea and send button. An ancestor <code>&lt;fieldset disabled&gt;</code> does the same</td>
         </tr>
         <tr>
           <td><code>autofocus</code></td>
@@ -80,7 +81,7 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><kbd>Enter</kbd></td>
-          <td>Submit message</td>
+          <td>Send the message (submits the form when inside one). Ignored while an IME composition is active, so composing CJK text never sends mid-word</td>
         </tr>
         <tr>
           <td><kbd>Shift+Enter</kbd></td>
@@ -98,7 +99,7 @@ crumbLabel: Web Components
     <h2>Basic Usage</h2>
     <p>The child <code>&lt;textarea data-grow&gt;</code> auto-resizes. The <code>[data-send]</code> button triggers submission.</p>
     <code-block language="html" show-lines label="Basic chat input" data-escape><chat-input name="message">
-  <textarea data-grow rows="1" data-max-rows="8"
+  <textarea data-grow rows="1" data-max-rows="8" aria-label="Message"
             placeholder="Ask anything..."></textarea>
   <footer>
     <button type="submit" class="small" data-send aria-label="Send">
@@ -109,11 +110,18 @@ crumbLabel: Web Components
   </section>
 
   <section>
+    <h2>Accessible Name</h2>
+    <p>A placeholder is not a label. Give the textarea an accessible name with <code>aria-label</code>, <code>aria-labelledby</code> or a <code>&lt;label for&gt;</code>. If the textarea has none, <code>chat-input</code> adds <code>aria-label="Message"</code> as a fallback. The fallback is generic, so write a label that fits the context ("Reply to Sarah", "Ask the assistant").</p>
+    <p>The textarea drops its own border, so <code>chat-input</code> draws the focus ring while the textarea has focus. The ring uses the <code>--focus-ring-*</code> tokens and is inset so a clipping parent cannot hide it.</p>
+  </section>
+
+  <section>
     <h2>Inside a Form</h2>
-    <p>As a form-associated element, <code>chat-input</code> participates in native <code>FormData</code>, form submit, and <code>reset()</code>.</p>
+    <p>As a form-associated element, <code>chat-input</code> takes part in native <code>FormData</code>, form submit, constraint validation and <code>reset()</code>. Inside a form, <kbd>Enter</kbd> and the <code>[data-send]</code> button submit the form. <kbd>Enter</kbd> calls <code>requestSubmit()</code>, so validation and the <code>submit</code> event run as they would for a button click. No <code>chat-input:send</code> event fires in this mode.</p>
+    <p>The input clears after the <code>submit</code> event, unless a listener calls <code>preventDefault()</code>. A prevented submit means the page handles the outcome, for example by sending with <code>fetch()</code>. Call <code>form.reset()</code> when it succeeds.</p>
     <code-block language="html" show-lines label="Form-associated chat input" data-escape><form action="/support/reply" method="POST">
   <chat-input name="message">
-    <textarea data-grow rows="1" placeholder="Reply..."></textarea>
+    <textarea data-grow rows="1" aria-label="Reply" placeholder="Reply..."></textarea>
     <footer>
       <button type="submit" class="small" data-send aria-label="Send">
         <icon-wc name="send"></icon-wc>
@@ -121,13 +129,18 @@ crumbLabel: Web Components
     </footer>
   </chat-input>
 </form></code-block>
+    <code-block language="javascript" show-lines label="Submitting with fetch" data-escape>form.addEventListener('submit', async (e) => {
+  e.preventDefault();               // keep the text until the send succeeds
+  const res = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+  if (res.ok) form.reset();         // clears chat-input via formResetCallback
+});</code-block>
   </section>
 
   <section>
     <h2>Disabled State</h2>
-    <p>Set <code>disabled</code> to prevent input. This also disables the send button and reduces opacity.</p>
+    <p>Set <code>disabled</code> to prevent input. This disables the textarea and the send button and reduces opacity. It works whether the attribute is in the markup, set later, or comes from an ancestor <code>&lt;fieldset disabled&gt;</code>.</p>
     <code-block language="html" show-lines label="Disabled chat input" data-escape><chat-input name="message" disabled>
-  <textarea data-grow rows="1" placeholder="Input is disabled..."></textarea>
+  <textarea data-grow rows="1" aria-label="Message" placeholder="Input is disabled..."></textarea>
   <footer>
     <button type="submit" class="small" data-send aria-label="Send">
       <icon-wc name="send"></icon-wc>
@@ -149,13 +162,18 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>chat-input:send</code></td>
-          <td><code>{ message, from, model }</code></td>
-          <td>Enter key or send button click</td>
+          <td><code>{ message }</code></td>
+          <td>Enter key or send button click when the input is not inside a form. <code>message</code> is trimmed. The input clears afterwards</td>
         </tr>
         <tr>
           <td><code>chat-input:input</code></td>
           <td><code>{ value, length }</code></td>
           <td>Keystroke (debounced 100ms)</td>
+        </tr>
+        <tr>
+          <td><code>chat-input:change</code></td>
+          <td><code>{ value, source: 'api' }</code></td>
+          <td>The <code>value</code> property was set to a new value (no event when the value is unchanged)</td>
         </tr>
       </tbody>
     </table>
@@ -176,6 +194,26 @@ crumbLabel: Web Components
           <td><code>value</code></td>
           <td>string (get/set)</td>
           <td>Current textarea content</td>
+        </tr>
+        <tr>
+          <td><code>form</code></td>
+          <td>HTMLFormElement | null (get)</td>
+          <td>The associated form</td>
+        </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>string (get)</td>
+          <td>The <code>name</code> attribute</td>
+        </tr>
+        <tr>
+          <td><code>validity</code> / <code>validationMessage</code></td>
+          <td>ValidityState / string (get)</td>
+          <td>Constraint validation state (<code>tooLong</code> over <code>maxlength</code>)</td>
+        </tr>
+        <tr>
+          <td><code>checkValidity()</code> / <code>reportValidity()</code></td>
+          <td>method</td>
+          <td>Native constraint validation</td>
         </tr>
         <tr>
           <td><code>focus()</code></td>
@@ -216,11 +254,6 @@ crumbLabel: Web Components
           <td><code>--chat-input-border</code></td>
           <td><code>var(--border-width-thin) solid var(--color-border)</code></td>
           <td>Top border</td>
-        </tr>
-        <tr>
-          <td><code>--chat-input-radius</code></td>
-          <td><code>var(--radius-m)</code></td>
-          <td>Border radius</td>
         </tr>
         <tr>
           <td><code>--chat-input-padding</code></td>

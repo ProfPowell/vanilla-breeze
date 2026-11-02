@@ -46,22 +46,17 @@ crumbLabel: Custom Elements
         <tr>
           <td><code>data-from-label</code></td>
           <td>string</td>
-          <td>Display name rendered via CSS <code>::before</code></td>
+          <td>Sender name rendered via CSS <code>::before</code>. Visible on agent messages. On user messages it is visually hidden, but screen readers still read it</td>
         </tr>
         <tr>
           <td><code>data-status</code></td>
-          <td><code>typing</code>, <code>sending</code>, <code>sent</code>, <code>error</code></td>
-          <td>Message state</td>
+          <td><code>typing</code>, <code>error</code></td>
+          <td>Message state: typing dots on an empty bubble, or an error border</td>
         </tr>
         <tr>
           <td><code>data-model</code></td>
           <td>string</td>
           <td>AI model identifier (informational)</td>
-        </tr>
-        <tr>
-          <td><code>data-timestamp</code></td>
-          <td>ISO 8601</td>
-          <td>Message timestamp</td>
         </tr>
       </tbody>
     </table>
@@ -99,7 +94,7 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>User Message</h2>
-    <p>Right-aligned with primary color. No avatar needed.</p>
+    <p>Right-aligned with primary color. No avatar needed. A <code>data-from-label</code> (e.g. "You") is hidden visually but still read by screen readers, so each turn says who sent it.</p>
     <code-block language="html" show-lines label="User message" data-escape><chat-message data-role="user">
   <chat-bubble><p>Hello, I need help with my order.</p></chat-bubble>
 </chat-message></code-block>
@@ -126,12 +121,12 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Typing State</h2>
-    <p>Set <code>data-status="typing"</code> and leave the <code>&lt;chat-bubble&gt;</code> empty. CSS renders animated dots. When content arrives, populate the bubble and remove the status attribute.</p>
+    <p>Set <code>data-status="typing"</code> and give the <code>&lt;chat-bubble&gt;</code> no visible content. CSS draws animated dots while the bubble is empty or holds only a visually hidden <code>[data-chat-typing]</code> label. Include that label: it is the text screen readers announce, because an <code>aria-label</code> on <code>chat-message</code> is not read. When content arrives, replace the bubble's contents (the dots stop as soon as it has content) and remove the status attribute. <code>chat-window</code> builds this markup for you; with a custom transport, finish it with <code>chatWindow.resolveTyping()</code>.</p>
     <code-block language="html" show-lines label="Typing indicator" data-escape><chat-message data-role="agent" data-status="typing" data-from-label="Sarah Chen">
   <user-avatar data-size="sm">
     <span data-fallback>SC</span>
   </user-avatar>
-  <chat-bubble></chat-bubble>
+  <chat-bubble><span class="visually-hidden" data-chat-typing>Sarah Chen is typing</span></chat-bubble>
 </chat-message></code-block>
     <p>The animation respects <code>prefers-reduced-motion</code> and degrades to a static indicator.</p>
   </section>

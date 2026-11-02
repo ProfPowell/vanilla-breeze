@@ -3,7 +3,7 @@ chat-bubble {
   padding: var(--size-s) var(--size-m);
   border-radius: var(--chat-bubble-radius, var(--radius-m));
   line-height: var(--line-height-relaxed, 1.6);
-  word-break: break-word;
+  overflow-wrap: anywhere;
 
   /* Typography within bubble */
   & > p {
@@ -37,8 +37,11 @@ chat-bubble {
   }
 }
 
-/* Typing dots animation */
-chat-message[data-status="typing"] chat-bubble {
+/* Typing dots: only while the bubble has no content yet. An empty bubble,
+   or one holding just chat-window's visually-hidden typing label, draws the
+   dots; as soon as a transport writes content the dots go away, even if it
+   forgets to clear data-status. */
+chat-message[data-status="typing"] > chat-bubble:is(:empty, :has(> [data-chat-typing]:only-child)) {
   min-width: 3.5rem;
   min-height: 2rem;
   display: flex;
@@ -64,7 +67,7 @@ chat-message[data-status="typing"] chat-bubble {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  chat-message[data-status="typing"] chat-bubble::after {
+  chat-message[data-status="typing"] > chat-bubble::after {
     animation: none;
     opacity: 0.4;
   }

@@ -64,6 +64,7 @@
 
     <section>
       <h2>Inside a native form</h2>
+      <p>Enter or the button submits the form; the message travels in <code>FormData</code>.</p>
       <form action="#" method="POST" id="chat-form">
         <chat-input name="message">
           <textarea data-grow rows="1" aria-label="Reply" placeholder="Reply..."></textarea>
@@ -114,11 +115,15 @@
       thread.scrollTop = thread.scrollHeight;
     });
 
-    // Demo 3: form
-    document.getElementById('chat-form').addEventListener('submit', (e) => {
+    // Demo 3: form. Enter and the send button submit the form. The demo
+    // prevents navigation, so it resets the form itself (a prevented submit
+    // leaves the text in place for the page to handle).
+    const form = document.getElementById('chat-form');
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const data = new FormData(e.target);
+      const data = new FormData(form);
       document.getElementById('output2').textContent = `FormData: message="${data.get('message')}"`;
+      form.reset();
     });
   </script>
 </body>
