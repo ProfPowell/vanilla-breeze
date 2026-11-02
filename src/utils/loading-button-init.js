@@ -2,8 +2,15 @@
  * loading-button-init: Upscale disabled → loading state with spinner
  *
  * Enhances buttons with data-loading to show a spinner, set aria-busy,
- * and prevent double-submit. Auto-activates on form submit for submit
- * buttons. Auto-reverts when the form completes or after a timeout.
+ * and prevent double-submit. Auto-activates on form submit for the button
+ * that submitted the form. Auto-reverts when the form completes or after
+ * a timeout.
+ *
+ * The button is NOT set `disabled`: disabling it inside the submit event
+ * drops its name/value from the form data (the entry list is built after
+ * the event), so a Save/Delete form loses which action was chosen, and it
+ * throws focus to <body>. It gets aria-disabled + aria-busy instead, and
+ * further activations are swallowed while it is busy.
  *
  * @attr {string}  data-loading         - Enable loading enhancement. Optional value
  *   becomes the loading text (e.g. "Saving..."). Empty = spinner only.
@@ -36,14 +43,24 @@ function activate(btn) {
   // Preserve button width to prevent layout shift
   btn.style.minInlineSize = `${btn._vbLoadingWidth}px`;
 
-  // Build loading content
+  // Build loading content. Spinner-only keeps the original label as
+  // visually hidden text so the button never loses its accessible name.
   const loadingText = btn.getAttribute('data-loading');
-  const spinner = '<span class="vb-btn-spinner" aria-hidden="true"></span>';
-  btn.innerHTML = loadingText ? `${spinner} ${loadingText}` : spinner;
+  const spinner = document.createElement('span');
+  spinner.className = 'vb-btn-spinner';
+  spinner.setAttribute('aria-hidden', 'true');
+  const label = document.createElement('span');
+  if (loadingText) {
+    label.textContent = loadingText;
+  } else {
+    label.className = 'visually-hidden';
+    label.textContent = btn.textContent.trim();
+  }
+  btn.replaceChildren(spinner, ' ', label);
 
   // State
   btn.setAttribute('aria-busy', 'true');
-  btn.disabled = true;
+  btn.setAttribute('aria-disabled', 'true');
   btn.dataset.loadingActive = '';
 
   // Safety timeout
@@ -65,7 +82,7 @@ function deactivate(btn) {
 
   btn.style.minInlineSize = '';
   btn.removeAttribute('aria-busy');
-  btn.disabled = false;
+  btn.removeAttribute('aria-disabled');
   delete btn.dataset.loadingActive;
 }
 
@@ -74,10 +91,25 @@ function enhance(btn) {
   if (ENHANCED.has(btn)) return;
   ENHANCED.add(btn);
 
-  // Auto-activate on ancestor form submit (for submit buttons)
-  const form = btn.closest('form');
-  if (form && (btn.type === 'submit' || !btn.type)) {
-    form.addEventListener('submit', () => activate(btn));
+  // While busy, swallow further activations (keyboard Enter/Space and
+  // implicit submission still click; CSS pointer-events covers the mouse).
+  btn.addEventListener('click', (e) => {
+    if (btn.getAttribute('aria-busy') === 'true') {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }, true);
+
+  // Auto-activate when THIS button submits its form (form="" association
+  // included). Other submit buttons in the same form stay as they are.
+  const form = btn.form;
+  if (form && btn.type === 'submit') {
+    form.addEventListener('submit', (e) => {
+      const submitter = /** @type {SubmitEvent} */ (e).submitter;
+      if (submitter ? submitter === btn : form.querySelector('button[type="submit"], button:not([type]), input[type="submit"]') === btn) {
+        activate(btn);
+      }
+    });
 
     // Auto-deactivate when form-coordinator clears data-submitting
     const obs = new MutationObserver(() => {
