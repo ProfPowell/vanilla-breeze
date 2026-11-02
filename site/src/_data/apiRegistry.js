@@ -1987,7 +1987,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "analytics-panel",
     "type": "web-component",
-    "description": "Self-serve view of analytics data stored on the device — shows what's been captured this session, with Pause and Clear controls.",
+    "description": "Visitor-facing view of what analytics is doing on this page: whether it runs, why it is off, and which fields an event carries, with a Pause / Resume control.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -2000,7 +2000,8 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Override the panel heading (default: \"Analytics data\")"
+        "default": "Analytics on this page",
+        "description": "Override the panel heading"
       },
       {
         "name": "compact",
@@ -2008,15 +2009,44 @@ export default {
         "purpose": "visual-variant",
         "type": "boolean",
         "description": "Tighter layout for embedding alongside other UI"
+      },
+      {
+        "name": "data-state",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "enum",
+        "values": [
+          "active",
+          "debug",
+          "paused",
+          "off"
+        ],
+        "direction": "output",
+        "public": true,
+        "description": "Reflected runtime state: active (sending), debug (console transport), paused (visitor paused this tab), off (any other reason)"
+      },
+      {
+        "name": "data-reason",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "enum",
+        "values": [
+          "user",
+          "gpc",
+          "dnt",
+          "consent",
+          "disabled",
+          "iframe",
+          "uninitialized"
+        ],
+        "direction": "output",
+        "public": true,
+        "description": "Reflected when analytics is not sending: why"
       }
     ],
     "structure": [],
     "childAttributes": [],
     "events": [
-      {
-        "name": "analytics-panel:cleared",
-        "description": "Fired after session data is cleared by the user"
-      },
       {
         "name": "analytics-panel:optout",
         "description": "Fired when the user pauses analytics for this tab"
@@ -2134,7 +2164,20 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "number",
-        "description": "AnalyserNode FFT size (power of 2, 32-32768). Default: 256"
+        "description": "AnalyserNode FFT size (power of 2, 32-32768). Default: 256. Other values are rounded to the nearest power of two and clamped to that range"
+      },
+      {
+        "name": "data-state",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "enum",
+        "values": [
+          "cross-origin",
+          "error"
+        ],
+        "direction": "output",
+        "public": true,
+        "description": "Set when the visualizer cannot hook the audio: \"cross-origin\" (cross-origin source without crossorigin + CORS — left unhooked so it stays audible) or \"error\" (Web Audio connection failed). Absent while visualizing normally"
       }
     ],
     "childAttributes": [],
@@ -5604,6 +5647,18 @@ export default {
         ],
         "default": "eager",
         "description": "Defer fetch until element enters viewport (Phase 3)"
+      },
+      {
+        "name": "sanitize",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "on",
+          "off"
+        ],
+        "default": "on",
+        "description": "Strip scripts, embeds, on* handlers and javascript: URLs from rendered HTML via the shared sanitizer. On by default; set sanitize=\"off\" only for trusted first-party markdown that needs raw embeds"
       },
       {
         "name": "highlight",

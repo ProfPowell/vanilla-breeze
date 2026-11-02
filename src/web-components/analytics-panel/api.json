@@ -2,19 +2,20 @@
   "$schema": "../../schemas/api.schema.json",
   "element": "analytics-panel",
   "type": "web-component",
-  "description": "Self-serve view of analytics data stored on the device — shows what's been captured this session, with Pause and Clear controls.",
+  "description": "Visitor-facing view of what analytics is doing on this page: whether it runs, why it is off, and which fields an event carries, with a Pause / Resume control.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": ["@flow"]
   },
   "attributes": [
-    { "name": "title",   "kind": "host-api", "purpose": "config",         "type": "string",  "description": "Override the panel heading (default: \"Analytics data\")" },
-    { "name": "compact", "kind": "host-api", "purpose": "visual-variant", "type": "boolean", "description": "Tighter layout for embedding alongside other UI" }
+    { "name": "title",       "kind": "host-api", "purpose": "config",         "type": "string",  "default": "Analytics on this page", "description": "Override the panel heading" },
+    { "name": "compact",     "kind": "host-api", "purpose": "visual-variant", "type": "boolean", "description": "Tighter layout for embedding alongside other UI" },
+    { "name": "data-state",  "kind": "data",     "purpose": "output-state",   "type": "enum", "values": ["active", "debug", "paused", "off"], "direction": "output", "public": true, "description": "Reflected runtime state: active (sending), debug (console transport), paused (visitor paused this tab), off (any other reason)" },
+    { "name": "data-reason", "kind": "data",     "purpose": "output-state",   "type": "enum", "values": ["user", "gpc", "dnt", "consent", "disabled", "iframe", "uninitialized"], "direction": "output", "public": true, "description": "Reflected when analytics is not sending: why" }
   ],
   "structure": [],
   "childAttributes": [],
   "events": [
-    { "name": "analytics-panel:cleared", "description": "Fired after session data is cleared by the user" },
     { "name": "analytics-panel:optout",  "description": "Fired when the user pauses analytics for this tab" },
     { "name": "analytics-panel:optin",   "description": "Fired when the user resumes analytics for this tab" }
   ]

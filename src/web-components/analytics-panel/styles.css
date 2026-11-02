@@ -1,122 +1,127 @@
 /**
  * analytics-panel — styles
  *
- * Design tokens used: --surface-*, --text-*, --red-*, --green-*, --radius-*.
- * Falls back to neutral greys when tokens are absent so the component is
- * visually sensible on any page.
+ * VB tokens only (no fallbacks): the surface/text/border pairs are
+ * light-dark() aware, so the panel stays legible in dark mode.
  */
 
 analytics-panel {
   display: block;
-  padding: var(--size-m, 1rem);
-  border: 1px solid var(--surface-4, #d4d4d8);
-  border-radius: var(--radius-m, .5rem);
-  background: var(--surface-1, #fff);
-  color: var(--text-1, inherit);
-  font-size: var(--font-size-0, .875rem);
-  line-height: 1.5;
+  padding: var(--size-m);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font-size: var(--font-size-s);
+  line-height: var(--line-height-normal);
 }
 
 analytics-panel[compact] {
-  padding: var(--size-s, .75rem);
-  font-size: .8125rem;
+  padding: var(--size-s);
+  font-size: var(--font-size-xs);
 }
 
 analytics-panel .analytics-panel__header h3 {
-  margin: 0 0 .25rem;
-  font-size: var(--font-size-1, 1rem);
+  margin: 0 0 var(--size-2xs);
+  font-size: var(--font-size-m);
 }
 
 analytics-panel .analytics-panel__status {
-  margin: 0 0 var(--size-m, 1rem);
+  margin: 0 0 var(--size-m);
   display: flex;
   align-items: center;
-  gap: .5rem;
-  color: var(--text-2, #71717a);
+  gap: var(--size-xs);
+  color: var(--color-text);
 }
 
 analytics-panel .analytics-panel__dot {
   display: inline-block;
   inline-size: .5rem;
   block-size: .5rem;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   flex-shrink: 0;
+  background: var(--color-text-muted);
 }
 
-analytics-panel .analytics-panel__dot--active {
-  background: var(--green-6, #16a34a);
+analytics-panel[data-state="active"] .analytics-panel__dot,
+analytics-panel[data-state="debug"] .analytics-panel__dot {
+  background: var(--color-success);
 }
 
-analytics-panel .analytics-panel__dot--paused {
-  background: var(--red-6, #dc2626);
+analytics-panel[data-state="paused"] .analytics-panel__dot,
+analytics-panel[data-state="off"] .analytics-panel__dot {
+  background: var(--color-error);
 }
 
 analytics-panel .analytics-panel__body {
-  margin-block: var(--size-m, 1rem);
+  margin-block: var(--size-m);
 }
 
 analytics-panel .analytics-panel__body h4 {
-  margin: 0 0 .5rem;
-  font-size: var(--font-size-0, .875rem);
+  margin: 0 0 var(--size-xs);
+  font-size: inherit;
   font-weight: 600;
-  color: var(--text-2, #71717a);
+  color: var(--color-text-muted);
 }
 
 analytics-panel .analytics-panel__data {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: .25rem var(--size-m, 1rem);
+  gap: var(--size-2xs) var(--size-m);
   margin: 0;
 }
 
 analytics-panel .analytics-panel__data dt {
-  color: var(--text-2, #71717a);
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 
 analytics-panel .analytics-panel__data dd {
   margin: 0;
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 analytics-panel .analytics-panel__empty {
   margin: 0;
-  color: var(--text-2, #71717a);
-  font-style: italic;
+  color: var(--color-text-muted);
 }
 
 analytics-panel .analytics-panel__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: .5rem;
-  margin-block: var(--size-m, 1rem);
+  align-items: center;
+  gap: var(--size-xs);
+  margin-block: var(--size-m);
 }
 
 analytics-panel .analytics-panel__action {
-  padding: .375rem .75rem;
-  border: 1px solid var(--surface-4, #d4d4d8);
-  border-radius: var(--radius-s, .25rem);
-  background: var(--surface-1, #fff);
-  color: inherit;
+  padding: var(--size-2xs) var(--size-s);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-s);
+  background: var(--color-surface);
+  color: var(--color-text);
   font: inherit;
   cursor: var(--cursor-custom-pointer, pointer);
 }
 
 analytics-panel .analytics-panel__action:hover {
-  background: var(--surface-2, #f4f4f5);
+  background: var(--color-surface-sunken);
 }
 
-analytics-panel .analytics-panel__action--danger {
-  border-color: var(--red-4, #f87171);
-  color: var(--red-7, #b91c1c);
+analytics-panel .analytics-panel__action[aria-disabled="true"] {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
 }
 
-analytics-panel .analytics-panel__action--danger:hover {
-  background: var(--red-1, #fef2f2);
+analytics-panel .analytics-panel__hint {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-text-muted);
 }
 
 analytics-panel .analytics-panel__note {
   margin: 0;
-  font-size: .8125rem;
-  color: var(--text-2, #71717a);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
 }

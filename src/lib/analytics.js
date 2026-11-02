@@ -26,18 +26,48 @@
 // ── Opt-out ──────────────────────────────────────────────────────────
 // Priority: sessionStorage opt-out > GPC > DNT > app consent function.
 
-function isOptedOut(config) {
+/**
+ * Every opt-out signal, evaluated independently. `isOptedOut` and
+ * `getStatus()` both derive from this so the panel can never disagree with
+ * the gate that actually drops events.
+ * @param {{ consent?: (() => boolean) | null } | null} config
+ * @returns {{ user: boolean, gpc: boolean, dnt: boolean, consent: boolean }}
+ */
+function readOptOutSignals(config) {
+  let user = false;
   try {
-    if (sessionStorage.getItem('vb_optout') === '1') return true;
+    user = sessionStorage.getItem('vb_optout') === '1';
   } catch { /* sessionStorage unavailable — treat as opt-in */ }
 
-  if (navigator.globalPrivacyControl === true) return true;
-  if (navigator.doNotTrack === '1') return true;
-
-  if (typeof config.consent === 'function') {
-    try { return config.consent() === false; } catch { return true; }
+  let consent = false;
+  if (typeof config?.consent === 'function') {
+    try { consent = config.consent() === false; } catch { consent = true; }
   }
-  return false;
+
+  return {
+    user,
+    gpc: navigator.globalPrivacyControl === true,
+    dnt: navigator.doNotTrack === '1',
+    consent,
+  };
+}
+
+/**
+ * First opt-out signal that applies, in gate priority order.
+ * @param {{ consent?: (() => boolean) | null } | null} config
+ * @returns {'user'|'gpc'|'dnt'|'consent'|null}
+ */
+function optOutReason(config) {
+  const s = readOptOutSignals(config);
+  if (s.user) return 'user';
+  if (s.gpc) return 'gpc';
+  if (s.dnt) return 'dnt';
+  if (s.consent) return 'consent';
+  return null;
+}
+
+function isOptedOut(config) {
+  return optOutReason(config) !== null;
 }
 
 function isExcludedElement(el) {
@@ -136,6 +166,31 @@ const state = {
   queue: [],
 };
 
+/** Read-only counters for `getStatus()`. Per page load (module state). */
+const stats = {
+  /** Requests handed to sendBeacon/fetch by the 'beacon' transport. */
+  sent: 0,
+  /** Envelopes written to the console by the 'console' transport. */
+  logged: 0,
+  /** True when init() switched the runtime off because it is in an iframe. */
+  iframeDisabled: false,
+};
+
+/* Per-component CDN chunks each bundle their own copy of this module, so a
+   standalone <analytics-panel> chunk would otherwise see an uninitialised
+   runtime. The instance that init()s publishes itself here; readers use
+   getAnalyticsRuntime(). */
+const RUNTIME_KEY = Symbol.for('vanilla-breeze.analytics');
+
+/** Event fired on `document` when status-relevant state changes. */
+export const ANALYTICS_STATUS_EVENT = 'vb:analytics-status';
+
+function notifyStatus() {
+  try {
+    document.dispatchEvent(new CustomEvent(ANALYTICS_STATUS_EVENT));
+  } catch { /* no document (SSR/tests) */ }
+}
+
 function getEndpoint(kind) {
   const base = state.config?.endpoint ?? '/api/analytics';
   return `${base.replace(/\/+$/, '')}/${kind}`;
@@ -168,10 +223,14 @@ function dispatch(kind, envelope) {
     // Use console.log so events show under the default console filter
     // (console.debug is hidden unless "Verbose" is enabled in Chrome).
     console.log('%c[vb:analytics]', 'color:#0aa;font-weight:600', kind, envelope);
+    stats.logged++;
+    notifyStatus();
     return true;
   }
 
-  return sendBeacon(getEndpoint(kind), envelope);
+  const ok = sendBeacon(getEndpoint(kind), envelope);
+  if (ok) { stats.sent++; notifyStatus(); }
+  return ok;
 }
 
 function shouldSample() {
@@ -311,11 +370,14 @@ export const Analytics = {
     if (state.config) return; // idempotent
     const cfg = /** @type {AnalyticsConfig} */ ({ ...defaults, ...config });
     state.config = cfg;
+    if (!globalThis[RUNTIME_KEY]) globalThis[RUNTIME_KEY] = Analytics;
+    queueMicrotask(notifyStatus);
 
     // Sandboxed demos embedded via iframe should not report analytics —
     // every page-view beacon would be a demo load, not a real visit.
     // Callers that *do* want analytics inside an iframe set allowInIframe.
     if (isInIframe() && !cfg.allowInIframe) {
+      stats.iframeDisabled = true;
       cfg.transport = 'disabled';
       cfg.autoPageView = false;
       cfg.autoOutboundLinks = false;
@@ -372,6 +434,53 @@ export const Analytics = {
       if (granted) sessionStorage.removeItem('vb_optout');
       else sessionStorage.setItem('vb_optout', '1');
     } catch { /* sessionStorage unavailable — no-op */ }
+    notifyStatus();
+  },
+
+  /**
+   * Read-only snapshot of what the runtime is doing right now — for
+   * visitor-facing transparency UI such as `<analytics-panel>`. Never
+   * changes state and never sends anything.
+   *
+   * - `active`: events can leave this page (initialised, transport is
+   *   'beacon' or 'console', no opt-out signal).
+   * - `reason`: the first opt-out signal in gate order; `signals` has them
+   *   all, so UI can tell when lifting the user opt-out would not be enough.
+   * - `sent` / `logged` / `queued`: counts for this page load only. Outbound
+   *   link `ping` requests are sent by the browser and are not counted.
+   * - `collects` / `preview`: the envelope the runtime would build for an
+   *   event on this page right now (after URL masking), so UI can list the
+   *   actual fields and values rather than a hardcoded description.
+   *   `null` when not initialised.
+   */
+  getStatus() {
+    const cfg = state.config;
+    const signals = readOptOutSignals(cfg);
+    const reason = optOutReason(cfg);
+    let preview = null;
+    if (cfg) {
+      try { preview = buildEnvelope('page.view', {}); } catch { preview = null; }
+    }
+    const transport = cfg?.transport ?? null;
+    return {
+      initialized: cfg != null,
+      active: cfg != null && transport !== 'disabled' && reason === null,
+      optedOut: reason !== null,
+      reason,
+      signals,
+      transport,
+      inIframe: stats.iframeDisabled,
+      endpoint: cfg ? getEndpoint('hit') : null,
+      siteId: cfg?.siteId ?? null,
+      sampleRate: cfg?.sampleRate ?? null,
+      outboundLinks: cfg?.autoOutboundLinks ?? false,
+      queued: state.queue.length,
+      sent: stats.sent,
+      logged: stats.logged,
+      collects: preview ? Object.keys(preview) : [],
+      contextKeys: preview ? Object.keys(preview.context) : [],
+      preview,
+    };
   },
 
   /** Read-only view of the resolved config, for tests and docs. */
@@ -379,3 +488,13 @@ export const Analytics = {
     return state.config ? { ...state.config } : null;
   },
 };
+
+/**
+ * The runtime instance that was actually initialised on this page, falling
+ * back to this module's own copy. Use from code that may be bundled
+ * separately from the entry that called `Analytics.init()`.
+ * @returns {typeof Analytics}
+ */
+export function getAnalyticsRuntime() {
+  return globalThis[RUNTIME_KEY] ?? Analytics;
+}

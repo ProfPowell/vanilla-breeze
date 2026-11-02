@@ -351,7 +351,9 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "title": {},
-      "compact": { boolean: true }
+      "compact": { boolean: true },
+      "data-state": { enum: ["active", "debug", "paused", "off"] },
+      "data-reason": { enum: ["user", "gpc", "dnt", "consent", "disabled", "iframe", "uninitialized"] }
     }
   },
 
@@ -376,7 +378,8 @@ module.exports = {
     attributes: {
       "for": {},
       "data-mode": {},
-      "data-fft-size": {}
+      "data-fft-size": {},
+      "data-state": { enum: ["cross-origin", "error"] }
     }
   },
 
@@ -966,6 +969,7 @@ module.exports = {
     attributes: {
       "src": {},
       "loading": { enum: ["eager", "lazy"] },
+      "sanitize": { enum: ["on", "off"] },
       "highlight": { boolean: true },
       "ping": {},
       "data-theme": {}

@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "analytics-panel"
-description: "Self-serve view of analytics data stored on the device — shows what's been captured this session, with Pause and Clear controls."
+description: "Visitor-facing view of what analytics is doing on this page: whether it runs, why it is off, and which fields an event carries, with Pause and Resume."
 elementName: analytics-panel
 category: component
 currentPath: /docs/elements/web-components/analytics-panel/
@@ -12,41 +12,95 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;analytics-panel&gt;</code> component lets visitors see exactly what Vanilla Breeze analytics has captured about their current browsing session — no hand-waving about "anonymous data". Users can pause collection for the session, clear stored data, or both.</p>
-  <p>The panel reads from <code>sessionStorage</code> (<code>vb_sc</code>, <code>vb_q</code>, <code>vb_optout</code>) — the same storage the analytics runtime writes to. No server round-trip, no identifier lookup.</p>
+  <p>The <code>&lt;analytics-panel&gt;</code> component shows visitors what Vanilla Breeze analytics is doing on the current page: whether it is running, why it is off, which fields an event carries, and how many events this page has sent. Visitors can pause collection for the tab and resume it.</p>
+  <p>Everything the panel shows comes from the live runtime through <code>Analytics.getStatus()</code>. Nothing is hardcoded, so the panel cannot drift from what the runtime actually sends.</p>
 
   <analytics-panel title="Your analytics data"></analytics-panel>
 </section>
 
 <section>
   <h2>Basic Usage</h2>
-  <p>Place the element anywhere — dashboard, privacy page, settings section. The component self-renders on upgrade.</p>
+  <p>Place the element anywhere: dashboard, privacy page, settings section. It renders on upgrade and updates itself when the runtime starts, sends an event, or the consent state changes.</p>
 
   <code-block language="html" show-lines label="Minimal placement" data-escape><analytics-panel></analytics-panel></code-block>
 </section>
 
 <section>
   <h2>Compact Mode</h2>
-  <p>Add <code>compact</code> for a tighter layout when embedding alongside other UI. The heading and action buttons reduce in size; data readouts stay legible.</p>
+  <p>Add <code>compact</code> for a tighter layout when embedding alongside other UI.</p>
 
   <code-block language="html" label="Compact mode" data-escape><analytics-panel title="Your data" compact></analytics-panel></code-block>
 </section>
 
 <section>
   <h2>Custom Title</h2>
-  <p>Override the default <q>Analytics data</q> heading with <code>title</code>.</p>
+  <p>Override the default <q>Analytics on this page</q> heading with <code>title</code>.</p>
 
-  <code-block language="html" label="Custom title" data-escape><analytics-panel title="What we've captured"></analytics-panel></code-block>
+  <code-block language="html" label="Custom title" data-escape><analytics-panel title="What we send"></analytics-panel></code-block>
+</section>
+
+<section>
+  <h2>What the Panel Reports</h2>
+  <p>The status line, and the reflected <code>data-state</code> and <code>data-reason</code> attributes, follow the same gate that drops events in the runtime:</p>
+
+  <table>
+    <thead><tr><th scope="col"><code>data-state</code></th><th scope="col"><code>data-reason</code></th><th scope="col">Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>active</code></td><td>(none)</td><td>Events are sent to the configured endpoint.</td></tr>
+      <tr><td><code>debug</code></td><td>(none)</td><td>The <code>console</code> transport is on: events are logged in the browser, not sent.</td></tr>
+      <tr><td><code>paused</code></td><td><code>user</code></td><td>The visitor paused analytics for this tab.</td></tr>
+      <tr><td><code>off</code></td><td><code>gpc</code></td><td>The browser sends Global Privacy Control.</td></tr>
+      <tr><td><code>off</code></td><td><code>dnt</code></td><td>The browser sends Do Not Track.</td></tr>
+      <tr><td><code>off</code></td><td><code>consent</code></td><td>The site&rsquo;s <code>consent</code> callback returned <code>false</code>.</td></tr>
+      <tr><td><code>off</code></td><td><code>disabled</code></td><td>The site configured <code>transport: 'disabled'</code>.</td></tr>
+      <tr><td><code>off</code></td><td><code>iframe</code></td><td>The page is in an iframe and the runtime does not run there.</td></tr>
+      <tr><td><code>off</code></td><td><code>uninitialized</code></td><td><code>Analytics.init()</code> has not run on this page.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Below the status, a description list shows the envelope fields an event from this page carries (<code>name</code>, <code>ts</code>, <code>site</code>, <code>path</code>, <code>referrer</code>, <code>context</code>, <code>props</code>), the path and referrer as they would be sent after URL masking, the keys in <code>context</code> (the <code>&lt;html&gt;</code> <code>data-*</code> attributes and <code>vb:*</code> meta tags on the page), the endpoint, and the number of events sent from this page load.</p>
+</section>
+
+<section>
+  <h2>Pause and Resume</h2>
+  <p>The toggle calls <code>Analytics.setConsent(false)</code> or <code>Analytics.setConsent(true)</code>, which sets or removes the <code>vb_optout</code> flag in <code>sessionStorage</code>. The runtime checks that flag before every event. The panel and the API stay in sync: calling <code>setConsent()</code> directly updates any open panel.</p>
+
+  <code-block language="js" label="Programmatic parity" data-escape>import { Analytics } from 'vanilla-breeze';
+
+Analytics.setConsent(false); // same effect as clicking "Pause analytics"
+Analytics.setConsent(true);  // same effect as clicking "Resume analytics"</code-block>
+
+  <p>Resume cannot override Global Privacy Control, Do Not Track, or the site&rsquo;s consent callback. When one of those keeps analytics off, the Resume button is marked unavailable (<code>aria-disabled="true"</code>) and a note linked by <code>aria-describedby</code> explains why.</p>
+</section>
+
+<section>
+  <h2>Reading Status Yourself</h2>
+  <p><code>Analytics.getStatus()</code> is a read-only snapshot; it never changes state or sends anything. The runtime fires <code>vb:analytics-status</code> on <code>document</code> when the status changes.</p>
+
+  <code-block language="js" label="Status snapshot" data-escape>import { Analytics } from 'vanilla-breeze';
+
+const s = Analytics.getStatus();
+// {
+//   initialized: true, active: true, optedOut: false,
+//   reason: null,                // 'user' | 'gpc' | 'dnt' | 'consent' | null
+//   signals: { user, gpc, dnt, consent },
+//   transport: 'beacon', inIframe: false,
+//   endpoint: '/api/analytics/hit', siteId: 'vb-docs', sampleRate: 1,
+//   outboundLinks: true,
+//   queued: 0, sent: 1, logged: 0,   // this page load only
+//   collects: ['name', 'ts', 'site', 'path', 'referrer', 'context', 'props'],
+//   contextKeys: ['mode', 'topic'],
+//   preview: { ...the envelope an event from this page would carry }
+// }</code-block>
+
+  <p>Counts cover the current page load. Outbound link <code>ping</code> requests are sent by the browser and are not counted.</p>
 </section>
 
 <section>
   <h2>Events</h2>
-  <p>The panel dispatches custom events when the user takes an action, so embedding pages can react (e.g. showing a confirmation toast, updating a status indicator).</p>
-
   <table>
-    <thead><tr><th>Event</th><th>When</th></tr></thead>
+    <thead><tr><th scope="col">Event</th><th scope="col">When</th></tr></thead>
     <tbody>
-      <tr><td><code>analytics-panel:cleared</code></td><td>After the user clears their session data</td></tr>
       <tr><td><code>analytics-panel:optout</code></td><td>When the user pauses analytics for this tab</td></tr>
       <tr><td><code>analytics-panel:optin</code></td><td>When the user resumes analytics for this tab</td></tr>
     </tbody>
@@ -58,38 +112,22 @@ crumbLabel: Web Components
 </section>
 
 <section>
-  <h2>How It Relates to <code>Analytics.setConsent()</code></h2>
-  <p>The panel's <q>Pause analytics</q> button writes <code>vb_optout</code> to <code>sessionStorage</code>, which the core runtime checks on every <code>Analytics.track()</code> call. The same flag can be set programmatically:</p>
-
-  <code-block language="js" label="Programmatic parity" data-escape>import { Analytics } from 'vanilla-breeze';
-
-Analytics.setConsent(false); // same effect as clicking "Pause analytics"
-Analytics.setConsent(true);  // same effect as clicking "Resume analytics"</code-block>
-
-  <p>The panel and the API share the same <code>sessionStorage</code> key, so they stay in sync automatically. If you set consent via the API while the panel is open, click <strong>Refresh</strong> (or re-render the panel) to reflect the new state.</p>
-</section>
-
-<section>
-  <h2>Privacy Boundaries</h2>
-  <p>The panel shows only data the runtime has captured about <em>this tab</em> in <em>this session</em>:</p>
-
+  <h2>Privacy and Storage</h2>
   <ul>
-    <li><strong>Pages this session</strong> — a simple counter, no path history.</li>
-    <li><strong>Max scroll depth</strong> — the furthest point reached on any page (0–100%).</li>
-    <li><strong>Active reading time</strong> — milliseconds the tab was visible.</li>
-    <li><strong>Queued events</strong> — count of component interactions waiting to flush.</li>
+    <li><strong>On this device:</strong> only the pause flag (<code>vb_optout</code> in <code>sessionStorage</code>), which the browser clears when the tab closes. The runtime keeps no event history on the device, so there is no <q>clear my data</q> action: there is nothing local to clear.</li>
+    <li><strong>On the server:</strong> each sent event is stored as a row with the event name, site, path, referrer, the page&rsquo;s taxonomy fields, event properties and a timestamp. The server adds the visitor&rsquo;s country from the request.</li>
+    <li><strong>No identifier:</strong> no cookies and no visitor ID. The IP address is not stored; unique visits are counted with a daily-rotating salted hash that is pruned after a day or two. Because sent events carry no identifier, they cannot be looked up or deleted from the panel.</li>
   </ul>
-
-  <p>The panel does <strong>not</strong> display or have access to server-side aggregates. There is no user identifier, no cross-tab history, and no cross-site correlation. Closing the tab clears everything automatically.</p>
 </section>
 
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Status indicator is announced to assistive tech via <code>role="status"</code>.</li>
-    <li>Actions are standard <code>&lt;button&gt;</code> elements — keyboard activatable.</li>
-    <li>The panel uses semantic landmarks: <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;footer&gt;</code>.</li>
-    <li>Data readout uses a <code>&lt;dl&gt;</code> so screen readers announce labels with their values.</li>
+    <li>The panel renders once and then updates text in place, so the activated button keeps focus.</li>
+    <li>One persistent <code>role="status"</code> region announces each change of state; a Refresh that changes nothing stays quiet.</li>
+    <li>The toggle exposes its state with <code>aria-pressed</code>, and uses <code>aria-disabled</code> rather than <code>disabled</code> when Resume is unavailable, so it stays focusable and its explanation stays reachable.</li>
+    <li>Colours come from VB tokens (<code>--color-surface-raised</code>, <code>--color-text</code>, <code>--color-text-muted</code>), which keep 4.5:1 contrast in light and dark modes.</li>
+    <li>The field readout uses a <code>&lt;dl&gt;</code> so screen readers announce labels with their values.</li>
   </ul>
 </section>
 
