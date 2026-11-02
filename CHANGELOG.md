@@ -8,6 +8,22 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Stop buttons and history for the AI components.** `<ai-chat>` and
+  `<ai-summary>` show a Stop button while a reply streams (plus a public
+  `stop()`); endpoint mode sends prior turns as `messages[]`
+  (ai-page-tools v1.1 — servers that ignore it still work); the
+  `{content}` fallback-URL token is filled (capped at 1,500 characters;
+  `<ai-chat>` uses only its `context` region); `format="plain-text"`
+  renders as text; `<ai-summary>` warns when input exceeds the on-device
+  quota.
+- **`heading` and `heading-level` on `<analytics-panel>` and
+  `<author-index>`.** `<analytics-panel title>` is renamed `heading` (the
+  global `title` put a tooltip on the whole panel).
+- **`<activity-feed>` load-more contract.** `load-more` carries
+  `detail.done()`, the feed is `aria-busy` while loading, and removing
+  `data-infinite` ends it. Authored `<time datetime>` works as the
+  timestamp without JavaScript.
+
 - **`Analytics.getStatus()`** — a read-only snapshot of the analytics
   runtime: whether it is running, why it is off (user, GPC, DNT, consent),
   the fields an event carries, and per-page send counts. A
@@ -70,6 +86,27 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   nav page.
 
 ### Fixed
+
+- **A-element review, batch 5.**
+  - `<audio-player>`: the seek slider announces "0:13 of 0:30", mute
+    reports `aria-pressed`, load errors show a message, shuffle plays each
+    track once per cycle, scrubbing no longer jumps, and the player and the
+    `.audio-standalone` utility share one track helper (both auto-advance).
+  - `<audio-visualizer>`: caches its canvas and colours instead of doing
+    the work every frame, draws a baseline instead of a blank box (and a
+    single frame under reduced motion), and follows `for`/`data-mode`
+    changes.
+  - `<activity-feed>`: follows the APG feed pattern (Page keys move one
+    article; feed children are all articles; `aria-setsize` is -1 while
+    infinite), and avatars render (they never did).
+  - `<author-index>`: a failed fetch keeps the filter on authored markup,
+    ids are unique for any script, unsafe hrefs are dropped, result counts
+    are announced, and moving it doesn't refetch.
+  - Article highlights: every article paints its own palette (only the
+    first did), two articles sharing a colour no longer overwrite each
+    other, and custom colours work in the `<mark>` fallback.
+  - `<comment-thread>` avatars render.
+  - `<area>` focus uses the theme's interactive colour.
 
 - **`<ai-summary>` XSS.** Model or endpoint output rendered through
   `<markdown-viewer>` was inserted as raw HTML; it is now sanitized.

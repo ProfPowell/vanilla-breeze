@@ -350,7 +350,8 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "title": {},
+      "heading": {},
+      "heading-level": { enum: ["1", "2", "3", "4", "5", "6"] },
       "compact": { boolean: true },
       "data-state": { enum: ["active", "debug", "paused", "off"] },
       "data-reason": { enum: ["user", "gpc", "dnt", "consent", "disabled", "iframe", "uninitialized"] }
@@ -364,11 +365,9 @@ module.exports = {
       "autoplay": { boolean: true },
       "loop": { boolean: true },
       "shuffle": { boolean: true },
-      "controls": {},
-      "state": {},
-      "data-audio-played": {},
-      "muted": {},
-      "data-audio-active": {}
+      "state": { enum: ["playing", "paused", "ended"] },
+      "muted": { boolean: true },
+      "data-state": { enum: ["error"] }
     }
   },
 
@@ -390,7 +389,8 @@ module.exports = {
       "data-lens-src": {},
       "src": {},
       "placeholder": {},
-      "sort": {}
+      "sort": { enum: ["alpha", "count"] },
+      "heading-level": { enum: ["1", "2", "3", "4", "5", "6"] }
     }
   },
 

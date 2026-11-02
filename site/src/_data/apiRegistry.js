@@ -1610,13 +1610,54 @@ export default {
         "element": "<summary>",
         "description": "Panel heading inside each <details>"
       }
+    ],
+    "events": [
+      {
+        "name": "accordion-wc:toggle",
+        "detail": "{ index, open }",
+        "description": "Fired when a panel opens or closes"
+      },
+      {
+        "name": "accordion-wc:panels-changed",
+        "detail": "{ panels, source: 'property' }",
+        "description": "Fired after the panels property rebuilds the accordion"
+      }
+    ],
+    "methods": [
+      {
+        "name": "open(index)",
+        "description": "Open the panel at index (out-of-range indexes are ignored)"
+      },
+      {
+        "name": "close(index)",
+        "description": "Close the panel at index"
+      },
+      {
+        "name": "toggle(index)",
+        "description": "Toggle the panel at index"
+      },
+      {
+        "name": "openAll()",
+        "description": "Open every panel (no-op in single mode)"
+      },
+      {
+        "name": "closeAll()",
+        "description": "Close every panel"
+      }
+    ],
+    "properties": [
+      {
+        "name": "panels",
+        "type": "Array<{ id?, summary, content, open? }>",
+        "description": "Get the panel set as data, or assign one to rebuild the accordion"
+      }
     ]
   },
   "activity-feed": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "activity-feed",
     "type": "web-component",
-    "description": "WAI-ARIA Feed timeline of user actions. Author renders <article data-activity data-time=ISO> children; component decorates with relative-time badges, optional date grouping, optional infinite-scroll sentinel, and per-entry avatar / icon left-rail.",
+    "description": "WAI-ARIA Feed timeline of user actions. Author renders <article data-activity> children timestamped with data-time or an authored <time datetime> child; component decorates with relative-time badges, optional date grouping, optional infinite-scroll sentinel (aria-busy + done() handshake), and per-entry avatar / icon left-rail.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -1643,7 +1684,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Adds an IntersectionObserver sentinel; emits activity-feed:load-more when reached"
+        "description": "Adds an IntersectionObserver sentinel; emits activity-feed:load-more when reached and sets aria-setsize=\"-1\" on entries. Remove the attribute to end the feed (sentinel removed, real aria-setsize, aria-busy cleared)."
       },
       {
         "name": "data-empty-text",
@@ -1656,18 +1697,21 @@ export default {
         "name": "role",
         "kind": "aria",
         "purpose": "config",
-        "description": "Set to \"feed\" per WAI-ARIA Feed pattern"
+        "description": "Managed: \"feed\" while the feed has entries, \"group\" while empty (so the empty-state text is a valid child). An author-set role other than feed/group is left alone."
       },
       {
         "name": "aria-busy",
         "kind": "aria",
-        "purpose": "config"
+        "purpose": "config",
+        "description": "Managed: \"true\" from activity-feed:load-more until detail.done() is called, new entries arrive, or data-infinite is removed.",
+        "type": "string"
       }
     ],
     "events": [
       {
         "name": "activity-feed:load-more",
-        "description": "Fires when the infinite-scroll sentinel enters the viewport"
+        "description": "Fires when the infinite-scroll sentinel comes into view (at most one outstanding request). detail.done() ends the busy state and re-arms the sentinel; appending entries or removing data-infinite also ends it.",
+        "detail": "{ done: () => void }"
       }
     ],
     "properties": [
@@ -1689,7 +1733,12 @@ export default {
       {
         "name": "entries",
         "type": "HTMLElement[]",
-        "description": "Live list of decorated entry elements"
+        "description": "Snapshot array of the current entry elements (a new array on each read, not live)"
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "description": "Read-only. True while a load-more is outstanding (mirrors aria-busy)"
       }
     ],
     "childAttributes": [
@@ -1704,8 +1753,8 @@ export default {
         "name": "data-time",
         "on": "article",
         "type": "string",
-        "required": true,
-        "description": "ISO-8601 timestamp; renders as relative time"
+        "required": false,
+        "description": "ISO-8601 timestamp; renders as relative time. Alternatively author a direct-child <time datetime> (works without JS and is upgraded in place); data-time wins if both are present"
       },
       {
         "name": "data-activity-avatar",
@@ -1769,14 +1818,14 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Inline-fallback HTTP URL (POST JSON, streamed text/plain or one-shot application/json)."
+        "description": "Inline-fallback HTTP URL (POST JSON, streamed text/plain or one-shot application/json). Sends prior turns as messages[] (admin/specs/ai-page-tools-v1.md §C, v1.1)."
       },
       {
         "name": "fallback-url",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Deep-link URL template. Tokens: {prompt} {url} {title} {content}. Provider-neutral."
+        "description": "Deep-link URL template. Tokens: {prompt} {url} {title} {content}. {content} is the context region's text, capped at 1500 characters (empty without a context attribute). Provider-neutral."
       },
       {
         "name": "fallback-label",
@@ -1852,7 +1901,12 @@ export default {
       {
         "name": "reset()",
         "returns": "Promise<void>",
-        "description": "Destroy the current session and clear the log."
+        "description": "Abort any reply, destroy the current session, and clear the log and the conversation history sent to endpoints."
+      },
+      {
+        "name": "stop()",
+        "returns": "void",
+        "description": "Abort the in-flight reply, if any. Same as the Stop button or Escape."
       }
     ]
   },
@@ -1905,7 +1959,7 @@ export default {
           "plain-text"
         ],
         "default": "markdown",
-        "description": "Output format."
+        "description": "Output format. plain-text output is rendered as text (no markdown-viewer)."
       },
       {
         "name": "shared-context",
@@ -1926,7 +1980,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Deep-link URL template. Tokens: {prompt} {url} {title} {content}. Provider-neutral."
+        "description": "Deep-link URL template. Tokens: {prompt} {url} {title} {content}. {content} is the wrapped text, capped at 1500 characters. Provider-neutral."
       },
       {
         "name": "fallback-label",
@@ -1981,7 +2035,13 @@ export default {
       }
     ],
     "properties": [],
-    "methods": []
+    "methods": [
+      {
+        "name": "stop()",
+        "returns": "void",
+        "description": "Abort the in-flight summary, if any. Same as the Stop button or Escape."
+      }
+    ]
   },
   "analytics-panel": {
     "$schema": "../../schemas/api.schema.json",
@@ -1996,19 +2056,35 @@ export default {
     },
     "attributes": [
       {
-        "name": "title",
+        "name": "heading",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
         "default": "Analytics on this page",
-        "description": "Override the panel heading"
+        "description": "Override the panel heading text"
+      },
+      {
+        "name": "heading-level",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6"
+        ],
+        "default": "2",
+        "description": "Level of the panel heading; the field-list subheading is one level below (max 6)"
       },
       {
         "name": "compact",
         "kind": "host-api",
         "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Tighter layout for embedding alongside other UI"
+        "description": "Tighter layout (smaller heading, text and buttons) for embedding alongside other UI"
       },
       {
         "name": "data-state",
@@ -2081,57 +2157,185 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Loop single track or entire playlist"
+        "description": "Single track: sets the native audio.loop. Playlist: wrap to the first track after the last; with shuffle, start a new shuffle cycle"
       },
       {
         "name": "shuffle",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Randomize playlist order"
-      },
-      {
-        "name": "controls",
-        "kind": "host-api",
-        "purpose": "config"
+        "description": "Advance to a random track: each track plays once per cycle, never twice in a row. Without loop, playback stops at the end of the cycle"
       },
       {
         "name": "state",
         "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-audio-played",
-        "kind": "data",
-        "purpose": "semantic-state"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "playing",
+          "paused",
+          "ended"
+        ],
+        "description": "Reflected playback state, set by the component"
       },
       {
         "name": "muted",
         "kind": "host-api",
-        "purpose": "semantic-state"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Reflects the inner audio.muted (set by the mute button, the M shortcut or script)"
       },
       {
-        "name": "data-audio-active",
+        "name": "data-state",
         "kind": "data",
-        "purpose": "semantic-state"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "error"
+        ],
+        "description": "\"error\" when the audio (or every <source>) fails to load; a visible, politely announced message is shown. Cleared when a source loads"
+      }
+    ],
+    "properties": [
+      {
+        "name": "src",
+        "type": "string",
+        "description": "Get/set the inner <audio> source. Setting loads it, refreshes the title, moves data-audio-active to a matching track link and fires audio-player:src-changed"
+      },
+      {
+        "name": "currentTime",
+        "type": "number",
+        "description": "Playback position in seconds (proxies audio.currentTime)"
       }
     ],
     "events": [
       {
-        "name": "audio-player:play"
+        "name": "audio-player:play",
+        "detail": "{ currentTime, src }",
+        "description": "Playback started"
       },
       {
-        "name": "audio-player:pause"
+        "name": "audio-player:pause",
+        "detail": "{ currentTime }",
+        "description": "Playback paused"
       },
       {
-        "name": "audio-player:ended"
+        "name": "audio-player:ended",
+        "detail": "{ src }",
+        "description": "A track played to the end"
       },
       {
-        "name": "audio-player:track-change"
+        "name": "audio-player:track-change",
+        "detail": "{ src, title }",
+        "description": "A playlist track was activated (click or auto-advance)"
+      },
+      {
+        "name": "audio-player:src-changed",
+        "detail": "{ src, source: 'property' }",
+        "description": "The src property was set"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "controls",
+        "on": "audio",
+        "type": "boolean",
+        "description": "Native controls for the no-JS fallback. Removed while the component is upgraded, restored when it disconnects"
+      },
+      {
+        "name": "data-audio-active",
+        "on": "li",
+        "type": "boolean",
+        "description": "The loaded track. Author sets the initial one; the component moves it and keeps it on a track after it ends"
+      },
+      {
+        "name": "data-audio-played",
+        "on": "li",
+        "type": "boolean",
+        "description": "Set by the component when the track plays to the end"
+      },
+      {
+        "name": "data-audio-favorite",
+        "on": "li",
+        "type": "boolean",
+        "description": "Author-set editorial highlight (heart marker)"
+      }
+    ],
+    "structure": [
+      {
+        "element": "audio",
+        "required": true,
+        "description": "The native audio element (light DOM); the component renders custom controls for it"
+      },
+      {
+        "element": "ol.track-list",
+        "required": false,
+        "description": "Optional playlist (usually inside <details>): one <li> per track with an <a href> to the file"
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--audio-player-accent",
+        "description": "Play button, slider thumbs and progress fill colour"
+      },
+      {
+        "name": "--audio-player-bg",
+        "description": "Player background and slider thumb border"
+      },
+      {
+        "name": "--audio-player-radius",
+        "description": "Player border radius"
+      },
+      {
+        "name": "--audio-player-text",
+        "description": "Track title and controls text colour"
+      },
+      {
+        "name": "--audio-player-border",
+        "description": "Player border and slider track colour"
+      },
+      {
+        "name": "--audio-player-shadow",
+        "description": "Player box shadow (opt-in, default none)"
+      },
+      {
+        "name": "--audio-player-padding",
+        "description": "Controls row padding"
+      }
+    ],
+    "parts": [
+      {
+        "name": "player",
+        "description": "Outer player container"
+      },
+      {
+        "name": "controls",
+        "description": "Controls row"
+      },
+      {
+        "name": "play-button",
+        "description": "Play/pause button"
+      },
+      {
+        "name": "track-info",
+        "description": "Track title and time display"
+      },
+      {
+        "name": "timeline",
+        "description": "Seek range input"
+      },
+      {
+        "name": "volume",
+        "description": "Volume range input"
+      },
+      {
+        "name": "error",
+        "description": "Load-error message (hidden unless data-state=\"error\")"
+      }
+    ]
   },
   "audio-visualizer": {
     "$schema": "../../../schemas/api.schema.json",
@@ -2187,7 +2391,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "author-index",
     "type": "web-component",
-    "description": "Author-grouped view of site content",
+    "description": "Author-grouped view of site content. Fetches a pages.json-shaped source (or enhances authored fallback markup, including when the fetch fails) and adds a diacritic-insensitive filter with a polite live result count.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -2200,28 +2404,58 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "URL to pages.json (or compatible source)"
+        "description": "URL to pages.json (or compatible source). On failure, authored light-DOM markup is kept and enhanced; an empty host shows an error"
       },
       {
         "name": "src",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
         "description": "Alias for data-lens-src"
       },
       {
         "name": "placeholder",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Search input placeholder (default \"Filter authors…\")"
+        "default": "Filter authors…",
+        "description": "Search input placeholder; also the input's accessible name"
       },
       {
         "name": "sort",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Sort mode: \"alpha\" (default) | \"count\""
+        "type": "enum",
+        "values": [
+          "alpha",
+          "count"
+        ],
+        "default": "alpha",
+        "description": "Group order: alphabetical by author, or by page count (descending, ties alphabetical). Applies to fetched data only"
+      },
+      {
+        "name": "heading-level",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6"
+        ],
+        "default": "2",
+        "description": "Level of the generated \"Authors (N)\" heading (fetched data only)"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-author-group",
+        "on": "details",
+        "type": "boolean",
+        "description": "Marks an authored fallback group as filterable; hidden when its visible text does not contain the query"
       }
     ]
   },
