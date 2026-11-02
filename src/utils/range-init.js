@@ -45,13 +45,16 @@ function enhanceRange(input) {
   input.parentNode.insertBefore(wrapper, input);
   wrapper.appendChild(input);
 
-  // Update CSS custom property for track fill
+  // Track fill and bubble position are pure CSS driven by these two custom
+  // properties: --range-pct for the gradient, --range-frac (0–1) for the
+  // bubble. Nothing is measured, so the result never depends on when layout,
+  // theme stylesheets or fonts settle (vanilla-breeze-tn0j).
   function updateTrackFill() {
     const min = parseFloat(input.min) || 0;
     const max = parseFloat(input.max) || 100;
-    const val = parseFloat(input.value);
-    const pct = ((val - min) / (max - min)) * 100;
-    wrapper.style.setProperty('--range-pct', `${pct}%`);
+    const frac = (parseFloat(input.value) - min) / (max - min);
+    wrapper.style.setProperty('--range-pct', `${frac * 100}%`);
+    wrapper.style.setProperty('--range-frac', String(frac));
   }
 
   // Value bubble
@@ -66,16 +69,6 @@ function enhanceRange(input) {
   function updateBubble() {
     if (!bubble) return;
     bubble.textContent = `${prefix}${input.value}${suffix}`;
-    const min = parseFloat(input.min) || 0;
-    const max = parseFloat(input.max) || 100;
-    const pct = (parseFloat(input.value) - min) / (max - min);
-
-    // Compute thumb center in pixels — wrapper may be wider than input
-    const inputWidth = input.offsetWidth;
-    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-    const thumbSize = 1.25 * rem;
-    const thumbCenter = input.offsetLeft + thumbSize / 2 + pct * (inputWidth - thumbSize);
-    bubble.style.insetInlineStart = `${thumbCenter}px`;
   }
 
   // Tick markers
@@ -102,20 +95,13 @@ function enhanceRange(input) {
       const min = parseFloat(input.min) || 0;
       const max = parseFloat(input.max) || 100;
 
-      // Defer label positioning until input has layout dimensions
-      requestAnimationFrame(() => {
-        const inputWidth = input.offsetWidth;
-        const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-        const thumbSize = 1.25 * rem;
-
-        Array.from(/** @type {HTMLDataListElement} */ (datalist).options).forEach(option => {
-          const span = document.createElement('span');
-          span.textContent = option.label || option.value;
-          const pct = (parseFloat(option.value) - min) / (max - min);
-          const pos = input.offsetLeft + thumbSize / 2 + pct * (inputWidth - thumbSize);
-          span.style.insetInlineStart = `${pos}px`;
-          labels.appendChild(span);
-        });
+      // Positioned in CSS from --range-frac, like the bubble: no layout
+      // read, so labels are placed synchronously and track resizes.
+      Array.from(/** @type {HTMLDataListElement} */ (datalist).options).forEach(option => {
+        const span = document.createElement('span');
+        span.textContent = option.label || option.value;
+        span.style.setProperty('--range-frac', String((parseFloat(option.value) - min) / (max - min)));
+        labels.appendChild(span);
       });
 
       wrapper.appendChild(labels);

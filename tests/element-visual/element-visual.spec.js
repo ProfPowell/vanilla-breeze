@@ -55,6 +55,15 @@ test.describe('Element visual regression', () => {
           await page.goto(url);
           await page.waitForLoadState('networkidle');
 
+          // Real readiness signals, not timing: networkidle can fire while a
+          // CPU-starved page is still evaluating modules, before a lazily
+          // imported enhancer has run (vanilla-breeze-tn0j). Fixtures with JS
+          // enhancement declare readySelector in the compendium.
+          if (fixture.readySelector) {
+            await page.locator(fixture.readySelector).first().waitFor({ state: 'attached', timeout: 10000 });
+          }
+          await page.evaluate(() => document.fonts.ready);
+
           // Freeze animations
           await page.addStyleTag({ content: FREEZE_CSS });
           await page.waitForTimeout(200);

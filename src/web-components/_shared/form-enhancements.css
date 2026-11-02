@@ -48,6 +48,8 @@ textarea[data-grow][data-grow-init] {
    data-range: Range slider with value bubble and labels
    -------------------------------------------------------------------------- */
 .range-wrapper {
+  /* Thumb size drives both the thumb and the bubble/label positions below */
+  --_range-thumb: 1.25rem;
   position: relative;
   padding-block-start: 1.75rem;
   padding-block-end: 1.25rem;
@@ -74,8 +76,8 @@ textarea[data-grow][data-grow-init] {
 
 .range-wrapper input[type="range"]::-webkit-slider-thumb {
   appearance: none;
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
+  inline-size: var(--_range-thumb);
+  block-size: var(--_range-thumb);
   border-radius: 50%;
   background: var(--color-interactive, oklch(55% 0.2 260));
   border: 2px solid white;
@@ -84,8 +86,8 @@ textarea[data-grow][data-grow-init] {
 }
 
 .range-wrapper input[type="range"]::-moz-range-thumb {
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
+  inline-size: var(--_range-thumb);
+  block-size: var(--_range-thumb);
   border-radius: 50%;
   background: var(--color-interactive, oklch(55% 0.2 260));
   border: 2px solid white;
@@ -100,6 +102,13 @@ textarea[data-grow][data-grow-init] {
 }
 
 /* Value bubble */
+/* Thumb centre: half a thumb in from the start, then the value fraction of
+   the remaining track. 100% is the wrapper width, which the input fills. */
+.range-bubble,
+.range-labels span {
+  inset-inline-start: calc(var(--_range-thumb) / 2 + var(--range-frac, 0) * (100% - var(--_range-thumb)));
+}
+
 .range-bubble {
   position: absolute;
   inset-block-start: 0;
@@ -119,7 +128,7 @@ textarea[data-grow][data-grow-init] {
 .range-markers {
   display: flex;
   justify-content: space-between;
-  padding-inline: 0.625rem;
+  padding-inline: calc(var(--_range-thumb) / 2);
   margin-block-start: var(--size-2xs);
 }
 
