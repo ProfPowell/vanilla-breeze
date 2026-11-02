@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "content-lens",
   "type": "web-component",
-  "description": "Universal switchable host for VB lens components",
+  "description": "Universal switchable host for VB lens components; JS API: activeLens (read-only), setLens(name)",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -29,7 +29,7 @@
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Shared JSON source URL forwarded to children"
+      "description": "Shared JSON source URL forwarded to lens children lacking their own data-lens-src/src (order-independent; already-upgraded children are re-initialised)"
     },
     {
       "name": "data-lens-storage",
@@ -50,13 +50,43 @@
     {
       "name": "content-lens:change",
       "detail": "{ lens: string }",
-      "description": "Fires when the reader switches lenses"
+      "description": "Fires when the reader or setLens() changes the active lens; not on the initial/restored selection"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-lens-name",
+      "on": "direct lens child",
+      "type": "string",
+      "required": true,
+      "description": "Registers the child as a switchable lens; value used by data-lens-default, setLens() and the event detail"
+    },
+    {
+      "name": "data-lens-label",
+      "on": "direct lens child",
+      "type": "string",
+      "description": "Chip text (default: humanised data-lens-name)"
     }
   ],
   "slots": [
     {
       "name": "default",
       "description": "Lens components, each with data-lens-name"
+    }
+  ],
+  "properties": [
+    {
+      "name": "activeLens",
+      "type": "string",
+      "readonly": true,
+      "description": "data-lens-name of the visible lens ('' before upgrade)."
+    }
+  ],
+  "methods": [
+    {
+      "name": "setLens(name)",
+      "returns": "void",
+      "description": "Switch to the named lens (ignored if unknown). Persists the choice; fires content-lens:change only when the lens actually changes."
     }
   ]
 }

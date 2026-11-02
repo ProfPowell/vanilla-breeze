@@ -11,14 +11,17 @@ import { VBElement } from '../../lib/vb-element.js';
  * Each lens child is a fully-functional standalone component
  * (<author-index>, <trust-filter>, etc.). content-lens just shows/hides
  * them and propagates the shared `data-lens-src` so they can fetch the
- * same aggregated source.
+ * same aggregated source. Forwarding is order-independent: children that
+ * upgraded before the host (e.g. their definitions registered first) are
+ * re-initialised after the attribute is forwarded so they pick it up.
  *
  * @attr {string}  data-lens-default    Lens name to show on first load
  * @attr {string}  data-lens-controls   "on" (default) | "off" — render reader controls
  * @attr {string}  data-lens-src        Shared JSON source URL forwarded to children
  * @attr {string}  data-lens-storage    Key for sessionStorage persistence (default: pathname)
  *
- * @fires content-lens:change  detail: { lens: 'trust' }
+ * @fires content-lens:change  detail: { lens: 'trust' } — on reader or
+ *        setLens() switches only; never on the initial / restored selection.
  *
  * @example
  *   <content-lens data-lens-default="time"
@@ -45,7 +48,7 @@ class ContentLens extends VBElement {
     this.#renderControls();
 
     const initial = this.#initialLens();
-    this.#activate(initial, /* persist */ false);
+    this.#activate(initial, { persist: false, notify: false });
     return true;
   }
 
@@ -62,8 +65,15 @@ class ContentLens extends VBElement {
     if (!src) return;
     /* Children already carrying their own data-lens-src or src win. */
     for (const child of this.#lenses.values()) {
-      if (!child.hasAttribute('data-lens-src') && !child.hasAttribute('src')) {
-        child.setAttribute('data-lens-src', src);
+      if (child.hasAttribute('data-lens-src') || child.hasAttribute('src')) continue;
+      child.setAttribute('data-lens-src', src);
+      /* Upgrade order is not guaranteed (definition order, lazy autoload,
+       * reconnects). A child that already ran setup() read no source, so
+       * re-run its lifecycle now that the attribute is present. Children
+       * that upgrade later simply read it in their own setup(). */
+      const lens = /** @type {any} */ (child);
+      if (child.hasAttribute('data-upgraded') && typeof lens._reinit === 'function') {
+        lens._reinit();
       }
     }
   }
@@ -71,14 +81,13 @@ class ContentLens extends VBElement {
   #renderControls() {
     if (this.getAttribute('data-lens-controls') === 'off') return;
     // Reconnect guard: VBElement re-runs setup() on every reconnect, which
-    // would prepend a second <nav>. Skip if ours is already in place.
+    // would prepend a second control group. Skip if ours is already in place.
     if (this.#controls?.parentNode === this) return;
 
-    const nav = document.createElement('nav');
-    nav.setAttribute('data-content-lens-controls', '');
-    nav.setAttribute('aria-label', 'Switch lens');
-
+    /* A plain fieldset/legend groups and names the radios; no landmark —
+     * a <nav> per lens host would litter the landmark list. */
     const fieldset = document.createElement('fieldset');
+    fieldset.setAttribute('data-content-lens-controls', '');
     const legend = document.createElement('legend');
     legend.textContent = 'View';
     fieldset.append(legend);
@@ -92,7 +101,7 @@ class ContentLens extends VBElement {
       input.name = groupName;
       input.value = name;
       input.addEventListener('change', () => {
-        if (input.checked) this.#activate(name, /* persist */ true);
+        if (input.checked) this.#activate(name, { persist: true, notify: true });
       });
       const text = document.createElement('span');
       text.textContent = el.getAttribute('data-lens-label') || this.#humanize(name);
@@ -100,9 +109,8 @@ class ContentLens extends VBElement {
       fieldset.append(label);
     }
 
-    nav.append(fieldset);
-    this.prepend(nav);
-    this.#controls = nav;
+    this.prepend(fieldset);
+    this.#controls = fieldset;
   }
 
   #humanize(name) {
@@ -128,8 +136,13 @@ class ContentLens extends VBElement {
     return [...this.#lenses.keys()][0];
   }
 
-  #activate(name, persist) {
+  /**
+   * @param {string} name
+   * @param {{ persist: boolean, notify: boolean }} opts
+   */
+  #activate(name, { persist, notify }) {
     if (!this.#lenses.has(name)) return;
+    const changed = name !== this.#activeLens;
 
     for (const [key, el] of this.#lenses) {
       const isActive = key === name;
@@ -138,7 +151,7 @@ class ContentLens extends VBElement {
     }
 
     if (this.#controls) {
-      const input = /** @type {HTMLInputElement | null} */ (this.#controls.querySelector(`input[value="${name}"]`));
+      const input = /** @type {HTMLInputElement | null} */ (this.#controls.querySelector(`input[value="${CSS.escape(name)}"]`));
       if (input) input.checked = true;
     }
 
@@ -151,19 +164,28 @@ class ContentLens extends VBElement {
       } catch { /* ignore quota / privacy mode */ }
     }
 
-    this.dispatchEvent(new CustomEvent('content-lens:change', {
-      detail: { lens: name },
-      bubbles: true
-    }));
+    if (notify && changed) {
+      this.dispatchEvent(new CustomEvent('content-lens:change', {
+        detail: { lens: name },
+        bubbles: true
+      }));
+    }
   }
 
   /* Programmatic API */
+
+  /** @returns {string} Name of the visible lens ('' before upgrade). */
   get activeLens() {
     return this.#activeLens;
   }
 
+  /**
+   * Switch to the named lens (ignored if unknown). Persists the choice and
+   * fires content-lens:change when the lens actually changes.
+   * @param {string} name
+   */
   setLens(name) {
-    this.#activate(name, /* persist */ true);
+    this.#activate(name, { persist: true, notify: true });
   }
 }
 

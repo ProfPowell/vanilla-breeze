@@ -5,10 +5,24 @@
  * JS adds the drag handle and pointer events.
  * Without JS, both children display side-by-side.
  *
- * Expects exactly two child elements. Extra children are ignored.
- * Position reflects back to the host attribute on every change.
+ * Expects exactly two content children. Extra children are hidden once
+ * upgraded (CSS) and a console warning is logged.
  *
- * @attr {number} position - Slider position (0-100), default 50. Reflected on change.
+ * Position model (direction-aware): `position` is the percentage from the
+ * inline-start edge. In LTR that is from the left, in `dir="rtl"` from the
+ * right. The first child shows on the inline-start side of the divider,
+ * the second on the inline-end side. Arrow keys follow the visual
+ * direction (ArrowRight always moves the divider right).
+ *
+ * Position is an integer 0-100. User changes (drag, keyboard) reflect to
+ * the host attribute and fire `compare-surface:change`; setting the
+ * attribute or the `position` property updates the slider silently,
+ * like a native input. Setup never rewrites the author's attribute.
+ *
+ * @attr {number} position - Slider position (0-100) from the inline-start edge, default 50.
+ * @attr {string} label - Accessible name for the slider handle, default "Comparison slider".
+ *
+ * @fires compare-surface:change - detail: { position: number } (integer, user changes only)
  *
  * @example
  * <compare-surface>
@@ -20,117 +34,185 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 
+const DEFAULT_LABEL = 'Comparison slider';
+
+/** @param {string | null} raw */
+function parsePosition(raw) {
+  if (raw === null || raw.trim() === '') return 50;
+  const n = Number(raw);
+  return Number.isNaN(n) ? 50 : Math.min(100, Math.max(0, n));
+}
+
 class CompareSurface extends VBElement {
-  #divider;
+  static observedAttributes = ['position', 'label', 'aria-label'];
+
+  /** @type {HTMLElement | null} */
+  #divider = null;
   #dragging = false;
+  #reflecting = false;
+  /** Integer position currently applied. */
+  #position = 50;
 
   setup() {
-    const children = [...this.children];
+    const children = [...this.children].filter((c) => !c.classList.contains('comparison-divider'));
     if (children.length < 2) return false;
 
-    // Warn if more than two content children
     if (children.length > 2) {
-      console.warn('[compare-surface] Expected exactly 2 children; extra children will be ignored.');
+      console.warn('[compare-surface] Expected exactly 2 children; extra children are hidden.');
     }
 
-    // Parse position — use nullish check so position="0" works
-    const posAttr = this.getAttribute('position');
-    const position = posAttr !== null ? Number(posAttr) : 50;
-    const clamped = Math.min(100, Math.max(0, isNaN(position) ? 50 : position));
-
-    // Inject the divider handle
     this.#divider = document.createElement('div');
     this.#divider.className = 'comparison-divider';
     this.#divider.setAttribute('role', 'slider');
-    this.#divider.setAttribute('aria-label', 'Comparison slider');
     this.#divider.setAttribute('aria-valuemin', '0');
     this.#divider.setAttribute('aria-valuemax', '100');
-    this.#divider.setAttribute('aria-valuenow', String(Math.round(clamped)));
+    this.#divider.setAttribute('aria-orientation', 'horizontal');
     this.#divider.setAttribute('tabindex', '0');
+    this.#syncLabel();
     this.appendChild(this.#divider);
 
-    this.#setPosition(clamped);
+    // Apply the author's position without reflecting or dispatching.
+    this.#apply(parsePosition(this.getAttribute('position')));
 
-    // Pointer events on divider
     this.listen(this.#divider, 'pointerdown', this.#onPointerDown);
+    this.listen(this.#divider, 'pointermove', this.#onPointerMove);
+    this.listen(this.#divider, 'pointerup', this.#endDrag);
+    this.listen(this.#divider, 'pointercancel', this.#endDrag);
+    this.listen(this.#divider, 'lostpointercapture', this.#endDrag);
     this.listen(this.#divider, 'keydown', this.#onKeyDown);
     return true;
   }
 
   teardown() {
-    if (this.#divider) {
-      this.#divider.remove();
-      this.#divider = null;
-    }
+    this.#divider?.remove();
+    this.#divider = null;
     this.#dragging = false;
   }
 
+  /**
+   * @param {string} name
+   * @param {string | null} oldVal
+   * @param {string | null} newVal
+   */
+  attributeChangedCallback(name, oldVal, newVal) {
+    if (!this.#divider || oldVal === newVal) return;
+    if (name === 'position') {
+      if (this.#reflecting) return;
+      this.#apply(parsePosition(newVal));
+    } else {
+      this.#syncLabel();
+    }
+  }
+
+  #syncLabel() {
+    if (!this.#divider) return;
+    const label = this.getAttribute('label') || this.getAttribute('aria-label') || DEFAULT_LABEL;
+    this.#divider.setAttribute('aria-label', label);
+  }
+
+  get #isRtl() {
+    return getComputedStyle(this).direction === 'rtl';
+  }
+
+  /** @param {PointerEvent} e */
   #onPointerDown = (e) => {
     e.preventDefault();
     this.#dragging = true;
-    this.#divider.setPointerCapture(e.pointerId);
-    this.#divider.addEventListener('pointermove', this.#onPointerMove);
-    this.#divider.addEventListener('pointerup', this.#onPointerUp);
+    this.#divider?.setPointerCapture(e.pointerId);
   };
 
+  /** @param {PointerEvent} e */
   #onPointerMove = (e) => {
     if (!this.#dragging) return;
     const rect = this.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.min(100, Math.max(0, (x / rect.width) * 100));
-    this.#setPosition(percent);
+    if (!rect.width) return;
+    const fromStart = this.#isRtl ? rect.right - e.clientX : e.clientX - rect.left;
+    this.#userSet((fromStart / rect.width) * 100);
   };
 
-  #onPointerUp = (e) => {
+  /** @param {PointerEvent} e */
+  #endDrag = (e) => {
+    if (!this.#dragging) return;
     this.#dragging = false;
-    this.#divider.releasePointerCapture(e.pointerId);
-    this.#divider.removeEventListener('pointermove', this.#onPointerMove);
-    this.#divider.removeEventListener('pointerup', this.#onPointerUp);
+    if (this.#divider?.hasPointerCapture(e.pointerId)) {
+      this.#divider.releasePointerCapture(e.pointerId);
+    }
   };
 
+  /** @param {KeyboardEvent} e */
   #onKeyDown = (e) => {
     const step = e.shiftKey ? 10 : 1;
-    const current = Number(this.#divider.getAttribute('aria-valuenow'));
-
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      this.#setPosition(Math.max(0, current - step));
-    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      this.#setPosition(Math.min(100, current + step));
+    // ArrowLeft/Right follow the visual direction; in RTL "right" is toward inline-start.
+    const visual = this.#isRtl ? -1 : 1;
+    const current = this.#position;
+    /** @type {number | undefined} */
+    let next;
+    switch (e.key) {
+      case 'ArrowRight': next = current + step * visual; break;
+      case 'ArrowLeft': next = current - step * visual; break;
+      case 'ArrowUp': next = current + step; break;
+      case 'ArrowDown': next = current - step; break;
+      case 'PageUp': next = current + 10; break;
+      case 'PageDown': next = current - 10; break;
+      case 'Home': next = 0; break;
+      case 'End': next = 100; break;
+      default: return;
     }
+    e.preventDefault();
+    this.#userSet(next);
   };
 
-  #setPosition(percent) {
-    const rounded = Math.round(percent);
-    this.style.setProperty('--_position', `${percent}%`);
-    if (this.#divider) {
-      this.#divider.setAttribute('aria-valuenow', String(rounded));
-      this.#divider.style.left = `${percent}%`;
+  /**
+   * User-driven change: apply, reflect to the attribute, dispatch if changed.
+   * @param {number} percent
+   */
+  #userSet(percent) {
+    const prev = this.#position;
+    this.#apply(Math.min(100, Math.max(0, percent)));
+    if (this.#position === prev) return;
+    this.#reflecting = true;
+    try {
+      this.setAttribute('position', String(this.#position));
+    } finally {
+      this.#reflecting = false;
     }
-
-    // Reflect position to host attribute
-    this.setAttribute('position', String(rounded));
-
     this.dispatchEvent(new CustomEvent('compare-surface:change', {
-      detail: { position: percent },
-      bubbles: true
+      detail: { position: this.#position },
+      bubbles: true,
     }));
   }
 
   /**
-   * Get current position (0-100)
-   *
-   * @returns {number} Divider position as a percentage.
+   * Apply a position to CSS and ARIA. No reflection, no event.
+   * @param {number} percent - already clamped 0-100
    */
-  get position() {
-    return Number(this.getAttribute('position')) || 0;
+  #apply(percent) {
+    this.#position = Math.round(percent);
+    // CSS keeps the exact value so dragging stays smooth on wide surfaces.
+    this.style.setProperty('--_position', `${percent}%`);
+    if (this.#divider) {
+      this.#divider.setAttribute('aria-valuenow', String(this.#position));
+      this.#divider.setAttribute('aria-valuetext', `${this.#position}%`);
+    }
   }
 
-  /** Set position programmatically */
+  /**
+   * Current position (integer 0-100, percent from the inline-start edge).
+   * @returns {number}
+   */
+  get position() {
+    return this.#divider ? this.#position : Math.round(parsePosition(this.getAttribute('position')));
+  }
+
+  /**
+   * Set position programmatically. Reflects to the attribute; does not fire
+   * compare-surface:change (like a native input's value setter).
+   * @param {number} val
+   */
   set position(val) {
-    const clamped = Math.min(100, Math.max(0, Number(val) || 0));
-    this.#setPosition(clamped);
+    const n = Number(val);
+    const clamped = Math.round(Math.min(100, Math.max(0, Number.isNaN(n) ? 0 : n)));
+    this.setAttribute('position', String(clamped));
   }
 }
 

@@ -58,7 +58,7 @@ crumbLabel: Web Components
           <td><code>swapped</code></td>
           <td>boolean</td>
           <td><code>false</code></td>
-          <td>Reflects the current swap state. Can be set to start swapped.</td>
+          <td>Reflects the current swap state. Can be set to start swapped, or set/removed later &mdash; <code>inert</code> follows the attribute.</td>
         </tr>
         <tr>
           <td><code>card</code></td>
@@ -98,7 +98,12 @@ crumbLabel: Web Components
         <tr>
           <td><code>data-swap</code></td>
           <td>Any descendant</td>
-          <td>Marks an element as a swap trigger button.</td>
+          <td>Marks an element as a swap trigger. Use a <code>&lt;button type="button"&gt;</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-swap-toggle</code></td>
+          <td>Direct child</td>
+          <td>Toggle button used when there are no <code>data-swap</code> triggers. Generated (text &ldquo;Show back&rdquo;) if absent; author your own <code>&lt;button type="button" data-swap-toggle&gt;</code> to set or localize the label. Kept in sync via <code>aria-pressed</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -157,39 +162,12 @@ crumbLabel: Web Components
       </tbody>
     </table>
 
-    <div class="example">
-      <layout-grid data-min-item-size="200px" data-layout-gap="m">
-        <content-swap transition="fade">
-          <div data-face="front" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m);">
-            <p><strong>Fade</strong></p>
-            <small>Click to swap</small>
-          </div>
-          <div data-face="back" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
-            <p>Faded in</p>
-          </div>
-        </content-swap>
-
-        <content-swap transition="slide-left">
-          <div data-face="front" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m);">
-            <p><strong>Slide Left</strong></p>
-            <small>Click to swap</small>
-          </div>
-          <div data-face="back" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
-            <p>Slid in</p>
-          </div>
-        </content-swap>
-
-        <content-swap transition="scale">
-          <div data-face="front" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m);">
-            <p><strong>Scale</strong></p>
-            <small>Click to swap</small>
-          </div>
-          <div data-face="back" style="padding: var(--size-m); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
-            <p>Scaled in</p>
-          </div>
-        </content-swap>
-      </layout-grid>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/content-swap-transitions.html"
+      url="https://vanilla-breeze.dev/content-swap-transitions"
+      title="Content Swap Transitions"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Fade transition" data-escape><content-swap transition="fade">
   <div data-face="front">Front</div>
@@ -203,20 +181,15 @@ crumbLabel: Web Components
 
   <section>
     <h2>Trigger Buttons</h2>
-    <p>By default, clicking anywhere on the element triggers the swap. Add <code>data-swap</code> to specific buttons for explicit trigger controls. When triggers exist, the container is no longer clickable.</p>
+    <p>By default (no <code>data-swap</code> triggers), clicking the surface swaps for pointer users, and a generated <code>&lt;button data-swap-toggle&gt;</code> &mdash; visually hidden until it receives keyboard focus &mdash; is the keyboard and screen-reader control. Clicks on links, buttons and form fields inside a face keep their own behavior.</p>
+    <p>Add <code>data-swap</code> to specific buttons for explicit, always-visible trigger controls. When triggers exist, the surface is no longer clickable and no toggle is generated.</p>
 
-    <div class="example">
-      <content-swap transition="fade">
-        <div data-face="front" style="padding: var(--size-l); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface);">
-          <p><strong>Question:</strong> What does <code>inert</code> do?</p>
-          <button data-swap>Show answer</button>
-        </div>
-        <div data-face="back" style="padding: var(--size-l); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface-raised);">
-          <p><strong>Answer:</strong> It makes an element and its descendants non-interactive and hidden from assistive technology.</p>
-          <button data-swap>Back to question</button>
-        </div>
-      </content-swap>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/content-swap-triggers.html"
+      url="https://vanilla-breeze.dev/content-swap-triggers"
+      title="Content Swap Triggers"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Trigger buttons" data-escape><content-swap transition="fade">
   <div data-face="front">
@@ -234,31 +207,12 @@ crumbLabel: Web Components
     <h2>Card Mode</h2>
     <p>Add <code>card</code> to apply layout-card's visual shell directly on the swap element. Supports <code>data-variant</code> for elevated, outlined, and ghost styles.</p>
 
-    <div class="example">
-      <layout-grid data-min-item-size="200px" data-layout-gap="m">
-        <content-swap transition="flip" card>
-          <div data-face="front">
-            <p><strong>Product</strong></p>
-            <p>Flip to see details.</p>
-          </div>
-          <div data-face="back">
-            <p><strong>Details</strong></p>
-            <p>Price, specs, and more.</p>
-          </div>
-        </content-swap>
-
-        <content-swap transition="fade" card data-variant="outlined">
-          <div data-face="front">
-            <p><strong>Outlined</strong></p>
-            <p>Card mode with outlined variant.</p>
-          </div>
-          <div data-face="back">
-            <p><strong>Back</strong></p>
-            <p>Still outlined.</p>
-          </div>
-        </content-swap>
-      </layout-grid>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/content-swap-card.html"
+      url="https://vanilla-breeze.dev/content-swap-card"
+      title="Content Swap Card Mode and Composition"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Card mode shorthand" data-escape><content-swap transition="flip" card>
   <div data-face="front">
@@ -286,20 +240,8 @@ crumbLabel: Web Components
     <h2>Composition</h2>
     <p>Wrap <code>&lt;layout-card&gt;</code> elements as faces for full card structure (header, section, footer) on each side.</p>
 
-    <div class="example">
-      <content-swap transition="flip" style="max-inline-size: 400px;">
-        <layout-card data-face="front" data-toc-ignore>
-          <header><h3>Front Card</h3></header>
-          <section><p>Full card structure with header, section, and footer.</p></section>
-          <footer><button data-swap>See back</button></footer>
-        </layout-card>
-        <layout-card data-face="back" data-toc-ignore>
-          <header><h3>Back Card</h3></header>
-          <section><p>Each face is an independent layout-card.</p></section>
-          <footer><button data-swap>See front</button></footer>
-        </layout-card>
-      </content-swap>
-    </div>
+
+    <p>The composition example is the third card in the Card Mode demo above.</p>
 
     <code-block language="html" show-lines label="Composition with layout-card" data-escape><content-swap transition="flip">
   <layout-card data-face="front">
@@ -317,20 +259,8 @@ crumbLabel: Web Components
 
   <section>
     <h2>Attribute Form</h2>
-    <p>For authors who want swap behavior on an existing element, add <code>data-swap</code> as an attribute on any element with <code>data-face</code> children. The behavior auto-initializes via JavaScript.</p>
+    <p>For authors who want swap behavior on an existing element, add <code>data-swap</code> as an attribute on any element with <code>data-face</code> children. The behavior auto-initializes via JavaScript (the host gets <code>data-swap-init</code> once upgraded). Use <code>data-transition</code> and <code>data-swapped</code> in place of <code>transition</code> and <code>swapped</code>. The second example in the Trigger Buttons demo uses this form.</p>
 
-    <div class="example">
-      <article data-swap data-transition="fade" style="border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-m); overflow: hidden;">
-        <div data-face="front" style="padding: var(--size-l);">
-          <p><strong>Native article</strong></p>
-          <p>This is a regular <code>&lt;article&gt;</code> with <code>data-swap</code>.</p>
-        </div>
-        <div data-face="back" style="padding: var(--size-l); background: var(--color-surface-raised);">
-          <p><strong>Still an article</strong></p>
-          <p>Same swap behavior, no custom element wrapper needed.</p>
-        </div>
-      </article>
-    </div>
 
     <code-block language="html" show-lines label="Attribute form" data-escape><article data-swap data-transition="fade">
   <div data-face="front">Front content</div>
@@ -350,7 +280,7 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
-          <td>Toggle swap (when element or trigger is focused)</td>
+          <td>Toggle swap (when the generated toggle or a <code>data-swap</code> trigger is focused)</td>
         </tr>
         <tr>
           <td><kbd>Tab</kbd></td>
@@ -373,8 +303,8 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>content-swap:swap</code></td>
-          <td><code>{ swapped: boolean }</code></td>
-          <td>Fired after the content swaps.</td>
+          <td><code>{ swapped: boolean, source: 'pointer' | 'keyboard' | 'api' }</code></td>
+          <td>Fired after the content swaps. <code>source</code> says what caused it: a click or swipe, a keyboard activation, or a method/property call.</td>
         </tr>
       </tbody>
     </table>
@@ -382,7 +312,7 @@ crumbLabel: Web Components
     <code-block language="javascript" show-lines label="Listening to swap events" data-escape>const el = document.querySelector('content-swap');
 
 el.addEventListener('content-swap:swap', (event) => {
-  console.log('Swapped:', event.detail.swapped);
+  console.log('Swapped:', event.detail.swapped, 'via', event.detail.source);
 });</code-block>
   </section>
 
@@ -453,12 +383,12 @@ console.log(el.swapped); // true or false</code-block>
 
     <h3>Trigger Modes</h3>
     <ul>
-      <li><strong>Whole-element trigger</strong> (no <code>data-swap</code> children): The element gets <code>role="button"</code>, <code>tabindex="0"</code>, and <code>aria-label="Toggle content"</code>.</li>
-      <li><strong>Explicit triggers</strong> (<code>data-swap</code> children): The trigger buttons are the keyboard targets. No role is added to the container.</li>
+      <li><strong>Whole-element mode</strong> (no <code>data-swap</code> children): the container is never turned into a button, so headings, links and other face content stay individually reachable. A real <code>&lt;button type="button" data-swap-toggle aria-pressed&gt;</code> is appended outside both faces (so it is never made inert); it is visually hidden until focused, then shown over the corner of the card. Surface clicks are a pointer convenience only.</li>
+      <li><strong>Explicit triggers</strong> (<code>data-swap</code> children): the trigger buttons are the keyboard targets. Nothing is added to the container.</li>
     </ul>
 
     <h3>Focus Management</h3>
-    <p>When swapping, focus moves to the first interactive element on the newly visible face (buttons, links, inputs, or elements with <code>autofocus</code>).</p>
+    <p>An element with <code>autofocus</code> on the incoming face is always focused. Otherwise focus only moves on <em>keyboard</em> swaps whose focus was inside the outgoing face (for example a <code>data-swap</code> trigger that is about to become inert): it goes to the first trigger, button, link or field on the incoming face. Pointer and API swaps leave focus alone, and the generated toggle keeps focus because it sits outside both faces.</p>
 
     <h3>Reduced Motion</h3>
     <p>When <code>prefers-reduced-motion: reduce</code> is active, the swap animation duration is set to <code>0s</code>. The state still toggles instantly without animation.</p>
@@ -466,7 +396,7 @@ console.log(el.swapped); // true or false</code-block>
 
   <section>
     <h2>Progressive Enhancement</h2>
-    <p>Without JavaScript, both faces display stacked in natural document flow. The <code>:not(:defined)</code> selector ensures transforms only apply once the component is registered.</p>
+    <p>Without JavaScript, both faces display stacked in natural document flow. Stacking into one grid cell and the transition transforms only apply once upgraded (<code>content-swap:defined</code> or <code>[data-swap][data-swap-init]</code>), and the first upgrade settles without animating.</p>
   </section>
 
   <section>

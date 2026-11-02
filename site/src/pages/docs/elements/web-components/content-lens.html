@@ -42,6 +42,36 @@ crumbLabel: Web Components
       <tr><td><code>data-active-lens</code></td><td>string</td><td>computed</td><td>Reflects the active lens (state, not config)</td></tr>
     </tbody>
   </table>
+
+  <h3>Child attributes</h3>
+  <p>Set these on each direct lens child. Children without <code>data-lens-name</code> are left alone (always visible, not switchable).</p>
+  <table class="props-table">
+    <thead><tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-lens-name</code></td><td>string</td><td>&mdash;</td><td>Required. Registers the child as a lens; the value is what <code>data-lens-default</code>, <code>setLens()</code> and the event detail refer to</td></tr>
+      <tr><td><code>data-lens-label</code></td><td>string</td><td>humanised name</td><td>Chip text. Defaults to <code>data-lens-name</code> with dashes turned into spaces and words capitalised (<code>by-topic</code> &rarr; &ldquo;By Topic&rdquo;)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Shared source forwarding</h3>
+  <p><code>data-lens-src</code> is copied onto every lens child that has neither its own <code>data-lens-src</code> nor a <code>src</code>. Forwarding does not depend on upgrade order: a child that was already upgraded before the host (its definition loaded first) is re-initialised once the attribute arrives. <a href="/docs/elements/web-components/popularity-index/"><code>&lt;popularity-index&gt;</code></a> treats the forwarded URL as its metadata source only; its analytics endpoint lives on its own <code>analytics-src</code> attribute.</p>
+</section>
+
+<section>
+  <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>activeLens</code></td><td>string (read-only)</td><td>Name of the visible lens; empty before the element upgrades</td></tr>
+      <tr><td><code>setLens(name)</code></td><td>method</td><td>Show the named lens, check its chip and persist the choice. Unknown names are ignored</td></tr>
+    </tbody>
+  </table>
+  <code-block language="js" data-escape>const host = document.querySelector('content-lens');
+host.addEventListener('content-lens:change', (e) => {
+  console.log('now showing', e.detail.lens);
+});
+host.setLens('topic');
+console.log(host.activeLens); // "topic"</code-block>
 </section>
 
 <section>
@@ -49,12 +79,48 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
     <tbody>
-      <tr><td><code>content-lens:change</code></td><td><code>{ lens: string }</code></td><td>Reader switches lenses (or programmatic <code>setLens()</code>)</td></tr>
+      <tr><td><code>content-lens:change</code></td><td><code>{ lens: string }</code></td><td>Reader switches lenses, or <code>setLens()</code> changes the active lens. Not fired for the initial selection (default or restored from sessionStorage), on reconnect, or when <code>setLens()</code> names the lens already showing &mdash; read <code>activeLens</code> or <code>data-active-lens</code> for the starting state</td></tr>
     </tbody>
   </table>
 </section>
 
 <section>
+  <h2>Keyboard</h2>
+  <p>The chips are native radio buttons, so the browser's radio-group keyboard model applies.</p>
+  <table class="props-table">
+    <thead><tr><th>Key</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Tab</kbd></td><td>Moves focus into the group (onto the checked chip) and out again</td></tr>
+      <tr><td><kbd>Arrow</kbd> keys</td><td>Move to the previous / next chip and switch to that lens</td></tr>
+      <tr><td><kbd>Space</kbd></td><td>Selects the focused chip if it is not already checked</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The controls are a <code>&lt;fieldset&gt;</code> with a &ldquo;View&rdquo; <code>&lt;legend&gt;</code> wrapping real radio inputs, so screen readers announce the group name, each lens label and the checked state. No extra landmark is added.</li>
+    <li>The radio inputs are visually clipped, not hidden: the chip (<code>&lt;label&gt;</code>) shows the focus ring whenever its radio has <code>:focus-visible</code>, using the theme focus-ring tokens.</li>
+    <li>Inactive lenses get <code>hidden</code>, which removes them from the accessibility tree and the tab order.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Progressive Enhancement</h2>
+  <p>Before the script upgrades the host (or without JavaScript), every lens child is shown, stacked and separated by a top border, and no chips are rendered. Lens children that render from <code>data-lens-src</code> need JavaScript themselves, so author meaningful light-DOM fallback content inside them where you can.</p>
+</section>
+
+<section>
   <h2>Reader sovereignty</h2>
   <p>The lens family follows VB's reader-sovereignty principle: <em>the author defines the exposed view, the reader can always reframe.</em> <code>&lt;content-lens&gt;</code> exposes the radio chips by default; authors who want to lock to a single view can set <code>data-lens-controls="off"</code>, but the underlying data is still discoverable via the shared <code>data-lens-src</code>.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/author-index/"><code>&lt;author-index&gt;</code></a>, <a href="/docs/elements/web-components/topic-map/"><code>&lt;topic-map&gt;</code></a>, <a href="/docs/elements/web-components/trust-filter/"><code>&lt;trust-filter&gt;</code></a> &mdash; lens children that read the shared <code>pages.json</code></li>
+    <li><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a> &mdash; chronological lens over authored light-DOM content</li>
+    <li><a href="/docs/elements/web-components/recently-visited/"><code>&lt;recently-visited&gt;</code></a> and <a href="/docs/elements/web-components/popularity-index/"><code>&lt;popularity-index&gt;</code></a> &mdash; local and aggregate history lenses</li>
+  </ul>
 </section>

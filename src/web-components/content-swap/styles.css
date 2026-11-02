@@ -1,226 +1,209 @@
-/* content-swap: Two-face content toggle with transition variants */
+/* content-swap: Two-face content toggle with transition variants
+ *
+ * Hosts: <content-swap>, or any element with [data-swap] AND direct
+ * [data-face] children ([data-swap] alone also marks trigger buttons, which
+ * must not pick up host styles).
+ *
+ * Stacking and the transition transforms only apply once upgraded
+ * (content-swap:defined / [data-swap][data-swap-init]). Before that the
+ * faces flow stacked in document order, so no-JS readers see both.
+ */
 
 content-swap,
-[data-swap] {
+[data-swap]:has(> [data-face]) {
   --_swap-duration: var(--motion-enter-duration, 300ms);
   --_swap-easing: var(--ease-default, ease);
 
-  /* Structural invariant: faces must stack in a single grid cell.
+  /* Structural invariant: faces sit in a single-column grid.
      !important so author styles in unlayered <style> blocks (which beat
      layered component CSS regardless of specificity) cannot accidentally
-     turn this into flex/block and break the swap. */
+     turn this into flex/block and break the swap. Un-upgraded, the faces
+     auto-place into successive rows (stacked); upgraded, they share a cell. */
   display: grid !important;
 }
 
-/* Structural invariant: every face occupies the same grid cell so they
-   overlap. Locked with !important for the same reason as the container. */
-content-swap > [data-face],
-[data-swap] > [data-face] {
-  grid-area: 1 / 1 !important;
-}
+/* --- Upgraded hosts: stacking, toggle, transitions --- */
 
-/* Whole-element trigger: show pointer cursor */
-content-swap[role="button"],
-[data-swap][role="button"] {
-  cursor: var(--cursor-custom-pointer, pointer);
-}
+:is(content-swap:defined, [data-swap][data-swap-init]) {
+  view-transition-class: content-swap;
 
-/* --- Flip (default) --- */
-
-content-swap,
-content-swap[transition="flip"],
-[data-swap],
-[data-swap][data-transition="flip"] {
+  /* Flip (default) needs depth; non-3D variants reset it below. */
   perspective: 800px;
-}
 
-content-swap > [data-face],
-content-swap[transition="flip"] > [data-face],
-[data-swap] > [data-face],
-[data-swap][data-transition="flip"] > [data-face] {
-  grid-area: 1 / 1;
-  backface-visibility: hidden;
-  transition: transform var(--_swap-duration) var(--_swap-easing);
-}
+  /* Structural invariant: every face occupies the same grid cell so they
+     overlap. Locked with !important for the same reason as the container. */
+  & > [data-face] {
+    grid-area: 1 / 1 !important;
+  }
 
-content-swap > [data-face="back"],
-content-swap[transition="flip"] > [data-face="back"],
-[data-swap] > [data-face="back"],
-[data-swap][data-transition="flip"] > [data-face="back"] {
-  transform: rotateY(180deg);
-}
+  /* Whole-element mode (no [data-swap] triggers): the surface is
+     pointer-clickable; the generated toggle button is the keyboard and
+     assistive-technology target. It is visually hidden until focused, then
+     shown over the block-end / inline-end corner of the faces. */
+  &:has(> [data-swap-toggle]) {
+    cursor: var(--cursor-custom-pointer, pointer);
+  }
 
-content-swap[swapped] > [data-face="front"],
-content-swap[transition="flip"][swapped] > [data-face="front"],
-[data-swap][data-swapped] > [data-face="front"],
-[data-swap][data-transition="flip"][data-swapped] > [data-face="front"] {
-  transform: rotateY(180deg);
-}
+  & > [data-swap-toggle] {
+    grid-area: 1 / 1;
+    align-self: end;
+    justify-self: end;
+    z-index: 1;
+    margin: var(--size-s);
+  }
 
-content-swap[swapped] > [data-face="back"],
-content-swap[transition="flip"][swapped] > [data-face="back"],
-[data-swap][data-swapped] > [data-face="back"],
-[data-swap][data-transition="flip"][data-swapped] > [data-face="back"] {
-  transform: rotateY(0deg);
-}
+  & > [data-swap-toggle]:not(:focus-visible) {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
 
-/* --- Flip Vertical --- */
+  /* --- Flip (default) --- */
 
-content-swap[transition="flip-vertical"],
-[data-swap][data-transition="flip-vertical"] {
-  perspective: 800px;
-}
+  & > [data-face] {
+    backface-visibility: hidden;
+    transition: transform var(--_swap-duration) var(--_swap-easing);
+  }
 
-content-swap[transition="flip-vertical"] > [data-face],
-[data-swap][data-transition="flip-vertical"] > [data-face] {
-  grid-area: 1 / 1;
-  backface-visibility: hidden;
-  transition: transform var(--_swap-duration) var(--_swap-easing);
-}
+  & > [data-face="back"] {
+    transform: rotateY(180deg);
+  }
 
-content-swap[transition="flip-vertical"] > [data-face="back"],
-[data-swap][data-transition="flip-vertical"] > [data-face="back"] {
-  transform: rotateX(180deg);
-}
+  &:is([swapped], [data-swapped]) > [data-face="front"] {
+    transform: rotateY(180deg);
+  }
 
-content-swap[transition="flip-vertical"][swapped] > [data-face="front"],
-[data-swap][data-transition="flip-vertical"][data-swapped] > [data-face="front"] {
-  transform: rotateX(180deg);
-}
+  &:is([swapped], [data-swapped]) > [data-face="back"] {
+    transform: rotateY(0deg);
+  }
 
-content-swap[transition="flip-vertical"][swapped] > [data-face="back"],
-[data-swap][data-transition="flip-vertical"][data-swapped] > [data-face="back"] {
-  transform: rotateX(0deg);
-}
+  /* --- Flip Vertical --- */
 
-/* --- Fade --- */
+  &:is([transition="flip-vertical"], [data-transition="flip-vertical"]) {
+    & > [data-face="back"] {
+      transform: rotateX(180deg);
+    }
 
-content-swap[transition="fade"],
-[data-swap][data-transition="fade"] {
-  perspective: none;
-}
+    &:is([swapped], [data-swapped]) > [data-face="front"] {
+      transform: rotateX(180deg);
+    }
 
-content-swap[transition="fade"] > [data-face],
-[data-swap][data-transition="fade"] > [data-face] {
-  grid-area: 1 / 1;
-  backface-visibility: visible;
-  transition: opacity var(--_swap-duration) var(--_swap-easing);
-}
+    &:is([swapped], [data-swapped]) > [data-face="back"] {
+      transform: rotateX(0deg);
+    }
+  }
 
-content-swap[transition="fade"] > [data-face="back"],
-[data-swap][data-transition="fade"] > [data-face="back"] {
-  opacity: 0;
-}
+  /* --- Fade --- */
 
-content-swap[transition="fade"][swapped] > [data-face="front"],
-[data-swap][data-transition="fade"][data-swapped] > [data-face="front"] {
-  opacity: 0;
-}
+  &:is([transition="fade"], [data-transition="fade"]) {
+    perspective: none;
 
-content-swap[transition="fade"][swapped] > [data-face="back"],
-[data-swap][data-transition="fade"][data-swapped] > [data-face="back"] {
-  opacity: 1;
-}
+    & > [data-face] {
+      backface-visibility: visible;
+      transition: opacity var(--_swap-duration) var(--_swap-easing);
+    }
 
-/* --- Slide Left --- */
+    & > [data-face="back"] {
+      opacity: 0;
+    }
 
-content-swap[transition="slide-left"],
-[data-swap][data-transition="slide-left"] {
-  perspective: none;
-  overflow: hidden;
-}
+    &:is([swapped], [data-swapped]) > [data-face="front"] {
+      opacity: 0;
+    }
 
-content-swap[transition="slide-left"] > [data-face],
-[data-swap][data-transition="slide-left"] > [data-face] {
-  grid-area: 1 / 1;
-  backface-visibility: visible;
-  transition: transform var(--_swap-duration) var(--_swap-easing);
-}
+    &:is([swapped], [data-swapped]) > [data-face="back"] {
+      opacity: 1;
+    }
+  }
 
-content-swap[transition="slide-left"] > [data-face="back"],
-[data-swap][data-transition="slide-left"] > [data-face="back"] {
-  transform: translateX(100%);
-}
+  /* --- Slide Left --- */
 
-content-swap[transition="slide-left"][swapped] > [data-face="front"],
-[data-swap][data-transition="slide-left"][data-swapped] > [data-face="front"] {
-  transform: translateX(-100%);
-}
+  &:is([transition="slide-left"], [data-transition="slide-left"]) {
+    perspective: none;
+    overflow: hidden;
 
-content-swap[transition="slide-left"][swapped] > [data-face="back"],
-[data-swap][data-transition="slide-left"][data-swapped] > [data-face="back"] {
-  transform: translateX(0);
-}
+    & > [data-face] {
+      backface-visibility: visible;
+      transition: transform var(--_swap-duration) var(--_swap-easing);
+    }
 
-/* --- Slide Up --- */
+    & > [data-face="back"] {
+      transform: translateX(100%);
+    }
 
-content-swap[transition="slide-up"],
-[data-swap][data-transition="slide-up"] {
-  perspective: none;
-  overflow: hidden;
-}
+    &:is([swapped], [data-swapped]) > [data-face="front"] {
+      transform: translateX(-100%);
+    }
 
-content-swap[transition="slide-up"] > [data-face],
-[data-swap][data-transition="slide-up"] > [data-face] {
-  grid-area: 1 / 1;
-  backface-visibility: visible;
-  transition: transform var(--_swap-duration) var(--_swap-easing);
-}
+    &:is([swapped], [data-swapped]) > [data-face="back"] {
+      transform: translateX(0);
+    }
+  }
 
-content-swap[transition="slide-up"] > [data-face="back"],
-[data-swap][data-transition="slide-up"] > [data-face="back"] {
-  transform: translateY(100%);
-}
+  /* --- Slide Up --- */
 
-content-swap[transition="slide-up"][swapped] > [data-face="front"],
-[data-swap][data-transition="slide-up"][data-swapped] > [data-face="front"] {
-  transform: translateY(-100%);
-}
+  &:is([transition="slide-up"], [data-transition="slide-up"]) {
+    perspective: none;
+    overflow: hidden;
 
-content-swap[transition="slide-up"][swapped] > [data-face="back"],
-[data-swap][data-transition="slide-up"][data-swapped] > [data-face="back"] {
-  transform: translateY(0);
-}
+    & > [data-face] {
+      backface-visibility: visible;
+      transition: transform var(--_swap-duration) var(--_swap-easing);
+    }
 
-/* --- Scale --- */
+    & > [data-face="back"] {
+      transform: translateY(100%);
+    }
 
-content-swap[transition="scale"],
-[data-swap][data-transition="scale"] {
-  perspective: none;
-}
+    &:is([swapped], [data-swapped]) > [data-face="front"] {
+      transform: translateY(-100%);
+    }
 
-content-swap[transition="scale"] > [data-face],
-[data-swap][data-transition="scale"] > [data-face] {
-  grid-area: 1 / 1;
-  backface-visibility: visible;
-  transition:
-    opacity var(--_swap-duration) var(--_swap-easing),
-    transform var(--_swap-duration) var(--_swap-easing);
-}
+    &:is([swapped], [data-swapped]) > [data-face="back"] {
+      transform: translateY(0);
+    }
+  }
 
-content-swap[transition="scale"] > [data-face="back"],
-[data-swap][data-transition="scale"] > [data-face="back"] {
-  opacity: 0;
-  transform: scale(0.85);
-}
+  /* --- Scale --- */
 
-content-swap[transition="scale"][swapped] > [data-face="front"],
-[data-swap][data-transition="scale"][data-swapped] > [data-face="front"] {
-  opacity: 0;
-  transform: scale(0.85);
-}
+  &:is([transition="scale"], [data-transition="scale"]) {
+    perspective: none;
 
-content-swap[transition="scale"][swapped] > [data-face="back"],
-[data-swap][data-transition="scale"][data-swapped] > [data-face="back"] {
-  opacity: 1;
-  transform: scale(1);
+    & > [data-face] {
+      backface-visibility: visible;
+      transition:
+        opacity var(--_swap-duration) var(--_swap-easing),
+        transform var(--_swap-duration) var(--_swap-easing);
+    }
+
+    & > [data-face="back"] {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+
+    &:is([swapped], [data-swapped]) > [data-face="front"] {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+
+    &:is([swapped], [data-swapped]) > [data-face="back"] {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
 /* --- Card mode --- */
 
 content-swap[card],
 [data-swap-autocard] content-swap:not(:has(> layout-card)),
-[data-swap-autocard] [data-swap]:not(:has(> layout-card)) {
+[data-swap-autocard] [data-swap]:has(> [data-face]):not(:has(> layout-card)) {
   background: var(--color-surface);
   border-radius: var(--radius-l);
   box-shadow: 0 1px 3px oklch(0% 0 0 / 0.1);
@@ -229,7 +212,7 @@ content-swap[card],
 
 content-swap[card] > [data-face],
 [data-swap-autocard] content-swap:not(:has(> layout-card)) > [data-face],
-[data-swap-autocard] [data-swap]:not(:has(> layout-card)) > [data-face] {
+[data-swap-autocard] [data-swap]:has(> [data-face]):not(:has(> layout-card)) > [data-face] {
   padding: var(--size-l);
 }
 
@@ -252,33 +235,28 @@ content-swap[card][data-variant="ghost"],
   background: transparent;
 }
 
-/* --- Progressive enhancement: no-JS fallback --- */
+/* --- Progressive enhancement: no-JS fallback ---
+   Not upgraded: faces auto-place into stacked rows; separate them. */
 
-content-swap:not(:defined) > [data-face],
-[data-swap]:not([data-swap-init]) > [data-face] {
-  backface-visibility: visible;
-  transform: none;
-  opacity: 1;
-}
-
-content-swap:not(:defined) > [data-face="back"],
-[data-swap]:not([data-swap-init]) > [data-face="back"] {
+:is(content-swap:not(:defined), [data-swap]:has(> [data-face]):not([data-swap-init])) > [data-face="back"] {
   margin-block-start: var(--size-m);
 }
 
-/* --- View Transition (same-document, Chrome 111+, Safari 18+) --- */
+/* --- View Transition (same-document, Chrome 125+, Safari 18.2+) ---
+   Each host gets a unique inline view-transition-name; the shared
+   animation targets them through view-transition-class. */
 
-::view-transition-old(content-swap-*),
-::view-transition-new(content-swap-*) {
+::view-transition-old(*.content-swap),
+::view-transition-new(*.content-swap) {
   animation-duration: var(--motion-enter-duration, 300ms);
   animation-timing-function: var(--ease-default, ease);
 }
 
-::view-transition-old(content-swap-*) {
+::view-transition-old(*.content-swap) {
   animation-name: vt-swap-out;
 }
 
-::view-transition-new(content-swap-*) {
+::view-transition-new(*.content-swap) {
   animation-name: vt-swap-in;
 }
 
@@ -294,12 +272,11 @@ content-swap:not(:defined) > [data-face="back"],
 
 @media (prefers-reduced-motion: reduce) {
   content-swap,
-  [data-swap] {
+  [data-swap]:has(> [data-face]) {
     --_swap-duration: 0s;
   }
 }
 
-:root[data-motion-reduced] content-swap,
-:root[data-motion-reduced] [data-swap] {
+:root[data-motion-reduced] :is(content-swap, [data-swap]:has(> [data-face])) {
   --_swap-duration: 0s;
 }

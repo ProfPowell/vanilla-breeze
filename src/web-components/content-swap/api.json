@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "content-swap",
   "type": "web-component",
-  "description": "Two-face content toggle with accessible state management",
+  "description": "Two-face content toggle with accessible state management. The hidden face is made inert; with no [data-swap] triggers a real toggle button is generated (visually hidden until focused) and surface clicks swap for pointer users. Also available as the [data-swap] attribute form on any element with [data-face] children.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -13,54 +13,65 @@
     {
       "name": "transition",
       "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Transition type: \"flip\" (default), \"flip-vertical\", \"fade\", \"slide-left\", \"slide-up\", \"scale\""
+      "purpose": "visual-variant",
+      "type": "enum",
+      "values": ["flip", "flip-vertical", "fade", "slide-left", "slide-up", "scale"],
+      "default": "flip",
+      "description": "Transition effect between faces. The attribute form uses data-transition."
     },
     {
       "name": "swapped",
       "kind": "host-api",
-      "purpose": "config",
+      "purpose": "semantic-state",
+      "direction": "both",
       "type": "boolean",
-      "description": "Reflects swap state"
+      "description": "Showing the back face. Reflected by the runtime; may be set or removed by authors at any time and inert follows it. The attribute form uses data-swapped."
     },
     {
       "name": "card",
       "kind": "host-api",
-      "purpose": "config",
+      "purpose": "visual-variant",
       "type": "boolean",
-      "description": "Apply layout-card visual shell"
-    },
-    {
-      "name": "data-face",
-      "kind": "data",
-      "purpose": "config",
-      "type": "string",
-      "description": "\"front\" or \"back\" on child elements"
-    },
-    {
-      "name": "data-swap",
-      "kind": "data",
-      "purpose": "config",
-      "type": "boolean",
-      "description": "Marks an element as a swap trigger (on children),"
-    },
-    {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "data-swap-init",
-      "kind": "data",
-      "purpose": "config"
+      "description": "Apply layout-card visual shell (pair with data-variant: elevated, outlined, ghost)"
     }
   ],
   "events": [
     {
-      "name": "content-swap:swap"
+      "name": "content-swap:swap",
+      "detail": "{ swapped: boolean, source: 'pointer' | 'keyboard' | 'api' }",
+      "description": "Fired after the faces swap; source is what caused it"
     }
   ],
-  "childAttributes": [],
+  "methods": [
+    { "name": "flip()", "description": "Show the back face" },
+    { "name": "unflip()", "description": "Show the front face" },
+    { "name": "toggle()", "description": "Toggle between faces" }
+  ],
+  "properties": [
+    { "name": "swapped", "type": "boolean", "description": "Get or set whether the back face is showing" },
+    { "name": "flipped", "type": "boolean", "description": "Alias for swapped" }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-face",
+      "on": "direct child",
+      "type": "enum",
+      "values": ["front", "back"],
+      "required": true,
+      "description": "Marks the front and back faces"
+    },
+    {
+      "name": "data-swap",
+      "on": "button (any descendant)",
+      "type": "boolean",
+      "description": "Explicit swap trigger. When present, the surface is not clickable and no toggle is generated."
+    },
+    {
+      "name": "data-swap-toggle",
+      "on": "button (direct child)",
+      "type": "boolean",
+      "description": "Toggle used when there are no data-swap triggers; generated with the text \"Show back\" if absent. Author one to set the label. Receives aria-pressed."
+    }
+  ],
   "structure": []
 }

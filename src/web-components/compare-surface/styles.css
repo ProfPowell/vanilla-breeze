@@ -26,9 +26,21 @@ compare-surface:defined > :not(.comparison-divider) {
   inline-size: 100%;
 }
 
-/* Second child gets clipped to reveal the first */
+/* Second child gets clipped to reveal the first.
+   `--_position` is measured from the inline-start edge (left in LTR,
+   right in RTL), so the clip side flips with direction. */
 compare-surface:defined > :not(.comparison-divider):nth-child(2) {
   clip-path: inset(0 0 0 var(--_position, 50%));
+}
+
+compare-surface:defined:dir(rtl) > :not(.comparison-divider):nth-child(2) {
+  clip-path: inset(0 var(--_position, 50%) 0 0);
+}
+
+/* Only two content children are compared; hide extras once upgraded.
+   (The divider is appended last, so it is excluded explicitly.) */
+compare-surface[data-upgraded] > :nth-child(n+3):not(.comparison-divider) {
+  display: none;
 }
 
 @scope (compare-surface) {
@@ -37,7 +49,7 @@ compare-surface:defined > :not(.comparison-divider):nth-child(2) {
     grid-area: 1 / 1;
     position: absolute;
     inset-block: 0;
-    inset-inline-start: 50%;
+    inset-inline-start: var(--_position, 50%);
     inline-size: 3px;
     margin-inline-start: -1.5px;
     background: white;
@@ -55,7 +67,8 @@ compare-surface:defined > :not(.comparison-divider):nth-child(2) {
     inset-inline-start: 50%;
     inline-size: 40px;
     block-size: 40px;
-    margin: -20px 0 0 -20px;
+    margin-block-start: -20px;
+    margin-inline-start: -20px;
     border-radius: 50%;
     background: white;
     border: 2px solid oklch(0% 0 0 / 0.15);

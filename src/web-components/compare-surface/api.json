@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "compare-surface",
   "type": "web-component",
-  "description": "Before/after image comparison slider",
+  "description": "Before/after comparison slider: two overlaid children with a draggable, keyboard-operable divider (side by side without JS)",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -15,34 +15,45 @@
       "kind": "host-api",
       "purpose": "config",
       "type": "number",
-      "description": "Slider position (0-100), default 50. Reflected on change."
+      "description": "Divider position 0-100 measured from the inline-start edge (right in RTL), default 50. Observed; user drags and key presses reflect the integer value back."
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
+      "name": "label",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "string",
+      "description": "Accessible name for the slider handle, default \"Comparison slider\". Observed."
     },
     {
-      "name": "aria-valuemin",
+      "name": "aria-label",
       "kind": "aria",
-      "purpose": "config"
+      "purpose": "config",
+      "description": "Used as the slider handle's accessible name when label is absent"
+    }
+  ],
+  "structure": [
+    {
+      "element": "First child (any element)",
+      "description": "Shown on the inline-start side of the divider (the \"before\" view)"
     },
     {
-      "name": "aria-valuemax",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-valuenow",
-      "kind": "aria",
-      "purpose": "config"
+      "element": "Second child (any element)",
+      "description": "Shown on the inline-end side of the divider (the \"after\" view). Further children are hidden once upgraded."
     }
   ],
   "events": [
     {
-      "name": "compare-surface:change"
+      "name": "compare-surface:change",
+      "detail": "{ position: number }",
+      "description": "Fired when the user drags or uses the keyboard and the integer position changes. Not fired on upgrade or for attribute/property writes."
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "properties": [
+    {
+      "name": "position",
+      "type": "number",
+      "description": "Get or set the integer position (0-100). Setting clamps, rounds and reflects to the attribute without firing compare-surface:change."
+    }
+  ],
+  "childAttributes": []
 }

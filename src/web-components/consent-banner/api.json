@@ -5,28 +5,111 @@
   "description": "Cookie consent banner with granular category controls and persistence",
   "htmlvalidate": {
     "flow": true,
-    "permittedContent": ["@flow"]
+    "permittedContent": [
+      "@flow"
+    ]
   },
   "attributes": [
-    { "name": "persist",  "kind": "host-api", "purpose": "config", "type": "string",  "default": "banner", "description": "VBStore key under namespace 'consent' for storing consent" },
-    { "name": "position", "kind": "host-api", "purpose": "config", "type": "enum",    "values": ["bottom", "top", "center"], "default": "bottom", "description": "Banner position. Center uses modal dialog." },
-    { "name": "trigger",  "kind": "host-api", "purpose": "config", "type": "string",  "description": "CSS selector for a re-open button (e.g. #manage-cookies)" },
-    { "name": "expires",  "kind": "host-api", "purpose": "config", "type": "string",  "default": "365", "description": "Days until consent expires. 0 or 'never' disables expiry." }
+    {
+      "name": "persist",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "string",
+      "default": "banner",
+      "description": "VBStore key under namespace 'consent'. Stored in localStorage as vb:consent:<persist>."
+    },
+    {
+      "name": "position",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "bottom",
+        "top",
+        "center"
+      ],
+      "default": "bottom",
+      "description": "Banner position. Center uses modal dialog."
+    },
+    {
+      "name": "trigger",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "string",
+      "description": "CSS selector for a re-open button (e.g. #manage-cookies)"
+    },
+    {
+      "name": "expires",
+      "kind": "host-api",
+      "purpose": "config",
+      "type": "string",
+      "default": "365",
+      "description": "Days until stored consent expires (banner and getConsent). 0 or 'never' disables expiry."
+    }
   ],
   "structure": [
-    { "element": "<dialog>",                    "description": "Banner container — shown until consent is given" },
-    { "element": "<button value=\"accept\">",   "description": "Accept-all action button" },
-    { "element": "<button value=\"reject\">",   "required": false, "description": "Reject-all action button (optional)" },
-    { "element": "<input type=\"checkbox\">",   "required": false, "description": "Granular preference toggles (optional, for save mode)" },
-    { "element": "<button value=\"save\">",     "required": false, "description": "Save granular preferences button (optional, used with checkboxes)" }
+    {
+      "element": "<dialog>",
+      "description": "Banner container — shown until consent is given. Named from its first heading (aria-labelledby) or aria-label=\"Cookie consent\" unless the author names it."
+    },
+    {
+      "element": "<button value=\"accept\">",
+      "description": "Accept-all action button"
+    },
+    {
+      "element": "<button value=\"reject\">",
+      "required": false,
+      "description": "Reject-all action button (optional)"
+    },
+    {
+      "element": "<input type=\"checkbox\">",
+      "required": false,
+      "description": "Granular preference toggles (optional, for save mode)"
+    },
+    {
+      "element": "<button value=\"save\">",
+      "required": false,
+      "description": "Save granular preferences button (optional, used with checkboxes)"
+    }
   ],
   "childAttributes": [
-    { "name": "value", "on": "button", "type": "enum", "values": ["accept", "reject", "save"], "required": true, "description": "Action button type — accept all, reject all, or save granular preferences" },
-    { "name": "name",  "on": "input[type=checkbox]", "type": "string", "description": "Preference category name stored in the consent cookie" }
+    {
+      "name": "value",
+      "on": "button",
+      "type": "enum",
+      "values": [
+        "accept",
+        "reject",
+        "save"
+      ],
+      "required": true,
+      "description": "Action button type — accept all, reject all, or save granular preferences"
+    },
+    {
+      "name": "name",
+      "on": "input[type=checkbox]",
+      "type": "string",
+      "description": "Preference category name; becomes a key in the stored and emitted preferences object"
+    }
   ],
   "events": [
-    { "name": "consent-banner:accept", "description": "Fired when user accepts all" },
-    { "name": "consent-banner:reject", "description": "Fired when user rejects all" },
-    { "name": "consent-banner:save",   "detail": "{ preferences }", "description": "Fired when user saves granular preferences" }
+    {
+      "name": "consent-banner:change",
+      "detail": "{ preferences: Record<string, boolean>, action: 'accept' | 'reject' | 'save' }",
+      "description": "Fired when the user clicks an accept, reject, or save button. preferences maps checkbox names to booleans; action is the button's value."
+    }
+  ],
+  "properties": [],
+  "methods": [
+    {
+      "name": "ConsentBanner.getConsent(key?, options?)",
+      "returns": "Promise<{ preferences, action } | null>",
+      "description": "Static. Read stored consent for key (default 'banner'). Honours expiry: options.expires (days), else the expires attribute of an in-document banner with the same persist key, else 365. Resolves null when missing, expired, or storage is unavailable."
+    },
+    {
+      "name": "ConsentBanner.reset(key?)",
+      "returns": "Promise<void>",
+      "description": "Static. Clear stored consent for key (default 'banner') so the banner reappears on the next load."
+    }
   ]
 }

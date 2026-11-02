@@ -5,18 +5,24 @@ import { VBElement } from '../../lib/vb-element.js';
  * popularity-index: Aggregated "most-visited" lens.
  *
  * Fetches a JSON document expected to contain `{ pages: [{ url, title, views }] }`
- * from `data-lens-src`. The default endpoint is `/api/analytics/popular` —
+ * from `analytics-src`. The default endpoint is `/api/analytics/popular` —
  * not yet implemented in VB; the component degrades to a friendly message
  * when the endpoint is unavailable, returns 5xx, or returns an empty list.
  *
  * Order of preference for each entry's metadata: response payload → matching
  * record in `data-meta-src` (typically pages.json) → endpoint URL.
  *
- * @attr {string} data-lens-src   URL to the popularity endpoint
+ * The endpoint has its own attribute because `data-lens-src` is the lens
+ * family's shared pages.json URL (forwarded by <content-lens>); here it is
+ * only a fallback for `data-meta-src`.
+ *
+ * @attr {string} analytics-src   URL to the popularity endpoint
  *                                (default "/api/analytics/popular")
  * @attr {string} data-meta-src   Optional URL to pages.json — used to enrich
  *                                title/topic/provenance when the endpoint
  *                                returns sparse data
+ * @attr {string} data-lens-src   Shared lens pages.json URL; used as the
+ *                                metadata source when data-meta-src is unset
  * @attr {number} limit           Max entries shown (default 10)
  * @attr {string} window          Optional time-window query forwarded to
  *                                the endpoint (e.g. "24h", "7d", "30d")
@@ -30,9 +36,9 @@ class PopularityIndex extends VBElement {
   }
 
   async #load() {
-    const lensSrc = this.getAttribute('data-lens-src') || '/api/analytics/popular';
+    const endpoint = this.getAttribute('analytics-src') || '/api/analytics/popular';
     const win = this.getAttribute('window');
-    const url = new URL(lensSrc, document.baseURI);
+    const url = new URL(endpoint, document.baseURI);
     if (win) url.searchParams.set('window', win);
 
     let payload = null;
@@ -57,7 +63,7 @@ class PopularityIndex extends VBElement {
     }
 
     /* Optional metadata enrichment from pages.json */
-    const metaSrc = this.getAttribute('data-meta-src');
+    const metaSrc = this.getAttribute('data-meta-src') || this.getAttribute('data-lens-src');
     let metaIndex = null;
     if (metaSrc) {
       try {

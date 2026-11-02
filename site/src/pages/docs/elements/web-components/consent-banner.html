@@ -32,7 +32,7 @@ crumbLabel: Web Components
     <p>We use cookies to improve your experience.
       <a href="/privacy">Privacy Policy</a></p>
     <footer>
-      <button value="reject" class="secondary">Reject All</button>
+      <button value="reject">Reject All</button>
       <button value="accept">Accept All</button>
     </footer>
   </dialog>
@@ -62,6 +62,7 @@ crumbLabel: Web Components
       <p>We use cookies to personalize content and
         analyse traffic. <a href="/privacy">Learn more</a></p>
       <fieldset class="minimal">
+        <legend>Cookie categories</legend>
         <label>
           <input type="checkbox" name="necessary"
             checked disabled> Necessary
@@ -77,7 +78,7 @@ crumbLabel: Web Components
       </fieldset>
     </section>
     <footer>
-      <button value="reject" class="secondary">Reject All</button>
+      <button value="reject">Reject All</button>
       <button value="save" class="secondary">Save Preferences</button>
       <button value="accept">Accept All</button>
     </footer>
@@ -86,11 +87,15 @@ crumbLabel: Web Components
 
 <!-- Elsewhere on the page -->
 <button id="manage-cookies">Manage Cookies</button></code-block>
+
+  <aside class="note">
+    <strong>Equal choices:</strong> Give <q>Reject All</q> the same visual weight as <q>Accept All</q>. Many privacy regulators treat a de-emphasised reject option as a dark pattern, so the examples use the same button style for both.
+  </aside>
 </section>
 
 <section>
   <h2>Position Variants</h2>
-  <p>The <code>position</code> attribute controls where the banner appears and whether it is modal.</p>
+  <p>The <code>position</code> attribute controls where the banner appears and whether it is modal. Changing it while the banner is open re-shows the dialog in the new mode.</p>
 
   <browser-window
     src="/docs/snippets/demos/consent-banner-positions.html"
@@ -130,7 +135,7 @@ crumbLabel: Web Components
   <dialog>
     <p>This site uses cookies. <a href="/privacy">Learn more</a></p>
     <footer>
-      <button value="reject" class="secondary">Reject</button>
+      <button value="reject">Reject</button>
       <button value="accept">Accept</button>
     </footer>
   </dialog>
@@ -143,7 +148,7 @@ crumbLabel: Web Components
         You must make a choice to proceed.</p>
     </section>
     <footer>
-      <button value="reject" class="secondary">Reject All</button>
+      <button value="reject">Reject All</button>
       <button value="accept">Accept All</button>
     </footer>
   </dialog>
@@ -194,7 +199,7 @@ document.addEventListener('consent-banner:change', (e) => {
 
 <section>
   <h2>Static API</h2>
-  <p>The <code>ConsentBanner</code> class exposes static methods for reading and clearing consent from external code.</p>
+  <p>The <code>ConsentBanner</code> class exposes static methods for reading and clearing consent from external code. Both are <strong>async</strong> &mdash; <code>await</code> them.</p>
 
   <table class="props-table">
     <thead>
@@ -207,15 +212,15 @@ document.addEventListener('consent-banner:change', (e) => {
     </thead>
     <tbody>
       <tr>
-        <td><code>ConsentBanner.getConsent(key?)</code></td>
-        <td><code>key: string</code> (default: <code>'consent-banner'</code>)</td>
-        <td><code>{ preferences, action, timestamp } | null</code></td>
-        <td>Read stored consent. Use on page load to check if analytics/marketing scripts should run.</td>
+        <td><code>ConsentBanner.getConsent(key?, options?)</code></td>
+        <td><code>key: string</code> (default: <code>'banner'</code>, matching a banner without <code>persist</code>)<br><code>options.expires: number | 'never'</code> (days)</td>
+        <td><code>Promise&lt;{ preferences, action } | null&gt;</code></td>
+        <td>Read stored consent. Resolves <code>null</code> when nothing is stored, the entry has expired, or storage is unavailable. Expiry uses <code>options.expires</code>; if omitted, the <code>expires</code> attribute of a <code>&lt;consent-banner&gt;</code> in the document with the same <code>persist</code> key; otherwise the 365-day default. A banner without <code>trigger</code> removes itself after a choice, so pass <code>expires</code> explicitly when you use a non-default value.</td>
       </tr>
       <tr>
         <td><code>ConsentBanner.reset(key?)</code></td>
-        <td><code>key: string</code> (default: <code>'consent-banner'</code>)</td>
-        <td><code>void</code></td>
+        <td><code>key: string</code> (default: <code>'banner'</code>)</td>
+        <td><code>Promise&lt;void&gt;</code></td>
         <td>Clear stored consent. The banner reappears on next page load.</td>
       </tr>
     </tbody>
@@ -224,14 +229,56 @@ document.addEventListener('consent-banner:change', (e) => {
   <code-block language="javascript" show-lines label="Static API usage" data-escape>import { ConsentBanner } from
   '/src/web-components/consent-banner/logic.js';
 
-// Check stored consent on page load
-const consent = ConsentBanner.getConsent('cookie-prefs');
+// Check stored consent on page load (null if missing or expired)
+const consent = await ConsentBanner.getConsent('cookie-prefs');
 if (consent?.preferences?.analytics) {
   initAnalytics();
 }
 
+// Banner uses expires="30"? Pass the same value here
+const recent = await ConsentBanner.getConsent('cookie-prefs', { expires: 30 });
+
 // Clear consent (banner reappears on next load)
-ConsentBanner.reset('cookie-prefs');</code-block>
+await ConsentBanner.reset('cookie-prefs');</code-block>
+</section>
+
+<section>
+  <h2>Recipe: Gate Scripts on Consent</h2>
+  <p>Load optional scripts only after consent. Check stored consent once on load (returning visitors), then listen for <code>consent-banner:change</code> (first-time visitors and later changes via the trigger). Guard each loader so it runs only once.</p>
+
+  <code-block language="html" show-lines label="Load analytics only with consent" data-escape><consent-banner persist="cookie-prefs" trigger="#manage-cookies">
+  <dialog>…</dialog>
+</consent-banner>
+
+<script type="module">
+  import { ConsentBanner } from
+    '/src/web-components/consent-banner/logic.js';
+
+  const loaded = new Set();
+  function loadScript(src) {
+    if (loaded.has(src)) return;
+    loaded.add(src);
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    document.head.append(s);
+  }
+
+  function apply(preferences = {}) {
+    if (preferences.analytics) loadScript('/js/analytics.js');
+    if (preferences.marketing) loadScript('/js/marketing.js');
+  }
+
+  // Returning visitor: consent already stored (and not expired)
+  const stored = await ConsentBanner.getConsent('cookie-prefs');
+  if (stored) apply(stored.preferences);
+
+  // First choice, or a later change through the trigger
+  document.addEventListener('consent-banner:change',
+    (e) => apply(e.detail.preferences));
+</script></code-block>
+
+  <p>Withdrawing consent cannot unload a script that already ran. If a user turns a category off, reload the page (or stop the vendor through its own API) after the change event.</p>
 </section>
 
 {% from "partials/attribute-table.njk" import attributeTable, structureTable, childAttributeTable %}
@@ -248,19 +295,22 @@ ConsentBanner.reset('cookie-prefs');</code-block>
 
 <section>
   <h2>localStorage Format</h2>
-  <p>Consent is stored as JSON under the configured key.</p>
+  <p>Consent is stored through VBStore (namespace <code>consent</code>) under the localStorage key <code>vb:consent:&lt;persist&gt;</code> &mdash; <code>vb:consent:banner</code> when <code>persist</code> is not set. The value is a VBStore envelope: your choice sits in <code>data</code>, and VBStore adds the <code>timestamp</code>.</p>
 
-  <code-block language="json" label="Stored consent object">{
-  "preferences": {
-    "necessary": true,
-    "analytics": true,
-    "marketing": false
+  <code-block language="json" label="localStorage['vb:consent:cookie-prefs']">{
+  "data": {
+    "preferences": {
+      "necessary": true,
+      "analytics": true,
+      "marketing": false
+    },
+    "action": "save"
   },
-  "action": "save",
   "timestamp": 1709913600000
 }</code-block>
 
-  <p>The <code>timestamp</code> field enables expiry. When <code>expires</code> days have elapsed since the timestamp, the banner reappears on next page load.</p>
+  <p>The envelope <code>timestamp</code> drives expiry. When <code>expires</code> days have elapsed since it, the banner reappears on the next page load and <code>getConsent()</code> resolves <code>null</code>. <code>getConsent()</code> returns only the <code>data</code> part (<code>{ preferences, action }</code>), not the timestamp.</p>
+  <p>If localStorage is unavailable (blocked storage, some privacy modes), the banner still opens and still fires <code>consent-banner:change</code>; the choice simply is not remembered on the next load.</p>
 </section>
 
 <section>
@@ -268,6 +318,7 @@ ConsentBanner.reset('cookie-prefs');</code-block>
 
   <h3>Dialog Behavior</h3>
   <ul>
+    <li><strong>Accessible name:</strong> Unless you set <code>aria-label</code> or <code>aria-labelledby</code> on the <code>&lt;dialog&gt;</code>, the component points <code>aria-labelledby</code> at the first heading inside it (adding an <code>id</code> if needed), or sets <code>aria-label="Cookie consent"</code> when there is no heading.</li>
     <li><strong>Bottom / Top:</strong> Uses <code>dialog.show()</code> (non-modal). The page remains interactive &mdash; users can scroll and navigate freely.</li>
     <li><strong>Center:</strong> Uses <code>dialog.showModal()</code> (modal). Focus is trapped inside the dialog. ESC is prevented to enforce a consent choice.</li>
   </ul>

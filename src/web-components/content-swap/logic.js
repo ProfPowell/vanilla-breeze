@@ -12,6 +12,8 @@
  * @attr {string} data-face - "front" or "back" on child elements
  * @attr {boolean} data-swap - Marks an element as a swap trigger (on children),
  *                              or enables swap behavior on any element (on the element itself)
+ * @attr {boolean} data-swap-toggle - Direct-child toggle button used when there are no
+ *                              [data-swap] triggers (generated as "Show back" if absent)
  *
  * @example
  * <content-swap transition="flip">
@@ -47,14 +49,22 @@ function attrName(el, name) {
  * @returns {(() => void) | undefined} Cleanup function to remove listeners
  */
 function initSwapBehavior(el) {
-  // Assign unique view-transition-name per instance (avoids conflicts with multiple swaps)
-  if (!el.style.viewTransitionName) {
-    el.style.viewTransitionName = `content-swap-${++swapInstanceId}`;
-  }
   const front = el.querySelector(':scope > [data-face="front"]');
   const back = el.querySelector(':scope > [data-face="back"]');
 
   if (!front || !back) return;
+
+  // Assign unique view-transition-name per instance (avoids conflicts with
+  // multiple swaps). The shared animation hooks off view-transition-class
+  // (set in styles.css), since ::view-transition-old() takes no wildcards.
+  if (!el.style.viewTransitionName) {
+    el.style.viewTransitionName = `content-swap-${++swapInstanceId}`;
+  }
+
+  const isElement = el.matches('content-swap');
+  // The attribute form's "upgraded" marker gates the stacking CSS, so it is
+  // set here (before the first style flush) rather than by the caller.
+  if (!isElement) el.setAttribute('data-swap-init', '');
 
   const cleanups = [];
 
@@ -63,25 +73,48 @@ function initSwapBehavior(el) {
     cleanups.push(() => target.removeEventListener(event, handler, options));
   }
 
+  // A trigger belongs to this host when its nearest swap host ancestor is
+  // this element. Start from the parent: `closest()` includes the element
+  // itself, and every trigger matches [data-swap].
   const triggers = [...el.querySelectorAll('[data-swap]')].filter(
-    t => t !== el && t.closest('content-swap, [data-swap]') === el
+    t => t.parentElement?.closest('content-swap, [data-swap]') === el
   );
   const isWholeElementTrigger = triggers.length === 0;
 
+  let toggle = /** @type {HTMLElement | null} */ (el.querySelector(':scope > [data-swap-toggle]'));
+
   if (isWholeElementTrigger) {
-    el.setAttribute('role', 'button');
-    el.setAttribute('tabindex', '0');
-    if (!el.getAttribute('aria-label')) {
-      el.setAttribute('aria-label', 'Toggle content');
+    // Keyboard / assistive-technology target: a real toggle button outside
+    // both faces (so it is never made inert). The container itself is never
+    // given a button role, which would flatten the faces' content and links
+    // into a single opaque control. Authors may supply their own
+    // <button data-swap-toggle> to set the label.
+    if (!toggle) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.setAttribute('data-swap-toggle', '');
+      button.textContent = 'Show back';
+      el.append(button);
+      toggle = button;
     }
-    listen(el, 'click', () => toggleSwap(el, 'pointer'));
-    listen(el, 'keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleSwap(el, 'keyboard');
-      }
+    listen(toggle, 'click', (e) => {
+      e.stopPropagation();
+      // detail === 0: activated from the keyboard (Enter/Space) or AT
+      toggleSwap(el, /** @type {MouseEvent} */ (e).detail === 0 ? 'keyboard' : 'pointer');
+    });
+
+    // Pointer convenience: a click anywhere on the surface toggles, unless
+    // it lands on an interactive descendant (links, buttons, fields…).
+    listen(el, 'click', (e) => {
+      const target = /** @type {Element} */ (e.target);
+      const interactive = target.closest?.(INTERACTIVE);
+      if (interactive && interactive !== el && el.contains(interactive)) return;
+      toggleSwap(el, 'pointer');
     });
   } else {
+    // Explicit triggers replace the generated toggle.
+    if (toggle && !toggle.hasAttribute('data-swap')) toggle.remove();
+    toggle = null;
     triggers.forEach(trigger => {
       listen(trigger, 'click', (e) => {
         e.stopPropagation();
@@ -105,7 +138,16 @@ function initSwapBehavior(el) {
     listen(el, 'swipe-right', () => toggleSwap(el, 'pointer'));
   }
 
+  // <content-swap> observes `swapped` via attributeChangedCallback; the
+  // attribute form has no lifecycle callbacks, so watch data-swapped here.
+  if (!isElement) {
+    const mo = new MutationObserver(() => syncState(el, front, back));
+    mo.observe(el, { attributes: true, attributeFilter: ['data-swapped'] });
+    cleanups.push(() => mo.disconnect());
+  }
+
   syncState(el, front, back);
+  settleWithoutTransition([front, back]);
 
   return () => {
     for (const fn of cleanups) fn();
@@ -113,10 +155,27 @@ function initSwapBehavior(el) {
   };
 }
 
+/** Interactive descendants that keep their own click behaviour */
+const INTERACTIVE = 'a[href], button, input, select, textarea, label, summary, [contenteditable=""], [contenteditable="true"], [tabindex]';
+
+/**
+ * The stacking/transform CSS only applies once upgraded. Flush that style
+ * change with transitions off so faces don't animate into place on load.
+ * @param {HTMLElement[]} faces
+ */
+function settleWithoutTransition(faces) {
+  const previous = faces.map(f => f.style.transition);
+  for (const f of faces) f.style.transition = 'none';
+  for (const f of faces) void getComputedStyle(f).transform;
+  faces.forEach((f, i) => { f.style.transition = previous[i]; });
+}
+
 function syncState(el, front, back) {
   const swapped = el.hasAttribute(attrName(el, 'swapped'));
   front.inert = swapped;
   back.inert = !swapped;
+  el.querySelector(':scope > [data-swap-toggle]')
+    ?.setAttribute('aria-pressed', String(swapped));
 }
 
 function getFaces(el) {
@@ -138,6 +197,7 @@ function swapTo(el, show, source = 'api') {
   const attr = attrName(el, 'swapped');
   if (show && el.hasAttribute(attr)) return;
   if (!show && !el.hasAttribute(attr)) return;
+  const focusedBefore = document.activeElement;
 
   const applySwap = () => {
     if (show) {
@@ -149,13 +209,16 @@ function swapTo(el, show, source = 'api') {
     syncState(el, front, back);
     dispatchSwapEvent(el, source);
 
-    // Focus management: only move focus on keyboard-triggered swaps
-    // or when the target face has [autofocus]
+    // Focus management: [autofocus] on the incoming face always wins.
+    // Otherwise focus only moves on keyboard-triggered swaps whose focus was
+    // inside the outgoing (now inert) face, e.g. a [data-swap] trigger. The
+    // generated toggle sits outside both faces and keeps focus.
     const targetFace = show ? back : front;
+    const outgoingFace = show ? front : back;
     const autofocusTarget = targetFace.querySelector('[autofocus]');
     if (autofocusTarget) {
       autofocusTarget.focus();
-    } else if (source === 'keyboard') {
+    } else if (source === 'keyboard' && outgoingFace.contains(focusedBefore)) {
       moveFocus(targetFace);
     }
   };
@@ -201,8 +264,17 @@ function moveFocus(face) {
  * <content-swap> custom element
  */
 class ContentSwap extends VBElement {
+  static observedAttributes = ['swapped'];
+
   /** @type {(() => void) | null} */
   #cleanup = null;
+
+  /** Keep `inert` / aria-pressed in step when `swapped` is set externally. */
+  attributeChangedCallback() {
+    if (!this.isConnected) return;
+    const { front, back } = getFaces(this);
+    if (front && back) syncState(this, front, back);
+  }
 
   setup() {
     this.#cleanup = initSwapBehavior(this) ?? null;
@@ -243,7 +315,6 @@ function autoInitSwap() {
     // Skip child trigger buttons — only init elements that have data-face children
     if (!el.querySelector(':scope > [data-face]')) return;
     initSwapBehavior(el);
-    el.setAttribute('data-swap-init', '');
   });
 }
 
@@ -260,17 +331,11 @@ const observer = new MutationObserver((mutations) => {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
       const el = /** @type {Element} */ (node);
       if (el.hasAttribute('data-swap') && !el.matches('content-swap') && !el.hasAttribute('data-swap-init')) {
-        if (el.querySelector(':scope > [data-face]')) {
-          initSwapBehavior(el);
-          el.setAttribute('data-swap-init', '');
-        }
+        if (el.querySelector(':scope > [data-face]')) initSwapBehavior(el);
       }
       // Also check descendants
       el.querySelectorAll('[data-swap]:not(content-swap):not([data-swap-init])').forEach(el => {
-        if (el.querySelector(':scope > [data-face]')) {
-          initSwapBehavior(el);
-          el.setAttribute('data-swap-init', '');
-        }
+        if (el.querySelector(':scope > [data-face]')) initSwapBehavior(el);
       });
     }
   }
