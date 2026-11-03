@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#080d16">
 <meta name="generator" content="Cook">
 
 <!-- Favicon -->
@@ -74,9 +74,30 @@
       } catch { return null; }
     };
 
+    const root = document.documentElement;
+    // Snapshot the page's authored root attributes before writing stored
+    // prefs over them: ThemeManager treats these as the page defaults
+    // (reset() restores them; no preference never strips them).
+    const ROOT_ATTRS = ['data-theme', 'data-accent', 'data-border-style', 'data-icon-set', 'data-fluid', 'data-backdrop', 'data-backdrop-chrome'];
+    window.__vbAuthoredRoot = Object.fromEntries(ROOT_ATTRS.map((a) => [a, root.getAttribute(a)]));
+
     const stored = vbRead('theme', 'current') || {};
+    // Root-attribute prefs: null/absent = page default. Schema v1 saved ''
+    // (and accent 'default') for untouched keys, so those mean "no choice".
+    const pref = (key) => {
+      const v = stored[key];
+      if (v == null) return null;
+      if (!(stored.v >= 2) && (v === '' || (key === 'accent' && v === 'default'))) return null;
+      return typeof v === 'string' && /^[a-z0-9 -]*$/.test(v) ? v : null;
+    };
+    const setRoot = (attr, value, off) => {
+      if (value == null) return; // no choice: keep the authored attribute
+      if (value === '' || value === off) root.removeAttribute(attr);
+      else root.setAttribute(attr, value);
+    };
     const mode = stored.mode || 'auto';
-    const brand = stored.brand || 'default';
+    const pinned = (root.getAttribute('data-theme') || '').split(/\s+/).find((t) => t && !t.startsWith('a11y-')) || '';
+    const brand = stored.brand && stored.brand !== 'default' ? stored.brand : (pinned || 'default');
     const isDev = document.currentScript?.dataset.vbIsDev === 'true';
     const coreThemes = new Set([
       'default',
@@ -89,17 +110,18 @@
     ]);
     const packThemes = new Set(['kawaii', 'memphis']);
     if (mode !== 'auto') {
-      document.documentElement.dataset.mode = mode;
+      root.dataset.mode = mode;
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.documentElement.dataset.mode = 'dark';
+      root.dataset.mode = 'dark';
     }
     const a11y = vbRead('settings', 'a11y') || [];
     const parts = [];
     if (brand && brand !== 'default') parts.push(brand);
     parts.push(...(Array.isArray(a11y) ? a11y : []));
-    if (parts.length) document.documentElement.dataset.theme = parts.join(' ');
+    if (parts.length) root.dataset.theme = parts.join(' ');
     const safeBrand = /^[a-z0-9-]+$/.test(brand) ? brand : 'default';
-    if (!isDev && safeBrand && !coreThemes.has(safeBrand) && !document.querySelector(`link[data-vb-theme="${safeBrand}"]`)) {
+    // Only a stored brand needs fetching here; a pinned brand ships its CSS.
+    if (!isDev && safeBrand !== pinned && safeBrand && !coreThemes.has(safeBrand) && !document.querySelector(`link[data-vb-theme="${safeBrand}"]`)) {
       const href = `/cdn/themes/${safeBrand}.css`;
       const packAttr = packThemes.has(safeBrand) ? ` data-vb-pack="${safeBrand}"` : '';
       document.write(
@@ -115,17 +137,26 @@
         }
       }, 1500);
     }
-    if (stored.fluid) document.documentElement.dataset.fluid = stored.fluid;
+    // Returning visitors: apply every stored root preference now, so nothing
+    // repaints when ThemeManager.init() runs (same rules as apply()).
+    setRoot('data-fluid', pref('fluid'));
+    setRoot('data-backdrop', pref('backdrop'));
+    setRoot('data-backdrop-chrome', pref('backdropChrome'), 'card');
+    setRoot('data-border-style', pref('borderStyle'), 'clean');
+    setRoot('data-icon-set', pref('iconSet'), 'lucide');
+    setRoot('data-accent', pref('accent'), 'default');
+    // Seed the browser chrome colour for the known mode. ThemeManager.apply()
+    // replaces it with the computed --color-background once CSS is in.
     const effectiveMode = mode !== 'auto' ? mode
       : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const themeColor = effectiveMode === 'dark' ? '#1a1a1a' : '#ffffff';
-    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+    const themeColor = effectiveMode === 'dark' ? '#080d16' : '#ffffff';
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
       m.removeAttribute('media');
+      m.content = themeColor;
     });
-    document.querySelector('meta[name="theme-color"]').content = themeColor;
     const ext = vbRead('settings', 'extensions') || {};
-    if (ext.motionFx === false) document.documentElement.dataset.motionReduced = '';
-    if (vbRead('settings', 'sticky') === 'on') document.documentElement.dataset.sticky = '';
+    if (ext.motionFx === false) root.dataset.motionReduced = '';
+    if (vbRead('settings', 'sticky') === 'on') root.dataset.sticky = '';
   } catch(e) {}
 </script>
 

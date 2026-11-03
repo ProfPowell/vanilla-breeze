@@ -22,8 +22,10 @@
 }
 
 html {
-  -webkit-text-size-adjust: none;
-  text-size-adjust: none;
+  /* 100%, not none: none also blocks the user's own text zoom on some
+     mobile browsers. 100% only stops the automatic landscape inflation. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   background: var(--page-bg-color, var(--color-surface));
@@ -34,10 +36,17 @@ html:focus-within {
   scroll-behavior: smooth;
 }
 
+/* Reduced motion: the OS preference or the site's own switch
+   (data-motion-reduced on <html>, written by settings-panel) */
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
     scroll-behavior: auto;
   }
+}
+
+:root[data-motion-reduced],
+:root[data-motion-reduced]:focus-within {
+  scroll-behavior: auto;
 }
 
 body {
@@ -56,11 +65,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Re-apply text color on scoped theme/mode elements so CSS variables
-   resolve in the element's own scope rather than inheriting from body */
-[data-theme]:not(:root),
-[data-mode]:not(:root) {
+/* Scoped theme/mode: an element carrying data-theme or data-mode paints
+   its own surface and text from the tokens re-derived on it (colors.css),
+   rather than inheriting body's text over the page's background. Without
+   the background a <aside data-mode="dark"> on a light page drew near-white
+   text on the white page. Zero specificity so any component or author
+   background still wins. */
+:where([data-theme]:not(:root), [data-mode="light"]:not(:root), [data-mode="dark"]:not(:root)) {
   color: var(--color-text);
+  background-color: var(--color-background);
 }
 
 img,
@@ -131,7 +144,9 @@ h6 {
   }
 }
 
-/* Touch devices — enforce comfortable target sizes (WCAG 2.5.8) */
+/* Touch devices — comfortable target heights: --size-touch-min (44px, the
+   WCAG 2.5.5 AAA figure; 2.5.8 AA asks for 24px) as min-block-size on
+   buttons and inputs only. Inline size and links are not touched. */
 @media (pointer: coarse) {
   button,
   [type="button"],

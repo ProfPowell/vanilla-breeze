@@ -97,7 +97,8 @@ export async function getThemeManifest() {
 /**
  * Core themes that are always in the core CSS bundle.
  * Includes default, personality themes, and accessibility themes.
- * Color accents are NOT here — they use ThemeManager.setAccent() inline styles.
+ * Color accents are NOT here — they are a separate axis: ThemeManager.setAccent()
+ * sets data-accent on <html>, matched by src/tokens/themes/_accents.css (in core).
  * These never need loading — they switch instantly with zero network requests.
  */
 const CORE_THEMES = new Set([

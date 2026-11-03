@@ -31,6 +31,8 @@ export { Analytics } from './lib/analytics.js';
 // Public storage and service APIs (also on window.VB.store / VB.service)
 export { VBStore } from './lib/vb-store.js';
 export { VBService, VBServiceError } from './lib/vb-service.js';
+// Theme API (also on window.VB.themeManager). init() already ran on load.
+export { ThemeManager };
 
 // Initialize theme system early to prevent FOUC
 await ThemeManager.init();

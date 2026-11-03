@@ -69,6 +69,12 @@ const CSS_DEFAULTS = {
   bundle: true,
   minify: true,
   sourcemap: /** @type {const} */ ('linked'),
+  // Self-hosted fonts referenced from bundled CSS (the a11y-dyslexia theme's
+  // Atkinson Hyperlegible faces) are emitted next to the output as
+  // fonts/<name>.woff2 — dist/cdn/fonts/ for the main bundles. Packs
+  // override both keys with their own copy loader + folder.
+  loader: /** @type {Record<string, import('esbuild').Loader>} */ ({ '.woff2': 'file' }),
+  assetNames: 'fonts/[name]',
 };
 
 // Ensure directories exist
@@ -544,6 +550,13 @@ async function buildCDN() {
     logLevel: 'info',
   });
   fixAtPropertyLeadingZeros(join(CDN, 'vanilla-breeze-core.css'));
+
+  // OFL 1.1 requires the licence to travel with the self-hosted
+  // Atkinson Hyperlegible files esbuild just emitted to cdn/fonts/.
+  const atkinsonLicence = join(SRC, 'tokens', 'themes', 'fonts', 'atkinson-hyperlegible-OFL.txt');
+  if (existsSync(atkinsonLicence)) {
+    cpSync(atkinsonLicence, join(CDN, 'fonts', 'atkinson-hyperlegible-OFL.txt'));
+  }
 
   // Build charts CSS add-on
   const chartsPath = join(SRC, 'charts-standalone.css');

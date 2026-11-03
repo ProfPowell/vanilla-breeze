@@ -40,14 +40,39 @@
   --hue-accent: 30;
 
   /* ==================== BRAND SEEDS ==================== */
-  /* Lightness and chroma seeds — brand themes override these */
-  --lightness-primary: 50%;
-  --chroma-primary: 0.2;
+  /* Lightness and chroma seeds — brand themes override these.
+     --lightness-primary / --chroma-primary are mode-dependent and live in
+     the light-seed rule below (dark values in the dark-mode rule). */
   --lightness-secondary: 50%;
   --chroma-secondary: 0.08;
   --lightness-accent: 65%;
   --chroma-accent: 0.18;
+}
 
+/* ==================== LIGHT SEEDS ==================== */
+/* One source for the light primary seeds: the page root, and a scoped
+   data-mode="light" region inside a dark page (which would otherwise
+   inherit the dark seeds from :root[data-mode="dark"]). */
+:root,
+[data-mode="light"] {
+  --lightness-primary: 50%;
+  --chroma-primary: 0.2;
+}
+
+/* ==================== DERIVED TOKENS ==================== */
+/* Everything below is derived from the seeds through var() chains, and a
+   custom property's var() references are resolved on the element that
+   declares it — so tokens declared only on :root stay frozen at the root's
+   values for every descendant. Declaring them on scoped data-mode elements
+   too re-derives them from that element's own seeds and surfaces: an
+   <aside data-mode="dark"> on a light page gets dark --color-primary,
+   --color-hover-bg, etc., and data-mode="light" inside a dark page gets
+   the light ones (light-dark() resolves against the element's own
+   color-scheme). Concrete dark surfaces come from the dark-mode rule
+   further down, which wins on source order. */
+:root,
+[data-mode="light"],
+[data-mode="dark"] {
   /* ==================== BRAND COLORS ==================== */
   /* Derived from seeds + hues — themes set seeds, core derives states */
   --color-primary: oklch(var(--lightness-primary) var(--chroma-primary) var(--hue-primary));
@@ -169,7 +194,9 @@
    Components use these via fallback chain: var(--color-text-on-X-auto, white)
    so browsers without contrast-color() gracefully degrade. */
 @supports (color: contrast-color(red)) {
-  :root {
+  :root,
+  [data-mode="light"],
+  [data-mode="dark"] {
     --color-text-on-primary-auto:     contrast-color(var(--color-primary));
     --color-text-on-secondary-auto:   contrast-color(var(--color-secondary));
     --color-text-on-accent-auto:      contrast-color(var(--color-accent));
@@ -182,7 +209,9 @@
 }
 
 /* ==================== EXPLICIT MODE OVERRIDES ==================== */
-/* Force light mode */
+/* Force light mode. Light token values come from the shared rules above
+   (light seeds + derived tokens), so a scoped data-mode="light" inside a
+   dark page re-declares them from the same source. */
 :root[data-mode="light"],
 [data-mode="light"] {
   color-scheme: light;
@@ -243,4 +272,8 @@
   :root {
     transition: none;
   }
+}
+
+:root[data-motion-reduced] {
+  transition: none;
 }

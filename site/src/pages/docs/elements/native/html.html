@@ -80,9 +80,24 @@ crumbLabel: Native Elements
           <td>Brand and aesthetic tokens (global config)</td>
         </tr>
         <tr>
+          <td><code>data-accent</code></td>
+          <td><code>&lt;html&gt;</code> or any element</td>
+          <td>Colour accent (brand hues), a separate axis from the theme</td>
+        </tr>
+        <tr>
           <td><code>data-fluid</code></td>
           <td><code>&lt;html&gt;</code></td>
           <td>Fluid typography and spacing scaling</td>
+        </tr>
+        <tr>
+          <td><code>data-backdrop</code>, <code>data-backdrop-chrome</code></td>
+          <td><code>&lt;html&gt;</code></td>
+          <td>Canvas backdrop: page regions as cards on a tinted canvas</td>
+        </tr>
+        <tr>
+          <td><code>data-sticky</code></td>
+          <td><code>&lt;html&gt;</code></td>
+          <td>Sticky site header system</td>
         </tr>
         <tr>
           <td><code>data-page</code></td>
@@ -98,7 +113,8 @@ crumbLabel: Native Elements
     </table>
 
     <h3>Scoped Overrides</h3>
-    <p>Both <code>data-theme</code> and <code>data-mode</code> can be placed on any descendant element to create a scoped region. VB's reset re-applies <code>color: var(--color-text)</code> on scoped elements so custom properties resolve in the element's own context rather than inheriting from the body.</p>
+    <p>Both <code>data-theme</code> and <code>data-mode</code> can be placed on any descendant element to create a scoped region. A scoped <code>data-mode="light"</code> or <code>"dark"</code> element re-derives the colour tokens (primary, surfaces, text, borders, hover and focus colours) from its own seeds, and VB's reset gives every scoped <code>data-theme</code> / <code>data-mode</code> element its own <code>background-color: var(--color-background)</code> and <code>color: var(--color-text)</code>. A dark aside on a light page therefore paints a dark surface instead of light text over the white page. The reset rule has zero specificity, so your own background wins.</p>
+    <p>Limits: a scoped light region inside a dark page uses the framework's light seeds, not a brand theme's; a theme's own dark-mode overrides apply only where <code>data-theme</code> and <code>data-mode</code> sit on the same element (or on <code>&lt;html&gt;</code>). Component tokens that alias colours at <code>:root</code> (for example a button background) keep the page's values.</p>
     <code-block language="html" label="Scoped overrides" data-escape><main data-theme="modern">
   <!-- This section gets the modern personality while
        the rest of the page uses the root theme -->
@@ -151,10 +167,6 @@ crumbLabel: Native Elements
       </thead>
       <tbody>
         <tr>
-          <td>Accent <em>(via JS)</em></td>
-          <td><code>ocean</code>, <code>forest</code>, <code>sunset</code>, <code>amber</code>, <code>emerald</code>, <code>lavender</code>, <code>indigo</code>, <code>slate</code>, <code>rose</code>, <code>coral</code> &mdash; applied via <code>ThemeManager.setAccent()</code>, not <code>data-theme</code></td>
-        </tr>
-        <tr>
           <td>Extreme</td>
           <td><code>swiss</code>, <code>brutalist</code>, <code>organic</code>, <code>kawaii</code>, <code>cyber</code>, <code>terminal</code>, <code>8bit</code>, <code>nes</code>, <code>win9x</code>, <code>vaporwave</code>, <code>art-deco</code>, <code>bauhaus</code>, <code>memphis</code>, <code>editorial</code>, <code>claymorphism</code>, <code>neumorphism</code>, <code>glassmorphism</code>, <code>cottagecore</code>, <code>rough</code>, <code>genai</code>, and more</td>
         </tr>
@@ -172,9 +184,24 @@ crumbLabel: Native Elements
         </tr>
       </tbody>
     </table>
-    <p>Themes can be combined. Accessibility themes layer on top of personality or extreme themes. The <code>[data-theme~="name"]</code> word-match selector enables this stacking &#8212; each token is matched independently, so <code>data-theme="modern a11y-large-text"</code> activates both rulesets simultaneously. Color accents (ocean, forest, sunset, etc.) are applied separately via <code>ThemeManager.setAccent()</code>.</p>
+    <p>Themes can be combined. Accessibility themes layer on top of personality or extreme themes. The <code>[data-theme~="name"]</code> word-match selector enables this stacking &#8212; each token is matched independently, so <code>data-theme="modern a11y-large-text"</code> activates both rulesets simultaneously. Colour accents are a separate attribute, <a href="#data-accent"><code>data-accent</code></a>.</p>
     <code-block language="html" label="Single theme" data-escape><html lang="en" data-theme="modern"></code-block>
     <code-block language="html" label="Combined themes" data-escape><html lang="en" data-theme="modern a11y-large-text"></code-block>
+    <p>Which CSS each value needs:</p>
+    <ul>
+      <li><strong>Bundled:</strong> <code>modern</code>, <code>minimal</code>, <code>classic</code> and the three <code>a11y-*</code> themes ship inside <code>vanilla-breeze.css</code> and <code>vanilla-breeze-core.css</code>. The attribute alone is enough.</li>
+      <li><strong>Everything else</strong> loads on demand: the JS bundle's <code>ThemeManager</code> fetches <code>themes/&lt;name&gt;.css</code> from the CDN folder the bundle came from (default <code>/cdn/</code>, override with <code>window.__VB_THEME_BASE</code>) when it sees the value. Without JS, link the file yourself (<code>&lt;link rel="stylesheet" href="/cdn/themes/swiss.css"&gt;</code>, or <code>vanilla-breeze/themes/swiss</code> from npm). Order does not matter: theme files declare <code>@layer bundle-theme</code> themselves.</li>
+      <li><strong>Pack themes:</strong> <code>kawaii</code> and <code>memphis</code> are fuller as packs (<code>/cdn/packs/kawaii.full.css</code> + <code>.full.js</code>) with effects and components on top of the theme tokens.</li>
+      <li><strong>Fixed schemes:</strong> some themes ignore <code>data-mode</code>. <code>a11y-dyslexia</code> is light-only (a warm paper surface), and dark-first themes such as the editor palettes render dark whatever the mode. Check the <a href="/docs/themes/">Themes page</a> previews.</li>
+    </ul>
+
+    <h3 id="data-accent">data-accent</h3>
+    <p>Colour accent: swaps the brand hues (primary, secondary, accent) and keeps everything else &#8212; shape, shadows, typography. A separate axis from <code>data-theme</code>, so it tints the seed-based themes (default, modern, minimal, classic); themes that fix their own palette keep it. Works on <code>&lt;html&gt;</code> or on <strong>any element</strong>, including inside a dark page (the dark-mode seed variants follow).</p>
+    <p>Values: <code>ocean</code>, <code>forest</code>, <code>sunset</code>, <code>amber</code>, <code>emerald</code>, <code>lavender</code>, <code>indigo</code>, <code>slate</code>, <code>rose</code>, <code>coral</code>. See <a href="/docs/themes/">Themes</a> for swatches.</p>
+    <code-block language="html" label="Accents" data-escape><html lang="en" data-accent="ocean">
+...
+<section data-accent="sunset">Warm call-out</section></code-block>
+    <p><code>&lt;theme-picker&gt;</code> and <code>ThemeManager.setAccent()</code> write the same attribute on <code>&lt;html&gt;</code>.</p>
 
     <h3>data-page</h3>
     <p>Identifies which site section a page belongs to. This is a scoping hook for your own CSS &#8212; VB does not define a fixed enumeration. Values are whatever makes sense for your site (e.g., <code>docs</code>, <code>lab</code>, <code>blog</code>, <code>admin</code>).</p>
@@ -244,8 +271,32 @@ crumbLabel: Native Elements
 <!-- or with a preset -->
 <html lang="en" data-fluid="compact"></code-block>
 
+    <h3>data-backdrop and data-backdrop-chrome</h3>
+    <p><code>data-backdrop</code> turns the page into a canvas: the body gets padding and a tinted background, and its direct <code>header</code>, <code>nav</code>, <code>main</code>, <code>aside</code> and <code>footer</code> children become rounded, elevated cards. Values: <em>(boolean)</em> or <code>default</code>, <code>flush</code> (no gap, flat), <code>elevated</code> (stronger shadows).</p>
+    <p><code>data-backdrop-chrome</code> decides how the header and footer sit on that canvas. Space-separated: <code>card</code> (default, chrome is a card like the rest), <code>stretch</code> (full-width bars), <code>integrated</code> (chrome sits on the canvas without a card), plus <code>fixed</code> to pin the header. It only has an effect together with <code>data-backdrop</code>.</p>
+    <code-block language="html" label="Canvas backdrop" data-escape><html lang="en" data-backdrop="elevated" data-backdrop-chrome="stretch fixed"></code-block>
+    <p>See <a href="/docs/elements/native/body/">body</a> for how the backdrop interacts with the page background.</p>
+
+    <h3>data-sticky</h3>
+    <p>Opts the page into VB's sticky header system: the JS bundle marks the site banner header sticky and keeps its height in <code>--sticky-offset</code> on <code>:root</code> so anchors, sidebars and other sticky elements offset below it. <code>&lt;settings-panel&gt;</code> toggles it. Details on the <a href="/docs/attributes/data-sticky/">data-sticky</a> page.</p>
+
+    <h3>data-scrollbar</h3>
+    <p>Scrollbar styling, on <code>&lt;html&gt;</code> for the page scrollbar or on any scroll container. Values: <code>hidden</code>, <code>auto</code> (full-width scrollbar), <code>primary</code> (brand-coloured thumb), <code>minimal</code> (thin, border-coloured). Without it, the page uses the themed thin scrollbar from the reset.</p>
+    <code-block language="html" label="Scrollbars" data-escape><html lang="en" data-scrollbar="primary">
+...
+<pre data-scrollbar="minimal">...</pre></code-block>
+
+    <h3>Authored attributes and saved preferences</h3>
+    <p>Attributes you write on <code>&lt;html&gt;</code> are the page's defaults. <code>ThemeManager</code> (in every JS bundle) only replaces <code>data-fluid</code>, <code>data-accent</code>, <code>data-border-style</code>, <code>data-icon-set</code>, <code>data-backdrop</code>, <code>data-backdrop-chrome</code> or a brand in <code>data-theme</code> when the visitor has chosen something else in <code>&lt;theme-picker&gt;</code> / <code>&lt;settings-panel&gt;</code> (a saved preference) or a setter is called. Resetting the settings restores your values. <code>data-mode</code> is always written: it reflects the effective light/dark mode.</p>
+
     <h3>data-motion-reduced</h3>
-    <p>User-toggled reduced motion. When present, all CSS transitions, animations, and view transitions are disabled. Set programmatically by <code>&lt;theme-picker&gt;</code> or <code>&lt;settings-panel&gt;</code>; complements the <code>prefers-reduced-motion</code> media query for users who want motion control per-site rather than system-wide.</p>
+    <p>User-toggled reduced motion, a per-site complement to the <code>prefers-reduced-motion</code> media query. When present on <code>&lt;html&gt;</code>, VB:</p>
+    <ul>
+      <li>sets every <code>--duration-*</code> token to <code>0ms</code>, so token-driven transitions finish instantly;</li>
+      <li>turns smooth anchor scrolling off (<code>scroll-behavior: auto</code>);</li>
+      <li>disables view-transition animations, the theme colour transition, and the effects that check it (glitch, typewriter cursor, gradient text, spotlight, pack effects).</li>
+    </ul>
+    <p>Animations with hard-coded durations in your own CSS are not affected; read the attribute in your selectors (<code>:root[data-motion-reduced] .x { animation: none }</code>). <code>&lt;settings-panel&gt;</code> writes it from its motion switch and the docs boot script restores it before first paint.</p>
 
     <h3>data-border-style</h3>
     <p>Overrides the global border aesthetic. Can also be set on any descendant element for scoped styling. It restyles bordered containers that carry their own padding (<code>.card</code> and the preview panels); forms, blockquotes and other bare elements keep their own borders.</p>
@@ -298,8 +349,8 @@ crumbLabel: Native Elements
           <td>Always hide ruby annotations</td>
         </tr>
         <tr>
-          <td><code>auto</code></td>
-          <td>Show only when document language is <code>ja</code>, <code>zh</code>, or <code>ko</code></td>
+          <td><code>auto</code> <em>(default)</em></td>
+          <td>Show only when document language is <code>ja</code>, <code>zh</code>, or <code>ko</code>. This is also what happens with no <code>data-ruby</code> at all, so ruby annotations on a non-CJK page are hidden unless you set <code>show</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -315,10 +366,10 @@ crumbLabel: Native Elements
   <!-- Developer Utilities Section -->
   <section>
     <h2>Developer Utilities</h2>
-    <p>These attributes are for development and debugging only.</p>
+    <p>These attributes are for development and debugging only. Both need the dev add-on: <code>vanilla-breeze-dev.css</code> (and <code>vanilla-breeze-dev.js</code> for content-model checks); the main bundles ignore them.</p>
 
     <h3>data-debug</h3>
-    <p>Activates debug mode. Shows an overlay banner and highlights HTML content model violations (e.g., block elements inside inline elements). Can also be activated via <code>localStorage</code>.</p>
+    <p>Activates debug mode. Shows an overlay banner and highlights HTML content model violations (e.g., block elements inside inline elements). Can also be activated with <code>localStorage.setItem('vanillaBreeze.debug', 'true')</code>.</p>
 
     <h3>data-wireframe</h3>
     <p>Renders the page in wireframe view, stripping visual styling to expose layout structure.</p>
@@ -344,35 +395,38 @@ crumbLabel: Native Elements
   <!-- Theme Manager Section -->
   <section>
     <h2>Theme Manager</h2>
-    <p>Vanilla Breeze includes a <code>ThemeManager</code> utility for programmatic theme control with localStorage persistence.</p>
-    <code-block language="javascript" label="Using ThemeManager" data-escape>import { ThemeManager } from './lib/theme-manager.js';
-
-// Initialize on page load (applies saved preferences)
-ThemeManager.init();
+    <p>Every JS bundle includes <code>ThemeManager</code>, which persists theme choices (through <a href="/docs/concepts/vb-store/">VBStore</a>, key <code>vb:theme:current</code>) and writes the root attributes. The bundle runs <code>init()</code> on load, so pages just call the setters. Most sites never touch it directly: <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> and <a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> drive it.</p>
+    <p>It is available as <code>window.VB.themeManager</code> and as the <code>ThemeManager</code> export of <code>vanilla-breeze.js</code>, <code>vanilla-breeze-core.js</code> and <code>vanilla-breeze-autoload.js</code>.</p>
+    <code-block language="javascript" label="Using ThemeManager" data-escape>const ThemeManager = window.VB.themeManager;
+// or: import { ThemeManager } from 'vanilla-breeze';
 
 // Change mode
 ThemeManager.setMode('dark');    // Force dark
 ThemeManager.setMode('light');   // Force light
 ThemeManager.setMode('auto');    // Follow system
 
-// Change brand theme (personality themes like swiss, brutalist, etc.)
-ThemeManager.setBrand('swiss');    // Apply swiss theme
-ThemeManager.setBrand('default');  // Reset to default
+// Change brand theme (loads /cdn/themes/&lt;name&gt;.css when needed)
+await ThemeManager.setBrand('swiss');
+await ThemeManager.setBrand('default');  // Back to the page's default
 
-// Change color accent
-ThemeManager.setAccent('ocean');   // Apply ocean accent
-ThemeManager.setAccent('default'); // Reset to default
+// Change colour accent (writes data-accent on &lt;html&gt;)
+ThemeManager.setAccent('ocean');
+ThemeManager.setAccent('default'); // No accent
 
 // Toggle between light and dark
 ThemeManager.toggleMode();
 
+// Forget saved choices; the page's authored attributes come back
+ThemeManager.reset();
+
 // Get current state
-const { mode, brand, accent, effectiveMode } = ThemeManager.getState();
+const { mode, brand, accent, fluid, effectiveMode } = ThemeManager.getState();
 
 // Listen for changes
 window.addEventListener('vb:theme-change', (e) => {
-  console.log(e.detail); // { mode, brand, accent, effectiveMode }
+  console.log(e.detail); // { mode, brand, accent, fluid, …, effectiveMode }
 });</code-block>
+    <p><code>ThemeManager</code> also keeps <code>&lt;meta name="theme-color"&gt;</code> (when the page has one) in step with the page's actual background after every mode or theme change.</p>
   </section>
 
   <!-- CSS Reset Section -->
@@ -388,8 +442,8 @@ window.addEventListener('vb:theme-change', (e) => {
       </thead>
       <tbody>
         <tr>
-          <td><code>text-size-adjust: none</code></td>
-          <td>Prevents iOS landscape font inflation</td>
+          <td><code>text-size-adjust: 100%</code></td>
+          <td>Stops automatic landscape font inflation on mobile browsers without blocking the user's own text zoom</td>
         </tr>
         <tr>
           <td><code>scrollbar-width: thin</code></td>
@@ -400,27 +454,43 @@ window.addEventListener('vb:theme-change', (e) => {
           <td>Themed scrollbar thumb and track via custom properties</td>
         </tr>
         <tr>
+          <td><code>background</code></td>
+          <td><code>var(--page-bg-color, var(--color-surface))</code>, so the canvas (overscroll areas included) follows the theme and mode</td>
+        </tr>
+        <tr>
+          <td><code>cursor</code></td>
+          <td><code>var(--cursor-custom-default)</code>, a hook for themes with custom cursors</td>
+        </tr>
+        <tr>
           <td><code>scroll-behavior: smooth</code></td>
           <td>Smooth anchor scrolling (on <code>html:focus-within</code> only)</td>
         </tr>
       </tbody>
     </table>
-    <p>Smooth scrolling is automatically disabled when <code>prefers-reduced-motion: reduce</code> is active.</p>
+    <p>Smooth scrolling is turned off when <code>prefers-reduced-motion: reduce</code> matches or <code>data-motion-reduced</code> is set.</p>
     <code-block language="css" label="Reset rules applied to html" data-escape>html {
-  text-size-adjust: none;          /* prevent iOS landscape inflation */
+  text-size-adjust: 100%;          /* no landscape inflation, zoom still works */
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  background: var(--page-bg-color, var(--color-surface));
+  cursor: var(--cursor-custom-default);
 }
 
 html:focus-within {
-  scroll-behavior: smooth;        /* smooth anchor scrolling */
+  scroll-behavior: smooth;         /* smooth anchor scrolling */
 }
 
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
-    scroll-behavior: auto;        /* respect motion preference */
+    scroll-behavior: auto;         /* respect motion preference */
   }
+}
+
+:root[data-motion-reduced],
+:root[data-motion-reduced]:focus-within {
+  scroll-behavior: auto;           /* the per-site switch too */
 }</code-block>
+    <p>Not in the reset, but recommended: <code>html { scrollbar-gutter: stable; }</code>. VB's modal dialogs lock page scrolling while open; with a reserved gutter the page does not shift sideways when the scrollbar disappears.</p>
   </section>
 
   <!-- System Preference Detection Section -->
@@ -441,7 +511,7 @@ html:focus-within {
         </tr>
         <tr>
           <td><code>prefers-reduced-motion</code></td>
-          <td>Sets all <code>--duration-*</code> tokens to <code>0ms</code></td>
+          <td>Sets all <code>--duration-*</code> tokens to <code>0ms</code> and turns off smooth scrolling (<code>data-motion-reduced</code> does the same per site)</td>
         </tr>
         <tr>
           <td><code>prefers-contrast: more</code></td>
@@ -457,7 +527,7 @@ html:focus-within {
         </tr>
         <tr>
           <td><code>pointer: coarse</code></td>
-          <td>Enforces 44px minimum touch targets (WCAG 2.5.8)</td>
+          <td>44px minimum height on buttons and inputs (<code>--size-touch-min</code>)</td>
         </tr>
         <tr>
           <td><code>hover: none</code></td>
@@ -558,7 +628,7 @@ html:focus-within {
     </ul>
 
     <h3>dir</h3>
-    <p>Sets the text direction. VB uses CSS logical properties throughout (<code>inline-start</code>/<code>inline-end</code> instead of <code>left</code>/<code>right</code>), so setting <code>dir="rtl"</code> automatically mirrors all layouts.</p>
+    <p>Sets the text direction. VB's layouts and components are written with CSS logical properties (<code>inline-start</code>/<code>inline-end</code> rather than <code>left</code>/<code>right</code>), so <code>dir="rtl"</code> mirrors them. Check third-party widgets and your own CSS for physical properties.</p>
     <table class="props-table">
       <thead>
         <tr>
@@ -573,14 +643,15 @@ html:focus-within {
         </tr>
         <tr>
           <td><code>rtl</code></td>
-          <td>Right-to-left. VB sets <code>unicode-bidi: embed</code> for correct embedding.</td>
+          <td>Right-to-left</td>
         </tr>
         <tr>
           <td><code>auto</code></td>
-          <td>Direction determined by content. VB sets <code>unicode-bidi: isolate</code>. Useful for user-generated content (chat messages, comments, form inputs).</td>
+          <td>Direction determined by the first strong character. Useful for user-generated content (chat messages, comments, form inputs).</td>
         </tr>
       </tbody>
     </table>
+    <p>VB adds no bidi rules of its own: the browser's stylesheet already isolates every element with a <code>dir</code> attribute (<code>unicode-bidi: isolate</code>), and <code>&lt;bdi&gt;</code> / <code>&lt;bdo&gt;</code> work natively.</p>
   </section>
 
   <!-- Progressive Enhancement Section -->
@@ -610,10 +681,11 @@ html:focus-within {
     <ul>
       <li><strong>Always set <code>lang</code>:</strong> Screen readers use this to select the correct pronunciation. VB's i18n layer also reads it to apply script-specific typography, locale-aware quotation marks, and ruby annotation visibility.</li>
       <li><strong>Theme considerations:</strong> The <code>data-mode</code> attribute works with <code>color-scheme</code> CSS to ensure proper contrast and respect user preferences</li>
-      <li><strong>Motion preferences:</strong> Vanilla Breeze respects <code>prefers-reduced-motion</code> at the system level. The <code>data-motion-reduced</code> attribute provides per-site opt-out for users who want motion elsewhere but not on your page.</li>
+      <li><strong>Motion preferences:</strong> Vanilla Breeze respects <code>prefers-reduced-motion</code> at the system level. The <code>data-motion-reduced</code> attribute provides a per-site opt-out (durations, smooth scrolling, view transitions and effects) for users who want motion elsewhere but not on your page.</li>
       <li><strong>Accessibility themes:</strong> The <code>a11y-high-contrast</code>, <code>a11y-large-text</code>, and <code>a11y-dyslexia</code> theme tokens can be combined with any brand theme via <code>data-theme</code>.</li>
       <li><strong>System preferences:</strong> VB automatically responds to <code>prefers-contrast</code>, <code>prefers-reduced-transparency</code>, <code>forced-colors</code>, and <code>pointer: coarse</code> &#8212; no opt-in required.</li>
-      <li><strong>Touch targets:</strong> On coarse-pointer devices, interactive elements enforce a 44px minimum size per WCAG 2.5.8.</li>
+      <li><strong>Touch targets:</strong> On coarse-pointer devices, buttons, selects and inputs get a 44px minimum height (the WCAG 2.5.5 AAA figure; 2.5.8 AA asks for 24px). Links and inline sizes are up to you.</li>
+      <li><strong>Text zoom:</strong> the reset uses <code>text-size-adjust: 100%</code>, not <code>none</code>, so mobile text zoom keeps working.</li>
     </ul>
   </section>
 
