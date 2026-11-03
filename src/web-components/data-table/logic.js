@@ -4,6 +4,10 @@
  * Wraps a standard HTML table and adds interactive features based on
  * data attributes. Progressive enhancement - table works without JS.
  *
+ * Host attributes:
+ * @attr {string} data-label-no-results - Empty-state / announcement text when the filter matches nothing (default "No matching rows found")
+ *
+ * Table attributes (on the wrapped <table>):
  * @attr {boolean} data-filterable - Enable text search filtering
  * @attr {number} data-paginate - Enable pagination with N rows per page
  *
@@ -14,7 +18,7 @@
  * @attr {string} data-heatmap - Tint this column's cells by relative value: "auto" | "low-good" | "high-good"
  *
  * Cell attributes:
- * @attr {string} data-sort-value - Custom value for sorting
+ * @attr {string} data-sort-value - Custom value for sorting (use for formatted numbers/dates, e.g. "$1,234" -> "1234")
  * @attr {string} data-filter-value - Custom value for filtering
  *
  * State attributes (set by component):
@@ -27,6 +31,12 @@
  * @fires data-table:page - When page changes { page }
  * @fires data-table:expand - When row is expanded/collapsed { row, expanded }
  * @fires data-table:selection - When row selection changes { count, rows }
+ * @fires data-table:rows-changed - After a .rows assignment { rows, added, moved, removed, source }
+ *
+ * Accessibility: sortable headers get a <button> inside the <th> (APG
+ * sortable table; aria-sort stays on the th). A visually-hidden polite
+ * live region announces sort changes, filter result counts and selection
+ * counts. The no-results message is a real element, not CSS content.
  *
  * @example
  * <data-table>
@@ -53,6 +63,9 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { diffByKey } from '../../lib/diff-by-key.js';
 
+/** Data rows only — expansion content rows travel with their parent row. */
+const DATA_ROWS = ':scope > tr:not([data-expand-content])';
+
 class DataTable extends VBElement {
   #table;
   #tbody;
@@ -75,6 +88,10 @@ class DataTable extends VBElement {
   #selectAllCheckbox = null;
   /** @type {Element | null} */
   #selectedCountElement = null;
+  /** @type {HTMLElement | null} */
+  #liveRegion = null;
+  /** @type {HTMLElement | null} */
+  #emptyMessage = null;
 
   // -- Data API state --
   /** @type {Array<Record<string, unknown>>} */
@@ -105,8 +122,13 @@ class DataTable extends VBElement {
   #init() {
     // Collect data rows only — exclude expansion content rows
     // This ensures sort/filter/pagination treat expandable + content as a group
-    this.#allRows = [...this.#tbody.querySelectorAll(':scope > tr:not([data-expand-content])')];
+    this.#allRows = [...this.#tbody.querySelectorAll(DATA_ROWS)];
     this.#filteredRows = [...this.#allRows];
+    this.#currentPage = 1;
+    this.#currentSortColumn = -1;
+    this.#currentSortDirection = null;
+    this.#filterQuery = '';
+    this.#pageSize = 0;
 
     // Derive column spec from <thead> for the JS-first .rows API.
     // Columns are keyed by data-key on each <th>, falling back to the
@@ -136,6 +158,9 @@ class DataTable extends VBElement {
     // Apply rollups before sorting/filtering so computed cells participate.
     this.#applyRollups();
     this.#applyHeatmaps();
+
+    // Live region for sort / filter / selection announcements
+    this.#setupLiveRegion();
 
     // Set up sorting
     this.#setupSorting();
@@ -192,7 +217,7 @@ class DataTable extends VBElement {
       containerFor: () => this.#tbody,
     });
     this.#rows = next;
-    this.#allRows = [...this.#tbody.querySelectorAll(':scope > tr:not([data-expand-content])')];
+    this.#allRows = [...this.#tbody.querySelectorAll(DATA_ROWS)];
     this.#applyRollups();
     this.#applyHeatmaps();
     this.#applyFilter(this.#filterQuery);
@@ -359,6 +384,39 @@ class DataTable extends VBElement {
     // Remove dynamically created elements
     this.#filterInput?.parentElement?.remove();
     this.#paginationNav?.remove();
+    this.#liveRegion?.remove();
+    this.#emptyMessage?.remove();
+    this.#filterInput = null;
+    this.#paginationNav = null;
+    this.#liveRegion = null;
+    this.#emptyMessage = null;
+  }
+
+  /**
+   * Author-overridable UI string from a data-label-* attribute.
+   * @param {string} key  dataset key suffix, e.g. 'NoResults' for data-label-no-results
+   * @param {string} fallback
+   */
+  #label(key, fallback) {
+    return this.dataset[`label${key}`] || fallback;
+  }
+
+  #setupLiveRegion() {
+    const region = document.createElement('span');
+    region.setAttribute('role', 'status');
+    region.setAttribute('aria-live', 'polite');
+    region.setAttribute('aria-atomic', 'true');
+    region.setAttribute('data-table-status', '');
+    region.className = 'visually-hidden';
+    this.appendChild(region);
+    this.#liveRegion = region;
+  }
+
+  /** Politely announce a message; re-announces identical text by nudging it. */
+  #announce(message) {
+    const region = this.#liveRegion;
+    if (!region) return;
+    region.textContent = region.textContent === message ? `${message}\u00A0` : message;
   }
 
   #setupSorting() {
@@ -374,17 +432,29 @@ class DataTable extends VBElement {
         columnIndex
       });
 
-      // Make header focusable and interactive
-      th.setAttribute('tabindex', '0');
-      th.setAttribute('role', 'columnheader');
+      // APG sortable table: the th stays a columnheader (aria-sort lives
+      // here) and a native <button> inside it is the interactive target,
+      // so keyboard activation and focus styling come from the platform.
       th.setAttribute('aria-sort', 'none');
+      DataTable.#ensureSortButton(th);
 
       // Store column index on element for event handler
       th.dataset.columnIndex = columnIndex;
 
+      // Click on the th (padding included) or its button sorts. Enter /
+      // Space on the button fire a native click, so no keydown handler.
       this.listen(th, 'click', this.#handleHeaderClick);
-      this.listen(th, 'keydown', this.#handleHeaderKeyDown);
     });
+  }
+
+  /** Wrap the header's content in a <button> once (idempotent across reconnects). */
+  static #ensureSortButton(th) {
+    if (th.querySelector(':scope > button[data-sort-button]')) return;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.setAttribute('data-sort-button', '');
+    button.append(...th.childNodes);
+    th.appendChild(button);
   }
 
   #getColumnIndex(th) {
@@ -395,17 +465,11 @@ class DataTable extends VBElement {
 
   #handleHeaderClick = (e) => {
     const th = e.currentTarget;
+    // Ignore clicks on other interactive content an author put in the header
+    const interactive = e.target.closest?.('a, input, select, textarea, button:not([data-sort-button])');
+    if (interactive && th.contains(interactive)) return;
     const columnIndex = parseInt(th.dataset.columnIndex, 10);
     this.#sortByColumn(columnIndex);
-  };
-
-  #handleHeaderKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      const th = e.currentTarget;
-      const columnIndex = parseInt(th.dataset.columnIndex, 10);
-      this.#sortByColumn(columnIndex);
-    }
   };
 
   #isAlreadySorted(columnIndex, sortType, dir) {
@@ -461,12 +525,15 @@ class DataTable extends VBElement {
     // Re-render
     this.#render();
 
+    const columnName = headerInfo.th.textContent.trim();
+    this.#announce(`Sorted by ${columnName}, ${direction === 'asc' ? 'ascending' : 'descending'}`);
+
     // Dispatch event
     this.dispatchEvent(new CustomEvent('data-table:sort', {
       detail: {
         column: columnIndex,
         direction,
-        columnName: headerInfo.th.textContent.trim()
+        columnName
       },
       bubbles: true
     }));
@@ -538,6 +605,14 @@ class DataTable extends VBElement {
 
     this.#filterInput = filterInput;
 
+    // Visible empty state (a real element so AT and translators see it)
+    const empty = document.createElement('p');
+    empty.setAttribute('data-table-empty', '');
+    empty.hidden = true;
+    empty.textContent = this.#label('NoResults', 'No matching rows found');
+    this.#table.after(empty);
+    this.#emptyMessage = empty;
+
     // Add event listener with debounce
     this.listen(filterInput, 'input', this.#handleFilterInput);
   }
@@ -551,12 +626,16 @@ class DataTable extends VBElement {
     }
 
     this.#filterDebounceTimer = setTimeout(() => {
-      this.#applyFilter(query);
+      this.#applyFilter(query, { announce: true });
     }, 150);
   };
 
-  #applyFilter(query) {
-    this.#filterQuery = query.toLowerCase().trim();
+  /**
+   * @param {string} query
+   * @param {{ announce?: boolean, keepPage?: boolean }} [options]
+   */
+  #applyFilter(query, { announce = false, keepPage = false } = {}) {
+    this.#filterQuery = String(query ?? '').toLowerCase().trim();
 
     if (this.#filterQuery === '') {
       this.#filteredRows = [...this.#allRows];
@@ -580,11 +659,25 @@ class DataTable extends VBElement {
       }
     }
 
-    // Reset to first page after filter
-    this.#currentPage = 1;
+    // Reset to first page after filter (refresh() keeps the page if valid)
+    if (keepPage) {
+      this.#currentPage = Math.min(this.#currentPage, this.totalPages);
+    } else {
+      this.#currentPage = 1;
+    }
 
     // Re-render
     this.#render();
+
+    if (announce) {
+      const count = this.#filteredRows.length;
+      const total = this.#allRows.length;
+      this.#announce(count === 0
+        ? this.#label('NoResults', 'No matching rows found')
+        : this.#filterQuery
+          ? `${count} of ${total} ${total === 1 ? 'row' : 'rows'} shown`
+          : `All ${total} ${total === 1 ? 'row' : 'rows'} shown`);
+    }
 
     // Dispatch event
     this.dispatchEvent(new CustomEvent('data-table:filter', {
@@ -609,6 +702,13 @@ class DataTable extends VBElement {
   // ==================== ROW EXPANSION ====================
 
   #setupExpansion() {
+    // Toggle buttons are author-supplied (<button data-action="toggle-expand">);
+    // reflect the authored state onto aria-expanded so AT reads it from load.
+    for (const row of this.#tbody.querySelectorAll(':scope > tr[data-expandable]')) {
+      const button = row.querySelector('[data-action="toggle-expand"]');
+      if (button) button.setAttribute('aria-expanded', String(row.hasAttribute('data-state-expanded')));
+    }
+
     // Use event delegation on the table for expand toggles
     this.listen(this.#table, 'click', this.#handleExpandClick);
   }
@@ -692,6 +792,7 @@ class DataTable extends VBElement {
     e.target.indeterminate = false;
 
     this.#updateSelectedCount();
+    this.#announceSelection();
     this.#dispatchSelectionEvent();
   };
 
@@ -709,8 +810,14 @@ class DataTable extends VBElement {
     }
 
     this.#syncSelectionState();
+    this.#announceSelection();
     this.#dispatchSelectionEvent();
   };
+
+  #announceSelection() {
+    const count = this.getSelectedRows().length;
+    this.#announce(`${count} ${count === 1 ? 'row' : 'rows'} selected`);
+  }
 
   #syncSelectionState() {
     if (!this.#selectAllCheckbox) {
@@ -765,8 +872,19 @@ class DataTable extends VBElement {
     const nav = this.#paginationNav;
     const totalPages = Math.ceil(this.#filteredRows.length / this.#pageSize);
 
+    // Rebuilding destroys the focused button; remember which control had
+    // focus so it can be restored on its replacement.
+    const active = document.activeElement;
+    /** @type {'prev' | 'next' | 'page' | null} */
+    let focusKey = null;
+    if (active instanceof HTMLElement && nav.contains(active)) {
+      focusKey = active.hasAttribute('data-pagination-prev') ? 'prev'
+        : active.hasAttribute('data-pagination-next') ? 'next'
+        : 'page';
+    }
+
     // Clear existing content
-    nav.innerHTML = '';
+    nav.replaceChildren();
 
     if (totalPages <= 1) {
       return; // No pagination needed
@@ -814,6 +932,16 @@ class DataTable extends VBElement {
     nextBtn.disabled = this.#currentPage === totalPages;
     nextBtn.addEventListener('click', () => this.goToPage(this.#currentPage + 1));
     nav.appendChild(nextBtn);
+
+    if (focusKey) {
+      // Prev/Next keep focus unless they just became disabled; a page
+      // button's replacement is the new current-page button.
+      const current = /** @type {HTMLElement | null} */ (nav.querySelector('[aria-current="page"]'));
+      const target = focusKey === 'prev' && !prevBtn.disabled ? prevBtn
+        : focusKey === 'next' && !nextBtn.disabled ? nextBtn
+        : current;
+      target?.focus();
+    }
   }
 
   #getPageNumbers(totalPages) {
@@ -853,9 +981,10 @@ class DataTable extends VBElement {
   }
 
   #render() {
-    // First, hide all rows
+    // First, hide all rows (and their expansion content rows)
     this.#allRows.forEach(row => {
       row.setAttribute('data-state-hidden', '');
+      this.#findContentRow(row)?.setAttribute('data-state-hidden', '');
     });
 
     // Determine which rows to show
@@ -872,31 +1001,38 @@ class DataTable extends VBElement {
     // Show visible rows and reorder DOM — keep expansion content rows with parents
     rowsToShow.forEach(row => {
       row.removeAttribute('data-state-hidden');
+      // Grab the content row before moving the parent (it is the next sibling)
+      const contentRow = this.#findContentRow(row);
       this.#tbody.appendChild(row);
-      // If this row has an expansion content row, move it right after
-      const contentRow = row.nextElementSibling?.hasAttribute?.('data-expand-content')
-        ? row.nextElementSibling
-        : this.#findContentRow(row);
-      if (contentRow) this.#tbody.appendChild(contentRow);
+      if (contentRow) {
+        contentRow.removeAttribute('data-state-hidden');
+        this.#tbody.appendChild(contentRow);
+      }
     });
 
     // Move hidden filtered rows to end (with their content rows)
     this.#filteredRows.forEach(row => {
       if (row.hasAttribute('data-state-hidden')) {
-        this.#tbody.appendChild(row);
         const contentRow = this.#findContentRow(row);
+        this.#tbody.appendChild(row);
         if (contentRow) this.#tbody.appendChild(contentRow);
       }
     });
 
     // Move rows not in filtered set to very end
+    const filtered = new Set(this.#filteredRows);
     this.#allRows.forEach(row => {
-      if (!this.#filteredRows.includes(row)) {
-        this.#tbody.appendChild(row);
+      if (!filtered.has(row)) {
         const contentRow = this.#findContentRow(row);
+        this.#tbody.appendChild(row);
         if (contentRow) this.#tbody.appendChild(contentRow);
       }
     });
+
+    // Empty state: only meaningful while a filter is active
+    if (this.#emptyMessage) {
+      this.#emptyMessage.hidden = !(this.#filterQuery && this.#filteredRows.length === 0 && this.#allRows.length > 0);
+    }
 
     // Update pagination
     this.#renderPagination();
@@ -916,8 +1052,9 @@ class DataTable extends VBElement {
    * @param {number} page - Page number (1-indexed)
    */
   goToPage(page) {
-    const totalPages = Math.ceil(this.#filteredRows.length / this.#pageSize);
-    const newPage = Math.max(1, Math.min(page, totalPages));
+    if (this.#pageSize <= 0) return;
+    const totalPages = Math.max(1, Math.ceil(this.#filteredRows.length / this.#pageSize));
+    const newPage = Math.max(1, Math.min(Math.trunc(Number(page)) || 1, totalPages));
 
     if (newPage === this.#currentPage) return;
 
@@ -938,7 +1075,7 @@ class DataTable extends VBElement {
     if (this.#filterInput) {
       this.#filterInput.value = query;
     }
-    this.#applyFilter(query);
+    this.#applyFilter(query, { announce: true });
   }
 
   /**
@@ -946,31 +1083,16 @@ class DataTable extends VBElement {
    * Call this if rows are added/removed dynamically
    */
   refresh() {
-    // Re-collect rows
-    this.#allRows = [...this.#tbody.querySelectorAll(':scope > tr')];
+    if (!this.#tbody) return;
+    // Re-collect rows with the same selector as setup and the .rows setter
+    // so expansion content rows stay attached to their parents.
+    this.#allRows = [...this.#tbody.querySelectorAll(DATA_ROWS)];
+    this.#applyRollups();
+    this.#applyHeatmaps();
 
-    // Re-apply current filter
-    if (this.#filterQuery) {
-      this.#applyFilter(this.#filterQuery);
-    } else {
-      this.#filteredRows = [...this.#allRows];
-    }
-
-    // Re-apply sort if active
-    if (this.#currentSortColumn >= 0 && this.#currentSortDirection) {
-      const headerInfo = this.#sortableHeaders.find(h => h.columnIndex === this.#currentSortColumn);
-      if (headerInfo) {
-        this.#sortRows(this.#currentSortColumn, this.#currentSortDirection, headerInfo.sortType);
-      }
-    }
-
-    // Ensure current page is valid
-    const totalPages = Math.max(1, Math.ceil(this.#filteredRows.length / this.#pageSize));
-    if (this.#currentPage > totalPages) {
-      this.#currentPage = totalPages;
-    }
-
-    this.#render();
+    // Re-apply filter + sort, keeping the current page when still valid
+    this.#applyFilter(this.#filterQuery, { keepPage: true });
+    this.#syncSelectionState();
   }
 
   /**
@@ -987,7 +1109,7 @@ class DataTable extends VBElement {
    */
   get totalPages() {
     if (this.#pageSize <= 0) return 1;
-    return Math.ceil(this.#filteredRows.length / this.#pageSize);
+    return Math.max(1, Math.ceil(this.#filteredRows.length / this.#pageSize));
   }
 
   /**

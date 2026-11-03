@@ -132,7 +132,7 @@ Display actions when rows are selected:
 </div>
 ```
 
-The `[data-bulk-actions]` container appears automatically when rows are selected. The `[data-selected-count]` element is updated with the selection count.
+The `[data-bulk-actions]` container inside a `data-table` appears automatically when rows in that table are selected. The `[data-selected-count]` element is updated with the selection count.
 
 ## Row Expansion
 
@@ -292,14 +292,12 @@ Use `data-responsive="scroll"` for horizontal scrolling:
 
 ## Accessibility
 
-- Sortable headers have `role="columnheader"`, `tabindex="0"`, and `aria-sort`
-- Keyboard support: Enter/Space to sort columns
-- Filter input has proper `aria-label`
-- Pagination navigation has `aria-label="Table pagination"`
-- Current page button has `aria-current="page"`
-- Expand buttons have `aria-expanded` state
-- Expanded content rows have `aria-hidden` state
-- Live region announces filter/pagination changes to screen readers
+- Sortable headers follow the APG sortable-table pattern: `aria-sort` on the `<th>`, a native `<button data-sort-button>` inside it (Tab to focus, Enter/Space to sort, visible focus ring)
+- Sort arrows are CSS content keyed on `aria-sort` with empty alt text (no double reading)
+- Filter input has an `aria-label`; no results shows a real `<p data-table-empty>` (text from `data-label-no-results` on the host)
+- A visually hidden `role="status"` region announces sort changes, filter result counts and selection counts
+- Pagination navigation has `aria-label="Table pagination"`; current page button has `aria-current="page"`; focus is restored to the replacement button after paging
+- Expand buttons (author-supplied, `data-action="toggle-expand"`) get `aria-expanded`; content rows stay with their parent row when sorted, filtered or paged
 
 ## Browser Support
 

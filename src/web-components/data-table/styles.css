@@ -121,13 +121,18 @@ data-table [data-pagination-ellipsis] {
 
 /* --- Empty state when filter returns no results --- */
 
-data-table:has([data-filter-input]:not(:placeholder-shown)) tbody:not(:has(tr:not([data-state-hidden])))::after {
-  content: 'No matching rows found';
-  display: block;
+/* Real element (<p data-table-empty>) rendered by the component; the text
+   comes from data-label-no-results so it is translatable and AT-visible. */
+data-table [data-table-empty] {
+  margin: 0;
   padding: var(--size-l);
   text-align: center;
   color: var(--color-text-muted);
   font-style: italic;
+
+  &[hidden] {
+    display: none;
+  }
 }
 
 /* --- Bulk Actions Bar --- */
@@ -137,7 +142,9 @@ data-table:has([data-filter-input]:not(:placeholder-shown)) tbody:not(:has(tr:no
   display: none;
 }
 
-body:has(tr[data-state-selected]) [data-bulk-actions] {
+/* Scoped to the owning table: selecting rows in one data-table must not
+   reveal every other table's bulk bar on the page. */
+data-table:has(> table tr[data-state-selected]) [data-bulk-actions] {
   display: flex;
   gap: var(--size-m);
   align-items: center;
@@ -155,10 +162,13 @@ body:has(tr[data-state-selected]) [data-bulk-actions] {
 
 /* --- Heatmap cells (data-heatmap on <th>, data-heat-level on <td>) --- */
 
+/* Status "subtle" tokens are light-dark() pairs, so the tint flips with
+   the colour scheme; cell text stays --color-text for AA contrast. */
 @scope (data-table) {
-  td[data-heat-level="low"]  { background: oklch(94% 0.05 25  / 0.65); }
-  td[data-heat-level="mid"]  { background: oklch(94% 0.05 80  / 0.65); }
-  td[data-heat-level="high"] { background: oklch(94% 0.06 145 / 0.65); }
+  td[data-heat-level] { color: var(--color-text); }
+  td[data-heat-level="low"]  { background: var(--color-error-subtle); }
+  td[data-heat-level="mid"]  { background: var(--color-warning-subtle); }
+  td[data-heat-level="high"] { background: var(--color-success-subtle); }
 }
 
 /* --- Reduced Motion --- */

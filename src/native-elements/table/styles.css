@@ -145,23 +145,49 @@ table {
 
 /* --- Sortable Column Indicators --- */
 
+/* State comes from aria-sort (set by data-table and data-sortable), so the
+   visual and the accessible state cannot drift. data-table puts a <button>
+   inside the th (APG sortable table) and the arrow rides on that button;
+   tables with a bare th[data-sort] get it on the th itself. The arrow's
+   alt text is empty: aria-sort already conveys the direction. */
 th[data-sort] {
   cursor: var(--cursor-custom-pointer, pointer);
   user-select: none;
 
-  &::after {
-    content: ' ⇅';
+  &:not(:has(> button[data-sort-button]))::after,
+  & > button[data-sort-button]::after {
+    content: " ⇅" / "";
     opacity: 0.3;
   }
 
-  &[data-state-sorted="asc"]::after {
-    content: ' ↑';
+  &[aria-sort="ascending"]:not(:has(> button[data-sort-button]))::after,
+  &[aria-sort="ascending"] > button[data-sort-button]::after {
+    content: " ↑" / "";
     opacity: 1;
   }
 
-  &[data-state-sorted="desc"]::after {
-    content: ' ↓';
+  &[aria-sort="descending"]:not(:has(> button[data-sort-button]))::after,
+  &[aria-sort="descending"] > button[data-sort-button]::after {
+    content: " ↓" / "";
     opacity: 1;
+  }
+
+  /* The sort button reads as the header text but keeps a focus ring */
+  & > button[data-sort-button] {
+    all: unset;
+    box-sizing: border-box;
+    display: block;
+    inline-size: 100%;
+    text-align: inherit;
+    font: inherit;
+    color: inherit;
+    cursor: inherit;
+
+    &:focus-visible {
+      outline: var(--border-width-medium, 2px) solid var(--color-interactive);
+      outline-offset: 2px;
+      border-radius: var(--radius-s, 2px);
+    }
   }
 }
 

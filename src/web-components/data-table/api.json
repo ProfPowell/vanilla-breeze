@@ -5,31 +5,205 @@
   "description": "Enhanced HTML table with sorting, filtering, pagination, row expansion, and selection",
   "htmlvalidate": {
     "flow": true,
-    "permittedContent": ["@flow"]
+    "permittedContent": [
+      "@flow"
+    ]
   },
   "attributes": [
-    { "name": "data-filterable", "kind": "data",  "purpose": "config", "type": "boolean", "description": "Enable text search filtering" },
-    { "name": "data-paginate",   "kind": "data",  "purpose": "config", "type": "number",  "description": "Enable pagination with N rows per page" }
+    {
+      "name": "data-label-no-results",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "No matching rows found",
+      "description": "Text for the visible empty state and the live-region announcement when the filter matches no rows."
+    }
   ],
   "structure": [
-    { "element": "<table>", "description": "Standard HTML table — the component enhances it in place" }
+    {
+      "element": "<table>",
+      "description": "Standard HTML table — the component enhances it in place"
+    }
   ],
   "childAttributes": [
-    { "name": "data-sort",           "on": "th", "type": "enum", "values": ["string", "number", "date"], "description": "Enable sorting on this column with the specified comparator" },
-    { "name": "data-weight",         "on": "th", "type": "number", "description": "Column weight; multiplier applied to cell values for weighted-sum rollups" },
-    { "name": "data-rollup",         "on": "th", "type": "enum", "values": ["sum", "weighted-sum", "product", "avg", "max"], "description": "Compute this column's cells from sibling cells in the same row" },
-    { "name": "data-heatmap",        "on": "th", "type": "enum", "values": ["auto", "low-good", "high-good"], "description": "Tint this column's cells by relative value bucket (low/mid/high)" },
-    { "name": "data-sort-value",     "on": "td", "type": "string",  "description": "Custom sort value overriding cell text" },
-    { "name": "data-filter-value",   "on": "td", "type": "string",  "description": "Custom filter value overriding cell text" },
-    { "name": "data-expandable",     "on": "tr", "type": "boolean", "description": "Mark row as expandable (followed by a data-expand-content row)" },
-    { "name": "data-expand-content", "on": "tr", "type": "boolean", "description": "Hidden row revealed when its preceding expandable row is toggled" },
-    { "name": "data-selectable",     "on": "tr", "type": "boolean", "description": "Mark row as selectable via checkbox" }
+    {
+      "name": "data-filterable",
+      "on": "table",
+      "type": "boolean",
+      "description": "Enable text search filtering (adds a search input above the table)"
+    },
+    {
+      "name": "data-paginate",
+      "on": "table",
+      "type": "number",
+      "description": "Enable pagination with N rows per page"
+    },
+    {
+      "name": "data-sort",
+      "on": "th",
+      "type": "enum",
+      "values": [
+        "string",
+        "number",
+        "date"
+      ],
+      "description": "Enable sorting on this column with the specified comparator"
+    },
+    {
+      "name": "data-weight",
+      "on": "th",
+      "type": "number",
+      "description": "Column weight; multiplier applied to cell values for weighted-sum rollups"
+    },
+    {
+      "name": "data-rollup",
+      "on": "th",
+      "type": "enum",
+      "values": [
+        "sum",
+        "weighted-sum",
+        "product",
+        "avg",
+        "max"
+      ],
+      "description": "Compute this column's cells from sibling cells in the same row"
+    },
+    {
+      "name": "data-heatmap",
+      "on": "th",
+      "type": "enum",
+      "values": [
+        "auto",
+        "low-good",
+        "high-good"
+      ],
+      "description": "Tint this column's cells by relative value bucket (low/mid/high)"
+    },
+    {
+      "name": "data-sort-value",
+      "on": "td",
+      "type": "string",
+      "description": "Custom sort value overriding cell text. Use for formatted values, e.g. <td data-sort-value=\"1234\">$1,234</td> — data-sort=\"number\" parses the cell with parseFloat, so \"$1,234\" would sort as 0"
+    },
+    {
+      "name": "data-filter-value",
+      "on": "td",
+      "type": "string",
+      "description": "Custom filter value overriding cell text"
+    },
+    {
+      "name": "data-expandable",
+      "on": "tr",
+      "type": "boolean",
+      "description": "Mark row as expandable (followed by a data-expand-content row). Supply the toggle yourself: <button data-action=\"toggle-expand\"> in a cell; the component manages aria-expanded"
+    },
+    {
+      "name": "data-expand-content",
+      "on": "tr",
+      "type": "boolean",
+      "description": "Hidden row revealed when its preceding expandable row is toggled"
+    },
+    {
+      "name": "data-selectable",
+      "on": "tr",
+      "type": "boolean",
+      "description": "Mark row as selectable via an author-supplied <input type=\"checkbox\" data-action=\"select-row\">; a thead checkbox with data-action=\"select-all\" toggles all"
+    }
   ],
   "events": [
-    { "name": "data-table:sort",      "detail": "{ column, direction, columnName }", "description": "Fired when a column is sorted" },
-    { "name": "data-table:filter",    "detail": "{ query, count }",    "description": "Fired when filter text changes" },
-    { "name": "data-table:page",      "detail": "{ page }",            "description": "Fired when page changes" },
-    { "name": "data-table:expand",    "detail": "{ row, expanded }",   "description": "Fired when a row is expanded or collapsed" },
-    { "name": "data-table:selection", "detail": "{ count, rows[] }",   "description": "Fired when row selection changes" }
+    {
+      "name": "data-table:sort",
+      "detail": "{ column, direction, columnName }",
+      "description": "Fired when a column is sorted"
+    },
+    {
+      "name": "data-table:filter",
+      "detail": "{ query, count }",
+      "description": "Fired when filter text changes"
+    },
+    {
+      "name": "data-table:page",
+      "detail": "{ page }",
+      "description": "Fired when page changes"
+    },
+    {
+      "name": "data-table:expand",
+      "detail": "{ row, expanded }",
+      "description": "Fired when a row is expanded or collapsed"
+    },
+    {
+      "name": "data-table:selection",
+      "detail": "{ count, rows[] }",
+      "description": "Fired when row selection changes"
+    },
+    {
+      "name": "data-table:rows-changed",
+      "detail": "{ rows, added, moved, removed, source }",
+      "description": "Fired after each .rows assignment with keyed-diff stats (source: 'api')"
+    }
+  ],
+  "properties": [
+    {
+      "name": "rows",
+      "type": "Array<{ id, [columnKey]: value }>",
+      "description": "Row records. Seeded from <tr data-id> on upgrade; assigning runs a keyed diff that preserves <tr> nodes whose id persists."
+    },
+    {
+      "name": "columns",
+      "type": "Array<{ key, label, sort? }>",
+      "readonly": true,
+      "description": "Column spec derived from <thead> (th data-key, else lowercased header text)."
+    },
+    {
+      "name": "renderRow",
+      "type": "(row, columns) => Element",
+      "description": "Optional custom row renderer used for new rows in .rows assignments."
+    },
+    {
+      "name": "currentPage",
+      "type": "number",
+      "readonly": true,
+      "description": "Current page (1-indexed)."
+    },
+    {
+      "name": "totalPages",
+      "type": "number",
+      "readonly": true,
+      "description": "Total pages for the current filter (1 when not paginated)."
+    },
+    {
+      "name": "filteredCount",
+      "type": "number",
+      "readonly": true,
+      "description": "Rows matching the current filter."
+    },
+    {
+      "name": "totalCount",
+      "type": "number",
+      "readonly": true,
+      "description": "Total data rows (expansion content rows excluded)."
+    }
+  ],
+  "methods": [
+    {
+      "name": "goToPage(page)",
+      "returns": "void",
+      "description": "Navigate to a page (1-indexed, clamped). No-op without data-paginate."
+    },
+    {
+      "name": "setFilter(query)",
+      "returns": "void",
+      "description": "Set the filter text programmatically (updates the search input) and announce the result count."
+    },
+    {
+      "name": "refresh()",
+      "returns": "void",
+      "description": "Re-scan rows after DOM changes and re-apply rollups, heatmaps, filter, sort and pagination."
+    },
+    {
+      "name": "getSelectedRows()",
+      "returns": "HTMLTableRowElement[]",
+      "description": "Currently selected rows."
+    }
   ]
 }
