@@ -2,6 +2,14 @@
 export default {
   "items": [
     {
+      "id": "0.5.0",
+      "type": "update",
+      "title": "v0.5.0",
+      "body": "0.5.0 is the first element quality release, covering every A, B and C element. Components rebuild cleanly when moved or re-populated, keyboard and screen-reader access is fixed across the C components, and several XSS paths are closed. Themes gain a `--btn-border-width` hook,…",
+      "url": "https://vanilla-breeze.com/changelog/#v0-5-0",
+      "date": "2026-11-02"
+    },
+    {
       "id": "0.4.1",
       "type": "update",
       "title": "v0.4.1",

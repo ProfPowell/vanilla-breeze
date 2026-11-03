@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-02
+
+0.5.0 is the first element quality release, covering every A, B and C element. Components rebuild cleanly when moved or re-populated, keyboard and screen-reader access is fixed across the C components, and several XSS paths are closed. Themes gain a `--btn-border-width` hook, reach 4.5:1 contrast for links and outline buttons, and paint their own dark-mode backgrounds. It includes breaking changes, listed under Changed: C-component API cleanups, `<cite data-variant="quoted">`, removed legacy link and abbr classes, and the brand demo and stale per-accent theme files are no longer in the package.
+
 ### Added
 
 - **`--btn-border-width` button hook.** Themes set the border width through it
