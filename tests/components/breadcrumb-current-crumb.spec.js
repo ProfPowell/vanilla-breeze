@@ -22,7 +22,7 @@ const THEMES = {
   swiss: '/src/tokens/themes/_extreme-swiss.css',
   neumorphism: '/src/tokens/themes/_extreme-neumorphism.css',
   /* the one theme whose --color-active-bg is filled: a real pill */
-  starbucks: '/src/tokens/themes/_brand-starbucks.css',
+  starbucks: '/demos/alpenglow/themes/starbucks.css',
 };
 
 /**
@@ -31,9 +31,12 @@ const THEMES = {
  * @param {string} [theme]
  */
 async function load(page, body, theme) {
-  await page.route('**/src/**', (route) => route.fulfill({
-    path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
-  }));
+  // /demos too: the starbucks brand demo theme lives in demos/alpenglow/themes/.
+  for (const glob of ['**/src/**', '**/demos/**']) {
+    await page.route(glob, (route) => route.fulfill({
+      path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
+    }));
+  }
   const url = `/__breadcrumb-current-${Math.random().toString(36).slice(2)}.html`;
   await page.route(`**${url}`, (route) => route.fulfill({
     status: 200,

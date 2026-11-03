@@ -113,9 +113,8 @@ const SHOWCASE_THEME_IDS = new Set([
   'vaporwave', 'neumorphism', 'bauhaus', 'claymorphism',
   'alpha1999', 'super2026',
   'win9x', 'nes', '8bit',
-  // Brand reference themes — public-brand interpretations, removable
-  // per-file if any rights-holder objects. See _brand-{id}.css headers.
-  'mcdonalds', 'starbucks', 'ibm', 'anthropic',
+  // Brand demo themes (mcdonalds, starbucks, ibm, anthropic) are not
+  // shipped: they live in demos/alpenglow/themes/ as a site-only demo.
 ]);
 
 function getThemeTier(themeId) {

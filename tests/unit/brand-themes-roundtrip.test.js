@@ -1,6 +1,6 @@
 /**
- * Round-trip regression test for the four brand themes promoted via
- * the DTCG theme pipeline (vanilla-breeze-jxlv Phase 5).
+ * Round-trip regression test for the four brand demo themes
+ * (demos/alpenglow/themes/, site-only — not shipped in the package).
  *
  * For each brand: parse the `:root[data-theme~="{brand}"]` block,
  * extract custom-property declarations, run them through
@@ -27,13 +27,13 @@ import { deserializeDTCG } from '../../src/lib/dtcg/dtcg-deserialize.js';
 import { extractBaseBlock, parseDeclarations } from '../../src/lib/dtcg/theme-css-parse.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const THEMES_DIR = join(__dirname, '..', '..', 'src', 'tokens', 'themes');
+const THEMES_DIR = join(__dirname, '..', '..', 'demos', 'alpenglow', 'themes');
 
 const BRANDS = [
-  { id: 'mcdonalds', file: '_brand-mcdonalds.css', primary: '#DB0007' },
-  { id: 'starbucks', file: '_brand-starbucks.css', primary: '#00754A' },
-  { id: 'ibm',       file: '_brand-ibm.css',       primary: '#0F62FE' },
-  { id: 'anthropic', file: '_brand-anthropic.css', primary: '#CC785C' },
+  { id: 'mcdonalds', file: 'mcdonalds.css', primary: '#DB0007' },
+  { id: 'starbucks', file: 'starbucks.css', primary: '#00754A' },
+  { id: 'ibm',       file: 'ibm.css', primary: '#0F62FE' },
+  { id: 'anthropic', file: 'anthropic.css', primary: '#CC785C' },
 ];
 
 // VB-specific tokens that don't fit the documented prefix surface.

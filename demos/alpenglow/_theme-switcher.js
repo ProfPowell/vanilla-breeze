@@ -143,9 +143,9 @@
       var link = document.createElement('link');
       link.id = 'theme-' + name;
       link.rel = 'stylesheet';
-      // Brand themes were promoted to first-class src/tokens/themes/_brand-*
-      // and are served from the CDN. See vanilla-breeze-jxlv Phase 5.
-      link.href = '/cdn/themes/' + name + '.css';
+      // Brand themes are demo-only: they live beside this script and are
+      // not part of the VB package.
+      link.href = '/docs/alpenglow/themes/' + name + '.css';
       link.disabled = true;
       document.head.appendChild(link);
     }
