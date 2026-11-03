@@ -31,9 +31,9 @@ crumbLabel: Custom Elements
       <tbody>
         <tr>
           <td><code>data-size</code></td>
-          <td><code>sm</code>, <code>lg</code></td>
+          <td><code>s</code>, <code>l</code></td>
           <td>&mdash;</td>
-          <td>Size: sm or lg (default medium).</td>
+          <td>Size: <code>s</code> (type-scale token with an 11px floor) or <code>l</code>. Omit for the default size.</td>
         </tr>
         <tr>
           <td><code>data-color</code></td>
@@ -45,7 +45,7 @@ crumbLabel: Custom Elements
           <td><code>data-variant</code></td>
           <td><code>subtle</code>, <code>outlined</code></td>
           <td>&mdash;</td>
-          <td>subtle (tinted) or outlined instead of filled.</td>
+          <td><code>subtle</code> (mode-aware tint) or <code>outlined</code> (transparent with a border) instead of filled.</td>
         </tr>
         <tr>
           <td><code>data-shape</code></td>
@@ -61,7 +61,7 @@ crumbLabel: Custom Elements
     <h2>Colors</h2>
 
     <h3>Semantic Colors</h3>
-    <p>Use semantic colors for status indicators that convey specific meaning. These colors remain consistent regardless of theme.</p>
+    <p>Use semantic colors for status indicators. They come from the <code>--color-success</code>, <code>--color-warning</code>, <code>--color-error</code> and <code>--color-info</code> tokens, so a theme can retune them. Keep the meaning in the badge text as well (see <a href="#accessibility">Accessibility</a>).</p>
 
     <browser-window
       src="/docs/snippets/demos/layout-badge-semantic-colors.html"
@@ -100,7 +100,7 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Variants</h2>
-    <p>Choose between solid (default), subtle, or outlined styles.</p>
+    <p>Choose between solid (default), subtle, or outlined styles. Subtle badges pair a tinted background with the matching <code>--color-*-text</code> ink. Outlined badges use that ink for the text and border. Both switch between light and dark values with the colour scheme and keep at least 4.5:1 contrast.</p>
 
     <browser-window
       src="/docs/snippets/demos/layout-badge-variants.html"
@@ -115,7 +115,7 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Sizes</h2>
-    <p>Three sizes available for different contexts.</p>
+    <p>Three sizes: <code>data-size="s"</code>, the default, and <code>data-size="l"</code>. The small size uses the type scale with an 11px floor, so it stays legible.</p>
 
     <browser-window
       src="/docs/snippets/demos/layout-badge-sizes.html"
@@ -124,9 +124,9 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Badge sizes" data-escape><layout-badge data-size="sm">Small</layout-badge>
+    <code-block language="html" show-lines label="Badge sizes" data-escape><layout-badge data-size="s">Small</layout-badge>
 <layout-badge>Medium</layout-badge>
-<layout-badge data-size="lg">Large</layout-badge></code-block>
+<layout-badge data-size="l">Large</layout-badge></code-block>
   </section>
 
   <section>
@@ -150,6 +150,11 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
+    <code-block language="html" show-lines label="Count with context" data-escape><span class="notification-label">
+  Messages
+  <layout-badge data-color="error" data-size="s">3<span class="visually-hidden"> unread</span></layout-badge>
+</span></code-block>
+
     <h3>Tag List</h3>
 
     <browser-window
@@ -158,6 +163,17 @@ crumbLabel: Custom Elements
       title="Tag list badges"
       shadow>
     </browser-window>
+  </section>
+
+  <section id="accessibility">
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>Colour is never the only signal.</strong> A red badge reading &ldquo;3&rdquo; or a green dot means nothing to someone who cannot tell the colours apart. Put the meaning in the text (&ldquo;Failed&rdquo;, &ldquo;Paid&rdquo;, &ldquo;Beta&rdquo;), or add an icon with a text alternative.</li>
+      <li><strong>Counts need context.</strong> A bare number next to &ldquo;Messages&rdquo; is read as &ldquo;Messages 3&rdquo;. Add visually hidden text so the count makes sense on its own: <code>&lt;layout-badge&gt;3&lt;span class="visually-hidden"&gt; unread&lt;/span&gt;&lt;/layout-badge&gt;</code>.</li>
+      <li>A badge is static text. If its count changes while the page is open and the change matters, announce it through a live region (for example <code>role="status"</code> on a container) rather than relying on the badge alone.</li>
+      <li>Every colour and variant combination meets 4.5:1 text contrast in both light and dark mode with the default theme. If a theme overrides the status tokens, check its <code>--color-*-text</code> and <code>-subtle</code> pairs too.</li>
+      <li>In forced-colors mode every badge gets a <code>CanvasText</code> border, because the system removes the background that would otherwise mark its edges.</li>
+    </ul>
   </section>
 
   <section>
