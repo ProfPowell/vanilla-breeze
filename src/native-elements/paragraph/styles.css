@@ -63,10 +63,13 @@ em, i {
   padding-inline: var(--size-2xs);
 }
 
-/* Italic in blockquote — de-emphasize since blockquote is already offset */
-:where(blockquote) :where(i, em) {
+/* Italic inside an italic context toggles back to upright — the classic
+ * emphasis toggle, so nested emphasis (and emphasis in a blockquote, cite,
+ * dfn or var) still shows a difference. <address> is upright in VB, so it is
+ * not a context. Same specificity as `em, i` above; source order wins.
+ * Themes (access-dyslexia) and the CJK rule in i18n override this. */
+:where(blockquote, cite, dfn, var, em, i) :is(em, i) {
   font-style: normal;
-  font-weight: var(--font-weight-medium);
 }
 
 small {

@@ -13,7 +13,7 @@ iframe {
   inline-size: 100%;
   aspect-ratio: 16 / 9;
 
-  & > iframe {
+  & > :is(iframe, embed, object) {
     position: absolute;
     inset: 0;
     inline-size: 100%;
@@ -71,6 +71,34 @@ object {
   display: block;
   max-inline-size: 100%;
 }
+
+/* --- Intrinsic aspect ratio: data-ratio on the element itself ---
+ * embed/object/iframe have no natural aspect ratio, so the width/height
+ * attributes don't scale together: max-inline-size clamps the width and
+ * leaves the fixed height (a tall letterbox). data-ratio derives the block
+ * size from the used inline size, so the box scales as one. A width
+ * attribute stays the preferred (maximum) width; without one the element
+ * fills its container. Same vocabulary as the [data-media] wrapper
+ * (utils/media.css); keep integer width/height as the no-CSS fallback. */
+:is(iframe, embed, object)[data-ratio] {
+  block-size: auto;
+  aspect-ratio: var(--_ratio, 16 / 9);
+
+  &:not([width]) {
+    inline-size: 100%;
+  }
+}
+
+:is(iframe, embed, object)[data-ratio="1:1"]  { --_ratio: 1 / 1; }
+:is(iframe, embed, object)[data-ratio="4:3"]  { --_ratio: 4 / 3; }
+:is(iframe, embed, object)[data-ratio="3:2"]  { --_ratio: 3 / 2; }
+:is(iframe, embed, object)[data-ratio="16:9"] { --_ratio: 16 / 9; }
+:is(iframe, embed, object)[data-ratio="21:9"] { --_ratio: 21 / 9; }
+:is(iframe, embed, object)[data-ratio="2:3"]  { --_ratio: 2 / 3; }
+:is(iframe, embed, object)[data-ratio="3:4"]  { --_ratio: 3 / 4; }
+:is(iframe, embed, object)[data-ratio="9:16"] { --_ratio: 9 / 16; }
+/* Portrait documents (PDF pages): ISO paper ratio, roughly A4/Letter */
+:is(iframe, embed, object)[data-ratio="page"] { --_ratio: 1 / 1.414; }
 
 /* Map/Area - interactive image maps */
 map {
