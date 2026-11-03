@@ -103,10 +103,12 @@ crumbLabel: Native Elements
     <h2 id="cjk-emphasis">CJK Emphasis</h2>
     <p>Chinese, Japanese and Korean fonts generally have no italic face, so with <code>font-synthesis: none</code> an italic <code>&lt;em&gt;</code> would look like plain text. When the content language is <code>zh</code>, <code>ja</code> or <code>ko</code> (set via <code>lang</code>), VB draws emphasis marks instead: sesame dots over the characters for Japanese and Korean, and filled dots under the characters for Chinese. Emphasis marks are reserved for <code>&lt;em&gt;</code>: <a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> gets a calligraphic face with a dotted underline, <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> a heavier weight and <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> a wavy underline.</p>
     <p>Romanised text (<code>lang="ja-Latn"</code>, <code>zh-Latn</code>, <code>ko-Latn</code>) is Latin script and keeps the real italic.</p>
+    <p>When an <code>&lt;em&gt;</code> contains <a href="/docs/elements/native/ruby/"><code>&lt;ruby&gt;</code></a>, the ruby text already occupies the space above the characters, so the marks move underneath. Without this, Safari drops the marks entirely and other browsers stack them above the ruby.</p>
 
     <code-block language="html" show-lines label="CJK emphasis marks" data-escape><p lang="ja">これは<em>とても</em>大切です。</p>
 <p lang="zh-Hans">这是<em>非常</em>重要的。</p>
-<p lang="ja-Latn">Kore wa <em>totemo</em> taisetsu desu.</p> <!-- romanised: stays italic --></code-block>
+<p lang="ja-Latn">Kore wa <em>totemo</em> taisetsu desu.</p> <!-- romanised: stays italic -->
+<p lang="ja"><em><ruby>東京<rt>とうきょう</rt></ruby></em>へ行く。</p> <!-- marks move under the ruby --></code-block>
   </section>
 
   <section>
@@ -154,6 +156,11 @@ em:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang
 
 em:lang(zh):not(:lang(zh-Latn)) {
   text-emphasis: filled dot;
+  text-emphasis-position: under right;
+}
+
+/* Ruby holds the space above: marks go under */
+em:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)):has(ruby) {
   text-emphasis-position: under right;
 }</code-block>
   </section>
