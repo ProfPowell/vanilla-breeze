@@ -840,26 +840,47 @@ module.exports = {
       "lat": {},
       "lng": {},
       "zoom": {},
-      "marker": {},
+      "marker": { enum: ["true", "false"], omit: true },
       "marker-color": {},
-      "provider": {},
+      "provider": { enum: ["osm", "carto-light", "carto-dark", "carto-auto"] },
       "tile-url": {},
-      "interactive": {},
-      "static-only": {},
+      "attribution": {},
+      "attribution-href": {},
+      "interactive": { enum: ["click", "eager", "none"] },
+      "static-only": { boolean: true },
+      "loading": { enum: ["lazy", "eager", "consent"] },
+      "label": {},
       "src": {},
       "place": {},
-      "content": {},
-      "data-has-caption": {},
-      "data-interactive-active": {},
-      "data-state": {}
+      "data-ready": { boolean: true },
+      "data-label-map": {},
+      "data-label-map-of": {},
+      "data-label-activate": {},
+      "data-label-consent": {},
+      "data-label-consent-note": {},
+      "data-label-zoom-in": {},
+      "data-label-zoom-out": {},
+      "data-label-recenter": {},
+      "data-label-exit": {},
+      "data-label-controls": {},
+      "data-label-instructions": {},
+      "data-label-moved": {},
+      "data-label-error-coords": {},
+      "data-label-error-tiles": {}
     }
   },
 
   "glossary-index": {
     attributes: {
       "placeholder": {},
-      "data-glossary-search": {},
-      "href": {}
+      "data-label-filter": {},
+      "data-label-matches-one": {},
+      "data-label-matches-other": {},
+      "data-label-all-one": {},
+      "data-label-all-other": {},
+      "data-label-empty": {},
+      "data-label-permalink": {},
+      "data-label-copied": {}
     }
   },
 
@@ -867,10 +888,23 @@ module.exports = {
     flow: true,
     permittedContent: ["dl", "@flow"],
     attributes: {
-      "title": {},
+      "data-title": {},
+      "data-heading-level": {},
       "src": {},
       "searchable": { boolean: true },
-      "compact": { boolean: true }
+      "compact": { boolean: true },
+      "data-state": { enum: ["loading", "ready", "error"] },
+      "data-label-search": {},
+      "data-label-search-placeholder": {},
+      "data-label-terms": {},
+      "data-label-alphabet": {},
+      "data-label-found-one": {},
+      "data-label-found-other": {},
+      "data-label-all-one": {},
+      "data-label-all-other": {},
+      "data-label-uncategorized": {},
+      "data-label-see-also": {},
+      "data-label-error": {}
     }
   },
 
@@ -879,8 +913,8 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "levels": {},
-      "data-toc-ignore": {},
-      "role": {}
+      "data-label-anchor": {},
+      "data-label-copied": {}
     }
   },
 
@@ -891,7 +925,12 @@ module.exports = {
       "for": {},
       "colors": {},
       "readonly": { boolean: true },
-      "storage-key": {}
+      "storage-key": {},
+      "data-label-button": {},
+      "data-label-palette": {},
+      "data-label-annotation": {},
+      "data-label-added": {},
+      "data-label-removed": {}
     }
   },
 

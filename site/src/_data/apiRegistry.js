@@ -6987,7 +6987,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "geo-map",
     "type": "web-component",
-    "description": "A zero-dependency map component using OSM tiles.",
+    "description": "A zero-dependency map component using OpenStreetMap / CARTO raster tiles or your own tile proxy, with a lazy-loaded interactive pan / zoom mode.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -7000,131 +7000,437 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Latitude of map center"
+        "description": "Latitude of the map centre. With lng, highest-priority coordinate source."
       },
       {
         "name": "lng",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Longitude of map center"
+        "description": "Longitude of the map centre."
       },
       {
         "name": "zoom",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Tile zoom level 1–19 (default: 15)"
+        "default": "15",
+        "description": "Tile zoom level 1–19; out-of-range values fall back to 15."
       },
       {
         "name": "marker",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Show pin at center; \"false\" to hide"
+        "type": "enum",
+        "values": [
+          "",
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Show the pin at the centre (bare or \"true\"); \"false\" hides it."
       },
       {
         "name": "marker-color",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "string",
-        "description": "Pin fill color (default: #e74c3c)"
+        "description": "Pin fill, any CSS colour. Invalid values are ignored (the pin falls back to --geo-map-marker-color, then --color-error)."
       },
       {
         "name": "provider",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Tile source: osm, carto-light, carto-dark"
+        "type": "enum",
+        "values": [
+          "osm",
+          "carto-light",
+          "carto-dark",
+          "carto-auto"
+        ],
+        "default": "osm",
+        "description": "Built-in tile source. carto-auto picks carto-dark or carto-light from the nearest data-mode (else prefers-color-scheme) and follows changes. Each provider shows its required credit."
       },
       {
         "name": "tile-url",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL template with {z}/{x}/{y} placeholders for first-party tile proxying. Overrides provider when set. See /docs/concepts/service-facade/."
+        "description": "Tile URL template overriding provider: {z} {x} {y}, {s} (a/b/c subdomain rotation) and {r} (\"@2x\" on high-density screens). Set attribution for the credit. See /docs/concepts/service-facade/."
+      },
+      {
+        "name": "attribution",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Credit text shown for a tile-url source (built-in providers always show their own). A child with slot=\"attribution\" replaces it."
+      },
+      {
+        "name": "attribution-href",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Link for the attribution credit (http/https only)."
       },
       {
         "name": "interactive",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "click",
+          "eager",
+          "none"
+        ],
+        "default": "click",
+        "description": "click: the map surface is an activation button; eager: interactive on load (without moving focus); none: static view only."
       },
       {
         "name": "static-only",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Never activate (same as interactive=\"none\")."
+      },
+      {
+        "name": "loading",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "lazy",
+          "eager",
+          "consent"
+        ],
+        "default": "lazy",
+        "description": "Tile loading. consent: request nothing from the tile host until the user presses \"Load map\" (shows a placeholder naming the host; the slotted address stays visible)."
+      },
+      {
+        "name": "label",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the map. Default: \"Map of …\" from the slotted <address> text, the src address / JSON-LD name, or place; else \"Map\"."
       },
       {
         "name": "src",
-        "kind": "native",
-        "purpose": "config"
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of an <address data-lat data-lng> or a <script type=\"application/ld+json\"> with geo.latitude / geo.longitude to read coordinates (and the name) from."
       },
       {
         "name": "place",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Name matched against JSON-LD scripts on the page (data.name); the match's geo supplies coordinates."
       },
       {
-        "name": "content",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-has-caption",
+        "name": "data-ready",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Set when the static tiles have finished loading (with geo-map:ready); removed on each re-render."
       },
       {
-        "name": "data-interactive-active",
+        "name": "data-label-map",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Map",
+        "description": "Accessible name when nothing names the place."
       },
       {
-        "name": "data-state",
+        "name": "data-label-map-of",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Map of {name}",
+        "description": "Accessible name template; {name} is the address text, src name or place."
+      },
+      {
+        "name": "data-label-activate",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Activate interactive map",
+        "description": "Visible text (and name) of the activation button."
+      },
+      {
+        "name": "data-label-consent",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Load map",
+        "description": "Consent button text (loading=\"consent\")."
+      },
+      {
+        "name": "data-label-consent-note",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loads map images from {host}",
+        "description": "Consent note; {host} is the tile host."
+      },
+      {
+        "name": "data-label-zoom-in",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Zoom in",
+        "description": "Zoom-in button name."
+      },
+      {
+        "name": "data-label-zoom-out",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Zoom out",
+        "description": "Zoom-out button name."
+      },
+      {
+        "name": "data-label-recenter",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Recenter map",
+        "description": "Recenter button name."
+      },
+      {
+        "name": "data-label-exit",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Exit map",
+        "description": "Exit button name (returns to the static view)."
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Map controls",
+        "description": "Name of the control button group."
+      },
+      {
+        "name": "data-label-instructions",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Key / gesture instructions referenced by aria-describedby in interactive mode."
+      },
+      {
+        "name": "data-label-moved",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Map centred on {lat}, {lng}, zoom {zoom}",
+        "description": "Polite live-region announcement after pan / zoom."
+      },
+      {
+        "name": "data-label-error-coords",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Map location unavailable",
+        "description": "On-screen text when no coordinates resolve."
+      },
+      {
+        "name": "data-label-error-tiles",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Map images failed to load",
+        "description": "On-screen text when every tile fails."
+      }
+    ],
+    "properties": [
+      {
+        "name": "data",
+        "type": "{ lat?: number, lng?: number, zoom: number, marker: boolean, markerColor: string }",
+        "description": "Get the map state, or assign a partial object: attributes are written as one batch and the map re-renders once. Assigning the current state is a no-op; an invalid markerColor is ignored, '' clears it. Emits geo-map:data-changed."
+      },
+      {
+        "name": "markers",
+        "type": "Array<{ lat: number, lng: number, color: string }>",
+        "readonly": true,
+        "description": "The centre marker as a one-element array when coordinates resolve, else []."
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "readonly": true,
+        "description": "True while interactive mode is on (also the :state(active) custom state)."
       }
     ],
     "events": [
       {
-        "name": "geo-map:ready"
+        "name": "geo-map:ready",
+        "detail": "{ lat, lng, zoom }",
+        "description": "Static tiles finished loading (data-ready is set)."
       },
       {
-        "name": "geo-map:activate"
+        "name": "geo-map:activate",
+        "detail": "{ lat, lng, zoom }",
+        "description": "Interactive mode started."
       },
       {
-        "name": "geo-map:error"
+        "name": "geo-map:move",
+        "detail": "{ lat, lng, zoom }",
+        "description": "After a pan or zoom in interactive mode (new centre, 6 decimal places)."
+      },
+      {
+        "name": "geo-map:data-changed",
+        "detail": "{ data, source: 'property' }",
+        "description": "After a .data assignment that changed something."
+      },
+      {
+        "name": "geo-map:error",
+        "detail": "{ message }",
+        "description": "No coordinates resolved, or every tile failed to load."
       }
     ],
-    "childAttributes": [],
+    "childAttributes": [
+      {
+        "name": "data-lat",
+        "on": "address",
+        "type": "number",
+        "description": "Latitude on a slotted (or src-referenced) <address>."
+      },
+      {
+        "name": "data-lng",
+        "on": "address",
+        "type": "number",
+        "description": "Longitude on a slotted (or src-referenced) <address>."
+      },
+      {
+        "name": "slot",
+        "on": "*",
+        "type": "enum",
+        "values": [
+          "attribution"
+        ],
+        "description": "slot=\"attribution\" replaces the credit line."
+      }
+    ],
     "structure": []
   },
   "glossary-index": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "glossary-index",
     "type": "web-component",
-    "description": "Interactive glossary with search and scroll-spy",
+    "description": "Interactive glossary with search filtering, scroll-spy letter tracking and copyable term permalinks",
     "attributes": [
       {
         "name": "placeholder",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Placeholder text for the search input"
+        "default": "Filter terms…",
+        "description": "Placeholder text for the injected search input (a hint, not its label — see data-label-filter)"
       },
       {
-        "name": "data-glossary-search",
+        "name": "data-label-filter",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Filter glossary terms",
+        "description": "Accessible name of the search input"
       },
       {
-        "name": "href",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-label-matches-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} term matches",
+        "description": "Polite match-count announcement for the Intl.PluralRules \"one\" category ({count} is replaced). Any category works: -few, -many, -zero, -two."
+      },
+      {
+        "name": "data-label-matches-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} terms match",
+        "description": "Match-count announcement for the \"other\" category and the fallback for unset categories"
+      },
+      {
+        "name": "data-label-all-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing {count} term",
+        "description": "Announcement when the filter is cleared (\"one\" category)"
+      },
+      {
+        "name": "data-label-all-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing all {count} terms",
+        "description": "Announcement when the filter is cleared (\"other\" category and fallback)"
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No terms match your filter.",
+        "description": "Visible empty-state message when nothing matches"
+      },
+      {
+        "name": "data-label-permalink",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Copy link to",
+        "description": "Permalink name prefix; the term text is appended"
+      },
+      {
+        "name": "data-label-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Link copied to clipboard",
+        "description": "Screen-reader announcement after a permalink copies the term URL"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "id",
+        "on": "dt",
+        "type": "string",
+        "description": "Term anchor. Each dt with an id gets a permalink that follows the fragment and copies the term URL."
+      }
+    ],
+    "structure": [
+      {
+        "element": "nav.glossary-jump",
+        "required": false,
+        "description": "Letter jump navigation; its fragment links get aria-current=\"true\" for the section in view and aria-disabled while their section is filtered out"
+      },
+      {
+        "element": "section.glossary-section",
+        "description": "One per letter group, with an id the jump links target (section[id^=\"glossary-\"] also matches)"
+      },
+      {
+        "element": "dl",
+        "description": "Terms inside each section: dt/dd groups (several dt per dd, several dd per dt, or div-wrapped groups)"
+      },
+      {
+        "element": "dfn",
+        "required": false,
+        "description": "The defined term inside dt; used as the filter target when present (otherwise the dt text)"
+      }
+    ],
+    "events": [
+      {
+        "name": "glossary-index:filter",
+        "detail": "{ query, matchCount }",
+        "description": "After the filter is applied"
+      }
+    ]
   },
   "glossary-wc": {
     "$schema": "../../../schemas/api.schema.json",
@@ -7140,32 +7446,140 @@ export default {
     },
     "attributes": [
       {
-        "name": "title",
-        "kind": "host-api",
+        "name": "data-title",
+        "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Glossary heading"
+        "description": "Glossary heading, rendered as a real heading (the title attribute is not used). Observed."
+      },
+      {
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "2",
+        "description": "Heading level (1-6) for data-title. Observed."
       },
       {
         "name": "src",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to JSON term data"
+        "description": "URL to JSON term data: { title?, terms: [{ id, term, definition, category?, seeAlso?, definitionHtml? }] }. Fetched once per URL; an inline <dl> renders as the fallback while loading and if the fetch fails. Observed."
       },
       {
         "name": "searchable",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Enables search input"
+        "description": "Adds a search input (inside a <search> landmark) that filters terms by name and definition. Observed."
       },
       {
         "name": "compact",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Reduced spacing variant"
+        "description": "Reduced spacing variant. CSS only."
+      },
+      {
+        "name": "data-state",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "enum",
+        "values": [
+          "loading",
+          "ready",
+          "error"
+        ],
+        "description": "Set in src mode: loading while fetching, ready after the data renders, error when the fetch fails (an error message is shown and the fallback <dl> is kept)."
+      },
+      {
+        "name": "data-label-search",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search glossary terms",
+        "description": "Accessible name of the search input."
+      },
+      {
+        "name": "data-label-search-placeholder",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search terms…",
+        "description": "Search input placeholder."
+      },
+      {
+        "name": "data-label-terms",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Glossary terms",
+        "description": "Accessible name of the terms region."
+      },
+      {
+        "name": "data-label-alphabet",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Alphabet navigation",
+        "description": "Accessible name of the jump-bar nav."
+      },
+      {
+        "name": "data-label-found-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} term found",
+        "description": "Search announcement for the Intl.PluralRules \"one\" category ({count} is replaced). Any category works: data-label-found-few, -many, -zero, -two."
+      },
+      {
+        "name": "data-label-found-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} terms found",
+        "description": "Search announcement for the \"other\" category and the fallback for unset categories."
+      },
+      {
+        "name": "data-label-all-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing {count} term",
+        "description": "Announcement when the search is cleared (\"one\" category; other categories as for found)."
+      },
+      {
+        "name": "data-label-all-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing all {count} terms",
+        "description": "Announcement when the search is cleared (\"other\" category and fallback)."
+      },
+      {
+        "name": "data-label-uncategorized",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Uncategorized",
+        "description": "Category label for terms without data-category."
+      },
+      {
+        "name": "data-label-see-also",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "See also:",
+        "description": "Prefix for seeAlso links generated from JSON / .terms data."
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Could not load the glossary terms.",
+        "description": "Message shown when src fails to load."
       }
     ],
     "childAttributes": [
@@ -7179,19 +7593,47 @@ export default {
         "name": "data-term-id",
         "on": "div",
         "type": "string",
-        "description": "Unique term identifier, used as fragment anchor"
+        "description": "Unique term identifier, set as the div's id (fragment anchor). Jump-bar letters link to the first term of each letter."
+      }
+    ],
+    "structure": [
+      {
+        "element": "dl",
+        "required": false,
+        "description": "Source definition list (optional with src: rendered as the fallback). Kept in place, hidden, while upgraded; restored on teardown."
+      },
+      {
+        "element": "div[data-term-id]",
+        "description": "One per term inside the dl, wrapping its dt and dd"
+      }
+    ],
+    "properties": [
+      {
+        "name": "terms",
+        "type": "Array<{ id, term, definition, category?, seeAlso?, definitionHtml? }>",
+        "description": "Get the parsed terms ({ id, term, definition, category, seeAlso? }; definition is text), or assign to rebuild. Assigned entries are written into the source <dl>, so they survive moves and re-renders. definition is rendered as text; definitionHtml is an explicit opt-in passed through VB's HTML sanitizer."
       }
     ],
     "events": [
       {
         "name": "glossary-wc:ready",
         "detail": "{ termCount, categories }",
-        "description": "After setup completes"
+        "description": "After every render (upgrade, reconnect, observed attribute change, .terms assignment, src load). Not fired while src is loading."
       },
       {
         "name": "glossary-wc:search",
         "detail": "{ query, matchCount }",
-        "description": "On search input"
+        "description": "After the (debounced) search input is applied"
+      },
+      {
+        "name": "glossary-wc:terms-changed",
+        "detail": "{ terms, source: 'property' }",
+        "description": "After .terms assignment (fires after the render's ready)"
+      },
+      {
+        "name": "glossary-wc:error",
+        "detail": "{ url, error }",
+        "description": "When src fails to load (HTTP error, invalid JSON, or no terms array)"
       }
     ]
   },
@@ -7199,32 +7641,49 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "heading-links",
     "type": "web-component",
-    "description": "Add anchor links to headings",
+    "description": "Add permalink anchors to headings; activating one follows the fragment and copies the section URL",
     "attributes": [
       {
         "name": "levels",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Heading levels to process (default: 'h2,h3')"
+        "description": "Comma-separated heading levels to process, h1–h6 only (default: 'h2,h3'). Invalid tokens are ignored; changes are observed",
+        "default": "h2,h3"
       },
       {
-        "name": "data-toc-ignore",
+        "name": "data-label-anchor",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Anchor accessible-name prefix; the anchor is named \"<prefix> <heading text>\" (default: 'Copy link to'). Observed",
+        "default": "Copy link to"
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-label-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Screen-reader announcement after the URL is copied (default: 'Link copied to clipboard')",
+        "default": "Link copied to clipboard"
       }
     ],
     "events": [
       {
-        "name": "heading-links:navigate"
+        "name": "heading-links:navigate",
+        "description": "Fires when an anchor is activated (unmodified primary click or Enter), after the fragment navigation and before the clipboard write",
+        "detail": "{ id: string, url: string, heading: HTMLElement }"
       }
     ],
-    "childAttributes": [],
+    "childAttributes": [
+      {
+        "name": "data-toc-ignore",
+        "on": "*",
+        "type": "boolean",
+        "required": false,
+        "description": "Skip this heading (or every heading inside this element): no anchor, no generated id. Shared with page-toc"
+      }
+    ],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -7237,7 +7696,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "highlight-wc",
     "type": "web-component",
-    "description": "Medium-style text highlighting and annotation component with color swatches, private notes, and localStorage persistence",
+    "description": "Text highlighting with localStorage persistence. Inside <selection-menu> it renders a highlighter button + colour palette for the selection; standalone it renders no UI and exposes a JS API and events",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -7250,53 +7709,151 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "ID of element to annotate (defaults to first child element)"
+        "description": "Standalone mode: ID of the element to annotate (defaults to the first child element). Ignored inside <selection-menu>, which highlights its own targets"
       },
       {
         "name": "colors",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Comma-separated color names (default: yellow,green,blue,pink)"
+        "default": "yellow,green,blue,pink",
+        "description": "Comma-separated palette colour names; each needs a --highlight-{name} token"
       },
       {
         "name": "readonly",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Render stored highlights but disable creating new ones"
+        "description": "Render stored highlights but disable creating new ones. Inside <selection-menu> no highlighter button is rendered"
       },
       {
         "name": "storage-key",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Custom localStorage key suffix (default: page pathname)"
+        "description": "Custom storage key suffix (default: page pathname)"
+      },
+      {
+        "name": "data-label-button",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Highlight selection",
+        "description": "Accessible name of the highlighter button (selection-menu mode)"
+      },
+      {
+        "name": "data-label-palette",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Highlight color",
+        "description": "Accessible name of the colour palette group (selection-menu mode)"
+      },
+      {
+        "name": "data-label-annotation",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "You highlighted",
+        "description": "Margin annotation text; forwarded to the target as data-highlights-label-annotation"
+      },
+      {
+        "name": "data-label-added",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Highlight added",
+        "description": "Screen-reader announcement when a highlight is created; forwarded as data-highlights-label-added"
+      },
+      {
+        "name": "data-label-removed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Highlight removed",
+        "description": "Screen-reader announcement when a highlight is removed; forwarded as data-highlights-label-removed"
       }
     ],
     "structure": [
       {
         "element": "<article>",
-        "description": "Content to annotate (when not using for= attribute)"
+        "description": "Standalone mode: content to annotate (when not using for=)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "highlightSelection(color?)",
+        "description": "Highlight the current text selection in the given palette colour (default: last used). No-op when readonly or the colour is not in the palette"
+      },
+      {
+        "name": "getHighlights()",
+        "description": "Array of { id, startOffset, endOffset, text, color, note, created } records. Inside <selection-menu> the methods act on the most recently highlighted target (initially the first)"
+      },
+      {
+        "name": "removeHighlight(id)",
+        "description": "Remove one highlight by id"
+      },
+      {
+        "name": "clearAll()",
+        "description": "Remove every highlight on the target"
+      },
+      {
+        "name": "exportHighlights()",
+        "description": "JSON string { version: 1, highlights: [...] }"
+      },
+      {
+        "name": "importHighlights(json)",
+        "description": "Replace the highlights from an exported string or object. Records with a bad shape, offsets outside the text or a colour not in the palette are dropped. Returns { imported, rejected }"
+      }
+    ],
+    "events": [
+      {
+        "name": "highlights:added",
+        "detail": "{ id, text, color, note }",
+        "description": "A highlight was created. Dispatched on the target element and bubbles"
+      },
+      {
+        "name": "highlights:removed",
+        "detail": "{ id }",
+        "description": "A highlight was removed via removeHighlight(). Dispatched on the target and bubbles"
+      },
+      {
+        "name": "highlights:selected",
+        "detail": "{ text, rect }",
+        "description": "Text was selected inside an interactive target — hook for a custom UI in standalone mode. Dispatched on the target and bubbles"
+      },
+      {
+        "name": "highlights:clicked",
+        "detail": "{ id, highlight }",
+        "description": "An existing highlight or its margin annotation was clicked. Dispatched on the target and bubbles"
+      },
+      {
+        "name": "highlights:note-changed",
+        "detail": "{ id, note }",
+        "description": "A note was saved (via <note-wc>). Dispatched on the target and bubbles"
       }
     ],
     "css": {
       "tokens": [
         {
           "name": "--highlight-yellow",
-          "description": "Yellow highlight color"
+          "description": "Yellow highlight wash (light-dark() pair)"
         },
         {
           "name": "--highlight-green",
-          "description": "Green highlight color"
+          "description": "Green highlight wash (light-dark() pair)"
         },
         {
           "name": "--highlight-blue",
-          "description": "Blue highlight color"
+          "description": "Blue highlight wash (light-dark() pair)"
         },
         {
           "name": "--highlight-pink",
-          "description": "Pink highlight color"
+          "description": "Pink highlight wash (light-dark() pair)"
+        },
+        {
+          "name": "--highlight-ink",
+          "description": "Text colour of highlighted text (light-dark() pair); per-colour override --highlight-{name}-ink"
         }
       ]
     }

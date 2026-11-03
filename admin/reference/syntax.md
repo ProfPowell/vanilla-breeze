@@ -251,14 +251,17 @@ Keyframe animations: `vb-fade-in`, `vb-fade-out`, `vb-slide-up`, `vb-slide-down`
 
 ### Themes (`src/tokens/themes/`)
 
-Applied via `data-theme` on `<html>`. Combine with `data-mode="dark"` for dark mode.
+Applied via `data-theme` on `<html>` (or any element, scoped). Combine with `data-mode="dark"` for dark mode. Colour accents are a separate attribute, `data-accent`.
 
 | Category | Themes |
 |----------|--------|
-| **Color** | `ocean`, `forest`, `sunset`, `rose`, `lavender`, `coral`, `slate`, `emerald`, `amber`, `indigo` |
-| **Personality** | `modern`, `minimal`, `classic` |
-| **Extreme** | `brutalist`, `swiss`, `cyber`, `organic`, `editorial`, `terminal`, `kawaii`, `8bit`, `nes`, `win9x` |
-| **Accessibility** | `a11y-high-contrast`, `a11y-large-text`, `a11y-dyslexia` (composable with any theme) |
+| **Personality** (bundled) | `modern`, `minimal`, `classic` |
+| **Extreme** (on demand: `/cdn/themes/<name>.css`, auto-loaded by JS) | `brutalist`, `swiss`, `cyber`, `organic`, `editorial`, `terminal`, `kawaii`, `8bit`, `nes`, `win9x`, … |
+| **Accessibility** (bundled) | `a11y-high-contrast`, `a11y-large-text`, `a11y-dyslexia` (composable with any theme; a11y-dyslexia is light-only and uses self-hosted Atkinson Hyperlegible) |
+
+### Accents (`data-accent`)
+
+`data-accent` on `<html>` or any element: `ocean`, `forest`, `sunset`, `rose`, `lavender`, `coral`, `slate`, `emerald`, `amber`, `indigo`. Swaps brand hue seeds only; written by `<theme-picker>` / `ThemeManager.setAccent()`.
 
 ---
 
@@ -268,7 +271,16 @@ Styled HTML elements. No JS required. Classes and data-attributes add variants.
 
 ### `<h1>` – `<h6>` Headings
 
-Base: font-weight 600, tight line-height, text-wrap balance. Fluid font sizes.
+Base: font-weight 600, tight line-height, text-wrap balance, lining numerals, no hyphenation. Token font sizes (`--font-size-4xl` … `--font-size-m`). No margins (reset); rhythm comes from `layout-text` / `data-layout="prose"` / stack gaps.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-display` | (boolean) | h1/h2 only: fluid display size (`--font-size-4xl`→`5xl`), line-height 1, tight tracking |
+| `data-display="hero"` | — | h1 only: up to 10rem, line-height 0.95 |
+
+Theme ornament tokens (plain string values; rendered with empty alt text, so excluded from the accessible name): `--heading-ornament-before` / `--heading-ornament-after` (all levels), `--h1-ornament-before` … `--h6-ornament-after` (per level, override the global token). Unset → nothing renders.
+
+> **Script typography** (`:lang(zh|ja|ko|ar|fa|ur|ps|he|yi|th|hi|mr|sa|ne)`) is zero-specificity (`:where()`), so element/component rules win. CJK body line-height 1.8, CJK headings `--line-height-snug`; Korean `word-break: keep-all`; Arabic-script rules no longer set `text-align`.
 
 ### `<p>` Paragraph
 
@@ -517,9 +529,14 @@ Custom properties: `--dl-term-min` (default `10ch`), `--dl-term-max` (default `4
 
 ### `<hr>` Horizontal Rule
 
-| Class | Description |
-|-------|-------------|
-| `.decorative` | "• • •" separator |
+| Class / Attribute | Description |
+|-------------------|-------------|
+| `.decorative` | "• • •" glyphs (silent: empty alt text) |
+| `data-ornament="…"` | Custom glyph(s) from the attribute (silent: `attr() / ""`); kept across themes |
+| `.wave`, `.zigzag`, `.scallop`, `.diamonds` | `shape()` dividers (fall back to a plain rule without `shape()` support) |
+| `.dots` | Radial-gradient dot row (works everywhere) |
+
+Themes restyle only plain rules (`hr:not([data-ornament], .decorative, .wave, .zigzag, .scallop, .diamonds, .dots)`). Forced colors: every plain/shape hr becomes a 1px `CanvasText` line (overrides theme backgrounds). Print: shape dividers set `print-color-adjust: exact`.
 
 ### `<img>`, `<picture>` Image
 
@@ -605,15 +622,18 @@ Caption first (`<figcaption>` as first child) moves spacing, the `.bordered` div
 
 #### `<header>`
 
-| Class | Description |
-|-------|-------------|
+| Class / Attribute | Description |
+|-------------------|-------------|
 | `.site` | Top navigation (flex between, bordered) |
 | `.page` | Page title (bordered bottom) |
 | `.card` | Card header (bordered bottom) |
-| `[data-sticky]` | Sticks to top |
-| `.transparent` | Absolute overlay |
+| `[data-sticky]` | Sticks to top; a body-level sticky header adds `scroll-padding-block-start` to `<html>` (`--sticky-offset`, else `--header-sticky-size`, default header.site height) |
+| `[data-scroll-hide]` | Sticky; hides on scroll down, reveals after ~40px cumulative scroll up or when focus enters (sets `data-hidden`; JS auto-loaded) |
+| `.transparent` | Absolute overlay (for hero sections) |
 | `.centered` | Text centered |
 | `.compact` | Reduced padding |
+
+Banner landmark only when scoped to `<body>` (no article/aside/main/nav/section ancestor). The `<html data-sticky>` system pins that banner header only (never an article/card header) and reports `--sticky-offset: 0px` when the header is static (below 48rem).
 
 #### `<footer>`
 
@@ -670,13 +690,18 @@ Caption first (`<figcaption>` as first child) moves spacing, the `.bordered` div
 
 #### `<hgroup>`
 
-| Class | Description |
-|-------|-------------|
-| `.tight` | Minimal spacing |
-| `.spaced` | Normal spacing |
-| `.reversed` | Flex column-reverse |
-| `.centered` | Text centered |
-| `.divided` | Border divider |
+Content model: zero+ `<p>`, one h1–h6, zero+ `<p>` (no `<small>`). Put kicker text first in source; there is no reversed variant.
+
+| Class / Attribute | Description |
+|-------------------|-------------|
+| `.tight` | No gap |
+| `.spaced` | Larger gap |
+| `.centered`, `data-align="center"` | Text centered |
+| `.divided` | Border divider between items |
+| `.eyebrow` | First `<p>` becomes a small uppercase label above the heading |
+| `.byline` | Metadata row (`<p><span>…</span><span>…</span></p>`) with silent "·" separators; `a[rel~="author"]` underlined |
+| `.section-header` | Large section intro with bottom border |
+| `.display` | Hero-scale fluid heading with accent rule (`data-align="center"` centres the rule) |
 
 #### `<address>`
 
@@ -940,6 +965,15 @@ Floating action stack (CSS-only; back-to-top reveal uses JS).
 - Tokens: `--fab-stack-gap`, `--float-offset`, `--nav-bottom-height`, `--z-float`.
 - `[data-back-to-top]`: hidden until one viewport of scroll (`[data-visible]`, JS); hidden = `visibility: hidden` (not tabbable). Visible without JS.
 
+#### `<hour-view>`
+CSS-only hour slot holding `<calendar-event>` children: two half-hour rows (:00 top, :30 bottom). Placed by its parent (`<day-view>` column 2, `<week-view>` cell); generated automatically when day-view/week-view build their grid.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-overlap` | (boolean) | Events in the same half-hour row sit side by side in equal columns (any count). Without it events stack full width. Set automatically by day-view/week-view only when events share a half-hour row |
+
+Child `calendar-event[data-start="30"]` goes in the bottom half; only `"30"` has an effect (no quarter-hour rows). `data-duration` events are lifted out and positioned across hours by day-view/week-view JS.
+
 #### `<form-field>`
 Accessible form field: binds its control (native input/textarea/select, or a form-associated custom element such as `<date-picker>` / `<star-rating>` / `<combo-box>`), times validation (on leaving the field, then eager after the first error) and wires `aria-describedby` (hints + counter, then the error while invalid) and `aria-invalid`.
 
@@ -1001,7 +1035,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 > build (`npm run build:cem`). The entries below are the human-readable companion;
 > when a component is missing detail here, read its `api.json` and `logic.js`.
 
-### Component index (64 elements)
+### Component index (66 elements)
 
 | Element | Purpose | Detail below |
 |---------|---------|:------------:|
@@ -1031,8 +1065,10 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<foot-notes>` / `<foot-note>` | Footnote collection / inline reference | ✓ |
 | `<form-field>` | Field shell with label, help, error, password rules | (see §3) |
 | `<geo-map>` | OpenStreetMap-backed map embed | ✓ |
-| `<glossary-index>` | Page reference for term definitions | |
+| `<glossary-index>` | Enhances a static A–Z glossary (`.glossary-jump` nav + `section.glossary-section` > `dl`): `<search>` filter (`placeholder`, `data-label-filter`), polite match status + empty state, scroll-spy `aria-current`, copy-link permalink on each `dt[id]`; `data-label-matches-<plural>`/`all-<plural>`/`empty`/`permalink`/`copied` | |
+| `<glossary-wc>` | Searchable, categorized glossary over `<dl>` of `div[data-term-id][data-category]` > dt/dd: `data-title` (+ `data-heading-level`), `searchable`, `compact`, `src` JSON `{ title?, terms: [{ id, term, definition, category?, seeAlso?, definitionHtml? }] }` (definition = text; definitionHtml = sanitized opt-in), `data-state` loading/ready/error, `.terms` get/set; events `glossary-wc:ready` `{ termCount, categories }`, `glossary-wc:search` `{ query, matchCount }`, `glossary-wc:terms-changed` `{ terms, source }`, `glossary-wc:error` `{ url, error }`; Intl.Collator letter jump bar for the element's `lang`; `data-label-*` strings | |
 | `<heading-links>` | Auto-anchor permalinks on headings | ✓ |
+| `<highlight-wc>` | Text highlighting: highlighter + colour palette in `<selection-menu>`; standalone = programmatic API | ✓ |
 | `<icon-wc>` | Lucide icon insertion | ✓ |
 | `<image-map>` / `<map-area>` | Modern hotspot image map | |
 | `<include-file>` (alias `<html-include-wc>`) | HTML include with caching, lazy mode | ✓ |
@@ -1355,15 +1391,20 @@ Footnote / sidenote system. `<foot-note>` elements anywhere *before* the `<foot-
 Generated ids: `fnref-I-N` (reference link), `fnref-I-N-b`… (repeat citations), `fn-I-N` (note), `fnh-I` (heading).
 
 ### `<heading-links>`
-Adds anchor links to headings.
+Adds permalink anchors to headings. Activating one follows the fragment (`:target`, history, focus, reduced-motion aware) and copies the absolute section URL — every activation writes to the clipboard. Generated ids are Unicode-aware slugs (`café-crème`, `日本語の見出し`; emoji-only → `section`), deduped `-1`, `-2`; mirrored by `scripts/check-links.mjs`. Skips headings in `dialog`, `[data-toc-ignore]`, `browser-window` and nested `heading-links`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `levels` | Comma-separated selectors | Heading levels to process |
+| `levels` | Comma-separated `h1`–`h6` (default `h2,h3`) | Heading levels to process; invalid tokens ignored; observed |
+| `data-label-anchor` | Text (default `Copy link to`) | Anchor name prefix — anchor is named prefix + heading text |
+| `data-label-copied` | Text (default `Link copied to clipboard`) | Copy announcement |
+| `data-toc-ignore` | Boolean, on heading or ancestor | Skip heading(s); shared with `<page-toc>` |
 
 | Events | Detail |
 |--------|--------|
-| `heading-links:navigate` | `{ id, heading }` |
+| `heading-links:navigate` | `{ id, url, heading }` |
+
+After a copy the anchor gets `data-state="copied"` (styling hook).
 
 ### `<page-toc>`
 Auto-generated table of contents from headings.
@@ -1426,25 +1467,37 @@ HTML fragment include via fetch.
 | `html-include-error` | `{ src, error }` |
 
 ### `<geo-map>`
-Interactive map component.
+Raster tile map (OpenStreetMap / CARTO / your own tile proxy) with a lazy-loaded pan / zoom mode.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `lat` | number | Latitude |
-| `lng` | number | Longitude |
-| `zoom` | number | Zoom level |
-| `marker` | (boolean) | Show center marker |
-| `marker-color` | color | Marker color |
-| `provider` | `osm`, `carto`, `stamen` | Tile provider |
-| `interactive` | (boolean) | Enable pan/zoom |
-| `static-only` | (boolean) | Static image only |
+| `lat` | number | Latitude of the centre |
+| `lng` | number | Longitude of the centre |
+| `zoom` | 1–19 (default 15) | Zoom level |
+| `marker` | `true` (default), `false` | Show centre marker |
+| `marker-color` | CSS colour | Pin fill; invalid values ignored. Default `--geo-map-marker-color` → `--color-error` |
+| `provider` | `osm` (default), `carto-light`, `carto-dark`, `carto-auto` | Built-in tiles + required credit; `carto-auto` follows `data-mode` / `prefers-color-scheme` |
+| `tile-url` | URL template | Overrides `provider`; `{z}` `{x}` `{y}`, `{s}` (a/b/c), `{r}` (`@2x` on hi-DPI) |
+| `attribution` | text | Credit for a `tile-url` source (or slot `slot="attribution"`) |
+| `attribution-href` | URL | Link for that credit |
+| `interactive` | `click` (default), `eager`, `none` | Activation mode |
+| `static-only` | (boolean) | Never activate |
+| `loading` | `lazy` (default), `eager`, `consent` | `consent`: no tile requests until the user presses "Load map" |
+| `label` | text | Accessible name (default "Map of …" from slotted `<address>`, `src` name, or `place`) |
+| `src` | ID | `<address data-lat data-lng>` or JSON-LD `<script>` to read coordinates from |
+| `place` | text | JSON-LD Place name to match |
+| `data-label-*` | text | i18n: `map`, `map-of`, `activate`, `consent`, `consent-note`, `zoom-in`, `zoom-out`, `recenter`, `exit`, `controls`, `instructions`, `moved`, `error-coords`, `error-tiles` |
+| `data-ready` | (output) | Set when static tiles have loaded |
+
+Properties: `data` (get / batched set `{ lat, lng, zoom, marker, markerColor }`), `markers` (read-only), `active` (read-only; also `:state(active)`).
 
 | Events | Detail |
 |--------|--------|
 | `geo-map:ready` | `{ lat, lng, zoom }` |
+| `geo-map:activate` | `{ lat, lng, zoom }` |
 | `geo-map:move` | `{ lat, lng, zoom }` |
-| `geo-map:activate` | — |
-| `geo-map:error` | `{ error }` |
+| `geo-map:data-changed` | `{ data, source: 'property' }` |
+| `geo-map:error` | `{ message }` |
 
 ### `<slide-accept>`
 Slide-to-confirm action.
@@ -1512,6 +1565,20 @@ Progressively enhances a nested `<ol>` into a flow chart. Renders a `<figure>` (
 Child `<li>`: `data-type` (`start` \| `action` (default) \| `decision` \| `process` \| `wait` \| `end`), `data-annotation`; a decision nests `<ol><li data-branch="Yes"><ol>…</ol></li>…</ol>`.
 
 `steps` get/set (`{ type, text, annotation?, branches?: [{ label, steps }] }[]`, normalized, written back into the source `<ol>`). Events: `flow-diagram:ready` `{ nodeCount }` (every render), `flow-diagram:select` `{ type, text }`, `flow-diagram:steps-changed` `{ steps, source }`. Colour hooks: `--fd-<type>-text|border|bg`, `--fd-line`.
+
+### `<highlight-wc>`
+Primary usage is as a `<selection-menu>` child: renders a highlighter `<button>` (`aria-expanded`, `aria-controls`) that opens a palette group of swatch buttons (`aria-pressed` on the last-used colour, colour name as label + tooltip); picking a swatch highlights the selection in whichever menu target it falls in (each target gets its own engine controller; stored highlights paint on load). Escape closes the palette (toolbar stays), outside click / `selection-menu:dismiss` close it. Standalone (`<highlight-wc><article>` or `for="id"`) renders **no UI** — persistence, rendering, API and events only.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `colors` | comma list (default `yellow,green,blue,pink`) | Palette; each name needs `--highlight-{name}` |
+| `readonly` | boolean | Render stored highlights only; no highlighter button in selection-menu |
+| `storage-key` | string | Storage key suffix (default pathname) |
+| `for` | ID | Standalone target (default first child); ignored in selection-menu |
+| `data-label-button` / `data-label-palette` | string | Button / palette names (`Highlight selection` / `Highlight color`) |
+| `data-label-annotation` / `-added` / `-removed` | string | Forwarded to the target as `data-highlights-label-*` (margin text, announcements) |
+
+Methods: `highlightSelection(color?)`, `getHighlights()`, `removeHighlight(id)`, `clearAll()`, `exportHighlights()`, `importHighlights(json)` → `{ imported, rejected }` (drops bad shape / out-of-range offsets / non-palette colours). In selection-menu mode methods act on the last highlighted (else first) target. Events on the target, bubbling: `highlights:added` `{ id, text, color, note }`, `highlights:removed` `{ id }`, `highlights:selected` `{ text, rect }`, `highlights:clicked` `{ id, highlight }`, `highlights:note-changed` `{ id, note }`. Tokens: `--highlight-{yellow,green,blue,pink}` (`light-dark()` pairs), `--highlight-ink`, optional `--highlight-{name}-ink`. Forced colors: `Mark`/`MarkText` + per-colour underline style. Highlight API ranges are not exposed to AT (announcement only); margin annotations are `aria-hidden`.
 
 ---
 
@@ -1815,15 +1882,24 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 
 ## 9. Global Attributes
 
-Applied to `<html>` or `<body>` root elements.
+Applied to `<html>`. Authored values are page defaults: ThemeManager only replaces them when the visitor saved a different choice (reset restores them).
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-theme` | See themes list | Active theme |
-| `data-mode` | `light`, `dark` | Color mode override |
-| `data-motion-reduced` | (boolean) | User-toggled motion reduction |
-| `data-debug` | (boolean) | Debug mode |
-| `data-wireframe` | `lo`, `mid`, `hi`, `annotate` | Wireframe mode |
+| `data-theme` | See themes list | Active theme (also scoped on any element) |
+| `data-mode` | `light`, `dark` | Color mode override (also scoped: element gets its own surface + re-derived colour tokens) |
+| `data-accent` | See accents | Colour accent (also on any element) |
+| `data-fluid` | (boolean), `default`, `compact`, `spacious` | Fluid type/spacing |
+| `data-backdrop` | (boolean), `default`, `flush`, `elevated` | Canvas backdrop |
+| `data-backdrop-chrome` | `card`, `stretch`, `integrated` + `fixed` | Backdrop header/footer treatment |
+| `data-border-style` | `clean`, `sharp`, `soft`, `sketch`, … | Border aesthetic |
+| `data-icon-set` | `lucide`, … | Default icon set |
+| `data-sticky` | (boolean) | Sticky header system |
+| `data-scrollbar` | `hidden`, `auto`, `primary`, `minimal` | Scrollbar styling (also any scroller) |
+| `data-motion-reduced` | (boolean) | User-toggled motion reduction: `--duration-*` → 0ms, smooth scroll off, view transitions/effects off |
+| `data-ruby` | `show`, `hide`, `auto` (default) | Ruby visibility; default hides `<rt>` on non-CJK pages |
+| `data-debug` | (boolean) | Debug mode (needs vanilla-breeze-dev.css/.js) |
+| `data-wireframe` | `lo`, `mid`, `hi`, `annotate` | Wireframe mode (needs vanilla-breeze-dev.css) |
 
 ---
 
@@ -1903,6 +1979,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | Attribute | Applies to |
 |-----------|------------|
 | `data-a11y-theme` | `<html>` — accessibility theme |
+| `data-accent` | `<html>` or any element — colour accent |
 | `data-align` | Table cells — text alignment |
 | ~~`data-allow-custom`~~ | **Removed** — use `custom` on `<combo-box>` |
 | `data-anchor` | Tooltip — CSS anchor positioning |
@@ -1916,6 +1993,8 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-autosave` | `<form>` — localStorage save (boolean form derives key from method+action) |
 | `data-autosave-retain` | `<form data-autosave>` — field-name allowlist for persistence |
 | `data-axes` | `.vb-chart` — axis display |
+| `data-backdrop` | `<html>` — canvas backdrop |
+| `data-backdrop-chrome` | `<html>` — backdrop chrome mode |
 | `data-blur-reveal` | Text — blur-to-clear entrance |
 | `data-bordered` | Various — border variant |
 | `data-center-label` | Pie chart — donut center text |
@@ -2030,6 +2109,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-review` | Content blocks, `<html>` — review state (see §10) |
 | `data-ring` | `<user-avatar>` — border ring |
 | `data-scramble` | Text — decode effect |
+| `data-scrollbar` | `<html>` or any scroller — scrollbar style |
 | `data-select-all` | Checkbox — select-all toggle |
 | `data-selected` | Table row — row highlight |
 | `data-selected-count` | `<data-table>` — selection count display |
@@ -2055,7 +2135,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-state-sorted` | Table th — sort direction |
 | `data-status` | Avatar child — online status; content blocks, `<html>` — publication state (see §10) |
 | `data-stepper` | Number input — +/- buttons. See [numeric-inputs decision guide](/docs/concepts/numeric-inputs/) for when to reach for [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) instead. |
-| `data-sticky` | Table — sticky header/column; `<header>`, `<footer>` — sticky |
+| `data-sticky` | Table — sticky header/column; `<header>`, `<footer>` — sticky; `<html>` — sticky header system |
 | `data-sticky-column` | Table — sticky N columns |
 | `data-switch` | Checkbox — toggle switch |
 | `data-table-empty` | `<data-table>` — no-results message element (generated) |

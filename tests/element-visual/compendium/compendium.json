@@ -1937,6 +1937,12 @@
           "name": "All-day strip",
           "fixtureWidth": "wide",
           "html": "<day-view data-date=\"2026-07-06\" data-start-hour=\"auto\">\n  <calendar-event data-category=\"personal\">Company holiday</calendar-event>\n  <calendar-event data-category=\"deadline\">Report due</calendar-event>\n  <calendar-event data-category=\"meeting\"><time datetime=\"11:00\">11:00</time> Briefing</calendar-event>\n</day-view>"
+        },
+        {
+          "id": "hour-slots",
+          "name": "hour-view: :00/:30, overlapping pair and triple",
+          "fixtureWidth": "wide",
+          "html": "<day-view data-date=\"2026-07-06\">\n  <ol>\n    <li><time datetime=\"09:00\">9 AM</time><hour-view><calendar-event data-category=\"focus\"><time datetime=\"09:00\">09:00</time> Release notes</calendar-event><calendar-event data-category=\"personal\" data-start=\"30\"><time datetime=\"09:30\">09:30</time> Coffee</calendar-event></hour-view></li>\n    <li><time datetime=\"10:00\">10 AM</time><hour-view data-overlap><calendar-event data-category=\"focus\"><time datetime=\"10:00\">10:00</time> Code review</calendar-event><calendar-event data-category=\"meeting\"><time datetime=\"10:00\">10:00</time> 1:1 with Sarah</calendar-event></hour-view></li>\n    <li><time datetime=\"11:00\">11 AM</time><hour-view data-overlap><calendar-event data-category=\"meeting\"><time datetime=\"11:00\">11:00</time> Vendor call</calendar-event><calendar-event data-category=\"deadline\"><time datetime=\"11:00\">11:00</time> Ship the quarterly business review deck to leadership</calendar-event><calendar-event data-category=\"personal\"><time datetime=\"11:00\">11:00</time> Lunch</calendar-event></hour-view></li>\n  </ol>\n</day-view>"
         }
       ]
     },
@@ -2868,22 +2874,91 @@
       "category": "media",
       "cssFile": "src/web-components/geo-map/styles.js",
       "jsRequired": true,
+      "readySelector": "geo-map[data-ready], geo-map[loading=consent][data-upgraded]",
       "variants": [
         {
           "id": "default",
           "name": "Default Map",
           "interactive": true,
           "fixtureWidth": "wide",
-          "html": "<geo-map lat=\"40.7484\" lng=\"-73.9857\" zoom=\"15\" static-only>\n  <address>Empire State Building, New York</address>\n</geo-map>",
-          "setup": "await new Promise(r => setTimeout(r, 2000));"
+          "html": "<geo-map lat=\"40.7484\" lng=\"-73.9857\" zoom=\"15\" static-only tile-url=\"/tests/element-visual/fixtures/generated/geo-tile.svg\" attribution=\"© OpenStreetMap contributors\" attribution-href=\"https://www.openstreetmap.org/copyright\">\n  <address>Empire State Building, New York</address>\n</geo-map>"
         },
         {
           "id": "carto-dark",
-          "name": "Carto Dark Provider",
+          "name": "Custom Tile Source",
           "interactive": true,
           "fixtureWidth": "wide",
-          "html": "<geo-map lat=\"48.8584\" lng=\"2.2945\" zoom=\"14\" provider=\"carto-dark\" static-only>\n  <address>Eiffel Tower, Paris</address>\n</geo-map>",
-          "setup": "await new Promise(r => setTimeout(r, 2000));"
+          "html": "<geo-map lat=\"48.8584\" lng=\"2.2945\" zoom=\"14\" provider=\"carto-dark\" static-only tile-url=\"/tests/element-visual/fixtures/generated/geo-tile.svg\" attribution=\"© OpenStreetMap contributors, © CARTO\">\n  <address>Eiffel Tower, Paris</address>\n</geo-map>"
+        },
+        {
+          "id": "consent",
+          "name": "Consent Placeholder (loading=consent)",
+          "interactive": true,
+          "fixtureWidth": "wide",
+          "html": "<geo-map lat=\"48.8584\" lng=\"2.2945\" zoom=\"16\" loading=\"consent\" tile-url=\"/tests/element-visual/fixtures/generated/geo-tile.svg\" attribution=\"© OpenStreetMap contributors\" attribution-href=\"https://www.openstreetmap.org/copyright\">\n  <address>Eiffel Tower, Paris</address>\n</geo-map>"
+        },
+        {
+          "id": "custom-marker",
+          "name": "Custom Marker, Label, No Caption",
+          "interactive": true,
+          "fixtureWidth": "wide",
+          "html": "<geo-map lat=\"40.7484\" lng=\"-73.9857\" zoom=\"15\" marker-color=\"#2563eb\" label=\"Empire State Building\" static-only tile-url=\"/tests/element-visual/fixtures/generated/geo-tile.svg\" attribution=\"© OpenStreetMap contributors\" attribution-href=\"https://www.openstreetmap.org/copyright\"></geo-map>"
+        }
+      ]
+    },
+    {
+      "id": "glossary-index",
+      "tag": "glossary-index",
+      "type": "web-component",
+      "category": "navigation",
+      "cssFile": "src/web-components/glossary-index/styles.css",
+      "jsRequired": true,
+      "readySelector": "glossary-index[data-upgraded]",
+      "variants": [
+        {
+          "id": "default",
+          "name": "Search, jump nav, permalinks",
+          "fixtureWidth": "wide",
+          "html": "<glossary-index placeholder=\"Filter terms…\">\n  <h2>Glossary</h2>\n  <nav class=\"glossary-jump\" aria-label=\"Jump to letter\">\n    <ol class=\"inline\">\n      <li><a href=\"#glossary-a\" aria-current=\"true\">A</a></li>\n      <li><a href=\"#glossary-p\">P</a></li>\n    </ol>\n  </nav>\n  <section class=\"glossary-section\" id=\"glossary-a\">\n    <h2>A</h2>\n    <dl>\n      <dt id=\"term-accessibility\"><dfn>accessibility</dfn></dt>\n      <dt id=\"term-a11y\"><dfn>a11y</dfn></dt>\n      <dd>Making content usable by everyone.</dd>\n    </dl>\n  </section>\n  <section class=\"glossary-section\" id=\"glossary-p\">\n    <h2>P</h2>\n    <dl>\n      <dt id=\"term-provenance\"><dfn>provenance</dfn></dt>\n      <dd>Where content came from.</dd>\n    </dl>\n  </section>\n</glossary-index>",
+          "setup": "document.querySelectorAll('.glossary-permalink').forEach(a => a.style.opacity = '1');",
+          "interactive": true
+        },
+        {
+          "id": "empty",
+          "name": "Filtered: empty state",
+          "interactive": true,
+          "html": "<glossary-index>\n  <h2>Glossary</h2>\n  <section class=\"glossary-section\" id=\"glossary-x\">\n    <h2>X</h2>\n    <dl><dt id=\"term-xml\"><dfn>XML</dfn></dt><dd>Extensible Markup Language.</dd></dl>\n  </section>\n</glossary-index>",
+          "setup": "const i = document.querySelector('glossary-index input'); i.value = 'zzz'; i.dispatchEvent(new Event('input', { bubbles: true }));"
+        }
+      ]
+    },
+    {
+      "id": "glossary-wc",
+      "tag": "glossary-wc",
+      "type": "web-component",
+      "category": "data",
+      "cssFile": "src/web-components/glossary-wc/styles.css",
+      "jsRequired": true,
+      "readySelector": "glossary-wc[data-upgraded]",
+      "variants": [
+        {
+          "id": "default",
+          "name": "Searchable, categorized",
+          "fixtureWidth": "wide",
+          "html": "<glossary-wc data-title=\"Project Glossary\" searchable>\n  <dl>\n    <div data-category=\"Domain\" data-term-id=\"velocity\"><dt>Velocity</dt><dd>Work a team completes in a sprint.</dd></div>\n    <div data-category=\"Domain\" data-term-id=\"epic\"><dt>Epic</dt><dd>A large body of work. See also <a href=\"#velocity\">velocity</a>.</dd></div>\n    <div data-category=\"Technical\" data-term-id=\"api-gateway\"><dt>API Gateway</dt><dd>Single entry point for client requests.</dd></div>\n    <div data-category=\"Technical\" data-term-id=\"microservice\"><dt>Microservice</dt><dd>A small, independently deployable service.</dd></div>\n  </dl>\n</glossary-wc>"
+        },
+        {
+          "id": "compact",
+          "name": "Compact, collapsed category",
+          "interactive": true,
+          "html": "<glossary-wc data-title=\"Terms\" compact>\n  <dl>\n    <div data-category=\"Process\" data-term-id=\"retro\"><dt>Retrospective</dt><dd>A meeting after a sprint.</dd></div>\n    <div data-category=\"Process\" data-term-id=\"standup\"><dt>Stand-up</dt><dd>A short daily sync.</dd></div>\n    <div data-category=\"Domain\" data-term-id=\"backlog\"><dt>Backlog</dt><dd>Ordered list of work.</dd></div>\n  </dl>\n</glossary-wc>",
+          "setup": "document.querySelector('.gloss-category[data-category=\"Domain\"] .gloss-category-toggle').click();"
+        },
+        {
+          "id": "i18n",
+          "name": "Russian letters, # bucket",
+          "fixtureWidth": "wide",
+          "html": "<glossary-wc lang=\"ru\" data-title=\"Глоссарий\" data-label-uncategorized=\"Без категории\">\n  <dl>\n    <div data-term-id=\"t1\"><dt>Яблоко</dt><dd>Фрукт.</dd></div>\n    <div data-term-id=\"t2\"><dt>Арбуз</dt><dd>Ягода.</dd></div>\n    <div data-term-id=\"t3\"><dt>3D</dt><dd>Трёхмерный.</dd></div>\n  </dl>\n</glossary-wc>"
         }
       ]
     },
@@ -2899,7 +2974,7 @@
           "id": "site",
           "name": "Site Header",
           "fixtureWidth": "wide",
-          "html": "<header class=\"site\">\n  <div>Vanilla Breeze</div>\n  <nav>\n    <a href=\"#\">Home</a>\n    <a href=\"#\">Docs</a>\n    <a href=\"#\">Components</a>\n  </nav>\n</header>"
+          "html": "<header class=\"site\"><strong>Vanilla Breeze</strong><nav class=\"horizontal pills\" aria-label=\"Main\"><ul><li><a href=\"#\">Home</a></li><li><a href=\"#\">Docs</a></li><li><a href=\"#\">Components</a></li></ul></nav></header>"
         },
         {
           "id": "page",
@@ -2926,6 +3001,24 @@
             "centered"
           ],
           "html": "<header class=\"centered\"><h2>Centered Title</h2><p>A centered header with auto-margin children.</p></header>"
+        },
+        {
+          "id": "sticky",
+          "name": "Sticky Header",
+          "fixtureWidth": "wide",
+          "attributes": [
+            "data-sticky"
+          ],
+          "html": "<header class=\"site\" data-sticky><strong>Vanilla Breeze</strong><nav class=\"horizontal pills\" aria-label=\"Main\"><ul><li><a href=\"#\">Home</a></li><li><a href=\"#\">Docs</a></li><li><a href=\"#\">Components</a></li></ul></nav></header>"
+        },
+        {
+          "id": "scroll-hide",
+          "name": "Auto-hiding Header",
+          "fixtureWidth": "wide",
+          "attributes": [
+            "data-scroll-hide"
+          ],
+          "html": "<header class=\"site\" data-scroll-hide><strong>Vanilla Breeze</strong><nav class=\"horizontal pills\" aria-label=\"Main\"><ul><li><a href=\"#\">Home</a></li><li><a href=\"#\">Docs</a></li><li><a href=\"#\">Components</a></li></ul></nav></header>"
         }
       ]
     },
@@ -2967,6 +3060,44 @@
           "id": "h3",
           "name": "Heading 3",
           "html": "<h3>Consensus Algorithms Explained</h3>"
+        },
+        {
+          "id": "h4",
+          "name": "Heading 4",
+          "html": "<h4>Leader Election</h4>"
+        },
+        {
+          "id": "h5",
+          "name": "Heading 5",
+          "html": "<h5>Term Numbers</h5>"
+        },
+        {
+          "id": "h6",
+          "name": "Heading 6",
+          "html": "<h6>Log Compaction</h6>"
+        },
+        {
+          "id": "display",
+          "name": "Display Heading",
+          "attributes": [
+            "data-display"
+          ],
+          "fixtureWidth": "wide",
+          "html": "<h2 data-display>Built on the platform</h2>"
+        },
+        {
+          "id": "display-hero",
+          "name": "Hero Display Heading",
+          "attributes": [
+            "data-display"
+          ],
+          "fixtureWidth": "wide",
+          "html": "<h1 data-display=\"hero\">Ship less.</h1>"
+        },
+        {
+          "id": "ornament",
+          "name": "Ornament Tokens",
+          "html": "<section style=\"--heading-ornament-before: '§ '; --h1-ornament-before: '❧ '\"><h1>Chapter One</h1><h2>Section Title</h2></section>"
         }
       ]
     },
@@ -2983,14 +3114,6 @@
           "html": "<hgroup><h2>Design Systems at Scale</h2><p>How large organisations maintain consistency across hundreds of products</p></hgroup>"
         },
         {
-          "id": "reversed",
-          "name": "Reversed",
-          "classes": [
-            "reversed"
-          ],
-          "html": "<hgroup class=\"reversed\"><h2>Design Systems at Scale</h2><small>Volume III — Governance &amp; Tooling</small></hgroup>"
-        },
-        {
           "id": "centered",
           "name": "Centered",
           "classes": [
@@ -3005,6 +3128,87 @@
             "divided"
           ],
           "html": "<hgroup class=\"divided\"><h2>Design Systems at Scale</h2><p>Consistency across hundreds of products</p></hgroup>"
+        },
+        {
+          "id": "kicker-first",
+          "name": "Paragraph Before Heading",
+          "html": "<hgroup><p>Volume III — Governance &amp; Tooling</p><h2>Design Systems at Scale</h2></hgroup>"
+        },
+        {
+          "id": "eyebrow",
+          "name": "Eyebrow",
+          "classes": [
+            "eyebrow"
+          ],
+          "html": "<hgroup class=\"eyebrow\"><p>Release Notes</p><h2>Vanilla Breeze 2.0</h2><p>A complete overhaul of the theming system.</p></hgroup>"
+        },
+        {
+          "id": "byline",
+          "name": "Byline",
+          "classes": [
+            "byline"
+          ],
+          "html": "<hgroup class=\"byline\"><h2>Understanding the Cascade</h2><p><span><a href=\"#\" rel=\"author\">Thomas Powell</a></span><span><time datetime=\"2026-03-06\">March 6, 2026</time></span><span>8 min read</span></p></hgroup>"
+        },
+        {
+          "id": "section-header",
+          "name": "Section Header",
+          "classes": [
+            "section-header"
+          ],
+          "html": "<hgroup class=\"section-header\"><h2>Component Library</h2><p>Semantic, composable HTML components styled with modern CSS.</p></hgroup>"
+        },
+        {
+          "id": "display",
+          "name": "Display",
+          "classes": [
+            "display"
+          ],
+          "fixtureWidth": "wide",
+          "html": "<hgroup class=\"display\"><h1>HTML is the product.</h1><p>A CSS-first framework built on great HTML.</p></hgroup>"
+        },
+        {
+          "id": "display-centered",
+          "name": "Display Centered",
+          "classes": [
+            "display"
+          ],
+          "attributes": [
+            "data-align"
+          ],
+          "fixtureWidth": "wide",
+          "html": "<hgroup class=\"display\" data-align=\"center\"><h1>Start with the platform.</h1><p>Modern CSS and HTML have quietly solved most of it.</p></hgroup>"
+        },
+        {
+          "id": "tight",
+          "name": "Tight",
+          "classes": [
+            "tight"
+          ],
+          "html": "<hgroup class=\"tight\"><h2>Quick Setup</h2><p>Install in under 5 minutes</p></hgroup>"
+        },
+        {
+          "id": "spaced",
+          "name": "Spaced",
+          "classes": [
+            "spaced"
+          ],
+          "html": "<hgroup class=\"spaced\"><h2>Documentation</h2><p>Comprehensive guides and API reference</p></hgroup>"
+        }
+      ]
+    },
+    {
+      "id": "highlight-wc",
+      "tag": "highlight-wc",
+      "type": "web-component",
+      "category": "interactive",
+      "cssFile": "src/web-components/highlight-wc/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "standalone",
+          "name": "Standalone (no UI, programmatic)",
+          "html": "<highlight-wc storage-key=\"compendium-highlight-wc\">\n  <article>\n    <h3>Typography</h3>\n    <p>Standalone highlight-wc renders no controls; it paints stored highlights and exposes highlightSelection() for a custom UI.</p>\n  </article>\n</highlight-wc>"
         }
       ]
     },
@@ -3032,6 +3236,46 @@
           "id": "ornament",
           "name": "Ornament",
           "html": "<hr data-ornament=\"✦\">"
+        },
+        {
+          "id": "wave",
+          "name": "Wave",
+          "classes": [
+            "wave"
+          ],
+          "html": "<hr class=\"wave\">"
+        },
+        {
+          "id": "zigzag",
+          "name": "Zigzag",
+          "classes": [
+            "zigzag"
+          ],
+          "html": "<hr class=\"zigzag\">"
+        },
+        {
+          "id": "scallop",
+          "name": "Scallop",
+          "classes": [
+            "scallop"
+          ],
+          "html": "<hr class=\"scallop\">"
+        },
+        {
+          "id": "diamonds",
+          "name": "Diamonds",
+          "classes": [
+            "diamonds"
+          ],
+          "html": "<hr class=\"diamonds\">"
+        },
+        {
+          "id": "dots",
+          "name": "Dots",
+          "classes": [
+            "dots"
+          ],
+          "html": "<hr class=\"dots\">"
         }
       ]
     },
