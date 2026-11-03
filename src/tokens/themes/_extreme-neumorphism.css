@@ -337,13 +337,31 @@
         border-radius: var(--radius-s);
       }
 
-      /* Fieldset — raised group, inner items softer */
-      & fieldset {
+      /* Fieldset — raised group, inner items softer. Minimal fieldsets
+         stay flat; state borders survive the border reset. */
+      & fieldset:not([data-variant="minimal"]) {
         border: none;
         background: var(--color-background);
         box-shadow: var(--shadow-s);
         border-radius: var(--radius-l);
       }
+
+      & fieldset:is([data-status], [data-invalid], :disabled):not([data-variant="minimal"]) {
+        border: var(--border-width-medium) solid var(--color-border-strong);
+      }
+
+      & fieldset[data-status] {
+        border-color: var(--fieldset-status-color, var(--color-border-strong));
+      }
+
+      & fieldset[data-invalid] {
+        border-color: var(--color-error);
+      }
+
+      & fieldset:disabled:not([data-variant="minimal"]) {
+        border-style: dashed;
+      }
+
 
       /* Mark highlight with soft shadow */
       & mark {

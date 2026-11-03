@@ -658,8 +658,8 @@
       position: relative;
     }
 
-    /* Fieldset / Group box */
-    & fieldset,
+    /* Fieldset / Group box (minimal fieldsets keep no box) */
+    & fieldset:not([data-variant="minimal"]),
     & .win9x-groupbox {
       background: var(--_win9x-bg);
       border: 1px solid var(--_win9x-shadow);
@@ -668,6 +668,23 @@
         0 0 0 1px var(--_win9x-highlight);
       padding: 1rem;
       margin: 0.5rem 0;
+    }
+
+    /* State borders survive the group-box border shorthand */
+    & fieldset[data-status] {
+      border-color: var(--fieldset-status-color, var(--_win9x-shadow));
+    }
+
+    & fieldset[data-invalid] {
+      border-color: var(--color-error);
+    }
+
+    & fieldset:is([data-status], [data-invalid]):not([data-variant="minimal"]) {
+      border-width: 2px;
+    }
+
+    & fieldset:disabled:not([data-variant="minimal"]) {
+      border-style: dashed;
     }
 
     & legend {
