@@ -2,10 +2,14 @@
   "$schema": "../../../.claude/schemas/api.schema.json",
   "element": "image-gallery",
   "type": "web-component",
-  "description": "Thumbnail grid with lightbox viewer. Progressive enhancement: thumbnails link to full images without JS. With JS, opens a fullscreen dialog with navigation, swipe, keyboard, and View Transitions.",
+  "description": "Thumbnail grid with lightbox viewer. Progressive enhancement: thumbnails link to full images without JS. With JS, opens a native <dialog> lightbox with prev/next, keyboard (direction-aware), swipe, and View Transitions.",
   "htmlvalidate": {
     "flow": true,
-    "permittedContent": ["a", "figure", "img"]
+    "permittedContent": [
+      "a",
+      "figure",
+      "img"
+    ]
   },
   "attributes": [
     {
@@ -14,7 +18,13 @@
       "direction": "input",
       "purpose": "config",
       "type": "enum",
-      "values": ["100px", "150px", "200px", "250px", "300px"],
+      "values": [
+        "100px",
+        "150px",
+        "200px",
+        "250px",
+        "300px"
+      ],
       "default": "200px",
       "description": "Minimum column width for the thumbnail grid."
     },
@@ -24,7 +34,14 @@
       "direction": "input",
       "purpose": "visual-variant",
       "type": "enum",
-      "values": ["none", "xs", "s", "m", "l", "xl"],
+      "values": [
+        "none",
+        "xs",
+        "s",
+        "m",
+        "l",
+        "xl"
+      ],
       "default": "s",
       "description": "Gap between thumbnails."
     },
@@ -34,7 +51,14 @@
       "direction": "input",
       "purpose": "visual-variant",
       "type": "enum",
-      "values": ["1", "4:3", "3:2", "16:9", "3:4", "auto"],
+      "values": [
+        "1",
+        "4:3",
+        "3:2",
+        "16:9",
+        "3:4",
+        "auto"
+      ],
       "default": "1",
       "description": "Aspect ratio for thumbnail images."
     },
@@ -44,9 +68,13 @@
       "direction": "input",
       "purpose": "visual-variant",
       "type": "enum",
-      "values": ["edge", "bar", "minimal"],
+      "values": [
+        "edge",
+        "bar",
+        "minimal"
+      ],
       "default": "edge",
-      "description": "Lightbox control layout. 'edge' puts prev/next on sides with floating header. 'bar' puts all controls in a top bar. 'minimal' shows close only (swipe/keyboard for nav)."
+      "description": "Lightbox control layout. 'edge' puts prev/next on the sides with a floating header, 'bar' moves prev/next into the top bar, 'minimal' shows close only (swipe/keyboard to navigate). Changing it rebuilds the lightbox on next open."
     },
     {
       "name": "loop",
@@ -62,9 +90,13 @@
       "direction": "input",
       "purpose": "config",
       "type": "enum",
-      "values": ["auto", "overlay", "hidden"],
+      "values": [
+        "auto",
+        "overlay",
+        "hidden"
+      ],
       "default": "auto",
-      "description": "Caption display in lightbox. 'auto' shows via popover button, 'overlay' shows persistent bar, 'hidden' suppresses."
+      "description": "Caption display in the lightbox. 'auto' adds an info button in a footer that toggles the caption text (hidden attribute), 'overlay' shows the caption under the image, 'hidden' suppresses it. Changing it rebuilds the lightbox on next open."
     },
     {
       "name": "transition",
@@ -72,9 +104,101 @@
       "direction": "input",
       "purpose": "visual-variant",
       "type": "enum",
-      "values": ["morph", "fade", "none"],
+      "values": [
+        "morph",
+        "fade",
+        "none"
+      ],
       "default": "morph",
       "description": "View Transition type. 'morph' animates thumbnail to full image, 'fade' cross-fades, 'none' disables."
+    },
+    {
+      "name": "data-label-dialog",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Image viewer",
+      "description": "Accessible name of the lightbox dialog."
+    },
+    {
+      "name": "data-label-close",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Close gallery",
+      "description": "Close button name."
+    },
+    {
+      "name": "data-label-prev",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Previous image",
+      "description": "Previous button name."
+    },
+    {
+      "name": "data-label-next",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Next image",
+      "description": "Next button name."
+    },
+    {
+      "name": "data-label-show-details",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Show image details",
+      "description": "Info button name while the caption is collapsed (captions=\"auto\")."
+    },
+    {
+      "name": "data-label-hide-details",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Hide image details",
+      "description": "Info button name while the caption is expanded (captions=\"auto\")."
+    },
+    {
+      "name": "data-label-counter",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Image {n} of {total}",
+      "description": "Counter text template, announced politely on navigation; {n} and {total} are replaced."
+    }
+  ],
+  "events": [
+    {
+      "name": "image-gallery:images-changed",
+      "detail": "{ images, source: 'property' }",
+      "description": "Fired after the images setter rebuilds the gallery."
+    }
+  ],
+  "properties": [
+    {
+      "name": "images",
+      "type": "Array<{ href, thumbSrc, alt?, caption? }>",
+      "description": "Get the image set (caption is a string for text-only captions, a cloned DocumentFragment for markup, or null) or assign one to rebuild the thumbnails. String captions render as text, never HTML; pass a Node, DocumentFragment or <template> for rich captions. Assigning closes an open lightbox and fires image-gallery:images-changed with source 'property'."
+    }
+  ],
+  "methods": [
+    {
+      "name": "open(index)",
+      "description": "Open the lightbox at a zero-based index (no-op when out of range)."
+    },
+    {
+      "name": "close()",
+      "description": "Close the lightbox (with the morph transition when enabled)."
+    },
+    {
+      "name": "next()",
+      "description": "Show the next image (wraps with loop)."
+    },
+    {
+      "name": "prev()",
+      "description": "Show the previous image (wraps with loop)."
     }
   ],
   "structure": [
@@ -92,7 +216,7 @@
     },
     {
       "element": "<figcaption>",
-      "description": "Optional caption inside figure. Supports HTML including links."
+      "description": "Optional caption inside figure. Supports HTML including links; its nodes are cloned into the lightbox."
     }
   ]
 }

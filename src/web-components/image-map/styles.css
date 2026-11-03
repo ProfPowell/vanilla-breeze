@@ -14,20 +14,8 @@ map-area:not(:defined) {
 
 map-area:not(:defined)::before {
   content: attr(label);
+  display: block;
   font-weight: 600;
-}
-
-map-area:not(:defined)[href]::before {
-  content: none;
-}
-
-map-area:not(:defined)[href]::after {
-  content: none;
-}
-
-/* When href is present, render as a link */
-map-area:not(:defined)[href] {
-  display: list-item;
 }
 
 /* Hide area content when JS upgrades */
@@ -117,6 +105,12 @@ image-map:defined {
   }
 
   /* --- Tooltip --- */
+  /* Hidden tooltips are out of the a11y tree and tab order: re-assert
+     display:none in case author-layer resets blockify [hidden]. */
+  .image-map-tooltip[hidden] {
+    display: none;
+  }
+
   .image-map-tooltip {
     position: fixed;
     z-index: 9999;
@@ -126,16 +120,14 @@ image-map:defined {
     max-inline-size: var(--map-tooltip-max-width, 20rem);
     padding: var(--size-s) var(--size-m);
     line-height: var(--line-height-normal, 1.5);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 150ms, transform 150ms;
-    transform: translateY(4px);
-  }
-
-  .image-map-tooltip[data-visible] {
     opacity: 1;
-    pointer-events: auto;
     transform: translateY(0);
+    transition: opacity 150ms, transform 150ms;
+
+    @starting-style {
+      opacity: 0;
+      transform: translateY(4px);
+    }
   }
 
   /* Tooltip content styling */
@@ -166,6 +158,33 @@ image-map:defined {
     border-radius: var(--radius-s, 4px);
     max-inline-size: 100%;
     block-size: auto;
+  }
+}
+
+/* --- Forced colors: system-colour strokes, thicker on hover/focus --- */
+@media (forced-colors: active) {
+  @scope (image-map) {
+    .image-map-overlay > * {
+      fill: transparent;
+      stroke: CanvasText;
+      stroke-width: 0.6;
+    }
+
+    .image-map-overlay > *:hover,
+    .image-map-overlay > *[data-hover] {
+      fill: transparent;
+      stroke: Highlight;
+      stroke-width: 1.2;
+    }
+
+    .image-map-overlay > *[data-disabled] {
+      stroke: GrayText;
+      stroke-dasharray: 1 1;
+    }
+
+    .image-map-tooltip {
+      border: 1px solid CanvasText;
+    }
   }
 }
 

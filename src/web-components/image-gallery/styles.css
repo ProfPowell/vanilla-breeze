@@ -93,7 +93,8 @@ image-gallery > dialog:not([open]) {
 
 /* ==========================================================================
    Lightbox dialog
-   DOM: dialog > header[counter, info?, close] + section.gallery-stage[prev, figure, next]
+   DOM: dialog > header[counter, close] + section.gallery-stage[prev, figure, next]
+        + footer.gallery-caption[info, text] (captions="auto")
    Controls mode set via data-controls on the dialog: "edge", "bar", "minimal"
    ========================================================================== */
 
@@ -141,7 +142,13 @@ image-gallery .gallery-lightbox button:disabled {
   cursor: not-allowed;
 }
 
-/* --- Header bar: counter + info + close --- */
+/* Chevrons point toward the reading direction's start/end: mirror under RTL
+   (the stage grid already flips prev/next placement via inline flow). */
+image-gallery .gallery-lightbox:dir(rtl) :is(.gallery-prev, .gallery-next) > icon-wc {
+  scale: -1 1;
+}
+
+/* --- Header bar: counter + close --- */
 
 image-gallery .gallery-lightbox > header {
   display: flex;
@@ -348,5 +355,27 @@ image-gallery .gallery-caption-text a:hover {
   image-gallery > a > img,
   image-gallery > figure > a > img {
     transition: none;
+  }
+
+  image-gallery > a:hover > img,
+  image-gallery > figure > a:hover > img {
+    transform: none;
+  }
+}
+
+:root[data-motion-reduced] image-gallery > a > img,
+:root[data-motion-reduced] image-gallery > figure > a > img {
+  transition: none;
+}
+
+:root[data-motion-reduced] image-gallery > a:hover > img,
+:root[data-motion-reduced] image-gallery > figure > a:hover > img {
+  transform: none;
+}
+
+/* Forced colors: keep lightbox controls visible against the system canvas */
+@media (forced-colors: active) {
+  image-gallery .gallery-lightbox button {
+    border: 1px solid ButtonText;
   }
 }
