@@ -39,10 +39,39 @@ crumbLabel: Custom Elements
           <td><code>data-layout-align</code></td>
           <td><code>start</code>, <code>center</code>, <code>end</code>, <code>stretch</code></td>
           <td><code>stretch</code></td>
-          <td>Cross-axis (inline) alignment of children.</td>
+          <td>Cross-axis (inline) alignment of children. <code>start</code>, <code>center</code> and <code>end</code> make children content-sized; see <a href="#semantic-children">sectioning children</a>.</td>
         </tr>
       </tbody>
     </table>
+
+    <h3>Child attribute</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>On</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-container</code></td>
+          <td><code>main</code>, <code>article</code>, <code>section</code>, <code>aside</code></td>
+          <td>When the stack is aligned <code>start</code>/<code>center</code>/<code>end</code>, keeps the child as a query container. Give it an explicit inline size too, or it collapses.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Attribute form</h2>
+    <p>Any semantic element can be a stack with <code>data-layout="stack"</code>. The same <code>data-layout-gap</code> and <code>data-layout-align</code> values apply.</p>
+
+    <code-block language="html" show-lines label="Attribute form" data-escape><form data-layout="stack" data-layout-gap="s">
+  <label for="q">Search</label>
+  <input type="search" id="q" />
+  <button type="submit">Go</button>
+</form></code-block>
   </section>
 
   <section>
@@ -57,9 +86,9 @@ crumbLabel: Custom Elements
     </browser-window>
 
     <code-block language="html" show-lines label="Gap variants example" data-escape><layout-stack data-layout-gap="xs">
-  <div>Item 1</div>
-  <div>Item 2</div>
-  <div>Item 3</div>
+  <p>Item 1</p>
+  <p>Item 2</p>
+  <p>Item 3</p>
 </layout-stack>
 
 <layout-stack data-layout-gap="m">
@@ -95,6 +124,27 @@ crumbLabel: Custom Elements
 <layout-stack data-layout-gap="s" data-layout-align="end">
   <!-- End-aligned items -->
 </layout-stack></code-block>
+
+    <h3 id="semantic-children">Sectioning children</h3>
+    <p>VB makes <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> query containers (<code>container-type: inline-size</code>). A query container has no intrinsic width, so in a stack aligned <code>start</code>, <code>center</code> or <code>end</code>, where children shrink to their content, it would collapse to zero width. The stack therefore removes <code>container-type</code> from such direct children so they size to their content. To keep container queries on one of them, add <code>data-container</code> and give it a width.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/stack-align-sections.html"
+      url="https://vanilla-breeze.com/stack/align-sections"
+      title="Alignment with section children"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Aligned stack with sectioning children" data-escape><layout-stack data-layout-gap="s" data-layout-align="center">
+  <section><p>A section sized to its content</p></section>
+  <article><p>An article too</p></article>
+</layout-stack>
+
+<section data-layout="stack" data-layout-align="end">
+  <article><p>End-aligned article</p></article>
+  <!-- Opt back into container queries (needs a width) -->
+  <aside data-container><p>Container aside</p></aside>
+</section></code-block>
   </section>
 
   <section>

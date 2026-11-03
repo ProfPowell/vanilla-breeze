@@ -37,7 +37,7 @@ crumbLabel: Custom Elements
         </tr>
         <tr>
           <td><code>data-layout-threshold</code></td>
-          <td>(bare), <code>s</code>, <code>m</code>, <code>l</code></td>
+          <td><code>s</code>, <code>m</code>, <code>l</code></td>
           <td><code>m</code></td>
           <td>Container width at which the row becomes a column: 25 / 30 / 40rem. One-off: style=&quot;--layout-threshold: 35rem&quot;.</td>
         </tr>
@@ -51,7 +51,7 @@ crumbLabel: Custom Elements
           <td><code>data-layout-reverse</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Reverse the visual order when stacked.</td>
+          <td>Reverse the visual order when stacked: the last item goes on top. The row keeps DOM order. Visual only; see <a href="#reverse">Reverse when stacked</a>.</td>
         </tr>
       </tbody>
     </table>
@@ -69,9 +69,17 @@ crumbLabel: Custom Elements
     </browser-window>
 
     <code-block language="html" show-lines label="Basic layout-switcher usage" data-escape><layout-switcher data-layout-gap="m">
-  <div>Item 1</div>
-  <div>Item 2</div>
+  <article>Item 1</article>
+  <article>Item 2</article>
 </layout-switcher></code-block>
+
+    <h3>Attribute form</h3>
+    <p>Any semantic element can be a switcher with <code>data-layout="switcher"</code>, using the same attributes.</p>
+
+    <code-block language="html" show-lines label="Attribute form" data-escape><section data-layout="switcher" data-layout-threshold="l">
+  <article>Item 1</article>
+  <article>Item 2</article>
+</section></code-block>
   </section>
 
   <section>
@@ -87,14 +95,20 @@ crumbLabel: Custom Elements
 
     <code-block language="html" show-lines label="Threshold variants" data-escape><!-- Lower threshold - stays horizontal longer -->
 <layout-switcher data-layout-threshold="s">
-  <div>Card A</div>
-  <div>Card B</div>
+  <article>Card A</article>
+  <article>Card B</article>
 </layout-switcher>
 
 <!-- Higher threshold - stacks earlier -->
 <layout-switcher data-layout-threshold="l">
-  <div>Card A</div>
-  <div>Card B</div>
+  <article>Card A</article>
+  <article>Card B</article>
+</layout-switcher>
+
+<!-- One-off threshold: beats the token, not inherited by nested switchers -->
+<layout-switcher style="--layout-threshold: 35rem">
+  <article>Card A</article>
+  <article>Card B</article>
 </layout-switcher></code-block>
   </section>
 
@@ -111,10 +125,29 @@ crumbLabel: Custom Elements
 
     <code-block language="html" show-lines label="Item limit forcing vertical layout" data-escape><!-- Forces vertical when more than 2 items -->
 <layout-switcher data-layout-gap="m" data-layout-limit="2">
-  <div>Item 1</div>
-  <div>Item 2</div>
-  <div>Item 3</div> <!-- This causes stack -->
+  <p>Item 1</p>
+  <p>Item 2</p>
+  <p>Item 3</p> <!-- This causes stack -->
 </layout-switcher></code-block>
+  </section>
+
+  <section>
+    <h2 id="reverse">Reverse when stacked</h2>
+    <p><code>data-layout-reverse</code> flips the order of the stacked items, so the last item ends up on top. Side by side, the items keep their DOM order. It works with or without <code>data-layout-threshold</code> and with <code>data-layout-limit</code>. A common use: put the text first in the DOM so it is read first, and show the image above it on narrow screens.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/switcher-reverse.html"
+      url="https://vanilla-breeze.com/switcher/reverse"
+      title="Reverse when stacked"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Reverse when stacked" data-escape><layout-switcher data-layout-reverse>
+  <article>Text (first in DOM, read first)</article>
+  <figure>Image (on top when stacked)</figure>
+</layout-switcher></code-block>
+
+    <p><strong>Accessibility:</strong> the reversal is visual only. Keyboard focus and screen readers still follow the DOM order, so when stacked, focus moves from the lower item up to the upper one (<a href="https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html">WCAG 2.4.3 Focus Order</a>). Use it only when the stacked order is presentational, for example a decorative image above text, and not when the items contain focusable controls in a meaningful sequence.</p>
   </section>
 
   <section>

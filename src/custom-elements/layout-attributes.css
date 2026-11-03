@@ -50,6 +50,11 @@
    Split: Two-column ratio grid
    -------------------------------------------------------------------------- */
 [data-layout="split"] {
+  /* Reset variant-only private props so an outer layout's values don't
+     inherit in (see layout-grid/styles.css). */
+  --_ratio: initial;
+  --_gap: initial;
+
   display: grid;
   grid-template-columns: var(--_ratio, 1fr 1fr);
   gap: var(--_gap, var(--size-xl));
@@ -541,6 +546,7 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
     "content" 1fr
     "footer"  auto
     / 1fr;
+  --_gap: initial;
   gap: var(--_gap, 0);
 }
 
@@ -564,6 +570,7 @@ main[data-layout^="sidebar-"] > aside   { grid-area: main-aside; }
    Media: Figure + content side by side (media object pattern)
    -------------------------------------------------------------------------- */
 [data-layout="media"] {
+  --_gap: initial;
   display: grid;
   grid-template: "figure content" auto / auto 1fr;
   gap: var(--_gap, var(--size-m));
@@ -686,6 +693,12 @@ main, article, section, aside:not(.float):not(.sidenote) {
    principal section collapsing to a one-word column being fixed
    (vanilla-breeze-vwez).
 
+   Stack joins the list when it is aligned start/center/end: the cross axis
+   no longer stretches, so its items are content-sized too (a <section> in
+   <layout-stack data-layout-align="center"> measured 0px wide). It is a
+   separate rule so its align values are not attributed to cluster, reel
+   and cover by the vocabulary reader.
+
    The `:not([data-container])` is the escape hatch: an author who deliberately
    wants container queries on such a child adds `data-container` and is simply
    excluded from this rule, so the `[data-container]` rule below establishes the
@@ -694,9 +707,13 @@ main, article, section, aside:not(.float):not(.sidenote) {
    which would otherwise tie/beat `[data-container]`.) */
 :is(
   layout-cluster, [data-layout="cluster"],
-  layout-reel,
+  layout-reel, [data-layout="reel"],
   :is(layout-cover, [data-layout="cover"])[data-layout-centered]
 ) > :is(main, article, section, aside):not([data-container]) {
+  container-type: normal;
+}
+
+:is(layout-stack, [data-layout="stack"]):is([data-layout-align="start"], [data-layout-align="center"], [data-layout-align="end"]) > :is(main, article, section, aside):not([data-container]) {
   container-type: normal;
 }
 
@@ -760,10 +777,7 @@ main, article, section, aside:not(.float):not(.sidenote) {
   }
 }
 
-/* Micro-card mode for very narrow card containers */
-@container card (width < 200px) {
-  [data-layout="grid"] {
-    grid-template-columns: 1fr;
-  }
-}
+/* (The old `@container card (width < 200px)` micro-card grid rule lived
+   here. It lost the cascade to the layout-grid file and only covered the
+   attribute form; the grid's min(…, 100%) track clamp covers the case.) */
 

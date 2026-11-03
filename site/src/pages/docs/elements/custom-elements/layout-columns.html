@@ -39,31 +39,31 @@ crumbLabel: Custom Elements
           <td><code>data-layout-column-count</code></td>
           <td><code>1</code>, <code>2</code>, <code>3</code>, <code>auto</code></td>
           <td><code>1</code></td>
-          <td>Number of columns; auto derives columns from --column-min-width above 48rem.</td>
+          <td>Number of columns. <code>2</code> and <code>3</code> are maximums: below about 14rem per column they drop to fewer columns, down to one on a phone. <code>auto</code> fits as many <code>--column-min-width</code> (38ch) columns as the element's own width allows.</td>
         </tr>
         <tr>
           <td><code>data-layout-measure</code></td>
           <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
           <td><code>normal</code></td>
-          <td>Line measure: --measure-narrow / --measure-normal / --measure-wide.</td>
+          <td>Line measure (<code>--measure-narrow</code> / <code>-normal</code> / <code>-wide</code>). With count 1 it caps the block. With counts 2 and 3 it caps each column, so the block is at most count &times; measure + gaps; without it they fill the container. With <code>auto</code> it sets the column width.</td>
         </tr>
         <tr>
           <td><code>data-layout-max</code></td>
           <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
           <td><code>normal</code></td>
-          <td>Same as data-layout-measure.</td>
+          <td>Same as <code>data-layout-measure</code> (ch-based, unlike <code>layout-center</code>'s rem-based <code>data-layout-max</code>).</td>
         </tr>
         <tr>
           <td><code>data-layout-centered</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Center the container (columns are centered by default).</td>
+          <td>No effect on columns: they are always centered. Accepted because the typographic core is shared with <code>layout-text</code>.</td>
         </tr>
         <tr>
-          <td><code>data-bleed</code> <small>(on any child)</small></td>
+          <td><code>data-bleed</code> <small>(on a direct child)</small></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Break out to the full viewport width.</td>
+          <td>Break out to the full width of the nearest query container (<code>main</code>, <code>article</code>, <code>section</code>), spanning every column. See <a href="/docs/elements/custom-elements/layout-text/#bleed">layout-text: Full-width breakout</a>.</td>
         </tr>
       </tbody>
   </table>
@@ -73,10 +73,11 @@ crumbLabel: Custom Elements
   <h2>How It Works</h2>
   <p>The layout-columns element is a column flow primitive. It controls:</p>
   <ul>
-    <li><strong>Measure</strong> — constrains line length to a readable width (65ch default)</li>
+    <li><strong>Measure</strong> — constrains line length to a readable width (<code>--measure-normal</code>, 65ch by default)</li>
     <li><strong>Column flow</strong> — responsive or explicit multi-column layout via CSS <code>columns</code></li>
     <li><strong>Break hygiene</strong> — prevents blockquotes, figures, tables, lists from splitting across columns</li>
-    <li><strong>Vertical rhythm</strong> — intelligent spacing between headings, paragraphs, and blocks (same rules as <code>layout-text</code>)</li>
+    <li><strong>Vertical rhythm</strong> — spacing between headings, paragraphs, and blocks (same rules as <code>layout-text</code>). It applies to <em>direct children</em>: put the headings and paragraphs straight inside, or use the attribute form on the <code>&lt;article&gt;</code> itself. Wrapping everything in one <code>&lt;article&gt;</code> child switches the rhythm off.</li>
+    <li><strong>Theme border reset</strong> — themes that rule under headings (brutalist, swiss) would clash with the column rules, so headings and paragraphs in the flow lose their borders. Nested components (<code>nav</code>, <code>details</code>, cards) keep theirs.</li>
     <li><strong>Inline padding</strong> — gutter so content doesn't touch screen edges on mobile</li>
   </ul>
   <p>It does <strong>not</strong> set font family, hyphenation defaults, or drop caps — those belong to the <code>&lt;article&gt;</code> element's existing <code>data-prose</code> and <code>data-drop-cap</code> attributes.</p>
@@ -88,43 +89,50 @@ crumbLabel: Custom Elements
   <h3>Single Column (Default)</h3>
   <p>Without any attributes, layout-columns provides a measure-constrained container with vertical rhythm:</p>
   <code-block language="html" show-lines label="Basic single column" data-escape><layout-columns>
-  <article>
-    <h2>Article Title</h2>
-    <p>Single-column content with measure constraint
-    and vertical rhythm applied automatically.</p>
-    <p>Line length stays readable at any viewport width.</p>
-  </article>
+  <h2>Article Title</h2>
+  <p>Single-column content with measure constraint
+  and vertical rhythm applied automatically.</p>
+  <p>Line length stays readable at any viewport width.</p>
 </layout-columns></code-block>
 
   <h3>Auto Columns</h3>
-  <p>The recommended responsive pattern. The browser fits as many columns as the container allows, based on a minimum column width of 38ch:</p>
+  <p>The recommended responsive pattern. The browser fits as many columns as the element's own width allows, based on a minimum column width of 38ch. It responds to the container, not the viewport, so a columns block in a narrow sidebar on a wide screen stays single-column:</p>
   <code-block language="html" show-lines label="Responsive auto columns" data-escape><layout-columns data-layout-column-count="auto"
                data-layout-align="justify">
-  <article data-prose>
-    <h2>Responsive Columns</h2>
-    <p>Browser determines column count from available width.
-    Single column on mobile, multi-column on wider screens.</p>
-  </article>
+  <h2>Responsive Columns</h2>
+  <p>Browser determines column count from available width.
+  Single column in a narrow container, more as it widens.</p>
 </layout-columns></code-block>
 
   <h3>Explicit Two Column</h3>
-  <p>Force a fixed column count. Best for controlled-width contexts:</p>
+  <p>Ask for a column count. The count is a maximum: when the element is too narrow for about 14rem per column it drops to fewer columns, down to one on a phone. Without a measure the block fills its container; add <code>data-layout-measure</code> to cap each column's line length:</p>
   <code-block language="html" show-lines label="Explicit two columns" data-escape><layout-columns data-layout-column-count="2">
-  <article>
-    <h2>Two Columns</h2>
-    <p>Explicit two-column layout. Use when the column count
-    must be fixed regardless of viewport width.</p>
-  </article>
+  <h2>Two Columns</h2>
+  <p>Two columns when there is room, one on a phone.</p>
+</layout-columns>
+
+<!-- Each column at most 45ch; the block centres in wide containers -->
+<layout-columns data-layout-column-count="2" data-layout-measure="narrow">
+  <h2>Two Narrow Columns</h2>
+  <p>…</p>
 </layout-columns></code-block>
 
   <h3>Narrow Measure</h3>
   <p>Tighter line length for sidebars and captions:</p>
   <code-block language="html" show-lines label="Narrow measure" data-escape><layout-columns data-layout-measure="narrow">
-  <article>
-    <h2>Narrow Reading</h2>
-    <p>45ch measure. Appropriate for short articles,
-    captions, or sidebar content.</p>
-  </article>
+  <h2>Narrow Reading</h2>
+  <p>45ch measure. Appropriate for short articles,
+  captions, or sidebar content.</p>
+</layout-columns></code-block>
+
+  <h3>Full-width breakout</h3>
+  <p>A direct child with <code>data-bleed</code> spans every column and breaks out to the width of the nearest query container:</p>
+  <code-block language="html" show-lines label="Bleed in a column flow" data-escape><layout-columns data-layout-column-count="2">
+  <p>…</p>
+  <figure data-bleed>
+    <img src="wide.jpg" alt="…" />
+  </figure>
+  <p>…</p>
 </layout-columns></code-block>
 
   <h3>Attribute Form</h3>
@@ -168,7 +176,7 @@ crumbLabel: Custom Elements
       <tr><td>1200px (desktop)</td><td>~3 columns</td></tr>
     </tbody>
   </table>
-  <p>For explicit counts (<code>data-layout-column-count="2"</code>), <code>column-width: unset</code> is applied to prevent the two CSS properties from fighting each other.</p>
+  <p>The widths are the element's own width (the table assumes it fills the viewport). For explicit counts (<code>data-layout-column-count="2"</code> or <code>"3"</code>), the count is paired with a 14rem column width (<code>columns: 14rem 2</code>). When both are set, CSS treats the count as a maximum, so fixed counts collapse in narrow containers without a media or container query.</p>
 </section>
 
 <section>
@@ -199,7 +207,7 @@ crumbLabel: Custom Elements
 
 <section>
   <h2>Spacing Rules</h2>
-  <p>Vertical rhythm matches <code>layout-text</code>:</p>
+  <p>Vertical rhythm matches <code>layout-text</code> and applies between direct children:</p>
   <table class="props-table">
     <thead>
       <tr>
@@ -213,7 +221,7 @@ crumbLabel: Custom Elements
       <tr><td>Before h3</td><td><code>var(--size-xl)</code></td></tr>
       <tr><td>Before h4/h5/h6</td><td><code>var(--size-l)</code></td></tr>
       <tr><td>After any heading</td><td><code>var(--size-s)</code></td></tr>
-      <tr><td>Before/after figures and pre</td><td><code>var(--size-l)</code></td></tr>
+      <tr><td>Before/after figure, pre, table, blockquote, video, <code>code-block</code>, <code>browser-window</code></td><td><code>var(--size-l)</code></td></tr>
     </tbody>
   </table>
 </section>
@@ -223,7 +231,7 @@ crumbLabel: Custom Elements
   <ul>
     <li><strong>Prefer <code>auto</code> over explicit counts</strong> — let the browser choose. Use explicit counts only in known-width containers.</li>
     <li><strong>Use <code>data-layout-align="justify"</code> with multi-column</strong> — ragged-right lines disrupt column rules in multi-column layouts.</li>
-    <li><strong>Pair with <code>article[data-prose]</code></strong> — layout-columns handles flow, article handles typographic quality (hyphenation, limits).</li>
+    <li><strong>Pair with <code>data-prose</code></strong> — put <code>data-layout="columns"</code> and <code>data-prose</code> on the same <code>&lt;article&gt;</code>. The layout handles flow, <code>data-prose</code> handles typographic quality (hyphenation, limits), and the rhythm still reaches the article's children.</li>
     <li><strong>Don't nest inside <code>layout-text</code></strong> — use one or the other. They serve the same rhythm role.</li>
   </ul>
 </section>

@@ -33,25 +33,25 @@ crumbLabel: Custom Elements
           <td><code>data-layout-measure</code></td>
           <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
           <td><code>normal</code></td>
-          <td>Line measure: --measure-narrow / --measure-normal / --measure-wide.</td>
+          <td>Line measure: <code>--measure-narrow</code> / <code>--measure-normal</code> / <code>--measure-wide</code> (45 / 65 / 80ch by default). See <a href="#measure">Measure</a>.</td>
         </tr>
         <tr>
           <td><code>data-layout-max</code></td>
           <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
           <td><code>normal</code></td>
-          <td>Same as data-layout-measure (the prose attribute form spells it this way).</td>
+          <td>Same as <code>data-layout-measure</code> (the prose attribute form spells it this way). ch-based: <code>narrow</code> is 45ch here but 40rem on <code>layout-center</code>.</td>
         </tr>
         <tr>
           <td><code>data-layout-centered</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Center the container (margin-inline: auto).</td>
+          <td>Center the container (<code>margin-inline: auto</code>). Off by default: the text keeps its position.</td>
         </tr>
         <tr>
-          <td><code>data-bleed</code> <small>(on any child)</small></td>
+          <td><code>data-bleed</code> <small>(on a direct child)</small></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Break out to the full viewport width.</td>
+          <td>Break out to the full width of the nearest query container. See <a href="#bleed">Full-width breakout</a>.</td>
         </tr>
       </tbody>
     </table>
@@ -61,12 +61,86 @@ crumbLabel: Custom Elements
     <h2>How It Works</h2>
     <p>The layout-text element creates a container optimized for long-form reading content. It:</p>
     <ul>
-      <li>Sets a maximum line width of 65ch (characters) for optimal readability</li>
+      <li>Sets a maximum line width of <code>--measure-normal</code> (65ch by default; <code>data-fluid</code> makes it fluid, and the dyslexia and large-text themes shorten it)</li>
       <li>Applies consistent vertical spacing between block elements</li>
       <li>Uses larger margins before major headings (proximity principle)</li>
       <li>Tightens spacing after headings so they associate with their content</li>
-      <li>Provides extra breathing room around figures and code blocks</li>
+      <li>Provides extra breathing room around figures, <code>pre</code>, <code>code-block</code>, tables, blockquotes, video and <code>browser-window</code></li>
     </ul>
+    <p>The rhythm applies between <em>direct children</em>. Content wrapped in one extra element (a single <code>&lt;article&gt;</code> inside) only gets the browser's default spacing; put the content straight inside, or use the attribute form on the article itself.</p>
+  </section>
+
+  <section>
+    <h2>Attribute forms</h2>
+    <p>The same typographic core (measure, rhythm, centering, bleed) is available without a wrapper element:</p>
+    <ul>
+      <li><code>data-layout="prose"</code>: identical to <code>&lt;layout-text&gt;</code>. Spell the measure <code>data-layout-max</code> (or <code>data-layout-measure</code>; both work).</li>
+      <li><code>data-layout="columns"</code>: adds multi-column flow; see <a href="/docs/elements/custom-elements/layout-columns/"><code>&lt;layout-columns&gt;</code></a>.</li>
+    </ul>
+
+    <code-block language="html" show-lines label="Prose attribute form" data-escape><article data-layout="prose" data-layout-max="narrow" data-layout-centered>
+  <h1>Article Title</h1>
+  <p>Measure, rhythm and centering on the article itself.</p>
+</article></code-block>
+  </section>
+
+  <section>
+    <h2 id="measure">Measure</h2>
+    <p>The default line width is <code>--measure-normal</code>. <code>data-layout-measure</code> (or <code>data-layout-max</code>) picks <code>narrow</code>, <code>normal</code> or <code>wide</code>. The tokens are 45, 65 and 80ch by default. Under <code>data-fluid</code> they become clamps that grow with the viewport, and the accessibility themes adjust them (dyslexia 55ch, large text 60ch).</p>
+    <p><strong>Narrow containers:</strong> in a query container narrower than 30rem (a sidebar, a card, a phone-width column), the measure is released to 100%, so the text fills the space rather than leaving a gap.</p>
+
+    <h3>Reading width only: <code>article[data-measure]</code></h3>
+    <p>For an article that needs the reading width but not the rhythm, use <code>data-measure</code> on the <code>&lt;article&gt;</code>. It is always centered. Bare or <code>normal</code> uses <code>--measure-normal</code>; <code>narrow</code> and <code>wide</code> use the other two tokens. <code>data-bleed</code> works on its direct children too.</p>
+
+    <code-block language="html" show-lines label="article data-measure" data-escape><article data-measure="narrow">
+  <p>Constrained to --measure-narrow, centered, no rhythm rules.</p>
+</article></code-block>
+  </section>
+
+  <section>
+    <h2>Centering</h2>
+    <p>layout-text keeps its position by default. Add <code>data-layout-centered</code> to center it in its container. Since it already limits its own width, it needs no <code>layout-center</code> wrapper.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-text-centered.html"
+      url="https://vanilla-breeze.com/layout-text/centered"
+      title="Centered article layout"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Centered article layout" data-escape><layout-text data-layout-centered data-layout-measure="narrow">
+  <h2>Centered Article</h2>
+  <p>layout-text limits its own line length; data-layout-centered centers it.</p>
+</layout-text></code-block>
+  </section>
+
+  <section>
+    <h2 id="bleed">Full-width breakout</h2>
+    <p>Add <code>data-bleed</code> to a <em>direct child</em> (a figure, a table, a code block) to break it out of the measure. The child spans the full width of the nearest query container: <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are query containers by default, as is any element with <code>data-container</code>.</p>
+    <ul>
+      <li>It works centered or not. Uncentered text bleeds from its start edge across the container; centered text bleeds evenly on both sides.</li>
+      <li>It measures the container, not the viewport, so it never adds a horizontal scrollbar.</li>
+      <li>If the text host is itself a query container (<code>&lt;article data-layout="prose"&gt;</code>, <code>article[data-measure]</code>), it stops being one while it holds a bleed child, so the bleed reaches the next container out. Add <code>data-container</code> to the host to keep it as a container (the bleed then fills only the host).</li>
+      <li>With no query container above it at all, the bleed falls back to the viewport width.</li>
+      <li>In <code>layout-columns</code>, a bleed child also spans every column.</li>
+    </ul>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-text-bleed.html"
+      url="https://vanilla-breeze.com/layout-text/bleed"
+      title="Full-width breakout"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Bleed" data-escape><main>
+  <layout-text data-layout-centered>
+    <p>Text at the reading measure…</p>
+    <figure data-bleed>
+      <img src="wide.jpg" alt="…" />
+    </figure>
+    <p>…and back to the measure.</p>
+  </layout-text>
+</main></code-block>
   </section>
 
   <section>
@@ -100,7 +174,7 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Spacing Rules</h2>
-    <p>The prose element applies different spacing based on element types:</p>
+    <p>layout-text spaces its direct children according to their element type:</p>
 
     <table class="props-table">
       <thead>
@@ -142,7 +216,7 @@ crumbLabel: Custom Elements
           <td>Groups related lists</td>
         </tr>
         <tr>
-          <td>Before/after figures and pre</td>
+          <td>Before/after figure, pre, table, blockquote, video, <code>code-block</code>, <code>browser-window</code></td>
           <td><code>var(--size-l)</code></td>
           <td>Extra breathing room for media</td>
         </tr>
@@ -186,29 +260,13 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <h3>With layout-center for Page Layout</h3>
-
-    <browser-window
-      src="/docs/snippets/demos/layout-text-centered.html"
-      url="https://vanilla-breeze.com/layout-text/centered"
-      title="Centered article layout"
-      shadow>
-    </browser-window>
-
-    <code-block language="html" show-lines label="Centered article layout" data-escape><layout-center data-layout-max="narrow">
-  <layout-text>
-    <h2>Centered Article</h2>
-    <p>Combining layout-text with layout-center creates an optimal reading experience.</p>
-    <p>This pattern is common for blog posts, documentation, and long-form content.</p>
-  </layout-text>
-</layout-center></code-block>
   </section>
 
   <section>
     <h2>Best Practices</h2>
     <ul>
       <li><strong>Use for long-form content only</strong> - layout-text is designed for articles, documentation, and similar content. Don't use it for UI layouts.</li>
-      <li><strong>Combine with layout-center</strong> - For page layouts, wrap layout-text in a layout-center to constrain width.</li>
+      <li><strong>Center with <code>data-layout-centered</code></strong> - layout-text already limits its own width, so it doesn't need a <code>layout-center</code> wrapper to constrain it. Use <code>layout-center</code> only when the page needs a wider frame around the text (the blog post example above). Note that the two <code>data-layout-max</code> attributes use different scales: <code>narrow</code> is 40rem on <code>layout-center</code> and 45ch on layout-text.</li>
       <li><strong>Semantic HTML</strong> - The spacing rules work best with proper semantic markup (h2 before h3, etc.).</li>
       <li><strong>Avoid nesting layout elements</strong> - layout-stack, layout-grid, and similar elements inside prose may have unexpected spacing.</li>
     </ul>
