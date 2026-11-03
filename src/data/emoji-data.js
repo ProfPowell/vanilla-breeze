@@ -1,7 +1,8 @@
 /**
  * emoji-data: Curated emoji dataset for Vanilla Breeze
  *
- * ~200–250 commonly used emoji organized by group.
+ * 211 commonly used emoji organized by group (the extended set adds the
+ * full gemoji shortcode list — see emoji-data-extended.js).
  * Shared by emoji-init.js (shortcode replacement) and emoji-picker (browsing).
  *
  * @example
@@ -327,32 +328,53 @@ export const EMOJI_GROUP_ICONS = {
 };
 
 // ── Extended emoji support ───────────────────────────────────────────
+//
+// This module is bundled separately into several outputs (vanilla-breeze.js,
+// -extras.js, -autoload.js, components/emoji-picker.js), so a page can hold
+// more than one copy of it. The extended set therefore never talks to "the"
+// copy: it pushes its batch into one shared array on a Symbol.for() global,
+// and every copy merges whatever batches it has not seen yet, lazily, on each
+// public call. No copy deletes or overwrites the slot, so data-emoji and
+// <emoji-picker> both see the extended set in any load order.
 
-/** @type {object[]} Extended entries registered at runtime */
+/** Global registry key shared with emoji-data-extended.js */
+export const EXTENDED_REGISTRY = Symbol.for('vanilla-breeze.emoji-extended');
+
+/** Event dispatched on document by emoji-data-extended.js once it has registered */
+export const EXTENDED_EVENT = 'vb:emoji-extended';
+
+/** @type {Array<Array<[string, string, string, string]>>} */
+const extendedBatches = (/** @type {any} */ (globalThis))[EXTENDED_REGISTRY] ??= [];
+let mergedBatches = 0;
+
+/** @type {object[]} Extended entries merged into this copy */
 const EXTENDED_ENTRIES = [];
 
 /**
- * Register extended emoji entries (from emoji-data-extended.js).
- * Each entry is [shortcode, emoji, name, group].
- * Skips shortcodes already in the core set.
- * @param {Array<[string, string, string, string]>} entries
+ * Merge extended batches this copy has not seen yet.
+ * Each entry is [shortcode, emoji, name, group]; shortcodes already present
+ * (core or an earlier batch) are skipped.
  */
-function registerExtended(entries) {
-  for (const [shortcode, emoji, name, group] of entries) {
-    if (EMOJI_MAP.has(shortcode)) continue;
-    const entry = { shortcode, emoji, name, keywords: [], group };
-    EMOJI_MAP.set(shortcode, entry);
-    EXTENDED_ENTRIES.push(entry);
+function syncExtended() {
+  while (mergedBatches < extendedBatches.length) {
+    const batch = extendedBatches[mergedBatches++];
+    for (const [shortcode, emoji, name, group] of batch) {
+      if (EMOJI_MAP.has(shortcode)) continue;
+      const entry = { shortcode, emoji, name, keywords: [], group };
+      EMOJI_MAP.set(shortcode, entry);
+      EXTENDED_ENTRIES.push(entry);
+    }
   }
 }
 
-// Expose for the standalone extended module
-globalThis.__vbEmojiRegister = registerExtended;
-
-// Pick up extended data if it loaded before us
-if (globalThis.__vbEmojiExtended) {
-  registerExtended(globalThis.__vbEmojiExtended);
-  delete globalThis.__vbEmojiExtended;
+/**
+ * Number of extended entries merged so far. Changes when the extended set
+ * arrives, so consumers that cache a rendering can tell when to rebuild.
+ * @returns {number}
+ */
+export function extendedCount() {
+  syncExtended();
+  return EXTENDED_ENTRIES.length;
 }
 
 // ── Public API ──────────────────────────────────────────────────────
@@ -363,6 +385,7 @@ if (globalThis.__vbEmojiExtended) {
  * @returns {object|null}
  */
 export function resolveEmoji(shortcode) {
+  syncExtended();
   const direct = EMOJI_MAP.get(shortcode);
   if (direct) return direct;
 
@@ -378,6 +401,7 @@ export function resolveEmoji(shortcode) {
  * @returns {object[]}
  */
 export function getByGroup(group) {
+  syncExtended();
   const core = ENTRIES.filter(e => e.group === group);
   const ext = EXTENDED_ENTRIES.filter(e => e.group === group);
   return ext.length > 0 ? core.concat(ext) : core;
@@ -389,6 +413,7 @@ export function getByGroup(group) {
  * @returns {object[]}
  */
 export function searchEmoji(query) {
+  syncExtended();
   const q = query.toLowerCase().trim();
   const all = EXTENDED_ENTRIES.length > 0 ? ENTRIES.concat(EXTENDED_ENTRIES) : ENTRIES;
   if (!q) return all;

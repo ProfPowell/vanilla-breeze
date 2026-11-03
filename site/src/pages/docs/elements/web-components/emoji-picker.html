@@ -15,19 +15,20 @@ crumbLabel: Web Components
     <p>The <code>&lt;emoji-picker&gt;</code> component provides an accessible popup for browsing, searching, and selecting emoji. It can insert directly into a target <code>input</code>, <code>textarea</code>, or <code>contenteditable</code> element, or dispatch events for custom handling.</p>
 
     <browser-window
-      src="/docs/examples/demos/emoji-basic.html"
+      src="/docs/examples/demos/emoji-picker-basic.html"
       url="https://vanilla-breeze.com/emoji-picker"
       title="Emoji Picker Demo"
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Basic emoji picker" data-escape><textarea id="msg" rows="3"></textarea>
+    <code-block language="html" show-lines label="Basic emoji picker" data-escape><label for="msg">Message</label>
+<textarea id="msg" rows="3"></textarea>
 <emoji-picker for="msg">
-  <button data-trigger type="button">😀</button>
+  <button data-trigger type="button" aria-label="Insert emoji">😀</button>
 </emoji-picker></code-block>
 
     <aside class="note">
-      <strong>~200 curated emoji by default.</strong> A focused core subset organized into 9 categories. Load <a href="/docs/attributes/data-emoji/#extended-emoji-set"><code>emoji-extended.js</code></a> to add ~1,700 more (the full GitHub/Slack shortcode set). The same dataset powers the <a href="/docs/attributes/data-emoji/"><code>data-emoji</code></a> attribute for shortcode replacement.
+      <strong>211 curated emoji by default.</strong> A focused core subset organized into 9 categories. Load the <a href="/docs/attributes/data-emoji/#extended-emoji-set">extended set</a> (<code>/cdn/emoji-extended.js</code> or <code>import 'vanilla-breeze/emoji-extended'</code>, ~23&nbsp;KB gzipped) to add about 1,700 shortcodes &mdash; roughly 1,640 more emoji, the full GitHub/Slack set. Glyphs listed under several shortcodes appear once in the picker; every shortcode stays searchable. The same dataset powers the <a href="/docs/attributes/data-emoji/"><code>data-emoji</code></a> attribute, and the extended set reaches both whichever loads first.
     </aside>
 
     <aside class="note">
@@ -65,8 +66,83 @@ crumbLabel: Web Components
           <td><code>24</code></td>
           <td>Maximum number of recently used emoji to store.</td>
         </tr>
+        <tr>
+          <td><code>data-trigger</code></td>
+          <td>boolean (on a child button)</td>
+          <td>&mdash;</td>
+          <td>Marks the trigger button. Without one, the first child <code>&lt;button&gt;</code> is used, else a trigger is created.</td>
+        </tr>
       </tbody>
     </table>
+
+    <h3>Localization</h3>
+    <p>Every UI string can be overridden with a <code>data-label-*</code> attribute on the host. Emoji names come from the CLDR/gemoji dataset and are English.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-label-trigger</code></td><td>&ldquo;Open emoji picker&rdquo; (only when the trigger has no text or <code>aria-label</code>)</td></tr>
+        <tr><td><code>data-label-dialog</code></td><td>&ldquo;Emoji picker&rdquo;</td></tr>
+        <tr><td><code>data-label-search</code></td><td>&ldquo;Search emoji&rdquo; (search input name)</td></tr>
+        <tr><td><code>data-label-placeholder</code></td><td>&ldquo;Search emoji&hellip;&rdquo;</td></tr>
+        <tr><td><code>data-label-categories</code></td><td>&ldquo;Emoji categories&rdquo; (toolbar name)</td></tr>
+        <tr><td><code>data-label-emoji</code></td><td>&ldquo;Emoji&rdquo; (listbox name)</td></tr>
+        <tr><td><code>data-label-recent</code></td><td>&ldquo;Recently used&rdquo;</td></tr>
+        <tr><td><code>data-label-empty</code></td><td>&ldquo;No emoji found&rdquo;</td></tr>
+        <tr><td><code>data-label-results</code></td><td>&ldquo;{count} emoji found&rdquo; &mdash; <code>{count}</code> is replaced</td></tr>
+        <tr><td><code>data-label-smileys</code>, <code>-people</code>, <code>-animals</code>, <code>-food</code>, <code>-travel</code>, <code>-activities</code>, <code>-objects</code>, <code>-symbols</code>, <code>-flags</code></td><td>Category names (&ldquo;Smileys &amp; Emotion&rdquo;, &hellip;)</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="html" show-lines label="Spanish labels" data-escape><emoji-picker for="msg"
+  data-label-placeholder="Buscar emoji…"
+  data-label-results="{count} emoji encontrados"
+  data-label-empty="Sin resultados"
+  data-label-recent="Usados recientemente"
+  data-label-smileys="Caritas y emociones"></emoji-picker></code-block>
+  </section>
+
+  <section>
+    <h2>Methods and Properties</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>open()</code></td>
+          <td>Open the panel and focus the search input.</td>
+        </tr>
+        <tr>
+          <td><code>close()</code></td>
+          <td>Close the panel. Focus is not moved.</td>
+        </tr>
+        <tr>
+          <td><code>toggle()</code></td>
+          <td>Open when closed, close when open.</td>
+        </tr>
+        <tr>
+          <td><code>isOpen</code></td>
+          <td>Read-only boolean.</td>
+        </tr>
+        <tr>
+          <td><code>ready</code></td>
+          <td>Promise that resolves once the panel is built (the emoji data loads asynchronously). <code>data-upgraded</code> is set at the same moment.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The methods are safe to call at any time: before the data has loaded, <code>open()</code> and <code>toggle()</code> are queued and applied once the panel exists, and <code>close()</code> cancels a queued open.</p>
+
+    <code-block language="javascript" show-lines label="Open programmatically" data-escape>const picker = document.querySelector('emoji-picker');
+await picker.ready;   // optional — open() would queue anyway
+picker.open();</code-block>
   </section>
 
   <section>
@@ -83,7 +159,7 @@ crumbLabel: Web Components
         <tr>
           <td><code>emoji-picker:select</code></td>
           <td><code>{ shortcode, emoji, name, keywords }</code></td>
-          <td>Fired when an emoji is selected.</td>
+          <td>Fired when an emoji is selected, after it was inserted into the <code>for</code> target (which also receives a native <code>input</code> event with <code>inputType: "insertText"</code>).</td>
         </tr>
         <tr>
           <td><code>emoji-picker:open</code></td>
@@ -138,6 +214,7 @@ document.querySelector('emoji-picker')
 
   <section>
     <h2>Keyboard Navigation</h2>
+    <p>The panel has three Tab stops: the search input, the category toolbar, and the emoji list. Tabbing past the list (or anywhere outside the component) closes the picker.</p>
     <table class="props-table">
       <thead>
         <tr>
@@ -154,62 +231,69 @@ document.querySelector('emoji-picker')
         </tr>
         <tr>
           <td><kbd>Escape</kbd></td>
-          <td>Any</td>
-          <td>Close picker, return focus to trigger</td>
+          <td>Anywhere in the picker</td>
+          <td>Close picker, return focus to the trigger</td>
         </tr>
         <tr>
           <td><kbd>Arrow Down</kbd></td>
           <td>Search input</td>
-          <td>Move focus to first emoji in grid</td>
+          <td>Move focus into the emoji list</td>
         </tr>
         <tr>
-          <td><kbd>Arrow Up</kbd></td>
-          <td>Grid (first row)</td>
-          <td>Return focus to search input</td>
+          <td><kbd>Arrow Left</kbd> / <kbd>Arrow Right</kbd></td>
+          <td>Category toolbar</td>
+          <td>Previous/next category (wraps; mirrored in right-to-left pages). <kbd>Home</kbd>/<kbd>End</kbd> jump to the first/last. <kbd>Enter</kbd> scrolls to the category.</td>
         </tr>
         <tr>
           <td><kbd>Arrow keys</kbd></td>
-          <td>Grid</td>
-          <td>Navigate between emoji (8-column grid)</td>
+          <td>Emoji list</td>
+          <td>Move by the visual layout: Up/Down go to the nearest emoji in the row above/below, across category headings. Left/Right follow reading order (mirrored in RTL).</td>
+        </tr>
+        <tr>
+          <td><kbd>Arrow Up</kbd></td>
+          <td>Emoji list, first row</td>
+          <td>Return focus to the search input</td>
         </tr>
         <tr>
           <td><kbd>Home</kbd> / <kbd>End</kbd></td>
-          <td>Grid</td>
-          <td>Jump to first/last emoji</td>
+          <td>Emoji list</td>
+          <td>First/last visible emoji</td>
+        </tr>
+        <tr>
+          <td><kbd>Page Down</kbd> / <kbd>Page Up</kbd></td>
+          <td>Emoji list</td>
+          <td>First emoji of the next category / of the current (then previous) category</td>
         </tr>
         <tr>
           <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
-          <td>Grid</td>
-          <td>Select focused emoji</td>
-        </tr>
-        <tr>
-          <td><kbd>Tab</kbd></td>
-          <td>Grid</td>
-          <td>Close picker</td>
+          <td>Emoji list</td>
+          <td>Select the focused emoji</td>
         </tr>
       </tbody>
     </table>
+    <p>After a selection, focus goes to the <code>for</code> target (the caret sits after the inserted emoji). Without a target it returns to the trigger.</p>
   </section>
 
   <section>
     <h2>Recents</h2>
-    <p>Selected emoji are stored in <code>localStorage</code> (key: <code>vb-emoji-recent</code>) and shown as a &ldquo;Recently Used&rdquo; section at the top of the grid. The <code>recent-limit</code> attribute controls how many are kept.</p>
+    <p>Selected emoji are stored in <code>localStorage</code> (key: <code>vb-emoji-recent</code>) and shown as a &ldquo;Recently used&rdquo; section at the top of the grid. The <code>recent-limit</code> attribute controls how many are kept.</p>
   </section>
 
   <section>
     <h2>Progressive Enhancement</h2>
-    <p>Without JavaScript, the trigger button remains visible but non-functional. The picker panel is hidden by default. Users can still type emoji directly using their OS emoji keyboard (<kbd>Cmd+Ctrl+Space</kbd> on macOS, <kbd>Win+.</kbd> on Windows).</p>
+    <p>Without JavaScript the <code>[data-trigger]</code> button is hidden (<code>emoji-picker:not(:defined)</code>), so there is no dead control. The text field still works and users can type emoji with their OS emoji keyboard (<kbd>Cmd+Ctrl+Space</kbd> on macOS, <kbd>Win+.</kbd> on Windows) &mdash; consider saying so in the field&rsquo;s hint.</p>
+    <p>Once defined, the trigger works immediately: a click while the emoji data is still loading opens the panel as soon as it is built.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The picker panel uses <code>role="dialog"</code> with a descriptive label.</li>
-      <li>Category tabs use <code>role="tablist"</code> / <code>role="tab"</code>.</li>
-      <li>The emoji grid uses <code>role="grid"</code> / <code>role="gridcell"</code>.</li>
-      <li>Full keyboard navigation with arrow keys, Home/End, and Escape.</li>
-      <li>Focus is managed: search input on open, trigger on close.</li>
-      <li>Each emoji button has a <code>title</code> with the emoji name and shortcode.</li>
+      <li>The trigger carries <code>aria-haspopup="dialog"</code>, <code>aria-expanded</code> and <code>aria-controls</code>. A trigger with visible text keeps it as its name; an emoji-only trigger needs an <code>aria-label</code> (or gets <code>data-label-trigger</code>).</li>
+      <li>The panel is a <code>role="dialog"</code> in the top layer (Popover API), so overflow containers and dialogs never clip it. It opens below the trigger aligned to its start edge (right edge in RTL), flips above when there is no room, and stays inside the viewport.</li>
+      <li>Categories are plain buttons in a <code>role="toolbar"</code> with a roving tab stop and arrow keys; the category in view is marked <code>aria-current="true"</code> as the list scrolls.</li>
+      <li>The emoji list is a <code>role="listbox"</code> of labelled <code>role="group"</code> categories; each emoji is a <code>role="option"</code> named with its CLDR name (the tooltip shows the shortcode). Exactly one option is tabbable.</li>
+      <li>The search input has <code>aria-controls</code> pointing at the list, and a polite <code>role="status"</code> region announces the result count or &ldquo;No emoji found&rdquo;.</li>
+      <li>Insertion is a real edit: it goes through the browser&rsquo;s editing command, so undo works and the target receives an <code>input</code> event. A selection elsewhere on the page is never touched.</li>
     </ul>
   </section>
 

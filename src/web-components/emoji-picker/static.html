@@ -17,8 +17,9 @@
      *
      * Without JS, the text field still works — users can type emoji using
      * their OS emoji keyboard (Cmd+Ctrl+Space on macOS, Win+. on Windows).
-     * The trigger button remains visible but non-functional. The picker
-     * panel is not created.
+     * The trigger button is hidden while the element is undefined
+     * (emoji-picker:not(:defined) > [data-trigger]) so there is no dead
+     * control, and the picker panel is never created.
      *
      * This is the correct VB progressive enhancement story:
      * - the text field is the baseline
@@ -72,9 +73,9 @@
       min-height: 4rem;
     }
 
-    /* Without JS, emoji-picker renders as inline-block with the trigger visible */
-    emoji-picker {
-      display: inline-block;
+    /* Without JS there is nothing for the trigger to do: hide it */
+    emoji-picker:not(:defined) > [data-trigger] {
+      display: none;
     }
 
     emoji-picker button {

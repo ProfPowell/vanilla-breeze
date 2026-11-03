@@ -660,7 +660,10 @@ async function buildCDN() {
     });
   }
 
-  // Build extended emoji dataset (opt-in, separate file)
+  // Build extended emoji dataset (opt-in, separate file). Shipped in the npm
+  // package as `vanilla-breeze/emoji-extended`; it pushes into the shared
+  // Symbol.for('vanilla-breeze.emoji-extended') registry that every bundled
+  // copy of emoji-data.js reads, so it works with any entry point.
   const emojiExtPath = join(SRC, 'data', 'emoji-data-extended.js');
   if (existsSync(emojiExtPath)) {
     await esbuild.build({

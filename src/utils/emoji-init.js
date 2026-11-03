@@ -25,7 +25,10 @@
 
 import { registerInit } from './_init-registry.js';
 
-// Lazy-loaded: emoji data (~31 KB) is only imported when [data-emoji] elements exist
+// Deferred evaluation, not a separate download: esbuild inlines this
+// import() into every CDN bundle (no code splitting), so the data ships with
+// the bundle and is only *evaluated* once a [data-emoji] element exists. On
+// the unbundled /src graph it is a real lazy fetch.
 let resolveEmoji = null;
 
 async function loadEmojiData() {
@@ -33,6 +36,18 @@ async function loadEmojiData() {
   const mod = await import('../data/emoji-data.js');
   resolveEmoji = mod.resolveEmoji;
 }
+
+// The extended set can arrive after containers were already scanned (it is a
+// separate opt-in module and load order is free). resolveEmoji() merges it
+// lazily from the shared registry, so a rescan of enhanced containers is all
+// that is needed. Inputs resolve on their next input event.
+document.addEventListener('vb:emoji-extended', () => {
+  if (!resolveEmoji) return;
+  for (const el of document.querySelectorAll('[data-emoji-init]')) {
+    if (INPUT_TAGS.has(el.tagName)) continue;
+    processTextNodes(el, el.getAttribute('data-emoji-unknown') || 'keep');
+  }
+});
 
 const SELECTOR = '[data-emoji]';
 const SHORTCODE_RE = /:([a-z0-9_+-]+):/g;
