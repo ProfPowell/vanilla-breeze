@@ -13,7 +13,7 @@ crumbLabel: Web Components
 <section>
   <h2>Overview</h2>
   <p>A web component that progressively enhances a fenced Mermaid code block into a rendered SVG figure. Without JavaScript the page shows the source as a readable code block; with JavaScript the source is replaced by an SVG <code>&lt;figure&gt;</code>.</p>
-  <p>Mermaid is loaded from a CDN URL via dynamic <code>import()</code> only when a <code>&lt;diagram-wc&gt;</code> reaches setup, so the library never lands in VB's core or pack bundles.</p>
+  <p>Mermaid is loaded from a CDN URL via dynamic <code>import()</code> only when a <code>&lt;diagram-wc&gt;</code> renders, so the library never lands in VB's core or pack bundles.</p>
 
   <browser-window
     src="/docs/examples/demos/diagram-wc-basic.html"
@@ -24,6 +24,8 @@ crumbLabel: Web Components
 
   <code-block language="html" show-lines label="Basic usage" data-escape><diagram-wc type="mermaid" caption="Login flow">
   <pre><code class="language-mermaid">flowchart LR
+    accTitle: Login flow
+    accDescr: Valid credentials create a session; invalid ones return to the visit step.
     A[Visit] --> B{Valid creds?}
     B -->|Yes| C[Session]
     B -->|No| A
@@ -55,13 +57,15 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Mermaid <code>themeVariables</code></th><th>VB token</th></tr></thead>
     <tbody>
-      <tr><td><code>primaryColor</code>, <code>primaryBorderColor</code></td><td><code>--color-primary</code></td></tr>
-      <tr><td><code>primaryTextColor</code>, <code>titleColor</code>, <code>actorTextColor</code>, <code>noteTextColor</code></td><td><code>--color-text</code></td></tr>
-      <tr><td><code>secondaryColor</code>, <code>secondBkg</code></td><td><code>--color-secondary</code></td></tr>
-      <tr><td><code>tertiaryColor</code>, <code>tertiaryBkg</code></td><td><code>--color-accent</code></td></tr>
+      <tr><td><code>primaryColor</code></td><td><code>--color-primary</code> (falls back to <code>--color-interactive</code>)</td></tr>
+      <tr><td><code>secondaryColor</code></td><td><code>--color-secondary</code> (falls back to <code>--color-surface-raised</code>)</td></tr>
+      <tr><td><code>tertiaryColor</code></td><td><code>--color-accent</code> (falls back to <code>--color-primary</code>)</td></tr>
+      <tr><td><code>primaryTextColor</code>, <code>secondaryTextColor</code>, <code>tertiaryTextColor</code>, <code>nodeTextColor</code>, <code>titleColor</code>, <code>actorTextColor</code>, <code>signalColor</code>, <code>signalTextColor</code>, <code>labelTextColor</code>, <code>loopTextColor</code>, <code>noteTextColor</code></td><td><code>--color-text</code></td></tr>
       <tr><td><code>mainBkg</code>, <code>background</code>, <code>actorBkg</code>, <code>edgeLabelBackground</code></td><td><code>--color-surface</code></td></tr>
-      <tr><td><code>lineColor</code>, <code>nodeBorder</code>, <code>gridColor</code>, <code>defaultLinkColor</code>, <code>actorBorder</code>, <code>noteBorderColor</code></td><td><code>--color-border</code></td></tr>
-      <tr><td><code>clusterBkg</code>, <code>noteBkgColor</code>, <code>labelBoxBkgColor</code></td><td><code>--color-surface-raised</code></td></tr>
+      <tr><td><code>secondBkg</code>, <code>tertiaryBkg</code>, <code>clusterBkg</code>, <code>noteBkgColor</code>, <code>labelBoxBkgColor</code></td><td><code>--color-surface-raised</code></td></tr>
+      <tr><td><code>primaryBorderColor</code>, <code>secondaryBorderColor</code>, <code>tertiaryBorderColor</code>, <code>lineColor</code>, <code>nodeBorder</code>, <code>gridColor</code>, <code>clusterBorder</code>, <code>actorBorder</code>, <code>actorLineColor</code>, <code>labelBoxBorderColor</code>, <code>noteBorderColor</code></td><td><code>--color-border</code></td></tr>
+      <tr><td><code>defaultLinkColor</code></td><td><code>--color-text-muted</code></td></tr>
+      <tr><td><code>cScale0</code>–<code>cScale11</code>, <code>git0</code>–<code>git7</code> (mindmap, gitGraph)</td><td>Cycle <code>--color-primary</code>, <code>--color-accent</code>, <code>--color-secondary</code>; labels pinned to <code>--color-text</code></td></tr>
       <tr><td><code>fontFamily</code></td><td><code>--font-sans</code></td></tr>
       <tr><td><code>fontSize</code></td><td><code>--font-size-m</code></td></tr>
     </tbody>
@@ -92,7 +96,9 @@ crumbLabel: Web Components
 
   <p>For manual wiring (no <code>data-auto-mermaid</code>):</p>
 
-  <code-block language="javascript" show-lines label="Manual wiring" data-escape>import { enhanceMermaidFences } from 'vanilla-breeze/dist/cdn/components/diagram-wc.js';
+  <code-block language="javascript" show-lines label="Manual wiring" data-escape>// The per-component CDN build of diagram-wc re-exports enhanceMermaidFences
+// (and registers <diagram-wc> as a side effect).
+import { enhanceMermaidFences } from 'vanilla-breeze/dist/cdn/components/diagram-wc.js';
 
 document.addEventListener('markdown-viewer:rendered', (e) => {
   enhanceMermaidFences(e.detail.node);
@@ -105,11 +111,10 @@ document.addEventListener('markdown-viewer:rendered', (e) => {
     <thead><tr><th>Attribute</th><th>Purpose</th></tr></thead>
     <tbody>
       <tr><td><code>type</code></td><td>Backend selector. v1 only supports <code>"mermaid"</code>; reserved for future <code>"d2"</code>, <code>"kroki"</code>.</td></tr>
-      <tr><td><code>src</code></td><td>URL of a diagram source file. Inline <code>&lt;pre&gt;&lt;code&gt;</code> takes priority if absent.</td></tr>
+      <tr><td><code>src</code></td><td>URL of a diagram source file (<code>.mmd</code>). Takes priority over inline <code>&lt;pre&gt;&lt;code&gt;</code> source. Fetched once per URL — moving the element does not refetch.</td></tr>
       <tr><td><code>caption</code></td><td>Rendered as <code>&lt;figcaption&gt;</code> below the SVG.</td></tr>
       <tr><td><code>loading="lazy"</code></td><td>Defers render until the element scrolls into view.</td></tr>
       <tr><td><code>data-theme-base</code></td><td>Mermaid base theme (<code>base|default|dark|forest|neutral</code>). Default <code>"base"</code> so VB tokens win.</td></tr>
-      <tr><td><code>data-mermaid-src</code></td><td>Override the URL Mermaid loads from (per-element). The default is jsDelivr; <code>window.VB_MERMAID_URL</code> overrides globally.</td></tr>
       <tr><td><code>min-height</code></td><td>CSS length reserved for the diagram before render to prevent layout shift.</td></tr>
     </tbody>
   </table>
@@ -120,24 +125,61 @@ document.addEventListener('markdown-viewer:rendered', (e) => {
   <table class="props-table">
     <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
     <tbody>
-      <tr><td><code>diagram-wc:ready</code></td><td><code>{ svg, type, source }</code></td><td>After successful render</td></tr>
-      <tr><td><code>diagram-wc:error</code></td><td><code>{ error, source, type }</code></td><td>Render failed; the <code>&lt;pre&gt;</code> fallback is restored</td></tr>
-      <tr><td><code>diagram-wc:source-changed</code></td><td><code>{ source }</code></td><td>The <code>.source</code> setter was used</td></tr>
+      <tr><td><code>diagram-wc:ready</code></td><td><code>{ svg, type, source }</code></td><td>After a successful render (initial, source change, or theme re-render)</td></tr>
+      <tr><td><code>diagram-wc:error</code></td><td><code>{ error, source, type }</code></td><td>Render or <code>src</code> fetch failed. If nothing has rendered yet, the <code>&lt;pre&gt;</code> source is shown with an error note; otherwise the previous diagram stays visible with the note.</td></tr>
+      <tr><td><code>diagram-wc:source-changed</code></td><td><code>{ source }</code></td><td>The <code>.source</code> setter assigned a new value</td></tr>
     </tbody>
   </table>
 </section>
 
 <section>
   <h2>JavaScript API</h2>
+  <table class="props-table">
+    <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>source</code></td><td><code>string</code></td><td>Get/set the diagram source. Setting it re-renders; the previous diagram stays on screen until the new one is ready (crossfaded), and stays if the new source has a syntax error. The value survives moving the element.</td></tr>
+      <tr><td><code>svg</code></td><td><code>string</code> (read-only)</td><td>Serialized markup of the current SVG, or <code>""</code> before the first render.</td></tr>
+    </tbody>
+  </table>
   <code-block language="javascript" show-lines label="Programmatic source updates" data-escape>const dw = document.querySelector('diagram-wc');
 dw.source = 'flowchart LR\n  A --> B --> C';   // re-renders, fires source-changed
 console.log(dw.svg);                              // serialized current SVG</code-block>
 </section>
 
 <section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The rendered SVG keeps Mermaid's own <code>graphics-document</code> role, so node and edge labels stay reachable to assistive technology. Nothing is collapsed into a single opaque image.</li>
+    <li><strong>Name:</strong> write Mermaid's <code>accTitle:</code> in the source. Without one, the <code>caption</code> attribute (the visible <code>&lt;figcaption&gt;</code>) names the diagram. If you give neither, no generic name like "diagram" is invented — add one.</li>
+    <li><strong>Description:</strong> Mermaid's <code>accDescr:</code> becomes the SVG description. The diagram source is always kept in a collapsed <strong>Diagram source</strong> <code>&lt;details&gt;</code> in the figure and linked from the SVG through <code>aria-describedby</code>, so the full text alternative is available to everyone.</li>
+    <li>Syntax errors are announced through a <code>role="status"</code> note. Animations inside the SVG are disabled under <code>prefers-reduced-motion</code>, and the re-render crossfade is skipped.</li>
+  </ul>
+  <code-block language="html" show-lines label="Naming a diagram" data-escape><diagram-wc caption="Checkout">
+  <pre><code class="language-mermaid">flowchart LR
+    accTitle: Checkout flow
+    accDescr: Cart leads to payment, then to the confirmation page.
+    Cart --> Pay --> Done
+  </code></pre>
+</diagram-wc></code-block>
+</section>
+
+<section>
+  <h2>Security and CSP</h2>
+  <ul>
+    <li><strong>Module URL:</strong> Mermaid is imported from <code>https://cdn.jsdelivr.net/npm/mermaid@11.14.0/dist/mermaid.esm.min.mjs</code>. Only page script can change it, by setting <code>window.VB_MERMAID_URL</code> before the first diagram renders (for example, to self-host). There is no per-element override: markup — including sanitized markdown, which keeps custom elements and <code>data-*</code> attributes — can't choose which module is imported.</li>
+    <li><strong>CSP:</strong> allow the module host in <code>script-src</code> (<code>script-src 'self' https://cdn.jsdelivr.net</code>), or self-host Mermaid and point <code>VB_MERMAID_URL</code> at your origin. Mermaid also injects <code>&lt;style&gt;</code> elements into each SVG, so <code>style-src</code> must allow inline styles (<code>'unsafe-inline'</code>) for diagrams to be styled.</li>
+    <li><strong>SRI:</strong> dynamic <code>import()</code> can't carry an <code>integrity</code> attribute. The CDN URL is version-pinned; if you need integrity guarantees, self-host the file.</li>
+    <li>Mermaid runs with <code>securityLevel: 'strict'</code>, which escapes labels and disables click handlers in diagram source.</li>
+  </ul>
+  <code-block language="html" show-lines label="Self-hosting Mermaid" data-escape><script>
+  window.VB_MERMAID_URL = '/vendor/mermaid/mermaid.esm.min.mjs';
+</script>
+<script type="module" src="/cdn/vanilla-breeze.js"></script></code-block>
+</section>
+
+<section>
   <h2>Notes</h2>
   <ul>
-    <li>Mermaid runs with <code>securityLevel: 'strict'</code> by default. Author content is escaped.</li>
     <li>This is the first VB component to wrap an external runtime library. The library is loaded from a CDN URL at runtime — never bundled. The <code>type="mermaid"</code> attribute reserves the door for substitution backends per VB's wrapped-dependency policy.</li>
     <li>Bundle audit: enabling <code>&lt;diagram-wc&gt;</code> in the <code>ux-planning</code> pack adds &lt; 5 KB gzip; Mermaid (~360 KB gzip) is fetched from jsDelivr only on pages that use a diagram.</li>
   </ul>

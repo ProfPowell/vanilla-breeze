@@ -7,10 +7,11 @@
  */
 
 import { test, expect } from './pinned-fonts.js';
-import { readdirSync } from 'fs';
+import { readdirSync, readFileSync } from 'fs';
 import { basename, join, sep } from 'path';
 
 const demosDir = join(import.meta.dirname, '../../demos/examples/demos');
+const MERMAID_STUB = readFileSync(join(import.meta.dirname, '../element-visual/fixtures/static/mermaid-stub.mjs'), 'utf8');
 
 // Demos whose rendering is nondeterministic at screenshot time —
 // JS-driven animations or runtime-fetched content. Screenshot comparison
@@ -42,6 +43,13 @@ for (const demo of demos) {
     // drift away from their baseline every month (t5r2). The date is the
     // one the original baselines were captured on.
     await page.clock.setFixedTime(new Date('2026-07-06T12:00:00'));
+    // diagram-wc loads Mermaid from jsDelivr; serve the deterministic local
+    // stub instead so diagram demos don't depend on the network or on
+    // Mermaid's layout engine version.
+    await page.route('**/npm/mermaid@*/**', (route) => route.fulfill({
+      contentType: 'text/javascript',
+      body: MERMAID_STUB,
+    }));
     await page.goto(`/docs/examples/demos/${demo}`);
     await page.waitForLoadState('networkidle');
 

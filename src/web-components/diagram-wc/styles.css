@@ -4,11 +4,9 @@
 diagram-wc {
   display: block;
   margin-block: var(--size-m, 16px);
-}
-
-diagram-wc:not(:defined),
-diagram-wc:not([data-upgraded]) {
-  display: block;
+  /* Scopes the swap crossfade below to diagram transitions only. Applies
+     only while viewTransitionSwap() has pinned a view-transition-name. */
+  view-transition-class: dwc;
 }
 
 /*
@@ -41,6 +39,21 @@ diagram-wc[data-error] > pre {
   block-size: auto;
 }
 
+/* Source listing — the diagram's text alternative (aria-describedby). */
+.dwc-source {
+  margin-block-start: var(--size-s, 12px);
+  text-align: start;
+}
+
+.dwc-source > summary {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted, #666);
+}
+
+.dwc-source > pre {
+  margin-block: var(--size-2xs, 4px) 0;
+}
+
 .dwc-caption {
   margin-block-start: var(--size-s, 12px);
   font-size: 0.8125rem;
@@ -53,10 +66,11 @@ diagram-wc[data-error] > pre {
   padding: var(--size-2xs, 6px) var(--size-s, 10px);
   font-size: 0.8125rem;
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
-  color: var(--color-text-muted, #666);
-  background: color-mix(in oklch, #ef4444 6%, var(--color-surface, #fff));
-  border-inline-start: 3px solid color-mix(in oklch, #ef4444 60%, var(--color-surface, #fff));
-  border-radius: 0 var(--radius-s, 0.375rem) var(--radius-s, 0.375rem) 0;
+  color: var(--color-error-text, var(--color-text));
+  background: var(--color-error-subtle, color-mix(in oklch, var(--color-error) 6%, var(--color-surface, #fff)));
+  border-inline-start: 3px solid var(--color-error);
+  border-start-end-radius: var(--radius-s, 0.375rem);
+  border-end-end-radius: var(--radius-s, 0.375rem);
   max-block-size: 4.5em;
   overflow: auto;
 }
@@ -70,12 +84,12 @@ diagram-wc[data-error] > pre {
 
 /*
  * View Transition crossfade for diagram swaps (theme change, content edit).
- * The component pins a unique view-transition-name on each pair of figures
- * so the browser captures only the diagram region (not the whole document)
- * and crossfades between old and new in one frame budget.
+ * viewTransitionSwap() pins a unique view-transition-name on the host so the
+ * browser captures only the diagram region; the `dwc` view-transition-class
+ * keeps this timing off every other transition on the page.
  */
-::view-transition-old(*),
-::view-transition-new(*) {
+::view-transition-old(*.dwc),
+::view-transition-new(*.dwc) {
   animation-duration: 220ms;
   animation-timing-function: ease-out;
 }

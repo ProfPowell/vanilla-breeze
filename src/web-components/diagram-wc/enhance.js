@@ -37,7 +37,8 @@ export function enhanceMermaidFences(root = document, opts = {}) {
     if (priming && priming[i]) {
       const fig = document.createElement('figure');
       fig.className = 'dwc-figure';
-      fig.setAttribute('role', 'img');
+      // No role here: <diagram-wc> decorates the primed figure on connect
+      // (name from accTitle/caption, source listing as description).
       fig.innerHTML = priming[i];
       wrap.appendChild(fig);
     }

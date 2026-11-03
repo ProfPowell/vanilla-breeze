@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "diagram-wc",
   "type": "web-component",
-  "description": "Declarative diagram renderer \u2014 wraps Mermaid (v1) with VB token-driven theming, lazy load, and HTML-first authoring via fenced code blocks",
+  "description": "Declarative diagram renderer — wraps Mermaid (v1) with VB token-driven theming, lazy load, and HTML-first authoring via fenced code blocks",
   "attributes": [
     {
       "name": "type",
@@ -16,7 +16,7 @@
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "URL of a diagram source file (.mmd). Inline source via <pre><code> takes priority if absent."
+      "description": "URL of a diagram source file (.mmd). Takes priority over inline <pre><code> source; fetched once per URL (not refetched when the element is moved)."
     },
     {
       "name": "caption",
@@ -50,18 +50,22 @@
   "events": [
     {
       "name": "diagram-wc:ready",
-      "detail": "{ svg, type, source }",
-      "description": "After successful render"
+      "detail": "{ svg: string, type: string, source: string }",
+      "description": "After a successful render (initial, source change or theme re-render)"
     },
     {
       "name": "diagram-wc:error",
-      "detail": "{ error, source, type }",
-      "description": "Render failed; the <pre> fallback is restored"
+      "detail": "{ error: Error, source: string|null, type: string }",
+      "description": "Render or src fetch failed. If nothing has rendered yet the <pre> source is shown with an error note; otherwise the prior figure stays visible"
     },
     {
       "name": "diagram-wc:source-changed",
-      "detail": "{ source }",
-      "description": ".source setter fired"
+      "detail": "{ source: string }",
+      "description": "The .source setter assigned a new value"
+    },
+    {
+      "name": "diagram-wc:upgraded",
+      "description": "Fired once after the component upgrades"
     }
   ],
   "htmlvalidate": {
@@ -69,5 +73,18 @@
     "permittedContent": [
       "@flow"
     ]
-  }
+  },
+  "properties": [
+    {
+      "name": "source",
+      "type": "string",
+      "description": "Get/set the diagram source. Setting it re-renders (the prior figure stays until the new one is ready, and on a parse error) and fires diagram-wc:source-changed. Kept across disconnect/reconnect."
+    },
+    {
+      "name": "svg",
+      "type": "string",
+      "readonly": true,
+      "description": "Serialized markup of the currently rendered SVG, or an empty string before the first render"
+    }
+  ]
 }

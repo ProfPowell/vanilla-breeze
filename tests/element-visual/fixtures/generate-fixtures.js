@@ -9,7 +9,7 @@
  * Run: node tests/element-visual/fixtures/generate-fixtures.js
  */
 
-import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, copyFileSync } from 'fs';
 import { join } from 'path';
 
 const dir = import.meta.dirname;
@@ -20,6 +20,11 @@ const compendium = JSON.parse(readFileSync(compendiumPath, 'utf8'));
 // Clean and recreate output directory
 rmSync(outputDir, { recursive: true, force: true });
 mkdirSync(outputDir, { recursive: true });
+
+// Static helpers fixtures import (e.g. a deterministic Mermaid stub for
+// diagram-wc) are copied in, because the test server only serves generated/.
+const staticDir = join(dir, 'static');
+for (const f of readdirSync(staticDir)) copyFileSync(join(staticDir, f), join(outputDir, f));
 
 const manifest = [];
 
