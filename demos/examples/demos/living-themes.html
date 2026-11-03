@@ -5,18 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Living Themes — Environmental Backdrop Demo</title>
   <link rel="stylesheet" href="/cdn/vanilla-breeze.css"/>
-  <link rel="stylesheet" href="/cdn/themes/ocean.css"/>
-  <link rel="stylesheet" href="/cdn/themes/sunset.css"/>
-  <link rel="stylesheet" href="/cdn/themes/forest.css"/>
-  <link rel="stylesheet" href="/cdn/themes/rose.css"/>
-  <link rel="stylesheet" href="/cdn/themes/lavender.css"/>
-  <link rel="stylesheet" href="/cdn/themes/coral.css"/>
-  <link rel="stylesheet" href="/cdn/themes/amber.css"/>
-  <link rel="stylesheet" href="/cdn/themes/indigo.css"/>
-  <link rel="stylesheet" href="/cdn/themes/slate.css"/>
-  <link rel="stylesheet" href="/cdn/themes/emerald.css"/>
-  <link rel="stylesheet" href="/cdn/themes/minimal.css"/>
-  <link rel="stylesheet" href="/cdn/themes/modern.css"/>
   <style>
     /* ===== Background image layers — behind everything ===== */
     .bg-layer {
@@ -680,10 +668,17 @@
 
       <span class="sep"></span>
 
-      <!-- Theme -->
+      <!-- Theme + accent (both bundled in vanilla-breeze.css) -->
       <label>Theme
         <select id="ctl-theme">
           <option value="">Default</option>
+          <option value="minimal">Minimal</option>
+          <option value="modern">Modern</option>
+        </select>
+      </label>
+      <label>Accent
+        <select id="ctl-accent">
+          <option value="">None</option>
           <option value="ocean">Ocean</option>
           <option value="sunset">Sunset</option>
           <option value="forest">Forest</option>
@@ -694,8 +689,6 @@
           <option value="indigo">Indigo</option>
           <option value="slate">Slate</option>
           <option value="emerald">Emerald</option>
-          <option value="minimal">Minimal</option>
-          <option value="modern">Modern</option>
         </select>
       </label>
     </section>
@@ -726,30 +719,31 @@
     const DEFAULT_HUES = { primary: 260, secondary: 200, accent: 30 };
 
     function readThemeHues() {
-      // Read hue values directly from CSSOM to avoid animation interpolation.
-      // @property-registered --hue-* values are animatable, so getComputedStyle
-      // returns mid-transition values during View Transitions.
-      const theme = document.documentElement.getAttribute('data-theme');
-      if (!theme) return { ...DEFAULT_HUES };
+      // Read the theme's declared hues from a probe element rather than
+      // :root: @property-registered --hue-* values are animatable, so :root
+      // reports mid-transition values during View Transitions. Theme and
+      // accent rules also match non-root [data-theme]/[data-accent] elements,
+      // and the probe has no transition, so it gets the end values at once.
+      const root = document.documentElement;
+      const theme = root.getAttribute('data-theme');
+      const accent = root.getAttribute('data-accent');
+      if (!theme && !accent) return { ...DEFAULT_HUES };
 
-      const selector = `[data-theme~="${theme}"]`;
-      for (const sheet of document.styleSheets) {
-        try {
-          for (const rule of sheet.cssRules) {
-            if (rule.selectorText?.includes(selector) && !rule.selectorText.includes('dark')) {
-              const h = rule.style?.getPropertyValue('--hue-primary');
-              if (h) {
-                return {
-                  primary: parseFloat(h) || DEFAULT_HUES.primary,
-                  secondary: parseFloat(rule.style.getPropertyValue('--hue-secondary')) || DEFAULT_HUES.secondary,
-                  accent: parseFloat(rule.style.getPropertyValue('--hue-accent')) || DEFAULT_HUES.accent,
-                };
-              }
-            }
-          }
-        } catch { /* cross-origin sheet */ }
-      }
-      return { ...DEFAULT_HUES };
+      const probe = document.createElement('span');
+      probe.hidden = true;
+      probe.style.transition = 'none';
+      if (theme) probe.setAttribute('data-theme', theme);
+      if (accent) probe.setAttribute('data-accent', accent);
+      document.body.append(probe);
+      const cs = getComputedStyle(probe);
+      const read = (name, fallback) => parseFloat(cs.getPropertyValue(name)) || fallback;
+      const hues = {
+        primary: read('--hue-primary', DEFAULT_HUES.primary),
+        secondary: read('--hue-secondary', DEFAULT_HUES.secondary),
+        accent: read('--hue-accent', DEFAULT_HUES.accent),
+      };
+      probe.remove();
+      return hues;
     }
 
     function captureBaseHues(then) {
@@ -874,6 +868,7 @@
     const timeSlider = document.getElementById('ctl-time');
     const timeDisplay = document.getElementById('time-display');
     const ctlTheme = document.getElementById('ctl-theme');
+    const ctlAccent = document.getElementById('ctl-accent');
     const ctlMode = document.getElementById('ctl-mode');
     const ctlSpeed = document.getElementById('ctl-speed');
     const playBtn = document.getElementById('play-btn');
@@ -1212,25 +1207,28 @@
       });
     });
 
-    // ===== Theme switching =====
-    ctlTheme.addEventListener('change', () => {
-      const theme = ctlTheme.value;
+    // ===== Theme + accent switching =====
+    function applyThemeChoice() {
       const apply = () => {
-        if (theme) {
-          document.documentElement.setAttribute('data-theme', theme);
-        } else {
-          document.documentElement.removeAttribute('data-theme');
+        const root = document.documentElement;
+        for (const [attr, value] of [['data-theme', ctlTheme.value], ['data-accent', ctlAccent.value]]) {
+          if (value) root.setAttribute(attr, value);
+          else root.removeAttribute(attr);
         }
         captureBaseHues();
         updateEnvironment(currentTime);
       };
 
       if (document.startViewTransition) {
-        document.startViewTransition(apply);
+        // A quick second change skips the first transition; that rejection
+        // is expected, so don't let it surface as an unhandled error.
+        document.startViewTransition(apply).ready.catch(() => {});
       } else {
         apply();
       }
-    });
+    }
+    ctlTheme.addEventListener('change', applyThemeChoice);
+    ctlAccent.addEventListener('change', applyThemeChoice);
 
     // ===== Initial render =====
     setMode('photos');

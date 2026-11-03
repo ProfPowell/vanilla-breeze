@@ -58,6 +58,17 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Brand demo themes are no longer in the package.** `themes/anthropic.css`,
+  `themes/ibm.css`, `themes/mcdonalds.css` and `themes/starbucks.css` were
+  demonstrations of building a theme from a brand, not library themes. They
+  now live with the alpenglow demo (`/docs/alpenglow/themes/`) and are no
+  longer in `dist/cdn/themes/` or the theme manifest.
+
+- **Stale per-accent theme files removed from the package.**
+  `themes/{ocean,sunset,forest,rose,lavender,coral,amber,indigo,slate,emerald}.css`
+  were leftovers from before accents were bundled. Use `data-accent="ocean"`
+  (and so on) with the main bundle instead.
+
 - **Breaking API changes from the C-element review.**
   - **`<comment-thread>`:** `addComment()`/`updateComment()` take `bodyText` (set as text) or `bodyHtml` (sanitized) instead of `body`. Author links are kept only for http(s) and relative URLs.
   - **`<comment-box>` submit:** the event detail offers `waitUntil(promise)`. The box stays busy, clears when the promise resolves and keeps the text when it rejects. `comment-thread:reply` follows the same pattern and is now cancelable.
@@ -127,7 +138,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - **Themes.**
-  - Links, outline buttons and primary-button labels reach 4.5:1 contrast in every theme and accent, in both modes (anthropic, ibm, mcdonalds, starbucks, art-deco, claymorphism, cyber, journal, nord, solarized, super2026, tokyo-night, dusk, bauhaus, high-noon, dawn, cottagecore; forest, sunset, coral and amber accents). Brand primaries keep their brand value; only `--color-interactive` changed.
+  - Links, outline buttons and primary-button labels reach 4.5:1 contrast in every theme and accent, in both modes (art-deco, claymorphism, cyber, journal, nord, solarized, super2026, tokyo-night, dusk, bauhaus, high-noon, dawn, cottagecore; forest, sunset, coral and amber accents). Brand primaries keep their brand value; only `--color-interactive` changed.
+  - Dark mode paints each theme's own `--color-background` as the page background. A fixed VB blue-black used to cover it in most themes (solarized dark showed blue-black, not #002b36). The light-only a11y-dyslexia palette declares `color-scheme: light`, so in dark mode it is a readable cream page instead of dark text on a dark page.
   - Theme blockquote glyphs are silent to screen readers and sit on the inline-start side in right-to-left text, with logical padding.
   - A breadcrumb's linked current crumb is plain current text, not the nav current-page pill (starbucks pill, neumorphism inset, wrong colour elsewhere).
 - **Range sliders.** The value bubble and datalist labels are positioned in CSS, so they track the thumb after late layout changes and resizes. The chat `[data-bubble]` shape no longer narrows range inputs to 75%.
