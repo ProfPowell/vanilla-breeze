@@ -2,22 +2,32 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "include-file",
   "type": "web-component",
-  "description": "Fetch and inject HTML content from a URL into the page",
+  "description": "Fetch a same-origin HTML fragment, sanitize it, and insert it into the page",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": ["@flow"]
   },
   "attributes": [
-    { "name": "src",           "kind": "host-api", "purpose": "config",       "type": "string",  "description": "URL to fetch HTML from" },
-    { "name": "mode",          "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["replace", "append", "prepend"], "default": "replace", "description": "How fetched content is inserted" },
-    { "name": "lazy",          "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Defer loading until element enters viewport" },
-    { "name": "allow-scripts", "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Re-execute inline scripts in loaded content (trusted sources only)" },
-    { "name": "data-loading",  "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present while content is loading" },
-    { "name": "data-loaded",   "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present after successful load" },
-    { "name": "data-error",    "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present if fetch fails" }
+    { "name": "src",                "kind": "host-api", "purpose": "config",       "type": "string",  "description": "URL of the HTML fragment, resolved against the page (document.baseURI). Only same-origin http(s) URLs load; blob:, data:, javascript: and other schemes are always refused; other origins need allow-cross-origin. A same-origin URL that redirects off-origin is refused. Observed: changing it re-fetches (honouring lazy); a change made while detached loads on reconnect." },
+    { "name": "mode",               "kind": "host-api", "purpose": "config",       "type": "enum",    "values": ["replace", "append", "prepend"], "default": "replace", "description": "How fetched content is inserted. append/prepend leave existing children (including author scripts) untouched. Unknown values behave as replace and log a warning." },
+    { "name": "lazy",               "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Defer loading until the element is within 200px of the viewport (also for later src changes)" },
+    { "name": "trusted",            "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Author vouches for the source: insert the fetched HTML without sanitizing. Without it the fragment goes through VB's sanitizer (no scripts, on* handlers, javascript: URLs, iframes, forms…). Never set it for URLs that serve user-generated content." },
+    { "name": "allow-scripts",      "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Run the fragment's scripts (each once per load). Requires trusted; ignored with a console warning otherwise." },
+    { "name": "allow-cross-origin", "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Permit fetching from another origin (the server must allow it via CORS). Content is still sanitized unless trusted is also set." },
+    { "name": "data-label-error",   "kind": "data",     "purpose": "config",       "type": "string",  "default": "Failed to load content", "description": "Text of the role=\"alert\" error message shown when a load fails and no fallback content remains" },
+    { "name": "data-loading",       "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present while content is loading (aria-busy=\"true\" is set alongside)" },
+    { "name": "data-loaded",        "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present after successful load" },
+    { "name": "data-error",         "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present if the fetch fails or the URL is refused (origin, scheme, include cycle, nesting deeper than 10)" }
+  ],
+  "properties": [
+    { "name": "src", "type": "string", "description": "Mirror of the src attribute. Setting it updates the attribute (which loads the new URL) and fires include-file:src-changed." }
+  ],
+  "methods": [
+    { "name": "reload()", "returns": "void", "description": "Re-fetch the current src (same policy checks as a normal load)." }
   ],
   "events": [
-    { "name": "include-file:loaded",  "detail": "{ src, html }", "description": "Fired after successful content load" },
-    { "name": "include-file:error", "detail": "{ src, error }", "description": "Fired if fetch fails" }
+    { "name": "include-file:loaded",      "detail": "{ src, url, html }",          "description": "After the fragment is inserted. src is the attribute value, url the resolved absolute URL, html the markup as inserted (sanitized unless trusted)." },
+    { "name": "include-file:error",       "detail": "{ src, error }",              "description": "When the fetch fails or the load is refused; error is a message string. The original fallback is restored on a first-load failure in replace mode." },
+    { "name": "include-file:src-changed", "detail": "{ src, source: 'property' }", "description": "After .src is assigned a new value from script (not for direct attribute changes)" }
   ]
 }

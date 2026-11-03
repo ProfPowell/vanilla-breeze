@@ -999,7 +999,10 @@ module.exports = {
       "src": {},
       "mode": { enum: ["replace", "append", "prepend"] },
       "lazy": { boolean: true },
-      "allow-scripts": { boolean: true }
+      "trusted": { boolean: true },
+      "allow-scripts": { boolean: true },
+      "allow-cross-origin": { boolean: true },
+      "data-label-error": {}
     }
   },
 

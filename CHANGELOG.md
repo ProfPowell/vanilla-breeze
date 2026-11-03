@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- **I-element review.**
+  - **include-file / sanitize-html** — Fixed an XSS chain (vanilla-breeze-9vrm): sanitized content (e.g. markdown rendered by `<markdown-viewer>`) could contain `<include-file src="blob:…">`, and `<include-file>` fetched any URL and inserted it raw, so an `<img onerror>` in the fetched HTML ran. `sanitizeHTML` now neutralises fetch-capable VB elements (`<include-file>` loses `src`/`trusted`/`allow-scripts`/`allow-cross-origin`; `<markdown-viewer>` loses `src`/`sanitize`/`ping`), and `<include-file>` is same-origin and sanitizing by default (below).
+  - **sanitize-html** — Hardened denylist: `javascript:`/`vbscript:` detection survives whitespace/control-char obfuscation; `data:` refused on navigation/loader attributes (media `src`/`poster`/`srcset` keep `data:image|audio|video|font`); also removes `frame`/`frameset`/`applet`/`portal`/`fencedframe`/SVG `foreignObject`, href-targeting SVG `animate`/`set`, script-bearing or `@import` `<style>` and `style` attributes; `<template>` contents are sanitized recursively. New `sanitizeSVG(element)` export sanitizes an SVG element in place (used by `<icon-wc>`).
+
 ### Added
 
 - **G+H-element review.**
@@ -20,6 +26,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **include-file (I-element review).**
+  - **include-file** — Breaking: only same-origin http(s) URLs load (resolved against `document.baseURI`); `blob:`/`data:`/`javascript:` and other schemes are always refused, a same-origin URL redirecting off-origin is refused, and other origins need the new `allow-cross-origin` attribute. Fetched HTML is sanitized unless the new `trusted` attribute is set; `allow-scripts` now requires `trusted` (ignored with a warning otherwise). Nested includes in sanitized fragments keep `src` but lose trust attributes.
+  - **include-file** — The error message is now a real `<p role="alert">` (text from the new `data-label-error`, default "Failed to load content"), rendered only when no fallback remains, replacing the CSS `::after` text. `aria-busy="true"` is set while loading. `include-file:loaded` detail adds `url` (resolved) and `html` is the markup as inserted.
 - **Changes from the G+H-element review.**
   - **ThemeManager** — authored root attributes are page defaults: `<html data-fluid / data-accent / data-border-style / data-icon-set / data-backdrop / data-backdrop-chrome>` are no longer stripped when the visitor has no stored preference (fluid type was off sitewide on the docs). Stored prefs or setter calls override them; `reset()` restores them. Stored-pref schema v2: `null` = page default, `''` = explicitly off (v1 blobs migrate on read). `getState()` reports resolved values (bare `data-fluid` → `'default'`). Now public as `window.VB.themeManager` and the `ThemeManager` export of `vanilla-breeze.js` / `-core.js` / `-autoload.js` (wja7)
   - **ThemeManager** — keeps `<meta name="theme-color">` in sync with the painted page background after every mode/theme/accent change (media pair collapses to one value) (wja7)
@@ -186,6 +195,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **include-file (I-element review).**
+  - **include-file** — Include cycles (self, A→B→A) and nesting deeper than 10 are refused with the error state instead of recursing forever.
+  - **include-file** — `append`/`prepend` with `allow-scripts` no longer re-runs earlier scripts, and without it no longer deletes the author's own scripts: each fragment is parsed in a `<template>` and only its nodes are processed.
+  - **include-file** — No double fetch (and aborted request) on upgrade; a `src` changed while detached now loads on reconnect; an unknown `mode` behaves as `replace` (with a warning) instead of silently inserting nothing.
+  - **include-file** — Docs: live demo, Security & Nesting section, accurate API manifest (`src` property, `reload()`, `include-file:src-changed`, new attributes, event details); demo no longer uses an inline `<style>`.
 - **G+H-element review.**
   - **data-motion-reduced** — now zeroes every `--duration-*` token, disables smooth scrolling and the root theme transition (previously only the media query did) (wja7)
   - **Reset** — `text-size-adjust: 100%` instead of `none` (no longer blocks mobile text zoom); touch-target comment/docs corrected (44px is WCAG 2.5.5 AAA; 2.5.8 AA is 24px) (wja7)
