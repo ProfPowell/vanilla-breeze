@@ -16,11 +16,7 @@ crumbLabel: Native Elements
     <h2 id="overview">Overview</h2>
     <p>The <code>&lt;hr&gt;</code> element creates a thematic break in HTML content. Despite its name, it represents a semantic break rather than just a visual line. Use it to separate sections of content that have different topics or themes.</p>
 
-    <div class="example">
-      <p>Content in the first thematic section. This paragraph discusses one topic.</p>
-      <hr />
-      <p>Content in the second thematic section. This paragraph shifts to a different topic.</p>
-    </div>
+    <browser-window src="/docs/snippets/demos/hr-overview.html" url="https://vanilla-breeze.com/hr/overview" title="Thematic break" shadow></browser-window>
 
     <code-block language="html" label="Basic horizontal rule" data-escape><p>The story begins...</p>
 <hr />
@@ -78,7 +74,8 @@ crumbLabel: Native Elements
     <h2 id="ornament">Custom Ornament</h2>
     <p>The <code>data-ornament</code> attribute lets you specify any text or symbol as the divider content. This is more flexible than the <code>.decorative</code> class, which always uses dots.</p>
 
-    <p>Unlike plain <code>&lt;hr&gt;</code> and <code>.decorative</code> rules, an explicit <code>data-ornament</code> value is preserved across all themes — your chosen symbol always renders as specified.</p>
+    <p>Themes restyle plain <code>&lt;hr&gt;</code> rules, but they leave <code>data-ornament</code>, <code>.decorative</code> and the shape variants alone, so your chosen symbol always renders as specified.</p>
+    <p>The ornament is visual only. It is rendered with empty alternative text (<code>content: attr(data-ornament) / ""</code>), so screen readers announce a separator, not "section sign" or "asterism". The same applies to the <code>.decorative</code> dots.</p>
 
     <browser-window src="/docs/snippets/demos/hr-ornaments.html" url="https://vanilla-breeze.com/hr/ornaments" title="Custom ornament horizontal rules" shadow></browser-window>
     <code-block language="html" label="Custom ornament examples" data-escape><hr data-ornament="❧" />
@@ -130,6 +127,28 @@ crumbLabel: Native Elements
     </table>
   </section>
 
+  <!-- Shape Variants Section -->
+  <section>
+    <h2 id="shapes">Shape Variants</h2>
+    <p>Five classes turn the rule into a shaped divider: <code>.wave</code>, <code>.zigzag</code>, <code>.scallop</code>, <code>.diamonds</code> and <code>.dots</code>. The first four use CSS <code>shape()</code> and fall back to the plain line where it isn't supported. <code>.dots</code> uses a radial gradient and works everywhere. See <a href="/docs/attributes/data-shape/#hr-dividers">data-shape: HR Dividers</a> for the full shapes system.</p>
+    <browser-window src="/docs/snippets/demos/hr-shapes.html" url="https://vanilla-breeze.com/hr/shapes" title="Shape dividers" shadow></browser-window>
+    <code-block language="html" label="Shape dividers" data-escape><hr class="wave" />
+<hr class="zigzag" />
+<hr class="scallop" />
+<hr class="diamonds" />
+<hr class="dots" /></code-block>
+    <p>Themes recolour shape dividers but keep the shape.</p>
+  </section>
+
+  <!-- Forced colors & print Section -->
+  <section>
+    <h2 id="forced-colors-print">Forced Colors and Print</h2>
+    <ul>
+      <li><strong>Forced colors</strong> (Windows High Contrast): the browser repaints backgrounds with the system Canvas colour. That would hide the shape dividers and the many theme rules that draw an <code>hr</code> with a gradient or background. So in forced colors mode every plain and shape <code>hr</code> becomes a 1px <code>CanvasText</code> line, whatever the theme. Ornament and <code>.decorative</code> rules keep their glyphs, which are drawn in the system text colour.</li>
+      <li><strong>Print</strong>: browsers drop backgrounds when printing by default. The plain rule is a border, so it always prints. The shape dividers set <code>print-color-adjust: exact</code> so they print as shown.</li>
+    </ul>
+  </section>
+
   <!-- Examples in Context Section -->
   <section>
     <h2 id="examples">Examples in Context</h2>
@@ -170,7 +189,7 @@ hr.decorative {
   text-align: center;
 
   &::before {
-    content: "* * *";
+    content: "• • •" / "";
     color: var(--color-text-muted);
     letter-spacing: 0.5em;
   }
@@ -182,9 +201,19 @@ hr[data-ornament] {
   text-align: center;
 
   &::before {
-    content: attr(data-ornament);
+    content: attr(data-ornament) / "";
     color: var(--color-text-muted);
     letter-spacing: 0.25em;
+  }
+}
+
+/* Forced colors: background-painted rules would vanish */
+@media (forced-colors: active) {
+  hr:not([data-ornament], .decorative) {
+    border-block-start: var(--border-width-thin, 1px) solid CanvasText !important;
+    background: none !important;
+    clip-path: none !important;
+    block-size: 0 !important;
   }
 }</code-block>
 
@@ -193,12 +222,13 @@ hr[data-ornament] {
       <li><strong>No default border</strong> - Resets browser default to use custom styling</li>
       <li><strong>Logical properties</strong> - Uses <code>border-block-start</code> for RTL support</li>
       <li><strong>Generous spacing</strong> - <code>margin-block: var(--size-xl)</code> for clear separation</li>
-      <li><strong>Decorative content</strong> - Uses <code>::before</code> pseudo-element for dots</li>
-      <li><strong>Custom ornament</strong> - Uses <code>attr(data-ornament)</code> for user-defined symbols</li>
+      <li><strong>Decorative content</strong> - Uses a <code>::before</code> pseudo-element for the dots, with empty alt text so they aren't read aloud</li>
+      <li><strong>Custom ornament</strong> - Uses <code>attr(data-ornament)</code> for user-defined symbols, also silent</li>
+      <li><strong>Forced colors</strong> - Always a visible <code>CanvasText</code> line, even when a theme paints the rule with a background</li>
     </ul>
 
     <h3>Customization</h3>
-    <p>You can customize the horizontal rule with CSS custom properties:</p>
+    <p>You can customize the horizontal rule with your own classes:</p>
     <code-block language="css" label="Customization examples" data-escape>/* Thicker divider */
 hr.thick {
   border-block-start-width: var(--border-width-thick);
@@ -242,12 +272,12 @@ hr.compact {
     <p>Consider these alternatives depending on your use case:</p>
 
     <h3>CSS Border (Decorative)</h3>
-    <div class="example">
-      <div style="border-block-end: var(--border-width-thin) solid var(--color-border); padding-block-end: var(--size-l); margin-block-end: var(--size-l);">
-        <p>Content with a bottom border for visual separation only.</p>
-      </div>
-      <p>More content below the border.</p>
-    </div>
+    <browser-window src="/docs/snippets/demos/hr-border-alternative.html" url="https://vanilla-breeze.com/hr/border-alternative" title="CSS border instead of hr" shadow></browser-window>
+    <code-block language="css" label="Border alternative" data-escape>.bordered {
+  border-block-end: var(--border-width-thin) solid var(--color-border);
+  padding-block-end: var(--size-l);
+  margin-block-end: var(--size-l);
+}</code-block>
 
     <h3>New Section with Heading (Semantic)</h3>
     <browser-window src="/docs/snippets/demos/hr-section-alternative.html" url="https://vanilla-breeze.com/hr/section-alternative" title="Section with heading alternative" shadow></browser-window>
@@ -293,6 +323,7 @@ hr.compact {
   <section>
     <h2 id="related">Related</h2>
     <ul>
+      <li><a href="/docs/attributes/data-shape/#hr-dividers">data-shape</a> - Shape dividers and section edges</li>
       <li><a href="/docs/elements/native/headings/"><code>&lt;h1&gt;-&lt;h6&gt;</code></a> - Headings that introduce new sections</li>
       <li><a href="/docs/elements/native/section/"><code>&lt;section&gt;</code></a> - Semantic sectioning element</li>
       <li><a href="/docs/elements/native/article/"><code>&lt;article&gt;</code></a> - Self-contained content sections</li>

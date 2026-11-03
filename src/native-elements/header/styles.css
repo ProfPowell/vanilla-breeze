@@ -45,6 +45,16 @@ header[data-sticky] {
   background: var(--header-bg, var(--color-surface-overlay));
 }
 
+/* Keep in-page anchor targets clear of a sticky banner header. The
+   coordinated system (:root[data-sticky], utils/sticky.css) measures the
+   header into --sticky-offset; a standalone sticky header falls back to
+   --header-sticky-size (default: header.site's reserved block size — set it
+   on :root if your sticky header is taller). Mobile drops the sticky (see below), so the
+   padding goes with it. */
+html:has(> body > header[data-sticky]) {
+  scroll-padding-block-start: calc(var(--sticky-offset, var(--header-sticky-size, calc(3rem + 2 * var(--size-m)))) + var(--sticky-gap, var(--size-2xs, 0.5rem)));
+}
+
 /* Transparent header (for hero overlays) */
 header.transparent {
   position: absolute;
@@ -86,6 +96,12 @@ header[data-scroll-hide] {
 
 header[data-scroll-hide][data-hidden] {
   transform: translateY(-100%);
+}
+
+/* A hidden header still holds focusable links — never leave the focused
+   one offscreen. The JS also drops data-hidden on focusin. */
+header[data-scroll-hide][data-hidden]:focus-within {
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

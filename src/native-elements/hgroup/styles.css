@@ -1,4 +1,7 @@
-/* hgroup: Heading group styling */
+/* hgroup: Heading group styling
+   Content model (HTML): zero or more <p>, one h1–h6, zero or more <p>.
+   Put a kicker/eyebrow <p> before the heading in source — reading order
+   and visual order then match (no column-reverse). */
 
 hgroup {
   display: flex;
@@ -11,8 +14,7 @@ hgroup > * {
 }
 
 /* Subheading styling */
-hgroup > p,
-hgroup > small {
+hgroup > p {
   color: var(--color-text-muted);
   font-size: var(--font-size-l);
   line-height: var(--line-height-normal);
@@ -33,11 +35,6 @@ hgroup.spaced {
 }
 
 /* --- Layout Variants --- */
-
-/* Reversed (subheading above) */
-hgroup.reversed {
-  flex-direction: column-reverse;
-}
 
 /* Centered hgroup */
 hgroup.centered,
@@ -97,18 +94,25 @@ hgroup.byline > p time {
   font-variant-numeric: tabular-nums;
 }
 
-hgroup.byline > p [rel="author"] {
+/* The author link shares the muted text colour, so it needs a non-colour
+   cue (WCAG 1.4.1): a subtle underline that firms up on hover/focus. */
+hgroup.byline > p a[rel~="author"] {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-thickness: from-font;
+  text-decoration-color: color-mix(in oklch, currentColor 50%, transparent);
+  text-underline-offset: 0.2em;
 
-  &:hover {
+  &:is(:hover, :focus-visible) {
     color: var(--color-interactive);
+    text-decoration-color: currentColor;
   }
 }
 
+/* Visual separator only — the empty alt keeps "dot" out of speech */
 hgroup.byline > p > span + span::before {
-  content: var(--sep-list, "\00B7");
+  content: var(--sep-list, "\00B7") / "";
   margin-inline-end: var(--size-m);
   color: var(--color-border);
 }

@@ -2,18 +2,38 @@
 
 /* ============================================================
    1. SCRIPT-SPECIFIC TYPOGRAPHY
-   Uses :lang() so rules inherit through the subtree.
+   Uses :lang() so rules reach every element in the subtree, but wrapped
+   in :where() (zero specificity) so element and component rules win —
+   headings keep their tight line-height, header.centered / hgroup.centered
+   keep their centring, code keeps its monospace font. Body copy (which only
+   gets reset.css's line-height, a lower layer) picks these up.
    ============================================================ */
 
 /* CJK: Chinese, Japanese, Korean */
-:lang(zh),
-:lang(ja),
-:lang(ko) {
+:where(:lang(zh), :lang(ja), :lang(ko)) {
   font-family: var(--font-cjk);
   line-height: 1.8;
   letter-spacing: 0;
-  word-break: break-all;
-  overflow-wrap: normal;
+  /* Ideographs and kana already break between characters with normal
+     word-break; break-all would also split embedded Latin words and URLs
+     mid-word. line-break: strict applies the stricter kinsoku rules (no
+     small kana or closing punctuation at a line start). */
+  word-break: normal;
+  line-break: strict;
+  overflow-wrap: break-word;
+}
+
+/* Korean separates words with spaces — break-all would split words (eojeol)
+   mid-syllable-cluster. keep-all wraps at spaces like Latin text. */
+:where(:lang(ko)) {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* CJK headings: a little more room than Latin's tight leading, far less
+   than body copy's 1.8. */
+:is(h1, h2, h3, h4, h5, h6):where(:lang(zh), :lang(ja), :lang(ko)) {
+  line-height: var(--line-height-snug);
 }
 
 /* CJK italics: most CJK fonts have no italic, so browsers synthesise an
@@ -52,32 +72,29 @@ em:lang(zh) {
 }
 
 /* Japanese: proportional alternates for punctuation */
-:lang(ja) {
+:where(:lang(ja)) {
   font-feature-settings: "palt" 1;
 }
 
 /* Arabic script: Arabic, Persian, Urdu, Pashto */
-:lang(ar),
-:lang(fa),
-:lang(ur),
-:lang(ps) {
+/* No text-align here: start is already the initial value, and setting it on
+   every element beat inherited centring (header.centered, hgroup.centered). */
+:where(:lang(ar), :lang(fa), :lang(ur), :lang(ps)) {
   font-family: var(--font-arabic);
   line-height: 1.9;
   letter-spacing: normal;
   word-spacing: 0.05em;
-  text-align: start;
 }
 
 /* Hebrew */
-:lang(he),
-:lang(yi) {
+:where(:lang(he), :lang(yi)) {
   font-family: var(--font-hebrew);
   line-height: 1.75;
   letter-spacing: normal;
 }
 
 /* Thai: no word breaks, needs larger line height */
-:lang(th) {
+:where(:lang(th)) {
   font-family: var(--font-thai);
   line-height: 2;
   word-break: normal;
@@ -85,10 +102,7 @@ em:lang(zh) {
 }
 
 /* Devanagari: Hindi, Marathi, Sanskrit, Nepali */
-:lang(hi),
-:lang(mr),
-:lang(sa),
-:lang(ne) {
+:where(:lang(hi), :lang(mr), :lang(sa), :lang(ne)) {
   font-family: var(--font-devanagari);
   line-height: 1.75;
 }

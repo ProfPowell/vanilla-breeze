@@ -1,7 +1,10 @@
 /* hr shape dividers
    Class-based variants extending <hr>.
    All degrade to plain 1px hr in browsers without shape() support.
-   Uses color-mix with --color-text-muted for accessible default colors. */
+   Uses --color-text-muted for accessible default colors.
+   The shapes are painted with background, so:
+   - forced colors: hr/styles.css restores a CanvasText border rule;
+   - print: browsers drop backgrounds by default, so opt the shapes in. */
 
 @supports (clip-path: shape(from 0% 0%, close)) {
   hr.wave,
@@ -120,4 +123,10 @@ hr.dots {
   background-size: 28px 20px;
   background-repeat: repeat-x;
   background-position: center;
+}
+
+@media print {
+  hr:is(.wave, .zigzag, .scallop, .diamonds, .dots) {
+    print-color-adjust: exact;
+  }
 }

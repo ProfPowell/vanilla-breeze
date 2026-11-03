@@ -8,13 +8,14 @@ hr {
   margin-block: var(--size-xl);
 }
 
-/* Decorative variant */
+/* Decorative variant — the glyphs are visual only (empty alt text), the
+   hr itself still exposes role="separator". */
 hr.decorative {
   border: none;
   text-align: center;
 
   &::before {
-    content: "• • •";
+    content: "• • •" / "";
     color: var(--color-text-muted);
     letter-spacing: 0.5em;
   }
@@ -26,8 +27,26 @@ hr[data-ornament] {
   text-align: center;
 
   &::before {
-    content: attr(data-ornament);
+    content: attr(data-ornament) / "";
     color: var(--color-text-muted);
     letter-spacing: 0.25em;
+  }
+}
+
+/* Forced colors (Windows High Contrast): backgrounds are replaced with
+   Canvas, so a background-painted rule — the shape variants (shapes.css)
+   and the many theme rules that swap the border for a gradient/background —
+   would disappear. Restore a plain CanvasText rule. !important is needed:
+   themes live in a higher layer, and an important declaration in a lower
+   layer beats normal ones in every layer above. Ornament/decorative hrs keep
+   their (system-coloured) glyphs instead. */
+@media (forced-colors: active) {
+  hr:not([data-ornament], .decorative) {
+    border: none !important;
+    border-block-start: var(--border-width-thin, 1px) solid CanvasText !important;
+    background: none !important;
+    clip-path: none !important;
+    block-size: 0 !important;
+    box-shadow: none !important;
   }
 }
