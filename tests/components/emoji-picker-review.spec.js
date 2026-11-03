@@ -482,10 +482,18 @@ test.describe('input insertion', () => {
 
   test('no target: select event fires and focus returns to the trigger', async ({ page }) => {
     await load(page, '<emoji-picker id="ep"></emoji-picker>');
+    // Register the listener before interacting, and wait for the panel to be
+    // open with the search box focused — on a slow runner the keys otherwise
+    // land before the picker has built and the select event never fires.
+    await page.evaluate(() => {
+      window.__epDetail = new Promise((res) => {
+        document.getElementById('ep').addEventListener('emoji-picker:select', (e) => res(/** @type {CustomEvent} */ (e).detail), { once: true });
+      });
+    });
     await page.click('#ep [data-trigger]');
-    const detail = page.evaluate(() => new Promise((res) => {
-      document.getElementById('ep').addEventListener('emoji-picker:select', (e) => res(/** @type {CustomEvent} */ (e).detail), { once: true });
-    }));
+    await expect(page.locator('#ep')).toHaveAttribute('open', '');
+    await expect(page.locator('#ep input[type="search"]')).toBeFocused();
+    const detail = page.evaluate(() => window.__epDetail);
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
     expect(await detail).toMatchObject({ shortcode: 'smile', emoji: '😄' });
