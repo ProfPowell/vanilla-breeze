@@ -121,7 +121,11 @@ export function checkSite(root) {
 
     const refs = [];
     if (!demo) for (const a of document.querySelectorAll('a[href]')) refs.push(['a', a.getAttribute('href')]);
-    for (const el of document.querySelectorAll('img[src], script[src], source[src], iframe[src], video[src], audio[src]')) {
+    // browser-window[src] / include-file[src] embed demos and fragments: a
+    // missing target is a blank "Failed to load" frame on the docs page.
+    for (const el of document.querySelectorAll('img[src], script[src], source[src], iframe[src], video[src], audio[src], browser-window[src], include-file[src]')) {
+      // data-link-check="ignore": a deliberately missing target (error-state demos).
+      if (el.getAttribute('data-link-check') === 'ignore') continue;
       refs.push([el.localName, el.getAttribute('src')]);
     }
     for (const l of document.querySelectorAll('link[href]')) {
