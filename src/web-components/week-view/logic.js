@@ -30,6 +30,7 @@
 
 import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { usableLocale } from '../../lib/i18n.js';
 import { parseTime, parseDuration, layoutColumns, eventLabel, DEFAULT_DURATION_MINUTES, SPAN_STYLE_PROPS, sharesHalfHour } from '../../lib/time-grid.js';
 
 const NAV_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
@@ -162,7 +163,7 @@ class WeekView extends VBElement {
   // ── Internals ───────────────────────────────────────────────────
 
   #locale() {
-    return /** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language;
+    return usableLocale(/** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language);
   }
 
   /** @returns {HTMLElement[]} calendar-events inside the table, in DOM order */

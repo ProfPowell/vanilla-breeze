@@ -24,6 +24,12 @@
  *
  * The wrapped <input type="date"> provides min, max, and value.
  *
+ * Typed input accepts ISO (2026-04-15, 2026/04/15), month names in English
+ * or the picker's locale (April 15, 2026 / 15 Apr 2026 / April 2026), CJK
+ * numeric dates (2026年4月15日) and, when the locale is Japanese, era dates
+ * (令和8年4月15日, 令和元年5月1日, R8/4/15). Full-width digits are accepted in
+ * the CJK forms.
+ *
  * Validity: the host owns it (ElementInternals: valueMissing,
  * rangeUnderflow, rangeOverflow) anchored on the visible combobox, so
  * requestSubmit()/reportValidity() focus something real. Changing min/max
@@ -43,6 +49,8 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { supportsPopover } from '../../utils/popover-support.js';
+import { parseWareki, parseCJKNumeric } from '../../lib/date-japanese.js';
+import { usableLocale, primarySubtag } from '../../lib/i18n.js';
 
 const EN_MONTHS = [
   'january', 'february', 'march', 'april', 'may', 'june',
@@ -209,6 +217,16 @@ function parseUserDate(text, locale) {
     return date ? { date, partial: null } : none;
   }
 
+  // 1a. Japanese era: 令和8年10月21日, R8/10/21 (Japanese locales only)
+  if (primarySubtag(locale) === 'ja') {
+    const wareki = parseWareki(t);
+    if (wareki) return { date: wareki, partial: null };
+  }
+
+  // 1b. CJK numeric: 2026年10月21日
+  const cjk = parseCJKNumeric(t);
+  if (cjk) return { date: cjk, partial: null };
+
   const months = getMonthMap(locale);
 
   // 2. Month Day Year: "Apr 15 2026", "April 15, 2026"
@@ -328,7 +346,7 @@ class DatePicker extends VBElement {
     if (!input) return false;
     this.#input = input;
 
-    this.#locale = /** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language || 'en-US';
+    this.#locale = usableLocale(/** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language);
     this.#firstDayOfWeek = getFirstDayOfWeek(this.#locale);
 
     // Constraints (fresh maps every setup: no accumulation across reconnects)

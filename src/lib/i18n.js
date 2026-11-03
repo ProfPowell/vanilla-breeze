@@ -88,6 +88,26 @@ export function getLocale() {
   );
 }
 
+/**
+ * Return `tag` when it is a usable BCP 47 locale, otherwise `fallback`.
+ * Authors frequently write POSIX-style tags ("en_US"), which make every
+ * Intl constructor throw RangeError.
+ * @param {string|null|undefined} tag
+ * @param {string} [fallback]
+ * @returns {string}
+ */
+export function usableLocale(tag, fallback = 'en-US') {
+  try {
+    if (tag) { Intl.getCanonicalLocales(tag); return tag; }
+  } catch { /* malformed tag — fall through */ }
+  try {
+    Intl.getCanonicalLocales(fallback);
+    return fallback;
+  } catch {
+    return 'en-US';
+  }
+}
+
 // ============================================================
 // VbI18n — String Swap Manager
 // Exported for application use, not auto-initialized.
