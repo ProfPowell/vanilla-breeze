@@ -129,6 +129,12 @@ test.describe('date-picker — Japanese era (和暦) entry', () => {
     });
   }
 
+  test('is not accepted when the picker locale is not Japanese', async ({ page }) => {
+    const { box, value } = await render(page, 'en');
+    await enter(box, '令和8年11月3日');
+    await expect.poll(value).toBe('2026-04-15');
+  });
+
   test('rejects a date outside the named era', async ({ page }) => {
     const { box, value } = await render(page, 'ja');
     await enter(box, '令和元年4月30日');
