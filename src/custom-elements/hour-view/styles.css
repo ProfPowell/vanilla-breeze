@@ -1,17 +1,33 @@
-/* hour-view: subgrid container for events within a single hour slot */
+/* hour-view: grid container for events within a single hour slot.
+
+   Two half-hour rows (:00 top, :30 bottom). Not a subgrid: a subgrid has
+   no implicit rows, so a third event would be clamped onto the last row
+   and overlap. Placement in the parent grid belongs to the parent
+   (day-view / week-view styles). */
 
 hour-view {
-  grid-column: 2;
-  grid-row: 1 / -1;
   display: grid;
-  grid-template-rows: subgrid;
-  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-auto-rows: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   padding-inline: var(--size-3xs, 2px);
   gap: 1px;
   /* No position:relative — spanning events position against <ol> ancestor */
 }
 
-/* Double-booking: two events side by side */
+/* Plain hour: events stack. calendar-event pins itself to row 1, so free
+   it here; [data-start="30"] (higher specificity) still lands in row 2. */
+hour-view > calendar-event {
+  grid-row: auto;
+}
+
+/* Double-booking: every event in a half-hour row gets an equal column,
+   however many there are. Rows stay put (:00 row 1, :30 row 2). */
 hour-view[data-overlap] {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: none;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+hour-view[data-overlap] > calendar-event {
+  grid-row: 1;
 }

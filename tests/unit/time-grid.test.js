@@ -4,7 +4,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseTime, parseDuration, layoutColumns } from '../../src/lib/time-grid.js';
+import { parseTime, parseDuration, layoutColumns, sharesHalfHour } from '../../src/lib/time-grid.js';
 
 test('parseTime: HH:MM and full ISO datetimes give the wall-clock time', () => {
   assert.deepEqual(parseTime('09:00'), { hour: 9, minute: 0 });
@@ -65,4 +65,13 @@ test('layoutColumns: overlapping intervals get columns, separate clusters do not
   assert.deepEqual([by.b.column, by.b.columns], [1, 2]);
   assert.deepEqual([by.c.column, by.c.columns], [1, 2]);
   assert.deepEqual([by.d.column, by.d.columns], [0, 1]);
+});
+
+test('sharesHalfHour: only events in the same half-hour row need columns', () => {
+  const ev = (dataset) => /** @type {any} */ ({ dataset });
+  assert.equal(sharesHalfHour([ev({}), ev({})]), true);                       // two :00
+  assert.equal(sharesHalfHour([ev({}), ev({ start: '30' })]), false);        // :00 + :30
+  assert.equal(sharesHalfHour([ev({ start: '30' }), ev({ start: '30' })]), true);
+  assert.equal(sharesHalfHour([ev({}), ev({ duration: '90m' })]), false);    // spans ignored
+  assert.equal(sharesHalfHour([ev({})]), false);
 });

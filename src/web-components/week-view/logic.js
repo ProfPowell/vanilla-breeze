@@ -30,12 +30,10 @@
 
 import { VBElement } from '../../lib/vb-element.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
-import {
-  parseTime, parseDuration, layoutColumns, eventLabel,
-  DEFAULT_DURATION_MINUTES, SPAN_STYLE_PROPS,
-} from '../../lib/time-grid.js';
+import { parseTime, parseDuration, layoutColumns, eventLabel, DEFAULT_DURATION_MINUTES, SPAN_STYLE_PROPS, sharesHalfHour } from '../../lib/time-grid.js';
 
 const NAV_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+
 
 /** @param {Date} d */
 function toISO(d) {
@@ -330,8 +328,9 @@ class WeekView extends VBElement {
 
         if (cellEvents.length > 0) {
           const hourView = document.createElement('hour-view');
-          // Spanning events are lifted out of the grid, so only in-grid ones share columns
-          if (cellEvents.filter((e) => !e.dataset.duration).length > 1) hourView.dataset.overlap = '';
+          // Columns only when in-grid events share a half-hour row (spanning
+          // events are lifted out of the grid and laid out by JS)
+          if (sharesHalfHour(cellEvents)) hourView.dataset.overlap = '';
           cellEvents.forEach(evt => hourView.appendChild(evt));
           td.appendChild(hourView);
         }
