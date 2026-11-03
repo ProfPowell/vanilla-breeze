@@ -113,3 +113,34 @@ test.describe('date-picker — locale follows the nearest lang', () => {
     await expect.poll(value).toBe('2026-10-21');
   });
 });
+
+test.describe('date-picker — Japanese era (和暦) entry', () => {
+  test.use({ locale: 'ja-JP' });
+
+  for (const [typed, expected] of [
+    ['令和8年11月3日', '2026-11-03'],
+    ['令和元年5月1日', '2019-05-01'],
+    ['R8/11/3', '2026-11-03'],
+  ]) {
+    test(`${typed} selects ${expected}`, async ({ page }) => {
+      const { box, value } = await render(page, 'ja');
+      await enter(box, typed);
+      await expect.poll(value).toBe(expected);
+    });
+  }
+
+  test('rejects a date outside the named era', async ({ page }) => {
+    const { box, value } = await render(page, 'ja');
+    await enter(box, '令和元年4月30日');
+    await expect.poll(value).toBe('2026-04-15');
+  });
+
+  test('parses the era format it displays under -u-ca-japanese', async ({ page }) => {
+    const { box, value } = await render(page, 'ja-JP-u-ca-japanese');
+    const shown = await box.inputValue();
+    expect(shown).toBe('令和8年4月15日');
+    await enter(box, '2026-01-01');
+    await enter(box, shown);
+    await expect.poll(value).toBe('2026-04-15');
+  });
+});
