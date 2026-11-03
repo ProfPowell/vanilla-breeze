@@ -14,9 +14,10 @@ const REPO = join(import.meta.dirname, '..', '..');
 /**
  * Serve a one-picker page with the given <html lang> and open it.
  * @param {import('playwright/test').Page} page
- * @param {string} lang
+ * @param {string} lang - <html lang>
+ * @param {string} [pickerLang] - optional lang on the <date-picker> itself
  */
-async function render(page, lang) {
+async function render(page, lang, pickerLang) {
   await page.route('**/src/**', (route) => route.fulfill({
     path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
   }));
@@ -29,7 +30,7 @@ async function render(page, lang) {
       <script type="module">import '/src/web-components/date-picker/logic.js';</script>
       </head><body><main>
         <label for="when">Date</label>
-        <date-picker id="dp"><input type="date" id="when" name="when" value="2026-04-15"></date-picker>
+        <date-picker id="dp"${pickerLang ? ` lang="${pickerLang}"` : ''}><input type="date" id="when" name="when" value="2026-04-15"></date-picker>
       </main></body></html>`,
   }));
   await page.goto(url, { waitUntil: 'load' });
@@ -83,6 +84,32 @@ test.describe('date-picker — CJK numeric entry', () => {
   test('still accepts English month names', async ({ page }) => {
     const { box, value } = await render(page, 'en');
     await enter(box, 'October 21 2026');
+    await expect.poll(value).toBe('2026-10-21');
+  });
+});
+
+test.describe('date-picker — locale follows the nearest lang', () => {
+  test.use({ locale: 'de-DE' });
+
+  test('displays in the document language, not the browser language', async ({ page }) => {
+    const { box } = await render(page, 'ja');
+    await expect(box).toHaveValue('2026年4月15日');
+  });
+
+  test('a lang on the picker overrides the document', async ({ page }) => {
+    const { box } = await render(page, 'en', 'ja');
+    await expect(box).toHaveValue('2026年4月15日');
+  });
+
+  test('calendar month label follows the document language', async ({ page }) => {
+    const { box } = await render(page, 'ja');
+    await box.press('ArrowDown');
+    await expect(page.locator('#dp').getByText('4月', { exact: true })).toBeVisible();
+  });
+
+  test('parses month names in the document language', async ({ page }) => {
+    const { box, value } = await render(page, 'fr');
+    await enter(box, '21 octobre 2026');
     await expect.poll(value).toBe('2026-10-21');
   });
 });
