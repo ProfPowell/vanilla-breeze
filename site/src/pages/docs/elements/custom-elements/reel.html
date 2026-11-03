@@ -11,6 +11,15 @@ crumbLabel: Custom Elements
 ---
 
 <section>
+    <h2>Element and attribute forms</h2>
+    <p>The same rules apply to <code>&lt;layout-reel&gt;</code> and to <code>data-layout="reel"</code> on any element, for example a list of cards or <code>&lt;card-list data-layout="reel"&gt;</code>:</p>
+    <code-block language="html" show-lines label="Attribute form" data-escape><ul data-layout="reel" data-layout-item-width="s" role="list">
+  <li>...</li>
+  <li>...</li>
+</ul></code-block>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -26,7 +35,7 @@ crumbLabel: Custom Elements
           <td><code>data-layout-scrollbar</code></td>
           <td>(boolean)</td>
           <td>&mdash;</td>
-          <td>Show a thin scrollbar (hidden by default).</td>
+          <td>Show a thin scrollbar. Hidden by default, except under forced colours and on touch-only devices (<code>hover: none</code>), where it always shows.</td>
         </tr>
         <tr>
           <td><code>data-layout-gap</code></td>
@@ -38,7 +47,7 @@ crumbLabel: Custom Elements
           <td><code>data-layout-padding</code></td>
           <td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code></td>
           <td><code>s</code></td>
-          <td>Inline padding and scroll padding.</td>
+          <td>Padding on all sides (the block padding leaves room for focus rings and shadows); the same value is the inline scroll padding, so snapped items align with the padded edge.</td>
         </tr>
         <tr>
           <td><code>data-layout-item-width</code></td>
@@ -56,7 +65,7 @@ crumbLabel: Custom Elements
           <td><code>data-scroll-hint</code></td>
           <td>(bare), <code>start</code></td>
           <td>&mdash;</td>
-          <td>Fade both edges to hint at overflow; start fades only the end edge.</td>
+          <td>Fade the edges to hint at overflow (logical: mirrored in RTL). <code>start</code>: only the end edge ever fades.</td>
         </tr>
         <tr>
           <td><code>data-container</code> <small>(on main, article, section, aside)</small></td>
@@ -70,7 +79,7 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Basic Usage</h2>
-    <p>Items scroll horizontally with scroll snap for smooth navigation.</p>
+    <p>Items scroll horizontally with proximity scroll snap: the reel settles on an item edge when you stop near one, without trapping you mid-item when items are wider than the view.</p>
 
     <browser-window
       src="/docs/snippets/demos/reel-basic.html"
@@ -122,6 +131,14 @@ crumbLabel: Custom Elements
   <section>
     <h2>Scroll Hints</h2>
     <p>Add <code>data-scroll-hint</code> to fade the edges of the reel, signaling there is more content to scroll. Use <code>data-scroll-hint="start"</code> to only fade the end edge (useful when content starts fully visible). The fade size can be customized with <code>--scroll-hint-size</code>.</p>
+    <p>Where scroll-driven animations are supported, each edge fades only while there is more content in that direction: the start edge stays sharp at the start, the end edge clears at the end, and a reel that does not overflow has no fade at all. Other browsers fade both edges all the time.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/reel-scroll-hints.html"
+      url="https://vanilla-breeze.com/reel/scroll-hints"
+      title="Reel scroll hints"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Scroll hints" data-escape><!-- Both edges fade -->
 <layout-reel data-scroll-hint>...</layout-reel>
@@ -130,12 +147,28 @@ crumbLabel: Custom Elements
 <layout-reel data-scroll-hint="start">...</layout-reel>
 
 <!-- Custom fade size -->
-<layout-reel data-scroll-hint style="--scroll-hint-size: 3rem;">...</layout-reel></code-block>
+<layout-reel data-scroll-hint class="wide-hints">...</layout-reel>
+
+<style>
+  .wide-hints { --scroll-hint-size: 3rem; }
+</style></code-block>
+  </section>
+
+  <section>
+    <h2>Right to Left</h2>
+    <p>The reel is logical. In <code>dir="rtl"</code> it starts at the right edge, the scroll hints mirror (the start edge is the right-hand side), and snapping aligns items to the right.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/reel-rtl.html"
+      url="https://vanilla-breeze.com/reel/rtl"
+      title="Reel in a right-to-left page"
+      shadow>
+    </browser-window>
   </section>
 
   <section>
     <h2>Scrollbar Visibility</h2>
-    <p>By default the scrollbar is hidden. Add <code>data-layout-scrollbar</code> to show it.</p>
+    <p>By default the scrollbar is hidden. Add <code>data-layout-scrollbar</code> to show it. It always shows under forced colours (Windows High Contrast) and on touch-only devices, where a hidden scrollbar removes the only scrolling affordance. Show it whenever mouse users without a horizontal wheel need to reach the overflow.</p>
 
     <browser-window
       src="/docs/snippets/demos/reel-scrollbar.html"
@@ -174,12 +207,12 @@ crumbLabel: Custom Elements
     </browser-window>
 
     <code-block language="html" show-lines label="Image gallery with reel" data-escape><layout-reel data-layout-gap="m" data-layout-item-width="m" data-layout-scrollbar>
-  <div data-media data-ratio="4:3" data-radius="m" style="inline-size: 20rem;">
+  <figure data-media data-ratio="4:3" data-radius="m">
     <img src="image1.jpg" alt="Gallery 1" loading="lazy" />
-  </div>
-  <div data-media data-ratio="4:3" data-radius="m" style="inline-size: 20rem;">
+  </figure>
+  <figure data-media data-ratio="4:3" data-radius="m">
     <img src="image2.jpg" alt="Gallery 2" loading="lazy" />
-  </div>
+  </figure>
   <!-- More images... -->
 </layout-reel></code-block>
 
@@ -195,9 +228,9 @@ crumbLabel: Custom Elements
     <code-block language="html" show-lines label="Product carousel" data-escape><layout-reel data-layout-gap="m" data-layout-item-width="m">
   <layout-card data-variant="outlined">
     <layout-stack data-layout-gap="s">
-      <div data-media data-ratio="1:1" data-radius="s">
+      <figure data-media data-ratio="1:1" data-radius="s">
         <img src="product.jpg" alt="Product" loading="lazy" />
-      </div>
+      </figure>
       <strong>Product Name</strong>
       <span>$29.99</span>
     </layout-stack>
@@ -217,7 +250,7 @@ crumbLabel: Custom Elements
     <code-block language="html" show-lines label="Testimonials carousel" data-escape><layout-reel data-layout-gap="l" data-layout-item-width="l">
   <layout-card data-variant="elevated" data-padding="l">
     <layout-stack data-layout-gap="m">
-      <p style="font-style: italic;">"Great product!"</p>
+      <blockquote>"Great product!"</blockquote>
       <layout-cluster data-layout-gap="s">
         <user-avatar>
           <img src="avatar.jpg" alt="Avatar" />
@@ -244,9 +277,25 @@ crumbLabel: Custom Elements
 
   <section>
     <h2>Accessibility</h2>
-    <p>The reel component respects <code>prefers-reduced-motion</code> by disabling scroll snap for users who prefer reduced motion.</p>
+    <h3>Keyboard access and a name</h3>
+    <p>A scroll container is only reachable from the keyboard when something inside it, or the container itself, can take focus. Chrome and Firefox make a scroller with no focusable content focusable automatically; Safari does not, and nobody gives the region a name. When the items hold no links or buttons, make the reel a named, focusable region. The simplest way is the attribute form on a <code>&lt;section&gt;</code>, which is a region landmark once it has a name (the demos on this page use this form):</p>
+    <code-block language="html" show-lines label="Focusable, named reel" data-escape><section data-layout="reel" aria-label="Customer testimonials" tabindex="0">
+  ...
+</section>
+
+<!-- Element form: add the role yourself -->
+<layout-reel role="region" aria-label="Customer testimonials" tabindex="0">
+  ...
+</layout-reel></code-block>
+    <p>Arrow keys then scroll it, and screen readers announce the region by name. When every item contains a link or button, the region attributes are optional: tabbing to an item scrolls it into view.</p>
+
+    <h3>Scrollbar</h3>
+    <p>The scrollbar is hidden by default but always shown under forced colours and on touch-only devices. Add <code>data-layout-scrollbar</code> where mouse users need it.</p>
+
+    <h3>Reduced motion</h3>
+    <p>The reel respects <code>prefers-reduced-motion</code> by disabling scroll snap for users who prefer reduced motion.</p>
     <code-block language="css" show-lines label="Reduced motion accessibility styles" data-escape>@media (prefers-reduced-motion: reduce) {
-  layout-reel {
+  :is(layout-reel, [data-layout="reel"]) {
     scroll-snap-type: none;
   }
 }</code-block>

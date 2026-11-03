@@ -24,15 +24,16 @@ crumbLabel: Data Attributes
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Basic horizontal splitter" data-escape><div data-layout="sidebar" data-splitter>
-  <nav>
+    <code-block language="html" show-lines label="Basic horizontal splitter" data-escape><section data-layout="sidebar" data-splitter>
+  <nav aria-label="Sidebar">
     <strong>Sidebar</strong>
     <p>Drag the divider or use arrow keys.</p>
   </nav>
   <main>
     <strong>Main Content</strong>
   </main>
-</div></code-block>
+</section></code-block>
+    <p>Pairs naturally with the <a href="/docs/elements/custom-elements/sidebar/">sidebar layout</a>: the splitter switches it to no-wrap and drops the content column's minimum width so any content child (a <code>main</code>, a <code>section data-layout="stack"</code>, a nested layout) can shrink beside the divider.</p>
   </section>
 
   <section>
@@ -44,7 +45,8 @@ crumbLabel: Data Attributes
       <li>Listens for mouse drag, touch drag, and keyboard events on the divider</li>
       <li>Calculates the split position as a percentage and applies it to the first panel's flex-basis</li>
       <li>Reads <code>data-min</code> and <code>data-max</code> from the first child for constraints</li>
-      <li>Sets <code>data-splitter-init</code> to prevent double-binding</li>
+      <li>Clamps the initial 50% position into the <code>data-min</code> / <code>data-max</code> range</li>
+      <li>Sets <code>data-splitter-init</code> (styling hook); removing and re-inserting the container never adds a second divider</li>
     </ol>
     <p>The container should use <code>data-layout="sidebar"</code> for horizontal splits or <code>data-layout="stack"</code> for vertical splits.</p>
   </section>
@@ -63,7 +65,12 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>data-splitter</code></td>
           <td>Container</td>
-          <td>Enables the splitter. Empty string for horizontal, <code>"vertical"</code> for vertical.</td>
+          <td>Enables the splitter. Empty string for side-by-side panels, <code>"vertical"</code> for stacked panels.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-resize</code></td>
+          <td>Container</td>
+          <td>Accessible name of the divider (default: <code>"Resize panels"</code>). Translate it for non-English pages.</td>
         </tr>
         <tr>
           <td><code>data-min</code></td>
@@ -78,7 +85,7 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>data-splitter-init</code></td>
           <td>Container</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+          <td>Set automatically once enhanced. Do not set manually.</td>
         </tr>
       </tbody>
     </table>
@@ -88,32 +95,31 @@ crumbLabel: Data Attributes
     <h2>Vertical Orientation</h2>
     <p>Set <code>data-splitter="vertical"</code> for a top/bottom split. The container needs a fixed height since vertical splits rely on the container's height to calculate proportions.</p>
 
-    <code-block language="html" show-lines label="Vertical splitter" data-escape><div data-layout="stack" data-splitter="vertical" style="height: 300px;">
-  <div>Top Panel</div>
-  <div>Bottom Panel</div>
-</div></code-block>
+    <code-block language="html" show-lines label="Vertical splitter" data-escape><section data-layout="stack" data-splitter="vertical" class="editor-panes">
+  <section>Top Panel</section>
+  <section>Bottom Panel</section>
+</section>
+
+<style>
+  .editor-panes { block-size: 300px; }
+</style></code-block>
   </section>
 
   <section>
     <h2>Min/Max Constraints</h2>
     <p>Add <code>data-min</code> and <code>data-max</code> to the first child element to constrain the drag range. Values are percentages. The divider stops at these boundaries during drag and keyboard navigation.</p>
 
-    <div class="example">
-      <div data-layout="sidebar" data-splitter style="height: 150px;">
-        <nav data-min="20" data-max="60">
-          <strong>Sidebar</strong>
-          <p>Min 20%, Max 60%</p>
-        </nav>
-        <main>
-          <strong>Main Content</strong>
-        </main>
-      </div>
-    </div>
+    <browser-window
+      src="/docs/snippets/demos/splitter-constrained.html"
+      url="https://vanilla-breeze.com/splitter/constrained"
+      title="Constrained and RTL splitters"
+      shadow>
+    </browser-window>
 
-    <code-block language="html" show-lines label="Constrained splitter" data-escape><div data-layout="sidebar" data-splitter>
-  <nav data-min="20" data-max="60">Sidebar</nav>
+    <code-block language="html" show-lines label="Constrained splitter" data-escape><section data-layout="sidebar" data-splitter data-label-resize="Resize navigation">
+  <nav aria-label="Files" data-min="20" data-max="60">Sidebar</nav>
   <main>Content</main>
-</div></code-block>
+</section></code-block>
   </section>
 
   <section>
@@ -121,9 +127,10 @@ crumbLabel: Data Attributes
     <p>The divider is a <code>div.split-divider</code> injected between the two child panels with the following accessibility attributes:</p>
     <ul>
       <li><code>role="separator"</code> and <code>tabindex="0"</code> for keyboard focus</li>
-      <li><code>aria-orientation</code> matching the split direction</li>
-      <li><code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code> tracking position</li>
-      <li><code>aria-label="Resize panels"</code> for screen readers</li>
+      <li><code>aria-orientation</code> naming the divider's own axis: <code>vertical</code> for side-by-side panels (a vertical bar), <code>horizontal</code> for stacked panels</li>
+      <li><code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code> tracking the first panel's size</li>
+      <li><code>aria-controls</code> pointing at the first panel (an <code>id</code> is generated if it has none)</li>
+      <li><code>aria-label</code> from <code>data-label-resize</code> (default <code>"Resize panels"</code>)</li>
     </ul>
   </section>
 
@@ -140,11 +147,11 @@ crumbLabel: Data Attributes
       <tbody>
         <tr>
           <td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td>
-          <td>Move divider by 1% (horizontal)</td>
+          <td>Move divider by 1% in the arrow's direction (side-by-side). Mirrored in RTL, where the first panel is on the right.</td>
         </tr>
         <tr>
           <td><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd></td>
-          <td>Move divider by 1% (vertical)</td>
+          <td>Move divider by 1% (stacked)</td>
         </tr>
         <tr>
           <td><kbd>Shift</kbd> + Arrow</td>
@@ -170,16 +177,16 @@ crumbLabel: Data Attributes
       </thead>
       <tbody>
         <tr>
-          <td><code>split-surface:resize</code></td>
+          <td><code>splitter:resize</code></td>
           <td><code>{ position }</code></td>
-          <td>Fired during drag and keyboard resize. <code>position</code> is the first panel's size as a percentage.</td>
+          <td>Fired during drag and keyboard resize (not on init). <code>position</code> is the first panel's size as a percentage.</td>
         </tr>
       </tbody>
     </table>
 
     <code-block language="javascript" show-lines label="Listening for resize events" data-escape>const panel = document.querySelector('[data-splitter]');
 
-panel.addEventListener('split-surface:resize', (e) => {
+panel.addEventListener('splitter:resize', (e) => {
   console.log('Panel resized to:', e.detail.position + '%');
 });</code-block>
   </section>
@@ -188,19 +195,19 @@ panel.addEventListener('split-surface:resize', (e) => {
     <h2>Nested Splitters</h2>
     <p>Splitters can be nested for IDE-style layouts. Combine a horizontal sidebar split with a vertical editor/terminal split.</p>
 
-    <code-block language="html" show-lines label="Nested horizontal and vertical splitters" data-escape><div data-layout="sidebar" data-splitter>
-  <nav>
+    <code-block language="html" show-lines label="Nested horizontal and vertical splitters" data-escape><section data-layout="sidebar" data-splitter>
+  <nav aria-label="File tree">
     <strong>File Tree</strong>
   </nav>
-  <div data-layout="stack" data-splitter="vertical" style="height: 500px;">
+  <section data-layout="stack" data-splitter="vertical" class="editor-panes">
     <main>
       <strong>Editor</strong>
     </main>
-    <div>
+    <section aria-label="Terminal">
       <strong>Terminal</strong>
-    </div>
-  </div>
-</div></code-block>
+    </section>
+  </section>
+</section></code-block>
   </section>
 
   <section>
@@ -247,7 +254,7 @@ panel.addEventListener('split-surface:resize', (e) => {
     <p>Splitter containers added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
 
     <code-block language="javascript" show-lines label="Dynamically added splitters" data-escape>// Dynamically added splitters are auto-enhanced via MutationObserver
-const container = document.createElement('div');
+const container = document.createElement('section');
 container.dataset.layout = 'sidebar';
 container.dataset.splitter = '';
 container.innerHTML = '<nav>Side</nav><main>Content</main>';
@@ -260,8 +267,10 @@ document.body.appendChild(container);
     <ul>
       <li><code>role="separator"</code> identifies the divider as a resizable boundary to screen readers</li>
       <li><code>aria-valuenow</code>, <code>aria-valuemin</code>, and <code>aria-valuemax</code> convey position and range</li>
-      <li><code>aria-orientation</code> indicates horizontal or vertical resize direction</li>
-      <li><code>aria-label="Resize panels"</code> provides a clear accessible name</li>
+      <li><code>aria-orientation</code> is the divider's own axis (<code>vertical</code> for side-by-side panels)</li>
+      <li><code>aria-label</code> (default <code>"Resize panels"</code>, override with <code>data-label-resize</code>) provides the accessible name; <code>aria-controls</code> names the resized panel</li>
+      <li>Pointer drag and arrow keys are direction-aware: in RTL the first panel is on the right and the controls mirror</li>
+      <li>A cancelled drag (<code>pointercancel</code>, lost capture) ends cleanly, restoring text selection</li>
       <li><code>tabindex="0"</code> makes the divider keyboard-focusable with a visible focus ring</li>
       <li>Full keyboard navigation: Arrow keys, Shift+Arrow, Home, and End</li>
       <li>The divider traps neither focus nor mouse &mdash; panel content remains fully interactive</li>

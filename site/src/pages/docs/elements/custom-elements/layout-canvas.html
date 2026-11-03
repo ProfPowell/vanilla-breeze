@@ -30,16 +30,22 @@ crumbLabel: Custom Elements
     </thead>
       <tbody>
         <tr>
-          <td><code>data-variant</code></td>
+          <td><code>data-canvas</code> <small>(attribute form)</small></td>
+          <td>(bare), <code>flush</code>, <code>elevated</code></td>
+          <td>(bare)</td>
+          <td>Turns any element into a canvas. The value is the variant: bare for the default surface, <code>flush</code> or <code>elevated</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-variant</code> <small>(element form only)</small></td>
           <td><code>flush</code>, <code>elevated</code></td>
           <td>&mdash;</td>
-          <td>flush (no radius or shadow) or elevated (larger radius and shadow).</td>
+          <td>Variant for <code>&lt;layout-canvas&gt;</code>: flush (no radius or shadow) or elevated (larger radius and shadow). Has no effect with <code>data-canvas</code>; put the variant in the <code>data-canvas</code> value instead.</td>
         </tr>
         <tr>
           <td><code>data-max</code></td>
           <td><code>narrow</code>, <code>normal</code>, <code>wide</code>, <code>prose</code></td>
           <td>&mdash;</td>
-          <td>Max inline size, centered: narrow / normal / wide (--content-* tokens) or prose (65ch).</td>
+          <td>Max inline size, centered: <code>narrow</code> / <code>normal</code> / <code>wide</code> use the <code>--content-narrow</code> / <code>--content-normal</code> / <code>--content-wide</code> tokens (40 / 60 / 80rem by default; <code>normal</code> is fluid under <code>data-fluid</code>), <code>prose</code> is 65ch.</td>
         </tr>
         <tr>
           <td><code>data-padding</code></td>
@@ -61,6 +67,7 @@ crumbLabel: Custom Elements
   <h2>How It Works</h2>
   <p><code>data-canvas</code> is an attribute you add to any semantic element to give it an elevated surface &mdash; background, border-radius, box-shadow, and padding. The <code>&lt;layout-canvas&gt;</code> custom element is an alternative wrapper for when you need a non-semantic container.</p>
   <p>Both forms share the same CSS and consume the same <code>--canvas-*</code> design tokens used by <code>data-backdrop</code>, so theme overrides apply to both systems.</p>
+  <p>The surface always reserves a 1px edge. On a plain page, where the canvas and the page share <code>--color-surface</code>, the edge is a <code>--color-border</code> hairline so the panel reads in light and dark mode. Under <code>data-backdrop</code> the tinted page frames the surface and the edge is transparent. In forced-colours mode (Windows High Contrast), where backgrounds and shadows are flattened, the edge is drawn in <code>CanvasText</code>.</p>
 </section>
 
 <section>
@@ -109,18 +116,18 @@ crumbLabel: Custom Elements
 
   <code-block language="html" show-lines label="Width constraints" data-escape><article data-canvas data-max="narrow">
   <h2>Narrow Canvas</h2>
-  <p>Constrained to 45rem max width, centered on the page.</p>
+  <p>Constrained to --content-narrow (40rem), centered on the page.</p>
 </article>
 
 <article data-canvas data-max="normal">
   <h2>Content Width</h2>
-  <p>Constrained to 60rem max width.</p>
+  <p>Constrained to --content-normal (60rem, fluid under data-fluid).</p>
 </article></code-block>
 </section>
 
 <section>
   <h2>Nested Canvases</h2>
-  <p>Nested canvases automatically use <code>--color-surface-raised</code> for visual hierarchy.</p>
+  <p>Nested canvases automatically use <code>--color-surface-raised</code> for visual hierarchy. They do it by setting <code>--canvas-bg</code>, not <code>background</code>, so the depth sheets match the nested surface and an author's own <code>--canvas-bg</code> on the nested canvas still wins.</p>
 
   <code-block language="html" show-lines label="Nested canvases" data-escape><article data-canvas>
   <h2>Outer Canvas</h2>
@@ -173,11 +180,13 @@ crumbLabel: Custom Elements
     <li>Both consume the same <code>--canvas-*</code> tokens</li>
     <li>A page can use both simultaneously</li>
   </ul>
+  <h3>Token coupling</h3>
+  <p>The <code>--canvas-*</code> tokens (<code>--canvas-bg</code>, <code>--canvas-radius</code>, <code>--canvas-shadow</code>, padding and width) are only defined under <code>[data-backdrop]</code>. Without a backdrop, every canvas uses the fallbacks (surface colour, <code>--radius-l</code>, <code>--shadow-l</code>). With one, the backdrop preset decides: <code>&lt;html data-backdrop="flush"&gt;</code> sets <code>--canvas-radius: 0</code> and <code>--canvas-shadow: none</code>, which flattens every default <code>data-canvas</code> on the page too. The <code>elevated</code> variant reads <code>--radius-xl</code> and <code>--shadow-xl</code> directly, so it keeps its elevation under any backdrop preset. To restyle one canvas, set the <code>--canvas-*</code> tokens on that element.</p>
 </section>
 
 <section>
   <h2>Mobile Behavior</h2>
-  <p>At <code>&lt;640px</code>, all canvases automatically go flush &mdash; no border radius, no shadow, reduced padding. This matches <code>data-backdrop</code> mobile behavior.</p>
+  <p>Below <code>37.5rem</code> (600px, <code>--bp-s</code>), every canvas goes flush &mdash; no border radius, no shadow (including the <code>elevated</code> variant and the depth sheets), full width, reduced inline padding. The element and attribute forms behave the same. This matches <code>data-backdrop</code> mobile behavior.</p>
 </section>
 
 <section>

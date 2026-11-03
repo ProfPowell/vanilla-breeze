@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "layout-sidebar"
-description: "Sidebar layout with a fixed-width sidebar and flexible main content area. Automatically stacks on narrow viewports."
+description: "Sidebar layout with a fixed-basis sidebar and a flexible content column that wraps below it when its container is too narrow."
 elementName: layout-sidebar
 category: custom
 currentPath: /docs/elements/custom-elements/sidebar/
@@ -16,6 +16,23 @@ crumbLabel: Custom Elements
     title="Responsive Sidebar"
     shadow>
   </browser-window>
+
+  <section>
+    <h2>How the sidebar is chosen</h2>
+    <p>The layout is semantic-aware. <code>&lt;nav&gt;</code> and <code>&lt;aside&gt;</code> children are the sidebar; every other child is content. That lets you write children in their natural DOM order and pick the visual side with <code>data-layout-side</code>.</p>
+    <p>When there is no <code>nav</code> or <code>aside</code> child, a positional fallback applies: the first child is the sidebar and the last child is the content.</p>
+    <p>Wrapping depends on the width of the <em>container</em>, not the viewport. The sidebar takes its basis (<code>16rem</code> by default) and the content column takes the rest; when the content would drop below its floor (<code>data-layout-content-min</code>, 50% by default) it wraps underneath. A sidebar inside a narrow card wraps even on a wide screen.</p>
+  </section>
+
+  <section>
+    <h2>Element and attribute forms</h2>
+    <p>The same rules apply to <code>&lt;layout-sidebar&gt;</code> and to <code>data-layout="sidebar"</code> on any element, so a semantic wrapper can carry the layout directly:</p>
+    <code-block language="html" show-lines label="Attribute form" data-escape><section data-layout="sidebar" data-layout-gap="l">
+  <nav aria-label="Section">...</nav>
+  <article>...</article>
+</section></code-block>
+    <p>Nested sidebars start from their own defaults: an inner sidebar never inherits the outer one's gap or width settings.</p>
+  </section>
 
   <section>
     <h2>Attributes</h2>
@@ -110,7 +127,7 @@ crumbLabel: Custom Elements
   <main>Main content</main>
 </layout-sidebar>
 
-<!-- Normal sidebar (15rem) - default -->
+<!-- Normal sidebar (16rem) - default -->
 <layout-sidebar data-layout-sidebar-width="normal">
   <aside>Sidebar content</aside>
   <main>Main content</main>
@@ -121,6 +138,73 @@ crumbLabel: Custom Elements
   <aside>Sidebar content</aside>
   <main>Main content</main>
 </layout-sidebar></code-block>
+  </section>
+
+  <section>
+    <h2>Content Minimum</h2>
+    <p><code>data-layout-content-min</code> sets how narrow the content column may get (40 / 50 / 60%) before it wraps below the sidebar. For a one-off value, set <code>--layout-content-min</code>.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/sidebar-content-min.html"
+      url="https://vanilla-breeze.com/sidebar/content-min"
+      title="Sidebar content minimum"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Content minimum" data-escape><layout-sidebar data-layout-content-min="s">
+  <aside>Sidebar</aside>
+  <main>Content may shrink to 40% before wrapping</main>
+</layout-sidebar></code-block>
+  </section>
+
+  <section>
+    <h2>No Wrap</h2>
+    <p><code>data-layout-nowrap</code> keeps the sidebar beside the content at every width. Use it when the sidebar is small, such as an icon rail.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/sidebar-nowrap.html"
+      url="https://vanilla-breeze.com/sidebar/nowrap"
+      title="Sidebar no-wrap"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="No wrap" data-escape><layout-sidebar data-layout-sidebar-width="narrow" data-layout-nowrap>
+  <nav aria-label="Tools">...</nav>
+  <main>...</main>
+</layout-sidebar></code-block>
+  </section>
+
+  <section>
+    <h2>Sticky Sidebar</h2>
+    <p>Add <code>data-layout-sticky</code> to the <code>nav</code> or <code>aside</code> to pin it while the content scrolls. It has two prerequisites:</p>
+    <ul>
+      <li>The page opts into the smart sticky system with <code>&lt;html data-sticky&gt;</code>. Without it the attribute does nothing.</li>
+      <li>The sticky child must be a <code>nav</code> or <code>aside</code> that is a direct child of the sidebar layout.</li>
+    </ul>
+    <p>The sidebar is limited to the remaining viewport height and scrolls on its own when its content is taller.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/sidebar-sticky.html"
+      url="https://vanilla-breeze.com/sidebar/sticky"
+      title="Sticky sidebar"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Sticky sidebar" data-escape><html data-sticky>
+...
+<layout-sidebar>
+  <nav aria-label="Sections" data-layout-sticky>...</nav>
+  <main>...</main>
+</layout-sidebar></code-block>
+  </section>
+
+  <section>
+    <h2>Resizable Panels</h2>
+    <p>Add <a href="/docs/attributes/data-splitter/"><code>data-splitter</code></a> to make the sidebar resizable with a draggable, keyboard-accessible divider. The splitter switches the layout to no-wrap and lets the content column shrink freely.</p>
+    <code-block language="html" show-lines label="Resizable sidebar" data-escape><section data-layout="sidebar" data-splitter>
+  <nav aria-label="Files">...</nav>
+  <main>...</main>
+</section></code-block>
   </section>
 
   <section>
@@ -225,6 +309,14 @@ crumbLabel: Custom Elements
     </layout-grid>
   </main>
 </layout-sidebar></code-block>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>Keep DOM order the same as the visual order. For a sidebar on the end, write <code>&lt;main&gt;</code> first and the <code>&lt;aside&gt;</code> after it, then set <code>data-layout-side="end"</code>. If the aside comes first in the source, the layout still moves it to the end visually, but focus and reading order then differ from what is on screen (WCAG 1.3.2, 2.4.3).</li>
+      <li>Give a <code>nav</code> sidebar an accessible name (<code>aria-label</code> or <code>aria-labelledby</code>) when the page has more than one navigation region.</li>
+    </ul>
   </section>
 
   <section>

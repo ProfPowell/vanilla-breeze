@@ -26,31 +26,33 @@ crumbLabel: Web Components
     <h2>Layer 1: Attribute Init</h2>
     <p><strong>Light JS (~80 lines).</strong> Apply <code>data-splitter</code> to a container. A small init script injects a full-height drag divider between the first two children with pointer and keyboard events.</p>
 
-    <div class="example">
-      <div data-layout="sidebar" data-splitter style="min-height: 150px;">
-        <nav style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">Sidebar &mdash; drag the divider</nav>
-        <main style="padding: var(--size-m); background: var(--color-surface); border-radius: var(--radius-m);">Main content area</main>
-      </div>
-    </div>
-
     <code-block language="html" show-lines label="data-splitter" data-escape><!-- Light JS — auto-injected divider -->
-<div data-layout="sidebar" data-splitter>
-  <nav>Sidebar content</nav>
+<section data-layout="sidebar" data-splitter>
+  <nav aria-label="Sidebar">Sidebar content</nav>
   <main>Main content</main>
-</div></code-block>
+</section></code-block>
 
     <h3>Vertical Splitting</h3>
-    <code-block language="html" show-lines label="Vertical splitter" data-escape><div data-layout="stack" data-splitter="vertical">
-  <div>Top panel</div>
-  <div>Bottom panel</div>
-</div></code-block>
+    <code-block language="html" show-lines label="Vertical splitter" data-escape><section data-layout="stack" data-splitter="vertical">
+  <section>Top panel</section>
+  <section>Bottom panel</section>
+</section></code-block>
 
-    <h3>Constraints</h3>
-    <p>Set <code>data-min</code> and <code>data-max</code> on children to constrain how far the divider can move.</p>
-    <code-block language="html" show-lines label="Min/max constraints" data-escape><div data-layout="sidebar" data-splitter>
-  <nav data-min="20" data-max="60">Sidebar (20-60%)</nav>
+    <h3>Constraints and RTL</h3>
+    <p>Set <code>data-min</code> and <code>data-max</code> on the first child to constrain how far the divider can move; the initial position is clamped into that range. In right-to-left containers the first panel sits on the right and drag and arrow keys mirror.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/splitter-constrained.html"
+      url="https://vanilla-breeze.com/splitter/constrained"
+      title="Constrained and RTL splitters"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Min/max constraints" data-escape><section data-layout="sidebar" data-splitter>
+  <nav aria-label="Sidebar" data-min="20" data-max="60">Sidebar (20-60%)</nav>
   <main>Main content</main>
-</div></code-block>
+</section></code-block>
+    <p>The attribute utility fires <code>splitter:resize</code> (<code>{ position }</code>); see <a href="/docs/attributes/data-splitter/"><code>data-splitter</code></a>.</p>
 
     <h3>Keyboard</h3>
     <table class="props-table">
@@ -58,7 +60,7 @@ crumbLabel: Web Components
         <tr><th>Key</th><th>Action</th></tr>
       </thead>
       <tbody>
-        <tr><td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td><td>Move divider 1%</td></tr>
+        <tr><td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td><td>Move divider 1% in the arrow's direction (mirrored in RTL)</td></tr>
         <tr><td><kbd>Shift</kbd> + Arrow</td><td>Move divider 10%</td></tr>
         <tr><td><kbd>Home</kbd></td><td>Move to minimum</td></tr>
         <tr><td><kbd>End</kbd></td><td>Move to maximum</td></tr>
@@ -69,13 +71,6 @@ crumbLabel: Web Components
   <section>
     <h2>Layer 2: Web Component</h2>
     <p><strong>Full component.</strong> Self-contained <code>&lt;split-surface&gt;</code> element with persistence, collapsible panels, custom events, and JS API.</p>
-
-    <div class="example">
-      <split-surface style="min-height: 180px;">
-        <nav style="padding: var(--size-m); background: var(--color-surface-raised); border-radius: var(--radius-m);">Sidebar panel</nav>
-        <main style="padding: var(--size-m); background: var(--color-surface); border-radius: var(--radius-m);">Main content panel</main>
-      </split-surface>
-    </div>
 
     <code-block language="html" show-lines label="Basic split-surface" data-escape><split-surface>
   <nav>Sidebar</nav>
@@ -148,8 +143,8 @@ el.reset();                // Restore to initial position</code-block>
         <tr><th>Key</th><th>Action</th></tr>
       </thead>
       <tbody>
-        <tr><td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td><td>Move divider 1% (horizontal)</td></tr>
-        <tr><td><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd></td><td>Move divider 1% (vertical)</td></tr>
+        <tr><td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td><td>Move divider 1% in the arrow's direction (side-by-side; mirrored in RTL)</td></tr>
+        <tr><td><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd></td><td>Move divider 1% (stacked)</td></tr>
         <tr><td><kbd>Shift</kbd> + Arrow</td><td>Move divider 10%</td></tr>
         <tr><td><kbd>Home</kbd></td><td>Move to minimum position</td></tr>
         <tr><td><kbd>End</kbd></td><td>Move to maximum position</td></tr>
@@ -161,13 +156,14 @@ el.reset();                // Restore to initial position</code-block>
     <h2>Accessibility</h2>
 
     <h3>Separator Role</h3>
-    <p>The divider has <code>role="separator"</code> with <code>aria-orientation</code>, <code>aria-valuenow</code>, <code>aria-valuemin</code>, and <code>aria-valuemax</code>. Screen readers announce the current position.</p>
+    <p>The divider has <code>role="separator"</code> with <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code> and <code>aria-controls</code> (the first panel; an <code>id</code> is generated when missing). <code>aria-orientation</code> is the divider's own axis: <code>vertical</code> for side-by-side panels, <code>horizontal</code> for <code>direction="vertical"</code>. Screen readers announce the current position.</p>
+    <p>The accessible name defaults to "Resize panels"; set <code>data-label-resize</code> to translate or specialise it.</p>
 
     <h3>Keyboard Support</h3>
     <p>The divider is focusable (<code>tabindex="0"</code>) and responds to arrow keys. <kbd>Shift</kbd> + arrow provides larger steps. <kbd>Home</kbd> and <kbd>End</kbd> jump to min/max.</p>
 
     <h3>Touch Support</h3>
-    <p>The divider uses <code>touch-action: none</code> and <code>setPointerCapture</code> for reliable pointer drag behavior across devices.</p>
+    <p>The divider uses <code>touch-action: none</code> and <code>setPointerCapture</code> for reliable pointer drag behavior across devices. A cancelled gesture (<code>pointercancel</code> or lost capture) ends the drag cleanly.</p>
   </section>
 
   <section>

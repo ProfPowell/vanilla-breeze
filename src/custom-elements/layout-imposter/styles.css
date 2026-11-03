@@ -1,96 +1,105 @@
-/* layout-imposter: Positioning helper for overlays and modals */
+/* layout-imposter: Positioning helper for overlays
+ *
+ * Visual positioning only — no focus management, no inert background, no
+ * dialog semantics. For modal UI use <dialog> or [popover].
+ *
+ * Every position uses the same mechanism: inset: 0 plus a fit-content box,
+ * placed with auto margins. Auto margins split the free space evenly, so
+ * center/top/bottom are centred along the inline axis in both LTR and RTL
+ * (no physical translate), and the shrink-to-fit width can use the whole
+ * containing block (an inset-inline-start: 50% box was capped at half).
+ * Pinned edges replace the auto margin on that side with the margin token.
+ *
+ * Private props are namespaced (--_imposter-*) and re-declared on every
+ * host, so a nested imposter never inherits an outer one's values.
+ *
+ * --imposter-z: stacking order (default 1 when absolute, --z-float when
+ * fixed) so the overlay paints above later positioned siblings. */
 
 layout-imposter {
-  position: var(--_position, absolute);
-  inset-block-start: var(--_inset-block, 50%);
-  inset-inline-start: var(--_inset-inline, 50%);
-  translate: var(--_translate, -50% -50%);
+  --_imposter-margin: 0px;
+  --_imposter-z: var(--imposter-z, 1);
+
+  position: absolute;
+  inset: 0;
+  inline-size: fit-content;
+  block-size: fit-content;
+  margin: auto;
+  z-index: var(--_imposter-z);
 }
 
 /* Position type */
 layout-imposter[data-layout-fixed] {
-  --_position: fixed;
+  --_imposter-z: var(--imposter-z, var(--z-float, 200));
+
+  position: fixed;
 }
 
 /* Margin from edges */
-layout-imposter[data-layout-margin="s"] { --_margin: var(--size-s); }
-layout-imposter[data-layout-margin="m"] { --_margin: var(--size-m); }
-layout-imposter[data-layout-margin="l"] { --_margin: var(--size-l); }
-layout-imposter[data-layout-margin="xl"] { --_margin: var(--size-xl); }
+layout-imposter[data-layout-margin="s"]  { --_imposter-margin: var(--size-s); }
+layout-imposter[data-layout-margin="m"]  { --_imposter-margin: var(--size-m); }
+layout-imposter[data-layout-margin="l"]  { --_imposter-margin: var(--size-l); }
+layout-imposter[data-layout-margin="xl"] { --_imposter-margin: var(--size-xl); }
 
-/* Positioning presets */
-
-/* Center (default) */
+/* --------------------------------------------------------------------------
+   Positioning presets. Center (the default) is the base rule: margin: auto
+   on all sides. Edge presets centre on the cross axis.
+   -------------------------------------------------------------------------- */
 layout-imposter[data-layout-position="center"] {
-  --_inset-block: 50%;
-  --_inset-inline: 50%;
-  --_translate: -50% -50%;
+  margin: auto;
 }
 
-/* Top */
 layout-imposter[data-layout-position="top"] {
-  --_inset-block: var(--_margin, 0);
-  --_inset-inline: 50%;
-  --_translate: -50% 0;
+  margin-block: var(--_imposter-margin) auto;
+  margin-inline: auto;
 }
 
-/* Bottom */
 layout-imposter[data-layout-position="bottom"] {
-  --_inset-block: auto;
-  inset-block-end: var(--_margin, 0);
-  --_inset-inline: 50%;
-  --_translate: -50% 0;
+  margin-block: auto var(--_imposter-margin);
+  margin-inline: auto;
 }
 
-/* Start (left in LTR) */
+/* Start: inline-start edge (left in LTR, right in RTL) */
 layout-imposter[data-layout-position="start"] {
-  --_inset-block: 50%;
-  --_inset-inline: var(--_margin, 0);
-  --_translate: 0 -50%;
+  margin-block: auto;
+  margin-inline: var(--_imposter-margin) auto;
 }
 
-/* End (right in LTR) */
+/* End: inline-end edge (right in LTR, left in RTL) */
 layout-imposter[data-layout-position="end"] {
-  --_inset-block: 50%;
-  --_inset-inline: auto;
-  inset-inline-end: var(--_margin, 0);
-  --_translate: 0 -50%;
+  margin-block: auto;
+  margin-inline: auto var(--_imposter-margin);
 }
 
 /* Corners */
 layout-imposter[data-layout-position="top-start"] {
-  --_inset-block: var(--_margin, 0);
-  --_inset-inline: var(--_margin, 0);
-  --_translate: 0 0;
+  margin-block: var(--_imposter-margin) auto;
+  margin-inline: var(--_imposter-margin) auto;
 }
 
 layout-imposter[data-layout-position="top-end"] {
-  --_inset-block: var(--_margin, 0);
-  --_inset-inline: auto;
-  inset-inline-end: var(--_margin, 0);
-  --_translate: 0 0;
+  margin-block: var(--_imposter-margin) auto;
+  margin-inline: auto var(--_imposter-margin);
 }
 
 layout-imposter[data-layout-position="bottom-start"] {
-  --_inset-block: auto;
-  inset-block-end: var(--_margin, 0);
-  --_inset-inline: var(--_margin, 0);
-  --_translate: 0 0;
+  margin-block: auto var(--_imposter-margin);
+  margin-inline: var(--_imposter-margin) auto;
 }
 
 layout-imposter[data-layout-position="bottom-end"] {
-  --_inset-block: auto;
-  inset-block-end: var(--_margin, 0);
-  --_inset-inline: auto;
-  inset-inline-end: var(--_margin, 0);
-  --_translate: 0 0;
+  margin-block: auto var(--_imposter-margin);
+  margin-inline: auto var(--_imposter-margin);
 }
 
-/* Contain within viewport when fixed */
+/* --------------------------------------------------------------------------
+   Contain: never larger than the containing block minus the margin on each
+   side, scrolling inside when the content is bigger. Percentages resolve
+   against the containing block — the positioned ancestor when absolute,
+   the viewport when fixed — so one rule covers both.
+   -------------------------------------------------------------------------- */
 layout-imposter[data-layout-contain] {
-  max-inline-size: calc(100vw - var(--_margin, 0) * 2);
-  max-inline-size: calc(100dvw - var(--_margin, 0) * 2);
-  max-block-size: calc(100vh - var(--_margin, 0) * 2);
-  max-block-size: calc(100dvh - var(--_margin, 0) * 2);
+  max-inline-size: calc(100% - var(--_imposter-margin) * 2);
+  max-block-size: calc(100% - var(--_imposter-margin) * 2);
   overflow: auto;
 }

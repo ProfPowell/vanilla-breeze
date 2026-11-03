@@ -10,6 +10,11 @@
  * @attr {number}  max        - Maximum panel size % (default: 90)
  * @attr {string}  persist    - VBStore key suffix for position persistence (vb:layout:split:{key})
  * @attr {boolean} collapsible - Double-click divider to collapse first panel
+ * @attr {string}  data-label-resize - Accessible name of the divider (default "Resize panels")
+ *
+ * Direction-aware: in RTL the first panel sits on the right, so pointer
+ * math and arrow keys flip (arrows move the divider in their visual
+ * direction).
  *
  * @example
  * <split-surface>
@@ -21,6 +26,8 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { VBStore } from '../../lib/vb-store.js';
 
+let panelIdCounter = 0;
+
 class SplitSurface extends VBElement {
   #divider;
   #first;
@@ -28,9 +35,17 @@ class SplitSurface extends VBElement {
   #position = 50;
   #collapsed = false;
   #preCollapsePosition = 50;
+  /** Bumped on every setup/teardown so a stale async init (remove +
+   *  reinsert before the persisted position resolved) never injects a
+   *  second divider. */
+  #generation = 0;
 
   get #vertical() {
     return this.getAttribute('direction') === 'vertical';
+  }
+
+  get #rtl() {
+    return getComputedStyle(this).direction === 'rtl';
   }
 
   get #min() {
@@ -72,34 +87,41 @@ class SplitSurface extends VBElement {
   }
 
   setup() {
-    // Select panels: exclude any previously-generated divider
+    // Drop a stale divider (cloned markup carries no listeners), then
+    // select the panels.
+    for (const stale of this.querySelectorAll(':scope > .split-divider')) stale.remove();
     const panels = [...this.children].filter(el => !el.classList.contains('split-divider'));
     if (panels.length < 2) return false;
 
     this.#first = /** @type {HTMLElement} */ (panels[0]);
     this.#second = /** @type {HTMLElement} */ (panels[1]);
 
-    this.#initAsync();
+    this.#initAsync(++this.#generation);
     return true;
   }
 
-  async #initAsync() {
+  async #initAsync(generation) {
     // Read initial position (authored attribute wins over persisted)
     const posAttr = this.getAttribute('position');
     const posVal = Number(posAttr);
     const authored = posAttr !== null && !isNaN(posVal) ? posVal : null;
     const persisted = await this.#readPersist();
+    if (generation !== this.#generation || !this.isConnected) return false;
     const initial = authored ?? persisted ?? 50;
 
     // Create divider
     this.#divider = document.createElement('div');
     this.#divider.className = 'split-divider';
     this.#divider.setAttribute('role', 'separator');
-    this.#divider.setAttribute('aria-orientation', this.#vertical ? 'vertical' : 'horizontal');
+    // aria-orientation names the divider's own axis: side-by-side panels
+    // (direction="horizontal") have a vertical bar.
+    this.#divider.setAttribute('aria-orientation', this.#vertical ? 'horizontal' : 'vertical');
     this.#divider.setAttribute('aria-valuenow', String(Math.round(initial)));
     this.#divider.setAttribute('aria-valuemin', String(this.#min));
     this.#divider.setAttribute('aria-valuemax', String(this.#max));
-    this.#divider.setAttribute('aria-label', 'Resize panels');
+    this.#divider.setAttribute('aria-label', this.getAttribute('data-label-resize') || 'Resize panels');
+    if (!this.#first.id) this.#first.id = `vb-split-panel-${++panelIdCounter}`;
+    this.#divider.setAttribute('aria-controls', this.#first.id);
     this.#divider.setAttribute('tabindex', '0');
     this.insertBefore(this.#divider, this.#second);
 
@@ -116,6 +138,7 @@ class SplitSurface extends VBElement {
   }
 
   teardown() {
+    this.#generation++;
     if (this.#divider) {
       this.#divider.remove();
       this.#divider = null;
@@ -128,6 +151,8 @@ class SplitSurface extends VBElement {
     this.#divider.setPointerCapture(e.pointerId);
     this.#divider.addEventListener('pointermove', this.#onPointerMove);
     this.#divider.addEventListener('pointerup', this.#onPointerUp);
+    this.#divider.addEventListener('pointercancel', this.#onPointerUp);
+    this.#divider.addEventListener('lostpointercapture', this.#onPointerUp);
   };
 
   #onPointerMove = (e) => {
@@ -137,7 +162,8 @@ class SplitSurface extends VBElement {
     if (this.#vertical) {
       percent = ((e.clientY - rect.top) / rect.height) * 100;
     } else {
-      percent = ((e.clientX - rect.left) / rect.width) * 100;
+      const offset = this.#rtl ? rect.right - e.clientX : e.clientX - rect.left;
+      percent = (offset / rect.width) * 100;
     }
     if (this.#collapsed) {
       this.#collapsed = false;
@@ -145,19 +171,26 @@ class SplitSurface extends VBElement {
     this.#setPosition(percent);
   };
 
+  // Also handles pointercancel / lostpointercapture, so a cancelled drag
+  // never leaves the dragging state (and user-select: none) stuck on.
   #onPointerUp = (e) => {
+    if (!this.#divider) return;
+    const wasDragging = this.matches(':state(divider-dragging)');
     this.setState('divider-dragging', false);
-    this.#divider.releasePointerCapture(e.pointerId);
+    if (this.#divider.hasPointerCapture(e.pointerId)) this.#divider.releasePointerCapture(e.pointerId);
     this.#divider.removeEventListener('pointermove', this.#onPointerMove);
     this.#divider.removeEventListener('pointerup', this.#onPointerUp);
-    this.#writePersist();
+    this.#divider.removeEventListener('pointercancel', this.#onPointerUp);
+    this.#divider.removeEventListener('lostpointercapture', this.#onPointerUp);
+    if (wasDragging) this.#writePersist();
   };
 
   #onKeyDown = (e) => {
     const step = e.shiftKey ? 10 : 1;
     const current = this.#position;
-    const dec = this.#vertical ? ['ArrowUp'] : ['ArrowLeft'];
-    const inc = this.#vertical ? ['ArrowDown'] : ['ArrowRight'];
+    const rtl = !this.#vertical && this.#rtl;
+    const dec = this.#vertical ? ['ArrowUp'] : [rtl ? 'ArrowRight' : 'ArrowLeft'];
+    const inc = this.#vertical ? ['ArrowDown'] : [rtl ? 'ArrowLeft' : 'ArrowRight'];
 
     if (dec.includes(e.key)) {
       e.preventDefault();

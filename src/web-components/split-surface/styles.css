@@ -105,8 +105,18 @@ split-surface:defined > :not(.split-divider) {
   flex-wrap: nowrap;
 }
 
-[data-splitter-init] > main,
-[data-splitter-init] > article,
-[data-splitter-init] > section:not([data-layout]) {
+/* Drop every panel's content floor, not just main/article/section: the
+   sidebar layout gives any content child (a section[data-layout], a nested
+   sidebar, …) a 50–60% min-inline-size, which overflowed beside the
+   splitter's flex-shrink: 0 first panel under nowrap. */
+[data-splitter-init] > :not(.split-divider) {
   min-inline-size: 0;
+}
+
+[data-splitter="vertical"][data-splitter-init] {
+  flex-direction: column;
+}
+
+[data-splitter="vertical"][data-splitter-init] > :not(.split-divider) {
+  min-block-size: 0;
 }
