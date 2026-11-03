@@ -14,6 +14,8 @@
  * <code data-math="inline" data-mathml="<math><mi>&pi;</mi></math>">\pi</code>
  */
 
+import { getCdnBase } from '../lib/theme-loader.js';
+
 const SELECTOR = '[data-math], code.language-math';
 const ANNOUNCE_DURATION = 1000;
 
@@ -136,13 +138,15 @@ function enhanceElement(el) {
 }
 
 /**
- * Lazy-inject math font CSS when math is detected
+ * Lazy-inject math font CSS when math is detected. Resolved against the VB
+ * CDN base (the build ships it as cdn/fonts/math-fonts.css), so CDN and
+ * subpath consumers fetch it from wherever VB itself is served.
  */
 function ensureMathFont() {
   if (document.querySelector('[data-vb-math-font]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = '/fonts/math-fonts.css';
+  link.href = `${getCdnBase()}/fonts/math-fonts.css`;
   link.setAttribute('data-vb-math-font', '');
   document.head.appendChild(link);
 }

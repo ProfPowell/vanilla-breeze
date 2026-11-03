@@ -558,6 +558,14 @@ async function buildCDN() {
     cpSync(atkinsonLicence, join(CDN, 'fonts', 'atkinson-hyperlegible-OFL.txt'));
   }
 
+  // math-init lazily injects <link rel="stylesheet" href="{cdn}/fonts/math-fonts.css">
+  // (an @font-face that pulls the Latin Modern Math face from jsDelivr).
+  const mathFontsCss = join(SRC, 'fonts', 'math-fonts.css');
+  if (existsSync(mathFontsCss)) {
+    mkdirSync(join(CDN, 'fonts'), { recursive: true });
+    cpSync(mathFontsCss, join(CDN, 'fonts', 'math-fonts.css'));
+  }
+
   // Build charts CSS add-on
   const chartsPath = join(SRC, 'charts-standalone.css');
   if (existsSync(chartsPath)) {

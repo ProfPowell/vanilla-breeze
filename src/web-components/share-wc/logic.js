@@ -119,7 +119,7 @@ class ShareWc extends VBElement {
   #resolveMeta() {
     // URL: attribute → canonical → location
     this.#url = this.getAttribute('url')
-      || document.querySelector('link[rel="canonical"]')?.getAttribute('href')
+      || /** @type {HTMLLinkElement | null} */ (document.querySelector('link[rel~="canonical" i]'))?.href
       || location.href;
 
     // Title: attribute → og:title → document.title

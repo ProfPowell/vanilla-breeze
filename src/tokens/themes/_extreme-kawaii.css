@@ -397,33 +397,25 @@
 
     }
 
-    /* Lists with cute markers — scoped to article, excluding nav lists */
-    & article {
-    & :not(nav) > ul:not([class]) {
-      list-style: none;
-
-      & > li::before {
-        content: "♡";
-        color: var(--color-primary);
-        margin-inline-end: 0.5rem;
-      }
+    /* Lists with cute markers — scoped to article, excluding nav lists.
+       Styled through ::marker so the list keeps its list-style (and with it
+       its list semantics in Safari/VoiceOver), and ordered lists count with
+       the native list-item counter, which honours <li value>, start and
+       reversed. An ol with a type attribute keeps its native marker text
+       (only colour/weight change): [type] matches case-insensitively and the
+       `s` flag is not supported everywhere, so a/A and i/I can't be told apart. */
+    & article ul:not([class], [data-marker], nav *) > li::marker {
+      content: "♡\2009";
+      color: var(--color-primary);
     }
 
-    & :not(nav) > ol:not([class]) {
-      list-style: none;
-      counter-reset: kawaii;
-
-      & > li {
-        counter-increment: kawaii;
-
-        &::before {
-          content: counter(kawaii) "♡";
-          color: var(--_kawaii-color-lavender);
-          margin-inline-end: 0.5rem;
-          font-weight: 700;
-        }
-      }
+    & article ol:not([class], nav *) > li::marker {
+      color: var(--_kawaii-color-lavender);
+      font-weight: 700;
     }
+
+    & article ol:not([class], [type], nav *) > li::marker {
+      content: counter(list-item) "♡\2009";
     }
 
     /* Soften doc section borders for kawaii */

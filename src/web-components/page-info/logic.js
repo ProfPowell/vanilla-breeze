@@ -142,7 +142,7 @@ class PageInfo extends VBElement {
       return;
     }
 
-    const keyHref = document.querySelector('link[rel="author-key"]')?.getAttribute('href');
+    const keyHref = document.querySelector('link[rel~="author-key" i]')?.getAttribute('href');
     if (!keyHref) {
       this.#setTrust('failed', { reason: 'missing-author-key' });
       return;
@@ -176,7 +176,7 @@ class PageInfo extends VBElement {
 
     let canonical;
     try {
-      const canonicalUrl = /** @type {HTMLLinkElement | null} */ (document.querySelector('link[rel="canonical"]'))?.href || document.location.href;
+      const canonicalUrl = /** @type {HTMLLinkElement | null} */ (document.querySelector('link[rel~="canonical" i]'))?.href || document.location.href;
       canonical = serializeCanonical(buildCanonicalDocument(document, { url: canonicalUrl }));
     } catch (err) {
       this.#setTrust('failed', { reason: `canonicalize:${err.message}` });
@@ -263,7 +263,7 @@ class PageInfo extends VBElement {
     const itemprop = (name) =>
       /** @type {HTMLMetaElement | null} */ (document.querySelector(`meta[itemprop="${name}"]`))?.content;
     const linkHref = (rel) =>
-      /** @type {HTMLLinkElement | null} */ (document.querySelector(`link[rel="${rel}"]`))?.href;
+      /** @type {HTMLLinkElement | null} */ (document.querySelector(`link[rel~="${rel}" i]`))?.href;
 
     /* Section A — public-standard fields */
     const author = meta('author');

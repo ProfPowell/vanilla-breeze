@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "link"
-description: "Links external resources like stylesheets, icons, and preload hints."
+description: "Connects the document to external resources: stylesheets, icons, preload and preconnect hints, and machine-readable relations such as canonical, author and license."
 elementName: link
 category: native
 nativeGroup: Document
@@ -14,29 +14,327 @@ crumbLabel: Native Elements
 <!-- Description Section -->
   <section>
     <h2>Description</h2>
-    <p>The <code>&lt;link&gt;</code> element is part of the Document category in HTML.</p>
+    <p>The <code>&lt;link&gt;</code> element relates the current document to another resource. It is a void element: there is no closing tag and nothing renders on the page. The <a href="/docs/attributes/rel/"><code>rel</code></a> attribute says what the relation is, and <code>href</code> says where the resource is. Both are required, apart from a few special cases such as <code>rel="preload"</code> with <code>imagesrcset</code>.</p>
+    <p>Most links live in <a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a>. A few kinds are "body-ok" and may also appear in <code>&lt;body&gt;</code>: <code>stylesheet</code>, <code>preload</code>, <code>modulepreload</code>, <code>prefetch</code>, <code>preconnect</code> and <code>dns-prefetch</code>. Microdata links use <code>itemprop</code> instead of <code>rel</code>.</p>
+    <p><code>rel</code> is a space-separated list of tokens, matched case-insensitively. <code>&lt;link rel="author license" href="/about/"&gt;</code> declares both relations at once.</p>
   </section>
 
   <!-- Basic Example Section -->
   <section>
     <h2>Basic Example</h2>
-    <code-block language="html" label="Basic link example" data-escape><link></code-block>
+    <code-block language="html" show-lines label="Typical head links" data-escape><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page Title | Site Name</title>
+
+  <link rel="canonical" href="https://example.com/page/">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <link rel="modulepreload" href="/cdn/vanilla-breeze-autoload.js">
+  <link rel="stylesheet" href="/cdn/vanilla-breeze.css">
+  <script type="module" src="/cdn/vanilla-breeze-autoload.js"></script>
+</head></code-block>
+  </section>
+
+  <!-- Rel Values Section -->
+  <section>
+    <h2>Relation Types</h2>
+
+    <h3>Loading resources</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th><code>rel</code></th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>stylesheet</code></td>
+          <td>Loads and applies a CSS file. A stylesheet in <code>&lt;head&gt;</code> blocks rendering until it arrives, unless its <code>media</code> does not match.</td>
+        </tr>
+        <tr>
+          <td><code>preload</code></td>
+          <td>Fetches a resource the current page will need soon, at high priority, without applying it. Requires <code>as</code>. A preload that goes unused triggers a console warning.</td>
+        </tr>
+        <tr>
+          <td><code>modulepreload</code></td>
+          <td>Fetches, parses and compiles an ES module (and may fetch its imports) before a <code>&lt;script type="module"&gt;</code> asks for it.</td>
+        </tr>
+        <tr>
+          <td><code>preconnect</code></td>
+          <td>Opens the DNS + TCP + TLS connection to another origin ahead of time. Only worth it for origins the page will request from within a few seconds.</td>
+        </tr>
+        <tr>
+          <td><code>dns-prefetch</code></td>
+          <td>Resolves only the DNS name. Cheaper than <code>preconnect</code>; a common fallback next to it.</td>
+        </tr>
+        <tr>
+          <td><code>prefetch</code></td>
+          <td>Low-priority fetch of a resource a <em>future</em> navigation is likely to need.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Describing the document</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th><code>rel</code></th>
+          <th>Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>icon</code>, <code>apple-touch-icon</code></td>
+          <td>Favicon and home-screen icon. <code>type</code> and <code>sizes</code> help the browser pick one.</td>
+        </tr>
+        <tr>
+          <td><code>manifest</code></td>
+          <td>The web app manifest (name, icons, display mode) for installable sites.</td>
+        </tr>
+        <tr>
+          <td><code>alternate</code></td>
+          <td>Another version of this page: a translation (with <code>hreflang</code>), a feed (with <code>type="application/rss+xml"</code> or <code>application/feed+json</code>), or a print version (with <code>media</code>).</td>
+        </tr>
+        <tr>
+          <td><code>canonical</code></td>
+          <td>The preferred URL for this content, so query-string and trailing-slash variants do not count as duplicates.</td>
+        </tr>
+        <tr>
+          <td><code>author</code></td>
+          <td>A page about the author (a profile page or a <code>mailto:</code> URL).</td>
+        </tr>
+        <tr>
+          <td><code>license</code></td>
+          <td>The license that covers the main content of the page.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>See the <a href="/docs/attributes/rel/"><code>rel</code> attribute</a> page for the full list, including the values that apply to <code>&lt;a&gt;</code> and <code>&lt;form&gt;</code>, and <a href="/docs/concepts/link-relations/">link relations</a> for how VB uses them.</p>
+
+    <code-block language="html" show-lines label="Document relations" data-escape><link rel="canonical" href="https://example.com/guides/setup/">
+<link rel="alternate" hreflang="de" href="https://example.com/de/guides/setup/">
+<link rel="alternate" type="application/feed+json" title="Site feed" href="/feed.json">
+<link rel="author" href="/team/jane/">
+<link rel="license" href="https://creativecommons.org/licenses/by/4.0/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest"></code-block>
+  </section>
+
+  <!-- Resource Hints Section -->
+  <section>
+    <h2>Preloading and Resource Hints</h2>
+    <code-block language="html" show-lines label="Preload, modulepreload and preconnect" data-escape><!-- A font the CSS will ask for: preloads of fonts always need crossorigin -->
+<link rel="preload" href="/fonts/body.woff2" as="font" type="font/woff2" crossorigin>
+
+<!-- The hero image, fetched at high priority -->
+<link rel="preload" href="/img/hero.avif" as="image" fetchpriority="high">
+
+<!-- An ES module entry, compiled ahead of its script tag -->
+<link rel="modulepreload" href="/cdn/vanilla-breeze-autoload.js">
+
+<!-- A third-party origin used early, with a DNS-only fallback -->
+<link rel="preconnect" href="https://images.example-cdn.com">
+<link rel="dns-prefetch" href="https://images.example-cdn.com"></code-block>
+    <ul>
+      <li><strong>Match the later request.</strong> A preload is only reused when its URL, <code>as</code> and CORS mode match the real request. A font preload without <code>crossorigin</code> downloads the font twice. In the same way, a <code>preconnect</code> with <code>crossorigin</code> opens a connection that plain <code>&lt;img&gt;</code> requests cannot use.</li>
+      <li><strong>Preload sparingly.</strong> Every preload competes with the resources the parser already found. Preload late-discovered, render-critical files (fonts, a CSS background hero, a module entry), not everything.</li>
+    </ul>
   </section>
 
   <!-- Attributes Section -->
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/attributes/">global attributes</a>.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Applies to</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/attributes/rel/"><code>rel</code></a></td>
+          <td>All</td>
+          <td>Space-separated relation tokens.</td>
+        </tr>
+        <tr>
+          <td><code>href</code></td>
+          <td>All</td>
+          <td>URL of the linked resource. Resolved against the document base URL (see <a href="/docs/elements/native/base/"><code>&lt;base&gt;</code></a>).</td>
+        </tr>
+        <tr>
+          <td><code>media</code></td>
+          <td><code>stylesheet</code>, <code>preload</code>, <code>alternate</code>, <code>icon</code></td>
+          <td>Media query. A stylesheet whose media does not match is still downloaded, at low priority, and does not block rendering.</td>
+        </tr>
+        <tr>
+          <td><code>as</code></td>
+          <td><code>preload</code>, <code>modulepreload</code></td>
+          <td>Destination of the resource: <code>style</code>, <code>script</code>, <code>font</code>, <code>image</code>, <code>fetch</code>, … Required for <code>preload</code>; sets the priority and the <code>Accept</code> header.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/crossorigin/"><code>crossorigin</code></a></td>
+          <td>Fetching rels</td>
+          <td>Fetch in CORS mode (<code>anonymous</code> or <code>use-credentials</code>). Must match how the resource is used later.</td>
+        </tr>
+        <tr>
+          <td><code>fetchpriority</code></td>
+          <td>Fetching rels</td>
+          <td><code>high</code>, <code>low</code> or <code>auto</code>: a hint relative to other resources of the same type.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/blocking/"><code>blocking</code></a></td>
+          <td><code>stylesheet</code>, <code>preload</code>, <code>modulepreload</code></td>
+          <td><code>blocking="render"</code> holds first paint until the resource loads. Only needed for links that would not block anyway, such as ones inserted by script.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/integrity/"><code>integrity</code></a></td>
+          <td><code>stylesheet</code>, <code>preload</code>, <code>modulepreload</code></td>
+          <td>Subresource Integrity hash. The browser refuses the file if its content does not match. Cross-origin files also need <code>crossorigin</code>.</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a></td>
+          <td>Fetching rels</td>
+          <td>How much of the page URL to send as the <code>Referer</code> header.</td>
+        </tr>
+        <tr>
+          <td><code>type</code></td>
+          <td>All</td>
+          <td>MIME type hint. Lets the browser skip a preload or icon it cannot use.</td>
+        </tr>
+        <tr>
+          <td><code>hreflang</code></td>
+          <td><code>alternate</code></td>
+          <td>Language of the linked resource.</td>
+        </tr>
+        <tr>
+          <td><code>sizes</code></td>
+          <td><code>icon</code>, <code>apple-touch-icon</code></td>
+          <td>Icon dimensions, e.g. <code>32x32</code> or <code>any</code>.</td>
+        </tr>
+        <tr>
+          <td><code>imagesrcset</code>, <code>imagesizes</code></td>
+          <td><code>preload</code> with <code>as="image"</code></td>
+          <td>Preload the same responsive candidate the <code>&lt;img srcset&gt;</code> will choose.</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td><code>stylesheet</code></td>
+          <td>Leaves the stylesheet unapplied.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>This element also supports <a href="/docs/attributes/">global attributes</a>.</p>
+  </section>
+
+  <!-- VB Section -->
+  <section>
+    <h2>Vanilla Breeze and <code>&lt;link&gt;</code></h2>
+
+    <h3>Loading VB and themes</h3>
+    <p>Link the VB stylesheet, optionally a decorative theme, and preload the JS entry you load:</p>
+    <code-block language="html" show-lines label="VB head links" data-escape><link rel="modulepreload" href="/cdn/vanilla-breeze-autoload.js">
+<link rel="stylesheet" href="/cdn/vanilla-breeze.css">
+<link rel="stylesheet" href="/cdn/themes/swiss.css" data-vb-theme="swiss">
+<script type="module" src="/cdn/vanilla-breeze-autoload.js"></script></code-block>
+    <p>Link order between VB files does not matter. Every theme file declares <code>@layer bundle-theme</code> itself and the CDN build prepends VB's layer-order statement, so a theme linked before or after the main stylesheet lands in the same layer. Your own unlayered CSS beats every VB layer wherever you link it. See <a href="/docs/elements/native/head/">loading Vanilla Breeze</a> for the bundle choices.</p>
+    <p>The theme link is optional: when <code>data-theme</code> on <code>&lt;html&gt;</code> names a decorative theme, the JS bundle loads it on demand. Linking it yourself avoids a late repaint and works without JavaScript.</p>
+
+    <h3>Theme link attributes</h3>
+    <p>VB's theme loader marks the links it inserts, and adopts links you author with the same attributes instead of loading the theme a second time.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-vb-theme</code></td>
+          <td>Theme name</td>
+          <td>This stylesheet is the named theme. The loader waits for an existing link with this attribute instead of inserting its own.</td>
+        </tr>
+        <tr>
+          <td><code>data-vb-theme-state</code></td>
+          <td><code>loading</code>, <code>ready</code>, <code>error</code>, <code>timeout</code></td>
+          <td>Load state, set by the loader and the boot snippet. The docs site hides <code>&lt;body&gt;</code> while a <code>loading</code> theme link is present, to avoid a flash of the default theme.</td>
+        </tr>
+        <tr>
+          <td><code>data-vb-theme-preload</code></td>
+          <td>Theme name</td>
+          <td>A <code>rel="preload"</code> hint the theme picker adds on hover or focus. At most one per theme; it is removed once the theme stylesheet is inserted.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Links VB reads</h3>
+    <p>Some components read relations from <code>&lt;head&gt;</code>, as defined by VB's <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/meta-tag-contract-v1.md">meta-tag contract</a>. They match <code>rel</code> as a token list, so combined values such as <code>rel="author license"</code> work.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th><code>rel</code></th>
+          <th>Read by</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>canonical</code></td>
+          <td><a href="/docs/elements/web-components/share/"><code>&lt;share-wc&gt;</code></a> (the URL it shares when no <code>url</code> attribute is set) and <a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a>. Both resolve a relative <code>href</code> to an absolute URL.</td>
+        </tr>
+        <tr>
+          <td><code>author</code></td>
+          <td><code>&lt;page-info&gt;</code> author link, and the signed canonical document, when <code>article:author</code> is absent.</td>
+        </tr>
+        <tr>
+          <td><code>license</code></td>
+          <td><code>&lt;page-info&gt;</code> license link and the signed canonical document.</td>
+        </tr>
+        <tr>
+          <td><code>author-key</code></td>
+          <td><code>&lt;page-info&gt;</code> signature verification: the URL of the public signing key (JWK). See <a href="/docs/concepts/document-provenance/">document provenance</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The contract also defines <code>rel="tag"</code> (one per topic) and <code>rel="glossary"</code>. VB emits them for crawlers and other clients; no VB component reads them.</p>
+
+    <h3>Links VB inserts</h3>
+    <p>Apart from themes, a few features add a <code>&lt;link&gt;</code> to <code>&lt;head&gt;</code> when they are first used. All of them resolve against the same CDN base as the theme files:</p>
+    <ul>
+      <li><a href="/docs/attributes/data-math/"><code>data-math</code></a> adds <code>&lt;link rel="stylesheet" href="…/cdn/fonts/math-fonts.css" data-vb-math-font&gt;</code> for the Latin Modern Math face.</li>
+      <li>Pack themes add their effects stylesheet (<code>data-vb-pack-effects</code>) after the theme loads.</li>
+      <li><a href="/docs/elements/web-components/geo-map/"><code>&lt;geo-map&gt;</code></a> adds a <code>preconnect</code> to its tile server when a reader is about to activate the map.</li>
+    </ul>
   </section>
 
   <!-- Accessibility Section -->
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;link&gt;</code> element will be documented here.</p>
+    <ul>
+      <li><code>&lt;link&gt;</code> renders nothing and is not exposed to assistive technology.</li>
+      <li>Give alternate stylesheets and feeds a clear <code>title</code>. Browsers and feed readers list them by that title.</li>
+      <li>A render-blocking stylesheet that is slow or fails leaves readers with a blank page. Keep critical CSS small, and do not add <code>blocking="render"</code> to resources the first paint does not need.</li>
+      <li>Do not use <code>disabled</code> stylesheets or <code>media</code> tricks to hide content that assistive technology still reads.</li>
+    </ul>
   </section>
 
   <!-- Related Section -->
   <section>
     <h2>Related</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> &mdash; Where links live, and how to load VB</li>
+      <li><a href="/docs/elements/native/meta/"><code>&lt;meta&gt;</code></a> &mdash; Name/value metadata, the other half of the meta-tag contract</li>
+      <li><a href="/docs/elements/native/style/"><code>&lt;style&gt;</code></a> &mdash; Inline CSS</li>
+      <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> &mdash; The module the <code>modulepreload</code> link warms up</li>
+      <li><a href="/docs/elements/native/base/"><code>&lt;base&gt;</code></a> &mdash; Base URL for relative <code>href</code> values</li>
+      <li><a href="/docs/elements/native/a/"><code>&lt;a&gt;</code></a> &mdash; Visible links, which share the <code>rel</code> vocabulary</li>
+      <li><a href="/docs/attributes/rel/"><code>rel</code></a>, <a href="/docs/attributes/blocking/"><code>blocking</code></a>, <a href="/docs/attributes/crossorigin/"><code>crossorigin</code></a>, <a href="/docs/attributes/integrity/"><code>integrity</code></a>, <a href="/docs/attributes/referrerpolicy/"><code>referrerpolicy</code></a> &mdash; Attribute reference</li>
+    </ul>
   </section>

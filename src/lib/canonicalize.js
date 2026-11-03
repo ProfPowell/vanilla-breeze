@@ -150,7 +150,7 @@ function itemprop(doc, name) {
   return doc.querySelector(`meta[itemprop="${cssEscape(name)}"]`)?.getAttribute('content') || '';
 }
 function linkHref(doc, rel) {
-  return doc.querySelector(`link[rel="${cssEscape(rel)}"]`)?.getAttribute('href') || '';
+  return doc.querySelector(`link[rel~="${cssEscape(rel)}" i]`)?.getAttribute('href') || '';
 }
 
 /* Conservative CSS attribute-value escape — only handles the values we'll

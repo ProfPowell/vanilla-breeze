@@ -88,12 +88,12 @@
       letter-spacing: var(--letter-spacing-normal);
     }
 
-    /* Ensure no justified text - left-align only. bundle-theme sits above
+    /* Ensure no justified text - start-align only (logical, so RTL text aligns right). bundle-theme sits above
        native-elements, so this beats p.justify without !important. */
     & p,
     & li,
     & blockquote {
-      text-align: left;
+      text-align: start;
       hyphens: none;
     }
 
@@ -132,7 +132,10 @@
       padding-inline-start: 1.5em;
     }
 
-    & :is(main, article) li {
+    /* Plain block-flow lists only: layout-primitive, .inline/.meta and other
+       classed lists space their items with gap, where a margin would double
+       the gap or offset items on the cross axis. */
+    & :is(main, article) :is(ul, ol):not([class], [data-layout]) > li {
       margin-block-end: 0.5em;
     }
 

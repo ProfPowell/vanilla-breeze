@@ -138,7 +138,7 @@ async function signPage(html, opts) {
      hostname; the build can pass it via --canonical-base in a future v2.
      For now we read from <link rel="canonical"> which Cook's head
      include emits per page. */
-  const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href') || '';
+  const canonical = document.querySelector('link[rel~="canonical" i]')?.getAttribute('href') || '';
 
   const canonicalDoc = buildCanonicalDocument(document, { url: canonical });
   if (!canonicalDoc.content) {
