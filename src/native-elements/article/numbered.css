@@ -41,14 +41,17 @@ article[data-numbered] h4::before {
   color: var(--color-text-muted);
 }
 
-/* --- Figure Numbering --- */
+/* --- Figure Numbering ---
+   Quote figures keep their attribution dash and code figures are numbered
+   as Listings (below), so neither counts as a Figure. :where() keeps the
+   specificity low enough for the subfigure rules to win. */
 
-article[data-numbered] figure {
+article[data-numbered] figure:where(:not(.quote, .code)) {
   counter-increment: vb-fig;
   counter-reset: vb-subfig;
 }
 
-article[data-numbered] figure > figcaption::before {
+article[data-numbered] figure:where(:not(.quote, .code)) > figcaption::before {
   content: var(--label-figure) "\00a0" counter(vb-fig) ":\00a0";
   font-weight: 600;
 }

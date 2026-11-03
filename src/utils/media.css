@@ -34,6 +34,35 @@
   object-fit: var(--_fit, cover);
 }
 
+/* With a <figcaption>: the ratio box moves from the container to the
+   media child, so the caption flows below (or above, when it comes first)
+   instead of being covered by an absolutely positioned media layer.
+   Captionless containers keep the rules above unchanged. */
+[data-media]:has(> figcaption) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  aspect-ratio: auto;
+  overflow: visible;
+}
+
+[data-media]:has(> figcaption) > :is(img, video, iframe, embed, object, picture, canvas, svg) {
+  position: relative;
+  inset: auto;
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: var(--_ratio, 16 / 9);
+  overflow: hidden;
+  border-radius: var(--_radius, 0);
+}
+
+[data-media]:has(> figcaption) > picture > img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: var(--_fit, cover);
+}
+
 /* Object-fit variants */
 [data-media][data-fit="cover"]   { --_fit: cover; }
 [data-media][data-fit="contain"] { --_fit: contain; }
@@ -48,7 +77,9 @@
 [data-media][data-position="center"] > * { object-position: center; }
 
 /* Border radius variants */
-[data-media][data-radius="s"]    { border-radius: var(--radius-s); }
-[data-media][data-radius="m"]    { border-radius: var(--radius-m); }
-[data-media][data-radius="l"]    { border-radius: var(--radius-l); }
-[data-media][data-radius="full"] { border-radius: var(--radius-full); }
+/* (with a figcaption the radius rounds the media child, not the caption) */
+[data-media][data-radius="s"]    { --_radius: var(--radius-s); }
+[data-media][data-radius="m"]    { --_radius: var(--radius-m); }
+[data-media][data-radius="l"]    { --_radius: var(--radius-l); }
+[data-media][data-radius="full"] { --_radius: var(--radius-full); }
+[data-media][data-radius]:not(:has(> figcaption)) { border-radius: var(--_radius); }

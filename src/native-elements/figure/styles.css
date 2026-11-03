@@ -4,10 +4,15 @@ figure {
   display: block;
   margin: 0;
 
+  /* Replaced media fill the figure. Inline <svg> is left at its intrinsic
+     size on purpose: diagrams, charts and illustrations usually carry their
+     own width (diagram-wc, chart-wc); stretch one with [data-media]. */
   & > img,
   & > video,
   & > picture,
   & > iframe,
+  & > embed,
+  & > object,
   & > canvas {
     display: block;
     inline-size: 100%;
@@ -31,6 +36,14 @@ figure {
       margin-block-start: var(--size-s);
       padding-block-start: var(--size-s);
       border-block-start: var(--border-width-thin) solid var(--color-border);
+    }
+
+    /* Caption first: the divider sits below the caption instead */
+    & > figcaption:first-child {
+      margin-block: 0 var(--size-s);
+      padding-block: 0 var(--size-s);
+      border-block-start: 0;
+      border-block-end: var(--border-width-thin) solid var(--color-border);
     }
   }
 
@@ -64,10 +77,20 @@ figure {
     }
 
     & > figcaption {
+      margin-block: 0;
       padding: var(--size-xs) var(--size-s);
       background: var(--color-surface-raised);
       border-radius: 0 0 var(--radius-m) var(--radius-m);
       font-family: var(--font-mono);
+    }
+
+    /* Caption first: a tab above the code — swap the square corners */
+    & > figcaption:first-child {
+      border-radius: var(--radius-m) var(--radius-m) 0 0;
+    }
+
+    &:has(> figcaption:first-child) > pre {
+      border-radius: 0 0 var(--radius-m) var(--radius-m);
     }
   }
 
@@ -103,17 +126,23 @@ figcaption {
     text-align: end;
   }
 
+  /* Visually hidden — the same declarations as .visually-hidden
+     (utils/visually-hidden.css). !important so figure variants
+     (.bordered, .code, caption-first spacing) can't re-expose it. */
   &.hidden {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+    position: absolute !important;
+    inline-size: 1px !important;
+    block-size: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
   }
 }
 
-/* Sticky caption in scrollable figures */
-figure:has(:is(table, pre)) > figcaption {
-  position: sticky;
-  inset-inline-start: 0;
+/* Caption first: space goes below the caption, not above it */
+:where(figure) > figcaption:first-child {
+  margin-block: 0 var(--size-s);
 }
