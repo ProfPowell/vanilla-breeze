@@ -23,13 +23,13 @@ crumbLabel: Web Components
 
     <code-block language="html" show-lines label="Basic date picker" data-escape><form-field>
   <label for="event">Event date</label>
-  <date-picker name="event">
-    <input type="date" id="event" value="2026-04-15">
+  <date-picker>
+    <input type="date" id="event" name="event" value="2026-04-15">
   </date-picker>
 </form-field></code-block>
 
     <aside class="note">
-      <strong>Progressive enhancement:</strong> Without JavaScript, the native <code>&lt;input type="date"&gt;</code> provides a fully functional date picker. The calendar UI only appears after the component upgrades.
+      <strong>Progressive enhancement:</strong> Without JavaScript, the native <code>&lt;input type="date"&gt;</code> is the whole control: the browser&rsquo;s own picker, <code>min</code>/<code>max</code>, <code>required</code> and form submission all work. Put <code>name</code> on the inner input; on upgrade it moves to <code>&lt;date-picker&gt;</code> so exactly one value is submitted. The <code>&lt;label for&gt;</code> keeps naming the control after upgrade &mdash; it is forwarded to the generated text input.
     </aside>
   </section>
 
@@ -49,7 +49,7 @@ crumbLabel: Web Components
           <td><code>name</code></td>
           <td>string</td>
           <td>&mdash;</td>
-          <td>Form field name for submission.</td>
+          <td>Form field name for submission. A <code>name</code> on the inner input is moved here on upgrade (the host&rsquo;s own <code>name</code> wins if both are set).</td>
         </tr>
         <tr>
           <td><code>data-disabled-dates</code></td>
@@ -67,13 +67,19 @@ crumbLabel: Web Components
           <td><code>disabled</code></td>
           <td>boolean</td>
           <td><code>false</code></td>
-          <td>Disables the picker.</td>
+          <td>Disables the text input and calendar button and drops the value from submission. A disabled ancestor <code>&lt;fieldset&gt;</code> has the same effect; a <code>disabled</code> on the inner input is moved here on upgrade.</td>
         </tr>
         <tr>
           <td><code>required</code></td>
           <td>boolean</td>
           <td><code>false</code></td>
-          <td>Marks the field as required for form validation.</td>
+          <td>Marks the field as required for form validation (on the host or the inner input). Toggling it at runtime re-validates.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-*</code></td>
+          <td>string</td>
+          <td>English</td>
+          <td>Translate the built-in UI strings. See <a href="#localization">Localization</a>.</td>
         </tr>
       </tbody>
     </table>
@@ -100,13 +106,21 @@ crumbLabel: Web Components
           <td><code>max</code></td>
           <td>Latest selectable date.</td>
         </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>Submission name for the no-JS fallback; moved to the host on upgrade.</td>
+        </tr>
+        <tr>
+          <td><code>id</code></td>
+          <td>Target for <code>&lt;label for&gt;</code>. Its labels name the generated text input (a <code>&lt;label for&gt;</code> pointing at the <code>&lt;date-picker&gt;</code> itself works too, as does an <code>aria-label</code> on either).</td>
+        </tr>
       </tbody>
     </table>
   </section>
 
   <section>
     <h2>Date Constraints</h2>
-    <p>Use <code>min</code> and <code>max</code> on the native input to restrict the date range. Use <code>data-disabled-dates</code> to exclude specific dates.</p>
+    <p>Use <code>min</code> and <code>max</code> on the native input to restrict the date range. Use <code>data-disabled-dates</code> to exclude specific dates. Disabled days stay reachable with the keyboard (so focus never gets lost) but cannot be selected by click, <kbd>Enter</kbd>, or typing.</p>
 
     <code-block language="html" show-lines label="Constrained date range with disabled dates" data-escape><date-picker name="appointment"
   data-disabled-dates="2026-04-05,2026-04-06">
@@ -207,13 +221,14 @@ crumbLabel: Web Components
 
   <section>
     <h2>Form Integration</h2>
-    <p>The component is form-associated via <code>ElementInternals</code> and works inside <code>&lt;form-field&gt;</code> for validation messaging. The submitted value is always in ISO format (<code>YYYY-MM-DD</code>).</p>
+    <p>The component is form-associated via <code>ElementInternals</code> and works inside <code>&lt;form-field&gt;</code> for validation messaging. The submitted value is always in ISO format (<code>YYYY-MM-DD</code>). Form reset restores the inner input&rsquo;s authored <code>value</code>, and a disabled <code>&lt;fieldset&gt;</code> disables the picker. To clear a date, empty the text input (or assign <code>value = ''</code>): the field becomes empty, re-validates, and fires <code>date-picker:change</code>.</p>
+    <p>The host owns validity: <code>valueMissing</code> (required and empty), <code>rangeUnderflow</code> (before <code>min</code>) and <code>rangeOverflow</code> (after <code>max</code>). Submitting an invalid form focuses the visible text input. Once upgraded, the hidden native input is detached from the form, so it never blocks submission or sends a second value. It still mirrors the host&rsquo;s message, so <code>&lt;form-field&gt;</code> shows it (an authored <code>data-message-rangeunderflow</code> and similar attributes on the inner input win). Changing <code>min</code> or <code>max</code> never rewrites the value: a date that falls outside the new range is kept and marked invalid.</p>
 
     <code-block language="html" show-lines label="With validation" data-escape><form>
   <form-field>
     <label for="dob">Date of birth</label>
-    <date-picker name="dob" required>
-      <input type="date" id="dob"
+    <date-picker required>
+      <input type="date" id="dob" name="dob"
              min="1920-01-01" max="2025-12-31">
     </date-picker>
     <output class="error" for="dob" aria-live="polite"></output>
@@ -251,7 +266,7 @@ crumbLabel: Web Components
         </tr>
       </tbody>
     </table>
-    <p>Locale-aware month names are also accepted. Ambiguous numeric formats like <code>4/15/2026</code> are intentionally rejected to avoid locale confusion.</p>
+    <p>Locale-aware month names are also accepted. Ambiguous numeric formats like <code>4/15/2026</code> are intentionally rejected to avoid locale confusion, and so are impossible dates (<code>2026-02-31</code>, <code>April 31, 2026</code>) &mdash; they are not rolled over into the next month. On blur, empty text clears the date; text that does not parse to a selectable date reverts to the current value.</p>
   </section>
 
   <section>
@@ -267,7 +282,7 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><kbd>Enter</kbd></td>
-          <td>Parse typed text and select the date if valid.</td>
+          <td>Parse typed text and select the date if valid (empty text clears).</td>
         </tr>
         <tr>
           <td><kbd>Arrow Down</kbd></td>
@@ -303,7 +318,7 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><kbd>Page Up</kbd> / <kbd>Page Down</kbd></td>
-          <td>Move focus one month.</td>
+          <td>Move focus one month, clamped to the month&rsquo;s length (Jan 31 &rarr; Feb 28).</td>
         </tr>
         <tr>
           <td><kbd>Shift + Page Up</kbd> / <kbd>Shift + Page Down</kbd></td>
@@ -311,11 +326,11 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><kbd>Home</kbd> / <kbd>End</kbd></td>
-          <td>Move to first / last day of the week.</td>
+          <td>Move to first / last day of the week (follows the locale&rsquo;s first weekday).</td>
         </tr>
         <tr>
           <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
-          <td>Select the focused date.</td>
+          <td>Select the focused date and close (also when it is already selected). Disabled days are ignored.</td>
         </tr>
         <tr>
           <td><kbd>Escape</kbd></td>
@@ -342,8 +357,8 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>date-picker:change</code></td>
-          <td><code>{ value, date }</code></td>
-          <td>Fired when a date is selected. <code>value</code> is the ISO string, <code>date</code> is a <code>Date</code> object.</td>
+          <td><code>{ value, date, source }</code></td>
+          <td>Fired when the selected date changes (not on form reset). <code>value</code> is the ISO string (<code>''</code> when cleared), <code>date</code> a <code>Date</code> or <code>null</code>. <code>source</code> is <code>'pointer'</code> (grid click), <code>'keyboard'</code> (grid <kbd>Enter</kbd>/<kbd>Space</kbd> or a typed date) or <code>'api'</code> (<code>.value</code> assignment).</td>
         </tr>
         <tr>
           <td><code>date-picker:open</code></td>
@@ -361,12 +376,48 @@ crumbLabel: Web Components
 
   <section>
     <h2>Accessibility</h2>
-    <p>The text input uses <code>role="combobox"</code> with <code>aria-haspopup="dialog"</code> and <code>aria-expanded</code>, following the W3C Date Picker Combobox pattern. The calendar popup uses <code>role="dialog"</code> with an accessible label. The date grid uses <code>role="grid"</code> with individual day buttons. Today is marked with <code>aria-current="date"</code>, the selected date with <code>aria-selected="true"</code>, and disabled dates with <code>aria-disabled="true"</code>. The month/year header uses <code>aria-live="polite"</code> so screen readers announce navigation changes.</p>
+    <p>The text input uses <code>role="combobox"</code> with <code>aria-haspopup="dialog"</code> and <code>aria-expanded</code>, following the W3C Date Picker Combobox pattern. It takes its accessible name from your <code>&lt;label&gt;</code> (via <code>aria-labelledby</code>), since the native input is hidden from assistive technology after upgrade. The calendar popup uses <code>role="dialog"</code> with an accessible label. The date grid uses <code>role="grid"</code> with a button in each gridcell and a roving <code>tabindex</code>. Today is marked with <code>aria-current="date"</code>; the selected day&rsquo;s gridcell (<code>&lt;td&gt;</code>) carries <code>aria-selected="true"</code> (buttons do not support it); disabled dates use <code>aria-disabled="true"</code> rather than the native <code>disabled</code> attribute, so they remain focusable during keyboard navigation but cannot be chosen. The month/year header uses <code>aria-live="polite"</code> so screen readers announce navigation changes.</p>
   </section>
 
-  <section>
+  <section id="localization">
     <h2>Localization</h2>
-    <p>The trigger button formats dates using <code>Intl.DateTimeFormat</code> and the user&rsquo;s locale. Month/year headers and first-day-of-week detection are also locale-aware. The submitted form value is always ISO-formatted regardless of display locale.</p>
+    <p>The locale is the nearest <code>lang</code> attribute (on the element or an ancestor), falling back to the browser language. It drives the displayed date (<code>Intl.DateTimeFormat</code>), the month name, the weekday column headers, typed month names, and the first day of the week (from <code>Intl.Locale</code> week info). The submitted form value is always ISO-formatted regardless of display locale.</p>
+
+    <code-block language="html" show-lines label="German locale" data-escape><label for="termin">Termin</label>
+<date-picker lang="de"
+  data-label-toggle="Kalender umschalten"
+  data-label-dialog="Datum wählen"
+  data-label-prev="Vorheriger Monat"
+  data-label-next="Nächster Monat"
+  data-label-year="Jahr"
+  data-label-placeholder="Datum eingeben …"
+  data-label-required="Bitte ein Datum wählen">
+  <input type="date" id="termin" name="termin">
+</date-picker>
+<!-- Weeks start on Monday: Mo. Di. Mi. Do. Fr. Sa. So. --></code-block>
+
+    <p>The built-in UI strings default to English; translate them with these attributes:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Default</th>
+          <th>Used for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-label-toggle</code></td><td>Toggle calendar</td><td>Calendar icon button</td></tr>
+        <tr><td><code>data-label-dialog</code></td><td>Choose date</td><td>Calendar popup</td></tr>
+        <tr><td><code>data-label-prev</code></td><td>Previous month</td><td>Previous-month button</td></tr>
+        <tr><td><code>data-label-next</code></td><td>Next month</td><td>Next-month button</td></tr>
+        <tr><td><code>data-label-year</code></td><td>Year</td><td>Year select</td></tr>
+        <tr><td><code>data-label-placeholder</code></td><td>Type a date&hellip;</td><td>Text input placeholder</td></tr>
+        <tr><td><code>data-label-required</code></td><td>Please select a date</td><td>Validation message when required and empty</td></tr>
+        <tr><td><code>data-label-range-underflow</code></td><td>Choose a date on or after {date}</td><td>Validation message when the value is before <code>min</code> (<code>{date}</code> is the formatted min)</td></tr>
+        <tr><td><code>data-label-range-overflow</code></td><td>Choose a date on or before {date}</td><td>Validation message when the value is after <code>max</code> (<code>{date}</code> is the formatted max)</td></tr>
+        <tr><td><code>data-label-input</code></td><td>Date</td><td>Text input name when there is no label or <code>aria-label</code></td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
@@ -383,17 +434,27 @@ crumbLabel: Web Components
         <tr>
           <td><code>value</code></td>
           <td>string</td>
-          <td>Get or set the selected date as an ISO string (<code>YYYY-MM-DD</code>).</td>
+          <td>Get or set the selected date as an ISO string (<code>YYYY-MM-DD</code>). Assigning <code>''</code> or <code>null</code> clears it; malformed or impossible dates are ignored.</td>
         </tr>
         <tr>
           <td><code>min</code></td>
           <td>string</td>
-          <td>Get or set the earliest selectable date. Updates the calendar immediately.</td>
+          <td>Get or set the earliest selectable date. Updates the calendar and validity immediately; an earlier current value is kept and flagged <code>rangeUnderflow</code>.</td>
         </tr>
         <tr>
           <td><code>max</code></td>
           <td>string</td>
-          <td>Get or set the latest selectable date. Updates the calendar immediately.</td>
+          <td>Get or set the latest selectable date. Updates the calendar and validity immediately; a later current value is kept and flagged <code>rangeOverflow</code>.</td>
+        </tr>
+        <tr>
+          <td><code>form</code>, <code>validity</code>, <code>validationMessage</code>, <code>willValidate</code></td>
+          <td>&mdash;</td>
+          <td>Standard form-control properties (via <code>ElementInternals</code>).</td>
+        </tr>
+        <tr>
+          <td><code>checkValidity()</code>, <code>reportValidity()</code></td>
+          <td>method</td>
+          <td>Standard constraint validation; <code>reportValidity()</code> anchors the message on the text input.</td>
         </tr>
       </tbody>
     </table>
@@ -401,7 +462,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Recipe: Date Range (Linked Pickers)</h2>
-    <p>Two standard <code>&lt;date-picker&gt;</code> elements can be linked for date range selection. When the start date is picked, it sets <code>min</code> on the end picker. When the end date is picked, it sets <code>max</code> on the start. No custom range component needed.</p>
+    <p>Two standard <code>&lt;date-picker&gt;</code> elements can be linked for date range selection. Picking the start date sets <code>min</code> on the end picker. The start stays free, so the user can move it past an existing end date. The end date is then kept but marked invalid (<code>rangeUnderflow</code>), its message appears, and submitting focuses it until it is fixed. No custom range component needed.</p>
 
     <browser-window
       src="/docs/examples/demos/date-picker-range.html"
@@ -411,35 +472,39 @@ crumbLabel: Web Components
     </browser-window>
 
     <code-block language="html" show-lines label="Linked check-in / check-out" data-escape><form-field>
+  <!-- A label can point at the date-picker itself -->
   <label for="check-in">Check-in</label>
   <date-picker id="check-in" name="check_in">
-    <input type="date" id="check-in-input" min="2026-04-01">
+    <input type="date" min="2026-04-01">
   </date-picker>
 </form-field>
 
 <form-field>
   <label for="check-out">Check-out</label>
   <date-picker id="check-out" name="check_out">
-    <input type="date" id="check-out-input" min="2026-04-01">
+    <input type="date" id="check-out-input" min="2026-04-01"
+           aria-describedby="check-out-msg">
   </date-picker>
+  <output class="error" id="check-out-msg" for="check-out-input"
+          aria-live="polite"></output>
 </form-field></code-block>
 
     <code-block language="javascript" show-lines label="Linking script" data-escape>const checkIn  = document.getElementById('check-in');
 const checkOut = document.getElementById('check-out');
 
-// Start date constrains the end picker
-checkIn.addEventListener('date-picker:change', (e) => {
-  checkOut.min = e.detail.value;
-});
+const floor    = '2026-04-01';
 
-// End date constrains the start picker
-checkOut.addEventListener('date-picker:change', (e) => {
-  checkIn.max = e.detail.value;
+// The start date constrains the end picker (never below the floor)
+checkIn.addEventListener('date-picker:change', (e) => {
+  checkOut.min = e.detail.value > floor ? e.detail.value : floor;
+  // An existing end date before the new start is kept but now invalid:
+  // show its message straight away instead of on its next blur.
+  if (checkOut.value) checkOut.closest('form-field')?.validate();
 });</code-block>
 
-    <p>The <code>min</code> and <code>max</code> properties update the calendar constraints in real time. Dates outside the allowed range are automatically greyed out in the grid.</p>
+    <p>The <code>min</code> and <code>max</code> properties update the calendar constraints and validity in real time. Dates outside the allowed range are greyed out in the grid. A value already outside the new range is kept, so <code>checkValidity()</code> returns <code>false</code> and <code>validationMessage</code> explains the range. The demo also moves check-out to at least one night after check-in, and restores the derived <code>min</code> on form reset.</p>
 
     <aside class="note">
-      <strong>Need richer visual range selection?</strong> For a full calendar with range highlighting, week selection, or multi-date selection, see the planned <code>&lt;calendar-wc&gt;</code> component.
+      <strong>Need richer visual range selection?</strong> For an always-visible calendar with range highlighting, multi-date selection, or event display, see <a href="/docs/elements/web-components/calendar-wc/"><code>&lt;calendar-wc&gt;</code></a>.
     </aside>
   </section>

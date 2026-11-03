@@ -45,6 +45,16 @@ date-picker {
     box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
   }
 
+  /* Invalid: the combobox carries aria-invalid once the state is meaningful
+     (out-of-range value, or touched/submitted while required and empty). */
+  .date-trigger:has(> .date-input[aria-invalid="true"]) {
+    border-color: var(--color-error);
+  }
+
+  .date-trigger:has(> .date-input[aria-invalid="true"]):focus-within {
+    box-shadow: 0 0 0 3px oklch(from var(--color-error) l c h / 0.15);
+  }
+
   /* Text input — combobox */
   .date-input {
     all: unset;
@@ -200,7 +210,7 @@ date-picker {
                 color var(--duration-fast, 150ms);
   }
 
-  td button:hover:not([disabled]) {
+  td button:hover:not([aria-disabled="true"]) {
     background: var(--color-hover-bg);
   }
 
@@ -223,18 +233,18 @@ date-picker {
     outline-offset: -1px;
   }
 
-  /* Selected */
-  td button[aria-selected="true"] {
+  /* Selected — aria-selected lives on the gridcell */
+  td[aria-selected="true"] button {
     background: var(--color-interactive);
-    color: white;
+    color: var(--color-text-on-interactive-auto, var(--color-text-on-primary, white));
   }
 
-  td button[aria-selected="true"]:hover {
+  td[aria-selected="true"] button:hover {
     background: color-mix(in oklab, var(--color-interactive) 85%, black);
   }
 
-  /* Disabled dates — default */
-  td button[disabled] {
+  /* Disabled dates — default (aria-disabled: still focusable, not selectable) */
+  td button[aria-disabled="true"] {
     opacity: 0.3;
     cursor: not-allowed;
   }
@@ -298,8 +308,8 @@ date-picker {
     font-weight: 600;
   }
 
-  /* Disabled state on the whole picker */
-  :scope[data-disabled] {
+  /* Disabled state on the whole picker (attribute or disabled fieldset) */
+  :scope:disabled {
     opacity: 0.4;
     pointer-events: none;
   }

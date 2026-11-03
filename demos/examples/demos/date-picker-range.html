@@ -11,9 +11,10 @@
       background: var(--color-surface);
     }
 
+    /* Top-aligned so an error message under one field never shifts the other */
     .date-range {
       display: flex;
-      align-items: end;
+      align-items: start;
       gap: var(--size-m);
       flex-wrap: wrap;
     }
@@ -26,7 +27,9 @@
     .range-arrow {
       display: flex;
       align-items: center;
-      padding-block-end: var(--size-xs);
+      /* Line up with the inputs: skip the label row, then centre on the input */
+      margin-block-start: 1lh;
+      min-block-size: var(--input-height, 2.75rem);
       color: var(--color-text-muted);
     }
 
@@ -46,7 +49,7 @@
 
     .card-title { margin: 0 0 var(--size-m); }
 
-    #form-output {
+    .form-output {
       display: block;
       margin-block-start: var(--size-m);
       padding: var(--size-m);
@@ -76,8 +79,9 @@
               <form-field>
                 <label for="check-in">Check-in</label>
                 <date-picker id="check-in" name="check_in">
-                  <input type="date" id="check-in-input" aria-label="Check-in date" min="2026-04-01" />
+                  <input type="date" id="check-in-input" aria-label="Check-in date" aria-describedby="check-in-msg" min="2026-04-01" />
                 </date-picker>
+                <output class="error" id="check-in-msg" for="check-in-input" aria-live="polite"></output>
               </form-field>
 
               <span class="range-arrow" aria-hidden="true">
@@ -87,8 +91,9 @@
               <form-field>
                 <label for="check-out">Check-out</label>
                 <date-picker id="check-out" name="check_out">
-                  <input type="date" id="check-out-input" aria-label="Check-out date" min="2026-04-01" />
+                  <input type="date" id="check-out-input" aria-label="Check-out date" aria-describedby="check-out-msg" min="2026-04-01" />
                 </date-picker>
+                <output class="error" id="check-out-msg" for="check-out-input" aria-live="polite"></output>
               </form-field>
             </section>
 
@@ -100,7 +105,7 @@
             </layout-cluster>
           </layout-stack>
         </form>
-        <output id="form-output">Submit the form to see data here</output>
+        <output id="form-output" class="form-output">Submit the form to see data here</output>
       </layout-card>
 
       <layout-card>
@@ -111,8 +116,9 @@
               <form-field>
                 <label for="start-date">Start date</label>
                 <date-picker id="start-date" name="start_date">
-                  <input type="date" id="start-date-input" aria-label="Start date" />
+                  <input type="date" id="start-date-input" aria-label="Start date" aria-describedby="start-date-msg" />
                 </date-picker>
+                <output class="error" id="start-date-msg" for="start-date-input" aria-live="polite"></output>
               </form-field>
 
               <span class="range-arrow" aria-hidden="true">
@@ -122,15 +128,21 @@
               <form-field>
                 <label for="end-date">End date</label>
                 <date-picker id="end-date" name="end_date">
-                  <input type="date" id="end-date-input" aria-label="End date" />
+                  <input type="date" id="end-date-input" aria-label="End date" aria-describedby="end-date-msg" />
                 </date-picker>
+                <output class="error" id="end-date-msg" for="end-date-input" aria-live="polite"></output>
               </form-field>
             </section>
 
             <output id="duration-info" class="stay-summary" hidden></output>
+
+            <layout-cluster data-layout-gap="s">
+              <button type="submit">Save timeline</button>
+              <button type="reset" data-variant="outline">Clear</button>
+            </layout-cluster>
           </layout-stack>
-        <button type="submit" hidden>Submit</button>
-</form>
+        </form>
+        <output id="timeline-output" class="form-output">Submit the form to see data here</output>
       </layout-card>
 
     </layout-stack>
@@ -141,67 +153,76 @@
     /**
      * Link two date-pickers for range selection.
      *
-     * When start date is picked → sets min on end picker.
-     * When end date is picked → sets max on start picker.
+     * Picking a start date moves the end picker's `min` (never below the
+     * floor authored on its inner input). The start picker is not capped by
+     * the end date, so the user can move the start freely: if the existing
+     * end date is now too early, date-picker keeps it and marks it invalid
+     * (rangeUnderflow) — this script asks the wrapping <form-field> to show
+     * the message right away, and submitting focuses the end date.
      */
-    function linkDatePickers(startPicker, endPicker, { onRangeChange } = {}) {
-      startPicker.addEventListener('date-picker:change', (e) => {
-        endPicker.min = e.detail.value;
-        if (onRangeChange) onRangeChange(startPicker.value, endPicker.value);
-      });
-
-      endPicker.addEventListener('date-picker:change', (e) => {
-        startPicker.max = e.detail.value;
-        if (onRangeChange) onRangeChange(startPicker.value, endPicker.value);
-      });
+    function linkDatePickers(startPicker, endPicker, { minGapDays = 0, onRangeChange } = {}) {
+      // The floor authored on the end picker's inner input (read from markup:
+      // the picker may not have upgraded yet when this runs).
+      const floor = endPicker.querySelector('input[type="date"]')?.getAttribute('min') ?? '';
+      const shift = (iso, days) => {
+        const d = new Date(`${iso}T00:00:00`);
+        d.setDate(d.getDate() + days);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      };
+      const sync = () => {
+        const start = startPicker.value;
+        const earliest = start ? shift(start, minGapDays) : floor;
+        endPicker.min = floor && earliest < floor ? floor : earliest;
+        // Show (or clear) the end date's message now, not on its next blur.
+        if (endPicker.value) endPicker.closest('form-field')?.validate();
+        if (onRangeChange) onRangeChange(start, endPicker.value, endPicker.checkValidity());
+      };
+      startPicker.addEventListener('date-picker:change', sync);
+      endPicker.addEventListener('date-picker:change', sync);
+      // Form reset restores the values; restore the derived constraint too.
+      startPicker.form?.addEventListener('reset', () => requestAnimationFrame(sync));
     }
 
-    // --- Hotel booking ---
-    const checkIn = document.getElementById('check-in');
-    const checkOut = document.getElementById('check-out');
-    const stayInfo = document.getElementById('stay-info');
+    const days = (start, end) => Math.round((new Date(end) - new Date(start)) / 86400000);
 
-    linkDatePickers(checkIn, checkOut, {
-      onRangeChange(start, end) {
-        if (start && end) {
-          const nights = Math.round((new Date(end) - new Date(start)) / 86400000);
-          stayInfo.hidden = false;
-          stayInfo.innerHTML = `<strong>${nights} night${nights !== 1 ? 's' : ''}</strong> &mdash; ${new Date(start).toLocaleDateString()} to ${new Date(end).toLocaleDateString()}`;
-        } else {
-          stayInfo.hidden = true;
-        }
+    // --- Hotel booking ---
+    const stayInfo = document.getElementById('stay-info');
+    linkDatePickers(document.getElementById('check-in'), document.getElementById('check-out'), {
+      minGapDays: 1,
+      onRangeChange(start, end, valid) {
+        stayInfo.hidden = !(start && end && valid);
+        if (stayInfo.hidden) return;
+        const nights = days(start, end);
+        stayInfo.innerHTML = `<strong>${nights} night${nights !== 1 ? 's' : ''}</strong> &mdash; ${new Date(start).toLocaleDateString()} to ${new Date(end).toLocaleDateString()}`;
       },
     });
 
     // --- Project timeline ---
-    const startDate = document.getElementById('start-date');
-    const endDate = document.getElementById('end-date');
     const durationInfo = document.getElementById('duration-info');
-
-    linkDatePickers(startDate, endDate, {
-      onRangeChange(start, end) {
-        if (start && end) {
-          const days = Math.round((new Date(end) - new Date(start)) / 86400000);
-          const weeks = Math.floor(days / 7);
-          const remainDays = days % 7;
-          const parts = [];
-          if (weeks) parts.push(`${weeks} week${weeks !== 1 ? 's' : ''}`);
-          if (remainDays) parts.push(`${remainDays} day${remainDays !== 1 ? 's' : ''}`);
-          durationInfo.hidden = false;
-          durationInfo.innerHTML = `Duration: <strong>${parts.join(', ') || '0 days'}</strong>`;
-        } else {
-          durationInfo.hidden = true;
-        }
+    linkDatePickers(document.getElementById('start-date'), document.getElementById('end-date'), {
+      onRangeChange(start, end, valid) {
+        durationInfo.hidden = !(start && end && valid);
+        if (durationInfo.hidden) return;
+        const total = days(start, end);
+        const weeks = Math.floor(total / 7);
+        const remainDays = total % 7;
+        const parts = [];
+        if (weeks) parts.push(`${weeks} week${weeks !== 1 ? 's' : ''}`);
+        if (remainDays) parts.push(`${remainDays} day${remainDays !== 1 ? 's' : ''}`);
+        durationInfo.innerHTML = `Duration: <strong>${parts.join(', ') || '0 days'}</strong>`;
       },
     });
 
-    // Form submit
-    document.getElementById('booking-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const data = new FormData(e.target);
-      const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
-      document.getElementById('form-output').textContent = entries || '(no data)';
-    });
+    // Submit: invalid pickers block submission (the browser focuses the
+    // offending date's text input); valid ones submit one ISO value each.
+    for (const [formId, outId] of [['booking-form', 'form-output'], ['timeline-form', 'timeline-output']]) {
+      document.getElementById(formId).addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = new FormData(/** @type {HTMLFormElement} */ (e.target));
+        const entries = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
+        document.getElementById(outId).textContent = entries || '(no data)';
+      });
+    }
   </script>
 </body>
 </html>

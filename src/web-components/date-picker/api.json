@@ -15,113 +15,218 @@
       "kind": "native",
       "purpose": "config",
       "type": "string",
-      "description": "Form field name"
+      "description": "Form field name. A name on the inner input (the no-JS path) moves here on upgrade so exactly one value submits; the host's own name wins if both are set."
     },
     {
       "name": "disabled",
       "kind": "native",
-      "purpose": "config",
+      "purpose": "semantic-state",
       "type": "boolean",
-      "description": "Disables the picker"
+      "description": "Disables the text input and calendar button, closes the calendar and drops the value from submission. A disabled ancestor fieldset has the same effect. A disabled on the inner input moves here on upgrade."
     },
     {
       "name": "required",
       "kind": "native",
       "purpose": "config",
       "type": "boolean",
-      "description": "Makes selection required"
+      "description": "Makes a date required (valueMissing). Observed at runtime; a required on the inner input works too."
     },
     {
       "name": "data-disabled-dates",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Comma-separated ISO dates to disable (optionally with reason: \"2026-04-05:booked\")"
+      "description": "Comma-separated ISO dates to disable (optionally with reason: \"2026-04-05:booked\"). Disabled days stay keyboard-focusable but cannot be selected."
     },
     {
       "name": "data-highlight-dates",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Comma-separated ISO dates to highlight (optionally with category: \"2026-12-25:holiday\")"
+      "description": "Comma-separated ISO dates to highlight (optionally with category: \"2026-12-25:holiday\"). Highlighted days remain selectable."
     },
     {
-      "name": "min",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "max",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "data-disabled",
+      "name": "data-label-toggle",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Toggle calendar",
+      "description": "Accessible name for the calendar icon button (default \"Toggle calendar\")."
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-haspopup",
-      "kind": "aria",
-      "purpose": "config"
-    },
-    {
-      "name": "autocomplete",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "placeholder",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "size",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "data-date",
+      "name": "data-label-dialog",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Choose date",
+      "description": "Accessible name for the calendar popup (default \"Choose date\")."
     },
     {
-      "name": "data-disabled-reason",
+      "name": "data-label-prev",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Previous month",
+      "description": "Accessible name for the previous-month button (default \"Previous month\")."
     },
     {
-      "name": "data-highlight",
+      "name": "data-label-next",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Next month",
+      "description": "Accessible name for the next-month button (default \"Next month\")."
     },
     {
-      "name": "data-focused",
+      "name": "data-label-year",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Year",
+      "description": "Accessible name for the year select (default \"Year\")."
+    },
+    {
+      "name": "data-label-placeholder",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Type a date…",
+      "description": "Placeholder for the text input (default \"Type a date…\")."
+    },
+    {
+      "name": "data-label-required",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Please select a date",
+      "description": "Validation message when required and empty (default \"Please select a date\")."
+    },
+    {
+      "name": "data-label-range-underflow",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Choose a date on or after {date}",
+      "description": "Validation message when the value is before min; {date} is replaced by the formatted min. A data-message-rangeunderflow on the inner input wins."
+    },
+    {
+      "name": "data-label-range-overflow",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Choose a date on or before {date}",
+      "description": "Validation message when the value is after max; {date} is replaced by the formatted max. A data-message-rangeoverflow on the inner input wins."
+    },
+    {
+      "name": "data-label-input",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Date",
+      "description": "Accessible name for the text input when neither a <label> nor an aria-label/aria-labelledby is present (default \"Date\")."
     },
     {
       "name": "open",
-      "kind": "native",
-      "purpose": "config"
+      "kind": "host-api",
+      "purpose": "output-state",
+      "type": "boolean",
+      "direction": "output",
+      "public": false,
+      "description": "Reflected while the calendar is open"
     }
   ],
   "events": [
     {
-      "name": "date-picker:change"
+      "name": "date-picker:change",
+      "detail": "{ value, date, source: 'pointer' | 'keyboard' | 'api' }",
+      "description": "Fired when the selected date changes (not on form reset/restore). value is the ISO string ('' when cleared), date a Date or null. source is 'api' for .value assignments, 'pointer' for grid clicks, 'keyboard' for grid Enter/Space and typed commits."
     },
     {
-      "name": "date-picker:open"
+      "name": "date-picker:open",
+      "description": "Fired when the calendar opens"
     },
     {
-      "name": "date-picker:close"
+      "name": "date-picker:close",
+      "description": "Fired when the calendar closes"
     }
   ],
-  "childAttributes": [],
-  "structure": []
+  "properties": [
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Get or set the selected date as an ISO string (YYYY-MM-DD). Assigning '' or null clears; malformed or impossible dates (2026-02-31) are ignored."
+    },
+    {
+      "name": "min",
+      "type": "string",
+      "description": "Get or set the earliest selectable date (ISO). Updates the calendar and validity immediately; a current value before it is kept and flagged rangeUnderflow."
+    },
+    {
+      "name": "max",
+      "type": "string",
+      "description": "Get or set the latest selectable date (ISO). Updates the calendar and validity immediately; a current value after it is kept and flagged rangeOverflow."
+    },
+    {
+      "name": "form",
+      "type": "HTMLFormElement | null",
+      "description": "The associated form"
+    },
+    {
+      "name": "validity",
+      "type": "ValidityState",
+      "description": "Current validity, owned by the host: valueMissing (required and empty), rangeUnderflow (before min), rangeOverflow (after max). Anchored on the text input."
+    },
+    {
+      "name": "validationMessage",
+      "type": "string",
+      "description": "Current validation message"
+    },
+    {
+      "name": "willValidate",
+      "type": "boolean",
+      "description": "Whether the element is a candidate for constraint validation"
+    }
+  ],
+  "methods": [
+    {
+      "name": "checkValidity()",
+      "description": "Run constraint validation without showing UI"
+    },
+    {
+      "name": "reportValidity()",
+      "description": "Run constraint validation and show the browser message, anchored on the text input"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "value",
+      "on": "input",
+      "type": "string",
+      "description": "Initial date (ISO). The value attribute is the form-reset target."
+    },
+    {
+      "name": "min",
+      "on": "input",
+      "type": "string",
+      "description": "Earliest selectable date (ISO)"
+    },
+    {
+      "name": "max",
+      "on": "input",
+      "type": "string",
+      "description": "Latest selectable date (ISO)"
+    },
+    {
+      "name": "name",
+      "on": "input",
+      "type": "string",
+      "description": "Submission name for the no-JS fallback. Moved to the host on upgrade."
+    }
+  ],
+  "structure": [
+    {
+      "element": "<input type=\"date\">",
+      "description": "Required. Supplies value/min/max and is the no-JS fallback. Its <label for> (or a <label for> on the host, or an aria-label) names the generated combobox."
+    }
+  ]
 }

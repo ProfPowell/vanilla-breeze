@@ -120,7 +120,7 @@ function checkCompendiumFixtures(shadowMap) {
       if (!variant.html) continue;
       for (const [stale, canonical] of staleAttrs) {
         // Match data-attr in the HTML (attribute on the host element tag)
-        const tagRe = new RegExp(`<${el.tag || el.id}[^>]*\\b${stale}\\b`, 'i');
+        const tagRe = new RegExp(`<${el.tag || el.id}[^>]*(?<![\\w-])${stale}(?![\\w-])`, 'i');
         if (tagRe.test(variant.html)) {
           err(`compendium ${el.id}/${variant.id}: uses stale "${stale}" — should be "${canonical}"`);
         }
@@ -149,7 +149,7 @@ function checkDemoFiles(shadowMap) {
         if (!content.includes(`<${element}`)) continue;
 
         for (const [stale, canonical] of staleAttrs) {
-          const tagRe = new RegExp(`<${element}[^>]*\\b${stale}\\b`, 'i');
+          const tagRe = new RegExp(`<${element}[^>]*(?<![\\w-])${stale}(?![\\w-])`, 'i');
           if (tagRe.test(content)) {
             warn(`${rel}: <${element}> uses stale "${stale}" — should be "${canonical}"`);
           }
