@@ -11,14 +11,14 @@ HTML-first searchable glossary using a native `<dl>` definition list with progre
 
 ## Purpose
 
-Progressively enhances a semantic `<dl>` into a searchable, categorized, cross-linked glossary with alphabet navigation. Without JavaScript, users see a standard definition list. With JavaScript, the component adds search filtering, collapsible category groups, an A-Z jump bar, and term count badges.
+Progressively enhances a semantic `<dl>` into a searchable, categorized, cross-linked glossary with letter navigation. Without JavaScript, users see a standard definition list. With JavaScript, the component adds search filtering, collapsible category groups, a letter jump bar, and term count badges.
 
 Part of the **UX Planning Pack**.
 
 ## Static HTML Form
 
 ```html
-<glossary-wc title="Project Glossary" searchable>
+<glossary-wc data-title="Project Glossary" searchable>
   <dl>
     <div data-category="Domain" data-term-id="velocity">
       <dt>Velocity</dt>
@@ -36,10 +36,13 @@ Part of the **UX Planning Pack**.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `title` | string | — | Glossary heading |
-| `src` | string | — | JSON data URL |
-| `searchable` | boolean | — | Enables search input |
+| `data-title` | string | — | Glossary heading (rendered as a heading; `title` is not used) |
+| `data-heading-level` | number | `2` | Heading level 1–6 |
+| `src` | string | — | JSON data URL, fetched once per URL; inline `<dl>` is the fallback |
+| `searchable` | boolean | — | Enables search input (in a `<search>` landmark) |
 | `compact` | boolean | — | Reduced spacing |
+| `data-state` | read-only | — | `src` mode: `loading` / `ready` / `error` |
+| `data-label-*` | string | — | UI strings: `search`, `search-placeholder`, `terms`, `alphabet`, `found-<plural>`, `all-<plural>`, `uncategorized`, `see-also`, `error` |
 
 ### Child Attributes (on `<div>` inside `<dl>`)
 
@@ -48,12 +51,20 @@ Part of the **UX Planning Pack**.
 | `data-category` | string | Category label for grouping |
 | `data-term-id` | string | Unique ID, becomes fragment anchor |
 
+## Properties
+
+| Property | Description |
+|----------|-------------|
+| `terms` | Get `{ id, term, definition, category, seeAlso? }[]`; assign records (JSON format below) to rebuild |
+
 ## Events
 
 | Event | Detail | Description |
 |-------|--------|-------------|
-| `glossary-wc:ready` | `{ termCount, categories }` | After setup |
-| `glossary-wc:search` | `{ query, matchCount }` | On search input |
+| `glossary-wc:ready` | `{ termCount, categories }` | After every render (not while `src` is loading) |
+| `glossary-wc:search` | `{ query, matchCount }` | After the debounced search is applied |
+| `glossary-wc:terms-changed` | `{ terms, source: 'property' }` | After `terms` assignment |
+| `glossary-wc:error` | `{ url, error }` | When `src` fails to load |
 
 ## Failure Modes
 
@@ -65,10 +76,10 @@ Part of the **UX Planning Pack**.
 ## Accessibility
 
 - Native `<dl>`, `<dt>`, `<dd>` semantics preserved in enhanced view
-- Search input has `aria-label` for screen readers
-- Category toggles use `aria-expanded` for collapsible state
-- `aria-live="polite"` region announces search match count
-- Jump bar letters use `aria-disabled` for inactive letters
+- Search input sits in a `<search>` landmark with an `aria-label`
+- Category toggles use `aria-expanded` / `aria-controls`; matches in collapsed categories are revealed while searching
+- One `aria-live="polite"` region announces the match count (and the total when cleared); count badges are `aria-hidden`
+- Jump-bar letters are derived from the terms with `Intl.Collator` for the element's `lang` (digits/symbols under `#`), are ≥24px targets, and are `aria-disabled` while no visible term starts with them
 - `prefers-reduced-motion: reduce` disables transitions
 - Print styles hide search and jump bar, show all terms
 
@@ -92,3 +103,5 @@ Inherits design tokens from the Vanilla Breeze system. No component-specific cus
   ]
 }
 ```
+
+`definition` is rendered as text. `definitionHtml` (optional) is an explicit opt-in for formatted definitions, passed through `src/lib/sanitize-html.js` and used instead of `definition`. `seeAlso` links are labelled with the target term's text.

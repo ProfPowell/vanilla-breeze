@@ -33,6 +33,7 @@ glossary-wc:not(:defined) {
 /* ── Search ───────────────────────────────────────────────────────────────── */
 
 .gloss-search {
+  display: block;
   margin-block-end: var(--size-m, 16px);
 }
 
@@ -74,8 +75,10 @@ glossary-wc:not(:defined) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-inline-size: 1.75em;
-  min-block-size: 1.75em;
+  /* WCAG 2.5.8 target size: never below 24px */
+  min-inline-size: max(24px, 1.75em);
+  min-block-size: max(24px, 1.75em);
+  padding-inline: 0.25em;
   font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none;
@@ -116,7 +119,8 @@ glossary-wc:not(:defined) {
 .gloss-category {
   border: var(--border-width-thin, 1px) solid var(--color-border, #e0e0e0);
   border-radius: var(--radius-l, 0.75rem);
-  overflow: hidden;
+  /* clip (not hidden): no scroll container, so the sticky header still sticks */
+  overflow: clip;
 }
 
 /* ── Category header ─────────────────────────────────────────────────────── */
@@ -186,18 +190,16 @@ glossary-wc:not(:defined) {
   transform: rotate(-45deg);
 }
 
+/* Collapsed chevron points toward inline-end */
+[aria-expanded="false"] .gloss-chevron:dir(rtl) {
+  transform: rotate(135deg);
+}
+
 /* ── Term list (dl) ──────────────────────────────────────────────────────── */
 
 .gloss-term-list {
   margin: 0;
   padding: 0;
-}
-
-/* ── Letter anchor ───────────────────────────────────────────────────────── */
-
-.gloss-letter-anchor {
-  display: block;
-  scroll-margin-block-start: 4rem;
 }
 
 /* ── Individual term ─────────────────────────────────────────────────────── */
@@ -264,9 +266,17 @@ glossary-wc[compact] .gloss-jump-bar {
 }
 
 glossary-wc[compact] .gloss-jump-letter {
-  min-inline-size: 1.5em;
-  min-block-size: 1.5em;
   font-size: 0.65rem;
+}
+
+/* ── src error message ───────────────────────────────────────────────────── */
+
+.gloss-error {
+  margin-block: 0 var(--size-m, 16px);
+  padding: var(--size-xs, 8px) var(--size-s, 12px);
+  border-inline-start: var(--border-width-thick, 4px) solid var(--color-error, #b91c1c);
+  background: color-mix(in oklch, var(--color-error, #b91c1c) 8%, transparent);
+  color: var(--color-text, #1a1a1a);
 }
 
 /* ── Live region (visually hidden) ───────────────────────────────────────── */
@@ -291,8 +301,6 @@ glossary-wc[compact] .gloss-jump-letter {
   }
 
   .gloss-jump-letter {
-    min-inline-size: 1.5em;
-    min-block-size: 1.5em;
     font-size: 0.65rem;
   }
 }
@@ -300,8 +308,9 @@ glossary-wc[compact] .gloss-jump-letter {
 /* ── Reduced motion ──────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  glossary-wc,
-  glossary-wc * {
+  /* Class selectors: a bare glossary-wc * would lose to .gloss-chevron */
+  glossary-wc .gloss-chevron,
+  glossary-wc .gloss-jump-letter {
     transition: none;
   }
 }

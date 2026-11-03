@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "glossary-index"
-description: "Interactive glossary wrapper with live search filtering and scroll-spy letter tracking."
+description: "Interactive glossary wrapper with live search filtering, scroll-spy letter tracking and copyable term permalinks."
 elementName: glossary-index
 category: component
 currentPath: /docs/elements/web-components/glossary-index/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;glossary-index&gt;</code> component wraps a static <code>&lt;dl&gt;</code>-based glossary to add live search filtering, scroll-spy active letter tracking, and deep-link support. Without JavaScript, the glossary is fully readable with anchor link jump navigation.</p>
+  <p>The <code>&lt;glossary-index&gt;</code> component wraps a static <code>&lt;dl&gt;</code>-based glossary to add live search filtering, scroll-spy active letter tracking, and a copyable permalink on every term. Without JavaScript, the glossary is fully readable with anchor link jump navigation.</p>
 
   <browser-window
     src="/docs/examples/demos/glossary.html"
@@ -56,16 +56,17 @@ crumbLabel: Web Components
       <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
     </thead>
     <tbody>
-      <tr>
-        <td><code>placeholder</code></td>
-        <td>string</td>
-        <td><code>"Filter terms..."</code></td>
-        <td>Placeholder text for the search input</td>
-      </tr>
+      <tr><td><code>placeholder</code></td><td>string</td><td><code>"Filter terms…"</code></td><td>Placeholder hint for the search input</td></tr>
+      <tr><td><code>data-label-filter</code></td><td>string</td><td><code>"Filter glossary terms"</code></td><td>Accessible name of the search input (a placeholder is not a label)</td></tr>
+      <tr><td><code>data-label-matches-one</code> / <code>-other</code></td><td>string</td><td><code>"{count} term matches"</code> / <code>"{count} terms match"</code></td><td>Polite match-count announcement (<code>Intl.PluralRules</code>; any category works)</td></tr>
+      <tr><td><code>data-label-all-one</code> / <code>-other</code></td><td>string</td><td><code>"Showing all {count} terms"</code></td><td>Announcement when the filter is cleared</td></tr>
+      <tr><td><code>data-label-empty</code></td><td>string</td><td><code>"No terms match your filter."</code></td><td>Visible empty-state message</td></tr>
+      <tr><td><code>data-label-permalink</code></td><td>string</td><td><code>"Copy link to"</code></td><td>Permalink name prefix (the term is appended)</td></tr>
+      <tr><td><code>data-label-copied</code></td><td>string</td><td><code>"Link copied to clipboard"</code></td><td>Announcement after copying a term link</td></tr>
     </tbody>
   </table>
 
-  <code-block language="html" show-lines label="Custom search placeholder" data-escape><glossary-index placeholder="Search glossary...">
+  <code-block language="html" show-lines label="Custom search placeholder and label" data-escape><glossary-index placeholder="e.g. token" data-label-filter="Search the glossary">
   <!-- glossary sections -->
 </glossary-index></code-block>
 </section>
@@ -132,8 +133,10 @@ crumbLabel: Web Components
 <section>
   <h2>Behavior</h2>
   <ul>
-    <li><strong>Search filtering:</strong> A search input is injected above the glossary. Typing filters terms in real time, hiding non-matching sections.</li>
-    <li><strong>Scroll-spy:</strong> As the user scrolls, the active letter in the jump navigation updates to reflect the currently visible section.</li>
+    <li><strong>Search filtering:</strong> A search input (in a <code>&lt;search&gt;</code> landmark) is injected at the top of an inner <code>&lt;main&gt;</code>, otherwise just before the <code>.glossary-jump</code> nav, otherwise after the first heading. Typing filters terms in real time, hiding non-matching terms and emptied sections. A visible message appears when nothing matches.</li>
+    <li><strong>Term groups:</strong> Filtering walks real <code>&lt;dl&gt;</code> groups &mdash; several <code>&lt;dt&gt;</code> sharing one <code>&lt;dd&gt;</code>, several <code>&lt;dd&gt;</code> for one term, or <code>&lt;div&gt;</code>-wrapped groups &mdash; and hides or shows each group as a whole.</li>
+    <li><strong>Scroll-spy:</strong> As the user scrolls, the active letter in the jump navigation gets <code>aria-current="true"</code> (styled bold in the interactive colour).</li>
+    <li><strong>Permalinks:</strong> Every <code>&lt;dt&gt;</code> with an <code>id</code> gets a <code>#</code> link. Activating it goes to the term (focus, history, <code>:target</code>) and copies the term&rsquo;s URL to the clipboard. Jump links and permalinks stay on the page under <code>&lt;base href&gt;</code>.</li>
     <li><strong>Deep links:</strong> URL hash is updated when clicking jump links, allowing direct links to specific letters.</li>
     <li><strong>Progressive enhancement:</strong> Without JavaScript, the static markup provides a fully functional glossary with working anchor links.</li>
   </ul>
@@ -144,8 +147,10 @@ crumbLabel: Web Components
   <ul>
     <li>Jump navigation uses <code>aria-label="Jump to letter"</code> for screen reader context</li>
     <li>Active letter in jump navigation is marked with <code>aria-current="true"</code></li>
-    <li>Search input is labelled via the <code>placeholder</code> attribute</li>
-    <li>Filtered-out sections are hidden with <code>display: none</code>, removing them from the accessibility tree</li>
+    <li>Search input has an accessible name from <code>data-label-filter</code>; the placeholder is only a hint</li>
+    <li>A polite status announces the match count while filtering, and the full count when the filter is cleared</li>
+    <li>Filtered-out sections are hidden with <code>display: none</code>, removing them from the accessibility tree; jump links to them are <code>aria-disabled</code> until the filter changes</li>
+    <li>Permalinks are named &ldquo;Copy link to <em>term</em>&rdquo;, are at least 24&times;24&nbsp;px, show on hover, keyboard focus and always on touch devices, and announce when the link is copied</li>
     <li>Uses semantic <code>&lt;dl&gt;</code>, <code>&lt;dt&gt;</code>, <code>&lt;dd&gt;</code>, and <code>&lt;dfn&gt;</code> elements</li>
     <li>Keyboard accessible &mdash; tab through jump links and search input</li>
   </ul>
