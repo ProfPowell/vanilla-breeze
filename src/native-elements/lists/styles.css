@@ -19,8 +19,14 @@ li > ol {
   margin-block-start: var(--size-xs);
 }
 
-/* Definition lists */
-dl {
+/* Definition lists
+   Groups are either flat (dt… dd…) or wrapped in the spec's <div> or VB's
+   <dl-item>. A plain dl spaces wrapped groups exactly like flat pairs. A dl
+   carrying a class or data-layout is treated as author/primitive-styled
+   and manages its own group spacing (wrapper margins would otherwise
+   double a flex/grid gap or offset items on the cross axis). */
+dl,
+dl-item {
   display: block;
 }
 
@@ -32,7 +38,8 @@ dd {
   margin-inline-start: var(--size-l);
 }
 
-dd + dt {
+dd + dt,
+:where(dl:not([class], [data-layout])) > :is(div, dl-item) + :is(div, dl-item) {
   margin-block-start: var(--size-m);
 }
 
@@ -89,30 +96,129 @@ dl[data-striped] > dd + dt {
   margin-block-start: 0;
 }
 
-/* Flat dt/dd pairs: stripe odd dt and its immediate dd */
+/* Flat pairs: stripe odd dt and the dd run that follows it (up to four dd).
+   Flat striping counts <dt> elements, so a group with several <dt> shifts
+   the parity — wrap multi-term groups in <div> (or <dl-item>) instead. */
 dl[data-striped] > dt:nth-of-type(odd),
-dl[data-striped] > dt:nth-of-type(odd) + dd {
+dl[data-striped] > dt:nth-of-type(odd) + dd,
+dl[data-striped] > dt:nth-of-type(odd) + dd + dd,
+dl[data-striped] > dt:nth-of-type(odd) + dd + dd + dd,
+dl[data-striped] > dt:nth-of-type(odd) + dd + dd + dd + dd {
   background: var(--color-surface-raised);
 }
 
-/* Div-wrapped pairs: stripe odd div groups */
-dl[data-striped] > div {
+/* Wrapped groups (<div> or <dl-item>): stripe odd groups as a whole */
+dl[data-striped] > :is(div, dl-item) {
   padding-inline: var(--size-s);
   padding-block: var(--size-2xs);
 }
 
-dl[data-striped] > div:nth-of-type(odd) {
+dl[data-striped] > :is(div, dl-item):nth-of-type(odd) {
   background: var(--color-surface-raised);
 }
 
-/* dl-item wrapped pairs: stripe odd dl-item groups */
-dl[data-striped] > dl-item {
-  padding-inline: var(--size-s);
-  padding-block: var(--size-2xs);
+/* --- Description list variants ---
+   data-variant="horizontal" | "stacked", data-bordered, data-density="compact".
+   They work on flat dt/dd pairs and on <div> / <dl-item> group wrappers.
+   Tunables: --dl-term-min (default 10ch) and --dl-term-max (default 40%)
+   bound the term column of the horizontal variant. */
+
+/* Horizontal — term column + description column. Groups are subgrids, so
+   the term column lines up across every row. Every dd lands in column 2;
+   several dt in one group stack in column 1. Below 24rem of available
+   inline size it falls back to a stacked flow. */
+dl[data-variant="horizontal"] {
+  container: vb-dl / inline-size;
+  display: grid;
+  grid-template-columns: fit-content(var(--dl-term-max, 40%)) minmax(0, 1fr);
+  column-gap: var(--_dl-col-gap, var(--size-m));
+  row-gap: var(--_dl-row-gap, var(--size-s));
+  align-items: baseline;
 }
 
-dl[data-striped] > dl-item:nth-of-type(odd) {
-  background: var(--color-surface-raised);
+dl[data-variant="horizontal"]:has(> :is(div, dl-item)) {
+  row-gap: 0;
+}
+
+dl[data-variant="horizontal"] > :is(div, dl-item) {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: fit-content(var(--dl-term-max, 40%)) minmax(0, 1fr);
+  grid-template-columns: subgrid;
+  grid-auto-flow: row dense;
+  row-gap: var(--size-2xs);
+  align-items: baseline;
+}
+
+dl[data-variant="horizontal"] > :is(div, dl-item) + :is(div, dl-item),
+dl[data-variant="horizontal"] > dd + dt {
+  margin-block-start: 0;
+}
+
+:is(dl[data-variant="horizontal"], dl[data-variant="horizontal"] > :is(div, dl-item)) > dt {
+  grid-column: 1;
+  min-inline-size: var(--dl-term-min, 10ch);
+  overflow-wrap: break-word;
+}
+
+:is(dl[data-variant="horizontal"], dl[data-variant="horizontal"] > :is(div, dl-item)) > dd {
+  grid-column: 2;
+  min-inline-size: 0;
+  margin-inline-start: 0;
+  overflow-wrap: break-word;
+}
+
+@container vb-dl (inline-size < 24rem) {
+  :is(dl[data-variant="horizontal"], dl[data-variant="horizontal"] > :is(div, dl-item)) > :is(dt, dd) {
+    grid-column: 1 / -1;
+    min-inline-size: 0;
+  }
+}
+
+/* Stacked — muted label above its value(s), no indent */
+:is(dl[data-variant="stacked"], dl[data-variant="stacked"] > :is(div, dl-item)) > dt {
+  font-size: var(--font-size-s);
+  color: var(--color-text-muted);
+  margin-block-end: var(--size-2xs);
+}
+
+:is(dl[data-variant="stacked"], dl[data-variant="stacked"] > :is(div, dl-item)) > dd {
+  margin-inline-start: 0;
+}
+
+:is(dl[data-variant="stacked"], dl[data-variant="stacked"] > :is(div, dl-item)) > dd + dd {
+  margin-block-start: var(--size-2xs);
+}
+
+dl[data-variant="stacked"] > dd + dt,
+dl[data-variant="stacked"] > :is(div, dl-item) + :is(div, dl-item) {
+  margin-block-start: var(--_dl-group-gap, var(--size-l));
+}
+
+/* Bordered — separator lines between wrapped groups */
+dl[data-bordered] > :is(div, dl-item) {
+  border-block-end: var(--border-width-thin) solid var(--color-border);
+}
+
+dl[data-bordered] > :is(div, dl-item):last-child {
+  border-block-end: none;
+}
+
+dl:is([data-variant="horizontal"], [data-bordered]) > :is(div, dl-item) {
+  padding-block: var(--_dl-pad, var(--size-s));
+}
+
+/* Bordered and striped groups are separated by padding, not margin */
+dl:is([data-bordered], [data-striped]) > :is(div, dl-item) + :is(div, dl-item) {
+  margin-block-start: 0;
+}
+
+/* Compact — tighter spacing for dense data */
+dl[data-density="compact"] {
+  --_dl-pad: var(--size-2xs);
+  --_dl-col-gap: var(--size-xs);
+  --_dl-row-gap: var(--size-2xs);
+  --_dl-group-gap: var(--size-s);
 }
 
 /* --- Metadata List --- */

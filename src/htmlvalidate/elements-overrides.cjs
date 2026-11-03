@@ -3,17 +3,23 @@
 // per-component api.json manifests.
 
 module.exports = {
-  // Recognize VB's <dl-item> custom element as a valid wrapper for
-  // <dt> and <dd>. The base HTML rule only allows <dl> / <dl><div>
-  // ancestors; <dl-item> is documented as a standalone definition-
-  // list entry that can be used without an enclosing <dl>.
+  // <dl-item> is VB's named alternative to the spec's <div> group
+  // wrapper. It is only meaningful as a direct child of <dl> (the HTML
+  // spec itself does not list it among <dl>'s permitted children — see
+  // the Conformance note on the dl-item doc page). Require the full
+  // <dl> > <dl-item> chain so a stray <dl-item> (and the <dt>/<dd>
+  // inside it) is flagged when used outside a description list.
+  "dl-item": {
+    inherit: "dl-item",
+    requiredAncestors: ["dl > dl-item"],
+  },
   "dt": {
     inherit: "dt",
-    requiredAncestors: ["dl > dt", "dl > div > dt", "dl-item > dt"],
+    requiredAncestors: ["dl > dt", "dl > div > dt", "dl > dl-item > dt"],
   },
   "dd": {
     inherit: "dd",
-    requiredAncestors: ["dl > dd", "dl > div > dd", "dl-item > dd"],
+    requiredAncestors: ["dl > dd", "dl > div > dd", "dl > dl-item > dd"],
   },
 
   // <li> per spec requires <ul>/<ol>/<menu>/<template> parent, but VB's

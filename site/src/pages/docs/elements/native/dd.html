@@ -14,7 +14,7 @@ crumbLabel: Native Elements
 <section>
     <h2>Description</h2>
     <p>The <code>&lt;dd&gt;</code> element (definition description) provides the description, definition, or value for the preceding <a href="/docs/elements/native/dt/"><code>&lt;dt&gt;</code></a> element(s) in a <a href="/docs/elements/native/dl/"><code>&lt;dl&gt;</code></a> (definition list).</p>
-    <p>By default, <code>&lt;dd&gt;</code> elements are indented from the left margin to visually distinguish them from their associated terms.</p>
+    <p>By default, <code>&lt;dd&gt;</code> elements are indented from the inline-start edge (the left in left-to-right text, the right in right-to-left) to visually distinguish them from their associated terms.</p>
   </section>
 
   <section>
@@ -38,7 +38,7 @@ crumbLabel: Native Elements
   <section>
     <h2>Basic Usage</h2>
 
-    <browser-window src="/docs/snippets/demos/dl-basic.html" url="dl-basic.html" title="Basic definition descriptions" shadow></browser-window>
+    <browser-window src="/docs/snippets/demos/dd-basic.html" url="dd-basic.html" title="Basic definition descriptions" shadow></browser-window>
 
     <code-block language="html" show-lines label="Basic definition list" data-escape><dl>
   <dt>Accessibility</dt>
@@ -53,7 +53,7 @@ crumbLabel: Native Elements
     <h2>Multiple Descriptions</h2>
     <p>A term can have multiple <code>&lt;dd&gt;</code> elements, each providing a different definition, meaning, or aspect.</p>
 
-    <browser-window src="/docs/snippets/demos/dl-multiple-descriptions.html" url="dl-multiple-descriptions.html" title="Multiple descriptions" shadow></browser-window>
+    <browser-window src="/docs/snippets/demos/dd-multiple-descriptions.html" url="dd-multiple-descriptions.html" title="Multiple descriptions" shadow></browser-window>
 
     <code-block language="html" show-lines label="Multiple descriptions for one term" data-escape><dl>
   <dt>Port</dt>
@@ -68,7 +68,7 @@ crumbLabel: Native Elements
     <h2>Shared Description</h2>
     <p>Multiple terms can share the same <code>&lt;dd&gt;</code> description. This is useful for synonyms or alternate names.</p>
 
-    <browser-window src="/docs/snippets/demos/dl-multiple-terms.html" url="dl-multiple-terms.html" title="Shared description" shadow></browser-window>
+    <browser-window src="/docs/snippets/demos/dd-shared.html" url="dd-shared.html" title="Shared description" shadow></browser-window>
 
     <code-block language="html" show-lines label="Multiple terms sharing a description" data-escape><dl>
   <dt>RGB</dt>
@@ -83,7 +83,15 @@ crumbLabel: Native Elements
 
     <browser-window src="/docs/snippets/demos/dd-rich-content.html" url="dd-rich-content.html" title="Rich content in descriptions" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Description with nested list" data-escape><dl>
+    <code-block language="html" show-lines label="Rich content in descriptions" data-escape><dl>
+  <dt>Progressive Enhancement</dt>
+  <dd>
+    <p>A strategy for web design that emphasizes core webpage content first.</p>
+    <p>Additional functionality and styling are layered on top for browsers that support them.</p>
+  </dd>
+</dl>
+
+<dl>
   <dt>Key Features</dt>
   <dd>
     <ul>
@@ -94,16 +102,6 @@ crumbLabel: Native Elements
     </ul>
   </dd>
 </dl></code-block>
-    <code-block language="html" show-lines label="Rich content in description" data-escape><dl>
-  <dt>Term</dt>
-  <dd>
-    <p>Introduction paragraph.</p>
-    <ul>
-      <li>Detail one</li>
-      <li>Detail two</li>
-    </ul>
-  </dd>
-</dl></code-block>
   </section>
 
   <section>
@@ -111,10 +109,9 @@ crumbLabel: Native Elements
 
     <h3>Screen Reader Behavior</h3>
     <ul>
-      <li>Announced as the description or definition for preceding terms</li>
-      <li>Associated with <code>&lt;dt&gt;</code> elements in the list context</li>
-      <li>Multiple descriptions announced sequentially</li>
-      <li>Rich content within descriptions is fully accessible</li>
+      <li>Exposed with the <code>definition</code> role in browser accessibility trees</li>
+      <li>Whether a screen reader announces the link to the preceding <code>&lt;dt&gt;</code> varies; most simply read descriptions in source order</li>
+      <li>Rich content inside a description (lists, links, paragraphs) keeps its own semantics</li>
     </ul>
 
     <h3>Best Practices</h3>
@@ -141,10 +138,12 @@ crumbLabel: Native Elements
         <tr>
           <td><code>margin-inline-start</code></td>
           <td><code>var(--size-l)</code></td>
-          <td>Left indentation to distinguish from terms</td>
+          <td>Inline-start indentation to distinguish from terms</td>
         </tr>
       </tbody>
     </table>
+
+    <p>The indent is removed where a layout replaces it: in <code>dl[data-striped]</code> (padding instead), and in the <code>data-variant="horizontal"</code> and <code>data-variant="stacked"</code> layouts. Plain <code>&lt;div&gt;</code> or <code>&lt;dl-item&gt;</code> wrappers keep it.</p>
 
     <p>When a <code>&lt;dd&gt;</code> is followed by a <code>&lt;dt&gt;</code> (starting a new term group), <code>dd + dt</code> adds <code>margin-block-start: var(--size-m)</code> for visual separation.</p>
   </section>
@@ -160,7 +159,7 @@ crumbLabel: Native Elements
     </ul>
 
     <h3>Required Parent</h3>
-    <p>Must be a child of <code>&lt;dl&gt;</code>, optionally inside a <code>&lt;dl-item&gt;</code>.</p>
+    <p>Must be a child of <code>&lt;dl&gt;</code>, or of a <code>&lt;div&gt;</code> that is a child of <code>&lt;dl&gt;</code>. VB also accepts <code>&lt;dl&gt; &gt; &lt;dl-item&gt;</code>, a styling wrapper that is not conforming HTML (see <a href="/docs/elements/custom-elements/dl-item/#conformance">dl-item conformance</a>).</p>
   </section>
 
   <section>
