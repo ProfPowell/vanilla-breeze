@@ -3,12 +3,54 @@
  *
  * Tests keyboard reorder, visual state attributes, event dispatch,
  * and accessibility for the drag-surface component.
+ *
+ * Tests the working tree: /src is served from disk, not the build.
  */
 
 import { test, expect } from 'playwright/test';
+import { join } from 'node:path';
 
-const demoPage = '/docs/examples/demos/drag-surface-basic.html';
-const kanbanPage = '/docs/examples/demos/drag-surface-kanban.html';
+const REPO = join(import.meta.dirname, '..', '..');
+
+const BASIC = `
+  <drag-surface id="todo-list" data-layout="stack" data-layout-gap="xs">
+    <article class="card" draggable="true" data-id="task-1">Design review</article>
+    <article class="card" draggable="true" data-id="task-2">Code audit</article>
+    <article class="card" draggable="true" data-id="task-3">Write tests</article>
+    <article class="card" draggable="true" data-id="task-4">Deploy staging</article>
+  </drag-surface>`;
+
+const KANBAN = `
+  <section data-layout="grid" data-layout-min="m">
+    <drag-surface group="tasks" aria-label="To Do" data-layout="stack">
+      <article class="card" draggable="true" data-id="task-1">Design review</article>
+      <article class="card" draggable="true" data-id="task-2">Write docs</article>
+    </drag-surface>
+    <drag-surface group="tasks" aria-label="In Progress" data-layout="stack">
+      <article class="card" draggable="true" data-id="task-3">API integration</article>
+    </drag-surface>
+    <drag-surface group="tasks" aria-label="Done" data-layout="stack"></drag-surface>
+  </section>`;
+
+async function load(page, body) {
+  await page.route('**/src/**', (route) => route.fulfill({
+    path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
+  }));
+  const url = `/__drag-surface-${Math.random().toString(36).slice(2)}.html`;
+  await page.route(`**${url}`, (route) => route.fulfill({
+    status: 200,
+    contentType: 'text/html; charset=utf-8',
+    body: `<!doctype html><html lang="en"><head><meta charset="utf-8">
+      <link rel="stylesheet" href="/src/main.css">
+      <script type="module">import '/src/web-components/drag-surface/logic.js';</script>
+      </head><body><main>${body}</main></body></html>`,
+  }));
+  await page.goto(url, { waitUntil: 'load' });
+  await page.waitForSelector('drag-surface[data-upgraded]');
+}
+
+const demoPage = BASIC;
+const kanbanPage = KANBAN;
 
 /** Wait for drag-surface WC to initialize */
 async function waitForSurface(page) {
@@ -18,7 +60,7 @@ async function waitForSurface(page) {
 test.describe('drag-surface', () => {
 
   test('renders with role="list" and children as listitems', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await waitForSurface(page);
 
     const result = await page.evaluate(() => {
@@ -29,7 +71,7 @@ test.describe('drag-surface', () => {
         itemCount: items.length,
         allHaveRole: [...items].every(el => el.getAttribute('role') === 'listitem'),
         allHaveTabindex: [...items].every(el => el.getAttribute('tabindex') === '0'),
-        allHaveGrabbed: [...items].every(el => el.getAttribute('aria-grabbed') === 'false'),
+        noneUseAriaGrabbed: [...items].every(el => !el.hasAttribute('aria-grabbed')),
       };
     });
 
@@ -37,21 +79,23 @@ test.describe('drag-surface', () => {
     expect(result.itemCount).toBeGreaterThan(1);
     expect(result.allHaveRole).toBe(true);
     expect(result.allHaveTabindex).toBe(true);
-    expect(result.allHaveGrabbed).toBe(true);
+    expect(result.noneUseAriaGrabbed).toBe(true);
   });
 
   test('has a live region for screen reader announcements', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await waitForSurface(page);
 
     const hasLiveRegion = await page.evaluate(() => {
-      return document.querySelector('drag-surface [aria-live="polite"]') !== null;
+      const region = document.querySelector('drag-surface').nextElementSibling;
+      return region?.getAttribute('aria-live') === 'polite'
+        && document.querySelector('drag-surface [aria-live]') === null;
     });
     expect(hasLiveRegion).toBe(true);
   });
 
   test('keyboard: Space grabs and drops an item', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await waitForSurface(page);
 
     const firstItem = page.locator('drag-surface [draggable="true"]').first();
@@ -59,8 +103,8 @@ test.describe('drag-surface', () => {
     await page.keyboard.press('Space');
 
     // Item should be grabbed
-    const grabbed = await firstItem.getAttribute('aria-grabbed');
-    expect(grabbed).toBe('true');
+    await expect(firstItem).toHaveAttribute('data-grabbed', '');
+    await expect(firstItem).toHaveAttribute('aria-description', 'Grabbed');
 
     const reorderMode = await page.evaluate(() =>
       document.querySelector('drag-surface').hasAttribute('data-reorder-mode')
@@ -70,12 +114,12 @@ test.describe('drag-surface', () => {
     // Drop it
     await page.keyboard.press('Space');
 
-    const grabbedAfter = await firstItem.getAttribute('aria-grabbed');
-    expect(grabbedAfter).toBe('false');
+    await expect(firstItem).not.toHaveAttribute('data-grabbed');
+    await expect(firstItem).not.toHaveAttribute('aria-description');
   });
 
   test('keyboard: arrow keys reorder grabbed item', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await waitForSurface(page);
 
     const items = page.locator('drag-surface [draggable="true"]');
@@ -98,7 +142,7 @@ test.describe('drag-surface', () => {
   });
 
   test('keyboard: Escape cancels reorder', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await waitForSurface(page);
 
     const items = page.locator('drag-surface [draggable="true"]');
@@ -119,7 +163,7 @@ test.describe('drag-surface', () => {
   });
 
   test('keyboard: fires drag-surface:reorder event', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await waitForSurface(page);
 
     await page.evaluate(() => {
@@ -149,7 +193,7 @@ test.describe('drag-surface', () => {
   });
 
   test('keyboard: arrow navigation between items without grab', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await waitForSurface(page);
 
     const items = page.locator('drag-surface [draggable="true"]');
@@ -165,7 +209,7 @@ test.describe('drag-surface', () => {
   });
 
   test('flash animation on drop', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await waitForSurface(page);
 
     const firstItem = page.locator('drag-surface [draggable="true"]').first();
@@ -184,7 +228,7 @@ test.describe('drag-surface', () => {
   });
 
   test('disabled state prevents keyboard grab', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await waitForSurface(page);
 
     await page.evaluate(() => {
@@ -195,8 +239,7 @@ test.describe('drag-surface', () => {
     await firstItem.focus();
     await page.keyboard.press('Space');
 
-    const isGrabbed = await firstItem.getAttribute('aria-grabbed');
-    expect(isGrabbed).toBe('false');
+    await expect(firstItem).not.toHaveAttribute('data-grabbed');
   });
 
 });
@@ -204,7 +247,7 @@ test.describe('drag-surface', () => {
 test.describe('drag-surface cross-surface transfer', () => {
 
   test('keyboard: transfer item between grouped surfaces', async ({ page }) => {
-    await page.goto(kanbanPage);
+    await load(page, kanbanPage);
     await page.waitForSelector('drag-surface[role="list"]', { timeout: 5000 });
 
     const surfaceCount = await page.locator('drag-surface[group]').count();
@@ -246,7 +289,7 @@ test.describe('drag-surface cross-surface transfer', () => {
 test.describe('drag-surface — lifecycle', () => {
 
   test('reconnect does not duplicate live regions', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await page.waitForSelector('drag-surface[data-upgraded]');
 
     const liveCount = await page.evaluate(() => {
@@ -258,7 +301,8 @@ test.describe('drag-surface — lifecycle', () => {
 
       return new Promise(resolve => {
         requestAnimationFrame(() => {
-          const count = surface.querySelectorAll('[aria-live]').length;
+          const count = surface.parentElement.querySelectorAll(':scope > [data-drag-surface-live]').length
+            + surface.querySelectorAll('[aria-live]').length;
           resolve(count);
         });
       });
@@ -268,7 +312,7 @@ test.describe('drag-surface — lifecycle', () => {
   });
 
   test('reconnect does not duplicate reorder events', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await page.waitForSelector('drag-surface[data-upgraded]');
 
     const eventCount = await page.evaluate(() => {
@@ -302,7 +346,7 @@ test.describe('drag-surface — lifecycle', () => {
   });
 
   test('keyboard still works after reconnect', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await page.waitForSelector('drag-surface[data-upgraded]');
 
     await page.evaluate(() => {
@@ -319,18 +363,18 @@ test.describe('drag-surface — lifecycle', () => {
 
     // Should be able to grab
     await page.keyboard.press('Space');
-    await expect(item).toHaveAttribute('aria-grabbed', 'true');
+    await expect(item).toHaveAttribute('data-grabbed', '');
 
     // Cancel
     await page.keyboard.press('Escape');
-    await expect(item).toHaveAttribute('aria-grabbed', 'false');
+    await expect(item).not.toHaveAttribute('data-grabbed');
   });
 });
 
 test.describe('drag-surface — CSS state contract', () => {
 
   test('data-reorder-mode is set during keyboard reorder', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await page.waitForSelector('drag-surface[data-upgraded]');
 
     const surface = page.locator('drag-surface').first();
@@ -340,7 +384,7 @@ test.describe('drag-surface — CSS state contract', () => {
     await page.keyboard.press('Space');
 
     await expect(surface).toHaveAttribute('data-reorder-mode', '');
-    await expect(item).toHaveAttribute('aria-grabbed', 'true');
+    await expect(item).toHaveAttribute('data-grabbed', '');
 
     // Cancel
     await page.keyboard.press('Escape');
@@ -348,7 +392,7 @@ test.describe('drag-surface — CSS state contract', () => {
   });
 
   test('data-just-dropped is set then removed after drop', async ({ page }) => {
-    await page.goto(demoPage);
+    await load(page, demoPage);
     await page.waitForSelector('drag-surface[data-upgraded]');
 
     const item = page.locator('drag-surface [draggable="true"]').first();

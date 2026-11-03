@@ -32,7 +32,7 @@ crumbLabel: Web Components
     <strong>Progressive enhancement:</strong> Without JavaScript, the content renders as a static list. The <code>draggable</code> attribute only enables drag-and-drop when the component is registered. Keyboard reorder and screen reader announcements are added automatically.
   </aside>
 
-  <p><code>&lt;drag-surface&gt;</code> uses <code>flex: 1</code> to fill available space when placed inside a flex container (such as a kanban column using <code>data-layout="stack"</code>). This ensures the full column area is a valid drop target, not just the space occupied by cards.</p>
+  <p>The surface is only as big as its content (with a small minimum block size). In a kanban column, give it <code>flex: 1</code> in your own CSS (for example <code>.board &gt; section &gt; drag-surface { flex: 1; }</code>) so the whole column is a drop target, not just the space the cards occupy.</p>
 </section>
 
 <section>
@@ -53,13 +53,19 @@ crumbLabel: Web Components
         <td><code>orientation</code></td>
         <td>string</td>
         <td><code>"vertical"</code></td>
-        <td>Set to <code>"horizontal"</code> to use Left/Right arrows and clientX for drop position.</td>
+        <td>Set to <code>"horizontal"</code> to use Left/Right arrows and the inline axis for drop position. Both follow the computed <code>direction</code>, so they flip in RTL.</td>
       </tr>
       <tr>
         <td><code>disabled</code></td>
         <td>boolean</td>
         <td>&mdash;</td>
-        <td>Disables all dragging on this surface.</td>
+        <td>Disables dragging out of, dropping into, keyboard reorder and move controls on this surface. Reflected as <code>aria-disabled="true"</code>; grouped surfaces skip it as a transfer target.</td>
+      </tr>
+      <tr>
+        <td><code>data-move-controls</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Renders per-item Move buttons: a single-pointer alternative to dragging. See <a href="#move-controls">Move controls</a>.</td>
       </tr>
     </tbody>
   </table>
@@ -88,7 +94,7 @@ crumbLabel: Web Components
       <tr>
         <td><code>data-drag-handle</code></td>
         <td>boolean</td>
-        <td>If present on a descendant, only that element initiates the drag.</td>
+        <td>If present on a descendant, only that element initiates the drag. If the handle is a focusable <code>&lt;button&gt;</code>, keyboard reorder works from it too and it gets <code>aria-pressed</code> while grabbed.</td>
       </tr>
     </tbody>
   </table>
@@ -123,9 +129,14 @@ crumbLabel: Web Components
         <td>During keyboard reorder (item is grabbed)</td>
       </tr>
       <tr>
-        <td><code>aria-grabbed="true"</code></td>
+        <td><code>data-grabbed</code></td>
         <td>A child item</td>
-        <td>Item is grabbed for keyboard reorder</td>
+        <td>Item is grabbed for keyboard reorder (also given <code>aria-description="Grabbed"</code> unless it has its own)</td>
+      </tr>
+      <tr>
+        <td><code>aria-disabled="true"</code></td>
+        <td>The surface</td>
+        <td>Mirrors the <code>disabled</code> attribute</td>
       </tr>
       <tr>
         <td><code>data-just-dropped</code></td>
@@ -172,6 +183,32 @@ crumbLabel: Web Components
 </section></code-block>
 </section>
 
+<section id="move-controls">
+  <h2>Move Controls</h2>
+  <p>Dragging needs a press-and-move gesture, which WCAG 2.5.7 (Dragging Movements) says must have a single-pointer alternative. Add <code>data-move-controls</code> and each item gets small Move buttons: up/down (left/right for horizontal surfaces, flipped in RTL) and, for grouped surfaces, a button for each neighbouring surface. Every button&rsquo;s accessible name includes the item label, for example &ldquo;Move Export to CSV down&rdquo; or &ldquo;Move Export to CSV to This sprint&rdquo;.</p>
+  <p>The buttons use the same move logic as dragging, so they fire the same <code>drag-surface:reorder</code> and <code>drag-surface:transfer</code> events. Focus stays on the button you pressed. At either end of the list the button is marked <code>aria-disabled</code> rather than <code>disabled</code>, so it keeps focus.</p>
+
+  <browser-window
+    src="/docs/examples/demos/drag-surface-move-controls.html"
+    url="https://vanilla-breeze.com/move-controls"
+    title="Move Controls Demo"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Move controls on grouped surfaces" data-escape><h3 id="col-backlog">Backlog</h3>
+<drag-surface group="sprint" aria-labelledby="col-backlog" data-move-controls data-layout="stack" data-layout-gap="xs">
+  <article class="card" draggable="true" data-id="story-1">Password reset flow</article>
+  <article class="card" draggable="true" data-id="story-2">Export to CSV</article>
+</drag-surface>
+
+<h3 id="col-sprint">This sprint</h3>
+<drag-surface group="sprint" aria-labelledby="col-sprint" data-move-controls data-layout="stack" data-layout-gap="xs">
+  <article class="card" draggable="true" data-id="story-4">Billing page copy</article>
+</drag-surface></code-block>
+
+  <p>Name each surface with <code>aria-label</code> or <code>aria-labelledby</code>: the transfer buttons and announcements use that name. The buttons are added inside each item, in a <code>[data-drag-surface-controls]</code> wrapper you can style.</p>
+</section>
+
 <section>
   <h2>Drag Handles</h2>
   <p>Add <code>data-drag-handle</code> to a descendant element to constrain where the drag can be initiated. Only clicks on the handle start a drag &mdash; clicking other parts of the item does not.</p>
@@ -197,7 +234,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Horizontal Layout</h2>
-  <p>Set <code>orientation="horizontal"</code> to switch keyboard navigation to Left/Right arrows and use horizontal position for drop calculations.</p>
+  <p>Set <code>orientation="horizontal"</code> to switch keyboard navigation to Left/Right arrows and use the inline axis for drop calculations. Both follow the computed <code>direction</code>: in a right-to-left context, <kbd>ArrowLeft</kbd> moves an item towards the end of the list, and the drop indicator is drawn on the inline-start or inline-end edge.</p>
 
   <browser-window
     src="/docs/examples/demos/drag-surface-horizontal.html"
@@ -223,22 +260,22 @@ crumbLabel: Web Components
       <tr>
         <td><code>drag-surface:reorder</code></td>
         <td><code>{item, itemId, oldIndex, newIndex, order}</code></td>
-        <td>Items within this surface were reordered (mouse or keyboard).</td>
+        <td>Items within this surface were reordered (mouse, keyboard or move controls).</td>
       </tr>
       <tr>
         <td><code>drag-surface:transfer</code></td>
         <td><code>{item, itemId, fromSurface, toSurface, newIndex, fromOrder, toOrder}</code></td>
-        <td>An item moved between surfaces sharing a <code>group</code>.</td>
+        <td>An item moved between surfaces sharing a <code>group</code>. Fired on the receiving surface.</td>
       </tr>
       <tr>
         <td><code>drag-surface:reorder-start</code></td>
         <td>&mdash;</td>
-        <td>A drag or keyboard reorder began.</td>
+        <td>A drag or keyboard grab began.</td>
       </tr>
       <tr>
         <td><code>drag-surface:reorder-end</code></td>
         <td>&mdash;</td>
-        <td>A drag or keyboard reorder ended.</td>
+        <td>A drag or keyboard grab ended (dropped, cancelled, or the drag was abandoned). For a pointer drag it fires on the source surface.</td>
       </tr>
     </tbody>
   </table>
@@ -273,6 +310,7 @@ document.addEventListener('drag-surface:transfer', (e) => {
 
 <section>
   <h2>Keyboard Navigation</h2>
+  <p>Keys are handled only when focus is on the item itself (or on its <code>data-drag-handle</code> button). Buttons, links and inputs inside an item keep their normal keyboard behaviour.</p>
   <table class="props-table">
     <thead>
       <tr><th>Key</th><th>Action</th></tr>
@@ -288,11 +326,11 @@ document.addEventListener('drag-surface:transfer', (e) => {
       </tr>
       <tr>
         <td><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td>
-        <td>Move the grabbed item left/right (horizontal orientation), or transfer between grouped surfaces (vertical orientation).</td>
+        <td>Move the grabbed item towards the start/end of the list (horizontal orientation; follows the reading direction), or transfer it to the grouped surface on that side (vertical orientation). Without a grab, arrows move focus between items.</td>
       </tr>
       <tr>
         <td><kbd>Escape</kbd></td>
-        <td>Cancel the reorder and return the item to its original position. Does not undo cross-surface transfers.</td>
+        <td>Cancel the reorder and return the item to its original position. Does not undo cross-surface transfers. Moving focus out of the grabbed item also cancels.</td>
       </tr>
     </tbody>
   </table>
@@ -305,13 +343,13 @@ document.addEventListener('drag-surface:transfer', (e) => {
     <li><strong>Vertical surfaces</strong> (default): <kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd> transfer to the adjacent surface</li>
     <li><strong>Horizontal surfaces</strong>: <kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd> transfer to the adjacent surface</li>
   </ul>
-  <p>Adjacent surfaces are determined by visual position (left-to-right, top-to-bottom). The transfer is committed immediately &mdash; pressing <kbd>Escape</kbd> afterwards will not undo a cross-surface transfer, only cancel further reordering within the new surface.</p>
+  <p>The arrow points at the surface on that side of the screen: for vertical surfaces <kbd>ArrowRight</kbd> moves to the surface physically to the right (in RTL as well), and horizontal surfaces use top-to-bottom order. Disabled surfaces are skipped. The item stays grabbed in the new surface. The transfer is committed immediately: <kbd>Escape</kbd> afterwards returns the item to where it landed in the new surface, not to the original surface.</p>
   <p>After transfer, the item receives focus in the new surface and a <code>data-just-dropped</code> flash animation plays. The <code>drag-surface:transfer</code> event fires on the receiving surface.</p>
 </section>
 
 <section>
   <h2>Disabled State</h2>
-  <p>Add <code>disabled</code> to the surface to temporarily prevent all dragging.</p>
+  <p>Add <code>disabled</code> to the surface to turn it off: its items can&rsquo;t be dragged, grabbed or moved, it rejects drops from other surfaces in its group, and move controls are marked <code>aria-disabled</code>. The surface gets <code>aria-disabled="true"</code> and drag handles lose the grab cursor.</p>
 
   <code-block language="html" show-lines label="Disabled surface" data-escape><!-- Disable the entire surface -->
 <drag-surface disabled data-layout="stack" data-layout-gap="xs">
@@ -324,16 +362,16 @@ document.addEventListener('drag-surface:transfer', (e) => {
   <h2>Accessibility</h2>
 
   <h3>ARIA Roles</h3>
-  <p>The surface sets <code>role="list"</code> on itself and ensures each draggable child has <code>role="listitem"</code>, <code>tabindex="0"</code>, and <code>aria-grabbed="false"</code>.</p>
+  <p>The surface sets <code>role="list"</code> on itself and gives each draggable child <code>role="listitem"</code> and <code>tabindex="0"</code>, including items added later. Grab state is not exposed through the deprecated <code>aria-grabbed</code>. A grabbed item gets <code>aria-description="Grabbed"</code>, a button handle gets <code>aria-pressed="true"</code>, and every change is announced.</p>
 
   <h3>Live Region</h3>
-  <p>A visually hidden <code>aria-live="polite"</code> region announces position changes during keyboard reorder (e.g., &ldquo;Position 2 of 5&rdquo;) and grab/drop actions.</p>
+  <p>A visually hidden <code>role="status"</code> region announces position changes during keyboard reorder (e.g., &ldquo;Position 2 of 5&rdquo;), grab/drop actions and move-control moves. It is inserted as the surface&rsquo;s next sibling, not inside the list, so the list only contains list items.</p>
 
-  <h3>Keyboard Alternative</h3>
-  <p>The keyboard reorder mode is the accessible alternative to mouse drag-and-drop. Users can grab items with <kbd>Space</kbd>/<kbd>Enter</kbd>, move with arrow keys, drop with <kbd>Space</kbd>/<kbd>Enter</kbd>, and cancel with <kbd>Escape</kbd>.</p>
+  <h3>Keyboard and Pointer Alternatives</h3>
+  <p>Keyboard reorder covers keyboard and screen reader users: grab with <kbd>Space</kbd>/<kbd>Enter</kbd>, move with the arrow keys, drop with <kbd>Space</kbd>/<kbd>Enter</kbd>, cancel with <kbd>Escape</kbd>. It does <strong>not</strong> satisfy WCAG 2.5.7 Dragging Movements, which asks for a <em>single-pointer</em> alternative for people who can tap or click but can&rsquo;t hold and drag. Add <code>data-move-controls</code> (or your own buttons that call into your data model) wherever reordering matters.</p>
 
   <h3>Reduced Motion</h3>
-  <p>When <code>prefers-reduced-motion: reduce</code> is active, the component skips any transition animations.</p>
+  <p>When <code>prefers-reduced-motion: reduce</code> is active, the stylesheet turns off the drop flash animation and the surface&rsquo;s background transition.</p>
 </section>
 
 <section>
@@ -355,7 +393,7 @@ document.addEventListener('drag-surface:transfer', (e) => {
       </tr>
       <tr>
         <td>HTML + <code>&lt;drag-surface&gt;</code> JS</td>
-        <td>Full reorder, transfer, keyboard, live announcements</td>
+        <td>Full reorder, transfer, keyboard, optional move controls, live announcements</td>
         <td>No persistence (resets on reload)</td>
       </tr>
       <tr>

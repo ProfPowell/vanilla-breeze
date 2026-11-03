@@ -1,7 +1,6 @@
 drag-surface {
   display: block;
   min-block-size: 4rem;
-  flex: 1;
   transition: background-color 0.15s ease;
 }
 
@@ -11,6 +10,19 @@ drag-surface[data-layout] {
 
 drag-surface:not(:defined) {
   display: block;
+}
+
+/* --- Live region (rendered as the surface's next sibling) --- */
+[data-drag-surface-live] {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* --- Drag Handle --- */
@@ -23,6 +35,35 @@ drag-surface [data-drag-handle]:active {
   cursor: grabbing;
 }
 
+drag-surface[disabled] [data-drag-handle],
+drag-surface[disabled] > [draggable="true"] {
+  cursor: default;
+}
+
+/* --- Move controls (data-move-controls) --- */
+drag-surface [data-drag-surface-controls] {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--size-3xs, 0.125rem);
+  margin-inline-start: auto;
+}
+
+drag-surface [data-drag-surface-controls] > [hidden] {
+  display: none;
+}
+
+drag-surface [data-drag-surface-controls] > button {
+  --btn-padding-block: var(--size-3xs, 0.125rem);
+  --btn-padding-inline: var(--size-2xs, 0.25rem);
+  min-block-size: var(--size-l, 1.5rem);
+  min-inline-size: var(--size-l, 1.5rem);
+}
+
+drag-surface [data-drag-surface-controls] > button[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* --- Drag State Feedback --- */
 
 /* Item being dragged */
@@ -32,25 +73,51 @@ drag-surface [data-dragging] {
 
 /* Surface accepting a drop */
 drag-surface[data-drag-over] {
-  outline: 2px dashed var(--color-interactive, oklch(55% 0.2 260));
+  outline: 2px dashed var(--color-interactive);
   outline-offset: -2px;
-  background: var(--color-primary-subtle, oklch(from var(--color-interactive, oklch(55% 0.2 260)) 0.95 0.03 h));
+  background: var(--color-primary-subtle, oklch(from var(--color-interactive) 0.95 0.03 h));
 }
 
-/* Drop target indicator on individual items */
-drag-surface [data-drop-target] {
-  box-shadow: 0 -2px 0 0 var(--color-interactive, oklch(55% 0.2 260));
+/* Drop target indicator: a bar on the edge where the item will land.
+   Vertical: block-start (before) / block-end (after). Horizontal: inline
+   start / end, flipped for RTL (box-shadow offsets are physical). */
+drag-surface {
+  --_drop-bar: var(--color-interactive);
+}
+
+drag-surface [data-drop-target="before"] {
+  box-shadow: 0 -2px 0 0 var(--_drop-bar);
+}
+
+drag-surface [data-drop-target="after"] {
+  box-shadow: 0 2px 0 0 var(--_drop-bar);
+}
+
+drag-surface[orientation="horizontal"] [data-drop-target="before"] {
+  box-shadow: -2px 0 0 0 var(--_drop-bar);
+}
+
+drag-surface[orientation="horizontal"] [data-drop-target="after"] {
+  box-shadow: 2px 0 0 0 var(--_drop-bar);
+}
+
+drag-surface[orientation="horizontal"]:dir(rtl) [data-drop-target="before"] {
+  box-shadow: 2px 0 0 0 var(--_drop-bar);
+}
+
+drag-surface[orientation="horizontal"]:dir(rtl) [data-drop-target="after"] {
+  box-shadow: -2px 0 0 0 var(--_drop-bar);
 }
 
 /* Keyboard reorder mode */
-drag-surface[data-reorder-mode] [aria-grabbed="true"] {
-  outline: 2px solid var(--color-interactive, oklch(55% 0.2 260));
+drag-surface[data-reorder-mode] [data-grabbed] {
+  outline: 2px solid var(--color-interactive);
   outline-offset: 2px;
 }
 
 /* Flash animation on drop */
 @keyframes drag-surface-flash {
-  0% { background-color: var(--color-primary-subtle, oklch(from var(--color-interactive, oklch(55% 0.2 260)) 0.95 0.03 h)); }
+  0% { background-color: var(--color-primary-subtle, oklch(from var(--color-interactive) 0.95 0.03 h)); }
   100% { background-color: transparent; }
 }
 

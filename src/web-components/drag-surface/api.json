@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "drag-surface",
   "type": "web-component",
-  "description": "Accessible drag-and-drop reorder surface",
+  "description": "Accessible drag-and-drop reorder surface with keyboard reorder, optional single-pointer move controls, live announcements and cross-surface transfer",
   "attributes": [
     {
       "name": "group",
@@ -15,95 +15,161 @@
       "name": "orientation",
       "kind": "host-api",
       "purpose": "config",
-      "type": "string",
-      "description": "\"horizontal\" switches to Left/Right arrows and clientX"
+      "type": "enum",
+      "values": ["vertical", "horizontal"],
+      "default": "vertical",
+      "description": "\"horizontal\" switches keyboard reorder to Left/Right and drop maths to the inline axis; both follow the computed direction (RTL-aware)"
     },
     {
       "name": "disabled",
-      "kind": "native",
-      "purpose": "config",
-      "type": "boolean",
-      "description": "Temporarily disables all dragging"
-    },
-    {
-      "name": "draggable",
       "kind": "host-api",
-      "purpose": "config",
+      "purpose": "semantic-state",
       "type": "boolean",
-      "description": "=\"true\" - Marks an element as draggable"
+      "description": "Disables dragging out, dropping in, keyboard reorder and move controls; reflected as aria-disabled and skipped as a transfer target"
     },
     {
-      "name": "data-id",
-      "kind": "data",
-      "purpose": "config",
-      "type": "string",
-      "description": "Stable identifier for the item"
-    },
-    {
-      "name": "data-sort-order",
-      "kind": "data",
-      "purpose": "config",
-      "type": "string",
-      "description": "Numeric position (managed automatically)"
-    },
-    {
-      "name": "data-drag-handle",
+      "name": "data-move-controls",
       "kind": "data",
       "purpose": "config",
       "type": "boolean",
-      "description": "If present on a descendant, only that element initiates drag"
+      "description": "Renders per-item Move buttons (up/down or inline start/end, plus Move to <adjacent surface> for grouped surfaces) — the single-pointer alternative to dragging (WCAG 2.5.7)"
     },
     {
       "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "aria-grabbed",
       "kind": "aria",
-      "purpose": "config"
+      "purpose": "output-state",
+      "direction": "output",
+      "description": "Managed: always \"list\""
     },
     {
-      "name": "data-dragging",
-      "kind": "data",
-      "purpose": "config"
+      "name": "aria-disabled",
+      "kind": "aria",
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "string",
+      "description": "Managed: \"true\" while disabled is present"
     },
     {
       "name": "data-drag-over",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "boolean",
+      "description": "Present while a dragged item from an accepted source hovers the surface"
     },
     {
       "name": "data-reorder-mode",
       "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-just-dropped",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-drop-target",
-      "kind": "data",
-      "purpose": "config"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "boolean",
+      "description": "Present while one of the surface's items is grabbed for keyboard reorder"
     }
   ],
   "events": [
     {
-      "name": "drag-surface:reorder-start"
+      "name": "drag-surface:reorder-start",
+      "description": "A pointer drag or keyboard grab began"
     },
     {
-      "name": "drag-surface:reorder"
+      "name": "drag-surface:reorder",
+      "description": "Items within this surface were reordered (pointer drag, keyboard drop or move control)",
+      "detail": "{ item: HTMLElement, itemId: string | undefined, oldIndex: number, newIndex: number, order: (string | undefined)[] }"
     },
     {
-      "name": "drag-surface:transfer"
+      "name": "drag-surface:transfer",
+      "description": "An item moved to another surface in the same group; fired on the receiving surface",
+      "detail": "{ item: HTMLElement, itemId: string | undefined, fromSurface: DragSurface, toSurface: DragSurface, newIndex: number, fromOrder: (string | undefined)[], toOrder: (string | undefined)[] }"
     },
     {
-      "name": "drag-surface:reorder-end"
+      "name": "drag-surface:reorder-end",
+      "description": "A pointer drag or keyboard grab ended (dropped, cancelled or abandoned); for pointer drags it fires on the source surface"
     }
   ],
-  "childAttributes": [],
+  "properties": [
+    {
+      "name": "sortedOrder",
+      "type": "(string | undefined)[]",
+      "readonly": true,
+      "description": "data-id of each draggable child in DOM order"
+    },
+    {
+      "name": "draggableChildren",
+      "type": "HTMLElement[]",
+      "readonly": true,
+      "description": "Direct children with draggable=\"true\" (a new array on each read)"
+    },
+    {
+      "name": "group",
+      "type": "string | null",
+      "readonly": true,
+      "description": "The group attribute, or null"
+    },
+    {
+      "name": "orientation",
+      "type": "'vertical' | 'horizontal'",
+      "readonly": true,
+      "description": "Normalised orientation attribute"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Reflects the disabled attribute"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "draggable",
+      "on": "direct child",
+      "type": "enum",
+      "values": ["true"],
+      "required": true,
+      "description": "Native attribute; marks a direct child as a reorderable item (gets role=listitem and tabindex=0, including items added later)"
+    },
+    {
+      "name": "data-id",
+      "on": "direct child",
+      "type": "string",
+      "description": "Stable identifier reported in event details and sortedOrder"
+    },
+    {
+      "name": "data-sort-order",
+      "on": "direct child",
+      "type": "number",
+      "description": "1-based position, rewritten by the component after each move"
+    },
+    {
+      "name": "data-drag-handle",
+      "on": "descendant of an item",
+      "type": "boolean",
+      "description": "Only this element starts a pointer drag; a focusable button handle also accepts reorder keys and gets aria-pressed while grabbed"
+    },
+    {
+      "name": "data-grabbed",
+      "on": "direct child",
+      "type": "boolean",
+      "description": "Output: present while the item is grabbed for keyboard reorder (with aria-description=\"Grabbed\" unless the item has its own)"
+    },
+    {
+      "name": "data-dragging",
+      "on": "direct child",
+      "type": "boolean",
+      "description": "Output: present on the item during a pointer drag"
+    },
+    {
+      "name": "data-drop-target",
+      "on": "direct child",
+      "type": "enum",
+      "values": ["before", "after"],
+      "description": "Output: insertion indicator during a pointer drag (drawn on the block or inline edge, RTL-aware)"
+    },
+    {
+      "name": "data-just-dropped",
+      "on": "direct child",
+      "type": "boolean",
+      "description": "Output: briefly present after a drop or move to trigger the flash animation"
+    }
+  ],
   "structure": [],
   "htmlvalidate": {
     "flow": true,
