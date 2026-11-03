@@ -163,7 +163,7 @@
     --input-bg: oklch(100% 0 0);
     --input-border-focus: oklch(52% 0.27 18);
     --range-track-h: 0.5rem;
-    --range-track-bg: oklch(85% 0.01 80);
+    --range-track-bg: color-mix(in oklab, oklch(85% 0.01 80), var(--color-text) 40%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(52% 0.27 18);
     --range-thumb-bg: oklch(100% 0 0);
     --range-thumb-border: var(--_sg2-ink);
@@ -253,12 +253,12 @@
 
     /* Form controls: match dark surfaces */
     --input-bg: oklch(15% 0.007 240);
-    --input-border: oklch(35% 0.010 240);
+    --input-border: color-mix(in oklab, oklch(35% 0.010 240), var(--color-text) 30%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(62% 0.28 18);
     --control-border: oklch(60% 0.010 240);
     --control-checked-bg: oklch(62% 0.28 18);
     --control-checked-border: oklch(60% 0.010 240);
-    --range-track-bg: oklch(25% 0.008 240);
+    --range-track-bg: color-mix(in oklab, oklch(25% 0.008 240), var(--color-text) 40%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(62% 0.28 18);
     --range-thumb-bg: oklch(15% 0.007 240);
     --range-thumb-border: oklch(60% 0.010 240);
@@ -456,6 +456,13 @@
         padding-inline-start: 1.5rem;
         font-style: normal;
 
+        /* Core toggles emphasis to upright inside a blockquote because it
+           assumes the quote is italic; this quote is upright, so emphasis
+           re-asserts italic (unless it sits in another italic context). */
+        & :is(em, i):not(:where(em, i, cite:not([data-variant~="quoted"]), dfn, var) *) {
+          font-style: italic;
+        }
+
         /* Decorative glyph: empty alt text keeps it out of the a11y tree */
         &::before {
           content: "\0022" / "";
@@ -531,7 +538,7 @@
       & input:not([type="checkbox"]):not([type="radio"]),
       & textarea,
       & select {
-        border: var(--_sg2-rule-sm);
+        border: 2px solid var(--input-border); /* 3:1 non-text contrast */
 
         &:focus {
           border-color: var(--_sg2-red);

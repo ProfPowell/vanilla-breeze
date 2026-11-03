@@ -37,16 +37,24 @@
 }
 
 /* CJK italics: most CJK fonts have no italic, so browsers synthesise an
-   oblique that distorts the glyphs. <dfn> and <cite> drop the slant and
-   use a script-friendly cue instead: a heavier weight for a defined
-   term, and a wavy underline beneath a work title (the traditional
-   book-title mark). cite[data-variant="quoted"] keeps its brackets. */
-dfn:is(:lang(zh), :lang(ja), :lang(ko)) {
+   oblique that distorts the glyphs (and with font-synthesis: none the
+   slant simply disappears). Each italic element drops the slant and uses a
+   script-friendly cue instead, a different one per element so they stay
+   distinguishable:
+   - <dfn>: a heavier weight for a defined term
+   - <cite>: a wavy underline beneath a work title (the traditional
+     book-title mark); cite[data-variant="quoted"] keeps its brackets
+   - <em>: emphasis marks (stress)
+   - <i>: a calligraphic (kai / mincho) face plus a dotted underline — an
+     alternate voice, deliberately not text-emphasis, which is em's stress
+   Romanised tags (zh-Latn, ja-Latn, ko-Latn) are Latin text and keep the
+   real italic: :lang(ja) also matches ja-Latn, so each rule excludes them. */
+dfn:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
   font-style: normal;
   font-weight: var(--font-weight-semibold, 600);
 }
 
-cite:is(:lang(zh), :lang(ja), :lang(ko)) {
+cite:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
   font-style: normal;
 
   &:not([data-variant~="quoted"]) {
@@ -56,19 +64,28 @@ cite:is(:lang(zh), :lang(ja), :lang(ko)) {
   }
 }
 
-/* CJK emphasis: <em> is italic with font-synthesis: none, and CJK fonts
-   have no italic face, so the emphasis would be invisible. Use emphasis
-   marks instead — sesame over the text (Japanese, Korean), and a filled
-   dot under the text for Chinese. */
-em:is(:lang(zh), :lang(ja), :lang(ko)) {
+/* CJK emphasis: emphasis marks instead of the missing italic — sesame over
+   the text (Japanese, Korean), and a filled dot under the text for
+   Chinese. */
+em:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
   font-style: normal;
   text-emphasis: filled sesame;
   text-emphasis-position: over right;
 }
 
-em:lang(zh) {
+em:lang(zh):not(:lang(zh-Latn)) {
   text-emphasis: filled dot;
   text-emphasis-position: under right;
+}
+
+/* CJK <i> (alternate voice: terms from another language, thoughts, ship
+   names): override the face with --font-cjk-alternate. */
+i:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
+  font-style: normal;
+  font-family: var(--font-cjk-alternate);
+  text-decoration: underline dotted var(--color-text-muted);
+  text-underline-position: under;
+  text-decoration-thickness: from-font;
 }
 
 /* Japanese: proportional alternates for punctuation */

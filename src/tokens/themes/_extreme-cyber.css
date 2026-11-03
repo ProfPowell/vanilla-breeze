@@ -119,9 +119,9 @@
     --control-checked-bg: oklch(75% 0.25 180);
     --control-checked-border: oklch(75% 0.25 180);
     --input-bg: oklch(10% 0.02 280);
-    --input-border: oklch(40% 0.06 280);
+    --input-border: color-mix(in oklab, oklch(40% 0.06 280), var(--color-text) 40%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(75% 0.25 180);
-    --range-track-bg: oklch(25% 0.04 280);
+    --range-track-bg: color-mix(in oklab, oklch(25% 0.04 280), var(--color-text) 40%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(75% 0.25 180);
     --range-thumb-bg: oklch(12% 0.02 280);
     --range-thumb-border: oklch(75% 0.25 180);
@@ -250,7 +250,7 @@
     & input,
     & textarea {
       background: var(--color-surface-sunken);
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--input-border); /* 3:1 non-text contrast */
 
       &:focus {
         border-color: var(--color-primary);
@@ -287,6 +287,13 @@
       background: var(--color-surface-alt);
       padding: 1rem 1.5rem;
       font-style: normal;
+
+      /* Core toggles emphasis to upright inside a blockquote because it
+         assumes the quote is italic; this quote is upright, so emphasis
+         re-asserts italic (unless it sits in another italic context). */
+      & :is(em, i):not(:where(em, i, cite:not([data-variant~="quoted"]), dfn, var) *) {
+        font-style: italic;
+      }
 
       /* Decorative glyph: empty alt text keeps it out of the a11y tree */
       &::before {
@@ -437,7 +444,7 @@
 
     /* Form controls: match light surface */
     --input-bg: oklch(96% 0.015 250);
-    --input-border: oklch(85% 0.02 250);
+    --input-border: color-mix(in oklab, oklch(85% 0.02 250), var(--color-text) 40%); /* 3:1 non-text contrast */
     --input-border-focus: oklch(50% 0.22 180);
 
     /* Toned-down glows for light mode */
@@ -463,7 +470,7 @@
       & input,
       & textarea {
         background: var(--color-surface);
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--input-border);
 
         &:focus {
           border-color: var(--color-primary);
@@ -523,10 +530,10 @@
     }
 
     /* Control overrides for light mode */
-    --control-border: oklch(70% 0.04 250);
+    --control-border: color-mix(in oklab, oklch(70% 0.04 250), var(--color-text) 20%); /* 3:1 non-text contrast */
     --control-checked-bg: oklch(50% 0.22 180);
     --control-checked-border: oklch(50% 0.22 180);
-    --range-track-bg: oklch(88% 0.02 250);
+    --range-track-bg: color-mix(in oklab, oklch(88% 0.02 250), var(--color-text) 40%); /* 3:1 non-text contrast */
     --range-track-fill: oklch(50% 0.22 180);
     --range-thumb-bg: oklch(98% 0.01 250);
     --range-thumb-border: oklch(50% 0.22 180);

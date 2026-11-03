@@ -78,24 +78,35 @@ crumbLabel: Native Elements
   </section>
 
   <section>
-    <h2>Emphasis in Italic Contexts</h2>
-    <p>Italic emphasis inside text that is already italic would disappear. VB uses the classic typographic toggle: <code>&lt;em&gt;</code> and <code>&lt;i&gt;</code> inside an italic context &mdash; <code>&lt;blockquote&gt;</code>, <code>&lt;cite&gt;</code>, <code>&lt;dfn&gt;</code>, <code>&lt;var&gt;</code>, or another <code>&lt;em&gt;</code>/<code>&lt;i&gt;</code> &mdash; switch back to upright. The toggle goes one level deep. (<code>&lt;address&gt;</code> is upright in VB, so emphasis inside it stays italic.)</p>
+    <h2 id="italic-contexts">Emphasis in Italic Contexts</h2>
+    <p>Italic emphasis inside text that is already italic would disappear. VB uses the classic typographic toggle: <code>&lt;em&gt;</code> and <code>&lt;i&gt;</code> inside an italic context &mdash; <code>&lt;blockquote&gt;</code>, <code>&lt;cite&gt;</code>, <code>&lt;dfn&gt;</code>, <code>&lt;var&gt;</code>, or another <code>&lt;em&gt;</code>/<code>&lt;i&gt;</code> &mdash; switch back to upright. The toggle goes one level deep.</p>
+    <p>Only contexts that are actually italic count:</p>
+    <ul>
+      <li><code>&lt;address&gt;</code> and <code>&lt;cite data-variant="quoted"&gt;</code> are upright, so <code>&lt;em&gt;</code> inside them stays italic.</li>
+      <li>A blockquote's attribution line (<code>blockquote &gt; footer</code>, <code>blockquote &gt; cite</code>) is upright, so <code>&lt;em&gt;</code> there is italic again &mdash; unless another italic context sits between the attribution and the emphasis.</li>
+      <li>Themes with an upright blockquote (brutalist, cyber, super2026, swiss) re-assert italic inside it; the editorial theme's italic <code>&lt;h1&gt;</code> and <code>&lt;h3&gt;</code> toggle like a blockquote does.</li>
+      <li>The dyslexia theme makes <code>&lt;em&gt;</code> upright and semibold instead of italic.</li>
+    </ul>
 
     <code-block language="html" show-lines label="Emphasis toggles inside italic contexts" data-escape><blockquote>
   <p>The quote is italic, so <em>this emphasis</em> is upright.</p>
+  <footer>Said <em>twice</em>, by the captain</footer> <!-- attribution is upright: em is italic -->
 </blockquote>
 
 <p><cite>The Hitchhiker's Guide to the <em>Galaxy</em></cite></p>
+<p><cite data-variant="quoted">A <em>Very</em> Short Story</cite></p> <!-- quoted cite is upright: em is italic -->
 
 <p><em>Never, and I mean <em>never</em>, press that button.</em></p></code-block>
   </section>
 
   <section>
     <h2 id="cjk-emphasis">CJK Emphasis</h2>
-    <p>Chinese, Japanese and Korean fonts generally have no italic face, so with <code>font-synthesis: none</code> an italic <code>&lt;em&gt;</code> would look like plain text. When the content language is <code>zh</code>, <code>ja</code> or <code>ko</code> (set via <code>lang</code>), VB draws emphasis marks instead: sesame dots over the characters for Japanese and Korean, and filled dots under the characters for Chinese. This matches the CJK treatment of <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> and <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a>.</p>
+    <p>Chinese, Japanese and Korean fonts generally have no italic face, so with <code>font-synthesis: none</code> an italic <code>&lt;em&gt;</code> would look like plain text. When the content language is <code>zh</code>, <code>ja</code> or <code>ko</code> (set via <code>lang</code>), VB draws emphasis marks instead: sesame dots over the characters for Japanese and Korean, and filled dots under the characters for Chinese. Emphasis marks are reserved for <code>&lt;em&gt;</code>: <a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> gets a calligraphic face with a dotted underline, <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> a heavier weight and <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> a wavy underline.</p>
+    <p>Romanised text (<code>lang="ja-Latn"</code>, <code>zh-Latn</code>, <code>ko-Latn</code>) is Latin script and keeps the real italic.</p>
 
     <code-block language="html" show-lines label="CJK emphasis marks" data-escape><p lang="ja">これは<em>とても</em>大切です。</p>
-<p lang="zh-Hans">这是<em>非常</em>重要的。</p></code-block>
+<p lang="zh-Hans">这是<em>非常</em>重要的。</p>
+<p lang="ja-Latn">Kore wa <em>totemo</em> taisetsu desu.</p> <!-- romanised: stays italic --></code-block>
   </section>
 
   <section>
@@ -121,18 +132,27 @@ crumbLabel: Native Elements
 }
 
 /* Toggle: emphasis inside an italic context is upright */
-:where(blockquote, cite, dfn, var, em, i) :is(em, i) {
+:where(blockquote, cite:not([data-variant~="quoted"]), dfn, var, em, i) :is(em, i) {
   font-style: normal;
 }
 
-/* CJK: emphasis marks instead of a missing italic (i18n styles) */
-em:is(:lang(zh), :lang(ja), :lang(ko)) {
+/* Upright islands (attribution, quoted cite) restore italic */
+:where(blockquote > :is(footer, cite), cite[data-variant~="quoted"]) :is(em, i):not(
+  :where(blockquote > :is(footer, cite), cite[data-variant~="quoted"])
+  :where(em, i, cite:not([data-variant~="quoted"]), dfn, var) *
+) {
+  font-style: italic;
+}
+
+/* CJK: emphasis marks instead of a missing italic (i18n styles);
+   romanised -Latn tags keep the real italic */
+em:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
   font-style: normal;
   text-emphasis: filled sesame;
   text-emphasis-position: over right;
 }
 
-em:lang(zh) {
+em:lang(zh):not(:lang(zh-Latn)) {
   text-emphasis: filled dot;
   text-emphasis-position: under right;
 }</code-block>
