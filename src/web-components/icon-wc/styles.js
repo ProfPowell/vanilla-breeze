@@ -43,14 +43,18 @@ const styles = `
   block-size: 3em;
 }
 
+/* Sizing only. Paint (fill/stroke/stroke-width) comes from each file's own
+   presentation attributes: Lucide/Tabler/Mage are stroked, Phosphor/Bold are
+   filled. Any author rule here, even :where(), would beat those attributes. */
 svg {
+  display: block;
   inline-size: 100%;
   block-size: 100%;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
+}
+
+/* Opt-in RTL mirroring for directional glyphs (arrows, chevrons, undo…) */
+:host([data-flip-rtl]:dir(rtl)) svg {
+  transform: scaleX(-1);
 }
 
 /* Error state */

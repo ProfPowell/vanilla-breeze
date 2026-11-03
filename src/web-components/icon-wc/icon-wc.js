@@ -1,329 +1,342 @@
 import './enhance-data-icon.js';
 import { styles } from './styles.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
+import { buildIconUrl, resolveIconSet, resolveIconBase } from '../../lib/icon-url.js';
+import { sanitizeSVG } from '../../lib/sanitize-html.js';
+
+/** Default set, also the fallback when another set lacks an icon. */
+const FALLBACK_SET = 'lucide';
 
 /**
- * SVG icon cache to avoid refetching
- * @type {Map<string, string>}
+ * Sets whose `<base>/<set>.json` name manifest is NOT consulted: the default
+ * set (always fetched directly) and `custom`, which projects extend by
+ * dropping SVGs in without regenerating the manifest.
  */
-const iconCache = new Map();
+const NO_MANIFEST = new Set([FALLBACK_SET, 'custom']);
 
 /**
- * In-flight fetch promises to deduplicate parallel requests for the same icon
- * @type {Map<string, Promise<string>>}
+ * Sanitized, dimensionless SVG templates keyed by full URL (base/set/name).
+ * Instances clone from here, so each file is fetched, parsed and sanitized once.
+ * @type {Map<string, SVGElement>}
+ */
+const svgCache = new Map();
+
+/**
+ * Negative cache: URLs that answered non-OK or with invalid SVG. Never refetched.
+ * @type {Set<string>}
+ */
+const missCache = new Set();
+
+/**
+ * In-flight fetches, deduplicated by URL.
+ * @type {Map<string, Promise<SVGElement>>}
  */
 const inflight = new Map();
 
 /**
+ * Per-set name manifests keyed by `<base>/<set>`, loaded once. Resolves to
+ * null when the manifest is missing or malformed (then icons are fetched directly).
+ * @type {Map<string, Promise<Set<string> | null>>}
+ */
+const manifests = new Map();
+
+/**
+ * @param {string} base
+ * @param {string} set
+ * @returns {Promise<Set<string> | null>}
+ */
+function loadManifest(base, set) {
+    const key = `${base}/${set}`;
+    let p = manifests.get(key);
+    if (!p) {
+        p = fetch(`${key}.json`)
+            .then((r) => (r.ok ? r.json() : null))
+            .then((names) => (Array.isArray(names) ? new Set(names.map(String)) : null))
+            .catch(() => null);
+        manifests.set(key, p);
+    }
+    return p;
+}
+
+/**
+ * Parse SVG text into a sanitized, dimensionless `<svg>` element, or null.
+ * @param {string} text
+ * @returns {SVGElement | null}
+ */
+function parseSVG(text) {
+    if (!text.includes('<svg')) return null;
+    const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+    const svg = doc.documentElement;
+    if (!svg || svg.localName !== 'svg' || doc.querySelector('parsererror')) return null;
+    sanitizeSVG(svg);
+    // Remove fixed dimensions so the host's size preset controls sizing
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
+    return /** @type {SVGElement} */ (/** @type {unknown} */ (document.importNode(svg, true)));
+}
+
+/**
+ * Single-flight, cached fetch of one icon file.
+ * @param {string} url
+ * @returns {Promise<SVGElement>} the cached template (clone before inserting)
+ */
+function fetchIcon(url) {
+    const hit = svgCache.get(url);
+    if (hit) return Promise.resolve(hit);
+    if (missCache.has(url)) return Promise.reject(new Error(`Icon not found: ${url}`));
+    let p = inflight.get(url);
+    if (!p) {
+        p = fetch(url).then(async (response) => {
+            if (!response.ok) {
+                missCache.add(url);
+                throw new Error(`Icon not found: ${url}`);
+            }
+            const svg = parseSVG(await response.text());
+            if (!svg) {
+                missCache.add(url);
+                throw new Error(`Invalid SVG: ${url}`);
+            }
+            svgCache.set(url, svg);
+            return svg;
+        }).finally(() => inflight.delete(url));
+        inflight.set(url, p);
+    }
+    return p;
+}
+
+/**
+ * Resolve an icon: the requested set (skipping the fetch when its manifest
+ * says the name is absent), then the Lucide fallback.
+ * @param {string} base
+ * @param {string} set
+ * @param {string} name
+ * @returns {Promise<SVGElement>}
+ */
+async function resolveIcon(base, set, name) {
+    if (set !== FALLBACK_SET) {
+        const manifest = NO_MANIFEST.has(set) ? null : await loadManifest(base, set);
+        if (!manifest || manifest.has(name)) {
+            try {
+                return await fetchIcon(buildIconUrl({ basePath: base, set, name }));
+            } catch { /* fall back to lucide */ }
+        }
+    }
+    return fetchIcon(buildIconUrl({ basePath: base, set: FALLBACK_SET, name }));
+}
+
+/**
  * @class IconWc
  * @augments HTMLElement
- * @description A lightweight icon component that loads SVG icons from local files
+ * @description Inline SVG icon. Fetches one SVG file per icon from
+ * `<base>/<set>/<name>.svg`, sanitizes it, and renders it in shadow DOM.
  *
  * @example
  * <icon-wc name="menu"></icon-wc>
- * <icon-wc name="arrow-right" size="lg"></icon-wc>
+ * <icon-wc name="arrow-right" size="lg" data-flip-rtl></icon-wc>
  * <icon-wc name="logo" set="custom"></icon-wc>
  *
  * @attr {string} name - Icon name (required, matches filename without .svg)
- * @attr {string} set - Icon set directory (default: "lucide", or "custom")
+ * @attr {string} set - Icon set; defaults to the nearest data-icon-set, then lucide
  * @attr {string} size - Icon size: xs, sm, md, lg, xl, 2xl (default: md)
  * @attr {string} label - Accessible label for functional icons
+ * @attr {string} base-path - Icon base URL; defaults to <html data-icon-path>, then /cdn/icons
+ * @attr {boolean} data-flip-rtl - Mirror the glyph horizontally in RTL contexts
  */
 class IconWc extends HTMLElement {
+    /** @type {Set<IconWc>} */
     static #instances = new Set();
     /** @type {MutationObserver | null} */
-    static #globalObserver = null;
+    static #observer = null;
 
-    static #initGlobalObserver() {
-        if (IconWc.#globalObserver) return;
-        IconWc.#globalObserver = new MutationObserver((mutations) => {
-            for (const m of mutations) {
-                if (m.attributeName === 'data-icon-set') {
-                    for (const inst of IconWc.#instances) {
-                        if (!inst.hasAttribute('set')) {
-                            inst.render();
-                            inst.loadIcon();
-                        }
-                    }
+    /**
+     * One document-level observer re-resolves instances when data-icon-set
+     * (on <html> or any ancestor) or <html data-icon-path> changes.
+     */
+    static #initObserver() {
+        if (IconWc.#observer) return;
+        IconWc.#observer = new MutationObserver((records) => {
+            const root = document.documentElement;
+            for (const rec of records) {
+                const target = /** @type {Element} */ (rec.target);
+                for (const inst of IconWc.#instances) {
+                    if (target === root || target.contains(inst)) inst.#update();
                 }
             }
         });
-        IconWc.#globalObserver?.observe(document.documentElement, {
+        IconWc.#observer.observe(document.documentElement, {
+            subtree: true,
             attributes: true,
-            attributeFilter: ['data-icon-set']
+            attributeFilter: ['data-icon-set', 'data-icon-path'],
         });
     }
 
-    /**
-     * @static
-     * @returns {string[]} List of attributes to observe for changes
-     */
     static get observedAttributes() {
-        return ['name', 'set', 'size', 'label'];
+        return ['name', 'set', 'label', 'base-path'];
     }
 
-    /**
-     * @class
-     */
+    /** Load token: bumped per request so stale fetch results are dropped. */
+    #token = 0;
+    /** Key (`base|set|name`) of the SVG currently rendered. */
+    #shownKey = '';
+    /** Key of the request in flight. */
+    #pendingKey = '';
+    /** Key that last failed (misses are negative-cached; don't re-warn). */
+    #failedKey = '';
+    /** @type {(() => void) | null} */
+    #onThemeChange = null;
+
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
+        const root = this.attachShadow({ mode: 'open' });
+        root.innerHTML = `<style>${styles}</style><slot></slot>`;
     }
 
-    /**
-     * @readonly
-     * @returns {string} The icon name
-     */
+    /** @returns {string} The icon name */
     get name() {
         return this.getAttribute('name') || '';
     }
 
-    /**
-     * @readonly
-     * @returns {string} The icon set — reads from attribute, then global data-icon-set, then defaults to lucide
-     */
+    /** @returns {string} `set` attribute, else nearest data-icon-set (self, ancestor, <html>), else lucide */
     get set() {
-        return this.getAttribute('set') ||
-               document.documentElement.dataset.iconSet ||
-               'lucide';
+        return this.getAttribute('set') || resolveIconSet(this);
     }
 
-    /**
-     * @readonly
-     * @returns {string} The icon size
-     */
+    /** @returns {string} The size preset */
     get size() {
         return this.getAttribute('size') || 'md';
     }
 
-    /**
-     * @readonly
-     * @returns {string|null} Accessible label for the icon
-     */
+    /** @returns {string|null} Accessible label */
     get label() {
         return this.getAttribute('label');
     }
 
-    /**
-     * @readonly
-     * @returns {string} The base path for icons
-     */
+    /** @returns {string} `base-path` attribute, else <html data-icon-path>, else /cdn/icons */
     get basePath() {
-        // Look for data-icon-path on document or component
-        return this.getAttribute('base-path') ||
-               document.documentElement.dataset.iconPath ||
-               '/cdn/icons';
+        return this.getAttribute('base-path') || resolveIconBase();
     }
 
-    /**
-     * @readonly
-     * @returns {string} Full path to the icon SVG file
-     */
+    /** @returns {string} URL of the requested icon (before any Lucide fallback) */
     get iconPath() {
-        return `${this.basePath}/${this.set}/${this.name}.svg`;
+        return buildIconUrl({ basePath: this.basePath, set: this.set, name: this.name });
     }
 
-    /**
-     * @private
-     * @description Renders the component's shadow DOM with styles
-     */
-    render() {
-        /** @type {ShadowRoot} */ (this.shadowRoot).innerHTML = `
-            <style>${styles}</style>
-            <slot></slot>
-        `;
-    }
-
-    /**
-     * @private
-     * @description Loads and displays the SVG icon
-     */
-    async loadIcon() {
-        if (!this.name) {
-            this.setError('No icon name specified');
-            return;
-        }
-
-        const cacheKey = `${this.set}/${this.name}`;
-
-        // Check cache first
-        if (iconCache.has(cacheKey)) {
-            this.displayIcon(/** @type {string} */ (iconCache.get(cacheKey)));
-            return;
-        }
-
-        try {
-            const svgText = await this.#resolveIcon(this.set, cacheKey);
-            this.displayIcon(svgText);
-        } catch (error) {
-            // Fallback to lucide if the requested set fails
-            const fallbackSet = 'lucide';
-            if (this.set !== fallbackSet) {
-                const fallbackKey = `${fallbackSet}/${this.name}`;
-                if (iconCache.has(fallbackKey)) {
-                    this.displayIcon(/** @type {string} */ (iconCache.get(fallbackKey)));
-                    return;
-                }
-                try {
-                    const svgText = await this.#resolveIcon(fallbackSet, fallbackKey);
-                    this.displayIcon(svgText);
-                    return;
-                } catch { /* fall through to error */ }
-            }
-            this.setError(error.message);
-        }
-    }
-
-    /**
-     * Single-flight icon resolution — deduplicates parallel fetches for the same icon
-     * @param {string} set - Icon set name
-     * @param {string} cacheKey - Cache key for the icon
-     * @returns {Promise<string>} SVG text
-     */
-    async #resolveIcon(set, cacheKey) {
-        if (!inflight.has(cacheKey)) {
-            inflight.set(cacheKey, this.#fetchIcon(set).then(svg => {
-                iconCache.set(cacheKey, svg);
-                inflight.delete(cacheKey);
-                return svg;
-            }).catch(err => {
-                inflight.delete(cacheKey);
-                throw err;
-            }));
-        }
-        return /** @type {Promise<string>} */ (inflight.get(cacheKey));
-    }
-
-    /**
-     * @param {string} set - Icon set name
-     * @returns {Promise<string>} SVG text
-     */
-    async #fetchIcon(set) {
-        const path = `${this.basePath}/${set}/${this.name}.svg`;
-        const response = await fetch(path);
-
-        if (!response.ok) {
-            throw new Error(`Icon not found: ${this.name}`);
-        }
-
-        const svgText = await response.text();
-
-        if (!svgText.includes('<svg')) {
-            throw new Error(`Invalid SVG: ${this.name}`);
-        }
-
-        return svgText;
-    }
-
-    /**
-     * @private
-     * @param {string} svgText - The SVG markup to display
-     */
-    /** @param {string} svgText */
-    displayIcon(svgText) {
-        // Parse and clean up the SVG
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(svgText, 'image/svg+xml');
-        const svg = doc.querySelector('svg');
-
-        if (!svg) {
-            this.setError('Invalid SVG content');
-            return;
-        }
-
-        // Remove fixed dimensions to allow CSS sizing
-        svg.removeAttribute('width');
-        svg.removeAttribute('height');
-
-        // Set accessibility attributes
-        if (this.label) {
-            svg.setAttribute('role', 'img');
-            svg.setAttribute('aria-label', this.label);
-        } else {
-            svg.setAttribute('aria-hidden', 'true');
-        }
-
-        // Clear error state
-        this.removeAttribute('data-error');
-
-        // Insert the SVG
-        const slot = this.shadowRoot?.querySelector('slot');
-        if (slot) {
-            slot.replaceWith(svg);
-        }
-    }
-
-    /**
-     * @private
-     * @param {string} message - Error message
-     */
-    setError(message) {
-        this.setAttribute('data-error', 'true');
-        console.warn(`icon-wc: ${message}`);
-
-        // Show fallback or hide
-        const slot = this.shadowRoot?.querySelector('slot');
-        if (slot) {
-            slot.textContent = '';
-        }
-    }
-
-    /**
-     * @description Lifecycle callback when element is added to DOM
-     */
     connectedCallback() {
         IconWc.#instances.add(this);
-        IconWc.#initGlobalObserver();
-        this.render();
-        this.loadIcon();
+        IconWc.#initObserver();
+        this.#update();
 
         // Force SVG repaint when theme changes (shadow DOM may not re-resolve currentColor)
-        this._onThemeChange = () => {
-            const svg = this.shadowRoot?.querySelector('svg');
+        this.#onThemeChange = () => {
+            const svg = this.#svg();
             if (svg) {
                 svg.style.stroke = 'none';
                 requestAnimationFrame(() => { svg.style.stroke = ''; });
             }
         };
-        window.addEventListener('vb:theme-change', this._onThemeChange);
+        window.addEventListener('vb:theme-change', this.#onThemeChange);
         this.setAttribute('data-upgraded', '');
     }
 
-    /**
-     * @description Lifecycle callback when element is removed from DOM
-     */
     disconnectedCallback() {
         this.removeAttribute('data-upgraded');
         IconWc.#instances.delete(this);
-        if (this._onThemeChange) {
-            window.removeEventListener('vb:theme-change', this._onThemeChange);
+        if (this.#onThemeChange) {
+            window.removeEventListener('vb:theme-change', this.#onThemeChange);
+            this.#onThemeChange = null;
         }
     }
 
     /**
-     * @description Lifecycle callback when observed attributes change
-     * @param {string} name - Attribute name
-     * @param {string} oldValue - Previous value
-     * @param {string} newValue - New value
+     * @param {string} name
+     * @param {string|null} oldValue
+     * @param {string|null} newValue
      */
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue !== newValue && this.isConnected) {
-            if (name === 'name' || name === 'set') {
-                this.render();
-                this.loadIcon();
-            } else if (name === 'label') {
-                const svg = this.shadowRoot?.querySelector('svg');
-                if (svg) {
-                    if (newValue) {
-                        svg.setAttribute('role', 'img');
-                        svg.setAttribute('aria-label', newValue);
-                    } else {
-                        svg.removeAttribute('role');
-                        svg.setAttribute('aria-hidden', 'true');
-                    }
-                }
-            }
+        if (oldValue === newValue || !this.isConnected) return;
+        if (name === 'label') this.#applyA11y();
+        else this.#update();
+    }
+
+    /** @returns {SVGElement | null} */
+    #svg() {
+        return this.shadowRoot?.querySelector('svg') ?? null;
+    }
+
+    /** Load the icon unless the wanted one is already shown or in flight. */
+    #update() {
+        const name = this.name;
+        const key = `${this.basePath}|${this.set}|${name}`;
+        // Already rendered (e.g. reconnect), loading, or known-missing: nothing to do
+        if (key === this.#shownKey) { this.#applyA11y(); return; }
+        if (key === this.#pendingKey || key === this.#failedKey) return;
+        const token = ++this.#token;
+        this.#pendingKey = key;
+        this.#failedKey = '';
+        if (!name) {
+            this.#pendingKey = '';
+            this.#setError('No icon name specified', key);
+            return;
         }
+        const base = this.basePath;
+        const set = this.set;
+        resolveIcon(base, set, name).then(
+            (template) => {
+                if (token !== this.#token) return; // stale: name/set changed mid-fetch
+                this.#pendingKey = '';
+                this.#display(/** @type {SVGElement} */ (template.cloneNode(true)), key);
+            },
+            (error) => {
+                if (token !== this.#token) return;
+                this.#pendingKey = '';
+                this.#setError(error.message, key);
+            },
+        );
+    }
+
+    /**
+     * Swap the rendered SVG in place (no shadow-root rebuild, no flash).
+     * @param {SVGElement} svg
+     * @param {string} key
+     */
+    #display(svg, key) {
+        const root = /** @type {ShadowRoot} */ (this.shadowRoot);
+        const current = this.#svg() || root.querySelector('slot');
+        if (current) current.replaceWith(svg);
+        else root.append(svg);
+        this.#shownKey = key;
+        this.removeAttribute('data-error');
+        this.#applyA11y();
+    }
+
+    /** Sync role/aria-label/aria-hidden with `label`, in both directions. */
+    #applyA11y() {
+        const svg = this.#svg();
+        if (!svg) return;
+        const label = this.label;
+        if (label) {
+            svg.setAttribute('role', 'img');
+            svg.setAttribute('aria-label', label);
+            svg.removeAttribute('aria-hidden');
+        } else {
+            svg.removeAttribute('role');
+            svg.removeAttribute('aria-label');
+            svg.setAttribute('aria-hidden', 'true');
+        }
+    }
+
+    /**
+     * @param {string} message
+     * @param {string} key
+     */
+    #setError(message, key) {
+        this.#failedKey = key;
+        this.setAttribute('data-error', 'true');
+        console.warn(`icon-wc: ${message}`);
+        // Drop any stale glyph; restore the slot so light-DOM fallback content shows
+        const svg = this.#svg();
+        if (svg) svg.replaceWith(document.createElement('slot'));
+        this.#shownKey = '';
     }
 }
 

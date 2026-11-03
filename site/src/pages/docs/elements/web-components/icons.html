@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;icon-wc&gt;</code> component provides a simple way to use SVG icons from the Lucide library or custom icon sets. Icons inherit the current text color and can be sized using preset values.</p>
+    <p>The <code>&lt;icon-wc&gt;</code> component provides a simple way to use SVG icons from the Lucide library or custom icon sets. Each icon is one SVG file, fetched from <code>&lt;base-path&gt;/&lt;set&gt;/&lt;name&gt;.svg</code> (default <code>/cdn/icons/lucide/home.svg</code>), sanitized, cached, and rendered inline in shadow DOM. Icons inherit the current text color and can be sized using preset values.</p>
 
     <browser-window
       src="/docs/examples/demos/icons-basic.html"
@@ -89,8 +89,8 @@ crumbLabel: Web Components
         <tr>
           <td><code>set</code></td>
           <td>string</td>
-          <td><code>"lucide"</code></td>
-          <td>Icon set directory. Use <code>"custom"</code> for project-specific icons.</td>
+          <td>nearest <code>data-icon-set</code>, else <code>"lucide"</code></td>
+          <td>Icon set directory: <code>lucide</code>, <code>phosphor</code>, <code>tabler</code>, <code>mage</code>, <code>bold</code>, or <code>custom</code> for project-specific icons. See <a href="#icon-sets">Icon sets and paths</a>.</td>
         </tr>
         <tr>
           <td><code>size</code></td>
@@ -102,16 +102,74 @@ crumbLabel: Web Components
           <td><code>label</code></td>
           <td>string</td>
           <td>-</td>
-          <td>Accessible label for functional icons. When set, icon is announced to screen readers.</td>
+          <td>Accessible label for functional icons. When set, the icon is announced as an image with this name; without it the icon is hidden from assistive tech. Adding or removing it later updates the icon live.</td>
         </tr>
         <tr>
           <td><code>base-path</code></td>
           <td>string</td>
-          <td><code>"/.assets/icons"</code></td>
-          <td>Override the default icon path.</td>
+          <td><code>&lt;html data-icon-path&gt;</code>, else <code>"/cdn/icons"</code></td>
+          <td>Icon base URL for this one icon. Usually you set <code>data-icon-path</code> on <code>&lt;html&gt;</code> instead.</td>
+        </tr>
+        <tr>
+          <td><code>data-flip-rtl</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Mirror the glyph horizontally in right-to-left contexts. See <a href="#rtl">RTL mirroring</a>.</td>
+        </tr>
+        <tr>
+          <td><code>data-animate</code></td>
+          <td><code>"spin"</code></td>
+          <td>-</td>
+          <td>Spin the icon while an ancestor has <code>data-loading</code>. Disabled under <code>prefers-reduced-motion</code>.</td>
         </tr>
       </tbody>
     </table>
+
+    <h3>State attributes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-error</code></td>
+          <td>Set when the icon could not be loaded from the requested set or the Lucide fallback. The icon dims, and any light-DOM content inside the element is shown instead.</td>
+        </tr>
+        <tr>
+          <td><code>data-upgraded</code></td>
+          <td>Set while the element is connected and upgraded.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2 id="icon-sets">Icon sets and paths</h2>
+    <p>Without a <code>set</code> attribute, an icon uses the nearest <code>data-icon-set</code>: on the element itself, on any ancestor, then on <code>&lt;html&gt;</code>, falling back to <code>lucide</code>. This is the same resolution the <code>[data-icon]</code> primitive uses, and it is live: changing <code>data-icon-set</code> on an ancestor or on <code>&lt;html&gt;</code> (as the theme picker does) re-renders the icons beneath it.</p>
+
+    <code-block language="html" show-lines label="Document-wide and per-section icon sets" data-escape><html lang="en" data-icon-set="tabler">
+  …
+  <section data-icon-set="phosphor">
+    <icon-wc name="bell"></icon-wc>            <!-- phosphor -->
+    <icon-wc name="bell" set="mage"></icon-wc> <!-- the attribute wins -->
+  </section>
+  <icon-wc name="bell"></icon-wc>              <!-- tabler -->
+</html></code-block>
+
+    <h3>Fallback to Lucide</h3>
+    <p>The alternative sets are small. When the requested set does not contain an icon, <code>&lt;icon-wc&gt;</code> renders the Lucide icon of the same name instead. To avoid a failed request per missing icon, it reads the set's name manifest (<code>&lt;base-path&gt;/&lt;set&gt;.json</code>, loaded once per set) and goes straight to Lucide for names it does not list. The <code>custom</code> set skips the manifest, so you can add files to it without regenerating anything. Missing icons are remembered, so each one is requested at most once per page.</p>
+
+    <h3>Serving icons from another path</h3>
+    <p>The default base path <code>/cdn/icons</code> is root-absolute and does <strong>not</strong> follow <code>&lt;base href&gt;</code>. When the icons live elsewhere (an npm install copied into your assets, a GitHub Pages sub-path, a CDN), set <code>data-icon-path</code> on <code>&lt;html&gt;</code>. It applies to every <code>&lt;icon-wc&gt;</code> and every <code>[data-icon]</code>.</p>
+
+    <code-block language="html" show-lines label="Icons under a sub-path or a package copy" data-escape><!-- GitHub Pages project site -->
+<html lang="en" data-icon-path="/my-repo/cdn/icons">
+
+<!-- Copied from node_modules/vanilla-breeze/dist/cdn/icons -->
+<html lang="en" data-icon-path="/assets/vb/icons"></code-block>
   </section>
 
   <section>
@@ -179,7 +237,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>With Buttons</h2>
-    <p>Icons work naturally inside buttons. For icon-only buttons, always include an accessible label.</p>
+    <p>Icons work naturally inside buttons. An icon-only button needs exactly one accessible name: label the button <em>or</em> the icon, not both, or some screen readers announce it twice.</p>
 
     <code-block language="html" show-lines label="Icons in buttons" data-escape><!-- Icon with text label -->
 <button type="button">
@@ -187,8 +245,13 @@ crumbLabel: Web Components
   Add Item
 </button>
 
-<!-- Icon-only button (needs label for accessibility) -->
+<!-- Icon-only button: name the button, keep the icon decorative -->
 <button type="button" class="ghost" aria-label="Settings">
+  <icon-wc name="settings"></icon-wc>
+</button>
+
+<!-- …or let the labelled icon name the button -->
+<button type="button" class="ghost">
   <icon-wc name="settings" label="Settings"></icon-wc>
 </button></code-block>
   </section>
@@ -240,15 +303,17 @@ crumbLabel: Web Components
 
   <section>
     <h2>Custom Icons</h2>
-    <p>Add custom icons to the <code>.assets/icons/custom/</code> directory and reference them with <code>set="custom"</code>.</p>
+    <p>Put project-specific SVGs in the <code>custom/</code> folder under your icon base path (by default <code>/cdn/icons/custom/</code>; in this repository the source lives in <code>src/icons/custom/</code>) and reference them with <code>set="custom"</code>.</p>
 
     <code-block language="html" show-lines label="Custom icon set usage" data-escape><!-- Using a custom icon -->
 <icon-wc name="logo" set="custom"></icon-wc>
 
 <!-- Custom icon requirements:
      - SVG format with viewBox attribute
-     - No fixed width/height (component handles sizing)
-     - Use currentColor for strokes/fills
+     - No fixed width/height needed (the component removes them)
+     - Paint with currentColor via the file's own fill / stroke attributes:
+       the component does not impose a stroke or fill, so filled and
+       stroked icons both render as drawn
 --></code-block>
   </section>
 
@@ -291,10 +356,40 @@ crumbLabel: Web Components
   Save Document
 </button>
 
-<!-- Functional - icon is announced to screen readers -->
-<button aria-label="Close dialog">
-  <icon-wc name="x" label="Close"></icon-wc>
+<!-- Functional - the labelled icon names the button -->
+<button>
+  <icon-wc name="x" label="Close dialog"></icon-wc>
+</button>
+
+<!-- Status icon with meaning of its own -->
+<icon-wc name="alert-circle" label="Warning"></icon-wc></code-block>
+  </section>
+
+  <section>
+    <h2 id="rtl">RTL mirroring</h2>
+    <p>Directional glyphs (arrows, chevrons, “undo”, “reply”) should point the other way in right-to-left text. Icons are not mirrored automatically, because most glyphs (checkmarks, clocks, media controls, logos) must not flip. Opt in per icon with <code>data-flip-rtl</code>; it only takes effect when the icon is in an RTL context (<code>dir="rtl"</code> on it or an ancestor).</p>
+
+    <code-block language="html" show-lines label="Mirroring a directional icon in RTL" data-escape><a href="/next" dir="rtl">
+  التالي
+  <icon-wc name="arrow-right" data-flip-rtl></icon-wc>
+</a></code-block>
+
+    <p>Good candidates: <code>arrow-left</code>, <code>arrow-right</code>, <code>chevron-left</code>, <code>chevron-right</code>, <code>chevrons-left</code>, <code>chevrons-right</code>, <code>undo</code>, <code>redo</code>, <code>reply</code>, <code>log-in</code>, <code>log-out</code>, and text-direction icons such as <code>list-indent-increase</code>.</p>
+  </section>
+
+  <section>
+    <h2>Loading spinner</h2>
+    <p>Add <code>data-animate="spin"</code> to an icon that should rotate while its container is busy. The animation runs only while an ancestor has <code>data-loading</code>, and stops under <code>prefers-reduced-motion: reduce</code>.</p>
+
+    <code-block language="html" show-lines label="Spinning icon while loading" data-escape><button type="submit" data-loading>
+  <icon-wc name="loader" data-animate="spin"></icon-wc>
+  Saving…
 </button></code-block>
+  </section>
+
+  <section>
+    <h2>Security</h2>
+    <p>Fetched SVG is sanitized before it is inserted: <code>&lt;script&gt;</code>, <code>&lt;foreignObject&gt;</code>, <code>&lt;iframe&gt;</code> and similar elements, every <code>on*</code> event-handler attribute, and <code>javascript:</code> / <code>data:</code> links are removed. Even so, serve icons only from origins you control.</p>
   </section>
 
   <section>
@@ -308,8 +403,8 @@ crumbLabel: Web Components
 
 /* Custom sizing via CSS */
 icon-wc.hero-icon {
-  width: 4rem;
-  height: 4rem;
+  inline-size: 4rem;
+  block-size: 4rem;
 }
 
 /* Hover effects */
@@ -320,17 +415,17 @@ button:hover icon-wc {
 
   <section>
     <h2>JavaScript API</h2>
-    <p>The component exposes properties that mirror its attributes.</p>
+    <p>The component exposes read-only properties that report its resolved configuration. Change it through attributes.</p>
 
     <code-block language="javascript" show-lines label="JavaScript API usage" data-escape>const icon = document.querySelector('icon-wc');
 
 // Read-only properties
 console.log(icon.name);     // "menu"
-console.log(icon.set);      // "lucide"
+console.log(icon.set);      // "lucide" (or the nearest data-icon-set)
 console.log(icon.size);     // "md"
 console.log(icon.label);    // null or "Close"
-console.log(icon.basePath); // "/.assets/icons"
-console.log(icon.iconPath); // "/.assets/icons/lucide/menu.svg"
+console.log(icon.basePath); // "/cdn/icons" (or <html data-icon-path>)
+console.log(icon.iconPath); // "/cdn/icons/lucide/menu.svg"
 
 // Change icon dynamically
 icon.setAttribute('name', 'settings');
