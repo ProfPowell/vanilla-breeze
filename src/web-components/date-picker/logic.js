@@ -43,6 +43,7 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { supportsPopover } from '../../utils/popover-support.js';
+import { parseCJKNumeric } from '../../lib/date-japanese.js';
 
 const EN_MONTHS = [
   'january', 'february', 'march', 'april', 'may', 'june',
@@ -208,6 +209,10 @@ function parseUserDate(text, locale) {
     const date = fromISO(t.replace(/\//g, '-'));
     return date ? { date, partial: null } : none;
   }
+
+  // 1b. CJK numeric: 2026年10月21日
+  const cjk = parseCJKNumeric(t);
+  if (cjk) return { date: cjk, partial: null };
 
   const months = getMonthMap(locale);
 
