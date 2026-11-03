@@ -43,6 +43,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { usableLocale } from '../../lib/i18n.js';
 
 // ── Date utilities ──────────────────────────────────────────────────
 
@@ -327,7 +328,7 @@ class CalendarWc extends VBElement {
   }
 
   setup() {
-    this.#locale = /** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language;
+    this.#locale = usableLocale(/** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language);
     const today = new Date();
     this.#viewMonth = parseInt(this.getAttribute('data-month') ?? '', 10) - 1;
     if (isNaN(this.#viewMonth)) this.#viewMonth = today.getMonth();

@@ -126,6 +126,8 @@ toc: true
   <data value="1234.56" data-format-number data-locale="en-US">1,234.56</data>
 </html></code-block>
 
+<p>Components that read the nearest <code>lang</code> (<code>&lt;calendar-wc&gt;</code>, <code>&lt;week-view&gt;</code>, <code>&lt;day-view&gt;</code>, <code>&lt;date-picker&gt;</code>) pass it through <code>usableLocale()</code> first. A malformed tag such as the POSIX-style <code>lang="en_US"</code> makes every <code>Intl</code> constructor throw, so those components fall back to <code>en-US</code> rather than failing to render. Write BCP 47 tags with hyphens: <code>en-US</code>, <code>ja-JP</code>.</p>
+
 <h3>Alternate Calendars</h3>
 <p>Locales are passed straight to <code>Intl</code>, so a BCP 47 calendar extension works with no extra configuration. Setting <code>lang="ja-JP-u-ca-japanese"</code> on <code>&lt;html&gt;</code> switches every VB date utility to the Japanese era calendar (和暦) at once:</p>
 
@@ -151,9 +153,10 @@ toc: true
 <h3>JS Utilities</h3>
 <p>Import locale utilities for custom components:</p>
 
-<code-block language="js" label="Locale utility functions" data-escape>import { getLocale, isRTL, usesRuby, primarySubtag } from './lib/i18n.js';
+<code-block language="js" label="Locale utility functions" data-escape>import { getLocale, usableLocale, isRTL, usesRuby, primarySubtag } from './lib/i18n.js';
 
 getLocale();           // 'en-US' (from html[lang] or navigator)
+usableLocale('en_US'); // 'en-US' (malformed tags fall back instead of throwing)
 isRTL('ar');           // true
 usesRuby('ja');        // true
 primarySubtag('zh-TW'); // 'zh'</code-block>

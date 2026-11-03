@@ -49,6 +49,7 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { supportsPopover } from '../../utils/popover-support.js';
 import { parseWareki, parseCJKNumeric } from '../../lib/date-japanese.js';
+import { usableLocale } from '../../lib/i18n.js';
 
 const EN_MONTHS = [
   'january', 'february', 'march', 'april', 'may', 'june',
@@ -342,7 +343,7 @@ class DatePicker extends VBElement {
     if (!input) return false;
     this.#input = input;
 
-    this.#locale = /** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language || 'en-US';
+    this.#locale = usableLocale(/** @type {HTMLElement | null} */ (this.closest('[lang]'))?.lang || navigator.language);
     this.#firstDayOfWeek = getFirstDayOfWeek(this.#locale);
 
     // Constraints (fresh maps every setup: no accumulation across reconnects)
