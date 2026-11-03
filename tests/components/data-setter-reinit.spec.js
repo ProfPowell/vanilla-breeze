@@ -132,11 +132,11 @@ for (const c of CASES) {
 
 test('flow-diagram: attribute refresh restores data-upgraded with one container', async ({ page }) => {
   await load(page, 'flow-diagram',
-    `<flow-diagram title="Flow"><ol><li data-type="start">Begin</li><li data-type="end">Done</li></ol></flow-diagram>`);
+    `<flow-diagram data-title="Flow"><ol><li data-type="start">Begin</li><li data-type="end">Done</li></ol></flow-diagram>`);
   await page.evaluate(() => {
     const fd = /** @type {any} */ (document.querySelector('flow-diagram'));
-    fd.setAttribute('title', 'Renamed');
-    fd.setAttribute('title', 'Renamed again');
+    fd.setAttribute('data-title', 'Renamed');
+    fd.setAttribute('data-title', 'Renamed again');
   });
   await page.waitForFunction(() => document.querySelector('flow-diagram .fd-title')?.textContent === 'Renamed again');
   const r = await page.evaluate(() => {

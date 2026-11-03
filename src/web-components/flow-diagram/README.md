@@ -18,7 +18,7 @@ Part of the **UX Planning Pack**.
 ## Static HTML Form
 
 ```html
-<flow-diagram title="Login Flow">
+<flow-diagram data-title="Login Flow">
   <ol>
     <li data-type="start">User visits login</li>
     <li data-type="action">Enter credentials</li>
@@ -55,10 +55,20 @@ Part of the **UX Planning Pack**.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `title` | string | — | Diagram heading |
-| `src` | string | — | JSON data URL |
-| `data-direction` | string | `"vertical"` | `vertical` or `horizontal` |
-| `compact` | boolean | — | Reduced spacing |
+| `data-title` | string | — | Diagram heading (labels the figure) |
+| `data-heading-level` | 1–6 | `2` | Heading level for `data-title` |
+| `src` | string | — | JSON data URL (`{ title?, steps }`) |
+| `data-direction` | string | `"vertical"` | `vertical` or `horizontal` (follows writing direction) |
+| `compact` | boolean | — | Reduced spacing (CSS only) |
+| `data-label` | string | `"Flow diagram"` | Figure name when there is no `data-title` |
+| `data-label-selected` | string | `"Selected: {text}"` | Live-region text on select |
+| `data-label-steps-<plural>` | string | `"{count} step(s)"` | Step-count summary via `Intl.PluralRules` |
+| `data-label-type-<type>` | string | `Start`, `Action`, … | Spoken type prefix per node type |
+
+## JavaScript
+
+- `.steps` — `{ type, text, annotation?, branches?: [{ label, steps }] }[]`; assignment writes the source `<ol>` and re-renders.
+- Events: `flow-diagram:ready { nodeCount }` (every render), `flow-diagram:select { type, text }`, `flow-diagram:steps-changed { steps, source }`.
 
 ## Child Attributes (on `<li>`)
 

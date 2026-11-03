@@ -2,16 +2,36 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "flow-diagram",
   "type": "web-component",
-  "description": "User flow and sequence visualization — progressively enhances an ol into a connected node graph with actions, decisions, and branches",
+  "description": "User flow and sequence visualization — progressively enhances an ol into a labelled figure holding a nested list drawn as a connected node graph with actions, decisions, and branches",
   "htmlvalidate": { "flow": true, "permittedContent": ["@flow"] },
   "attributes": [
-    { "name": "title",          "kind": "host-api", "purpose": "config", "type": "string",  "description": "Diagram heading" },
-    { "name": "src",            "kind": "host-api", "purpose": "config", "type": "string",  "description": "URL to JSON flow data" },
-    { "name": "data-direction", "kind": "data",     "purpose": "config", "type": "string",  "description": "Layout: vertical (default) or horizontal" },
-    { "name": "compact",        "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Reduced spacing" }
+    { "name": "data-title",          "kind": "data",     "purpose": "config",         "type": "string",  "description": "Diagram heading, rendered as a real heading that labels the figure. Observed." },
+    { "name": "data-heading-level",  "kind": "data",     "purpose": "config",         "type": "number",  "default": "2", "description": "Heading level (1-6) for data-title. Observed." },
+    { "name": "src",                 "kind": "host-api", "purpose": "config",         "type": "string",  "description": "URL to JSON flow data: { title?, steps }. Loaded on connect when there is no inline <ol>, and whenever it changes." },
+    { "name": "data-direction",      "kind": "data",     "purpose": "visual-variant", "type": "enum",    "values": ["vertical", "horizontal"], "default": "vertical", "description": "Layout direction. Horizontal follows the writing direction (arrows point toward inline-end in RTL). CSS only." },
+    { "name": "compact",             "kind": "host-api", "purpose": "visual-variant", "type": "boolean", "description": "Reduced spacing and node sizes. CSS only (no re-render)." },
+    { "name": "data-label",          "kind": "data",     "purpose": "config",         "type": "string",  "default": "Flow diagram", "description": "Accessible name of the figure when there is no data-title. Observed." },
+    { "name": "data-label-selected", "kind": "data",     "purpose": "config",         "type": "string",  "default": "Selected: {text}", "description": "Live-region announcement on select; {text} is replaced with the node text." },
+    { "name": "data-label-steps-one",   "kind": "data",  "purpose": "config",         "type": "string",  "default": "{count} step", "description": "Step-count summary for the Intl.PluralRules \"one\" category ({count} is replaced). Any category works: data-label-steps-few, -many, -zero, -two." },
+    { "name": "data-label-steps-other", "kind": "data",  "purpose": "config",         "type": "string",  "default": "{count} steps", "description": "Step-count summary for the \"other\" category and the fallback for unset categories." },
+    { "name": "data-label-type-start",    "kind": "data", "purpose": "config", "type": "string", "default": "Start",    "description": "Spoken type prefix for start nodes (\"Start: …\")." },
+    { "name": "data-label-type-action",   "kind": "data", "purpose": "config", "type": "string", "default": "Action",   "description": "Spoken type prefix for action nodes." },
+    { "name": "data-label-type-decision", "kind": "data", "purpose": "config", "type": "string", "default": "Decision", "description": "Spoken type prefix for decision nodes." },
+    { "name": "data-label-type-process",  "kind": "data", "purpose": "config", "type": "string", "default": "Process",  "description": "Spoken type prefix for process nodes." },
+    { "name": "data-label-type-wait",     "kind": "data", "purpose": "config", "type": "string", "default": "Wait",     "description": "Spoken type prefix for wait nodes." },
+    { "name": "data-label-type-end",      "kind": "data", "purpose": "config", "type": "string", "default": "End",      "description": "Spoken type prefix for end nodes." }
+  ],
+  "childAttributes": [
+    { "name": "data-type",       "on": "li", "type": "enum", "values": ["start", "action", "decision", "process", "wait", "end"], "description": "Node type (default action). Other values render with action styling and the raw type as the spoken prefix unless data-label-type-<type> is set." },
+    { "name": "data-annotation", "on": "li", "type": "string", "description": "Note shown under the node; also the node button's accessible description" },
+    { "name": "data-branch",     "on": "li", "type": "string", "description": "Branch label on a decision's nested <li>, which holds its own <ol> of steps. \"Yes\"/\"No\" get success/error colouring." }
+  ],
+  "properties": [
+    { "name": "steps", "type": "Array<{ type, text, annotation?, branches?: Array<{ label, steps }> }>", "description": "Get the parsed flow, or assign one to rebuild. Input is normalized (branches default to [], strings become action steps, malformed entries are dropped) and written into the source <ol>, so it survives re-renders and moves." }
   ],
   "events": [
-    { "name": "flow-diagram:ready",  "detail": "{ nodeCount }",    "description": "After setup" },
-    { "name": "flow-diagram:select", "detail": "{ type, text }",   "description": "Node clicked" }
+    { "name": "flow-diagram:ready",         "detail": "{ nodeCount }",                "description": "After every render: initial upgrade, observed attribute change, src load, and .steps assignment" },
+    { "name": "flow-diagram:select",        "detail": "{ type, text }",               "description": "Node activated by click, Enter or Space" },
+    { "name": "flow-diagram:steps-changed", "detail": "{ steps, source: 'property' }", "description": "After .steps assignment (fires after the render's ready)" }
   ]
 }

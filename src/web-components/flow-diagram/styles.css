@@ -3,15 +3,39 @@
  *
  * Renders a user flow / sequence visualization.
  * Before JS: renders as a normal ordered list.
- * After JS: connected node graph with typed shapes.
+ * After JS: the source <ol> is hidden and a generated <figure> holds a
+ * nested list (.fd-flow > .fd-node, .fd-branches > .fd-branch) drawn as a
+ * connected node graph. Colours come from theme tokens so every type keeps
+ * AA text contrast in light and dark schemes.
  */
 
 /* ── Host ──────────────────────────────────────────── */
 flow-diagram {
   display: block;
   container-type: inline-size;
-  font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-  color: var(--color-text, #1a1a1a);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  color: var(--color-text);
+
+  /* Per-type palette (text / border / tint). Overridable per instance. */
+  --fd-start-text: var(--color-success-text);
+  --fd-start-border: var(--color-success);
+  --fd-start-bg: var(--color-success-subtle);
+  --fd-end-text: var(--color-error-text);
+  --fd-end-border: var(--color-error);
+  --fd-end-bg: var(--color-error-subtle);
+  --fd-action-text: var(--color-info-text);
+  --fd-action-border: var(--color-info);
+  --fd-action-bg: var(--color-info-subtle);
+  --fd-decision-text: var(--color-warning-text);
+  --fd-decision-border: var(--color-warning);
+  --fd-decision-bg: var(--color-warning-subtle);
+  --fd-process-text: var(--color-text);
+  --fd-process-border: var(--color-accent);
+  --fd-process-bg: color-mix(in oklch, var(--color-accent) 12%, var(--color-surface));
+  --fd-wait-text: var(--color-text);
+  --fd-wait-border: var(--color-text-muted);
+  --fd-wait-bg: var(--color-surface-sunken);
+  --fd-line: var(--color-text-muted);
 }
 
 /* Before upgrade, the list is visible normally */
@@ -19,310 +43,413 @@ flow-diagram:not([data-upgraded]) > ol {
   padding-inline-start: 1.5em;
 }
 
+/* After upgrade the generated figure replaces the source list, both
+   visually and in the accessibility tree (no duplicate reading). */
+flow-diagram[data-upgraded] > ol {
+  display: none;
+}
+
 /* ── Title ─────────────────────────────────────────── */
-.fd-title {
+flow-diagram > .fd-title {
   font-size: var(--font-size-xl, 1.25rem);
   font-weight: 700;
-  margin-block-end: var(--size-s, 0.75rem);
+  margin-block: 0 var(--size-s, 0.75rem);
 }
 
 /* ── Container ─────────────────────────────────────── */
-.fd-container {
+flow-diagram .fd-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0;
+  margin: 0;
   padding: var(--size-m, 1rem);
-  background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #e0e0e0);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-m, 0.5rem);
   overflow-x: auto;
 }
 
-/* Horizontal layout */
-flow-diagram[data-direction="horizontal"] .fd-container {
-  flex-direction: row;
+/* Generated lists: strip list chrome and VB's list spacing. */
+flow-diagram :is(.fd-flow, .fd-branches) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+flow-diagram :is(.fd-node, .fd-branch) {
+  margin: 0;
+}
+
+flow-diagram .fd-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  inline-size: 100%;
 }
 
 /* ── Nodes ─────────────────────────────────────────── */
-.fd-node {
+flow-diagram .fd-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  inline-size: 100%;
+}
+
+flow-diagram .fd-step {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--size-2xs, 0.25rem);
-  position: relative;
 }
 
-.fd-node-shape {
+flow-diagram .fd-node-shape {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: var(--size-xs, 0.5rem) var(--size-m, 1rem);
+  font: inherit;
   font-size: var(--font-size-s, 0.875rem);
   font-weight: 500;
   line-height: 1.4;
-  min-width: 120px;
-  max-width: 220px;
-  cursor: default;
+  min-inline-size: 120px;
+  max-inline-size: 220px;
+  cursor: var(--cursor-custom-pointer, pointer);
+  unicode-bidi: plaintext;
   transition: box-shadow 150ms ease;
-  border: 2px solid;
+  border: 2px solid var(--fd-border);
+  border-radius: var(--radius-m, 0.5rem);
+  background: var(--fd-bg);
+  color: var(--fd-text);
+
+  --fd-text: var(--fd-action-text);
+  --fd-border: var(--fd-action-border);
+  --fd-bg: var(--fd-action-bg);
 }
 
-.fd-node-shape:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+flow-diagram .fd-node-shape:hover {
+  box-shadow: var(--shadow-s);
 }
 
-.fd-node-shape:focus-visible {
-  outline: 2px solid var(--color-interactive, #0066cc);
+flow-diagram .fd-node-shape:focus-visible {
+  outline: 2px solid var(--color-interactive);
   outline-offset: 2px;
 }
 
+/* Spoken type prefix ("Decision: …"), visually hidden */
+flow-diagram .fd-type {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* ── Node types ────────────────────────────────────── */
-
-/* Start: rounded pill, green */
-.fd-node[data-type="start"] .fd-node-shape {
-  border-radius: 9999px;
-  background: rgba(34, 197, 94, 0.1);
-  border-color: #22c55e;
-  color: #15803d;
+flow-diagram .fd-node[data-type="start"] > .fd-step > .fd-node-shape {
+  border-radius: var(--radius-full, 9999px);
+  --fd-text: var(--fd-start-text);
+  --fd-border: var(--fd-start-border);
+  --fd-bg: var(--fd-start-bg);
 }
 
-/* End: rounded pill, red */
-.fd-node[data-type="end"] .fd-node-shape {
-  border-radius: 9999px;
-  background: rgba(220, 38, 38, 0.1);
-  border-color: #dc2626;
-  color: #b91c1c;
+flow-diagram .fd-node[data-type="end"] > .fd-step > .fd-node-shape {
+  border-radius: var(--radius-full, 9999px);
+  --fd-text: var(--fd-end-text);
+  --fd-border: var(--fd-end-border);
+  --fd-bg: var(--fd-end-bg);
 }
 
-/* Action: rounded rect, blue */
-.fd-node[data-type="action"] .fd-node-shape {
-  border-radius: var(--radius-m, 0.5rem);
-  background: rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
-  color: #1d4ed8;
-}
-
-/* Decision: diamond shape via clip-path, amber */
-.fd-node[data-type="decision"] .fd-node-shape {
+flow-diagram .fd-node[data-type="decision"] > .fd-step > .fd-node-shape {
   border-radius: var(--radius-s, 0.25rem);
-  background: rgba(245, 158, 11, 0.1);
-  border-color: #f59e0b;
-  color: #b45309;
-  min-width: 140px;
+  min-inline-size: 140px;
   padding: var(--size-s, 0.75rem) var(--size-m, 1rem);
+  --fd-text: var(--fd-decision-text);
+  --fd-border: var(--fd-decision-border);
+  --fd-bg: var(--fd-decision-bg);
 }
 
-.fd-node[data-type="decision"]::before {
+/* Decision marker: small diamond on the top edge */
+flow-diagram .fd-node[data-type="decision"] > .fd-step > .fd-node-shape::before {
   content: '';
   position: absolute;
-  top: -1px;
-  left: 50%;
-  transform: translateX(-50%) rotate(45deg);
-  width: 10px;
-  height: 10px;
-  background: #f59e0b;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  inline-size: 10px;
+  block-size: 10px;
+  translate: -50% -50%;
+  rotate: 45deg;
+  background: var(--fd-decision-border);
   border-radius: 2px;
 }
 
-/* Process: rect, purple */
-.fd-node[data-type="process"] .fd-node-shape {
+flow-diagram .fd-node[data-type="process"] > .fd-step > .fd-node-shape {
   border-radius: var(--radius-s, 0.25rem);
-  background: rgba(139, 92, 246, 0.1);
-  border-color: #8b5cf6;
-  color: #6d28d9;
+  --fd-text: var(--fd-process-text);
+  --fd-border: var(--fd-process-border);
+  --fd-bg: var(--fd-process-bg);
 }
 
-/* Wait: dashed border, gray */
-.fd-node[data-type="wait"] .fd-node-shape {
-  border-radius: var(--radius-m, 0.5rem);
-  background: rgba(107, 114, 128, 0.05);
-  border-color: #6b7280;
+flow-diagram .fd-node[data-type="wait"] > .fd-step > .fd-node-shape {
   border-style: dashed;
-  color: #4b5563;
+  --fd-text: var(--fd-wait-text);
+  --fd-border: var(--fd-wait-border);
+  --fd-bg: var(--fd-wait-bg);
 }
 
 /* ── Annotations ───────────────────────────────────── */
-.fd-annotation {
-  font-size: 11px;
-  color: var(--color-text-muted, #666);
+flow-diagram .fd-annotation {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted);
   font-style: italic;
-  max-width: 180px;
+  max-inline-size: 180px;
   text-align: center;
 }
 
 /* ── Connectors ────────────────────────────────────── */
-.fd-connector {
+flow-diagram .fd-connector {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  color: var(--color-border, #e0e0e0);
   flex-shrink: 0;
 }
 
-.fd-connector-line {
-  width: 2px;
-  height: 24px;
-  background: var(--color-border, #e0e0e0);
+flow-diagram .fd-connector-line {
+  display: block;
+  inline-size: 2px;
+  block-size: 24px;
+  background: var(--fd-line);
 }
 
-flow-diagram[data-direction="horizontal"] .fd-connector-line {
-  width: 24px;
-  height: 2px;
+flow-diagram .fd-connector-arrow {
+  display: block;
+  inline-size: 0;
+  block-size: 0;
+  border-inline: 5px solid transparent;
+  border-block-start: 6px solid var(--fd-line);
 }
 
-.fd-connector-arrow {
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 6px solid var(--color-border, #e0e0e0);
-}
-
-flow-diagram[data-direction="horizontal"] .fd-connector-arrow {
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 6px solid var(--color-border, #e0e0e0);
-  border-right: none;
-}
-
-/* Connector label (for decision branches) */
-.fd-connector-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--color-text-muted, #666);
-  padding: 1px 6px;
-  background: var(--color-surface, #ffffff);
-  border-radius: var(--radius-s, 0.25rem);
-  border: 1px solid var(--color-border, #e0e0e0);
-}
-
-/* ── Branch container ──────────────────────────────── */
-.fd-branches {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
+/* ── Branches ──────────────────────────────────────── */
+/* .fd-branches::before = short drop from the decision. Each .fd-branch
+   paints its own slice of the split bar (::before), so the bar always runs
+   exactly centre-to-centre of the first and last branch, whatever their
+   sizes, in both directions. */
+flow-diagram .fd-branches {
+  --fd-branch-gap: var(--size-l, 1.5rem);
   position: relative;
-}
-
-/* Vertical drop from decision to split line — rendered by JS as .fd-split-line */
-.fd-split-line {
-  width: 2px;
-  height: 12px;
-  background: var(--color-border, #e0e0e0);
-}
-
-/* Branch columns row with horizontal bar connecting centers */
-.fd-branch-columns {
   display: flex;
-  gap: var(--size-l, 1.5rem);
+  gap: var(--fd-branch-gap);
   align-items: flex-start;
   justify-content: center;
-  width: 100%;
-  position: relative;
+  inline-size: 100%;
+  padding-block-start: 12px;
 }
 
-/*
- * Horizontal bar spanning from first branch center to last branch center.
- * Each branch is flex:1 so the first center is at (0.5 / N * 100%) and
- * the last center is at ((N - 0.5) / N * 100%). With equal columns and
- * the gap, we approximate by insetting 50%/N from each side.
- * The data-branch-count attribute drives the calculation.
- */
-/* Horizontal bar: positioned by JS via inline --fd-inset custom property */
-.fd-branch-columns::before {
+flow-diagram .fd-branches::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: var(--fd-inset, 25%);
-  right: var(--fd-inset, 25%);
-  height: 2px;
-  background: var(--color-border, #e0e0e0);
-  pointer-events: none;
+  inset-block-start: 0;
+  inset-inline-start: calc(50% - 1px);
+  inline-size: 2px;
+  block-size: 12px;
+  background: var(--fd-line);
 }
 
-.fd-branch {
+flow-diagram .fd-branch {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0;
-  min-width: 140px;
+  min-inline-size: 140px;
   flex: 1;
 }
 
-.fd-branch-label {
-  font-size: 11px;
+flow-diagram .fd-branch::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: calc(var(--fd-branch-gap) / -2);
+  block-size: 2px;
+  background: var(--fd-line);
+  pointer-events: none;
+}
+
+flow-diagram .fd-branch:first-child::before { inset-inline-start: calc(50% - 1px); }
+flow-diagram .fd-branch:last-child::before { inset-inline-end: calc(50% - 1px); }
+flow-diagram .fd-branch:only-child::before { display: none; }
+
+flow-diagram .fd-branch-label {
+  font-size: var(--font-size-xs, 0.75rem);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 2px 8px;
   border-radius: var(--radius-full, 9999px);
   margin-block-end: var(--size-2xs, 0.25rem);
+  color: var(--color-text-muted);
+  background: var(--color-surface-sunken);
 }
 
-.fd-branch-label[data-branch="yes"] {
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.1);
+flow-diagram .fd-branch-label[data-branch="yes"] {
+  color: var(--fd-start-text);
+  background: var(--fd-start-bg);
 }
 
-.fd-branch-label[data-branch="no"] {
-  color: #dc2626;
-  background: rgba(220, 38, 38, 0.1);
+flow-diagram .fd-branch-label[data-branch="no"] {
+  color: var(--fd-end-text);
+  background: var(--fd-end-bg);
+}
+
+/* ── Horizontal ────────────────────────────────────── */
+flow-diagram[data-direction="horizontal"] .fd-flow {
+  flex-direction: row;
+  align-items: center;
+  inline-size: auto;
+}
+
+flow-diagram[data-direction="horizontal"] .fd-container {
+  align-items: flex-start;
+}
+
+flow-diagram[data-direction="horizontal"] .fd-node {
+  flex-direction: row;
+  inline-size: auto;
+}
+
+flow-diagram[data-direction="horizontal"] .fd-connector {
+  flex-direction: row;
+}
+
+flow-diagram[data-direction="horizontal"] .fd-connector-line {
+  inline-size: 24px;
+  block-size: 2px;
+}
+
+/* Arrow points toward inline-end (right in LTR, left in RTL). */
+flow-diagram[data-direction="horizontal"] .fd-connector-arrow {
+  border-inline: 6px solid transparent;
+  border-inline-end: none;
+  border-inline-start-color: var(--fd-line);
+  border-block: 5px solid transparent;
+}
+
+flow-diagram[data-direction="horizontal"] .fd-branches {
+  --fd-branch-gap: var(--size-s, 0.75rem);
+  flex-direction: column;
+  align-items: flex-start;
+  inline-size: auto;
+  padding-block-start: 0;
+  padding-inline-start: 12px;
+}
+
+flow-diagram[data-direction="horizontal"] .fd-branches::before {
+  inset-block-start: calc(50% - 1px);
+  inset-inline-start: 0;
+  inline-size: 12px;
+  block-size: 2px;
+}
+
+flow-diagram[data-direction="horizontal"] .fd-branch {
+  flex-direction: row;
+  min-inline-size: 0;
+}
+
+flow-diagram[data-direction="horizontal"] .fd-branch::before {
+  inset-block: calc(var(--fd-branch-gap) / -2);
+  inset-inline: 0 auto;
+  inline-size: 2px;
+  block-size: auto;
+}
+
+flow-diagram[data-direction="horizontal"] .fd-branch:first-child::before { inset-block-start: calc(50% - 1px); }
+flow-diagram[data-direction="horizontal"] .fd-branch:last-child::before { inset-block-end: calc(50% - 1px); }
+
+flow-diagram[data-direction="horizontal"] .fd-branch-label {
+  margin-block-end: 0;
+  margin-inline-end: var(--size-2xs, 0.25rem);
 }
 
 /* ── Node count summary ────────────────────────────── */
-.fd-summary {
+flow-diagram .fd-summary {
   font-size: var(--font-size-xs, 0.75rem);
-  color: var(--color-text-muted, #666);
-  margin-block-start: var(--size-xs, 0.5rem);
+  color: var(--color-text-muted);
+  margin-block: var(--size-xs, 0.5rem) 0;
   text-align: center;
 }
 
 /* ── Live region ───────────────────────────────────── */
-.fd-live {
+flow-diagram .fd-live {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: 0;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 
-/* ── Compact ───────────────────────────────────────── */
+/* ── Compact (CSS only) ────────────────────────────── */
 flow-diagram[compact] .fd-node-shape {
-  min-width: 100px;
-  max-width: 180px;
+  min-inline-size: 100px;
+  max-inline-size: 180px;
   padding: var(--size-2xs, 0.25rem) var(--size-xs, 0.5rem);
-  font-size: 12px;
+  font-size: var(--font-size-xs, 0.75rem);
 }
 
 flow-diagram[compact] .fd-connector-line {
-  height: 16px;
+  block-size: 16px;
 }
 
 flow-diagram[compact][data-direction="horizontal"] .fd-connector-line {
-  width: 16px;
-  height: 2px;
+  inline-size: 16px;
+  block-size: 2px;
 }
 
 /* ── Responsive ────────────────────────────────────── */
 @container (max-width: 30rem) {
-  .fd-branch-columns {
+  flow-diagram:not([data-direction="horizontal"]) .fd-branches {
     flex-direction: column;
     align-items: center;
   }
 
-  .fd-split-line {
+  flow-diagram:not([data-direction="horizontal"]) .fd-branch::before {
     display: none;
+  }
+}
+
+/* ── Forced colors ─────────────────────────────────── */
+/* Connectors, the split bar and the decision marker are background-painted,
+   which forced-colors mode erases; repaint them in CanvasText. */
+@media (forced-colors: active) {
+  flow-diagram .fd-connector-line,
+  flow-diagram .fd-branches::before,
+  flow-diagram .fd-branch::before,
+  flow-diagram .fd-node[data-type="decision"] > .fd-step > .fd-node-shape::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  flow-diagram .fd-connector-arrow {
+    forced-color-adjust: none;
+    border-block-start-color: CanvasText;
+  }
+
+  flow-diagram[data-direction="horizontal"] .fd-connector-arrow {
+    border-block-start-color: transparent;
+    border-inline-start-color: CanvasText;
+  }
+
+  flow-diagram .fd-node-shape {
+    border-color: ButtonText;
   }
 }
 
 /* ── Motion ────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .fd-node-shape {
+  flow-diagram .fd-node-shape {
     transition: none;
   }
 }
@@ -330,7 +457,7 @@ flow-diagram[compact][data-direction="horizontal"] .fd-connector-line {
 /* ── Print ─────────────────────────────────────────── */
 @media print {
   flow-diagram[data-upgraded] .fd-container {
-    border-color: #ccc;
+    border-color: currentColor;
     box-shadow: none;
   }
 }
