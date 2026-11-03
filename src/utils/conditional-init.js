@@ -2,8 +2,11 @@
  * conditional-init: Show/hide fields based on another field's value
  *
  * Toggles visibility of elements based on form field values.
- * Hidden elements get the `hidden` and `inert` attributes to
- * prevent them from blocking form validation.
+ * Hidden elements get `hidden` + `inert`, and their form controls are
+ * disabled (hidden/inert alone do not bar constraint validation, so a
+ * hidden required field would block submit). Disabled controls are also
+ * left out of the submitted data. Controls the author disabled stay
+ * disabled when the section is shown again.
  *
  * @attr {string} data-show-when - Show when condition is met: "fieldname=value"
  * @attr {string} data-hide-when - Hide when condition is met: "fieldname=value"
@@ -89,9 +92,41 @@ function updateVisibility(el) {
   if (visible) {
     el.removeAttribute('hidden');
     el.removeAttribute('inert');
+    enableControls(el);
   } else {
     el.setAttribute('hidden', '');
     el.setAttribute('inert', '');
+    disableControls(el);
+  }
+}
+
+const CONTROLS = 'input, select, textarea, button, fieldset';
+const MARK = 'data-conditional-disabled';
+const HIDDEN_CONDITIONAL = '[data-show-when][hidden], [data-hide-when][hidden]';
+
+/** @param {HTMLElement} el */
+function controlsIn(el) {
+  const list = /** @type {HTMLInputElement[]} */ ([...el.querySelectorAll(CONTROLS)]);
+  if (el.matches(CONTROLS)) list.unshift(/** @type {HTMLInputElement} */ (el));
+  return list;
+}
+
+/** Disable controls in a hidden section, marking the ones we touched. */
+function disableControls(el) {
+  for (const ctrl of controlsIn(el)) {
+    if (ctrl.disabled || ctrl.hasAttribute('disabled')) continue;
+    ctrl.disabled = true;
+    ctrl.setAttribute(MARK, '');
+  }
+}
+
+/** Re-enable only what we disabled, and not inside another hidden section. */
+function enableControls(el) {
+  for (const ctrl of controlsIn(el)) {
+    if (!ctrl.hasAttribute(MARK)) continue;
+    if (ctrl.closest(HIDDEN_CONDITIONAL)) continue;
+    ctrl.disabled = false;
+    ctrl.removeAttribute(MARK);
   }
 }
 

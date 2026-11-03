@@ -3,8 +3,12 @@
  *
  * Enhances buttons with data-loading to show a spinner, set aria-busy,
  * and prevent double-submit. Auto-activates on form submit for the button
- * that submitted the form. Auto-reverts when the form completes or after
- * a timeout.
+ * that submitted the form — but only once the submission actually proceeds
+ * (an invalid form-coordinator submit leaves the button alone; on plain
+ * forms the browser never fires submit for an invalid form). Auto-reverts when
+ * form-coordinator clears data-submitting (fetch mode) or after a timeout.
+ * In data-submit="event" mode, clear it yourself when your handler finishes
+ * (`delete btn.dataset.loadingActive`) or let the timeout revert it.
  *
  * The button is NOT set `disabled`: disabling it inside the submit event
  * drops its name/value from the form data (the entry list is built after
@@ -100,18 +104,9 @@ function enhance(btn) {
     }
   }, true);
 
-  // Auto-activate when THIS button submits its form (form="" association
-  // included). Other submit buttons in the same form stay as they are.
+  // Auto-deactivate when form-coordinator clears data-submitting
   const form = btn.form;
   if (form && btn.type === 'submit') {
-    form.addEventListener('submit', (e) => {
-      const submitter = /** @type {SubmitEvent} */ (e).submitter;
-      if (submitter ? submitter === btn : form.querySelector('button[type="submit"], button:not([type]), input[type="submit"]') === btn) {
-        activate(btn);
-      }
-    });
-
-    // Auto-deactivate when form-coordinator clears data-submitting
     const obs = new MutationObserver(() => {
       if (!form.hasAttribute('data-submitting') && btn.getAttribute('aria-busy') === 'true') {
         deactivate(btn);
@@ -130,6 +125,45 @@ function enhance(btn) {
   });
   selfObs.observe(btn, { attributes: true, attributeFilter: ['data-loading-active'] });
 }
+
+/** The button that submits: the event's submitter, else the default button. */
+function submitterOf(form, submitter) {
+  if (submitter) return submitter;
+  return [...form.elements].find(el =>
+    (el instanceof HTMLButtonElement && el.type === 'submit')
+    || (el instanceof HTMLInputElement && el.type === 'submit')) ?? null;
+}
+
+function maybeActivate(form, submitter) {
+  const btn = submitterOf(form, submitter);
+  if (btn instanceof HTMLButtonElement && btn.matches(SELECTOR)) {
+    enhance(btn);
+    activate(btn);
+  }
+}
+
+// Activate only when a submission actually proceeds.
+//  - Plain forms: the browser never fires submit for an invalid form, so any
+//    submit event is a real submission — including one an author's handler
+//    cancels to send it with fetch (the spinner covers that request; clear
+//    it with deactivate() or let the timeout revert it).
+//  - form-coordinator forms (form[data-validate], novalidate): the
+//    coordinator cancels every native submit and validates itself, so the
+//    native submit says nothing. Wait for its vb:beforesubmit, which fires
+//    only after validation passes (every data-submit mode), unless cancelled.
+//    An invalid submit therefore never starts the spinner.
+// Both listeners sit on the document (bubble phase), after form handlers.
+document.addEventListener('submit', (e) => {
+  const form = /** @type {HTMLFormElement} */ (e.target);
+  if (form.matches('[data-validate]')) return;
+  maybeActivate(form, /** @type {SubmitEvent} */ (e).submitter);
+});
+
+document.addEventListener('vb:beforesubmit', (e) => {
+  if (e.defaultPrevented) return;
+  const { form, submitter } = /** @type {CustomEvent} */ (e).detail ?? {};
+  if (form instanceof HTMLFormElement) maybeActivate(form, submitter);
+});
 
 registerInit(SELECTOR, enhance);
 

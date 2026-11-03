@@ -65,11 +65,6 @@ crumbLabel: Data Attributes
           <td>string</td>
           <td>Comma-separated list of rules. Available rules: <code>length:N</code>, <code>uppercase</code>, <code>lowercase</code>, <code>number</code>, <code>special</code>.</td>
         </tr>
-        <tr>
-          <td><code>data-strength-init</code></td>
-          <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
-        </tr>
       </tbody>
     </table>
   </section>
@@ -177,10 +172,10 @@ crumbLabel: Data Attributes
     <p>After initialization, the following elements are inserted after the password input within the <code>&lt;form-field&gt;</code>:</p>
 
     <code-block language="html" show-lines label="Generated DOM structure" data-escape><!-- After init, the following structure is generated after the input -->
-<div class="strength-meter" role="meter"
-  aria-label="Password strength" aria-valuemin="0" aria-valuemax="100"
-  aria-valuenow="0" aria-valuetext="weak">
-  <div class="strength-fill" data-level="weak"></div>
+<div class="strength-meter" data-level="weak">
+  <meter class="xs" aria-label="Password strength"
+         min="0" max="5" low="2" high="4" optimum="5" value="1"></meter>
+  <span class="strength-label">Weak</span>
 </div>
 
 <ul class="strength-rules" aria-label="Password requirements">
@@ -191,7 +186,8 @@ crumbLabel: Data Attributes
   <li data-rule="special">One special character</li>
 </ul></code-block>
 
-    <p>The <code>.strength-meter</code> uses <code>role="meter"</code> with ARIA attributes for the current score. The <code>.strength-rules</code> checklist marks met rules with <code>data-met</code>.</p>
+    <p>The <code>.strength-meter</code> wraps a native <code>&lt;meter&gt;</code> (one step per rule) and a text level. The <code>.strength-rules</code> checklist marks met rules with <code>data-met</code>. Moving the field never duplicates the meter.</p>
+    <p>All text is localizable with <code>data-label-*</code> on the <code>&lt;form-field&gt;</code>: <code>data-label-strength</code> ("Password strength"), <code>data-label-strength-weak</code> / <code>-fair</code> / <code>-good</code> / <code>-strong</code>, <code>data-label-requirements</code> ("Password requirements"), <code>data-label-rule-length</code> ("At least {n} characters"), <code>data-label-rule-uppercase</code>, <code>data-label-rule-lowercase</code>, <code>data-label-rule-number</code>, <code>data-label-rule-special</code>.</p>
   </section>
 
   <section>

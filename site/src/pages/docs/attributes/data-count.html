@@ -32,8 +32,8 @@ crumbLabel: Data Attributes
     <h2>How It Works</h2>
     <p>Add <code>data-count</code> to any <code>&lt;textarea&gt;</code>. The init script:</p>
     <ol>
-      <li>Creates an <code>&lt;output&gt;</code> element with <code>class="textarea-counter"</code></li>
-      <li>Sets <code>aria-live="polite"</code> and <code>aria-atomic="true"</code> on the counter for screen reader announcements</li>
+      <li>Creates an <code>&lt;output&gt;</code> element with <code>class="textarea-counter"</code> and an id, and adds it to the textarea's <code>aria-describedby</code></li>
+      <li>Keeps the visible counter quiet (<code>aria-live="off"</code>) and announces the count through a visually hidden live region only near or over the limit, once typing pauses</li>
       <li>Places the counter after the textarea (inside <code>&lt;form-field&gt;</code> if present, otherwise directly after)</li>
       <li>Listens for <code>input</code> events to update the count in real time</li>
       <li>Calculates thresholds: <strong>warning</strong> at &ge;80% of limit, <strong>error</strong> at &ge;100%</li>
@@ -67,6 +67,11 @@ crumbLabel: Data Attributes
           <td><code>data-maxwords</code></td>
           <td>number</td>
           <td>Word limit for word-count mode. The counter displays <code>current / max</code> format.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-characters</code>, <code>data-label-words</code></td>
+          <td>string</td>
+          <td>Text for counters without a limit, with <code>{count}</code> replaced (default <code>{count} characters</code> / <code>{count} words</code>). Add a plural category suffix for languages that need it, e.g. <code>data-label-characters-one="{count} Zeichen"</code>; the category comes from <code>Intl.PluralRules</code> for the nearest <code>lang</code>.</td>
         </tr>
         <tr>
           <td><code>data-count-init</code></td>

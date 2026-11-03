@@ -6,57 +6,134 @@
  * component for field-level validation timing.
  *
  * Submit modes (via `data-submit` attribute on <form>):
- *   - absent / "native": validate then submit natively via action/method
+ *   - absent / "native": validate then submit natively (requestSubmit with
+ *     the original submitter, so its name/value/formaction/formmethod apply)
  *   - "event": validate then dispatch cancelable `vb:submit` with FormData
- *   - "fetch": validate then POST via fetch with loading/success/error states
+ *   - "fetch": validate then send via fetch with loading/success/error states
  *
  * Error summary supports two authored patterns:
- *   - New: <div data-form-summary role="alert" tabindex="-1" hidden>
- *            <h2>...</h2> <ul data-summary-list></ul>
- *          </div>
+ *   - <section data-form-summary role="alert" tabindex="-1" hidden>
+ *       <h2 data-summary-heading>...</h2> <ul data-summary-list></ul>
+ *     </section>
  *   - Legacy: <output class="error-summary" role="alert" tabindex="-1">
+ *
+ * Form-level text overrides (all optional, for i18n):
+ *   data-label-summary[-one|-other|...]  "Please fix {count} errors:" (Intl.PluralRules)
+ *   data-label-group                     fallback legend for fieldset entries
+ *   data-message-min-checked             "Select at least {min}"
+ *   data-message-max-checked             "Select no more than {max}"
+ *   data-message-invalid-selection       fallback fieldset message
+ *   data-message-match                   "Values do not match"
+ *   data-message-network                 network error text
  */
+
+const VALIDITY_KEYS = [
+  'valueMissing', 'typeMismatch', 'patternMismatch', 'tooShort', 'tooLong',
+  'rangeUnderflow', 'rangeOverflow', 'stepMismatch', 'badInput',
+];
+
+const DEFAULTS = {
+  'data-label-group': 'Group',
+  'data-message-min-checked': 'Select at least {min}',
+  'data-message-max-checked': 'Select no more than {max}',
+  'data-message-invalid-selection': 'Invalid selection',
+  'data-message-match': 'Values do not match',
+  'data-message-network': 'Something went wrong. Please try again.',
+};
+
+/** Forms whose next submit event must pass through untouched (native mode). */
+const BYPASS = new WeakSet();
+/** Bare controls the coordinator marked aria-invalid. */
+const MARKED = new WeakSet();
+let uid = 0;
+
+// ── Text helpers ─────────────────────────────────────────────────────
+
+/**
+ * Resolve an overridable string: element attribute, then form attribute,
+ * then the built-in default. `{name}` placeholders are filled from vars.
+ * @param {HTMLFormElement} form
+ * @param {Element|null} el
+ * @param {string} attr
+ * @param {Record<string, string|number>} [vars]
+ */
+function text(form, el, attr, vars = {}) {
+  const tpl = el?.getAttribute(attr) ?? form.getAttribute(attr) ?? DEFAULTS[attr] ?? '';
+  return tpl.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+}
+
+function summaryHeading(form, count) {
+  const lang = form.closest('[lang]')?.getAttribute('lang') || undefined;
+  let category = 'other';
+  try { category = new Intl.PluralRules(lang).select(count); } catch { /* bad lang tag */ }
+  const tpl = form.getAttribute(`data-label-summary-${category}`)
+    ?? form.getAttribute('data-label-summary')
+    ?? (count === 1 ? 'Please fix {count} error:' : 'Please fix {count} errors:');
+  return tpl.replaceAll('{count}', String(count));
+}
 
 // ── Field helpers ────────────────────────────────────────────────────
 
-function getFields(form) {
-  return [...form.querySelectorAll('input, select, textarea')]
-    .filter(f => f.type !== 'submit' && f.type !== 'button'
-            && f.type !== 'hidden' && !('honeypot' in f.dataset));
+/** Validatable controls in tree order (form="" association included). */
+function getControls(form) {
+  return /** @type {HTMLInputElement[]} */ ([...form.elements])
+    .filter(el => /** @type {any} */ (el).willValidate && !('honeypot' in /** @type {HTMLElement} */ (el).dataset));
+}
+
+/** Text inputs that carry a data-match constraint. */
+function getMatchFields(form) {
+  return getControls(form).filter(f => f.dataset.match);
 }
 
 function getFormFields(form) {
-  return [...form.querySelectorAll('form-field[data-upgraded]')];
+  return /** @type {any[]} */ ([...form.querySelectorAll('form-field[data-upgraded]')]);
 }
 
-function getLabelText(field) {
-  return field.labels?.[0]?.textContent?.trim()
-    ?? field.getAttribute('aria-label')
-    ?? field.name
-    ?? field.id;
+/** The upgraded form-field that owns this control, if any. */
+function owningFormField(el) {
+  const ff = /** @type {any} */ (el.closest('form-field[data-upgraded]'));
+  return ff && ff.input === el ? ff : null;
 }
 
-// ── Cross-field: data-match ──────────────────────────────────────────
+function ensureId(el) {
+  if (!el.id) el.id = `vb-field-${++uid}`;
+  return el.id;
+}
 
-function checkMatch(field, form) {
-  const targetId = field.dataset.match;
-  if (!targetId) return;
+function isFocusable(el) {
+  return !el.disabled && !el.closest('[inert], [hidden]') && el.getClientRects().length > 0;
+}
 
-  const target = form.querySelector(`#${CSS.escape(targetId)}`)
-    ?? form.querySelector(`[name="${CSS.escape(targetId)}"]`);
-  if (!target) return;
-
-  field.setCustomValidity('');
-
-  if (field.value && target.value && field.value !== target.value) {
-    const msg = field.dataset.messageMatch ?? 'Values do not match';
-    field.setCustomValidity(msg);
-    const output = findErrorOutput(field);
-    if (output) output.textContent = msg;
-  } else if (field.validity.valid) {
-    const output = findErrorOutput(field);
-    if (output) output.textContent = '';
+function getLabelText(form, field) {
+  if (field.type === 'radio') {
+    const legend = field.closest('fieldset')?.querySelector(':scope > legend')?.textContent?.trim();
+    if (legend) return legend;
   }
+  const ff = owningFormField(field);
+  if (ff?.fieldName) return ff.fieldName;
+  return field.labels?.[0]?.textContent?.trim()
+    || field.getAttribute('aria-label')
+    || field.name
+    || field.id
+    || text(form, null, 'data-label-group');
+}
+
+/**
+ * The message the user sees for a control: form-field's resolved message,
+ * then the rendered output.error, then data-message-*, then the browser's.
+ */
+function getMessage(field) {
+  const ff = owningFormField(field);
+  if (ff && typeof ff.errorMessage === 'string' && ff.errorMessage) return ff.errorMessage;
+  const rendered = findErrorOutput(field)?.textContent?.trim();
+  if (rendered) return rendered;
+  for (const key of VALIDITY_KEYS) {
+    if (!field.validity[key]) continue;
+    const msg = field.getAttribute(`data-message-${key.toLowerCase()}`);
+    if (msg) return msg;
+    break;
+  }
+  return field.validationMessage;
 }
 
 function findErrorOutput(field) {
@@ -69,9 +146,42 @@ function findErrorOutput(field) {
   return formField?.querySelector('output.error') ?? null;
 }
 
+/** First focusable control inside a container (fieldset group target). */
+function firstControl(container) {
+  return /** @type {HTMLElement|null} */ (
+    container.querySelector('input:not([type="hidden"]), select, textarea, button')
+  );
+}
+
+// ── Cross-field: data-match ──────────────────────────────────────────
+
+function findMatchTarget(field, form) {
+  const targetId = field.dataset.match;
+  if (!targetId) return null;
+  return form.querySelector(`#${CSS.escape(targetId)}`)
+    ?? form.querySelector(`[name="${CSS.escape(targetId)}"]`);
+}
+
+function checkMatch(field, form) {
+  const target = findMatchTarget(field, form);
+  if (!target) return;
+
+  field.setCustomValidity('');
+
+  if (field.value && target.value && field.value !== target.value) {
+    const msg = text(form, field, 'data-message-match');
+    field.setCustomValidity(msg);
+    const output = findErrorOutput(field);
+    if (output) output.textContent = msg;
+  } else if (field.validity.valid) {
+    const output = findErrorOutput(field);
+    if (output) output.textContent = '';
+  }
+}
+
 // ── Checkbox group: data-min-checked / data-max-checked ──────────────
 
-function checkFieldset(fieldset) {
+function checkFieldset(form, fieldset) {
   const boxes = [...fieldset.querySelectorAll('input[type="checkbox"]')];
   const count = boxes.filter(b => b.checked).length;
   const min = parseInt(fieldset.dataset.minChecked ?? '0', 10);
@@ -79,8 +189,8 @@ function checkFieldset(fieldset) {
   const output = fieldset.querySelector(':scope > output');
 
   let msg = null;
-  if (count < min) msg = fieldset.dataset.messageMinChecked ?? `Select at least ${min}`;
-  if (count > max) msg = fieldset.dataset.messageMaxChecked ?? `Select no more than ${max}`;
+  if (count < min) msg = text(form, fieldset, 'data-message-min-checked', { min, max });
+  if (count > max) msg = text(form, fieldset, 'data-message-max-checked', { min, max });
 
   if (output) output.textContent = msg ?? '';
 
@@ -93,106 +203,155 @@ function checkFieldset(fieldset) {
   return !msg;
 }
 
+function groupFieldsets(form) {
+  return [...form.querySelectorAll('fieldset[data-min-checked], fieldset[data-max-checked]')];
+}
+
+// ── Error collection ─────────────────────────────────────────────────
+
+/**
+ * Every current error as { target, text }, in document order. Radio groups
+ * yield one entry linking the group's first radio; fieldset groups link
+ * their first control.
+ */
+function collectErrors(form) {
+  /** @type {{ target: HTMLElement, label: string, message: string }[]} */
+  const errors = [];
+  const seenRadio = new Set();
+
+  for (const field of getControls(form)) {
+    if (field.validity.valid) continue;
+    let target = field;
+    if (field.type === 'radio' && field.name) {
+      if (seenRadio.has(field.name)) continue;
+      seenRadio.add(field.name);
+      target = /** @type {HTMLInputElement} */ (
+        getControls(form).find(c => c.type === 'radio' && c.name === field.name) ?? field
+      );
+    }
+    errors.push({ target, label: getLabelText(form, field), message: getMessage(field) });
+  }
+
+  for (const fs of form.querySelectorAll('fieldset[data-invalid]')) {
+    const target = firstControl(fs);
+    if (!target) continue;
+    const output = fs.querySelector(':scope > output');
+    errors.push({
+      target,
+      label: fs.querySelector(':scope > legend')?.textContent?.trim() || text(form, fs, 'data-label-group'),
+      message: output?.textContent?.trim() || text(form, fs, 'data-message-invalid-selection'),
+    });
+  }
+
+  errors.sort((a, b) =>
+    a.target.compareDocumentPosition(b.target) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
+  return errors;
+}
+
+function firstInvalidControl(form) {
+  return collectErrors(form).map(e => e.target).find(isFocusable) ?? null;
+}
+
 // ── Error summary ────────────────────────────────────────────────────
 
 function findSummary(form) {
-  // New pattern: <div data-form-summary>
   const authored = form.querySelector('[data-form-summary]');
-  if (authored) return { el: authored, type: 'authored' };
+  if (authored) return { el: /** @type {HTMLElement} */ (authored), type: 'authored', signature: '', active: false };
 
-  // Legacy pattern: <output class="error-summary">
   const legacy = form.querySelector('output.error-summary');
-  if (legacy) return { el: legacy, type: 'legacy' };
+  if (legacy) return { el: /** @type {HTMLElement} */ (legacy), type: 'legacy', signature: '', active: false };
 
   return null;
 }
 
+function buildLinks(errors) {
+  return errors.map(e => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = `#${ensureId(e.target)}`;
+    a.textContent = `${e.label}: ${e.message}`;
+    li.append(a);
+    return li;
+  });
+}
+
+/**
+ * Render the summary. Skips the DOM write when the error set is unchanged
+ * so the live region is not re-announced.
+ */
 function updateSummary(form, summary, { focus = false } = {}) {
   if (!summary) return;
 
-  const errors = [];
-
-  for (const field of getFields(form)) {
-    if (field.validity.valid) continue;
-    errors.push({
-      id: field.id || field.name,
-      label: getLabelText(field),
-      message: field.validationMessage,
-    });
-  }
-
-  // Fieldset group errors
-  for (const fs of form.querySelectorAll('fieldset[data-invalid]')) {
-    const output = fs.querySelector(':scope > output');
-    errors.push({
-      id: fs.id || '',
-      label: fs.querySelector('legend')?.textContent?.trim() ?? 'Group',
-      message: output?.textContent || 'Invalid selection',
-    });
-  }
+  const errors = collectErrors(form);
 
   if (errors.length === 0) {
     clearSummary(summary);
     return;
   }
 
-  if (summary.type === 'authored') {
-    const list = summary.el.querySelector('[data-summary-list]');
-    if (list) {
-      list.innerHTML = '';
-      for (const e of errors) {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = e.id ? `#${e.id}` : '#';
-        a.textContent = `${e.label}: ${e.message}`;
-        li.appendChild(a);
-        list.appendChild(li);
-      }
-    }
-    summary.el.removeAttribute('hidden');
-    summary.el.dataset.visible = '';
-  } else {
-    // Legacy innerHTML approach
-    const count = errors.length;
-    const links = errors
-      .map(e => {
-        const href = e.id ? `#${e.id}` : '#';
-        return `<li><a href="${href}">${e.label}: ${e.message}</a></li>`;
-      })
-      .join('\n      ');
+  summary.active = true;
+  const signature = errors.map(e => `${ensureId(e.target)}\u0000${e.label}\u0000${e.message}`).join('\u0001');
+  const changed = signature !== summary.signature;
+  summary.signature = signature;
 
-    summary.el.innerHTML =
-      `<p>Please fix ${count} error${count === 1 ? '' : 's'}:</p>\n` +
-      `    <ul>\n      ${links}\n    </ul>`;
+  if (summary.type === 'authored') {
+    if (changed) {
+      summary.el.querySelector('[data-summary-list]')?.replaceChildren(...buildLinks(errors));
+      const heading = summary.el.querySelector('[data-summary-heading]');
+      if (heading) heading.textContent = summaryHeading(form, errors.length);
+    }
+    if (summary.el.hidden || !summary.el.hasAttribute('data-visible')) {
+      summary.el.hidden = false;
+      void summary.el.offsetHeight; // start the expand transition from the collapsed state
+      summary.el.dataset.visible = '';
+    }
+  } else if (changed) {
+    const p = document.createElement('p');
+    p.textContent = summaryHeading(form, errors.length);
+    const ul = document.createElement('ul');
+    ul.append(...buildLinks(errors));
+    summary.el.replaceChildren(p, ul);
   }
 
   if (focus) summary.el.focus();
 }
 
+function transitionMs(el) {
+  const cs = getComputedStyle(el);
+  const list = (v) => v.split(',').map(s => parseFloat(s) * (s.trim().endsWith('ms') ? 1 : 1000) || 0);
+  const d = list(cs.transitionDuration);
+  const delay = list(cs.transitionDelay);
+  return Math.max(0, ...d.map((v, i) => v + (delay[i] ?? delay[0] ?? 0)));
+}
+
 function clearSummary(summary) {
   if (!summary) return;
+  summary.active = false;
+  summary.signature = '';
   if (summary.type === 'authored') {
-    delete summary.el.dataset.visible;
-    // Clear list content after the collapse transition finishes
-    const list = summary.el.querySelector('[data-summary-list]');
-    if (list) {
-      summary.el.addEventListener('transitionend', () => {
-        if (!summary.el.dataset.visible) list.innerHTML = '';
-      }, { once: true });
-    }
+    const el = summary.el;
+    delete el.dataset.visible;
+    const done = () => {
+      if (el.hasAttribute('data-visible')) return; // re-shown meanwhile
+      el.hidden = true;
+      el.querySelector('[data-summary-list]')?.replaceChildren();
+    };
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ms = reduce ? 0 : transitionMs(el);
+    if (ms === 0) done();
+    else setTimeout(done, ms + 50);
   } else {
-    summary.el.innerHTML = '';
+    summary.el.replaceChildren();
   }
 }
 
 function bindSummaryLinks(summary) {
   if (!summary) return;
   summary.el.addEventListener('click', (e) => {
-    const link = e.target.closest('a[href^="#"]');
+    const link = /** @type {Element} */ (e.target).closest('a[href^="#"]');
     if (!link) return;
     e.preventDefault();
-    const id = link.getAttribute('href').slice(1);
-    const target = document.getElementById(id);
+    const target = document.getElementById((link.getAttribute('href') ?? '#').slice(1));
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
       target.focus();
@@ -200,36 +359,130 @@ function bindSummaryLinks(summary) {
   });
 }
 
-// ── Force :user-invalid on submit ────────────────────────────────────
+// ── Bare controls (no form-field): aria-invalid on submit ────────────
 
-function forceUserInvalid(form) {
-  for (const field of getFields(form)) {
-    field.focus({ preventScroll: true });
-    field.blur();
+function markBareControls(form) {
+  for (const field of getControls(form)) {
+    if (owningFormField(field)) continue;
+    if (!field.validity.valid) {
+      field.setAttribute('aria-invalid', 'true');
+      MARKED.add(field);
+    } else if (MARKED.has(field)) {
+      field.removeAttribute('aria-invalid');
+      MARKED.delete(field);
+    }
   }
 }
 
-// ── Fetch submission cycle ───────────────────────────────────────────
+function unmarkIfValid(e) {
+  const field = /** @type {HTMLInputElement} */ (e.target);
+  if (!MARKED.has(field)) return;
+  const group = field.type === 'radio' && field.form && field.name
+    ? getControls(field.form).filter(c => c.type === 'radio' && c.name === field.name)
+    : [field];
+  for (const f of group) {
+    if (MARKED.has(f) && f.validity.valid) {
+      f.removeAttribute('aria-invalid');
+      MARKED.delete(f);
+    }
+  }
+}
 
-async function fetchSubmit(form) {
-  const submitBtn = form.querySelector('[type="submit"]');
+// ── Form-level status elements ───────────────────────────────────────
+
+function getErrorElement(form) {
+  let el = /** @type {HTMLElement|null} */ (form.querySelector('[data-form-error]'));
+  if (!el) {
+    el = document.createElement('p');
+    el.setAttribute('data-form-error', '');
+    el.hidden = true;
+    form.prepend(el);
+  }
+  if (!el.hasAttribute('role')) el.setAttribute('role', 'alert');
+  return el;
+}
+
+function showNetworkError(form) {
+  form.dataset.error = 'network';
+  const el = getErrorElement(form);
+  if (!el.textContent.trim() || el.hasAttribute('data-vb-generated')) {
+    el.textContent = text(form, null, 'data-message-network');
+    el.setAttribute('data-vb-generated', '');
+  }
+  el.hidden = false;
+}
+
+function resetStatus(form) {
+  if (form.hasAttribute('data-success')) {
+    delete form.dataset.success;
+    const successEl = /** @type {HTMLElement|null} */ (form.querySelector('[data-form-success]'));
+    if (successEl) successEl.hidden = true;
+  }
+  delete form.dataset.error;
+  const errorEl = /** @type {HTMLElement|null} */ (form.querySelector('[data-form-error]'));
+  if (errorEl) errorEl.hidden = true;
+}
+
+function showSuccess(form) {
+  form.dataset.success = '';
+  const successEl = /** @type {HTMLElement|null} */ (form.querySelector('[data-form-success]'));
+  if (!successEl) return;
+  successEl.hidden = false;
+  if (!successEl.hasAttribute('tabindex')) successEl.tabIndex = -1;
+  if (!successEl.hasAttribute('role')) successEl.setAttribute('role', 'status');
+  successEl.focus();
+}
+
+// ── Submission ───────────────────────────────────────────────────────
+
+/** The spec's default button: first submit button in tree order. */
+function defaultButton(form) {
+  return /** @type {HTMLElement|null} */ ([...form.elements].find(el =>
+    (el instanceof HTMLButtonElement && el.type === 'submit')
+    || (el instanceof HTMLInputElement && (el.type === 'submit' || el.type === 'image'))) ?? null);
+}
+
+function formData(form, submitter) {
+  try {
+    return submitter ? new FormData(form, submitter) : new FormData(form);
+  } catch {
+    return new FormData(form);
+  }
+}
+
+async function fetchSubmit(form, submitter) {
+  const button = submitter ?? defaultButton(form);
+  const rawMethod = (submitter?.getAttribute('formmethod') || form.getAttribute('method') || 'post').toLowerCase();
+  const method = rawMethod === 'get' ? 'GET' : 'POST';
+  const action = submitter?.hasAttribute('formaction')
+    ? /** @type {HTMLButtonElement} */ (submitter).formAction
+    : form.action;
 
   form.dataset.submitting = '';
-  delete form.dataset.error;
-  if (submitBtn) submitBtn.setAttribute('aria-disabled', 'true');
+  if (button) button.setAttribute('aria-disabled', 'true');
+
+  const finish = () => {
+    delete form.dataset.submitting;
+    if (button && button.getAttribute('aria-busy') !== 'true') button.removeAttribute('aria-disabled');
+  };
 
   try {
-    const data = new FormData(form);
-    const response = await fetch(form.action, {
-      method: form.method || 'post',
-      body: data,
-    });
+    const data = formData(form, submitter);
+    let response;
+    if (method === 'GET') {
+      const url = new URL(action, document.baseURI);
+      url.search = '';
+      for (const [k, v] of data) {
+        if (typeof v === 'string') url.searchParams.append(k, v);
+      }
+      response = await fetch(url, { method });
+    } else {
+      response = await fetch(action, { method, body: data });
+    }
 
-    delete form.dataset.submitting;
-    if (submitBtn) submitBtn.removeAttribute('aria-disabled');
+    finish();
 
     if (!response.ok) {
-      // Attempt to read server validation errors
       const contentType = response.headers.get('content-type') ?? '';
       if (contentType.includes('application/json')) {
         const body = await response.json();
@@ -241,19 +494,10 @@ async function fetchSubmit(form) {
       throw new Error(`Server error: ${response.status}`);
     }
 
-    // Success
-    form.dataset.success = '';
-
-    const successEl = form.querySelector('[data-form-success]');
-    if (successEl) {
-      successEl.hidden = false;
-      successEl.focus();
-    }
+    showSuccess(form);
   } catch {
-    // Network or unexpected server error
-    delete form.dataset.submitting;
-    if (submitBtn) submitBtn.removeAttribute('aria-disabled');
-    form.dataset.error = 'network';
+    finish();
+    showNetworkError(form);
   }
 }
 
@@ -261,115 +505,112 @@ function mapServerErrors(form, errors) {
   form.dataset.error = '';
 
   const formFields = getFormFields(form);
-  const invalidFields = [];
+  let any = false;
 
   for (const formField of formFields) {
-    const input = formField.querySelector('input, textarea, select');
+    const input = formField.input ?? formField.querySelector('input, textarea, select');
     if (!input) continue;
     const msg = errors[input.name];
     if (msg) {
-      formField.setError(msg);
-      invalidFields.push(formField);
+      formField.setError(String(msg));
+      any = true;
     }
   }
 
-  if (invalidFields.length > 0) {
-    const summary = findSummary(form);
-    updateSummary(form, summary, { focus: true });
+  if (any) {
+    const summary = /** @type {any} */ (form)._vbSummary;
+    if (summary) updateSummary(form, summary, { focus: true });
+    else firstInvalidControl(form)?.focus();
   }
 
   // Clear custom validity on next input so resubmission works
   for (const formField of formFields) {
-    const input = formField.querySelector('input, textarea, select');
+    const input = formField.input ?? formField.querySelector('input, textarea, select');
     input?.addEventListener('input', () => formField.clearError(), { once: true });
   }
+}
+
+function submitNatively(form, submitter) {
+  // The submission algorithm is not re-entrant while submit events are
+  // firing, so requestSubmit() has to wait for the current dispatch to end.
+  setTimeout(() => {
+    if (!form.isConnected) return;
+    const button = submitter?.isConnected && /** @type {any} */ (submitter).form === form ? submitter : null;
+    BYPASS.add(form);
+    try {
+      if (button) form.requestSubmit(button);
+      else form.requestSubmit();
+    } catch {
+      BYPASS.delete(form);
+      form.submit();
+    }
+    BYPASS.delete(form);
+  });
 }
 
 // ── Form enhancement ─────────────────────────────────────────────────
 
 function enhanceForm(form) {
-  // Idempotent guard
   if (form.hasAttribute('data-vb-enhanced')) return;
 
-  // Take ownership of validation UI
   form.setAttribute('novalidate', '');
   form.setAttribute('data-vb-enhanced', '');
 
   const summary = findSummary(form);
+  /** @type {any} */ (form)._vbSummary = summary;
   if (summary) bindSummaryLinks(summary);
 
-  // Cross-field match listeners
-  for (const field of getFields(form)) {
-    if (field.dataset.match) {
-      field.addEventListener('input', () => checkMatch(field, form));
-      field.addEventListener('blur', () => checkMatch(field, form));
-
-      // Also re-check when the target field changes
-      const targetId = field.dataset.match;
-      const target = form.querySelector(`#${CSS.escape(targetId)}`)
-        ?? form.querySelector(`[name="${CSS.escape(targetId)}"]`);
-      if (target) {
-        target.addEventListener('input', () => checkMatch(field, form));
-      }
-    }
+  for (const field of getMatchFields(form)) {
+    field.addEventListener('input', () => checkMatch(field, form));
+    field.addEventListener('blur', () => checkMatch(field, form));
+    findMatchTarget(field, form)?.addEventListener('input', () => checkMatch(field, form));
   }
 
-  // Fieldset checkbox group constraints
-  for (const fs of form.querySelectorAll('fieldset[data-min-checked], fieldset[data-max-checked]')) {
-    fs.addEventListener('change', () => {
-      checkFieldset(fs);
-      if (summary) updateSummary(form, summary);
-    });
+  for (const fs of groupFieldsets(form)) {
+    fs.addEventListener('change', () => checkFieldset(form, fs));
   }
 
-  // Submit handler
+  form.addEventListener('input', unmarkIfValid);
+  form.addEventListener('change', unmarkIfValid);
+
   form.addEventListener('submit', (e) => {
+    // Second pass from our own requestSubmit(): let the browser submit.
+    if (BYPASS.has(form)) {
+      BYPASS.delete(form);
+      return;
+    }
     e.preventDefault();
 
-    // Validate all form-field components
-    const formFields = getFormFields(form);
-    for (const ff of formFields) {
-      ff.validate();
-    }
+    const submitter = /** @type {HTMLElement|null} */ (/** @type {SubmitEvent} */ (e).submitter ?? null);
+    resetStatus(form);
 
-    // Cross-field checks
-    for (const field of getFields(form)) {
-      if (field.dataset.match) checkMatch(field, form);
-    }
+    for (const ff of getFormFields(form)) ff.validate();
+    for (const field of getMatchFields(form)) checkMatch(field, form);
+    for (const fs of groupFieldsets(form)) checkFieldset(form, fs);
+    markBareControls(form);
 
-    // Check fieldsets
-    for (const fs of form.querySelectorAll('fieldset[data-min-checked], fieldset[data-max-checked]')) {
-      checkFieldset(fs);
-    }
-
-    // Force :user-invalid on untouched fields
-    forceUserInvalid(form);
-
-    const valid = form.checkValidity()
-      && ![...form.querySelectorAll('fieldset[data-invalid]')].length;
+    const valid = form.checkValidity() && !form.querySelector('fieldset[data-invalid]');
 
     if (!valid) {
       if (summary) {
         updateSummary(form, summary, { focus: true });
       } else {
-        // Focus the first invalid field
-        const firstInvalid = form.querySelector(':invalid');
-        if (firstInvalid) {
-          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          firstInvalid.focus();
+        const first = firstInvalidControl(form);
+        if (first) {
+          first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          first.focus();
         }
       }
       return;
     }
 
-    // Valid — clear summary and handle submission
     clearSummary(summary);
 
-    // Bot protection hook — fires before submission
+    // Bot protection / loading-state hook — fires before submission
     const beforeEvent = new CustomEvent('vb:beforesubmit', {
       bubbles: true,
       cancelable: true,
-      detail: { form },
+      detail: { form, submitter },
     });
     form.dispatchEvent(beforeEvent);
     if (beforeEvent.defaultPrevented) return;
@@ -377,30 +618,26 @@ function enhanceForm(form) {
     const submitMode = form.dataset.submit ?? 'native';
 
     if (submitMode === 'fetch') {
-      fetchSubmit(form);
+      fetchSubmit(form, submitter);
     } else if (submitMode === 'event') {
-      const event = new CustomEvent('vb:submit', {
+      form.dispatchEvent(new CustomEvent('vb:submit', {
         bubbles: true,
         cancelable: true,
-        detail: new FormData(form),
-      });
-      form.dispatchEvent(event);
+        detail: formData(form, submitter),
+      }));
     } else {
-      // Native submit
-      form.submit();
+      submitNatively(form, submitter);
     }
   });
 
-  // Live clearing: when user fixes errors, update summary
+  // Once the summary has been shown, keep it current on blur/change only —
+  // never per keystroke — and only rewrite it when the error set changes.
   if (summary) {
-    form.addEventListener('input', () => {
-      requestAnimationFrame(() => {
-        for (const field of getFields(form)) {
-          if (field.dataset.match) checkMatch(field, form);
-        }
-        updateSummary(form, summary);
-      });
+    const refresh = () => requestAnimationFrame(() => {
+      if (summary.active) updateSummary(form, summary);
     });
+    form.addEventListener('focusout', refresh);
+    form.addEventListener('change', refresh);
   }
 }
 
@@ -415,7 +652,6 @@ export function initFormCoordinator() {
     enhanceForm(/** @type {HTMLFormElement} */ (form));
   }
 
-  // Observe for dynamically added forms
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {

@@ -14,9 +14,13 @@ form-field {
   display: block;
 }
 
-/* Required field indicator */
-form-field:has(:required) label::after {
-  content: " *";
+/* Required field indicator — on the field's own label (or the legend of a
+   grouped field), never on every radio label. The asterisk is a shape, not
+   colour alone, and is silent to screen readers: the control's native
+   required state is announced instead. */
+form-field:has(:required) > label:only-of-type::after,
+form-field:has(:required) > fieldset > legend::after {
+  content: " *" / "";
   color: var(--color-error);
 }
 
@@ -35,7 +39,9 @@ form-field output.hint {
     margin var(--duration-normal, 200ms) var(--ease-default, ease);
 }
 
-/* Error - collapsed by default, reveals on invalid */
+/* Error - collapsed by default, reveals on invalid. visibility keeps the
+   collapsed output out of the accessibility tree (it is discrete, so it
+   stays visible for the whole collapse transition). */
 form-field output.error {
   display: block;
   font-size: var(--font-size-s);
@@ -44,10 +50,12 @@ form-field output.error {
   overflow: hidden;
   max-block-size: 0;
   opacity: 0;
+  visibility: hidden;
   transition:
     max-block-size var(--duration-normal, 200ms) var(--ease-default, ease),
     opacity var(--duration-normal, 200ms) var(--ease-default, ease),
-    margin var(--duration-normal, 200ms) var(--ease-default, ease);
+    margin var(--duration-normal, 200ms) var(--ease-default, ease),
+    visibility var(--duration-normal, 200ms) var(--ease-default, ease);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -59,14 +67,15 @@ form-field output.error {
 
 /* Valid state - after user interaction
    Only show valid styling on required fields (which must have a value to be valid)
-   or fields that have data-valid set by the web component (which guards for empty) */
+   or fields that have data-valid set by the web component (which guards for empty).
+   background-color only: the background shorthand would wipe the select chevron. */
 form-field:has(:user-valid:required),
 form-field[data-valid] {
   & input,
   & textarea,
   & select {
     border-color: var(--color-success);
-    background: color-mix(in oklab, var(--color-success) 5%, transparent);
+    background-color: color-mix(in oklab, var(--color-success) 5%, transparent);
   }
 
   & output.hint {
@@ -87,6 +96,7 @@ form-field:has(:user-invalid) {
   & output.error {
     max-block-size: 4lh;
     opacity: 1;
+    visibility: visible;
   }
 }
 
@@ -97,28 +107,15 @@ form-field:has(:user-invalid) {
 form-field[data-invalid] {
   & input,
   & textarea,
-  & select {
+  & select,
+  & .otp-digit {
     border-color: var(--color-error);
   }
 
   & output.error {
     max-block-size: 4lh;
     opacity: 1;
-  }
-}
-
-form-field[data-valid] {
-  & input,
-  & textarea,
-  & select {
-    border-color: var(--color-success);
-    background: color-mix(in oklab, var(--color-success) 5%, transparent);
-  }
-
-  & output.hint {
-    max-block-size: 0;
-    opacity: 0;
-    margin-block-start: 0;
+    visibility: visible;
   }
 }
 
@@ -130,6 +127,9 @@ form-field[data-pending] {
 /* --------------------------------------------------------------------------
    Validation status icons
    Using mask-image for icon display. Opt-out with data-no-icon.
+   No icons on checkbox/radio fields (the control shows its own state).
+   --_icon-inset / --_icon-pad move the icon clear of the password toggle
+   and the select chevron.
    -------------------------------------------------------------------------- */
 
 /* Add position context for icon placement */
@@ -137,30 +137,31 @@ form-field:not([data-no-icon]) {
   position: relative;
 }
 
-/* Reserve space for validation icons */
-form-field:not([data-no-icon]):has(:user-valid:required) input:not([type="checkbox"]):not([type="radio"]),
-form-field:not([data-no-icon]):has(:user-valid:required) textarea,
-form-field:not([data-no-icon]):has(:user-valid:required) select,
-form-field:not([data-no-icon])[data-valid] input:not([type="checkbox"]):not([type="radio"]),
-form-field:not([data-no-icon])[data-valid] textarea,
-form-field:not([data-no-icon])[data-valid] select,
-form-field:not([data-no-icon]):has(:user-invalid) input:not([type="checkbox"]):not([type="radio"]),
-form-field:not([data-no-icon]):has(:user-invalid) textarea,
-form-field:not([data-no-icon]):has(:user-invalid) select {
-  padding-inline-end: 2.5rem;
+form-field:has(.password-wrapper) {
+  --_icon-inset: 2.75rem;
+  --_icon-pad: 5rem;
 }
 
-/* Valid icon (checkmark) — only for required fields or JS-confirmed valid */
-form-field:not([data-no-icon]):has(:user-valid:required)::after,
-form-field:not([data-no-icon])[data-valid]::after {
+form-field:has(> select:not([multiple]):is(:not([size]), [size="0"], [size="1"])) {
+  --_icon-inset: calc(var(--select-chevron-inset, var(--size-s)) + 1.25rem);
+  --_icon-pad: calc(var(--size-xl) + 1.75rem);
+}
+
+/* Reserve space for validation icons */
+form-field:not([data-no-icon], [data-type="checkbox"], [data-type="radio"]):is(:has(:user-valid:required), [data-valid], :has(:user-invalid), [data-invalid]) :is(input:not([type="checkbox"], [type="radio"], .otp-digit, .otp-source), textarea, select) {
+  padding-inline-end: var(--_icon-pad, 2.5rem);
+}
+
+/* Shared icon box */
+form-field:not([data-no-icon], [data-type="checkbox"], [data-type="radio"], :has(:is([type="checkbox"], [type="radio"]))):is(:has(:user-valid:required), [data-valid], :has(:user-invalid), [data-invalid])::after {
   content: '';
   position: absolute;
-  inset-inline-end: var(--size-s);
+  inset-inline-end: var(--_icon-inset, var(--size-s));
   /* Position at input level - roughly middle of typical input height */
   inset-block-start: calc(1lh + var(--size-s) + 0.625rem);
   inline-size: 1.25rem;
   block-size: 1.25rem;
-  background: var(--color-success);
+  background-color: var(--color-success);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
   mask-size: contain;
   mask-repeat: no-repeat;
@@ -168,32 +169,35 @@ form-field:not([data-no-icon])[data-valid]::after {
   pointer-events: none;
 }
 
-/* Invalid icon (x) */
-form-field:not([data-no-icon]):has(:user-invalid)::after {
-  content: '';
-  position: absolute;
-  inset-inline-end: var(--size-s);
-  inset-block-start: calc(1lh + var(--size-s) + 0.625rem);
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
-  background: var(--color-error);
+/* Invalid icon (x) — wins over the valid checkmark */
+form-field:not([data-no-icon], [data-type="checkbox"], [data-type="radio"], :has(:is([type="checkbox"], [type="radio"]))):is(:has(:user-invalid), [data-invalid])::after {
+  background-color: var(--color-error);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E");
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center;
-  pointer-events: none;
 }
 
-/* Adjust for password fields with toggle button */
-form-field:not([data-no-icon]):has(.password-wrapper):has(:user-valid:required)::after,
-form-field:not([data-no-icon]):has(.password-wrapper)[data-valid]::after,
-form-field:not([data-no-icon]):has(.password-wrapper):has(:user-invalid)::after {
-  inset-inline-end: 2.75rem;
-}
+/* Forced colors: background colours are overridden, which would erase the
+   mask icons. Re-assert system colours so they stay visible. */
+@media (forced-colors: active) {
+  form-field::after,
+  form-field .strength-rules li::before {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
 
-form-field:not([data-no-icon]):has(.password-wrapper):has(:user-valid) input,
-form-field:not([data-no-icon]):has(.password-wrapper):has(:user-invalid) input {
-  padding-inline-end: 5rem;
+  form-field[data-valid]::after,
+  form-field .strength-rules li[data-met]::before {
+    background-color: Highlight;
+  }
+
+  form-field[data-invalid]::after,
+  form-field:has(:user-invalid)::after {
+    background-color: CanvasText;
+  }
+
+  form-field[data-invalid] :is(input, textarea, select, .otp-digit) {
+    border-color: CanvasText;
+    border-style: double;
+  }
 }
 
 /* Checkbox/radio variants */
@@ -288,8 +292,25 @@ form-field .otp-digit:not(:placeholder-shown) {
 }
 
 /* Disable validation icons on OTP fields */
-form-field[data-enhanced="otp"]::after {
+form-field[data-otp-ready]::after {
   display: none;
+}
+
+/* The source input stays a real, validatable text input (it submits the
+   code and carries required/pattern) but is visually hidden; the digit
+   group is what people see and use. */
+form-field input.otp-source {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -486,6 +507,12 @@ fieldset[data-invalid] > output {
     margin var(--duration-normal, 200ms) var(--ease-default, ease);
 }
 
+/* Collapsed + [hidden] after clearing: stale links must not stay
+   focusable or announced (display: block above beats UA [hidden]). */
+[data-form-summary][hidden] {
+  display: none;
+}
+
 [data-form-summary][data-visible] {
   max-block-size: 50vh;
   opacity: 1;
@@ -532,15 +559,21 @@ form[data-success] [data-form-success] {
   display: block;
 }
 
-/* Network error */
-form[data-error="network"]::before {
-  content: "Something went wrong. Please try again.";
+/* Authored status elements stay out of layout and the a11y tree until
+   the coordinator reveals them (author display rules beat UA [hidden]). */
+[data-form-success][hidden],
+[data-form-error][hidden] {
+  display: none;
+}
+
+/* Network error: authored or generated <p data-form-error role="alert"> */
+[data-form-error] {
   display: block;
   color: var(--color-error);
   padding: var(--size-s);
-  border: 1px solid var(--color-error);
+  border: var(--border-width-thin, 1px) solid var(--color-error);
   border-radius: var(--radius-s);
-  margin-block-end: var(--size-m);
+  margin-block: 0 var(--size-m);
 }
 
 /* ── Floating label ──────────────────────────────────────────────── */
@@ -572,9 +605,11 @@ form-field[data-floating-label-ready] > label {
     color var(--duration-fast, 150ms) var(--ease-default, ease);
 }
 
-/* Floated state — on focus or when input has a value */
+/* Floated state — on focus, when the input has a value, or when it has a
+   real placeholder (the label would otherwise sit on top of it) */
 form-field[data-floating-label-ready]:focus-within > label,
-form-field[data-floating-label-ready]:has(:is(input, textarea):not(:placeholder-shown)) > label {
+form-field[data-floating-label-ready]:has(:is(input, textarea):not(:placeholder-shown)) > label,
+form-field[data-floating-label-ready]:has(:is(input, textarea):not([placeholder=" "])) > label {
   transform: translateY(-0.55em);
   font-size: var(--font-size-s, 0.8rem);
   font-weight: 500;
@@ -589,12 +624,14 @@ form-field[data-floating-label-ready]:focus-within > label {
 
 /* Required indicator inherits positioning */
 form-field[data-floating-label-ready]:has(:required) > label::after {
-  content: " *";
+  content: " *" / "";
   color: var(--color-error);
 }
 
-/* Ensure input has top padding to avoid label overlap when floated */
-form-field[data-floating-label-ready] > :is(input, textarea, select) {
+/* Ensure input has top padding to avoid label overlap when floated
+   (password inputs sit inside .password-wrapper once enhanced) */
+form-field[data-floating-label-ready] > :is(input, textarea, select),
+form-field[data-floating-label-ready] > .password-wrapper > input {
   padding-block-start: calc(var(--input-padding-inline, var(--size-s)) + 0.15rem);
 }
 

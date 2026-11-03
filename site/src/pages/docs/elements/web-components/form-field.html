@@ -31,9 +31,9 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>data-type</code></td>
-          <td><code>checkbox</code>, <code>radio</code>, <code>file</code></td>
+          <td><code>checkbox</code>, <code>radio</code></td>
           <td>-</td>
-          <td>Special styling for non-text inputs</td>
+          <td>Inline label + control layout. No validation icon (the control shows its own state).</td>
         </tr>
         <tr>
           <td><code>data-no-icon</code></td>
@@ -42,22 +42,46 @@ crumbLabel: Web Components
           <td>Disable validation status icons</td>
         </tr>
         <tr>
-          <td><code>data-required</code></td>
+          <td><code>data-floating-label</code></td>
           <td>boolean</td>
           <td>-</td>
-          <td>Visual indicator (auto-detected from input)</td>
+          <td>Label starts inside the input and floats above on focus or value. A real <code>placeholder</code> keeps the label floated. See <a href="/docs/attributes/data-floating-label/"><code>data-floating-label</code></a>.</td>
         </tr>
         <tr>
           <td><code>data-valid</code></td>
           <td>boolean</td>
           <td>-</td>
-          <td>Force valid state styling</td>
+          <td>Valid state (set by the component when a valid field has a value; can be set by hand)</td>
         </tr>
         <tr>
           <td><code>data-invalid</code></td>
           <td>boolean</td>
           <td>-</td>
-          <td>Force invalid state styling</td>
+          <td>Invalid state: reveals the error output and icon (set by the component; can be set by hand)</td>
+        </tr>
+        <tr>
+          <td><code>data-pending</code></td>
+          <td>boolean</td>
+          <td>-</td>
+          <td>Dims the field and blocks pointer input while something is in flight</td>
+        </tr>
+        <tr>
+          <td><code>data-state</code></td>
+          <td><code>validating</code></td>
+          <td>-</td>
+          <td>Async-check hook: warning border and a spinner in the icon slot</td>
+        </tr>
+        <tr>
+          <td><code>data-message-invalid</code></td>
+          <td>string</td>
+          <td><code>Please check this field.</code></td>
+          <td>Last-resort error message when neither a <code>data-message-*</code>, the authored error text nor the control supplies one (custom elements without a public <code>validationMessage</code>)</td>
+        </tr>
+        <tr>
+          <td><code>data-label-*</code></td>
+          <td>string</td>
+          <td>-</td>
+          <td>Localize generated text: <code>show-password</code>, <code>hide-password</code>, <code>digit</code> (<code>Digit {n} of {total}</code>), <code>incomplete</code> (<code>Enter all {total} digits</code>), plus the <a href="/docs/attributes/data-strength/">strength meter labels</a></td>
         </tr>
       </tbody>
     </table>
@@ -85,6 +109,24 @@ crumbLabel: Web Components
           <td><code>6</code></td>
           <td>Number of digits for OTP/PIN input</td>
         </tr>
+        <tr>
+          <td><code>data-strength</code>, <code>data-rules</code> (on password input)</td>
+          <td>boolean; <code>length:N,uppercase,lowercase,number,special</code></td>
+          <td><code>length:8</code></td>
+          <td>Strength meter + rules checklist. See <a href="/docs/attributes/data-strength/"><code>data-strength</code></a>.</td>
+        </tr>
+        <tr>
+          <td><code>data-count</code> (on textarea)</td>
+          <td><code>""</code>, <code>words</code></td>
+          <td>-</td>
+          <td>Character/word counter, linked with <code>aria-describedby</code>. See <a href="/docs/attributes/data-count/"><code>data-count</code></a>.</td>
+        </tr>
+        <tr>
+          <td><code>data-message-*</code> (on input)</td>
+          <td>string</td>
+          <td>-</td>
+          <td>Custom error message per <code>ValidityState</code> key (see <a href="#js-enhanced-validation">JS-Enhanced Validation</a>)</td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -109,16 +151,31 @@ crumbLabel: Web Components
         </tr>
         <tr>
           <td><code>&lt;input&gt;</code> / <code>&lt;textarea&gt;</code> / <code>&lt;select&gt;</code></td>
-          <td>Form control</td>
-          <td><code>id</code>, <code>name</code>, validation attrs, <code>aria-describedby</code></td>
+          <td>Form control (or a form-associated custom element, see <a href="#custom-controls">Custom controls</a>)</td>
+          <td><code>id</code>, <code>name</code>, validation attrs, <code>data-message-*</code></td>
         </tr>
         <tr>
-          <td><code>&lt;output&gt;</code></td>
-          <td>Validation/help message</td>
-          <td><code>id</code>, <code>for</code>, <code>aria-live="polite"</code></td>
+          <td><code>&lt;output class="hint"&gt;</code></td>
+          <td>Help text, collapses once the field is valid</td>
+          <td><code>for</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;output class="error"&gt;</code></td>
+          <td>Error message, hidden until invalid. Authored text is the no-JS message and the JS fallback.</td>
+          <td><code>for</code>, <code>aria-live="polite"</code></td>
         </tr>
       </tbody>
     </table>
+
+    <h3>ARIA wiring</h3>
+    <p>When it upgrades, <code>&lt;form-field&gt;</code> wires the control for you:</p>
+    <ul>
+      <li><code>aria-describedby</code> lists the hint output(s) and the textarea counter, then the error output <em>only while the field is invalid</em>. Ids you already put in <code>aria-describedby</code> are kept (first); outputs without an id get one.</li>
+      <li><code>aria-invalid="true"</code> mirrors the invalid state. For a radio group it goes on the field's radios; for OTP on the digit group; for custom elements on their inner combobox/group/input.</li>
+      <li>The collapsed error output is <code>visibility: hidden</code>, so it is not in the accessibility tree and a valid field never announces a stale error.</li>
+      <li><code>aria-errormessage</code> is not used: screen-reader support is still too uneven.</li>
+    </ul>
+    <p>Writing <code>aria-describedby</code> by hand is still fine (and is what the no-JS page uses).</p>
 
     <code-block language="html" show-lines label="Basic text input" data-escape><form-field>
   <label for="name">Full Name</label>
@@ -128,9 +185,10 @@ crumbLabel: Web Components
          required
          minlength="2"
          autocomplete="name"
-         aria-describedby="name-msg" />
-  <output id="name-msg" for="name" aria-live="polite">
-    At least 2 characters required
+         aria-describedby="name-hint name-error" />
+  <output id="name-hint" class="hint" for="name">As it appears on your ID.</output>
+  <output id="name-error" class="error" for="name" aria-live="polite">
+    Please enter at least 2 characters.
   </output>
 </form-field></code-block>
   </section>
@@ -162,8 +220,10 @@ crumbLabel: Web Components
     <p>Password inputs are automatically enhanced with a show/hide toggle button when JavaScript is available. No extra markup needed.</p>
     <ul>
       <li>Appears automatically when JavaScript loads</li>
-      <li>Uses <code>aria-pressed</code> and <code>aria-label</code> for accessibility</li>
+      <li>Uses <code>aria-pressed</code> and <code>aria-label</code> for accessibility; localize the label with <code>data-label-show-password</code> / <code>data-label-hide-password</code> on the <code>&lt;form-field&gt;</code></li>
       <li>Positions adjust alongside validation icons</li>
+      <li>Add <code>data-strength</code> (and optionally <code>data-rules</code>) to the input for a <a href="/docs/attributes/data-strength/">strength meter and rules checklist</a></li>
+      <li>Idempotent: moving or re-inserting the field never adds a second toggle or meter</li>
     </ul>
 
     <code-block language="html" show-lines label="Password input with auto toggle" data-escape><form-field>
@@ -211,7 +271,9 @@ crumbLabel: Web Components
       <li>Auto-focus moves to the next box after entering a digit</li>
       <li>Backspace moves focus to the previous box</li>
       <li>Arrow keys navigate between boxes</li>
-      <li>Paste support fills multiple boxes at once</li>
+      <li>Paste and one-time-code autofill fill multiple boxes at once</li>
+      <li>The original input stays a real (visually hidden) text input: it submits the code and keeps <code>required</code> and the length check (a <code>pattern</code> of <code>\d{length}</code> is added when you don't supply one), so an empty or partial code blocks submission. Its partial-code message defaults to "Enter all {total} digits" (<code>data-message-patternmismatch</code> or <code>data-label-incomplete</code> to change it)</li>
+      <li>The boxes form a <code>role="group"</code> named by the field's <code>&lt;label&gt;</code> and described by its hints; <code>autocomplete="one-time-code"</code> moves to the first box. Box names default to "Digit 1 of 6" (<code>data-label-digit="Ziffer {n} von {total}"</code> to localize)</li>
     </ul>
 
     <code-block language="html" show-lines label="OTP input progressive enhancement" data-escape><form-field data-no-icon>
@@ -220,10 +282,11 @@ crumbLabel: Web Components
          data-type="otp" data-length="6"
          inputmode="numeric" pattern="[0-9]{6}"
          autocomplete="one-time-code" required
-         aria-describedby="code-msg" />
-  <output id="code-msg" class="hint" for="code" aria-live="polite">
+         aria-describedby="code-hint" />
+  <output id="code-hint" class="hint" for="code">
     Enter the 6-digit code from your authenticator app.
   </output>
+  <output class="error" for="code" aria-live="polite"></output>
 </form-field></code-block>
   </section>
 
@@ -317,28 +380,33 @@ crumbLabel: Web Components
       shadow>
     </browser-window>
 
-    <code-block language="css" show-lines label="CSS-only validation states" data-escape>/* Valid state - green border after user interacts */
-form-field:has(input:user-valid) {
-  & input {
+    <code-block language="css" show-lines label="CSS-only validation states (simplified from the shipped rules)" data-escape>/* Valid - only required fields, which must have a value to be valid */
+form-field:has(:user-valid:required) {
+  & :is(input, textarea, select) {
     border-color: var(--color-success);
+    /* background-color, not the shorthand: keeps the select chevron */
+    background-color: color-mix(in oklab, var(--color-success) 5%, transparent);
   }
-  & output {
-    color: var(--color-success);
+  & output.hint {
+    max-block-size: 0;
+    opacity: 0;
   }
 }
 
-/* Invalid state - red border after user interacts */
-form-field:has(input:user-invalid) {
-  & input {
+/* Invalid - after the user has interacted */
+form-field:has(:user-invalid) {
+  & :is(input, textarea, select) {
     border-color: var(--color-error);
   }
-  & output {
-    color: var(--color-error);
+  & output.error {
+    max-block-size: 4lh;
+    opacity: 1;
+    visibility: visible; /* collapsed errors are visibility: hidden */
   }
 }</code-block>
   </section>
 
-  <section>
+  <section id="js-enhanced-validation">
     <h2>JS-Enhanced Validation</h2>
     <p>Add <code>data-validate</code> to a <code>&lt;form&gt;</code> to enable features CSS can't handle: custom error messages, cross-field validation, checkbox group constraints, and error summaries. Without it, everything works as pure CSS validation.</p>
 
@@ -423,8 +491,19 @@ form-field:has(input:user-invalid) {
           <td><code>stepMismatch</code></td>
           <td>Not on <code>step</code> interval</td>
         </tr>
+        <tr>
+          <td><code>data-message-badinput</code></td>
+          <td><code>badInput</code></td>
+          <td>The browser can't parse the entry (e.g. letters in <code>type="number"</code>)</td>
+        </tr>
+        <tr>
+          <td><code>data-message-customerror</code></td>
+          <td><code>customError</code></td>
+          <td><code>setCustomValidity()</code> was called; without this attribute the custom message itself is shown</td>
+        </tr>
       </tbody>
     </table>
+    <p>Message order: the matching <code>data-message-*</code> → (for custom errors and custom elements) the control's own <code>validationMessage</code> → the text authored inside <code>output.error</code> → the browser's <code>validationMessage</code> → <code>data-message-invalid</code>.</p>
 
     <h3>Cross-Field and Group Attributes</h3>
     <table class="props-table">
@@ -471,32 +550,38 @@ form-field:has(input:user-invalid) {
       </thead>
       <tbody>
         <tr>
-          <td><code>validate()</code></td>
+          <td><code>validate({ show = true } = {})</code></td>
           <td><code>boolean</code></td>
-          <td>Validate the field and update visual state. Returns validity.</td>
+          <td>Validate the field and show the result immediately (no blur needed) &mdash; error text, <code>data-invalid</code>, <code>aria-invalid</code>, describedby. The form coordinator calls it on submit. <code>{ show: false }</code> only returns validity.</td>
         </tr>
         <tr>
           <td><code>setError(message)</code></td>
           <td>-</td>
-          <td>Set a programmatic error (e.g. from server validation).</td>
+          <td>Show a programmatic error (e.g. from server validation). Also sets it as the native control's custom validity so the form won't submit. Cleared on the user's next edit; a custom error set by other code (e.g. <code>data-match</code>) is never cleared by the field.</td>
         </tr>
         <tr>
           <td><code>clearError()</code></td>
           <td>-</td>
-          <td>Clear a programmatic error and reset state.</td>
+          <td>Clear the field's programmatic error and return to the neutral state.</td>
         </tr>
         <tr>
           <td><code>fieldName</code></td>
           <td><code>string</code></td>
-          <td>Human-readable field name from the label.</td>
+          <td>Human-readable field name from the label or legend.</td>
         </tr>
         <tr>
           <td><code>input</code></td>
           <td><code>HTMLElement</code></td>
-          <td>The controlled input element.</td>
+          <td>The bound control: the native input/textarea/select, or the form-associated custom element.</td>
+        </tr>
+        <tr>
+          <td><code>form-field:upgraded</code> (event)</td>
+          <td>-</td>
+          <td>Bubbles once the field has bound its control.</td>
         </tr>
       </tbody>
     </table>
+    <p>Timing: the field validates when focus leaves it (moving between its own parts &mdash; password toggle, OTP boxes, a combobox popup &mdash; doesn't count), then re-validates on every edit once an error has been shown. It also validates when the browser fires <code>invalid</code> (native submit, <code>checkValidity()</code>). Its state survives being moved in the DOM.</p>
 
     <code-block language="html" show-lines label="Custom error messages" data-escape><form data-validate>
   <form-field>
@@ -557,6 +642,19 @@ form-field:has(input:user-invalid) {
   </fieldset>
   <button type="submit">Save</button>
 </form></code-block>
+  </section>
+
+  <section id="custom-controls">
+    <h2>Custom Controls</h2>
+    <p>A form-associated custom element inside the field &mdash; <a href="/docs/elements/web-components/date-picker/"><code>&lt;date-picker&gt;</code></a>, <a href="/docs/elements/web-components/rating/"><code>&lt;star-rating&gt;</code></a>, <a href="/docs/elements/web-components/combobox/"><code>&lt;combo-box&gt;</code></a> &mdash; becomes the bound control in preference to any native input inside it. The field reads its <code>validity</code> / <code>validationMessage</code> when exposed (date-picker), otherwise its <code>:invalid</code> state, and listens for its <code>input</code>, <code>change</code>, <code>&lt;tag&gt;:change</code> and <code>invalid</code> events. If the custom element is defined after the field upgrades, the field re-binds to it.</p>
+    <p>Put <code>data-message-valuemissing</code> on the custom element (or the field) for the required message; otherwise the authored error text is used.</p>
+
+    <code-block language="html" show-lines label="Required star-rating inside form-field" data-escape><form-field>
+  <star-rating name="rating" label="Your rating" required
+               data-message-valuemissing="Please choose a rating"></star-rating>
+  <output class="error" aria-live="polite"></output>
+</form-field></code-block>
+    <p><code>setError()</code> on a custom control is display-only (its validity lives in its own <code>ElementInternals</code>) and clears on the next change.</p>
   </section>
 
   <section>
@@ -633,9 +731,9 @@ form-field:has(input:user-invalid) {
       <label for="name">Name</label>
       <input type="text" id="name" name="name" required
              minlength="2" autocomplete="name"
-             aria-describedby="name-msg" />
-      <output id="name-msg" for="name" aria-live="polite">
-        Please enter your name
+             aria-describedby="name-error" />
+      <output id="name-error" class="error" for="name" aria-live="polite">
+        Please enter your name (at least 2 characters)
       </output>
     </form-field>
 
@@ -643,9 +741,9 @@ form-field:has(input:user-invalid) {
       <label for="email">Email</label>
       <input type="email" id="email" name="email" required
              autocomplete="email"
-             aria-describedby="email-msg" />
-      <output id="email-msg" for="email" aria-live="polite">
-        Please enter a valid email
+             aria-describedby="email-error" />
+      <output id="email-error" class="error" for="email" aria-live="polite">
+        Please enter a valid email address
       </output>
     </form-field>
 
@@ -663,9 +761,9 @@ form-field:has(input:user-invalid) {
       <label for="message">Message</label>
       <textarea id="message" name="message" required
                 minlength="10" rows="5"
-                aria-describedby="message-msg"></textarea>
-      <output id="message-msg" for="message" aria-live="polite">
-        At least 10 characters
+                aria-describedby="message-error"></textarea>
+      <output id="message-error" class="error" for="message" aria-live="polite">
+        Please enter your message (at least 10 characters)
       </output>
     </form-field>
 
@@ -690,7 +788,9 @@ form-field:has(input:user-invalid) {
       <li>Every <code>&lt;input&gt;</code> has a <code>&lt;label&gt;</code> with matching <code>for</code>/<code>id</code></li>
       <li>Required fields use the <code>required</code> attribute</li>
       <li>Validation messages use <code>&lt;output&gt;</code> with <code>aria-live="polite"</code></li>
-      <li>Inputs link to messages via <code>aria-describedby</code></li>
+      <li>Inputs link to messages via <code>aria-describedby</code> (wired automatically on upgrade; author it too for the no-JS page)</li>
+      <li>The required asterisk is decorative and silent; the control's native <code>required</code> state is what screen readers announce</li>
+      <li>In forced-colors mode the state icons switch to system colours and invalid controls get a double border</li>
       <li>Form controls have appropriate <code>autocomplete</code> values</li>
       <li>Error states don't rely on color alone (include text)</li>
     </ul>
