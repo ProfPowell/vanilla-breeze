@@ -2308,13 +2308,54 @@
       "tag": "em",
       "type": "native",
       "category": "text",
-      "cssFile": "src/native-elements/inline-semantics/styles.css",
+      "cssFile": "src/native-elements/paragraph/styles.css",
       "jsRequired": false,
       "variants": [
         {
           "id": "default",
           "name": "Default",
           "html": "<p>You <em>must</em> read the documentation before proceeding. This is <em>not</em> optional.</p>"
+        },
+        {
+          "id": "in-blockquote",
+          "name": "In blockquote (toggles upright)",
+          "html": "<blockquote>\n  <p>The quote is italic, so <em>this emphasis</em> is upright.</p>\n</blockquote>"
+        },
+        {
+          "id": "nested",
+          "name": "Nested and in cite",
+          "html": "<p><em>Never, and I mean <em>never</em>, press that button.</em></p>\n<p><cite>The Hitchhiker's Guide to the <em>Galaxy</em></cite></p>"
+        },
+        {
+          "id": "cjk",
+          "name": "CJK emphasis marks (ja + zh)",
+          "html": "<p lang=\"ja\">これは<em>とても</em>大切です。</p>\n<p lang=\"zh-Hans\">这是<em>非常</em>重要的。</p>"
+        }
+      ]
+    },
+    {
+      "id": "embed",
+      "tag": "embed",
+      "type": "native",
+      "category": "media",
+      "cssFile": "src/native-elements/iframe/styles.css",
+      "jsRequired": false,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Default (fixed size)",
+          "html": "<embed src=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ccc'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' fill='%23666' font-size='24'%3E4:3%3C/text%3E%3C/svg%3E\" type=\"image/svg+xml\" width=\"400\" height=\"300\" title=\"Grey placeholder box, 4:3\">"
+        },
+        {
+          "id": "data-ratio",
+          "name": "data-ratio (responsive)",
+          "html": "<embed src=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ccc'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' fill='%23666' font-size='24'%3E4:3%3C/text%3E%3C/svg%3E\" type=\"image/svg+xml\" width=\"400\" height=\"300\" data-ratio=\"4:3\" title=\"Grey placeholder box, 4:3\">"
+        },
+        {
+          "id": "data-media",
+          "name": "In a data-media ratio box",
+          "fixtureWidth": "wide",
+          "html": "<figure data-media data-ratio=\"16:9\" data-radius=\"m\">\n  <embed src=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ccc'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' fill='%23666' font-size='24'%3E4:3%3C/text%3E%3C/svg%3E\" type=\"image/svg+xml\" title=\"Grey placeholder box\">\n</figure>"
         }
       ]
     },
@@ -2331,10 +2372,35 @@
           "name": "Open Picker",
           "interactive": true,
           "screenshotTarget": "page",
-          "setup": "await new Promise(r => setTimeout(r, 500));\n    document.querySelector('emoji-picker').open();",
-          "html": "<div style=\"min-height: 400px;\">\n  <textarea id=\"msg\" placeholder=\"Type a message...\"></textarea>\n  <emoji-picker for=\"msg\">\n    <button data-trigger type=\"button\" aria-label=\"Insert emoji\">😀</button>\n  </emoji-picker>\n</div>"
+          "setup": "localStorage.removeItem('vb-emoji-recent');\n    await customElements.whenDefined('emoji-picker');\n    const ep = document.querySelector('emoji-picker');\n    await ep.ready;\n    ep.open();",
+          "html": "<label for=\"ep-msg\">Message</label>\n<textarea id=\"ep-msg\" placeholder=\"Type a message...\"></textarea>\n<emoji-picker for=\"ep-msg\">\n  <button data-trigger type=\"button\" aria-label=\"Insert emoji\">😀</button>\n</emoji-picker>"
+        },
+        {
+          "id": "search-results",
+          "name": "Search results",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "localStorage.removeItem('vb-emoji-recent');\n    await customElements.whenDefined('emoji-picker');\n    const ep = document.querySelector('emoji-picker');\n    await ep.ready;\n    ep.open();\n    const s = ep.querySelector('input[type=\"search\"]');\n    const st = ep.querySelector('[role=\"status\"]');\n    const announced = new Promise((r) => { const mo = new MutationObserver(() => { mo.disconnect(); r(); }); mo.observe(st, { childList: true, characterData: true, subtree: true }); });\n    s.value = 'heart';\n    s.dispatchEvent(new Event('input', { bubbles: true }));\n    await announced;",
+          "html": "<label for=\"ep-msg\">Message</label>\n<textarea id=\"ep-msg\" placeholder=\"Type a message...\"></textarea>\n<emoji-picker for=\"ep-msg\">\n  <button data-trigger type=\"button\" aria-label=\"Insert emoji\">😀</button>\n</emoji-picker>"
+        },
+        {
+          "id": "no-results",
+          "name": "No results",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "localStorage.removeItem('vb-emoji-recent');\n    await customElements.whenDefined('emoji-picker');\n    const ep = document.querySelector('emoji-picker');\n    await ep.ready;\n    ep.open();\n    const s = ep.querySelector('input[type=\"search\"]');\n    const st = ep.querySelector('[role=\"status\"]');\n    const announced = new Promise((r) => { const mo = new MutationObserver(() => { mo.disconnect(); r(); }); mo.observe(st, { childList: true, characterData: true, subtree: true }); });\n    s.value = 'zzzz';\n    s.dispatchEvent(new Event('input', { bubbles: true }));\n    await announced;",
+          "html": "<label for=\"ep-msg\">Message</label>\n<textarea id=\"ep-msg\" placeholder=\"Type a message...\"></textarea>\n<emoji-picker for=\"ep-msg\">\n  <button data-trigger type=\"button\" aria-label=\"Insert emoji\">😀</button>\n</emoji-picker>"
+        },
+        {
+          "id": "rtl",
+          "name": "RTL (panel end-aligned)",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "localStorage.removeItem('vb-emoji-recent');\n    await customElements.whenDefined('emoji-picker');\n    const ep = document.querySelector('emoji-picker');\n    await ep.ready;\n    ep.open();",
+          "html": "<section dir=\"rtl\" lang=\"ar\">\n<label for=\"ep-rtl\">رسالة</label>\n<textarea id=\"ep-rtl\"></textarea>\n<emoji-picker for=\"ep-rtl\" data-label-placeholder=\"ابحث عن رمز تعبيري…\">\n  <button data-trigger type=\"button\" aria-label=\"إدراج رمز تعبيري\">😀</button>\n</emoji-picker>\n</section>"
         }
-      ]
+      ],
+      "readySelector": "emoji-picker[data-upgraded]"
     },
     {
       "id": "fieldset",
@@ -3690,6 +3756,26 @@
             "vertical"
           ],
           "html": "<nav class=\"vertical\"><ul><li><a href=\"#\">Dashboard</a></li><li><a href=\"#\" aria-current=\"page\">Settings</a></li><li><a href=\"#\">Profile</a></li><li><a href=\"#\">Logout</a></li></ul></nav>"
+        }
+      ]
+    },
+    {
+      "id": "object",
+      "tag": "object",
+      "type": "native",
+      "category": "media",
+      "cssFile": "src/native-elements/iframe/styles.css",
+      "jsRequired": false,
+      "variants": [
+        {
+          "id": "default",
+          "name": "SVG with fallback",
+          "html": "<object data=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ccc'/%3E%3Ctext x='200' y='150' text-anchor='middle' dy='.3em' fill='%23666' font-size='24'%3E4:3%3C/text%3E%3C/svg%3E\" type=\"image/svg+xml\" width=\"400\" height=\"300\" data-ratio=\"4:3\" role=\"img\" aria-label=\"Grey placeholder box, 4:3\">\n  <p>Image unavailable.</p>\n</object>"
+        },
+        {
+          "id": "fallback",
+          "name": "Fallback content (unsupported type)",
+          "html": "<object data=\"about:blank\" type=\"application/x-vb-unsupported\" width=\"400\" height=\"120\">\n  <p>This browser cannot display the document. <a href=\"#download\">Download the PDF</a>.</p>\n</object>"
         }
       ]
     },

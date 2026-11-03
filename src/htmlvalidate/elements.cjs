@@ -749,13 +749,26 @@ module.exports = {
     attributes: {
       "for": {},
       "recent-limit": {},
-      "data-trigger": {},
-      "aria-haspopup": {},
-      "role": {},
-      "data-group": {},
-      "data-group-heading": {},
-      "data-shortcode": {},
-      "open": {}
+      "data-trigger": { boolean: true },
+      "data-label-trigger": {},
+      "data-label-dialog": {},
+      "data-label-search": {},
+      "data-label-placeholder": {},
+      "data-label-categories": {},
+      "data-label-emoji": {},
+      "data-label-recent": {},
+      "data-label-empty": {},
+      "data-label-results": {},
+      "data-label-smileys": {},
+      "data-label-people": {},
+      "data-label-animals": {},
+      "data-label-food": {},
+      "data-label-travel": {},
+      "data-label-activities": {},
+      "data-label-objects": {},
+      "data-label-symbols": {},
+      "data-label-flags": {},
+      "open": { boolean: true }
     }
   },
 

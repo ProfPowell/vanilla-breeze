@@ -13,6 +13,21 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Changes from the E-element review.**
+  - **em / i**: emphasis inside an italic context (`<blockquote>`, `<cite>`, `<dfn>`, `<var>`, or another `<em>`/`<i>`) now toggles back to upright. Replaces the zero-specificity blockquote de-emphasis rule, which never won (blockquote emphasis rendered italic-on-italic) and also added medium weight. The a11y-dyslexia theme override is unchanged.
+  - **em**: in Chinese, Japanese and Korean content (`:lang(zh|ja|ko)`) `<em>` renders emphasis marks instead of an italic CJK fonts don't have — sesame over (ja, ko), filled dot under (zh).
+  - **embed / object / iframe**: new `data-ratio` on the element itself (`1:1`, `4:3`, `3:2`, `16:9` default, `21:9`, `2:3`, `3:4`, `9:16`, `page`) — block size follows the used width, a `width` attribute stays the preferred width, no `width` fills the container. `.embed-responsive` now sizes `embed` and `object` children as well as `iframe`.
+  - **emoji-picker**
+    - Panel is now a top-layer `popover="manual"` positioned below the trigger (start-aligned, RTL-aware), flipped above when there is no room and clamped to the viewport — no longer clipped by overflow containers or dialogs.
+    - ARIA restructured: categories are plain buttons in a `role="toolbar"` (roving tabindex, arrow keys, `aria-current` synced to the scrolled group via IntersectionObserver) instead of tabs without panels; the grid is a `role="listbox"` of labelled `role="group"` categories with `role="option"` emoji named by their CLDR name (tooltip shows `:shortcode:`). Exactly one option is tabbable; Tab moves search → toolbar → list and leaving the component closes it (Tab no longer closes from inside the grid).
+    - Arrow keys follow the rendered layout (across group headings and Recently used) instead of a flat ±8; Home/End = first/last, PageUp/PageDown = category jumps; Left/Right mirror in RTL.
+    - `data-upgraded` is set only once the panel is built (the data loads asynchronously); new `ready` promise. `open()`/`close()`/`toggle()` before that are queued instead of throwing.
+    - Grid is built once and filtered with `hidden`; one delegated listener per event type. Glyphs listed under several shortcodes appear once; every shortcode stays searchable.
+    - Localizable strings via `data-label-*` (trigger, dialog, search, placeholder, categories, emoji, recent, empty, results with `{count}`, and per-category `data-label-smileys` … `data-label-flags`). The trigger's visible text is kept as its name; `aria-label` is only added to emoji-only triggers.
+    - No-JS: the `[data-trigger]` is hidden while the element is undefined (no dead control).
+    - api.json trimmed to the public surface (`for`, `recent-limit`, `data-trigger`, `data-label-*`, reflected `open`) with methods, properties and event detail.
+  - **emoji-extended / data-emoji** — the extended set now hands over through one shared `Symbol.for('vanilla-breeze.emoji-extended')` registry that every bundled copy of `emoji-data.js` merges lazily (replacing the single-reader `__vbEmojiExtended` / overwritten `__vbEmojiRegister` globals), so `data-emoji` and `<emoji-picker>` both see it in any load order, autoload included. It dispatches `vb:emoji-extended`; already-scanned `data-emoji` containers are rescanned.
+  - **package** — `dist/cdn/emoji-extended.js` now ships in the npm package with a `vanilla-breeze/emoji-extended` export (side-effect module).
 - **Breaking and behaviour changes from the D-element review.**
   - **diagram-wc**
     - Breaking (security): removed the per-element `data-mermaid-src` override. Only page script can change the Mermaid module URL, via `window.VB_MERMAID_URL`; markup (including sanitized markdown) can no longer choose which module is imported (c4mc).
@@ -83,6 +98,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **E-element review.**
+  - **embed / object**: print styles keep `embed`, `object` (and `iframe`) from splitting across pages and cap `embed`/`object` at the page width.
+  - **embed / object docs**: PDF examples used invalid `width="100%"`; now integer sizes plus `data-ratio="page"`. Added Sizing and Security sections (no sandbox, scripts in SVG/HTML embeds, `<iframe sandbox>`/`<img>` for untrusted content, CSP `object-src 'none'`, `type` is only a hint), accessible-name guidance, and the mobile PDF caveat (recommend `<object>` with a download link). Demo drops inline styles and its placeholder "Embedded content" name.
+  - **em docs**: documents the `font-synthesis: none` invisible-emphasis caveat, the italic-context toggle, CJK marks, and corrects the screen-reader claim (most don't convey emphasis by default).
+  - **emoji-picker**
+    - Inserting into a contenteditable no longer deletes text selected elsewhere on the page: a saved selection is used only if it lies inside the target, otherwise the emoji goes at the end of the target.
+    - Disconnecting while the data loads no longer leaves document listeners behind; reconnects never duplicate the panel.
+    - Insertion uses `execCommand('insertText')` (undo works, native `InputEvent`) with a `setRangeText` + `InputEvent({ inputType: 'insertText', data })` fallback; email/number inputs no longer throw; contenteditable insertion fires `input` too.
+    - Search results are announced in a polite `role="status"` region ("N emoji found" / "No emoji found"); the search input has `aria-controls`; "No emoji found" is no longer a div inside the grid.
+    - Focus after selection goes to the target (or back to the trigger when there is none); Escape returns focus to the trigger.
 - **D-element review.**
   - **diagram-wc**
     - Setting `.source` no longer removes the figure before rendering: the new figure is crossfaded in, and on a parse error the previous diagram stays visible (with no prior render, a `<pre>` of the current source is shown).

@@ -525,6 +525,11 @@ Broken image: `:not([src])` / `[src=""]` show placeholder. `[loading="lazy"]` ge
 
 Wrapper: `.embed-responsive` with `.ratio-16x9`, `.ratio-4x3`, `.ratio-1x1`, `.ratio-21x9`
 
+
+### `<embed>` / `<object>`
+- `<embed src type width height title>` — void, no fallback, no sandbox. Integer `width`/`height` only. Name it with `title`/`aria-label`. `data-ratio="1:1|4:3|3:2|16:9|21:9|2:3|3:4|9:16|page"` makes it responsive (block size follows width; `width` = preferred width, none = fill). Works inside `[data-media]` and `.embed-responsive`.
+- `<object data type width height>…fallback…</object>` — same sizing; fallback content between the tags. Preferred for PDFs (download-link fallback). No sandbox: use `<iframe sandbox>` / `<img>` for untrusted HTML/SVG; CSP `object-src 'none'` disables both.
+
 ### `<canvas>` Canvas
 
 | Class | Description |
@@ -1059,12 +1064,22 @@ Properties: `items` (`{ label, value?, href?, disabled? } | { separator: true }`
 Children: trigger + `<menu>` (or `<ul role="menu">`) of `<li>` holding `<button>`/`<a>`. Only rows whose nearest menu is this one belong to it, so nested drop-downs stay independent.
 
 ### `<emoji-picker>`
-Accessible emoji picker with search, categories, and insertion.
+Accessible emoji picker: search, category toolbar, listbox of emoji, undoable insertion into a target. Panel is a top-layer `popover` (never clipped), flips above when needed, RTL-aware.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `for` | element ID | Target input/textarea/contenteditable |
+| `for` | element ID | Target input/textarea/contenteditable (inserted at the caret via `insertText`; fires an `input` event) |
 | `recent-limit` | number | Max recent emoji (default: 24) |
+| `data-label-trigger`, `-dialog`, `-search`, `-placeholder`, `-categories`, `-emoji`, `-recent`, `-empty` | string | Localized UI strings |
+| `data-label-results` | string | Result-count announcement, `{count}` replaced (default `{count} emoji found`) |
+| `data-label-{group}` | string | Category names: `smileys`, `people`, `animals`, `food`, `travel`, `activities`, `objects`, `symbols`, `flags` |
+| `open` | (reflected) | Output only — set by the methods |
+
+| Methods / properties | |
+|--------|--------|
+| `open()`, `close()`, `toggle()` | Safe before the data loads (queued) |
+| `isOpen` | boolean |
+| `ready` | Promise — resolves when built; `data-upgraded` is set at the same time |
 
 | Events | Detail |
 |--------|--------|
@@ -1072,7 +1087,7 @@ Accessible emoji picker with search, categories, and insertion.
 | `emoji-picker:open` | — |
 | `emoji-picker:close` | — |
 
-Children: `<button data-trigger>` (auto-created if absent).
+Children: `<button data-trigger>` (first child `<button>` or auto-created if absent; hidden until defined). Extended set: `<script type="module" src="/cdn/emoji-extended.js">` or `import 'vanilla-breeze/emoji-extended'` (any load order; also feeds `data-emoji`).
 
 ### `<context-menu>`
 Right-click context menu.
@@ -1604,7 +1619,7 @@ Children: `<output data-empty>`, `<output data-loading>`, `<output data-error>`,
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-media` | (boolean) | Aspect-ratio container |
-| `data-ratio` | `1:1`, `4:3`, `3:2`, `16:9`, `21:9`, `2:3`, `3:4`, `9:16` | Aspect ratio |
+| `data-ratio` | `1:1`, `4:3`, `3:2`, `16:9`, `21:9`, `2:3`, `3:4`, `9:16` (`page` on embed/object/iframe) | Aspect ratio (on a `[data-media]` wrapper; also directly on `<iframe>`, `<embed>`, `<object>`) |
 | `data-fit` | `cover`, `contain`, `fill`, `none` | Object-fit |
 | `data-position` | `top`, `bottom`, `left`, `right`, `center` | Object-position |
 | `data-radius` | `s`, `m`, `l`, `full` | Border radius |
@@ -1907,7 +1922,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-rating` | `<fieldset>` — star rating |
 | `data-rating-half` | Rating — half-star precision |
 | `data-rating-readonly` | Rating — read-only |
-| `data-ratio` | `[data-media]` — aspect ratio |
+| `data-ratio` | `[data-media]`, `iframe`, `embed`, `object` — aspect ratio |
 | ~~`data-readonly`~~ | **Removed** — use `readonly` on `<star-rating>` |
 | `data-reason` | `<ins>`, `<del>` — visible change-reason tag |
 | ~~`data-required`~~ | **Removed** — use `required` on `<combo-box>` |

@@ -24,6 +24,7 @@ const SKIP = new Set([
   'scroll-effects-gallery.html',   // scroll-driven animations settle nondeterministically
   'activity-feed-dashboard.html',  // relative-time badges change with the wall clock
   'mock-portraits.html',           // faces load from a remote portrait CDN; a slow or failed image shifts the page
+  'mock-basic.html',               // its Portraits section loads the same remote portrait CDN (same failure mode)
 ]);
 
 // Recursive: tutorial/, view-transitions/, quick-start/ and raw-layouts/

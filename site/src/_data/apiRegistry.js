@@ -6140,71 +6140,231 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "emoji-picker",
     "type": "web-component",
-    "description": "Accessible emoji picker with search, categories, and insertion",
+    "description": "Accessible emoji picker with search, a category toolbar, a listbox of emoji, and undoable insertion into a target field",
     "attributes": [
       {
         "name": "for",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "ID of target input/textarea/contenteditable for insertion"
+        "description": "ID of the input, textarea or contenteditable the emoji is inserted into (at the saved caret, as an undoable edit that fires an insertText input event). Omit to handle emoji-picker:select yourself."
       },
       {
         "name": "recent-limit",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Max recent emoji stored (default: 24)"
+        "default": "24",
+        "description": "Maximum number of recently used emoji kept in localStorage (vb-emoji-recent)"
       },
       {
         "name": "data-trigger",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Marks the trigger button (a direct child). Without one the first child <button> is used, else a trigger is created. Hidden until the element is defined (no-JS)."
       },
       {
-        "name": "aria-haspopup",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-group",
+        "name": "data-label-trigger",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Open emoji picker",
+        "description": "Trigger accessible name, applied only when the trigger has no text and no aria-label"
       },
       {
-        "name": "data-group-heading",
+        "name": "data-label-dialog",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Emoji picker",
+        "description": "Accessible name of the picker panel"
       },
       {
-        "name": "data-shortcode",
+        "name": "data-label-search",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Search emoji",
+        "description": "Accessible name of the search input"
+      },
+      {
+        "name": "data-label-placeholder",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search emoji…",
+        "description": "Search input placeholder"
+      },
+      {
+        "name": "data-label-categories",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Emoji categories",
+        "description": "Accessible name of the category toolbar"
+      },
+      {
+        "name": "data-label-emoji",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Emoji",
+        "description": "Accessible name of the emoji listbox"
+      },
+      {
+        "name": "data-label-recent",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Recently used",
+        "description": "Name of the recently used group"
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No emoji found",
+        "description": "Empty search message (shown and announced)"
+      },
+      {
+        "name": "data-label-results",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} emoji found",
+        "description": "Result-count announcement; {count} is replaced"
+      },
+      {
+        "name": "data-label-smileys",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Smileys & Emotion",
+        "description": "Category name for smileys"
+      },
+      {
+        "name": "data-label-people",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "People & Body",
+        "description": "Category name for people"
+      },
+      {
+        "name": "data-label-animals",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Animals & Nature",
+        "description": "Category name for animals"
+      },
+      {
+        "name": "data-label-food",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Food & Drink",
+        "description": "Category name for food"
+      },
+      {
+        "name": "data-label-travel",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Travel & Places",
+        "description": "Category name for travel"
+      },
+      {
+        "name": "data-label-activities",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Activities",
+        "description": "Category name for activities"
+      },
+      {
+        "name": "data-label-objects",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Objects",
+        "description": "Category name for objects"
+      },
+      {
+        "name": "data-label-symbols",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Symbols",
+        "description": "Category name for symbols"
+      },
+      {
+        "name": "data-label-flags",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Flags",
+        "description": "Category name for flags"
       },
       {
         "name": "open",
         "kind": "native",
-        "purpose": "config"
+        "purpose": "output-state",
+        "type": "boolean",
+        "direction": "output",
+        "description": "Reflected state — set by open()/close()/toggle(), not intended as initial markup"
       }
     ],
     "events": [
       {
-        "name": "emoji-picker:select"
+        "name": "emoji-picker:select",
+        "detail": "{ shortcode, emoji, name, keywords }",
+        "description": "Fired when an emoji is selected, after it was inserted into the for target"
       },
       {
-        "name": "emoji-picker:open"
+        "name": "emoji-picker:open",
+        "description": "Fired when the picker opens"
       },
       {
-        "name": "emoji-picker:close"
+        "name": "emoji-picker:close",
+        "description": "Fired when the picker closes"
+      }
+    ],
+    "properties": [
+      {
+        "name": "isOpen",
+        "type": "boolean",
+        "description": "Read-only. Whether the panel is open"
+      },
+      {
+        "name": "ready",
+        "type": "Promise<void>",
+        "description": "Read-only. Resolves once the panel is built (emoji data loads asynchronously); data-upgraded is set at the same time"
+      }
+    ],
+    "methods": [
+      {
+        "name": "open()",
+        "description": "Open the panel and focus the search input. Queued until the panel is built"
+      },
+      {
+        "name": "close()",
+        "description": "Close the panel (focus is not moved). Before the build it cancels a queued open"
+      },
+      {
+        "name": "toggle()",
+        "description": "Open when closed, close when open. Queued until the panel is built"
       }
     ],
     "childAttributes": [],
-    "structure": [],
+    "structure": [
+      {
+        "element": "<button data-trigger>",
+        "description": "Optional trigger. An emoji-only trigger needs an aria-label."
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
