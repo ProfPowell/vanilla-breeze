@@ -32,12 +32,18 @@
  * ----------------------------
  * `left` and `right` map to inset-inline-start / inset-inline-end so
  * the float mirrors in RTL — Material's behavior. If you need physical
- * positions, use plain CSS instead of data-float.
+ * positions, use plain CSS instead of data-float. `*-center` is the
+ * physical midpoint (left: 50% + translate), which is the same point in
+ * both directions — a logical inset-inline-start: 50% would pair the
+ * element's right edge with the midpoint in RTL and pull it off-centre.
  *
  * Safe-area awareness
  * -------------------
  * Edge positions add the corresponding env(safe-area-inset-*) so floats
- * don't hide under the iPhone home indicator or the notch.
+ * don't hide under the iPhone home indicator or the notch. The inline
+ * edges resolve through --_float-safe-start / --_float-safe-end, which
+ * swap under :dir(rtl): inline-end is the physical left edge in RTL, so
+ * it needs --safe-left, not --safe-right.
  */
 
 /* Base — applies to every floated element */
@@ -45,6 +51,13 @@
   position: fixed;
   z-index: var(--z-float, 200);
   margin: 0;
+  --_float-safe-start: var(--safe-left, 0px);
+  --_float-safe-end: var(--safe-right, 0px);
+}
+
+[data-float]:dir(rtl) {
+  --_float-safe-start: var(--safe-right, 0px);
+  --_float-safe-end: var(--safe-left, 0px);
 }
 
 /* ── Vertical anchor ──────────────────────────────────────────────── */
@@ -56,10 +69,11 @@
 }
 
 /* ── Horizontal anchor ───────────────────────────────────────────── */
-[data-float$="-left"]  { inset-inline-start: calc(var(--float-offset, var(--size-l, 1.5rem)) + var(--safe-left, 0px)); }
-[data-float$="-right"] { inset-inline-end:   calc(var(--float-offset, var(--size-l, 1.5rem)) + var(--safe-right, 0px)); }
+[data-float$="-left"]  { inset-inline-start: calc(var(--float-offset, var(--size-l, 1.5rem)) + var(--_float-safe-start)); }
+[data-float$="-right"] { inset-inline-end:   calc(var(--float-offset, var(--size-l, 1.5rem)) + var(--_float-safe-end)); }
 [data-float$="-center"] {
-  inset-inline-start: 50%;
+  /* Physical on purpose: the viewport midpoint is direction-agnostic. */
+  left: 50%;
   /* Combine center-X with center-Y translate when present */
   translate: -50% var(--float-translate-y, 0%);
 }
@@ -69,7 +83,7 @@
   --float-translate-y: -50%;
 }
 [data-float="center-center"] {
-  inset-inline-start: 50%;
+  left: 50%;
   inset-block-start: 50%;
   translate: -50% -50%;
 }

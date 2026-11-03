@@ -1,15 +1,17 @@
 /**
- * Back-to-top — scroll-driven show/hide
+ * Back-to-top — JS-driven show/hide
  *
  * Usage:
  *   <a href="#" data-back-to-top data-float="bottom-right" aria-label="Back to top">↑</a>
  *
  * Positioning is delegated to the shared `[data-float]` system in
- * src/utils/float.css. This file owns appearance and the scroll-driven
- * show/hide animation only.
+ * src/utils/float.css. This file owns appearance and the show/hide
+ * transition only.
  *
- * Hidden at top of page, fades in after scrolling past first viewport.
- * Uses scroll-driven animation where supported, falls back to always-visible.
+ * Hidden at top of page, fades in after scrolling past the first viewport
+ * (src/utils/back-to-top-init.js toggles [data-visible]). Without JS it
+ * stays visible. While hidden it is also visibility: hidden, so keyboard
+ * and screen-reader users can't land on an invisible control.
  *
  * Styles are hardened against theme interference — uses !important on
  * properties that themes commonly override on <a> elements.
@@ -45,9 +47,6 @@
   transform: none !important;
   cursor: var(--cursor-custom-pointer, pointer);
 
-  /* Transition */
-  transition: background 0.15s ease, border-color 0.15s ease;
-
   /* Kill theme-injected pseudo-element underlines (e.g. Cyber neon links) */
   &::before,
   &::after {
@@ -60,24 +59,40 @@
  * bottom-right placement so existing pages keep working. New code
  * should write `data-back-to-top data-float="bottom-right"`. */
 [data-back-to-top]:not([data-float]) {
+  --_btt-safe-end: var(--safe-right, 0px);
   position: fixed !important;
   inset-block-end: calc(var(--float-offset, var(--size-l)) + var(--safe-bottom, 0px));
-  inset-inline-end: calc(var(--float-offset, var(--size-l)) + var(--safe-right, 0px));
+  inset-inline-end: calc(var(--float-offset, var(--size-l)) + var(--_btt-safe-end));
   z-index: var(--z-float, 200);
+}
+
+/* Inline-end is the physical left edge in RTL. */
+[data-back-to-top]:not([data-float]):dir(rtl) {
+  --_btt-safe-end: var(--safe-left, 0px);
 }
 
 /* Visibility is JS-driven via [data-visible]. The init script
  * (src/utils/back-to-top-init.js) toggles the attribute when the user
  * scrolls past one viewport, and removes it again near the top of the
- * page so the button doesn't sit over hero content. */
+ * page so the button doesn't sit over hero content.
+ *
+ * visibility: hidden takes the hidden button out of the tab order and the
+ * accessibility tree. visibility interpolates as "visible" for the whole
+ * transition when either end is visible, so the fade-out still plays. */
 [data-back-to-top] {
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity var(--motion-enter-duration, 200ms) var(--ease-out, ease) !important;
+  transition:
+    opacity var(--motion-enter-duration, 200ms) var(--ease-out, ease),
+    visibility var(--motion-enter-duration, 200ms) var(--ease-out, ease),
+    background 0.15s ease,
+    border-color 0.15s ease !important;
 }
 
 [data-back-to-top][data-visible] {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 
@@ -86,6 +101,7 @@
  * Once data-back-to-top-init is set the rule above takes over. */
 [data-back-to-top]:not([data-back-to-top-init]) {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 
