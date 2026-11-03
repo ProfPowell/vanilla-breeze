@@ -190,14 +190,16 @@ test('scoped data-mode="light" inside a dark page: light tokens, readable text',
   expect(r.bgAlpha).toBe(255);
   expect(r.bgLum).toBeGreaterThan(0.8);
   expect(r.ratio).toBeGreaterThanOrEqual(4.5);
-  // Derived tokens re-derive from the light seeds, not the dark root's
-  const seeds = await page.evaluate(() => {
+  // Derived tokens re-derive from the light seeds, not the dark root's.
+  // The root's seeds are @property-registered and transition when the stored
+  // dark mode is applied at load, so poll until they settle (slow CI runners
+  // otherwise read a mid-transition value).
+  const seeds = () => page.evaluate(() => {
     const s = getComputedStyle(/** @type {HTMLElement} */ (document.getElementById('s')));
     const root = getComputedStyle(document.documentElement);
     return { aside: s.getPropertyValue('--lightness-primary').trim(), root: root.getPropertyValue('--lightness-primary').trim() };
   });
-  expect(seeds.aside).toBe('50%');
-  expect(seeds.root).toBe('65%');
+  await expect.poll(seeds, { timeout: 5000 }).toEqual({ aside: '50%', root: '65%' });
 });
 
 /* ── 4. data-motion-reduced ─────────────────────────────────────────────── */

@@ -38,10 +38,17 @@ async function load(page, body, { js = true } = {}) {
   if (js) await page.waitForFunction(() => customElements.get('content-swap'));
 }
 
-const nextSwap = (page, sel = 'content-swap') => page.evaluate((s) => new Promise((resolve) => {
-  document.querySelector(s).addEventListener('content-swap:swap',
-    (e) => resolve(/** @type {CustomEvent} */ (e).detail), { once: true });
-}), sel);
+// Arm the listener first (awaited), then return a getter for the detail —
+// otherwise a slow runner can fire the swap before the listener attaches.
+const nextSwap = async (page, sel = 'content-swap') => {
+  await page.evaluate((s) => {
+    window.__nextSwap = new Promise((resolve) => {
+      document.querySelector(s).addEventListener('content-swap:swap',
+        (e) => resolve(/** @type {CustomEvent} */ (e).detail), { once: true });
+    });
+  }, sel);
+  return () => page.evaluate(() => window.__nextSwap);
+};
 
 const EXPLICIT = `
   <content-swap transition="fade" id="cs">
@@ -83,18 +90,18 @@ test.describe('explicit [data-swap] triggers', () => {
     await page.waitForTimeout(100);
     await expect(cs).not.toHaveAttribute('swapped', '');
 
-    const swapped = nextSwap(page, '#cs');
+    const swapped = await nextSwap(page, '#cs');
     await page.locator('#show').click();
-    expect(await swapped).toEqual({ swapped: true, source: 'pointer' });
+    expect(await swapped()).toEqual({ swapped: true, source: 'pointer' });
     await expect(page.locator('[data-face="front"]')).toHaveJSProperty('inert', true);
   });
 
   test('keyboard trigger moves focus into the incoming face', async ({ page }) => {
     await load(page, EXPLICIT);
     await page.locator('#show').focus();
-    const swapped = nextSwap(page, '#cs');
+    const swapped = await nextSwap(page, '#cs');
     await page.keyboard.press('Enter');
-    expect(await swapped).toEqual({ swapped: true, source: 'keyboard' });
+    expect(await swapped()).toEqual({ swapped: true, source: 'keyboard' });
     await expect(page.locator('#hide')).toBeFocused();
   });
 
@@ -139,9 +146,9 @@ test.describe('whole-element mode', () => {
     const toggle = page.locator('#cs > [data-swap-toggle]');
     await toggle.focus();
     await expect(toggle).toBeVisible();
-    const swapped = nextSwap(page, '#cs');
+    const swapped = await nextSwap(page, '#cs');
     await page.keyboard.press('Enter');
-    expect(await swapped).toEqual({ swapped: true, source: 'keyboard' });
+    expect(await swapped()).toEqual({ swapped: true, source: 'keyboard' });
     await expect(toggle).toHaveAttribute('aria-pressed', 'true');
     await expect(toggle).toBeFocused();
   });
@@ -152,9 +159,9 @@ test.describe('whole-element mode', () => {
     await page.locator('#link').click();
     await page.waitForTimeout(100);
     await expect(cs).not.toHaveAttribute('swapped', '');
-    const swapped = nextSwap(page, '#cs');
+    const swapped = await nextSwap(page, '#cs');
     await page.locator('#front-text').click({ position: { x: 2, y: 2 } });
-    expect(await swapped).toEqual({ swapped: true, source: 'pointer' });
+    expect(await swapped()).toEqual({ swapped: true, source: 'pointer' });
   });
 
   test('reconnect reuses the toggle instead of duplicating it', async ({ page }) => {
