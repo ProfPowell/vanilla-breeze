@@ -1,405 +1,428 @@
-import { getTileUrl, worldPixelToLatLng } from './tile-math.js';
+import { getTileUrl, worldPixelToLatLng, latLngToWorldPixel } from './tile-math.js';
 
 /**
  * MapInteraction — lazy-loaded interactive pan/zoom for <geo-map>.
  *
- * Takes over the tile container when activated, managing pointer-based
- * panning, wheel/keyboard zoom, and dynamic tile loading.
+ * Takes over the tile layer when activated: pointer drag to pan, a click
+ * (no drag) re-centres on that point (single-pointer alternative to
+ * dragging, WCAG 2.5.7), two-pointer pinch to zoom, wheel / keyboard
+ * zoom, and dynamic tile loading. The host renders the on-screen zoom /
+ * recenter buttons and calls zoomBy() / recenter().
  *
- * World coordinates: the world is 256 * 2^zoom pixels wide.
- * Panning shifts worldX/worldY. Zooming scales toward the pointer.
+ * World coordinates: the world is 256 * 2^zoom pixels wide. Tiles are
+ * positioned relative to a tile-aligned local origin so CSS offsets stay
+ * small at high zoom (layout units overflow around 33M px — zoom 17+).
  */
 export class MapInteraction {
-    /** @type {ShadowRoot} */
-    #shadow;
     /** @type {HTMLElement} */
-    #host;
+    #viewport;
     /** @type {HTMLElement} */
     #tiles;
+    /** @type {HTMLElement|null} */
+    #marker;
     /** @type {string} */
     #provider;
     /** @type {string} */
     #tileUrl;
-    /** @type {Function} */
+    /** @type {() => void} */
     #onDeactivate;
+    /** @type {(detail: { lat: number, lng: number, zoom: number }) => void} */
+    #onMove;
+    /** @type {HTMLElement} */
+    #host;
 
-    // Core state
     #worldX = 0;
     #worldY = 0;
     #zoom = 15;
     #minZoom = 1;
     #maxZoom = 19;
+    #originX = 0;
+    #originY = 0;
+    #homeLat = 0;
+    #homeLng = 0;
+    #homeZoom = 15;
 
-    // Viewport
     #width = 0;
     #height = 0;
 
-    // Tile cache: "z/x/y" → HTMLImageElement
-    /** @type {Map<string, HTMLImageElement>} */
+    /** @type {Map<string, HTMLImageElement & { _wx?: number, _wy?: number }>} */
     #tileCache = new Map();
 
-    // Marker state
-    /** @type {HTMLElement|null} */
-    #marker = null;
-    #markerWorldX = 0;
-    #markerWorldY = 0;
+    #markerLat = 0;
+    #markerLng = 0;
 
-    // Drag state
-    #dragging = false;
-    #lastPointerX = 0;
-    #lastPointerY = 0;
+    /** @type {Map<number, { x: number, y: number }>} active pointers */
+    #pointers = new Map();
+    #dragDistance = 0;
+    #pinchStart = 0;
 
     /**
      * @param {object} config
-     * @param {ShadowRoot} config.shadow
      * @param {HTMLElement} config.host
+     * @param {HTMLElement} config.viewport - stationary focus / pointer target
+     * @param {HTMLElement} config.tiles - translated tile layer
+     * @param {HTMLElement|null} config.marker
      * @param {number} config.lat
      * @param {number} config.lng
      * @param {number} config.zoom
-     * @param {string} config.provider
+     * @param {string} config.provider - resolved provider id
      * @param {string} [config.tileUrl] - URL template overriding provider
-     * @param {Function} config.onDeactivate - called when user presses Escape
+     * @param {number} config.width
+     * @param {number} config.height
+     * @param {() => void} config.onDeactivate - Escape
+     * @param {(detail: { lat: number, lng: number, zoom: number }) => void} [config.onMove]
      */
-    constructor({ shadow, host, lat, lng, zoom, provider, tileUrl, onDeactivate }) {
-        this.#shadow = shadow;
+    constructor({ host, viewport, tiles, marker, lat, lng, zoom, provider, tileUrl, width, height, onDeactivate, onMove }) {
         this.#host = host;
+        this.#viewport = viewport;
+        this.#tiles = tiles;
+        this.#marker = marker;
         this.#provider = provider;
         this.#tileUrl = tileUrl || '';
         this.#onDeactivate = onDeactivate;
+        this.#onMove = onMove || (() => {});
         this.#zoom = zoom;
+        this.#homeLat = this.#markerLat = lat;
+        this.#homeLng = this.#markerLng = lng;
+        this.#homeZoom = zoom;
+        this.#width = width;
+        this.#height = height;
 
-        this.#tiles = /** @type {HTMLElement} */ (shadow.querySelector('[part="tiles"]'));
-        this.#marker = shadow.querySelector('[part="marker"]');
+        const p = latLngToWorldPixel(lat, lng, zoom);
+        this.#worldX = p.x;
+        this.#worldY = p.y;
+        this.#resetOrigin();
 
-        // Calculate initial world pixel position from lat/lng
-        const worldSize = 256 * Math.pow(2, zoom);
-        const latRad = (lat * Math.PI) / 180;
-        this.#worldX = ((lng + 180) / 360) * worldSize;
-        this.#worldY = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * worldSize;
-
-        // Store marker origin for repositioning
-        this.#markerWorldX = this.#worldX;
-        this.#markerWorldY = this.#worldY;
-
-        // Read viewport size
-        this.#width = this.#host.offsetWidth || 400;
-        this.#height = this.#host.offsetHeight || 300;
-
-        // Clear static tiles and switch to interactive layout
-        this.#tiles.innerHTML = '';
+        this.#tiles.replaceChildren();
         this.#tiles.style.transform = '';
 
-        // Move marker into tiles container so it pans with the map
-        if (this.#marker) {
-            this.#marker.style.position = 'absolute';
-            this.#marker.style.top = '';
-            this.#marker.style.left = '';
-            this.#tiles.appendChild(this.#marker);
-        }
+        if (this.#marker) this.#tiles.appendChild(this.#marker);
 
-        this.#bindEvents();
+        this.#viewport.addEventListener('pointerdown', this.#onPointerDown);
+        this.#viewport.addEventListener('pointermove', this.#onPointerMove);
+        this.#viewport.addEventListener('pointerup', this.#onPointerUp);
+        this.#viewport.addEventListener('pointercancel', this.#onPointerUp);
+        this.#viewport.addEventListener('wheel', this.#onWheel, { passive: false });
+        this.#viewport.addEventListener('keydown', this.#onKeyDown);
+
         this.#updateView();
     }
 
-    #bindEvents() {
-        this.#tiles.addEventListener('pointerdown', this.#onPointerDown);
-        this.#tiles.addEventListener('wheel', this.#onWheel, { passive: false });
-        this.#host.addEventListener('keydown', this.#onKeyDown);
+    get zoom() { return this.#zoom; }
+    get minZoom() { return this.#minZoom; }
+    get maxZoom() { return this.#maxZoom; }
+
+    /**
+     * Current centre.
+     * @returns {{ lat: number, lng: number, zoom: number }}
+     */
+    get center() {
+        const { lat, lng } = worldPixelToLatLng(this.#worldX, this.#worldY, this.#zoom);
+        return { lat: +lat.toFixed(6), lng: +lng.toFixed(6), zoom: this.#zoom };
     }
 
-    #onPointerDown = (e) => {
-        if (e.button !== 0) return;
-        e.preventDefault();
-        this.#dragging = true;
-        this.#lastPointerX = e.clientX;
-        this.#lastPointerY = e.clientY;
-        this.#tiles.setPointerCapture(e.pointerId);
-        this.#tiles.setAttribute('data-dragging', '');
-        this.#tiles.addEventListener('pointermove', this.#onPointerMove);
-        this.#tiles.addEventListener('pointerup', this.#onPointerUp);
-    };
+    /**
+     * Zoom by whole levels around the viewport centre.
+     * @param {number} delta
+     */
+    zoomBy(delta) {
+        this.#setZoom(this.#zoom + delta, this.#width / 2, this.#height / 2);
+    }
 
-    #onPointerMove = (e) => {
-        if (!this.#dragging) return;
-        const dx = e.clientX - this.#lastPointerX;
-        const dy = e.clientY - this.#lastPointerY;
-        this.#lastPointerX = e.clientX;
-        this.#lastPointerY = e.clientY;
-
-        this.#worldX -= dx;
-        this.#worldY -= dy;
+    /** Return to the original centre and zoom. */
+    recenter() {
+        this.#zoom = this.#homeZoom;
+        const p = latLngToWorldPixel(this.#homeLat, this.#homeLng, this.#zoom);
+        this.#worldX = p.x;
+        this.#worldY = p.y;
+        this.#clearTiles();
+        this.#resetOrigin();
         this.#clampWorld();
         this.#updateView();
+        this.#emitMove();
+    }
+
+    /**
+     * Pan by viewport pixels.
+     * @param {number} dx
+     * @param {number} dy
+     */
+    panBy(dx, dy) {
+        this.#worldX += dx;
+        this.#worldY += dy;
+        this.#clampWorld();
+        this.#updateView();
+    }
+
+    /**
+     * The host was resized: keep the centre, cover the new box.
+     * @param {number} width
+     * @param {number} height
+     */
+    resize(width, height) {
+        if (!width || !height) return;
+        if (width === this.#width && height === this.#height) return;
+        this.#width = width;
+        this.#height = height;
+        this.#clampWorld();
+        this.#updateView();
+    }
+
+    #resetOrigin() {
+        this.#originX = Math.floor(this.#worldX / 256) * 256;
+        this.#originY = Math.floor(this.#worldY / 256) * 256;
+    }
+
+    /** @param {PointerEvent} e */
+    #onPointerDown = (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (/** @type {Element} */ (e.target).closest?.('a, button')) return;
+        e.preventDefault();
+        this.#viewport.focus({ preventScroll: true });
+        this.#pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        try { this.#viewport.setPointerCapture(e.pointerId); } catch { /* synthetic pointer */ }
+        if (this.#pointers.size === 1) {
+            this.#dragDistance = 0;
+            this.#viewport.setAttribute('data-dragging', '');
+        } else if (this.#pointers.size === 2) {
+            this.#pinchStart = this.#pinchDistance();
+            this.#dragDistance = Infinity; // a pinch is never a click
+        }
     };
 
+    /** @param {PointerEvent} e */
+    #onPointerMove = (e) => {
+        const prev = this.#pointers.get(e.pointerId);
+        if (!prev) return;
+        const dx = e.clientX - prev.x;
+        const dy = e.clientY - prev.y;
+        prev.x = e.clientX;
+        prev.y = e.clientY;
+
+        if (this.#pointers.size === 1) {
+            this.#dragDistance += Math.abs(dx) + Math.abs(dy);
+            this.panBy(-dx, -dy);
+            return;
+        }
+
+        if (this.#pointers.size === 2) {
+            // Pan with the midpoint (half of this pointer's movement)
+            this.panBy(-dx / 2, -dy / 2);
+            const dist = this.#pinchDistance();
+            if (!this.#pinchStart) { this.#pinchStart = dist; return; }
+            const ratio = dist / this.#pinchStart;
+            if (ratio >= 1.5 || ratio <= 1 / 1.5) {
+                const mid = this.#pinchMidpoint();
+                this.#setZoom(this.#zoom + (ratio > 1 ? 1 : -1), mid.x, mid.y);
+                this.#pinchStart = dist;
+            }
+        }
+    };
+
+    /** @param {PointerEvent} e */
     #onPointerUp = (e) => {
-        this.#dragging = false;
-        this.#tiles.releasePointerCapture(e.pointerId);
-        this.#tiles.removeAttribute('data-dragging');
-        this.#tiles.removeEventListener('pointermove', this.#onPointerMove);
-        this.#tiles.removeEventListener('pointerup', this.#onPointerUp);
+        if (!this.#pointers.has(e.pointerId)) return;
+        const wasSingle = this.#pointers.size === 1;
+        this.#pointers.delete(e.pointerId);
+        try { this.#viewport.releasePointerCapture(e.pointerId); } catch { /* not captured */ }
+        if (this.#pointers.size < 2) this.#pinchStart = 0;
+        if (this.#pointers.size > 0) return;
+        this.#viewport.removeAttribute('data-dragging');
+
+        if (wasSingle && e.type === 'pointerup' && this.#dragDistance < 5) {
+            // Click without drag: centre the map on the clicked point
+            const rect = this.#viewport.getBoundingClientRect();
+            this.panBy(e.clientX - rect.left - this.#width / 2, e.clientY - rect.top - this.#height / 2);
+        }
         this.#emitMove();
     };
 
+    #pinchDistance() {
+        const [a, b] = [...this.#pointers.values()];
+        return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0;
+    }
+
+    #pinchMidpoint() {
+        const [a, b] = [...this.#pointers.values()];
+        const rect = this.#viewport.getBoundingClientRect();
+        return { x: (a.x + b.x) / 2 - rect.left, y: (a.y + b.y) / 2 - rect.top };
+    }
+
+    /** @param {WheelEvent} e */
     #onWheel = (e) => {
         e.preventDefault();
         // ctrlKey is set for trackpad pinch gestures
         const delta = e.ctrlKey ? -e.deltaY * 0.01 : -Math.sign(e.deltaY);
         const newZoom = Math.round(Math.max(this.#minZoom, Math.min(this.#maxZoom, this.#zoom + delta)));
         if (newZoom === this.#zoom) return;
-
-        // Zoom toward pointer position
-        const rect = this.#host.getBoundingClientRect();
-        const pointerX = e.clientX - rect.left;
-        const pointerY = e.clientY - rect.top;
-        this.#setZoom(newZoom, pointerX, pointerY);
+        const rect = this.#viewport.getBoundingClientRect();
+        this.#setZoom(newZoom, e.clientX - rect.left, e.clientY - rect.top);
     };
 
+    /** @param {KeyboardEvent} e */
     #onKeyDown = (e) => {
+        if (e.target !== this.#viewport) return;
         const PAN_STEP = 80;
+        /** @type {[number, number] | null} */
+        let pan = null;
         switch (e.key) {
-            case 'ArrowLeft':
-                e.preventDefault();
-                this.#worldX -= PAN_STEP;
-                this.#clampWorld();
-                this.#updateView();
-                this.#emitMove();
-                break;
-            case 'ArrowRight':
-                e.preventDefault();
-                this.#worldX += PAN_STEP;
-                this.#clampWorld();
-                this.#updateView();
-                this.#emitMove();
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                this.#worldY -= PAN_STEP;
-                this.#clampWorld();
-                this.#updateView();
-                this.#emitMove();
-                break;
-            case 'ArrowDown':
-                e.preventDefault();
-                this.#worldY += PAN_STEP;
-                this.#clampWorld();
-                this.#updateView();
-                this.#emitMove();
-                break;
+            case 'ArrowLeft': pan = [-PAN_STEP, 0]; break;
+            case 'ArrowRight': pan = [PAN_STEP, 0]; break;
+            case 'ArrowUp': pan = [0, -PAN_STEP]; break;
+            case 'ArrowDown': pan = [0, PAN_STEP]; break;
             case '+':
             case '=':
                 e.preventDefault();
-                this.#setZoom(this.#zoom + 1, this.#width / 2, this.#height / 2);
-                break;
+                this.zoomBy(1);
+                return;
             case '-':
+            case '_':
                 e.preventDefault();
-                this.#setZoom(this.#zoom - 1, this.#width / 2, this.#height / 2);
-                break;
+                this.zoomBy(-1);
+                return;
+            case 'Home':
+            case '0':
+                e.preventDefault();
+                this.recenter();
+                return;
             case 'Escape':
                 e.preventDefault();
                 this.#onDeactivate();
-                break;
+                return;
+            default:
+                return;
         }
+        e.preventDefault();
+        this.panBy(pan[0], pan[1]);
+        this.#emitMove();
     };
 
     /**
      * Zoom toward a point in viewport coordinates.
-     * Scales world coordinates so the point under the pointer stays fixed.
+     * @param {number} newZoom
+     * @param {number} pointerX
+     * @param {number} pointerY
      */
     #setZoom(newZoom, pointerX, pointerY) {
         newZoom = Math.max(this.#minZoom, Math.min(this.#maxZoom, newZoom));
         if (newZoom === this.#zoom) return;
 
-        // World pixel position of the pointer before zoom
-        const viewLeft = this.#worldX - this.#width / 2;
-        const viewTop = this.#worldY - this.#height / 2;
-        const worldPointerX = viewLeft + pointerX;
-        const worldPointerY = viewTop + pointerY;
-
-        // Scale factor
+        const worldPointerX = this.#worldX - this.#width / 2 + pointerX;
+        const worldPointerY = this.#worldY - this.#height / 2 + pointerY;
         const scale = Math.pow(2, newZoom - this.#zoom);
 
-        // New world position: scale pointer's world position, then offset back
         this.#worldX = worldPointerX * scale - pointerX + this.#width / 2;
         this.#worldY = worldPointerY * scale - pointerY + this.#height / 2;
-
-        // Scale marker origin too
-        this.#markerWorldX *= scale;
-        this.#markerWorldY *= scale;
-
         this.#zoom = newZoom;
 
-        // Clear all tiles (they're at old zoom)
         this.#clearTiles();
         this.#clampWorld();
+        this.#resetOrigin();
         this.#updateView();
         this.#emitMove();
     }
 
-    /**
-     * Clamp world coordinates to valid range for current zoom.
-     */
     #clampWorld() {
         const worldSize = 256 * Math.pow(2, this.#zoom);
-        // Wrap horizontally
-        this.#worldX = ((this.#worldX % worldSize) + worldSize) % worldSize;
-        // Clamp vertically
-        this.#worldY = Math.max(this.#height / 2, Math.min(worldSize - this.#height / 2, this.#worldY));
+        const wrapped = ((this.#worldX % worldSize) + worldSize) % worldSize;
+        if (wrapped !== this.#worldX) {
+            // Crossed the antimeridian: re-anchor so cached tile positions stay valid
+            this.#worldX = wrapped;
+            this.#clearTiles();
+            this.#resetOrigin();
+        }
+        const half = Math.min(this.#height / 2, worldSize / 2);
+        this.#worldY = Math.max(half, Math.min(worldSize - half, this.#worldY));
     }
 
-    /**
-     * Update the view: position the tiles container, load visible tiles, prune off-screen, position marker.
-     */
     #updateView() {
-        // The viewport shows the region:
-        //   left = worldX - width/2,  top = worldY - height/2
-        // Tiles container origin is at world (0, 0).
-        // We translate it so that worldX is at viewport center.
-        const translateX = -(this.#worldX - this.#width / 2);
-        const translateY = -(this.#worldY - this.#height / 2);
-        this.#tiles.style.transform = `translate(${Math.round(translateX)}px, ${Math.round(translateY)}px)`;
-
+        const tx = -(this.#worldX - this.#width / 2 - this.#originX);
+        const ty = -(this.#worldY - this.#height / 2 - this.#originY);
+        this.#tiles.style.transform = `translate(${Math.round(tx)}px, ${Math.round(ty)}px)`;
         this.#loadVisibleTiles();
         this.#pruneTiles();
         this.#positionMarker();
     }
 
-    /**
-     * Load tiles that are visible in the current viewport.
-     */
     #loadVisibleTiles() {
         const z = this.#zoom;
         const maxTile = Math.pow(2, z);
-
-        // Viewport bounds in world pixels
         const left = this.#worldX - this.#width / 2;
         const top = this.#worldY - this.#height / 2;
-        const right = left + this.#width;
-        const bottom = top + this.#height;
-
-        // Convert to tile indices with 1-tile buffer
         const tileLeft = Math.floor(left / 256) - 1;
         const tileTop = Math.max(0, Math.floor(top / 256) - 1);
-        const tileRight = Math.ceil(right / 256) + 1;
-        const tileBottom = Math.min(maxTile, Math.ceil(bottom / 256) + 1);
+        const tileRight = Math.ceil((left + this.#width) / 256) + 1;
+        const tileBottom = Math.min(maxTile, Math.ceil((top + this.#height) / 256) + 1);
 
         for (let ty = tileTop; ty < tileBottom; ty++) {
             for (let tx = tileLeft; tx < tileRight; tx++) {
-                // Wrap X for world wrapping
                 const wrappedX = ((tx % maxTile) + maxTile) % maxTile;
-                const key = `${z}/${wrappedX}/${ty}`;
+                const key = `${z}/${tx}/${ty}`;
                 if (this.#tileCache.has(key)) continue;
-                this.#loadTile(z, tx, ty, wrappedX);
+                const img = /** @type {HTMLImageElement & { _wx?: number, _wy?: number }} */ (document.createElement('img'));
+                img.src = getTileUrl(this.#provider, z, wrappedX, ty, this.#tileUrl);
+                img.alt = '';
+                img.draggable = false;
+                img.style.left = `${tx * 256 - this.#originX}px`;
+                img.style.top = `${ty * 256 - this.#originY}px`;
+                img._wx = tx * 256;
+                img._wy = ty * 256;
+                this.#tileCache.set(key, img);
+                this.#tiles.insertBefore(img, this.#marker?.parentNode === this.#tiles ? this.#marker : null);
             }
         }
     }
 
-    /**
-     * Create and position a tile image.
-     */
-    #loadTile(z, posX, posY, wrappedX) {
-        const key = `${z}/${wrappedX}/${posY}`;
-        if (this.#tileCache.has(key)) return;
-
-        const pxLeft = posX * 256;
-        const pxTop = posY * 256;
-
-        const img = document.createElement('img');
-        img.src = getTileUrl(this.#provider, z, wrappedX, posY, this.#tileUrl);
-        img.alt = '';
-        img.draggable = false;
-        img.style.left = pxLeft + 'px';
-        img.style.top = pxTop + 'px';
-        img.style.width = '256px';
-        img.style.height = '256px';
-
-        // Store world pixel positions directly (avoids CSS serialization roundtrip)
-        /** @type {VBMapImage} */ (img)._wx = pxLeft;
-        /** @type {VBMapImage} */ (img)._wy = pxTop;
-
-        this.#tileCache.set(key, img);
-        this.#tiles.appendChild(img);
-    }
-
-    /**
-     * Remove tiles outside the viewport + 2-tile buffer.
-     */
     #pruneTiles() {
         const left = this.#worldX - this.#width / 2;
         const top = this.#worldY - this.#height / 2;
-        const buffer = 512; // 2 tiles
-
+        const buffer = 512;
         for (const [key, img] of this.#tileCache) {
-            const imgLeft = /** @type {VBMapImage} */ (img)._wx;
-            const imgTop = /** @type {VBMapImage} */ (img)._wy;
-
-            if (
-                imgLeft + 256 < left - buffer ||
-                imgLeft > left + this.#width + buffer ||
-                imgTop + 256 < top - buffer ||
-                imgTop > top + this.#height + buffer
-            ) {
+            const x = img._wx ?? 0;
+            const y = img._wy ?? 0;
+            if (x + 256 < left - buffer || x > left + this.#width + buffer ||
+                y + 256 < top - buffer || y > top + this.#height + buffer) {
                 img.remove();
                 this.#tileCache.delete(key);
             }
         }
     }
 
-    /**
-     * Position the marker at its world coordinates within the tiles container.
-     */
     #positionMarker() {
         if (!this.#marker) return;
-        const markerSize = this.#marker.offsetWidth || 32;
-        this.#marker.style.left = `${Math.round(this.#markerWorldX - markerSize / 2)}px`;
-        this.#marker.style.top = `${Math.round(this.#markerWorldY - markerSize)}px`;
-        this.#marker.style.transform = '';
+        const p = latLngToWorldPixel(this.#markerLat, this.#markerLng, this.#zoom);
+        const size = this.#marker.offsetWidth || 32;
+        // Nearest copy of the marker to the current view (world wraps)
+        const worldSize = 256 * Math.pow(2, this.#zoom);
+        let x = p.x;
+        while (x - this.#worldX > worldSize / 2) x -= worldSize;
+        while (this.#worldX - x > worldSize / 2) x += worldSize;
+        this.#marker.style.top = `${Math.round(p.y - this.#originY - size)}px`;
+        this.#marker.style.left = `${Math.round(x - this.#originX - size / 2)}px`;
+        this.#marker.style.transform = 'none';
     }
 
-    /**
-     * Dispatch geo-map:move with current center lat/lng/zoom.
-     */
     #emitMove() {
-        const { lat, lng } = worldPixelToLatLng(this.#worldX, this.#worldY, this.#zoom);
-        this.#host.dispatchEvent(new CustomEvent('geo-map:move', {
-            bubbles: true,
-            detail: { lat: +lat.toFixed(6), lng: +lng.toFixed(6), zoom: this.#zoom }
-        }));
+        const detail = this.center;
+        this.#host.dispatchEvent(new CustomEvent('geo-map:move', { bubbles: true, detail }));
+        this.#onMove(detail);
     }
 
-    /**
-     * Clear all cached tiles from the DOM.
-     */
     #clearTiles() {
-        for (const img of this.#tileCache.values()) {
-            img.remove();
-        }
+        for (const img of this.#tileCache.values()) img.remove();
         this.#tileCache.clear();
     }
 
-    /**
-     * Tear down all listeners and state. Called on deactivation.
-     */
+    /** Tear down listeners and tiles. The host re-renders the static view. */
     destroy() {
-        this.#tiles.removeEventListener('pointerdown', this.#onPointerDown);
-        this.#tiles.removeEventListener('wheel', this.#onWheel);
-        this.#host.removeEventListener('keydown', this.#onKeyDown);
-        this.#tiles.removeEventListener('pointermove', this.#onPointerMove);
-        this.#tiles.removeEventListener('pointerup', this.#onPointerUp);
-
-        // Move marker back out of tiles container
-        if (this.#marker && this.#marker.parentNode === this.#tiles) {
-            const container = this.#shadow.querySelector('[part="container"]');
-            if (container) {
-                container.insertBefore(this.#marker, this.#tiles.nextSibling);
-                this.#marker.style.position = '';
-                this.#marker.style.left = '';
-                this.#marker.style.top = '';
-                this.#marker.style.transform = '';
-            }
-        }
-
+        this.#viewport.removeEventListener('pointerdown', this.#onPointerDown);
+        this.#viewport.removeEventListener('pointermove', this.#onPointerMove);
+        this.#viewport.removeEventListener('pointerup', this.#onPointerUp);
+        this.#viewport.removeEventListener('pointercancel', this.#onPointerUp);
+        this.#viewport.removeEventListener('wheel', this.#onWheel);
+        this.#viewport.removeEventListener('keydown', this.#onKeyDown);
+        this.#viewport.removeAttribute('data-dragging');
+        this.#pointers.clear();
         this.#clearTiles();
-        this.#host.removeAttribute('data-interactive-active');
     }
 }

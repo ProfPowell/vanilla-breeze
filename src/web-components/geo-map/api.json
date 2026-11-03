@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "geo-map",
   "type": "web-component",
-  "description": "A zero-dependency map component using OSM tiles.",
+  "description": "A zero-dependency map component using OpenStreetMap / CARTO raster tiles or your own tile proxy, with a lazy-loaded interactive pan / zoom mode.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -10,107 +10,53 @@
     ]
   },
   "attributes": [
-    {
-      "name": "lat",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "number",
-      "description": "Latitude of map center"
-    },
-    {
-      "name": "lng",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "number",
-      "description": "Longitude of map center"
-    },
-    {
-      "name": "zoom",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "number",
-      "description": "Tile zoom level 1–19 (default: 15)"
-    },
-    {
-      "name": "marker",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Show pin at center; \"false\" to hide"
-    },
-    {
-      "name": "marker-color",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Pin fill color (default: #e74c3c)"
-    },
-    {
-      "name": "provider",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Tile source: osm, carto-light, carto-dark"
-    },
-    {
-      "name": "tile-url",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "URL template with {z}/{x}/{y} placeholders for first-party tile proxying. Overrides provider when set. See /docs/concepts/service-facade/."
-    },
-    {
-      "name": "interactive",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "static-only",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "src",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "place",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "content",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "data-has-caption",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-interactive-active",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "data-state",
-      "kind": "data",
-      "purpose": "config"
-    }
+    { "name": "lat", "kind": "host-api", "purpose": "config", "type": "number", "description": "Latitude of the map centre. With lng, highest-priority coordinate source." },
+    { "name": "lng", "kind": "host-api", "purpose": "config", "type": "number", "description": "Longitude of the map centre." },
+    { "name": "zoom", "kind": "host-api", "purpose": "config", "type": "number", "default": "15", "description": "Tile zoom level 1–19; out-of-range values fall back to 15." },
+    { "name": "marker", "kind": "host-api", "purpose": "config", "type": "enum", "values": ["", "true", "false"], "default": "true", "description": "Show the pin at the centre (bare or \"true\"); \"false\" hides it." },
+    { "name": "marker-color", "kind": "host-api", "purpose": "visual-variant", "type": "string", "description": "Pin fill, any CSS colour. Invalid values are ignored (the pin falls back to --geo-map-marker-color, then --color-error)." },
+    { "name": "provider", "kind": "host-api", "purpose": "config", "type": "enum", "values": ["osm", "carto-light", "carto-dark", "carto-auto"], "default": "osm", "description": "Built-in tile source. carto-auto picks carto-dark or carto-light from the nearest data-mode (else prefers-color-scheme) and follows changes. Each provider shows its required credit." },
+    { "name": "tile-url", "kind": "host-api", "purpose": "config", "type": "string", "description": "Tile URL template overriding provider: {z} {x} {y}, {s} (a/b/c subdomain rotation) and {r} (\"@2x\" on high-density screens). Set attribution for the credit. See /docs/concepts/service-facade/." },
+    { "name": "attribution", "kind": "host-api", "purpose": "config", "type": "string", "description": "Credit text shown for a tile-url source (built-in providers always show their own). A child with slot=\"attribution\" replaces it." },
+    { "name": "attribution-href", "kind": "host-api", "purpose": "config", "type": "string", "description": "Link for the attribution credit (http/https only)." },
+    { "name": "interactive", "kind": "host-api", "purpose": "config", "type": "enum", "values": ["click", "eager", "none"], "default": "click", "description": "click: the map surface is an activation button; eager: interactive on load (without moving focus); none: static view only." },
+    { "name": "static-only", "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Never activate (same as interactive=\"none\")." },
+    { "name": "loading", "kind": "host-api", "purpose": "config", "type": "enum", "values": ["lazy", "eager", "consent"], "default": "lazy", "description": "Tile loading. consent: request nothing from the tile host until the user presses \"Load map\" (shows a placeholder naming the host; the slotted address stays visible)." },
+    { "name": "label", "kind": "host-api", "purpose": "config", "type": "string", "description": "Accessible name of the map. Default: \"Map of …\" from the slotted <address> text, the src address / JSON-LD name, or place; else \"Map\"." },
+    { "name": "src", "kind": "host-api", "purpose": "config", "type": "string", "description": "ID of an <address data-lat data-lng> or a <script type=\"application/ld+json\"> with geo.latitude / geo.longitude to read coordinates (and the name) from." },
+    { "name": "place", "kind": "host-api", "purpose": "config", "type": "string", "description": "Name matched against JSON-LD scripts on the page (data.name); the match's geo supplies coordinates." },
+    { "name": "data-ready", "kind": "data", "purpose": "output-state", "direction": "output", "type": "boolean", "description": "Set when the static tiles have finished loading (with geo-map:ready); removed on each re-render." },
+    { "name": "data-label-map", "kind": "data", "purpose": "config", "type": "string", "default": "Map", "description": "Accessible name when nothing names the place." },
+    { "name": "data-label-map-of", "kind": "data", "purpose": "config", "type": "string", "default": "Map of {name}", "description": "Accessible name template; {name} is the address text, src name or place." },
+    { "name": "data-label-activate", "kind": "data", "purpose": "config", "type": "string", "default": "Activate interactive map", "description": "Visible text (and name) of the activation button." },
+    { "name": "data-label-consent", "kind": "data", "purpose": "config", "type": "string", "default": "Load map", "description": "Consent button text (loading=\"consent\")." },
+    { "name": "data-label-consent-note", "kind": "data", "purpose": "config", "type": "string", "default": "Loads map images from {host}", "description": "Consent note; {host} is the tile host." },
+    { "name": "data-label-zoom-in", "kind": "data", "purpose": "config", "type": "string", "default": "Zoom in", "description": "Zoom-in button name." },
+    { "name": "data-label-zoom-out", "kind": "data", "purpose": "config", "type": "string", "default": "Zoom out", "description": "Zoom-out button name." },
+    { "name": "data-label-recenter", "kind": "data", "purpose": "config", "type": "string", "default": "Recenter map", "description": "Recenter button name." },
+    { "name": "data-label-exit", "kind": "data", "purpose": "config", "type": "string", "default": "Exit map", "description": "Exit button name (returns to the static view)." },
+    { "name": "data-label-controls", "kind": "data", "purpose": "config", "type": "string", "default": "Map controls", "description": "Name of the control button group." },
+    { "name": "data-label-instructions", "kind": "data", "purpose": "config", "type": "string", "description": "Key / gesture instructions referenced by aria-describedby in interactive mode." },
+    { "name": "data-label-moved", "kind": "data", "purpose": "config", "type": "string", "default": "Map centred on {lat}, {lng}, zoom {zoom}", "description": "Polite live-region announcement after pan / zoom." },
+    { "name": "data-label-error-coords", "kind": "data", "purpose": "config", "type": "string", "default": "Map location unavailable", "description": "On-screen text when no coordinates resolve." },
+    { "name": "data-label-error-tiles", "kind": "data", "purpose": "config", "type": "string", "default": "Map images failed to load", "description": "On-screen text when every tile fails." }
+  ],
+  "properties": [
+    { "name": "data", "type": "{ lat?: number, lng?: number, zoom: number, marker: boolean, markerColor: string }", "description": "Get the map state, or assign a partial object: attributes are written as one batch and the map re-renders once. Assigning the current state is a no-op; an invalid markerColor is ignored, '' clears it. Emits geo-map:data-changed." },
+    { "name": "markers", "type": "Array<{ lat: number, lng: number, color: string }>", "readonly": true, "description": "The centre marker as a one-element array when coordinates resolve, else []." },
+    { "name": "active", "type": "boolean", "readonly": true, "description": "True while interactive mode is on (also the :state(active) custom state)." }
   ],
   "events": [
-    {
-      "name": "geo-map:ready"
-    },
-    {
-      "name": "geo-map:activate"
-    },
-    {
-      "name": "geo-map:error"
-    }
+    { "name": "geo-map:ready", "detail": "{ lat, lng, zoom }", "description": "Static tiles finished loading (data-ready is set)." },
+    { "name": "geo-map:activate", "detail": "{ lat, lng, zoom }", "description": "Interactive mode started." },
+    { "name": "geo-map:move", "detail": "{ lat, lng, zoom }", "description": "After a pan or zoom in interactive mode (new centre, 6 decimal places)." },
+    { "name": "geo-map:data-changed", "detail": "{ data, source: 'property' }", "description": "After a .data assignment that changed something." },
+    { "name": "geo-map:error", "detail": "{ message }", "description": "No coordinates resolved, or every tile failed to load." }
   ],
-  "childAttributes": [],
+  "childAttributes": [
+    { "name": "data-lat", "on": "address", "type": "number", "description": "Latitude on a slotted (or src-referenced) <address>." },
+    { "name": "data-lng", "on": "address", "type": "number", "description": "Longitude on a slotted (or src-referenced) <address>." },
+    { "name": "slot", "on": "*", "type": "enum", "values": ["attribution"], "description": "slot=\"attribution\" replaces the credit line." }
+  ],
   "structure": []
 }

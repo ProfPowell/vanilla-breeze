@@ -1,26 +1,85 @@
 import { VBElement } from '../../lib/vb-element.js';
-import { styles } from './styles.js';
-import { latLngToTile, getTileUrl } from './tile-math.js';
+import { adoptStyles } from './styles.js';
+import { latLngToWorldPixel, getTileUrl, PROVIDERS } from './tile-math.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Default UI strings; each is overridable with data-label-<key>. */
+const LABELS = {
+    'map': 'Map',
+    'map-of': 'Map of {name}',
+    'activate': 'Activate interactive map',
+    'consent': 'Load map',
+    'consent-note': 'Loads map images from {host}',
+    'zoom-in': 'Zoom in',
+    'zoom-out': 'Zoom out',
+    'recenter': 'Recenter map',
+    'exit': 'Exit map',
+    'controls': 'Map controls',
+    'instructions': 'Drag or use the arrow keys to pan. Click a point to centre on it. Pinch, scroll, or press plus and minus to zoom. Home recentres. Escape exits.',
+    'moved': 'Map centred on {lat}, {lng}, zoom {zoom}',
+    'error-coords': 'Map location unavailable',
+    'error-tiles': 'Map images failed to load',
+};
+
+let instance = 0;
+
 /**
- * Inline SVG marker pin (teardrop shape)
- * @param {string} color - Fill color
- * @returns {string} SVG markup
+ * Teardrop marker pin built with DOM APIs (no markup interpolation).
+ * Fill comes from CSS: --_marker-color (validated marker-color) →
+ * --geo-map-marker-color → --color-error.
+ * @returns {HTMLElement}
  */
-function markerSvg(color) {
-    return `<svg viewBox="0 0 24 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 0C5.373 0 0 5.373 0 12c0 9 12 24 12 24s12-15 12-24C24 5.373 18.627 0 12 0z" fill="${color}"/>
-        <circle cx="12" cy="12" r="5" fill="white" opacity="0.9"/>
-    </svg>`;
+function buildMarker() {
+    const wrap = document.createElement('div');
+    wrap.setAttribute('part', 'marker');
+    wrap.setAttribute('aria-hidden', 'true');
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 36');
+    svg.setAttribute('focusable', 'false');
+    const path = document.createElementNS(SVG_NS, 'path');
+    path.setAttribute('class', 'pin');
+    path.setAttribute('d', 'M12 0C5.373 0 0 5.373 0 12c0 9 12 24 12 24s12-15 12-24C24 5.373 18.627 0 12 0z');
+    const dot = document.createElementNS(SVG_NS, 'circle');
+    dot.setAttribute('class', 'dot');
+    dot.setAttribute('cx', '12');
+    dot.setAttribute('cy', '12');
+    dot.setAttribute('r', '5');
+    svg.append(path, dot);
+    wrap.append(svg);
+    return wrap;
+}
+
+/**
+ * @param {string} tag
+ * @param {Record<string, string>} [attrs]
+ * @param {string} [text]
+ * @returns {HTMLElement}
+ */
+function el(tag, attrs = {}, text) {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+    if (text != null) node.textContent = text;
+    return node;
+}
+
+/**
+ * @param {string | null | undefined} value
+ * @returns {boolean} True when value is a valid CSS colour.
+ */
+function isColor(value) {
+    if (!value || typeof value !== 'string') return false;
+    return typeof CSS !== 'undefined' && CSS.supports('color', value);
 }
 
 /**
  * @class GeoMap
  * @augments VBElement
- * @description A zero-dependency map component using OSM tiles.
- * Renders a static tile grid centered on the given coordinates
- * with an optional marker pin and caption slot.
+ * @description A zero-dependency map component using OSM / CARTO raster
+ * tiles (or your own tile proxy). Renders a static tile view centred on the
+ * given coordinates with an optional marker pin and caption slot; an
+ * activation step lazy-loads pan / zoom.
  *
  * @example
  * <geo-map lat="40.7484" lng="-73.9857" zoom="15">
@@ -31,21 +90,54 @@ function markerSvg(color) {
  * @attr {number} lng - Longitude of map center
  * @attr {number} zoom - Tile zoom level 1–19 (default: 15)
  * @attr {string} marker - Show pin at center; "false" to hide
- * @attr {string} marker-color - Pin fill color (default: #e74c3c)
- * @attr {string} provider - Tile source: osm, carto-light, carto-dark
- * @attr {string} tile-url - URL template with {z}/{x}/{y} placeholders.
- *   Overrides `provider`. Lets you point at a first-party proxy that
- *   caches a third-party tile source server-side — see
- *   /docs/concepts/service-facade/ for the pattern.
+ * @attr {string} marker-color - Pin fill (any CSS colour; invalid values are ignored)
+ * @attr {string} provider - osm | carto-light | carto-dark | carto-auto
+ * @attr {string} tile-url - URL template ({z} {x} {y} {s} {r}); overrides provider
+ * @attr {string} attribution - Credit text for tile-url sources
+ * @attr {string} attribution-href - Link for the attribution credit
+ * @attr {string} interactive - click | eager | none
+ * @attr {boolean} static-only - Never activate
+ * @attr {string} loading - lazy | eager | consent
+ * @attr {string} label - Accessible name of the map
+ * @attr {string} src - ID of an <address data-lat data-lng> or JSON-LD script
+ * @attr {string} place - JSON-LD Place name to match
  */
 class GeoMap extends VBElement {
     static get observedAttributes() {
-        return ['lat', 'lng', 'zoom', 'marker', 'marker-color', 'provider', 'tile-url', 'interactive', 'static-only', 'src', 'place'];
+        return ['lat', 'lng', 'zoom', 'marker', 'marker-color', 'provider', 'tile-url', 'interactive',
+            'static-only', 'src', 'place', 'label', 'attribution', 'attribution-href', 'loading'];
     }
 
     /** @type {import('./interact.js').MapInteraction|null} */
     #interaction = null;
+    /** @type {Promise<void> | null} */
+    #activating = null;
+    #renderGen = 0;
+    #batching = false;
+    #consented = false;
+    /** Set after the user exits so eager mode does not re-activate. */
+    #userExited = false;
     #preconnected = false;
+    #readyFired = false;
+    #uid = `geo-map-${++instance}`;
+
+    /** @type {{ lat: number, lng: number } | null} */
+    #center = null;
+    #name = '';
+    /** @type {Map<string, HTMLImageElement>} */
+    #tileImgs = new Map();
+    #lastSize = '';
+
+    /** @type {ResizeObserver | null} */
+    #ro = null;
+    #resizeFrame = 0;
+    /** @type {MutationObserver | null} */
+    #modeObserver = null;
+    /** @type {MediaQueryList | null} */
+    #darkQuery = null;
+    #onSchemeChange = () => this.#maybeRefreshAuto();
+    #announceTimer = 0;
+    #resolvedProvider = 'osm';
 
     constructor() {
         super();
@@ -69,20 +161,25 @@ class GeoMap extends VBElement {
         return this.getAttribute('marker') !== 'false';
     }
 
+    /**
+     * The marker-color attribute when it is a valid CSS colour, else ''
+     * (the pin then uses --geo-map-marker-color / the theme token).
+     * @returns {string}
+     */
     get markerColor() {
-        return this.getAttribute('marker-color') || '#e74c3c';
+        const v = this.getAttribute('marker-color');
+        return isColor(v) ? /** @type {string} */ (v) : '';
     }
 
     get provider() {
-        return this.getAttribute('provider') || 'osm';
+        const p = this.getAttribute('provider');
+        return p && (p in PROVIDERS || p === 'carto-auto') ? p : 'osm';
     }
 
     /**
      * URL template for first-party tile proxying. When set, `provider`
-     * is ignored and `getTileUrl()` substitutes {z}/{x}/{y} into this
-     * template instead.
-     *
-     * @returns {string} The tile URL template, or ''.
+     * is ignored.
+     * @returns {string}
      */
     get tileUrl() {
         return this.getAttribute('tile-url') || '';
@@ -96,6 +193,57 @@ class GeoMap extends VBElement {
 
     get staticOnly() {
         return this.hasAttribute('static-only');
+    }
+
+    get loading() {
+        const v = this.getAttribute('loading');
+        return v === 'eager' || v === 'consent' ? v : 'lazy';
+    }
+
+    /**
+     * True while interactive (pan / zoom) mode is active.
+     * @returns {boolean}
+     */
+    get active() {
+        return this.#interaction !== null;
+    }
+
+    /**
+     * @param {string} key
+     * @param {Record<string, string | number>} [vars]
+     * @returns {string}
+     */
+    #label(key, vars = {}) {
+        const raw = this.getAttribute(`data-label-${key}`) ?? LABELS[/** @type {keyof typeof LABELS} */ (key)] ?? '';
+        return raw.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+    }
+
+    get #canInteract() {
+        return this.interactive !== 'none' && !this.staticOnly;
+    }
+
+    get #consentPending() {
+        return this.loading === 'consent' && !this.#consented;
+    }
+
+    /** Provider after resolving carto-auto against data-mode / prefers-color-scheme. */
+    #resolveProvider() {
+        const p = this.provider;
+        if (p !== 'carto-auto') return p;
+        const mode = this.closest('[data-mode]')?.getAttribute('data-mode');
+        if (mode === 'dark') return 'carto-dark';
+        if (mode === 'light') return 'carto-light';
+        return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'carto-dark' : 'carto-light';
+    }
+
+    /** Origin tiles are fetched from (for preconnect and the consent note). */
+    #tileOrigin() {
+        if (this.tileUrl) {
+            try {
+                return new URL(this.tileUrl.replace(/\{s\}/g, 'a'), location.href).origin;
+            } catch { return ''; }
+        }
+        return (PROVIDERS[/** @type {keyof typeof PROVIDERS} */ (this.#resolvedProvider)] ?? PROVIDERS.osm).origin;
     }
 
     /**
@@ -210,37 +358,101 @@ class GeoMap extends VBElement {
         return null;
     }
 
-    setup() {
-        this.render();
-        this.loadTiles();
-        this.#wireActivation();
+    /**
+     * Accessible name: label attr → slotted <address> text → src address
+     * text / JSON-LD name → place → "Map".
+     * @returns {string}
+     */
+    #resolveName() {
+        const clean = (/** @type {string | null | undefined} */ t) => (t || '').replace(/\s+/g, ' ').trim();
+        const label = clean(this.getAttribute('label'));
+        if (label) return label;
+        let name = clean(this.querySelector('address')?.textContent);
+        const srcId = this.getAttribute('src');
+        if (!name && srcId) {
+            const ref = document.getElementById(srcId);
+            if (ref?.tagName === 'ADDRESS') name = clean(ref.textContent);
+            else if (ref?.tagName === 'SCRIPT') {
+                try { name = clean(JSON.parse(ref.textContent || '').name); } catch { /* malformed */ }
+            }
+        }
+        if (!name) name = clean(this.getAttribute('place'));
+        return name ? this.#label('map-of', { name }) : this.#label('map');
     }
 
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue !== newValue && this.isConnected) {
-            // If interactive mode is active and a core attr changed, deactivate first
-            if (this.#interaction) {
-                this.#deactivate();
-            }
-            this.render();
-            this.loadTiles();
-            this.#wireActivation();
+    // ── Lifecycle ──────────────────────────────────────────────────
+
+    setup() {
+        this.#renderGen++;
+        this.#resolvedProvider = this.#resolveProvider();
+        this.render();
+        this.#watchSize();
+        this.#watchMode();
+        this.#layout();
+        if (this.interactive === 'eager' && !this.#userExited && this.#canInteract && !this.#consentPending && this.#center) {
+            const gen = this.#renderGen;
+            requestAnimationFrame(() => {
+                if (gen === this.#renderGen) this.#activate({ focus: false });
+            });
         }
+    }
+
+    /**
+     * @param {string} name
+     * @param {string | null} oldValue
+     * @param {string | null} newValue
+     */
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue || this.#batching) return;
+        // Before the first upgrade connectedCallback renders everything once.
+        if (!this.isConnected || !this.hasAttribute('data-upgraded')) return;
+        this._reinit();
     }
 
     teardown() {
+        this.#renderGen++;
+        this.#activating = null;
         if (this.#interaction) {
             this.#interaction.destroy();
             this.#interaction = null;
+            this.setState('active', false);
         }
+        this.#ro?.disconnect();
+        this.#ro = null;
+        cancelAnimationFrame(this.#resizeFrame);
+        this.#modeObserver?.disconnect();
+        this.#modeObserver = null;
+        this.#darkQuery?.removeEventListener('change', this.#onSchemeChange);
+        this.#darkQuery = null;
+        clearTimeout(this.#announceTimer);
+    }
+
+    #watchSize() {
+        if (typeof ResizeObserver !== 'function') return;
+        this.#ro = new ResizeObserver(() => {
+            cancelAnimationFrame(this.#resizeFrame);
+            this.#resizeFrame = requestAnimationFrame(() => this.#layout());
+        });
+        this.#ro.observe(this);
+    }
+
+    #watchMode() {
+        if (this.provider !== 'carto-auto' || this.tileUrl) return;
+        this.#modeObserver = new MutationObserver(() => this.#maybeRefreshAuto());
+        this.#modeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+        this.#darkQuery = window.matchMedia?.('(prefers-color-scheme: dark)') ?? null;
+        this.#darkQuery?.addEventListener('change', this.#onSchemeChange);
+    }
+
+    #maybeRefreshAuto() {
+        if (this.#resolveProvider() !== this.#resolvedProvider) this._reinit();
     }
 
     // ── Data API (HTML-first / JS-first dual contract) ──────────────
 
     /**
-     * Read the current map state as `{ lat, lng, zoom, marker, markerColor }`.
-     *
-     * @returns {{ lat?: number, lng?: number, zoom: number, marker: boolean, markerColor: string }} Map state.
+     * Current map state.
+     * @returns {{ lat?: number, lng?: number, zoom: number, marker: boolean, markerColor: string }}
      */
     get data() {
         return {
@@ -253,19 +465,40 @@ class GeoMap extends VBElement {
     }
 
     /**
-     * Set map state in one call. Idempotent — assigning the same
-     * lat/lng/zoom is a no-op. Re-renders the map.
+     * Set map state in one call: writes the attributes as one batch and
+     * re-renders once. Assigning the current state is a no-op. An invalid
+     * markerColor is ignored; '' / null clears it.
      * Emits geo-map:data-changed { data, source: 'property' }.
      */
     set data(value) {
         if (!value || typeof value !== 'object') return;
         const cur = this.data;
-        if (cur.lat === value.lat && cur.lng === value.lng && cur.zoom === value.zoom) return;
-        if (value.lat != null) this.setAttribute('lat', String(value.lat));
-        if (value.lng != null) this.setAttribute('lng', String(value.lng));
-        if (value.zoom != null) this.setAttribute('zoom', String(value.zoom));
-        if (value.marker != null) this.setAttribute('marker', value.marker ? 'true' : 'false');
-        if (value.markerColor) this.setAttribute('marker-color', value.markerColor);
+        const next = { ...cur };
+        if (value.lat != null && !isNaN(Number(value.lat))) next.lat = Number(value.lat);
+        if (value.lng != null && !isNaN(Number(value.lng))) next.lng = Number(value.lng);
+        if (value.zoom != null && !isNaN(Number(value.zoom))) next.zoom = Number(value.zoom);
+        if (value.marker != null) next.marker = Boolean(value.marker);
+        if ('markerColor' in value) {
+            if (isColor(value.markerColor)) next.markerColor = value.markerColor;
+            else if (!value.markerColor) next.markerColor = '';
+        }
+        if (next.lat === cur.lat && next.lng === cur.lng && next.zoom === cur.zoom &&
+            next.marker === cur.marker && next.markerColor === cur.markerColor) return;
+
+        this.#batching = true;
+        try {
+            if (next.lat !== cur.lat) this.setAttribute('lat', String(next.lat));
+            if (next.lng !== cur.lng) this.setAttribute('lng', String(next.lng));
+            if (next.zoom !== cur.zoom) this.setAttribute('zoom', String(next.zoom));
+            if (next.marker !== cur.marker) this.setAttribute('marker', next.marker ? 'true' : 'false');
+            if (next.markerColor !== cur.markerColor) {
+                if (next.markerColor) this.setAttribute('marker-color', next.markerColor);
+                else this.removeAttribute('marker-color');
+            }
+        } finally {
+            this.#batching = false;
+        }
+        if (this.hasAttribute('data-upgraded')) this._reinit();
         this.dispatchEvent(new CustomEvent('geo-map:data-changed', {
             detail: { data: this.data, source: 'property' },
             bubbles: true, composed: true,
@@ -273,11 +506,9 @@ class GeoMap extends VBElement {
     }
 
     /**
-     * Read the markers as a single-element array `[{ lat, lng, color }]`
-     * if coordinates are set, else `[]`. Multi-marker support is on the
-     * roadmap; today the component is single-point.
-     *
-     * @returns {Array<{ lat: number, lng: number, color: string }>} Marker records.
+     * The marker as a single-element array `[{ lat, lng, color }]` when
+     * coordinates resolve, else `[]`. Single-point today.
+     * @returns {Array<{ lat: number, lng: number, color: string }>}
      */
     get markers() {
         const c = this.#resolveCoordinates();
@@ -285,190 +516,246 @@ class GeoMap extends VBElement {
         return [{ lat: c.lat, lng: c.lng, color: this.markerColor }];
     }
 
-    /**
-     * Build the shadow DOM structure
-     */
-    render() {
-        const coords = this.#resolveCoordinates();
-        const lat = coords?.lat ?? NaN;
-        const lng = coords?.lng ?? NaN;
-        const hasCoords = !isNaN(lat) && !isNaN(lng);
+    // ── Rendering ───────────────────────────────────────────────────
 
-        // Check if there's slotted content
-        const hasSlottedContent = this.children.length > 0;
-        if (hasSlottedContent) {
-            this.setAttribute('data-has-caption', '');
-        } else {
-            this.removeAttribute('data-has-caption');
+    /** Build the shadow DOM (DOM APIs only — nothing is parsed as markup). */
+    render() {
+        const root = /** @type {ShadowRoot} */ (this.shadowRoot);
+        const fallbackStyle = adoptStyles(root);
+        this.removeAttribute('data-ready');
+        this.#readyFired = false;
+        this.#tileImgs = new Map();
+        this.#lastSize = '';
+        this.#center = this.#resolveCoordinates();
+        this.#name = this.#resolveName();
+        const hasCoords = this.#center !== null;
+        const consentPending = hasCoords && this.#consentPending;
+
+        const container = el('div', { part: 'container' });
+        const viewport = el('div', { part: 'viewport', role: 'img', 'aria-label': this.#name });
+        viewport.append(el('div', { part: 'tiles' }));
+        if (this.showMarker && hasCoords) {
+            const marker = buildMarker();
+            if (this.markerColor) marker.style.setProperty('--_marker-color', this.markerColor);
+            viewport.append(marker);
+        }
+        container.append(viewport);
+
+        if (consentPending) {
+            container.setAttribute('data-consent', '');
+            const overlay = el('div', { part: 'overlay' });
+            const btn = el('button', { part: 'activate', type: 'button' }, this.#label('consent'));
+            const host = this.#tileOrigin().replace(/^https?:\/\//, '');
+            const note = el('p', { part: 'consent-note' }, this.#label('consent-note', { host }));
+            overlay.append(btn, note);
+            overlay.addEventListener('click', () => this.#consent());
+            const warm = () => this.#preconnect();
+            overlay.addEventListener('pointerenter', warm, { once: true });
+            btn.addEventListener('focus', warm, { once: true });
+            container.append(overlay);
+        } else if (hasCoords && this.#canInteract) {
+            const overlay = el('div', { part: 'overlay' });
+            overlay.append(el('button', { part: 'activate', type: 'button' }, this.#label('activate')));
+            overlay.addEventListener('click', () => this.#activate({ focus: true }));
+            container.append(overlay);
         }
 
-        const ariaLabel = hasCoords
-            ? `Map of ${lat.toFixed(4)}, ${lng.toFixed(4)}`
-            : 'Map';
+        if (hasCoords && this.#canInteract) {
+            const controls = el('div', { part: 'controls', role: 'group', 'aria-label': this.#label('controls') });
+            /** @type {Array<[string, string, string, () => void]>} */
+            const defs = [
+                ['zoom-in', '+', this.#label('zoom-in'), () => this.#interaction?.zoomBy(1)],
+                ['zoom-out', '−', this.#label('zoom-out'), () => this.#interaction?.zoomBy(-1)],
+                ['recenter', '⌖', this.#label('recenter'), () => this.#interaction?.recenter()],
+                ['exit', '✕', this.#label('exit'), () => this.#deactivate()],
+            ];
+            for (const [part, glyph, name, fn] of defs) {
+                const b = el('button', { part: `control ${part}`, type: 'button', 'aria-label': name, title: name }, glyph);
+                b.addEventListener('click', fn);
+                controls.append(b);
+            }
+            container.append(controls);
+        }
 
-        const markerHtml = this.showMarker && hasCoords
-            ? `<div part="marker" aria-hidden="true">${markerSvg(this.markerColor)}</div>`
-            : '';
+        const caption = el('div', { part: 'caption' });
+        const slot = /** @type {HTMLSlotElement} */ (el('slot'));
+        caption.append(slot);
+        container.append(caption);
+        const syncCaption = () => {
+            const filled = slot.assignedNodes().some((n) => n.nodeType === 1 || (n.textContent || '').trim());
+            container.toggleAttribute('data-caption', filled);
+        };
+        slot.addEventListener('slotchange', syncCaption);
+        container.toggleAttribute('data-caption', [...this.childNodes].some((n) =>
+            (n.nodeType === 1 && !/** @type {Element} */ (n).hasAttribute('slot')) ||
+            (n.nodeType === 3 && (n.textContent || '').trim())));
 
-        const showActivate = hasCoords && this.interactive !== 'none' && !this.staticOnly;
-        const activateHtml = showActivate
-            ? `<div part="overlay"><button part="activate" aria-label="Activate interactive map" tabindex="0">Click to interact</button></div>`
-            : '';
+        container.append(this.#buildAttribution());
+        container.append(el('p', { part: 'instructions', id: `${this.#uid}-help`, hidden: '' }, this.#label('instructions')));
+        container.append(el('p', { part: 'status', role: 'status', 'aria-live': 'polite' }));
 
-        /** @type {ShadowRoot} */ (this.shadowRoot).innerHTML = `
-            <style>${styles}</style>
-            <div part="container">
-                <div part="tiles" role="img" aria-label="${ariaLabel}"></div>
-                ${markerHtml}
-                ${activateHtml}
-                <div part="caption"><slot></slot></div>
-                <div part="attribution">
-                    <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap</a>
-                </div>
-            </div>
-        `;
+        root.replaceChildren(...(fallbackStyle ? [fallbackStyle] : []), container);
+
+        if (!hasCoords) this.handleError('Missing or invalid lat/lng coordinates', this.#label('error-coords'));
+    }
+
+    /** Provider credit, or the attribution attribute for tile-url, inside a named slot. */
+    #buildAttribution() {
+        const wrap = el('div', { part: 'attribution' });
+        const slot = /** @type {HTMLSlotElement} */ (el('slot', { name: 'attribution' }));
+        /** @type {Array<{ text: string, href?: string }>} */
+        let credits;
+        if (this.tileUrl) {
+            const text = (this.getAttribute('attribution') || '').trim();
+            const href = this.getAttribute('attribution-href') || '';
+            credits = text ? [{ text, href }] : [];
+        } else {
+            credits = (PROVIDERS[/** @type {keyof typeof PROVIDERS} */ (this.#resolvedProvider)] ?? PROVIDERS.osm).credits;
+        }
+        credits.forEach((c, i) => {
+            if (i) slot.append(document.createTextNode(' '));
+            let safeHref = '';
+            if (c.href) {
+                try {
+                    const u = new URL(c.href, location.href);
+                    if (u.protocol === 'https:' || u.protocol === 'http:') safeHref = u.href;
+                } catch { /* invalid URL → plain text */ }
+            }
+            slot.append(safeHref
+                ? el('a', { href: safeHref, target: '_blank', rel: 'noopener noreferrer' }, c.text)
+                : el('span', {}, c.text));
+        });
+        const sync = () => {
+            wrap.hidden = credits.length === 0 && slot.assignedNodes().length === 0;
+        };
+        slot.addEventListener('slotchange', sync);
+        wrap.hidden = credits.length === 0 && !this.querySelector(':scope > [slot="attribution"]');
+        wrap.append(slot);
+        return wrap;
+    }
+
+    #parts() {
+        const root = /** @type {ShadowRoot} */ (this.shadowRoot);
+        return {
+            container: /** @type {HTMLElement | null} */ (root.querySelector('[part="container"]')),
+            viewport: /** @type {HTMLElement | null} */ (root.querySelector('[part="viewport"]')),
+            tiles: /** @type {HTMLElement | null} */ (root.querySelector('[part="tiles"]')),
+            marker: /** @type {HTMLElement | null} */ (root.querySelector('[part="marker"]')),
+            status: /** @type {HTMLElement | null} */ (root.querySelector('[part="status"]')),
+        };
     }
 
     /**
-     * Calculate tile positions and load tile images
+     * (Re)lay out the static tile view to cover the current box. Runs on
+     * setup and (debounced) on every resize; skipped while hidden (0×0)
+     * and re-run when it becomes visible. Hands off to the interaction
+     * when interactive mode is active.
      */
-    loadTiles() {
-        const coords = this.#resolveCoordinates();
-        const lat = coords?.lat ?? NaN;
-        const lng = coords?.lng ?? NaN;
-
-        if (isNaN(lat) || isNaN(lng)) {
-            this.handleError('Missing or invalid lat/lng coordinates');
+    #layout() {
+        const w = this.clientWidth;
+        const h = this.clientHeight;
+        if (this.#interaction) {
+            this.#interaction.resize(w, h);
             return;
         }
+        if (!this.#center || this.#consentPending || !w || !h) return;
+        const size = `${w}x${h}`;
+        if (size === this.#lastSize) return;
+        this.#lastSize = size;
+        this.loadTiles(w, h);
+    }
 
+    /**
+     * Place the tiles needed to cover a w×h box centred on the map centre.
+     * Existing tiles are reused; tiles no longer needed are removed.
+     * @param {number} [w]
+     * @param {number} [h]
+     */
+    loadTiles(w = this.clientWidth, h = this.clientHeight) {
+        const { tiles } = this.#parts();
+        if (!tiles || !this.#center || !w || !h) return;
         const zoom = this.zoom;
-        const provider = this.provider;
-        const { tileX, tileY, pixelX, pixelY } = latLngToTile(lat, lng, zoom);
+        const { lat, lng } = this.#center;
+        const center = latLngToWorldPixel(lat, lng, zoom);
+        const maxTile = Math.pow(2, zoom);
+        const left = center.x - w / 2;
+        const top = center.y - h / 2;
+        const x0 = Math.floor(left / 256);
+        const x1 = Math.floor((left + w - 1) / 256);
+        const y0 = Math.max(0, Math.floor(top / 256));
+        const y1 = Math.min(maxTile - 1, Math.floor((top + h - 1) / 256));
 
-        const tilesEl = /** @type {ShadowRoot} */ (this.shadowRoot).querySelector('[part="tiles"]');
-        if (!tilesEl) return;
+        // Tiles are positioned relative to tile (x0, y0); the layer is shifted
+        tiles.style.transform = `translate(${Math.round(x0 * 256 - left)}px, ${Math.round(y0 * 256 - top)}px)`;
 
-        // Clear existing tiles
-        tilesEl.innerHTML = '';
-
-        // Calculate offset to center the target point in the component
-        // The 3×3 grid is 768×768. We want pixelX,pixelY of the center tile
-        // to appear at the center of the component.
-        const el = this;
-        const w = el.offsetWidth || 400;
-        const h = el.offsetHeight || 300;
-
-        // Center tile is at grid position (1,1), so its top-left in the grid is (256, 256)
-        // The target pixel within that tile is (pixelX, pixelY)
-        // We want that point at (w/2, h/2)
-        const offsetX = Math.round(w / 2 - 256 - pixelX);
-        const offsetY = Math.round(h / 2 - 256 - pixelY);
-
-        /** @type {HTMLElement} */ (tilesEl).style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-
-        let loadCount = 0;
-        let errorCount = 0;
-        const totalTiles = 9;
-
-        // Build 3×3 grid around center tile
-        for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-                const tx = tileX + dx;
-                const ty = tileY + dy;
-                const url = getTileUrl(provider, zoom, tx, ty, this.tileUrl);
-
-                const img = document.createElement('img');
-                img.src = url;
-                img.alt = '';
-                img.loading = 'lazy';
-                img.draggable = false;
-
-                img.addEventListener('load', () => {
-                    loadCount++;
-                    if (loadCount + errorCount === totalTiles) {
-                        this.dispatchEvent(new CustomEvent('geo-map:ready', {
-                            bubbles: true,
-                            detail: { lat, lng, zoom }
-                        }));
-                    }
-                });
-
-                img.addEventListener('error', () => {
-                    errorCount++;
-                    if (errorCount === totalTiles) {
-                        this.handleError('Failed to load map tiles');
-                    } else if (loadCount + errorCount === totalTiles) {
-                        this.dispatchEvent(new CustomEvent('geo-map:ready', {
-                            bubbles: true,
-                            detail: { lat, lng, zoom }
-                        }));
-                    }
-                });
-
-                tilesEl.appendChild(img);
+        const keep = new Set();
+        for (let ty = y0; ty <= y1; ty++) {
+            for (let tx = x0; tx <= x1; tx++) {
+                const key = `${tx}/${ty}`;
+                keep.add(key);
+                let img = this.#tileImgs.get(key);
+                if (!img) {
+                    const wrapped = ((tx % maxTile) + maxTile) % maxTile;
+                    img = document.createElement('img');
+                    img.alt = '';
+                    img.loading = this.loading === 'eager' ? 'eager' : 'lazy';
+                    img.decoding = 'async';
+                    img.draggable = false;
+                    img.addEventListener('load', () => this.#checkReady());
+                    img.addEventListener('error', () => this.#checkReady());
+                    img.src = getTileUrl(this.#resolvedProvider, zoom, wrapped, ty, this.tileUrl);
+                    this.#tileImgs.set(key, img);
+                    tiles.append(img);
+                }
+                img.style.left = `${(tx - x0) * 256}px`;
+                img.style.top = `${(ty - y0) * 256}px`;
             }
         }
-    }
-
-    /**
-     * Wire up the activate button with hover preconnect and click/eager activation.
-     */
-    #wireActivation() {
-        const overlay = /** @type {ShadowRoot} */ (this.shadowRoot).querySelector('[part="overlay"]');
-        if (!overlay) return;
-
-        const btn = overlay.querySelector('[part="activate"]');
-
-        overlay.addEventListener('mouseenter', () => this.#preconnect(), { once: true });
-        if (btn) btn.addEventListener('focus', () => this.#preconnect(), { once: true });
-        if (btn) btn.addEventListener('click', () => this.#activate());
-
-        if (this.interactive === 'eager') {
-            // Activate on next frame so tiles render first
-            requestAnimationFrame(() => this.#activate());
+        for (const [key, img] of this.#tileImgs) {
+            if (!keep.has(key)) {
+                img.remove();
+                this.#tileImgs.delete(key);
+            }
         }
+        this.#checkReady();
+    }
+
+    #checkReady() {
+        if (this.#readyFired || this.#interaction || !this.#center || this.#tileImgs.size === 0) return;
+        const imgs = [...this.#tileImgs.values()];
+        if (!imgs.every((i) => i.complete)) return;
+        this.#readyFired = true;
+        if (imgs.every((i) => i.naturalWidth === 0)) {
+            this.handleError('Failed to load map tiles', this.#label('error-tiles'));
+            return;
+        }
+        this.setAttribute('data-ready', '');
+        this.dispatchEvent(new CustomEvent('geo-map:ready', {
+            bubbles: true,
+            detail: { lat: this.#center.lat, lng: this.#center.lng, zoom: this.zoom },
+        }));
+    }
+
+    // ── Consent / activation ────────────────────────────────────────
+
+    /** The user agreed to load third-party tiles. */
+    #consent() {
+        this.#consented = true;
+        this._reinit();
+        if (this.#canInteract) this.#activate({ focus: true });
     }
 
     /**
-     * Inject a preconnect link for the tile server on hover/focus.
-     * Skipped when tile-url points at a same-origin proxy — preconnect
-     * is only useful for cross-origin DNS/TLS warmup.
+     * Warm the tile origin while the user hovers / focuses the consent
+     * button (tiles have not been requested yet, so it actually helps).
+     * Same-origin tile URLs are skipped.
      */
     #preconnect() {
         if (this.#preconnected) return;
-
-        // First-party tile proxy: tileUrl that's relative or matches
-        // location.origin doesn't benefit from preconnect.
-        const tileUrl = this.tileUrl;
-        if (tileUrl) {
-            try {
-                const url = new URL(tileUrl, location.origin);
-                if (url.origin === location.origin) {
-                    this.#preconnected = true;
-                    return;
-                }
-                this.#preconnected = true;
-                const link = document.createElement('link');
-                link.rel = 'preconnect';
-                link.href = url.origin;
-                link.crossOrigin = '';
-                document.head.appendChild(link);
-                return;
-            } catch {
-                // Malformed template — fall through to provider preconnect
-            }
-        }
-
         this.#preconnected = true;
-        const provider = this.provider;
-        let origin;
-        if (provider === 'carto-light' || provider === 'carto-dark') {
-            origin = 'https://basemaps.cartocdn.com';
-        } else {
-            origin = 'https://tile.openstreetmap.org';
-        }
-
+        const origin = this.#tileOrigin();
+        if (!origin || origin === location.origin) return;
+        if (document.head.querySelector(`link[rel="preconnect"][href="${CSS.escape(origin)}"]`)) return;
         const link = document.createElement('link');
         link.rel = 'preconnect';
         link.href = origin;
@@ -477,69 +764,98 @@ class GeoMap extends VBElement {
     }
 
     /**
-     * Activate interactive mode — lazy-load interact.js and hand off control.
+     * Activate interactive mode — lazy-load interact.js and hand off.
+     * Concurrent calls share one pending promise; a disconnect or
+     * re-render during the import cancels it.
+     * @param {{ focus?: boolean }} [opts]
+     * @returns {Promise<void>}
      */
-    async #activate() {
-        if (this.#interaction) return;
-        const coords = this.#resolveCoordinates();
-        const lat = coords?.lat ?? NaN;
-        const lng = coords?.lng ?? NaN;
-        if (isNaN(lat) || isNaN(lng)) return;
+    #activate({ focus = true } = {}) {
+        if (this.#interaction) return Promise.resolve();
+        if (this.#activating) return this.#activating;
+        if (!this.#center || !this.#canInteract || this.#consentPending) return Promise.resolve();
+        const gen = this.#renderGen;
+        const p = (async () => {
+            const { MapInteraction } = await import('./interact.js');
+            if (!this.isConnected || gen !== this.#renderGen || this.#interaction || !this.#center) return;
+            const { container, viewport, tiles, marker } = this.#parts();
+            if (!container || !viewport || !tiles) return;
 
-        const { MapInteraction } = await import('./interact.js');
+            for (const img of this.#tileImgs.values()) img.remove();
+            this.#tileImgs.clear();
 
-        // Make the host focusable for keyboard events
-        if (!this.hasAttribute('tabindex')) {
-            this.setAttribute('tabindex', '0');
-        }
-        this.focus();
+            container.setAttribute('data-active', '');
+            viewport.setAttribute('role', 'region');
+            viewport.setAttribute('aria-roledescription', 'map');
+            viewport.setAttribute('aria-describedby', `${this.#uid}-help`);
+            viewport.setAttribute('tabindex', '0');
+            this.setState('active', true);
 
-        this.setAttribute('data-interactive-active', '');
-        this.#interaction = new MapInteraction({
-            shadow: /** @type {ShadowRoot} */ (this.shadowRoot),
-            host: this,
-            lat,
-            lng,
-            zoom: this.zoom,
-            provider: this.provider,
-            tileUrl: this.tileUrl,
-            onDeactivate: () => this.#deactivate(),
-        });
+            const { lat, lng } = this.#center;
+            this.#interaction = new MapInteraction({
+                host: this,
+                viewport,
+                tiles,
+                marker,
+                lat,
+                lng,
+                zoom: this.zoom,
+                provider: this.#resolvedProvider,
+                tileUrl: this.tileUrl,
+                width: this.clientWidth,
+                height: this.clientHeight,
+                onDeactivate: () => this.#deactivate(),
+                onMove: (d) => this.#announce(d),
+            });
+            if (focus) viewport.focus({ preventScroll: true });
 
-        this.dispatchEvent(new CustomEvent('geo-map:activate', {
-            bubbles: true,
-            detail: { lat, lng, zoom: this.zoom }
-        }));
+            this.dispatchEvent(new CustomEvent('geo-map:activate', {
+                bubbles: true,
+                detail: { lat, lng, zoom: this.zoom },
+            }));
+        })();
+        this.#activating = p;
+        p.finally(() => { if (this.#activating === p) this.#activating = null; });
+        return p;
     }
 
     /**
-     * Deactivate interactive mode — destroy interaction, re-render static view.
+     * Debounced polite announcement of the new centre / zoom.
+     * @param {{ lat: number, lng: number, zoom: number }} d
      */
+    #announce(d) {
+        clearTimeout(this.#announceTimer);
+        this.#announceTimer = window.setTimeout(() => {
+            const { status } = this.#parts();
+            if (status) status.textContent = this.#label('moved', { lat: d.lat.toFixed(4), lng: d.lng.toFixed(4), zoom: d.zoom });
+        }, 400);
+    }
+
+    /** Leave interactive mode and return to the static view. */
     #deactivate() {
         if (!this.#interaction) return;
-        this.#interaction.destroy();
-        this.#interaction = null;
-        this.removeAttribute('data-interactive-active');
-
-        // Re-render static view
-        this.render();
-        this.loadTiles();
-        this.#wireActivation();
+        const hadFocus = !!this.shadowRoot?.activeElement;
+        this.#userExited = true;
+        this._reinit();
+        if (hadFocus) {
+            /** @type {HTMLElement | null | undefined} */ (this.shadowRoot?.querySelector('[part="activate"]'))?.focus();
+        }
     }
 
     /**
-     * Handle error state
-     * @param {string} message
+     * Error state: shown in the map surface, reported as geo-map:error.
+     * @param {string} message - Event detail message (stable, English)
+     * @param {string} [display] - Localised on-screen text
      */
-    handleError(message) {
-        const container = /** @type {ShadowRoot} */ (this.shadowRoot).querySelector('[part="container"]');
+    handleError(message, display = message) {
+        const { container } = this.#parts();
         if (container) {
             container.setAttribute('data-state', 'error');
-            container.setAttribute('data-error', message);
+            container.setAttribute('data-error', display);
         }
         this.dispatchEvent(new CustomEvent('geo-map:error', {
             bubbles: true,
-            detail: { message }
+            detail: { message },
         }));
     }
 }

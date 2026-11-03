@@ -12,6 +12,7 @@ import { basename, join, sep } from 'path';
 
 const demosDir = join(import.meta.dirname, '../../demos/examples/demos');
 const MERMAID_STUB = readFileSync(join(import.meta.dirname, '../element-visual/fixtures/static/mermaid-stub.mjs'), 'utf8');
+const GEO_TILE_STUB = readFileSync(join(import.meta.dirname, '../element-visual/fixtures/static/geo-tile.svg'));
 
 // Demos whose rendering is nondeterministic at screenshot time —
 // JS-driven animations or runtime-fetched content. Screenshot comparison
@@ -51,6 +52,11 @@ for (const demo of demos) {
       contentType: 'text/javascript',
       body: MERMAID_STUB,
     }));
+    // geo-map demos fetch OSM / CARTO raster tiles; serve one local stub
+    // tile for every request so map demos are deterministic and offline.
+    for (const host of ['https://tile.openstreetmap.org/**', 'https://basemaps.cartocdn.com/**']) {
+      await page.route(host, (route) => route.fulfill({ contentType: 'image/svg+xml', body: GEO_TILE_STUB }));
+    }
     await page.goto(`/docs/examples/demos/${demo}`);
     await page.waitForLoadState('networkidle');
 

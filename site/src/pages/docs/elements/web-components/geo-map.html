@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "geo-map"
-description: "A zero-dependency map component using OpenStreetMap tiles. Renders a static tile grid centered on given coordinates with an optional marker pin and address caption."
+description: "A zero-dependency map component using OpenStreetMap or CARTO tiles (or your own tile proxy). Renders a static map centred on given coordinates with a marker pin and address caption, and lazy-loads an accessible pan / zoom mode."
 elementName: "geo-map"
 category: component
 currentPath: /docs/elements/web-components/geo-map/
@@ -13,26 +13,24 @@ crumbLabel: Web Components
   <section>
     <h2>Overview</h2>
     <layout-text>
-      <p>The <code>&lt;geo-map&gt;</code> component displays a static map using free OpenStreetMap tiles. It calculates tile coordinates from <code>lat</code>/<code>lng</code> attributes and renders a 3&times;3 tile grid clipped to the component dimensions.</p>
+      <p>The <code>&lt;geo-map&gt;</code> component displays a map from free raster tiles. It computes the tiles needed to cover its box from <code>lat</code>/<code>lng</code>/<code>zoom</code>, re-lays them out when the element is resized, and draws a marker at the centre. Activating the map lazy-loads pan and zoom.</p>
       <p><strong>Key features:</strong></p>
       <ul>
         <li>Zero dependencies &mdash; no API keys, no external libraries</li>
-        <li>Free tiles from OpenStreetMap or Carto</li>
-        <li>Progressive enhancement &mdash; slotted <code>&lt;address&gt;</code> visible before JS</li>
-        <li>SVG marker pin with customizable color</li>
-        <li>CSS custom properties for styling</li>
-        <li>Shadow DOM with exposed CSS parts</li>
+        <li>OpenStreetMap or CARTO tiles, or your own tile proxy, each with the credit its terms require</li>
+        <li>Progressive enhancement &mdash; the slotted <code>&lt;address&gt;</code> is visible before JS and names the map</li>
+        <li>Opt-in consent mode that contacts no tile server until the user agrees</li>
+        <li>On-screen zoom buttons, pinch, keyboard, and click-to-centre in interactive mode</li>
+        <li>CSS custom properties, CSS parts, and <code>data-label-*</code> strings for localisation</li>
       </ul>
     </layout-text>
 
-    <div class="example">
-      <geo-map lat="40.7484" lng="-73.9857" zoom="15">
-        <address>
-          <strong>Empire State Building</strong><br/>
-          20 W 34th St, New York, NY 10001
-        </address>
-      </geo-map>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/geo-map-interactive.html"
+      url="https://vanilla-breeze.com/geo-map"
+      title="Geo Map"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Basic usage" data-escape><geo-map lat="40.7484" lng="-73.9857" zoom="15">
   <address>
@@ -55,60 +53,22 @@ crumbLabel: Web Components
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td><code>lat</code></td>
-          <td>Number</td>
-          <td>&mdash;</td>
-          <td>Latitude of map center</td>
-        </tr>
-        <tr>
-          <td><code>lng</code></td>
-          <td>Number</td>
-          <td>&mdash;</td>
-          <td>Longitude of map center</td>
-        </tr>
-        <tr>
-          <td><code>zoom</code></td>
-          <td>Number</td>
-          <td><code>15</code></td>
-          <td>Tile zoom level (1&ndash;19)</td>
-        </tr>
-        <tr>
-          <td><code>marker</code></td>
-          <td>Boolean</td>
-          <td><code>true</code></td>
-          <td>Show pin at center. Set to <code>"false"</code> to hide.</td>
-        </tr>
-        <tr>
-          <td><code>marker-color</code></td>
-          <td>String</td>
-          <td><code>#e74c3c</code></td>
-          <td>Pin fill color</td>
-        </tr>
-        <tr>
-          <td><code>provider</code></td>
-          <td>String</td>
-          <td><code>osm</code></td>
-          <td>Tile source: <code>osm</code>, <code>carto-light</code>, <code>carto-dark</code></td>
-        </tr>
-        <tr>
-          <td><code>tile-url</code></td>
-          <td>String</td>
-          <td>&mdash;</td>
-          <td>URL template with <code>{z}</code>, <code>{x}</code>, <code>{y}</code> placeholders. Overrides <code>provider</code>. Used for <a href="/docs/concepts/service-facade/">first-party tile proxying</a> &mdash; point at your own endpoint instead of OSM/Carto directly.</td>
-        </tr>
-        <tr>
-          <td><code>src</code></td>
-          <td>String</td>
-          <td>&mdash;</td>
-          <td>ID of an external <code>&lt;address data-lat data-lng&gt;</code> or <code>&lt;script type="application/ld+json"&gt;</code> element to resolve coordinates from</td>
-        </tr>
-        <tr>
-          <td><code>place</code></td>
-          <td>String</td>
-          <td>&mdash;</td>
-          <td>Name to match against JSON-LD <code>Place</code> scripts on the page (matches <code>data.name</code>)</td>
-        </tr>
+        <tr><td><code>lat</code></td><td>Number</td><td>&mdash;</td><td>Latitude of the map centre</td></tr>
+        <tr><td><code>lng</code></td><td>Number</td><td>&mdash;</td><td>Longitude of the map centre</td></tr>
+        <tr><td><code>zoom</code></td><td>Number</td><td><code>15</code></td><td>Tile zoom level (1&ndash;19)</td></tr>
+        <tr><td><code>marker</code></td><td><code>true</code> | <code>false</code></td><td><code>true</code></td><td>Show the pin at the centre. Set to <code>"false"</code> to hide.</td></tr>
+        <tr><td><code>marker-color</code></td><td>CSS colour</td><td>theme</td><td>Pin fill. Invalid values are ignored; without it the pin uses <code>--geo-map-marker-color</code>, then the theme&rsquo;s <code>--color-error</code>.</td></tr>
+        <tr><td><code>provider</code></td><td><code>osm</code> | <code>carto-light</code> | <code>carto-dark</code> | <code>carto-auto</code></td><td><code>osm</code></td><td>Built-in tile source. <code>carto-auto</code> follows the page&rsquo;s <code>data-mode</code> (else <code>prefers-color-scheme</code>).</td></tr>
+        <tr><td><code>tile-url</code></td><td>String</td><td>&mdash;</td><td>Tile URL template overriding <code>provider</code>: <code>{z}</code> <code>{x}</code> <code>{y}</code>, <code>{s}</code> (subdomain a/b/c) and <code>{r}</code> (<code>@2x</code> on high-density screens).</td></tr>
+        <tr><td><code>attribution</code></td><td>String</td><td>&mdash;</td><td>Credit text for a <code>tile-url</code> source.</td></tr>
+        <tr><td><code>attribution-href</code></td><td>URL</td><td>&mdash;</td><td>Link for that credit (http/https only).</td></tr>
+        <tr><td><code>interactive</code></td><td><code>click</code> | <code>eager</code> | <code>none</code></td><td><code>click</code></td><td>Activation mode: the map surface is an activation button; <code>eager</code> activates on load (without moving focus); <code>none</code> is static.</td></tr>
+        <tr><td><code>static-only</code></td><td>Boolean</td><td>&mdash;</td><td>Never activate.</td></tr>
+        <tr><td><code>loading</code></td><td><code>lazy</code> | <code>eager</code> | <code>consent</code></td><td><code>lazy</code></td><td>Tile loading. <code>consent</code> requests nothing from the tile host until the user presses &ldquo;Load map&rdquo;.</td></tr>
+        <tr><td><code>label</code></td><td>String</td><td>&mdash;</td><td>Accessible name of the map (default: &ldquo;Map of &hellip;&rdquo; from the address text, the <code>src</code> name, or <code>place</code>).</td></tr>
+        <tr><td><code>src</code></td><td>ID</td><td>&mdash;</td><td>ID of an external <code>&lt;address data-lat data-lng&gt;</code> or <code>&lt;script type="application/ld+json"&gt;</code> to read coordinates from</td></tr>
+        <tr><td><code>place</code></td><td>String</td><td>&mdash;</td><td>Name matched against JSON-LD scripts on the page (<code>data.name</code>)</td></tr>
+        <tr><td><code>data-ready</code></td><td>Output</td><td>&mdash;</td><td>Set by the component once the static tiles have loaded.</td></tr>
       </tbody>
     </table>
   </section>
@@ -116,72 +76,96 @@ crumbLabel: Web Components
   <section>
     <h2>Tile Providers</h2>
     <layout-text>
-      <p>Three free tile providers are supported. All require attribution (included automatically).</p>
+      <p>Each built-in provider shows the credit its terms require: OpenStreetMap shows &ldquo;&copy; OpenStreetMap contributors&rdquo;; the CARTO styles add &ldquo;&copy; CARTO&rdquo;. Keep the credit visible.</p>
     </layout-text>
 
-    <div class="example">
-      <layout-stack data-layout-gap="m">
-        <div>
-          <strong>OSM (default)</strong>
-          <geo-map lat="51.5007" lng="-0.1246" zoom="15" provider="osm" style="--geo-map-height: 200px;"></geo-map>
-        </div>
-        <div>
-          <strong>Carto Light</strong>
-          <geo-map lat="51.5007" lng="-0.1246" zoom="15" provider="carto-light" style="--geo-map-height: 200px;"></geo-map>
-        </div>
-        <div>
-          <strong>Carto Dark</strong>
-          <geo-map lat="51.5007" lng="-0.1246" zoom="15" provider="carto-dark" style="--geo-map-height: 200px;"></geo-map>
-        </div>
-      </layout-stack>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/geo-map-providers.html"
+      url="https://vanilla-breeze.com/geo-map/providers"
+      title="Tile providers"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Provider variants" data-escape><!-- OpenStreetMap (default) -->
 <geo-map lat="51.5007" lng="-0.1246" zoom="15" provider="osm"></geo-map>
 
-<!-- Carto Light — minimal, clean style -->
+<!-- CARTO light / dark -->
 <geo-map lat="51.5007" lng="-0.1246" zoom="15" provider="carto-light"></geo-map>
+<geo-map lat="51.5007" lng="-0.1246" zoom="15" provider="carto-dark"></geo-map>
 
-<!-- Carto Dark — great for dark themes -->
-<geo-map lat="51.5007" lng="-0.1246" zoom="15" provider="carto-dark"></geo-map></code-block>
+<!-- CARTO, following the page's light / dark mode -->
+<geo-map lat="51.5007" lng="-0.1246" zoom="15" provider="carto-auto"></geo-map></code-block>
   </section>
 
   <section>
-    <h2>First-Party Tile Proxy</h2>
+    <h2>Your Own Tiles and Attribution</h2>
     <layout-text>
-      <p>For privacy, swappability, caching control, or rate limiting, point <code>&lt;geo-map&gt;</code> at your own endpoint instead of contacting OSM / Carto directly. The <code>tile-url</code> attribute takes a URL template with <code>{z}</code>, <code>{x}</code>, <code>{y}</code> placeholders &mdash; the component substitutes them per tile request. See <a href="/docs/concepts/service-facade/">Server-Side Service Facade</a> for the broader pattern and a Cloudflare Worker example that proxies + caches OSM tiles in KV.</p>
+      <p>For privacy, swappability, caching control, or rate limiting, point <code>&lt;geo-map&gt;</code> at your own endpoint. <code>tile-url</code> takes a URL template; every <code>{z}</code>, <code>{x}</code>, <code>{y}</code> is substituted, <code>{s}</code> rotates through subdomains <code>a</code>/<code>b</code>/<code>c</code>, and <code>{r}</code> becomes <code>@2x</code> on high-density screens. See <a href="/docs/concepts/service-facade/">Server-Side Service Facade</a> for a Cloudflare Worker that proxies and caches OSM tiles.</p>
+      <p>A <code>tile-url</code> source has no built-in credit &mdash; supply the credit its licence needs with <code>attribution</code> (and <code>attribution-href</code>), or slot your own element with <code>slot="attribution"</code>. If you proxy OpenStreetMap, credit OpenStreetMap.</p>
     </layout-text>
 
-    <code-block language="html" label="Point at a same-origin proxy" data-escape><geo-map lat="40.7484" lng="-73.9857" zoom="15"
-         tile-url="/api/tiles/{z}/{x}/{y}"></geo-map>
-
-<!-- Or a third-party CDN, with attribution unchanged -->
+    <code-block language="html" label="Tile proxy with its credit" data-escape><!-- Same-origin proxy of OSM tiles -->
 <geo-map lat="40.7484" lng="-73.9857" zoom="15"
-         tile-url="https://tiles.example.com/{z}/{x}/{y}.png"></geo-map></code-block>
+         tile-url="/api/tiles/{z}/{x}/{y}.png"
+         attribution="© OpenStreetMap contributors"
+         attribution-href="https://www.openstreetmap.org/copyright"></geo-map>
 
+<!-- Third-party CDN with subdomains and retina tiles -->
+<geo-map lat="40.7484" lng="-73.9857" zoom="15"
+         tile-url="https://{s}.tiles.example.com/{z}/{x}/{y}{r}.png">
+  <small slot="attribution">
+    © <a href="https://tiles.example.com/terms">Example Tiles</a>,
+    © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>
+  </small>
+</geo-map></code-block>
+  </section>
+
+  <section>
+    <h2>Privacy and Third-Party Requests</h2>
     <layout-text>
-      <p><code>tile-url</code> overrides <code>provider</code> when both are set. Same-origin URLs skip the preconnect hint (no DNS / TLS warmup needed for first-party). Attribution remains visible &mdash; if you proxy a non-OSM source, override the <code>[part="attribution"]</code> styling or hide it via CSS.</p>
+      <p>By default the static map fetches its tiles as soon as it is near the viewport, even with <code>interactive="click"</code>. Each tile request sends the visitor&rsquo;s IP address and the page as referrer to the tile host:</p>
+      <ul>
+        <li><code>osm</code>: <code>https://tile.openstreetmap.org</code></li>
+        <li><code>carto-*</code>: <code>https://basemaps.cartocdn.com</code></li>
+        <li><code>tile-url</code>: whatever host you configure (nothing third-party if it is same-origin)</li>
+      </ul>
+      <p>With a Content Security Policy, allow the tile host in <code>img-src</code> (for example <code>img-src 'self' https://tile.openstreetmap.org</code>). The component adopts its styles as a constructable stylesheet, so it does not need <code>style-src 'unsafe-inline'</code> in browsers that support <code>adoptedStyleSheets</code>.</p>
+      <p>Set <code>loading="consent"</code> to show a placeholder naming the tile host instead; no tile is requested until the user presses &ldquo;Load map&rdquo; (which then also activates interactive mode). Hovering or focusing that button preconnects to the tile host. Keep a link in the slotted address so the placeholder is still useful.</p>
     </layout-text>
+
+    <browser-window
+      src="/docs/examples/demos/geo-map-consent.html"
+      url="https://vanilla-breeze.com/geo-map/consent"
+      title="Consent mode"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" label="Load tiles only after consent" data-escape><geo-map lat="48.8584" lng="2.2945" zoom="16" loading="consent">
+  <address>
+    <a href="https://www.openstreetmap.org/?mlat=48.8584&mlon=2.2945#map=16/48.8584/2.2945">
+      Eiffel Tower, Champ de Mars, 75007 Paris
+    </a>
+  </address>
+</geo-map></code-block>
   </section>
 
   <section>
     <h2>Marker</h2>
     <layout-text>
-      <p>The marker pin is an inline SVG positioned at the center of the map. Customize its color with the <code>marker-color</code> attribute or hide it with <code>marker="false"</code>.</p>
+      <p>The marker pin is an SVG drawn at the centre of the map. By default it uses the theme&rsquo;s <code>--color-error</code>; set <code>--geo-map-marker-color</code> in CSS for a site-wide colour, <code>marker-color</code> for one map, or hide it with <code>marker="false"</code>.</p>
     </layout-text>
 
-    <div class="example">
-      <layout-stack data-layout-gap="m">
-        <geo-map lat="40.7484" lng="-73.9857" zoom="15" style="--geo-map-height: 180px;"></geo-map>
-        <geo-map lat="40.7484" lng="-73.9857" zoom="15" marker-color="#2563eb" style="--geo-map-height: 180px;"></geo-map>
-        <geo-map lat="40.7484" lng="-73.9857" zoom="15" marker="false" style="--geo-map-height: 180px;"></geo-map>
-      </layout-stack>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/geo-map-markers.html"
+      url="https://vanilla-breeze.com/geo-map/markers"
+      title="Markers"
+      shadow>
+    </browser-window>
 
-    <code-block language="html" show-lines label="Marker variants" data-escape><!-- Default marker -->
+    <code-block language="html" show-lines label="Marker variants" data-escape><!-- Default marker (theme colour) -->
 <geo-map lat="40.7484" lng="-73.9857" zoom="15"></geo-map>
 
-<!-- Custom color -->
+<!-- Per-map colour -->
 <geo-map lat="40.7484" lng="-73.9857" zoom="15" marker-color="#2563eb"></geo-map>
 
 <!-- No marker -->
@@ -191,7 +175,7 @@ crumbLabel: Web Components
   <section>
     <h2>Caption</h2>
     <layout-text>
-      <p>Slot an <code>&lt;address&gt;</code> (or any content) as a caption overlay at the bottom of the map. This content is also the no-JS fallback.</p>
+      <p>Slot an <code>&lt;address&gt;</code> (or any content) as a caption at the bottom of the map. It is also the no-JS fallback and, by default, the map&rsquo;s accessible name (&ldquo;Map of &hellip;&rdquo;). Links in the caption stay clickable above the activation surface.</p>
     </layout-text>
 
     <code-block language="html" show-lines label="Caption slot" data-escape><!-- Slotted address as caption -->
@@ -203,8 +187,8 @@ crumbLabel: Web Components
   </address>
 </geo-map>
 
-<!-- No caption — just the map -->
-<geo-map lat="48.8584" lng="2.2945" zoom="16"></geo-map></code-block>
+<!-- No caption: name it with label -->
+<geo-map lat="48.8584" lng="2.2945" zoom="16" label="Eiffel Tower and Champ de Mars"></geo-map></code-block>
   </section>
 
   <section>
@@ -317,85 +301,102 @@ crumbLabel: Web Components
   </section>
 
   <section>
+    <h2>JavaScript API</h2>
+    <layout-text>
+      <p><code>.data</code> reads the map state; assigning a partial object writes the attributes as one batch and re-renders once. Assigning the current state is a no-op, an invalid <code>markerColor</code> is ignored, and <code>''</code> clears it.</p>
+    </layout-text>
+
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data</code></td><td><code>{ lat, lng, zoom, marker, markerColor }</code></td><td>Get, or assign (partial) to update. Emits <code>geo-map:data-changed</code>.</td></tr>
+        <tr><td><code>markers</code></td><td><code>Array&lt;{ lat, lng, color }&gt;</code></td><td>Read-only. The centre marker as a one-element array, or <code>[]</code> without coordinates.</td></tr>
+        <tr><td><code>active</code></td><td>Boolean</td><td>Read-only. True in interactive mode (also <code>:state(active)</code>).</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="javascript" show-lines label="Data API" data-escape>const map = document.querySelector('geo-map');
+
+map.data = { lat: 51.5007, lng: -0.1246, zoom: 16, markerColor: 'rebeccapurple' };
+map.data;    // { lat: 51.5007, lng: -0.1246, zoom: 16, marker: true, markerColor: 'rebeccapurple' }
+map.markers; // [{ lat: 51.5007, lng: -0.1246, color: 'rebeccapurple' }]
+
+map.addEventListener('geo-map:data-changed', (e) => {
+  console.log(e.detail.data, e.detail.source); // source: 'property'
+});</code-block>
+  </section>
+
+  <section>
+    <h2>Interactive Mode</h2>
+    <layout-text>
+      <p>With the default <code>interactive="click"</code> the whole map surface is the activation target: click or tap anywhere, or Tab to the &ldquo;Activate interactive map&rdquo; button and press Enter. On touch screens the button is always visible. Activation lazy-loads the pan / zoom layer and moves focus to the map.</p>
+      <p>In interactive mode you can drag to pan, click a point to centre the map on it (a single-pointer alternative to dragging), pinch with two fingers, scroll, or use the on-screen <strong>+</strong> / <strong>&minus;</strong>, recenter and exit buttons. Use <code>interactive="eager"</code> to activate on load, or <code>interactive="none"</code> / <code>static-only</code> for a static map.</p>
+    </layout-text>
+
+    <code-block language="html" show-lines label="Interactive variants" data-escape><!-- Default: activate first -->
+<geo-map lat="40.7484" lng="-73.9857" zoom="15">
+  <address>Empire State Building, New York</address>
+</geo-map>
+
+<!-- Eager: interactive on load (focus is not moved) -->
+<geo-map lat="48.8584" lng="2.2945" zoom="14" interactive="eager"></geo-map>
+
+<!-- Static -->
+<geo-map lat="51.5007" lng="-0.1246" zoom="15" interactive="none"></geo-map>
+<geo-map lat="35.6762" lng="139.6503" zoom="13" static-only></geo-map></code-block>
+
+    <h3>Keyboard</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>Arrow keys</kbd></td><td>Pan the map</td></tr>
+        <tr><td><kbd>+</kbd> / <kbd>=</kbd></td><td>Zoom in</td></tr>
+        <tr><td><kbd>-</kbd></td><td>Zoom out</td></tr>
+        <tr><td><kbd>Home</kbd> / <kbd>0</kbd></td><td>Recenter on the original location and zoom</td></tr>
+        <tr><td><kbd>Escape</kbd></td><td>Exit interactive mode; focus returns to the activate button</td></tr>
+        <tr><td><kbd>Tab</kbd></td><td>Move between the map and the zoom / recenter / exit buttons</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
     <h2>CSS Custom Properties</h2>
 
     <table class="props-table">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Default</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Property</th><th>Default</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td><code>--geo-map-height</code></td>
-          <td><code>300px</code></td>
-          <td>Component height</td>
-        </tr>
-        <tr>
-          <td><code>--geo-map-border-radius</code></td>
-          <td><code>0.5rem</code></td>
-          <td>Border radius</td>
-        </tr>
-        <tr>
-          <td><code>--geo-map-marker-color</code></td>
-          <td><code>#e74c3c</code></td>
-          <td>Marker pin fill (overridden by <code>marker-color</code> attr)</td>
-        </tr>
-        <tr>
-          <td><code>--geo-map-marker-size</code></td>
-          <td><code>32px</code></td>
-          <td>Marker pin dimensions</td>
-        </tr>
-        <tr>
-          <td><code>--geo-map-caption-bg</code></td>
-          <td><code>rgba(255,255,255,0.9)</code></td>
-          <td>Caption background</td>
-        </tr>
-        <tr>
-          <td><code>--geo-map-caption-padding</code></td>
-          <td><code>0.5rem 0.75rem</code></td>
-          <td>Caption padding</td>
-        </tr>
-        <tr>
-          <td><code>--geo-map-overlay-bg</code></td>
-          <td><code>rgba(0,0,0,0.35)</code></td>
-          <td>Overlay background on hover/focus</td>
-        </tr>
-        <tr>
-          <td><code>--geo-map-overlay-color</code></td>
-          <td><code>#fff</code></td>
-          <td>Overlay text color</td>
-        </tr>
-        <tr>
-          <td><code>--geo-map-attribution-font-size</code></td>
-          <td><code>0.625rem</code></td>
-          <td>Attribution text size</td>
-        </tr>
+        <tr><td><code>--geo-map-height</code></td><td><code>300px</code></td><td>Component height</td></tr>
+        <tr><td><code>--geo-map-border-radius</code></td><td><code>0.5rem</code></td><td>Border radius</td></tr>
+        <tr><td><code>--geo-map-marker-color</code></td><td><code>var(--color-error)</code></td><td>Marker pin fill (the <code>marker-color</code> attribute wins)</td></tr>
+        <tr><td><code>--geo-map-marker-dot-color</code></td><td><code>#fff</code></td><td>Dot inside the pin</td></tr>
+        <tr><td><code>--geo-map-marker-size</code></td><td><code>32px</code></td><td>Marker pin dimensions</td></tr>
+        <tr><td><code>--geo-map-caption-bg</code></td><td>translucent surface</td><td>Caption background (light / dark aware)</td></tr>
+        <tr><td><code>--geo-map-caption-color</code></td><td><code>var(--color-text)</code></td><td>Caption text colour</td></tr>
+        <tr><td><code>--geo-map-caption-padding</code></td><td><code>0.5rem 0.75rem</code></td><td>Caption padding</td></tr>
+        <tr><td><code>--geo-map-overlay-bg</code></td><td><code>rgb(0 0 0 / 0.35)</code></td><td>Activation overlay background on hover / focus</td></tr>
+        <tr><td><code>--geo-map-overlay-color</code></td><td><code>#fff</code></td><td>Activation overlay text colour</td></tr>
+        <tr><td><code>--geo-map-activate-bg</code></td><td><code>rgb(0 0 0 / 0.6)</code></td><td>Activate button background</td></tr>
+        <tr><td><code>--geo-map-consent-bg</code></td><td>translucent surface</td><td>Consent placeholder background</td></tr>
+        <tr><td><code>--geo-map-consent-color</code></td><td><code>var(--color-text)</code></td><td>Consent placeholder text colour</td></tr>
+        <tr><td><code>--geo-map-attribution-bg</code></td><td>translucent surface</td><td>Attribution background</td></tr>
+        <tr><td><code>--geo-map-attribution-color</code></td><td><code>var(--color-text)</code></td><td>Attribution text colour</td></tr>
+        <tr><td><code>--geo-map-attribution-font-size</code></td><td><code>0.625rem</code></td><td>Attribution text size</td></tr>
       </tbody>
     </table>
 
-    <code-block language="css" show-lines label="Styling with custom properties" data-escape>/* Custom height */
-geo-map {
+    <code-block language="css" show-lines label="Styling with custom properties" data-escape>geo-map {
   --geo-map-height: 400px;
-}
-
-/* Custom border radius */
-geo-map {
   --geo-map-border-radius: 1rem;
-}
-
-/* Custom marker */
-geo-map {
-  --geo-map-marker-color: #2563eb;
+  --geo-map-marker-color: var(--color-primary);
   --geo-map-marker-size: 40px;
-}
-
-/* Custom caption */
-geo-map {
-  --geo-map-caption-bg: rgba(0, 0, 0, 0.7);
-  --geo-map-caption-padding: 0.75rem 1rem;
+  --geo-map-caption-bg: rgb(0 0 0 / 0.7);
+  --geo-map-caption-color: #fff;
 }</code-block>
   </section>
 
@@ -404,152 +405,41 @@ geo-map {
 
     <table class="props-table">
       <thead>
-        <tr>
-          <th>Part</th>
-          <th>Element</th>
-          <th>Purpose</th>
-        </tr>
+        <tr><th>Part</th><th>Element</th><th>Purpose</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td><code>container</code></td>
-          <td>Outer wrapper</td>
-          <td>Overall sizing and border radius</td>
-        </tr>
-        <tr>
-          <td><code>tiles</code></td>
-          <td>Tile grid area</td>
-          <td>Map image area</td>
-        </tr>
-        <tr>
-          <td><code>marker</code></td>
-          <td>SVG pin</td>
-          <td>Marker styling</td>
-        </tr>
-        <tr>
-          <td><code>overlay</code></td>
-          <td>Overlay wrapper</td>
-          <td>Full-surface hover overlay containing the activate button</td>
-        </tr>
-        <tr>
-          <td><code>activate</code></td>
-          <td>Button</td>
-          <td>Click-to-interact trigger inside the overlay</td>
-        </tr>
-        <tr>
-          <td><code>caption</code></td>
-          <td>Slot wrapper</td>
-          <td>Address/label display</td>
-        </tr>
-        <tr>
-          <td><code>attribution</code></td>
-          <td>OSM credit</td>
-          <td>Required attribution link</td>
-        </tr>
+        <tr><td><code>container</code></td><td>Outer wrapper</td><td>Overall sizing</td></tr>
+        <tr><td><code>viewport</code></td><td>Map surface</td><td>Named image (static) or focusable map region (interactive)</td></tr>
+        <tr><td><code>tiles</code></td><td>Tile layer</td><td>Translated layer holding the tile images</td></tr>
+        <tr><td><code>marker</code></td><td>SVG pin</td><td>Marker styling</td></tr>
+        <tr><td><code>overlay</code></td><td>Activation surface</td><td>Full-surface click target containing the activate button</td></tr>
+        <tr><td><code>activate</code></td><td>Button</td><td>Activate (or, in consent mode, &ldquo;Load map&rdquo;) button</td></tr>
+        <tr><td><code>consent-note</code></td><td>Paragraph</td><td>Names the tile host in consent mode</td></tr>
+        <tr><td><code>controls</code></td><td>Button group</td><td>On-screen controls (interactive mode)</td></tr>
+        <tr><td><code>control</code></td><td>Button</td><td>Every control button; also <code>zoom-in</code>, <code>zoom-out</code>, <code>recenter</code>, <code>exit</code></td></tr>
+        <tr><td><code>caption</code></td><td>Slot wrapper</td><td>Address / label display</td></tr>
+        <tr><td><code>attribution</code></td><td>Credit</td><td>Provider credit, <code>attribution</code> text, or the <code>attribution</code> slot</td></tr>
+        <tr><td><code>status</code></td><td>Live region</td><td>Visually hidden pan / zoom announcements</td></tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Interactive Mode</h2>
+    <h2>Localisation</h2>
     <layout-text>
-      <p>By default, hovering over the map reveals a "Click to interact" button. Clicking activates pan and zoom &mdash; no external libraries loaded. The interactive layer is lazy-loaded on first activation.</p>
-      <p>Use <code>interactive="eager"</code> to activate immediately, <code>interactive="none"</code> to hide the button, or <code>static-only</code> to fully prevent interaction.</p>
+      <p>Every built-in string is overridable with a <code>data-label-*</code> attribute: <code>map</code>, <code>map-of</code> (<code>{name}</code>), <code>activate</code>, <code>consent</code>, <code>consent-note</code> (<code>{host}</code>), <code>zoom-in</code>, <code>zoom-out</code>, <code>recenter</code>, <code>exit</code>, <code>controls</code>, <code>instructions</code>, <code>moved</code> (<code>{lat}</code>, <code>{lng}</code>, <code>{zoom}</code>), <code>error-coords</code> and <code>error-tiles</code>.</p>
     </layout-text>
 
-    <div class="example">
-      <layout-stack data-layout-gap="m">
-        <div>
-          <strong>Click to activate (default)</strong>
-          <geo-map lat="40.7484" lng="-73.9857" zoom="15" style="--geo-map-height: 250px;">
-            <address>Hover, then click to interact. Drag to pan, scroll to zoom, Escape to exit.</address>
-          </geo-map>
-        </div>
-        <div>
-          <strong>Static only</strong>
-          <geo-map lat="35.6762" lng="139.6503" zoom="13" static-only provider="carto-light" style="--geo-map-height: 200px;">
-            <address>Tokyo &mdash; no interaction</address>
-          </geo-map>
-        </div>
-      </layout-stack>
-    </div>
-
-    <code-block language="html" show-lines label="Interactive variants" data-escape><!-- Default: click to activate (hover to see button) -->
-<geo-map lat="40.7484" lng="-73.9857" zoom="15">
-  <address>Empire State Building, New York</address>
-</geo-map>
-
-<!-- Eager: activates immediately on load -->
-<geo-map lat="48.8584" lng="2.2945" zoom="14" interactive="eager"></geo-map>
-
-<!-- No interactive button -->
-<geo-map lat="51.5007" lng="-0.1246" zoom="15" interactive="none"></geo-map>
-
-<!-- Static only: prevents all interaction -->
-<geo-map lat="35.6762" lng="139.6503" zoom="13" static-only></geo-map></code-block>
-  </section>
-
-  <section>
-    <h2>Interactive Attributes</h2>
-
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Type</th>
-          <th>Default</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>interactive</code></td>
-          <td>String</td>
-          <td><code>click</code></td>
-          <td>Activation mode: <code>click</code> (show button on hover), <code>eager</code> (activate immediately), <code>none</code> (no button)</td>
-        </tr>
-        <tr>
-          <td><code>static-only</code></td>
-          <td>Boolean</td>
-          <td><code>false</code></td>
-          <td>Prevent interactive activation entirely. No activate button rendered.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Keyboard Navigation</h2>
-    <layout-text>
-      <p>When interactive mode is active, the following keyboard controls are available:</p>
-    </layout-text>
-
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Key</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><kbd>Arrow keys</kbd></td>
-          <td>Pan the map (up, down, left, right)</td>
-        </tr>
-        <tr>
-          <td><kbd>+</kbd> / <kbd>=</kbd></td>
-          <td>Zoom in</td>
-        </tr>
-        <tr>
-          <td><kbd>-</kbd></td>
-          <td>Zoom out</td>
-        </tr>
-        <tr>
-          <td><kbd>Escape</kbd></td>
-          <td>Exit interactive mode, return to static view</td>
-        </tr>
-      </tbody>
-    </table>
+    <code-block language="html" label="French strings" data-escape><geo-map lat="48.8584" lng="2.2945" zoom="16"
+         data-label-map-of="Carte : {name}"
+         data-label-activate="Activer la carte interactive"
+         data-label-zoom-in="Zoom avant"
+         data-label-zoom-out="Zoom arrière"
+         data-label-recenter="Recentrer"
+         data-label-exit="Quitter la carte"
+         data-label-moved="Carte centrée sur {lat}, {lng}, zoom {zoom}">
+  <address>Tour Eiffel, Paris</address>
+</geo-map></code-block>
   </section>
 
   <section>
@@ -557,56 +447,29 @@ geo-map {
 
     <table class="props-table">
       <thead>
-        <tr>
-          <th>Event</th>
-          <th>Detail</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td><code>geo-map:ready</code></td>
-          <td><code>{ lat, lng, zoom }</code></td>
-          <td>Fired after tiles finish loading</td>
-        </tr>
-        <tr>
-          <td><code>geo-map:activate</code></td>
-          <td><code>{ lat, lng, zoom }</code></td>
-          <td>Fired when interactive mode is activated</td>
-        </tr>
-        <tr>
-          <td><code>geo-map:move</code></td>
-          <td><code>{ lat, lng, zoom }</code></td>
-          <td>Fired after pan or zoom in interactive mode</td>
-        </tr>
-        <tr>
-          <td><code>geo-map:error</code></td>
-          <td><code>{ message }</code></td>
-          <td>Fired on tile load failure or missing coordinates</td>
-        </tr>
+        <tr><td><code>geo-map:ready</code></td><td><code>{ lat, lng, zoom }</code></td><td>Static tiles finished loading (<code>data-ready</code> is set)</td></tr>
+        <tr><td><code>geo-map:activate</code></td><td><code>{ lat, lng, zoom }</code></td><td>Interactive mode started</td></tr>
+        <tr><td><code>geo-map:move</code></td><td><code>{ lat, lng, zoom }</code></td><td>After a pan or zoom in interactive mode (new centre)</td></tr>
+        <tr><td><code>geo-map:data-changed</code></td><td><code>{ data, source: 'property' }</code></td><td>After a <code>.data</code> assignment that changed something</td></tr>
+        <tr><td><code>geo-map:error</code></td><td><code>{ message }</code></td><td>No coordinates resolved, or every tile failed to load</td></tr>
       </tbody>
     </table>
 
     <code-block language="javascript" show-lines label="Listening to events" data-escape>const map = document.querySelector('geo-map');
 
 map.addEventListener('geo-map:ready', (e) => {
-  console.log('Tiles loaded:', e.detail);
-  // { lat: 40.7484, lng: -73.9857, zoom: 15 }
+  console.log('Tiles loaded:', e.detail); // { lat: 40.7484, lng: -73.9857, zoom: 15 }
+});
+
+map.addEventListener('geo-map:move', (e) => {
+  console.log('Map moved:', e.detail);    // { lat: 40.7501, lng: -73.9823, zoom: 16 }
 });
 
 map.addEventListener('geo-map:error', (e) => {
   console.error('Map error:', e.detail.message);
-});</code-block>
-    <code-block language="javascript" show-lines label="Interactive events" data-escape>const map = document.querySelector('geo-map');
-
-map.addEventListener('geo-map:activate', (e) => {
-  console.log('Interactive mode started:', e.detail);
-  // { lat: 40.7484, lng: -73.9857, zoom: 15 }
-});
-
-map.addEventListener('geo-map:move', (e) => {
-  console.log('Map moved:', e.detail);
-  // { lat: 40.7501, lng: -73.9823, zoom: 16 }
 });</code-block>
   </section>
 
@@ -616,48 +479,52 @@ map.addEventListener('geo-map:move', (e) => {
       <p>A common use case: pair <code>&lt;geo-map&gt;</code> with a contact form in a sidebar layout.</p>
     </layout-text>
 
-    <code-block language="html" show-lines label="Contact form with map" data-escape><section>
-  <layout-sidebar data-layout-gap="xl" data-layout-sidebar-width="wide">
-    <!-- Contact Form -->
-    <form action="/contact" method="POST" data-layout="stack" data-layout-gap="l">
-      <h2>Send a message</h2>
-      <form-field>
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" required/>
-      </form-field>
-      <form-field>
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required/>
-      </form-field>
-      <form-field>
-        <label for="message">Message</label>
-        <textarea id="message" name="message" rows="4" required></textarea>
-      </form-field>
-      <button type="submit">Send message</button>
-    </form>
+    <code-block language="html" show-lines label="Contact form with map" data-escape><layout-sidebar data-layout-gap="xl" data-layout-sidebar-width="wide">
+  <form action="/contact" method="POST" data-layout="stack" data-layout-gap="l">
+    <h2>Send a message</h2>
+    <form-field>
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" required/>
+    </form-field>
+    <form-field>
+      <label for="message">Message</label>
+      <textarea id="message" name="message" rows="4" required></textarea>
+    </form-field>
+    <button type="submit">Send message</button>
+  </form>
 
-    <!-- Map Sidebar -->
-    <aside>
-      <geo-map lat="37.7749" lng="-122.4194" zoom="14"
-               style="--geo-map-height: 100%; min-height: 300px;">
-        <address>
-          123 Business Ave<br/>
-          San Francisco, CA 94102
-        </address>
-      </geo-map>
-    </aside>
-  </layout-sidebar>
-</section></code-block>
+  <aside>
+    <geo-map lat="37.7749" lng="-122.4194" zoom="14">
+      <address>
+        123 Business Ave<br/>
+        San Francisco, CA 94102
+      </address>
+    </geo-map>
+  </aside>
+</layout-sidebar></code-block>
+
+    <code-block language="css" label="Fill the sidebar" data-escape>aside geo-map {
+  --geo-map-height: 100%;
+  min-block-size: 300px;
+}</code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <layout-text>
+      <p>What the component provides:</p>
       <ul>
-        <li>Tile grid has <code>role="img"</code> with an <code>aria-label</code> describing the coordinates</li>
-        <li>Marker SVG is <code>aria-hidden="true"</code> (decorative)</li>
-        <li>Attribution link opens in a new tab with <code>rel="noopener"</code></li>
-        <li>Slotted <code>&lt;address&gt;</code> content is accessible before and after JS loads</li>
+        <li>The static map is an image named from <code>label</code>, the slotted <code>&lt;address&gt;</code>, the <code>src</code> name, or <code>place</code> &mdash; not raw coordinates.</li>
+        <li>The activate button&rsquo;s accessible name is its visible text; on touch screens it is always visible, and the whole map surface activates.</li>
+        <li>In interactive mode the map is a focusable region with <code>aria-roledescription="map"</code>, instructions via <code>aria-describedby</code>, and a polite live region announcing the new centre and zoom.</li>
+        <li>Single-pointer alternatives to dragging and pinching: click-to-centre and the on-screen zoom, recenter and exit buttons (WCAG 2.5.7). All controls work from the keyboard.</li>
+        <li>The marker is decorative (<code>aria-hidden</code>); attribution links open in a new tab.</li>
+      </ul>
+      <p>Limits to be aware of:</p>
+      <ul>
+        <li>Raster tiles are pictures: street names and landmarks on the map are not available to screen readers. Always put the address (and ideally a link to a full map service or directions) in the slotted <code>&lt;address&gt;</code> &mdash; that text, not the map, is the accessible content.</li>
+        <li>Tile colours come from the provider and are not themed; check that your marker colour contrasts with the tiles you use, and prefer <code>carto-auto</code> for dark pages.</li>
+        <li>Announcements report coordinates, not place names (there is no geocoding).</li>
       </ul>
     </layout-text>
   </section>
@@ -665,7 +532,8 @@ map.addEventListener('geo-map:move', (e) => {
   <section>
     <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/web-components/icons/"><code>&lt;icon-wc&gt;</code></a> &mdash; Icon component (similar Shadow DOM pattern)</li>
+      <li><a href="/docs/elements/web-components/image-map/"><code>&lt;image-map&gt;</code></a> &mdash; Interactive regions on an image</li>
+      <li><a href="/docs/concepts/service-facade/">Server-Side Service Facade</a> &mdash; Proxying and caching tiles first-party</li>
       <li><a href="/docs/patterns/forms/contact/">Contact patterns</a> &mdash; Contact form layouts with map integration</li>
     </ul>
   </section>
