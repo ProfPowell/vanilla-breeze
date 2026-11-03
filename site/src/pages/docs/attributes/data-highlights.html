@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-highlights"
-description: "Medium-style text highlighting and annotation with color swatches, private notes, and localStorage persistence."
+description: "The text-highlighting engine: renders and persists highlights on any element with the CSS Custom Highlight API. No built-in UI; pair it with highlight-wc and selection-menu for interactive highlighting."
 attributeName: data-highlights
 category: clipboard
 attributeType: data
@@ -13,8 +13,32 @@ crumbLabel: Clipboard & Selection
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>data-highlights</code> attribute enables Medium-style text selection highlighting on any element. Users can select text, choose a highlight color, add private notes, and all annotations persist in localStorage.</p>
-  <p>Uses the <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSS_Custom_Highlight_API">CSS Custom Highlight API</a> for non-destructive rendering, with a <code>&lt;mark&gt;</code> wrapping fallback for older browsers.</p>
+  <p><code>data-highlights</code> is the engine behind <a href="/docs/elements/web-components/highlight-wc/"><code>&lt;highlight-wc&gt;</code></a>. On any element it loads stored highlights, paints them, keeps them in localStorage and exposes a JavaScript API and events.</p>
+  <p>The attribute itself renders <strong>no UI</strong>. Nothing appears when the reader selects text. For interactive highlighting, put a <code>&lt;highlight-wc&gt;</code> inside a <a href="/docs/elements/web-components/selection-menu/"><code>&lt;selection-menu&gt;</code></a>. The component sets <code>data-highlights</code> on the menu's targets for you. Use the attribute directly when you only want to show stored highlights, or when you are building your own controls in script.</p>
+  <p>Highlights are painted with the <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSS_Custom_Highlight_API">CSS Custom Highlight API</a>, which does not change the DOM. Browsers without it get <code>&lt;mark&gt;</code> elements instead.</p>
+</section>
+
+<section>
+  <h2>Interactive highlighting (recommended)</h2>
+  <p>Select text in the article and press the highlighter button in the toolbar. The <code>data-highlights</code> attribute on the article is optional here, because <code>&lt;highlight-wc&gt;</code> adds it.</p>
+
+  <browser-window
+    src="/docs/snippets/demos/article-highlights.html"
+    url="https://vanilla-breeze.com/highlights"
+    title="Text highlighting"
+    shadow>
+  </browser-window>
+
+<code-block language="html" label="Selection toolbar with highlighter and notes" data-escape><article id="demo-article" data-highlights>
+  <p>Select any text in this article&hellip;</p>
+</article>
+
+<selection-menu for="demo-article">
+  <highlight-wc></highlight-wc>
+  <note-wc></note-wc>
+</selection-menu></code-block>
+
+  <p>See <a href="/docs/elements/web-components/highlight-wc/"><code>&lt;highlight-wc&gt;</code></a> for the palette, its keyboard behaviour and the component attributes.</p>
 </section>
 
 <section>
@@ -28,185 +52,139 @@ crumbLabel: Clipboard & Selection
         <td><code>data-highlights</code></td>
         <td>string (optional)</td>
         <td>pathname</td>
-        <td>Enables highlighting. Optional value becomes the localStorage key suffix.</td>
+        <td>Turns the engine on. An optional value is the storage key suffix; highlights are saved under <code>vb:highlights:{key}</code>.</td>
       </tr>
       <tr>
         <td><code>data-highlights-colors</code></td>
         <td>comma-separated</td>
         <td><code>yellow,green,blue,pink</code></td>
-        <td>Available highlight colors. Maps to <code>--highlight-{color}</code> CSS tokens.</td>
+        <td>Palette colour names. Each needs a <code>--highlight-{name}</code> token. Names may only use letters, digits, <code>-</code> and <code>_</code>.</td>
       </tr>
       <tr>
         <td><code>data-highlights-readonly</code></td>
         <td>boolean</td>
         <td>&mdash;</td>
-        <td>Renders stored highlights but disables creating new ones.</td>
+        <td>Paints stored highlights but ignores pointer input (no <code>highlights:selected</code> or <code>highlights:clicked</code> events). It is read when the engine starts.</td>
+      </tr>
+      <tr>
+        <td><code>data-highlights-label-*</code></td>
+        <td>string</td>
+        <td>see below</td>
+        <td>Overrides the announcement and annotation text: <code>-annotation</code> (&ldquo;You highlighted&rdquo;), <code>-added</code> (&ldquo;Highlight added&rdquo;), <code>-removed</code> (&ldquo;Highlight removed&rdquo;), <code>-note-saved</code> (&ldquo;Note saved&rdquo;).</td>
       </tr>
     </tbody>
   </table>
+  <p>The engine sets <code>data-highlights-init</code> on the element once it is running.</p>
 </section>
 
 <section>
-  <h2>Basic Usage</h2>
-  <p>Add <code>data-highlights</code> to any content container. Users can select text to see a color-swatch toolbar.</p>
-
-<code-block language="html" label="Enable highlighting" data-escape><article data-highlights>
-  <h2>Article Title</h2>
-  <p>Select any text in this article to highlight it.
-     Highlights persist in localStorage.</p>
-</article></code-block>
+  <h2>Display stored highlights</h2>
+  <p>With no component, the attribute just paints whatever is already stored under its key. Combined with <code>data-highlights-readonly</code>, that is a read-only view of highlights saved elsewhere, such as on another page that uses the same key.</p>
 
   <browser-window
-    src="/docs/snippets/demos/article-highlights.html"
+    src="/docs/snippets/demos/article-highlights-readonly.html"
     url="https://vanilla-breeze.com/highlights"
-    title="Text highlighting"
+    title="Read-only highlights"
     shadow>
   </browser-window>
+
+<code-block language="html" label="Read-only highlights" data-escape><article data-highlights="readonly-demo" data-highlights-readonly>
+  <p>Stored highlights are painted; new ones cannot be made.</p>
+</article></code-block>
 </section>
 
 <section>
-  <h2>Custom Colors</h2>
-  <p>Override the default palette with <code>data-highlights-colors</code>.</p>
+  <h2>Colours</h2>
+  <p>Each palette colour is a <code>--highlight-{name}</code> token holding a <code>light-dark()</code> pair: a pale wash in light mode, a deep wash in dark mode. Highlighted text takes <code>--highlight-ink</code> (or <code>--highlight-{name}-ink</code> if set), so it meets WCAG AA in both schemes.</p>
+  <p>Tokens are read where the highlighted text is, so a palette defined on one article only affects that article.</p>
 
-<code-block language="html" label="Custom color palette" data-escape><article data-highlights data-highlights-colors="yellow,pink">
-  <p>Only yellow and pink swatches will appear.</p>
-</article></code-block>
-
-  <p>Define the actual color values with CSS custom properties:</p>
-
-<code-block language="css" label="Custom highlight colors">:root {
-  --highlight-yellow: #fef08a;
-  --highlight-green: #bbf7d0;
-  --highlight-blue: #bfdbfe;
-  --highlight-pink: #fbcfe8;
-  /* Add your own: */
-  --highlight-orange: #fed7aa;
+<code-block language="css" label="Custom colour tokens">.custom-colors {
+  --highlight-mint: light-dark(#ccfbef, #0f4d3f);
+  /* optional per-colour text colour */
+  --highlight-mint-ink: light-dark(#062e25, #f0fdf9);
 }</code-block>
-</section>
 
-<section>
-  <h2>Custom Storage Key</h2>
-  <p>By default, highlights are stored per page pathname. Provide a value to use a custom key.</p>
-
-<code-block language="html" label="Custom storage key" data-escape><article data-highlights="my-notes">
-  <p>Uses localStorage key: vb-highlights:my-notes</p>
+<code-block language="html" label="Custom palette" data-escape><article class="custom-colors" data-highlights data-highlights-colors="yellow,mint">
+  &hellip;
 </article></code-block>
-</section>
 
-<section>
-  <h2>Read-Only Mode</h2>
-  <p>Render previously stored highlights without allowing new ones.</p>
-
-<code-block language="html" label="Read-only highlights" data-escape><article data-highlights data-highlights-readonly>
-  <p>Highlights are visible but users cannot create new ones.</p>
-</article></code-block>
-</section>
-
-<section>
-  <h2>Private Notes</h2>
-  <p>Click an existing highlight to open the toolbar, then click &ldquo;Add Note&rdquo; to attach a private note. Notes appear as Medium-style margin annotations on wide screens and as a fixed bottom panel on narrow screens.</p>
-  <p>Notes are stored alongside highlights in localStorage. The note panel supports <kbd>Ctrl+Enter</kbd> to save and <kbd>Esc</kbd> to cancel.</p>
-</section>
-
-<section>
-  <h2>How It Works</h2>
-  <ol>
-    <li>On page load, <code>highlights-init.js</code> finds all <code>[data-highlights]</code> elements and creates a <code>HighlightController</code> for each.</li>
-    <li>When text is selected (via <code>pointerup</code>), a color-swatch toolbar appears as a popover above the selection.</li>
-    <li>Clicking a color creates a highlight stored as text offsets in localStorage, with a content hash for drift detection.</li>
-    <li>The CSS Custom Highlight API renders highlights non-destructively (no DOM mutation). On unsupported browsers, <code>&lt;mark&gt;</code> elements are inserted as a fallback.</li>
-    <li>A <code>MutationObserver</code> watches for dynamically added <code>[data-highlights]</code> elements.</li>
-  </ol>
+  <table class="props-table">
+    <thead>
+      <tr><th>Token</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>--highlight-yellow</code></td><td>Yellow wash (<code>light-dark()</code> pair)</td></tr>
+      <tr><td><code>--highlight-green</code></td><td>Green wash</td></tr>
+      <tr><td><code>--highlight-blue</code></td><td>Blue wash</td></tr>
+      <tr><td><code>--highlight-pink</code></td><td>Pink wash</td></tr>
+      <tr><td><code>--highlight-ink</code></td><td>Text colour of all highlighted text</td></tr>
+      <tr><td><code>--highlight-{name}-ink</code></td><td>Optional text colour for one palette colour</td></tr>
+    </tbody>
+  </table>
+  <p>In forced-colors mode highlights use the system <code>Mark</code> and <code>MarkText</code> colours, and each palette colour gets a different underline style so they can still be told apart.</p>
 </section>
 
 <section>
   <h2>JavaScript API</h2>
-  <p>Access the controller programmatically:</p>
+  <p><code>initHighlights()</code> returns the element's controller and is idempotent. Elements with <code>data-highlights</code> are started automatically, including ones added to the page later.</p>
 
-<code-block language="javascript" label="Programmatic API">import { initHighlights } from './utils/highlights-init.js';
+<code-block language="javascript" label="Controller API">import { initHighlights } from './utils/highlights-init.js';
 
-const article = document.querySelector('article');
-const controller = initHighlights(article);
+const controller = initHighlights(document.querySelector('article'));
 
-// Get all highlights
-const highlights = controller.getHighlights();
-
-// Remove a specific highlight
-controller.removeHighlight(highlights[0].id);
-
-// Clear all
+controller.colors;                 // ['yellow', 'green', 'blue', 'pink']
+controller.getHighlights();        // [{ id, startOffset, endOffset, text, color, note, created }]
+controller.removeHighlight('hn-abc123');
 controller.clearAll();
 
-// Export/import
 const json = controller.exportHighlights();
-controller.importHighlights(json);
+const { imported, rejected } = controller.importHighlights(json);
 
-// Cleanup
-controller.destroy();</code-block>
+controller.destroy();              // unpaint and stop listening</code-block>
+
+  <p><code>importHighlights()</code> drops records with the wrong shape, offsets outside the element's text, or a colour that is not in the palette. If the text changes after highlights are saved, the engine keeps only the highlights whose text still matches.</p>
+  <p>The controller has no public method for making a highlight. To do that from your own controls, wrap the element in a standalone <code>&lt;highlight-wc&gt;</code> and call its <code>highlightSelection(color)</code>; see <a href="/docs/elements/web-components/highlight-wc/">highlight-wc: Standalone (programmatic)</a>.</p>
 </section>
 
 <section>
   <h2>Events</h2>
+  <p>Dispatched on the element and bubble.</p>
   <table class="props-table">
     <thead>
-      <tr><th>Event</th><th>Detail</th><th>Description</th></tr>
+      <tr><th>Event</th><th>Detail</th><th>When</th></tr>
     </thead>
     <tbody>
-      <tr>
-        <td><code>highlights:added</code></td>
-        <td><code>{ id, text, color, note }</code></td>
-        <td>Fired when a new highlight is created</td>
-      </tr>
-      <tr>
-        <td><code>highlights:removed</code></td>
-        <td><code>{ id }</code></td>
-        <td>Fired when a highlight is deleted</td>
-      </tr>
-      <tr>
-        <td><code>highlights:clicked</code></td>
-        <td><code>{ id }</code></td>
-        <td>Fired when a highlight is clicked</td>
-      </tr>
-      <tr>
-        <td><code>highlights:note-changed</code></td>
-        <td><code>{ id, note }</code></td>
-        <td>Fired when a note is saved</td>
-      </tr>
+      <tr><td><code>highlights:added</code></td><td><code>{ id, text, color, note }</code></td><td>A highlight was created</td></tr>
+      <tr><td><code>highlights:removed</code></td><td><code>{ id }</code></td><td>A highlight was removed</td></tr>
+      <tr><td><code>highlights:selected</code></td><td><code>{ text, rect }</code></td><td>Text was selected inside the element; a hook for your own UI</td></tr>
+      <tr><td><code>highlights:clicked</code></td><td><code>{ id, highlight }</code></td><td>A highlight or its margin annotation was clicked</td></tr>
+      <tr><td><code>highlights:note-changed</code></td><td><code>{ id, note }</code></td><td>A note was saved via <a href="/docs/elements/web-components/note-wc/"><code>&lt;note-wc&gt;</code></a></td></tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>Margin annotations</h2>
+  <p>At widths of <code>64rem</code> and up, each highlight gets a label in the margin (&ldquo;You highlighted&rdquo;, starred when it has a note). Clicking the label fires <code>highlights:clicked</code>. When a <code>&lt;note-wc&gt;</code> is present, it also opens the note editor. Below that width the labels are hidden.</p>
 </section>
 
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Toolbar uses <code>role="toolbar"</code> with arrow-key navigation between color swatches</li>
-    <li>Screen reader announcements via <code>aria-live="polite"</code> region</li>
-    <li>Keyboard: <kbd>Escape</kbd> closes toolbar, <kbd>Ctrl+Enter</kbd> saves notes</li>
-    <li>Color swatches use <code>aria-label</code> with color names and <code>aria-pressed</code> for active state</li>
-    <li>Note panel uses <code>role="dialog"</code> with <code>aria-label</code></li>
+    <li>Creating or removing a highlight, and saving a note, are announced through a polite live region.</li>
+    <li>Margin annotations are <code>aria-hidden</code>; they repeat the highlight visually and the announcement covers assistive technology.</li>
+    <li><strong>Limitation:</strong> Custom Highlight API ranges are not exposed to assistive technology. Highlighted text is not identified when a screen reader reads it back. If your readers need a list of their highlights, build one from <code>getHighlights()</code>.</li>
+    <li>The attribute has no keyboard UI of its own. The keyboard-accessible highlighter and palette come from <a href="/docs/elements/web-components/highlight-wc/"><code>&lt;highlight-wc&gt;</code></a>.</li>
   </ul>
-</section>
-
-<section>
-  <h2>CSS Tokens</h2>
-  <table class="props-table">
-    <thead>
-      <tr><th>Token</th><th>Default</th><th>Description</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>--highlight-yellow</code></td><td><code>#fef08a</code></td><td>Yellow highlight color</td></tr>
-      <tr><td><code>--highlight-green</code></td><td><code>#bbf7d0</code></td><td>Green highlight color</td></tr>
-      <tr><td><code>--highlight-blue</code></td><td><code>#bfdbfe</code></td><td>Blue highlight color</td></tr>
-      <tr><td><code>--highlight-pink</code></td><td><code>#fbcfe8</code></td><td>Pink highlight color</td></tr>
-    </tbody>
-  </table>
 </section>
 
 <section>
   <h2>Related</h2>
   <ul>
-    <li><a href="/docs/elements/native/article/">article</a> &mdash; Common container for highlights</li>
-    <li><a href="/docs/elements/native/mark/">mark</a> &mdash; Native highlight element (used as fallback)</li>
+    <li><a href="/docs/elements/web-components/highlight-wc/">highlight-wc</a> &mdash; Highlighter button and palette for selection-menu; standalone programmatic API</li>
+    <li><a href="/docs/elements/web-components/selection-menu/">selection-menu</a> &mdash; Selection toolbar that hosts the highlighter</li>
+    <li><a href="/docs/elements/web-components/note-wc/">note-wc</a> &mdash; Private notes on highlights</li>
+    <li><a href="/docs/elements/native/mark/">mark</a> &mdash; Native highlight element (used as the fallback)</li>
     <li><a href="/docs/elements/web-components/text-reader/">text-reader</a> &mdash; Text-to-speech with word highlighting</li>
   </ul>
 </section>

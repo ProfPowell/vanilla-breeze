@@ -1,4 +1,4 @@
-/* highlight-wc: standalone mode */
+/* highlight-wc: standalone mode renders no UI (block wrapper around its target) */
 
 highlight-wc {
   display: block;
@@ -20,7 +20,8 @@ selection-menu highlight-wc {
   position: absolute;
   top: 100%;
   left: 50%;
-  transform: translateX(-50%);
+  /* --_hn-shift: JS nudge that keeps the palette inside the viewport */
+  transform: translateX(calc(-50% + var(--_hn-shift, 0px)));
   margin-top: 4px;
   display: flex;
   gap: 4px;
@@ -36,9 +37,13 @@ selection-menu highlight-wc {
   display: none;
 }
 
-.highlight-color-swatch {
+/* Specificity (0,3,2) on purpose: selection-menu resets every
+   `highlight-wc button` with all: unset (0,1,4) and restyles :hover (0,2,4). */
+highlight-wc .highlight-color-dropdown > .highlight-color-swatch[data-color] {
+  box-sizing: border-box;
   inline-size: 18px;
   block-size: 18px;
+  background-color: var(--_swatch, var(--highlight-yellow));
   border: 1.5px solid transparent;
   border-radius: var(--radius-full, 50%);
   cursor: var(--cursor-custom-pointer, pointer);
@@ -48,12 +53,34 @@ selection-menu highlight-wc {
   transition: border-color var(--duration-fast);
 }
 
-.highlight-color-swatch:hover,
-.highlight-color-swatch:focus-visible {
+highlight-wc .highlight-color-dropdown > .highlight-color-swatch[data-color]:hover,
+highlight-wc .highlight-color-dropdown > .highlight-color-swatch[data-color]:focus-visible {
+  background-color: var(--_swatch, var(--highlight-yellow));
   border-color: var(--color-text);
 }
 
-.highlight-color-swatch[aria-pressed="true"] {
+highlight-wc .highlight-color-dropdown > .highlight-color-swatch[data-color][aria-pressed="true"] {
   border-color: var(--color-interactive);
   box-shadow: 0 0 0 1px var(--color-interactive);
+}
+
+/* Forced colors: keep the swatch fills (the only thing that tells them
+   apart) and draw state with system colours. Names are in aria-label +
+   title. */
+@media (forced-colors: active) {
+  highlight-wc .highlight-color-dropdown > .highlight-color-swatch[data-color] {
+    forced-color-adjust: none;
+    border-color: CanvasText;
+  }
+
+  highlight-wc .highlight-color-dropdown > .highlight-color-swatch[data-color]:hover,
+  highlight-wc .highlight-color-dropdown > .highlight-color-swatch[data-color]:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  highlight-wc .highlight-color-dropdown > .highlight-color-swatch[data-color][aria-pressed="true"] {
+    border-color: Highlight;
+    box-shadow: 0 0 0 2px Highlight;
+  }
 }

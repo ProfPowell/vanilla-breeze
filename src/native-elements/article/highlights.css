@@ -2,11 +2,16 @@
 
 /* --- Custom Properties --- */
 
+/* Each colour is a light-dark() pair: pale wash + dark ink in light mode,
+ * deep wash + light ink in dark mode (AA 4.5:1 either way). The ink is
+ * shared (--highlight-ink); a custom colour may set --highlight-{name}-ink. */
+
 :root {
-  --highlight-yellow: oklch(95% 0.12 102);
-  --highlight-green: oklch(93% 0.08 156);
-  --highlight-blue: oklch(88% 0.06 254);
-  --highlight-pink: oklch(90% 0.06 343);
+  --highlight-yellow: light-dark(oklch(95% 0.12 102), oklch(44% 0.09 95));
+  --highlight-green: light-dark(oklch(93% 0.08 156), oklch(42% 0.07 156));
+  --highlight-blue: light-dark(oklch(88% 0.06 254), oklch(42% 0.08 254));
+  --highlight-pink: light-dark(oklch(90% 0.06 343), oklch(42% 0.08 343));
+  --highlight-ink: light-dark(oklch(22% 0.02 260), oklch(97% 0.01 95));
 }
 
 /* --- Mark fallback (when CSS Highlight API unavailable) ---
@@ -16,7 +21,7 @@
 
 mark[data-hn-id] {
   background-color: var(--_hn-color, var(--highlight-yellow));
-  color: inherit;
+  color: var(--_hn-ink, var(--highlight-ink));
   text-decoration-line: underline;
   text-decoration-color: currentColor;
   text-decoration-thickness: 1px;
@@ -24,6 +29,14 @@ mark[data-hn-id] {
   cursor: var(--cursor-custom-pointer, pointer);
   border-radius: 2px;
   padding-inline: 0;
+}
+
+@media (forced-colors: active) {
+  mark[data-hn-id] {
+    background-color: Mark;
+    color: MarkText;
+    text-decoration-thickness: 2px;
+  }
 }
 
 /* --- Screen-reader-only utility --- */
@@ -80,8 +93,8 @@ mark[data-hn-id] {
 
 .hn-margin-annotation {
   position: absolute;
-  right: -180px;
-  width: 160px;
+  inset-inline-end: -180px;
+  inline-size: 160px;
   font-size: 0.8125rem;
   color: var(--color-text-muted);
   line-height: 1.4;
@@ -110,8 +123,8 @@ mark[data-hn-id] {
 
 .hn-note-panel {
   position: absolute;
-  right: -340px;
-  width: 320px;
+  inset-inline-end: -340px;
+  inline-size: 320px;
   background: var(--color-surface-raised, var(--color-surface));
   border: var(--border-width-thin, 1px) solid var(--color-border);
   border-radius: var(--radius-m, 8px);
@@ -125,12 +138,10 @@ mark[data-hn-id] {
 @media (width < 64rem) { /* --bp-lg */
   .hn-note-panel {
     position: fixed;
-    right: var(--size-m, 16px);
-    left: var(--size-m, 16px);
-    bottom: var(--size-m, 16px);
-    top: auto;
-    width: auto;
-    max-width: 400px;
+    inset-inline: var(--size-m, 16px);
+    inset-block: auto var(--size-m, 16px);
+    inline-size: auto;
+    max-inline-size: 400px;
     margin-inline: auto;
     box-shadow: 0 -4px 24px oklch(0% 0 0 / 0.2);
   }
@@ -185,9 +196,4 @@ mark[data-hn-id] {
   gap: var(--size-xs, 8px);
   justify-content: flex-start;
   margin-block-start: var(--size-xs, 8px);
-}
-
-/* --- Reduced motion --- */
-
-@media (prefers-reduced-motion: reduce) {
 }

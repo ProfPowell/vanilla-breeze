@@ -34,6 +34,9 @@ const TOOLBAR_EDGE_PADDING = 8;
 
 const supportsHighlightAPI = typeof CSS !== 'undefined' && 'highlights' in CSS;
 
+/** @type {WeakMap<Element, HighlightController>} live controller per element */
+const controllers = new WeakMap();
+
 // ---------- FNV-1a hash ----------
 
 function fnv1a(str) {
@@ -59,6 +62,64 @@ function newId() {
 // inject CSS.
 
 const COLOR_NAME = /^[a-z0-9_-]+$/i;
+
+/** Underline styles that tell palette colours apart in forced-colors mode. */
+const FORCED_DECORATION = ['solid', 'double', 'dotted', 'dashed', 'wavy'];
+
+// ---------- Announcement / annotation strings ----------
+//
+// Overridable per article via data-highlights-label-* attributes
+// (<highlight-wc data-label-*> forwards its own to the target).
+
+const LABELS = {
+  annotation: 'You highlighted',
+  added: 'Highlight added',
+  removed: 'Highlight removed',
+  noteSaved: 'Note saved',
+};
+
+/**
+ * @param {HTMLElement} el
+ * @param {keyof typeof LABELS} key
+ */
+function label(el, key) {
+  const attr = 'highlightsLabel' + key[0].toUpperCase() + key.slice(1);
+  return el.dataset[attr] || LABELS[key];
+}
+
+// ---------- Record validation ----------
+//
+// Imported and stored records are untrusted: keep only well-formed ones
+// whose offsets fall inside the article's text and whose colour is in
+// the article's palette.
+
+/**
+ * @param {unknown} raw
+ * @param {{ textLength: number, colors: string[] }} ctx
+ * @returns {{ id: string, startOffset: number, endOffset: number, text: string, color: string, note: string, created: number } | null}
+ */
+function sanitizeRecord(raw, { textLength, colors }) {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = /** @type {Record<string, unknown>} */ (raw);
+  const { startOffset, endOffset, color } = r;
+  if (!Number.isInteger(startOffset) || !Number.isInteger(endOffset)) return null;
+  const start = /** @type {number} */ (startOffset);
+  const end = /** @type {number} */ (endOffset);
+  if (start < 0 || end <= start || end > textLength) return null;
+  if (!isColorName(color) || !colors.includes(/** @type {string} */ (color))) return null;
+  if (r.id != null && (typeof r.id !== 'string' || !/^[\w-]{1,64}$/.test(r.id))) return null;
+  if (r.text != null && typeof r.text !== 'string') return null;
+  if (r.note != null && typeof r.note !== 'string') return null;
+  return {
+    id: /** @type {string} */ (r.id) || newId(),
+    startOffset: start,
+    endOffset: end,
+    text: /** @type {string} */ (r.text) ?? '',
+    color: /** @type {string} */ (color),
+    note: /** @type {string} */ (r.note) ?? '',
+    created: Number.isFinite(r.created) ? /** @type {number} */ (r.created) : Date.now(),
+  };
+}
 
 /** @param {unknown} name */
 function isColorName(name) {
@@ -95,11 +156,20 @@ function writeSharedSheet() {
     sharedSheet = new CSSStyleSheet();
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, sharedSheet];
   }
-  // ::highlight() only supports: background-color, color, text-decoration, text-shadow
-  const rules = [...paletteColors.keys()].map(c =>
-    `::highlight(hn-${c}) { background-color: var(--highlight-${c}); text-decoration-line: underline; text-decoration-color: var(--highlight-${c}); text-underline-offset: 2px; }`
-  ).join('\n');
-  sharedSheet.replaceSync(rules);
+  // ::highlight() only supports: background-color, color, text-decoration, text-shadow.
+  // Text colour is set alongside the background (--highlight-{name}-ink,
+  // falling back to the shared --highlight-ink) so contrast holds in both
+  // colour schemes. In forced-colors mode the author background is replaced
+  // by the system Mark/MarkText pair and each colour gets its own underline
+  // style so palette entries stay distinguishable without hue.
+  const names = [...paletteColors.keys()];
+  const rules = names.map(c =>
+    `::highlight(hn-${c}) { background-color: var(--highlight-${c}); color: var(--highlight-${c}-ink, var(--highlight-ink, CanvasText)); text-decoration-line: underline; text-decoration-color: var(--highlight-${c}); text-underline-offset: 2px; }`
+  );
+  const forced = names.map((c, i) =>
+    `::highlight(hn-${c}) { background-color: Mark; color: MarkText; text-decoration-line: underline; text-decoration-color: MarkText; text-decoration-style: ${FORCED_DECORATION[i % FORCED_DECORATION.length]}; text-decoration-thickness: 2px; }`
+  );
+  sharedSheet.replaceSync(`${rules.join('\n')}\n@media (forced-colors: active) {\n${forced.join('\n')}\n}`);
 }
 
 /** @param {string[]} colors */
@@ -243,6 +313,8 @@ class HighlightController {
   #handleClick;
   #destroyed = false;
   #marginAnnotations = [];
+  /** @type {Map<string, Range>} highlight id -> Range, rebuilt once per render */
+  #ranges = new Map();
 
   constructor(element) {
     this.#element = element;
@@ -285,6 +357,7 @@ class HighlightController {
   }
 
   get colors() { return [...this.#colors]; }
+  get destroyed() { return this.#destroyed; }
   get element() { return this.#element; }
 
   // ---------- Public API ----------
@@ -302,7 +375,7 @@ class HighlightController {
     this.#render();
 
     this.#emit('highlights:removed', { id });
-    announce('Highlight removed');
+    announce(label(this.#element, 'removed'));
   }
 
   clearAll() {
@@ -318,14 +391,40 @@ class HighlightController {
     });
   }
 
+  /**
+   * Replace the highlights with an exported set. Malformed records
+   * (wrong shape, offsets outside the text, colour not in the palette)
+   * are dropped; duplicate ids keep the first.
+   * @param {string|object} json
+   * @returns {{ imported: number, rejected: number }}
+   */
   importHighlights(json) {
+    let data;
     try {
-      const data = typeof json === 'string' ? JSON.parse(json) : json;
-      if (!data.highlights || !Array.isArray(data.highlights)) return;
-      this.#highlights = data.highlights;
-      this.#save();
-      this.#render();
-    } catch { /* invalid JSON */ }
+      data = typeof json === 'string' ? JSON.parse(json) : json;
+    } catch {
+      return { imported: 0, rejected: 0 };
+    }
+    if (!data || !Array.isArray(data.highlights)) return { imported: 0, rejected: 0 };
+    const clean = this.#sanitize(data.highlights);
+    this.#highlights = clean;
+    this.#save();
+    this.#render();
+    return { imported: clean.length, rejected: data.highlights.length - clean.length };
+  }
+
+  /** @param {unknown[]} list */
+  #sanitize(list) {
+    const ctx = { textLength: (this.#element.textContent ?? '').length, colors: this.#colors };
+    const seen = new Set();
+    const out = [];
+    for (const raw of list) {
+      const rec = sanitizeRecord(raw, ctx);
+      if (!rec || seen.has(rec.id)) continue;
+      seen.add(rec.id);
+      out.push(rec);
+    }
+    return out;
   }
 
   destroy() {
@@ -353,7 +452,11 @@ class HighlightController {
     }
 
     this.#clearMarginAnnotations();
+    this.#ranges.clear();
     this.#element.removeAttribute('data-highlights-init');
+    // Forget this controller so a later initHighlights() (e.g. after the
+    // element is moved and re-set-up) builds a fresh, live one.
+    if (controllers.get(this.#element) === this) controllers.delete(this.#element);
   }
 
   // ---------- Selection / click handling ----------
@@ -425,15 +528,30 @@ class HighlightController {
   findHighlightRect(id) {
     const hl = this.#highlights.find(h => h.id === id);
     if (!hl) return null;
-    const range = findRangeFromOffsets(this.#element, hl.startOffset, hl.endOffset);
+    const range = this.#rangeFor(hl);
     if (!range) return null;
     const rects = range.getClientRects();
     return rects.length ? rects[0] : null;
   }
 
-  #findHighlightAtPoint(x, y) {
+  /** Cached Range for a highlight (built once per render), else a fresh walk. */
+  #rangeFor(hl) {
+    return this.#ranges.get(hl.id)
+      ?? findRangeFromOffsets(this.#element, hl.startOffset, hl.endOffset);
+  }
+
+  /** Rebuild the id -> Range cache: one text walk per highlight per render, not per click. */
+  #buildRanges() {
+    this.#ranges.clear();
     for (const hl of this.#highlights) {
       const range = findRangeFromOffsets(this.#element, hl.startOffset, hl.endOffset);
+      if (range) this.#ranges.set(hl.id, range);
+    }
+  }
+
+  #findHighlightAtPoint(x, y) {
+    for (const hl of this.#highlights) {
+      const range = this.#ranges.get(hl.id);
       if (!range) continue;
 
       const rects = range.getClientRects();
@@ -483,7 +601,7 @@ class HighlightController {
     this.#emit('highlights:added', {
       id: highlight.id, text, color, note: '',
     });
-    announce('Highlight added');
+    announce(label(this.#element, 'added'));
   }
 
   _changeColor(id, color) {
@@ -502,7 +620,7 @@ class HighlightController {
     this.#renderMarginAnnotations();
 
     this.#emit('highlights:note-changed', { id, note });
-    announce('Note saved');
+    announce(label(this.#element, 'noteSaved'));
   }
 
   // ---------- Persistence ----------
@@ -512,10 +630,12 @@ class HighlightController {
       await VBStore.get(STORAGE_NS, this.#storageKey)
     );
     if (!data || !Array.isArray(data.highlights)) return;
+    if (this.#destroyed) return;
 
+    const stored = this.#sanitize(data.highlights);
     const currentHash = fnv1a(this.#element.textContent);
     if (data.contentHash && data.contentHash !== currentHash) {
-      this.#highlights = data.highlights.filter(h => {
+      this.#highlights = stored.filter(h => {
         const range = findRangeFromOffsets(this.#element, h.startOffset, h.endOffset);
         if (!range) return false;
         const currentText = range.toString().trim();
@@ -523,7 +643,7 @@ class HighlightController {
       });
       this.#save();
     } else {
-      this.#highlights = data.highlights;
+      this.#highlights = stored;
     }
   }
 
@@ -541,7 +661,9 @@ class HighlightController {
   #render() {
     if (this.#useFallback) {
       this.#renderMarks();
+      this.#buildRanges();
     } else {
+      this.#buildRanges();
       this.#renderHighlightAPI();
     }
     this.#renderMarginAnnotations();
@@ -554,7 +676,7 @@ class HighlightController {
     }
 
     for (const hl of this.#highlights) {
-      const range = findRangeFromOffsets(this.#element, hl.startOffset, hl.endOffset);
+      const range = this.#ranges.get(hl.id);
       if (!range) continue;
       if (!groups.has(hl.color)) continue;
       groups.get(hl.color).push(range);
@@ -584,6 +706,7 @@ class HighlightController {
       if (isColorName(hl.color)) {
         mark.dataset.hnColor = hl.color;
         mark.style.setProperty('--_hn-color', `var(--highlight-${hl.color})`);
+        mark.style.setProperty('--_hn-ink', `var(--highlight-${hl.color}-ink, var(--highlight-ink))`);
       }
 
       try {
@@ -616,28 +739,34 @@ class HighlightController {
       this.#element.style.position = 'relative';
     }
 
+    const elementRect = this.#element.getBoundingClientRect();
+    const text = label(this.#element, 'annotation');
+
     for (const hl of this.#highlights) {
-      const range = findRangeFromOffsets(this.#element, hl.startOffset, hl.endOffset);
+      const range = this.#ranges.get(hl.id);
       if (!range) continue;
 
       const rects = range.getClientRects();
       if (rects.length === 0) continue;
 
-      const firstRect = rects[0];
-      const elementRect = this.#element.getBoundingClientRect();
-      const topInElement = firstRect.top - elementRect.top;
+      const topInElement = rects[0].top - elementRect.top;
 
+      // aria-hidden: the margin label is a visual echo of the highlight;
+      // assistive tech gets the live-region announcement instead.
       const annot = document.createElement('span');
       annot.className = 'hn-margin-annotation';
       annot.dataset.hnId = hl.id;
       annot.setAttribute('aria-hidden', 'true');
-      annot.style.top = `${topInElement}px`;
+      annot.style.insetBlockStart = `${topInElement}px`;
 
       if (hl.note) {
-        annot.innerHTML = '<span class="hn-note-indicator">*</span> You highlighted';
+        const star = document.createElement('span');
+        star.className = 'hn-note-indicator';
+        star.textContent = '*';
+        annot.append(star, ` ${text}`);
         annot.classList.add('hn-has-note');
       } else {
-        annot.textContent = 'You highlighted';
+        annot.textContent = text;
       }
 
       this.#element.appendChild(annot);
@@ -654,10 +783,15 @@ class HighlightController {
 
 // ---------- Auto-init ----------
 
-const controllers = new WeakMap();
-
+/**
+ * Idempotent: returns the element's live controller, or builds one.
+ * A destroyed controller is never reused.
+ * @param {Element} element
+ * @returns {HighlightController}
+ */
 function initHighlights(element) {
-  if (controllers.has(element)) return controllers.get(element);
+  const existing = controllers.get(element);
+  if (existing && !existing.destroyed) return existing;
   const ctrl = new HighlightController(element);
   controllers.set(element, ctrl);
   return ctrl;

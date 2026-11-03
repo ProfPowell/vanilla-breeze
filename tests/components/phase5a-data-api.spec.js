@@ -52,7 +52,7 @@ test('selection-menu: .actions setter replaces toolbar children', async ({ page 
       fired.push({ source: e.detail.source, count: e.detail.actions.length });
     });
     sm.actions = [
-      { tag: 'highlight-wc', attrs: { color: 'yellow' } },
+      { tag: 'highlight-wc', attrs: { colors: 'yellow,pink' } },
       { tag: 'note-wc' },
     ];
     // selection-menu composes <pop-over> for the toolbar surface (52a792d3);
