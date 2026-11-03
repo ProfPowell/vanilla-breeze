@@ -31,6 +31,22 @@ function initFormatDate(root = document) {
 }
 
 /**
+ * Parse a datetime attribute. A date-only value ("2026-10-21") is a
+ * calendar date, so it is built in local time: new Date() would read it
+ * as UTC midnight and show the previous day west of UTC.
+ * @param {string} raw
+ * @returns {Date}
+ */
+function parseDatetime(raw) {
+  const m = raw.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return new Date(raw);
+  const [y, mo, d] = [Number(m[1]), Number(m[2]) - 1, Number(m[3])];
+  const date = new Date(y, mo, d);
+  // Reject overflow (2026-02-30) rather than rolling into the next month.
+  return date.getMonth() === mo && date.getDate() === d ? date : new Date(NaN);
+}
+
+/**
  * Enhance a single <time> element with formatted date display
  * @param {HTMLElement} el - The time element to enhance
  */
@@ -41,7 +57,7 @@ function enhanceDate(el) {
   const raw = el.getAttribute('datetime');
   if (!raw) return;
 
-  const datetime = new Date(raw);
+  const datetime = parseDatetime(raw);
   if (isNaN(datetime.getTime())) return;
 
   // Preserve original text as tooltip
