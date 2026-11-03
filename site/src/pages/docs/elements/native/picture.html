@@ -15,7 +15,7 @@ crumbLabel: Native Elements
     <h2>Description</h2>
     <p>The <code>&lt;picture&gt;</code> element is a container for zero or more <code>&lt;source&gt;</code> elements and one <code>&lt;img&gt;</code> element. It allows the browser to choose the most appropriate image source based on media queries, image format support, or pixel density.</p>
 
-    <p>Vanilla Breeze styles <code>&lt;picture&gt;</code> as a block-level element, with the contained <code>&lt;img&gt;</code> expanding to fill its width. This ensures responsive behavior while allowing the browser to select the optimal source.</p>
+    <p>Vanilla Breeze styles <code>&lt;picture&gt;</code> as a block-level element. The contained <code>&lt;img&gt;</code> keeps the standard image rule (<code>max-inline-size: 100%</code>): it shrinks to fit the picture but is never upscaled past its intrinsic width, so small sources stay sharp. Add <code>class="full"</code> to the <code>&lt;picture&gt;</code> (or the <code>&lt;img&gt;</code>) to stretch it to the full width. Inside a <code>[data-media]</code> ratio box, the image fills the box and crops to fit.</p>
   </section>
 
   <section>
@@ -212,7 +212,15 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>picture &gt; img</code></td>
-          <td><code>inline-size: 100%;</code></td>
+          <td><code>max-inline-size: 100%;</code> (from <code>img</code>; never upscaled)</td>
+        </tr>
+        <tr>
+          <td><code>picture.full &gt; img</code></td>
+          <td><code>inline-size: 100%; block-size: auto;</code></td>
+        </tr>
+        <tr>
+          <td><code>[data-media] &gt; picture &gt; img</code></td>
+          <td><code>inline-size: 100%; block-size: 100%; object-fit: var(--_fit, cover);</code></td>
         </tr>
       </tbody>
     </table>
