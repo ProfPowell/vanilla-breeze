@@ -7862,7 +7862,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "icon-wc",
     "type": "web-component",
-    "description": "Inline icon element using SVG sprite sets with accessible labelling",
+    "description": "Inline SVG icon: fetches one sanitized SVG file per icon from <base-path>/<set>/<name>.svg, sized by preset and labelled for assistive tech",
     "htmlvalidate": {
       "flow": true,
       "phrasing": true
@@ -7873,58 +7873,133 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Icon name (required, matches filename without .svg)"
+        "description": "Icon name (required): the SVG filename without .svg"
       },
       {
         "name": "set",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Icon set directory (default: \"lucide\", or \"custom\")"
+        "description": "Icon set directory (lucide, phosphor, tabler, mage, bold, custom). Defaults to the nearest data-icon-set on the element, an ancestor or <html>, then lucide. Icons missing from the set fall back to Lucide."
       },
       {
         "name": "size",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Icon size: xs, sm, md, lg, xl, 2xl (default: md)"
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "xs",
+          "sm",
+          "md",
+          "lg",
+          "xl",
+          "2xl"
+        ],
+        "default": "md",
+        "description": "Size preset relative to the font size: 1em, 1.25em, 1.5em, 2em, 2.5em, 3em"
       },
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Accessible label for functional icons"
+        "description": "Accessible name for a meaningful icon (role=\"img\"). Without it the icon is decorative (aria-hidden). Adding or removing it updates the icon live."
       },
       {
         "name": "base-path",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "/cdn/icons",
+        "description": "Icon base URL for this icon. Defaults to <html data-icon-path>, then /cdn/icons (root-absolute: <base href> is not applied)."
       },
       {
-        "name": "width",
-        "kind": "host-api",
-        "purpose": "config"
+        "name": "data-flip-rtl",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Mirror the glyph horizontally when the icon is in a right-to-left context (directional icons such as arrows and chevrons)"
       },
       {
-        "name": "height",
-        "kind": "host-api",
-        "purpose": "config"
+        "name": "data-animate",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "spin"
+        ],
+        "description": "Spins the icon while an ancestor has [data-loading] (disabled under prefers-reduced-motion)"
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-error",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Present when the icon could not be loaded from the requested set or the Lucide fallback; light-DOM content is shown instead"
+      },
+      {
+        "name": "data-upgraded",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "public": false,
+        "description": "Present while the element is connected and upgraded"
+      }
+    ],
+    "properties": [
+      {
+        "name": "name",
+        "type": "string",
+        "readonly": true,
+        "description": "The name attribute"
+      },
+      {
+        "name": "set",
+        "type": "string",
+        "readonly": true,
+        "description": "Resolved set: set attribute, else nearest data-icon-set, else lucide"
+      },
+      {
+        "name": "size",
+        "type": "string",
+        "readonly": true,
+        "description": "The size attribute (default md)"
+      },
+      {
+        "name": "label",
+        "type": "string | null",
+        "readonly": true,
+        "description": "The label attribute"
+      },
+      {
+        "name": "basePath",
+        "type": "string",
+        "readonly": true,
+        "description": "Resolved base URL: base-path attribute, else <html data-icon-path>, else /cdn/icons"
+      },
+      {
+        "name": "iconPath",
+        "type": "string",
+        "readonly": true,
+        "description": "URL of the requested icon file (before any Lucide fallback)"
       }
     ],
     "childAttributes": [],
-    "structure": []
+    "structure": [
+      {
+        "element": "light-DOM content",
+        "required": false,
+        "description": "Optional fallback shown until the SVG loads and when it fails (data-error)"
+      }
+    ]
   },
   "image-gallery": {
     "$schema": "../../../.claude/schemas/api.schema.json",
     "element": "image-gallery",
     "type": "web-component",
-    "description": "Thumbnail grid with lightbox viewer. Progressive enhancement: thumbnails link to full images without JS. With JS, opens a fullscreen dialog with navigation, swipe, keyboard, and View Transitions.",
+    "description": "Thumbnail grid with lightbox viewer. Progressive enhancement: thumbnails link to full images without JS. With JS, opens a native <dialog> lightbox with prev/next, keyboard (direction-aware), swipe, and View Transitions.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -7996,7 +8071,7 @@ export default {
           "minimal"
         ],
         "default": "edge",
-        "description": "Lightbox control layout. 'edge' puts prev/next on sides with floating header. 'bar' puts all controls in a top bar. 'minimal' shows close only (swipe/keyboard for nav)."
+        "description": "Lightbox control layout. 'edge' puts prev/next on the sides with a floating header, 'bar' moves prev/next into the top bar, 'minimal' shows close only (swipe/keyboard to navigate). Changing it rebuilds the lightbox on next open."
       },
       {
         "name": "loop",
@@ -8018,7 +8093,7 @@ export default {
           "hidden"
         ],
         "default": "auto",
-        "description": "Caption display in lightbox. 'auto' shows via popover button, 'overlay' shows persistent bar, 'hidden' suppresses."
+        "description": "Caption display in the lightbox. 'auto' adds an info button in a footer that toggles the caption text (hidden attribute), 'overlay' shows the caption under the image, 'hidden' suppresses it. Changing it rebuilds the lightbox on next open."
       },
       {
         "name": "transition",
@@ -8033,6 +8108,94 @@ export default {
         ],
         "default": "morph",
         "description": "View Transition type. 'morph' animates thumbnail to full image, 'fade' cross-fades, 'none' disables."
+      },
+      {
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Image viewer",
+        "description": "Accessible name of the lightbox dialog."
+      },
+      {
+        "name": "data-label-close",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Close gallery",
+        "description": "Close button name."
+      },
+      {
+        "name": "data-label-prev",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Previous image",
+        "description": "Previous button name."
+      },
+      {
+        "name": "data-label-next",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Next image",
+        "description": "Next button name."
+      },
+      {
+        "name": "data-label-show-details",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Show image details",
+        "description": "Info button name while the caption is collapsed (captions=\"auto\")."
+      },
+      {
+        "name": "data-label-hide-details",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Hide image details",
+        "description": "Info button name while the caption is expanded (captions=\"auto\")."
+      },
+      {
+        "name": "data-label-counter",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Image {n} of {total}",
+        "description": "Counter text template, announced politely on navigation; {n} and {total} are replaced."
+      }
+    ],
+    "events": [
+      {
+        "name": "image-gallery:images-changed",
+        "detail": "{ images, source: 'property' }",
+        "description": "Fired after the images setter rebuilds the gallery."
+      }
+    ],
+    "properties": [
+      {
+        "name": "images",
+        "type": "Array<{ href, thumbSrc, alt?, caption? }>",
+        "description": "Get the image set (caption is a string for text-only captions, a cloned DocumentFragment for markup, or null) or assign one to rebuild the thumbnails. String captions render as text, never HTML; pass a Node, DocumentFragment or <template> for rich captions. Assigning closes an open lightbox and fires image-gallery:images-changed with source 'property'."
+      }
+    ],
+    "methods": [
+      {
+        "name": "open(index)",
+        "description": "Open the lightbox at a zero-based index (no-op when out of range)."
+      },
+      {
+        "name": "close()",
+        "description": "Close the lightbox (with the morph transition when enabled)."
+      },
+      {
+        "name": "next()",
+        "description": "Show the next image (wraps with loop)."
+      },
+      {
+        "name": "prev()",
+        "description": "Show the previous image (wraps with loop)."
       }
     ],
     "structure": [
@@ -8050,146 +8213,147 @@ export default {
       },
       {
         "element": "<figcaption>",
-        "description": "Optional caption inside figure. Supports HTML including links."
+        "description": "Optional caption inside figure. Supports HTML including links; its nodes are cloned into the lightbox."
       }
     ]
   },
   "image-map": {
-    "$schema": "../../../schemas/api.schema.json",
+    "$schema": "../../../.claude/schemas/api.schema.json",
     "element": "image-map",
     "type": "web-component",
-    "description": "map + map-area: Modern responsive image map with percentage coordinates",
-    "attributes": [
-      {
-        "name": "x",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "y",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "width",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "height",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "cx",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "cy",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "r",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "points",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "shape",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "coords",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "label",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "href",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "target",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "tooltip",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "disabled",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "src",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "alt",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "viewBox",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "preserveAspectRatio",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-disabled",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-hover",
-        "kind": "data",
-        "purpose": "config"
-      }
-    ],
-    "events": [
-      {
-        "name": "image-map:area-enter"
-      },
-      {
-        "name": "image-map:area-leave"
-      },
-      {
-        "name": "image-map:area-activate"
-      }
-    ],
-    "childAttributes": [],
-    "structure": [],
+    "description": "Responsive image map: <map-area> children define percentage-coordinate hotspots (rect, circle, poly) over a child <img>, with an SVG hit-testing overlay, keyboard-focusable anchors, and rich HTML tooltips. Without JS the image renders and each map-area shows as a labeled list item.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
         "@flow"
       ]
-    }
+    },
+    "attributes": [
+      {
+        "name": "src",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "config",
+        "type": "string",
+        "description": "Image URL used to create the <img> when no child <img> is authored."
+      },
+      {
+        "name": "alt",
+        "kind": "host-api",
+        "direction": "input",
+        "purpose": "config",
+        "type": "string",
+        "description": "Alt text for the generated <img>."
+      },
+      {
+        "name": "data-label-map",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Image map",
+        "description": "Group name fallback when there is no aria-label/aria-labelledby and the image has no alt."
+      }
+    ],
+    "events": [
+      {
+        "name": "image-map:area-enter",
+        "detail": "{ area }",
+        "description": "Pointer entered or focus moved onto an area; area is the <map-area> element."
+      },
+      {
+        "name": "image-map:area-leave",
+        "detail": "{ area }",
+        "description": "Pointer left or focus moved off an area."
+      },
+      {
+        "name": "image-map:area-activate",
+        "detail": "{ area }",
+        "description": "Area clicked, tapped, or activated with Enter/Space. Cancelable: preventDefault() stops link navigation."
+      },
+      {
+        "name": "image-map:regions-changed",
+        "detail": "{ regions, source: 'property' }",
+        "description": "Fired after the regions setter rebuilds the map."
+      }
+    ],
+    "properties": [
+      {
+        "name": "regions",
+        "type": "Array<{ shape, coords, label?, href?, target?, tooltip?, disabled?, content? }>",
+        "description": "Get the regions from the <map-area> children (content is a string for text-only areas or a cloned DocumentFragment for markup) or assign to rebuild them. String content renders as text, never HTML; pass a Node, DocumentFragment or <template> for rich tooltips. Fires image-map:regions-changed with source 'property'."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "shape",
+        "on": "map-area",
+        "type": "enum",
+        "values": [
+          "rect",
+          "circle",
+          "poly"
+        ],
+        "required": false,
+        "description": "Hotspot shape (default rect)."
+      },
+      {
+        "name": "coords",
+        "on": "map-area",
+        "type": "string",
+        "required": true,
+        "description": "Percentage coordinates (0-100), space or comma separated: rect x1 y1 x2 y2, circle cx cy r, poly x1 y1 x2 y2 ..."
+      },
+      {
+        "name": "label",
+        "on": "map-area",
+        "type": "string",
+        "required": false,
+        "description": "Accessible name of the hotspot; falls back to the area's text content. Shown as the list label without JS."
+      },
+      {
+        "name": "href",
+        "on": "map-area",
+        "type": "string",
+        "required": false,
+        "description": "Navigation target; the hotspot becomes an <a> focus anchor. Not a link without JS: also author an <a href> in the content for no-JS reachability."
+      },
+      {
+        "name": "target",
+        "on": "map-area",
+        "type": "string",
+        "required": false,
+        "description": "Link target for href (e.g. _blank)."
+      },
+      {
+        "name": "tooltip",
+        "on": "map-area",
+        "type": "enum",
+        "values": [
+          "hover",
+          "click",
+          "none"
+        ],
+        "required": false,
+        "description": "Tooltip mode: hover (default; on hover/focus, hoverable), click (toggle on click/Enter/Space, focus moves into interactive content, Escape returns), none."
+      },
+      {
+        "name": "disabled",
+        "on": "map-area",
+        "type": "boolean",
+        "required": false,
+        "description": "Removes the hotspot from interaction and the tab order."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<img>",
+        "description": "Direct child image the overlay is laid over (or use src/alt on the host)."
+      },
+      {
+        "element": "<map-area>",
+        "description": "Hotspot definition; its child content becomes the tooltip (and the no-JS list item body)."
+      }
+    ]
   },
   "include-file": {
     "$schema": "../../../schemas/api.schema.json",

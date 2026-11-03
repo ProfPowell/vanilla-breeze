@@ -940,12 +940,12 @@ module.exports = {
     attributes: {
       "name": {},
       "set": {},
-      "size": {},
+      "size": { enum: ["xs", "sm", "md", "lg", "xl", "2xl"] },
       "label": {},
       "base-path": {},
-      "width": {},
-      "height": {},
-      "role": {}
+      "data-flip-rtl": { boolean: true },
+      "data-animate": { enum: ["spin"] },
+      "data-error": { boolean: true }
     }
   },
 
@@ -959,7 +959,14 @@ module.exports = {
       "controls": { enum: ["edge", "bar", "minimal"] },
       "loop": { boolean: true },
       "captions": { enum: ["auto", "overlay", "hidden"] },
-      "transition": { enum: ["morph", "fade", "none"] }
+      "transition": { enum: ["morph", "fade", "none"] },
+      "data-label-dialog": {},
+      "data-label-close": {},
+      "data-label-prev": {},
+      "data-label-next": {},
+      "data-label-show-details": {},
+      "data-label-hide-details": {},
+      "data-label-counter": {}
     }
   },
 
@@ -967,28 +974,9 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "x": {},
-      "y": {},
-      "width": {},
-      "height": {},
-      "cx": {},
-      "cy": {},
-      "r": {},
-      "points": {},
-      "shape": {},
-      "coords": {},
-      "label": {},
-      "href": {},
-      "target": {},
-      "tooltip": {},
-      "disabled": {},
       "src": {},
       "alt": {},
-      "viewBox": {},
-      "preserveAspectRatio": {},
-      "role": {},
-      "data-disabled": {},
-      "data-hover": {}
+      "data-label-map": {}
     }
   },
 

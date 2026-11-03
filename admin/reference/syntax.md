@@ -325,6 +325,18 @@ Base: border, radius, padding, focus ring. Validation via `:user-invalid` and `[
 | `input[list].no-arrow` | Hide dropdown arrow |
 | `input[list].search` | Search icon on the inline-start side |
 
+> The switch knob slides toward the inline end, so it mirrors under `dir="rtl"`. Colour tokens: `--switch-track-bg`, `--switch-track-checked-bg`, `--switch-knob-bg`. In forced colors the track is outlined in CanvasText and filled with Highlight when on.
+
+| Token | Default | Purpose |
+|---|---|---|
+| `--control-border` | `color-mix(in oklab, var(--color-border-strong), var(--color-text) 30%)` | Control boundary ≥3:1 (WCAG 1.4.11); feeds `--input-border`, `--range-track-bg`, `--switch-track-bg` |
+| `--input-readonly-bg` | `var(--color-surface-raised)` | Readonly text field fill |
+| `--input-readonly-border-style` | `dashed` | Readonly text field border style |
+| `--switch-track-bg` | `var(--control-border)` | Unchecked switch track |
+| `--switch-track-checked-bg` | `var(--color-interactive)` | Checked switch track |
+| `--switch-knob-bg` | `var(--color-white)` | Switch knob |
+| `--range-pct` | unset (0%) | Range fill stop; set by data-range, or set it yourself for a static fill |
+
 ### `<form>` Form
 
 | Class | Description |
@@ -540,16 +552,17 @@ Themes restyle only plain rules (`hr:not([data-ornament], .decorative, .wave, .z
 
 ### `<img>`, `<picture>` Image
 
-| Class | Description |
-|-------|-------------|
-| `.full` | 100% width |
-| `.contain`, `.cover` | Object-fit variants |
+| Class / Attribute | Description |
+|-------------------|-------------|
+| `.full` | 100% width (on `img`, or `picture.full`) |
+| `.contain`, `.cover` | Object-fit variants; combine with ratio classes (`ratio-square contain`) |
 | `.rounded` | Border-radius |
 | `.circle` | Circular with aspect-ratio 1 |
 | `.thumbnail` | Border + background |
-| `.ratio-square`, `.ratio-video`, `.ratio-portrait`, `.ratio-landscape` | Aspect ratios |
+| `.ratio-square`, `.ratio-video`, `.ratio-landscape`, `.ratio-portrait` | 1:1, 16:9, 4:3, 3:4 (object-fit cover) |
+| `data-outlined` | Faint inner outline (`img`, `picture[data-outlined] > img`) |
 
-Broken image: `:not([src])` / `[src=""]` show placeholder. `[loading="lazy"]` gets background.
+`picture > img` is never upscaled past its intrinsic width (`max-inline-size: 100%`); `[data-media] > picture > img` fills the ratio box. Missing source: `:not([src])` / `[src=""]` get a raised surface + 100px min height. No lazy-loading background.
 
 ### `<video>`, `<audio>` Media
 
@@ -566,14 +579,15 @@ Broken image: `:not([src])` / `[src=""]` show placeholder. `[loading="lazy"]` ge
 
 ### `<iframe>` Embed
 
-| Class | Description |
-|-------|-------------|
-| `.full` | Full-width |
-| `.fixed` | 400px height |
+| Class / Attribute | Description |
+|-------------------|-------------|
+| `.full` | Full-width; keeps the `height` attribute |
+| `.fixed` | Full-width, 400px height |
 | `.rounded` | Border-radius |
 | `.bordered` | Border |
+| `data-ratio="1:1\|4:3\|3:2\|16:9\|21:9\|2:3\|3:4\|9:16\|page"` | Block size follows width; `width` = preferred width, none = fill |
 
-Wrapper: `.embed-responsive` with `.ratio-16x9`, `.ratio-4x3`, `.ratio-1x1`, `.ratio-21x9`
+Wrappers: `[data-media][data-ratio]` (preferred; `figure` + `figcaption` puts the ratio on the iframe) or legacy `.embed-responsive` with `.ratio-16x9`, `.ratio-4x3`, `.ratio-1x1`, `.ratio-21x9`. Never `sandbox="allow-scripts allow-same-origin"` on a same-origin `src` (escapable).
 
 
 ### `<embed>` / `<object>`
@@ -745,7 +759,7 @@ Separator: `<li role="separator">`
 | `abbr[data-variant="plain"]` | abbr | No underline |
 | `cite[data-variant="quoted"]` | cite | Title in locale quotation marks instead of italics |
 | `del.diff`, `ins.diff` | del/ins | Diff display (pill tokens) |
-| `del`/`ins` wrapping block content (auto, via `:has()`) | del/ins | Block change: tint + inline-start bar; no class needed (`.block` removed) |
+| `del`/`ins` wrapping block content (auto, via `:has()`) | del/ins | Block change: tint + inline-start bar; no class needed (`.block` removed). Block children: `p, ul, ol, dl, div, section, article, aside, blockquote, pre, table, figure, h1–h6, details, nav, header, footer, form, fieldset, hgroup, menu, hr, address, search` |
 | `del[data-reason]`, `ins[data-reason]` | del/ins | Visible uppercase reason tag before the change |
 | `del[data-author]`, `ins[data-author]` | del/ins | Author shown on hover, focus-within, touch (hover:none) and print |
 | `[data-announce]` (on del/ins or any ancestor) | del/ins | Visually hidden "deletion/insertion start/end" text for screen readers; translate via `--del-announce-start/-end`, `--ins-announce-start/-end` (quoted strings) |
@@ -755,6 +769,8 @@ Separator: `<li role="separator">`
 | `sup.footnote-ref` | sup | Footnote styling |
 
 > `dfn` inherits the weight of bold contexts (`dt`, `th`, headings, `strong`, `b`, `legend`). In `:lang(zh|ja|ko)`, `dfn` and `cite` are upright (no synthetic italic): `dfn` uses semibold, `cite` a muted wavy underline (except `cite[data-variant="quoted"]`).
+
+> `<i>` / `<em>` toggle to upright inside italic contexts: `blockquote`, `cite` (not `cite[data-variant~="quoted"]`), `dfn`, `var`, `em`, `i`. Upright islands (`blockquote > footer`, `blockquote > cite`, quoted cite) restore italic. In CJK (`:lang(zh|ja|ko)`, excluding `-Latn`): `<i>` is upright with the `--font-cjk-alternate` face + dotted underline; `<em>` uses emphasis marks; `<dfn>` semibold; `<cite>` wavy underline. Token `--font-cjk-alternate` (optional; default kai/mincho stack) sets the face for CJK `<i>`.
 
 ### Native Tooltip (`[role="tooltip"][popover]`)
 
@@ -1070,8 +1086,9 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<heading-links>` | Auto-anchor permalinks on headings | ✓ |
 | `<highlight-wc>` | Text highlighting: highlighter + colour palette in `<selection-menu>`; standalone = programmatic API | ✓ |
 | `<icon-wc>` | Lucide icon insertion | ✓ |
-| `<image-map>` / `<map-area>` | Modern hotspot image map | |
-| `<include-file>` (alias `<html-include-wc>`) | HTML include with caching, lazy mode | ✓ |
+| `<image-gallery>` | Thumbnail grid (`a > img` or `figure > a > img + figcaption`) → native `<dialog>` lightbox: `columns`, `gap`, `ratio`, `controls` edge/bar/minimal, `loop`, `captions` auto/overlay/hidden, `transition` morph/fade/none; direction-aware arrows/swipe; `.images` get/set `{ href, thumbSrc, alt, caption }` (string caption = text; Node/`<template>` = rich), `open(i)`/`close()`/`next()`/`prev()`, event `image-gallery:images-changed` `{ images, source }`; `data-label-dialog`/`close`/`prev`/`next`/`show-details`/`hide-details`/`counter` ("Image {n} of {total}") | |
+| `<image-map>` / `<map-area>` | Percentage-coordinate hotspot image map over a child `<img>` (or host `src`/`alt`): `<map-area shape="rect\|circle\|poly" coords label href target tooltip="hover\|click\|none" disabled>`, content = tooltip (hoverable, Escape anywhere; click mode is a disclosure with focus in/out); `.regions` get/set (round-trips tooltip/disabled/content); events `image-map:area-enter`/`area-leave` (pointer + focus), `area-activate` (pointer + Enter/Space, cancelable), `regions-changed` `{ regions, source }`; `data-label-map` | |
+| `<include-file>` | Same-origin HTML fragment include, sanitized by default: `src` (resolved against the page; blob:/data:/javascript: refused), `mode` replace/append/prepend, `lazy`, `trusted` (skip sanitizing), `allow-scripts` (requires `trusted`), `allow-cross-origin`, `data-label-error`; state `data-loading`/`data-loaded`/`data-error` + `aria-busy`; cycles and nesting > 10 refused; `.src`, `reload()`; events `include-file:loaded` `{ src, url, html }`, `include-file:error` `{ src, error }`, `include-file:src-changed` `{ src, source }` | ✓ |
 | `<markdown-editor>` | Markdown authoring textarea + preview | |
 | `<markdown-viewer>` | Render markdown to sanitized HTML | |
 | `<page-info>` | Document provenance disclosure (auto-reads §11 metadata) | (see §11) |
@@ -1435,14 +1452,18 @@ Data-driven card list from JSON.
 Uses `<template>` child for card layout with `data-field="..."` bindings.
 
 ### `<icon-wc>`
-SVG icon component.
+SVG icon component. Fetches one sanitized SVG per icon from `<base-path>/<set>/<name>.svg`; falls back to Lucide.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `name` | string | Icon name (e.g. `arrow-right`) |
-| `set` | string | Icon set (default: `lucide`) |
-| `size` | `xs`, `sm`, `md`, `lg`, `xl` | Icon size |
-| `label` | string | Accessible label |
+| `set` | string | Icon set (default: nearest `data-icon-set` on self/ancestor/`<html>`, then `lucide`) |
+| `size` | `xs`, `sm`, `md`, `lg`, `xl`, `2xl` | Icon size |
+| `label` | string | Accessible label (omit for decorative icons) |
+| `base-path` | URL | Icon base (default: `<html data-icon-path>`, then `/cdn/icons`) |
+| `data-flip-rtl` | (boolean) | Mirror the glyph in RTL contexts |
+| `data-animate` | `spin` | Spin while an ancestor has `data-loading` |
+| `data-error` | (output) | Set when the icon could not load |
 
 ### `<qr-code>`
 QR code generator.
@@ -1453,18 +1474,24 @@ QR code generator.
 | `data-size` | number | Canvas size in px |
 | `data-error-correction` | `L`, `M`, `Q`, `H` | Error correction level |
 
-### `<html-include-wc>`
-HTML fragment include via fetch.
+### `<include-file>`
+Same-origin HTML fragment include. Fetched HTML is sanitized unless `trusted`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `src` | URL | HTML file to fetch |
-| `data-lazy` | (boolean) | Load on viewport entry |
+| `src` | URL | Fragment URL, same-origin http(s) only unless `allow-cross-origin` |
+| `mode` | `replace` (default), `append`, `prepend` | Insertion mode; unknown values act as `replace` |
+| `lazy` | (boolean) | Load on viewport entry |
+| `trusted` | (boolean) | Skip sanitizing (author-vouched source) |
+| `allow-scripts` | (boolean) | Run fragment scripts; requires `trusted` |
+| `allow-cross-origin` | (boolean) | Permit another origin (CORS); still sanitized unless `trusted` |
+| `data-label-error` | string | Error message text (default "Failed to load content") |
 
 | Events | Detail |
 |--------|--------|
-| `html-include-load` | `{ src }` |
-| `html-include-error` | `{ src, error }` |
+| `include-file:loaded` | `{ src, url, html }` |
+| `include-file:error` | `{ src, error }` |
+| `include-file:src-changed` | `{ src, source: 'property' }` |
 
 ### `<geo-map>`
 Raster tile map (OpenStreetMap / CARTO / your own tile proxy) with a lazy-loaded pan / zoom mode.
@@ -1833,7 +1860,7 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-grow` | `<textarea>` | Auto-expanding textarea |
 | `data-count` | `<textarea>` | Character/word counter (`data-max`, `data-maxwords`) |
 | `data-range` | `<input type="range">` | Enhanced range with value bubble + markers |
-| `data-stepper` | `<input type="number">` | +/- button wrapper. For non-numeric values (formatted units, currency, time, token-snap, enums), see [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) and the [numeric-inputs decision guide](/docs/concepts/numeric-inputs/). |
+| `data-stepper` | `<input type="number">` | +/- button wrapper. For non-numeric values (formatted units, currency, time, token-snap, enums), see [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) and the [numeric-inputs decision guide](/docs/concepts/numeric-inputs/). Native spinners are hidden only once upgraded (`[data-stepper-init]`). A plain `type="number"` keeps the browser spinners. |
 | `data-color` | `<input type="color">` | Enhanced color picker with swatch + hex |
 | `data-upload` | `<input type="file">` | Drop zone file upload |
 | `data-mask` | `<input>` | Input masking (`data-pattern` for format) |
@@ -2134,7 +2161,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-state-selected` | Table row — selection state |
 | `data-state-sorted` | Table th — sort direction |
 | `data-status` | Avatar child — online status; content blocks, `<html>` — publication state (see §10) |
-| `data-stepper` | Number input — +/- buttons. See [numeric-inputs decision guide](/docs/concepts/numeric-inputs/) for when to reach for [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) instead. |
+| `data-stepper` | Number input — +/- buttons. See [numeric-inputs decision guide](/docs/concepts/numeric-inputs/) for when to reach for [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) instead. Native spinners are hidden only once upgraded (`[data-stepper-init]`). A plain `type="number"` keeps the browser spinners. |
 | `data-sticky` | Table — sticky header/column; `<header>`, `<footer>` — sticky; `<html>` — sticky header system |
 | `data-sticky-column` | Table — sticky N columns |
 | `data-switch` | Checkbox — toggle switch |

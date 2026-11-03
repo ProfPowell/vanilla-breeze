@@ -26,6 +26,37 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Changes from the I-element review.**
+  - **icon-wc**
+    - Filled icon sets (Phosphor, Bold) now render filled: the shadow stylesheet no longer forces `fill: none; stroke: currentColor; stroke-width: 2` over each file's own presentation attributes (stroked sets carry their own stroke attributes).
+    - Without a `set` attribute the icon resolves `data-icon-set` from the element, any ancestor, then `<html>` (same as `[data-icon]`), and re-renders when an ancestor's `data-icon-set` or `<html data-icon-path>` changes.
+    - New opt-in `data-flip-rtl` mirrors directional glyphs in RTL contexts.
+    - api.json: removed phantom `width`/`height`/`role` attributes; `size` is an enum incl. `2xl`; documented `base-path`, `data-flip-rtl`, `data-animate`, `data-error`, `data-upgraded` and the read-only properties.
+  - **image-gallery**
+    - `.images` string captions now render as text, never HTML; pass a Node, DocumentFragment or `<template>` for rich captions. The getter returns a string for text-only captions and a cloned DocumentFragment for markup captions (was an innerHTML string).
+    - Assigning `.images` re-runs the lifecycle (`_reinit`) and closes an open lightbox.
+    - Counter reads "Image {n} of {total}" by default (was a bare "{n} of {total}"); all lightbox strings are overridable via `data-label-dialog`, `-close`, `-prev`, `-next`, `-show-details`, `-hide-details`, `-counter`.
+    - Close button no longer carries `commandfor`/`command="close"`: the native invoker closed the dialog before the morph transition could snapshot it.
+  - **image-map**
+    - `image-map:area-activate` is now cancelable (`preventDefault()` stops link navigation) and fires for keyboard activation (Enter/Space) as well as pointer clicks; `area-enter`/`area-leave` also fire on focus/blur.
+    - `.regions` round-trips `tooltip`, `disabled` and `content` (string = text, Node/DocumentFragment/`<template>` = rich); `regions-changed` detail carries the normalised regions.
+    - Click-mode tooltips are disclosures: the hotspot gets `aria-expanded`/`aria-controls`, keyboard activation moves focus to the first focusable item inside, Escape closes and returns focus. Hover tooltips describe their hotspot via a per-area `aria-describedby` (the `<map-area>` itself) instead of one shared tooltip id; `aria-live` removed.
+    - Without JS, `<map-area href>` now shows its label like other areas (docs recommend an authored `<a href>` in the content for no-JS reachability).
+    - Host group name fallback is `data-label-map` (default "Image map").
+  - **input (native)**
+    - Control borders now meet WCAG 1.4.11 (3:1). New base `--control-border: color-mix(in oklab, var(--color-border-strong), var(--color-text) 30%)` (~3.8:1 light, >5:1 dark by default). It also feeds `--input-border`, `--range-track-bg` and the new `--switch-track-bg`, replacing `--color-border` (~1.3:1). Text fields, checkboxes, radios, range tracks, unchecked switches and the data-range track rest colour all get darker borders. Themes that set `--input-border` / `--control-border` themselves are unchanged.
+    - Number inputs keep their native spinners. They are hidden only on an upgraded `data-stepper` (`[data-stepper-init]`), so without JS the spinners stay.
+    - `type="search"` keeps the native clear (cancel) button. Only the decorative search-results chrome is removed.
+    - Readonly text fields (not select, checkbox, radio, range, color or file) get `--input-readonly-bg` and a dashed border (`--input-readonly-border-style`). New tokens.
+    - Invalid text fields (`aria-invalid="true"`, `:user-invalid`) get a 4px inline-start border as well as the error colour, so the state does not rely on colour alone.
+    - A label that wraps a checkbox or radio is at least 1.5rem tall, giving a 24px pointer target (WCAG 2.5.8).
+    - Toggle switch colours are now tokens: `--switch-track-bg`, `--switch-track-checked-bg`, `--switch-knob-bg`. Sizes come from private `--_switch-w` / `--_switch-h`.
+    - The range fill stop is `--range-pct` (the property data-range already sets). The dead `--_pct` hook is gone.
+  - **img** — `img[loading="lazy"]` no longer gets a `--color-surface-raised` background (it never cleared, leaving grey boxes behind transparent PNG/SVG logos). `.contain`/`.cover` now come after the ratio classes so `class="ratio-square contain"` letterboxes.
+  - **picture** — `picture > img` is no longer forced to `inline-size: 100%`; it keeps `max-inline-size: 100%` and is never upscaled past its intrinsic width. Stretch with `picture.full` (or `img.full`). `[data-media] > picture > img` now fills the ratio box (`object-fit: var(--_fit, cover)`).
+  - **i / em (italic toggle)** — the "italic inside an italic context goes upright" toggle now only fires in contexts that are actually italic: `cite[data-variant="quoted"]` is no longer a context, and emphasis inside a blockquote attribution (`blockquote > footer`, `blockquote > cite`) or a quoted cite is italic again. Themes with an upright blockquote (brutalist, cyber, super2026, swiss) re-assert italic for emphasis in it; editorial's italic `h1`/`h3` toggle emphasis upright; the dyslexia theme keeps `<i>` italic inside its upright `<em>`.
+  - **i (CJK)** — `<i>` in `zh`/`ja`/`ko` text is upright in a calligraphic face (`--font-cjk-alternate`, kai/mincho stack) with a dotted underline instead of an invisible italic.
+  - **del / ins** — block-change detection also covers `details`, `nav`, `header`, `footer`, `form`, `fieldset`, `hgroup`, `menu`, `hr`, `address` and `search`.
 - **include-file (I-element review).**
   - **include-file** — Breaking: only same-origin http(s) URLs load (resolved against `document.baseURI`); `blob:`/`data:`/`javascript:` and other schemes are always refused, a same-origin URL redirecting off-origin is refused, and other origins need the new `allow-cross-origin` attribute. Fetched HTML is sanitized unless the new `trusted` attribute is set; `allow-scripts` now requires `trusted` (ignored with a warning otherwise). Nested includes in sanitized fragments keep `src` but lose trust attributes.
   - **include-file** — The error message is now a real `<p role="alert">` (text from the new `data-label-error`, default "Failed to load content"), rendered only when no fallback remains, replacing the CSS `::after` text. `aria-busy="true"` is set while loading. `include-file:loaded` detail adds `url` (resolved) and `html` is the markup as inserted.
@@ -195,6 +226,46 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **I-element review.**
+  - **icon-wc**
+    - Changing `name`/`set` mid-fetch no longer leaves the stale icon: results are tokened and the `<svg>` is swapped in place (no shadow-root rebuild, no flash).
+    - Adding `label` after load now sets `role="img"`/`aria-label` and drops `aria-hidden`; removing it clears `aria-label` and restores `aria-hidden`.
+    - Fetched SVG is sanitized (`sanitizeSVG`) before insertion: scripts, `foreignObject`, `on*` handlers and `javascript:` hrefs are stripped.
+    - Missing icons are negative-cached (one request per URL); the cache is keyed by base path; non-default sets consult `<base>/<set>.json` once and go straight to the Lucide fallback for names they lack.
+    - Reconnecting (moving) an icon no longer refetches or re-renders it.
+  - **image-gallery**
+    - Lightbox captions were re-injected with innerHTML (XSS via `.images` captions); nodes are now cloned/created as text.
+    - An empty gallery never became interactive; it now upgrades and works once thumbnails arrive (markup or setter).
+    - RTL: ArrowLeft/Right and swipe follow the reading direction; prev/next chevrons are mirrored.
+    - Lightbox `<dialog>` is named ("Image viewer"); info button has `aria-controls`.
+    - Changing `captions`/`controls` rebuilds the lightbox instead of keeping the first-open layout.
+    - Setter thumbnails load lazily; entries without `alt` warn once and name the link from the caption or counter.
+    - Swipe module resolving after disconnect no longer attaches listeners; thumbnail hover zoom honours `data-motion-reduced`.
+  - **image-map**
+    - Overlay could build twice (raw load listener firing after disconnect/reconnect); now built once per lifecycle via `listen(..., { once: true })` and an already-built guard.
+    - `crypto.randomUUID` threw on insecure http origins; ids use a module counter.
+    - Tooltip was only `opacity: 0` when closed (in tab order and a11y tree); now `hidden` when not showing, placed after its hotspot so Tab flows into it.
+    - WCAG 1.4.13: hover tooltip is hoverable (300 ms grace), Escape dismisses it from anywhere, tap/click outside closes it.
+    - `tooltip="none"` was ignored on focus; empty `label` falls back to the area's text content.
+    - Fixed-position tooltip follows scroll (passive, rAF-throttled).
+    - Forced colors: system-colour strokes (CanvasText, Highlight on hover/focus, thicker).
+  - **input (native)**
+    - Forced colors: checkbox and radio repaint in system colours (CanvasText border, Highlight fill, HighlightText tick, dot or bar), so unchecked, checked and indeterminate stay distinct. Disabled uses GrayText.
+    - Forced colors: switch tracks are outlined in CanvasText with a CanvasText knob. Checked shows a Highlight track and a HighlightText knob; disabled uses GrayText.
+    - Forced colors: range keeps a visible Highlight/CanvasText track, both plain and data-range.
+    - Forced colors: text fields show a 2px Highlight focus outline (the box-shadow halo was dropped), and invalid fields get a double border.
+    - RTL: the switch knob slides toward the inline end. Previously the physical translate pushed it out of the track.
+    - RTL: the range fill (plain and data-range) grows from the inline start. Firefox now fills via `::-moz-range-progress`.
+    - Docs: removed the wrong "44x44px checkboxes" claim and documented the data-switch sizes, indeterminate, readonly, submit/reset/button/image types, the styled color swatch and forced colors. The CSS reference is corrected (`--range-pct` default 0%, `[type="image"]` in the selector).
+    - Demos: input-states, input-text-types and input-numeric-date no longer use inline styles. The hardcoded error colour is now `<output class="error">` / `class="hint"`. Added indeterminate checkbox, month, week and readonly number examples.
+  - **iframe** — `.full` no longer sets `block-size: auto`, which discarded the `height` attribute and collapsed the frame to 150px. `.fixed` now sets `inline-size: 100%` as documented. Docs: `data-ratio` (incl. `page`) and `[data-media]`, sandbox warning for `allow-scripts allow-same-origin` + full token table, CSP uses `youtube-nocookie.com`, new Attributes (`allow`/Permissions Policy, `allowfullscreen`, `srcdoc`, `credentialless`, `referrerpolicy`), Performance and Printing sections; demos drop inline styles and show `.fixed` and `data-ratio`.
+  - **img** — added the documented `.ratio-landscape` (4:3, cover). Removed a dead `::before` on the missing-`src` rule. Docs: CLS (`width`/`height`), `srcset`/`sizes`, `decoding`, `fetchpriority` and not lazy-loading the LCP image, `[data-media]` + `data-ratio`/`data-fit`, `data-outlined`, `data-mock` presets (which use external CDNs), missing-source placeholder, complex-image pattern; dropped the `role="presentation"` advice. Demo uses one off-ratio local placeholder so the ratio/fit differences show.
+  - **i / em / dfn / cite (CJK)** — romanised tags (`ja-Latn`, `zh-Latn`, `ko-Latn`) keep the real italic; the CJK upright cues no longer apply to them.
+  - **i** — docs described a nonexistent blockquote rule; now document the real toggle, italic contexts, the `font-synthesis: none` caveat, CJK treatment, and a "Not for icons" note.
+  - **ins / del** — the tint-vs-body-text contrast claim is now backed by a themed AA check (tests/visual/site-pages.spec.js).
+  - **Themes / form controls**: text inputs, checkboxes, radios, unchecked switch tracks, range tracks and `data-stepper` wrappers now reach 3:1 non-text contrast (WCAG 1.4.11) against the surface in every theme, light and dark. 20 extreme themes (8bit, alpha1999, art-deco, bauhaus, claymorphism, cottagecore, cyber, editorial, glassmorphism, kawaii, nes, neumorphism, nord, organic, rough, super2026, swiss, terminal, vaporwave, win9x) mix their own `--control-border` / `--input-border` / `--range-track-bg` toward `--color-text`, which keeps the hue. Theme input rules that hard-coded `--color-border` or literal colours now use `--input-border`. Claymorphism controls gain a 2px edge and neumorphism a 1px edge next to their soft insets. Win9x dark lifts the outer bevel of form controls through a new `--_win9x-field-edge` token. Guarded by `tests/components/i-theme-form-contrast.spec.js`.
+  - **data-stepper**: the wrapper border uses `--input-border`, the same 3:1 edge as a text field, in place of the low-contrast `--color-border`. Under forced colors it shows a 2px `Highlight` outline on `:focus-within`, because the box-shadow halo disappears there.
+  - **icon-wc usages**: demos and docs used `size="s"`, `size="20"` and `size="24"`, which icon-wc never supported (presets only); they now use `sm`/`md`.
 - **include-file (I-element review).**
   - **include-file** — Include cycles (self, A→B→A) and nesting deeper than 10 are refused with the error state instead of recursing forever.
   - **include-file** — `append`/`prepend` with `allow-scripts` no longer re-runs earlier scripts, and without it no longer deletes the author's own scripts: each fragment is parsed in a `<template>` and only its nodes are processed.
