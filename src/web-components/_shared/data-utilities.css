@@ -30,19 +30,21 @@ data[data-format-bytes] {
   font-variant-numeric: tabular-nums;
 }
 
-/* data-hotkey: Platform-aware keyboard shortcut display */
-kbd[data-hotkey] {
+/* data-hotkey: Platform-aware keyboard shortcut display.
+   The unboxed wrapper / font-size reset comes from the generic nested-kbd
+   rule (kbd:has(> kbd), native-elements/code), so before hotkey-init runs
+   the fallback text still shows as one ordinary cap. Shortcuts are written
+   left to right in every locale, so the caps keep their order in RTL. */
+kbd[data-hotkey]:has(> kbd) {
   display: inline-flex;
   align-items: center;
   gap: 0.15em;
-  background: none;
-  border: none;
-  box-shadow: none;
-  padding: 0;
   font-family: inherit;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
-kbd[data-hotkey] kbd {
+kbd[data-hotkey] > kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;

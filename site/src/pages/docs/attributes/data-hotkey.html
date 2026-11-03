@@ -31,10 +31,11 @@ crumbLabel: Data Attributes
       <li>Reads the <code>data-hotkey</code> attribute value (e.g., <code>"meta+k"</code>)</li>
       <li>Detects the user's platform (Mac vs. other)</li>
       <li>Maps modifier names to platform-appropriate symbols or labels</li>
-      <li>Generates a <code>&lt;kbd&gt;</code> element for each key in the combo</li>
-      <li>Replaces the element's content with the styled key caps</li>
-      <li>Sets <code>aria-label</code> with the readable text</li>
+      <li>Generates an <code>aria-hidden</code> <code>&lt;kbd&gt;</code> cap for each key in the combo</li>
+      <li>Adds a visually hidden <code>&lt;span&gt;</code> with the spelled-out combo (for example "Command Shift P") for screen readers</li>
+      <li>Replaces the element's content with the caps and the spoken text</li>
     </ol>
+    <p>Re-running the enhancement (for example after the element is moved) is a no-op. If <code>data-hotkey</code> has changed, the caps are rebuilt from scratch, never appended.</p>
     <p>The original text content (e.g., "Ctrl+K") serves as a no-JS fallback. Nested <code>&lt;kbd&gt;</code> inside <code>&lt;kbd&gt;</code> is valid HTML for key combinations per the spec.</p>
   </section>
 
@@ -52,12 +53,17 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>data-hotkey</code></td>
           <td>string</td>
-          <td>Key combination string. Keys separated by <code>+</code>. Supported modifiers: <code>meta</code>, <code>alt</code>, <code>shift</code>, <code>ctrl</code>.</td>
+          <td>Key combination string. Keys separated by <code>+</code>. Modifiers: <code>meta</code> (alias <code>cmd</code>), <code>alt</code> (alias <code>option</code>), <code>shift</code>, <code>ctrl</code> (alias <code>control</code>). Write the plus key as <code>plus</code> or as a trailing <code>+</code> (<code>ctrl++</code>).</td>
+        </tr>
+        <tr>
+          <td><code>data-label-<var>key</var></code></td>
+          <td>string</td>
+          <td>Override the label and spoken name of one key, e.g. <code>data-label-ctrl="Strg"</code>. Read from the element or any ancestor, so it can be set once on <code>&lt;html&gt;</code>. On Mac, modifier glyphs stay and only the spoken name changes.</td>
         </tr>
         <tr>
           <td><code>data-hotkey-init</code></td>
-          <td>boolean</td>
-          <td>Set automatically to prevent double-enhancement. Do not set manually.</td>
+          <td>string</td>
+          <td>Set automatically to the rendered combo to prevent double-enhancement. Do not set manually.</td>
         </tr>
       </tbody>
     </table>
@@ -77,29 +83,56 @@ crumbLabel: Data Attributes
       </thead>
       <tbody>
         <tr>
-          <td><code>meta</code></td>
-          <td>&#x2318;</td>
-          <td>Ctrl</td>
+          <td><code>meta</code>, <code>cmd</code></td>
+          <td>&#x2318; (spoken "Command")</td>
+          <td>Ctrl (spoken "Control")</td>
         </tr>
         <tr>
-          <td><code>alt</code></td>
-          <td>&#x2325;</td>
+          <td><code>alt</code>, <code>option</code></td>
+          <td>&#x2325; (spoken "Option")</td>
           <td>Alt</td>
         </tr>
         <tr>
           <td><code>shift</code></td>
-          <td>&#x21E7;</td>
+          <td>&#x21E7; (spoken "Shift")</td>
           <td>Shift</td>
         </tr>
         <tr>
-          <td><code>ctrl</code></td>
-          <td>&#x2303;</td>
-          <td>Ctrl</td>
+          <td><code>ctrl</code>, <code>control</code></td>
+          <td>&#x2303; (spoken "Control")</td>
+          <td>Ctrl (spoken "Control")</td>
         </tr>
       </tbody>
     </table>
 
-    <p>Non-modifier keys are displayed in uppercase (e.g., <code>k</code> becomes <kbd>K</kbd>).</p>
+    <h3>Named keys</h3>
+    <p>Named keys get short labels on every platform:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Key name</th>
+          <th>Shown</th>
+          <th>Spoken</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>escape</code>, <code>esc</code></td><td>Esc</td><td>Escape</td></tr>
+        <tr><td><code>enter</code>, <code>return</code></td><td>Enter</td><td>Enter</td></tr>
+        <tr><td><code>tab</code>, <code>space</code>, <code>backspace</code>, <code>home</code>, <code>end</code></td><td>Tab, Space, Backspace, Home, End</td><td>as shown</td></tr>
+        <tr><td><code>delete</code>, <code>del</code> / <code>insert</code></td><td>Del / Ins</td><td>Delete / Insert</td></tr>
+        <tr><td><code>pageup</code> / <code>pagedown</code></td><td>PgUp / PgDn</td><td>Page up / Page down</td></tr>
+        <tr><td><code>arrowup</code> (<code>up</code>), <code>arrowdown</code>, <code>arrowleft</code>, <code>arrowright</code></td><td>&uarr; &darr; &larr; &rarr;</td><td>Up arrow, Down arrow, &hellip;</td></tr>
+        <tr><td><code>plus</code> (or trailing <code>+</code>)</td><td>+</td><td>Plus</td></tr>
+      </tbody>
+    </table>
+
+    <p>Any other key is displayed in uppercase (e.g., <code>k</code> becomes <kbd>K</kbd>).</p>
+
+    <h3>Localised key names</h3>
+    <p>Key names default to English. Override any of them with <code>data-label-<var>key</var></code> on the element or an ancestor:</p>
+    <code-block language="html" show-lines label="German keyboard labels" data-escape><html lang="de" data-label-ctrl="Strg" data-label-meta="Strg" data-label-shift="Umschalt">
+  <!-- ... -->
+  <p>Speichern: <kbd data-hotkey="meta+s">Strg+S</kbd></p></code-block>
   </section>
 
   <section>
@@ -340,10 +373,11 @@ document.body.appendChild(kbd);
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Sets <code>aria-label</code> on the element with the full text content for screen readers</li>
+      <li>The visible caps are <code>aria-hidden</code>; a visually hidden span carries the spelled-out combo ("Command Shift P"), because screen readers read the Mac glyphs inconsistently and <code>aria-label</code> is prohibited on <code>&lt;kbd&gt;</code> (generic role)</li>
       <li>Uses semantic <code>&lt;kbd&gt;</code> elements which are recognized by assistive technology</li>
       <li>Nested <code>&lt;kbd&gt;</code> inside <code>&lt;kbd&gt;</code> is valid HTML for key combinations per the spec</li>
       <li>The original text content serves as a no-JS fallback</li>
+      <li>The caps keep left-to-right order in right-to-left pages</li>
       <li>On Mac, separators between keys are omitted since the symbols are self-explanatory; on other platforms, <code>+</code> separators are included for clarity</li>
     </ul>
   </section>

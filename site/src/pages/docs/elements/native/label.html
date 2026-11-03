@@ -23,7 +23,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>VB Styling</h2>
-    <p>Vanilla Breeze styles labels as <code>display: block</code> with <code>font-weight: 500</code> and a small bottom margin (<code>var(--size-xs)</code>). When a label contains a checkbox or radio input, VB auto-detects this via <code>:has()</code> and switches to <code>inline-flex</code> with centered alignment, gap spacing, and a pointer cursor &mdash; no classes needed.</p>
+    <p>Vanilla Breeze styles labels as <code>display: block</code> with <code>font-weight: 500</code> and a small bottom margin (<code>var(--size-xs)</code>). When a label contains a checkbox or radio input, VB auto-detects this via <code>:has()</code> and switches to <code>inline-flex</code> with first-baseline alignment (the control lines up with the first line of text, even when the text wraps), gap spacing, a 24px minimum row height and a pointer cursor &mdash; no classes needed.</p>
   </section>
 
   <section>
@@ -58,24 +58,30 @@ crumbLabel: Native Elements
   <input type="checkbox" name="feature" /> Enable feature
 </label>
 
-<!-- Radio buttons in fieldset -->
+<!-- Radio buttons in fieldset, one per row -->
 <fieldset>
   <legend>Select size</legend>
-  <label>
-    <input type="radio" name="size" value="small" /> Small
-  </label>
-  <label>
-    <input type="radio" name="size" value="large" /> Large
-  </label>
+  <layout-stack data-layout-gap="s">
+    <label>
+      <input type="radio" name="size" value="small" /> Small
+    </label>
+    <label>
+      <input type="radio" name="size" value="large" /> Large
+    </label>
+  </layout-stack>
 </fieldset></code-block>
+    <p>Checkbox and radio labels are <code>inline-flex</code>, so without a wrapper they sit side by side in one row. Wrap them in <code>&lt;layout-stack&gt;</code> to stack them.</p>
   </section>
 
   <section>
     <h2>Required Field Indicator</h2>
-    <p>Indicate required fields visually. The asterisk is commonly used but should be explained at the top of the form.</p>
-    <code-block language="html" show-lines label="Required field indicator" data-escape><p class="help">Fields marked with * are required</p>
-<label for="name">Name *</label>
-<input type="text" id="name" required /></code-block>
+    <p>Inside <a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a>, the asterisk is automatic. When the field contains a <code>required</code> control, form-field adds a red <code>*</code> after the label (and after the legend of a grouped field). Screen readers do not announce the asterisk, because the control's native required state is announced instead. Keep the label text plain. A typed <code>*</code> would show twice and be read aloud as &ldquo;star&rdquo;. Explain the asterisk once at the top of the form.</p>
+    <code-block language="html" show-lines label="Required field in form-field" data-escape><p class="help">Fields marked with * are required</p>
+<form-field>
+  <label for="name">Name</label>
+  <input type="text" id="name" required />
+</form-field></code-block>
+    <p>A bare label outside form-field gets no marker. Add your own, hidden from screen readers, and keep <code>required</code> on the control: <code>&lt;label for="name"&gt;Name &lt;span aria-hidden="true"&gt;*&lt;/span&gt;&lt;/label&gt;</code>.</p>
   </section>
 
   <section>
@@ -84,6 +90,14 @@ crumbLabel: Native Elements
     <code-block language="html" show-lines label="Visually hidden label" data-escape><label for="search" class="visually-hidden">Search</label>
 <input type="search" id="search" placeholder="Search..." /></code-block>
     <p class="help">The <code>.visually-hidden</code> class hides the label from sight while keeping it announced by screen readers.</p>
+  </section>
+
+  <section>
+    <h2>Enhanced Labels</h2>
+    <ul>
+      <li><a href="/docs/attributes/data-floating-label/"><code>data-floating-label</code></a> on <code>&lt;form-field&gt;</code> places the label inside the control and floats it up when the field has focus or a value</li>
+      <li><a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a> adds the silent required asterisk, hint and error messages around a label/control pair</li>
+    </ul>
   </section>
 
   <section>
@@ -110,23 +124,32 @@ crumbLabel: Native Elements
 label:has(input[type="checkbox"]),
 label:has(input[type="radio"]) {
   display: inline-flex;
-  align-items: center;
+  align-items: first baseline;
   gap: var(--size-xs);
   margin-block-end: 0;
-  cursor: pointer;
+  min-block-size: 1.5rem; /* 24px pointer target (WCAG 2.5.8) */
+  cursor: var(--cursor-custom-pointer, pointer);
 }
 
-/* Within a .group container */
-.group > label {
+/* Within a .group container (form/styles.css) */
+:where(form) .group > label,
+:where(fieldset).group > label {
   font-weight: 500;
   font-size: var(--font-size-s);
+}
+
+/* form-field: silent required asterisk (form-field/styles.css) */
+form-field:has(:required) > label:only-of-type::after,
+form-field:has(:required) > fieldset > legend::after {
+  content: " *" / "";
+  color: var(--color-error);
 }
 
 /* Visually hidden but accessible */
 .visually-hidden {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  inline-size: 1px;
+  block-size: 1px;
   padding: 0;
   margin: -1px;
   overflow: hidden;
@@ -143,7 +166,7 @@ label:has(input[type="radio"]) {
       <li><a href="/docs/elements/native/select/">select</a> - Dropdown menus that need labels</li>
       <li><a href="/docs/elements/native/textarea/">textarea</a> - Multi-line inputs that need labels</li>
       <li><a href="/docs/elements/native/fieldset/">fieldset</a> - Groups of labeled controls</li>
-      <li><a href="/docs/elements/custom-elements/form-field/">form-field</a> - Enhanced form field wrapper</li>
+      <li><a href="/docs/elements/web-components/form-field/">form-field</a> - Enhanced form field wrapper</li>
       <li><a href="/docs/accessibility-utilities/#hidden-labels">Accessibility Utilities &rsaquo; Hidden labels</a> - When to hide a label with <code>.visually-hidden</code> instead of omitting it</li>
     </ul>
   </section>
