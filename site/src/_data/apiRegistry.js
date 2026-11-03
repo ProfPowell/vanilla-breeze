@@ -5130,18 +5130,12 @@ export default {
     },
     "attributes": [
       {
-        "name": "data-filterable",
+        "name": "data-label-no-results",
         "kind": "data",
         "purpose": "config",
-        "type": "boolean",
-        "description": "Enable text search filtering"
-      },
-      {
-        "name": "data-paginate",
-        "kind": "data",
-        "purpose": "config",
-        "type": "number",
-        "description": "Enable pagination with N rows per page"
+        "type": "string",
+        "default": "No matching rows found",
+        "description": "Text for the visible empty state and the live-region announcement when the filter matches no rows."
       }
     ],
     "structure": [
@@ -5151,6 +5145,18 @@ export default {
       }
     ],
     "childAttributes": [
+      {
+        "name": "data-filterable",
+        "on": "table",
+        "type": "boolean",
+        "description": "Enable text search filtering (adds a search input above the table)"
+      },
+      {
+        "name": "data-paginate",
+        "on": "table",
+        "type": "number",
+        "description": "Enable pagination with N rows per page"
+      },
       {
         "name": "data-sort",
         "on": "th",
@@ -5196,7 +5202,7 @@ export default {
         "name": "data-sort-value",
         "on": "td",
         "type": "string",
-        "description": "Custom sort value overriding cell text"
+        "description": "Custom sort value overriding cell text. Use for formatted values, e.g. <td data-sort-value=\"1234\">$1,234</td> — data-sort=\"number\" parses the cell with parseFloat, so \"$1,234\" would sort as 0"
       },
       {
         "name": "data-filter-value",
@@ -5208,7 +5214,7 @@ export default {
         "name": "data-expandable",
         "on": "tr",
         "type": "boolean",
-        "description": "Mark row as expandable (followed by a data-expand-content row)"
+        "description": "Mark row as expandable (followed by a data-expand-content row). Supply the toggle yourself: <button data-action=\"toggle-expand\"> in a cell; the component manages aria-expanded"
       },
       {
         "name": "data-expand-content",
@@ -5220,7 +5226,7 @@ export default {
         "name": "data-selectable",
         "on": "tr",
         "type": "boolean",
-        "description": "Mark row as selectable via checkbox"
+        "description": "Mark row as selectable via an author-supplied <input type=\"checkbox\" data-action=\"select-row\">; a thead checkbox with data-action=\"select-all\" toggles all"
       }
     ],
     "events": [
@@ -5248,6 +5254,75 @@ export default {
         "name": "data-table:selection",
         "detail": "{ count, rows[] }",
         "description": "Fired when row selection changes"
+      },
+      {
+        "name": "data-table:rows-changed",
+        "detail": "{ rows, added, moved, removed, source }",
+        "description": "Fired after each .rows assignment with keyed-diff stats (source: 'api')"
+      }
+    ],
+    "properties": [
+      {
+        "name": "rows",
+        "type": "Array<{ id, [columnKey]: value }>",
+        "description": "Row records. Seeded from <tr data-id> on upgrade; assigning runs a keyed diff that preserves <tr> nodes whose id persists."
+      },
+      {
+        "name": "columns",
+        "type": "Array<{ key, label, sort? }>",
+        "readonly": true,
+        "description": "Column spec derived from <thead> (th data-key, else lowercased header text)."
+      },
+      {
+        "name": "renderRow",
+        "type": "(row, columns) => Element",
+        "description": "Optional custom row renderer used for new rows in .rows assignments."
+      },
+      {
+        "name": "currentPage",
+        "type": "number",
+        "readonly": true,
+        "description": "Current page (1-indexed)."
+      },
+      {
+        "name": "totalPages",
+        "type": "number",
+        "readonly": true,
+        "description": "Total pages for the current filter (1 when not paginated)."
+      },
+      {
+        "name": "filteredCount",
+        "type": "number",
+        "readonly": true,
+        "description": "Rows matching the current filter."
+      },
+      {
+        "name": "totalCount",
+        "type": "number",
+        "readonly": true,
+        "description": "Total data rows (expansion content rows excluded)."
+      }
+    ],
+    "methods": [
+      {
+        "name": "goToPage(page)",
+        "returns": "void",
+        "description": "Navigate to a page (1-indexed, clamped). No-op without data-paginate."
+      },
+      {
+        "name": "setFilter(query)",
+        "returns": "void",
+        "description": "Set the filter text programmatically (updates the search input) and announce the result count."
+      },
+      {
+        "name": "refresh()",
+        "returns": "void",
+        "description": "Re-scan rows after DOM changes and re-apply rollups, heatmaps, filter, sort and pagination."
+      },
+      {
+        "name": "getSelectedRows()",
+        "returns": "HTMLTableRowElement[]",
+        "description": "Currently selected rows."
       }
     ]
   },
@@ -5268,115 +5343,220 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Form field name"
+        "description": "Form field name. A name on the inner input (the no-JS path) moves here on upgrade so exactly one value submits; the host's own name wins if both are set."
       },
       {
         "name": "disabled",
         "kind": "native",
-        "purpose": "config",
+        "purpose": "semantic-state",
         "type": "boolean",
-        "description": "Disables the picker"
+        "description": "Disables the text input and calendar button, closes the calendar and drops the value from submission. A disabled ancestor fieldset has the same effect. A disabled on the inner input moves here on upgrade."
       },
       {
         "name": "required",
         "kind": "native",
         "purpose": "config",
         "type": "boolean",
-        "description": "Makes selection required"
+        "description": "Makes a date required (valueMissing). Observed at runtime; a required on the inner input works too."
       },
       {
         "name": "data-disabled-dates",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Comma-separated ISO dates to disable (optionally with reason: \"2026-04-05:booked\")"
+        "description": "Comma-separated ISO dates to disable (optionally with reason: \"2026-04-05:booked\"). Disabled days stay keyboard-focusable but cannot be selected."
       },
       {
         "name": "data-highlight-dates",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Comma-separated ISO dates to highlight (optionally with category: \"2026-12-25:holiday\")"
+        "description": "Comma-separated ISO dates to highlight (optionally with category: \"2026-12-25:holiday\"). Highlighted days remain selectable."
       },
       {
-        "name": "min",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "max",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-disabled",
+        "name": "data-label-toggle",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Toggle calendar",
+        "description": "Accessible name for the calendar icon button (default \"Toggle calendar\")."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-haspopup",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "autocomplete",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "placeholder",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "size",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-date",
+        "name": "data-label-dialog",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose date",
+        "description": "Accessible name for the calendar popup (default \"Choose date\")."
       },
       {
-        "name": "data-disabled-reason",
+        "name": "data-label-prev",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Previous month",
+        "description": "Accessible name for the previous-month button (default \"Previous month\")."
       },
       {
-        "name": "data-highlight",
+        "name": "data-label-next",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Next month",
+        "description": "Accessible name for the next-month button (default \"Next month\")."
       },
       {
-        "name": "data-focused",
+        "name": "data-label-year",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Year",
+        "description": "Accessible name for the year select (default \"Year\")."
+      },
+      {
+        "name": "data-label-placeholder",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Type a date…",
+        "description": "Placeholder for the text input (default \"Type a date…\")."
+      },
+      {
+        "name": "data-label-required",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Please select a date",
+        "description": "Validation message when required and empty (default \"Please select a date\")."
+      },
+      {
+        "name": "data-label-range-underflow",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose a date on or after {date}",
+        "description": "Validation message when the value is before min; {date} is replaced by the formatted min. A data-message-rangeunderflow on the inner input wins."
+      },
+      {
+        "name": "data-label-range-overflow",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose a date on or before {date}",
+        "description": "Validation message when the value is after max; {date} is replaced by the formatted max. A data-message-rangeoverflow on the inner input wins."
+      },
+      {
+        "name": "data-label-input",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Date",
+        "description": "Accessible name for the text input when neither a <label> nor an aria-label/aria-labelledby is present (default \"Date\")."
       },
       {
         "name": "open",
-        "kind": "native",
-        "purpose": "config"
+        "kind": "host-api",
+        "purpose": "output-state",
+        "type": "boolean",
+        "direction": "output",
+        "public": false,
+        "description": "Reflected while the calendar is open"
       }
     ],
     "events": [
       {
-        "name": "date-picker:change"
+        "name": "date-picker:change",
+        "detail": "{ value, date, source: 'pointer' | 'keyboard' | 'api' }",
+        "description": "Fired when the selected date changes (not on form reset/restore). value is the ISO string ('' when cleared), date a Date or null. source is 'api' for .value assignments, 'pointer' for grid clicks, 'keyboard' for grid Enter/Space and typed commits."
       },
       {
-        "name": "date-picker:open"
+        "name": "date-picker:open",
+        "description": "Fired when the calendar opens"
       },
       {
-        "name": "date-picker:close"
+        "name": "date-picker:close",
+        "description": "Fired when the calendar closes"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "properties": [
+      {
+        "name": "value",
+        "type": "string",
+        "description": "Get or set the selected date as an ISO string (YYYY-MM-DD). Assigning '' or null clears; malformed or impossible dates (2026-02-31) are ignored."
+      },
+      {
+        "name": "min",
+        "type": "string",
+        "description": "Get or set the earliest selectable date (ISO). Updates the calendar and validity immediately; a current value before it is kept and flagged rangeUnderflow."
+      },
+      {
+        "name": "max",
+        "type": "string",
+        "description": "Get or set the latest selectable date (ISO). Updates the calendar and validity immediately; a current value after it is kept and flagged rangeOverflow."
+      },
+      {
+        "name": "form",
+        "type": "HTMLFormElement | null",
+        "description": "The associated form"
+      },
+      {
+        "name": "validity",
+        "type": "ValidityState",
+        "description": "Current validity, owned by the host: valueMissing (required and empty), rangeUnderflow (before min), rangeOverflow (after max). Anchored on the text input."
+      },
+      {
+        "name": "validationMessage",
+        "type": "string",
+        "description": "Current validation message"
+      },
+      {
+        "name": "willValidate",
+        "type": "boolean",
+        "description": "Whether the element is a candidate for constraint validation"
+      }
+    ],
+    "methods": [
+      {
+        "name": "checkValidity()",
+        "description": "Run constraint validation without showing UI"
+      },
+      {
+        "name": "reportValidity()",
+        "description": "Run constraint validation and show the browser message, anchored on the text input"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "value",
+        "on": "input",
+        "type": "string",
+        "description": "Initial date (ISO). The value attribute is the form-reset target."
+      },
+      {
+        "name": "min",
+        "on": "input",
+        "type": "string",
+        "description": "Earliest selectable date (ISO)"
+      },
+      {
+        "name": "max",
+        "on": "input",
+        "type": "string",
+        "description": "Latest selectable date (ISO)"
+      },
+      {
+        "name": "name",
+        "on": "input",
+        "type": "string",
+        "description": "Submission name for the no-JS fallback. Moved to the host on upgrade."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<input type=\"date\">",
+        "description": "Required. Supplies value/min/max and is the no-JS fallback. Its <label for> (or a <label for> on the host, or an aria-label) names the generated combobox."
+      }
+    ]
   },
   "day-view": {
     "$schema": "../../../schemas/api.schema.json",
@@ -5395,7 +5575,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "ISO date for this day view (e.g., 2026-04-10)"
+        "description": "ISO date for this day view (e.g., 2026-04-10). Names the hour list (aria-label) and is passed as detail.date in day-view:event-click."
       },
       {
         "name": "data-start-hour",
@@ -5403,7 +5583,7 @@ export default {
         "purpose": "config",
         "type": "string",
         "default": "7",
-        "description": "First visible hour (0-23), or 'auto' to scan calendar-event children and compute sparse range"
+        "description": "First hour (0-23) of the grid the component generates when there is no authored <ol>, or 'auto' for a sparse range (first event hour - 1 to last event hour + 1). The range grows to fit events outside it. Ignored when you author the <ol>."
       },
       {
         "name": "data-end-hour",
@@ -5411,7 +5591,7 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": 19,
-        "description": "Last visible hour (0-23). Ignored when data-start-hour is 'auto'."
+        "description": "Last hour (0-23) of the generated grid. Ignored when data-start-hour is 'auto' or the <ol> is authored."
       },
       {
         "name": "data-compact",
@@ -5419,13 +5599,62 @@ export default {
         "purpose": "visual-variant",
         "type": "boolean",
         "description": "Compact presentation for dialog or overlay embedding"
+      },
+      {
+        "name": "data-label-continues",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "continues after the visible hours",
+        "description": "Text appended to the accessible name of a spanning event that runs past the last visible hour (localisation hook)."
       }
     ],
     "events": [
       {
         "name": "day-view:event-click",
-        "description": "Fired when a calendar-event is clicked",
-        "detail": "{ time, text, element, category, duration }"
+        "description": "Fired when a calendar-event is clicked, or activated with Enter/Space while focused",
+        "detail": "{ date, time, text, element, category, duration }"
+      },
+      {
+        "name": "day-view:events-changed",
+        "description": "Fired after the events property rebuilds the view",
+        "detail": "{ events, source: 'property' }"
+      }
+    ],
+    "properties": [
+      {
+        "name": "events",
+        "type": "Array<{ time?, text, category?, duration?, href? }>",
+        "description": "Get the day's events as data, or assign an array to rebuild the view (sets data-start-hour=\"auto\"). time is HH:MM or a full ISO datetime (wall-clock as written); omit it for an all-day event. Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour."
+      }
+    ],
+    "methods": [
+      {
+        "name": "refresh()",
+        "description": "Re-measure and re-position spanning events now (they also re-position automatically when the view resizes)"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-duration",
+        "on": "calendar-event",
+        "type": "string",
+        "description": "Makes the event span hour rows. Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour. Overlapping spans are laid out side by side."
+      },
+      {
+        "name": "data-start",
+        "on": "calendar-event",
+        "type": "enum",
+        "values": [
+          "30"
+        ],
+        "description": "Minute offset within the hour row; set automatically in generated grids for :30+ start times."
+      },
+      {
+        "name": "data-continues",
+        "on": "calendar-event",
+        "type": "boolean",
+        "description": "Set by the component (not authored) on a spanning event clipped at the last visible hour; styled with a dashed end edge."
       }
     ],
     "structure": [
@@ -5469,7 +5698,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL of a diagram source file (.mmd). Inline source via <pre><code> takes priority if absent."
+        "description": "URL of a diagram source file (.mmd). Takes priority over inline <pre><code> source; fetched once per URL (not refetched when the element is moved)."
       },
       {
         "name": "caption",
@@ -5503,18 +5732,22 @@ export default {
     "events": [
       {
         "name": "diagram-wc:ready",
-        "detail": "{ svg, type, source }",
-        "description": "After successful render"
+        "detail": "{ svg: string, type: string, source: string }",
+        "description": "After a successful render (initial, source change or theme re-render)"
       },
       {
         "name": "diagram-wc:error",
-        "detail": "{ error, source, type }",
-        "description": "Render failed; the <pre> fallback is restored"
+        "detail": "{ error: Error, source: string|null, type: string }",
+        "description": "Render or src fetch failed. If nothing has rendered yet the <pre> source is shown with an error note; otherwise the prior figure stays visible"
       },
       {
         "name": "diagram-wc:source-changed",
-        "detail": "{ source }",
-        "description": ".source setter fired"
+        "detail": "{ source: string }",
+        "description": "The .source setter assigned a new value"
+      },
+      {
+        "name": "diagram-wc:upgraded",
+        "description": "Fired once after the component upgrades"
       }
     ],
     "htmlvalidate": {
@@ -5522,7 +5755,20 @@ export default {
       "permittedContent": [
         "@flow"
       ]
-    }
+    },
+    "properties": [
+      {
+        "name": "source",
+        "type": "string",
+        "description": "Get/set the diagram source. Setting it re-renders (the prior figure stays until the new one is ready, and on a parse error) and fires diagram-wc:source-changed. Kept across disconnect/reconnect."
+      },
+      {
+        "name": "svg",
+        "type": "string",
+        "readonly": true,
+        "description": "Serialized markup of the currently rendered SVG, or an empty string before the first render"
+      }
+    ]
   },
   "dl": {
     "element": "dl",
@@ -5537,13 +5783,45 @@ export default {
         "dl-item"
       ]
     },
-    "attributes": []
+    "attributes": [
+      {
+        "name": "data-variant",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "horizontal",
+          "stacked"
+        ]
+      },
+      {
+        "name": "data-bordered",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean"
+      },
+      {
+        "name": "data-density",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "compact"
+        ]
+      },
+      {
+        "name": "data-striped",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean"
+      }
+    ]
   },
   "drag-surface": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "drag-surface",
     "type": "web-component",
-    "description": "Accessible drag-and-drop reorder surface",
+    "description": "Accessible drag-and-drop reorder surface with keyboard reorder, optional single-pointer move controls, live announcements and cross-surface transfer",
     "attributes": [
       {
         "name": "group",
@@ -5556,95 +5834,169 @@ export default {
         "name": "orientation",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "\"horizontal\" switches to Left/Right arrows and clientX"
+        "type": "enum",
+        "values": [
+          "vertical",
+          "horizontal"
+        ],
+        "default": "vertical",
+        "description": "\"horizontal\" switches keyboard reorder to Left/Right and drop maths to the inline axis; both follow the computed direction (RTL-aware)"
       },
       {
         "name": "disabled",
-        "kind": "native",
-        "purpose": "config",
-        "type": "boolean",
-        "description": "Temporarily disables all dragging"
-      },
-      {
-        "name": "draggable",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "semantic-state",
         "type": "boolean",
-        "description": "=\"true\" - Marks an element as draggable"
+        "description": "Disables dragging out, dropping in, keyboard reorder and move controls; reflected as aria-disabled and skipped as a transfer target"
       },
       {
-        "name": "data-id",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "description": "Stable identifier for the item"
-      },
-      {
-        "name": "data-sort-order",
-        "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "description": "Numeric position (managed automatically)"
-      },
-      {
-        "name": "data-drag-handle",
+        "name": "data-move-controls",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "If present on a descendant, only that element initiates drag"
+        "description": "Renders per-item Move buttons (up/down or inline start/end, plus Move to <adjacent surface> for grouped surfaces) — the single-pointer alternative to dragging (WCAG 2.5.7)"
       },
       {
         "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-grabbed",
         "kind": "aria",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "description": "Managed: always \"list\""
       },
       {
-        "name": "data-dragging",
-        "kind": "data",
-        "purpose": "config"
+        "name": "aria-disabled",
+        "kind": "aria",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "string",
+        "description": "Managed: \"true\" while disabled is present"
       },
       {
         "name": "data-drag-over",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Present while a dragged item from an accepted source hovers the surface"
       },
       {
         "name": "data-reorder-mode",
         "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-just-dropped",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-drop-target",
-        "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Present while one of the surface's items is grabbed for keyboard reorder"
       }
     ],
     "events": [
       {
-        "name": "drag-surface:reorder-start"
+        "name": "drag-surface:reorder-start",
+        "description": "A pointer drag or keyboard grab began"
       },
       {
-        "name": "drag-surface:reorder"
+        "name": "drag-surface:reorder",
+        "description": "Items within this surface were reordered (pointer drag, keyboard drop or move control)",
+        "detail": "{ item: HTMLElement, itemId: string | undefined, oldIndex: number, newIndex: number, order: (string | undefined)[] }"
       },
       {
-        "name": "drag-surface:transfer"
+        "name": "drag-surface:transfer",
+        "description": "An item moved to another surface in the same group; fired on the receiving surface",
+        "detail": "{ item: HTMLElement, itemId: string | undefined, fromSurface: DragSurface, toSurface: DragSurface, newIndex: number, fromOrder: (string | undefined)[], toOrder: (string | undefined)[] }"
       },
       {
-        "name": "drag-surface:reorder-end"
+        "name": "drag-surface:reorder-end",
+        "description": "A pointer drag or keyboard grab ended (dropped, cancelled or abandoned); for pointer drags it fires on the source surface"
       }
     ],
-    "childAttributes": [],
+    "properties": [
+      {
+        "name": "sortedOrder",
+        "type": "(string | undefined)[]",
+        "readonly": true,
+        "description": "data-id of each draggable child in DOM order"
+      },
+      {
+        "name": "draggableChildren",
+        "type": "HTMLElement[]",
+        "readonly": true,
+        "description": "Direct children with draggable=\"true\" (a new array on each read)"
+      },
+      {
+        "name": "group",
+        "type": "string | null",
+        "readonly": true,
+        "description": "The group attribute, or null"
+      },
+      {
+        "name": "orientation",
+        "type": "'vertical' | 'horizontal'",
+        "readonly": true,
+        "description": "Normalised orientation attribute"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "description": "Reflects the disabled attribute"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "draggable",
+        "on": "direct child",
+        "type": "enum",
+        "values": [
+          "true"
+        ],
+        "required": true,
+        "description": "Native attribute; marks a direct child as a reorderable item (gets role=listitem and tabindex=0, including items added later)"
+      },
+      {
+        "name": "data-id",
+        "on": "direct child",
+        "type": "string",
+        "description": "Stable identifier reported in event details and sortedOrder"
+      },
+      {
+        "name": "data-sort-order",
+        "on": "direct child",
+        "type": "number",
+        "description": "1-based position, rewritten by the component after each move"
+      },
+      {
+        "name": "data-drag-handle",
+        "on": "descendant of an item",
+        "type": "boolean",
+        "description": "Only this element starts a pointer drag; a focusable button handle also accepts reorder keys and gets aria-pressed while grabbed"
+      },
+      {
+        "name": "data-grabbed",
+        "on": "direct child",
+        "type": "boolean",
+        "description": "Output: present while the item is grabbed for keyboard reorder (with aria-description=\"Grabbed\" unless the item has its own)"
+      },
+      {
+        "name": "data-dragging",
+        "on": "direct child",
+        "type": "boolean",
+        "description": "Output: present on the item during a pointer drag"
+      },
+      {
+        "name": "data-drop-target",
+        "on": "direct child",
+        "type": "enum",
+        "values": [
+          "before",
+          "after"
+        ],
+        "description": "Output: insertion indicator during a pointer drag (drawn on the block or inline edge, RTL-aware)"
+      },
+      {
+        "name": "data-just-dropped",
+        "on": "direct child",
+        "type": "boolean",
+        "description": "Output: briefly present after a drop or move to trigger the flash animation"
+      }
+    ],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -5657,7 +6009,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "drop-down",
     "type": "web-component",
-    "description": "Accessible dropdown menu with keyboard navigation and Popover API support",
+    "description": "Accessible dropdown: an APG menu button for actions, or (with hover) an APG disclosure for navigation links",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -5677,21 +6029,21 @@ export default {
           "top-end"
         ],
         "default": "bottom-start",
-        "description": "Menu position relative to trigger"
+        "description": "Menu position relative to the trigger. start/end are logical, so they mirror in RTL"
       },
       {
         "name": "hover",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Open on hover/focus instead of click (useful for nav menus)"
+        "description": "Navigation disclosure: no menu roles, links stay in the Tab order, a <button aria-expanded> toggles the list (generated next to a link trigger). Opens on mouse hover or toggle activation, not on focus"
       },
       {
         "name": "no-flip",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Disable automatic flip when menu overflows viewport"
+        "description": "Keep the requested position instead of flipping to the opposite side when the menu overflows the viewport"
       },
       {
         "name": "open",
@@ -5705,11 +6057,15 @@ export default {
     "structure": [
       {
         "element": "<button data-trigger> or <a data-trigger>",
-        "description": "Trigger element that opens the menu"
+        "description": "Trigger element that opens the menu. Action mode: aria-haspopup=\"menu\" + aria-expanded. Navigation mode: a link trigger stays a plain link"
+      },
+      {
+        "element": "<button data-dropdown-toggle>",
+        "description": "Navigation mode with a link trigger: the submenu toggle (aria-expanded, aria-controls). Generated with aria-label \"<link text> submenu\" when absent; author one to set your own label"
       },
       {
         "element": "<menu>",
-        "description": "Menu container with <li> items holding <button> or <a> actions"
+        "description": "Menu container with <li> items holding <button> or <a> actions. Only rows whose nearest menu is this one belong to it (nested drop-downs keep their own)"
       }
     ],
     "childAttributes": [
@@ -5718,7 +6074,19 @@ export default {
         "on": "button | a",
         "type": "boolean",
         "required": true,
-        "description": "Marks the element that opens the menu. Falls back to first <button> if absent."
+        "description": "Marks the element that opens the menu. Falls back to the first direct <button> if absent."
+      },
+      {
+        "name": "data-disabled",
+        "on": "button, a",
+        "type": "boolean",
+        "description": "Disabled item: aria-disabled=\"true\", stays in the arrow-key order, cannot be activated"
+      },
+      {
+        "name": "data-value",
+        "on": "button, a",
+        "type": "string",
+        "description": "Value reported in drop-down:select detail.value and the items property"
       }
     ],
     "events": [
@@ -5732,8 +6100,39 @@ export default {
       },
       {
         "name": "drop-down:select",
-        "detail": "{ item }",
-        "description": "Fired when a menu item is selected"
+        "detail": "{ item, value }",
+        "description": "Fired when one of this menu's items is activated by click or keyboard (not for disabled items or a nested drop-down's trigger row)"
+      },
+      {
+        "name": "drop-down:items-changed",
+        "detail": "{ items, source: 'property' }",
+        "description": "Fired after the items property rebuilds the menu"
+      }
+    ],
+    "methods": [
+      {
+        "name": "open()",
+        "description": "Open the menu"
+      },
+      {
+        "name": "close()",
+        "description": "Close the menu"
+      },
+      {
+        "name": "toggle()",
+        "description": "Toggle the menu"
+      }
+    ],
+    "properties": [
+      {
+        "name": "items",
+        "type": "Array<{ label, value?, href?, disabled? } | { separator: true }>",
+        "description": "Get the menu as data, or assign to rebuild it (href → <a>, otherwise <button type=\"button\">; disabled → data-disabled + aria-disabled)"
+      },
+      {
+        "name": "isOpen",
+        "type": "boolean",
+        "description": "Read-only. Whether the menu is open"
       }
     ]
   },
@@ -10385,7 +10784,7 @@ export default {
         "purpose": "config",
         "type": "string",
         "default": "auto",
-        "description": "First visible hour (0-23), or 'auto' to scan events"
+        "description": "First visible hour (0-23), or 'auto' to scan events. A fixed range grows to fit events outside it."
       },
       {
         "name": "data-end-hour",
@@ -10394,13 +10793,59 @@ export default {
         "type": "number",
         "default": 19,
         "description": "Last visible hour (0-23). Ignored when data-start-hour is 'auto'."
+      },
+      {
+        "name": "data-label-continues",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "continues after the visible hours",
+        "description": "Text appended to the accessible name of a spanning event that runs past the last visible hour (localisation hook)."
       }
     ],
     "events": [
       {
         "name": "week-view:event-click",
-        "description": "Fired when a calendar-event is clicked",
+        "description": "Fired when a calendar-event is clicked, or activated with Enter/Space while focused",
         "detail": "{ date, time, text, element, category, duration }"
+      },
+      {
+        "name": "week-view:events-changed",
+        "description": "Fired after the events property rebuilds the view",
+        "detail": "{ events, source: 'property' }"
+      }
+    ],
+    "properties": [
+      {
+        "name": "events",
+        "type": "Array<{ date?, time, text, category?, duration? }>",
+        "description": "Get the week's events as data, or assign an array to rebuild the table. time is HH:MM or a full ISO datetime (its date is used when date is omitted). Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour."
+      }
+    ],
+    "methods": [
+      {
+        "name": "refresh()",
+        "description": "Re-measure and re-position spanning events now (they also re-position automatically when the view resizes)"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-date",
+        "on": "calendar-event",
+        "type": "string",
+        "description": "ISO date assigning this event to a day column (auto mode)"
+      },
+      {
+        "name": "data-duration",
+        "on": "calendar-event",
+        "type": "string",
+        "description": "Makes the event span hour rows. Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour. Overlapping spans in one day column are laid out side by side."
+      },
+      {
+        "name": "data-continues",
+        "on": "calendar-event",
+        "type": "boolean",
+        "description": "Set by the component (not authored) on a spanning event clipped at the last visible hour."
       }
     ],
     "structure": [
@@ -10427,14 +10872,6 @@ export default {
       {
         "element": "calendar-event",
         "description": "Individual event with time, category, and optional duration"
-      }
-    ],
-    "childAttributes": [
-      {
-        "name": "data-date",
-        "on": "calendar-event",
-        "type": "string",
-        "description": "ISO date assigning this event to a day column (auto mode)"
       }
     ],
     "htmlvalidate": {

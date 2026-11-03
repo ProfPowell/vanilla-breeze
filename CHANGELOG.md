@@ -6,6 +6,171 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **D-element review.**
+  - **drag-surface**: `data-move-controls` renders per-item Move buttons: up/down (left/right for horizontal, RTL-aware) and "Move <item> to <surface>" for adjacent grouped surfaces. This is the single-pointer alternative to dragging (WCAG 2.5.7). The buttons fire the same `reorder`/`transfer` events and keep focus, using `aria-disabled` at the ends of the list. New `disabled` property reflects the attribute.
+
+### Changed
+
+- **Breaking and behaviour changes from the D-element review.**
+  - **diagram-wc**
+    - Breaking (security): removed the per-element `data-mermaid-src` override. Only page script can change the Mermaid module URL, via `window.VB_MERMAID_URL`; markup (including sanitized markdown) can no longer choose which module is imported (c4mc).
+    - Accessibility: the rendered figure no longer carries `role="img"` with a caption or generic "mermaid diagram" label. The SVG keeps Mermaid's `graphics-document` role so node text stays reachable; its name comes from Mermaid `accTitle` (falls back to `caption`), its description from `accDescr` plus a collapsed "Diagram source" `<details>` linked via `aria-describedby`. Primed figures from `enhanceMermaidFences` get the same treatment (8kf7).
+    - Moving the element keeps the rendered figure and the current source (including a JS-set `.source`); `src` is fetched once per URL instead of on every reconnect (egb6).
+    - `logic.js` (and so `dist/cdn/components/diagram-wc.js`) re-exports `enhanceMermaidFences`.
+  - **date-picker**
+    - `aria-selected` moved from the day `<button>` to its gridcell `<td>`; the selected-day style now targets `td[aria-selected="true"] button`.
+    - Disabled days use `aria-disabled="true"` only (no native `disabled`), so they stay keyboard-focusable but cannot be selected. Custom CSS targeting `td button[disabled]` should use `td button[aria-disabled="true"]`.
+    - The host's internal `data-disabled` state attribute is gone; disabled styling uses `date-picker:disabled` (attribute or disabled `<fieldset>`).
+    - A `name` / `disabled` on the inner `<input type="date">` moves to the host on upgrade (no-JS fallback path); exactly one value is submitted.
+    - `date-picker:change` detail is now `{ value, date, source }` on every path (typed commits used to omit `source`); `value` is `''` and `date` `null` when cleared. It no longer fires when a typed date equals the current value.
+    - Weekday headers come from `Intl` for the nearest `lang` (were hardcoded English two-letter names); new `data-label-toggle|dialog|prev|next|year|placeholder|required|input` attributes translate the remaining UI strings.
+  - **data-table**
+    - Sortable headers now wrap their content in a native `<button data-sort-button>` inside the `<th>` (APG sortable table); `aria-sort` stays on the th. The th no longer gets `tabindex="0"` / `role="columnheader"`. Enter/Space come from the native button.
+    - `data-filterable` / `data-paginate` are documented as `<table>` attributes (they always were read from the table); the host gains `data-label-no-results`.
+    - `refresh()` now re-applies rollups and heatmaps, keeps the current page when still valid, and fires `data-table:filter`.
+    - Heatmap tints use `--color-error-subtle` / `--color-warning-subtle` / `--color-success-subtle` (light-dark) with `--color-text`, replacing fixed light oklch values.
+  - **drag-surface**
+    - `aria-grabbed` is gone (deprecated in ARIA 1.1). Grab state is now `data-grabbed` on the item (style hook), a transient `aria-description="Grabbed"` (only if the item has no `aria-description` of its own), and `aria-pressed` on a `<button data-drag-handle>`. Restyle `[aria-grabbed="true"]` selectors to `[data-grabbed]`.
+    - The live region is now the surface's next sibling (`[data-drag-surface-live]`, hidden by component CSS) rather than a styled-inline child prepended inside `role="list"`.
+    - The base `flex: 1` is removed. A surface in a kanban column only fills it if you set `flex: 1` yourself (the kanban and retro demos now do).
+    - Keyboard reorder only responds when focus is on the item or its `data-drag-handle`. Enter/Space/arrows in nested buttons, links and inputs are no longer hijacked.
+    - Horizontal surfaces follow the computed `direction`: in RTL `ArrowLeft` moves toward the end, and the drop index and `data-drop-target` indicator use the inline axis. Perpendicular transfer arrows move to the surface physically on that side.
+    - Keyboard transfer hands the grab to the target surface. `Escape` then returns the item to where it landed, and the drop reports a real `oldIndex` instead of `null`. Moving focus out of a grabbed item cancels the grab.
+    - Ungrouped surfaces only accept drops of their own items. Before, any two ungrouped surfaces accepted each other's items.
+    - api.json: `disabled` is `host-api`/`semantic-state`; child attributes moved to `childAttributes`; state attributes are `output-state`; events document `detail`; `properties` lists `sortedOrder`, `draggableChildren`, `group`, `orientation`, `disabled`.
+  - **drop-down**
+    - `hover` mode is now an APG disclosure navigation instead of a menu: no `role="menu"`/`menuitem`/`aria-haspopup`, links stay in the Tab order, and a `<button data-dropdown-toggle aria-expanded>` is generated next to a link trigger (the link still navigates; touch users can reach the submenu). Opens on mouse hover or toggle click/Enter/Space — focus alone no longer opens it, so tabbing across a navbar stops popping every menu. The toggle draws the chevron; a link trigger's own `::after` chevron is suppressed. (8s1z)
+    - `items` setter renders disabled entries as focusable `data-disabled` + `aria-disabled="true"` (buttons too, no longer native `disabled`), and uses `type="button"` for buttons. (8kf7)
+    - Keyboard opening (Enter/Space on the trigger) focuses the first item; printable characters typeahead to the next matching item; disabled items stay in the arrow-key order. (qim5)
+    - `no-flip` now works: menus flip via `position-try-fallbacks` by default, `no-flip` sets it to `none`. (rb3n)
+  - **pop-over**
+    - `top-start`/`top-end`/`bottom-start`/`bottom-end` use logical `position-area` values (`self-block-end span-self-inline-end` …) so they mirror in RTL (including `dir` set on a section), and anchored pop-overs get `position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline`. The no-anchor-positioning JS fallback and inset fallback are direction-aware. Affects every pop-over consumer (drop-down, combo-box, version-switcher, tool-tip…). (rb3n)
+  - **day-view**
+    - Loose `<calendar-event>` children now build a grid without `data-start-hour="auto"`: numeric `data-start-hour` / `data-end-hour` (default 7–19) are honoured, and the range grows to fit events outside it instead of dropping them. Authored `<ol>` grids ignore both. (qim5)
+    - `data-date` now names the hour list (`aria-label`, full date) and is passed as `detail.date` in `day-view:event-click`. (qim5)
+    - Events get `role="group"` + an accessible name (time + title) unless authored; Enter/Space fire `day-view:event-click`, Home/End jump to first/last; click/keyboard delegation now covers all-day events too. (egb6)
+    - Hour rows reset `margin` so the base `li + li` spacing no longer opens 8px gaps between rows (visual change; spans now line up with row edges).
+  - **week-view**
+    - Enter/Space fire `week-view:event-click`, Home/End jump to first/last event; events get `role="group"` + accessible name; ArrowLeft/Right follow the visual direction in RTL. (egb6)
+    - A numeric hour range grows to fit events outside it. The `events` setter formats the time label and derives `date` from a full ISO `time` when `date` is omitted.
+  - **datalist**
+    - The dropdown arrow now applies only to text-like inputs (`text`, `search`, `url`, `email`, `tel`, `number`, or no `type`). `input[type=range|color|date|time…][list]` are no longer restyled, so the range track and colour swatch render correctly.
+    - The arrow and the `.search` icon are drawn with CSS gradients in `currentColor` (no fixed-grey SVG switched by `prefers-color-scheme`), so they follow `data-mode`, themes and forced-colours, and mirror to the left in RTL.
+  - **data**
+    - `<data>` is no longer monospace by default: it keeps the prose font with `font-variant-numeric: tabular-nums`. Opt into monospace with `data-variant="mono"`.
+    - `data-format-number` / `data-format-bytes` no longer copy the original text into `title`; an empty `value` now leaves the text alone (was rendered as "0" / "0 B"); changing the `value` attribute re-formats.
+  - **del / ins**
+    - `.block` removed: a `<del>`/`<ins>` wrapping block content (p, lists, tables, headings, pre, blockquote…) is styled as a block automatically via `:has()`.
+    - New opt-in `data-announce` (on the change or any ancestor) inserts visually hidden "deletion/insertion start/end" text; words are translatable via `--del-announce-start/-end` and `--ins-announce-start/-end`.
+    - `data-author` is now also revealed on focus-within and always on touch (hover: none) screens; its fade respects `prefers-reduced-motion`.
+  - **dfn / cite**
+    - `dfn` keeps the surrounding weight inside `dt`, `th`, headings, `strong`, `b`, `legend` (was forced to 500); uses `--font-weight-medium`. `dfn[id]:target` gets a glossary-style highlight.
+    - In Chinese, Japanese and Korean text `dfn` and `cite` are upright: `dfn` semibold, `cite` a muted wavy underline (except `data-variant="quoted"`).
+  - **dialog**
+    - Open dialogs are now a flex column: header and footer keep their size and the body (`dialog > :is(p, section, article, form)`) shrinks and scrolls (`overflow-y: auto`, `min-block-size: 0`). Long content in a default modal is no longer cut off at 85dvh. The dialog itself scrolls only as a fallback (`overflow-y: auto` replaces `overflow: hidden`).
+    - `<form method="dialog">` wrapping header/body/footer: the form gets no padding and becomes the column; `dialog > form > header` / `> footer` are styled like `dialog > header` / `> footer` (full-width footer border, styled header). A fields-only form is still a padded body.
+    - Enter and exit are CSS transitions declared on `dialog` (not only `[open]`), so closing animates; the `vb-scale-in` keyframe that ran alongside `@starting-style` is gone. Drawers slide through the same transition via `--_dialog-hidden`. Reduced motion keeps a fade only.
+    - Modal dialogs lock page scroll: `html:has(dialog:modal) { overflow: hidden }`.
+    - Drawer keyframes `vb-slide-in-end` / `vb-slide-in-start` removed (drawers use transitions); `vb-slide-in-bottom` / `-top` kept for consent-banner.
+    - Side drawers grow their body so the footer sits at the bottom edge; the drawer-only `max-block-size: calc(100dvh - 8rem)` body rule is gone.
+  - **details**
+    - Adjacent `<details>` only join (shared border, squared corners) in normal flow. Inside gap layouts (`layout-*` primitives, `[data-layout]`, `[data-layout-gap]`) they keep their own borders; `data-layout-gap="none"` opts back in.
+  - **dl / dl-item** — Description-list variants moved from classes to data attributes on `<dl>` (pre-release breaking): `.horizontal` → `data-variant="horizontal"`, `.stacked` → `data-variant="stacked"`, `.bordered` → `data-bordered`, `.compact` → `data-density="compact"` (matches `table[data-density]`). `data-striped` is unchanged. The rules moved from `src/custom-elements/dl-item/styles.css` to `src/native-elements/lists/styles.css` and apply equally to spec `<div>` wrappers, `<dl-item>` wrappers and (horizontal/stacked) flat dt/dd pairs.
+  - **dl / dl-item** — Horizontal variant is now a grid with subgrid rows: the term column lines up across all rows, sized `fit-content(--dl-term-max, 40%)` with a `--dl-term-min` (10ch) floor instead of a hard-coded 120px; below 24rem of available width (container query) each term sits above its description.
+  - **dl-item** — html-validate now requires `<dl> > <dl-item>`: a `<dl-item>` outside a `<dl>`, and the `<dt>`/`<dd>` in it, are flagged.
+
+### Fixed
+
+- **D-element review.**
+  - **diagram-wc**
+    - Setting `.source` no longer removes the figure before rendering: the new figure is crossfaded in, and on a parse error the previous diagram stays visible (with no prior render, a `<pre>` of the current source is shown).
+    - Concurrent renders with different tokens/`data-theme-base` no longer cross configs: `mermaid.initialize()` + `render()` run through one queue; superseded renders are discarded.
+    - `diagram-wc:ready` now fires after the new figure is in the DOM (it previously fired before the view-transition swap ran).
+    - The 220ms crossfade timing no longer applies to every view transition on the page; it is scoped with `view-transition-class: dwc` (8s1z).
+    - Error note uses `--color-error` / `--color-error-subtle` / `--color-error-text` instead of hardcoded `#ef4444`; removed a dead `:not([data-upgraded])` rule.
+    - Docs: corrected token-map table, `src` priority, error-event behaviour, manual-wiring import; added Accessibility and Security/CSP sections; demos drop inline `<style>` blocks and the hand-built theme toolbar (now `<theme-picker>`) (rb3n). api.json gains `source`/`svg` properties and typed event details (qim5).
+  - **date-picker**
+    - Reconnecting (move/remove+reinsert) no longer duplicates the text input and calendar, accumulates disabled/highlight dates, or leaves stale open state; the form-reset target no longer drifts after a reconnect.
+    - The generated combobox is now named by the author's `<label for>` (on the inner input or the host) or `aria-label`; label clicks focus it.
+    - Dates can be cleared: empty text on blur/Enter, or `value = ''`, clears the selection and form value, re-validates and fires change.
+    - Home/End are correct for Monday-first locales; PageUp/PageDown (and Shift) clamp to the target month length instead of overflowing (Jan 31 → Feb 28).
+    - Impossible typed or assigned dates (2026-02-31, April 31) are rejected instead of rolling over.
+    - Re-picking the already-selected date closes the calendar.
+    - `disabled` and `required` are observed, and a disabled `<fieldset>` disables the picker (`formDisabledCallback`); `form`, `validity`, `validationMessage`, `willValidate`, `checkValidity()`, `reportValidity()` exposed.
+    - Arrow/Home/End/Page keys in the year select no longer move the day grid; setting `.value` no longer steals focus.
+    - Docs: the hero demo `date-picker-basic.html` existed only as a 404 — added; `static.html` is a real no-JS fallback.
+    - The host now owns validity via ElementInternals: `valueMissing`, `rangeUnderflow` (before `min`) and `rangeOverflow` (after `max`), anchored on the visible combobox. Submitting focuses the text input instead of failing with "An invalid form control is not focusable". After upgrade the hidden native `<input type="date">` is detached from its form, so its constraints can never block submission and it never sends a second FormData entry. An authored `form` attribute on it moves to the host. It still mirrors the host's message via `setCustomValidity`, so `<form-field>` shows it. The host's `invalid` event also prompts `<form-field>` to show the message on submit. (vanilla-breeze-lywa)
+    - Changing `min`/`max` never rewrites the value: a value outside the new range is kept and flagged invalid, and the change notifies `<form-field>`. The combobox gets `aria-invalid` (out-of-range, or required and empty once touched or submitted), and the trigger gets an error border.
+    - New `data-label-range-underflow` / `data-label-range-overflow` messages, with a `{date}` placeholder. A `data-message-range*` attribute on the inner input wins.
+    - Linked-range demo: the start date sets the end date's `min` (never below the authored floor; check-out is at least one night after check-in), and the start is no longer capped by the end. An end date left before a new start is kept, shows its form-field message straight away, and blocks submit until fixed. Reset restores the derived `min`. The demo adds error outputs, a submittable timeline form, and top-aligned fields.
+  - **data-table**
+    - Sort arrow never changed: the indicator keyed on `th[data-state-sorted]`, which the component never sets; it now follows `aria-sort` (arrow alt text is empty so it is not read twice).
+    - Added a visually hidden `role="status"` live region announcing sort column/direction, filter result counts ("3 of 12 rows shown" / no results) and selection counts; removed doc claims for unimplemented arrow-key row navigation, Home/End paging and `aria-selected` rows.
+    - "No matching rows found" is a real `<p data-table-empty>` element (overridable via `data-label-no-results`) instead of English CSS `::after` content on `<tbody>`.
+    - Pagination no longer drops keyboard focus: focus moves to the replacement Prev/Next button, or to the new current-page button.
+    - Expansion content rows are hidden along with their parent when it is filtered out or paged away; `refresh()` no longer counts them as data rows; `goToPage()` is a no-op without `data-paginate` (was NaN).
+    - Toggle buttons (`data-action="toggle-expand"`) get `aria-expanded` from the authored state on upgrade.
+    - The bulk-actions bar only appears for the `data-table` whose rows are selected (was every bar on the page).
+  - **drag-surface**
+    - `disabled` now calls `preventDefault()` on `dragstart`, rejects drops (including from grouped surfaces), cancels an active grab, sets `aria-disabled="true"`, and drops the grab cursor on handles. Grouped neighbours skip it as a transfer target.
+    - `dragend` and `drop` clear `data-drag-over` and `data-drop-target` on every surface, and `data-dragging` on the item. Abandoned or cross-surface drags no longer leave a stuck highlight. `reorder-end` fires on the source surface.
+    - Items added after upgrade get `role="listitem"` and `tabindex="0"` (a MutationObserver). Teardown clears `data-reorder-mode`, grab state and move controls.
+    - The drop indicator is drawn on the correct edge: block-end for `after`, and inline-start/inline-end (flipped in RTL) on horizontal surfaces.
+    - Announcement labels skip the control buttons and decorative or `aria-hidden` handle glyphs.
+    - Removed unused `#reducedMotion` (the CSS already handles reduced motion).
+  - **drop-down**
+    - Removing an open drop-down from the DOM left it thinking it was open (removal hides the popover without `beforetoggle`), so after reconnecting `open()` and `close()` were no-ops. (egb6)
+    - `items` setter re-runs the lifecycle via `_reinit()` instead of stripping `data-upgraded` and calling `setup()` directly; disabled links are no longer activatable menuitems. (8kf7)
+    - `drop-down:select` (`{ item, value }`) is now actually dispatched; `drop-down:items-changed`, `items`, `isOpen` and the methods are documented in api.json. (rb3n)
+    - Nested drop-downs: the outer one no longer reacts to the inner pop-over's bubbling `pop-over:show/hide`, no longer claims the inner menu's rows as its own items, and ignores keys from the inner menu. (qim5)
+    - Clicking the trigger of an open action menu closes it (light-dismiss used to close it on pointerdown and the click reopened it).
+    - Menu items show a `:focus-visible` outline from the `--focus-ring-*` tokens instead of only a background tint. (qim5)
+    - Escape / light-dismiss with focus in the menu returns focus to the trigger.
+  - **day-view / week-view**
+    - Full ISO datetimes (`2026-04-10T09:30:00Z`) place events: day-view auto mode no longer reads hour 2026 and drops every event. Shared parser in `src/lib/time-grid.js`, wall-clock time as written. (8kf7)
+    - Durations: `1.5h` is 90 minutes (was 5h), and ISO-8601 (`PT1H30M`), bare minutes (`60`), `90min` are understood; garbage/zero falls back to 1 hour. (8s1z)
+    - Spanning events re-position on resize (ResizeObserver), overlapping spans are laid out side by side instead of stacking, spans past the last visible hour are clipped with `data-continues` (dashed end edge, name says it continues; `data-label-continues` to localise), and the pending frame is cancelled on teardown. Teardown only clears the inline properties it set, so `--event-color` (e.g. from calendar-wc) survives. (rb3n)
+    - Roving tabindex is reset in setup, so a reconnect no longer leaves two tab stops. (egb6)
+  - **day-view, week-view, tab-set, glossary-wc, image-map, flow-diagram, site-map**
+    - Data setters (`events`, `tabs`, `terms`, `regions`, `pages`, glossary/flow-diagram `src` reloads, flow-diagram attribute refresh) re-run the lifecycle through `_reinit()`: `data-upgraded` is restored (day-view no longer falls back to its no-JS styles), old `listen()` handlers are released, and nothing renders while disconnected. site-map re-binds drag-pan after a rebuild. (egb6)
+  - **data**
+    - The ticker's tabular-nums rule targeted `data[data-ticker]`, which never matched; it now targets `data[data-effect~="ticker"]`.
+  - **datalist docs/demos**
+    - Range recipe rewritten around `data-range` (VB's `appearance: none` removes native tick marks); dynamic-suggestions recipe uses `new Option()` + `encodeURIComponent`; colour swatches use real `<li>` items; inline styles removed from demos.
+  - **del / ins / dfn docs**
+    - Corrected claims that screen readers announce del/ins by default, that `datetime` is exposed to assistive technology, and that search engines use `<dfn>`; CSS references now show the token-based rules.
+  - **details**
+    - Closed `<details>` now print open: the print rule targets `details::details-content` (content-visibility/block-size) instead of the children, which could not reveal it.
+    - Chevron points left when closed in RTL (was down) and down when open (was left).
+    - `summary` font-weight uses `--font-weight-medium`.
+  - **dialog**
+    - Forced colors: the dialog has a transparent border that shows as CanvasText, so its edge no longer vanishes with the shadow.
+    - RTL drawers: `start`/`end` slide in from the correct edge and use logical corner radii.
+    - Doc demos: every dialog named via `aria-labelledby`; dropped the "… heading" labels; removed the unpinned unpkg invokers-polyfill (Invoker Commands ship in all engines); `dialog-variants` Subscribe form uses `method="dialog"` instead of navigating the iframe.
+  - **accordion-wc**
+    - Removed the dead `accordion-wc > details > ::details-content` rules (descendant combinator never matched; the base details animation applies).
+  - **Docs**
+    - details: correct accordion-wc override row, interpolate-size (Chromium-only) note, ::details-content support (Chrome 131 / Safari 18.4 / Firefox 143), no inline styles in demos.
+    - dialog: `closedby` documented (Safari fallback), structural/backdrop/animation snippets synced with the CSS, naming guidance, scroll lock, support lines.
+    - div: allowlist path is `scripts/vb-conformance-allowlist.json`; severities corrected; fieldset example uses layout-stack; `generic` role wording; dl > div auto-exemption. Removed the stale unused `.claude/vb-conformance-allowlist.json`.
+  - **dl-item** — Horizontal: second and later `<dd>` in a group no longer wrap under the `<dt>`; every `<dd>` stays in the description column and several `<dt>` stack in the term column.
+  - **dl / dl-item** — Horizontal: long values (e.g. email addresses) wrap inside the description column instead of overflowing narrow containers.
+  - **dl / dl-item** — Plain wrapped groups (`<div>` or `<dl-item>` in a `<dl>` without class/data-layout) get the same group spacing and `<dd>` indent as flat pairs; the dd indent reset now applies only in the horizontal/stacked variants.
+  - **dl** — `data-striped` on flat lists stripes the whole run of up to four `<dd>` after an odd `<dt>` (was: first `<dd>` only); docs recommend wrapping multi-term groups.
+  - **dl / dt / dd docs** — CSS block synced with the shipped rules; screen-reader claims softened; dd demos now match their code samples; spec-correct "Required Parent" text; dl-item Conformance note; new dl-div-wrapper, dd-*, dt-multiple-descriptions demos.
+  - **docs** — Added the missing `floating-label-basic`, `hotkey-action-basic` and `loading-button-basic` demos embedded by the data-floating-label, data-hotkey and data-loading attribute pages.
+  - **select**
+    - The dropdown chevron is now a `currentColor` conic gradient instead of an SVG data URI, so it matches the text colour under `data-mode="dark"`, themes and forced-colors (it used to stay black). It sits on the inline-end side and mirrors to the left under `:dir(rtl)`. `multiple` and `size > 1` selects no longer get an arrow or the extra end padding in browsers without `appearance: base-select`. In forced-colors mode the single-row select opts out (`forced-color-adjust: none`) and re-applies `Field`/`FieldText`/`GrayText`/`Highlight` so the arrow survives (forced colors drop gradient backgrounds). `--select-chevron` is still the override hook; new `--select-chevron-size` and `--select-chevron-inset` tokens size and place it (set `--select-chevron-size` when you swap in a `url()`). The chevron is now a filled triangle that matches the `input[list]` (datalist) indicator. (vanilla-breeze-c7lt)
+  - **kbd / data-hotkey**
+    - Key caps inside buttons (`<button>`, `.button`, `[role="button"]`) are legible again: a `<kbd>` (including the caps `data-hotkey` generates) now keeps the button's text colour, draws its edge from `currentColor`, and gets a translucent neutral fill at the text's opposite lightness, so a cap is never less legible than the button label. Previously the cap kept the page surface fill under the button's text colour and rendered blank inside primary buttons (vanilla-breeze-hzt3). Standalone `<kbd>` is unchanged; the magna theme's accent `kbd` override no longer applies inside buttons.
+    - The `data-hotkey` action demo and doc snippet show the shortcut inside the Save button again (`<button …>Save <kbd data-hotkey="meta+s">Ctrl+S</kbd></button>`).
+  - **Repo-wide**
+    - `vanilla-breeze.dev` links, QR codes and copy buttons now use `vanilla-breeze.com`. The link checker also checks `<browser-window src>` and `<include-file src>` demo embeds, which found four doc pages whose demos had never existed (now added).
+    - `flow-diagram` and `site-map` crossfade timing no longer retimes every view transition on the page.
+    - win9x and nes dialogs keep a visible edge in forced-colors mode; accordion-wc and settings-panel chevrons point the right way in RTL.
+
 ## [0.5.0] - 2026-11-02
 
 0.5.0 is the first element quality release, covering every A, B and C element. Components rebuild cleanly when moved or re-populated, keyboard and screen-reader access is fixed across the C components, and several XSS paths are closed. Themes gain a `--btn-border-width` hook, reach 4.5:1 contrast for links and outline buttons, and paint their own dark-mode backgrounds. It includes breaking changes, listed under Changed: C-component API cleanups, `<cite data-variant="quoted">`, removed legacy link and abbr classes, and the brand demo and stale per-accent theme files are no longer in the package.

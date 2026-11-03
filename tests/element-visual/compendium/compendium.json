@@ -1815,6 +1815,11 @@
           "html": "<p>Users: <data value=\"24521\" data-effect=\"ticker\" data-trigger=\"scroll\">24,521</data></p>\n<p>Revenue: <data value=\"48200\" data-effect=\"ticker\" data-trigger=\"scroll\" data-format-number=\"currency\" data-currency=\"USD\">$48,200</data></p>",
           "setup": "\n    await new Promise(r => setTimeout(r, 500));",
           "interactive": true
+        },
+        {
+          "id": "mono",
+          "name": "Monospace identifier",
+          "html": "<p>Order <data value=\"ORD-7F3A-92C1\" data-variant=\"mono\">ORD-7F3A-92C1</data> shipped from <data value=\"WH-04\" data-variant=\"mono\">WH-04</data>.</p>"
         }
       ]
     },
@@ -1831,6 +1836,22 @@
           "name": "Sortable Table",
           "fixtureWidth": "wide",
           "html": "<data-table>\n  <table data-filterable>\n    <thead>\n      <tr>\n        <th data-sort=\"string\">Product</th>\n        <th data-sort=\"number\">Price</th>\n        <th data-sort=\"string\">Category</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr><td>Laptop Pro</td><td data-sort-value=\"1299\">$1,299</td><td>Electronics</td></tr>\n      <tr><td>Wireless Mouse</td><td data-sort-value=\"49\">$49</td><td>Accessories</td></tr>\n      <tr><td>USB-C Cable</td><td data-sort-value=\"19\">$19</td><td>Accessories</td></tr>\n      <tr><td>Monitor 4K</td><td data-sort-value=\"599\">$599</td><td>Electronics</td></tr>\n      <tr><td>Keyboard</td><td data-sort-value=\"159\">$159</td><td>Accessories</td></tr>\n    </tbody>\n  </table>\n</data-table>"
+        },
+        {
+          "id": "sorted-descending",
+          "name": "Sorted (Price descending, focused header)",
+          "fixtureWidth": "wide",
+          "interactive": true,
+          "setup": "await customElements.whenDefined('data-table'); const b = document.querySelectorAll('data-table th[data-sort] > button')[1]; if (b) { b.click(); b.click(); b.focus({ focusVisible: true }); }",
+          "html": "<data-table>\n  <table>\n    <thead>\n      <tr>\n        <th data-sort=\"string\">Product</th>\n        <th data-sort=\"number\">Price</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr><td>Laptop Pro</td><td data-sort-value=\"1299\">$1,299</td></tr>\n      <tr><td>Wireless Mouse</td><td data-sort-value=\"49\">$49</td></tr>\n      <tr><td>Monitor 4K</td><td data-sort-value=\"599\">$599</td></tr>\n    </tbody>\n  </table>\n</data-table>"
+        },
+        {
+          "id": "heatmap",
+          "name": "Heatmap + weighted-sum rollup",
+          "fixtureWidth": "wide",
+          "interactive": true,
+          "setup": "await customElements.whenDefined('data-table'); await new Promise(r => requestAnimationFrame(r));",
+          "html": "<data-table>\n  <table>\n    <thead>\n      <tr>\n        <th data-sort=\"string\">Option</th>\n        <th data-sort=\"number\" data-weight=\"3\" data-heatmap=\"high-good\">Performance</th>\n        <th data-sort=\"number\" data-weight=\"1\" data-heatmap=\"high-good\">Ecosystem</th>\n        <th data-sort=\"number\" data-rollup=\"weighted-sum\" data-heatmap=\"high-good\">Score</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr><td>Library A</td><td>5</td><td>3</td><td></td></tr>\n      <tr><td>Library B</td><td>3</td><td>5</td><td></td></tr>\n      <tr><td>Library C</td><td>1</td><td>2</td><td></td></tr>\n    </tbody>\n  </table>\n</data-table>"
         }
       ]
     },
@@ -1846,6 +1867,76 @@
           "id": "default",
           "name": "Default Datalist Input",
           "html": "<label for=\"browser\">Choose a browser:</label>\n<input list=\"browsers\" id=\"browser\" placeholder=\"Type to search...\">\n<datalist id=\"browsers\">\n  <option value=\"Chrome\">\n  <option value=\"Firefox\">\n  <option value=\"Safari\">\n  <option value=\"Edge\">\n</datalist>"
+        },
+        {
+          "id": "input-types",
+          "name": "Range, Color and Search with list",
+          "html": "<label for=\"cv-dl-range\">Volume</label>\n<input type=\"range\" id=\"cv-dl-range\" list=\"cv-dl-ticks\" min=\"0\" max=\"100\" value=\"50\">\n<datalist id=\"cv-dl-ticks\"><option value=\"0\"></option><option value=\"50\"></option><option value=\"100\"></option></datalist>\n<label for=\"cv-dl-color\">Brand colour</label>\n<input type=\"color\" id=\"cv-dl-color\" list=\"cv-dl-pal\" value=\"#c84b2f\">\n<datalist id=\"cv-dl-pal\"><option value=\"#c84b2f\"></option><option value=\"#2d6a4f\"></option></datalist>\n<label for=\"cv-dl-search\">Search</label>\n<input type=\"search\" id=\"cv-dl-search\" list=\"cv-dl-prod\" class=\"search\" placeholder=\"Search...\">\n<datalist id=\"cv-dl-prod\"><option value=\"Laptop\"></option></datalist>"
+        },
+        {
+          "id": "rtl",
+          "name": "RTL arrow",
+          "html": "<section dir=\"rtl\" lang=\"ar\">\n<label for=\"cv-dl-rtl\">المدينة</label>\n<input type=\"text\" id=\"cv-dl-rtl\" list=\"cv-dl-rtl-l\" placeholder=\"اكتب...\">\n<datalist id=\"cv-dl-rtl-l\"><option value=\"القاهرة\"></option></datalist>\n</section>"
+        }
+      ]
+    },
+    {
+      "id": "date-picker",
+      "tag": "date-picker",
+      "type": "web-component",
+      "category": "forms",
+      "cssFile": "src/web-components/date-picker/styles.css",
+      "jsRequired": true,
+      "readySelector": "date-picker[data-upgraded]",
+      "variants": [
+        {
+          "id": "labelled",
+          "name": "Labelled with value",
+          "html": "<label for=\"dp-event\">Event date</label>\n<date-picker lang=\"en-US\">\n  <input type=\"date\" id=\"dp-event\" name=\"event\" value=\"2026-04-15\">\n</date-picker>"
+        },
+        {
+          "id": "empty",
+          "name": "Empty (placeholder)",
+          "html": "<label for=\"dp-empty\">Start date</label>\n<date-picker>\n  <input type=\"date\" id=\"dp-empty\" name=\"start\">\n</date-picker>"
+        },
+        {
+          "id": "disabled",
+          "name": "Disabled",
+          "html": "<label for=\"dp-locked\">Locked date</label>\n<date-picker lang=\"en-US\" disabled>\n  <input type=\"date\" id=\"dp-locked\" name=\"locked\" value=\"2026-04-15\">\n</date-picker>"
+        }
+      ]
+    },
+    {
+      "id": "day-view",
+      "tag": "day-view",
+      "type": "web-component",
+      "category": "data",
+      "cssFile": "src/web-components/day-view/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Authored hour list",
+          "fixtureWidth": "wide",
+          "html": "<day-view data-date=\"2026-07-06\">\n  <ol>\n    <li><time datetime=\"09:00\">9 AM</time><hour-view><calendar-event data-category=\"meeting\"><time datetime=\"09:00\">09:00</time> Standup</calendar-event></hour-view></li>\n    <li><time datetime=\"10:00\">10 AM</time><hour-view><calendar-event data-category=\"meeting\" data-duration=\"2h\"><time datetime=\"10:00\">10:00</time> Design review</calendar-event></hour-view></li>\n    <li><time datetime=\"11:00\">11 AM</time><hour-view></hour-view></li>\n    <li><time datetime=\"12:00\">12 PM</time><hour-view><calendar-event data-category=\"personal\" data-start=\"30\"><time datetime=\"12:30\">12:30</time> Lunch</calendar-event></hour-view></li>\n  </ol>\n</day-view>"
+        },
+        {
+          "id": "auto",
+          "name": "Generated grid (ISO times)",
+          "fixtureWidth": "wide",
+          "html": "<day-view data-date=\"2026-07-06\" data-start-hour=\"auto\">\n  <calendar-event data-category=\"meeting\"><time datetime=\"2026-07-06T09:00\">9:00</time> Standup</calendar-event>\n  <calendar-event data-category=\"personal\"><time datetime=\"2026-07-06T10:30\">10:30</time> Coffee</calendar-event>\n  <calendar-event data-category=\"focus\" data-duration=\"1.5h\"><time datetime=\"2026-07-06T12:00\">12:00</time> Code review</calendar-event>\n</day-view>"
+        },
+        {
+          "id": "overlap",
+          "name": "Overlapping and clipped spans",
+          "fixtureWidth": "wide",
+          "html": "<day-view data-date=\"2026-07-06\" data-start-hour=\"9\" data-end-hour=\"13\">\n  <calendar-event data-category=\"meeting\" data-duration=\"2h\"><time datetime=\"10:00\">10:00</time> Workshop</calendar-event>\n  <calendar-event data-category=\"personal\" data-duration=\"PT1H\"><time datetime=\"10:30\">10:30</time> Interview</calendar-event>\n  <calendar-event data-category=\"deadline\" data-duration=\"3h\"><time datetime=\"12:00\">12:00</time> Rehearsal</calendar-event>\n</day-view>"
+        },
+        {
+          "id": "all-day",
+          "name": "All-day strip",
+          "fixtureWidth": "wide",
+          "html": "<day-view data-date=\"2026-07-06\" data-start-hour=\"auto\">\n  <calendar-event data-category=\"personal\">Company holiday</calendar-event>\n  <calendar-event data-category=\"deadline\">Report due</calendar-event>\n  <calendar-event data-category=\"meeting\"><time datetime=\"11:00\">11:00</time> Briefing</calendar-event>\n</day-view>"
         }
       ]
     },
@@ -1860,12 +1951,27 @@
         {
           "id": "default",
           "name": "Delete and Insert",
-          "html": "<p>The price is <del>$49.99</del> <ins>$29.99</ins></p>"
+          "html": "<p>The meeting will be held on <del>Tuesday</del> <ins>Wednesday</ins> at 2pm.</p>"
         },
         {
           "id": "diff",
           "name": "Diff Style",
           "html": "<p><del class=\"diff\">removed line</del></p>\n<p><ins class=\"diff\">added line</ins></p>"
+        },
+        {
+          "id": "block",
+          "name": "Block Change (auto)",
+          "html": "<del datetime=\"2026-02-20\"><p>The old API accepts XML payloads at /api/v1/upload.</p></del>\n<ins datetime=\"2026-02-20\"><p>The new API accepts JSON payloads at /api/v2/ingest.</p><p>XML is no longer supported.</p></ins>"
+        },
+        {
+          "id": "annotated",
+          "name": "Annotated (reason + author)",
+          "html": "<p>Requires <del datetime=\"2026-02-15\" data-reason=\"correction\" data-author=\"Ana\">Node.js 16</del> <ins datetime=\"2026-02-15\" data-reason=\"review\" data-author=\"Sam\">Node.js 20 LTS</ins> or later.</p>"
+        },
+        {
+          "id": "announce",
+          "name": "Announced (data-announce)",
+          "html": "<article data-announce><p>The release ships on <del>Friday</del> <ins>Monday</ins>.</p></article>"
         }
       ]
     },
@@ -1890,6 +1996,16 @@
           "id": "accordion-group",
           "name": "Accordion Group",
           "html": "<details open><summary>Getting Started</summary><p>Install via CDN or npm. No build step required.</p></details><details><summary>Customising Tokens</summary><p>All design tokens are CSS custom properties on :root. Override them in your stylesheet.</p></details><details><summary>Browser Support</summary><p>Targets evergreen browsers with graceful degradation where possible.</p></details>"
+        },
+        {
+          "id": "rtl",
+          "name": "RTL (closed + open)",
+          "html": "<section dir=\"rtl\"><details><summary>ما هو Vanilla Breeze؟</summary><p>نظام تصميم مبني على عناصر HTML الأصلية.</p></details><details open><summary>البدء</summary><p>التثبيت عبر CDN أو npm.</p></details></section>"
+        },
+        {
+          "id": "gapped",
+          "name": "In a gap layout (not joined)",
+          "html": "<layout-stack data-layout-gap=\"m\"><details><summary>Shipping</summary><p>Ships in 2-3 business days.</p></details><details><summary>Returns</summary><p>Free returns within 30 days.</p></details></layout-stack>"
         }
       ]
     },
@@ -1905,6 +2021,44 @@
           "id": "default",
           "name": "Default",
           "html": "<p>A <dfn>web component</dfn> is a custom HTML element with encapsulated behavior and styling.</p>"
+        },
+        {
+          "id": "in-dt",
+          "name": "In a definition list",
+          "html": "<dl><dt><dfn>Block element</dfn></dt><dd>Starts on a new line and fills the available width.</dd></dl>"
+        },
+        {
+          "id": "cjk",
+          "name": "CJK (upright)",
+          "html": "<p lang=\"ja\"><dfn>漸進的強化</dfn>とは、基本機能から始めて機能を追加する設計手法です。<cite>吾輩は猫である</cite></p>"
+        }
+      ]
+    },
+    {
+      "id": "diagram-wc",
+      "tag": "diagram-wc",
+      "type": "web-component",
+      "category": "media",
+      "cssFile": "src/web-components/diagram-wc/styles.css",
+      "jsRequired": true,
+      "readySelector": "diagram-wc[data-upgraded]:not([data-rendering])",
+      "variants": [
+        {
+          "id": "default",
+          "name": "Rendered Flowchart",
+          "html": "<script>window.VB_MERMAID_URL = '/tests/element-visual/fixtures/generated/mermaid-stub.mjs';</script><diagram-wc><pre><code class=\"language-mermaid\">flowchart LR\n  accTitle: Login flow\n  A[Visit] --&gt; B{Valid?}\n  B --&gt; C[Session]</code></pre></diagram-wc>",
+          "fixtureWidth": "wide"
+        },
+        {
+          "id": "caption",
+          "name": "With Caption",
+          "html": "<script>window.VB_MERMAID_URL = '/tests/element-visual/fixtures/generated/mermaid-stub.mjs';</script><diagram-wc caption=\"A small login flow\"><pre><code class=\"language-mermaid\">flowchart LR\n  A[Visit] --&gt; B[Session]</code></pre></diagram-wc>",
+          "fixtureWidth": "wide"
+        },
+        {
+          "id": "error",
+          "name": "Syntax Error Fallback",
+          "html": "<script>window.VB_MERMAID_URL = '/tests/element-visual/fixtures/generated/mermaid-stub.mjs';</script><diagram-wc><pre><code class=\"language-mermaid\">flowchart LR\n  INVALID --&gt;</code></pre></diagram-wc>"
         }
       ]
     },
@@ -1921,7 +2075,7 @@
           "interactive": true,
           "screenshotTarget": "dialog",
           "setup": "document.querySelector('#ev-dialog-default').showModal()",
-          "html": "<dialog id=\"ev-dialog-default\"><header><h2>Confirm action</h2></header><p>Are you sure you want to delete this item? This cannot be undone.</p><footer><button type=\"button\" class=\"secondary\">Cancel</button><button type=\"button\">Delete</button></footer></dialog>"
+          "html": "<dialog id=\"ev-dialog-default\" aria-labelledby=\"ev-dialog-default-t\"><header><h2 id=\"ev-dialog-default-t\">Confirm action</h2></header><p>Are you sure you want to delete this item? This cannot be undone.</p><footer><button type=\"button\" class=\"secondary\">Cancel</button><button type=\"button\">Delete</button></footer></dialog>"
         },
         {
           "id": "modal-small",
@@ -1929,7 +2083,7 @@
           "interactive": true,
           "screenshotTarget": "dialog",
           "setup": "document.querySelector('#ev-dialog-small').showModal()",
-          "html": "<dialog id=\"ev-dialog-small\" data-size=\"s\"><header><h2>Session expired</h2></header><p>Please sign in again to continue.</p><footer><button type=\"button\">Sign in</button></footer></dialog>"
+          "html": "<dialog id=\"ev-dialog-small\" aria-labelledby=\"ev-dialog-small-t\" data-size=\"s\"><header><h2 id=\"ev-dialog-small-t\">Session expired</h2></header><p>Please sign in again to continue.</p><footer><button type=\"button\">Sign in</button></footer></dialog>"
         },
         {
           "id": "drawer-end",
@@ -1937,7 +2091,47 @@
           "interactive": true,
           "screenshotTarget": "dialog",
           "setup": "document.querySelector('#ev-dialog-drawer').showModal()",
-          "html": "<dialog id=\"ev-dialog-drawer\" data-position=\"end\"><header><h2>Filters</h2></header><section><fieldset class=\"minimal\"><legend>Status</legend><label><input type=\"checkbox\" checked> Active</label><label><input type=\"checkbox\"> Archived</label></fieldset></section><footer><button type=\"button\" class=\"secondary\">Clear</button><button type=\"button\">Apply</button></footer></dialog>"
+          "html": "<dialog id=\"ev-dialog-drawer\" aria-labelledby=\"ev-dialog-drawer-t\" data-position=\"end\"><header><h2 id=\"ev-dialog-drawer-t\">Filters</h2></header><section><fieldset class=\"minimal\"><legend>Status</legend><label><input type=\"checkbox\" checked> Active</label><label><input type=\"checkbox\"> Archived</label></fieldset></section><footer><button type=\"button\" class=\"secondary\">Clear</button><button type=\"button\">Apply</button></footer></dialog>"
+        },
+        {
+          "id": "form-method",
+          "name": "Form method=dialog wrapping header/footer",
+          "interactive": true,
+          "screenshotTarget": "dialog",
+          "setup": "document.querySelector('#ev-dialog-form').showModal()",
+          "html": "<dialog id=\"ev-dialog-form\" aria-labelledby=\"ev-dialog-form-t\"><form method=\"dialog\"><header><h2 id=\"ev-dialog-form-t\">Choose an option</h2></header><p>Submitting closes the dialog and returns the button value.</p><footer><button value=\"cancel\" class=\"secondary\">Cancel</button><button value=\"confirm\">Confirm</button></footer></form></dialog>"
+        },
+        {
+          "id": "long-content",
+          "name": "Long content (body scrolls)",
+          "interactive": true,
+          "screenshotTarget": "dialog",
+          "setup": "document.querySelector('#ev-dialog-long').showModal()",
+          "html": "<dialog id=\"ev-dialog-long\" aria-labelledby=\"ev-dialog-long-t\"><header><h2 id=\"ev-dialog-long-t\">Terms of service</h2></header><section><p>Clause 1. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 2. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 3. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 4. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 5. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 6. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 7. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 8. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 9. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 10. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 11. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 12. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 13. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 14. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 15. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 16. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 17. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 18. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 19. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 20. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 21. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 22. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 23. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 24. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 25. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 26. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 27. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 28. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 29. Deterministic placeholder terms text for the scrolling body.</p><p>Clause 30. Deterministic placeholder terms text for the scrolling body.</p></section><footer><button type=\"button\" class=\"secondary\">Decline</button><button type=\"button\">Accept</button></footer></dialog>"
+        },
+        {
+          "id": "drawer-start",
+          "name": "Drawer (Start)",
+          "interactive": true,
+          "screenshotTarget": "dialog",
+          "setup": "document.querySelector('#ev-dialog-drawer-start').showModal()",
+          "html": "<dialog id=\"ev-dialog-drawer-start\" data-position=\"start\" aria-labelledby=\"ev-dialog-drawer-start-t\"><header><h2 id=\"ev-dialog-drawer-start-t\">Menu</h2></header><section><nav aria-label=\"Drawer\"><ul class=\"unstyled\"><li><a href=\"#\">Home</a></li><li><a href=\"#\">Products</a></li><li><a href=\"#\">About</a></li></ul></nav></section><footer><button type=\"button\">Close</button></footer></dialog>"
+        },
+        {
+          "id": "drawer-top",
+          "name": "Drawer (Top)",
+          "interactive": true,
+          "screenshotTarget": "dialog",
+          "setup": "document.querySelector('#ev-dialog-drawer-top').showModal()",
+          "html": "<dialog id=\"ev-dialog-drawer-top\" data-position=\"top\" aria-labelledby=\"ev-dialog-drawer-top-t\"><header><h2 id=\"ev-dialog-drawer-top-t\">Announcement</h2></header><p>Version 2 is out. See what changed.</p><footer><button type=\"button\">Dismiss</button></footer></dialog>"
+        },
+        {
+          "id": "drawer-end-rtl",
+          "name": "Drawer (End, RTL)",
+          "interactive": true,
+          "screenshotTarget": "dialog",
+          "setup": "document.querySelector('#ev-dialog-drawer-rtl').showModal()",
+          "html": "<dialog id=\"ev-dialog-drawer-rtl\" dir=\"rtl\" data-position=\"end\" aria-labelledby=\"ev-dialog-drawer-rtl-t\"><header><h2 id=\"ev-dialog-drawer-rtl-t\">عوامل التصفية</h2></header><section><p>اختر الحالة.</p></section><footer><button type=\"button\" class=\"secondary\">مسح</button><button type=\"button\">تطبيق</button></footer></dialog>"
         }
       ]
     },
@@ -1962,6 +2156,75 @@
           "id": "striped-wrapped",
           "name": "Striped (div-wrapped)",
           "html": "<dl data-striped><div><dt>Author</dt><dd>Grace Hopper</dd></div><div><dt>Published</dt><dd>1952</dd></div><div><dt>Language</dt><dd>FLOW-MATIC</dd></div><div><dt>Pages</dt><dd>312</dd></div></dl>"
+        },
+        {
+          "id": "horizontal",
+          "name": "Horizontal (flat pairs)",
+          "html": "<dl data-variant=\"horizontal\"><dt>Protocol</dt><dd>HTTP/3 over QUIC</dd><dt>TLS Version</dt><dd>TLS 1.3</dd><dt>Compression</dt><dd>Brotli</dd></dl>"
+        },
+        {
+          "id": "stacked",
+          "name": "Stacked (flat pairs)",
+          "html": "<dl data-variant=\"stacked\"><dt>Author</dt><dd>Grace Hopper</dd><dt>Published</dt><dd>1952</dd></dl>"
+        },
+        {
+          "id": "horizontal-multi-dd",
+          "name": "Horizontal, multi-dd groups (div)",
+          "html": "<dl data-variant=\"horizontal\" data-bordered><div><dt>Items</dt><dd>Field notebook</dd><dd>Fountain pen</dd><dd>Ink refill</dd></div><div><dt>Ship to</dt><dd>221B Baker Street, London NW1 6XE</dd></div></dl>"
+        },
+        {
+          "id": "div-wrapper",
+          "name": "Plain div-wrapped groups",
+          "html": "<dl><div><dt>Author</dt><dd>Grace Hopper</dd></div><div><dt>Language</dt><dd>FLOW-MATIC</dd></div></dl>"
+        },
+        {
+          "id": "horizontal-rtl",
+          "name": "Horizontal, right-to-left",
+          "html": "<dl dir=\"rtl\" lang=\"ar\" data-variant=\"horizontal\" data-bordered><div><dt>الاسم</dt><dd>ألكسندرا تشن</dd></div><div><dt>البريد</dt><dd>alexandra.chen@example.com</dd></div></dl>"
+        },
+        {
+          "id": "striped-multi-dd",
+          "name": "Striped, flat multi-dd run",
+          "html": "<dl data-striped><dt>Formats</dt><dd>PDF</dd><dd>EPUB</dd><dt>Pages</dt><dd>312</dd><dt>Language</dt><dd>English</dd></dl>"
+        }
+      ]
+    },
+    {
+      "id": "dl-item",
+      "tag": "dl-item",
+      "type": "custom",
+      "category": "text",
+      "cssFile": "src/native-elements/lists/styles.css",
+      "variants": [
+        {
+          "id": "default",
+          "name": "Plain (group spacing + indent)",
+          "html": "<dl><dl-item><dt>Latency</dt><dd>Time to first byte.</dd></dl-item><dl-item><dt>Throughput</dt><dd>Requests per second.</dd></dl-item></dl>"
+        },
+        {
+          "id": "horizontal",
+          "name": "Horizontal + bordered",
+          "html": "<dl data-variant=\"horizontal\" data-bordered><dl-item><dt>Full Name</dt><dd>Alexandra Chen</dd></dl-item><dl-item><dt>Email</dt><dd>alexandra.chen@example.com</dd></dl-item><dl-item><dt>Role</dt><dd>Senior Engineer</dd></dl-item></dl>"
+        },
+        {
+          "id": "stacked",
+          "name": "Stacked",
+          "html": "<dl data-variant=\"stacked\"><dl-item><dt>Project</dt><dd>Vanilla Breeze</dd></dl-item><dl-item><dt>License</dt><dd>MIT</dd></dl-item></dl>"
+        },
+        {
+          "id": "compact",
+          "name": "Horizontal + compact + bordered",
+          "html": "<dl data-variant=\"horizontal\" data-density=\"compact\" data-bordered><dl-item><dt>Created</dt><dd>2025-11-15</dd></dl-item><dl-item><dt>Updated</dt><dd>2026-02-28</dd></dl-item><dl-item><dt>Version</dt><dd>1.4.0</dd></dl-item></dl>"
+        },
+        {
+          "id": "striped",
+          "name": "Horizontal + striped",
+          "html": "<dl data-variant=\"horizontal\" data-striped><dl-item><dt>CPU</dt><dd>Apple M2 Pro</dd></dl-item><dl-item><dt>Memory</dt><dd>32 GB</dd></dl-item><dl-item><dt>Storage</dt><dd>1 TB SSD</dd></dl-item></dl>"
+        },
+        {
+          "id": "multiple",
+          "name": "Multiple dt / dd per group",
+          "html": "<dl data-variant=\"horizontal\" data-bordered><dl-item><dt>Phone Numbers</dt><dd>+1 (555) 123-4567</dd><dd>+1 (555) 987-6543</dd></dl-item><dl-item><dt>Email</dt><dt>Contact</dt><dd>alexandra.chen@example.com</dd></dl-item></dl>"
         }
       ]
     },
@@ -1976,7 +2239,17 @@
         {
           "id": "vertical",
           "name": "Vertical Reorder",
-          "html": "<drag-surface data-layout=\"stack\" data-layout-gap=\"xs\">\n  <article class=\"card\" draggable=\"true\" data-id=\"a\"><span data-drag-handle style=\"cursor: grab;\">☰</span> Design Review</article>\n  <article class=\"card\" draggable=\"true\" data-id=\"b\"><span data-drag-handle style=\"cursor: grab;\">☰</span> Code Audit</article>\n  <article class=\"card\" draggable=\"true\" data-id=\"c\"><span data-drag-handle style=\"cursor: grab;\">☰</span> User Testing</article>\n</drag-surface>"
+          "html": "<drag-surface data-layout=\"stack\" data-layout-gap=\"xs\">\n  <article class=\"card\" draggable=\"true\" data-id=\"a\"><span data-drag-handle>☰</span> Design Review</article>\n  <article class=\"card\" draggable=\"true\" data-id=\"b\"><span data-drag-handle>☰</span> Code Audit</article>\n  <article class=\"card\" draggable=\"true\" data-id=\"c\"><span data-drag-handle>☰</span> User Testing</article>\n</drag-surface>"
+        },
+        {
+          "id": "move-controls",
+          "name": "Move Controls (grouped)",
+          "html": "<section data-layout=\"grid\" data-layout-min=\"xs\" data-layout-gap=\"m\">\n  <section data-layout=\"stack\" data-layout-gap=\"xs\">\n    <h3 id=\"ds-col-a\">Backlog</h3>\n    <drag-surface group=\"cmp\" aria-labelledby=\"ds-col-a\" data-move-controls data-layout=\"stack\" data-layout-gap=\"xs\">\n      <article class=\"card\" draggable=\"true\" data-id=\"a\">Design Review</article>\n      <article class=\"card\" draggable=\"true\" data-id=\"b\">Code Audit</article>\n    </drag-surface>\n  </section>\n  <section data-layout=\"stack\" data-layout-gap=\"xs\">\n    <h3 id=\"ds-col-b\">Sprint</h3>\n    <drag-surface group=\"cmp\" aria-labelledby=\"ds-col-b\" data-move-controls data-layout=\"stack\" data-layout-gap=\"xs\">\n      <article class=\"card\" draggable=\"true\" data-id=\"c\">User Testing</article>\n    </drag-surface>\n  </section>\n</section>"
+        },
+        {
+          "id": "horizontal-rtl",
+          "name": "Horizontal, right-to-left (drop indicator on inline end)",
+          "html": "<drag-surface dir=\"rtl\" orientation=\"horizontal\" data-move-controls data-layout=\"cluster\" data-layout-gap=\"xs\">\n  <article class=\"card\" draggable=\"true\" data-id=\"a\">ألف</article>\n  <article class=\"card\" draggable=\"true\" data-id=\"b\" data-drop-target=\"after\">باء</article>\n  <article class=\"card\" draggable=\"true\" data-id=\"c\">تاء</article>\n</drag-surface>"
         }
       ]
     },
@@ -2003,6 +2276,30 @@
           "screenshotTarget": "page",
           "setup": "await new Promise(r => setTimeout(r, 300));\n    document.querySelector('drop-down').open();",
           "html": "<drop-down position=\"bottom-end\">\n  <button data-trigger>Actions</button>\n  <menu>\n    <li><button>Option 1</button></li>\n    <li><button>Option 2</button></li>\n    <li><button>Option 3</button></li>\n  </menu>\n</drop-down>"
+        },
+        {
+          "id": "nav-disclosure",
+          "name": "Navigation Disclosure (hover)",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "await new Promise(r => setTimeout(r, 300));\n    document.querySelector('drop-down').open();\n    await new Promise(r => setTimeout(r, 300));",
+          "html": "<nav class=\"horizontal\" aria-label=\"Main navigation\">\n  <ul>\n    <li>\n      <drop-down hover no-flip>\n        <a href=\"#products\" data-trigger>Products</a>\n        <menu>\n          <li><a href=\"#software\">Software</a></li>\n          <li><a href=\"#hardware\">Hardware</a></li>\n          <li><a href=\"#services\">Services</a></li>\n        </menu>\n      </drop-down>\n    </li>\n    <li><a href=\"#pricing\">Pricing</a></li>\n  </ul>\n</nav>"
+        },
+        {
+          "id": "rtl",
+          "name": "RTL bottom-start",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "await new Promise(r => setTimeout(r, 300));\n    document.querySelector('drop-down').open();\n    await new Promise(r => setTimeout(r, 300));",
+          "html": "<section dir=\"rtl\" lang=\"ar\">\n  <drop-down no-flip>\n    <button data-trigger>خيارات</button>\n    <menu>\n      <li><button>تعديل العنصر</button></li>\n      <li><button>نسخ</button></li>\n      <li role=\"separator\"></li>\n      <li><button data-disabled>حذف</button></li>\n    </menu>\n  </drop-down>\n</section>"
+        },
+        {
+          "id": "disabled-item",
+          "name": "Disabled Item (aria-disabled)",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "await new Promise(r => setTimeout(r, 300));\n    document.querySelector('drop-down').open();\n    await new Promise(r => setTimeout(r, 300));",
+          "html": "<drop-down no-flip>\n  <button data-trigger>Account</button>\n  <menu>\n    <li><a href=\"#profile\">Profile</a></li>\n    <li><a href=\"#billing\" data-disabled>Billing</a></li>\n    <li role=\"separator\"></li>\n    <li><button>Sign out</button></li>\n  </menu>\n</drop-down>"
         }
       ]
     },

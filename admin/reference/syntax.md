@@ -308,9 +308,9 @@ Base: border, radius, padding, focus ring. Validation via `:user-invalid` and `[
 | `input[data-switch]` | Toggle switch (default size) |
 | `input[data-switch="sm"]` | Small toggle switch |
 | `input[data-switch="lg"]` | Large toggle switch |
-| `input[list]` | Datalist dropdown arrow |
+| `input[list]` (text-like types: none, text, search, url, email, tel, number) | Datalist dropdown arrow (currentColor gradient, mirrors in RTL); range/color/date/time inputs with `list` are left untouched |
 | `input[list].no-arrow` | Hide dropdown arrow |
-| `input[list].search` | Search icon left-aligned |
+| `input[list].search` | Search icon on the inline-start side |
 
 ### `<form>` Form
 
@@ -353,7 +353,7 @@ Related classes:
 
 ### `<details>` / `<summary>` Disclosure
 
-Base: chevron indicator via `::after`, rotation on open. Adjacent `<details>` get joined borders.
+Base: chevron indicator via `summary::after` (physical right+bottom corner; points to the inline end when closed, down when open, RTL-aware). Adjacent `<details>` get joined borders in normal flow only — not inside gap layouts (`layout-*`, `[data-layout]`, `[data-layout-gap]`); `data-layout-gap="none"` joins. Closed panels print open (via `::details-content`).
 
 ### `<dialog>` Dialog
 
@@ -362,7 +362,7 @@ Base: chevron indicator via `::after`, rotation on open. Adjacent `<details>` ge
 | `data-size` | `s`, `m`, `l`, `full` | Modal size (24/32/48rem or viewport) |
 | `data-position` | `start`, `end`, `top`, `bottom` | Drawer positioning |
 
-Supports nested `<header>`, `<footer>`, `<form>` patterns.
+Open dialogs are a flex column: `<header>` / `<footer>` fixed, body (`p`, `section`, `article`, `form`) scrolls. `<form method="dialog">` may wrap header/body/footer (form gets no padding; its header/footer styled like direct children). Name dialogs with `aria-labelledby` → heading id. Modal open locks page scroll (`html:has(dialog:modal)`). Enter/exit transitions; drawers slide from their logical edge (RTL-aware). Native `closedby="any"` for light dismiss.
 
 ### `<table>` Table
 
@@ -469,7 +469,18 @@ Base: monospace font, `<code>` gets background highlight, `<kbd>` gets border + 
 
 ### `<dl>` Definition List
 
-Base: `<dt>` bold, `<dd>` indented.
+Base: `<dt>` bold, `<dd>` indented (inline-start). Groups may be flat or wrapped in `<div>` (spec) or `<dl-item>` (VB, non-conforming); a plain `<dl>` spaces wrapped groups like flat pairs.
+
+| Data Attribute | Values | Description |
+|----------------|--------|-------------|
+| `data-variant` | `horizontal`, `stacked` | Term/description columns (subgrid; stacks below 24rem) or muted label above value |
+| `data-bordered` | (boolean) | Separator lines between wrapped groups |
+| `data-density` | `compact` | Tighter spacing |
+| `data-striped` | (boolean) | Alternating backgrounds (wrapped groups stripe whole; flat: odd dt + following dd run) |
+
+Custom properties: `--dl-term-min` (default `10ch`), `--dl-term-max` (default `40%`) bound the horizontal term column.
+
+`<dl-item>`: group wrapper for dt/dd inside `<dl>` only; styled identically to `<div>`; variants live on the parent `<dl>`.
 
 ### `<hr>` Horizontal Rule
 
@@ -668,9 +679,17 @@ Separator: `<li role="separator">`
 | `mark.success/warning/error` | mark | Colored highlights |
 | `abbr[data-variant="plain"]` | abbr | No underline |
 | `cite[data-variant="quoted"]` | cite | Title in locale quotation marks instead of italics |
-| `del.diff`, `ins.diff` | del/ins | Diff display |
+| `del.diff`, `ins.diff` | del/ins | Diff display (pill tokens) |
+| `del`/`ins` wrapping block content (auto, via `:has()`) | del/ins | Block change: tint + inline-start bar; no class needed (`.block` removed) |
+| `del[data-reason]`, `ins[data-reason]` | del/ins | Visible uppercase reason tag before the change |
+| `del[data-author]`, `ins[data-author]` | del/ins | Author shown on hover, focus-within, touch (hover:none) and print |
+| `[data-announce]` (on del/ins or any ancestor) | del/ins | Visually hidden "deletion/insertion start/end" text for screen readers; translate via `--del-announce-start/-end`, `--ins-announce-start/-end` (quoted strings) |
+| `data[data-variant~="mono"]` | data | Monospace face for identifiers (default `<data>` is prose font + tabular-nums) |
+| `dfn[id]:target` | dfn | Outline highlight when reached by fragment link |
 | `time.relative`, `time.datetime` | time | Time variants |
 | `sup.footnote-ref` | sup | Footnote styling |
+
+> `dfn` inherits the weight of bold contexts (`dt`, `th`, headings, `strong`, `b`, `legend`). In `:lang(zh|ja|ko)`, `dfn` and `cite` are upright (no synthetic italic): `dfn` uses semibold, `cite` a muted wavy underline (except `cite[data-variant="quoted"]`).
 
 ### Native Tooltip (`[role="tooltip"][popover]`)
 
@@ -914,7 +933,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 > build (`npm run build:cem`). The entries below are the human-readable companion;
 > when a component is missing detail here, read its `api.json` and `logic.js`.
 
-### Component index (60 elements)
+### Component index (63 elements)
 
 | Element | Purpose | Detail below |
 |---------|---------|:------------:|
@@ -935,7 +954,9 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<content-swap>` | Flippable / swap front-and-back content | ✓ |
 | `<context-menu>` | Right-click context menu | ✓ |
 | `<data-table>` | Sortable, filterable, selectable table | ✓ |
-| `<drag-surface>` | Drag-and-drop reorder zone | |
+| `<date-picker>` | Form-associated date picker (combobox text entry + calendar popup) over `<input type="date">` | ✓ |
+| `<day-view>` | Hour-grid schedule for one day (calendar-event children) | ✓ |
+| `<drag-surface>` | Drag-and-drop reorder zone (`group`, `orientation`, `disabled`, `data-move-controls`; children `draggable="true"` + `data-id`, optional `data-drag-handle`) | |
 | `<drop-down>` | Generic dropdown menu | ✓ |
 | `<emoji-picker>` | Emoji search & insert popover | ✓ |
 | `<foot-notes>` / `<foot-note>` | Footnote collection / inline reference | ✓ |
@@ -972,16 +993,18 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<tool-tip>` | Anchor-positioned rich tooltip | ✓ |
 | `<type-specimen>` | Token specimen — typography scale demo | |
 | `<video-player>` | Custom-controls video playback | |
+| `<week-view>` | Multi-day hour grid in a semantic table | ✓ |
 | `<youtube-player>` | Privacy-respecting YouTube embed | |
 
 Detailed entries follow for the components with extended attributes/events. See `api.json` per component for the complete attribute & event surface.
 
 ### `<tab-set>`
-Accessible tabbed interface. Wraps `<button role="tab">` + `<div role="tabpanel">`.
+Accessible tabbed interface built on `<details name>` / `<summary>` children (no `role="tab"` / `role="tabpanel"` overrides; summary keeps its button role and `aria-expanded`).
 
 | Events | Detail |
 |--------|--------|
-| `tab-set:change` | `{ index, tab, panel }` |
+| `tab-set:change` | `{ index }` |
+| `tab-set:tabs-changed` | `{ tabs, source }` |
 
 ### `<accordion-wc>`
 Enhanced `<details>`/`<summary>` accordion.
@@ -1009,13 +1032,31 @@ Rich tooltip/popover container.
 | `tool-tip:show`, `tool-tip:hide` |
 
 ### `<drop-down>`
-Dropdown menu/popover triggered by a button.
+Action menu (APG menu button) by default; with `hover`, a navigation disclosure (APG disclosure nav — no menu roles).
 
-| Events |
-|--------|
-| `drop-down:open`, `drop-down:close` |
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `position` | `bottom-start` (default), `bottom-end`, `top-start`, `top-end` | Placement; start/end are logical (mirror in RTL) |
+| `hover` | (boolean) | Navigation disclosure: links stay in Tab order, `<button data-dropdown-toggle aria-expanded>` toggles (generated beside a link trigger); opens on mouse hover or toggle activation, never on focus |
+| `no-flip` | (boolean) | Keep the requested side; don't flip on viewport overflow |
+| `open` | (output) | Reflected open state |
 
-Children: `<button>` trigger + `<menu>` or `<ul>` items.
+| Child attribute | On | Description |
+|-----------------|----|-------------|
+| `data-trigger` | `button`, `a` | The trigger (falls back to the first direct `<button>`) |
+| `data-disabled` | `button`, `a` | `aria-disabled="true"`; stays in arrow-key order, not activatable |
+| `data-value` | `button`, `a` | Reported in `drop-down:select` and `items` |
+| `data-dropdown-toggle` | `button` | Nav-mode submenu toggle (author one to set its `aria-label`) |
+
+| Events | Detail |
+|--------|--------|
+| `drop-down:open`, `drop-down:close` | — |
+| `drop-down:select` | `{ item, value }` |
+| `drop-down:items-changed` | `{ items, source: 'property' }` |
+
+Properties: `items` (`{ label, value?, href?, disabled? } | { separator: true }`), `isOpen`. Methods: `open()`, `close()`, `toggle()`.
+
+Children: trigger + `<menu>` (or `<ul role="menu">`) of `<li>` holding `<button>`/`<a>`. Only rows whose nearest menu is this one belong to it, so nested drop-downs stay independent.
 
 ### `<emoji-picker>`
 Accessible emoji picker with search, categories, and insertion.
@@ -1077,15 +1118,22 @@ Command palette (Cmd+K). Opens via `data-command` button or programmatic API.
 | `command-palette:open`, `command-palette:close` | — |
 
 ### `<data-table>`
-Enhanced data table with sort, filter, pagination, selection.
+Enhanced data table with sort, filter, pagination, expansion, selection. `data-filterable` and `data-paginate` go on the inner `<table>`; sortable headers get a `<button data-sort-button>` inside the `<th>` (aria-sort stays on the th).
+
+| Attribute | On | Description |
+|-----------|----|-------------|
+| `data-label-no-results` | `<data-table>` | Empty-state / announcement text (default "No matching rows found") |
+| `data-filterable` | `<table>` | Adds a search input |
+| `data-paginate` | `<table>` | N rows per page |
 
 | Events | Detail |
 |--------|--------|
-| `data-table:sort` | `{ column, direction }` |
-| `data-table:filter` | `{ column, value }` |
+| `data-table:sort` | `{ column, direction, columnName }` |
+| `data-table:filter` | `{ query, count }` |
 | `data-table:expand` | `{ row, expanded }` |
-| `data-table:selection` | `{ selected }` |
-| `data-table:page` | `{ page, pageSize }` |
+| `data-table:selection` | `{ count, rows }` |
+| `data-table:page` | `{ page }` |
+| `data-table:rows-changed` | `{ rows, added, moved, removed, source }` |
 
 ### `<carousel-wc>`
 Slideshow/carousel with autoplay.
@@ -1180,6 +1228,26 @@ Form-associated combobox/autocomplete. Single-select by default; add `multiple` 
 | `combo-box:close` | — |
 
 Children: `<input>` + `<ul>` with `<li data-value="...">` options.
+
+### `<date-picker>`
+Form-associated date picker. Wraps a native `<input type="date">` (the no-JS fallback); on upgrade renders a combobox text input + calendar popup. Submitted value is always ISO `YYYY-MM-DD`.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `name` | string | Form field name (a `name` on the inner input moves here on upgrade) |
+| `disabled` | (boolean) | Disable (also via disabled `<fieldset>`; inner-input `disabled` moves here) |
+| `required` | (boolean) | Required validation (host or inner input) |
+| `data-disabled-dates` | `YYYY-MM-DD[:reason],…` | Disabled days (focusable, not selectable); reasons `booked`, `unavailable`, `holiday` styled |
+| `data-highlight-dates` | `YYYY-MM-DD[:category],…` | Highlighted, still selectable; categories `holiday`, `deadline`, `event` styled |
+| `data-label-toggle` / `-dialog` / `-prev` / `-next` / `-year` / `-placeholder` / `-required` / `-input` | string | Translate built-in UI strings |
+
+| Events | Detail |
+|--------|--------|
+| `date-picker:change` | `{ value, date, source }` (`value` `''` / `date` `null` when cleared) |
+| `date-picker:open` | — |
+| `date-picker:close` | — |
+
+Properties: `value` (ISO; `''` clears), `min`, `max`. Children: `<input type="date">` supplying `value` (reset target), `min`, `max`, `name`, `id` (its `<label for>` names the combobox). Locale = nearest `lang`.
 
 ### `<theme-picker>`
 Theme picker UI (mode, theme, extensions).
@@ -1297,6 +1365,42 @@ Slide-to-confirm action.
 Keyboard shortcut overlay display.
 
 Reads `data-hotkey` and `data-shortcut` attributes from page elements.
+
+### `<day-view>`
+Hour-grid schedule. Author `<ol>` > `<li>` > `<time datetime="HH:00">` + `<hour-view>`, or put `<calendar-event>` children directly inside to generate the grid.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-date` | ISO date | Names the hour list; `detail.date` in event-click |
+| `data-start-hour` | `0`–`23` \| `auto` (default `7`) | First generated hour; `auto` = sparse range; grows to fit events |
+| `data-end-hour` | `0`–`23` (default `19`) | Last generated hour |
+| `data-compact` | (boolean) | Dialog/overlay presentation |
+| `data-label-continues` | string | Suffix for a clipped span's accessible name |
+
+Child `calendar-event`: `<time datetime>` = `HH:MM` or full ISO (wall-clock as written); `data-duration` = `2h`, `1.5h`, `45m`, `90m`, `1h30m`, `60` (minutes), `PT1H30M` (fallback 1h); `data-continues` is set by the component on spans clipped at the last hour.
+
+| Property / method | Description |
+|-------------------|-------------|
+| `events` | get/set `{ time?, text, category?, duration?, href? }[]` |
+| `refresh()` | Re-measure spanning events |
+
+| Events | Detail |
+|--------|--------|
+| `day-view:event-click` | `{ date, time, text, element, category, duration }` (click or Enter/Space) |
+| `day-view:events-changed` | `{ events, source: 'property' }` |
+
+### `<week-view>`
+Same parsing and keyboard model as `<day-view>`, one column per day.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-start-date` | ISO date | First day column |
+| `data-days` | number (default `7`) | Day columns |
+| `data-start-hour` | `0`–`23` \| `auto` (default `auto`) | First hour; grows to fit events |
+| `data-end-hour` | `0`–`23` (default `19`) | Last hour |
+| `data-label-continues` | string | Suffix for a clipped span's accessible name |
+
+Child `calendar-event[data-date]` assigns the day column. `events` get/set (`{ date?, time, text, category?, duration? }`; date derived from an ISO `time`), `refresh()`. Events: `week-view:event-click`, `week-view:events-changed`.
 
 ---
 
@@ -1587,10 +1691,10 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-copy-target` | CSS selector | Target element to copy from |
 | `data-hotkey` | `<kbd>` | Platform-aware key display (⌘/Ctrl) |
 | `data-spoiler` | any | Content concealment (`blur`, `solid`, `noise`) |
-| `data-ticker` | `<data>` | Animated number count-up |
-| `data-format-number` | `<data>` | Locale-aware number formatting |
+| `data-effect="ticker"` | `<data>` | Animated number count-up (`--vb-ticker-duration`, `--vb-ticker-start`, `--vb-ticker-decimals`) |
+| `data-format-number` | `<data>` | Locale-aware number formatting (`""`, `currency` + `data-currency` [defaults to USD], `percent`, `compact`); re-formats when `value` changes; empty/invalid `value` leaves the text |
 | `data-format-date` | `<time>` | Locale-aware date formatting (`relative`) |
-| `data-format-bytes` | `<data>` | Byte size formatting |
+| `data-format-bytes` | `<data>` | Byte size formatting (value = precision; `data-unit="decimal"` for ÷1000) |
 | `data-animate-image` | `<img>` | Play/pause for animated images |
 | `data-command` | `<button>` | Command palette trigger |
 
@@ -1690,6 +1794,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | ~~`data-allow-custom`~~ | **Removed** — use `custom` on `<combo-box>` |
 | `data-anchor` | Tooltip — CSS anchor positioning |
 | `data-animate-image` | `<img>` — play/pause control |
+| `data-announce` | `<ins>`, `<del>` or any ancestor — opt-in screen-reader start/end announcement |
 | `data-attention` | UI elements — attention indicator |
 | `data-auto` | Various — auto behavior |
 | `data-author` | `<ins>`, `<del>`, content blocks — edit authorship (see §10) |
@@ -1804,6 +1909,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-rating-readonly` | Rating — read-only |
 | `data-ratio` | `[data-media]` — aspect ratio |
 | ~~`data-readonly`~~ | **Removed** — use `readonly` on `<star-rating>` |
+| `data-reason` | `<ins>`, `<del>` — visible change-reason tag |
 | ~~`data-required`~~ | **Removed** — use `required` on `<combo-box>` |
 | `data-responsive` | Table — mobile layout |
 | `data-reveal` | Text — reveal entrance |
@@ -1823,6 +1929,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | ~~`data-single`~~ | **Removed** — use `single` on `<accordion-wc>` |
 | `data-size` | Various — size variant |
 | `data-sort` | Table th — sortable column |
+| `data-sort-button` | `<th data-sort>` — generated sort button inside the header |
 | `data-sort-value` | Table td — custom sort value |
 | `data-spoiler` | Any — content concealment |
 | `data-stack` | `<brand-mark>` — vertical layout |
@@ -1837,9 +1944,11 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-sticky` | Table — sticky header/column |
 | `data-sticky-column` | Table — sticky N columns |
 | `data-switch` | Checkbox — toggle switch |
+| `data-table-empty` | `<data-table>` — no-results message element (generated) |
 | `data-table-filter` | `<data-table>` — filter input container |
+| `data-table-status` | `<data-table>` — visually hidden live region (generated) |
 | `data-theme` | `<html>` — active theme |
-| `data-ticker` | `<data>` — count-up animation |
+| ~~`data-ticker`~~ | **Removed** — use `data-effect="ticker"` on `<data>` |
 | `data-title` | Various — title text |
 | `data-toggle-tags` | `<fieldset>` — pill chip toggle |
 | `data-tooltip` | Chart td — tooltip text |
@@ -1853,6 +1962,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-truncated` | Breadcrumb li — truncate text |
 | `data-type` | Chart, `<form-field>` — type variant |
 | `data-typewriter` | Text — typing animation |
+| `data-unit` | `<data data-format-bytes>` — `decimal` for 1000-based sizes |
 | `data-upload` | File input — drop zone |
 | `data-value` | Various — value binding |
 | `data-variant` | Various — style variant |

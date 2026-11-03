@@ -233,7 +233,13 @@ module.exports = {
 
   "dl": {
     flow: true,
-    permittedContent: ["@script", "dt", "dd", "div", "dl-item"]
+    permittedContent: ["@script", "dt", "dd", "div", "dl-item"],
+    attributes: {
+      "data-variant": { enum: ["horizontal", "stacked"] },
+      "data-bordered": { boolean: true },
+      "data-density": { enum: ["compact"] },
+      "data-striped": { boolean: true }
+    }
   },
 
   "form-field": {
@@ -660,8 +666,7 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-filterable": { boolean: true },
-      "data-paginate": {}
+      "data-label-no-results": {}
     }
   },
 
@@ -674,19 +679,16 @@ module.exports = {
       "required": { boolean: true },
       "data-disabled-dates": {},
       "data-highlight-dates": {},
-      "min": {},
-      "max": {},
-      "data-disabled": {},
-      "role": {},
-      "aria-haspopup": {},
-      "autocomplete": {},
-      "placeholder": {},
-      "size": {},
-      "data-date": {},
-      "data-disabled-reason": {},
-      "data-highlight": {},
-      "data-focused": {},
-      "open": {}
+      "data-label-toggle": {},
+      "data-label-dialog": {},
+      "data-label-prev": {},
+      "data-label-next": {},
+      "data-label-year": {},
+      "data-label-placeholder": {},
+      "data-label-required": {},
+      "data-label-range-underflow": {},
+      "data-label-range-overflow": {},
+      "data-label-input": {}
     }
   },
 
@@ -697,7 +699,8 @@ module.exports = {
       "data-date": {},
       "data-start-hour": {},
       "data-end-hour": {},
-      "data-compact": { boolean: true }
+      "data-compact": { boolean: true },
+      "data-label-continues": {}
     }
   },
 
@@ -719,19 +722,13 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "group": {},
-      "orientation": {},
+      "orientation": { enum: ["vertical", "horizontal"] },
       "disabled": { boolean: true },
-      "draggable": { boolean: true },
-      "data-id": {},
-      "data-sort-order": {},
-      "data-drag-handle": { boolean: true },
+      "data-move-controls": { boolean: true },
       "role": {},
-      "aria-grabbed": {},
-      "data-dragging": {},
-      "data-drag-over": {},
-      "data-reorder-mode": {},
-      "data-just-dropped": {},
-      "data-drop-target": {}
+      "aria-disabled": {},
+      "data-drag-over": { boolean: true },
+      "data-reorder-mode": { boolean: true }
     }
   },
 
@@ -1563,7 +1560,8 @@ module.exports = {
       "data-start-date": {},
       "data-days": {},
       "data-start-hour": {},
-      "data-end-hour": {}
+      "data-end-hour": {},
+      "data-label-continues": {}
     }
   },
 
