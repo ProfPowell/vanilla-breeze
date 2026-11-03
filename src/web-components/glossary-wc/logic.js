@@ -161,9 +161,7 @@ class GlossaryWc extends VBElement {
     }
     this.appendChild(dl);
 
-    this.teardown();
-    this.removeAttribute('data-upgraded');
-    this.setup();
+    this._reinit();
 
     this.dispatchEvent(new CustomEvent('glossary-wc:terms-changed', {
       detail: { terms: next, source: 'property' },
@@ -482,9 +480,7 @@ class GlossaryWc extends VBElement {
       }
 
       // Tear down old state and re-run setup
-      this.teardown();
-      this.removeAttribute('data-upgraded');
-      this.setup();
+      this._reinit();
     } catch (err) {
       console.warn(`[glossary-wc] Failed to load src="${url}":`, err);
     }

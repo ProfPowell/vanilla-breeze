@@ -75,19 +75,19 @@ crumbLabel: Web Components
           <td><code>data-date</code></td>
           <td>ISO date</td>
           <td>&mdash;</td>
-          <td>The date this view represents.</td>
+          <td>The date this view represents. Names the hour list for assistive tech (&ldquo;Friday, April 10, 2026&rdquo;) and is passed as <code>detail.date</code> in <code>day-view:event-click</code>.</td>
         </tr>
         <tr>
           <td><code>data-start-hour</code></td>
           <td>number | <code>"auto"</code></td>
           <td><code>7</code></td>
-          <td>First visible hour, or <code>"auto"</code> to scan events and compute sparse range.</td>
+          <td>First hour of the grid the component generates when you place <code>&lt;calendar-event&gt;</code> children directly inside (no <code>&lt;ol&gt;</code>), or <code>"auto"</code> for a sparse range around the events. A numeric range grows to fit events outside it. Ignored when you author the <code>&lt;ol&gt;</code>.</td>
         </tr>
         <tr>
           <td><code>data-end-hour</code></td>
           <td>number</td>
           <td><code>19</code></td>
-          <td>Last visible hour. Ignored when <code>data-start-hour="auto"</code>.</td>
+          <td>Last hour of the generated grid. Ignored when <code>data-start-hour="auto"</code> or the <code>&lt;ol&gt;</code> is authored.</td>
         </tr>
         <tr>
           <td><code>data-compact</code></td>
@@ -95,25 +95,49 @@ crumbLabel: Web Components
           <td>&mdash;</td>
           <td>Compact presentation for embedding in dialogs or overlays.</td>
         </tr>
+        <tr>
+          <td><code>data-label-continues</code></td>
+          <td>string</td>
+          <td><code>"continues after the visible hours"</code></td>
+          <td>Appended to the accessible name of a spanning event clipped at the last visible hour. Localisation hook.</td>
+        </tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Auto Mode</h2>
-    <p>Set <code>data-start-hour="auto"</code> and place <code>&lt;calendar-event&gt;</code> children directly inside <code>&lt;day-view&gt;</code> (no <code>&lt;ol&gt;</code>). The component scans event times, computes a sparse hour range (first event hour &minus; 1 to last event hour + 1), and builds the hour grid automatically. Untimed events are placed in an all-day section.</p>
+    <h2>Generated Grid</h2>
+    <p>Place <code>&lt;calendar-event&gt;</code> children directly inside <code>&lt;day-view&gt;</code> (no <code>&lt;ol&gt;</code>) and the component builds the hour grid from each event&rsquo;s <code>&lt;time datetime&gt;</code>. Untimed events go to an all-day strip.</p>
+    <ul>
+      <li><code>data-start-hour="auto"</code>: sparse range, first event hour &minus; 1 to last event hour + 1.</li>
+      <li>Numeric <code>data-start-hour</code> / <code>data-end-hour</code> (default <code>7</code>&ndash;<code>19</code>): a fixed range that grows to fit any event outside it, so no event is dropped.</li>
+      <li><code>datetime</code> may be <code>HH:MM</code> or a full ISO datetime (<code>2026-04-10T09:30:00Z</code>). The wall-clock time is used as written; offsets are not converted to local time.</li>
+    </ul>
 
-    <code-block language="html" show-lines label="Auto mode" data-escape><day-view data-date="2026-04-10" data-start-hour="auto">
-  <calendar-event>
-    <time datetime="09:00">9:00 AM</time>
+    <browser-window
+      src="/docs/examples/demos/day-view-auto.html"
+      url="https://vanilla-breeze.com/day-view/auto"
+      title="Generated grid">
+    </browser-window>
+
+    <code-block language="html" show-lines label="Generated grid" data-escape><day-view data-date="2026-04-10" data-start-hour="auto">
+  <calendar-event data-category="meeting">
+    <time datetime="2026-04-10T09:00">9:00</time>
     Sprint standup
   </calendar-event>
-  <calendar-event>
-    <time datetime="14:00">2:00 PM</time>
+  <calendar-event data-category="focus" data-duration="1.5h">
+    <time datetime="2026-04-10T13:00">1:00</time>
     Code review
   </calendar-event>
-  <calendar-event>
-    Team lunch (all day)
+  <calendar-event data-category="personal">
+    Team offsite (all day)
+  </calendar-event>
+</day-view>
+
+<day-view data-start-hour="8" data-end-hour="12">
+  <calendar-event data-category="deadline" data-duration="PT45M">
+    <time datetime="11:00">11:00</time>
+    Release cut-off
   </calendar-event>
 </day-view></code-block>
 
@@ -143,8 +167,45 @@ crumbLabel: Web Components
   Design review
 </calendar-event></code-block>
 
-    <p>Supported durations: <code>1h</code>, <code>1h30m</code>, <code>2h</code>, <code>3h</code>.</p>
-    <p>Leave the subsequent hour's <code>&lt;hour-view&gt;</code> empty &mdash; the spanning event overlays it visually.</p>
+    <table class="props-table">
+      <caption>Supported <code>data-duration</code> formats</caption>
+      <thead><tr><th>Format</th><th>Examples</th></tr></thead>
+      <tbody>
+        <tr><td>Hours (decimals allowed)</td><td><code>2h</code>, <code>1.5h</code></td></tr>
+        <tr><td>Minutes</td><td><code>45m</code>, <code>90m</code>, <code>90min</code></td></tr>
+        <tr><td>Hours and minutes</td><td><code>1h30m</code>, <code>1h 30m</code></td></tr>
+        <tr><td>Bare number (minutes)</td><td><code>60</code></td></tr>
+        <tr><td>ISO-8601 duration</td><td><code>PT1H30M</code>, <code>PT45M</code></td></tr>
+      </tbody>
+    </table>
+    <p>Anything else (including zero) falls back to one hour. <code>&lt;week-view&gt;</code> reads durations the same way.</p>
+    <p>Leave the subsequent hour's <code>&lt;hour-view&gt;</code> empty &mdash; the spanning event overlays it visually. Spans are re-measured whenever the view resizes; call <code>refresh()</code> after changing <code>data-duration</code> yourself.</p>
+  </section>
+
+  <section>
+    <h2>Overlapping and Clipped Spans</h2>
+    <p>Spanning events whose times overlap are laid out side by side, each taking an equal share of the event column. A span that runs past the last visible hour (or past midnight) is clipped at the bottom of the grid, gets <code>data-continues</code> and a dashed end edge, and its accessible name gains &ldquo;continues after the visible hours&rdquo; (see <code>data-label-continues</code>).</p>
+
+    <browser-window
+      src="/docs/examples/demos/day-view-overlap.html"
+      url="https://vanilla-breeze.com/day-view/overlap"
+      title="Overlapping spans">
+    </browser-window>
+
+    <code-block language="html" show-lines label="Overlapping spans" data-escape><day-view data-start-hour="9" data-end-hour="17">
+  <calendar-event data-category="meeting" data-duration="2h">
+    <time datetime="10:00">10:00</time>
+    Design workshop
+  </calendar-event>
+  <calendar-event data-category="personal" data-duration="1h">
+    <time datetime="10:30">10:30</time>
+    Candidate interview
+  </calendar-event>
+  <calendar-event data-category="deadline" data-duration="3h">
+    <time datetime="16:00">4:00</time>
+    Launch rehearsal
+  </calendar-event>
+</day-view></code-block>
   </section>
 
   <section>
@@ -165,7 +226,13 @@ crumbLabel: Web Components
 
   <section>
     <h2>All-Day Events</h2>
-    <p>Place all-day events in a <code>&lt;ul class="all-day-events"&gt;</code> above the hour list.</p>
+    <p>Place all-day events in a <code>&lt;ul class="all-day-events"&gt;</code> above the hour list. In a generated grid, events without a <code>&lt;time datetime&gt;</code> are moved there for you.</p>
+
+    <browser-window
+      src="/docs/examples/demos/day-view-all-day.html"
+      url="https://vanilla-breeze.com/day-view/all-day"
+      title="All-day events">
+    </browser-window>
 
     <code-block language="html" show-lines label="All-day event" data-escape><day-view>
   <ul class="all-day-events">
@@ -187,11 +254,44 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>day-view:event-click</code></td>
-          <td><code>{ time, text, element, category, duration }</code></td>
-          <td>Fired when a <code>&lt;calendar-event&gt;</code> is clicked.</td>
+          <td><code>{ date, time, text, element, category, duration }</code></td>
+          <td>Fired when a <code>&lt;calendar-event&gt;</code> is clicked, or activated with <kbd>Enter</kbd> / <kbd>Space</kbd> while focused.</td>
+        </tr>
+        <tr>
+          <td><code>day-view:events-changed</code></td>
+          <td><code>{ events, source: 'property' }</code></td>
+          <td>Fired after assigning the <code>events</code> property rebuilds the view.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead><tr><th>Member</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>events</code> (get)</td>
+          <td>The current <code>&lt;calendar-event&gt;</code> children as data: <code>{ time, text, category?, duration?, href? }[]</code>.</td>
+        </tr>
+        <tr>
+          <td><code>events</code> (set)</td>
+          <td>Replace every event and rebuild the view. Sets <code>data-start-hour="auto"</code>. <code>time</code> is <code>HH:MM</code> or a full ISO datetime; omit it for an all-day event. Emits <code>day-view:events-changed</code>.</td>
+        </tr>
+        <tr>
+          <td><code>refresh()</code></td>
+          <td>Re-measure and re-position spanning events now.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <code-block language="js" label="Assigning events" data-escape>const day = document.querySelector('day-view');
+day.events = [
+  { time: '2026-04-10T09:00', text: 'Standup', category: 'meeting' },
+  { time: '2026-04-10T13:00', text: 'Review', duration: 'PT1H30M' },
+  { text: 'Offsite' }, // all day
+];</code-block>
   </section>
 
   <section>
@@ -221,8 +321,8 @@ crumbLabel: Web Components
       <thead><tr><th>Layer</th><th>What renders</th></tr></thead>
       <tbody>
         <tr><td><strong>HTML only</strong></td><td>Ordered list of hours with events &mdash; readable, semantic</td></tr>
-        <tr><td><strong>+ CSS</strong></td><td>Grid layout, category colors, half-hour positioning</td></tr>
-        <tr><td><strong>+ JS</strong></td><td>Multi-hour spanning, click events, keyboard navigation</td></tr>
+        <tr><td><strong>+ CSS</strong></td><td>Category colours and event blocks; the hours stay a numbered list</td></tr>
+        <tr><td><strong>+ JS</strong></td><td>Hour-grid layout and half-hour positioning (applied once upgraded, via <code>data-upgraded</code>), generated grids, multi-hour spanning, click events, keyboard navigation</td></tr>
       </tbody>
     </table>
   </section>
@@ -234,8 +334,11 @@ crumbLabel: Web Components
       <tbody>
         <tr><td><kbd>Arrow Down</kbd></td><td>Move focus to next event</td></tr>
         <tr><td><kbd>Arrow Up</kbd></td><td>Move focus to previous event</td></tr>
+        <tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td>Move focus to the first / last event</td></tr>
+        <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Fire <code>day-view:event-click</code> for the focused event</td></tr>
       </tbody>
     </table>
+    <p>Events are one roving tab stop: <kbd>Tab</kbd> enters the schedule on the last-focused event (the first one initially). Each event gets <code>role="group"</code> and an accessible name from its time and title (author-supplied <code>role</code> / <code>aria-label</code> are kept). Links and buttons inside an event keep their own behaviour; <kbd>Enter</kbd> on them does not fire <code>day-view:event-click</code>.</p>
   </section>
 
   <section>

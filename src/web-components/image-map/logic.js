@@ -241,9 +241,7 @@ class ImageMapWc extends VBElement {
       if (r.target) a.setAttribute('target', r.target);
       this.appendChild(a);
     }
-    this.teardown();
-    this.removeAttribute('data-upgraded');
-    this.setup();
+    this._reinit();
     this.dispatchEvent(new CustomEvent('image-map:regions-changed', {
       detail: { regions: next, source: 'property' },
       bubbles: true,

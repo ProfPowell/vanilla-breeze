@@ -167,9 +167,7 @@ class FlowDiagram extends VBElement {
    */
   #refresh() {
     const swap = () => {
-      this.teardown();
-      this.removeAttribute('data-upgraded');
-      this.setup();
+      this._reinit();
     };
     if (this.hasAttribute('data-upgraded')) {
       viewTransitionSwap(this, swap, 'fd-vt');

@@ -78,9 +78,7 @@ class TabSet extends VBElement {
       this.firstElementChild.setAttribute('open', '');
     }
 
-    this.teardown();
-    this.removeAttribute('data-upgraded');
-    this.setup();
+    this._reinit();
 
     this.dispatchEvent(new CustomEvent('tab-set:tabs-changed', {
       detail: { tabs: next, source: 'property' },

@@ -195,6 +195,8 @@ class SiteMap extends VBElement {
       ul.classList.remove('sm-subtree', 'sm-collapsed');
     });
     this.#treeContainer = null;
+    // listen() handlers are released on teardown; let #initDragPan rebind
+    this.#dragPanBound = false;
     this.#focusedNode = null;
     this.#nodeCount = 0;
     this.#maxDepth = 0;
@@ -1585,9 +1587,7 @@ class SiteMap extends VBElement {
     this.#buildListFromJson(ul, pages);
     nav.appendChild(ul);
     this.appendChild(nav);
-    this.teardown();
-    this.removeAttribute('data-upgraded');
-    this.setup();
+    this._reinit();
   }
 
   /**

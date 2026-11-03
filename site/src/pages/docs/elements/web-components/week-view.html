@@ -41,7 +41,7 @@ crumbLabel: Web Components
   </calendar-event>
 </week-view></code-block>
 
-    <p>Each <code>&lt;calendar-event&gt;</code> must have <code>data-date="YYYY-MM-DD"</code> to assign it to a day column, and a <code>&lt;time datetime="HH:MM"&gt;</code> for the hour slot.</p>
+    <p>Each <code>&lt;calendar-event&gt;</code> must have <code>data-date="YYYY-MM-DD"</code> to assign it to a day column, and a <code>&lt;time datetime&gt;</code> for the hour slot. The <code>datetime</code> may be <code>HH:MM</code> or a full ISO datetime; the wall-clock time is used as written (offsets are not converted). Events without a date in range or without a time are not placed.</p>
   </section>
 
   <section>
@@ -65,13 +65,19 @@ crumbLabel: Web Components
           <td><code>data-start-hour</code></td>
           <td>number | <code>"auto"</code></td>
           <td><code>"auto"</code></td>
-          <td>First visible hour, or <code>"auto"</code> to compute from events.</td>
+          <td>First visible hour, or <code>"auto"</code> to compute from events. A numeric range grows to fit events outside it.</td>
         </tr>
         <tr>
           <td><code>data-end-hour</code></td>
           <td>number</td>
           <td><code>19</code></td>
           <td>Last visible hour. Ignored when <code>data-start-hour="auto"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-continues</code></td>
+          <td>string</td>
+          <td><code>"continues after the visible hours"</code></td>
+          <td>Appended to the accessible name of a spanning event clipped at the last visible hour. Localisation hook.</td>
         </tr>
       </tbody>
     </table>
@@ -94,6 +100,8 @@ crumbLabel: Web Components
   <time datetime="10:00">10:00 AM</time>
   Design review
 </calendar-event></code-block>
+
+    <p>Durations are parsed exactly as in <code>&lt;day-view&gt;</code>: <code>2h</code>, <code>1.5h</code>, <code>45m</code>, <code>90m</code>, <code>1h30m</code>, bare minutes (<code>60</code>) and ISO-8601 (<code>PT1H30M</code>); anything else falls back to one hour. Overlapping spans in the same day column are laid out side by side. A span running past the last visible hour is clipped, marked <code>data-continues</code> (dashed end edge) and its accessible name says it continues. Spans re-measure when the view resizes; call <code>refresh()</code> after changing <code>data-duration</code> yourself.</p>
   </section>
 
   <section>
@@ -119,7 +127,33 @@ crumbLabel: Web Components
         <tr>
           <td><code>week-view:event-click</code></td>
           <td><code>{ date, time, text, element, category, duration }</code></td>
-          <td>Fired when a <code>&lt;calendar-event&gt;</code> is clicked.</td>
+          <td>Fired when a <code>&lt;calendar-event&gt;</code> is clicked, or activated with <kbd>Enter</kbd> / <kbd>Space</kbd> while focused.</td>
+        </tr>
+        <tr>
+          <td><code>week-view:events-changed</code></td>
+          <td><code>{ events, source: 'property' }</code></td>
+          <td>Fired after assigning the <code>events</code> property rebuilds the table.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead><tr><th>Member</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>events</code> (get)</td>
+          <td>The current events as data: <code>{ date, time, text, category?, duration? }[]</code>.</td>
+        </tr>
+        <tr>
+          <td><code>events</code> (set)</td>
+          <td>Replace every event and rebuild the table. <code>time</code> is <code>HH:MM</code> or a full ISO datetime, whose date is used when <code>date</code> is omitted. Emits <code>week-view:events-changed</code>.</td>
+        </tr>
+        <tr>
+          <td><code>refresh()</code></td>
+          <td>Re-measure and re-position spanning events now.</td>
         </tr>
       </tbody>
     </table>
@@ -132,10 +166,13 @@ crumbLabel: Web Components
       <tbody>
         <tr><td><kbd>Arrow Down</kbd></td><td>Next event in same day column</td></tr>
         <tr><td><kbd>Arrow Up</kbd></td><td>Previous event in same day column</td></tr>
-        <tr><td><kbd>Arrow Right</kbd></td><td>Next event in same hour row</td></tr>
-        <tr><td><kbd>Arrow Left</kbd></td><td>Previous event in same hour row</td></tr>
+        <tr><td><kbd>Arrow Right</kbd></td><td>Next event in same hour row (previous in right-to-left layouts)</td></tr>
+        <tr><td><kbd>Arrow Left</kbd></td><td>Previous event in same hour row (next in right-to-left layouts)</td></tr>
+        <tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td>First / last event of the week</td></tr>
+        <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Fire <code>week-view:event-click</code> for the focused event</td></tr>
       </tbody>
     </table>
+    <p>Events are one roving tab stop. Each gets <code>role="group"</code> and an accessible name from its time and title (author-supplied <code>role</code> / <code>aria-label</code> are kept).</p>
   </section>
 
   <section>
@@ -144,8 +181,8 @@ crumbLabel: Web Components
       <thead><tr><th>Layer</th><th>What renders</th></tr></thead>
       <tbody>
         <tr><td><strong>HTML only</strong></td><td>Calendar events render as a flat list (readable without JS)</td></tr>
-        <tr><td><strong>+ CSS</strong></td><td>Grid table layout with day columns and hour rows</td></tr>
-        <tr><td><strong>+ JS</strong></td><td>Auto table generation, spanning events, click handling, keyboard nav</td></tr>
+        <tr><td><strong>+ CSS</strong></td><td>Category colours and event blocks; an authored table stays a plain bordered table</td></tr>
+        <tr><td><strong>+ JS</strong></td><td>Auto table generation, the grid/subgrid layout (applied once upgraded), spanning events, click handling, keyboard nav</td></tr>
       </tbody>
     </table>
   </section>

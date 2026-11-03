@@ -25,7 +25,7 @@
       "purpose": "config",
       "type": "string",
       "default": "auto",
-      "description": "First visible hour (0-23), or 'auto' to scan events"
+      "description": "First visible hour (0-23), or 'auto' to scan events. A fixed range grows to fit events outside it."
     },
     {
       "name": "data-end-hour",
@@ -34,19 +34,65 @@
       "type": "number",
       "default": 19,
       "description": "Last visible hour (0-23). Ignored when data-start-hour is 'auto'."
+    },
+    {
+      "name": "data-label-continues",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "continues after the visible hours",
+      "description": "Text appended to the accessible name of a spanning event that runs past the last visible hour (localisation hook)."
     }
   ],
   "events": [
     {
       "name": "week-view:event-click",
-      "description": "Fired when a calendar-event is clicked",
+      "description": "Fired when a calendar-event is clicked, or activated with Enter/Space while focused",
       "detail": "{ date, time, text, element, category, duration }"
+    },
+    {
+      "name": "week-view:events-changed",
+      "description": "Fired after the events property rebuilds the view",
+      "detail": "{ events, source: 'property' }"
+    }
+  ],
+  "properties": [
+    {
+      "name": "events",
+      "type": "Array<{ date?, time, text, category?, duration? }>",
+      "description": "Get the week's events as data, or assign an array to rebuild the table. time is HH:MM or a full ISO datetime (its date is used when date is omitted). Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour."
+    }
+  ],
+  "methods": [
+    {
+      "name": "refresh()",
+      "description": "Re-measure and re-position spanning events now (they also re-position automatically when the view resizes)"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-date",
+      "on": "calendar-event",
+      "type": "string",
+      "description": "ISO date assigning this event to a day column (auto mode)"
+    },
+    {
+      "name": "data-duration",
+      "on": "calendar-event",
+      "type": "string",
+      "description": "Makes the event span hour rows. Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour. Overlapping spans in one day column are laid out side by side."
+    },
+    {
+      "name": "data-continues",
+      "on": "calendar-event",
+      "type": "boolean",
+      "description": "Set by the component (not authored) on a spanning event clipped at the last visible hour."
     }
   ],
   "structure": [
     {
       "element": "table",
-      "description": "Semantic table: hours (rows) \u00d7 days (columns)"
+      "description": "Semantic table: hours (rows) × days (columns)"
     },
     {
       "element": "thead > tr > th",
@@ -67,14 +113,6 @@
     {
       "element": "calendar-event",
       "description": "Individual event with time, category, and optional duration"
-    }
-  ],
-  "childAttributes": [
-    {
-      "name": "data-date",
-      "on": "calendar-event",
-      "type": "string",
-      "description": "ISO date assigning this event to a day column (auto mode)"
     }
   ],
   "htmlvalidate": {

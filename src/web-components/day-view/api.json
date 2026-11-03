@@ -15,7 +15,7 @@
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "ISO date for this day view (e.g., 2026-04-10)"
+      "description": "ISO date for this day view (e.g., 2026-04-10). Names the hour list (aria-label) and is passed as detail.date in day-view:event-click."
     },
     {
       "name": "data-start-hour",
@@ -23,7 +23,7 @@
       "purpose": "config",
       "type": "string",
       "default": "7",
-      "description": "First visible hour (0-23), or 'auto' to scan calendar-event children and compute sparse range"
+      "description": "First hour (0-23) of the grid the component generates when there is no authored <ol>, or 'auto' for a sparse range (first event hour - 1 to last event hour + 1). The range grows to fit events outside it. Ignored when you author the <ol>."
     },
     {
       "name": "data-end-hour",
@@ -31,7 +31,7 @@
       "purpose": "config",
       "type": "number",
       "default": 19,
-      "description": "Last visible hour (0-23). Ignored when data-start-hour is 'auto'."
+      "description": "Last hour (0-23) of the generated grid. Ignored when data-start-hour is 'auto' or the <ol> is authored."
     },
     {
       "name": "data-compact",
@@ -39,13 +39,62 @@
       "purpose": "visual-variant",
       "type": "boolean",
       "description": "Compact presentation for dialog or overlay embedding"
+    },
+    {
+      "name": "data-label-continues",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "continues after the visible hours",
+      "description": "Text appended to the accessible name of a spanning event that runs past the last visible hour (localisation hook)."
     }
   ],
   "events": [
     {
       "name": "day-view:event-click",
-      "description": "Fired when a calendar-event is clicked",
-      "detail": "{ time, text, element, category, duration }"
+      "description": "Fired when a calendar-event is clicked, or activated with Enter/Space while focused",
+      "detail": "{ date, time, text, element, category, duration }"
+    },
+    {
+      "name": "day-view:events-changed",
+      "description": "Fired after the events property rebuilds the view",
+      "detail": "{ events, source: 'property' }"
+    }
+  ],
+  "properties": [
+    {
+      "name": "events",
+      "type": "Array<{ time?, text, category?, duration?, href? }>",
+      "description": "Get the day's events as data, or assign an array to rebuild the view (sets data-start-hour=\"auto\"). time is HH:MM or a full ISO datetime (wall-clock as written); omit it for an all-day event. Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour."
+    }
+  ],
+  "methods": [
+    {
+      "name": "refresh()",
+      "description": "Re-measure and re-position spanning events now (they also re-position automatically when the view resizes)"
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-duration",
+      "on": "calendar-event",
+      "type": "string",
+      "description": "Makes the event span hour rows. Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour. Overlapping spans are laid out side by side."
+    },
+    {
+      "name": "data-start",
+      "on": "calendar-event",
+      "type": "enum",
+      "values": [
+        "30"
+      ],
+      "description": "Minute offset within the hour row; set automatically in generated grids for :30+ start times."
+    },
+    {
+      "name": "data-continues",
+      "on": "calendar-event",
+      "type": "boolean",
+      "description": "Set by the component (not authored) on a spanning event clipped at the last visible hour; styled with a dashed end edge."
     }
   ],
   "structure": [

@@ -63,6 +63,9 @@
     grid-template-columns: 4rem 1fr;
     grid-template-rows: 1fr 1fr;
     min-block-size: 3rem;
+    /* Rows must be contiguous: the base li + li flow spacing would open
+       gaps that spanning events (measured across rows) bridge visibly. */
+    margin: 0;
     box-shadow: inset 0 -1px 0 var(--color-border, #e0e0e0);
   }
 
@@ -77,6 +80,14 @@
     box-shadow: inset -1px 0 0 var(--color-border, #e0e0e0);
     text-align: end;
     line-height: 1;
+  }
+
+  /* ── Spanning events clipped at the last visible hour ──────── */
+
+  calendar-event.dv-spanning[data-continues] {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    border-block-end: 2px dashed var(--event-color, var(--color-primary));
   }
 
   /* ── Compact variant (dialog embedding) ────────────────────── */
