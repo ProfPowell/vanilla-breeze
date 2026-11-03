@@ -246,8 +246,29 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-valid": {},
-      "data-invalid": {}
+      "data-valid": { boolean: true },
+      "data-invalid": { boolean: true },
+      "data-type": {},
+      "data-no-icon": { boolean: true },
+      "data-floating-label": { boolean: true },
+      "data-pending": { boolean: true },
+      "data-state": {},
+      "data-message-invalid": {},
+      "data-label-show-password": {},
+      "data-label-hide-password": {},
+      "data-label-digit": {},
+      "data-label-incomplete": {},
+      "data-label-strength": {},
+      "data-label-strength-weak": {},
+      "data-label-strength-fair": {},
+      "data-label-strength-good": {},
+      "data-label-strength-strong": {},
+      "data-label-requirements": {},
+      "data-label-rule-length": {},
+      "data-label-rule-uppercase": {},
+      "data-label-rule-lowercase": {},
+      "data-label-rule-number": {},
+      "data-label-rule-special": {}
     }
   },
 
@@ -776,10 +797,21 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "title": {},
+      "data-title": {},
+      "data-heading-level": {},
       "src": {},
-      "data-direction": {},
-      "compact": { boolean: true }
+      "data-direction": { enum: ["vertical", "horizontal"] },
+      "compact": { boolean: true },
+      "data-label": {},
+      "data-label-selected": {},
+      "data-label-steps-one": {},
+      "data-label-steps-other": {},
+      "data-label-type-start": {},
+      "data-label-type-action": {},
+      "data-label-type-decision": {},
+      "data-label-type-process": {},
+      "data-label-type-wait": {},
+      "data-label-type-end": {}
     }
   },
 
@@ -793,12 +825,11 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-back-label": {},
-      "data-mode": {},
-      "data-enhanced": {},
-      "data-side": {},
-      "role": {},
-      "data-backref": {}
+      "data-mode": { enum: ["sidenotes"] },
+      "data-label-back": {},
+      "data-label-ref": {},
+      "data-label-heading": {},
+      "data-preview": { enum: ["false"] }
     }
   },
 

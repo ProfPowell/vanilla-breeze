@@ -1239,7 +1239,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "fab-stack",
     "type": "custom-element",
-    "description": "Fixed action button stack. Pins to one of 8 screen positions via the shared data-float system; stacks children vertically with a gap. Default position is bottom-right.",
+    "description": "Fixed action button stack. Pins to one of 8 screen positions via the shared data-float system; stacks children vertically with a gap. The first child is the primary action: it sits nearest the anchored edge and is focused first. Default position is bottom-right (inline-end). Dialog and popover children are left to the top layer.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -1263,7 +1263,7 @@ export default {
           "bottom-right"
         ],
         "default": "bottom-right",
-        "description": "Screen position via the shared [data-float] system. Mirrors in RTL (left/right are logical inline-start/end)."
+        "description": "Screen position via the shared [data-float] system. Mirrors in RTL (left/right are logical inline-start/end, with the matching physical safe-area inset); *-center stays on the viewport midpoint."
       }
     ],
     "structure": [
@@ -6376,7 +6376,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "flow-diagram",
     "type": "web-component",
-    "description": "User flow and sequence visualization — progressively enhances an ol into a connected node graph with actions, decisions, and branches",
+    "description": "User flow and sequence visualization — progressively enhances an ol into a labelled figure holding a nested list drawn as a connected node graph with actions, decisions, and branches",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6385,44 +6385,177 @@ export default {
     },
     "attributes": [
       {
-        "name": "title",
-        "kind": "host-api",
+        "name": "data-title",
+        "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Diagram heading"
+        "description": "Diagram heading, rendered as a real heading that labels the figure. Observed."
+      },
+      {
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": "2",
+        "description": "Heading level (1-6) for data-title. Observed."
       },
       {
         "name": "src",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to JSON flow data"
+        "description": "URL to JSON flow data: { title?, steps }. Loaded on connect when there is no inline <ol>, and whenever it changes."
       },
       {
         "name": "data-direction",
         "kind": "data",
-        "purpose": "config",
-        "type": "string",
-        "description": "Layout: vertical (default) or horizontal"
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "vertical",
+          "horizontal"
+        ],
+        "default": "vertical",
+        "description": "Layout direction. Horizontal follows the writing direction (arrows point toward inline-end in RTL). CSS only."
       },
       {
         "name": "compact",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Reduced spacing"
+        "description": "Reduced spacing and node sizes. CSS only (no re-render)."
+      },
+      {
+        "name": "data-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Flow diagram",
+        "description": "Accessible name of the figure when there is no data-title. Observed."
+      },
+      {
+        "name": "data-label-selected",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Selected: {text}",
+        "description": "Live-region announcement on select; {text} is replaced with the node text."
+      },
+      {
+        "name": "data-label-steps-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} step",
+        "description": "Step-count summary for the Intl.PluralRules \"one\" category ({count} is replaced). Any category works: data-label-steps-few, -many, -zero, -two."
+      },
+      {
+        "name": "data-label-steps-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} steps",
+        "description": "Step-count summary for the \"other\" category and the fallback for unset categories."
+      },
+      {
+        "name": "data-label-type-start",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Start",
+        "description": "Spoken type prefix for start nodes (\"Start: …\")."
+      },
+      {
+        "name": "data-label-type-action",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Action",
+        "description": "Spoken type prefix for action nodes."
+      },
+      {
+        "name": "data-label-type-decision",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Decision",
+        "description": "Spoken type prefix for decision nodes."
+      },
+      {
+        "name": "data-label-type-process",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Process",
+        "description": "Spoken type prefix for process nodes."
+      },
+      {
+        "name": "data-label-type-wait",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Wait",
+        "description": "Spoken type prefix for wait nodes."
+      },
+      {
+        "name": "data-label-type-end",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "End",
+        "description": "Spoken type prefix for end nodes."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-type",
+        "on": "li",
+        "type": "enum",
+        "values": [
+          "start",
+          "action",
+          "decision",
+          "process",
+          "wait",
+          "end"
+        ],
+        "description": "Node type (default action). Other values render with action styling and the raw type as the spoken prefix unless data-label-type-<type> is set."
+      },
+      {
+        "name": "data-annotation",
+        "on": "li",
+        "type": "string",
+        "description": "Note shown under the node; also the node button's accessible description"
+      },
+      {
+        "name": "data-branch",
+        "on": "li",
+        "type": "string",
+        "description": "Branch label on a decision's nested <li>, which holds its own <ol> of steps. \"Yes\"/\"No\" get success/error colouring."
+      }
+    ],
+    "properties": [
+      {
+        "name": "steps",
+        "type": "Array<{ type, text, annotation?, branches?: Array<{ label, steps }> }>",
+        "description": "Get the parsed flow, or assign one to rebuild. Input is normalized (branches default to [], strings become action steps, malformed entries are dropped) and written into the source <ol>, so it survives re-renders and moves."
       }
     ],
     "events": [
       {
         "name": "flow-diagram:ready",
         "detail": "{ nodeCount }",
-        "description": "After setup"
+        "description": "After every render: initial upgrade, observed attribute change, src load, and .steps assignment"
       },
       {
         "name": "flow-diagram:select",
         "detail": "{ type, text }",
-        "description": "Node clicked"
+        "description": "Node activated by click, Enter or Space"
+      },
+      {
+        "name": "flow-diagram:steps-changed",
+        "detail": "{ steps, source: 'property' }",
+        "description": "After .steps assignment (fires after the render's ready)"
       }
     ]
   },
@@ -6442,41 +6575,77 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "foot-notes",
     "type": "web-component",
-    "description": "Progressive enhancement for footnotes",
+    "description": "Progressive enhancement for footnotes: collects the <foot-note> elements that precede it into a labelled doc-endnotes list (or margin sidenotes), with doc-noteref references, doc-backlink return links, shared notes for repeat citations and a hover/focus preview.",
     "attributes": [
-      {
-        "name": "data-back-label",
-        "kind": "data",
-        "purpose": "config"
-      },
       {
         "name": "data-mode",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "sidenotes"
+        ],
+        "description": "Omit for a collected notes list; \"sidenotes\" places each note in the margin beside its reference (notes with data-side=\"false\" still go to the list). Observed: changing it re-renders."
       },
       {
-        "name": "data-enhanced",
+        "name": "data-label-back",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Back to content",
+        "description": "Accessible name of the backlinks; a note cited several times gets \" (a)\", \" (b)\" … appended. Observed at runtime."
       },
       {
-        "name": "data-side",
+        "name": "data-label-ref",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Footnote {n}",
+        "description": "Accessible name of each reference link; {n} is replaced by the note number. Observed at runtime."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-backref",
+        "name": "data-label-heading",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Notes",
+        "description": "Text of the generated, visually hidden heading that labels the doc-endnotes section. Ignored when the author supplies a heading child (h1–h6), which is used as the label instead. Observed at runtime."
+      },
+      {
+        "name": "data-preview",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "false"
+        ],
+        "description": "\"false\" disables the hover / keyboard-focus preview popover on references. Observed at runtime."
       }
     ],
-    "childAttributes": [],
-    "structure": [],
+    "childAttributes": [
+      {
+        "name": "data-side",
+        "on": "foot-note",
+        "type": "string",
+        "description": "\"false\" opts a note out of sidenote placement in data-mode=\"sidenotes\"; it is collected into the list instead."
+      },
+      {
+        "name": "data-ref",
+        "on": "foot-note",
+        "type": "string",
+        "description": "Id of an earlier or later <foot-note> collected by the same <foot-notes>: this element becomes another citation of that note (no content of its own) and the note gets one backlink per citation (a, b, …)."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<foot-note>",
+        "description": "Inline note anywhere BEFORE the <foot-notes> in document order (not necessarily a child). Phrasing content; without JS it renders in parentheses. Enhanced: its content nodes are moved (not copied) into the note, and it holds a superscript <a role=\"doc-noteref\"> (id fnref-I-N, fnref-I-N-b for repeat citations)."
+      },
+      {
+        "element": "<h1>–<h6> (optional)",
+        "description": "A heading child of <foot-notes> labels the generated <section role=\"doc-endnotes\">; otherwise a visually hidden <h2> with data-label-heading is generated."
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6488,7 +6657,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "form-field",
     "type": "web-component",
-    "description": "Accessible form field web component",
+    "description": "Accessible form field: binds its control (native or form-associated custom element), times validation, shows hint/error outputs and wires aria-describedby / aria-invalid",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -6499,16 +6668,320 @@ export default {
       {
         "name": "data-valid",
         "kind": "data",
-        "purpose": "semantic-state"
+        "purpose": "semantic-state",
+        "type": "boolean",
+        "description": "Valid state. Set by the component when a valid field has a value (not for empty optional fields); can be set by hand."
       },
       {
         "name": "data-invalid",
         "kind": "data",
-        "purpose": "semantic-state"
+        "purpose": "semantic-state",
+        "type": "boolean",
+        "description": "Invalid state: reveals output.error and the error icon. Set by validate()/setError(); survives moving the field."
+      },
+      {
+        "name": "data-type",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "string",
+        "description": "Inline label + control layout for checkable controls. No validation icon.",
+        "enum": [
+          "checkbox",
+          "radio"
+        ]
+      },
+      {
+        "name": "data-no-icon",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Disable the validation status icons."
+      },
+      {
+        "name": "data-floating-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Animated floating label (floating-label-init). A real placeholder keeps the label floated. Adds data-floating-label-ready when enhanced."
+      },
+      {
+        "name": "data-pending",
+        "kind": "data",
+        "purpose": "semantic-state",
+        "type": "boolean",
+        "description": "Dims the field and blocks pointer input while something is in flight."
+      },
+      {
+        "name": "data-state",
+        "kind": "data",
+        "purpose": "semantic-state",
+        "type": "string",
+        "description": "Async validation hook: warning border and spinner in the icon slot.",
+        "enum": [
+          "validating"
+        ]
+      },
+      {
+        "name": "data-message-invalid",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Last-resort error message when no data-message-*, authored error text or control message applies.",
+        "default": "Please check this field."
+      },
+      {
+        "name": "data-label-show-password",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the password toggle while the password is hidden.",
+        "default": "Show password"
+      },
+      {
+        "name": "data-label-hide-password",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the password toggle while the password is shown.",
+        "default": "Hide password"
+      },
+      {
+        "name": "data-label-digit",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "OTP/PIN box name; {n} and {total} are replaced.",
+        "default": "Digit {n} of {total}"
+      },
+      {
+        "name": "data-label-incomplete",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "OTP/PIN partial-code message (used when the input has no data-message-patternmismatch); {total} is replaced.",
+        "default": "Enter all {total} digits"
+      },
+      {
+        "name": "data-label-strength",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the password strength meter.",
+        "default": "Password strength"
+      },
+      {
+        "name": "data-label-strength-weak",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Strength level text.",
+        "default": "Weak"
+      },
+      {
+        "name": "data-label-strength-fair",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Strength level text.",
+        "default": "Fair"
+      },
+      {
+        "name": "data-label-strength-good",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Strength level text.",
+        "default": "Good"
+      },
+      {
+        "name": "data-label-strength-strong",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Strength level text.",
+        "default": "Strong"
+      },
+      {
+        "name": "data-label-requirements",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the password rules checklist.",
+        "default": "Password requirements"
+      },
+      {
+        "name": "data-label-rule-length",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Length rule text; {n} is replaced.",
+        "default": "At least {n} characters"
+      },
+      {
+        "name": "data-label-rule-uppercase",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Uppercase rule text.",
+        "default": "One uppercase letter"
+      },
+      {
+        "name": "data-label-rule-lowercase",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Lowercase rule text.",
+        "default": "One lowercase letter"
+      },
+      {
+        "name": "data-label-rule-number",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Number rule text.",
+        "default": "One number"
+      },
+      {
+        "name": "data-label-rule-special",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Special-character rule text.",
+        "default": "One special character"
+      },
+      {
+        "name": "data-floating-label-ready",
+        "kind": "data",
+        "purpose": "internal-hook",
+        "type": "boolean",
+        "description": "Set by floating-label-init once the floating label is wired. Do not set by hand."
+      },
+      {
+        "name": "data-otp-ready",
+        "kind": "data",
+        "purpose": "internal-hook",
+        "type": "boolean",
+        "description": "Set once the OTP/PIN boxes are built (hides the status icon). Do not set by hand."
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "data-message-valuemissing",
+        "on": "input",
+        "type": "string",
+        "description": "Message for valueMissing. Every ValidityState key has one: data-message-badinput, -typemismatch, -patternmismatch, -tooshort, -toolong, -rangeunderflow, -rangeoverflow, -stepmismatch, -customerror. On a custom element (or the field) for custom controls."
+      },
+      {
+        "name": "data-message-badinput",
+        "on": "input",
+        "type": "string",
+        "description": "Message when the browser can't parse the entry (e.g. letters in type=number)."
+      },
+      {
+        "name": "data-message-customerror",
+        "on": "input",
+        "type": "string",
+        "description": "Message for a custom validity error; without it the custom message itself is shown."
+      },
+      {
+        "name": "data-type",
+        "on": "input",
+        "type": "string",
+        "enum": [
+          "otp",
+          "pin"
+        ],
+        "description": "Multi-box OTP/PIN entry. The input stays a visually hidden, validatable text input (required + a \\d{length} pattern)."
+      },
+      {
+        "name": "data-length",
+        "on": "input",
+        "type": "number",
+        "default": "6",
+        "description": "Number of OTP/PIN digits."
+      },
+      {
+        "name": "data-strength",
+        "on": "input",
+        "type": "boolean",
+        "description": "Password strength meter + rules checklist."
+      },
+      {
+        "name": "data-rules",
+        "on": "input",
+        "type": "string",
+        "default": "length:8",
+        "description": "Comma-separated strength rules: length:N, uppercase, lowercase, number, special."
+      },
+      {
+        "name": "data-count",
+        "on": "textarea",
+        "type": "string",
+        "description": "Character (\"\") or word (\"words\") counter, added to aria-describedby; announced only near the limit."
+      },
+      {
+        "name": "class",
+        "on": "output",
+        "type": "string",
+        "enum": [
+          "hint",
+          "error"
+        ],
+        "description": "hint: help text, collapses when valid; error: hidden (visibility: hidden) until invalid, authored text is the fallback message."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<label>",
+        "description": "Field label (for= the control id). The required asterisk goes on it when it is the field's only label."
+      },
+      {
+        "element": "<input> | <textarea> | <select> | form-associated custom element",
+        "description": "The bound control. Radios bind their whole name group."
+      },
+      {
+        "element": "<output class=\"hint\">",
+        "required": false,
+        "description": "Help text; listed in aria-describedby."
+      },
+      {
+        "element": "<output class=\"error\">",
+        "required": false,
+        "description": "Error message; in aria-describedby only while invalid."
+      }
+    ],
+    "events": [
+      {
+        "name": "form-field:upgraded",
+        "description": "Bubbles once the field has bound its control."
+      }
+    ],
+    "properties": [
+      {
+        "name": "fieldName",
+        "type": "string",
+        "description": "Human-readable field name (label or legend text, else aria-label, name or id) for error summaries. Read-only."
+      },
+      {
+        "name": "input",
+        "type": "HTMLElement | null",
+        "description": "The bound control: the first form-associated custom element in the field (date-picker, star-rating, combo-box …), else the first native input/textarea/select. Read-only."
+      }
+    ],
+    "methods": [
+      {
+        "name": "validate({ show = true } = {})",
+        "description": "Validate the bound control and show the result immediately (error text, data-invalid/data-valid, aria-invalid, aria-describedby) — no blur needed; the form coordinator calls it on submit. Returns the validity. { show: false } returns validity without touching the UI."
+      },
+      {
+        "name": "setError(message)",
+        "description": "Show a programmatic (e.g. server) error. Also set as the native control's custom validity so the form won't submit; cleared on the user's next edit. Never clears a custom error set by other code."
+      },
+      {
+        "name": "clearError()",
+        "description": "Clear the field's own programmatic error and return to the neutral state."
+      }
+    ]
   },
   "geo-map": {
     "$schema": "../../../schemas/api.schema.json",

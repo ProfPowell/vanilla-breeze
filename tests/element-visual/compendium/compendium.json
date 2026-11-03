@@ -2091,7 +2091,7 @@
           "interactive": true,
           "screenshotTarget": "dialog",
           "setup": "document.querySelector('#ev-dialog-drawer').showModal()",
-          "html": "<dialog id=\"ev-dialog-drawer\" aria-labelledby=\"ev-dialog-drawer-t\" data-position=\"end\"><header><h2 id=\"ev-dialog-drawer-t\">Filters</h2></header><section><fieldset class=\"minimal\"><legend>Status</legend><label><input type=\"checkbox\" checked> Active</label><label><input type=\"checkbox\"> Archived</label></fieldset></section><footer><button type=\"button\" class=\"secondary\">Clear</button><button type=\"button\">Apply</button></footer></dialog>"
+          "html": "<dialog id=\"ev-dialog-drawer\" aria-labelledby=\"ev-dialog-drawer-t\" data-position=\"end\"><header><h2 id=\"ev-dialog-drawer-t\">Filters</h2></header><section><fieldset data-variant=\"minimal\"><legend>Status</legend><label><input type=\"checkbox\" checked> Active</label><label><input type=\"checkbox\"> Archived</label></fieldset></section><footer><button type=\"button\" class=\"secondary\">Clear</button><button type=\"button\">Apply</button></footer></dialog>"
         },
         {
           "id": "form-method",
@@ -2403,6 +2403,40 @@
       "readySelector": "emoji-picker[data-upgraded]"
     },
     {
+      "id": "fab-stack",
+      "tag": "fab-stack",
+      "type": "custom",
+      "category": "interactive",
+      "cssFile": "src/custom-elements/fab-stack/styles.css",
+      "jsRequired": false,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Default (bottom-right, first child nearest the edge)",
+          "html": "<fab-stack>\n  <button type=\"button\" class=\"fab\" aria-label=\"Compose\">+</button>\n  <button type=\"button\" class=\"fab\" aria-label=\"Chat\">C</button>\n  <button type=\"button\" class=\"fab\" aria-label=\"Help\">?</button>\n</fab-stack>",
+          "screenshotTarget": "page"
+        },
+        {
+          "id": "top-left",
+          "name": "Top-left (first child at the top)",
+          "html": "<fab-stack data-float=\"top-left\">\n  <button type=\"button\" class=\"fab\" aria-label=\"Compose\">+</button>\n  <button type=\"button\" class=\"fab\" aria-label=\"Chat\">C</button>\n  <button type=\"button\" class=\"fab\" aria-label=\"Help\">?</button>\n</fab-stack>",
+          "screenshotTarget": "page"
+        },
+        {
+          "id": "rtl",
+          "name": "RTL default (mirrors to bottom-left)",
+          "html": "<fab-stack dir=\"rtl\">\n  <button type=\"button\" class=\"fab\" aria-label=\"Compose\">+</button>\n  <button type=\"button\" class=\"fab\" aria-label=\"Chat\">C</button>\n  <button type=\"button\" class=\"fab\" aria-label=\"Help\">?</button>\n</fab-stack>",
+          "screenshotTarget": "page"
+        },
+        {
+          "id": "center",
+          "name": "Bottom-center, RTL (stays on the viewport midpoint)",
+          "html": "<fab-stack data-float=\"bottom-center\" dir=\"rtl\">\n  <button type=\"button\" class=\"fab\" aria-label=\"Compose\">+</button>\n  <button type=\"button\" class=\"fab\" aria-label=\"Chat\">C</button>\n  <button type=\"button\" class=\"fab\" aria-label=\"Help\">?</button>\n</fab-stack>",
+          "screenshotTarget": "page"
+        }
+      ]
+    },
+    {
       "id": "fieldset",
       "tag": "fieldset",
       "type": "native",
@@ -2417,7 +2451,7 @@
         {
           "id": "minimal",
           "name": "Minimal",
-          "html": "<fieldset class=\"minimal\"><legend>Notification Preferences</legend><label><input type=\"checkbox\" name=\"ev-notify\" value=\"email\"> Email notifications</label><label><input type=\"checkbox\" name=\"ev-notify\" value=\"sms\"> SMS notifications</label><label><input type=\"checkbox\" name=\"ev-notify\" value=\"push\"> Push notifications</label></fieldset>"
+          "html": "<fieldset data-variant=\"minimal\"><legend>Notification Preferences</legend><label><input type=\"checkbox\" name=\"ev-notify\" value=\"email\"> Email notifications</label><label><input type=\"checkbox\" name=\"ev-notify\" value=\"sms\"> SMS notifications</label><label><input type=\"checkbox\" name=\"ev-notify\" value=\"push\"> Push notifications</label></fieldset>"
         },
         {
           "id": "disabled",
@@ -2426,6 +2460,21 @@
             ":disabled"
           ],
           "html": "<fieldset disabled><legend>Disabled Section</legend><label for=\"ev-fs-dis-name\">Name</label><input type=\"text\" id=\"ev-fs-dis-name\" value=\"Cannot edit\"><button type=\"button\">Cannot Click</button></fieldset>"
+        },
+        {
+          "id": "status",
+          "name": "Status (success / warning / error)",
+          "html": "<section data-layout=\"stack\" data-layout-gap=\"m\"><fieldset data-status=\"success\"><legend>Payment complete</legend><label for=\"ev-fs-st-card\">Card</label><input type=\"text\" id=\"ev-fs-st-card\" value=\"4242\" readonly></fieldset><fieldset data-status=\"warning\"><legend>Verification needed</legend><label for=\"ev-fs-st-phone\">Phone</label><input type=\"tel\" id=\"ev-fs-st-phone\"></fieldset><fieldset data-status=\"error\"><legend>Validation errors</legend><label for=\"ev-fs-st-email\">Email</label><input type=\"email\" id=\"ev-fs-st-email\" value=\"not-an-email\" aria-invalid=\"true\"></fieldset></section>"
+        },
+        {
+          "id": "invalid",
+          "name": "Invalid checkbox group (data-invalid + message)",
+          "html": "<fieldset data-invalid data-min-checked=\"1\"><legend>Topics</legend><label><input type=\"checkbox\" name=\"ev-fs-topic\" value=\"css\"> CSS</label><label><input type=\"checkbox\" name=\"ev-fs-topic\" value=\"html\"> HTML</label><output>Select at least 1</output></fieldset>"
+        },
+        {
+          "id": "rtl",
+          "name": "RTL (bordered + minimal legend)",
+          "html": "<section dir=\"rtl\" lang=\"ar\" data-layout=\"stack\" data-layout-gap=\"m\"><fieldset><legend>معلومات الاتصال</legend><label for=\"ev-fs-rtl-name\">الاسم</label><input type=\"text\" id=\"ev-fs-rtl-name\"></fieldset><fieldset data-variant=\"minimal\"><legend>التفضيلات</legend><label><input type=\"checkbox\" name=\"ev-fs-rtl-p\" value=\"a\"> الوضع الداكن</label></fieldset></section>"
         }
       ]
     },
@@ -2440,12 +2489,12 @@
         {
           "id": "default",
           "name": "Default Figure",
-          "html": "<figure>\n  <div style=\"background: var(--color-surface-alt); height: 120px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-s);\">Image placeholder</div>\n  <figcaption>A descriptive caption for this figure.</figcaption>\n</figure>"
+          "html": "<figure>\n  <img src=\"/src/assets/placeholders/photo-figure-1-600x400.svg\" alt=\"A scenic landscape\">\n  <figcaption>A descriptive caption for this figure.</figcaption>\n</figure>"
         },
         {
           "id": "bordered",
           "name": "Bordered",
-          "html": "<figure class=\"bordered\">\n  <div style=\"background: var(--color-surface-alt); height: 120px; display: flex; align-items: center; justify-content: center;\">Image placeholder</div>\n  <figcaption>Bordered figure with caption</figcaption>\n</figure>"
+          "html": "<figure class=\"bordered\">\n  <img src=\"/src/assets/placeholders/photo-figure-2-600x350.svg\" alt=\"Bordered figure example\">\n  <figcaption>Bordered figure with caption</figcaption>\n</figure>"
         },
         {
           "id": "code",
@@ -2464,19 +2513,19 @@
           "classes": [
             "full"
           ],
-          "html": "<figure class=\"full\"><img src=\"https://placehold.co/720x200/e2e8f0/475569?text=Full+Width+Image\" alt=\"Landscape\"><figcaption>A full-width figure stretches to fill its container.</figcaption></figure>",
+          "html": "<figure class=\"full\"><img src=\"/src/assets/placeholders/photo-vb-full-1200x400.svg\" alt=\"Landscape\"><figcaption>A full-width figure stretches to fill its container.</figcaption></figure>",
           "fixtureWidth": "wide"
         },
         {
           "id": "float-start",
           "name": "Float Start",
-          "html": "<div><figure class=\"float-start\" style=\"max-inline-size: 200px\"><img src=\"https://placehold.co/200x150/e2e8f0/475569?text=Floated\" alt=\"Photo\"><figcaption>Float start</figcaption></figure><p>Text wraps around a figure floated to the inline-start (left in LTR). This demonstrates the classic magazine-style layout with an image alongside flowing paragraph content that fills the remaining space.</p></div>",
+          "html": "<section><figure class=\"float-start\"><img src=\"/src/assets/placeholders/photo-vb-float-s-200x150.svg\" alt=\"Photo\"><figcaption>Float start</figcaption></figure><p>Text wraps around a figure floated to the inline-start (left in LTR). This demonstrates the classic magazine-style layout with an image alongside flowing paragraph content that fills the remaining space.</p></section>",
           "fixtureWidth": "wide"
         },
         {
           "id": "float-end",
           "name": "Float End",
-          "html": "<div><figure class=\"float-end\" style=\"max-inline-size: 200px\"><img src=\"https://placehold.co/200x150/e2e8f0/475569?text=Floated\" alt=\"Photo\"><figcaption>Float end</figcaption></figure><p>Text wraps around a figure floated to the inline-end (right in LTR). This demonstrates the classic magazine-style layout with an image alongside flowing paragraph content that fills the remaining space.</p></div>",
+          "html": "<section><figure class=\"float-end\"><img src=\"/src/assets/placeholders/photo-vb-float-e-200x150.svg\" alt=\"Photo\"><figcaption>Float end</figcaption></figure><p>Text wraps around a figure floated to the inline-end (right in LTR). This demonstrates the classic magazine-style layout with an image alongside flowing paragraph content that fills the remaining space.</p></section>",
           "fixtureWidth": "wide"
         },
         {
@@ -2485,18 +2534,80 @@
           "classes": [
             "centered"
           ],
-          "html": "<figure class=\"centered\" style=\"max-inline-size: 300px\"><img src=\"https://placehold.co/300x150/e2e8f0/475569?text=Centered\" alt=\"Centered image\"><figcaption>A centered figure with auto margins.</figcaption></figure>",
+          "html": "<figure class=\"centered\"><img src=\"/src/assets/placeholders/photo-vb-centered-400x300.svg\" alt=\"Centered image\"><figcaption>A centered figure with auto margins.</figcaption></figure>",
           "fixtureWidth": "wide"
         },
         {
           "id": "figcaption-centered",
           "name": "Caption Centered",
-          "html": "<figure><img src=\"https://placehold.co/480x150/e2e8f0/475569?text=Image\" alt=\"Sample\"><figcaption class=\"centered\">A centered caption below the image.</figcaption></figure>"
+          "html": "<figure><img src=\"/src/assets/placeholders/photo-figcaption-4-500x281.svg\" alt=\"Sample\"><figcaption class=\"centered\">A centered caption below the image.</figcaption></figure>"
         },
         {
           "id": "figcaption-end",
           "name": "Caption End-Aligned",
-          "html": "<figure><img src=\"https://placehold.co/480x150/e2e8f0/475569?text=Image\" alt=\"Sample\"><figcaption class=\"end\">An end-aligned caption below the image.</figcaption></figure>"
+          "html": "<figure><img src=\"/src/assets/placeholders/photo-figcaption-5-500x282.svg\" alt=\"Sample\"><figcaption class=\"end\">An end-aligned caption below the image.</figcaption></figure>"
+        },
+        {
+          "id": "caption-first",
+          "name": "Caption First",
+          "html": "<figure class=\"bordered\">\n  <figcaption>Caption first: the divider moves below it.</figcaption>\n  <img src=\"/src/assets/placeholders/photo-figcaption-2-500x301.svg\" alt=\"Ocean view\">\n</figure>"
+        },
+        {
+          "id": "code-caption-first",
+          "name": "Code Figure, Caption First",
+          "fixtureWidth": "wide",
+          "html": "<figure class=\"code\">\n  <figcaption>utils/math.js</figcaption>\n  <pre><code>const sum = (a, b) =&gt; a + b;</code></pre>\n</figure>"
+        },
+        {
+          "id": "media-caption",
+          "name": "data-media with Caption",
+          "html": "<figure data-media data-ratio=\"16:9\" data-radius=\"m\">\n  <img src=\"/src/assets/placeholders/photo-figure-1-600x400.svg\" alt=\"Mountain landscape cropped to 16:9\">\n  <figcaption>The ratio box applies to the image; the caption sits below.</figcaption>\n</figure>"
+        },
+        {
+          "id": "numbered",
+          "name": "Numbered (article[data-numbered])",
+          "fixtureWidth": "wide",
+          "html": "<article data-numbered>\n  <figure><img src=\"/src/assets/placeholders/photo-vb-fig-img-500x300.svg\" alt=\"Survey chart\"><figcaption>Survey responses.</figcaption></figure>\n  <figure class=\"code\"><pre><code>const total = 42;</code></pre><figcaption>Summing responses.</figcaption></figure>\n  <figure class=\"quote\"><blockquote><p>The data speaks for itself.</p></blockquote><figcaption>Lead researcher</figcaption></figure>\n  <figure><img src=\"/src/assets/placeholders/photo-figure-2-600x350.svg\" alt=\"Follow-up chart\"><figcaption>Follow-up responses.</figcaption></figure>\n</article>"
+        }
+      ]
+    },
+    {
+      "id": "flow-diagram",
+      "tag": "flow-diagram",
+      "type": "web-component",
+      "category": "media",
+      "cssFile": "src/web-components/flow-diagram/styles.css",
+      "jsRequired": true,
+      "readySelector": "flow-diagram[data-upgraded]",
+      "variants": [
+        {
+          "id": "vertical",
+          "name": "Vertical with decision branches",
+          "html": "<flow-diagram data-title=\"Login\">\n  <ol>\n    <li data-type=\"start\">Visit login</li>\n    <li data-type=\"action\">Enter credentials</li>\n    <li data-type=\"decision\" data-annotation=\"Checked against the DB\">Valid?\n      <ol>\n        <li data-branch=\"Yes\"><ol><li data-type=\"process\">Create session</li><li data-type=\"end\">Dashboard</li></ol></li>\n        <li data-branch=\"No\"><ol><li data-type=\"wait\">Back off</li><li data-type=\"end\">Retry</li></ol></li>\n      </ol>\n    </li>\n  </ol>\n</flow-diagram>",
+          "fixtureWidth": "wide"
+        },
+        {
+          "id": "horizontal",
+          "name": "Horizontal",
+          "html": "<flow-diagram data-title=\"Checkout\" data-direction=\"horizontal\">\n  <ol>\n    <li data-type=\"start\">Open cart</li>\n    <li data-type=\"action\">Review items</li>\n    <li data-type=\"decision\">Signed in?\n      <ol>\n        <li data-branch=\"Yes\"><ol><li data-type=\"end\">Pay</li></ol></li>\n        <li data-branch=\"No\"><ol><li data-type=\"action\">Enter address</li><li data-type=\"end\">Pay as guest</li></ol></li>\n      </ol>\n    </li>\n  </ol>\n</flow-diagram>",
+          "fixtureWidth": "wide"
+        },
+        {
+          "id": "compact",
+          "name": "Compact",
+          "html": "<flow-diagram data-title=\"Checkout\" compact>\n  <ol>\n    <li data-type=\"start\">Open cart</li>\n    <li data-type=\"action\">Review items</li>\n    <li data-type=\"decision\">Signed in?\n      <ol>\n        <li data-branch=\"Yes\"><ol><li data-type=\"end\">Pay</li></ol></li>\n        <li data-branch=\"No\"><ol><li data-type=\"action\">Enter address</li><li data-type=\"end\">Pay as guest</li></ol></li>\n      </ol>\n    </li>\n  </ol>\n</flow-diagram>",
+          "fixtureWidth": "wide"
+        },
+        {
+          "id": "linear",
+          "name": "All node types, no title (data-label)",
+          "html": "<flow-diagram data-label=\"Support flow\"><ol><li data-type=\"start\">Open help</li><li data-type=\"action\">Describe problem</li><li data-type=\"process\" data-annotation=\"Auto-triage\">Route ticket</li><li data-type=\"wait\">Agent assigned</li><li data-type=\"end\">Resolved</li></ol></flow-diagram>"
+        },
+        {
+          "id": "rtl",
+          "name": "Horizontal, right-to-left",
+          "html": "<section dir=\"rtl\" lang=\"ar\">\n<flow-diagram data-title=\"الدفع\" data-direction=\"horizontal\" data-label-type-start=\"بداية\" data-label-type-action=\"إجراء\" data-label-type-decision=\"قرار\" data-label-type-end=\"نهاية\" data-label-steps-other=\"{count} خطوة\" data-label-steps-few=\"{count} خطوات\">\n  <ol>\n    <li data-type=\"start\">فتح السلة</li>\n    <li data-type=\"action\">مراجعة المنتجات</li>\n    <li data-type=\"decision\">هل سجلت الدخول؟\n      <ol>\n        <li data-branch=\"نعم\"><ol><li data-type=\"end\">الدفع</li></ol></li>\n        <li data-branch=\"لا\"><ol><li data-type=\"action\">إدخال العنوان</li><li data-type=\"end\">الدفع كضيف</li></ol></li>\n      </ol>\n    </li>\n  </ol>\n</flow-diagram>\n</section>",
+          "fixtureWidth": "wide"
         }
       ]
     },
@@ -2515,6 +2626,38 @@
           "interactive": true,
           "setup": "await new Promise(r => setTimeout(r, 500));",
           "html": "<article>\n  <p>The Web was invented by Tim Berners-Lee<foot-note>Tim Berners-Lee created the World Wide Web in 1989 at CERN.</foot-note> as a system for scientists.</p>\n  <p>HTML provides semantic structure<foot-note>HTML stands for HyperText Markup Language.</foot-note> for web documents.</p>\n  <p>CSS enables styling<foot-note>Cascading Style Sheets separate content from presentation.</foot-note> without polluting markup.</p>\n</article>\n<foot-notes></foot-notes>"
+        },
+        {
+          "id": "multi-ref",
+          "name": "Repeat citation (data-ref) with a/b backlinks",
+          "screenshotTarget": "page",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 500));",
+          "html": "<article>\n  <p>Bush described the Memex<foot-note id=\"cmp-fn-bush\">Vannevar Bush, <cite>As We May Think</cite>, 1945.</foot-note> in an essay.</p>\n  <p>Nelson coined hypertext<foot-note>Ted Nelson, 1963.</foot-note> later.</p>\n  <p>Both trace to the same essay<foot-note data-ref=\"cmp-fn-bush\"></foot-note>.</p>\n</article>\n<foot-notes></foot-notes>"
+        },
+        {
+          "id": "sidenotes",
+          "name": "Sidenote mode",
+          "screenshotTarget": "page",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 500));",
+          "html": "<layout-text>\n  <p>Gutenberg's press transformed European society.<foot-note>Movable type, around 1440 in Mainz.</foot-note> Books had been copied by hand.</p>\n  <p>Literacy rose dramatically.<foot-note>Roughly 10% in 1450 to over 50% by 1800.</foot-note> Knowledge spread beyond the clergy.</p>\n  <foot-notes data-mode=\"sidenotes\"></foot-notes>\n</layout-text>"
+        },
+        {
+          "id": "sidenotes-side-false",
+          "name": "Sidenote mode with data-side=\"false\" note in the list",
+          "screenshotTarget": "page",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 500));",
+          "html": "<layout-text>\n  <p>A margin note.<foot-note>Short sidenote.</foot-note> Then a long one.<foot-note data-side=\"false\">This longer note opts out of the margin and is collected into the list below.</foot-note></p>\n  <foot-notes data-mode=\"sidenotes\"></foot-notes>\n</layout-text>"
+        },
+        {
+          "id": "authored-heading",
+          "name": "Authored heading labels the notes",
+          "screenshotTarget": "page",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 500));",
+          "html": "<article>\n  <p>The Web was invented by Tim Berners-Lee<foot-note>Tim Berners-Lee created the World Wide Web in 1989 at CERN.</foot-note> as a system for scientists.</p>\n  <p>HTML provides semantic structure<foot-note>HTML stands for HyperText Markup Language.</foot-note> for web documents.</p>\n</article>\n<foot-notes>\n  <h2>References</h2>\n</foot-notes>"
         }
       ]
     },
@@ -2530,7 +2673,7 @@
           "id": "site",
           "name": "Site Footer",
           "fixtureWidth": "wide",
-          "html": "<footer class=\"site\">\n  <nav>\n    <a href=\"#\">Privacy</a>\n    <a href=\"#\">Terms</a>\n    <a href=\"#\">Contact</a>\n  </nav>\n  <p>&copy; 2026 Vanilla Breeze</p>\n</footer>"
+          "html": "<footer class=\"site\">\n  <nav>\n    <a href=\"/privacy\">Privacy</a>\n    <a href=\"/terms\">Terms</a>\n    <a href=\"/contact\">Contact</a>\n  </nav>\n  <p>&copy; 2026 Vanilla Breeze. Built with <a href=\"/docs/\">Vanilla Breeze</a>.</p>\n</footer>"
         },
         {
           "id": "article",
@@ -2541,7 +2684,7 @@
           "id": "columns",
           "name": "Multi-Column Footer",
           "fixtureWidth": "wide",
-          "html": "<footer class=\"columns\">\n  <div><h4>Product</h4><a href=\"#\">Features</a><a href=\"#\">Pricing</a></div>\n  <div><h4>Company</h4><a href=\"#\">About</a><a href=\"#\">Blog</a></div>\n  <div><h4>Support</h4><a href=\"#\">Docs</a><a href=\"#\">Contact</a></div>\n</footer>"
+          "html": "<footer class=\"columns\">\n  <section><h4>Product</h4><ul class=\"unstyled\"><li><a href=\"/features\">Features</a></li><li><a href=\"/pricing\">Pricing</a></li></ul></section>\n  <section><h4>Company</h4><ul class=\"unstyled\"><li><a href=\"/about\">About</a></li><li><a href=\"/blog\">Blog</a></li></ul></section>\n  <section><h4>Support</h4><ul class=\"unstyled\"><li><a href=\"/docs\">Docs</a></li><li><a href=\"/contact\">Contact</a></li></ul></section>\n</footer>"
         },
         {
           "id": "card",
@@ -2549,7 +2692,7 @@
           "classes": [
             "card"
           ],
-          "html": "<footer class=\"card\"><button class=\"secondary\">Cancel</button> <button>Save</button></footer>"
+          "html": "<article class=\"card\"><footer class=\"card\"><button type=\"button\" class=\"secondary\">Cancel</button> <button type=\"button\">Save</button></footer></article>"
         },
         {
           "id": "minimal",
@@ -2558,6 +2701,17 @@
             "minimal"
           ],
           "html": "<footer class=\"minimal\">© 2026 Example Inc. All rights reserved.</footer>"
+        },
+        {
+          "id": "default",
+          "name": "Default Footer",
+          "html": "<footer>\n  <p>Copyright 2026 Acme Corp. All rights reserved.</p>\n</footer>"
+        },
+        {
+          "id": "sticky",
+          "name": "Sticky Footer (data-sticky)",
+          "fixtureWidth": "wide",
+          "html": "<section>\n  <p>Form content above the sticky actions.</p>\n  <footer data-sticky>\n    <button type=\"submit\">Save</button>\n  </footer>\n</section>"
         }
       ]
     },
@@ -2599,6 +2753,27 @@
           "name": "Actions Between",
           "html": "<form class=\"stacked\" onsubmit=\"return false\"><label for=\"ev-f-aname\">Name</label><input type=\"text\" id=\"ev-f-aname\"><footer class=\"actions between\"><button type=\"button\" class=\"ghost\">Delete</button><span><button type=\"button\" class=\"secondary\">Cancel</button> <button type=\"submit\">Save</button></span></footer></form>",
           "fixtureWidth": "wide"
+        },
+        {
+          "id": "summary-visible",
+          "name": "Error Summary (visible)",
+          "html": "<form class=\"stacked\" data-validate onsubmit=\"return false\"><section data-form-summary data-visible role=\"alert\" tabindex=\"-1\"><h2 data-summary-heading>Please fix 2 errors:</h2><ul data-summary-list><li><a href=\"#ev-fs-name\">Name: Please enter your name</a></li><li><a href=\"#ev-fs-t1\">Toppings: Select at least 2</a></li></ul></section><form-field data-invalid><label for=\"ev-fs-name\">Name</label><input id=\"ev-fs-name\" name=\"name\" required aria-invalid=\"true\"><output class=\"error\" for=\"ev-fs-name\">Please enter your name</output></form-field><fieldset data-min-checked=\"2\" data-invalid><legend>Toppings</legend><label><input type=\"checkbox\" id=\"ev-fs-t1\" name=\"t\" value=\"1\"> Cheese</label><label><input type=\"checkbox\" name=\"t\" value=\"2\"> Olives</label><output>Select at least 2</output></fieldset><footer class=\"actions end\"><button type=\"submit\">Send</button></footer></form>",
+          "fixtureWidth": "wide"
+        },
+        {
+          "id": "invalid-fieldset",
+          "name": "Invalid Checkbox Group",
+          "html": "<form class=\"stacked\" data-validate onsubmit=\"return false\"><fieldset data-min-checked=\"2\" data-invalid><legend>Interests</legend><label><input type=\"checkbox\" name=\"i\" value=\"a\" checked> Design</label><label><input type=\"checkbox\" name=\"i\" value=\"b\"> Code</label><label><input type=\"checkbox\" name=\"i\" value=\"c\"> Writing</label><output>Select at least 2</output></fieldset></form>"
+        },
+        {
+          "id": "network-error",
+          "name": "Network Error",
+          "html": "<form class=\"stacked\" data-validate data-submit=\"fetch\" data-error=\"network\" onsubmit=\"return false\"><p data-form-error role=\"alert\">Something went wrong. Please try again.</p><label for=\"ev-fne-email\">Email</label><input type=\"email\" id=\"ev-fne-email\" value=\"ada@example.com\"><footer class=\"actions end\"><button type=\"submit\">Send</button></footer></form>"
+        },
+        {
+          "id": "success",
+          "name": "Fetch Success",
+          "html": "<form class=\"stacked\" data-validate data-submit=\"fetch\" data-success onsubmit=\"return false\"><label for=\"ev-fsu-email\">Email</label><input type=\"email\" id=\"ev-fsu-email\"><section data-form-success role=\"status\" tabindex=\"-1\"><p>Thank you! Your message has been sent.</p></section></form>"
         }
       ]
     },
@@ -2627,12 +2802,62 @@
         {
           "id": "with-error",
           "name": "With Error",
-          "html": "<form-field><label for=\"ev-ff-pw\">Password</label><input id=\"ev-ff-pw\" type=\"password\" required aria-invalid=\"true\" aria-describedby=\"ev-ff-pw-err\"><output id=\"ev-ff-pw-err\" class=\"error\" for=\"ev-ff-pw\" style=\"visibility:visible\">Password must be at least 8 characters.</output></form-field>"
+          "html": "<form-field data-invalid><label for=\"ev-ff-pw\">Password</label><input id=\"ev-ff-pw\" type=\"password\" required aria-invalid=\"true\" aria-describedby=\"ev-ff-pw-err\"><output id=\"ev-ff-pw-err\" class=\"error\" for=\"ev-ff-pw\">Password must be at least 8 characters.</output></form-field>"
         },
         {
           "id": "select",
           "name": "Select",
           "html": "<form-field><label for=\"ev-ff-color\">Favorite Color</label><select id=\"ev-ff-color\"><option value=\"\">Choose…</option><option value=\"red\">Red</option><option value=\"blue\">Blue</option><option value=\"green\">Green</option></select></form-field>"
+        },
+        {
+          "id": "otp",
+          "name": "OTP Code",
+          "html": "<form-field data-no-icon><label for=\"ev-ff-otp\">Verification code</label><input type=\"text\" id=\"ev-ff-otp\" name=\"code\" data-type=\"otp\" data-length=\"6\" inputmode=\"numeric\" autocomplete=\"one-time-code\" required value=\"123\"><output class=\"hint\" for=\"ev-ff-otp\">6 digits from the SMS we sent.</output></form-field>",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 200));",
+          "screenshotTarget": "[data-fixture-target]"
+        },
+        {
+          "id": "password-strength",
+          "name": "Password + Strength",
+          "html": "<form-field><label for=\"ev-ff-npw\">New password</label><input type=\"password\" id=\"ev-ff-npw\" autocomplete=\"new-password\" data-strength data-rules=\"length:8,uppercase,number\" value=\"Secret1\"></form-field>",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 200)); const i = document.querySelector('#ev-ff-npw'); i.dispatchEvent(new Event('input', { bubbles: true }));",
+          "screenshotTarget": "[data-fixture-target]"
+        },
+        {
+          "id": "counter",
+          "name": "Textarea Counter",
+          "html": "<form-field><label for=\"ev-ff-bio\">Bio</label><textarea id=\"ev-ff-bio\" rows=\"3\" maxlength=\"50\" data-count>Designer, writer, occasional baker of bread.</textarea><output class=\"hint\" for=\"ev-ff-bio\">Shown on your profile.</output></form-field>",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 200));",
+          "screenshotTarget": "[data-fixture-target]"
+        },
+        {
+          "id": "floating-label",
+          "name": "Floating Label",
+          "html": "<form-field data-floating-label><label for=\"ev-ff-fl\">Email address</label><input type=\"email\" id=\"ev-ff-fl\" value=\"ada@example.com\"></form-field>",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 200));",
+          "screenshotTarget": "[data-fixture-target]"
+        },
+        {
+          "id": "floating-label-placeholder",
+          "name": "Floating Label + Placeholder",
+          "html": "<form-field data-floating-label><label for=\"ev-ff-flp\">Website</label><input type=\"url\" id=\"ev-ff-flp\" placeholder=\"https://example.com\"></form-field>",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 200));",
+          "screenshotTarget": "[data-fixture-target]"
+        },
+        {
+          "id": "select-valid",
+          "name": "Select (valid)",
+          "html": "<form-field data-valid><label for=\"ev-ff-sv\">Plan</label><select id=\"ev-ff-sv\" required><option value=\"\">Choose…</option><option value=\"pro\" selected>Pro</option></select></form-field>"
+        },
+        {
+          "id": "checkbox-valid",
+          "name": "Checkbox (valid, no icon)",
+          "html": "<form-field data-type=\"checkbox\" data-valid><label><input type=\"checkbox\" id=\"ev-ff-cb\" required checked> I agree to the terms</label></form-field>"
         }
       ]
     },
@@ -4107,7 +4332,7 @@
         {
           "id": "default",
           "name": "Default Group",
-          "html": "<fieldset class=\"minimal\"><legend>Select size</legend><label><input type=\"radio\" name=\"ev-radio\" value=\"s\"> Small</label><label><input type=\"radio\" name=\"ev-radio\" value=\"m\" checked> Medium</label><label><input type=\"radio\" name=\"ev-radio\" value=\"l\"> Large</label></fieldset>"
+          "html": "<fieldset data-variant=\"minimal\"><legend>Select size</legend><label><input type=\"radio\" name=\"ev-radio\" value=\"s\"> Small</label><label><input type=\"radio\" name=\"ev-radio\" value=\"m\" checked> Medium</label><label><input type=\"radio\" name=\"ev-radio\" value=\"l\"> Large</label></fieldset>"
         },
         {
           "id": "bordered",

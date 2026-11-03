@@ -298,6 +298,7 @@ Icons suppressed inside `<nav>`, `<header>`, `<footer>`.
 | `.small` | Reduced padding/font |
 | `.large` | Increased padding/font |
 | `.full-width` | 100% inline-size |
+| `[data-loading]` | Spinner + `aria-busy` while its form submits (JS). Activates only when the submission proceeds (uncancelled submit or uncancelled `vb:beforesubmit`) |
 
 ### `<input>`, `<textarea>`, `<select>` Form Controls
 
@@ -324,15 +325,45 @@ Related classes:
 
 | Class | Description |
 |-------|-------------|
-| `.group` | Column flex wrapper |
+| `.group` | Column flex wrapper (inside a `form`, or on a `fieldset`) |
 | `.group.horizontal` | Row flex wrapper |
-| `.actions` | Button container (flex) |
+| `.actions` | Button container (flex). Inside a `form`/`dialog`, or on a `footer` |
 | `.actions.end` | Right-aligned buttons |
 | `.actions.between` | Space-between buttons |
-| `.help` | Small muted helper text |
-| `.error` | Red error message |
-| `fieldset.minimal` | No border, minimal legend |
-| `fieldset.code-inputs` | OTP/verification input layout |
+| `.help` | Small muted helper text (`p`, `span`, `small`) |
+| `.error` | Red error message (`p`, `span`, `small`) |
+
+### `<form data-validate>` Form Coordinator
+
+| Attribute / Selector | Values | Description |
+|----------------------|--------|-------------|
+| `data-validate` | (boolean), `summary` | Coordinator owns validation UI (sets `novalidate`). `summary` hides inline errors |
+| `data-submit` | `native` (default), `event`, `fetch` | `native`: `requestSubmit(submitter)`. `event`: cancelable `vb:submit`, detail = FormData incl. submitter. `fetch`: method from submitter `formmethod` → form `method` attr → POST; GET → querystring; honours `formaction` |
+| `data-submitting`, `data-success`, `data-error` | state (set on form) | `data-error` is `"network"` or `""` (server field errors). Cleared on next submit |
+| `[data-form-summary]` | child | Error summary (+ `[data-summary-list]`, optional `[data-summary-heading]`); legacy `output.error-summary` |
+| `[data-form-success]` | child | Shown + focused on fetch success (gets `tabindex="-1"`, `role="status"` if absent) |
+| `[data-form-error]` | child | Shown on network error (`role="alert"`); generated `<p>` if absent |
+| `data-label-summary`, `data-label-summary-{one\|other\|few\|many\|two\|zero}` | text with `{count}` | Summary heading |
+| `data-label-group` | text | Group label in the summary |
+| `data-message-min-checked` / `data-message-max-checked` | text with `{min}` / `{max}` | Checkbox-group messages |
+| `data-message-invalid-selection`, `data-message-match`, `data-message-network` | text | Message overrides |
+
+Events: `vb:beforesubmit` (cancelable, detail `{ form, submitter }`, after validation passes), `vb:submit`.
+
+### `<fieldset>` Fieldset
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-variant` | `minimal` | No border or padding; legend reads as a section heading (replaces `.minimal`) |
+| `data-status` | `success`, `warning`, `error` | Border tint. Pair with text; forced colors switch to a 3px solid/dotted/double border |
+| `data-min-checked` | number | Checkbox group: minimum ticked (form coordinator) |
+| `data-max-checked` | number | Checkbox group: maximum ticked (form coordinator) |
+| `data-message-min-checked` | text | Custom message when below the minimum (written to the fieldset's child `<output>`) |
+| `data-message-max-checked` | text | Custom message when above the maximum |
+| `data-invalid` | (set by coordinator) | Set while a checkbox-group constraint fails; red border + `<output>` message. Don't author it by hand |
+| `disabled` | (boolean) | Native; VB adds muted text + dashed border and the controls dim once (no fieldset opacity) |
+
+> Custom property: `--fieldset-status-color` (set per `data-status`) lets themes re-apply the status border after restyling the fieldset.
 
 ### `<form data-wizard>` Form Wizard
 
@@ -350,6 +381,8 @@ Related classes:
 | `data-wizard-last` | Applied when on final step |
 | `data-wizard-if` | Conditional step visibility |
 | `data-wizard-optional` | Optional step marker |
+
+Counter text via `--wizard-label-step` (default `"Step "`) and `--wizard-label-of` (default `" of "`).
 
 ### `<details>` / `<summary>` Disclosure
 
@@ -563,8 +596,10 @@ Wrapper: `.embed-responsive` with `.ratio-16x9`, `.ratio-4x3`, `.ratio-1x1`, `.r
 | `.code` | figure | Code example layout |
 | `.quote` | figure | Quote layout |
 | `.centered` | figcaption | Center text |
-| `.end` | figcaption | Right-align |
-| `.hidden` | figcaption | Accessible hiding |
+| `.end` | figcaption | End-align (right in LTR, left in RTL) |
+| `.hidden` | figcaption | Visually hidden (same as `.visually-hidden`); still names the figure |
+
+Caption first (`<figcaption>` as first child) moves spacing, the `.bordered` divider and `.code` corners to suit. `figure[data-media]` with a `<figcaption>` applies the ratio to the media child; the caption flows below. In `article[data-numbered]`, `.quote` figures are not numbered and `.code` figures are numbered as Listings.
 
 ### Content Sectioning
 
@@ -575,7 +610,7 @@ Wrapper: `.embed-responsive` with `.ratio-16x9`, `.ratio-4x3`, `.ratio-1x1`, `.r
 | `.site` | Top navigation (flex between, bordered) |
 | `.page` | Page title (bordered bottom) |
 | `.card` | Card header (bordered bottom) |
-| `.sticky` | Fixed to top |
+| `[data-sticky]` | Sticks to top |
 | `.transparent` | Absolute overlay |
 | `.centered` | Text centered |
 | `.compact` | Reduced padding |
@@ -586,10 +621,10 @@ Wrapper: `.embed-responsive` with `.ratio-16x9`, `.ratio-4x3`, `.ratio-1x1`, `.r
 |-------|-------------|
 | `.site` | Full-width site footer |
 | `.article` | Article footer (border top) |
-| `.card` | Card footer |
+| `.card` | Card footer (for non-`layout-card` containers; `layout-card` styles its own footer) |
 | `.minimal` | Centered small text |
 | `.columns` | Grid auto-fit columns |
-| `.sticky` | Fixed to bottom |
+| `[data-sticky]` | Sticks to bottom of scroll container, above the virtual keyboard; static in print |
 
 #### `<main>`
 
@@ -886,18 +921,46 @@ Children: `<img>`, `[data-fallback]` (initials), `[data-status]` (`online`, `off
 | `data-size` | `s`, `m`, `l`, `xl` | Size |
 | `data-stack` | (boolean) | Vertical layout |
 
-#### `<form-field>`
-Accessible form field wrapper with validation states.
+#### `<fab-stack>`
+Floating action stack (CSS-only; back-to-top reveal uses JS).
+
+```html
+<fab-stack data-float="bottom-right">   <!-- 8 positions; default bottom-right (inline-end) -->
+  <button class="fab" aria-label="Compose">…</button>   <!-- first child = primary, nearest the edge, focused first -->
+  <a href="#" data-back-to-top aria-label="Back to top">&uarr;</a>
+</fab-stack>
+```
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-type` | `checkbox`, `radio` | Enables label flex layout |
+| `data-float` | `top-left`, `top-center`, `top-right`, `center-left`, `center-right`, `bottom-left`, `bottom-center`, `bottom-right` (default) | Position. left/right are logical (mirror in RTL, with the physical safe-area inset); `*-center` is the viewport midpoint in any direction |
+
+- Order: `column-reverse` for bottom/center, `column` for `top-*`.
+- `<dialog>` / `[popover]` children are not flattened (top layer works).
+- Tokens: `--fab-stack-gap`, `--float-offset`, `--nav-bottom-height`, `--z-float`.
+- `[data-back-to-top]`: hidden until one viewport of scroll (`[data-visible]`, JS); hidden = `visibility: hidden` (not tabbable). Visible without JS.
+
+#### `<form-field>`
+Accessible form field: binds its control (native input/textarea/select, or a form-associated custom element such as `<date-picker>` / `<star-rating>` / `<combo-box>`), times validation (on leaving the field, then eager after the first error) and wires `aria-describedby` (hints + counter, then the error while invalid) and `aria-invalid`.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-type` | `checkbox`, `radio` | Inline label layout; no status icon |
 | `data-no-icon` | (boolean) | Disable validation icons |
-| `data-enhanced` | `otp` | Enhancement type |
+| `data-floating-label` | (boolean) | Floating label; a real `placeholder` keeps it floated |
+| `data-valid` / `data-invalid` | (boolean) | State (set by the component; settable by hand) |
+| `data-pending` | (boolean) | Dim + block pointer input |
+| `data-state` | `validating` | Async spinner hook |
+| `data-message-invalid` | string | Last-resort error message |
+| `data-label-*` | string | i18n: `show-password`, `hide-password`, `digit`, `incomplete`, `strength`, `strength-weak/fair/good/strong`, `requirements`, `rule-length/uppercase/lowercase/number/special` |
 
-Children pattern: `<label>` + `<input>` + `<output class="hint">` + `<output class="error">`
+On the control: `data-message-<validitykey>` (`valuemissing`, `badinput`, `typemismatch`, `patternmismatch`, `tooshort`, `toolong`, `rangeunderflow`, `rangeoverflow`, `stepmismatch`, `customerror`); `data-type="otp|pin"` + `data-length`; `data-strength` + `data-rules`; `data-count` on textarea.
 
-Features: auto-appends `*` to required labels, validation icons, error visibility via `:user-invalid`.
+Children pattern: `<label>` + control + `<output class="hint">` + `<output class="error">` (authored error text = no-JS message and JS fallback).
+
+API: `validate({ show = true } = {})` → boolean (shows errors immediately), `setError(msg)` (cleared on next edit), `clearError()`, `fieldName`, `input`; event `form-field:upgraded`.
+
+Features: silent `*` on the field's only label / legend, validation icons (forced-colors aware), error visibility via `:user-invalid` / `[data-invalid]`.
 
 #### `<loading-spinner>`
 
@@ -938,7 +1001,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 > build (`npm run build:cem`). The entries below are the human-readable companion;
 > when a component is missing detail here, read its `api.json` and `logic.js`.
 
-### Component index (63 elements)
+### Component index (64 elements)
 
 | Element | Purpose | Detail below |
 |---------|---------|:------------:|
@@ -964,6 +1027,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<drag-surface>` | Drag-and-drop reorder zone (`group`, `orientation`, `disabled`, `data-move-controls`; children `draggable="true"` + `data-id`, optional `data-drag-handle`) | |
 | `<drop-down>` | Generic dropdown menu | ✓ |
 | `<emoji-picker>` | Emoji search & insert popover | ✓ |
+| `<flow-diagram>` | User-flow chart from a nested `<ol>` (start/action/decision/process/wait/end, branches) | ✓ |
 | `<foot-notes>` / `<foot-note>` | Footnote collection / inline reference | ✓ |
 | `<form-field>` | Field shell with label, help, error, password rules | (see §3) |
 | `<geo-map>` | OpenStreetMap-backed map embed | ✓ |
@@ -1273,9 +1337,22 @@ Theme picker UI (mode, theme, extensions).
 | `extensions-change` (on window) | `{ extension, value }` |
 
 ### `<foot-notes>` / `<foot-note>`
-Sidenote/footnote system.
+Footnote / sidenote system. `<foot-note>` elements anywhere *before* the `<foot-notes>` are collected; content nodes move into a `<section role="doc-endnotes">` list, references become `<a role="doc-noteref">` named "Footnote N", backlinks `role="doc-backlink"`.
 
-Children: `<foot-note>` elements with content. Auto-generates numbers and back-references.
+| Attribute (`<foot-notes>`) | Values | Description |
+|-----------|--------|-------------|
+| `data-mode` | `sidenotes` | Margin notes instead of a collected list |
+| `data-label-back` | string (default `Back to content`) | Backlink accessible name; repeat citations append ` (a)`, ` (b)` |
+| `data-label-ref` | string with `{n}` (default `Footnote {n}`) | Reference accessible name |
+| `data-label-heading` | string (default `Notes`) | Visually hidden list heading (an authored h1–h6 child is used instead) |
+| `data-preview` | `false` | Disable the hover/focus preview popover |
+
+| Attribute (`<foot-note>`) | Values | Description |
+|-----------|--------|-------------|
+| `data-ref` | id of another `<foot-note>` | Cite that note again (leave empty); shared number, a/b backlinks |
+| `data-side` | `false` | In sidenote mode, send this note to the list |
+
+Generated ids: `fnref-I-N` (reference link), `fnref-I-N-b`… (repeat citations), `fn-I-N` (note), `fnh-I` (heading).
 
 ### `<heading-links>`
 Adds anchor links to headings.
@@ -1416,6 +1493,25 @@ Same parsing and keyboard model as `<day-view>`, one column per day.
 | `data-label-continues` | string | Suffix for a clipped span's accessible name |
 
 Child `calendar-event[data-date]` assigns the day column. `events` get/set (`{ date?, time, text, category?, duration? }`; date derived from an ISO `time`), `refresh()`. Events: `week-view:event-click`, `week-view:events-changed`.
+
+### `<flow-diagram>`
+Progressively enhances a nested `<ol>` into a flow chart. Renders a `<figure>` (named by the heading or `data-label`) holding a nested list of node `<button>`s; one tab stop, arrow keys/Home/End move, Enter/Space select. Source `<ol>` is hidden while upgraded.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-title` | string | Heading that names the figure (replaces `title`) |
+| `data-heading-level` | `1`–`6` (default `2`) | Heading level |
+| `src` | URL | JSON `{ title?, steps }`; loaded on connect when there is no inline `<ol>` |
+| `data-direction` | `vertical` \| `horizontal` | Horizontal follows writing direction (RTL-aware) |
+| `compact` | boolean | Tighter spacing (CSS only) |
+| `data-label` | string | Figure name without a title (default `Flow diagram`) |
+| `data-label-selected` | string | Select announcement, `{text}` replaced |
+| `data-label-steps-{one,other,…}` | string | Step-count summary via `Intl.PluralRules`, `{count}` replaced |
+| `data-label-type-{type}` | string | Spoken type prefix (`Start`, `Action`, `Decision`, `Process`, `Wait`, `End`) |
+
+Child `<li>`: `data-type` (`start` \| `action` (default) \| `decision` \| `process` \| `wait` \| `end`), `data-annotation`; a decision nests `<ol><li data-branch="Yes"><ol>…</ol></li>…</ol>`.
+
+`steps` get/set (`{ type, text, annotation?, branches?: [{ label, steps }] }[]`, normalized, written back into the source `<ol>`). Events: `flow-diagram:ready` `{ nodeCount }` (every render), `flow-diagram:select` `{ type, text }`, `flow-diagram:steps-changed` `{ steps, source }`. Colour hooks: `--fd-<type>-text|border|bg`, `--fd-line`.
 
 ---
 
@@ -1681,6 +1777,8 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-autosave-retain` | `<form data-autosave>` | Space-separated allowlist of field names to persist |
 | `data-select-all` | `<input type="checkbox">` | Select/deselect all checkboxes |
 
+`data-show-when` / `data-hide-when`: controls in a hidden section are disabled (marked `data-conditional-disabled`) and re-enabled on show; author-disabled controls stay disabled.
+
 ### Text Effects
 
 | Attribute | Values | Description |
@@ -1851,7 +1949,6 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-dragover` | Upload zone — drag active |
 | `data-ellipsis` | Pagination — ellipsis indicator |
 | `data-empty` | `<output>` — empty state content |
-| `data-enhanced` | `<form-field>` — enhancement type |
 | `data-error` | `<output>` — error state content |
 | `data-error-correction` | `<qr-code>` — QR error level |
 | `data-expand-content` | Table row — expandable content |
@@ -1862,6 +1959,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | ~~`data-filter`~~ | **Removed** — use `filter` on `<combo-box>` |
 | `data-fit` | `[data-media]` — object-fit |
 | `data-swap` | `<content-swap>` trigger or any element — swap behavior |
+| `data-floating-label-ready` | `<form-field>` — floating label wired (internal) |
 | `data-flush` | Accordion — no borders |
 | `data-format-bytes` | `<data>` — byte formatting |
 | `data-format-date` | `<time>` — date formatting |
@@ -1909,6 +2007,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-numeric` | Table th/td — right-align |
 | `data-open` | Various WC — open state |
 | ~~`data-direction`~~ | **Removed** — use `direction` on `<split-surface>` |
+| `data-otp-ready` | `<form-field>` — OTP/PIN boxes built (internal) |
 | `data-overlay` | `<loading-spinner>` — overlay mode |
 | `data-padding` | Cards — padding preset |
 | `data-page-layout` | `<body>` — page layout (see §5) |
@@ -1956,7 +2055,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-state-sorted` | Table th — sort direction |
 | `data-status` | Avatar child — online status; content blocks, `<html>` — publication state (see §10) |
 | `data-stepper` | Number input — +/- buttons. See [numeric-inputs decision guide](/docs/concepts/numeric-inputs/) for when to reach for [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) instead. |
-| `data-sticky` | Table — sticky header/column |
+| `data-sticky` | Table — sticky header/column; `<header>`, `<footer>` — sticky |
 | `data-sticky-column` | Table — sticky N columns |
 | `data-switch` | Checkbox — toggle switch |
 | `data-table-empty` | `<data-table>` — no-results message element (generated) |

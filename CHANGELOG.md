@@ -13,6 +13,58 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Changes from the F-element review.**
+  - **form coordinator (`data-validate`)**
+    - Native mode submits with `requestSubmit(submitter)` instead of `form.submit()`, so the clicked button's `name`/`value`, `formaction` and `formmethod` apply (and other `submit` listeners see the real submission).
+    - `data-submit="fetch"` defaults to POST when the form has no `method` attribute (was always GET via `form.method`); GET builds a query string; the submitter's `formaction`/`formmethod` and `name`/`value` are honoured. `vb:submit`'s FormData includes the submitter.
+    - `vb:beforesubmit` detail is now `{ form, submitter }`.
+    - Untouched fields are no longer focused and blurred on every submit; `form-field.validate()` shows errors and bare controls get `aria-invalid="true"`.
+    - The error summary updates only on submit and then on blur/change when the error set changes (no per-keystroke rewrite of the `role="alert"` region); it gets `hidden` once collapsed. Radio groups appear once, links target the first control (ids generated when missing), checkbox-group entries link their first box, messages match the field's displayed message.
+    - Network errors show an authored or generated `[data-form-error]` element (`role="alert"`) instead of CSS `::before` text; fetch success focuses `[data-form-success]` (adds `tabindex="-1"`/`role="status"` if absent); `data-success`/`data-error` are cleared on the next submit.
+    - New form-level text overrides: `data-label-summary[-one|-other|…]` (Intl.PluralRules, `{count}`), `data-label-group`, `data-message-min-checked`/`-max-checked` (`{min}`/`{max}`), `data-message-invalid-selection`, `data-message-match`, `data-message-network`. An element with `data-summary-heading` in an authored summary receives the count heading.
+  - **data-show-when / data-hide-when** — controls inside a hidden conditional section are now disabled (restored on show; author-disabled controls untouched), so hidden required fields no longer block submit and hidden values are not submitted.
+  - **data-loading buttons** — activate only when a submission proceeds (uncancelled native submit, or an uncancelled `vb:beforesubmit`); an invalid submit no longer locks the button for 10 s.
+  - **wizard** — the "Step X of Y" counter words come from `--wizard-label-step` / `--wizard-label-of` (localisable); font size uses `--font-size-s`.
+  - **form-field**
+    - The field now wires ARIA itself: `aria-describedby` lists the hint output(s) and textarea counter, then the error output only while invalid (author ids kept, missing output ids generated); `aria-invalid` mirrors the state (radios in the field, the OTP group, or a custom control's inner combobox/group).
+    - Authored text inside `output.error` is now the no-JS message and the JS fallback: the output is emptied on upgrade and filled only when invalid (`data-message-*` and custom-error messages still win).
+    - Validation runs when focus leaves the field (not when it moves to the password toggle / OTP boxes / combobox popup) and on the control's `invalid` event; state (`data-invalid`, `aria-invalid`, eager re-validation) survives moving the field.
+    - Binds form-associated custom elements (`<date-picker>`, `<star-rating>`, `<combo-box>`) in preference to native inputs inside them, reading their validity/`:invalid` and re-binding if they are defined later. `input` returns that element.
+    - `validate({ show })`: `{ show: false }` returns validity without touching the UI.
+    - OTP/PIN: the source input is no longer turned into `type="hidden"` — it stays a visually hidden text input that keeps `required` and gets a `\d{length}` pattern, so empty/partial codes block submission. Digits are a `role="group"` named by the label and described by the hints; `autocomplete="one-time-code"` moves to the first box, which also spreads a pasted/autofilled code. `data-enhanced="otp"` is replaced by `data-otp-ready`.
+    - Required asterisk only on the field's sole `<label>` or its `<legend>` (no longer on every radio label) and is silent to screen readers (`content: " *" / ""`).
+    - Docs: removed `data-type="file"` and `data-required` (never implemented).
+  - **fieldset**: the `.minimal` class is now `data-variant="minimal"` (`<fieldset data-variant="minimal">`). The class no longer applies; all docs, demos and patterns were migrated. Extreme themes (neumorphism, win9x) leave minimal fieldsets flat.
+  - **fieldset**: a disabled fieldset no longer sets `opacity: 0.5` + `saturate(0.3)` on itself. Its controls already dim (button opacity 0.5), so the old rule compounded to ~0.25. The group now gets muted text and a dashed border (minimal: muted text only), and `GrayText` in forced-colors mode.
+  - **form helpers**: `.group`, `.actions`, `.help` and `.error` are scoped instead of global. `.group` applies inside a `form` or on a `fieldset`; `.actions` inside a `form`/`dialog` or on any `footer`; `.help`/`.error` on `p`, `span`, `small`. Specificity unchanged (`:where()`), so components using these class names outside forms (emoji-picker groups, `progress.error`, `mark.error`, site-search) no longer pick them up.
+  - **figure**: `<figure data-media>` with a `<figcaption>` no longer hides its caption under the media — the ratio box (`data-ratio`, `data-fit`, `data-radius`) moves to the media child and the caption flows below (or above, when first). Captionless `data-media` containers are unchanged.
+  - **figure**: removed the automatic "sticky caption" rule for figures containing a table or pre (it never worked — the figure is not the scroll container).
+  - **figure**: direct `svg`, `embed` and `object` children are now block-level and full-width like `img`/`video`/`picture`/`iframe`/`canvas`, matching `data-media`.
+  - **figcaption**: caption-first figures put the spacing below the caption; `.bordered` moves its divider below it and `.code` swaps its rounded corners.
+  - **figcaption**: `.hidden` now uses the exact `.visually-hidden` declarations (adds `white-space: nowrap`, `margin: -1px`, `padding: 0`, `border: 0`), marked `!important` so `.bordered`/`.code` caption styles can't re-expose it.
+  - **footer**: `footer.site` muted, un-underlined link styling is scoped to links inside `nav` and lists; inline links (copyright, credits) keep the underline (WCAG 1.4.1). Hover colour now also applies on `:focus-visible`.
+  - **article[data-numbered]**: `.quote` figures are no longer counted as Figures and keep their attribution dash; `.code` figures count only as Listings, so Figure numbers no longer skip.
+  - **flow-diagram**
+    - **Breaking:** the heading attribute is now `data-title` (was `title`, which also produced a native hover tooltip). JSON `src` payloads keep their `title` key, applied as `data-title`. New `data-heading-level` (1–6, default 2).
+    - The rendered diagram is now a `<figure>` named by the heading (or `data-label`) holding a nested list (`ol > li`, decision branches as a labelled sublist, annotations as text) instead of a `role="img"` container that hid all node text from assistive tech. The source `<ol>` is hidden only while upgraded, so nothing is read twice.
+    - Nodes are `<button>`s with a spoken type prefix ("Decision: …") and the annotation as description, behind one roving tab stop (arrow keys, Home/End; Enter/Space select). Replaces `tabindex="0"` + `role="img"` on every node.
+    - Node and Yes/No colours use theme status tokens (`--color-*-text` / `-subtle`, accent tint) with per-type `--fd-<type>-text|border|bg` hooks: AA text in light and dark schemes (YES was ~2.3:1). Connectors use `--color-text-muted` (3:1+ for graphics).
+    - Localizable strings: `data-label`, `data-label-selected`, `data-label-steps-<plural category>` (via `Intl.PluralRules`), `data-label-type-<type>`.
+    - `flow-diagram:ready` fires after every render, including each `.steps` assignment (now documented that way). `compact` is CSS-only and no longer triggers a rebuild.
+  - **foot-notes**
+    - BREAKING: `data-back-label` renamed `data-label-back`; new `data-label-ref` (default "Footnote {n}") and `data-label-heading` (default "Notes"). All `data-label-*`, `data-mode` and new `data-preview` are observed and re-render in place.
+    - Footnote content is now *moved* (not copied via innerHTML) into the notes list — no duplicate ids, listeners preserved, no clip-hidden copy left in the paragraph. Reference links are named "Footnote N" with no `aria-describedby`, so notes are read once and the note's links are no longer invisible tab stops.
+    - DPUB-ARIA: references `role="doc-noteref"`, backlinks `role="doc-backlink"`, list wrapped in `<section role="doc-endnotes">` labelled by a visually hidden heading (or an authored heading child). Sidenotes keep `role="note"`.
+    - Reference `id` now sits on the generated link (`fnref-I-N`), not the `<foot-note>`; the author's `id` on `<foot-note>` is preserved. Bracket characters around the number are CSS-generated.
+    - Repeat citations: `<foot-note data-ref="id">` cites an existing note — same number, backlinks lettered a, b, … (`fnref-I-N-b` …).
+    - Hover / keyboard-focus preview popover on references (anchor-positioned, inert + aria-hidden, Escape closes, reduced-motion aware); `data-preview="false"` disables.
+    - Teardown restores the authored markup; reconnect re-renders in document order (notes inserted meanwhile are numbered in place instead of starting a second list from 1).
+  - **fab-stack**
+    - Child order is now defined as "first child = primary action, nearest the anchored edge, focused first". `top-*` stacks switch to `flex-direction: column` so the primary sits at the top edge (previously `column-reverse` put it at the bottom, away from the edge); bottom/center stacks keep `column-reverse`.
+    - `<dialog>` and `[popover]` children are no longer forced to `position: static; inset: unset; margin: 0` (`fab-stack > :not(dialog, [popover])`), so a modal dialog child centres in the top layer again. `[data-float]` descendants also lose their own `translate`.
+  - **back-to-top** — while hidden (`[data-back-to-top-init]:not([data-visible])`) the link is now `visibility: hidden` as well as transparent, so it is out of the tab order and accessibility tree; visibility transitions with the fade. The background/border hover transition, previously overridden by the fade transition, is restored.
+  - **VBElement**: form-associated components (star-rating, combo-box, color-picker, calendar-wc, time-picker…) expose the native constraint-validation surface — `validity`, `validationMessage`, `willValidate`, `form`, `checkValidity()`, `reportValidity()` — so `<form-field>` and author code read their validity like a native control.
+  - **textarea counter**: unlimited counters take `data-label-characters` / `data-label-words` (with `{count}` and optional plural-category suffixes via `Intl.PluralRules`).
 - **Changes from the E-element review.**
   - **em / i**: emphasis inside an italic context (`<blockquote>`, `<cite>`, `<dfn>`, `<var>`, or another `<em>`/`<i>`) now toggles back to upright. Replaces the zero-specificity blockquote de-emphasis rule, which never won (blockquote emphasis rendered italic-on-italic) and also added medium weight. The a11y-dyslexia theme override is unchanged.
   - **em**: in Chinese, Japanese and Korean content (`:lang(zh|ja|ko)`) `<em>` renders emphasis marks instead of an italic CJK fonts don't have — sesame over (ja, ko), filled dot under (zh).
@@ -98,6 +150,40 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **F-element review.**
+  - **form coordinator** — legacy `output.error-summary` was built with `innerHTML` from labels and messages (including server messages passed to `setError`), allowing HTML injection; now built with text nodes. Without a summary, an invalid submit focuses the first invalid control instead of possibly a `<fieldset>`.
+  - **form docs/demos** — `[data-form-summary][hidden]`, `[data-form-success][hidden]` and `[data-form-error][hidden]` now really hide (author `display:block` beat UA `[hidden]`); fetch demo mock matched no request (compared an absolute `form.action` to a path); inline styles removed from form-layouts/form-contact snippets.
+  - **form-field**
+    - `setError()` no longer sticks forever: the field's own message clears on the next edit; custom errors set by others (`data-match`, date-picker's mirror) are left alone.
+    - `badInput` is handled (`data-message-badinput`); unmatched states fall back to `validationMessage`.
+    - Checkboxes and radios validate on `checked` (an unchecked box no longer reads as "valid"); radio fields bind every radio in the name group; no success icon on checkable fields.
+    - Valid-state styling uses `background-color`, so the select chevron survives; the status icon is offset clear of the chevron.
+    - Collapsed `output.error` is `visibility: hidden`, so it leaves the accessibility tree.
+    - Status icons stay visible in forced-colors mode (system colours; invalid controls get a double border).
+    - Password toggle and strength meter no longer duplicate when a field is moved (per-feature idempotence instead of one shared `data-enhanced` slot). Toggle, strength levels, rule labels, "Password requirements" and OTP digit labels are localizable via `data-label-*` on the field; the meter has an accessible name.
+  - **data-count**: the counter is added to the textarea's `aria-describedby`, is no longer mistaken for the field's error output, and stops announcing every keystroke (announced only near/over the limit, after typing pauses).
+  - **data-floating-label**: a real placeholder keeps the label floated instead of overlapping it; enhanced password inputs get the floated-label top padding.
+  - **fieldset/legend**: removed the duplicate fieldset/legend rule in `input/styles.css`. The legend uses `padding-inline: var(--size-s)` and `font-size: var(--font-size-s)` as documented; the legend docs were also corrected (they described the shadowed `--size-xs` copy).
+  - **fieldset**: `data-status` and `data-invalid` get a non-colour cue in forced-colors mode: a 3px border, solid for success, dotted for warning, double for error/invalid. It uses `!important` so theme layers can't remove it. Docs now say to pair status with text.
+  - **fieldset**: the neumorphism and win9x themes no longer erase `data-status`/`data-invalid` borders (neumorphism `border: none`, win9x border shorthand). Status colours are exposed as `--fieldset-status-color` for themes to reuse.
+  - **form**: removed the empty "Verification Code Inputs" comment block (the phantom `fieldset.code-inputs`).
+  - **figure**: `figure.code` caption sits flush under the code block (the base caption top margin left a gap under the squared corners).
+  - **print**: `header[data-sticky]` / `footer[data-sticky]` print in normal flow; `fab-stack`, `[data-float]` and `[data-back-to-top]` are hidden in print.
+  - **docs**: figure/figcaption/footer pages use demo files instead of inline example wrappers and styles; footer sticky is documented as `data-sticky` (the `.sticky` class never existed), including the mobile forms guide; figure role/accessible-name guidance corrected; the decorative-image hidden-caption example removed.
+  - **flow-diagram**
+    - `.steps` no longer throws (and blanks the diagram) on steps without `branches`; input is normalized and the documented shape is corrected to `{ type, text, annotation?, branches?: [{ label, steps }] }`.
+    - `.steps` writes into the source `<ol>` and re-runs the lifecycle, so assigned data survives later attribute changes and moves, `select` keeps firing, and no stale listeners remain.
+    - `src` set before the element connects is now loaded on connect; stale responses for a superseded `src` are ignored.
+    - Forced colors: connectors, split bars, arrows and the decision marker repaint in `CanvasText`.
+    - RTL: horizontal flows run right-to-left with arrows pointing to the inline end; Left/Right keys follow the visual order. Branch split bars are drawn per branch, so they now meet every branch exactly (horizontal bars previously missed rows of unequal height).
+  - **foot-notes, glossary-wc, site-index**
+    - Generated `#id` links (footnote refs/backlinks, glossary jump bar + see-also links, site-index jump nav) no longer navigate away on pages with `<base href>`; shared `src/web-components/_shared/fragment-link.js` sets `location.hash`, focuses the target and keeps the relative hrefs (vanilla-breeze-ihgb).
+  - **foot-notes**
+    - Back glyph uses text presentation (U+21A9 U+FE0E); print hides backlinks and the preview, prints references as plain superscript numbers and avoids breaking notes across pages; `.sidenote-number` bold rule now actually matches (was scoped to `foot-notes`, but the aside lives in `foot-note`).
+  - **data-float**
+    - `*-center` positions use the physical viewport midpoint (`left: 50%` + `translate: -50%`) and are now centred in RTL; the logical `inset-inline-start: 50%` was off-centre by the element's width.
+    - Inline edges take the safe-area inset of the physical edge they touch: in RTL `-right` (inline-end) adds `--safe-left` and `-left` adds `--safe-right` (via private `--_float-safe-start/-end` swapped under `:dir(rtl)`). Same fix for the bare `<fab-stack>` and bare `[data-back-to-top]` fallbacks.
+  - **fab-stack docs** — removed phantom `--fab-stack-bottom` / `--fab-stack-end` tokens (real: `--fab-stack-gap`, `--float-offset`, `--nav-bottom-height`, `--z-float`), replaced the stale positioning sample, frontmatter no longer says "bottom-right corner", back-to-top visibility documented as JS-driven `[data-visible]`, new Child order section, and a dedicated `fab-stack-basic` demo. The data-float positions demo no longer overlaps its own bottom-left pill with a fab-stack and drops the unused `.stage` styling.
 - **E-element review.**
   - **embed / object**: print styles keep `embed`, `object` (and `iframe`) from splitting across pages and cap `embed`/`object` at the page width.
   - **embed / object docs**: PDF examples used invalid `width="100%"`; now integer sizes plus `data-ratio="page"`. Added Sizing and Security sections (no sandbox, scripts in SVG/HTML embeds, `<iframe sandbox>`/`<img>` for untrusted content, CSP `object-src 'none'`, `type` is only a hint), accessible-name guidance, and the mobile PDF caveat (recommend `<object>` with a download link). Demo drops inline styles and its placeholder "Embedded content" name.
