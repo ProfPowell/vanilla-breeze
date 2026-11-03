@@ -43,7 +43,8 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Input Variants</h2>
-    <p>Inputs with a <code>list</code> attribute display a dropdown arrow by default. Use <code>.no-arrow</code> to hide it, or <code>.search</code> for a search icon on the left.</p>
+    <p>Text-like inputs (<code>text</code>, <code>search</code>, <code>url</code>, <code>email</code>, <code>tel</code>, <code>number</code>, or no <code>type</code>) with a <code>list</code> attribute display a dropdown arrow on the inline-end side. The arrow is drawn in <code>currentColor</code>, so it follows the text colour in light and dark modes, themes, and forced-colours mode, and it moves to the left in right-to-left text. Use <code>.no-arrow</code> to hide it, or <code>.search</code> for a search icon on the inline-start side.</p>
+    <p>Range, colour, and date/time inputs are left untouched: a <code>list</code> on those types means tick marks, palette swatches, or suggested dates, and their own styling (the range track, the colour swatch) stays intact.</p>
 
     <browser-window src="/docs/snippets/demos/datalist-variants.html" url="datalist-variants.html" title="Input variants" shadow></browser-window>
 
@@ -71,7 +72,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>With Different Input Types</h2>
-    <p>Datalist works with various input types beyond text: email, URL, and range.</p>
+    <p>Datalist works with various input types beyond text: email, URL, and range. On a range input, add <a href="/docs/attributes/data-range/"><code>data-range</code></a> to render the option labels under the track.</p>
 
     <browser-window src="/docs/snippets/demos/datalist-input-types.html" url="datalist-input-types.html" title="Input types" shadow></browser-window>
   </section>
@@ -126,7 +127,7 @@ input.addEventListener('input', () => {
 
     <section>
       <h3>Dynamic Server-Driven Suggestions</h3>
-      <p>Populate datalist options from an API endpoint with debounced input. The demo simulates a 150ms fetch; replace with a real endpoint in production.</p>
+      <p>Populate datalist options from an API endpoint with debounced input. The demo simulates a 150ms fetch; replace with a real endpoint in production. Encode the query with <code>encodeURIComponent()</code> and create options with <code>new Option()</code> rather than an <code>innerHTML</code> template, so a suggestion containing markup is treated as text.</p>
 
       <browser-window src="/docs/snippets/demos/datalist-dynamic.html" url="datalist-dynamic.html" title="Dynamic suggestions" shadow></browser-window>
 
@@ -141,13 +142,13 @@ input.addEventListener('input', () => {
 
   input.addEventListener('input', () => {
     clearTimeout(timer);
-    if (input.value.length < 2) { datalist.innerHTML = ''; return; }
+    if (input.value.length < 2) { datalist.replaceChildren(); return; }
     timer = setTimeout(async () => {
-      const res = await fetch(`/api/cities?q=${input.value}`);
+      const q = encodeURIComponent(input.value);
+      const res = await fetch(`/api/cities?q=${q}`);
       const cities = await res.json();
-      datalist.innerHTML = cities
-        .map(c => `<option value="${c}">`)
-        .join('');
+      // Build nodes, not an HTML string: server data is untrusted
+      datalist.replaceChildren(...cities.map(c => new Option('', c)));
     }, 300);
   });
 </script></code-block>
@@ -155,18 +156,17 @@ input.addEventListener('input', () => {
 
     <section>
       <h3>Range with Visible Tick Labels</h3>
-      <p>Datalist on a range input adds tick marks at each <code>&lt;option&gt;</code> value. Pair with visible labels and a live <code>&lt;output&gt;</code> for clear feedback.</p>
+      <p>Browsers draw native tick marks for a range input's datalist, but VB styles ranges with <code>appearance: none</code>, which removes them. Add <a href="/docs/attributes/data-range/"><code>data-range</code></a> instead: it renders each <code>&lt;option&gt;</code>'s <code>label</code> (or value) under the track at the matching position, and <code>data-markers</code> adds a tick at every <code>step</code>. Pair with a live <code>&lt;output&gt;</code> for clear feedback.</p>
 
       <browser-window src="/docs/snippets/demos/datalist-range-ticks.html" url="datalist-range-ticks.html" title="Range with ticks" shadow></browser-window>
 
-      <code-block language="html" show-lines label="Range with tick marks" data-escape><input type="range" min="0" max="5000" step="500"
-       value="2500" list="budget-ticks" />
+      <code-block language="html" show-lines label="Range with tick labels" data-escape><input type="range" id="budget-range" min="0" max="5000" step="500"
+       value="2500" list="budget-ticks" data-range data-markers />
 <datalist id="budget-ticks">
-  <option value="0"></option>
-  <option value="500"></option>
-  <option value="1000"></option>
+  <option value="0" label="$0"></option>
+  <option value="1000" label="$1k"></option>
   <!-- ... -->
-  <option value="5000"></option>
+  <option value="5000" label="$5k"></option>
 </datalist>
 <output id="budget-value" for="budget-range">$2,500</output>
 
@@ -197,8 +197,9 @@ input.addEventListener('input', () => {
 </datalist>
 
 <script>
-  // Cross-browser swatch companion
+  // Cross-browser swatch companion: one <li> per palette colour
   const picker = document.getElementById('color-picker');
+  const list = document.getElementById('swatches'); // <ul id="swatches">
   const colors = [...document.querySelectorAll('#brand-palette option')]
     .map(o => o.value);
 
@@ -206,8 +207,11 @@ input.addEventListener('input', () => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.style.background = hex;
+    btn.setAttribute('aria-label', hex);
     btn.addEventListener('click', () => { picker.value = hex; });
-    container.appendChild(btn);
+    const item = document.createElement('li');
+    item.append(btn);
+    list.append(item);
   });
 </script></code-block>
     </section>
@@ -266,8 +270,8 @@ input.addEventListener('input', () => {
     <h2>Accessibility Notes</h2>
     <ul>
       <li><strong>Always include a label</strong>: The input must have an associated <a href="/docs/elements/native/label/">label</a></li>
-      <li><strong>Screen reader support</strong>: Native datalist is well-supported by assistive technologies</li>
-      <li><strong>Keyboard navigation</strong>: Users can navigate options with arrow keys</li>
+      <li><strong>Screen reader support</strong>: The input is exposed as a combobox, but how suggestions are announced varies by browser and screen reader, and some combinations do not announce them at all. Test with your target assistive technologies, and do not rely on the suggestions to convey required information</li>
+      <li><strong>Keyboard navigation</strong>: In most browsers users can open and move through suggestions with the arrow keys</li>
       <li><strong>Allow custom values</strong>: Unlike select, datalist allows users to enter values not in the list</li>
       <li><strong>Provide fallback</strong>: The input works without the datalist in older browsers</li>
     </ul>
@@ -275,26 +279,32 @@ input.addEventListener('input', () => {
 
   <section>
     <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="CSS for datalist styling" data-escape>/* Input with datalist indicator */
-input[list] {
-  background-image: url("data:image/svg+xml,..."); /* dropdown arrow */
+    <code-block language="css" show-lines label="CSS for datalist styling" data-escape>/* Text-like inputs only; :where() keeps specificity at (0,1,1) */
+input[list]:where(:not([type]), [type="text"], [type="search"],
+  [type="url"], [type="email"], [type="tel"], [type="number"]) {
+  /* Downward arrow drawn with gradients in currentColor */
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
   background-repeat: no-repeat;
-  background-position: right var(--size-s) center;
+  background-size: 0.3125rem 0.3125rem;
+  background-position: right calc(var(--size-s) + 0.3125rem) center,
+                       right var(--size-s) center;
   padding-inline-end: var(--size-xl);
-}
 
-/* Hide the dropdown arrow */
-input[list].no-arrow {
-  background-image: none;
-  padding-inline-end: var(--size-s);
-}
+  &:dir(rtl) { /* mirrored to the left */ }
 
-/* Search-style datalist input */
-input[list].search {
-  background-image: url("data:image/svg+xml,..."); /* search icon */
-  background-position: left var(--size-s) center;
-  padding-inline-start: var(--size-xl);
-  padding-inline-end: var(--size-s);
+  /* Hide the dropdown arrow */
+  &.no-arrow {
+    background-image: none;
+    padding-inline-end: var(--input-padding-inline);
+  }
+
+  /* Search icon on the inline-start side */
+  &.search {
+    padding-inline-start: var(--size-xl);
+    padding-inline-end: var(--input-padding-inline);
+  }
 }
 
 /* The datalist element itself is hidden */

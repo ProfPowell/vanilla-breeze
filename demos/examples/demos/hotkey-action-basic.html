@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotkey Actions</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-xl); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <main data-layout="stack" data-layout-gap="l">
+    <p>Click inside this window first, then try the shortcuts.</p>
+
+    <search data-layout="stack" data-layout-gap="s">
+      <form-field>
+        <label for="search">Search</label>
+        <input type="search" id="search" name="q" data-hotkey="/" data-hotkey-action="focus" data-hotkey-label="Focus search" />
+      </form-field>
+      <p><small>Press <kbd data-hotkey="/">/</kbd> to focus search.</small></p>
+    </search>
+
+    <p data-layout="cluster" data-layout-gap="s">
+      <button type="button" id="save" data-hotkey="meta+s" data-hotkey-label="Save document" data-hotkey-global>Save <kbd data-hotkey="meta+s">Ctrl+S</kbd></button>
+      <small>The shortcut works even while typing.</small>
+      <output for="save" id="save-status" aria-live="polite">Not saved yet</output>
+    </p>
+
+    <details data-hotkey="meta+i" data-hotkey-action="toggle" data-hotkey-label="Toggle info panel">
+      <summary>Info panel</summary>
+      <p>Toggled with <kbd data-hotkey="meta+i">Ctrl+I</kbd> via <code>data-hotkey-action="toggle"</code>.</p>
+    </details>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const save = document.getElementById('save');
+    const status = document.getElementById('save-status');
+    let count = 0;
+    save.addEventListener('click', () => {
+      count += 1;
+      status.textContent = `Saved (${count})`;
+    });
+  </script>
+</body>
+</html>

@@ -47,6 +47,23 @@ kbd {
   box-shadow: 0 1px 0 var(--color-border);
 }
 
+/* Key caps inside buttons (vanilla-breeze-hzt3). The surface tokens above
+   assume page-coloured text; a button sets its own text colour (white on a
+   primary fill), which made the caps blank. Inside a button the cap keeps
+   the button's text colour and derives its edge from it. The fill is a
+   translucent neutral at the text's OPPOSITE lightness (dark under white
+   text, light under dark text), so it pushes away from the text and the
+   cap never has less contrast than the button label itself — a
+   currentColor tint would pull towards it and sink primary buttons that sit
+   just over 4.5:1. No relative-colour support: a transparent fill. */
+:is(button, .button, [role="button"]) kbd {
+  color: inherit;
+  background: transparent;
+  background: oklch(from currentColor clamp(0, (0.6 - l) * 1000, 1) 0 h / clamp(0, max(l - 0.75, 0.45 - l) * 2, 0.2));
+  border-color: color-mix(in oklab, currentColor 45%, transparent);
+  box-shadow: 0 1px 0 color-mix(in oklab, currentColor 25%, transparent);
+}
+
 /* Sample output */
 samp {
   font-family: var(--font-mono);

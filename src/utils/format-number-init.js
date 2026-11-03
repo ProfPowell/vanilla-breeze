@@ -3,7 +3,6 @@
  *
  * Enhances <data> elements with data-format-number to replace their text
  * with a locale-aware formatted string using Intl.NumberFormat.
- * The original text is preserved in the title attribute for hover access.
  *
  * @attr {string} data-format-number - Format style: "" (decimal), "currency", "percent", "compact"
  * @attr {string} data-currency - Currency code for currency style (e.g., "USD", "EUR")
@@ -35,17 +34,21 @@ function initFormatNumber(root = document) {
 function enhanceNumber(el) {
   if (el.hasAttribute('data-format-number-init')) return;
   el.setAttribute('data-format-number-init', '');
+  formatNumber(el);
+}
 
+/**
+ * Write the formatted value into the element. Runs on enhance and again
+ * whenever the value attribute changes. A missing, empty or non-numeric
+ * value is invalid: the authored text is left as it is.
+ * @param {HTMLElement} el
+ */
+function formatNumber(el) {
   const raw = el.getAttribute('value');
-  if (raw == null) return;
+  if (raw == null || raw.trim() === '') return;
 
   const num = Number(raw);
   if (isNaN(num)) return;
-
-  // Preserve original text as tooltip
-  if (!el.title) {
-    el.title = el.textContent.trim();
-  }
 
   const style = el.getAttribute('data-format-number') || 'decimal';
   const locale = el.getAttribute('data-locale') || getLocale();
@@ -84,9 +87,16 @@ if (document.readyState === 'loading') {
   initFormatNumber();
 }
 
-// Watch for dynamically added elements
+// Watch for dynamically added elements, and re-format when a value changes
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
+    if (mutation.type === 'attributes') {
+      const target = /** @type {HTMLElement} */ (mutation.target);
+      if (target.hasAttribute('data-format-number-init') && target.matches(SELECTOR)) {
+        formatNumber(target);
+      }
+      continue;
+    }
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
@@ -100,6 +110,11 @@ const observer = new MutationObserver((mutations) => {
   }
 });
 
-observer.observe(document.documentElement, { childList: true, subtree: true });
+observer.observe(document.documentElement, {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  attributeFilter: ['value'],
+});
 
 export { initFormatNumber };

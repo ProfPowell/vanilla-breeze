@@ -59,7 +59,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Number Formatting</h2>
-    <p>Add <code>data-format-number</code> to have VB automatically format the <code>value</code> using the page's locale via <code>Intl.NumberFormat</code>. The visible text serves as a no-JS fallback.</p>
+    <p>Add <code>data-format-number</code> to have VB automatically format the <code>value</code> using the page's locale via <code>Intl.NumberFormat</code>. The visible text serves as a no-JS fallback, and is also left in place when <code>value</code> is missing, empty, or not a number. Changing the <code>value</code> attribute later re-formats the text.</p>
 
     <browser-window src="/docs/snippets/demos/data-formatting.html" url="data-formatting.html" title="Number and byte formatting" shadow></browser-window>
 
@@ -91,7 +91,7 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>data-format-number="currency"</code></td>
-          <td>Currency (requires <code>data-currency</code>)</td>
+          <td>Currency in <code>data-currency</code> (ISO 4217 code). <strong>Defaults to USD</strong> when <code>data-currency</code> is omitted, so always set it</td>
           <td>$48,200.00</td>
         </tr>
         <tr>
@@ -110,7 +110,9 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Byte Formatting</h2>
-    <p>Add <code>data-format-bytes</code> to format raw byte values as human-readable file sizes. The attribute value sets decimal precision.</p>
+    <p>Add <code>data-format-bytes</code> to format raw byte values as human-readable file sizes. The attribute value sets decimal precision. By default sizes use binary math (&divide;1024) with the familiar KB/MB/GB labels; <code>data-unit="decimal"</code> switches to &divide;1000, matching how drive makers and most operating systems other than Windows report sizes.</p>
+
+    <browser-window src="/docs/snippets/demos/data-format-bytes.html" url="data-format-bytes.html" title="Byte formatting" shadow></browser-window>
 
     <code-block language="html" show-lines label="Byte formatting" data-escape><!-- Default (no decimals) -->
 <data value="1048576" data-format-bytes>1 MB</data>
@@ -139,7 +141,7 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>data-unit="decimal"</code></td>
-          <td>Use 1000-based units instead of 1024-based</td>
+          <td>Use 1000-based units instead of 1024-based (the only other value; anything else means binary)</td>
         </tr>
       </tbody>
     </table>
@@ -151,10 +153,15 @@ crumbLabel: Native Elements
 
     <browser-window src="/docs/snippets/demos/data-ticker.html" url="data-ticker.html" title="Ticker effect" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Ticker effect" data-escape><data value="50000"
+    <code-block language="html" show-lines label="Ticker effect" data-escape><data id="uptime" value="99.9"
       data-effect="ticker"
-      data-trigger="scroll"
-      style="--vb-ticker-duration: 2000">50,000</data></code-block>
+      data-trigger="scroll">99.9</data>
+
+<style>
+  /* Timing is configured with custom properties */
+  .stat data { --vb-ticker-duration: 1500; }
+  #uptime { --vb-ticker-decimals: 1; }
+</style></code-block>
 
     <table class="props-table">
       <thead>
@@ -188,12 +195,17 @@ crumbLabel: Native Elements
         <tr>
           <td><code>--vb-ticker-decimals</code></td>
           <td>Decimal places (CSS custom property)</td>
-          <td>auto-detected</td>
+          <td>auto-detected from <code>value</code></td>
+        </tr>
+        <tr>
+          <td><code>--vb-ticker-decimals</code></td>
+          <td>Decimal places (CSS custom property)</td>
+          <td>auto-detected from <code>value</code></td>
         </tr>
       </tbody>
     </table>
 
-    <p>Parameters are read from CSS custom properties via <code>style="--vb-ticker-duration: 2000"</code>. This follows VB's unified effect configuration pattern. The ticker respects <code>prefers-reduced-motion</code> &mdash; the animation is skipped entirely when reduced motion is preferred.</p>
+    <p>Start and duration are read from CSS custom properties, following VB's unified effect configuration pattern; set them in a stylesheet rule. Ticker elements use tabular (equal-width) digits so the count-up does not jitter. The ticker respects <code>prefers-reduced-motion</code> &mdash; the animation is skipped entirely when reduced motion is preferred.</p>
   </section>
 
   <section>
@@ -206,16 +218,24 @@ crumbLabel: Native Elements
 <!-- Override locale for this element -->
 <data value="1234567" data-format-number data-locale="de-DE">1.234.567</data></code-block>
 
+    <browser-window src="/docs/snippets/demos/data-locale.html" url="data-locale.html" title="Locale override" shadow></browser-window>
+
     <p>See the <a href="/docs/i18n/">Internationalization guide</a> for full locale resolution details.</p>
   </section>
 
   <section>
     <h2>CSS Reference</h2>
     <code-block language="css" label="Data CSS" data-escape>data {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Opt-in code-like face for identifiers */
+data[data-variant~="mono"] {
   font-family: var(--font-mono);
   font-size: 0.9em;
 }</code-block>
-    <p>VB styles <code>&lt;data&gt;</code> with monospace font at 0.9em to distinguish machine-readable values from prose text.</p>
+    <p>VB keeps <code>&lt;data&gt;</code> in the surrounding prose font and turns on tabular (equal-width) digits so figures line up in tables and lists. For identifiers such as SKUs, order numbers, or hashes, add <code>data-variant="mono"</code> for a monospace face.</p>
+    <code-block language="html" label="Monospace identifier" data-escape><p>Order <data value="ORD-7F3A-92C1" data-variant="mono">ORD-7F3A-92C1</data> has shipped.</p></code-block>
   </section>
 
   <section>
@@ -242,7 +262,15 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>data-currency</code></td>
-          <td>Currency code for <code>data-format-number="currency"</code></td>
+          <td>ISO 4217 currency code for <code>data-format-number="currency"</code> (defaults to USD)</td>
+        </tr>
+        <tr>
+          <td><code>data-unit</code></td>
+          <td><code>"decimal"</code>: 1000-based sizes for <code>data-format-bytes</code> (default 1024-based)</td>
+        </tr>
+        <tr>
+          <td><code>data-variant="mono"</code></td>
+          <td>Monospace face for identifiers (VB styling)</td>
         </tr>
         <tr>
           <td><code>data-locale</code></td>
@@ -264,6 +292,7 @@ crumbLabel: Native Elements
     <h2>Accessibility</h2>
     <ul>
       <li>Screen readers read the visible content, not the <code>value</code> attribute</li>
+      <li>The formatters replace the text without adding a <code>title</code>, so the value is not read out twice</li>
       <li>The <code>value</code> is intended for machine processing</li>
       <li>The no-JS fallback text ensures content is readable even without JavaScript</li>
       <li>The ticker effect uses <code>data-trigger="scroll"</code> (IntersectionObserver), not auto-play</li>
@@ -276,7 +305,7 @@ crumbLabel: Native Elements
       <li><a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> &mdash; For dates and times (also has VB format utilities via <code>data-format-date</code>)</li>
       <li><a href="/docs/elements/native/meter/"><code>&lt;meter&gt;</code></a> &mdash; For scalar measurements within a known range</li>
       <li><a href="/docs/elements/native/progress/"><code>&lt;progress&gt;</code></a> &mdash; For progress toward completion</li>
-      <li><a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a> &mdash; For code content (both use <code>var(--font-mono)</code>)</li>
+      <li><a href="/docs/elements/native/code/"><code>&lt;code&gt;</code></a> &mdash; For code content (<code>data-variant="mono"</code> uses the same <code>var(--font-mono)</code>)</li>
       <li><a href="/docs/i18n/">Internationalization</a> &mdash; Locale resolution for number formatting</li>
     </ul>
   </section>

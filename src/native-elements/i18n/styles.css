@@ -16,6 +16,26 @@
   overflow-wrap: normal;
 }
 
+/* CJK italics: most CJK fonts have no italic, so browsers synthesise an
+   oblique that distorts the glyphs. <dfn> and <cite> drop the slant and
+   use a script-friendly cue instead: a heavier weight for a defined
+   term, and a wavy underline beneath a work title (the traditional
+   book-title mark). cite[data-variant="quoted"] keeps its brackets. */
+dfn:is(:lang(zh), :lang(ja), :lang(ko)) {
+  font-style: normal;
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+cite:is(:lang(zh), :lang(ja), :lang(ko)) {
+  font-style: normal;
+
+  &:not([data-variant~="quoted"]) {
+    text-decoration: underline wavy var(--color-text-muted);
+    text-underline-position: under;
+    text-decoration-thickness: from-font;
+  }
+}
+
 /* Japanese: proportional alternates for punctuation */
 :lang(ja) {
   font-feature-settings: "palt" 1;

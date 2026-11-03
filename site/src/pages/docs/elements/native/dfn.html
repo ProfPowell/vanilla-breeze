@@ -13,7 +13,7 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;dfn&gt;</code> element identifies the defining instance of a term. The paragraph, definition list group, or section containing the <code>&lt;dfn&gt;</code> should also contain the definition. Styled with italic and semi-bold (<code>font-weight: 500</code>) to distinguish it from regular italic text like <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> or <a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a>.</p>
+    <p>The <code>&lt;dfn&gt;</code> element identifies the defining instance of a term. The paragraph, definition list group, or section containing the <code>&lt;dfn&gt;</code> should also contain the definition. Styled with italic and medium weight (<code>var(--font-weight-medium)</code>) to distinguish it from regular italic text like <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a> or <a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a>.</p>
   </section>
 
   <section>
@@ -72,18 +72,35 @@ crumbLabel: Native Elements
     <h2>CSS Reference</h2>
     <code-block language="css" label="dfn CSS" data-escape>dfn {
   font-style: italic;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium, 500);
+}
+
+/* Keep the surrounding weight in bold contexts */
+:where(dt, th, strong, b, legend, h1, h2, h3, h4, h5, h6) dfn {
+  font-weight: inherit;
+}
+
+/* Highlight a definition reached by a fragment link */
+dfn[id]:target {
+  background: oklch(from var(--color-interactive) l c h / 0.08);
+  outline: var(--border-width-medium, 2px) solid var(--color-interactive);
+}
+
+/* CJK fonts have no italic: use weight instead (i18n layer) */
+dfn:is(:lang(zh), :lang(ja), :lang(ko)) {
+  font-style: normal;
+  font-weight: var(--font-weight-semibold, 600);
 }</code-block>
-    <p>The semi-bold weight (<code>500</code>) distinguishes <code>&lt;dfn&gt;</code> from <code>&lt;em&gt;</code> (which is just italic) and <code>&lt;i&gt;</code> (also just italic).</p>
+    <p>The medium weight distinguishes <code>&lt;dfn&gt;</code> from <code>&lt;em&gt;</code> and <code>&lt;i&gt;</code> (which are just italic). Inside a <code>&lt;dt&gt;</code>, table header, heading, or <code>&lt;strong&gt;</code> the term keeps the surrounding (bolder) weight rather than dropping to medium. A <code>&lt;dfn id&gt;</code> that is the target of a fragment link (<code>#dfn-viewport</code>) gets the same outline highlight as glossary terms.</p>
+    <p>Chinese, Japanese, and Korean fonts rarely include italics, and browsers fake them with a distorting slant, so in those languages <code>&lt;dfn&gt;</code> is upright and semi-bold instead.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Some screen readers announce defined terms, helping users identify definitions</li>
+      <li>Most screen readers do not announce <code>&lt;dfn&gt;</code> as a definition; the surrounding wording ("is", "means") is what tells listeners a term is being defined</li>
       <li>The surrounding paragraph should contain the actual definition</li>
       <li>Adding an <code>id</code> enables linking from other occurrences back to the definition</li>
-      <li>Search engines can use <code>&lt;dfn&gt;</code> to extract term-definition pairs</li>
     </ul>
   </section>
 

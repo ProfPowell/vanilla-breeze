@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "select"
-description: "Dropdown menu for choosing from a list of predefined options. Vanilla Breeze resets the native appearance and adds a custom SVG chevron, consistent sizing, and focus styling via design tokens."
+description: "Dropdown menu for choosing from a list of predefined options. Vanilla Breeze resets the native appearance and adds a currentColor chevron, consistent sizing, and focus styling via design tokens."
 elementName: select
 category: native
 nativeGroup: Forms
@@ -154,38 +154,63 @@ crumbLabel: Native Elements
 
 <section>
   <h2>CSS Reference</h2>
-  <p>VB sets <code>appearance: none</code> to remove the native dropdown arrow and replaces it with a custom SVG chevron positioned via <code>background-image</code>. The select inherits shared input styles (border, radius, focus ring) from the form layer.</p>
+  <p>VB sets <code>appearance: none</code> to remove the native dropdown arrow and draws its own chevron with a <code>currentColor</code> gradient in <code>background-image</code>, so the arrow always matches the text colour: it follows <code>data-mode="dark"</code>, themes and forced-colors mode. It sits on the inline-end side and mirrors to the left under <code>dir="rtl"</code>. Only single-row selects get it; <code>multiple</code> and <code>size</code> greater than 1 render as a list box with no arrow. The select inherits shared input styles (border, radius, focus ring) from the form layer.</p>
 
-  <code-block language="css" label="Select-specific CSS overrides" data-escape>/* Select inherits shared input styles, then overrides: */
+  <code-block language="css" label="Select-specific CSS overrides" data-escape>/* Tokens (tokens/forms.css) */
+:root {
+  --select-chevron: conic-gradient(from -45deg at 50% 100%, currentColor 90deg, transparent 0);
+  --select-chevron-size: 0.625rem 0.3125rem;
+  --select-chevron-inset: var(--size-s);
+}
 
+/* Select inherits shared input styles, then overrides: */
 select {
   appearance: none;
-  padding-inline-end: var(--size-xl);
-  background-image: url("data:image/svg+xml,...chevron-svg...");
-  background-repeat: no-repeat;
-  background-position: right var(--size-xs) center;
-  background-size: 1.25rem;
   cursor: pointer;
+}
+
+/* Chevron: single-row selects only (not multiple, not size > 1) */
+select:where(:not([multiple]):is(:not([size]), [size="0"], [size="1"])) {
+  padding-inline-end: var(--size-xl);
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-size: var(--select-chevron-size);
+  background-position: right var(--select-chevron-inset) center;
+
+  &:dir(rtl) {
+    background-position: left var(--select-chevron-inset) center;
+  }
+
+  /* Forced colors drop gradients, so opt out and use system colours */
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    color: FieldText;
+    background-color: Field;
+    border-color: FieldText;
+  }
 }
 
 select:disabled {
   cursor: not-allowed;
 }
 
-/* Multiple select removes the custom chevron */
-select[multiple] {
-  padding: var(--size-xs);
-}
-
 optgroup {
   font-weight: 600;
+}</code-block>
+
+  <h3>Custom chevron</h3>
+  <p>To swap the arrow, set <code>--select-chevron</code> to any image and <code>--select-chevron-size</code> to match. A <code>url()</code> image cannot see <code>currentColor</code>, so give it an explicit colour that works in both modes.</p>
+
+  <code-block language="css" label="Overriding the chevron" data-escape>.brand-form select {
+  --select-chevron: url("/icons/chevron-down.svg");
+  --select-chevron-size: 1rem;
 }</code-block>
 </section>
 
 <section>
   <h2>Customizable Select</h2>
   <p>Chrome 135+ ships <code>appearance: base-select</code>, which unlocks full CSS control over the dropdown picker, options, checkmark icon, and open/close animations — while retaining native semantics, keyboard navigation, form participation, and accessibility.</p>
-  <p>VB wraps all customizable-select styles in <code>@supports (appearance: base-select)</code>, making this a zero-risk progressive enhancement. Non-supporting browsers keep the existing <code>appearance: none</code> + SVG chevron.</p>
+  <p>VB wraps all customizable-select styles in <code>@supports (appearance: base-select)</code>, making this a zero-risk progressive enhancement. Non-supporting browsers keep the existing <code>appearance: none</code> + <code>currentColor</code> chevron.</p>
 
   <browser-window src="/docs/examples/demos/customizable-select.html" url="https://vanilla-breeze.com/select/customizable" title="Customizable select with styled picker and animated dropdown" shadow></browser-window>
 
@@ -330,8 +355,7 @@ optgroup {
 }
 
 /* Non-supporting browsers keep: */
-select {
-  appearance: none;
+select:where(:not([multiple]):is(:not([size]), [size="0"], [size="1"])) {
   background-image: var(--select-chevron);
 }</code-block>
 

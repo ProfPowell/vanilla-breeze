@@ -57,12 +57,51 @@ input[type="search"]::-webkit-search-results-decoration {
 
 select {
   appearance: none;
+  cursor: var(--cursor-custom-pointer, pointer);
+}
+
+/* Dropdown chevron — single-row selects only. A multiple or size > 1
+   select renders as a listbox and has no arrow. The chevron is a
+   currentColor gradient (see --select-chevron in tokens/forms.css), so it
+   follows data-mode, themes and forced-colors, and sits on the
+   inline-end side, mirrored under :dir(rtl). :where() keeps this at
+   (0,0,1) so themes and the base-select enhancement (input/select.css,
+   which swaps it for ::picker-icon) override it cleanly. */
+select:where(:not([multiple]):is(:not([size]), [size="0"], [size="1"])) {
   padding-inline-end: var(--size-xl);
   background-image: var(--select-chevron);
   background-repeat: no-repeat;
-  background-position: right var(--size-xs) center;
-  background-size: 1.25rem;
-  cursor: var(--cursor-custom-pointer, pointer);
+  background-size: var(--select-chevron-size);
+  background-position: right var(--select-chevron-inset) center;
+
+  &:dir(rtl) {
+    background-position: left var(--select-chevron-inset) center;
+  }
+
+  /* Forced colors drop gradient background-images, which would erase the
+     chevron. Opt the control out and re-assert system colours by hand so
+     the arrow (currentColor = FieldText) stays visible. Options keep the
+     UA's forced palette. */
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    color: FieldText;
+    background-color: Field;
+    border-color: FieldText;
+
+    &:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      color: GrayText;
+      border-color: GrayText;
+    }
+
+    & :is(option, optgroup) {
+      forced-color-adjust: auto;
+    }
+  }
 }
 
 select:disabled {

@@ -2,44 +2,98 @@
 
 /*
   Note: <datalist> appearance is largely controlled by the browser.
-  These styles primarily affect the associated input and provide
-  classes for common patterns.
+  These styles affect the associated input and provide variants for
+  common patterns.
+
+  Only text-like inputs get the suggestion indicator. A list on
+  range, color, date or time inputs means something different (tick
+  marks, palette swatches, suggested dates) and those inputs carry
+  their own background (range track gradient, colour swatch padding),
+  so they are left alone. :where() keeps the specificity at (0,1,1)
+  — the same as input[list] — so type-specific rules still win.
+
+  The indicator is drawn with CSS gradients in currentColor instead of
+  an SVG data URI: a data URI cannot see currentColor or tokens, so it
+  could not follow data-mode, themes or forced-colors.
 */
 
-/* Input with datalist indicator */
-input[list] {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+input[list]:where(:not([type]), [type="text"], [type="search"], [type="url"], [type="email"], [type="tel"], [type="number"]) {
+  --_datalist-arrow: 0.3125rem;
+  --_datalist-edge: var(--size-s);
+
+  /* Two half-tiles form a downward triangle */
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
   background-repeat: no-repeat;
-  background-position: right var(--size-s) center;
+  background-size: var(--_datalist-arrow) var(--_datalist-arrow);
+  background-position:
+    right calc(var(--_datalist-edge) + var(--_datalist-arrow)) center,
+    right var(--_datalist-edge) center;
   padding-inline-end: var(--size-xl);
-}
 
-/* Dark mode arrow */
-@media (prefers-color-scheme: dark) {
-  input[list] {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  /* Mirror to the inline-end side in right-to-left text */
+  &:dir(rtl) {
+    background-position:
+      left var(--_datalist-edge) center,
+      left calc(var(--_datalist-edge) + var(--_datalist-arrow)) center;
   }
-}
 
-/* --- Datalist Input Variants --- */
+  /* Forced colors drop gradient background-images, which would erase the
+     indicator. Opt the input out and re-assert system colours so the
+     arrow / magnifier (currentColor = FieldText) stays visible — same
+     approach as select (input/styles.css). */
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    color: FieldText;
+    background-color: Field;
+    border-color: FieldText;
 
-/* Hide the dropdown arrow */
-input[list].no-arrow {
-  background-image: none;
-  padding-inline-end: var(--size-s);
-}
+    &::placeholder {
+      color: GrayText;
+    }
 
-/* Search-style datalist input */
-input[list].search {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='6' cy='6' r='5' fill='none' stroke='%23666' stroke-width='2'/%3E%3Cline x1='10' y1='10' x2='14' y2='14' stroke='%23666' stroke-width='2'/%3E%3C/svg%3E");
-  background-position: left var(--size-s) center;
-  padding-inline-start: var(--size-xl);
-  padding-inline-end: var(--size-s);
-}
+    &:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 2px;
+    }
 
-@media (prefers-color-scheme: dark) {
-  input[list].search {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='6' cy='6' r='5' fill='none' stroke='%23999' stroke-width='2'/%3E%3Cline x1='10' y1='10' x2='14' y2='14' stroke='%23999' stroke-width='2'/%3E%3C/svg%3E");
+    &:disabled {
+      color: GrayText;
+      border-color: GrayText;
+    }
+  }
+
+  /* --- Variants --- */
+
+  /* Hide the dropdown arrow */
+  &.no-arrow {
+    background-image: none;
+    padding-inline-end: var(--input-padding-inline);
+  }
+
+  /* Search style: magnifier (ring + handle) on the inline-start side */
+  &.search {
+    --_datalist-ring: 0.75rem;
+    --_datalist-handle: 0.375rem;
+
+    background-image:
+      radial-gradient(circle closest-side, transparent calc(100% - 2px), currentColor calc(100% - 1.5px) calc(100% - 0.5px), transparent 100%),
+      linear-gradient(to top right, transparent calc(50% - 1px), currentColor calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px));
+    background-size:
+      var(--_datalist-ring) var(--_datalist-ring),
+      var(--_datalist-handle) var(--_datalist-handle);
+    background-position:
+      left var(--_datalist-edge) top calc(50% - 0.125rem),
+      left calc(var(--_datalist-edge) + 0.55rem) top calc(50% + 0.375rem);
+    padding-inline-start: var(--size-xl);
+    padding-inline-end: var(--input-padding-inline);
+
+    &:dir(rtl) {
+      background-position:
+        right calc(var(--_datalist-edge) + 0.175rem) top calc(50% - 0.125rem),
+        right var(--_datalist-edge) top calc(50% + 0.375rem);
+    }
   }
 }
 

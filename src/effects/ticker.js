@@ -1,6 +1,9 @@
 /**
  * Ticker effect — animated number count-up.
  * Works on <data> elements with a value attribute.
+ *
+ * Custom properties: --vb-ticker-duration, --vb-ticker-start, --vb-ticker-decimals
+ * (effect parameters are custom properties, like every VB effect).
  */
 
 import { VB } from '../lib/vb.js'
@@ -13,6 +16,12 @@ function easeOutExpo(t) {
 function detectDecimals(value) {
   const dot = value.indexOf('.')
   return dot === -1 ? 0 : value.length - dot - 1
+}
+
+function parseDecimals(value) {
+  if (value == null || value.trim() === '') return null
+  const n = parseInt(value, 10)
+  return Number.isInteger(n) && n >= 0 && n <= 20 ? n : null
 }
 
 function buildFormatter(el, decimals) {
@@ -49,7 +58,7 @@ function buildFormatter(el, decimals) {
 
 function animateTicker(el) {
   const raw = el.getAttribute('value')
-  if (raw == null) return
+  if (raw == null || raw.trim() === '') return
 
   const endValue = Number(raw)
   if (isNaN(endValue)) return
@@ -57,9 +66,8 @@ function animateTicker(el) {
   const params = VB.params(el)
   const startValue = params.getNumber('ticker-start', 0)
   const duration = params.getTime('ticker-duration', 1000)
-  const decimals = params.get('ticker-decimals')
-    ? parseInt(params.get('ticker-decimals'), 10)
-    : detectDecimals(raw)
+  // Decimal places: --vb-ticker-decimals, then the value's own precision.
+  const decimals = parseDecimals(params.get('ticker-decimals')) ?? detectDecimals(raw)
 
   const formatter = buildFormatter(el, decimals)
   const range = endValue - startValue

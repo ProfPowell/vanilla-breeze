@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="en">
-<!-- [html-validate-disable prefer-native-element: demo intentionally uses an alternative list structure] -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -16,7 +15,9 @@
       border-radius: var(--radius-s, 4px);
       cursor: pointer;
     }
-    [role="list"] button {
+    body > layout-grid { max-inline-size: 30rem; }
+    #swatches { list-style: none; padding: 0; margin: 0; }
+    #swatches button {
       inline-size: 2rem;
       block-size: 2rem;
       border-radius: var(--radius-s, 4px);
@@ -25,14 +26,24 @@
       padding: 0;
       transition: transform 0.1s, box-shadow 0.1s;
     }
-    [role="list"] button:hover {
-      transform: scale(1.15);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    @media (prefers-reduced-motion: no-preference) {
+      #swatches button:hover {
+        transform: scale(1.15);
+        box-shadow: var(--shadow-s);
+      }
+    }
+    #color-output { display: flex; align-items: center; gap: var(--size-s); margin-block-start: var(--size-m); }
+    #color-swatch {
+      display: inline-block;
+      inline-size: 1em;
+      block-size: 1em;
+      border-radius: var(--radius-xs, 2px);
+      border: 1px solid var(--color-border);
     }
   </style>
 </head>
 <body>
-  <layout-grid data-layout-gap="l" data-layout-min="s" style="max-inline-size: 30rem;">
+  <layout-grid data-layout-gap="l" data-layout-min="s">
     <section>
       <layout-stack data-layout-gap="s">
         <label for="color-picker">Theme color</label>
@@ -56,15 +67,15 @@
     </section>
     <section>
       <layout-stack data-layout-gap="s">
-        <p>Brand palette (click to apply)</p>
-        <layout-cluster data-layout-gap="s" id="swatches" role="list" aria-label="Brand color swatches"></layout-cluster>
+        <p id="swatches-label">Brand palette (click to apply)</p>
+        <ul data-layout="cluster" data-layout-gap="s" id="swatches" aria-labelledby="swatches-label"></ul>
       </layout-stack>
     </section>
   </layout-grid>
-  <output id="color-output" for="color-picker" aria-live="polite" style="margin-block-start: var(--size-m); display: flex; align-items: center; gap: var(--size-s);">
+  <output id="color-output" for="color-picker" aria-live="polite">
     <span>Color:</span>
     <span id="color-hex">#c84b2f</span>
-    <span id="color-swatch" style="display:inline-block; inline-size:1em; block-size:1em; border-radius:2px; background:#c84b2f; border:1px solid var(--color-border);"></span>
+    <span id="color-swatch"></span>
   </output>
   <script type="module" src="/src/main.js"></script>
   <script>
@@ -91,11 +102,13 @@
       btn.style.background = hex;
       btn.title = names[hex] || hex;
       btn.setAttribute('aria-label', names[hex] || hex);
-      btn.setAttribute('role', 'listitem');
       btn.addEventListener('click', () => { picker.value = hex; updateOutput(hex); });
-      container.appendChild(btn);
+      const item = document.createElement('li');
+      item.appendChild(btn);
+      container.appendChild(item);
     });
 
+    updateOutput(picker.value);
     picker.addEventListener('input', () => updateOutput(picker.value));
   </script>
 </body>

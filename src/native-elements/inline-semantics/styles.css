@@ -26,7 +26,22 @@ cite {
 /* Definition term */
 dfn {
   font-style: italic;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium, 500);
+}
+
+/* Inside an already-bold context (a <dt>, table header, heading or
+ * <strong>) the term keeps that weight instead of dropping to medium.
+ * :where() keeps this at the same specificity as the rule above. */
+:where(dt, th, strong, b, legend, h1, h2, h3, h4, h5, h6) dfn {
+  font-weight: inherit;
+}
+
+/* Linked-to definition (e.g. <a href="#term-x"> → <dfn id="term-x">) */
+dfn[id]:target {
+  background: oklch(from var(--color-interactive) l c h / 0.08);
+  border-radius: var(--radius-s);
+  outline: var(--border-width-medium, 2px) solid var(--color-interactive);
+  outline-offset: var(--size-3xs);
 }
 
 /* Inline quotation — quotes and ::before/::after moved to i18n/styles.css */
@@ -94,8 +109,14 @@ time {
   font-variant-numeric: tabular-nums;
 }
 
-/* Machine-readable data */
+/* Machine-readable data: equal-width digits so figures line up in
+ * tables and lists. The prose font is kept; data-variant="mono" opts in
+ * to a code-like monospace face (SKUs, hashes, identifiers). */
 data {
+  font-variant-numeric: tabular-nums;
+}
+
+data[data-variant~="mono"] {
   font-family: var(--font-mono);
   font-size: 0.9em;
 }
@@ -161,56 +182,66 @@ cite[data-variant="quoted"]::after {
 }
 
 /* Del/Ins for diff display */
-del.diff {
+:is(del, ins).diff {
   display: inline-block;
   padding-inline: var(--size-2xs);
   border-radius: var(--radius-s);
 }
 
-ins.diff {
-  display: inline-block;
-  padding-inline: var(--size-2xs);
-  border-radius: var(--radius-s);
-}
+/* --- Block-level changes ---
+ * A <del>/<ins> that wraps block content (paragraphs, lists, tables…)
+ * becomes a block automatically, so the tint and edge bar cover the
+ * whole change instead of breaking across the child blocks. */
 
-/* --- Block-level change variants --- */
-
-del.block,
-ins.block {
+:is(del, ins):has(> :is(p, ul, ol, dl, div, section, article, aside, blockquote, pre, table, figure, h1, h2, h3, h4, h5, h6)) {
   display: block;
   padding: var(--size-s);
   margin-block: var(--size-xs);
   border-radius: var(--radius-s);
+  border-block-end: none;
+  border-inline-start: var(--size-3xs) solid var(--_change-color);
+
+  & > :first-child { margin-block-start: 0; }
+  & > :last-child { margin-block-end: 0; }
 }
 
-del.block {
-  background: var(--color-error-subtle);
-  border-inline-start: var(--size-3xs) solid var(--color-error);
-  text-decoration: line-through;
+del:has(> :is(p, ul, ol, dl, div, section, article, aside, blockquote, pre, table, figure, h1, h2, h3, h4, h5, h6)) {
+  --_change-color: var(--color-error);
   text-decoration-color: oklch(from var(--color-error) l c h / 0.5);
 }
 
-ins.block {
-  background: var(--color-success-subtle);
-  border-inline-start: var(--size-3xs) solid var(--color-success);
-  text-decoration: none;
+ins:has(> :is(p, ul, ol, dl, div, section, article, aside, blockquote, pre, table, figure, h1, h2, h3, h4, h5, h6)) {
+  --_change-color: var(--color-success);
 }
 
 /* --- Annotated changes --- */
 
-/* Show author on hover via ::after */
+/* Author: revealed on hover, keyboard focus inside the change, and
+ * always on touch screens (no hover) and in print. */
 ins[data-author]::after,
 del[data-author]::after {
   content: " \2014 " attr(data-author);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   opacity: 0;
-  transition: opacity 200ms ease;
 }
 
-ins[data-author]:hover::after,
-del[data-author]:hover::after {
+@media (prefers-reduced-motion: no-preference) {
+  ins[data-author]::after,
+  del[data-author]::after {
+    transition: opacity var(--duration-normal, 200ms) var(--ease-default, ease);
+  }
+}
+
+:is(ins, del)[data-author]:is(:hover, :focus-visible, :focus-within)::after {
   opacity: 1;
+}
+
+@media (hover: none) {
+  ins[data-author]::after,
+  del[data-author]::after {
+    opacity: 1;
+  }
 }
 
 /* Reason tags */
@@ -230,6 +261,60 @@ del[data-reason]::before {
   del[data-author]::after {
     opacity: 1;
   }
+}
+
+/* --- Announced changes (opt-in) ---
+ * Most screen readers do not announce <del>/<ins> by default. Add
+ * data-announce to a change, or to any ancestor, to insert visually
+ * hidden "deletion start / end" and "insertion start / end" text.
+ * Translate the words by setting --del-announce-start,
+ * --del-announce-end, --ins-announce-start and --ins-announce-end
+ * (quoted strings) on the element or any ancestor, e.g. per :lang().
+ * When a change also has a visible data-reason / data-author, that
+ * pseudo-element stays visible and carries the announcement as its
+ * alternative text instead. */
+
+:is(del[data-announce], [data-announce] del)::before {
+  content: var(--del-announce-start, "deletion start") " ";
+}
+
+:is(del[data-announce], [data-announce] del)::after {
+  content: " " var(--del-announce-end, "deletion end");
+}
+
+:is(ins[data-announce], [data-announce] ins)::before {
+  content: var(--ins-announce-start, "insertion start") " ";
+}
+
+:is(ins[data-announce], [data-announce] ins)::after {
+  content: " " var(--ins-announce-end, "insertion end");
+}
+
+/* Visually hidden, still read */
+:is(del[data-announce], [data-announce] del, ins[data-announce], [data-announce] ins):not([data-reason])::before,
+:is(del[data-announce], [data-announce] del, ins[data-announce], [data-announce] ins):not([data-author])::after {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:is(del[data-announce], [data-announce] del)[data-reason]::before {
+  content: attr(data-reason) / var(--del-announce-start, "deletion start") ", " attr(data-reason);
+}
+
+:is(ins[data-announce], [data-announce] ins)[data-reason]::before {
+  content: attr(data-reason) / var(--ins-announce-start, "insertion start") ", " attr(data-reason);
+}
+
+:is(del[data-announce], [data-announce] del)[data-author]::after {
+  content: " \2014 " attr(data-author) / attr(data-author) ", " var(--del-announce-end, "deletion end");
+}
+
+:is(ins[data-announce], [data-announce] ins)[data-author]::after {
+  content: " \2014 " attr(data-author) / attr(data-author) ", " var(--ins-announce-end, "insertion end");
 }
 
 /* Time variants */

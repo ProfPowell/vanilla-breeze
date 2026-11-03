@@ -56,11 +56,29 @@ crumbLabel: Native Elements
 <ins class="diff">const newVariable = "current";</ins></code></pre></code-block>
 
     <h3>Block-Level Deletion</h3>
-    <p>The <code>&lt;del&gt;</code> element can wrap block content for multi-paragraph deletions.</p>
-    <code-block language="html" show-lines label="Block-level del" data-escape><del>
+    <p>When <code>&lt;del&gt;</code> wraps block content (paragraphs, lists, tables, headings, <code>&lt;pre&gt;</code>, <code>&lt;blockquote&gt;</code> and similar), VB detects it with <code>:has()</code> and turns the change into a block with the tint, padding, and an inline-start edge bar, so the styling covers the whole change instead of breaking across each child. No class is needed.</p>
+    <code-block language="html" show-lines label="Block-level del" data-escape><del datetime="2026-02-20">
   <p>This entire paragraph has been removed from the document.</p>
   <p>Multiple paragraphs can be deleted together.</p>
 </del></code-block>
+
+    <h3>Annotated Changes</h3>
+    <p><code>data-reason</code> shows a small uppercase tag before the change. <code>data-author</code> appends the author's name after it; the name appears on hover, when focus is inside the change, always on touch screens, and in print.</p>
+    <code-block language="html" show-lines label="Annotated del" data-escape><del datetime="2026-02-15" data-reason="correction" data-author="Ana">Node.js 16</del></code-block>
+
+    <h3 id="announced-changes">Announced Changes</h3>
+    <p>Most screen readers do not announce <code>&lt;del&gt;</code> at all by default, so a listener hears the deleted words with no hint that they are an edit. Add <code>data-announce</code> to the change, or to any ancestor such as an article, to insert visually hidden &ldquo;deletion start&rdquo; / &ldquo;deletion end&rdquo; text around it.</p>
+    <code-block language="html" show-lines label="Opt-in announcement" data-escape><article data-announce>
+  <p>The release ships on <del>Friday</del> <ins>Monday</ins>.</p>
+</article></code-block>
+    <p>Translate the announced words with custom properties holding quoted strings, set on the element or any ancestor:</p>
+    <code-block language="css" show-lines label="Localised announcements" data-escape>:lang(fr) {
+  --del-announce-start: "début de suppression";
+  --del-announce-end: "fin de suppression";
+  --ins-announce-start: "début d’insertion";
+  --ins-announce-end: "fin d’insertion";
+}</code-block>
+    <p>When the change also has a visible <code>data-reason</code> or <code>data-author</code>, that annotation stays visible and carries the announcement as its alternative text.</p>
   </section>
 
   <section>
@@ -76,13 +94,28 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>datetime</code></td>
-          <td>Date and time of the deletion in ISO 8601 format. Not visible to users but available to scripts and assistive technology.</td>
+          <td>Date and time of the deletion in ISO 8601 format. Not visible, and not exposed by browsers to assistive technology; available to scripts. Show the date in visible text if readers need it.</td>
           <td><code>datetime="2024-01-15T10:30:00"</code></td>
         </tr>
         <tr>
           <td><code>cite</code></td>
           <td>URL to a document explaining the change. Not rendered by the browser but useful for audit trails.</td>
           <td><code>cite="https://example.com/changelog"</code></td>
+        </tr>
+        <tr>
+          <td><code>data-reason</code></td>
+          <td>VB: short visible tag before the change (e.g. correction, review).</td>
+          <td><code>data-reason="correction"</code></td>
+        </tr>
+        <tr>
+          <td><code>data-author</code></td>
+          <td>VB: author name shown after the change on hover, focus, touch screens, and in print.</td>
+          <td><code>data-author="Ana"</code></td>
+        </tr>
+        <tr>
+          <td><code>data-announce</code></td>
+          <td>VB: on the element or any ancestor, adds visually hidden &ldquo;deletion start/end&rdquo; text for screen readers.</td>
+          <td><code>data-announce</code></td>
         </tr>
       </tbody>
     </table>
@@ -122,30 +155,44 @@ crumbLabel: Native Elements
     <h2>CSS Reference</h2>
     <code-block language="css" show-lines label="del CSS" data-escape>del {
   text-decoration: line-through;
-  background: oklch(55% 0.2 25 / 0.1);
-  text-decoration-color: oklch(55% 0.2 25);
+  background: var(--color-error-subtle);
+  text-decoration-color: var(--color-error);
 }
 
-del.diff {
+/* Pill-shaped diff tokens */
+:is(del, ins).diff {
   display: inline-block;
   padding-inline: var(--size-2xs);
   border-radius: var(--radius-s);
+}
+
+/* Wrapping block content: automatic block styling */
+:is(del, ins):has(> :is(p, ul, ol, dl, div, section, article, aside,
+                         blockquote, pre, table, figure, h1, h2, h3, h4, h5, h6)) {
+  display: block;
+  padding: var(--size-s);
+  border-inline-start: var(--size-3xs) solid var(--_change-color);
+}
+
+/* data-announce: visually hidden start/end text */
+:is(del[data-announce], [data-announce] del)::before {
+  content: var(--del-announce-start, "deletion start") " ";
 }</code-block>
-    <p>The red background at 10% opacity provides a subtle tint that works across light and dark themes. The <code>.diff</code> variant adds inline-block display with padding for pill-shaped diff tokens.</p>
+    <p>The tint and strikethrough come from the theme's <code>--color-error-subtle</code> and <code>--color-error</code> tokens, so they follow light and dark modes and every theme. The <code>.diff</code> variant adds inline-block display with padding for pill-shaped diff tokens.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li><strong>Screen reader announcement:</strong> Most screen readers announce "deletion" before reading deleted content and "end deletion" after</li>
+      <li><strong>Not announced by default:</strong> Most screen reader and browser combinations read <code>&lt;del&gt;</code> content as ordinary text, with no indication that it was deleted. Where the edit matters to the meaning, add <code>data-announce</code> (see <a href="#announced-changes">Announced Changes</a>) or say so in the surrounding text</li>
       <li><strong>Dual visual cues:</strong> Strikethrough and background color together ensure visibility, including for users who may not perceive color</li>
       <li><strong>Don't hide important info:</strong> Ensure any still-visible deleted content remains accessible</li>
-      <li><strong>Datetime attribute:</strong> Provides machine-readable context about when changes occurred</li>
+      <li><strong>Datetime is not exposed:</strong> Browsers do not pass <code>datetime</code> to assistive technology; put the date in visible text when it matters</li>
     </ul>
 
     <h3>Screen Reader Behavior</h3>
-    <p>With proper screen reader settings, users will hear something like:</p>
-    <code-block language="html" show-lines label="Screen reader announcement" data-escape>"deletion, This content has been deleted, end deletion"</code-block>
+    <p>With <code>data-announce</code>, users hear something like:</p>
+    <code-block language="html" show-lines label="Screen reader announcement" data-escape>"deletion start, This content has been deleted, deletion end"</code-block>
   </section>
 
   <section>

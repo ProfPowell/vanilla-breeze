@@ -57,11 +57,29 @@ crumbLabel: Native Elements
 <ins class="diff">const newVariable = "current";</ins></code></pre></code-block>
 
     <h3>Block-Level Insertion</h3>
-    <p>The <code>&lt;ins&gt;</code> element can wrap block content for multi-paragraph insertions.</p>
-    <code-block language="html" show-lines label="Block-level ins" data-escape><ins>
-  <p>This entire section has been added to the document.</p>
+    <p>When <code>&lt;ins&gt;</code> wraps block content (paragraphs, lists, tables, headings, <code>&lt;pre&gt;</code>, <code>&lt;blockquote&gt;</code> and similar), VB detects it with <code>:has()</code> and turns the change into a block with the tint, padding, and an inline-start edge bar, so the styling covers the whole change instead of breaking across each child. No class is needed.</p>
+    <code-block language="html" show-lines label="Block-level ins" data-escape><ins datetime="2026-02-20">
+  <p>This entire paragraph has been added to the document.</p>
   <p>Multiple paragraphs can be inserted together.</p>
 </ins></code-block>
+
+    <h3>Annotated Changes</h3>
+    <p><code>data-reason</code> shows a small uppercase tag before the change. <code>data-author</code> appends the author's name after it; the name appears on hover, when focus is inside the change, always on touch screens, and in print.</p>
+    <code-block language="html" show-lines label="Annotated ins" data-escape><ins datetime="2026-02-15" data-reason="review" data-author="Ana">Node.js 20 LTS</ins></code-block>
+
+    <h3 id="announced-changes">Announced Changes</h3>
+    <p>Most screen readers do not announce <code>&lt;ins&gt;</code> at all by default, so a listener hears the inserted words with no hint that they are an edit. Add <code>data-announce</code> to the change, or to any ancestor such as an article, to insert visually hidden &ldquo;insertion start&rdquo; / &ldquo;insertion end&rdquo; text around it.</p>
+    <code-block language="html" show-lines label="Opt-in announcement" data-escape><article data-announce>
+  <p>The release ships on <del>Friday</del> <ins>Monday</ins>.</p>
+</article></code-block>
+    <p>Translate the announced words with custom properties holding quoted strings, set on the element or any ancestor:</p>
+    <code-block language="css" show-lines label="Localised announcements" data-escape>:lang(fr) {
+  --del-announce-start: "début de suppression";
+  --del-announce-end: "fin de suppression";
+  --ins-announce-start: "début d’insertion";
+  --ins-announce-end: "fin d’insertion";
+}</code-block>
+    <p>When the change also has a visible <code>data-reason</code> or <code>data-author</code>, that annotation stays visible and carries the announcement as its alternative text.</p>
   </section>
 
   <section>
@@ -77,13 +95,28 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>datetime</code></td>
-          <td>Date and time of the insertion in ISO 8601 format. Not visible to users but available to scripts and assistive technology.</td>
+          <td>Date and time of the insertion in ISO 8601 format. Not visible, and not exposed by browsers to assistive technology; available to scripts. Show the date in visible text if readers need it.</td>
           <td><code>datetime="2024-01-15T10:30:00"</code></td>
         </tr>
         <tr>
           <td><code>cite</code></td>
           <td>URL to a document explaining the change. Not rendered by the browser but useful for audit trails.</td>
           <td><code>cite="https://example.com/changelog"</code></td>
+        </tr>
+        <tr>
+          <td><code>data-reason</code></td>
+          <td>VB: short visible tag before the change (e.g. correction, review).</td>
+          <td><code>data-reason="correction"</code></td>
+        </tr>
+        <tr>
+          <td><code>data-author</code></td>
+          <td>VB: author name shown after the change on hover, focus, touch screens, and in print.</td>
+          <td><code>data-author="Ana"</code></td>
+        </tr>
+        <tr>
+          <td><code>data-announce</code></td>
+          <td>VB: on the element or any ancestor, adds visually hidden &ldquo;insertion start/end&rdquo; text for screen readers.</td>
+          <td><code>data-announce</code></td>
         </tr>
       </tbody>
     </table>
@@ -123,30 +156,44 @@ crumbLabel: Native Elements
     <h2>CSS Reference</h2>
     <code-block language="css" show-lines label="ins CSS" data-escape>ins {
   text-decoration: none;
-  background: oklch(60% 0.18 145 / 0.1);
-  border-block-end: var(--border-width-thin) solid oklch(60% 0.18 145);
+  background: var(--color-success-subtle);
+  border-block-end: var(--border-width-thin) solid var(--color-success);
 }
 
-ins.diff {
+/* Pill-shaped diff tokens */
+:is(del, ins).diff {
   display: inline-block;
   padding-inline: var(--size-2xs);
   border-radius: var(--radius-s);
+}
+
+/* Wrapping block content: automatic block styling */
+:is(del, ins):has(> :is(p, ul, ol, dl, div, section, article, aside,
+                         blockquote, pre, table, figure, h1, h2, h3, h4, h5, h6)) {
+  display: block;
+  padding: var(--size-s);
+  border-inline-start: var(--size-3xs) solid var(--_change-color);
+}
+
+/* data-announce: visually hidden start/end text */
+:is(ins[data-announce], [data-announce] ins)::before {
+  content: var(--ins-announce-start, "insertion start") " ";
 }</code-block>
-    <p>The browser default underline is removed via <code>text-decoration: none</code> and replaced with a solid bottom border for a cleaner appearance. The green background at 10% opacity provides a subtle tint that works across light and dark themes. The <code>.diff</code> variant adds inline-block display with padding for pill-shaped diff tokens.</p>
+    <p>The browser default underline is replaced with a solid bottom border. The tint and border come from the theme's <code>--color-success-subtle</code> and <code>--color-success</code> tokens, so they follow light and dark modes and every theme. The <code>.diff</code> variant adds inline-block display with padding for pill-shaped diff tokens.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li><strong>Screen reader announcement:</strong> Most screen readers announce "insertion" before reading inserted content and "end insertion" after</li>
-      <li><strong>Dual visual cues:</strong> Background color and bottom border together ensure visibility, including for users who may not perceive color</li>
-      <li><strong>Color contrast:</strong> The green values are chosen for sufficient contrast while clearly indicating addition</li>
-      <li><strong>Datetime attribute:</strong> Provides machine-readable context about when changes occurred</li>
+      <li><strong>Not announced by default:</strong> Most screen reader and browser combinations read <code>&lt;ins&gt;</code> content as ordinary text, with no indication that it was inserted. Where the edit matters to the meaning, add <code>data-announce</code> (see <a href="#announced-changes">Announced Changes</a>) or say so in the surrounding text</li>
+      <li><strong>Dual visual cues:</strong> Bottom border and background color together ensure visibility, including for users who may not perceive color</li>
+      <li><strong>Color contrast:</strong> The tint comes from the theme's success tokens, which are checked for contrast against body text</li>
+      <li><strong>Datetime is not exposed:</strong> Browsers do not pass <code>datetime</code> to assistive technology; put the date in visible text when it matters</li>
     </ul>
 
     <h3>Screen Reader Behavior</h3>
-    <p>With proper screen reader settings, users will hear something like:</p>
-    <code-block language="html" show-lines label="Screen reader announcement" data-escape>"insertion, This content has been inserted, end insertion"</code-block>
+    <p>With <code>data-announce</code>, users hear something like:</p>
+    <code-block language="html" show-lines label="Screen reader announcement" data-escape>"insertion start, This content has been inserted, insertion end"</code-block>
   </section>
 
   <section>

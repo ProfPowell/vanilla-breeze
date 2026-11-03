@@ -35,17 +35,21 @@ function initFormatBytes(root = document) {
 function enhanceBytes(el) {
   if (el.hasAttribute('data-format-bytes-init')) return;
   el.setAttribute('data-format-bytes-init', '');
+  formatBytes(el);
+}
 
+/**
+ * Write the formatted value into the element. Runs on enhance and again
+ * whenever the value attribute changes. A missing, empty or non-numeric
+ * value is invalid: the authored text is left as it is.
+ * @param {HTMLElement} el
+ */
+function formatBytes(el) {
   const raw = el.getAttribute('value');
-  if (raw == null) return;
+  if (raw == null || raw.trim() === '') return;
 
   const bytes = Number(raw);
   if (isNaN(bytes) || bytes < 0) return;
-
-  // Preserve original text as tooltip
-  if (!el.title) {
-    el.title = el.textContent.trim();
-  }
 
   const precision = parseInt(el.getAttribute('data-format-bytes') ?? '0', 10) || 0;
   const isDecimal = el.getAttribute('data-unit') === 'decimal';
@@ -81,9 +85,16 @@ if (document.readyState === 'loading') {
   initFormatBytes();
 }
 
-// Watch for dynamically added elements
+// Watch for dynamically added elements, and re-format when a value changes
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
+    if (mutation.type === 'attributes') {
+      const target = /** @type {HTMLElement} */ (mutation.target);
+      if (target.hasAttribute('data-format-bytes-init') && target.matches(SELECTOR)) {
+        formatBytes(target);
+      }
+      continue;
+    }
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
@@ -97,6 +108,11 @@ const observer = new MutationObserver((mutations) => {
   }
 });
 
-observer.observe(document.documentElement, { childList: true, subtree: true });
+observer.observe(document.documentElement, {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  attributeFilter: ['value'],
+});
 
 export { initFormatBytes };

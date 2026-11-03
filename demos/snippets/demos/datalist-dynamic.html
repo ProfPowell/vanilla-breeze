@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/src/main.css" />
   <style>
     body { padding: var(--size-l); background: var(--color-surface); }
+    body > layout-stack { max-inline-size: 25rem; }
     [data-status] { font-size: var(--font-size-s); color: var(--color-text-muted); }
     [data-status]::before {
       content: '';
@@ -24,7 +25,7 @@
   </style>
 </head>
 <body>
-  <layout-stack data-layout-gap="m" style="max-inline-size: 25rem;">
+  <layout-stack data-layout-gap="m">
     <label for="city-input">City search</label>
     <input
       type="search"
@@ -70,7 +71,7 @@
       clearTimeout(timer);
       const v = input.value.trim();
       if (v.length < 2) {
-        datalist.innerHTML = '';
+        datalist.replaceChildren();
         status.textContent = 'Type at least 2 characters';
         status.dataset.status = 'idle';
         return;
@@ -79,7 +80,9 @@
       status.dataset.status = 'loading';
       timer = setTimeout(async () => {
         const results = await fetchCities(v);
-        datalist.innerHTML = results.map(r => `<option value="${r}">`).join('');
+        // Build options as nodes, never as an HTML string: server data is
+        // untrusted, and new Option() sets .value without parsing markup.
+        datalist.replaceChildren(...results.map(r => new Option('', r)));
         status.textContent = `${results.length} suggestion${results.length !== 1 ? 's' : ''} loaded`;
         status.dataset.status = 'ready';
       }, 300);
