@@ -136,9 +136,14 @@ class PopOver extends VBElement {
 
   #applyAnchorInset(pos) {
     const offsetVar = 'var(--_pop-over-offset, var(--size-xs))';
+    /* top/bottom align on the inline axis with logical insets so the
+       -start/-end variants mirror in RTL. */
+    const inline = pos.endsWith('-end')
+      ? { 'inset-inline-end': 'anchor(end)' }
+      : { 'inset-inline-start': 'anchor(start)' };
     const map = {
-      top:    { bottom: `calc(anchor(top) + ${offsetVar})`, left:  'anchor(left)' },
-      bottom: { top:    `calc(anchor(bottom) + ${offsetVar})`, left:  'anchor(left)' },
+      top:    { bottom: `calc(anchor(top) + ${offsetVar})`, ...inline },
+      bottom: { top:    `calc(anchor(bottom) + ${offsetVar})`, ...inline },
       left:   { right:  `calc(anchor(left) + ${offsetVar})`, top:   'anchor(top)' },
       right:  { left:   `calc(anchor(right) + ${offsetVar})`, top:   'anchor(top)' },
     };
@@ -163,11 +168,14 @@ class PopOver extends VBElement {
       case 'bottom':
       default:       top = r.bottom + off; left = r.left; break;
     }
-    if (pos.endsWith('-end')) {
-      if (pos.startsWith('top') || pos.startsWith('bottom'))
-        left = r.right - this.offsetWidth;
-      else
-        top  = r.bottom - this.offsetHeight;
+    const vertical = pos.startsWith('top') || pos.startsWith('bottom');
+    if (vertical) {
+      /* -start/-end are logical: in RTL, start is the anchor's right edge. */
+      const rtl = getComputedStyle(this).direction === 'rtl';
+      const alignEnd = pos.endsWith('-end') !== rtl;
+      left = alignEnd ? r.right - this.offsetWidth : r.left;
+    } else if (pos.endsWith('-end')) {
+      top = r.bottom - this.offsetHeight;
     }
 
     this.style.position = 'fixed';

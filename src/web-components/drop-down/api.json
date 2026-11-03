@@ -2,27 +2,40 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "drop-down",
   "type": "web-component",
-  "description": "Accessible dropdown menu with keyboard navigation and Popover API support",
+  "description": "Accessible dropdown: an APG menu button for actions, or (with hover) an APG disclosure for navigation links",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": ["@flow"]
   },
   "attributes": [
-    { "name": "position", "kind": "host-api", "purpose": "config",         "type": "enum",    "values": ["bottom-start", "bottom-end", "top-start", "top-end"], "default": "bottom-start", "description": "Menu position relative to trigger" },
-    { "name": "hover",    "kind": "host-api", "purpose": "config",         "type": "boolean", "description": "Open on hover/focus instead of click (useful for nav menus)" },
-    { "name": "no-flip",  "kind": "host-api", "purpose": "config",         "type": "boolean", "description": "Disable automatic flip when menu overflows viewport" },
+    { "name": "position", "kind": "host-api", "purpose": "config",         "type": "enum",    "values": ["bottom-start", "bottom-end", "top-start", "top-end"], "default": "bottom-start", "description": "Menu position relative to the trigger. start/end are logical, so they mirror in RTL" },
+    { "name": "hover",    "kind": "host-api", "purpose": "config",         "type": "boolean", "description": "Navigation disclosure: no menu roles, links stay in the Tab order, a <button aria-expanded> toggles the list (generated next to a link trigger). Opens on mouse hover or toggle activation, not on focus" },
+    { "name": "no-flip",  "kind": "host-api", "purpose": "config",         "type": "boolean", "description": "Keep the requested position instead of flipping to the opposite side when the menu overflows the viewport" },
     { "name": "open",     "kind": "host-api", "purpose": "output-state",   "type": "boolean", "direction": "output", "description": "Reflected state — set by open()/close()/toggle() methods, not intended as initial markup" }
   ],
   "structure": [
-    { "element": "<button data-trigger> or <a data-trigger>", "description": "Trigger element that opens the menu" },
-    { "element": "<menu>",                                     "description": "Menu container with <li> items holding <button> or <a> actions" }
+    { "element": "<button data-trigger> or <a data-trigger>", "description": "Trigger element that opens the menu. Action mode: aria-haspopup=\"menu\" + aria-expanded. Navigation mode: a link trigger stays a plain link" },
+    { "element": "<button data-dropdown-toggle>",              "description": "Navigation mode with a link trigger: the submenu toggle (aria-expanded, aria-controls). Generated with aria-label \"<link text> submenu\" when absent; author one to set your own label" },
+    { "element": "<menu>",                                     "description": "Menu container with <li> items holding <button> or <a> actions. Only rows whose nearest menu is this one belong to it (nested drop-downs keep their own)" }
   ],
   "childAttributes": [
-    { "name": "data-trigger", "on": "button | a", "type": "boolean", "required": true, "description": "Marks the element that opens the menu. Falls back to first <button> if absent." }
+    { "name": "data-trigger",  "on": "button | a",  "type": "boolean", "required": true, "description": "Marks the element that opens the menu. Falls back to the first direct <button> if absent." },
+    { "name": "data-disabled", "on": "button, a",   "type": "boolean", "description": "Disabled item: aria-disabled=\"true\", stays in the arrow-key order, cannot be activated" },
+    { "name": "data-value",    "on": "button, a",   "type": "string",  "description": "Value reported in drop-down:select detail.value and the items property" }
   ],
   "events": [
-    { "name": "drop-down:open",   "description": "Fired when the menu opens" },
-    { "name": "drop-down:close",  "description": "Fired when the menu closes" },
-    { "name": "drop-down:select", "detail": "{ item }", "description": "Fired when a menu item is selected" }
+    { "name": "drop-down:open",          "description": "Fired when the menu opens" },
+    { "name": "drop-down:close",         "description": "Fired when the menu closes" },
+    { "name": "drop-down:select",        "detail": "{ item, value }", "description": "Fired when one of this menu's items is activated by click or keyboard (not for disabled items or a nested drop-down's trigger row)" },
+    { "name": "drop-down:items-changed", "detail": "{ items, source: 'property' }", "description": "Fired after the items property rebuilds the menu" }
+  ],
+  "methods": [
+    { "name": "open()",   "description": "Open the menu" },
+    { "name": "close()",  "description": "Close the menu" },
+    { "name": "toggle()", "description": "Toggle the menu" }
+  ],
+  "properties": [
+    { "name": "items",  "type": "Array<{ label, value?, href?, disabled? } | { separator: true }>", "description": "Get the menu as data, or assign to rebuild it (href → <a>, otherwise <button type=\"button\">; disabled → data-disabled + aria-disabled)" },
+    { "name": "isOpen", "type": "boolean", "description": "Read-only. Whether the menu is open" }
   ]
 }

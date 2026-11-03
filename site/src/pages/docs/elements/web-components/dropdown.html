@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "drop-down"
-description: "Accessible dropdown menus with keyboard navigation, focus management, and automatic positioning."
+description: "Accessible dropdown menus (APG menu button) and navigation disclosures with keyboard navigation, focus management, and RTL-aware positioning."
 elementName: drop-down
 category: component
 currentPath: /docs/elements/web-components/dropdown/
@@ -10,15 +10,24 @@ crumbHref: /docs/elements/web-components/
 crumbLabel: Web Components
 ---
 
+<template slot="extraHead">
+<style>
+  /* Room for the open menu inside the demo frame. */
+  browser-window[data-demo-height="s"] { min-block-size: 16rem; }
+  browser-window[data-demo-height="m"] { min-block-size: 22rem; }
+  browser-window[data-demo-height="l"] { min-block-size: 28rem; }
+</style>
+</template>
+
 <section>
     <h2>Overview</h2>
-    <p>The <code>&lt;drop-down&gt;</code> component provides an accessible dropdown menu. It handles all keyboard interactions (arrow keys, Escape, Enter), click-outside-to-close, and proper ARIA attributes.</p>
+    <p>The <code>&lt;drop-down&gt;</code> component provides an accessible dropdown menu for actions, following the WAI-ARIA <a href="https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/">menu button pattern</a>: arrow keys, Home/End, typeahead, Escape, click-outside-to-close, and the menu roles. For site navigation, add <code>hover</code> to switch to the <a href="#navigation">disclosure pattern</a> instead.</p>
 
     <browser-window
       src="/docs/examples/demos/dropdown-basic.html"
       url="https://vanilla-breeze.com/dropdown"
       title="Dropdown Menu"
-      style="min-height: 22rem;"
+      data-demo-height="m"
       shadow>
     </browser-window>
 
@@ -83,22 +92,60 @@ crumbLabel: Web Components
           <td>Close menu and return focus to trigger</td>
         </tr>
         <tr>
+          <td>Printable characters</td>
+          <td>Typeahead: move to the next item whose label starts with the typed text (repeat a letter to cycle)</td>
+        </tr>
+        <tr>
           <td><kbd>Tab</kbd></td>
           <td>Close menu and move focus to next element</td>
         </tr>
       </tbody>
     </table>
+    <p>Items marked <code>data-disabled</code> get <code>aria-disabled="true"</code>: they stay in the arrow-key order (so screen reader users learn they exist) but cannot be activated. A native <code>disabled</code> button cannot take focus and is skipped.</p>
+  </section>
+
+  <section>
+    <h2 id="navigation">Navigation Menus</h2>
+    <p>Add <code>hover</code> for menus of links in a site header. This follows the WAI-ARIA <a href="https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation-hybrid/">disclosure navigation pattern</a> rather than the menu pattern: the list stays a plain list of links in the normal Tab order, with no menu roles.</p>
+    <ul>
+      <li>When the trigger is a link, it keeps navigating. A small <code>&lt;button data-dropdown-toggle&gt;</code> with <code>aria-expanded</code> is generated next to it to open the list, so keyboard and touch users can still reach the submenu. Author your own <code>&lt;button data-dropdown-toggle aria-label="…"&gt;</code> to set the label (the default is <em>“&lt;link text&gt; submenu”</em>).</li>
+      <li>When the trigger is a <code>&lt;button&gt;</code>, it is the toggle.</li>
+      <li>The list opens on mouse hover or when the toggle is activated (click, <kbd>Enter</kbd>, <kbd>Space</kbd>). Tabbing across the navigation does not open anything.</li>
+      <li><kbd>Escape</kbd> closes it and returns focus to the toggle; moving focus or clicking outside closes it.</li>
+    </ul>
+
+    <browser-window
+      src="/docs/examples/demos/dropdown-navigation.html"
+      url="https://vanilla-breeze.com/dropdown/navigation"
+      title="Dropdown Navigation Disclosure"
+      data-demo-height="s"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Navigation disclosure with a link trigger" data-escape><nav class="horizontal" aria-label="Main navigation">
+  <ul>
+    <li>
+      <drop-down hover>
+        <a href="/products/" data-trigger>Products</a>
+        <menu>
+          <li><a href="/products/software/">Software</a></li>
+          <li><a href="/products/hardware/">Hardware</a></li>
+        </menu>
+      </drop-down>
+    </li>
+  </ul>
+</nav></code-block>
   </section>
 
   <section>
     <h2>Position Variants</h2>
-    <p>Control menu alignment with the <code>position</code> attribute.</p>
+    <p>Control menu alignment with the <code>position</code> attribute. <code>start</code> and <code>end</code> are logical, so <code>bottom-start</code> hangs from the trigger’s right edge in a right-to-left page. When the menu would overflow the viewport it flips to the other side; add <code>no-flip</code> to keep the requested position.</p>
 
     <browser-window
       src="/docs/examples/demos/dropdown-positions.html"
       url="https://vanilla-breeze.com/dropdown/positions"
       title="Dropdown Position Variants"
-      style="min-height: 16rem;"
+      data-demo-height="s"
       shadow>
     </browser-window>
 
@@ -116,7 +163,7 @@ crumbLabel: Web Components
       src="/docs/examples/demos/dropdown-separators.html"
       url="https://vanilla-breeze.com/dropdown/separators"
       title="Dropdown with Separators"
-      style="min-height: 28rem;"
+      data-demo-height="l"
       shadow>
     </browser-window>
   </section>
@@ -129,7 +176,7 @@ crumbLabel: Web Components
       src="/docs/examples/demos/dropdown-destructive.html"
       url="https://vanilla-breeze.com/dropdown/destructive"
       title="Dropdown with Destructive Action"
-      style="min-height: 20rem;"
+      data-demo-height="m"
       shadow>
     </browser-window>
 
@@ -144,7 +191,7 @@ crumbLabel: Web Components
       src="/docs/examples/demos/dropdown-links.html"
       url="https://vanilla-breeze.com/dropdown/links"
       title="Dropdown with Links"
-      style="min-height: 22rem;"
+      data-demo-height="m"
       shadow>
     </browser-window>
   </section>
@@ -170,18 +217,62 @@ dropdown.addEventListener('drop-down:open', () => {
 
 dropdown.addEventListener('drop-down:close', () => {
   console.log('Menu closed');
+});
+
+dropdown.addEventListener('drop-down:select', (e) => {
+  console.log('Selected', e.detail.value, e.detail.item);
 });</code-block>
+
+    <h3>Items as data</h3>
+    <p>Read the menu with <code>items</code>, or assign an array to rebuild it. Entries with <code>href</code> render as links, the rest as <code>&lt;button type="button"&gt;</code>; <code>value</code> becomes <code>data-value</code> and is reported in <code>drop-down:select</code>; <code>disabled</code> renders a focusable, non-activatable item. Assigning fires <code>drop-down:items-changed</code>.</p>
+
+    <code-block language="javascript" show-lines label="Dropdown items API" data-escape>dropdown.items = [
+  { label: 'Edit', value: 'edit' },
+  { label: 'Help', href: '/help/' },
+  { label: 'Billing', href: '/billing/', disabled: true },
+  { separator: true },
+  { label: 'Delete', value: 'delete' },
+];
+
+dropdown.addEventListener('drop-down:items-changed', (e) => {
+  console.log(e.detail.items, e.detail.source); // source: 'property'
+});</code-block>
+
+    <h3>Events</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Detail</th>
+          <th>Fired when</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>drop-down:open</code></td><td>—</td><td>The menu opens</td></tr>
+        <tr><td><code>drop-down:close</code></td><td>—</td><td>The menu closes</td></tr>
+        <tr><td><code>drop-down:select</code></td><td><code>{ item, value }</code></td><td>One of this menu’s items is activated (not disabled items, and not a nested drop-down’s trigger)</td></tr>
+        <tr><td><code>drop-down:items-changed</code></td><td><code>{ items, source }</code></td><td>The <code>items</code> property rebuilt the menu</td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
     <h2>Accessibility</h2>
+    <h3>Action menus (default)</h3>
     <ul>
-      <li>Trigger has <code>aria-haspopup="menu"</code> and <code>aria-expanded</code></li>
-      <li>Menu has <code>role="menu"</code></li>
-      <li>Menu items have <code>role="menuitem"</code></li>
+      <li>Trigger has <code>aria-haspopup="menu"</code>, <code>aria-expanded</code> and <code>aria-controls</code></li>
+      <li>Menu has <code>role="menu"</code>; its list items get <code>role="none"</code></li>
+      <li>Menu items have <code>role="menuitem"</code> and roving focus; disabled items keep focus with <code>aria-disabled="true"</code></li>
       <li>Separators have <code>role="separator"</code></li>
-      <li>Full keyboard navigation per WAI-ARIA menu pattern</li>
-      <li>Focus returns to trigger on close</li>
-      <li>Click outside or Escape closes menu</li>
+      <li>Opening from the keyboard focuses the first item (<kbd>ArrowUp</kbd>: the last)</li>
+      <li>Keyboard focus shows the theme focus ring, not only a background tint</li>
+      <li>Focus returns to the trigger on Escape or selection</li>
+      <li>Nested drop-downs keep their own items, keys and open state</li>
+    </ul>
+    <h3>Navigation menus (<code>hover</code>)</h3>
+    <ul>
+      <li>No menu roles — links stay links in the Tab order</li>
+      <li>A toggle button carries <code>aria-expanded</code> and <code>aria-controls</code></li>
+      <li>Focus alone never opens a menu</li>
     </ul>
   </section>

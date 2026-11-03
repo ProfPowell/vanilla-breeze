@@ -32,19 +32,27 @@ pop-over[popover] {
     position: fixed;
     inset: auto;
     margin: var(--_pop-over-offset, var(--size-xs));
+    /* Flip to the opposite side (then the opposite edge) instead of
+       overflowing the viewport. */
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
   }
 
   /* Edge placement helpers — author-friendly position-area names map
-     to the standard `position-area` (Chromium 125+) when supported. */
+     to the standard `position-area` (Chromium 125+) when supported.
+     -start/-end on top/bottom are logical (inline axis) so RTL mirrors:
+     bottom-start hangs from the anchor's inline-start edge. The self-*
+     keywords resolve against the popover's own (inherited) direction —
+     the plain logical ones would use the viewport's, missing a dir="rtl"
+     set on a section rather than <html>. */
   @supports (position-area: bottom) {
     pop-over[popover][data-position="top"]          { position-area: top; }
     pop-over[popover][data-position="bottom"]       { position-area: bottom; }
     pop-over[popover][data-position="left"]         { position-area: left; }
     pop-over[popover][data-position="right"]        { position-area: right; }
-    pop-over[popover][data-position="top-start"]    { position-area: top span-right; }
-    pop-over[popover][data-position="top-end"]      { position-area: top span-left; }
-    pop-over[popover][data-position="bottom-start"] { position-area: bottom span-right; }
-    pop-over[popover][data-position="bottom-end"]   { position-area: bottom span-left; }
+    pop-over[popover][data-position="top-start"]    { position-area: self-block-start span-self-inline-end; }
+    pop-over[popover][data-position="top-end"]      { position-area: self-block-start span-self-inline-start; }
+    pop-over[popover][data-position="bottom-start"] { position-area: self-block-end span-self-inline-end; }
+    pop-over[popover][data-position="bottom-end"]   { position-area: self-block-end span-self-inline-start; }
     pop-over[popover][data-position="left-start"]   { position-area: left span-bottom; }
     pop-over[popover][data-position="left-end"]     { position-area: left span-top; }
     pop-over[popover][data-position="right-start"]  { position-area: right span-bottom; }

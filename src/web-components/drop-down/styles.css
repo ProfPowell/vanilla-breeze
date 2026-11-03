@@ -58,6 +58,73 @@ drop-down > pop-over[data-dropdown-host]:popover-open {
   }
 }
 
+/* no-flip: keep the requested side even when it overflows. */
+drop-down[no-flip] > pop-over[data-dropdown-host] {
+  position-try-fallbacks: none;
+}
+
+/* --- Navigation disclosure toggle ---------------------------------- */
+
+/* Generated next to a link trigger in [hover] mode (APG disclosure
+   navigation): the link navigates, this button opens the submenu. */
+drop-down[hover] {
+  display: inline-flex;
+  align-items: center;
+}
+
+drop-down > button[data-dropdown-toggle] {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.25em;
+  block-size: 1.5em;
+  /* The base button's 44px touch minimum would double the nav item's
+     width. The link beside it is the primary target; the toggle keeps the
+     WCAG 2.2 AA 24px minimum (2.5.8). */
+  min-inline-size: 24px;
+  min-block-size: 24px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: inherit;
+  cursor: var(--cursor-custom-pointer, pointer);
+
+  /* Chevron, drawn with borders so it inherits currentColor. */
+  &::before {
+    content: "";
+    inline-size: 0.4em;
+    block-size: 0.4em;
+    border-block-end: 0.12em solid currentColor;
+    border-inline-end: 0.12em solid currentColor;
+    transform: translateY(-0.1em) rotate(45deg);
+    transition: transform var(--duration-fast) var(--ease-default);
+  }
+
+  &[aria-expanded="true"]::before {
+    transform: translateY(0.1em) rotate(-135deg);
+  }
+
+  &:hover {
+    background: var(--color-hover-bg);
+  }
+
+  &:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-focus-ring));
+    outline-offset: var(--focus-ring-offset, 2px);
+  }
+}
+
+/* The toggle carries the chevron — drop any chevron the link trigger
+   draws itself (e.g. nav drop-down [data-trigger]::after). */
+drop-down:has(> button[data-dropdown-toggle]) > [data-trigger] {
+  padding-inline-end: var(--size-3xs);
+
+  &::after {
+    content: none;
+  }
+}
+
 /* --- Menu list inside the pop-over surface ------------------------- */
 
 @scope (drop-down) {
@@ -119,7 +186,15 @@ drop-down > pop-over[data-dropdown-host]:popover-open {
         outline: none;
       }
 
-      &:disabled {
+      /* Keyboard focus needs more than a background tint (WCAG 2.4.7 /
+         1.4.11). !important for the same reason as the reset above —
+         themes style button:focus-visible. */
+      &:focus-visible {
+        outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-focus-ring)) !important;
+        outline-offset: calc(-1 * var(--focus-ring-width, 2px)) !important;
+      }
+
+      &:is(:disabled, [data-disabled], [aria-disabled="true"]) {
         color: var(--color-text-muted);
         cursor: not-allowed;
 
@@ -163,9 +238,18 @@ drop-down > pop-over[data-dropdown-host]:popover-open {
       outline: none;
     }
 
+    &:focus-visible {
+      outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-focus-ring)) !important;
+      outline-offset: calc(-1 * var(--focus-ring-width, 2px)) !important;
+    }
+
     &[aria-disabled="true"] {
       color: var(--color-text-muted);
       cursor: not-allowed;
+
+      &:hover {
+        background: transparent;
+      }
     }
 
     &.danger {
@@ -196,8 +280,13 @@ drop-down > pop-over[data-dropdown-host]:popover-open {
 
 @media (prefers-reduced-motion: reduce) {
   drop-down > pop-over[data-dropdown-host],
-  drop-down > pop-over[data-dropdown-host]:popover-open {
+  drop-down > pop-over[data-dropdown-host]:popover-open,
+  drop-down > button[data-dropdown-toggle]::before {
     transition: none;
+  }
+
+  drop-down > pop-over[data-dropdown-host],
+  drop-down > pop-over[data-dropdown-host]:popover-open {
     transform: none;
   }
 }
