@@ -39,7 +39,7 @@ Without JavaScript, headings remain plain headings. If headings have `id` attrib
 
 ## Enhanced Form
 
-After upgrade, the component scans child headings, generates IDs for those without them, and appends a link icon (`<a class="heading-anchor">`) to each heading. The icon appears on hover/focus.
+After upgrade, the component scans child headings, generates IDs for those without them, and appends a link icon (`<a class="heading-anchor">`) to each heading. The icon appears on hover, keyboard focus, and always on touch (no-hover) devices. Every activation copies the section URL to the clipboard. IDs are Unicode-aware slugs (`café-crème`, `日本語の見出し`; emoji-only → `section`), de-duplicated with `-1`, `-2`; `scripts/check-links.mjs` mirrors the rule.
 
 ```html
 <heading-links levels="h2,h3,h4">
@@ -52,9 +52,11 @@ After upgrade, the component scans child headings, generates IDs for those witho
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `levels` | string | "h2,h3" | Comma-separated heading levels to process |
+| `levels` | string | "h2,h3" | Comma-separated h1–h6 levels to process (invalid tokens ignored; observed) |
+| `data-label-anchor` | string | "Copy link to" | Anchor name prefix (anchor is named prefix + heading text) |
+| `data-label-copied` | string | "Link copied to clipboard" | Copy announcement |
 
-**Events:** `heading-links:navigate` with `{ id, url }` detail
+**Events:** `heading-links:navigate` with `{ id, url, heading }` detail
 
 ## Failure Modes
 
@@ -78,15 +80,15 @@ After upgrade, the component scans child headings, generates IDs for those witho
 
 ### Keyboard Only
 
-- **Behavior:** Anchor links are focusable via Tab. Pressing Enter activates the link (copies URL and scrolls to heading). Headings are made focusable with `tabindex="-1"` for programmatic focus after anchor click.
+- **Behavior:** Anchor links are focusable via Tab. Pressing Enter activates the link (follows the fragment via `goToFragment`, so `:target`, history and reduced motion behave natively, then copies the URL). Modified and middle clicks are left to the browser. Headings are made focusable with `tabindex="-1"` for programmatic focus after anchor click.
 - **Tab order:** Anchor links appear in tab order after their parent heading's content.
 - **Key bindings:** Tab (focus anchor), Enter (activate), standard link behavior
 - **Acceptable:** Yes
 
 ### Screen Reader
 
-- **ARIA roles:** Each anchor has `aria-label="Link to [heading text]"` for clear announcement.
-- **Live regions:** Clipboard copy success is announced via a dynamically inserted `role="status" aria-live="polite"` element ("Link copied to clipboard").
+- **Names:** The heading text is wrapped in `.heading-text` and the heading is `aria-labelledby` it, so the heading's name is its text alone. The anchor is named "Copy link to [heading text]" via `aria-labelledby` (itself + the text span).
+- **Live regions:** Clipboard copy success is announced via a dynamically inserted `role="status" aria-live="polite"` element appended to `<body>` (not inside the link) ("Link copied to clipboard").
 - **Announced state changes:** Copy confirmation announced via live region. Visual check icon is decorative.
 - **Tested with:** VoiceOver (macOS)
 - **Acceptable:** Yes
@@ -111,7 +113,7 @@ After upgrade, the component scans child headings, generates IDs for those witho
 |-------|---------|---------|
 | `--size-xs` | 0.5rem | Anchor link margin from heading |
 | `--size-3xs` | -- | Anchor link padding |
-| `--size-xl` | 2rem | Heading scroll-margin-top |
+| `--site-header-height` + `--size-m` | 4rem + 1rem | Heading `scroll-margin-block-start` |
 | `--color-text-muted` | -- | Anchor link default color |
 | `--color-interactive` | -- | Anchor link hover color |
 | `--color-surface-raised` | -- | Anchor link hover background |

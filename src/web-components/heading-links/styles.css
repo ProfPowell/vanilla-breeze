@@ -11,12 +11,15 @@ heading-links {
   /* Heading container - enable anchor visibility on hover */
   & :is(h1, h2, h3, h4, h5, h6) {
     position: relative;
-    scroll-margin-top: var(--size-xl);
+    /* Clear a sticky site header when jumped to */
+    scroll-margin-block-start: calc(var(--site-header-height, 0px) + var(--size-m));
 
-    /* Show anchor on heading hover/focus */
+    /* Show anchor on heading hover/focus (keyboard: the anchor's own
+       :focus-visible below; touch: the (hover: none) block) */
     &:hover .heading-anchor,
     &:focus-within .heading-anchor,
-    &:focus .heading-anchor {
+    &:focus .heading-anchor,
+    &:target .heading-anchor {
       opacity: 1;
     }
   }
@@ -52,14 +55,22 @@ heading-links {
       outline-offset: var(--border-width-thin);
     }
 
-    /* Success state after copy */
-    &.copied {
+    /* Success state after copy (set for 1.5s by logic.js) */
+    &[data-state="copied"] {
+      opacity: 1;
       color: var(--color-success);
     }
   }
 
   /* Screen-reader announcements use class="visually-hidden" — the rule
      lives in src/utils/visually-hidden.css and is loaded site-wide. */
+}
+
+/* Touch / no-hover devices: there is no hover to reveal the anchor */
+@media (hover: none) {
+  heading-links .heading-anchor {
+    opacity: 1;
+  }
 }
 
 /* Reduced motion: no transition delays */

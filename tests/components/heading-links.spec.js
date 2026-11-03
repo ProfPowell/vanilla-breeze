@@ -35,7 +35,7 @@ test.describe('heading-links', () => {
     for (let i = 0; i < count; i++) {
       const id = await headings.nth(i).getAttribute('id');
       expect(id).toBeTruthy();
-      expect(id).toMatch(/^[a-z0-9-]+$/);
+      expect(id).toMatch(/^[\p{Ll}\p{Lo}\p{M}\p{N}_-]+$/u);
     }
   });
 
@@ -64,17 +64,14 @@ test.describe('heading-links', () => {
     expect(result.href).toBe(`#${result.headingId}`);
   });
 
-  test('anchor has aria-label for accessibility', async ({ page }) => {
+  test('anchor is named without changing the heading name', async ({ page }) => {
     await page.goto(demoPage);
     await waitForAnchors(page);
 
-    const ariaLabel = await page.evaluate(() => {
-      const anchor = document.querySelector('heading-links .heading-anchor');
-      return anchor?.getAttribute('aria-label');
-    });
-
-    expect(ariaLabel).toBeTruthy();
-    expect(ariaLabel).toMatch(/^Link to /);
+    const heading = page.locator('heading-links h2').first();
+    const text = (await heading.textContent())?.trim();
+    await expect(heading).toHaveAccessibleName(text);
+    await expect(heading.locator('.heading-anchor')).toHaveAccessibleName(`Copy link to ${text}`);
   });
 
   test('headings get tabindex for keyboard focus', async ({ page }) => {
@@ -137,11 +134,10 @@ test.describe('heading-links', () => {
     const anchor = page.locator('heading-links .heading-anchor').first();
     await anchor.click();
 
-    // Check for .copied class
-    await expect(anchor).toHaveClass(/copied/, { timeout: 2000 });
+    await expect(anchor).toHaveAttribute('data-state', 'copied', { timeout: 2000 });
 
     // Should revert after ~1.5s
-    await expect(anchor).not.toHaveClass(/copied/, { timeout: 3000 });
+    await expect(anchor).not.toHaveAttribute('data-state', 'copied', { timeout: 3000 });
   });
 
   test('skips headings with data-toc-ignore', async ({ page }) => {
