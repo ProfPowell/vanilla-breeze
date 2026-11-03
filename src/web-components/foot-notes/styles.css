@@ -16,7 +16,15 @@ foot-note {
   }
 }
 
-/* With JS: foot-note becomes a superscript link */
+/* A repeat citation (data-ref) has no content of its own — no empty "()" */
+foot-note[data-ref]:not([data-enhanced]) {
+  &::before,
+  &::after {
+    content: none;
+  }
+}
+
+/* With JS: foot-note becomes a superscript link (content moved to the list) */
 foot-note[data-enhanced] {
   &::before,
   &::after {
@@ -31,6 +39,14 @@ foot-note[data-enhanced] > a {
   text-decoration: none;
   color: var(--color-interactive);
 
+  /* Brackets are presentational: the accessible name is "Footnote N" */
+  &::before {
+    content: "[";
+  }
+  &::after {
+    content: "]";
+  }
+
   &:hover {
     text-decoration: underline;
   }
@@ -42,24 +58,9 @@ foot-note[data-enhanced] > a {
   }
 }
 
-/* Hide the original text content when enhanced (exclude sidenote asides) */
-foot-note[data-enhanced]:not([data-side]) > :not(a) {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-@scope (foot-notes) {
-  /* Sidenote number prefix */
-  .sidenote-number {
-    font-weight: var(--font-weight-semibold);
-  }
+/* Sidenote number prefix (the aside lives inside the foot-note) */
+foot-note .sidenote-number {
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Hide foot-notes container when all notes are sidenotes */
@@ -77,16 +78,37 @@ foot-notes {
   color: var(--color-text-muted);
 }
 
-foot-notes > ol {
+/* Generated doc-endnotes heading — visually hidden, self-contained so the
+   component does not depend on the utils bundle. */
+foot-notes > [role="doc-endnotes"] > .visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+foot-notes > [role="doc-endnotes"] {
+  display: block;
+  container-type: normal;
+  margin: 0;
+  padding: 0;
+}
+
+foot-notes ol {
   padding-inline-start: var(--size-l);
   margin: 0;
 }
 
-foot-notes > ol > li {
+foot-notes ol > li {
   margin-block-start: var(--size-s);
 }
 
-foot-notes > ol > li:first-child {
+foot-notes ol > li:first-child {
   margin-block-start: 0;
 }
 
@@ -95,6 +117,10 @@ foot-notes [data-backref] {
   margin-inline-start: var(--size-xs);
   text-decoration: none;
   color: var(--color-interactive);
+
+  & + [data-backref] {
+    margin-inline-start: var(--size-2xs);
+  }
 
   &:hover {
     text-decoration: underline;
@@ -108,9 +134,92 @@ foot-notes [data-backref] {
 }
 
 /* Target highlighting when jumping to footnote */
-foot-notes > ol > li:target {
+foot-notes ol > li:target {
   background: oklch(from var(--color-interactive) l c h / 0.1);
   margin-inline: calc(var(--size-s) * -1);
   padding-inline: var(--size-s);
   border-radius: var(--radius-s);
+}
+
+foot-notes ol > li:focus {
+  outline: none;
+}
+
+foot-notes ol > li:focus-visible {
+  outline: var(--border-width-medium) solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+/* --- Hover / focus preview popover --- */
+foot-note > a[data-preview-anchor] {
+  anchor-name: --vb-footnote-preview;
+}
+
+foot-notes > .fn-preview {
+  /* Reset UA popover centring */
+  inset: auto;
+  margin: var(--size-2xs);
+  position-anchor: --vb-footnote-preview;
+  position-area: block-start;
+  position-try-fallbacks: flip-block;
+  max-inline-size: min(40ch, calc(100vw - 2 * var(--size-s)));
+  padding: var(--size-xs) var(--size-s);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  box-shadow: var(--shadow-m);
+  font-size: var(--font-size-s);
+  line-height: var(--line-height-normal);
+  pointer-events: none;
+
+  & .fn-preview-number {
+    font-weight: var(--font-weight-semibold);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  foot-notes > .fn-preview {
+    transition: opacity var(--duration-fast) ease, display var(--duration-fast) allow-discrete, overlay var(--duration-fast) allow-discrete;
+    opacity: 0;
+
+    &:popover-open {
+      opacity: 1;
+
+      @starting-style {
+        opacity: 0;
+      }
+    }
+  }
+}
+
+/* --- Print: notes list prints cleanly, refs are plain superscript numbers --- */
+@media print {
+  foot-notes [data-backref],
+  foot-notes > .fn-preview {
+    display: none !important;
+  }
+
+  foot-note[data-enhanced] > a {
+    color: inherit;
+    text-decoration: none;
+
+    &::before,
+    &::after {
+      content: none;
+    }
+  }
+
+  foot-notes {
+    color: inherit;
+    break-inside: auto;
+  }
+
+  foot-notes ol > li {
+    break-inside: avoid;
+  }
+
+  foot-notes ol > li:target {
+    background: none;
+  }
 }

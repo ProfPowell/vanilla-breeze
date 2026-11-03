@@ -1,5 +1,6 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { fragmentClick } from '../_shared/fragment-link.js';
 
 /**
  * site-index: Interactive site keyword index
@@ -30,6 +31,9 @@ class SiteIndex extends VBElement {
   #scopeSelect = null;
 
   setup() {
+    // Jump-nav letters are relative "#index-x" hrefs (the scroll-spy compares
+    // them verbatim); keep them on the page under <base href>.
+    this.listen(this, 'click', fragmentClick);
     const src = this.getAttribute('src');
     if (src) {
       this.#loadFromSrc(src).then(() => this.#enhance());

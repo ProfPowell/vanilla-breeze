@@ -253,7 +253,7 @@ export const wireframe = {
 
     const panel = document.createElement('foot-notes');
     panel.setAttribute('data-wf-callout-panel', '');
-    panel.setAttribute('data-back-label', 'Back to callout');
+    panel.setAttribute('data-label-back', 'Back to callout');
 
     const target = container || document.querySelector('main') || document.body;
     target.appendChild(panel);

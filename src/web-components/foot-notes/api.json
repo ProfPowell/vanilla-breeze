@@ -2,41 +2,77 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "foot-notes",
   "type": "web-component",
-  "description": "Progressive enhancement for footnotes",
+  "description": "Progressive enhancement for footnotes: collects the <foot-note> elements that precede it into a labelled doc-endnotes list (or margin sidenotes), with doc-noteref references, doc-backlink return links, shared notes for repeat citations and a hover/focus preview.",
   "attributes": [
-    {
-      "name": "data-back-label",
-      "kind": "data",
-      "purpose": "config"
-    },
     {
       "name": "data-mode",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "sidenotes"
+      ],
+      "description": "Omit for a collected notes list; \"sidenotes\" places each note in the margin beside its reference (notes with data-side=\"false\" still go to the list). Observed: changing it re-renders."
     },
     {
-      "name": "data-enhanced",
+      "name": "data-label-back",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Back to content",
+      "description": "Accessible name of the backlinks; a note cited several times gets \" (a)\", \" (b)\" … appended. Observed at runtime."
     },
     {
-      "name": "data-side",
+      "name": "data-label-ref",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Footnote {n}",
+      "description": "Accessible name of each reference link; {n} is replaced by the note number. Observed at runtime."
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "data-backref",
+      "name": "data-label-heading",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "Notes",
+      "description": "Text of the generated, visually hidden heading that labels the doc-endnotes section. Ignored when the author supplies a heading child (h1–h6), which is used as the label instead. Observed at runtime."
+    },
+    {
+      "name": "data-preview",
+      "kind": "data",
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "false"
+      ],
+      "description": "\"false\" disables the hover / keyboard-focus preview popover on references. Observed at runtime."
     }
   ],
-  "childAttributes": [],
-  "structure": [],
+  "childAttributes": [
+    {
+      "name": "data-side",
+      "on": "foot-note",
+      "type": "string",
+      "description": "\"false\" opts a note out of sidenote placement in data-mode=\"sidenotes\"; it is collected into the list instead."
+    },
+    {
+      "name": "data-ref",
+      "on": "foot-note",
+      "type": "string",
+      "description": "Id of an earlier or later <foot-note> collected by the same <foot-notes>: this element becomes another citation of that note (no content of its own) and the note gets one backlink per citation (a, b, …)."
+    }
+  ],
+  "structure": [
+    {
+      "element": "<foot-note>",
+      "description": "Inline note anywhere BEFORE the <foot-notes> in document order (not necessarily a child). Phrasing content; without JS it renders in parentheses. Enhanced: its content nodes are moved (not copied) into the note, and it holds a superscript <a role=\"doc-noteref\"> (id fnref-I-N, fnref-I-N-b for repeat citations)."
+    },
+    {
+      "element": "<h1>–<h6> (optional)",
+      "description": "A heading child of <foot-notes> labels the generated <section role=\"doc-endnotes\">; otherwise a visually hidden <h2> with data-label-heading is generated."
+    }
+  ],
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [

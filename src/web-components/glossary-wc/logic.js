@@ -30,6 +30,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { fragmentClick } from '../_shared/fragment-link.js';
 import { esc } from '../_ux-base.js';
 
 class GlossaryWc extends VBElement {
@@ -74,6 +75,10 @@ class GlossaryWc extends VBElement {
     ]);
 
     if (termDivs.length === 0) return false;
+
+    // Jump-bar letters and see-also links are relative "#id" hrefs; keep them
+    // on the page under <base href> (vanilla-breeze-ihgb).
+    this.listen(this, 'click', fragmentClick);
 
     // 2. Parse terms from the HTML
     this.#terms = termDivs.map(div => {
