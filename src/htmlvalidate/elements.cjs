@@ -17,7 +17,7 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
-      "data-layout-threshold": { enum: ["s", "m", "l"], omit: true },
+      "data-layout-threshold": { enum: ["s", "m", "l"] },
       "data-layout-limit": { enum: ["2", "3", "4"] },
       "data-layout-reverse": { boolean: true }
     }
@@ -74,7 +74,7 @@ module.exports = {
     attributes: {
       "data-layout-min": { enum: ["xs", "s", "m", "l", "xl"] },
       "data-layout-gap": { enum: ["none", "3xs", "2xs", "xs", "s", "m", "l", "xl", "2xl", "3xl"] },
-      "data-layout-subgrid": { enum: ["2", "4"], omit: true }
+      "data-layout-subgrid": { enum: ["2", "3", "4"], omit: true }
     }
   },
 
@@ -151,7 +151,7 @@ module.exports = {
     phrasing: true,
     permittedContent: ["@phrasing"],
     attributes: {
-      "data-size": { enum: ["sm", "lg"] },
+      "data-size": { enum: ["s", "l"] },
       "data-color": { enum: ["primary", "success", "warning", "error", "info", "brand", "secondary", "accent"] },
       "data-variant": { enum: ["subtle", "outlined"] },
       "data-shape": { enum: ["square"] }
@@ -177,7 +177,7 @@ module.exports = {
     permittedContent: ["@phrasing"],
     attributes: {
       "data-size": { enum: ["xs", "s", "m", "l", "xl"] },
-      "data-variant": {},
+      "data-variant": { enum: ["primary", "success", "warning", "error"] },
       "data-overlay": { boolean: true }
     }
   },
@@ -1385,7 +1385,8 @@ module.exports = {
       "min": {},
       "max": {},
       "persist": {},
-      "collapsible": { boolean: true }
+      "collapsible": { boolean: true },
+      "data-label-resize": {}
     }
   },
 

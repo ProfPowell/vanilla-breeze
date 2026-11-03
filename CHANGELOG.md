@@ -26,6 +26,31 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Changes from the K+L-element review.**
+  - **layout-badge** — Breaking: `data-size="sm"` / `"lg"` are renamed `data-size="s"` / `"l"` (matching the other elements; no alias). All docs, demos and patterns are updated. The small size uses the type scale with an 11px floor instead of a fixed 10px.
+  - **layout-switcher** — Breaking: `data-layout-reverse` now reverses only the stacked order (`flex-wrap: wrap-reverse`), with or without `data-layout-threshold`; the row keeps DOM order. Before, the bare attribute did `row-reverse` and the stack reversed only when a threshold was also set. The bare `data-layout-threshold` form is gone.
+  - **layout-columns**
+    - Breaking: `data-layout-column-count="2"` / `"3"` are maximums (`columns: 14rem N`) and collapse to fewer columns in narrow containers, down to one on a phone. `auto` no longer waits for a 48rem viewport; it fits columns to the element's own width.
+    - `data-layout-measure` / `data-layout-max` work in multi-column modes: counts 2/3 cap each column (block ≤ count × measure + gaps), and `auto` uses the measure as its column width.
+    - The theme border reset covers only the flow's own headings and paragraphs (direct children, or children of one wrapping article/section); nested article/nav/details/aside keep their borders.
+  - **layout-card** — Breaking: grid mode is now "structured mode", a flex column. The header is pinned to the top, the footer to the bottom, and every other child stacks between them in source order (several content children used to overlap in one grid cell). `slot="header|content|footer"` children alone also turn it on. `container-type: inline-size` applies only in structured mode, so a block-mode card no longer collapses as a content-sized flex/grid item.
+  - **data-hotkey (kbd)**
+    - Breaking markup: the generated caps are `aria-hidden` and a visually hidden span carries the spoken combo ("Command Shift P", "Control S"). The element no longer gets an `aria-label` (prohibited on `<kbd>`; screen readers read the Mac glyph string).
+    - Named keys get short labels and spoken names: `escape`/`esc` → Esc, `arrowup`/`up` → ↑ ("Up arrow"), `pageup`/`pagedown` → PgUp/PgDn; Enter, Tab, Space, Backspace, Del, Ins, Home and End are mapped too (were upper-cased, e.g. "ESCAPE"). `formatHotkey()` shares the map, so `<command-palette>`, `<context-menu>` and `<short-cuts>` badges also show "Esc".
+    - The plus key can be written `plus` or `ctrl++`; modifier aliases `option` (alt) and `control` (ctrl) are accepted.
+    - `data-label-<key>` on the element or any ancestor (e.g. `<html data-label-ctrl="Strg">`) localises a key's label and spoken name. On Mac the modifier glyphs stay and only the spoken name changes.
+    - `data-hotkey-init` holds the rendered combo: re-running is a no-op, and a changed `data-hotkey` rebuilds the caps.
+    - In RTL the caps keep left-to-right order (`direction: ltr; unicode-bidi: isolate`).
+  - **data-splitter** — Breaking: the utility's event is renamed `split-surface:resize` → `splitter:resize` and no longer fires at init (`<split-surface>` keeps `split-surface:resize`). New `data-label-resize` on the container; the divider gets `aria-controls` (first panel, id generated when missing).
+  - **layout primitives (grid, stack, switcher, cluster, cover, center, text, split, regions, media, sidebar, reel, imposter, badge, card)** — Private `--_*` custom properties are reset or re-declared on every host (sidebar, reel, imposter, badge and card props are renamed `--_sidebar-*`, `--_reel-*`, `--_imposter-*`, `--_badge-*`, `--_card-*`), so a nested layout or an ancestor no longer leaks gap, min, threshold, width, padding, position, colours or `data-padding` into it. A `<nav data-layout="cluster">` with no gap attribute now gets the cluster default `s` (it used to pick up nav's internal `xs`).
+  - **layout-text / prose / columns** — `[data-bleed]` breaks out to the nearest query container (`100cqi`) instead of the viewport. A text host that is itself a query container stops being one while it holds a bleed child.
+  - **layout-reel** — One rule set for `<layout-reel>` and `[data-layout="reel"]` (the attribute form and `<card-list data-layout="reel">` previously had no CSS). Snap is `proximity` instead of `mandatory`. The scrollbar is always shown under forced colours and on touch-only devices. Scroll hints are logical (mirrored in RTL) and, where scroll-driven animations are supported, each edge fades only while there is more content in that direction. Removed `-webkit-overflow-scrolling` and the redundant per-variant `scroll-padding-inline`.
+  - **layout-imposter** — Every position uses `inset: 0` + fit-content + auto margins instead of `inset-inline-start: 50%` + a physical translate, so centred/top/bottom are correct in RTL and a centred overlay can use the full container width (was capped at 50%). `data-layout-contain` caps at the containing block (positioned ancestor, or the viewport when fixed). New `--imposter-z` (default 1, `--z-float` when fixed).
+  - **layout-canvas** — A 1px border is always reserved: a `--color-border` hairline on plain pages, transparent under `data-backdrop`, `CanvasText` in forced colours. The elevated variant and depth sheets apply only at 37.5rem and up, so element and attribute forms both go flush on mobile. Nested canvases set `--canvas-bg` instead of `background`. The `data-max="narrow"` fallback is 40rem.
+  - **label** — Checkbox and radio labels align the control with the first line of text (`align-items: first baseline` plus a small `translate` on the box), so a wrapped label no longer centres the box against the whole block. Switch labels stay centred; segmented and rating labels keep their own alignment (the rule now has single-element specificity).
+  - **lists (ul / ol / li)** — `data-marker`, the `.meta` separator and the `.inline` / `.unstyled` item rules target direct `> li` children only, so a nested list keeps its own bullets or numbers (a nested `<ol>` inside `ul[data-marker="check"]` used to lose its ordinals). `data-marker="arrow"` shows a left-pointing glyph (`--marker-arrow-rtl`, U+2B9C) in RTL.
+  - **kawaii theme** — List hearts are drawn with `li::marker` instead of `list-style: none` + `::before`. Ordered lists count with the native `list-item` counter, so `<li value>`, `start` and `reversed` are honoured; an `<ol type>` keeps its native marker text. `ul[data-marker]` and lists inside `<nav>` are left alone, and lists that are direct children of `<article>` are now matched.
+  - **a11y-dyslexia theme** — The extra `li` margin applies only to plain block-flow lists (`:is(ul, ol):not([class], [data-layout]) > li`), so it no longer doubles the gap in layout-primitive lists or offsets `.inline` / `.meta` items.
 - **Changes from the I-element review.**
   - **icon-wc**
     - Filled icon sets (Phosphor, Bold) now render filled: the shadow stylesheet no longer forces `fill: none; stroke: currentColor; stroke-width: 2` over each file's own presentation attributes (stroked sets carry their own stroke attributes).
@@ -226,6 +251,40 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **K+L-element review.**
+  - **layout-grid**
+    - Tracks are clamped with `minmax(min(var(--_min), 100%), 1fr)`, so `data-layout-min="l"` / `"xl"` no longer overflow containers narrower than the min (phones, sidebars).
+    - Removed the dead `@container card (width < 200px)` micro-card rule (it never won the cascade and only covered the attribute form).
+    - `data-layout-subgrid="3"` is an explicit value; docs explain the subgrid row gap and include a demo.
+  - **layout-stack** — With `data-layout-align="start|center|end"`, direct `section`/`article`/`aside`/`main` children no longer collapse to 0 width (their container-type is removed; opt back in with `data-container`).
+  - **layout-columns** — Theme heading borders (brutalist h2 and others) no longer show inside the column flow (the reset is `!important`, so it beats the bundle-theme layer). Bleed children span all columns (`column-span: all`).
+  - **layout-text** — `[data-bleed]` works in uncentered containers and no longer causes horizontal scrolling from the classic scrollbar width. Extra block spacing also applies to `table`, `blockquote`, `video`, `code-block` and `browser-window`.
+  - **layout-cluster** — The overlap amount is set on the items, so an item that is itself a cluster still gets its parent's overlap.
+  - **data-splitter / split-surface**
+    - `aria-orientation` was inverted (side-by-side panels now report `vertical`).
+    - Pointer drag and arrow keys are direction-aware in RTL. `pointercancel` / `lostpointercapture` end the drag (no stuck `user-select: none`). The initial position is clamped into `data-min` / `data-max`.
+    - Any content child (not just main/article/section) drops its min width beside the splitter, fixing horizontal overflow with `section[data-layout]` or nested layouts.
+    - Reconnect/clone safety: no duplicate dividers (the utility tracks live containers; split-surface ignores stale async inits). split-surface also gains the `data-label-resize` override and `aria-controls` on the divider.
+  - **loading-spinner**
+    - Removed the invalid `role: status` CSS declaration. Docs give the real pattern: `role="status"` plus `aria-label` for a standalone spinner, `aria-hidden="true"` next to visible text, and note that the live region must already exist to announce.
+    - `data-overlay` no longer draws a parent-sized ellipse; it centres a spinner at the chosen size over a translucent backdrop (docs explain the positioned-ancestor requirement).
+    - Forced colours: transparent track and a system-colour arc, so the rotation stays visible. The `warning` variant reads `--color-warning`.
+    - New `api.json` (variant and size enums, overlay, `--spinner-*` properties); the override entry is removed.
+  - **layout-badge** — Subtle and outlined badges meet 4.5:1 in light and dark mode (`--color-*-text` tokens; primary, brand, secondary and accent get a mode-aware tint and ink); default badges use surface and text tokens. Every badge has a `CanvasText` border in forced colours. Docs gain an Accessibility section (colour is never the only signal; counts need context).
+  - **layout-card** — `data-max` centres the card in normal block flow (`margin-inline: auto`). Non-ghost cards get a `CanvasText` border in forced colours. The subgrid card actually aligns rows across siblings now (`container-type` had turned it into an independent grid). `api.json` documents the child/slot structure and the structured-mode padding scale.
+  - **kbd** — Nested `<kbd><kbd>…</kbd></kbd>` draws caps only on the inner elements: the outer drops its border, background, shadow and padding and inherits the font size, so inner caps are 0.85em instead of 0.72em. This also applies inside buttons and to `kbd[data-hotkey]` (its duplicate reset was removed from data-utilities). Before JS runs, the data-hotkey fallback text renders as one ordinary cap.
+  - **magna theme** — The kbd cap rule no longer boxes a `kbd` that wraps other `kbd`s.
+  - **label / legend demos** — Removed typed `*` from required labels inside `<form-field>` (label-patterns, legend-examples, textarea-examples, input-states), which rendered "Name * *" next to form-field's automatic asterisk.
+  - **a11y-dyslexia theme** — `p, li, blockquote` use `text-align: start` instead of `left`, so RTL text aligns right.
+  - **kawaii pack** — `kawaii.effects.css` (what the kawaii pack theme actually loads) draws its list hearts with `::marker` too, so list semantics survive.
+  - **math-init** — The math font stylesheet resolves against the VB CDN base (`{cdn}/fonts/math-fonts.css`) instead of root-absolute `/fonts/math-fonts.css`, and the CDN build ships it. It used to 404 on the docs site and for every CDN or subpath consumer.
+  - **theme-loader** — `preloadTheme()` no longer adds a `<link rel="preload">` on every theme-picker hover or focus when one already exists; loading a theme or pack removes every matching preload. Theme names are `CSS.escape`d in selectors. New export: `getCdnBase()`.
+  - **rel lookups (page-info / canonicalize / share-wc / geo-map / sign-pages)** — `rel` is matched case-insensitively as a token list (`[rel~="canonical" i]`), so combined values such as `rel="author license"` work; the sign-pages canonical lookup matches multi-token `rel` too. share-wc shares a relative canonical as an absolute URL (`.href`).
+  - **geo-map** — The tile-origin `preconnect` no longer sets `crossorigin` (tiles are no-cors `<img>`, so a CORS-mode connection was never reused).
+  - **Docs**
+    - Layouts: grid, stack, switcher, columns and layout-text pages gain attribute forms, escape hatches and new demos (subgrid, stack align with sections, switcher reverse with a WCAG 2.4.3 focus-order note, bleed). Sidebar is documented as 16rem with "how the sidebar is chosen", sticky prerequisites and a DOM-order note; reel has region/keyboard guidance and RTL demos; imposter has an Accessibility section; canvas documents `data-canvas`, token coupling with `data-backdrop` and the 37.5rem breakpoint. Demos drop divs and inline styles (`<figure data-media>`, `<section data-layout="reel" aria-label tabindex="0">`).
+    - kbd covers nested kbd, data-hotkey and caps inside buttons; data-hotkey documents spoken names, named keys, the plus key, `data-label-*` and idempotency. The label page documents form-field's automatic asterisk and has a CSS Reference synced to source; the legend page covers required, disabled and status states.
+    - The `<link>` page is written in full (rel values, resource hints, attributes, VB theme links and `data-vb-theme*`, links VB reads and inserts). The `blocking` page states correctly what already blocks and shows real non-blocking CSS patterns. The `<li>` page has a corrected CSS properties table, a Markers section and a Safari/VoiceOver `role="list"` note; the `<ul>` page no longer contradicts itself.
 - **I-element review.**
   - **icon-wc**
     - Changing `name`/`set` mid-fetch no longer leaves the stale icon: results are tokened and the `<svg>` is swapped in place (no shadow-root rebuild, no flash).

@@ -259,6 +259,15 @@ Applied via `data-theme` on `<html>` (or any element, scoped). Combine with `dat
 | **Extreme** (on demand: `/cdn/themes/<name>.css`, auto-loaded by JS) | `brutalist`, `swiss`, `cyber`, `organic`, `editorial`, `terminal`, `kawaii`, `8bit`, `nes`, `win9x`, … |
 | **Accessibility** (bundled) | `a11y-high-contrast`, `a11y-large-text`, `a11y-dyslexia` (composable with any theme; a11y-dyslexia is light-only and uses self-hosted Atkinson Hyperlegible) |
 
+Theme and runtime `<link>` hooks:
+
+- `<link rel="stylesheet" href="{cdn}/themes/<name>.css" data-vb-theme="<name>">`: the theme loader adopts an authored link instead of loading the theme again. Link order relative to the core CSS does not matter, because theme files self-declare `@layer bundle-theme` and carry the layer-order prefix.
+- `data-vb-theme-state="loading|ready|error|timeout"`: set by the loader and the boot snippet.
+- `data-vb-theme-preload="<name>"`: the `rel="preload"` hint from `preloadTheme()` (at most one per theme), removed when the theme loads.
+- `data-vb-math-font`: `<link rel="stylesheet" href="{cdn}/fonts/math-fonts.css">`, injected by math-init.
+- Runtime `rel` reads are token-list and case-insensitive (`[rel~="x" i]`): `canonical` (share-wc, page-info; resolved via `.href`), `author`, `license`, `author-key` (page-info, canonicalize).
+- `theme-loader.js` exports `getCdnBase()`, the detected CDN base (`__VB_THEME_BASE` → `setThemeBase()` → `<script src*="vanilla-breeze">` dir → `/cdn`).
+
 ### Accents (`data-accent`)
 
 `data-accent` on `<html>` or any element: `ocean`, `forest`, `sunset`, `rose`, `lavender`, `coral`, `slate`, `emerald`, `amber`, `indigo`. Swaps brand hue seeds only; written by `<theme-picker>` / `ThemeManager.setAccent()`.
@@ -326,6 +335,8 @@ Base: border, radius, padding, focus ring. Validation via `:user-invalid` and `[
 | `input[list].search` | Search icon on the inline-start side |
 
 > The switch knob slides toward the inline end, so it mirrors under `dir="rtl"`. Colour tokens: `--switch-track-bg`, `--switch-track-checked-bg`, `--switch-knob-bg`. In forced colors the track is outlined in CanvasText and filled with Highlight when on.
+
+> `label` wrapping a checkbox/radio is `inline-flex` (24px min row, pointer). Checkbox/radio boxes align with the first line of text (`first baseline` + translate), switches centre on the row; the alignment rule has single-element specificity so `[data-segmented]` / `[data-rating]` labels keep their own. Inside `<form-field>` a required control adds a silent red `*` to the field's only label / the grouped field's legend — never type `*` into the label text.
 
 | Token | Default | Purpose |
 |---|---|---|
@@ -515,7 +526,7 @@ Base: left border accent, muted italic text, `<footer>` for attribution.
 
 ### `<code>`, `<pre>`, `<kbd>`, `<samp>`, `<var>` Code
 
-Base: monospace font, `<code>` gets background highlight, `<kbd>` gets border + shadow key style.
+Base: monospace font, `<code>` gets background highlight, `<kbd>` gets border + shadow key style. A `<kbd>` with a `<kbd>` child (`kbd:has(> kbd)`, nested sequence/combination and the `data-hotkey` wrapper) is unboxed and inherits the font size; only inner caps are drawn. Inside `button`/`.button`/`[role="button"]` a cap takes the button's text colour with a derived edge and translucent fill.
 
 ### `<ul>`, `<ol>` Lists
 
@@ -523,6 +534,11 @@ Base: monospace font, `<code>` gets background highlight, `<kbd>` gets border + 
 |-------|-------------|
 | `.inline` | Horizontal flex, no bullets |
 | `.unstyled` | No bullets, no padding |
+
+- `ul[data-marker="check|arrow|dash|star"]`: styles direct `> li::marker` only, so nested lists keep their own markers. `arrow` swaps to `--marker-arrow-rtl` (U+2B9C, fallback built in) under `:dir(rtl)`.
+- `ul.meta` / `ol.meta` (`data-separator="pipe|dash|slash"`): separators on direct `> li + li::before` only.
+- `.inline` / `.unstyled` / `.meta`: reset `margin-block-start` on direct `> li` only. They set `list-style: none`, so add `role="list"` where Safari/VoiceOver semantics matter.
+- `:where(li + li)` has zero specificity, so a plain author `li` rule wins over it. Any `[data-layout] > li` gets a margin of 0.
 
 ### `<dl>` Definition List
 
@@ -809,7 +825,9 @@ Vertical flex layout with configurable gap.
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between children |
-| `data-layout-align` | `start`, `center`, `end`, `stretch` | Cross-axis alignment |
+| `data-layout-align` | `start`, `center`, `end`, `stretch` | Cross-axis alignment. `start`/`center`/`end` make children content-sized, so direct `main`/`article`/`section`/`aside` children drop `container-type` (they would otherwise collapse to 0 width) |
+
+Child attribute: `data-container` (on `main`/`article`/`section`/`aside`): keeps the child a query container in a start/center/end stack. Give it an explicit width.
 
 #### `<layout-cluster>`
 Horizontal flexbox with wrapping.
@@ -838,8 +856,9 @@ Auto-fit responsive grid.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-min` | `xs` \| `s` \| `m` \| `l` \| `xl` | Minimum column width (8/10/15/20/25rem). One-off: `style="--layout-min: 220px"` |
+| `data-layout-min` | `xs` \| `s` \| `m` \| `l` \| `xl` | Minimum column width (8/10/15/20/25rem), clamped to the container (`minmax(min(min, 100%), 1fr)`): a grid narrower than the min shows one full-width column instead of overflowing. One-off: `style="--layout-min: 220px"` (not inherited by nested grids) |
 | `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between items |
+| `data-layout-subgrid` | (bare), `2`, `3`, `4` | Each child becomes a `grid-template-rows: subgrid` spanning N rows (bare = 3; other values also span 3) so header/body/footer align across siblings. The subgridded rows use the grid's row gap, so `data-layout-gap` also spaces the parts inside each child; set `row-gap` on the children to override |
 
 #### `<layout-cover>`
 Full-height container with centered principal element.
@@ -855,7 +874,7 @@ Full-height container with centered principal element.
 Child attributes: `data-layout-principal`, `data-layout-cover-top`, `data-layout-cover-bottom`
 
 #### `<layout-sidebar>`
-Two-column layout (sidebar + content).
+Two-column layout (sidebar + content). Element or attribute form (`data-layout="sidebar"`). `nav`/`aside` children are the sidebar; every other child is content; without `nav`/`aside` the first child is the sidebar and the last the content. Wraps on *container* width. Nested sidebars start from their own defaults. Pair with `data-splitter` for resizable panels.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
@@ -864,6 +883,7 @@ Two-column layout (sidebar + content).
 | `data-layout-sidebar-width` | `narrow`, `normal`, `wide` | Sidebar width (12 / 16 / 20rem — the same three values in every sidebar context; `--sidebar-width` token default 16rem) |
 | `data-layout-content-min` | `s` \| `m` \| `l` | Min content width (40/50/60%). One-off: `style="--layout-content-min: 45%"` |
 | `data-layout-nowrap` | (boolean) | Prevent stacking |
+| `data-layout-sticky` (on `nav`/`aside`) | (boolean) | Sticky sidebar with own scroll; requires `<html data-sticky>` |
 
 #### `<layout-switcher>`
 Flexbox that flips horizontal↔vertical based on available space.
@@ -871,33 +891,47 @@ Flexbox that flips horizontal↔vertical based on available space.
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap |
-| `data-layout-threshold` | `s` \| `m` \| `l` | Switch threshold (25/30/40rem). One-off: `style="--layout-threshold: 35rem"` |
+| `data-layout-threshold` | `s` \| `m` \| `l` | Switch threshold (25/30/40rem, default 30rem). One-off: `style="--layout-threshold: 35rem"`. No bare form |
 | `data-layout-limit` | `2`, `3`, `4` | Max items before vertical |
-| `data-layout-reverse` | (boolean) | Reverse when stacked |
+| `data-layout-reverse` | (boolean) | Reverse when stacked (`flex-wrap: wrap-reverse`: last item on top); the row keeps DOM order. Independent of the threshold. Visual only: focus order stays DOM order (WCAG 2.4.3) |
+
+Attribute form: `data-layout="switcher"`.
 
 #### `<layout-reel>`
-Horizontal scrolling container with snap.
+Horizontal scrolling container with proximity snap. Element or attribute form (`data-layout="reel"`, e.g. `<card-list data-layout="reel">`). Without focusable items, add `role="region" aria-label tabindex="0"` (or use `<section data-layout="reel" aria-label tabindex="0">`). Scrollbar always shown under forced colours and `(hover: none)`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap |
-| `data-layout-padding` | `none`, `s`, `m`, `l` | Container padding |
+| `data-layout-padding` | `none`, `s`, `m`, `l` | Padding on all sides; the inline value is also the scroll padding |
 | `data-layout-item-width` | `auto`, `s`, `m`, `l`, `xl`, `full` | Item width |
 | `data-layout-align` | `start`, `center`, `end`, `stretch` | Vertical alignment |
-| `data-layout-scrollbar` | (boolean) | Show scrollbar |
+| `data-layout-scrollbar` | (boolean) | Show scrollbar (hidden by default except forced colours / touch-only) |
+| `data-scroll-hint` | (bare), `start` | Logical edge fades (mirrored in RTL); with scroll-driven animations each edge fades only while there is more content that way. `start`: end edge only. Size: `--scroll-hint-size` |
 
 #### `<layout-imposter>`
-Positioning helper for overlays.
+Positioning helper for overlays (visual only — use `<dialog>`/`popover` for modal UI). Logical in RTL; centred overlays use the full container width. `--imposter-z` sets stacking (default 1, `--z-float` when fixed).
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-layout-fixed` | (boolean) | Fixed positioning |
 | `data-layout-position` | `center`, `top`, `bottom`, `start`, `end`, `top-start`, `top-end`, `bottom-start`, `bottom-end` | Position |
 | `data-layout-margin` | `s`, `m`, `l`, `xl` | Margin from edges |
-| `data-layout-contain` | (boolean) | Contain within viewport |
+| `data-layout-contain` | (boolean) | Cap at the containing block (positioned ancestor, or viewport when fixed) minus the margin; scrolls inside |
+
+#### `<layout-canvas>` / `[data-canvas]`
+Elevated content surface. Attribute form puts the variant in the value; the element form uses `data-variant`. 1px edge: hairline on plain pages, transparent under `data-backdrop`, CanvasText in forced colours. Below 37.5rem every canvas goes flush (both forms). Nested canvases set `--canvas-bg` to `--color-surface-raised`.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-canvas` (attribute form) | (bare), `flush`, `elevated` | Make any element a canvas; value = variant |
+| `data-variant` (element form only) | `flush`, `elevated` | Variant for `<layout-canvas>` |
+| `data-max` | `narrow`, `normal`, `wide`, `prose` | `--content-narrow/normal/wide` (40/60/80rem) or 65ch |
+| `data-padding` | `none`, `s`, `m`, `l`, `xl` | Padding |
+| `data-canvas-depth` | `1`, `2` | Stacked-paper sheets (37.5rem and up) |
 
 #### `<layout-text>`
-Content container with optimal line-length and vertical rhythm. Default max-width: 65ch.
+Content container with optimal line-length and vertical rhythm. Default max-width: `--measure-normal` (65ch; fluid under `data-fluid`, shorter in the dyslexia/large-text themes). Released to 100% in query containers narrower than 30rem.
 
 `layout-text/styles.css` owns the typographic core shared with `<layout-columns>`, `[data-layout="columns"]` and `[data-layout="prose"]`: measure, `--prose-line-height`, vertical rhythm, `[data-bleed]` breakout and the narrow-container width release.
 
@@ -906,20 +940,38 @@ Content container with optimal line-length and vertical rhythm. Default max-widt
 | `data-layout-measure` / `data-layout-max` | `narrow`, `normal`, `wide` | Measure (`--measure-narrow` 45ch / `--measure-normal` 65ch / `--measure-wide` 80ch). Both spellings accepted on every text container |
 | `data-layout-centered` | (boolean) | `margin-inline: auto` |
 
-Child attribute: `data-bleed` — full-viewport-width breakout.
+Extra block spacing (`--size-l`) before/after: `figure`, `pre`, `table`, `blockquote`, `video`, `code-block`, `browser-window`.
+
+Child attribute: `data-bleed` (direct child): breaks out to the full inline size of the nearest query container (`100cqi`, not `100vw`). Works uncentered (grows from the start edge) and centered (symmetric). A host that is itself a container (`article[data-layout="prose"]`, `article[data-measure]`) stops being one while it has a bleed child; `data-container` on the host keeps it as a container. Spans all columns in a multi-column flow.
+
+Note: `data-layout-max="narrow"` is 45ch on text containers but 40rem on `<layout-center>`.
+
+#### `<layout-columns>`
+Multi-column reading flow. Measure, rhythm, centering and `[data-bleed]` come from the typographic core in `layout-text/styles.css`; `layout-columns/styles.css` adds the column rules. Attribute form: `data-layout="columns"`.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-layout-column-count` | `1`, `2`, `3`, `auto` | `1` (default) = single measured column. `2`/`3` are maximums (`columns: 14rem N`): they drop to fewer columns in narrow containers, down to one on a phone. `auto` = as many `--column-min-width` (38ch) columns as the element's own width fits (no viewport query) |
+| `data-layout-measure` / `data-layout-max` | `narrow`, `normal`, `wide` | Count 1: caps the block. Counts 2/3: caps each column (block ≤ count × measure + gaps); without it they fill the container. `auto`: sets the column width |
+| `data-layout-align` | `justify` | Justified text with hyphenation |
+| `data-layout-centered` | (boolean) | No effect (columns are always centered) |
+
+Custom properties: `--column-min-width` (38ch, auto mode), `--column-gap` (`--size-2xl`).
+Child attribute: `data-bleed` (direct child): spans all columns and the nearest query container's width.
+Rhythm applies to direct children. Wrapping the content in one `<article>` turns it off, so put `data-layout="columns"` on the article instead. Headings and paragraphs in the flow drop theme borders (`!important`, so the reset beats the bundle-theme layer); nested components keep theirs.
 
 ### Card Elements
 
 #### `<layout-card>`
-Block container by default. Add `<header>`, `<section>`, or `<footer>` children to activate grid mode with named areas.
+Block container by default. A `<header>`, `<section>` or `<footer>` child, or any `slot="header|content|footer"` child, switches it to structured mode: header pinned on top, footer pinned at the bottom (`margin-block-start: auto`), every other child stacked between them in source order.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-variant` | `elevated`, `outlined`, `ghost` | Visual style |
-| `data-padding` | `none`, `s`, `m`, `l`, `xl` | Internal padding (applies to grid area children in grid mode) |
-| `data-max` | `narrow`, `normal`, `wide`, `prose` | Max-width constraint (same keyword set as `layout-center` / canvas). Surfaces — card, badge, canvas — use bare `data-*`; flow primitives use `data-layout-*` |
+| `data-padding` | `none`, `s`, `m`, `l`, `xl` | Internal padding. Structured mode pads the children one step up: header/footer `--size-m`/`--size-l`, content `--size-l` at the default `m`; `none` also drops the dividers |
+| `data-max` | `narrow`, `normal`, `wide`, `prose` | Max-width constraint, centered (`margin-inline: auto` in block flow, `align-self` in flex/grid). Same keyword set as `layout-center` / canvas. Surfaces — card, badge, canvas — use bare `data-*`; flow primitives use `data-layout-*` |
 
-Grid mode children: `<header>`, `<section>`, `<footer>` map to grid areas. Use `slot="content"` for non-semantic elements.
+Structured children: `<header>` / `slot="header"`, `<footer>` / `slot="footer"`; everything else (including `<section>` and `slot="content"`) is content. `container-type: inline-size` only in structured mode (compact padding under 300px). In a `data-layout-subgrid` parent: header row 1, footer last row, content fills the rows between. Forced colors: non-ghost cards get a `CanvasText` border.
 
 ### UI Elements
 
@@ -927,10 +979,12 @@ Grid mode children: `<header>`, `<section>`, `<footer>` map to grid areas. Use `
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-size` | `sm`, (default), `lg` | Size |
+| `data-size` | `s`, (default), `l` | Size (`s` = type-scale token with an 11px floor). Renamed from `sm` / `lg` |
 | `data-color` | `primary`, `success`, `warning`, `error`, `info`, `brand`, `secondary`, `accent` | Color |
 | `data-variant` | (default solid), `subtle`, `outlined` | Style variant |
 | `data-shape` | `square` (default: pill) | Shape |
+
+Subtle and outlined variants use `--color-*-text` ink (light-dark) on `--color-*-subtle` / transparent; primary/brand/secondary/accent derive a mode-aware tint + ink from their colour. Forced colors: `CanvasText` border on every badge.
 
 #### `<status-message>`
 
@@ -1016,9 +1070,11 @@ Features: silent `*` on the field's only label / legend, validation icons (force
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-size` | `xs`, `s`, `m`, `l`, `xl` | Size |
-| `data-variant` | `primary`, `success`, `warning`, `error` | Color |
-| `data-overlay` | (boolean) | Fixed overlay spinner |
+| `data-size` | `xs`, `s`, `m`, `l`, `xl` | Size (em-relative) |
+| `data-variant` | `primary`, `success`, `warning`, `error` | Color (token-driven) |
+| `data-overlay` | (boolean) | Absolute overlay (`inset: 0`) over the nearest positioned ancestor, translucent backdrop, spinner centered. The container needs a non-static position |
+
+A11y: standalone spinner → `role="status"` + `aria-label` (CSS cannot add a role); next to visible text → `aria-hidden="true"`. Custom properties: `--spinner-size`, `--spinner-width`, `--spinner-color`, `--spinner-track`, `--spinner-speed`.
 
 #### `<progress-ring>`
 
@@ -1319,11 +1375,14 @@ Resizable split panes.
 | `max` | 0-100 | Maximum panel size % |
 | `collapsible` | (boolean) | Allow panel collapse |
 | `persist` | (string key) | Remember size in localStorage |
+| `data-label-resize` | string | Divider accessible name (default "Resize panels") |
 
 | Events | Detail |
 |--------|--------|
 | `split-surface:resize` | `{ position }` |
 | `split-surface:collapse` | `{ collapsed }` |
+
+`aria-orientation` is the divider's own axis (`vertical` for side-by-side panels). Drag and arrow keys mirror in RTL. The `data-splitter` attribute utility shares the divider markup but fires `splitter:resize` (`{ position }`), not `split-surface:resize`; it also reads `data-label-resize` on the container.
 
 ### `<star-rating>`
 Interactive star rating (form-associated).
@@ -1672,6 +1731,8 @@ These `data-layout-*` attributes work on layout elements and `data-layout` conta
 | `data-layout-ratio` | `2:1`, `1:2`, `3:1`, `1:3`, `golden` | Split layout ratio |
 | `data-container` | (boolean) | Establish container query context |
 
+Modifiers apply only to the element they are on: layout private custom properties are reset on every layout host, so a nested layout never inherits an outer layout's gap/min/threshold/measure/padding/align tokens.
+
 ### Page-Level State Attributes
 
 | Attribute | Values | Description |
@@ -1896,7 +1957,7 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 |-----------|---------|-------------|
 | `data-copy` | `<button>` | Copy text to clipboard |
 | `data-copy-target` | CSS selector | Target element to copy from |
-| `data-hotkey` | `<kbd>` | Platform-aware key display (⌘/Ctrl) |
+| `data-hotkey` | `<kbd>` | Platform-aware key display (⌘/Ctrl). Caps `aria-hidden` + visually hidden spoken combo ("Command Shift P"). Modifiers `meta`/`cmd`, `alt`/`option`, `shift`, `ctrl`/`control`; named keys `escape` (Esc), `enter`, `tab`, `space`, `backspace`, `delete` (Del), `insert`, `home`, `end`, `pageup`/`pagedown` (PgUp/PgDn), `arrowup`/`down`/`left`/`right` (↑↓←→); plus key = `plus` or `ctrl++`. `data-label-<key>` (element or ancestor, e.g. `<html data-label-ctrl="Strg">`) localises labels/spoken names. LTR key order in RTL. `data-hotkey-init` = rendered combo (idempotent; changed combo re-renders) |
 | `data-spoiler` | any | Content concealment (`blur`, `solid`, `noise`) |
 | `data-effect="ticker"` | `<data>` | Animated number count-up (`--vb-ticker-duration`, `--vb-ticker-start`, `--vb-ticker-decimals`) |
 | `data-format-number` | `<data>` | Locale-aware number formatting (`""`, `currency` + `data-currency` [defaults to USD], `percent`, `compact`); re-formats when `value` changes; empty/invalid `value` leaves the text |
@@ -2114,7 +2175,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-open` | Various WC — open state |
 | ~~`data-direction`~~ | **Removed** — use `direction` on `<split-surface>` |
 | `data-otp-ready` | `<form-field>` — OTP/PIN boxes built (internal) |
-| `data-overlay` | `<loading-spinner>` — overlay mode |
+| `data-overlay` | `<loading-spinner>` — absolute overlay mode (needs a positioned ancestor) |
 | `data-padding` | Cards — padding preset |
 | `data-page-layout` | `<body>` — page layout (see §5) |
 | `data-pattern` | `[data-mask]` — mask format |

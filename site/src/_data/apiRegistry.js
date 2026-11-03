@@ -4,7 +4,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-badge",
     "type": "custom-element",
-    "description": "Small inline status or count badge. Surface elements use bare data-* attributes.",
+    "description": "Small inline status or count badge. Colour reinforces the text, never replaces it. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "phrasing": true,
@@ -19,10 +19,10 @@ export default {
         "purpose": "config",
         "type": "enum",
         "values": [
-          "sm",
-          "lg"
+          "s",
+          "l"
         ],
-        "description": "Size: sm or lg (default medium)."
+        "description": "Size: s (11px floor) or l; omit for the default (--font-size-xs)."
       },
       {
         "name": "data-color",
@@ -39,7 +39,7 @@ export default {
           "secondary",
           "accent"
         ],
-        "description": "Semantic or brand color."
+        "description": "Semantic (primary, success, warning, error, info) or theme (brand, secondary, accent) colour. Colour is never the only signal: the badge text must carry the meaning."
       },
       {
         "name": "data-variant",
@@ -50,7 +50,7 @@ export default {
           "subtle",
           "outlined"
         ],
-        "description": "subtle (tinted) or outlined instead of filled."
+        "description": "subtle (mode-aware tint with --color-*-text ink) or outlined (transparent, border in the text colour) instead of filled."
       },
       {
         "name": "data-shape",
@@ -68,7 +68,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-canvas",
     "type": "custom-element",
-    "description": "Elevated content surface (a raised panel with radius and shadow). Attribute form: data-canvas on a semantic element. Surface elements use bare data-* attributes.",
+    "description": "Elevated content surface (a panel with radius, shadow and a 1px edge: a hairline on a plain page, transparent under data-backdrop, CanvasText in forced colours). Attribute form: data-canvas on a semantic element, with the variant as its value (data-canvas=\"flush\" | \"elevated\"). Below 37.5rem every canvas goes flush. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -85,7 +85,7 @@ export default {
           "flush",
           "elevated"
         ],
-        "description": "flush (no radius or shadow) or elevated (larger radius and shadow)."
+        "description": "Element form only: flush (no radius or shadow) or elevated (larger radius and shadow, 37.5rem and up). The attribute form puts the variant in data-canvas itself."
       },
       {
         "name": "data-max",
@@ -132,7 +132,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-card",
     "type": "custom-element",
-    "description": "Card surface. A plain padded block by default; header / section / footer children switch it into a named-area grid. Surface elements use bare data-* attributes.",
+    "description": "Card surface. A plain padded block by default; a header / section / footer child (or slot=\"header|content|footer\") switches it to structured mode: header pinned on top, footer pinned at the bottom, every other child stacked between in source order. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -165,7 +165,7 @@ export default {
           "xl"
         ],
         "default": "m",
-        "description": "Internal padding (applies to grid-area children in grid mode)."
+        "description": "Internal padding. Block mode pads the card by the token (none/s/m/l/xl). Structured mode pads the children one step up: header/footer --size-m/--size-l and content --size-l at the default m (s: xs/s and s; l: l/xl and xl; xl: xl/2xl and 2xl); none also drops the header/footer dividers."
       },
       {
         "name": "data-max",
@@ -178,7 +178,39 @@ export default {
           "wide",
           "prose"
         ],
-        "description": "Max inline size, centered: --content-narrow / --content-normal / --content-wide, or prose (65ch). Same keyword set as layout-center and canvas."
+        "description": "Max inline size, centered (margin-inline: auto in block flow, align-self in flex/grid): --content-narrow / --content-normal / --content-wide, or prose (65ch). Same keyword set as layout-center and canvas."
+      }
+    ],
+    "structure": [
+      {
+        "element": "header",
+        "required": false,
+        "description": "Structured mode: pinned to the top, padded, with a bottom divider. A direct h1-h6 inside loses its margin and uses --font-size-l."
+      },
+      {
+        "element": "section",
+        "required": false,
+        "description": "Structured mode: a content child. Every child that is not the header or footer is content and stacks in source order, one body padding apart."
+      },
+      {
+        "element": "footer",
+        "required": false,
+        "description": "Structured mode: pinned to the bottom (margin-block-start: auto), top divider, wrapping flex row of actions aligned to the inline end."
+      },
+      {
+        "element": "[slot=\"header\"]",
+        "required": false,
+        "description": "Any element treated as the header (also triggers structured mode)."
+      },
+      {
+        "element": "[slot=\"content\"]",
+        "required": false,
+        "description": "Any element treated as content (also triggers structured mode, so a slot-only card works)."
+      },
+      {
+        "element": "[slot=\"footer\"]",
+        "required": false,
+        "description": "Any element treated as the footer (also triggers structured mode)."
       }
     ]
   },
@@ -385,7 +417,7 @@ export default {
           "auto"
         ],
         "default": "1",
-        "description": "Number of columns; auto derives columns from --column-min-width above 48rem."
+        "description": "Number of columns. 2 and 3 are maximums: below about 14rem per column they drop to fewer columns (one on a phone). auto fits as many --column-min-width (38ch) columns as the element's own width allows."
       },
       {
         "name": "data-layout-measure",
@@ -398,7 +430,7 @@ export default {
           "wide"
         ],
         "default": "normal",
-        "description": "Line measure: --measure-narrow / --measure-normal / --measure-wide."
+        "description": "Line measure (--measure-narrow / --measure-normal / --measure-wide). Count 1 caps the block width. Counts 2 and 3 cap each column, so the block is at most count × measure + gaps (without the attribute they fill the container). auto uses the measure as the column width."
       },
       {
         "name": "data-layout-max",
@@ -411,21 +443,21 @@ export default {
           "wide"
         ],
         "default": "normal",
-        "description": "Same as data-layout-measure."
+        "description": "Same as data-layout-measure (ch-based, unlike layout-center's rem-based data-layout-max)."
       },
       {
         "name": "data-layout-centered",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Center the container (columns are centered by default)."
+        "description": "No effect: columns are always centered (margin-inline: auto). Read by the shared typographic core."
       }
     ],
     "childAttributes": [
       {
         "name": "data-bleed",
-        "on": "any child",
-        "description": "Break out to the full viewport width.",
+        "on": "direct child",
+        "description": "Break out to the full inline size of the nearest query container (main, article, section). Spans every column in a multi-column flow.",
         "type": "boolean"
       }
     ]
@@ -552,7 +584,7 @@ export default {
           "xl"
         ],
         "default": "m",
-        "description": "Minimum column width before wrapping: 8 / 10 / 15 / 20 / 25rem. One-off lengths: style=\"--layout-min: 220px\"."
+        "description": "Minimum column width before wrapping: 8 / 10 / 15 / 20 / 25rem. Tracks are clamped to the container (min(…, 100%)), so a grid narrower than the minimum shows one full-width column instead of overflowing. One-off lengths: style=\"--layout-min: 220px\" (not inherited by nested grids)."
       },
       {
         "name": "data-layout-gap",
@@ -582,10 +614,11 @@ export default {
         "values": [
           "",
           "2",
+          "3",
           "4"
         ],
         "default": "3",
-        "description": "Children become subgrid rows so header/content/footer align across cells. Bare = span 3 rows; 2 or 4 for other card shapes."
+        "description": "Each child becomes a subgrid spanning 2, 3 or 4 rows (bare = 3; any other value also spans 3) so header/content/footer line up across siblings. The subgridded rows use the grid's row gap, so data-layout-gap also spaces the parts inside each child — set row-gap on the children to override."
       }
     ]
   },
@@ -593,7 +626,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-imposter",
     "type": "custom-element",
-    "description": "Positioned overlay centered over (or pinned to an edge of) its containing block. The container needs position: relative.",
+    "description": "Positioned overlay centred over (or pinned to an edge or corner of) its containing block, logically (mirrored in RTL). The container needs position: relative. Visual positioning only: no focus trap, inert background or dialog semantics; use <dialog> or [popover] for modal UI. Stacking order: --imposter-z (default 1, --z-float when fixed).",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -619,7 +652,7 @@ export default {
           "l",
           "xl"
         ],
-        "description": "Inset from the edges when pinned to one."
+        "description": "Inset from the edges when pinned to one (and the contain inset)."
       },
       {
         "name": "data-layout-position",
@@ -645,7 +678,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Keep the overlay within the viewport, minus the margin, when fixed."
+        "description": "Never larger than the containing block (the positioned ancestor, or the viewport when fixed) minus the margin on each side; scrolls inside when the content is bigger."
       }
     ]
   },
@@ -653,7 +686,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-reel",
     "type": "custom-element",
-    "description": "Horizontal scrolling strip with snap points and optional scrollbar and edge hints.",
+    "description": "Horizontal scrolling strip with proximity snap points, an optional scrollbar and edge hints. Attribute form: data-layout=\"reel\". When the items hold no focusable content, add role=\"region\", aria-label and tabindex=\"0\" so keyboard users can scroll it.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -666,7 +699,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Show a thin scrollbar (hidden by default)."
+        "description": "Show a thin scrollbar. Hidden by default, except under forced colours and on touch-only (hover: none) devices, where it always shows."
       },
       {
         "name": "data-layout-gap",
@@ -700,7 +733,7 @@ export default {
           "l"
         ],
         "default": "s",
-        "description": "Inline padding and scroll padding."
+        "description": "Padding on all sides (block padding leaves room for focus rings and shadows); the same value is the inline scroll padding."
       },
       {
         "name": "data-layout-item-width",
@@ -741,7 +774,7 @@ export default {
           "",
           "start"
         ],
-        "description": "Fade both edges to hint at overflow; start fades only the end edge."
+        "description": "Fade the edges to hint at overflow, logically (mirrored in RTL). Where scroll-driven animations are supported each edge fades only while there is more content that way; elsewhere both edges fade. start: only the end edge ever fades."
       }
     ],
     "childAttributes": [
@@ -842,7 +875,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-stack",
     "type": "custom-element",
-    "description": "Vertical flex stack with a consistent gap between children. Attribute form: any semantic element with data-layout=\"stack\".",
+    "description": "Vertical flex stack with a consistent gap between children. Attribute form: any semantic element with data-layout=\"stack\". With data-layout-align start/center/end, main/article/section/aside children drop container-type so they size to content instead of collapsing to zero width; add data-container to such a child to keep its container queries.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -882,7 +915,15 @@ export default {
           "stretch"
         ],
         "default": "stretch",
-        "description": "Cross-axis (inline) alignment of children."
+        "description": "Cross-axis (inline) alignment of children. start/center/end make children content-sized (semantic sectioning children stop being query containers — see data-container)."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-container",
+        "on": "main, article, section, aside",
+        "description": "Opt a semantic child back into container queries when the stack is aligned start/center/end. The layout removes container-type from such children so they size to content; this restores it (give the child an explicit inline size, or it collapses).",
+        "type": "boolean"
       }
     ]
   },
@@ -924,7 +965,6 @@ export default {
         "purpose": "config",
         "type": "enum",
         "values": [
-          "",
           "s",
           "m",
           "l"
@@ -949,7 +989,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Reverse the visual order when stacked."
+        "description": "Reverse the visual order when stacked (flex-wrap: wrap-reverse): the last item is on top once items wrap onto their own lines; the row keeps DOM order. Visual only — focus and reading order stay in DOM order, so use it only when the stacked order is presentational."
       }
     ]
   },
@@ -976,7 +1016,7 @@ export default {
           "wide"
         ],
         "default": "normal",
-        "description": "Line measure: --measure-narrow / --measure-normal / --measure-wide."
+        "description": "Line measure: --measure-narrow / --measure-normal / --measure-wide (45 / 65 / 80ch by default; data-fluid and the accessibility themes adjust the tokens). Released to 100% in containers narrower than 30rem."
       },
       {
         "name": "data-layout-max",
@@ -989,7 +1029,7 @@ export default {
           "wide"
         ],
         "default": "normal",
-        "description": "Same as data-layout-measure (the prose attribute form spells it this way)."
+        "description": "Same as data-layout-measure (the prose attribute form spells it this way). ch-based — layout-center's data-layout-max=\"narrow\" is 40rem, this one is 45ch."
       },
       {
         "name": "data-layout-centered",
@@ -1002,8 +1042,8 @@ export default {
     "childAttributes": [
       {
         "name": "data-bleed",
-        "on": "any child",
-        "description": "Break out to the full viewport width.",
+        "on": "direct child",
+        "description": "Break out to the full inline size of the nearest query container (main, article, section). Works centered or not; centered text bleeds symmetrically.",
         "type": "boolean"
       }
     ]
@@ -1308,8 +1348,10 @@ export default {
     ]
   },
   "loading-spinner": {
+    "$schema": "../../schemas/api.schema.json",
     "element": "loading-spinner",
     "type": "custom-element",
+    "description": "CSS-only animated loading spinner. Standalone: add role=\"status\" + aria-label. Next to visible text: add aria-hidden=\"true\".",
     "htmlvalidate": {
       "flow": true,
       "phrasing": true,
@@ -1329,19 +1371,51 @@ export default {
           "m",
           "l",
           "xl"
-        ]
+        ],
+        "default": "m",
+        "description": "Spinner diameter and stroke: xs 0.75em, s 1em, m 1.5em, l 2.5em, xl 4em (em-relative, so it scales with the surrounding text)."
       },
       {
         "name": "data-variant",
         "kind": "data",
         "purpose": "visual-variant",
-        "type": "string"
+        "type": "enum",
+        "values": [
+          "primary",
+          "success",
+          "warning",
+          "error"
+        ],
+        "description": "Arc colour from a theme token (--color-interactive / -success / -warning / -error). Without it the arc uses currentColor."
       },
       {
         "name": "data-overlay",
         "kind": "data",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "position: absolute; inset: 0 over the nearest positioned ancestor, with a translucent surface backdrop and the spinner centered. The container must have a non-static position."
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--spinner-size",
+        "description": "Spinner diameter (default 1.5em; data-size presets override)."
+      },
+      {
+        "name": "--spinner-width",
+        "description": "Ring stroke width (default 0.2em)."
+      },
+      {
+        "name": "--spinner-color",
+        "description": "Arc colour (default currentColor)."
+      },
+      {
+        "name": "--spinner-track",
+        "description": "Track colour (default the arc colour at 20% alpha)."
+      },
+      {
+        "name": "--spinner-speed",
+        "description": "Duration of one rotation (default 0.7s; 1.5s under reduced motion)."
       }
     ]
   },
@@ -10805,6 +10879,14 @@ export default {
         "purpose": "config",
         "type": "boolean",
         "description": "Double-click divider to collapse first panel"
+      },
+      {
+        "name": "data-label-resize",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Resize panels",
+        "description": "Accessible name override for the divider (default \"Resize panels\")."
       }
     ],
     "structure": [
