@@ -8,7 +8,7 @@
   --input-height: var(--size-touch-min);
   --input-padding-inline: var(--size-s);
   --input-bg: var(--color-surface);
-  --input-border: var(--color-border);
+  --input-border: var(--control-border);
   --input-border-focus: var(--color-interactive);
   --input-radius: var(--radius-m);
   --input-text: inherit;
@@ -16,7 +16,13 @@
 
   /* --- Checkbox / Radio controls --- */
   --control-size: 1.125rem;
-  --control-border: var(--color-border-strong);
+  /* Control boundaries are non-text UI that identifies the control, so they
+     need 3:1 against the surface (WCAG 1.4.11). --color-border /
+     --color-border-strong alone are decorative (gray-200/300, ~1.3-1.9:1).
+     Pulling the strong border 30% toward the text colour always moves it
+     away from the surface, so it keeps a theme's hue and only gains
+     contrast: ~3.9:1 on white, >4:1 on the dark surfaces by default. */
+  --control-border: color-mix(in oklab, var(--color-border-strong), var(--color-text) 30%);
   --control-checked-bg: var(--color-primary);
   --control-checked-border: var(--color-primary);
   --control-radius-check: var(--radius-s);
@@ -33,9 +39,14 @@
   --select-chevron-size: 0.625rem 0.3125rem;
   --select-chevron-inset: var(--size-s);
 
+  /* --- Toggle switch (data-switch) --- */
+  --switch-track-bg: var(--control-border);
+  --switch-track-checked-bg: var(--color-interactive);
+  --switch-knob-bg: var(--color-white, white);
+
   /* --- Range slider --- */
   --range-track-h: 0.375rem;
-  --range-track-bg: var(--color-border);
+  --range-track-bg: var(--control-border);
   --range-track-fill: var(--color-primary);
   --range-thumb-size: 1.25rem;
   --range-thumb-bg: var(--color-surface);
@@ -48,6 +59,11 @@
 
   /* --- Meter --- */
   --meter-h: var(--size-s);
+
+  /* --- Readonly text fields: a subtle sunken fill + dashed border so a
+     read-only value no longer looks editable --- */
+  --input-readonly-bg: var(--color-surface-raised);
+  --input-readonly-border-style: dashed;
 
   /* --- Caret (text cursor in editable fields) --- */
   --caret-color: auto;

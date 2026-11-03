@@ -60,18 +60,53 @@ textarea[data-grow][data-grow-init] {
   cursor: var(--cursor-custom-pointer, pointer);
 }
 
-/* Track fill via gradient */
+/* Track fill via gradient. The fill grows from the inline start, so the
+   gradient direction flips under RTL (linear-gradient has no logical
+   keyword). Forced colors drop gradients — see the block below. */
 .range-wrapper input[type="range"] {
+  --_range-dir: to right;
+  --_range-fill: var(--color-interactive, oklch(55% 0.2 260));
+  --_range-rest: var(--range-track-bg, var(--color-surface-raised, oklch(95% 0 0)));
+
   appearance: none;
   block-size: 0.5rem;
   border-radius: var(--radius-full, 999px);
   background: linear-gradient(
-    to right,
-    var(--color-interactive, oklch(55% 0.2 260)) var(--range-pct, 0%),
-    var(--color-surface-raised, oklch(95% 0 0)) var(--range-pct, 0%)
+    var(--_range-dir),
+    var(--_range-fill) var(--range-pct, 0%),
+    var(--_range-rest) var(--range-pct, 0%)
   );
   border: none;
   outline: none;
+
+  &:dir(rtl) {
+    --_range-dir: to left;
+  }
+}
+
+@media (forced-colors: active) {
+  .range-wrapper input[type="range"] {
+    forced-color-adjust: none;
+    --_range-fill: Highlight;
+    --_range-rest: CanvasText;
+  }
+
+  /* Separate rules: an unknown vendor pseudo invalidates a whole list. */
+  .range-wrapper input[type="range"]::-webkit-slider-thumb {
+    background: Canvas;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+
+  .range-wrapper input[type="range"]::-moz-range-thumb {
+    background: Canvas;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+
+  .range-wrapper input[type="range"]:focus-visible {
+    outline-color: Highlight;
+  }
 }
 
 .range-wrapper input[type="range"]::-webkit-slider-thumb {
@@ -319,7 +354,9 @@ textarea[data-grow][data-grow-init] {
 .number-wrapper {
   display: inline-flex;
   align-items: stretch;
-  border: var(--border-width-thin, 1px) solid var(--color-border);
+  /* Same edge as a text field: --input-border defaults to --control-border
+     (>= 3:1 against the surface, WCAG 1.4.11) and themes tune it there. */
+  border: var(--border-width-thin, 1px) solid var(--input-border, var(--control-border));
   border-radius: var(--radius-m);
   overflow: hidden;
   transition: border-color var(--duration-fast, 150ms);
@@ -328,6 +365,15 @@ textarea[data-grow][data-grow-init] {
 .number-wrapper:focus-within {
   border-color: var(--color-interactive);
   box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+}
+
+/* Forced colors drops box-shadow and flattens the border colour, so the
+   halo alone would leave no focus indicator. */
+@media (forced-colors: active) {
+  .number-wrapper:focus-within {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
 }
 
 .number-wrapper input[type="number"] {

@@ -1,19 +1,25 @@
 /* Range Slider Normalization
    appearance: none + token-driven track and thumb.
-   CSS-only baseline; JS can set --_pct for fill gradient.
+   CSS-only baseline: the fill stop is --range-pct (0% when unset, so the
+   track is plain). data-range (range-init) sets it on its wrapper as the
+   value changes; authors can set it themselves for a static fill.
+   The gradient runs toward the inline end — linear-gradient has no logical
+   direction keyword, so :dir(rtl) flips it.
    ---------------------------------------------------------------- */
 
 input[type="range"] {
+  --_range-dir: to right;
+
   appearance: none;
   display: block;
   inline-size: 100%;
   block-size: var(--range-thumb-size);
   border-radius: var(--radius-full);
   background: linear-gradient(
-    to right,
+    var(--_range-dir),
     var(--range-track-fill) 0%,
-    var(--range-track-fill) var(--_pct, 0%),
-    var(--range-track-bg) var(--_pct, 0%),
+    var(--range-track-fill) var(--range-pct, 0%),
+    var(--range-track-bg) var(--range-pct, 0%),
     var(--range-track-bg) 100%
   );
   background-size: 100% var(--range-track-h);
@@ -22,13 +28,17 @@ input[type="range"] {
   cursor: var(--cursor-custom-pointer, pointer);
   border: none;
   margin: 0;
+
+  &:dir(rtl) {
+    --_range-dir: to left;
+  }
 }
 
 /* --- WebKit thumb --- */
 input[type="range"]::-webkit-slider-thumb {
   appearance: none;
-  width: var(--range-thumb-size);
-  height: var(--range-thumb-size);
+  inline-size: var(--range-thumb-size);
+  block-size: var(--range-thumb-size);
   border-radius: 50%;
   background: var(--range-thumb-bg);
   border: var(--border-width-medium) solid var(--range-thumb-border);
@@ -45,17 +55,24 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 /* --- Firefox track --- */
 input[type="range"]::-moz-range-track {
-  height: var(--range-track-h);
+  block-size: var(--range-track-h);
   background: var(--range-track-bg);
   border-radius: var(--radius-full);
   border: none;
 }
 
+/* --- Firefox fill: native progress pseudo, direction-aware for free --- */
+input[type="range"]::-moz-range-progress {
+  block-size: var(--range-track-h);
+  background: var(--range-track-fill);
+  border-radius: var(--radius-full);
+}
+
 /* --- Firefox thumb --- */
 input[type="range"]::-moz-range-thumb {
   appearance: none;
-  width: var(--range-thumb-size);
-  height: var(--range-thumb-size);
+  inline-size: var(--range-thumb-size);
+  block-size: var(--range-thumb-size);
   border-radius: 50%;
   background: var(--range-thumb-bg);
   border: var(--border-width-medium) solid var(--range-thumb-border);
@@ -73,6 +90,35 @@ input[type="range"]:focus-visible {
 input[type="range"]:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* --- Forced colors ---
+   Forced colors drop the gradient track (background-image), leaving a
+   thumb floating on nothing. Opt out and paint the track as a system-colour
+   gradient: Highlight fill, CanvasText remainder, CanvasText-ringed thumb. */
+@media (forced-colors: active) {
+  input[type="range"] {
+    forced-color-adjust: none;
+    --range-track-fill: Highlight;
+    --range-track-bg: CanvasText;
+    --range-thumb-bg: Canvas;
+    --range-thumb-border: CanvasText;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    box-shadow: none;
+  }
+
+  input[type="range"]:focus-visible {
+    outline-color: Highlight;
+  }
+
+  input[type="range"]:disabled {
+    opacity: 1;
+    --range-track-fill: GrayText;
+    --range-track-bg: GrayText;
+    --range-thumb-border: GrayText;
+  }
 }
 
 /* --- Reduced motion --- */
