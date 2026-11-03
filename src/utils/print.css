@@ -214,9 +214,15 @@
 
     /* ---- Phase 3: Per-element print adjustments ---- */
 
-    /* Force all details open for print */
-    details:not([open]) > *:not(summary) {
-      display: block;
+    /* Force all details open for print. A closed panel's content lives in
+       ::details-content, which the UA hides with content-visibility: hidden
+       and the base details styles collapse to block-size: 0 — so reveal the
+       pseudo-element itself (styling the children cannot reach it). */
+    details::details-content {
+      content-visibility: visible;
+      block-size: auto;
+      overflow-y: visible;
+      transition: none;
     }
 
     /* Hide toggle indicators */

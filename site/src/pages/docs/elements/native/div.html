@@ -13,7 +13,7 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Philosophy</h2>
-    <p>Vanilla Breeze takes an intentional stance: <strong><code>&lt;div&gt;</code> is a last resort, not a default.</strong> The VB conformance checker flags every <code>&lt;div&gt;</code> as a warning, and the semantic check raises it as an error for new code.</p>
+    <p>Vanilla Breeze takes an intentional stance: <strong><code>&lt;div&gt;</code> is a last resort, not a default.</strong> The VB conformance checker flags every <code>&lt;div&gt;</code>: as an error in newly added files and as a warning in existing ones. The separate semantic check reports classed divs as informational suggestions.</p>
     <p>This is not about being pedantic &mdash; semantic elements provide:</p>
     <ul>
       <li><strong>Accessibility:</strong> Screen readers can navigate by landmarks (<code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>)</li>
@@ -95,7 +95,6 @@ crumbLabel: Native Elements
     <p>There are a few cases where <code>&lt;div&gt;</code> is the correct choice:</p>
     <ul>
       <li><strong><code>&lt;dl&gt;</code> grouping:</strong> HTML5 allows <code>&lt;div&gt;</code> inside <code>&lt;dl&gt;</code> to group <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> pairs (for striped styling)</li>
-      <li><strong>Form field groups:</strong> Wrapping radio/checkbox groups inside <code>&lt;form-field&gt;</code></li>
       <li><strong>Third-party widgets:</strong> When external libraries require a container div</li>
       <li><strong>CSS Grid/Flex children:</strong> When you genuinely need a non-semantic grid cell</li>
     </ul>
@@ -108,16 +107,16 @@ crumbLabel: Native Elements
   </div>
 </dl>
 
-<!-- Radio/checkbox group wrapper for form-field -->
-<form-field>
-  <fieldset>
-    <legend>Options</legend>
-    <div>
-      <label><input type="radio" name="opt" /> Option A</label>
-      <label><input type="radio" name="opt" /> Option B</label>
-    </div>
-  </fieldset>
-</form-field></code-block>
+<!-- Radio/checkbox groups do NOT need a div: lay out the
+     options with a layout primitive inside the fieldset -->
+<fieldset>
+  <legend>Options</legend>
+  <layout-stack data-layout-gap="s">
+    <label><input type="radio" name="opt" /> Option A</label>
+    <label><input type="radio" name="opt" /> Option B</label>
+  </layout-stack>
+</fieldset></code-block>
+    <p>The conformance checker exempts <code>&lt;div&gt;</code> elements that are direct children of <code>&lt;dl&gt;</code> automatically &mdash; no allowlist entry is needed for them.</p>
   </section>
 
   <section>
@@ -126,14 +125,14 @@ crumbLabel: Native Elements
 
     <code-block language="text" label="Conformance rules" data-escape># VB conformance checker flags divs:
 
-vb/no-div          — Any <div> element (warning → error)
-vb/no-div-wrapper   — <div> wrapping a single semantic child
-semantic/no-div     — Semantic check for div elements</code-block>
+vb/no-div          — Any <div> (error in new files, warning in existing ones)
+vb/no-div-wrapper  — <div> wrapping a single semantic child (same severities)
+semantic/no-div    — Classed <div> with a suggested alternative (info)</code-block>
 
     <ul>
-      <li><strong><code>vb/no-div</code></strong> &mdash; Flags any <code>&lt;div&gt;</code> element. Suggests semantic alternatives.</li>
+      <li><strong><code>vb/no-div</code></strong> &mdash; Flags any <code>&lt;div&gt;</code> element except <code>&lt;dl&gt; &gt; &lt;div&gt;</code> groupings. Suggests semantic alternatives. It is an error in files that are new to the repository and a warning in existing files.</li>
       <li><strong><code>vb/no-div-wrapper</code></strong> &mdash; Flags <code>&lt;div&gt;</code> wrapping a single semantic child (the div is unnecessary).</li>
-      <li><strong>Allowlist:</strong> Known legitimate uses can be added to <code>.claude/vb-conformance-allowlist.json</code></li>
+      <li><strong>Allowlist:</strong> Known legitimate uses can be added to <code>scripts/vb-conformance-allowlist.json</code> (rule name &rarr; list of file paths). Allowlisted files are downgraded to warnings rather than skipped.</li>
     </ul>
     <p>Run <code>npm run conformance</code> to check your HTML files.</p>
   </section>
@@ -153,7 +152,7 @@ semantic/no-div     — Semantic check for div elements</code-block>
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li><code>&lt;div&gt;</code> has no implicit ARIA role &mdash; it is invisible to screen readers</li>
+      <li><code>&lt;div&gt;</code> maps to the <code>generic</code> ARIA role: its content is read normally, but the element itself conveys no meaning and is not a landmark</li>
       <li>Screen readers cannot navigate by divs; they <em>can</em> navigate by landmarks, headings, lists, and other semantic elements</li>
       <li>Every div you replace with a semantic element improves the accessibility tree</li>
     </ul>

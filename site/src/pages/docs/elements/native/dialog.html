@@ -53,10 +53,10 @@ crumbLabel: Native Elements
     <code-block language="html" show-lines label="Invokers API markup" data-escape><!-- Trigger button -->
 <button commandfor="my-dialog" command="show-modal">Open Dialog</button>
 
-<!-- Dialog -->
-<dialog id="my-dialog">
+<!-- Dialog: aria-labelledby names it after its heading -->
+<dialog id="my-dialog" aria-labelledby="my-dialog-title">
   <header>
-    <h3>Dialog Title</h3>
+    <h3 id="my-dialog-title">Dialog Title</h3>
   </header>
   <p>Content goes here.</p>
   <footer>
@@ -89,9 +89,7 @@ crumbLabel: Native Elements
     </table>
 
     <h3>Browser Support</h3>
-    <p>Invokers API is supported in Chrome 135+, Edge 135+, Safari TP, and Firefox Nightly. Include the polyfill for broader support:</p>
-
-    <code-block language="html" show-lines label="Including polyfill" data-escape><script type="module" src="https://unpkg.com/invokers-polyfill"></script></code-block>
+    <p>The <code>command</code> / <code>commandfor</code> attributes ship in Chrome and Edge 135+, Firefox 144+ and Safari 26.2+, so no polyfill is needed. In older browsers the buttons do nothing; if you must support them, open the dialog from a click handler (<code>dialog.showModal()</code>) instead.</p>
   </section>
 
   <section>
@@ -156,9 +154,11 @@ document.getElementById('my-dialog').close();</code-block>
 
     <browser-window src="/docs/snippets/demos/dialog-form-method.html" url="dialog-form-method.html" title="Form method dialog" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Form with method=dialog" data-escape><dialog id="choice-dialog">
+    <p>The form can wrap the whole dialog &mdash; header, body and footer. VB styles <code>dialog &gt; form &gt; header</code> and <code>dialog &gt; form &gt; footer</code> exactly like their direct-child counterparts: the form itself gets no padding, the footer border spans the full width, and the body between them scrolls when it is long. A form that contains only fields (no header or footer) is treated as a padded body instead.</p>
+
+    <code-block language="html" show-lines label="Form with method=dialog" data-escape><dialog id="choice-dialog" aria-labelledby="choice-title">
   <form method="dialog">
-    <header><h3>Choose</h3></header>
+    <header><h3 id="choice-title">Choose</h3></header>
     <p>Select your preference:</p>
     <footer>
       <button type="submit" value="cancel">Cancel</button>
@@ -224,8 +224,8 @@ dialog.addEventListener('close', () => {
     <code-block language="html" show-lines label="Drawer markup" data-escape><!-- Right drawer -->
 <button commandfor="nav-drawer" command="show-modal">Menu</button>
 
-<dialog id="nav-drawer" data-position="end">
-  <header><h3>Navigation</h3></header>
+<dialog id="nav-drawer" data-position="end" aria-labelledby="nav-drawer-title">
+  <header><h3 id="nav-drawer-title">Navigation</h3></header>
   <section>
     <nav>...</nav>
   </section>
@@ -245,12 +245,12 @@ dialog.addEventListener('close', () => {
       <tbody>
         <tr>
           <td><code>data-position="end"</code></td>
-          <td>Right (in LTR)</td>
+          <td>Right in LTR, left in RTL</td>
           <td>Navigation, settings panels</td>
         </tr>
         <tr>
           <td><code>data-position="start"</code></td>
-          <td>Left (in LTR)</td>
+          <td>Left in LTR, right in RTL</td>
           <td>Sidebar, filters</td>
         </tr>
         <tr>
@@ -266,7 +266,7 @@ dialog.addEventListener('close', () => {
       </tbody>
     </table>
 
-    <p>Slide animations respect <code>prefers-reduced-motion</code>, falling back to a simple fade.</p>
+    <p>Side drawers follow the writing direction: in a right-to-left document <code>end</code> attaches to the left edge and slides in from the left, and the rounded corners flip with it. Slide animations respect <code>prefers-reduced-motion</code>, falling back to a simple fade.</p>
 
     <h3>Bottom Sheet</h3>
     <p>The bottom drawer variant (<code>data-position="bottom"</code>) acts as a mobile-native bottom sheet &mdash; ideal for action menus, share sheets, and quick option lists. It automatically includes safe-area padding for devices with home indicators.</p>
@@ -277,9 +277,9 @@ dialog.addEventListener('close', () => {
   Photo Options
 </button>
 
-<dialog id="photo-actions" data-position="bottom">
+<dialog id="photo-actions" data-position="bottom" aria-labelledby="photo-actions-title">
   <header data-layout="cluster" data-layout-justify="between">
-    <h2>Photo Options</h2>
+    <h2 id="photo-actions-title">Photo Options</h2>
     <button commandfor="photo-actions" command="close"
             class="ghost icon-only" aria-label="Close">
       <icon-wc name="x"></icon-wc>
@@ -299,10 +299,10 @@ dialog.addEventListener('close', () => {
     <h4>Drag to Dismiss</h4>
     <p>Add <code>data-gesture="dismiss-down"</code> to let users swipe the bottom sheet downward to close it. VB&rsquo;s gesture library handles the drag tracking, opacity falloff, and snap-back automatically. The dialog closes with <code>returnValue</code> set to <code>"dismiss"</code>.</p>
 
-    <code-block language="html" show-lines label="Bottom sheet with drag-to-dismiss" data-escape><dialog id="my-sheet" data-position="bottom" data-gesture="dismiss-down">
+    <code-block language="html" show-lines label="Bottom sheet with drag-to-dismiss" data-escape><dialog id="my-sheet" data-position="bottom" data-gesture="dismiss-down" aria-labelledby="my-sheet-title">
   <!-- drag handle indicator (CSS pseudo-element) -->
   <header data-layout="cluster" data-layout-justify="between">
-    <h2>Options</h2>
+    <h2 id="my-sheet-title">Options</h2>
     <button commandfor="my-sheet" command="close"
             class="ghost icon-only" aria-label="Close">
       <icon-wc name="x"></icon-wc>
@@ -318,15 +318,17 @@ dialog.addEventListener('close', () => {
 
   <section>
     <h2>Dialog Structure</h2>
-    <p>For consistent styling, use <code>&lt;header&gt;</code>, content, and <code>&lt;footer&gt;</code>:</p>
+    <p>For consistent styling, use <code>&lt;header&gt;</code>, one body element, and <code>&lt;footer&gt;</code>. An open dialog is a flex column: the header and footer keep their size and the body (<code>&lt;p&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;article&gt;</code> or <code>&lt;form&gt;</code>) scrolls when the content is taller than the dialog's <code>max-block-size</code> (85dvh). Put long content in a single <code>&lt;section&gt;</code> so it scrolls as one region; the actions in the footer stay visible, and the top of the body stays reachable even when a footer button has <code>autofocus</code>.</p>
 
-    <code-block language="html" show-lines label="Recommended dialog structure" data-escape><dialog>
+    <code-block language="html" show-lines label="Recommended dialog structure" data-escape><dialog aria-labelledby="dlg-title">
   <header>
-    <h3>Dialog Title</h3>
+    <h3 id="dlg-title">Dialog Title</h3>
   </header>
 
-  <!-- Main content -->
-  <p>Dialog content goes here.</p>
+  <!-- Main content: scrolls when long -->
+  <section>
+    <p>Dialog content goes here.</p>
+  </section>
 
   <footer>
     <button type="button" class="secondary">Cancel</button>
@@ -336,94 +338,119 @@ dialog.addEventListener('close', () => {
 
     <h3>Structural CSS</h3>
     <code-block language="css" show-lines label="Dialog structural CSS" data-escape>dialog {
+  inline-size: min(90vw, 32rem);
   max-inline-size: min(90vw, 32rem);
   max-block-size: 85dvh;
-  border: none;
+  padding: 0;
+  /* transparent border: shows as CanvasText in forced-colors mode */
+  border: var(--border-width-thin) solid transparent;
   border-radius: var(--radius-l);
-  background: var(--color-surface);
+  background: var(--color-surface-overlay);
   color: var(--color-text);
-  box-shadow: /* multi-layer elevation shadow */;
-  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  overflow-y: auto; /* fallback only — the body normally scrolls */
+  overscroll-behavior: contain;
 }
 
-dialog > header {
+dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+dialog > header,
+dialog > form > header {
+  flex-shrink: 0;
   padding: var(--size-m) var(--size-l);
-  border-block-end: 1px solid var(--color-border);
+  border-block-end: var(--border-width-thin) solid var(--color-border);
 }
 
-dialog > :is(p, section, form) {
+/* The body: padded, shrinks and scrolls */
+dialog > :is(p, section, article, form),
+dialog > form:has(> header, > footer) > :not(header, footer) {
   padding: var(--size-l);
+  min-block-size: 0;
+  overflow-y: auto;
 }
 
-dialog > footer {
+/* A form wrapping header/body/footer becomes the column itself */
+dialog > form:has(> header, > footer) {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  padding: 0;
+}
+
+dialog > footer,
+dialog > form > footer {
+  flex-shrink: 0;
   padding: var(--size-m) var(--size-l);
-  border-block-start: 1px solid var(--color-border);
+  border-block-start: var(--border-width-thin) solid var(--color-border);
   display: flex;
   flex-wrap: wrap;
   gap: var(--size-s);
   justify-content: flex-end;
+}
+
+/* Background scroll lock while a modal is open */
+html:has(dialog:modal) {
+  overflow: hidden;
 }</code-block>
+
+    <h3>Background Scroll Lock</h3>
+    <p>While a modal dialog is open, VB sets <code>overflow: hidden</code> on <code>&lt;html&gt;</code> via <code>html:has(dialog:modal)</code>, so the page behind the backdrop does not scroll. Non-modal dialogs opened with <code>show()</code> leave scrolling alone. With classic (non-overlay) scrollbars the page can shift by the scrollbar's width when the lock applies; add <code>html { scrollbar-gutter: stable; }</code> to your site styles to prevent that.</p>
   </section>
 
   <section>
     <h2>Backdrop Styling</h2>
-    <p>The <code>::backdrop</code> pseudo-element styles the overlay behind modal dialogs. VB defaults to a semi-transparent dark background with a subtle blur.</p>
+    <p>The <code>::backdrop</code> pseudo-element styles the overlay behind modal dialogs. VB defaults to a semi-transparent dark background with a subtle blur, both controlled by tokens so themes can change them.</p>
 
     <code-block language="css" show-lines label="Backdrop styling" data-escape>dialog::backdrop {
-  background: oklch(0% 0 0 / 0.5);
-  backdrop-filter: blur(2px);
+  background: var(--color-backdrop);          /* default oklch(0% 0 0 / 0.5) */
+  backdrop-filter: blur(var(--backdrop-blur)); /* default 2px */
 }</code-block>
   </section>
 
   <section>
     <h2>Animation</h2>
-    <p>Dialogs include smooth entry animations using both <code>@starting-style</code> (for supporting browsers) and keyframe fallbacks. Drawer variants use directional slide-in animations. All animations respect <code>prefers-reduced-motion</code>.</p>
+    <p>Dialogs animate both in and out with CSS transitions. The transition is declared on <code>dialog</code> itself (not only <code>dialog[open]</code>), so on close <code>display</code> and <code>overlay</code> are held with <code>allow-discrete</code> until the exit finishes; <code>@starting-style</code> supplies the entry starting point. Each variant sets its hidden transform through one custom property: modals scale, drawers slide from their edge. Under <code>prefers-reduced-motion</code> the movement is dropped and only a fade remains; the theme picker's reduced-motion toggle removes the fade too.</p>
 
-    <code-block language="css" show-lines label="Dialog entry animation" data-escape>/* Entry animation with @starting-style */
+    <code-block language="css" show-lines label="Dialog enter and exit" data-escape>dialog {
+  --_dialog-hidden: scale(0.95);
+  opacity: 0;
+  transform: var(--_dialog-hidden);
+  transition:
+    opacity var(--motion-exit-duration) var(--ease-in),
+    transform var(--motion-exit-duration) var(--ease-in),
+    display var(--motion-exit-duration) allow-discrete,
+    overlay var(--motion-exit-duration) allow-discrete;
+}
+
 dialog[open] {
   opacity: 1;
-  transform: scale(1);
-  transition:
-    opacity var(--motion-enter-duration) var(--ease-out),
-    transform var(--motion-enter-duration) var(--ease-out),
-    display var(--motion-enter-duration) allow-discrete,
-    overlay var(--motion-enter-duration) allow-discrete;
+  transform: none;
+  transition-duration: var(--motion-enter-duration);
+  transition-timing-function: var(--ease-out);
 }
 
 @starting-style {
   dialog[open] {
     opacity: 0;
-    transform: scale(0.9);
+    transform: var(--_dialog-hidden);
   }
 }
 
-/* Fallback keyframe animation */
-dialog[open] {
-  animation: vb-scale-in var(--motion-enter-duration) var(--ease-out);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  dialog[open] { animation: none; transition: none; }
+  dialog { --_dialog-hidden: none; } /* fade only */
 }</code-block>
 
     <h3>Drawer Animations</h3>
-    <code-block language="css" show-lines label="Drawer slide-in animations" data-escape>/* Drawers use directional slide-in animations */
-@keyframes vb-slide-in-end {
-  from { transform: translateX(100%); opacity: 0; }
-  to   { transform: translateX(0);    opacity: 1; }
-}
-
-@keyframes vb-slide-in-bottom {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-/* Reduced motion: fade instead of slide */
-@media (prefers-reduced-motion: reduce) {
-  dialog[data-position][open] {
-    animation: vb-fade-in var(--motion-enter-duration) var(--ease-out);
-  }
-}</code-block>
+    <code-block language="css" show-lines label="Drawer slide transforms" data-escape>/* Drawers reuse the same transition with a directional transform */
+dialog[data-position="end"]            { --_dialog-hidden: translateX(100%); }
+dialog[data-position="end"]:dir(rtl)   { --_dialog-hidden: translateX(-100%); }
+dialog[data-position="start"]          { --_dialog-hidden: translateX(-100%); }
+dialog[data-position="start"]:dir(rtl) { --_dialog-hidden: translateX(100%); }
+dialog[data-position="bottom"]         { --_dialog-hidden: translateY(100%); }
+dialog[data-position="top"]            { --_dialog-hidden: translateY(-100%); }</code-block>
   </section>
 
   <section>
@@ -514,14 +541,31 @@ dialog.addEventListener('cancel', (event) => {
 
   <section>
     <h2>Backdrop Click to Close</h2>
-    <p>Native dialogs do <strong>not</strong> close when clicking the backdrop. Add this small script if you want that behavior:</p>
+    <p>By default a modal dialog does <strong>not</strong> close when the backdrop is clicked. The native <code>closedby</code> attribute controls this declaratively:</p>
+    <ul>
+      <li><code>closedby="any"</code> &mdash; closes on backdrop click (light dismiss), <kbd>Escape</kbd>, or a close command</li>
+      <li><code>closedby="closerequest"</code> &mdash; <kbd>Escape</kbd> or a close command only (the default for modals)</li>
+      <li><code>closedby="none"</code> &mdash; only an explicit close command or <code>close()</code></li>
+    </ul>
 
-    <code-block language="javascript" show-lines label="Optional backdrop close" data-escape>// Optional: close on backdrop click
-document.querySelectorAll('dialog').forEach(dialog => {
-  dialog.addEventListener('click', e => {
-    if (e.target === dialog) dialog.close();
+    <code-block language="html" show-lines label="Light-dismiss dialog" data-escape><dialog id="info" closedby="any" aria-labelledby="info-title">
+  <header><h3 id="info-title">Details</h3></header>
+  <p>Click outside to dismiss.</p>
+</dialog></code-block>
+
+    <p><code>closedby</code> ships in Chrome and Edge 134+ and Firefox 141+, but not yet in a released Safari. Until it does, add a small feature-detected fallback:</p>
+
+    <code-block language="javascript" show-lines label="closedby fallback" data-escape>// Only needed where closedby is unsupported (Safari at the time of writing)
+if (!('closedBy' in HTMLDialogElement.prototype)) {
+  document.addEventListener('click', (e) => {
+    const dialog = e.target;
+    if (dialog instanceof HTMLDialogElement &&
+        dialog.getAttribute('closedby') === 'any') {
+      dialog.close(); // a click on the dialog box itself, not its content
+    }
   });
-});</code-block>
+}</code-block>
+    <p>The check works because a click on the backdrop targets the <code>&lt;dialog&gt;</code> element itself, while a click on its content targets a child. VB dialogs have no padding and their header, body and footer fill the box, so content clicks never land on the dialog element.</p>
   </section>
 
   <section>
@@ -540,7 +584,9 @@ document.querySelectorAll('dialog').forEach(dialog => {
     <h3>Best Practices</h3>
     <ul>
       <li>Include a visible close button</li>
-      <li>Use a heading in the dialog (<code>&lt;h3&gt;</code> in <code>&lt;header&gt;</code>) for screen reader context</li>
+      <li>Give every dialog an accessible name: put an <code>id</code> on its heading and point <code>aria-labelledby</code> at it (<code>&lt;dialog aria-labelledby="dlg-title"&gt;</code>). Use <code>aria-label</code> only when there is no visible heading. Screen readers announce this name when the dialog opens</li>
+      <li>A <code>&lt;dialog&gt;</code> does not scope <code>&lt;header&gt;</code> and <code>&lt;footer&gt;</code>, so (per HTML-AAM) they can map to banner/contentinfo landmarks. When a page has several dialogs, keep those landmarks distinguishable without inventing labels: name the header by its own heading (<code>&lt;header aria-labelledby="dlg-title"&gt;</code>) and give the footer a short purpose label (<code>aria-label="Delete item actions"</code>). Avoid labels that just restate the element, such as <code>"… heading"</code></li>
+      <li>Keep long content in a single body element so it scrolls with the header and actions still in view</li>
       <li>Keep dialogs focused &mdash; don't include unrelated content</li>
       <li>Provide keyboard alternatives for all actions</li>
       <li>Avoid nesting dialogs inside dialogs</li>
@@ -644,8 +690,9 @@ document.querySelectorAll('dialog').forEach(dialog => {
     <h2>Browser Support</h2>
     <p>The <code>&lt;dialog&gt;</code> element is supported in all modern browsers.</p>
     <ul>
-      <li><strong>Invokers API:</strong> Chrome 135+, Edge 135+, Safari TP, Firefox Nightly. Use the <a href="https://github.com/keithamus/invokers-polyfill">invokers-polyfill</a> for broader support.</li>
-      <li><strong>@starting-style:</strong> Chrome 117+, Safari 17.5+. Other browsers fall back to keyframe animations.</li>
+      <li><strong>Invokers API (<code>command</code>/<code>commandfor</code>):</strong> Chrome and Edge 135+, Firefox 144+, Safari 26.2+.</li>
+      <li><strong><code>closedby</code>:</strong> Chrome and Edge 134+, Firefox 141+; not yet in a released Safari (see the fallback above).</li>
+      <li><strong>@starting-style and <code>transition-behavior: allow-discrete</code>:</strong> all current engines. Older browsers open and close the dialog without animation.</li>
       <li><strong>backdrop-filter:</strong> All modern browsers. The blur effect on the backdrop degrades gracefully.</li>
     </ul>
   </section>

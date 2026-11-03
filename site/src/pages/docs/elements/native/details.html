@@ -57,6 +57,7 @@ crumbLabel: Native Elements
   <section>
     <h2>Stacked Details (Accordion)</h2>
     <p>Adjacent <code>&lt;details&gt;</code> elements automatically stack with connected borders &mdash; the border-radius is removed between siblings and the top border overlaps to prevent doubling.</p>
+    <p>Joining only happens in normal flow. When the parent is a gap-based layout primitive (<code>&lt;layout-stack&gt;</code>, <code>&lt;layout-grid&gt;</code>, any <code>[data-layout]</code> or <code>[data-layout-gap]</code> element) the items are visually separated, so each keeps its own border and radius. Use <code>data-layout-gap="none"</code> to join them inside a layout primitive.</p>
 
     <browser-window src="/docs/snippets/demos/details-stacked.html" url="details-stacked.html" title="Stacked details" shadow></browser-window>
 
@@ -122,7 +123,7 @@ crumbLabel: Native Elements
 </accordion-wc></code-block>
 
     <h3>tab-set</h3>
-    <p>Transforms details elements into a tabbed interface. Summaries become tab buttons in row 1, content panels display in row 2. Uses CSS <code>display: contents</code> on details for grid participation.</p>
+    <p>Transforms details elements into a tabbed interface. Summaries become the tab row and content panels display below. Uses CSS <code>display: contents</code> on details for grid participation.</p>
 
     <browser-window src="/docs/snippets/demos/tabs-basic.html" url="tabs-basic.html" title="Tab set web component" shadow></browser-window>
 
@@ -176,17 +177,24 @@ crumbLabel: Native Elements
   border-radius: var(--radius-m);
 }
 
-/* Adjacent details connect their borders */
-details + details {
+/* Adjacent details connect their borders — except inside gap layouts
+   (layout-* primitives, [data-layout], [data-layout-gap] other than "none") */
+details + details:where(:not(:is(layout-stack, layout-grid, /* … */
+  [data-layout], [data-layout-gap]):not([data-layout-gap="none"]) > *)) {
   margin-block-start: calc(var(--border-width-thin) * -1);
   border-start-start-radius: 0;
   border-start-end-radius: 0;
 }
+/* …and the mirror rule on details:has(+ details) for the bottom corners */
 
-details:has(+ details) {
-  border-end-start-radius: 0;
-  border-end-end-radius: 0;
+/* Chevron: physical right+bottom corner, rotated per direction */
+summary::after {
+  border-right: var(--border-width-medium) solid currentColor;
+  border-bottom: var(--border-width-medium) solid currentColor;
+  transform: rotate(-45deg);               /* closed, LTR: points right */
 }
+summary:dir(rtl)::after { transform: rotate(135deg); } /* closed, RTL: points left */
+details[open] > summary::after { transform: rotate(45deg); } /* open: points down */
 
 /* Content padding */
 details > :not(summary) {
@@ -195,8 +203,8 @@ details > :not(summary) {
 }</code-block>
 
     <h3>Open/Close Animation</h3>
-    <p>Vanilla Breeze uses the <code>::details-content</code> pseudo-element for smooth height animation. This is progressive &mdash; browsers that don't support it simply show/hide instantly.</p>
-    <code-block language="css" show-lines label="Smooth animation" data-escape>/* Smooth open/close animation (Chrome 131+, Safari 17.5+) */
+    <p>Vanilla Breeze uses the <code>::details-content</code> pseudo-element for smooth height animation. Animating <code>block-size</code> to <code>auto</code> also needs <code>interpolate-size: allow-keywords</code> (set on <code>:root</code> by VB's motion tokens), which is currently Chromium-only. This is progressive &mdash; other browsers simply show/hide instantly.</p>
+    <code-block language="css" show-lines label="Smooth animation" data-escape>/* Smooth open/close animation (needs ::details-content + interpolate-size) */
 ::details-content {
   block-size: 0;
   overflow-y: clip;
@@ -229,7 +237,7 @@ details[open]::details-content {
         </tr>
         <tr>
           <td><code>accordion-wc</code></td>
-          <td>Sets <code>display: contents</code> on details. Adds ARIA and keyboard navigation.</td>
+          <td>Removes the details border and radius (the accordion draws its own), restyles summary and indicator. Adds ARIA and keyboard navigation.</td>
         </tr>
         <tr>
           <td><code>tab-set</code></td>
@@ -237,7 +245,7 @@ details[open]::details-content {
         </tr>
         <tr>
           <td><code>@media print</code></td>
-          <td>Forces all details open. Hides chevron markers.</td>
+          <td>Reveals closed panels via <code>::details-content</code>. Hides chevron markers.</td>
         </tr>
       </tbody>
     </table>
@@ -245,11 +253,12 @@ details[open]::details-content {
 
   <section>
     <h2>Print Behavior</h2>
-    <p>In print stylesheets, all <code>&lt;details&gt;</code> content is forced visible regardless of the <code>open</code> attribute, so collapsed content is not lost when printing. The chevron indicator is hidden.</p>
-    <code-block language="css" show-lines label="Print styles for details" data-escape>/* Print: force all details open, hide markers */
+    <p>In print stylesheets, all <code>&lt;details&gt;</code> content is forced visible regardless of the <code>open</code> attribute, so collapsed content is not lost when printing. The chevron indicator is hidden. Closed content lives inside the <code>::details-content</code> pseudo-element (hidden with <code>content-visibility</code>), so the print rule targets that box rather than the children.</p>
+    <code-block language="css" show-lines label="Print styles for details" data-escape>/* Print: reveal closed panels, hide markers */
 @media print {
-  details:not([open]) > *:not(summary) {
-    display: block !important;
+  details::details-content {
+    content-visibility: visible;
+    block-size: auto;
   }
   summary::after { display: none; }
 }</code-block>
@@ -398,5 +407,5 @@ details.addEventListener('toggle', (event) => {
 
   <section>
     <h2>Browser Support</h2>
-    <p>The <code>&lt;details&gt;</code> element is supported in all modern browsers. The <code>name</code> attribute for exclusive accordions is supported in Chrome 120+, Safari 17.2+, and Firefox 130+. The <code>::details-content</code> animation pseudo-element works in Chrome 131+ and Safari 17.5+; other browsers fall back to instant show/hide.</p>
+    <p>The <code>&lt;details&gt;</code> element is supported in all modern browsers. The <code>name</code> attribute for exclusive accordions is supported in Chrome 120+, Safari 17.2+, and Firefox 130+. The <code>::details-content</code> pseudo-element is supported in Chrome 131+, Safari 18.4+ and Firefox 143+; the open/close height animation additionally needs <code>interpolate-size</code>, which only Chromium supports, so Safari and Firefox open and close instantly. Printing closed panels relies on <code>::details-content</code>; older browsers print only open panels.</p>
   </section>

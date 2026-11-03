@@ -2,13 +2,24 @@ details {
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-m);
 
-  & + details {
+  /* Adjacent details join into one bordered group — but only in normal
+     flow. Inside a gap-based layout primitive (layout-* elements,
+     [data-layout], [data-layout-gap]) the items are visually separated,
+     so they keep their own borders and radii. data-layout-gap="none"
+     opts back in to joining. */
+  & + details:where(:not(:is(
+    layout-stack, layout-grid, layout-cluster, layout-switcher, layout-reel,
+    layout-sidebar, layout-cover, layout-columns, [data-layout], [data-layout-gap]
+  ):not([data-layout-gap="none"]) > *)) {
     margin-block-start: calc(var(--border-width-thin) * -1);
     border-start-start-radius: 0;
     border-start-end-radius: 0;
   }
 
-  &:has(+ details) {
+  &:has(+ details):where(:not(:is(
+    layout-stack, layout-grid, layout-cluster, layout-switcher, layout-reel,
+    layout-sidebar, layout-cover, layout-columns, [data-layout], [data-layout-gap]
+  ):not([data-layout-gap="none"]) > *)) {
     border-end-start-radius: 0;
     border-end-end-radius: 0;
   }
@@ -17,7 +28,7 @@ details {
 summary {
   padding: var(--size-s) var(--size-m);
   cursor: var(--cursor-custom-pointer, pointer);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   list-style: none;
   display: flex;
   align-items: center;
@@ -25,12 +36,16 @@ summary {
   gap: var(--size-s);
   min-block-size: var(--size-touch-min);
 
+  /* Chevron: a physical right+bottom corner rotated to point toward the
+     inline end when closed (right in LTR, left in RTL) and down when
+     open. Physical borders on purpose — logical borders would mirror the
+     corner in RTL and the fixed rotations would then point the wrong way. */
   &::after {
     content: "";
     inline-size: 0.5em;
     block-size: 0.5em;
-    border-inline-end: var(--border-width-medium) solid currentColor;
-    border-block-end: var(--border-width-medium) solid currentColor;
+    border-right: var(--border-width-medium) solid currentColor;
+    border-bottom: var(--border-width-medium) solid currentColor;
     transform: rotate(-45deg);
     transition: transform var(--duration-fast) var(--ease-default);
     flex-shrink: 0;
@@ -46,6 +61,10 @@ summary {
   }
 }
 
+summary:dir(rtl)::after {
+  transform: rotate(135deg);
+}
+
 details[open] > summary::after {
   transform: rotate(45deg);
 }
@@ -55,7 +74,10 @@ details > :not(summary) {
   padding-block-end: var(--size-m);
 }
 
-/* Smooth open/close animation via ::details-content (Chrome 131+, Safari 17.5+) */
+/* Open/close animation via ::details-content. The block-size 0 → auto
+   transition also needs interpolate-size: allow-keywords (set on :root in
+   tokens/motion.css), which only Chromium supports; elsewhere the panel
+   opens and closes instantly. */
 ::details-content {
   block-size: 0;
   overflow-y: clip;

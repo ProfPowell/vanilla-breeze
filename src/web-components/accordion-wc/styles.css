@@ -53,12 +53,20 @@ accordion-wc > details > summary::after {
   inline-size: 0.5em;
   block-size: 0.5em;
   flex-shrink: 0;
-  border-inline-end: var(--border-width-medium) solid currentColor;
-  border-block-end: var(--border-width-medium) solid currentColor;
+  /* Physical corner + fixed rotations (see details/styles.css): logical
+     borders would mirror in RTL and the rotations would then point wrong. */
+  border-right: var(--border-width-medium) solid currentColor;
+  border-bottom: var(--border-width-medium) solid currentColor;
   transform: rotate(-45deg);
   transition: transform var(--duration-fast) var(--ease-default);
   background-color: transparent;
   mask-image: none;
+}
+
+/* Closed points toward the inline end: left in RTL. Declared before the
+   indicator variants so their equal-specificity resets still win. */
+accordion-wc > details > summary:dir(rtl)::after {
+  transform: rotate(135deg);
 }
 
 accordion-wc > details[open] > summary::after {
@@ -151,18 +159,8 @@ accordion-wc[compact] > details > :not(summary) {
   padding: 0 var(--size-s) var(--size-s);
 }
 
-/* Smooth open/close animation via ::details-content (Chrome 131+, Safari 17.5+) */
-accordion-wc > details > ::details-content {
-  block-size: 0;
-  overflow-y: clip;
-  transition:
-    block-size var(--duration-normal) var(--ease-default),
-    content-visibility var(--duration-normal) allow-discrete;
-}
-
-accordion-wc > details[open] > ::details-content {
-  block-size: auto;
-}
+/* Open/close animation comes from the base details styles
+   (src/native-elements/details/styles.css → details::details-content). */
 
 /* --- Reduced Motion --- */
 

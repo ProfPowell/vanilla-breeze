@@ -47,10 +47,10 @@ crumbLabel: Native Elements
 </details></code-block>
     <code-block language="html" show-lines label="Summary with icon" data-escape><details>
   <summary>
-    <span style="display: flex; align-items: center; gap: var(--size-xs);">
+    <layout-cluster data-layout-gap="xs">
       <icon-wc name="info" size="s"></icon-wc>
       Help and Information
-    </span>
+    </layout-cluster>
   </summary>
   <p>Icons provide visual cues about the content type.</p>
 </details></code-block>
@@ -63,7 +63,7 @@ crumbLabel: Native Elements
     <code-block language="css" show-lines label="Summary element CSS" data-escape>summary {
   padding: var(--size-s) var(--size-m);
   cursor: pointer;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   list-style: none;
 
   display: flex;
@@ -74,13 +74,14 @@ crumbLabel: Native Elements
   /* Touch-friendly minimum height (44px) */
   min-block-size: var(--size-touch-min);
 
-  /* Custom chevron indicator */
+  /* Custom chevron indicator: a physical right+bottom corner, rotated
+     to point toward the inline end (right in LTR, left in RTL) */
   &::after {
     content: "";
     inline-size: 0.5em;
     block-size: 0.5em;
-    border-inline-end: var(--border-width-medium) solid currentColor;
-    border-block-end: var(--border-width-medium) solid currentColor;
+    border-right: var(--border-width-medium) solid currentColor;
+    border-bottom: var(--border-width-medium) solid currentColor;
     transform: rotate(-45deg);
     transition: transform var(--duration-fast) var(--ease-default);
     flex-shrink: 0;
@@ -94,7 +95,12 @@ crumbLabel: Native Elements
   }
 }
 
-/* Rotate chevron when open */
+/* Right-to-left: closed chevron points left */
+summary:dir(rtl)::after {
+  transform: rotate(135deg);
+}
+
+/* Rotate chevron when open (points down in both directions) */
 details[open] > summary::after {
   transform: rotate(45deg);
 }</code-block>
@@ -155,13 +161,13 @@ details[open] > summary::after {
         </tr>
         <tr>
           <td><code>accordion-wc</code></td>
-          <td>Base chevron (inherited)</td>
+          <td>Own chevron (same shape), plus <code>indicator</code> variants</td>
           <td>ARIA <code>aria-controls</code> added. Keyboard arrow navigation between summaries.</td>
         </tr>
         <tr>
           <td><code>tab-set</code></td>
           <td>Chevron hidden (<code>::after { display: none }</code>)</td>
-          <td>Summary becomes tab button. Active tab gets blue bottom border.</td>
+          <td>Summary becomes tab button. Active tab gets an accent bottom border.</td>
         </tr>
         <tr>
           <td><code>@media print</code></td>
