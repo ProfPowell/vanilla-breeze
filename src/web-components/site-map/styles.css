@@ -191,34 +191,17 @@ site-map:not(:defined) {
   flex-shrink: 0;
 }
 
-.sm-badge--layout {
-  background: color-mix(in oklch, #8b5cf6 15%, var(--color-surface, #fff));
-  color: #7c3aed;
-}
+/* Type hues come from theme tokens so light, dark and brand themes all work */
+.sm-badge--layout    { --sm-hue: var(--color-accent, var(--color-primary)); }
+.sm-badge--section   { --sm-hue: var(--color-info); }
+.sm-badge--dashboard { --sm-hue: var(--color-success); }
+.sm-badge--page      { --sm-hue: var(--color-text-muted); }
+.sm-badge--modal     { --sm-hue: var(--color-warning); }
+.sm-badge--redirect  { --sm-hue: var(--color-error); }
 
-.sm-badge--section {
-  background: color-mix(in oklch, #3b82f6 15%, var(--color-surface, #fff));
-  color: #2563eb;
-}
-
-.sm-badge--dashboard {
-  background: color-mix(in oklch, #22c55e 15%, var(--color-surface, #fff));
-  color: #16a34a;
-}
-
-.sm-badge--page {
-  background: color-mix(in oklch, #94a3b8 20%, var(--color-surface, #fff));
-  color: #64748b;
-}
-
-.sm-badge--modal {
-  background: color-mix(in oklch, #f59e0b 15%, var(--color-surface, #fff));
-  color: #d97706;
-}
-
-.sm-badge--redirect {
-  background: color-mix(in oklch, #ef4444 15%, var(--color-surface, #fff));
-  color: #dc2626;
+.sm-badge:not(.sm-badge--template) {
+  background: color-mix(in oklch, var(--sm-hue) 15%, var(--color-surface));
+  color: color-mix(in oklch, var(--sm-hue) 65%, var(--color-text));
 }
 
 /* ── Template badge ──────────────────────────────────────────────────────── */
@@ -242,20 +225,14 @@ site-map:not(:defined) {
   flex-shrink: 0;
 }
 
-.sm-status--draft {
-  background: #94a3b8;
-}
+.sm-status--draft      { background: var(--color-text-muted); }
+.sm-status--ready      { background: var(--color-warning); }
+.sm-status--live       { background: var(--color-success); }
+.sm-status--deprecated { background: var(--color-error); }
 
-.sm-status--ready {
-  background: #f59e0b;
-}
-
-.sm-status--live {
-  background: #22c55e;
-}
-
-.sm-status--deprecated {
-  background: #ef4444;
+/* RTL: the collapsed ▸ glyph points along the reading direction */
+site-map:dir(rtl) .sm-toggle {
+  scale: -1 1;
 }
 
 /* ── Compact variant ─────────────────────────────────────────────────────── */
@@ -450,6 +427,133 @@ site-map[compact] .sm-title {
   font-weight: 600;
   color: var(--color-text-muted, #888);
   min-width: 70px;
+}
+
+/* ── Visual SVG colours (theme tokens) ─────────────────────────────────── */
+
+.sm-vnode               { --sm-hue: var(--color-text-muted); }
+.sm-vnode--layout       { --sm-hue: var(--color-accent, var(--color-primary)); }
+.sm-vnode--section      { --sm-hue: var(--color-info); }
+.sm-vnode--dashboard    { --sm-hue: var(--color-success); }
+.sm-vnode--modal        { --sm-hue: var(--color-warning); }
+.sm-vnode--redirect     { --sm-hue: var(--color-error); }
+
+.sm-vnode {
+  cursor: var(--cursor-custom-pointer, pointer);
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+.sm-vbox {
+  fill: color-mix(in oklch, var(--sm-hue) 8%, var(--color-surface));
+  stroke: var(--sm-hue);
+  stroke-width: 2;
+}
+
+.sm-vlabel {
+  fill: color-mix(in oklch, var(--sm-hue) 55%, var(--color-text));
+}
+
+.sm-vtype {
+  fill: var(--sm-hue);
+}
+
+.sm-vtemplate {
+  fill: var(--color-text-muted);
+}
+
+.sm-vedge,
+.sm-vwire {
+  fill: none;
+  stroke: var(--color-border-strong, var(--color-border));
+  stroke-width: 1.5;
+}
+
+.sm-vwire {
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+}
+
+.sm-vstatus--draft      { fill: var(--color-text-muted); }
+.sm-vstatus--ready      { fill: var(--color-warning); }
+.sm-vstatus--live       { fill: var(--color-success); }
+.sm-vstatus--deprecated { fill: var(--color-error); }
+
+.sm-vtoggle {
+  cursor: var(--cursor-custom-pointer, pointer);
+
+  & circle {
+    fill: var(--color-surface-raised);
+    stroke: var(--color-border-strong, var(--color-border));
+    stroke-width: 1;
+  }
+
+  & text {
+    fill: var(--color-text-muted);
+  }
+}
+
+.sm-vfocus-ring {
+  fill: none;
+  stroke: var(--color-focus-ring, var(--color-interactive));
+  stroke-width: 2;
+}
+
+/* Wireframe detail level: neutral greys from tokens */
+.sm-vsvg--wireframe {
+  & .sm-vnode { --sm-hue: var(--color-text-muted); }
+  & .sm-vbox { fill: var(--color-surface); stroke-width: 1; }
+  & .sm-vstatus { fill: var(--color-text-muted); }
+}
+
+/* ── Forced colors ───────────────────────────────────────────────────── */
+
+@media (forced-colors: active) {
+  /* Status is also announced as text; give the dots a visible edge */
+  .sm-status-dot {
+    background: CanvasText;
+    border: 1px solid CanvasText;
+  }
+
+  .sm-status--draft {
+    background: Canvas;
+  }
+
+  .sm-badge:not(.sm-badge--template) {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+
+  .sm-tree li[role="treeitem"]:focus > .sm-node-content {
+    outline-color: Highlight;
+  }
+
+  .sm-vbox,
+  .sm-vtoggle circle {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .sm-vlabel,
+  .sm-vtype,
+  .sm-vtemplate,
+  .sm-vtoggle text,
+  .sm-vstatus {
+    fill: CanvasText;
+  }
+
+  .sm-vedge,
+  .sm-vwire {
+    stroke: CanvasText;
+  }
+
+  .sm-vfocus-ring {
+    stroke: Highlight;
+  }
+
+  .sm-vnode[aria-selected="true"] .sm-vbox {
+    stroke: Highlight;
+  }
 }
 
 /* ── Reduced motion ──────────────────────────────────────────────────────── */

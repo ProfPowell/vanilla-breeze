@@ -75,10 +75,30 @@ const STATUS_META = {
   deprecated: { label: 'Deprecated', cssClass: 'sm-status--deprecated' },
 };
 
-class SiteMap extends VBElement {
-  static get observedAttributes() { return ['src', 'collapsed', 'compact', 'title', 'data-view', 'data-orientation', 'data-detail']; }
+/**
+ * Only http(s), relative and fragment hrefs from JSON become link targets.
+ * @param {unknown} href
+ * @returns {string|null}
+ */
+function safeHref(href) {
+  if (typeof href !== 'string' || !href.trim()) return null;
+  try {
+    const u = new URL(href, document.baseURI);
+    return u.protocol === 'http:' || u.protocol === 'https:' ? href : null;
+  } catch {
+    return null;
+  }
+}
 
-  static #instanceCount = 0;
+let uidCounter = 0;
+
+class SiteMap extends VBElement {
+  // compact is CSS-only; data-orientation / data-detail re-render the SVG
+  static get observedAttributes() { return ['src', 'collapsed', 'title', 'data-view', 'data-orientation', 'data-detail']; }
+
+  #uid = `sm-${++uidCounter}`;
+  /** True while the toolbar itself writes data-orientation / data-detail */
+  #syncingAttr = false;
 
   /** @type {HTMLElement | null} */
   #treeContainer = null;
@@ -99,8 +119,6 @@ class SiteMap extends VBElement {
       this.#setupNavEnhance();
       return;
     }
-
-    SiteMap.#instanceCount++;
 
     // Handle src attribute — load JSON and build HTML first
     const src = this.getAttribute('src');
@@ -145,6 +163,17 @@ class SiteMap extends VBElement {
       this.#collapseAll();
     }
 
+    // 6b. Roving tabindex entry point: the current page's node, else the first
+    const current = /** @type {HTMLElement|null} */ (
+      nav.querySelector('a[aria-current="page"]')?.closest('li[role="treeitem"]') ?? null);
+    const entry = current && this.#getVisibleNodes().includes(current)
+      ? current
+      : /** @type {HTMLElement|null} */ (nav.querySelector('li[role="treeitem"]'));
+    if (entry) {
+      entry.setAttribute('tabindex', '0');
+      this.#focusedNode = entry;
+    }
+
     // 7. Keyboard navigation
     this.listen(nav, 'keydown', (e) => this.#handleKeydown(/** @type {KeyboardEvent} */ (e)));
 
@@ -170,9 +199,11 @@ class SiteMap extends VBElement {
       this.#visualContainer.remove();
       this.#visualContainer = null;
       // Restore hidden nav
-      const nav = this.querySelector('nav');
-      if (nav) { nav.style.display = ''; nav.removeAttribute('aria-hidden'); }
+      const nav = /** @type {HTMLElement|null} */ (this.querySelector(':scope > nav'));
+      if (nav) { nav.hidden = false; nav.removeAttribute('aria-hidden'); }
     }
+    this.#visualData = null;
+    this.#visualFocusId = null;
     if (this.#headerEl) {
       this.#headerEl.remove();
       this.#headerEl = null;
@@ -182,8 +213,18 @@ class SiteMap extends VBElement {
       this.#treeContainer.removeAttribute('role');
       this.#treeContainer.removeAttribute('aria-label');
     }
-    // Remove all generated badges and toggle buttons
-    this.querySelectorAll('.sm-node-content, .sm-toggle').forEach(el => el.remove());
+    // Move each authored anchor back to its <li> before dropping the
+    // generated wrapper — removing .sm-node-content with the anchor inside
+    // would delete every link on a remove+reinsert.
+    this.querySelectorAll('.sm-node-content').forEach((content) => {
+      const a = content.querySelector(':scope > a');
+      if (a) {
+        a.removeAttribute('tabindex');
+        content.before(a);
+      }
+      content.remove();
+    });
+    this.querySelectorAll('.sm-toggle').forEach(el => el.remove());
     // Restore li roles
     this.querySelectorAll('li[role="treeitem"]').forEach(li => {
       li.removeAttribute('role');
@@ -205,9 +246,29 @@ class SiteMap extends VBElement {
   // ── Attribute changes ────────────────────────────────
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if ((this.getAttribute('mode') || 'nav-enhance') !== 'ia-tree') return;
-    if (oldValue === newValue || !this.isConnected) return;
-    if (name === 'src') this._loadSrc(newValue);
+    if (oldValue === newValue || !this.isConnected || !this.hasAttribute('data-upgraded')) return;
+    if ((this.getAttribute('mode') || 'nav-enhance') !== 'ia-tree') {
+      if (name === 'src' && newValue) this.#loadFromSrc();
+      return;
+    }
+    switch (name) {
+      case 'src':
+        if (newValue) this._loadSrc(newValue);
+        break;
+      case 'title':
+      case 'collapsed':
+      case 'data-view':
+        if (!this.#syncingAttr) this._reinit();
+        break;
+      case 'data-orientation':
+      case 'data-detail':
+        // The toolbar writes these itself and re-renders; react to authors
+        if (!this.#syncingAttr && this.#visualData) {
+          this.#syncToolbar();
+          this.#renderSvg();
+        }
+        break;
+    }
   }
 
   // ── Tree measurement ────────────────────────────────
@@ -279,17 +340,23 @@ class SiteMap extends VBElement {
         content.appendChild(leaf);
       }
 
-      // Status dot
+      // Status dot — decorative; the status is exposed as visually hidden text
       if (status && STATUS_META[status]) {
         const dot = document.createElement('span');
         dot.className = `sm-status-dot ${STATUS_META[status].cssClass}`;
         dot.setAttribute('title', STATUS_META[status].label);
-        dot.setAttribute('aria-label', STATUS_META[status].label);
+        dot.setAttribute('aria-hidden', 'true');
         content.appendChild(dot);
+        const text = document.createElement('span');
+        text.className = 'visually-hidden';
+        text.textContent = `${STATUS_META[status].label}: `;
+        content.appendChild(text);
       }
 
-      // Move anchor into content wrapper
+      // Move anchor into content wrapper. Treeitems own the focus (roving
+      // tabindex); the inner link leaves the Tab order.
       if (anchor) {
+        anchor.setAttribute('tabindex', '-1');
         content.appendChild(anchor);
       }
 
@@ -371,8 +438,31 @@ class SiteMap extends VBElement {
       const ul = li.querySelector(':scope > ul');
       if (ul) ul.classList.add('sm-collapsed');
       const toggle = li.querySelector(':scope > .sm-node-content > .sm-toggle');
-      if (toggle) toggle.textContent = '\u25B8'; // ▸
+      if (toggle) toggle.textContent = '\u25B8'; // ▸ (mirrored in RTL by CSS)
     }
+    this.#keepRovingVisible();
+  }
+
+  /**
+   * If the roving-tabindex node was hidden by a collapse, hand the tab stop
+   * to its nearest visible ancestor so the tree stays reachable.
+   */
+  #keepRovingVisible() {
+    const node = this.#focusedNode;
+    if (!node || !this.#treeContainer) return;
+    const visible = this.#getVisibleNodes();
+    if (visible.includes(node)) return;
+    let up = node.parentElement?.closest('li[role="treeitem"]');
+    while (up && !visible.includes(/** @type {HTMLElement} */ (up))) {
+      up = up.parentElement?.closest('li[role="treeitem"]');
+    }
+    const next = /** @type {HTMLElement|null} */ (up ?? visible[0] ?? null);
+    if (!next) return;
+    const hadFocus = node.contains(document.activeElement);
+    node.setAttribute('tabindex', '-1');
+    next.setAttribute('tabindex', '0');
+    this.#focusedNode = next;
+    if (hadFocus) next.focus();
   }
 
   #expandAll() {
@@ -399,6 +489,7 @@ class SiteMap extends VBElement {
     }
     const toggle = li.querySelector(':scope > .sm-node-content > .sm-toggle');
     if (toggle) toggle.textContent = expanded ? '\u25B8' : '\u25BE';
+    if (expanded) this.#keepRovingVisible();
   }
 
   // ── Click handling ──────────────────────────────────
@@ -444,12 +535,17 @@ class SiteMap extends VBElement {
    * @param {KeyboardEvent} e
    */
   #handleKeydown(e) {
-    const li = /** @type {HTMLElement | null} */ (
-      (/** @type {HTMLElement} */ (e.target)).closest('li[role="treeitem"]')
-    );
+    const target = /** @type {HTMLElement} */ (e.target);
+    const li = /** @type {HTMLElement | null} */ (target.closest('li[role="treeitem"]'));
     if (!li) return;
+    // A focused link (e.g. after a mouse click) keeps its native Enter
+    if (e.key === 'Enter' && target.closest('a') && target !== li) return;
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
 
-    const key = e.key;
+    const rtl = this.matches(':dir(rtl)');
+    let key = e.key;
+    if (rtl && key === 'ArrowRight') key = 'ArrowLeft';
+    else if (rtl && key === 'ArrowLeft') key = 'ArrowRight';
     let handled = false;
 
     switch (key) {
@@ -481,21 +577,25 @@ class SiteMap extends VBElement {
           if (parentLi) this.#setFocus(/** @type {HTMLElement} */ (parentLi));
         }
         break;
-      case 'Enter':
+      case 'Enter': {
+        // Follow the node's link (navigation tree); nodes without a link toggle
+        handled = true;
+        const anchor = /** @type {HTMLAnchorElement|null} */ (li.querySelector(':scope > .sm-node-content > a[href]'));
+        if (anchor) anchor.click();
+        else if (li.hasAttribute('aria-expanded')) this.#toggleNode(li);
+        break;
+      }
+      case ' ': {
+        // Space toggles a parent; on a leaf it follows the link
         handled = true;
         if (li.hasAttribute('aria-expanded')) {
           this.#toggleNode(li);
+        } else {
+          const anchor = /** @type {HTMLAnchorElement|null} */ (li.querySelector(':scope > .sm-node-content > a[href]'));
+          anchor?.click();
         }
         break;
-      case ' ':
-        handled = true;
-        {
-          const anchor = li.querySelector(':scope > .sm-node-content > a');
-          if (anchor) {
-            /** @type {HTMLAnchorElement} */ (anchor).click();
-          }
-        }
-        break;
+      }
       case 'Home':
         handled = true;
         {
@@ -586,19 +686,6 @@ class SiteMap extends VBElement {
   static #V_GAP = 50;
   static #PAD = 20;
 
-  /** Page-type colors */
-  static #TYPE_COLORS = {
-    layout:    { stroke: '#8b5cf6', fill: '#f5f3ff', text: '#6d28d9' },
-    section:   { stroke: '#3b82f6', fill: '#eff6ff', text: '#1d4ed8' },
-    dashboard: { stroke: '#22c55e', fill: '#f0fdf4', text: '#15803d' },
-    page:      { stroke: '#94a3b8', fill: '#f8fafc', text: '#475569' },
-    modal:     { stroke: '#f59e0b', fill: '#fffbeb', text: '#b45309' },
-    redirect:  { stroke: '#ef4444', fill: '#fef2f2', text: '#b91c1c' },
-  };
-
-  /** Status colors */
-  static #STATUS_COLORS = { draft: '#94a3b8', ready: '#f59e0b', live: '#22c55e', deprecated: '#ef4444' };
-
   /**
    * Parse the nav tree into a node hierarchy for layout.
    * @param {Element} ul
@@ -688,7 +775,7 @@ class SiteMap extends VBElement {
    * @param {HTMLElement} nav
    */
   #buildVisualTree(nav) {
-    nav.style.display = 'none';
+    nav.hidden = true;
     nav.setAttribute('aria-hidden', 'true');
 
     const rootUl = nav.querySelector('ul');
@@ -752,11 +839,14 @@ class SiteMap extends VBElement {
 
   /**
    * After a re-render, scroll the new SVG so the anchor node ends up at the
-   * same pixel position relative to the scroller, and restore keyboard focus.
+   * same pixel position relative to the scroller, and restore the active
+   * node. DOM focus moves to the new SVG only if the old SVG had it — a
+   * toolbar control keeps focus (the toolbar is never re-rendered).
    *
    * @param {{ nodeId: string|null, rectTop: number, rectLeft: number, focusId: string|null }} anchor
+   * @param {boolean} svgHadFocus
    */
-  #restoreAnchor(anchor) {
+  #restoreAnchor(anchor, svgHadFocus) {
     const scroller = this.#visualContainer?.querySelector('.sm-visual-scroll');
     const svg = this.#visualContainer?.querySelector('svg[role="tree"]');
     if (!scroller || !svg) return;
@@ -774,14 +864,18 @@ class SiteMap extends VBElement {
       }
     }
 
-    if (anchor.focusId) {
-      this.#focusVisualNode(anchor.focusId);
-      /** @type {SVGElement} */ (svg).focus({ preventScroll: true });
-    }
+    const focusId = anchor.focusId && svg.querySelector(`[data-node-id="${anchor.focusId}"]`)
+      ? anchor.focusId : '0';
+    const g = svg.querySelector(`[data-node-id="${focusId}"]`);
+    if (g) this.#markFocused(g);
+    if (svgHadFocus) /** @type {SVGElement} */ (svg).focus({ preventScroll: true });
   }
 
   /**
-   * Render (or re-render) the SVG from the current visual data + collapse state.
+   * Render (or re-render) the SVG from the current visual data + collapse
+   * state. The frame (toolbar + summary) is built once; re-renders swap only
+   * the scroller, so keyboard focus on a toolbar control survives zoom,
+   * flip and detail changes.
    * @param {{ anchorId?: string }} [opts] - When set, pins this node's pixel
    *   position across the re-render so the user stays anchored at the node
    *   they just toggled.
@@ -789,9 +883,10 @@ class SiteMap extends VBElement {
   #renderSvg(opts = {}) {
     if (!this.#visualData) return;
 
-    // Capture user position BEFORE replacing the container.
+    // Capture user position BEFORE replacing the scroller.
     const anchor = this.#captureAnchor(opts.anchorId || null);
-    const priorContainer = this.#visualContainer;
+    const priorScroller = this.#visualContainer?.querySelector('.sm-visual-scroll') ?? null;
+    const svgHadFocus = !!priorScroller && priorScroller.contains(document.activeElement);
 
     const NS = SiteMap.#NS;
     const W = SiteMap.#NODE_W;
@@ -811,13 +906,17 @@ class SiteMap extends VBElement {
     // For horizontal, swap the coordinate space (SVG transform handles rotation)
     if (horiz) [svgW, svgH] = [svgH, svgW];
 
-    // Outer frame — toolbar/summary stay fixed, scroller lives in the middle
-    this.#visualContainer = document.createElement('div');
-    this.#visualContainer.className = 'sm-visual';
-    this.#visualContainer.setAttribute('tabindex', '-1'); // not keyboard-focusable; SVG inside handles keys
-
-    // Toolbar (sibling of scroller — fixed in the frame)
-    this.#visualContainer.appendChild(this.#buildToolbar());
+    // Frame — toolbar/summary are built once and stay fixed
+    let summary = this.#visualContainer?.querySelector('.sm-visual-summary');
+    if (!this.#visualContainer) {
+      this.#visualContainer = document.createElement('div');
+      this.#visualContainer.className = 'sm-visual';
+      this.#visualContainer.appendChild(this.#buildToolbar());
+      summary = document.createElement('div');
+      summary.className = 'sm-visual-summary';
+      this.#visualContainer.appendChild(summary);
+      this.appendChild(this.#visualContainer);
+    }
 
     // Inner scroller — only this element scrolls when panning
     const scroller = document.createElement('div');
@@ -828,8 +927,7 @@ class SiteMap extends VBElement {
     svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
     svg.setAttribute('width', String(svgW));
     svg.setAttribute('height', String(svgH));
-    svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', `Site map${this.getAttribute('title') ? ': ' + this.getAttribute('title') : ''}`);
+    svg.setAttribute('class', `sm-vsvg${this.#detail >= 4 ? ' sm-vsvg--wireframe' : ''}`);
 
     // Zoom wrapper — transform: scale() for zoom, wrapper sized to match
     const zoomWrap = document.createElement('div');
@@ -853,49 +951,21 @@ class SiteMap extends VBElement {
 
     zoomWrap.appendChild(svg);
     scroller.appendChild(zoomWrap);
-    this.#visualContainer.appendChild(scroller);
 
-    // Summary (sibling of scroller — fixed in the frame)
-    const summary = document.createElement('div');
-    summary.className = 'sm-visual-summary';
-    const zoomPct = Math.round(this.#zoom * 100);
-    summary.textContent = `${this.#nodeCount} pages \u00B7 ${this.#maxDepth} levels \u00B7 ${zoomPct}%`;
-    this.#visualContainer.appendChild(summary);
-
-    // Atomic swap: replace the prior container in one DOM operation, wrapped
-    // in a View Transition so the browser crossfades old → new instead of
-    // showing a hard snap. Same pattern as diagram-wc. The prior container's
-    // DOM listeners are torn down implicitly when it's removed; new
-    // listeners are bound to the new svg below.
-    const newContainer = this.#visualContainer;
-    const swap = () => {
-      if (priorContainer && priorContainer.isConnected) {
-        priorContainer.replaceWith(newContainer);
-      } else {
-        this.appendChild(newContainer);
-      }
-    };
-
-    // Restore the anchor once the new DOM is in, so the user's clicked
-    // node lands at the same pixel position. viewTransitionSwap returns
-    // null when it swapped without a transition.
-    let tx = null;
-    if (priorContainer?.isConnected) {
-      tx = viewTransitionSwap(this, swap, 'sm-vt'); // swaps either way
-    } else {
-      swap();
-    }
-    if (tx) {
-      tx.updateCallbackDone.then(() => this.#restoreAnchor(anchor));
-    } else {
-      this.#restoreAnchor(anchor);
+    if (summary) {
+      const zoomPct = Math.round(this.#zoom * 100);
+      summary.textContent = `${this.#nodeCount} pages \u00B7 ${this.#maxDepth} levels \u00B7 ${zoomPct}%`;
     }
 
-    // Drag-to-pan on the scroll container (mouse + touch)
-    this.#initDragPan(this.#visualContainer, svg);
+    // Tree semantics: the SVG is the focusable tree; nodes are treeitems
+    // tracked with aria-activedescendant.
+    svg.setAttribute('tabindex', '0');
+    svg.setAttribute('role', 'tree');
+    svg.setAttribute('aria-label', `Site map${this.getAttribute('title') ? ': ' + this.getAttribute('title') : ''}`);
+    svg.addEventListener('keydown', (e) => this.#handleVisualKeydown(/** @type {KeyboardEvent} */ (e)));
 
-    // Click handler via event delegation on SVG
-    this.listen(svg, 'click', (e) => {
+    // Click handler via event delegation on SVG (dropped with the node)
+    svg.addEventListener('click', (e) => {
       const target = /** @type {Element} */ (e.target);
 
       const toggle = target.closest('[data-toggle]');
@@ -920,17 +990,60 @@ class SiteMap extends VBElement {
       }
     });
 
-    // Make SVG focusable — keyboard listener directly on SVG (must re-register each render)
-    svg.setAttribute('tabindex', '0');
-    svg.setAttribute('role', 'tree');
-    svg.setAttribute('aria-label', `Site map${this.getAttribute('title') ? ': ' + this.getAttribute('title') : ''} — use arrow keys to navigate`);
-    svg.addEventListener('keydown', (e) => this.#handleVisualKeydown(/** @type {KeyboardEvent} */ (e)));
+    // Atomic swap of the scroller only, wrapped in a View Transition so the
+    // browser crossfades old → new instead of showing a hard snap.
+    const container = this.#visualContainer;
+    const swap = () => {
+      if (priorScroller && priorScroller.isConnected) {
+        priorScroller.replaceWith(scroller);
+      } else {
+        container.insertBefore(scroller, container.querySelector('.sm-visual-summary'));
+      }
+    };
 
-    // Focus the root node visually (don't auto-steal DOM focus)
-    requestAnimationFrame(() => {
-      const first = svg.querySelector('[data-node-id]');
-      if (first) this.#markFocused(first);
-    });
+    let tx = null;
+    if (priorScroller?.isConnected) {
+      tx = viewTransitionSwap(this, swap, 'sm-vt'); // swaps either way
+    } else {
+      swap();
+    }
+    if (tx) {
+      tx.updateCallbackDone.then(() => this.#restoreAnchor(anchor, svgHadFocus));
+    } else {
+      this.#restoreAnchor(anchor, svgHadFocus);
+    }
+
+    // Drag-to-pan on the scroll container (mouse + touch)
+    this.#initDragPan(container, svg);
+  }
+
+  /**
+   * Bring toolbar controls in line with data-orientation / data-detail set
+   * from outside.
+   */
+  #syncToolbar() {
+    const bar = this.#visualContainer?.querySelector('.sm-vtoolbar');
+    if (!bar) return;
+    const flip = bar.querySelector('[data-sm-flip]');
+    const label = this.#orientation === 'horizontal' ? 'Vertical' : 'Horizontal';
+    flip?.setAttribute('aria-label', label);
+    flip?.setAttribute('title', label);
+    const slider = /** @type {HTMLInputElement|null} */ (bar.querySelector('.sm-vtoolbar-slider'));
+    if (slider) slider.value = String(this.#detail);
+    const detailLabel = bar.querySelector('.sm-vtoolbar-detail-label');
+    if (detailLabel) detailLabel.textContent = SiteMap.#DETAIL_LABELS[this.#detail];
+  }
+
+  /**
+   * Write a data-* attribute from the toolbar without triggering the
+   * attributeChangedCallback re-render path.
+   * @param {string} key
+   * @param {string} value
+   */
+  #setOwnData(key, value) {
+    this.#syncingAttr = true;
+    this.dataset[key] = value;
+    this.#syncingAttr = false;
   }
 
   /**
@@ -975,9 +1088,11 @@ class SiteMap extends VBElement {
     // Orientation toggle
     const flipLabel = this.#orientation === 'horizontal' ? 'Vertical' : 'Horizontal';
     const flip = this.#toolbarBtn(icon(SiteMap.#ICONS.flip), flipLabel, () => {
-      this.dataset.orientation = this.#orientation === 'horizontal' ? 'vertical' : 'horizontal';
+      this.#setOwnData('orientation', this.#orientation === 'horizontal' ? 'vertical' : 'horizontal');
+      this.#syncToolbar();
       this.#renderSvg();
     });
+    flip.setAttribute('data-sm-flip', '');
     bar.appendChild(flip);
 
     // Separator
@@ -1004,10 +1119,12 @@ class SiteMap extends VBElement {
     detailWrap.appendChild(detailLabel);
 
     slider.addEventListener('input', () => {
-      this.dataset.detail = slider.value;
+      this.#setOwnData('detail', slider.value);
       detailLabel.textContent = SiteMap.#DETAIL_LABELS[parseInt(slider.value, 10)];
+      slider.setAttribute('aria-valuetext', detailLabel.textContent);
       this.#renderSvg();
     });
+    slider.setAttribute('aria-valuetext', SiteMap.#DETAIL_LABELS[detail]);
 
     bar.appendChild(detailWrap);
 
@@ -1114,7 +1231,7 @@ class SiteMap extends VBElement {
 
     // Remove previous focus ring
     svg.querySelectorAll('.sm-vfocus-ring').forEach(r => r.remove());
-    svg.querySelectorAll('[data-node-id]').forEach(el => el.removeAttribute('aria-current'));
+    svg.querySelectorAll('[data-node-id][aria-selected="true"]').forEach(el => el.setAttribute('aria-selected', 'false'));
 
     // Add focus ring rect behind the node
     const NS = SiteMap.#NS;
@@ -1126,15 +1243,15 @@ class SiteMap extends VBElement {
       ring.setAttribute('width', String(parseFloat(rect.getAttribute('width') ?? '0') + 6));
       ring.setAttribute('height', String(parseFloat(rect.getAttribute('height') ?? '0') + 6));
       ring.setAttribute('rx', '11');
-      ring.setAttribute('fill', 'none');
-      ring.setAttribute('stroke', '#3b82f6');
-      ring.setAttribute('stroke-width', '2');
       ring.setAttribute('class', 'sm-vfocus-ring');
+      ring.setAttribute('aria-hidden', 'true');
       // Insert before the group so it's behind
       g.parentNode?.insertBefore(ring, g);
     }
 
-    g.setAttribute('aria-current', 'true');
+    // Screen readers follow the active node via aria-activedescendant
+    g.setAttribute('aria-selected', 'true');
+    if (g.id) svg.setAttribute('aria-activedescendant', g.id);
     this.#visualFocusId = g.getAttribute('data-node-id');
   }
 
@@ -1337,9 +1454,8 @@ class SiteMap extends VBElement {
 
         const path = document.createElementNS(NS, 'path');
         path.setAttribute('d', `M ${px} ${py} L ${px} ${midY} L ${cx} ${midY} L ${cx} ${cy}`);
-        path.setAttribute('fill', 'none');
-        path.setAttribute('stroke', '#cbd5e1');
-        path.setAttribute('stroke-width', '1.5');
+        path.setAttribute('class', 'sm-vedge');
+        path.setAttribute('aria-hidden', 'true');
         svg.appendChild(path);
       }
 
@@ -1360,15 +1476,25 @@ class SiteMap extends VBElement {
     const H = SiteMap.#NODE_H;
     const detail = this.#detail;
     const wireframe = detail >= 4;
+    const level = parentId ? parentId.split('-').length + 1 : 1;
 
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       const nodeId = parentId ? `${parentId}-${i}` : String(i);
-      const colors = wireframe
-        ? { stroke: '#94a3b8', fill: '#ffffff', text: '#475569' }
-        : (SiteMap.#TYPE_COLORS[node.pageType] || SiteMap.#TYPE_COLORS.page);
+      const type = PAGE_TYPES[node.pageType] ? node.pageType : 'page';
 
       const g = /** @type {SVGGElement} */ (document.createElementNS(NS, 'g'));
+      // Colours come from theme tokens in styles.css (light/dark/forced-colors)
+      g.setAttribute('class', `sm-vnode sm-vnode--${type}`);
+      g.id = `${this.#uid}-n-${nodeId}`;
+      g.setAttribute('role', 'treeitem');
+      g.setAttribute('aria-level', String(level));
+      g.setAttribute('aria-setsize', String(nodes.length));
+      g.setAttribute('aria-posinset', String(i + 1));
+      g.setAttribute('aria-selected', 'false');
+      if (node.children.length > 0) g.setAttribute('aria-expanded', node.collapsed ? 'false' : 'true');
+      const statusLabel = node.status && STATUS_META[node.status] ? `, ${STATUS_META[node.status].label}` : '';
+      g.setAttribute('aria-label', `${node.label || node.href || 'Untitled'}, ${PAGE_TYPES[type].label}${node.template ? `, ${node.template}` : ''}${statusLabel}`);
       g.setAttribute('data-node-id', nodeId);
       g.setAttribute('data-href', node.href);
       g.setAttribute('data-page-type', node.pageType);
@@ -1382,9 +1508,7 @@ class SiteMap extends VBElement {
       rect.setAttribute('width', String(W));
       rect.setAttribute('height', String(H));
       rect.setAttribute('rx', '8');
-      rect.setAttribute('fill', colors.fill);
-      rect.setAttribute('stroke', colors.stroke);
-      rect.setAttribute('stroke-width', wireframe ? '1' : '2');
+      rect.setAttribute('class', 'sm-vbox');
       if (wireframe || node.pageType === 'modal') rect.setAttribute('stroke-dasharray', '6 3');
       g.appendChild(rect);
 
@@ -1396,8 +1520,7 @@ class SiteMap extends VBElement {
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('font-size', '13');
         text.setAttribute('font-weight', '600');
-        text.setAttribute('fill', colors.text);
-        text.setAttribute('font-family', 'system-ui, sans-serif');
+        text.setAttribute('class', 'sm-vlabel');
         text.textContent = node.label.length > 18 ? node.label.slice(0, 17) + '\u2026' : node.label;
         g.appendChild(text);
       }
@@ -1410,8 +1533,7 @@ class SiteMap extends VBElement {
         badge.setAttribute('text-anchor', 'middle');
         badge.setAttribute('font-size', '9');
         badge.setAttribute('font-weight', '700');
-        badge.setAttribute('fill', colors.stroke);
-        badge.setAttribute('font-family', 'system-ui, sans-serif');
+        badge.setAttribute('class', 'sm-vtype');
         badge.textContent = (PAGE_TYPES[node.pageType]?.label || node.pageType).toUpperCase();
         g.appendChild(badge);
 
@@ -1421,20 +1543,19 @@ class SiteMap extends VBElement {
           tmpl.setAttribute('y', String(node.y + 54));
           tmpl.setAttribute('text-anchor', 'middle');
           tmpl.setAttribute('font-size', '9');
-          tmpl.setAttribute('fill', wireframe ? '#94a3b8' : '#94a3b8');
-          tmpl.setAttribute('font-family', 'system-ui, sans-serif');
+          tmpl.setAttribute('class', 'sm-vtemplate');
           tmpl.textContent = node.template;
           g.appendChild(tmpl);
         }
       }
 
       // Detail >= 3: Status dot
-      if (detail >= 3 && node.status && SiteMap.#STATUS_COLORS[node.status]) {
+      if (detail >= 3 && node.status && STATUS_META[node.status]) {
         const dot = document.createElementNS(NS, 'circle');
         dot.setAttribute('cx', String(node.x + W / 2));
         dot.setAttribute('cy', String(node.y + H - 8));
         dot.setAttribute('r', '4');
-        dot.setAttribute('fill', wireframe ? '#94a3b8' : SiteMap.#STATUS_COLORS[node.status]);
+        dot.setAttribute('class', `sm-vstatus sm-vstatus--${node.status}`);
         g.appendChild(dot);
       }
 
@@ -1446,9 +1567,7 @@ class SiteMap extends VBElement {
           wfLine.setAttribute('x2', String(node.x + W - 12));
           wfLine.setAttribute('y1', String(node.y + H - 22 + ly * 8));
           wfLine.setAttribute('y2', String(node.y + H - 22 + ly * 8));
-          wfLine.setAttribute('stroke', '#cbd5e1');
-          wfLine.setAttribute('stroke-width', '1');
-          wfLine.setAttribute('stroke-dasharray', '3 2');
+          wfLine.setAttribute('class', 'sm-vwire');
           g.appendChild(wfLine);
         }
       }
@@ -1457,15 +1576,14 @@ class SiteMap extends VBElement {
       if (node.children.length > 0) {
         const tg = /** @type {SVGGElement} */ (document.createElementNS(NS, 'g'));
         tg.setAttribute('data-toggle', nodeId);
-        tg.style.cursor = 'pointer';
+        tg.setAttribute('class', 'sm-vtoggle');
+        // Pointer affordance; keyboard users toggle with Enter/Space on the treeitem
+        tg.setAttribute('aria-hidden', 'true');
 
         const toggleCircle = document.createElementNS(NS, 'circle');
         toggleCircle.setAttribute('cx', String(node.x + W / 2));
         toggleCircle.setAttribute('cy', String(node.y + H + 10));
         toggleCircle.setAttribute('r', '10');
-        toggleCircle.setAttribute('fill', wireframe ? '#fff' : '#f1f5f9');
-        toggleCircle.setAttribute('stroke', '#cbd5e1');
-        toggleCircle.setAttribute('stroke-width', '1');
         tg.appendChild(toggleCircle);
 
         const toggleText = document.createElementNS(NS, 'text');
@@ -1474,8 +1592,6 @@ class SiteMap extends VBElement {
         toggleText.setAttribute('text-anchor', 'middle');
         toggleText.setAttribute('font-size', '11');
         toggleText.setAttribute('font-weight', '700');
-        toggleText.setAttribute('fill', '#64748b');
-        toggleText.setAttribute('font-family', 'system-ui, sans-serif');
         toggleText.textContent = node.collapsed ? `+${node.childCount}` : '\u2212';
         tg.appendChild(toggleText);
 
@@ -1536,7 +1652,9 @@ class SiteMap extends VBElement {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.title && !this.getAttribute('title')) {
-        this.setAttribute('title', data.title);
+        this.#syncingAttr = true;
+        this.setAttribute('title', String(data.title));
+        this.#syncingAttr = false;
       }
       this._setPages(data.pages || []);
     } catch (err) {
@@ -1598,7 +1716,8 @@ class SiteMap extends VBElement {
   #serializeListToJson(ul) {
     const pages = [];
     for (const li of ul.querySelectorAll(':scope > li')) {
-      const a = li.querySelector(':scope > a');
+      // ia-tree moves each anchor into a generated .sm-node-content wrapper
+      const a = li.querySelector(':scope > a, :scope > .sm-node-content > a');
       const childUl = li.querySelector(':scope > ul');
       const page = {
         label: a?.textContent?.trim() || '',
@@ -1626,8 +1745,9 @@ class SiteMap extends VBElement {
       if (page.status) li.setAttribute('data-status', page.status);
 
       const a = document.createElement('a');
-      a.href = page.href || '#';
-      a.textContent = page.label || '';
+      const href = safeHref(page.href);
+      if (href) a.setAttribute('href', href);
+      a.textContent = String(page.label ?? '');
       li.appendChild(a);
 
       if (page.children && page.children.length > 0) {
@@ -1652,6 +1772,11 @@ class SiteMap extends VBElement {
     }
   }
 
+  /** The sitemap nav — never the generated controls nav. */
+  #sitemapNav() {
+    return this.querySelector(':scope > nav:not([data-sitemap-controls])');
+  }
+
   #teardownNavEnhance() {
     this.querySelector(':scope > [data-sitemap-controls]')?.remove();
   }
@@ -1661,6 +1786,7 @@ class SiteMap extends VBElement {
     const links = this.querySelectorAll('a');
 
     for (const link of links) {
+      if (!link.hasAttribute('href')) continue;
       const href = new URL(link.href, window.location.origin).pathname;
       if (href === current) {
         link.setAttribute('aria-current', 'page');
@@ -1683,8 +1809,10 @@ class SiteMap extends VBElement {
   }
 
   #addControls() {
-    const details = this.querySelectorAll('details');
-    if (!details.length) return;
+    this.querySelector(':scope > [data-sitemap-controls]')?.remove();
+    if (!this.querySelector('details')) return;
+    // Look the <details> up at click time: a src render replaces them
+    const details = () => /** @type {NodeListOf<HTMLDetailsElement>} */ (this.querySelectorAll('details'));
 
     const controls = document.createElement('nav');
     controls.setAttribute('data-sitemap-controls', '');
@@ -1694,14 +1822,14 @@ class SiteMap extends VBElement {
     expandBtn.type = 'button';
     expandBtn.textContent = 'Expand all';
     this.listen(expandBtn, 'click', () => {
-      for (const d of details) d.open = true;
+      for (const d of details()) d.open = true;
     });
 
     const collapseBtn = document.createElement('button');
     collapseBtn.type = 'button';
     collapseBtn.textContent = 'Collapse all';
     this.listen(collapseBtn, 'click', () => {
-      for (const d of details) d.open = false;
+      for (const d of details()) d.open = false;
       this.#autoExpandCurrent();
     });
 
@@ -1726,11 +1854,11 @@ class SiteMap extends VBElement {
   #renderFromData(data) {
     if (!data || !Array.isArray(data.children)) return;
 
+    const existing = this.#sitemapNav();
     const nav = document.createElement('nav');
-    nav.setAttribute('aria-label', 'Full site map');
+    nav.setAttribute('aria-label', existing?.getAttribute('aria-label') || 'Full site map');
     nav.append(this.#buildTree(data.children));
 
-    const existing = this.querySelector('nav');
     if (existing) {
       existing.replaceWith(nav);
     } else {
@@ -1739,6 +1867,8 @@ class SiteMap extends VBElement {
 
     this.#markCurrentPage();
     this.#autoExpandCurrent();
+    // Rebuild the expand/collapse controls for the rendered tree
+    this.#addControls();
   }
 
   #buildTree(items) {
@@ -1749,14 +1879,15 @@ class SiteMap extends VBElement {
       if (item.children?.length) {
         const details = document.createElement('details');
         const summary = document.createElement('summary');
-        summary.textContent = item.title;
+        summary.textContent = String(item.title ?? '');
         details.append(summary);
         details.append(this.#buildTree(item.children));
         li.append(details);
       } else {
         const a = document.createElement('a');
-        a.href = item.href || item.path;
-        a.textContent = item.title;
+        const href = safeHref(item.href || item.path);
+        if (href) a.setAttribute('href', href);
+        a.textContent = String(item.title ?? '');
         li.append(a);
       }
 
