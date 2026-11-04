@@ -22,8 +22,18 @@
  * @attr {string}  data-suffix    - Static suffix, e.g. "px"
  * @attr {boolean} data-show-label- In token mode, show token name (strip leading --)
  * @attr {boolean} data-accelerate- Enable long-press acceleration on +/- buttons
- * @attr {boolean} disabled
- * @attr {boolean} readonly
+ * @attr {string}  data-label-decrease - Decrease button name (default "Decrease")
+ * @attr {string}  data-label-increase - Increase button name (default "Increase")
+ * @attr {string}  aria-label     - Forwarded to the inner spinbutton
+ * @attr {string}  aria-labelledby- Forwarded to the inner spinbutton
+ * @attr {boolean} disabled       - Also set by a disabled <fieldset>
+ * @attr {boolean} readonly       - aria-readonly; buttons disabled
+ *
+ * Labelling: the spinbutton is an inner element, so the host's name is
+ * forwarded to it — `<label for>` / wrapping `<label>` (via
+ * ElementInternals.labels, referenced by aria-labelledby), the host's
+ * `aria-labelledby`, or the host's `aria-label`, in that order of preference
+ * (labelledby ids are merged). Clicking a `<label>` focuses the spinbutton.
  *
  * @example Formatted-unit
  *   <stepper-wc data-min="0" data-max="100" data-suffix="px" value="12"></stepper-wc>
@@ -102,9 +112,13 @@ function decimalsOf(step) {
   return dot < 0 ? 0 : s.length - dot - 1;
 }
 
+let numericHintLogged = false;
+let labelIdSeq = 0;
+
 class StepperWc extends VBElement {
   static formAssociated = true;
-  static observedAttributes = ['value', 'disabled', 'readonly'];
+  static observedAttributes = ['value', 'disabled', 'readonly', 'aria-label', 'aria-labelledby',
+    'data-label-decrease', 'data-label-increase'];
 
   #internals;
   #mode;          // 'enum' | 'token' | 'formatted' | 'numeric'
@@ -122,6 +136,8 @@ class StepperWc extends VBElement {
 
   #value;         // canonical: number (numeric/formatted) or string (token/enum)
   #initialValue;
+  #initialCaptured = false;
+  #formDisabled = false;
   #valueEl;       // outer .stepper-value (carries spinbutton role + aria; grid container)
   #displayEl;     // inner .stepper-value-display (the actual visible text)
   #reservedSet;   // Set<string> of display strings already reserved as hidden grid siblings
@@ -146,8 +162,27 @@ class StepperWc extends VBElement {
     this.#parseConfig();
     this.#build();
     const initial = this.getAttribute('value');
-    this.#initialValue = initial;
+    // The reset target is the AUTHORED value: capture it once. After a move,
+    // the attribute holds the reflected current value, not the default.
+    if (!this.#initialCaptured) {
+      this.#initialValue = initial;
+      this.#initialCaptured = true;
+    }
     this.#applyValue(initial ?? this.#defaultValue(), 'init');
+    this.#syncName();
+    // A <label for> parsed after the element is not in internals.labels yet:
+    // re-sync next frame and whenever the spinbutton takes focus.
+    requestAnimationFrame(() => { if (this.isConnected) this.#syncName(); });
+    this.listen(this.#valueEl, 'focus', () => this.#syncName());
+    // Activating a <label for> clicks the host; move focus to the spinbutton.
+    this.listen(this, 'click', (e) => {
+      if (e.target === this && !this.#isDisabled()) this.#valueEl.focus();
+    });
+  }
+
+  teardown() {
+    this.#stopHold();
+    this.#suppressNextClick = false;
   }
 
   attributeChangedCallback(name, _old, next) {
@@ -156,7 +191,37 @@ class StepperWc extends VBElement {
       this.#applyValue(next ?? this.#defaultValue(), 'attr');
     } else if (name === 'disabled' || name === 'readonly') {
       this.#updateDisabled();
+    } else if (name === 'aria-label' || name === 'aria-labelledby') {
+      this.#syncName();
+    } else {
+      this.#syncButtonLabels();
     }
+  }
+
+  /**
+   * Forward the host's accessible name to the inner spinbutton.
+   */
+  #syncName() {
+    const ids = [];
+    let labels = [];
+    try { labels = [...(this.#internals.labels || [])]; } catch { /* not connected */ }
+    for (const label of labels) {
+      if (!label.id) label.id = `stepper-wc-label-${++labelIdSeq}`;
+      ids.push(label.id);
+    }
+    const hostLabelledby = (this.getAttribute('aria-labelledby') || '').trim();
+    if (hostLabelledby) ids.push(...hostLabelledby.split(/\s+/));
+    const unique = [...new Set(ids)];
+    if (unique.length) this.#valueEl.setAttribute('aria-labelledby', unique.join(' '));
+    else this.#valueEl.removeAttribute('aria-labelledby');
+    const hostLabel = this.getAttribute('aria-label');
+    if (hostLabel) this.#valueEl.setAttribute('aria-label', hostLabel);
+    else this.#valueEl.removeAttribute('aria-label');
+  }
+
+  #syncButtonLabels() {
+    this.#decBtn.setAttribute('aria-label', this.getAttribute('data-label-decrease') || 'Decrease');
+    this.#incBtn.setAttribute('aria-label', this.getAttribute('data-label-increase') || 'Increase');
   }
 
   #detectMode() {
@@ -166,6 +231,9 @@ class StepperWc extends VBElement {
     else {
       this.#mode = 'numeric';
       // Console hint, not a blocker — author may have legitimate reasons.
+      // Logged once per page, not on every upgrade / reconnect.
+      if (numericHintLogged) return;
+      numericHintLogged = true;
       console.info('[stepper-wc] No mode attribute set. Plain numeric stepping is better served by `<input type="number" data-stepper>`. See /docs/concepts/numeric-inputs/');
     }
   }
@@ -221,14 +289,12 @@ class StepperWc extends VBElement {
     this.#decBtn = document.createElement('button');
     this.#decBtn.type = 'button';
     this.#decBtn.className = 'stepper-dec';
-    this.#decBtn.setAttribute('aria-label', 'Decrease');
     this.#decBtn.setAttribute('tabindex', '-1');
     this.#decBtn.innerHTML = MINUS_SVG;
 
     this.#incBtn = document.createElement('button');
     this.#incBtn.type = 'button';
     this.#incBtn.className = 'stepper-inc';
-    this.#incBtn.setAttribute('aria-label', 'Increase');
     this.#incBtn.setAttribute('tabindex', '-1');
     this.#incBtn.innerHTML = PLUS_SVG;
 
@@ -258,6 +324,7 @@ class StepperWc extends VBElement {
     this.#bindButton(this.#decBtn, -1);
     this.#bindButton(this.#incBtn, +1);
     this.listen(this.#valueEl, 'keydown', this.#onSpinKey);
+    this.#syncButtonLabels();
     this.#updateDisabled();
   }
 
@@ -291,10 +358,7 @@ class StepperWc extends VBElement {
     });
 
     const stopHold = () => {
-      window.clearTimeout(this.#holdTimer);
-      window.clearInterval(this.#holdInterval);
-      this.#holdTimer = 0;
-      this.#holdInterval = 0;
+      this.#stopHold();
       if (this.#holdRamped) {
         // We already stepped via interval; suppress the click that pointerup triggers.
         this.#suppressNextClick = true;
@@ -305,9 +369,21 @@ class StepperWc extends VBElement {
     this.listen(btn, 'pointercancel', stopHold);
   }
 
+  #stopHold() {
+    window.clearTimeout(this.#holdTimer);
+    window.clearInterval(this.#holdInterval);
+    this.#holdTimer = 0;
+    this.#holdInterval = 0;
+  }
+
   #onSpinKey = (e) => {
     if (this.#disabledOrReadonly()) return;
-    switch (e.key) {
+    // Decrease sits at inline-start: in RTL that is the right-hand side, so
+    // ArrowLeft increases.
+    const rtl = getComputedStyle(this).direction === 'rtl';
+    const key = rtl && e.key === 'ArrowLeft' ? 'ArrowRight'
+      : rtl && e.key === 'ArrowRight' ? 'ArrowLeft' : e.key;
+    switch (key) {
       case 'ArrowUp':
       case 'ArrowRight':
         e.preventDefault(); this.#stepBy(+1, 1); break;
@@ -326,17 +402,30 @@ class StepperWc extends VBElement {
     }
   };
 
+  #isDisabled() {
+    return this.hasAttribute('disabled') || this.#formDisabled;
+  }
+
   #disabledOrReadonly() {
-    return this.hasAttribute('disabled') || this.hasAttribute('readonly');
+    return this.#isDisabled() || this.hasAttribute('readonly');
   }
 
   #updateDisabled() {
-    const disabled = this.hasAttribute('disabled');
-    this.#decBtn.disabled = disabled;
-    this.#incBtn.disabled = disabled;
+    const disabled = this.#isDisabled();
     this.#valueEl.setAttribute('aria-disabled', String(disabled));
-    if (disabled) this.#valueEl.removeAttribute('tabindex');
-    else this.#valueEl.setAttribute('tabindex', '0');
+    if (this.hasAttribute('readonly')) this.#valueEl.setAttribute('aria-readonly', 'true');
+    else this.#valueEl.removeAttribute('aria-readonly');
+    if (disabled) {
+      this.#valueEl.removeAttribute('tabindex');
+      this.#stopHold();
+    } else {
+      this.#valueEl.setAttribute('tabindex', '0');
+    }
+    if (this.#value !== undefined) this.#updateButtons();
+    else {
+      this.#decBtn.disabled = this.#disabledOrReadonly();
+      this.#incBtn.disabled = this.#disabledOrReadonly();
+    }
   }
 
   // --- Stepping ---
@@ -586,8 +675,10 @@ class StepperWc extends VBElement {
   #updateButtons() {
     const atMin = this.#isAtMin();
     const atMax = this.#isAtMax();
-    this.#decBtn.disabled = atMin || this.hasAttribute('disabled');
-    this.#incBtn.disabled = atMax || this.hasAttribute('disabled');
+    // readonly buttons are disabled too: they would do nothing.
+    const locked = this.#disabledOrReadonly();
+    this.#decBtn.disabled = atMin || locked;
+    this.#incBtn.disabled = atMax || locked;
   }
 
   #isAtMin() {
@@ -621,6 +712,12 @@ class StepperWc extends VBElement {
 
   formResetCallback() {
     this.#applyValue(this.#initialValue ?? this.#defaultValue(), 'reset');
+  }
+
+  /** @param {boolean} disabled - <fieldset disabled> or the disabled attribute */
+  formDisabledCallback(disabled) {
+    this.#formDisabled = disabled;
+    if (this.#valueEl) this.#updateDisabled();
   }
 
   formStateRestoreCallback(state) {

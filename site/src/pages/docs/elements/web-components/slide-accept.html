@@ -21,9 +21,8 @@ crumbLabel: Web Components
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Basic slide-to-confirm" data-escape><slide-accept
-  label="Slide to confirm"
-  activated-label="Confirmed!">
+    <code-block language="html" show-lines label="Basic slide-to-confirm" data-escape><!-- The text content is the no-JS fallback and the default label -->
+<slide-accept activated-label="Confirmed!">
   Slide to confirm
 </slide-accept></code-block>
 
@@ -47,14 +46,20 @@ crumbLabel: Web Components
         <tr>
           <td><code>label</code></td>
           <td>string</td>
-          <td><code>"Slide to confirm"</code></td>
-          <td>Track label text displayed inside the track.</td>
+          <td>authored text, else <code>"Slide to confirm"</code></td>
+          <td>Track label and the handle&rsquo;s accessible name. Without it, the element&rsquo;s own text content (the no-JS fallback) is used, so a translated fallback stays translated. Changes after upgrade are applied.</td>
         </tr>
         <tr>
           <td><code>activated-label</code></td>
           <td>string</td>
           <td><code>"Confirmed!"</code></td>
-          <td>Label shown after activation.</td>
+          <td>Label shown after activation; announced through a polite live region and used as the handle&rsquo;s <code>aria-valuetext</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-hint</code></td>
+          <td>string</td>
+          <td><code>"Press Enter to confirm"</code></td>
+          <td>Screen-reader hint linked to the handle with <code>aria-describedby</code>. Translate it with the label.</td>
         </tr>
         <tr>
           <td><code>attention</code></td>
@@ -66,7 +71,31 @@ crumbLabel: Web Components
           <td><code>threshold</code></td>
           <td>number</td>
           <td><code>90</code></td>
-          <td>Activation threshold as a percentage (0&ndash;100).</td>
+          <td>Drag activation threshold as a percentage (0&ndash;100).</td>
+        </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>string</td>
+          <td>&mdash;</td>
+          <td>Form field name. The element is form-associated and submits <code>value</code> only once confirmed.</td>
+        </tr>
+        <tr>
+          <td><code>value</code></td>
+          <td>string</td>
+          <td><code>"on"</code></td>
+          <td>Value submitted once confirmed.</td>
+        </tr>
+        <tr>
+          <td><code>required</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>The form will not submit until the slider is confirmed (<code>valueMissing</code>).</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>boolean</td>
+          <td>&mdash;</td>
+          <td>Blocks dragging, tapping and keys. A disabled <code>&lt;fieldset&gt;</code> does the same.</td>
         </tr>
       </tbody>
     </table>
@@ -76,13 +105,8 @@ crumbLabel: Web Components
     <h2>Attention Animations</h2>
 
     <h3>Shimmer</h3>
-    <p>A sweeping shimmer effect draws attention to the track, encouraging interaction.</p>
+    <p>A sweeping shimmer effect draws attention to the track, encouraging interaction (see the demo above).</p>
 
-    <div class="example">
-      <slide-accept label="Slide to delete" activated-label="Deleted!" attention="shimmer">
-        Slide to delete
-      </slide-accept>
-    </div>
 
     <code-block language="html" show-lines label="Shimmer attention" data-escape><slide-accept
   label="Slide to delete"
@@ -92,13 +116,8 @@ crumbLabel: Web Components
 </slide-accept></code-block>
 
     <h3>Pulse</h3>
-    <p>A pulsing glow on the handle draws attention to the draggable element.</p>
+    <p>A pulsing glow on the handle draws attention to the draggable element (see the demo above). Both attention animations are off under reduced motion.</p>
 
-    <div class="example">
-      <slide-accept label="Slide to send" activated-label="Sent!" attention="pulse">
-        Slide to send
-      </slide-accept>
-    </div>
 
     <code-block language="html" show-lines label="Pulse attention" data-escape><slide-accept
   label="Slide to send"
@@ -110,13 +129,8 @@ crumbLabel: Web Components
 
   <section>
     <h2>Custom Threshold</h2>
-    <p>By default, the handle must reach 90% of the track to activate. Set <code>threshold</code> to a lower value to make activation easier.</p>
+    <p>By default, the handle must be dragged to 90% of the track to activate. Set <code>threshold</code> to a lower value to make dragging easier. The threshold applies to dragging and arrow keys only: a tap, <kbd>Enter</kbd>, <kbd>Space</kbd> or <kbd>End</kbd> confirms at once.</p>
 
-    <div class="example">
-      <slide-accept label="Slide halfway" activated-label="Activated!" threshold="60">
-        Slide halfway
-      </slide-accept>
-    </div>
 
     <code-block language="html" show-lines label="Custom threshold" data-escape><!-- Activate at 60% instead of default 90% -->
 <slide-accept
@@ -127,34 +141,39 @@ crumbLabel: Web Components
   </section>
 
   <section>
-    <h2>Keyboard Navigation</h2>
+    <h2>Keyboard and pointer</h2>
+    <p>Dragging is never the only way to confirm (WCAG 2.5.7). A tap or click on the handle &mdash; pressing and releasing without dragging &mdash; confirms at once.</p>
     <table class="props-table">
       <thead>
         <tr>
-          <th>Key</th>
+          <th>Input</th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><kbd>ArrowRight</kbd></td>
-          <td>Move handle 5%</td>
+          <td><kbd>Enter</kbd>, <kbd>Space</kbd>, <kbd>End</kbd></td>
+          <td>Confirm immediately</td>
         </tr>
         <tr>
-          <td><kbd>Shift</kbd> + <kbd>ArrowRight</kbd></td>
-          <td>Move handle 20%</td>
+          <td>Tap or click the handle</td>
+          <td>Confirm immediately</td>
         </tr>
         <tr>
-          <td><kbd>ArrowLeft</kbd></td>
-          <td>Move handle back 5%</td>
+          <td><kbd>ArrowRight</kbd> / <kbd>ArrowUp</kbd></td>
+          <td>Move the handle 5% towards the end (<kbd>ArrowLeft</kbd> in right-to-left pages); confirms at the threshold</td>
         </tr>
         <tr>
-          <td><kbd>End</kbd></td>
-          <td>Activate immediately</td>
+          <td><kbd>Shift</kbd> + arrow</td>
+          <td>Move the handle 20%</td>
+        </tr>
+        <tr>
+          <td><kbd>ArrowLeft</kbd> / <kbd>ArrowDown</kbd></td>
+          <td>Move the handle back 5% (<kbd>ArrowRight</kbd> in right-to-left pages)</td>
         </tr>
         <tr>
           <td><kbd>Home</kbd></td>
-          <td>Reset to start</td>
+          <td>Move the handle back to the start</td>
         </tr>
       </tbody>
     </table>
@@ -172,11 +191,11 @@ crumbLabel: Web Components
       <tbody>
         <tr>
           <td><code>slide-accept:accept</code></td>
-          <td>Fired when the handle reaches the activation threshold.</td>
+          <td>Fired once when confirmed: dragged past the threshold, tapped, or <kbd>Enter</kbd> / <kbd>Space</kbd> / <kbd>End</kbd>.</td>
         </tr>
         <tr>
           <td><code>slide-accept:reset</code></td>
-          <td>Fired after <code>reset()</code> is called.</td>
+          <td>Fired after <code>reset()</code> is called (also when the owning form is reset after confirming).</td>
         </tr>
       </tbody>
     </table>
@@ -211,7 +230,7 @@ slider.addEventListener('slide-accept:reset', () => {
         <tr>
           <td><code>.reset()</code></td>
           <td>method</td>
-          <td>Resets to initial state (handle at 0, label restored).</td>
+          <td>Resets to initial state (handle at 0, label restored, form value cleared).</td>
         </tr>
       </tbody>
     </table>
@@ -228,19 +247,38 @@ slider.reset();</code-block>
   <section>
     <h2>Accessibility</h2>
 
-    <h3>Slider Role</h3>
-    <p>The handle has <code>role="slider"</code> with <code>aria-valuemin</code>, <code>aria-valuemax</code>, and <code>aria-valuenow</code>. Screen readers announce position changes as the handle moves.</p>
+    <h3>Slider role</h3>
+    <p>The handle is a <code>&lt;div role="slider"&gt;</code> named by <code>label</code>, with <code>aria-valuenow</code> and an <code>aria-valuetext</code> of the percentage (the activated label once confirmed). A visually hidden hint (<code>data-label-hint</code>, default &ldquo;Press Enter to confirm&rdquo;) is linked with <code>aria-describedby</code>.</p>
 
-    <h3>Keyboard Support</h3>
-    <p>The handle is focusable (<code>tabindex="0"</code>) and responds to arrow keys. <kbd>Shift</kbd> + arrow provides larger steps for faster navigation. <kbd>End</kbd> activates immediately, <kbd>Home</kbd> resets.</p>
+    <h3>Single-pointer alternative</h3>
+    <p>WCAG 2.5.7 requires a non-dragging way to complete a drag action. A tap or click on the handle confirms, as do <kbd>Enter</kbd>, <kbd>Space</kbd> and <kbd>End</kbd>. If you need protection from an accidental single tap, put the confirm step behind a dialog instead &mdash; a slider alone is not a safety mechanism for assistive-technology users.</p>
+
+    <h3>Focus and announcement</h3>
+    <p>After confirming, the handle keeps focus and stays in the tab order with <code>aria-disabled="true"</code>. The track label is a polite <code>role="status"</code> region, so the change to <code>activated-label</code> is announced.</p>
+
+    <h3>Right-to-left</h3>
+    <p>In right-to-left pages the handle starts at the right and travels left; dragging, arrow keys and the chevron icon all follow the direction.</p>
+
+    <h3>Forced colors</h3>
+    <p>In Windows High Contrast the handle gets a <code>ButtonText</code> border, the fill uses <code>Highlight</code>, and the confirmed track switches to a double border, so state is not conveyed by colour alone.</p>
 
     <h3>Reduced Motion</h3>
     <p>Spring-back animation and attention effects are disabled when <code>prefers-reduced-motion: reduce</code> is active.</p>
   </section>
 
   <section>
+    <h2>Forms</h2>
+    <p><code>&lt;slide-accept&gt;</code> is form-associated. Give it a <code>name</code> to submit <code>value</code> (default <code>"on"</code>) once confirmed, and <code>required</code> to block submission until then. Resetting the form resets the slider.</p>
+
+    <code-block language="html" show-lines label="Gate a form submit" data-escape><form>
+  <slide-accept name="consent" required>Slide to accept the terms</slide-accept>
+  <button type="submit">Continue</button>
+</form></code-block>
+  </section>
+
+  <section>
     <h2>Styling</h2>
-    <p>The track, handle, and label are all styleable with CSS. The handle is a <code>.slide-handle</code> button, and the track is a <code>.slide-track</code> div.</p>
+    <p>The track, handle, and label are all styleable with CSS. The handle is a <code>.slide-handle</code> element with <code>role="slider"</code> (deliberately not a <code>&lt;button&gt;</code>, so theme button styles do not leak in), inside a <code>.slide-track</code>; the text is <code>.slide-label</code>.</p>
 
     <code-block language="css" show-lines label="Custom styling" data-escape>/* Custom handle color */
 slide-accept .slide-handle {

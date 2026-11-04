@@ -24,7 +24,7 @@ crumbLabel: Web Components
 
   <section>
     <h2>Layer 1: Attribute Init</h2>
-    <p><strong>Light JS (~80 lines).</strong> Apply <code>data-splitter</code> to a container. A small init script injects a full-height drag divider between the first two children with pointer and keyboard events.</p>
+    <p><strong>Light JS (about 200 lines).</strong> Apply <code>data-splitter</code> to a container. A small init script injects a full-height drag divider between the first two children with pointer and keyboard events.</p>
 
     <code-block language="html" show-lines label="data-splitter" data-escape><!-- Light JS — auto-injected divider -->
 <section data-layout="sidebar" data-splitter>
@@ -86,11 +86,18 @@ crumbLabel: Web Components
   max="70"
   persist="editor-sidebar"
   collapsible>
+  <!-- position is the default; a stored layout for "editor-sidebar" wins -->
   <aside>Panel A</aside>
   <section>Panel B</section>
 </split-surface></code-block>
 
     {{ attributeTable("split-surface", apiRegistry) }}
+
+    <h3>Position and persistence</h3>
+    <p><code>position</code> is the <em>default</em> split. With <code>persist</code>, the user&rsquo;s last layout (position and collapsed state, stored under <code>vb:layout:split:{key}</code> after they resize) wins over <code>position</code> on the next load; <code>reset()</code> clears it and returns to <code>position</code>. Changing <code>position</code>, <code>min</code>, <code>max</code> or <code>direction</code> after upgrade is applied; the attribute is not reflected, so read the live value from the <code>position</code> property.</p>
+
+    <h3>Collapsing</h3>
+    <p>With <code>collapsible</code>, <kbd>Enter</kbd> or a double-click on the divider collapses the first panel to zero and back. While collapsed the panel is <code>inert</code> (its links and controls leave the tab order), the divider reports <code>aria-valuenow="0"</code> with <code>aria-valuetext</code> &ldquo;Collapsed&rdquo; (<code>data-label-collapsed</code> to translate), and any arrow, <kbd>Home</kbd> or <kbd>End</kbd> key expands it again &mdash; the keyboard is never trapped. <code>split-surface:state(collapsed)</code> styles the collapsed state.</p>
 
     <h3>Required Structure</h3>
     {{ structureTable("split-surface", apiRegistry) }}
@@ -103,7 +110,9 @@ crumbLabel: Web Components
     <code-block language="javascript" show-lines label="Event listeners" data-escape>const splitter = document.querySelector('split-surface');
 
 splitter.addEventListener('split-surface:resize', (e) => {
-  console.log('Position:', e.detail.position);
+  // source: 'pointer' | 'keyboard' | 'api' | 'attribute' (not fired on load)
+  if (e.detail.source === 'api') return;
+  console.log('User resized to', e.detail.position);
 });
 
 splitter.addEventListener('split-surface:collapse', (e) => {
@@ -118,9 +127,9 @@ splitter.addEventListener('split-surface:collapse', (e) => {
         <tr><th>Property / Method</th><th>Type</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>element.position</code></td><td>number</td><td>Get/set current position (0-100)</td></tr>
+        <tr><td><code>element.position</code></td><td>number</td><td>Get/set the live position (0&ndash;100, clamped to min/max; 0 while collapsed). Non-numeric values are ignored.</td></tr>
         <tr><td><code>element.collapsed</code></td><td>boolean</td><td>Get/set collapsed state</td></tr>
-        <tr><td><code>element.reset()</code></td><td>method</td><td>Restore to initial position, clear persistence</td></tr>
+        <tr><td><code>element.reset()</code></td><td>method</td><td>Expand, restore the <code>position</code> attribute (or 50), clear persistence</td></tr>
       </tbody>
     </table>
 
@@ -133,6 +142,7 @@ el.collapsed = true;       // Collapse first panel
 el.collapsed = false;      // Expand
 
 el.reset();                // Restore to initial position</code-block>
+    <p>The divider is created asynchronously (after the persisted layout is read), so properties and <code>reset()</code> set right after creating or appending the element are queued and applied once it is ready.</p>
   </section>
 
   <section>
@@ -148,19 +158,24 @@ el.reset();                // Restore to initial position</code-block>
         <tr><td><kbd>Shift</kbd> + Arrow</td><td>Move divider 10%</td></tr>
         <tr><td><kbd>Home</kbd></td><td>Move to minimum position</td></tr>
         <tr><td><kbd>End</kbd></td><td>Move to maximum position</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Collapse / expand the first panel (<code>&lt;split-surface collapsible&gt;</code> only)</td></tr>
       </tbody>
     </table>
+    <p>While collapsed, any arrow, <kbd>Home</kbd> or <kbd>End</kbd> key expands the panel again.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
 
     <h3>Separator Role</h3>
-    <p>The divider has <code>role="separator"</code> with <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code> and <code>aria-controls</code> (the first panel; an <code>id</code> is generated when missing). <code>aria-orientation</code> is the divider's own axis: <code>vertical</code> for side-by-side panels, <code>horizontal</code> for <code>direction="vertical"</code>. Screen readers announce the current position.</p>
+    <p>The divider has <code>role="separator"</code> with <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code> and <code>aria-controls</code> (the first panel; an <code>id</code> is generated when missing). <code>aria-orientation</code> is the divider's own axis: <code>vertical</code> for side-by-side panels, <code>horizontal</code> for <code>direction="vertical"</code>. Screen readers announce the current position; <code>&lt;split-surface&gt;</code> adds an <code>aria-valuetext</code> such as &ldquo;30%&rdquo; or &ldquo;Collapsed&rdquo;. When <code>collapsible</code> is set, <code>aria-valuemin</code> is 0 because the panel can reach zero.</p>
     <p>The accessible name defaults to "Resize panels"; set <code>data-label-resize</code> to translate or specialise it.</p>
 
     <h3>Keyboard Support</h3>
-    <p>The divider is focusable (<code>tabindex="0"</code>) and responds to arrow keys. <kbd>Shift</kbd> + arrow provides larger steps. <kbd>Home</kbd> and <kbd>End</kbd> jump to min/max.</p>
+    <p>The divider is focusable (<code>tabindex="0"</code>) and responds to arrow keys. <kbd>Shift</kbd> + arrow provides larger steps. <kbd>Home</kbd> and <kbd>End</kbd> jump to min/max. On a collapsible <code>&lt;split-surface&gt;</code>, <kbd>Enter</kbd> collapses and expands, following the APG window-splitter pattern, so collapse is not mouse-only.</p>
+
+    <h3>Forced colors</h3>
+    <p>In Windows High Contrast the divider is drawn in <code>CanvasText</code> with a <code>Canvas</code> grip, and hover, drag and focus switch to <code>Highlight</code>, for both layers.</p>
 
     <h3>Touch Support</h3>
     <p>The divider uses <code>touch-action: none</code> and <code>setPointerCapture</code> for reliable pointer drag behavior across devices. A cancelled gesture (<code>pointercancel</code> or lost capture) ends the drag cleanly.</p>
@@ -203,8 +218,8 @@ split-surface:not(:defined) > * {
         <tr><th>Layer</th><th>JS</th><th>Keyboard</th><th>ARIA</th><th>Persistence</th><th>Best for</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>data-splitter</code></td><td>~80 lines</td><td>Yes</td><td>Yes</td><td>No</td><td>Enhanced layout containers with accessibility</td></tr>
-        <tr><td><code>&lt;split-surface&gt;</code></td><td>~120 lines</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Full-featured standalone component</td></tr>
+        <tr><td><code>data-splitter</code></td><td>~200 lines</td><td>Yes</td><td>Yes</td><td>No</td><td>Enhanced layout containers with accessibility</td></tr>
+        <tr><td><code>&lt;split-surface&gt;</code></td><td>~430 lines</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Full-featured standalone component (collapse, persistence, JS API)</td></tr>
       </tbody>
     </table>
   </section>

@@ -65,9 +65,13 @@ split-surface:defined > :not(.split-divider) {
 .split-divider::after {
   content: '';
   position: absolute;
+  /* Centre on the inline axis with logical insets + auto margins, so the
+     grip stays centred in RTL (a physical translateX(-50%) would push it a
+     full grip-width off when inset-inline-start resolves to right). */
   inset-block-start: 50%;
-  inset-inline-start: 50%;
-  transform: translate(-50%, -50%);
+  inset-inline: 0;
+  margin-inline: auto;
+  transform: translateY(-50%);
   inline-size: 4px;
   block-size: 24px;
   border-radius: 2px;
@@ -97,6 +101,31 @@ split-surface:defined > :not(.split-divider) {
 @media (prefers-reduced-motion: reduce) {
   .split-divider {
     transition-duration: 0s;
+  }
+}
+
+/* Forced colors: the divider and grip are background-only, so draw them in
+   system colours; hover / drag / focus switch to Highlight. Shared by
+   split-surface and [data-splitter]. */
+@media (forced-colors: active) {
+  .split-divider {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .split-divider::after {
+    background: Canvas;
+    opacity: 1;
+  }
+
+  .split-divider:hover,
+  .split-divider:active,
+  split-surface:state(divider-dragging) > .split-divider {
+    background: Highlight;
+  }
+
+  .split-divider:focus-visible {
+    outline-color: Highlight;
   }
 }
 

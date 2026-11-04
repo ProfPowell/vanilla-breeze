@@ -2,79 +2,116 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "slide-accept",
   "type": "web-component",
-  "description": "Slide-to-confirm interaction",
+  "description": "Slide-to-confirm interaction. The inner .slide-handle is a role=\"slider\" (aria-valuenow/-valuetext, aria-describedby hint); a tap, Enter, Space or End also confirms (WCAG 2.5.7 single-pointer alternative)",
+  "formAssociated": true,
   "attributes": [
     {
       "name": "label",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Track label text (default: \"Slide to confirm\")"
+      "description": "Track label and handle accessible name. Default: the authored text content, else \"Slide to confirm\". Observed"
     },
     {
       "name": "activated-label",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "Label after activation (default: \"Confirmed!\")"
+      "description": "Label (and handle aria-valuetext) after activation, announced through a polite live region (default: \"Confirmed!\"). Observed"
+    },
+    {
+      "name": "data-label-hint",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Screen-reader hint wired with aria-describedby (default: \"Press Enter to confirm\"). Observed"
     },
     {
       "name": "attention",
       "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Attention animation: \"shimmer\" | \"pulse\""
+      "purpose": "visual-variant",
+      "type": "enum",
+      "values": ["shimmer", "pulse"],
+      "description": "Attention animation (off under reduced motion)"
     },
     {
       "name": "threshold",
       "kind": "host-api",
       "purpose": "config",
       "type": "number",
-      "description": "Activation threshold 0-100 (default: 90)"
+      "default": 90,
+      "description": "Drag activation threshold 0-100"
     },
     {
-      "name": "role",
+      "name": "name",
       "kind": "native",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "description": "Form field name; the value is submitted only once activated"
     },
     {
-      "name": "aria-valuemin",
-      "kind": "aria",
-      "purpose": "config"
+      "name": "value",
+      "kind": "native",
+      "purpose": "config",
+      "type": "string",
+      "default": "on",
+      "description": "Submitted value once activated"
     },
     {
-      "name": "aria-valuemax",
-      "kind": "aria",
-      "purpose": "config"
+      "name": "required",
+      "kind": "native",
+      "purpose": "config",
+      "type": "boolean",
+      "description": "valueMissing until activated, so the form cannot submit"
     },
     {
-      "name": "aria-valuenow",
-      "kind": "aria",
-      "purpose": "config"
+      "name": "disabled",
+      "kind": "native",
+      "purpose": "config",
+      "type": "boolean",
+      "description": "Blocks drag, tap and keys (a disabled fieldset does the same); handle gets aria-disabled"
     },
     {
       "name": "data-activated",
       "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "transitioning",
-      "kind": "host-api",
-      "purpose": "config"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "boolean",
+      "description": "Present once confirmed"
     },
     {
       "name": "data-dragging",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "output-state",
+      "direction": "output",
+      "type": "boolean",
+      "description": "Present while the handle is being dragged"
+    },
+    {
+      "name": "transitioning",
+      "kind": "host-api",
+      "purpose": "internal-hook",
+      "public": false,
+      "direction": "output",
+      "type": "boolean",
+      "description": "Internal: present during the spring-back transition"
     }
   ],
   "events": [
     {
-      "name": "slide-accept:reset"
+      "name": "slide-accept:accept",
+      "description": "Fired once on activation (drag past threshold, tap, Enter, Space or End)"
     },
     {
-      "name": "slide-accept:accept"
+      "name": "slide-accept:reset",
+      "description": "Fired after reset() (also on form reset when activated)"
     }
+  ],
+  "properties": [
+    { "name": "activated", "type": "boolean", "readonly": true, "description": "Whether the component has been confirmed" }
+  ],
+  "methods": [
+    { "name": "reset()", "description": "Return the handle to the start, restore the label, clear the form value" }
   ],
   "childAttributes": [],
   "structure": [],

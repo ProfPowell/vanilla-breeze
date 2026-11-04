@@ -2,26 +2,38 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "split-surface",
   "type": "web-component",
-  "description": "Resizable split panel with drag, keyboard, and persistence support",
+  "description": "Resizable split panel with drag, keyboard, collapse, and persistence support. The injected .split-divider is a focusable role=\"separator\" with aria-valuenow/-valuetext",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": ["@flow"]
   },
   "attributes": [
-    { "name": "direction",   "kind": "host-api", "purpose": "config",  "type": "enum",    "values": ["horizontal", "vertical"], "default": "horizontal", "description": "Split axis" },
-    { "name": "position",    "kind": "host-api", "purpose": "config",  "type": "number",  "default": "50", "direction": "both", "description": "Split position as percentage (0–100)" },
-    { "name": "min",         "kind": "host-api", "purpose": "config",  "type": "number",  "default": "10", "description": "Minimum panel size percentage" },
-    { "name": "max",         "kind": "host-api", "purpose": "config",  "type": "number",  "default": "90", "description": "Maximum panel size percentage" },
-    { "name": "persist",     "kind": "host-api", "purpose": "config",  "type": "string",  "description": "VBStore key suffix under namespace 'layout' (vb:layout:split:{key}) for position persistence" },
-    { "name": "collapsible", "kind": "host-api", "purpose": "config",  "type": "boolean", "description": "Double-click divider to collapse first panel" },
-    { "name": "data-label-resize", "kind": "data", "purpose": "config", "type": "string", "default": "Resize panels", "description": "Accessible name override for the divider (default \"Resize panels\")." }
+    { "name": "direction",   "kind": "host-api", "purpose": "config",  "type": "enum",    "values": ["horizontal", "vertical"], "default": "horizontal", "description": "Split axis. Observed" },
+    { "name": "position",    "kind": "host-api", "purpose": "config",  "type": "number",  "default": "50", "description": "Default split position as a percentage (0–100). A persisted value wins over it on load. Observed (changes apply), not reflected: read the live value from the position property" },
+    { "name": "min",         "kind": "host-api", "purpose": "config",  "type": "number",  "default": "10", "description": "Minimum panel size percentage. Observed" },
+    { "name": "max",         "kind": "host-api", "purpose": "config",  "type": "number",  "default": "90", "description": "Maximum panel size percentage. Observed" },
+    { "name": "persist",     "kind": "host-api", "purpose": "config",  "type": "string",  "description": "VBStore key suffix under namespace 'layout' (vb:layout:split:{key}); stores { position, collapsed } after user resizes and wins over the position attribute on load" },
+    { "name": "collapsible", "kind": "host-api", "purpose": "config",  "type": "boolean", "description": "Enter or double-click on the divider collapses / expands the first panel (collapsed panel is inert; aria-valuemin becomes 0). Observed" },
+    { "name": "data-label-resize", "kind": "data", "purpose": "config", "type": "string", "default": "Resize panels", "description": "Accessible name of the divider" },
+    { "name": "data-label-collapsed", "kind": "data", "purpose": "config", "type": "string", "default": "Collapsed", "description": "Divider aria-valuetext while the first panel is collapsed (otherwise \"{n}%\")" }
   ],
   "structure": [
-    { "element": "first child", "description": "First panel content" },
+    { "element": "first child", "description": "First panel content (the one the divider resizes and collapses)" },
     { "element": "second child", "description": "Second panel content — divider is auto-created between them" }
   ],
   "events": [
-    { "name": "split-surface:resize",   "detail": "{ position }", "description": "Fired when panel is resized" },
-    { "name": "split-surface:collapse", "detail": "{ collapsed }", "description": "Fired when panel is collapsed or expanded" }
+    { "name": "split-surface:resize",   "detail": "{ position, source }", "description": "Fired when the split changes; source is 'pointer', 'keyboard', 'api' or 'attribute'. Not fired on initial load / reconnect" },
+    { "name": "split-surface:collapse", "detail": "{ collapsed, source }", "description": "Fired when the first panel is collapsed or expanded" }
+  ],
+  "properties": [
+    { "name": "position",  "type": "number",  "description": "Live split percentage (0 while collapsed). Settable; non-numeric values are ignored. Safe to set before the element finishes initialising (queued)" },
+    { "name": "collapsed", "type": "boolean", "description": "Whether the first panel is collapsed. Settable (queued before init)" }
+  ],
+  "methods": [
+    { "name": "reset()", "description": "Expand, return to the position attribute (or 50), and clear the persisted value" }
+  ],
+  "states": [
+    { "name": "divider-dragging", "description": "The divider is being dragged" },
+    { "name": "collapsed", "description": "The first panel is collapsed" }
   ]
 }
