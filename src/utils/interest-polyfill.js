@@ -82,13 +82,26 @@ function isPlainHint(target) {
   return true;
 }
 
+/** Add an id to an IDREFS attribute, keeping the ids already there. */
+function addIdRef(el, attr, id) {
+  const ids = (el.getAttribute(attr) || '').split(/\s+/).filter(Boolean);
+  if (!ids.includes(id)) el.setAttribute(attr, [...ids, id].join(' '));
+}
+
 function setupAccessibility(invoker, target) {
+  /* <tool-tip> wires its own tip/card ARIA (describedby only when the
+     title isn't the trigger's name, aria-controls + aria-expanded for
+     cards), so the polyfill leaves those targets alone. */
+  if (target.parentElement?.localName === 'tool-tip') return;
   if (isPlainHint(target)) {
-    invoker.setAttribute('aria-describedby', target.id);
+    addIdRef(invoker, 'aria-describedby', target.id);
   } else {
-    invoker.setAttribute('aria-details', target.id);
+    addIdRef(invoker, 'aria-details', target.id);
     invoker.setAttribute('aria-expanded', 'false');
-    if (!target.hasAttribute('role')) target.setAttribute('role', 'tooltip');
+    /* role=tooltip only fits non-interactive content; cards and targets
+       with focusable content stay a generic popover. */
+    const interactive = target.matches('.hover-card') || target.querySelector(focusableSelector);
+    if (!interactive && !target.hasAttribute('role')) target.setAttribute('role', 'tooltip');
   }
 }
 

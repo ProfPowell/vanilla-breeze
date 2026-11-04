@@ -65,29 +65,37 @@
   inset: auto;
 }
 
-[role="tooltip"][popover][data-anchor]:not([data-tooltip-position]),
-[role="tooltip"][popover][data-anchor][data-tooltip-position="top"] {
-  bottom: anchor(top);
-  left: anchor(center);
-  translate: -50% calc(-1 * var(--size-xs));
-}
+/* anchor() and the centring translate only make sense with anchor
+   positioning. Unguarded, the translate still applied on the JS
+   fallback path (pixel insets) and shifted the tip twice; tool-tip
+   worked around it with an inline translate:none. inset:auto stays
+   outside the guard so the UA popover inset:0 never fights the
+   fallback's pixel insets. */
+@supports (anchor-name: --x) {
+  [role="tooltip"][popover][data-anchor]:not([data-tooltip-position]),
+  [role="tooltip"][popover][data-anchor][data-tooltip-position="top"] {
+    bottom: anchor(top);
+    left: anchor(center);
+    translate: -50% calc(-1 * var(--size-xs));
+  }
 
-[role="tooltip"][popover][data-anchor][data-tooltip-position="bottom"] {
-  top: anchor(bottom);
-  left: anchor(center);
-  translate: -50% var(--size-xs);
-}
+  [role="tooltip"][popover][data-anchor][data-tooltip-position="bottom"] {
+    top: anchor(bottom);
+    left: anchor(center);
+    translate: -50% var(--size-xs);
+  }
 
-[role="tooltip"][popover][data-anchor][data-tooltip-position="left"] {
-  right: anchor(left);
-  top: anchor(center);
-  translate: calc(-1 * var(--size-xs)) -50%;
-}
+  [role="tooltip"][popover][data-anchor][data-tooltip-position="left"] {
+    right: anchor(left);
+    top: anchor(center);
+    translate: calc(-1 * var(--size-xs)) -50%;
+  }
 
-[role="tooltip"][popover][data-anchor][data-tooltip-position="right"] {
-  left: anchor(right);
-  top: anchor(center);
-  translate: var(--size-xs) -50%;
+  [role="tooltip"][popover][data-anchor][data-tooltip-position="right"] {
+    left: anchor(right);
+    top: anchor(center);
+    translate: var(--size-xs) -50%;
+  }
 }
 
 /* --- Arrow (optional) --- */
@@ -115,13 +123,16 @@
   inset-inline-start: calc(50% - 4px);
 }
 
+/* left/right are physical sides (the tip sits physically left/right of
+   the trigger in any direction), so the arrow uses physical insets to
+   keep pointing at the trigger in RTL. */
 [role="tooltip"][popover][data-tooltip-position="left"] > .tooltip-arrow {
-  inset-inline-end: -4px;
+  right: -4px;
   inset-block-start: calc(50% - 4px);
 }
 
 [role="tooltip"][popover][data-tooltip-position="right"] > .tooltip-arrow {
-  inset-inline-start: -4px;
+  left: -4px;
   inset-block-start: calc(50% - 4px);
 }
 
@@ -208,6 +219,19 @@
 }
 
 /* Dark mode handled automatically via light-dark() semantic tokens */
+
+/* --- Forced Colors --- */
+
+@media (forced-colors: active) {
+  [role="tooltip"][popover],
+  [popover="hint"]:not([role="tooltip"]) {
+    border: 1px solid CanvasText;
+  }
+
+  [role="tooltip"][popover] > .tooltip-arrow {
+    background: CanvasText;
+  }
+}
 
 /* --- Reduced Motion --- */
 

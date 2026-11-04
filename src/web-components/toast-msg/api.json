@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "toast-msg",
   "type": "web-component",
-  "description": "Toast notification container with stacking, auto-dismiss, and position options",
+  "description": "Toast notification stack: one polite live region, queued toasts beyond max, auto-dismiss that pauses on hover/focus, localisable labels",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -23,21 +23,101 @@
         "bottom-center",
         "bottom-end"
       ],
-      "description": "Screen position for the toast stack"
+      "description": "Screen position for the toast stack (default top-end); centred positions stay centred in RTL"
     },
     {
       "name": "duration",
       "kind": "host-api",
       "purpose": "config",
       "type": "number",
-      "description": "Default auto-dismiss duration in milliseconds"
+      "description": "Default auto-dismiss duration in milliseconds (default 5000; 0 = stay until dismissed). The timer pauses while the pointer is over the stack, focus is inside it, or the page is hidden"
     },
     {
       "name": "max",
       "kind": "host-api",
       "purpose": "config",
       "type": "number",
-      "description": "Maximum number of visible toasts"
+      "description": "Maximum number of visible toasts (default 5); further toasts queue and appear as others dismiss"
+    },
+    {
+      "name": "data-label-region",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Accessible name of the stack; an authored aria-label wins (default \"Notifications\")"
+    },
+    {
+      "name": "data-label-dismiss",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Close button label (default \"Dismiss\")"
+    },
+    {
+      "name": "data-label-info",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Visually hidden prefix spoken before info messages (default \"Info\")"
+    },
+    {
+      "name": "data-label-success",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Visually hidden prefix spoken before success messages (default \"Success\")"
+    },
+    {
+      "name": "data-label-warning",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Visually hidden prefix spoken before warning messages (default \"Warning\")"
+    },
+    {
+      "name": "data-label-error",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Visually hidden prefix spoken before error messages (default \"Error\")"
+    }
+  ],
+  "events": [
+    {
+      "name": "toast-msg:enqueued",
+      "detail": "{ message, variant, duration, source, toast, queued }",
+      "description": "Fired (bubbles) on every show() call; queued is true when the toast waits behind max"
+    },
+    {
+      "name": "toast-msg:show",
+      "detail": "{ toast }",
+      "description": "Fired (bubbles) when a toast becomes visible"
+    },
+    {
+      "name": "toast-msg:hide",
+      "detail": "{ toast }",
+      "description": "Fired (bubbles) when a toast has been removed"
+    }
+  ],
+  "properties": [
+    {
+      "name": "queue",
+      "type": "Array<{ message, variant, state }>",
+      "description": "Read-only. Visible then queued toasts; state is 'visible' or 'queued'"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show(options)",
+      "description": "Show a toast. options: { message, variant ('info'|'success'|'warning'|'error'), duration, dismissible (default true), action, onAction, source }. Returns the toast element"
+    },
+    {
+      "name": "dismiss(toast)",
+      "description": "Dismiss one toast (also non-dismissible ones) or drop it from the queue"
+    },
+    {
+      "name": "dismissAll()",
+      "description": "Dismiss every visible toast and clear the queue"
     }
   ]
 }

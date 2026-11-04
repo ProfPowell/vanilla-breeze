@@ -38,6 +38,66 @@ const supportsAnchor = CSS.supports('anchor-name', '--test');
 // Elements that support native interestfor (spec-defined)
 const INTERESTFOR_TAGS = new Set(['BUTTON', 'A', 'AREA']);
 
+/* popover="hint" is newer than the Popover API. An unsupported value acts
+   as manual: no Escape, no light dismiss (WCAG 1.4.13). Created tooltips
+   use "manual" there, and every managed tooltip gets Escape + outside
+   dismiss from the document listeners below. ("auto" is avoided on
+   purpose: opening one closes every other open auto popover.) */
+const supportsHint = (() => {
+  const probe = document.createElement('span');
+  probe.setAttribute('popover', 'hint');
+  return /** @type {any} */ (probe).popover === 'hint';
+})();
+
+/** Tooltips (and their triggers) wired by this module. @type {Map<Element, Element>} */
+const managed = new Map();
+let dismissWired = false;
+
+/** Escape and outside-pointer dismissal for non-hint browsers. */
+function wireDismiss() {
+  if (dismissWired || supportsHint) return;
+  dismissWired = true;
+  const hideOpen = (/** @type {(tip: Element, trigger: Element) => boolean} */ keep) => {
+    managed.forEach((trigger, tip) => {
+      if (tip.matches(':popover-open') && !keep(tip, trigger)) {
+        /** @type {HTMLElement} */ (tip).hidePopover();
+      }
+    });
+  };
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hideOpen(() => false);
+  });
+  document.addEventListener('pointerdown', (e) => {
+    const t = /** @type {Node} */ (e.target);
+    hideOpen((tip, trigger) => tip.contains(t) || trigger.contains(t));
+  });
+}
+
+/**
+ * True when the element has an accessible name that doesn't come from
+ * its title attribute.
+ * @param {HTMLElement} el
+ */
+function hasOwnName(el) {
+  if (el.getAttribute('aria-label')?.trim()) return true;
+  if (el.hasAttribute('aria-labelledby')) return true;
+  if (/** @type {any} */ (el).labels?.length) return true;
+  if (el.textContent?.trim()) return true;
+  if (el instanceof HTMLInputElement && ['button', 'submit', 'reset'].includes(el.type) && el.value) return true;
+  return !!el.querySelector('img[alt]:not([alt=""]), [aria-label]:not([aria-hidden="true"])');
+}
+
+/**
+ * Append an id to an IDREF list attribute (keeps authored ids).
+ * @param {Element} el
+ * @param {string} attr
+ * @param {string} id
+ */
+function addIdRef(el, attr, id) {
+  const ids = (el.getAttribute(attr) || '').split(/\s+/).filter(Boolean);
+  if (!ids.includes(id)) el.setAttribute(attr, [...ids, id].join(' '));
+}
+
 /** Check if interestfor can be used on a specific trigger element */
 function canUseInterestFor(trigger) {
   if (document.documentElement.hasAttribute('data-interest-polyfill')) return true;
@@ -54,6 +114,9 @@ function canUseInterestFor(trigger) {
  * @param {Element} tip
  */
 function connectTrigger(trigger, tip) {
+  managed.set(tip, trigger);
+  wireDismiss();
+
   if (canUseInterestFor(trigger)) {
     trigger.setAttribute('interestfor', tip.id);
     // Position on show for JS fallback positioning
@@ -130,13 +193,19 @@ function initTitleTooltip(trigger) {
   const titleText = trigger.getAttribute('title');
   if (!titleText) return;
 
+  /* The title may be the trigger's only accessible name (icon-only
+     button): keep it as aria-label before removing it. Then the tooltip
+     only repeats the name, so it isn't also wired as a description. */
+  const titleIsName = !hasOwnName(/** @type {HTMLElement} */ (trigger));
+  if (titleIsName) trigger.setAttribute('aria-label', titleText);
+
   // Remove title to prevent native double-tooltip
   trigger.removeAttribute('title');
 
   // Create tooltip element
   const tip = document.createElement('div');
   tip.setAttribute('role', 'tooltip');
-  tip.setAttribute('popover', 'hint');
+  tip.setAttribute('popover', supportsHint ? 'hint' : 'manual');
   tip.id = `tooltip-${crypto.randomUUID().slice(0, 8)}`;
   tip.textContent = titleText;
 
@@ -153,8 +222,8 @@ function initTitleTooltip(trigger) {
   // Insert after trigger in DOM
   trigger.after(tip);
 
-  // ARIA
-  trigger.setAttribute('aria-describedby', tip.id);
+  // ARIA — appended, so authored describedby ids (form hints) survive
+  if (!titleIsName) addIdRef(trigger, 'aria-describedby', tip.id);
 
   // Anchor positioning
   setupAnchor(trigger, tip);
@@ -172,15 +241,16 @@ function initReferencedTooltip(trigger, id) {
   const tip = document.getElementById(id);
   if (!tip?.hasAttribute('popover')) return;
 
-  // Remove title from trigger if present (prevent double-tooltip)
-  if (trigger.hasAttribute('title')) {
+  // Remove title from trigger if present (prevent double-tooltip),
+  // keeping it as the name when it was the only one.
+  const title = trigger.getAttribute('title');
+  if (title) {
+    if (!hasOwnName(/** @type {HTMLElement} */ (trigger))) trigger.setAttribute('aria-label', title);
     trigger.removeAttribute('title');
   }
 
-  // ARIA
-  if (!trigger.hasAttribute('aria-describedby')) {
-    trigger.setAttribute('aria-describedby', id);
-  }
+  // ARIA — appended to any authored ids
+  addIdRef(trigger, 'aria-describedby', id);
 
   // Anchor positioning
   setupAnchor(trigger, tip);

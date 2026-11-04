@@ -44,20 +44,23 @@ toast-msg {
     flex-direction: column-reverse;
   }
 
+  /* Centred: stretch the containing box across the inline axis and let
+     auto margins centre the fit-content stack — direction-agnostic, so
+     RTL stays centred (a physical translateX(-50%) drifts in RTL). */
   &[position="top-center"] {
     inset-block-start: var(--size-m);
-    inset-inline-start: 50%;
-    inset-inline-end: auto;
-    transform: translateX(-50%);
+    inset-inline: 0;
+    margin-inline: auto;
+    inline-size: fit-content;
     align-items: center;
   }
 
   &[position="bottom-center"] {
     inset-block-start: auto;
     inset-block-end: var(--size-m);
-    inset-inline-start: 50%;
-    inset-inline-end: auto;
-    transform: translateX(-50%);
+    inset-inline: 0;
+    margin-inline: auto;
+    inline-size: fit-content;
     align-items: center;
     flex-direction: column-reverse;
   }
@@ -84,6 +87,19 @@ toast-msg {
     &[data-state="hiding"] {
       animation: toast-exit var(--motion-exit-duration) var(--ease-out) forwards;
     }
+  }
+
+  /* Spoken variant prefix ("Error: …") — visually hidden */
+  .variant-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   /* Toast icon */
@@ -217,9 +233,9 @@ toast-msg {
 }
 
 /* Bottom position toasts enter from below */
-toast-msg[position="bottom-end"] > .toast,
-toast-msg[position="bottom-start"] > .toast,
-toast-msg[position="bottom-center"] > .toast {
+/* :not(hiding) keeps this (0,3,1) rule from beating the exit rule, which
+   would leave bottom toasts without an exit animation. */
+toast-msg[position^="bottom"] > .toast:not([data-state="hiding"]) {
   animation-name: toast-enter-bottom;
 }
 
@@ -245,6 +261,23 @@ toast-msg[position="bottom-center"] > .toast {
         animation: none;
         opacity: 0;
       }
+    }
+  }
+}
+
+/* --- Forced colors --- */
+/* Background + shadow vanish in forced colors; give every toast a real
+   edge (the thick inline-start variant edge stays). */
+@media (forced-colors: active) {
+  @scope (toast-msg) {
+    .toast {
+      border: 1px solid CanvasText;
+      border-inline-start-width: var(--border-width-thick);
+    }
+
+    .action,
+    .close {
+      border: 1px solid ButtonText;
     }
   }
 }
