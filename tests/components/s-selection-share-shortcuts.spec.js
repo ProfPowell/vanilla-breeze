@@ -173,12 +173,13 @@ test.describe('selection-menu', () => {
 
   test('pointer selection still opens, select event carries detail', async ({ page }) => {
     await load(page, MENU, { modules: ['selection-menu'] });
-    const detail = page.evaluate(() => new Promise((res) => {
+    await page.evaluate(() => { /** @type {any} */ (window).__armed = new Promise((res) => {
       document.addEventListener('selection-menu:select', (e) => {
         const d = /** @type {CustomEvent} */ (e).detail;
         res({ text: d.text, target: d.target.id, range: d.range instanceof Range });
       }, { once: true });
-    }));
+    }); });
+    const detail = page.evaluate(() => /** @type {any} */ (window).__armed);
     const box = await page.locator('#p1').boundingBox();
     await page.mouse.move(box.x + 2, box.y + box.height / 2);
     await page.mouse.down();

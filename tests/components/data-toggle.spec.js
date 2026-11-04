@@ -79,9 +79,10 @@ test.describe('data-toggle — class shorthand', () => {
 test.describe('data-toggle — events', () => {
   test('emits toggle:change with detail', async ({ page }) => {
     await page.goto(demo);
-    const detail = page.evaluate(() => new Promise((resolve) => {
+    await page.evaluate(() => { /** @type {any} */ (window).__armed = new Promise((resolve) => {
       document.addEventListener('toggle:change', (e) => resolve(e.detail), { once: true });
-    }));
+    }); });
+    const detail = page.evaluate(() => /** @type {any} */ (window).__armed);
     await page.locator('button[data-toggle="hidden"]').click();
     // First click: hidden was absent → now present (element becomes hidden).
     expect(await detail).toMatchObject({ spec: 'hidden', present: true });

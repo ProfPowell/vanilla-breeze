@@ -182,9 +182,12 @@ test.describe('renderer', () => {
     const pause = page.locator('[data-recently-visited-pause]');
     await expect(pause).toHaveAttribute('aria-pressed', 'false');
     await pause.focus();
-    const detail = page.evaluate(() => new Promise((r) => document.addEventListener('recently-visited:pause-toggle', (e) => r(/** @type {CustomEvent} */ (e).detail), { once: true })));
+    // Arm the listener before pressing (an un-awaited evaluate raced the keypress on CI).
+    await page.evaluate(() => {
+      /** @type {any} */ (window).__pauseDetail = new Promise((r) => document.addEventListener('recently-visited:pause-toggle', (e) => r(/** @type {CustomEvent} */ (e).detail), { once: true }));
+    });
     await page.keyboard.press('Enter');
-    expect(await detail).toEqual({ paused: true });
+    expect(await page.evaluate(() => /** @type {any} */ (window).__pauseDetail)).toEqual({ paused: true });
     await expect(pause).toHaveAttribute('aria-pressed', 'true');
     await expect(pause).toHaveAttribute('aria-label', 'Pause tracking');
     await expect(pause).toBeFocused();
