@@ -131,7 +131,7 @@ const BEHAVIOUR = [
     run: `const input = q(el, 'input');
           return fired(el, 'combo-box:open', () => { input.focus(); key(input, 'ArrowDown'); });`, expected: 1 },
   { name: 'command-palette', demo: 'examples/demos/command-palette-basic.html', selector: 'command-palette',
-    run: `return fired(el, 'command-palette:open', () => key(document.body, 'k', { metaKey: true }));`, expected: 1 },
+    run: `return fired(el, 'command-palette:open', () => key(document.body, 'k', /Mac|iPhone|iPad/.test(navigator.platform) ? { metaKey: true } : { ctrlKey: true }));`, expected: 1 },
   { name: 'comment-box', demo: 'examples/demos/comment-box-basic.html', selector: 'comment-box',
     run: `const ta = q(el, 'textarea'); ta.value = 'A comment'; ta.dispatchEvent(new Event('input', { bubbles: true }));
           await tick();
