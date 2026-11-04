@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "sup"
-description: "Represents superscript text for exponents, ordinals, footnotes, and trademark symbols. Uses font-variant-position for proper OpenType rendering."
+description: "Represents superscript text for exponents, ordinals, footnotes, and trademark symbols. Rendered smaller and raised in any font."
 elementName: sup
 category: native
 nativeGroup: Text Semantics
@@ -13,7 +13,7 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;sup&gt;</code> element displays inline text as superscript. VB uses <code>font-variant-position: super</code> for proper OpenType rendering with a fallback for older browsers, and provides dedicated styling for footnote patterns via <code>sup.footnote-ref</code> and <code>.footnotes</code>.</p>
+    <p>The <code>&lt;sup&gt;</code> element displays inline text as superscript. VB always renders it at <code>0.75em</code>, raised with a relative offset and <code>line-height: 0</code>, so the superscript does not push the line taller. This works in every font. Fonts with designed OpenType superscript glyphs can opt in to them with <code>data-variant="opentype"</code>. VB also styles footnote patterns with <code>sup.footnote-ref</code> and <code>.footnotes</code>.</p>
   </section>
 
   <section>
@@ -49,7 +49,7 @@ crumbLabel: Native Elements
 
 <!-- Footnote definitions -->
 <ol class="footnotes">
-  <li id="fn1">Smith et al., <cite>Journal</cite>, 2025. <a href="#fnref1">&hookleftarrow;</a></li>
+  <li id="fn1">Smith et al., <cite>Journal</cite>, 2025. <a href="#fnref1" aria-label="Back to reference 1">&hookleftarrow;</a></li>
 </ol></code-block>
 
     <table class="props-table">
@@ -57,8 +57,8 @@ crumbLabel: Native Elements
         <tr><th>Selector</th><th>Purpose</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>sup.footnote-ref</code></td><td>Smaller, medium-weight superscript for footnote markers</td></tr>
-        <tr><td><code>sup.footnote-ref &gt; a</code></td><td>No underline, padded click target</td></tr>
+        <tr><td><code>sup.footnote-ref</code></td><td>Medium-weight superscript for footnote markers, at the normal superscript size (not shrunk a second time)</td></tr>
+        <tr><td><code>sup.footnote-ref &gt; a</code></td><td>Keeps its underline, so the link is not shown by colour alone. Padding enlarges the small click target without changing line height</td></tr>
         <tr><td><code>.footnotes</code></td><td>Muted, smaller text with top border separator</td></tr>
         <tr><td><code>.footnotes a[href^="#fnref"]</code></td><td>Back-to-reference links without underline</td></tr>
       </tbody>
@@ -68,32 +68,40 @@ crumbLabel: Native Elements
   </section>
 
   <section>
+    <h2>OpenType glyphs (opt-in)</h2>
+    <p>Some fonts include designed superscript glyphs. Add <code>data-variant="opentype"</code> to use them with <code>font-variant-position: super</code>. VB then removes its own size and offset, because the glyphs are already small and positioned.</p>
+    <code-block language="html" show-lines label="OpenType superscript" data-escape><p>E = mc<sup data-variant="opentype">2</sup></p></code-block>
+    <p>Only use this when you know the current font has the glyphs. Browsers do not synthesise them, and <code>@supports</code> cannot detect them. In a font without them (Georgia, Verdana, Courier New and most display fonts), opted-in text renders at full size on the baseline. That is why the default reduced size and offset are always applied.</p>
+  </section>
+
+  <section>
     <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="sup CSS (progressive enhancement)" data-escape>sup {
-  font-variant-position: super;
+    <code-block language="css" show-lines label="sub and sup CSS" data-escape>sub,
+sup {
   font-size: 0.75em;
-  line-height: 0;
+  line-height: 0;          /* keeps the line box from growing */
   position: relative;
   vertical-align: baseline;
-  inset-block-end: 0.5em;
 }
 
-@supports (font-variant-position: super) {
-  sub, sup {
-    vertical-align: inherit;
-    font-size: inherit;
-    position: static;
-    inset-block-end: unset;
-    line-height: inherit;
-  }
-}</code-block>
+sub { inset-block-end: -0.25em; }
+sup { inset-block-end: 0.5em; }
+
+/* Opt-in: the font's own OpenType subs/sups glyphs */
+:is(sub, sup)[data-variant~="opentype"] {
+  font-size: inherit;
+  position: static;
+  inset-block-end: auto;
+}
+sub[data-variant~="opentype"] { font-variant-position: sub; }
+sup[data-variant~="opentype"] { font-variant-position: super; }</code-block>
+    <p>The size and offset always apply. An earlier version reset them inside <code>@supports (font-variant-position: super)</code>, but that check only shows the browser understands the property, not that the font has superscript glyphs. In most fonts, exponents and ordinals then rendered at full size on the baseline.</p>
     <code-block language="css" show-lines label="Footnote CSS" data-escape>sup.footnote-ref {
-  font-size: 0.65em;
-  font-weight: 500;
+  font-weight: 500; /* size comes from sup: 0.75em, once */
 
   & > a {
-    text-decoration: none;
-    padding: var(--size-3xs);
+    text-underline-offset: 0.15em;
+    padding: 0.2em 0.15em; /* larger hit area, same line box */
   }
 }
 
@@ -117,7 +125,7 @@ crumbLabel: Native Elements
       <li>Screen readers may not announce superscript formatting</li>
       <li>For footnotes, the link text (e.g., "[1]") provides navigable context</li>
       <li>The <code>.footnotes</code> list uses an <code>&lt;ol&gt;</code> so screen readers announce numbered items</li>
-      <li>Back-to-reference links (<code>&hookleftarrow;</code>) let users return to where they left off</li>
+      <li>Back-to-reference links (<code>&hookleftarrow;</code>) let users return to where they left off. The arrow has no useful name of its own (screen readers say &ldquo;leftwards arrow with hook&rdquo; or nothing), so give each link an <code>aria-label</code> such as &ldquo;Back to reference 1&rdquo;</li>
     </ul>
   </section>
 

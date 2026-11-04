@@ -13,18 +13,18 @@ toc: true
 <p>VB uses progressive CSS enhancement for typography. Every feature in this guide is additive: browsers that don't support a property simply ignore it and fall back to the base style. No JavaScript is required.</p>
 
 <h2>Font Synthesis Control</h2>
-<p>When a font family lacks a true bold or italic variant, browsers synthesize (fake) one by algorithmically thickening or slanting glyphs. This often looks poor. VB sets <code>font-synthesis: none</code> on <code>&lt;strong&gt;</code>, <code>&lt;b&gt;</code>, <code>&lt;em&gt;</code>, and <code>&lt;i&gt;</code> to prevent faux bold/italic rendering.</p>
+<p>When a font family lacks a true bold or italic variant, browsers can synthesize (fake) one by thickening or slanting glyphs. VB sets <code>font-synthesis: weight style</code> on <code>&lt;strong&gt;</code>, <code>&lt;b&gt;</code>, <code>&lt;em&gt;</code>, and <code>&lt;i&gt;</code>. A real bold or italic face always wins when the font has one; synthesis only fills in for single-face fonts (several theme fonts ship just a regular weight), so emphasis never renders as plain body text. Small-caps and position synthesis stay off.</p>
 <p><code>font-optical-sizing: auto</code> lets OpenType variable fonts adjust stroke weight and contrast based on the rendered size, producing crisper text at small sizes and better proportions at display sizes.</p>
 
 <code-block language="css" label="Font synthesis and optical sizing" data-escape>strong, b {
   font-weight: 600;
-  font-synthesis: none;
+  font-synthesis: weight style;
   font-optical-sizing: auto;
 }
 
 em, i {
   font-style: italic;
-  font-synthesis: none;
+  font-synthesis: weight style;
   font-optical-sizing: auto;
 }</code-block>
 
@@ -50,11 +50,13 @@ em, i {
 </blockquote></code-block>
 
 <h2>Subscript and Superscript</h2>
-<p>VB uses <code>font-variant-position</code> for sub/sup when the browser supports it. This produces properly designed glyphs from the font's glyph table rather than shrunk-and-shifted text. The fallback uses the traditional <code>font-size</code> + <code>position: relative</code> approach.</p>
+<p>VB always renders <code>&lt;sub&gt;</code> and <code>&lt;sup&gt;</code> with the size-and-offset approach (<code>font-size: 0.75em</code>, <code>line-height: 0</code>, <code>position: relative</code>), which works with every font and does not disturb line spacing. When you know the font has OpenType subscript/superscript glyphs, opt in with <code>data-variant="opentype"</code> to use <code>font-variant-position</code> instead.</p>
 
 <code-block language="html" label="Sub and sup elements" data-escape><p>Water is H<sub>2</sub>O. Einstein's E=mc<sup>2</sup>.</p>
 
-<p>See footnote<sup class="footnote-ref"><a href="#fn1">1</a></sup>.</p></code-block>
+<p>See footnote<sup class="footnote-ref"><a href="#fn1">1</a></sup>.</p>
+
+<p>OpenType glyphs: x<sup data-variant="opentype">2</sup></p></code-block>
 
 <h2>Headings</h2>
 <p>All headings (<code>h1</code>&ndash;<code>h6</code>) receive two typographic enhancements:</p>

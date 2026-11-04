@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "em"
-description: "Marks text with stress emphasis that changes the meaning of a sentence. Rendered as italic with font-synthesis protection."
+description: "Marks text with stress emphasis that changes the meaning of a sentence. Rendered as italic, with synthesized italic as a fallback."
 elementName: em
 category: native
 nativeGroup: Text Semantics
@@ -14,8 +14,8 @@ crumbLabel: Native Elements
 <section>
     <h2>Description</h2>
     <p>The <code>&lt;em&gt;</code> element marks text with stress emphasis &mdash; the kind that changes the meaning of a sentence when spoken aloud. Moving the emphasis to a different word changes what the sentence communicates.</p>
-    <p>VB styles <code>&lt;em&gt;</code> with <code>font-synthesis: none</code> to prevent browsers from generating faux italic glyphs, and <code>font-optical-sizing: auto</code> for proper rendering in variable fonts.</p>
-    <p>The catch with <code>font-synthesis: none</code>: if the active font has no italic face, the browser will not fake one, so the emphasis renders upright and is <strong>invisible</strong>. Load an italic face for every text font you use. CJK fonts almost never ship italics, so VB swaps italic for emphasis marks in those languages (see <a href="#cjk-emphasis">CJK emphasis</a>).</p>
+    <p>VB styles <code>&lt;em&gt;</code> with <code>font-synthesis: weight style</code> and <code>font-optical-sizing: auto</code> for proper rendering in variable fonts.</p>
+    <p>A real italic face always wins. If the active font has none, the browser synthesizes a slanted version, so the emphasis stays visible; load an italic face if you want true italic letterforms. CJK fonts almost never ship italics, so VB swaps italic for emphasis marks in those languages (see <a href="#cjk-emphasis">CJK emphasis</a>).</p>
   </section>
 
   <section>
@@ -101,7 +101,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2 id="cjk-emphasis">CJK Emphasis</h2>
-    <p>Chinese, Japanese and Korean fonts generally have no italic face, so with <code>font-synthesis: none</code> an italic <code>&lt;em&gt;</code> would look like plain text. When the content language is <code>zh</code>, <code>ja</code> or <code>ko</code> (set via <code>lang</code>), VB draws emphasis marks instead: sesame dots over the characters for Japanese and Korean, and filled dots under the characters for Chinese. Emphasis marks are reserved for <code>&lt;em&gt;</code>: <a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> gets a calligraphic face with a dotted underline, <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> a heavier weight and <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> a wavy underline.</p>
+    <p>Chinese, Japanese and Korean fonts generally have no italic face, and a slanted CJK glyph is a poor cue for stress. When the content language is <code>zh</code>, <code>ja</code> or <code>ko</code> (set via <code>lang</code>), VB draws emphasis marks instead: sesame dots over the characters for Japanese and Korean, and filled dots under the characters for Chinese. Emphasis marks are reserved for <code>&lt;em&gt;</code>: <a href="/docs/elements/native/i/"><code>&lt;i&gt;</code></a> gets a calligraphic face with a dotted underline, <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> a heavier weight and <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> a wavy underline.</p>
     <p>Romanised text (<code>lang="ja-Latn"</code>, <code>zh-Latn</code>, <code>ko-Latn</code>) is Latin script and keeps the real italic.</p>
 
     <code-block language="html" show-lines label="CJK emphasis marks" data-escape><p lang="ja">これは<em>とても</em>大切です。</p>
@@ -111,7 +111,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Combined Bold + Italic</h2>
-    <p>When <code>&lt;em&gt;</code> is nested inside <code>&lt;strong&gt;</code> (or vice versa), VB ensures the combined style renders correctly with <code>font-synthesis: none</code>:</p>
+    <p>When <code>&lt;em&gt;</code> is nested inside <code>&lt;strong&gt;</code> (or vice versa), VB applies both weight and style; a bold-italic face is used when the font has one, otherwise the browser synthesizes the missing weight or slant:</p>
     <code-block language="html" show-lines label="Combined bold and italic" data-escape><p><strong><em>Bold italic via strong+em</em></strong></p>
 <p><b><i>Bold italic via b+i</i></b></p></code-block>
   </section>
@@ -120,7 +120,7 @@ crumbLabel: Native Elements
     <h2>CSS Reference</h2>
     <code-block language="css" show-lines label="em and i CSS" data-escape>em, i {
   font-style: italic;
-  font-synthesis: none;     /* prevent faux italic */
+  font-synthesis: weight style; /* real face wins; synthesize if missing */
   font-optical-sizing: auto;
 }
 
@@ -128,7 +128,7 @@ crumbLabel: Native Elements
 :where(b i, i b, strong em, em strong) {
   font-weight: 600;
   font-style: italic;
-  font-synthesis: none;
+  font-synthesis: weight style;
 }
 
 /* Toggle: emphasis inside an italic context is upright */

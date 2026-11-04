@@ -43,15 +43,22 @@ p.justify {
   -webkit-hyphens: auto;
 }
 
+/* Emphasis keeps weight and style synthesis on. A real bold or italic
+ * face always wins when the font has one; synthesis only fills in when it
+ * does not. Several theme fonts ship a single 400 face (DM Serif Display,
+ * VT323, Press Start 2P), and with font-synthesis: none their <strong> and
+ * <em> rendered exactly like body text. font-synthesis is inherited, so
+ * keeping style on here also stops a bold run inside a synthesised-italic
+ * context from turning upright. Small-caps and position stay off. */
 strong, b {
   font-weight: 600;
-  font-synthesis: none;
+  font-synthesis: weight style;
   font-optical-sizing: auto;
 }
 
 em, i {
   font-style: italic;
-  font-synthesis: none;
+  font-synthesis: weight style;
   font-optical-sizing: auto;
 }
 
@@ -59,7 +66,7 @@ em, i {
 :where(b i, i b, strong em, em strong) {
   font-weight: 600;
   font-style: italic;
-  font-synthesis: none;
+  font-synthesis: weight style;
 }
 
 /* Bold in code — highlight background instead of just weight */
@@ -67,6 +74,16 @@ em, i {
   background-color: oklch(from var(--color-interactive) l c h / 0.12);
   border-radius: var(--radius-s);
   padding-inline: var(--size-2xs);
+}
+
+/* Forced colours drop the highlight fill. Block code is handled in
+ * code/styles.css; this covers bold inside inline code the same way. */
+@media (forced-colors: active) {
+  code :where(b, strong) {
+    forced-color-adjust: none;
+    background-color: Mark;
+    color: MarkText;
+  }
 }
 
 /* Italic inside an italic context toggles back to upright — the classic
@@ -93,8 +110,12 @@ em, i {
   font-style: italic;
 }
 
+/* Relative to its context, so <small> inside a heading is a smaller
+ * heading-sized run (not a fixed ~14px) and inside already-small text
+ * (footnotes, figcaption, .status) it still steps down — floored at the
+ * xs token so nested small never becomes illegible. */
 small {
-  font-size: var(--font-size-s);
+  font-size: max(0.875em, var(--font-size-xs));
 }
 
 /* The UA's MarkText (black) stayed in dark mode: 1.3:1 on the tinted

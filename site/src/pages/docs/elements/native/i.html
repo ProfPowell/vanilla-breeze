@@ -14,8 +14,8 @@ crumbLabel: Native Elements
 <section>
     <h2>Description</h2>
     <p>The <code>&lt;i&gt;</code> element represents text in an alternate voice, mood, or quality &mdash; a span of text that is offset from normal prose without conveying extra emphasis or importance. Common uses include foreign language phrases, technical terms, thoughts, and ship names.</p>
-    <p>VB styles <code>&lt;i&gt;</code> with <code>font-synthesis: none</code> to prevent faux italic glyphs and <code>font-optical-sizing: auto</code> for variable fonts.</p>
-    <p>The catch with <code>font-synthesis: none</code>: if the active font has no italic face, the browser will not fake one, so the <code>&lt;i&gt;</code> renders upright and is <strong>invisible</strong>. Load an italic face for every text font you use. CJK fonts almost never ship italics, so VB swaps italic for a calligraphic face and a dotted underline in those languages (see <a href="#cjk">CJK alternate voice</a>).</p>
+    <p>VB styles <code>&lt;i&gt;</code> with <code>font-synthesis: weight style</code> and <code>font-optical-sizing: auto</code> for variable fonts.</p>
+    <p>A real italic face always wins. If the active font has none, the browser synthesizes a slanted version, so the <code>&lt;i&gt;</code> stays visible; load an italic face if you want true italic letterforms. CJK fonts almost never ship italics, so VB swaps italic for a calligraphic face and a dotted underline in those languages (see <a href="#cjk">CJK alternate voice</a>).</p>
     <p>Inside text that is already italic &mdash; a blockquote, a work title, another <code>&lt;i&gt;</code> &mdash; <code>&lt;i&gt;</code> toggles back to upright so it still stands out (see <a href="#italic-contexts">Italic contexts</a>).</p>
   </section>
 
@@ -110,7 +110,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2 id="cjk">CJK Alternate Voice</h2>
-    <p>Chinese, Japanese and Korean fonts generally have no italic face, so with <code>font-synthesis: none</code> an italic <code>&lt;i&gt;</code> would look like plain text. When the content language is <code>zh</code>, <code>ja</code> or <code>ko</code>, VB sets <code>&lt;i&gt;</code> upright in a calligraphic face (kai / mincho; override with <code>--font-cjk-alternate</code>) with a dotted underline. It deliberately does not use emphasis marks &mdash; those belong to <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a>, which is stress, not an alternate voice. <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> (heavier weight) and <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> (wavy underline) each get their own cue.</p>
+    <p>Chinese, Japanese and Korean fonts generally have no italic face, and a slanted CJK glyph reads poorly. When the content language is <code>zh</code>, <code>ja</code> or <code>ko</code>, VB sets <code>&lt;i&gt;</code> upright in a calligraphic face (kai / mincho; override with <code>--font-cjk-alternate</code>) with a dotted underline. It deliberately does not use emphasis marks &mdash; those belong to <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a>, which is stress, not an alternate voice. <a href="/docs/elements/native/dfn/"><code>&lt;dfn&gt;</code></a> (heavier weight) and <a href="/docs/elements/native/cite/"><code>&lt;cite&gt;</code></a> (wavy underline) each get their own cue.</p>
     <p>Romanised text (<code>lang="ja-Latn"</code>, <code>zh-Latn</code>, <code>ko-Latn</code>) is Latin script and keeps the real italic.</p>
 
     <code-block language="html" show-lines label="CJK alternate voice" data-escape><p lang="ja">船の名前は<i>日本丸</i>です。</p>
@@ -122,7 +122,7 @@ crumbLabel: Native Elements
     <h2>CSS Reference</h2>
     <code-block language="css" show-lines label="i and em CSS" data-escape>em, i {
   font-style: italic;
-  font-synthesis: none;     /* prevent faux italic */
+  font-synthesis: weight style; /* real face wins; synthesize if missing */
   font-optical-sizing: auto;
 }
 

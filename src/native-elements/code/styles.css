@@ -108,6 +108,19 @@ kbd:has(> kbd),
 samp {
   font-family: var(--font-mono);
   font-size: 0.9em;
+  /* Long paths, URLs and hashes break instead of overflowing, like inline
+     code above; the pre reset returns it to normal inside blocks. */
+  overflow-wrap: break-word;
+}
+
+/* Inline code and output on a right-to-left page: plaintext isolates the
+   run from the surrounding text and takes its direction from its own first
+   strong character, so "File not found: config.json." stays in order
+   instead of the RTL paragraph moving edge punctuation to the wrong end.
+   LTR pages are unaffected (Latin content resolves to LTR). Blocks are
+   left alone: pre:has(code, samp) already sets direction. */
+:is(code, samp):not(pre *) {
+  unicode-bidi: plaintext;
 }
 
 /* Variable — distinct from general italic via color accent */

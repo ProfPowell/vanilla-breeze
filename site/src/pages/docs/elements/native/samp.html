@@ -57,8 +57,16 @@ Output: dist/bundle.js (45.2 KB)</samp></pre></code-block>
     <code-block language="css" show-lines label="samp CSS" data-escape>samp {
   font-family: var(--font-mono);
   font-size: 0.9em;
+  overflow-wrap: break-word; /* long paths, URLs and hashes wrap */
+}
+
+/* Inline code and output keep their own direction on RTL pages */
+:is(code, samp):not(pre *) {
+  unicode-bidi: plaintext;
 }</code-block>
     <p>Unlike <code>&lt;code&gt;</code>, <code>&lt;samp&gt;</code> has no background or padding &mdash; output text should feel like raw system text, not highlighted code.</p>
+    <p>Long unbroken output such as file paths, URLs or hashes wraps inside narrow containers instead of overflowing. Inside a <code>&lt;pre&gt;</code> block the output keeps its exact line breaks.</p>
+    <p>On a right-to-left page, inline <code>&lt;samp&gt;</code> and <code>&lt;code&gt;</code> are isolated from the surrounding text and take their direction from their own content. Without this, output such as <samp>File not found: config.json.</samp> could have its edge punctuation moved to the wrong end. Block output in <code>&lt;pre&gt;</code> is always left-to-right unless the <code>&lt;pre&gt;</code> has its own <code>dir</code>.</p>
   </section>
 
   <section>
