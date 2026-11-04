@@ -5337,6 +5337,54 @@
       ]
     },
     {
+      "id": "page-info",
+      "tag": "page-info",
+      "type": "web-component",
+      "category": "data",
+      "cssFile": "src/web-components/page-info/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "static",
+          "name": "Static markup (open)",
+          "html": "<page-info>\n  <details open>\n    <summary>\n      <span class=\"page-info-author\">Jane Doe</span>\n      <span class=\"page-info-sep\" aria-hidden=\"true\">&middot;</span>\n      <time datetime=\"2026-03-15\">15 March 2026</time>\n      <span class=\"page-info-sep\" aria-hidden=\"true\">&middot;</span>\n      <span class=\"page-info-badge\" data-provenance=\"ai-assisted\" data-trust=\"declared\">Human-written, AI-assisted</span>\n    </summary>\n    <section class=\"page-info-panel\">\n      <section>\n        <h2 class=\"page-info-section-heading\">Author</h2>\n        <p><a href=\"/team/jane\" rel=\"author\">Jane Doe</a></p>\n      </section>\n      <section>\n        <h2 class=\"page-info-section-heading\">History</h2>\n        <dl>\n          <dl-item><dt>Published</dt><dd><time datetime=\"2026-01-10\">10 January 2026</time></dd></dl-item>\n          <dl-item><dt>Version</dt><dd>1.4.0</dd></dl-item>\n        </dl>\n      </section>\n      <section>\n        <h2 class=\"page-info-section-heading\">How this was made</h2>\n        <dl>\n          <dl-item><dt>Authorship</dt><dd>Human-written, AI-assisted</dd></dl-item>\n          <dl-item><dt>Review</dt><dd>Editor-reviewed</dd></dl-item>\n        </dl>\n      </section>\n    </section>\n  </details>\n</page-info>",
+          "fixtureWidth": "wide",
+          "setup": "await new Promise(r => setTimeout(r, 100));",
+          "interactive": true
+        },
+        {
+          "id": "auto",
+          "name": "Auto mode from stub <meta> tags",
+          "html": "<section id=\"page-info-auto-host\"></section>",
+          "fixtureWidth": "wide",
+          "interactive": true,
+          "setup": "const metas = [\n  ['name', 'author', 'Jane Doe'], ['name', 'last-modified', '2026-03-15'],\n  ['property', 'article:published_time', '2026-01-10T00:00:00Z'], ['itemprop', 'version', '1.4.0'],\n  ['name', 'vb:provenance', 'ai-assisted'], ['name', 'vb:review', 'editor-reviewed'],\n  ['name', 'vb:status', 'draft'], ['name', 'vb:ai-tools', 'Claude'],\n  ['name', 'license', 'CC BY 4.0'], ['name', 'concept', 'provenance']\n];\nfor (const [attr, key, content] of metas) {\n  const m = document.createElement('meta'); m.setAttribute(attr, key); m.setAttribute('content', content); document.head.append(m);\n}\nconst pi = document.createElement('page-info'); pi.setAttribute('auto', '');\ndocument.getElementById('page-info-auto-host').append(pi);\nawait customElements.whenDefined('page-info');\nawait new Promise(r => setTimeout(r, 100));\npi.querySelector('details').open = true;\nfor (const t of pi.querySelectorAll('time')) { t.removeAttribute('data-relative'); t.removeAttribute('title'); t.textContent = t.getAttribute('datetime').slice(0, 10); }"
+        }
+      ]
+    },
+    {
+      "id": "page-stats",
+      "tag": "page-stats",
+      "type": "web-component",
+      "category": "data",
+      "cssFile": "src/web-components/page-stats/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "computed",
+          "name": "Computed from fixed text",
+          "html": "<section>\n  <page-stats data-for=\"page-stats-fixture-text\" data-show=\"reading-time,word-count\"></page-stats>\n  <article id=\"page-stats-fixture-text\">\n    <h2>The Benefits of Walking</h2>\n    <p>Walking is one of the simplest and most accessible forms of exercise. It requires no special equipment and can be done almost anywhere at any time.</p>\n    <p>Regular walking lowers blood pressure, improves mood and supports bone density at every age.</p>\n  </article>\n</section>",
+          "setup": "await new Promise(r => setTimeout(r, 100));",
+          "interactive": true
+        },
+        {
+          "id": "ssr",
+          "name": "SSR-adopted markup",
+          "html": "<page-stats>\n  <dl class=\"page-stats-list\">\n    <dl-item><dt class=\"visually-hidden\">Reading time</dt><dd><time datetime=\"PT5M\">5 min read</time></dd></dl-item>\n    <dl-item><dt class=\"visually-hidden\">Word count</dt><dd>1,204 words</dd></dl-item>\n    <dl-item><dt class=\"visually-hidden\">Last updated</dt><dd><time datetime=\"2026-03-15\">15 March 2026</time></dd></dl-item>\n  </dl>\n</page-stats>"
+        }
+      ]
+    },
+    {
       "id": "page-toc",
       "tag": "page-toc",
       "type": "web-component",
@@ -5350,8 +5398,110 @@
           "screenshotTarget": "page",
           "interactive": true,
           "setup": "await new Promise(r => setTimeout(r, 500));",
-          "html": "<div style=\"display: grid; grid-template-columns: 1fr 200px; gap: var(--size-l);\">\n  <main>\n    <h1>Documentation</h1>\n    <h2 id=\"overview\">Overview</h2>\n    <p>Introduction content here.</p>\n    <h2 id=\"usage\">Usage</h2>\n    <p>Usage guide here.</p>\n    <h3 id=\"basic-usage\">Basic Usage</h3>\n    <p>Basic examples.</p>\n    <h2 id=\"api\">API Reference</h2>\n    <p>API documentation.</p>\n  </main>\n  <page-toc levels=\"h2,h3\" title=\"Contents\"></page-toc>\n</div>",
+          "html": "<layout-sidebar data-layout-side=\"end\" data-layout-sidebar-width=\"narrow\" data-layout-gap=\"l\">\n  <main>\n    <h1>Documentation</h1>\n    <h2 id=\"overview\">Overview</h2>\n    <p>Introduction content here.</p>\n    <h2 id=\"usage\">Usage</h2>\n    <p>Usage guide here.</p>\n    <h3 id=\"basic-usage\">Basic Usage</h3>\n    <p>Basic examples.</p>\n    <h2 id=\"api\">API Reference</h2>\n    <p>API documentation.</p>\n  </main>\n  <page-toc levels=\"h2,h3\" data-title=\"Contents\"></page-toc>\n</layout-sidebar>",
           "fixtureWidth": "wide"
+        },
+        {
+          "id": "horizontal",
+          "name": "Horizontal bar",
+          "interactive": true,
+          "setup": "await new Promise(r => setTimeout(r, 500));",
+          "html": "<page-toc orientation=\"horizontal\" levels=\"h2\" scope=\"#cmp-toc-h-article\"></page-toc>\n<article id=\"cmp-toc-h-article\">\n  <h2 id=\"h-overview\">Overview</h2>\n  <p>Introduction content here.</p>\n  <h2 id=\"h-usage\">Usage</h2>\n  <p>Usage guide here.</p>\n  <h2 id=\"h-api\">API Reference</h2>\n  <p>API documentation.</p>\n</article>",
+          "fixtureWidth": "wide"
+        }
+      ]
+    },
+    {
+      "id": "page-tools",
+      "tag": "page-tools",
+      "type": "web-component",
+      "category": "interactive",
+      "cssFile": "src/web-components/page-tools/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Inline toolbar",
+          "interactive": true,
+          "setup": "\n    await new Promise(r => setTimeout(r, 300));",
+          "html": "<page-tools data-position=\"inline\" data-breakpoint=\"0px\">\n  <print-page>Print this page</print-page>\n  <share-wc variant=\"icon\" size=\"s\"></share-wc>\n</page-tools>"
+        },
+        {
+          "id": "collapsed",
+          "name": "Collapsed to FAB (closed)",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "\n    await new Promise(r => setTimeout(r, 300));",
+          "html": "<page-tools data-position=\"inline\" data-breakpoint=\"200rem\" data-fab-label=\"Article tools\">\n  <print-page>Print this page</print-page>\n  <share-wc variant=\"icon\" size=\"s\"></share-wc>\n</page-tools>\n<p>The tools stay hidden until the FAB is activated.</p>"
+        },
+        {
+          "id": "collapsed-open",
+          "name": "Collapsed to FAB (open)",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "\n    await new Promise(r => setTimeout(r, 300));\n    document.querySelector('page-tools .page-tools-fab').click();\n    await new Promise(r => setTimeout(r, 100));",
+          "html": "<page-tools data-position=\"inline\" data-breakpoint=\"200rem\" data-fab-label=\"Article tools\">\n  <print-page>Print this page</print-page>\n  <share-wc variant=\"icon\" size=\"s\"></share-wc>\n</page-tools>\n<p>The popover opens just above the FAB.</p>"
+        }
+      ]
+    },
+    {
+      "id": "page-tour",
+      "tag": "page-tour",
+      "type": "web-component",
+      "category": "interactive",
+      "cssFile": "src/web-components/page-tour/styles.css",
+      "jsRequired": true,
+      "readySelector": "page-tour[data-upgraded]",
+      "variants": [
+        {
+          "id": "passive-step",
+          "name": "Passive step (middle of tour)",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "fixtureWidth": "wide",
+          "html": "<header id=\"ev-tour-head\"><strong>Acme</strong> <a href=\"#ev-tour-main\">Docs</a></header><section id=\"ev-tour-main\"><h2>Workspace</h2><p>Projects and files live here.</p><label for=\"ev-tour-name\">Project name</label> <input id=\"ev-tour-name\" type=\"text\"> <button id=\"ev-tour-save\" type=\"button\">Save</button></section><page-tour id=\"ev-tour-passive\" data-title=\"Getting started\" data-persist=\"none\"><tour-step data-target=\"#ev-tour-head\" data-scroll=\"none\"><h3>Header</h3><p>Navigation lives here.</p></tour-step><tour-step data-target=\"#ev-tour-main\" data-placement=\"bottom\" data-scroll=\"none\"><h3>Workspace</h3><p>Your projects and files.</p></tour-step><tour-step data-target=\"#ev-tour-save\" data-scroll=\"none\"><h3>Save</h3><p>Save your changes.</p></tour-step></page-tour>",
+          "setup": "await customElements.whenDefined('page-tour');\ndocument.getElementById('ev-tour-passive').start(1);\nawait new Promise(r => setTimeout(r, 600));"
+        },
+        {
+          "id": "gated-step",
+          "name": "Action-gated step (Next aria-disabled, hint)",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "fixtureWidth": "wide",
+          "html": "<header id=\"ev-tour-head\"><strong>Acme</strong> <a href=\"#ev-tour-main\">Docs</a></header><section id=\"ev-tour-main\"><h2>Workspace</h2><p>Projects and files live here.</p><label for=\"ev-tour-name\">Project name</label> <input id=\"ev-tour-name\" type=\"text\"> <button id=\"ev-tour-save\" type=\"button\">Save</button></section><page-tour id=\"ev-tour-gated\" data-title=\"Set up a project\" data-mode=\"active\" data-persist=\"none\"><tour-step data-target=\"#ev-tour-name\" data-placement=\"bottom\" data-scroll=\"none\" data-action=\"input\" data-action-hint=\"Type a project name to continue\"><h3>Name it</h3><p>Every project needs a name.</p></tour-step><tour-step data-target=\"#ev-tour-save\" data-scroll=\"none\"><h3>Save</h3><p>Save your changes.</p></tour-step></page-tour>",
+          "setup": "await customElements.whenDefined('page-tour');\ndocument.getElementById('ev-tour-gated').start(0);\nawait new Promise(r => setTimeout(r, 600));"
+        }
+      ]
+    },
+    {
+      "id": "pager-wc",
+      "tag": "pager-wc",
+      "type": "web-component",
+      "category": "navigation",
+      "cssFile": "src/utils/data-paged.css",
+      "jsRequired": true,
+      "readySelector": "pager-wc[data-upgraded] > nav[data-paged-nav]",
+      "variants": [
+        {
+          "id": "numbered",
+          "name": "Numbered (default)",
+          "html": "<ul id=\"ev-pager-num\" data-paged data-paged-size=\"3\" data-paged-controls=\"none\"><li>Article 1</li><li>Article 2</li><li>Article 3</li><li>Article 4</li><li>Article 5</li><li>Article 6</li><li>Article 7</li><li>Article 8</li><li>Article 9</li><li>Article 10</li><li>Article 11</li><li>Article 12</li></ul>\n<pager-wc target=\"#ev-pager-num\" data-label-nav=\"Articles pages\"></pager-wc>"
+        },
+        {
+          "id": "prev-next",
+          "name": "Prev / next",
+          "attributes": {
+            "data-style": "prev-next"
+          },
+          "html": "<ul id=\"ev-pager-pn\" data-paged data-paged-size=\"3\" data-paged-controls=\"none\"><li>Step 1</li><li>Step 2</li><li>Step 3</li><li>Step 4</li><li>Step 5</li><li>Step 6</li><li>Step 7</li><li>Step 8</li><li>Step 9</li></ul>\n<pager-wc target=\"#ev-pager-pn\" data-style=\"prev-next\" data-label-nav=\"Steps pages\"></pager-wc>"
+        },
+        {
+          "id": "load-more",
+          "name": "Load more (progressive target)",
+          "attributes": {
+            "data-style": "load-more"
+          },
+          "html": "<ul id=\"ev-pager-lm\" data-paged data-paged-size=\"3\" data-paged-style=\"load-more\" data-paged-controls=\"none\"><li>Activity 1</li><li>Activity 2</li><li>Activity 3</li><li>Activity 4</li><li>Activity 5</li><li>Activity 6</li><li>Activity 7</li><li>Activity 8</li></ul>\n<pager-wc target=\"#ev-pager-lm\" data-style=\"load-more\" data-label-nav=\"More activity\"></pager-wc>"
         }
       ]
     },
@@ -5398,6 +5548,28 @@
             "justify"
           ],
           "html": "<p class=\"justify\">Justified text aligns to both the left and right margins, creating clean edges on both sides. Automatic hyphenation breaks long words across lines to maintain even spacing. This style is common in books, newspapers, and other formal printed material where neat columns of text are desired.</p>"
+        },
+        {
+          "id": "emphasis-toggle",
+          "name": "Emphasis toggle (nested em, em in blockquote)",
+          "html": "<p><em>Read <em>The Odyssey</em> before the seminar</em>, then compare translations.</p>\n<blockquote><p>The <em>first</em> rule of the archive: never trust a single source.</p></blockquote>"
+        },
+        {
+          "id": "drop-cap",
+          "name": "Drop cap (p[data-drop-cap])",
+          "attributes": {
+            "data-drop-cap": ""
+          },
+          "html": "<p data-drop-cap>Once upon a time, in a kingdom by the sea, there lived a cartographer who mapped only the places nobody had visited yet. Her charts were full of careful blanks.</p>"
+        },
+        {
+          "id": "lead-cjk",
+          "name": "Lead + indent (Japanese)",
+          "classes": [
+            "lead",
+            "indent"
+          ],
+          "html": "<section lang=\"ja\">\n  <p class=\"lead\">日本語のリード段落は本文と同じ行間を保ちます。長い文章でも読みやすさが損なわれません。</p>\n  <p class=\"indent\">字下げは全角一文字分です。段落の始まりが明確になり、縦書きの伝統にも沿っています。</p>\n</section>"
         }
       ]
     },
@@ -5427,6 +5599,133 @@
       ]
     },
     {
+      "id": "poll-wc",
+      "tag": "poll-wc",
+      "type": "web-component",
+      "category": "interactive",
+      "cssFile": "src/web-components/poll-wc/styles.css",
+      "jsRequired": true,
+      "readySelector": "poll-wc[data-upgraded]",
+      "variants": [
+        {
+          "id": "single",
+          "name": "Single-choice",
+          "html": "<poll-wc>\n  <span slot=\"question\">When should we ship?</span>\n  <button data-option=\"friday\" data-count=\"12\">Friday</button>\n  <button data-option=\"next-mon\" data-count=\"33\" data-mine>Next Monday</button>\n  <button data-option=\"next-fri\" data-count=\"8\">Next Friday</button>\n  <button data-option=\"never\" data-count=\"2\">Never</button>\n</poll-wc>"
+        },
+        {
+          "id": "multi",
+          "name": "Multi-choice",
+          "html": "<poll-wc data-multi>\n  <span slot=\"question\">Which features matter to you?</span>\n  <button data-option=\"dark\" data-count=\"80\" data-mine>Dark mode</button>\n  <button data-option=\"i18n\" data-count=\"55\">i18n</button>\n  <button data-option=\"offline\" data-count=\"40\" data-mine>Offline</button>\n</poll-wc>"
+        },
+        {
+          "id": "closed",
+          "name": "Closed (results only)",
+          "html": "<poll-wc data-closed>\n  <span slot=\"question\">Best win this quarter?</span>\n  <button data-option=\"ship\" data-count=\"22\" data-mine>Shipping VB 1.0</button>\n  <button data-option=\"onboard\" data-count=\"9\">Onboarding revamp</button>\n  <button data-option=\"docs\" data-count=\"14\">Docs rewrite</button>\n</poll-wc>"
+        },
+        {
+          "id": "hide-counts",
+          "name": "Hidden counts",
+          "html": "<poll-wc data-hide-counts>\n  <span slot=\"question\">When should we ship?</span>\n  <button data-option=\"friday\" data-count=\"12\">Friday</button>\n  <button data-option=\"next-mon\" data-count=\"33\" data-mine>Next Monday</button>\n  <button data-option=\"next-fri\" data-count=\"8\">Next Friday</button>\n  <button data-option=\"never\" data-count=\"2\">Never</button>\n</poll-wc>"
+        },
+        {
+          "id": "disabled",
+          "name": "Disabled",
+          "html": "<poll-wc disabled>\n  <span slot=\"question\">When should we ship?</span>\n  <button data-option=\"friday\" data-count=\"12\">Friday</button>\n  <button data-option=\"next-mon\" data-count=\"33\" data-mine>Next Monday</button>\n  <button data-option=\"next-fri\" data-count=\"8\">Next Friday</button>\n  <button data-option=\"never\" data-count=\"2\">Never</button>\n</poll-wc>"
+        },
+        {
+          "id": "form-fallback",
+          "name": "Enhanced native form",
+          "html": "<poll-wc>\n  <form action=\"/polls/theme\" method=\"post\">\n    <fieldset>\n      <legend>Default theme for new sites?</legend>\n      <label><input type=\"radio\" name=\"vote\" value=\"light\" data-count=\"18\"> Light</label>\n      <label><input type=\"radio\" name=\"vote\" value=\"dark\" data-count=\"27\"> Dark</label>\n      <label><input type=\"radio\" name=\"vote\" value=\"system\" data-count=\"41\" checked> Follow the system</label>\n      <button type=\"submit\">Vote</button>\n    </fieldset>\n  </form>\n</poll-wc>"
+        }
+      ]
+    },
+    {
+      "id": "pop-over",
+      "tag": "pop-over",
+      "type": "web-component",
+      "category": "interactive",
+      "cssFile": "src/web-components/pop-over/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Default (bottom, no data-position)",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "await new Promise(r => setTimeout(r, 300));\n    document.querySelector('pop-over').show();\n    await new Promise(r => requestAnimationFrame(r));",
+          "html": "<p><button type=\"button\" popovertarget=\"cv-pop-default\">Preferences</button></p>\n<pop-over id=\"cv-pop-default\">\n  <p>Centred below the trigger.</p>\n</pop-over>"
+        },
+        {
+          "id": "bottom-start",
+          "name": "Bottom-start",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "await new Promise(r => setTimeout(r, 300));\n    document.querySelector('pop-over').show();\n    await new Promise(r => requestAnimationFrame(r));",
+          "html": "<p><button type=\"button\" popovertarget=\"cv-pop-bs\">Account</button></p>\n<pop-over id=\"cv-pop-bs\" data-position=\"bottom-start\">\n  <p>Hangs from the trigger's inline-start edge.</p>\n</pop-over>"
+        },
+        {
+          "id": "top-offset",
+          "name": "Top, offset m",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "await new Promise(r => setTimeout(r, 300));\n    document.querySelector('pop-over').show();\n    await new Promise(r => requestAnimationFrame(r));",
+          "html": "<p><button type=\"button\" popovertarget=\"cv-pop-top\">Help</button></p>\n<pop-over id=\"cv-pop-top\" data-position=\"top\" data-offset=\"m\">\n  <p>Floats above the trigger.</p>\n</pop-over>"
+        },
+        {
+          "id": "right-start",
+          "name": "Right-start",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "await new Promise(r => setTimeout(r, 300));\n    document.querySelector('pop-over').show();\n    await new Promise(r => requestAnimationFrame(r));",
+          "html": "<p><button type=\"button\" popovertarget=\"cv-pop-right\">Details</button></p>\n<pop-over id=\"cv-pop-right\" data-position=\"right-start\">\n  <p>Beside the trigger.</p>\n</pop-over>"
+        },
+        {
+          "id": "manual-centred",
+          "name": "Manual, no anchor (centred)",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "await new Promise(r => setTimeout(r, 300));\n    document.querySelector('pop-over').show();\n    await new Promise(r => requestAnimationFrame(r));",
+          "html": "<pop-over id=\"cv-pop-manual\" data-mode=\"manual\">\n  <p>No anchor: centred in the viewport.</p>\n  <button type=\"button\">Close</button>\n</pop-over>"
+        }
+      ]
+    },
+    {
+      "id": "popularity-index",
+      "tag": "popularity-index",
+      "type": "web-component",
+      "category": "navigation",
+      "cssFile": "src/web-components/popularity-index/styles.css",
+      "jsRequired": true,
+      "readySelector": "popularity-index:is([data-state=\"ready\"], [data-state=\"empty\"], [data-state=\"unavailable\"])",
+      "variants": [
+        {
+          "id": "list",
+          "name": "Ranked list",
+          "html": "<popularity-index analytics-src=\"data:application/json,%7B%22pages%22%3A%5B%7B%22url%22%3A%22%2Fchangelog%2F%22%2C%22title%22%3A%22Changelog%22%2C%22views%22%3A1834%7D%2C%7B%22url%22%3A%22%2Fglossary%2F%22%2C%22title%22%3A%22Glossary%22%2C%22views%22%3A1421%7D%2C%7B%22url%22%3A%22%2Fdocs%2Fconcepts%2Fdocument-provenance%2F%22%2C%22title%22%3A%22Document%20Provenance%22%2C%22views%22%3A988%7D%2C%7B%22url%22%3A%22%2Fsitemap%2F%22%2C%22title%22%3A%22Sitemap%22%2C%22views%22%3A1%7D%5D%7D\"></popularity-index>"
+        },
+        {
+          "id": "heading-level",
+          "name": "h3 heading, limit 2",
+          "html": "<popularity-index analytics-src=\"data:application/json,%7B%22pages%22%3A%5B%7B%22url%22%3A%22%2Fchangelog%2F%22%2C%22title%22%3A%22Changelog%22%2C%22views%22%3A1834%7D%2C%7B%22url%22%3A%22%2Fglossary%2F%22%2C%22title%22%3A%22Glossary%22%2C%22views%22%3A1421%7D%2C%7B%22url%22%3A%22%2Fdocs%2Fconcepts%2Fdocument-provenance%2F%22%2C%22title%22%3A%22Document%20Provenance%22%2C%22views%22%3A988%7D%2C%7B%22url%22%3A%22%2Fsitemap%2F%22%2C%22title%22%3A%22Sitemap%22%2C%22views%22%3A1%7D%5D%7D\" data-heading-level=\"3\" data-label-heading=\"Popular this week\" limit=\"2\"></popularity-index>"
+        },
+        {
+          "id": "no-heading",
+          "name": "No heading",
+          "html": "<popularity-index analytics-src=\"data:application/json,%7B%22pages%22%3A%5B%7B%22url%22%3A%22%2Fchangelog%2F%22%2C%22title%22%3A%22Changelog%22%2C%22views%22%3A1834%7D%2C%7B%22url%22%3A%22%2Fglossary%2F%22%2C%22title%22%3A%22Glossary%22%2C%22views%22%3A1421%7D%2C%7B%22url%22%3A%22%2Fdocs%2Fconcepts%2Fdocument-provenance%2F%22%2C%22title%22%3A%22Document%20Provenance%22%2C%22views%22%3A988%7D%2C%7B%22url%22%3A%22%2Fsitemap%2F%22%2C%22title%22%3A%22Sitemap%22%2C%22views%22%3A1%7D%5D%7D\" data-heading-level=\"0\"></popularity-index>"
+        },
+        {
+          "id": "empty",
+          "name": "Empty state",
+          "html": "<popularity-index analytics-src=\"data:application/json,%7B%22pages%22%3A%5B%5D%7D\"></popularity-index>"
+        },
+        {
+          "id": "unavailable",
+          "name": "Unavailable state",
+          "html": "<popularity-index analytics-src=\"data:application/json,%7Bnot%20json\"></popularity-index>"
+        }
+      ]
+    },
+    {
       "id": "pre",
       "tag": "pre",
       "type": "native",
@@ -5443,6 +5742,35 @@
           "id": "code-block",
           "name": "Code Block (pre > code)",
           "html": "<pre><code>const app = express();\n\napp.get(\"/api/users\", async (req, res) => {\n  const users = await db.query(\"SELECT * FROM users\");\n  res.json(users);\n});\n\napp.listen(3000);</code></pre>"
+        },
+        {
+          "id": "ascii-art",
+          "name": "Bare pre (ASCII art)",
+          "html": "<figure role=\"img\" aria-label=\"A small tree drawn with asterisks\">\n<pre>    *\n   ***\n  *****\n *******\n*********\n   |||</pre>\n</figure>"
+        },
+        {
+          "id": "samp",
+          "name": "Terminal output (pre > samp)",
+          "html": "<pre><samp>$ npm install\nadded 125 packages in 3.2s\n\n$ npm run build\nBuild completed successfully.</samp></pre>"
+        },
+        {
+          "id": "overflow",
+          "name": "Long line (keyboard-scrollable region)",
+          "attributes": {
+            "tabindex": "0",
+            "role": "region"
+          },
+          "html": "<pre tabindex=\"0\" role=\"region\" aria-label=\"Long line code example\"><code>const longVariableName = someFunction(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7);</code></pre>"
+        },
+        {
+          "id": "tabs",
+          "name": "Tab-indented code (tab-size 4)",
+          "html": "<pre><code>function outer() {\n\tif (ready) {\n\t\treturn true;\n\t}\n}</code></pre>"
+        },
+        {
+          "id": "rtl-page",
+          "name": "Code block on an RTL page (stays LTR)",
+          "html": "<section dir=\"rtl\" lang=\"ar\">\n  <p>مثال على الكود:</p>\n  <pre><code>greet('World');\nconst total = items.length;</code></pre>\n</section>"
         }
       ]
     },
@@ -5476,11 +5804,12 @@
       "type": "native",
       "category": "feedback",
       "cssFile": "src/native-elements/progress/styles.css",
+      "jsRequired": true,
       "variants": [
         {
           "id": "default",
           "name": "Default",
-          "html": "<progress value=\"65\" max=\"100\">65%</progress>"
+          "html": "<progress aria-label=\"Upload\" value=\"65\" max=\"100\">65%</progress>"
         },
         {
           "id": "success",
@@ -5488,7 +5817,7 @@
           "classes": [
             "success"
           ],
-          "html": "<progress class=\"success\" value=\"100\" max=\"100\">100%</progress>"
+          "html": "<progress aria-label=\"Upload\" class=\"success\" value=\"100\" max=\"100\">100%</progress>"
         },
         {
           "id": "warning",
@@ -5496,7 +5825,7 @@
           "classes": [
             "warning"
           ],
-          "html": "<progress class=\"warning\" value=\"72\" max=\"100\">72%</progress>"
+          "html": "<progress aria-label=\"Upload\" class=\"warning\" value=\"72\" max=\"100\">72%</progress>"
         },
         {
           "id": "error",
@@ -5504,12 +5833,12 @@
           "classes": [
             "error"
           ],
-          "html": "<progress class=\"error\" value=\"95\" max=\"100\">95%</progress>"
+          "html": "<progress aria-label=\"Upload\" class=\"error\" value=\"95\" max=\"100\">95%</progress>"
         },
         {
           "id": "indeterminate",
           "name": "Indeterminate",
-          "html": "<progress>Loading…</progress>"
+          "html": "<progress aria-label=\"Loading\">Loading…</progress>"
         },
         {
           "id": "size-xs",
@@ -5517,7 +5846,7 @@
           "classes": [
             "xs"
           ],
-          "html": "<progress class=\"xs\" value=\"60\" max=\"100\">60%</progress>"
+          "html": "<progress aria-label=\"Upload\" class=\"xs\" value=\"60\" max=\"100\">60%</progress>"
         },
         {
           "id": "size-s",
@@ -5525,7 +5854,7 @@
           "classes": [
             "s"
           ],
-          "html": "<progress class=\"s\" value=\"60\" max=\"100\">60%</progress>"
+          "html": "<progress aria-label=\"Upload\" class=\"s\" value=\"60\" max=\"100\">60%</progress>"
         },
         {
           "id": "size-l",
@@ -5533,36 +5862,128 @@
           "classes": [
             "l"
           ],
-          "html": "<progress class=\"l\" value=\"60\" max=\"100\">60%</progress>"
+          "html": "<progress aria-label=\"Upload\" class=\"l\" value=\"60\" max=\"100\">60%</progress>"
+        },
+        {
+          "id": "labeled",
+          "name": "Labeled (header + output)",
+          "classes": [
+            "labeled"
+          ],
+          "html": "<section class=\"labeled\">\n  <header>\n    <label for=\"cmp-progress-upload\">Uploading file.zip</label>\n    <output id=\"cmp-progress-upload-value\" for=\"cmp-progress-upload\">45%</output>\n  </header>\n  <progress id=\"cmp-progress-upload\" aria-describedby=\"cmp-progress-upload-value\" value=\"45\" max=\"100\">45%</progress>\n</section>"
+        },
+        {
+          "id": "ring",
+          "name": "Ring (40%)",
+          "attributes": {
+            "data-type": "ring"
+          },
+          "html": "<progress data-type=\"ring\" aria-label=\"Upload\" value=\"40\" max=\"100\">40%</progress>",
+          "setup": "for (let i = 0; i < 50 && document.querySelectorAll('progress[data-type=\"ring\"]:not([data-enhanced])').length; i++) { await new Promise(r => setTimeout(r, 20)); }",
+          "interactive": true
+        },
+        {
+          "id": "ring-success",
+          "name": "Ring Success",
+          "classes": [
+            "success"
+          ],
+          "attributes": {
+            "data-type": "ring"
+          },
+          "html": "<progress data-type=\"ring\" class=\"success\" aria-label=\"Upload complete\" data-label=\"Done\" value=\"100\" max=\"100\">Done</progress>",
+          "setup": "for (let i = 0; i < 50 && document.querySelectorAll('progress[data-type=\"ring\"]:not([data-enhanced])').length; i++) { await new Promise(r => setTimeout(r, 20)); }",
+          "interactive": true
+        },
+        {
+          "id": "ring-warning",
+          "name": "Ring Warning",
+          "classes": [
+            "warning"
+          ],
+          "attributes": {
+            "data-type": "ring"
+          },
+          "html": "<progress data-type=\"ring\" class=\"warning\" aria-label=\"Disk quota used\" value=\"45\" max=\"100\">45%</progress>",
+          "setup": "for (let i = 0; i < 50 && document.querySelectorAll('progress[data-type=\"ring\"]:not([data-enhanced])').length; i++) { await new Promise(r => setTimeout(r, 20)); }",
+          "interactive": true
+        },
+        {
+          "id": "ring-error",
+          "name": "Ring Error",
+          "classes": [
+            "error"
+          ],
+          "attributes": {
+            "data-type": "ring"
+          },
+          "html": "<progress data-type=\"ring\" class=\"error\" aria-label=\"Battery remaining\" value=\"20\" max=\"100\">20%</progress>",
+          "setup": "for (let i = 0; i < 50 && document.querySelectorAll('progress[data-type=\"ring\"]:not([data-enhanced])').length; i++) { await new Promise(r => setTimeout(r, 20)); }",
+          "interactive": true
+        },
+        {
+          "id": "ring-size-l",
+          "name": "Ring Size L",
+          "attributes": {
+            "data-type": "ring"
+          },
+          "html": "<progress data-type=\"ring\" data-size=\"l\" aria-label=\"Sync\" value=\"75\" max=\"100\">75%</progress>",
+          "setup": "for (let i = 0; i < 50 && document.querySelectorAll('progress[data-type=\"ring\"]:not([data-enhanced])').length; i++) { await new Promise(r => setTimeout(r, 20)); }",
+          "interactive": true
+        },
+        {
+          "id": "ring-size-xs-no-label",
+          "name": "Ring Size XS (no label)",
+          "attributes": {
+            "data-type": "ring"
+          },
+          "html": "<progress data-type=\"ring\" data-size=\"xs\" data-label=\"none\" aria-label=\"Sync\" value=\"60\" max=\"100\">60%</progress>",
+          "setup": "for (let i = 0; i < 50 && document.querySelectorAll('progress[data-type=\"ring\"]:not([data-enhanced])').length; i++) { await new Promise(r => setTimeout(r, 20)); }",
+          "interactive": true
         }
       ]
     },
     {
-      "id": "progress-ring",
-      "tag": "progress-ring",
-      "type": "custom",
+      "id": "progress-tracker",
+      "tag": "progress-tracker",
+      "type": "web-component",
       "category": "feedback",
-      "cssFile": "src/custom-elements/progress-ring/styles.css",
+      "cssFile": "src/web-components/progress-tracker/styles.css",
+      "jsRequired": true,
+      "readySelector": "progress-tracker[data-upgraded] li[data-status]",
       "variants": [
         {
-          "id": "default",
-          "name": "Default (40%)",
-          "html": "<progress-ring style=\"--progress:40\"><span>40%</span></progress-ring>"
+          "id": "horizontal",
+          "name": "Horizontal, clickable",
+          "attributes": {
+            "data-current": "prefs",
+            "data-clickable": ""
+          },
+          "fixtureWidth": "wide",
+          "html": "<progress-tracker data-current=\"prefs\" data-clickable data-label-list=\"Sign-up progress\">\n  <ol>\n    <li data-step=\"account\">Account</li>\n    <li data-step=\"profile\">Profile</li>\n    <li data-step=\"prefs\">Preferences</li>\n    <li data-step=\"confirm\">Confirm</li>\n  </ol>\n</progress-tracker>"
         },
         {
-          "id": "success",
-          "name": "Success (100%)",
-          "html": "<progress-ring data-variant=\"success\" style=\"--progress:100\"><span>Done</span></progress-ring>"
+          "id": "vertical",
+          "name": "Vertical",
+          "attributes": {
+            "data-direction": "vertical"
+          },
+          "html": "<progress-tracker data-current=\"3\" data-direction=\"vertical\" data-label-list=\"Order status\">\n  <ol>\n    <li>Order placed</li>\n    <li>Packed</li>\n    <li>Shipped</li>\n    <li>Delivered</li>\n  </ol>\n</progress-tracker>"
         },
         {
           "id": "error",
-          "name": "Error (20%)",
-          "html": "<progress-ring data-variant=\"error\" style=\"--progress:20\"><span>20%</span></progress-ring>"
+          "name": "Error mid-flow",
+          "fixtureWidth": "wide",
+          "html": "<progress-tracker data-current=\"3\" data-label-list=\"Import progress\">\n  <ol>\n    <li>Validate</li>\n    <li data-error>Upload</li>\n    <li>Process</li>\n    <li>Complete</li>\n  </ol>\n</progress-tracker>"
         },
         {
-          "id": "size-l",
-          "name": "Size L",
-          "html": "<progress-ring data-size=\"l\" style=\"--progress:75\"><span>75%</span></progress-ring>"
+          "id": "rtl",
+          "name": "Right-to-left",
+          "attributes": {
+            "dir": "rtl"
+          },
+          "fixtureWidth": "wide",
+          "html": "<progress-tracker dir=\"rtl\" lang=\"ar\" data-current=\"2\" data-label-list=\"التقدم\">\n  <ol>\n    <li>الحساب</li>\n    <li>الملف الشخصي</li>\n    <li>التفضيلات</li>\n    <li>التأكيد</li>\n  </ol>\n</progress-tracker>"
         }
       ]
     },

@@ -1091,9 +1091,27 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "auto": { boolean: true },
-      "og-preview": { boolean: true },
-      "datetime": {},
-      "data-trust": {}
+      "data-concept-base": {},
+      "data-heading-level": { enum: ["2", "3", "4", "5", "6"] },
+      "data-label-reading-time": {},
+      "data-label-author": {},
+      "data-label-history": {},
+      "data-label-provenance": {},
+      "data-label-topic": {},
+      "data-label-published": {},
+      "data-label-updated": {},
+      "data-label-version": {},
+      "data-label-authorship": {},
+      "data-label-ai-tools": {},
+      "data-label-review": {},
+      "data-label-status": {},
+      "data-label-license": {},
+      "data-label-concepts": {},
+      "data-label-keywords": {},
+      "data-label-tier-declared": {},
+      "data-label-tier-verified": {},
+      "data-label-tier-failed": {},
+      "data-label-tier-key-unavailable": {}
     }
   },
 
@@ -1103,7 +1121,12 @@ module.exports = {
     attributes: {
       "data-for": {},
       "data-wpm": {},
-      "data-show": {}
+      "data-show": {},
+      "data-label-reading-time": {},
+      "data-label-word-count": {},
+      "data-label-last-modified": {},
+      "data-label-min-read": {},
+      "data-label-words": {}
     }
   },
 
@@ -1112,9 +1135,9 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "levels": {},
-      "title": {},
-      "href": {},
-      "data-toc-ignore": {}
+      "scope": {},
+      "data-title": {},
+      "orientation": { enum: ["horizontal"] }
     }
   },
 
@@ -1122,17 +1145,14 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "data-position": {},
-      "data-orientation": {},
-      "data-gap": {},
+      "data-position": { enum: ["sticky", "fixed", "inline"] },
+      "data-orientation": { enum: ["auto", "vertical", "horizontal"] },
+      "data-gap": { enum: ["2xs", "xs", "s", "m", "l"] },
       "data-fab-icon": {},
       "data-fab-label": {},
       "data-breakpoint": {},
-      "role": {},
-      "data-page-tools-internal": {},
-      "popovertarget": {},
-      "data-resolved-orientation": {},
-      "data-collapsed": {}
+      "data-resolved-orientation": { enum: ["vertical", "horizontal"] },
+      "data-collapsed": { boolean: true }
     }
   },
 
@@ -1146,6 +1166,14 @@ module.exports = {
       "data-persist": { enum: ["none", "session", "local"] },
       "data-persist-key": {},
       "data-spotlight-padding": {},
+      "data-label-step": {},
+      "data-label-skip": {},
+      "data-label-close": {},
+      "data-label-prev": {},
+      "data-label-next": {},
+      "data-label-finish": {},
+      "data-label-nav": {},
+      "data-label-ready": {},
       "data-step": {},
       "data-active": { boolean: true },
       "data-complete": { boolean: true }
@@ -1158,7 +1186,15 @@ module.exports = {
     attributes: {
       "target": {},
       "for": {},
-      "style": { enum: ["numbered", "prev-next", "load-more"] }
+      "data-style": { enum: ["numbered", "prev-next", "load-more"] },
+      "data-label-nav": {},
+      "data-label-prev": {},
+      "data-label-next": {},
+      "data-label-page": {},
+      "data-label-status": {},
+      "data-label-load-more": {},
+      "data-label-no-more": {},
+      "data-label-missing": {}
     }
   },
 
@@ -1170,7 +1206,12 @@ module.exports = {
       "data-multi": { boolean: true },
       "data-closed": { boolean: true },
       "data-hide-counts": { boolean: true },
-      "disabled": { boolean: true }
+      "disabled": { boolean: true },
+      "data-label-vote": {},
+      "data-label-votes": {},
+      "data-label-your-choice": {},
+      "data-label-closed": {},
+      "data-label-poll": {}
     }
   },
 
@@ -1181,7 +1222,8 @@ module.exports = {
       "data-mode": { enum: ["auto", "manual", "hint"] },
       "data-anchor": {},
       "data-position": { enum: ["top", "bottom", "left", "right", "top-start", "top-end", "bottom-start", "bottom-end", "left-start", "left-end", "right-start", "right-end"] },
-      "data-offset": { enum: ["none", "xs", "s", "m", "l"] }
+      "data-offset": { enum: ["none", "xs", "s", "m", "l"] },
+      "data-anchor-name": {}
     }
   },
 
@@ -1193,7 +1235,14 @@ module.exports = {
       "data-meta-src": {},
       "data-lens-src": {},
       "limit": {},
-      "window": {}
+      "window": {},
+      "data-heading-level": {},
+      "data-label-heading": {},
+      "data-label-view": {},
+      "data-label-views": {},
+      "data-label-unavailable": {},
+      "data-label-empty": {},
+      "data-state": { enum: ["loading", "ready", "empty", "unavailable"] }
     }
   },
 
@@ -1203,19 +1252,24 @@ module.exports = {
     attributes: {
       "raw-toggle": { boolean: true },
       "label": {},
-      "role": {},
-      "data-print-raw": {}
+      "variant": { enum: ["icon", "label", "icon-label"] },
+      "data-label-raw": {}
     }
   },
 
   "progress-tracker": {
     flow: true,
-    permittedContent: ["li", "@flow"],
+    permittedContent: ["ol"],
     attributes: {
       "data-current": {},
       "data-clickable": { boolean: true },
-      "aria-label": {},
-      "role": {}
+      "data-direction": { enum: ["horizontal", "vertical"] },
+      "data-label-list": {},
+      "data-label-step": {},
+      "data-label-complete": {},
+      "data-label-current": {},
+      "data-label-upcoming": {},
+      "data-label-error": {}
     }
   },
 

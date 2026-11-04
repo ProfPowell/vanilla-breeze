@@ -267,7 +267,7 @@ Theme and runtime `<link>` hooks:
 - `data-vb-math-font`: `<link rel="stylesheet" href="{cdn}/fonts/math-fonts.css">`, injected by math-init. It points at the self-hosted `{cdn}/fonts/latinmodern-math.woff2`, the same face the core CSS declares for plain `<math>`.
 - `data-math="copyable"` renders `<button type="button" data-math-copy>` inside `[data-math-rendered]`. `data-label-copy` sets the button text (default "Copy LaTeX"); `data-label-copied` sets the announcement in the persistent `role="status"` span (default "Copied to clipboard").
 - `data-mathml`: precompiled MathML string, passed through `sanitizeMathML()` (MathML-namespace elements only; no `on*`/`href`/`src`/`style`/`id`/`name`/`xlink:`/`xml:` attributes; no `mglyph`/`malignmark`) and inserted as nodes. Do not rely on it to carry anything but MathML.
-- Runtime `rel` reads are token-list and case-insensitive (`[rel~="x" i]`): `canonical` (share-wc, page-info; resolved via `.href`), `author`, `license`, `author-key` (page-info, canonicalize).
+- Runtime `rel` reads are token-list and case-insensitive (`[rel~="x" i]`): `canonical` (share-wc resolves via `.href`; page-info and scripts/sign-pages.js both read the RAW href via `canonicalLinkHref()` so signer and verifier sign the same `url`), `author`, `license`, `author-key` (page-info, canonicalize).
 - `theme-loader.js` exports `getCdnBase()`, the detected CDN base (`__VB_THEME_BASE` → `setThemeBase()` → `<script src*="vanilla-breeze">` dir → `/cdn`).
 
 ### Accents (`data-accent`)
@@ -295,7 +295,17 @@ Theme ornament tokens (plain string values; rendered with empty alt text, so exc
 
 ### `<p>` Paragraph
 
-Base: text-wrap pretty. `<mark>` gets background + padding + radius.
+Base: `text-wrap: pretty`; `p + p` gets `margin-block-start: var(--size-m)`.
+
+| Class / Attribute | Description |
+|-------------------|-------------|
+| `.lead` | `--font-size-xl`, `--line-height-relaxed`, muted text (CJK `:lang(zh\|ja\|ko)`: line-height 1.8) |
+| `.balance` | `text-wrap: balance` (short centred text; browsers cap at ~6 lines) |
+| `.indent` | First-line indent 1.5em (CJK: 1em); `.indent + .indent` drops the paragraph gap |
+| `.justify` | `text-align: justify` + `hyphens: auto` (hyphenates only with a `lang` the browser has a dictionary for); `a11y-dyslexia` resets it |
+| `data-drop-cap` | Decorative initial letter (`initial-letter: 3`, floated fallback); also on `<article>` (styles in article/styles.css) |
+
+Emphasis in the same file: nested italic toggles upright inside italic contexts (`em`, `i`, `blockquote`, `cite`, `dfn`, `var`); `<mark>` gets background + padding + radius.
 
 ### `<a>` Anchor
 
@@ -514,10 +524,20 @@ Current page: `aria-current="page"` (or `.active`) is underlined as a non-colour
 
 ### `<progress>` Progress Bar
 
-| Class | Description |
-|-------|-------------|
-| `.xs`, `.s`, `.m`, `.l` | Size variants |
-| `.success`, `.warning`, `.error` | Color variants |
+Track: `--progress-track-bg` with a 1px `--progress-track-border` (`--control-border`, 3:1) edge. Fill: `--progress-fill`. Name every bar with `<label for>` or `aria-label` (`<form-field>` does not wire `for`).
+
+| Class / Attribute | Description |
+|-------------------|-------------|
+| `.xs`, `.s`, `.m`, `.l` | Size variants (`.xs` is a decorative hairline with no track border) |
+| `.success`, `.warning`, `.error` | Colour variants — set `--progress-fill` (`.warning` uses `--progress-fill-warning`, darkened in light mode); apply to bars, rings and themes |
+| `.labeled` (wrapper) | `.labeled:has(> progress)`: a `<header>` or `<label>` row plus the `<progress>` |
+| `data-type="ring"` | Circular mode, enhanced by `utils/progress-ring-init.js` (adds `[data-enhanced]`, `--progress` 0–100, an `aria-hidden` centre label). Without JS: a linear bar. Keeps the 1px `--progress-track-border` as its outer circle; remaining arc in `--progress-ring-track` (default `--progress-track-bg`) |
+| `data-size` (ring) | `xs`, `s`, `m` (default), `l`, `xl` |
+| `data-label` (ring) | Centre label text override; `none` hides it. The label is created lazily (an indeterminate ring gets one when it receives a `value`) and hidden while indeterminate |
+
+Ring tokens: `--progress-ring-size` (4em), `--progress-ring-width` (0.35em), `--progress-ring-track`. The utility watches `value` and `max`. Indeterminate bars shimmer (Blink/WebKit track, Firefox bar) and rings spin; both slow down under `prefers-reduced-motion` and `:root[data-motion-reduced]`. Forced colors: `Highlight` fill on `Canvas` with a `CanvasText` edge (rings: `Highlight` on `GrayText`). Themes 8bit/nes/win9x paint their fills from `--progress-fill` and skip enhanced rings.
+
+Labelled pattern: `<section class="labeled"><header><label for="p">…</label><output id="p-value" for="p">45%</output></header><progress id="p" aria-describedby="p-value" value="45" max="100">45%</progress></section>`.
 
 ### `<meter>` Meter
 
@@ -550,6 +570,8 @@ Base: left border accent, muted italic text, `<footer>` for attribution.
 ### `<code>`, `<pre>`, `<kbd>`, `<samp>`, `<var>` Code
 
 Base: monospace font, `<code>` gets background highlight, `<kbd>` gets border + shadow key style. A `<kbd>` with a `<kbd>` child (`kbd:has(> kbd)`, nested sequence/combination and the `data-hotkey` wrapper) is unboxed and inherits the font size; only inner caps are drawn. Inside `button`/`.button`/`[role="button"]` a cap takes the button's text colour with a derived edge and translucent fill.
+
+`<pre>`: `white-space: pre`, horizontal scroll, `tab-size: var(--tab-size, 4)`. `pre:has(code, samp)` is the code/output block (raised surface, padding, radius) and is `direction: ltr` unless the `pre` has its own `dir`; bare `<pre>` (ASCII art, poetry) follows the page direction. Forced colors: code blocks get a `CanvasText` border; `<b>`/`<strong>` inside `<pre>` use `Mark`/`MarkText`. A scrollable block made focusable with `tabindex="0"` must also get `role="region"` + `aria-label`. Print (`utils/print.css`): `pre-wrap`, `break-inside: avoid`, 1px border.
 
 ### `<ul>`, `<ol>` Lists
 
@@ -1120,15 +1142,9 @@ Children pattern: `<button data-trigger popovertarget="m" aria-label="Menu">` + 
 
 Tokens: `--mobile-menu-bg`, `--mobile-menu-radius`, `--mobile-menu-shadow`, `--mobile-menu-padding`, `--mobile-menu-max-width`, `--mobile-menu-backdrop`. Current link: `--color-interactive` fill + `--color-text-on-interactive-auto` text (via the nav `--_active-*` hooks); forced colors add outline + underline.
 
-#### `<progress-ring>`
+#### Progress ring
 
-| Attribute | Values | Description |
-|-----------|--------|-------------|
-| `data-size` | `xs`, `s`, `m`, `l`, `xl` | Size |
-| `data-variant` | `success`, `warning`, `error` | Color (default: primary) |
-| `data-indeterminate` | (boolean) | Spinning animation |
-
-CSS custom property `--progress` (0–100) controls fill.
+Not a custom element — use `<progress data-type="ring">` (see `<progress>` Progress Bar).
 
 ### Token Display Elements (for documentation)
 
@@ -1151,7 +1167,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 > build (`npm run build:cem`). The entries below are the human-readable companion;
 > when a component is missing detail here, read its `api.json` and `logic.js`.
 
-### Component index (69 elements)
+### Component index (76 elements)
 
 | Element | Purpose | Detail below |
 |---------|---------|:------------:|
@@ -1194,15 +1210,22 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<nav-bar>` | Top-level nav with automatic `aria-current="page"` (URL matching, popstate + Navigation API) | ✓ |
 | `<note-wc>` | Private reader notes on highlights: action in `<selection-menu>` (highlight + note), page-level button with `for="id"`, bare = panel host for margin-annotation clicks (`highlights:request-note`); `openFor(highlight, controller, opener?)`; `data-label-*` | |
 | `<notification-wc>` | `mode="banner"` dismissible strip (`persist`, `variant`, `position`, `expires`) or `mode="panel"` bell + drawer (static `<article data-id data-type data-date>` + `src` feed + `.notifications`), read state in VBStore; `data-label-*` | |
-| `<page-info>` | Document provenance disclosure (auto-reads §11 metadata) | (see §11) |
-| `<page-toc>` | Auto-generated table of contents | ✓ |
-| `<page-tour>` / `<tour-step>` | Guided product tour overlays | |
-| `<print-page>` | Print preview / paginated print view | |
+| `<page-info>` | Document provenance disclosure. Static: enhances `time[data-relative]` (Intl.RelativeTimeFormat in closest `[lang]`, absolute date in `title`, future dates "in 3 days"), `[data-reading-time]` (outermost `[data-signable]` roots, 238 wpm / 500 CJK chars per min, skips `[data-signable=false]`/hidden/script), first `.page-info-badge` (trust tier + visible `.page-info-tier` text). `auto` renders from §10 metadata as text only (links only when http(s)); author is plain text in `<summary>`, link in the panel. `data-concept-base` (default `/topics/`), `data-heading-level` (2–6), `data-label-*` (headings, row labels, `tier-*`, `provenance-*`/`review-*`/`status-*`, `reading-time` template `~{n}`); event `page-info:verified` `{ status, tier, reason? }` (declared first, then the verification result) | (see §10) |
+| `<page-stats>` | Reading stats for `data-for` target: `data-show="reading-time,word-count,last-modified"`, `data-wpm` (238, shared with page-info), Intl.Segmenter word count (CJK timed by characters), skips script/style/template/[hidden]/[aria-hidden]/[inert]/`[data-stats-ignore]`; `data-label-reading-time`/`word-count`/`last-modified`, templates `data-label-min-read` (`{n} read`) and `data-label-words` (`{n} words`, plus `-one`/`-few`/… PluralRules overrides); last-modified only from `meta[name=last-modified]`/`article:modified_time`; own `<dl data-generated>` recomputed on attribute change, author `<dl>` adopted | ✓ |
+| `<page-toc>` | Table of contents with scroll-spy: auto-built from `levels` (default `h2,h3`) inside `scope` (CSS selector, first match; default `main`), or enhances authored `.details > .summary + .nav > .list > .item > .link` markup (nest `.list` for sub-sections); `data-title` (summary + nav label, default "On this page"); `orientation="horizontal"` scrollable bar; `data-toc-ignore` on headings/ancestors; `.entries`, `refresh()`; event `page-toc:navigate` `{ id }` | ✓ |
+| `<page-tools>` | Page-utility toolbar (`role="toolbar"`, roving tabindex with arrows/Home/End, `aria-orientation`): `data-position` sticky\|fixed\|inline, `data-orientation` auto\|vertical\|horizontal (reflected `data-resolved-orientation`), `data-gap`; collapses at/below `data-breakpoint` (default `48rem`) to a FAB (`data-fab-icon`, `data-fab-label`) opening a native popover above it (reflected `data-collapsed`); `.tools`; `--page-tools-*` custom properties | |
+| `<page-tour>` / `<tour-step>` | Guided spotlight tour over `<tour-step data-target>` children (no-JS: in-page step list, optional `details.page-tour-guide` + `.page-tour-start-btn`): `data-title` (default "Page Tour"), `data-trigger` auto/manual/button (+ `[data-tour="id"]` buttons), `data-mode` passive/active/forced (skipping only), `data-persist` none/session/local + `data-persist-key`, `data-spotlight-padding` (overrides `--tour-spotlight-padding`); step `data-placement` top/bottom/inline-start/inline-end/auto (anchor-positioned, centred, flips), `data-action` none/click/focus/input/change/custom (Next `aria-disabled` + hint until done; focus never moved), `data-action-hint` (text), `data-skippable="false"`, `data-scroll` auto/smooth/none; reflects `data-step`/`data-active`/`data-complete`; `start(step?)` (while running = go to step), `stop()`/`next()`/`prev()`/`goto(i)`/`skip()`/`reset()`; keys anywhere while active (Escape, arrows, Home/End, Tab trap incl. gated target); events `tour:start`/`step`/`action`/`complete`/`skip`; `data-label-step` ("Step {n} of {total}")/`skip`/`close`/`prev`/`next`/`finish`/`nav`/`ready` | |
+| `<pager-wc>` | Decoupled pagination controls for a `[data-paged]` container: `target` (selector) / `for` (id) / implicit preceding `[data-paged]` sibling (resolved lazily; must carry `data-paged`); `data-style` `numbered`\|`prev-next`\|`load-more` (load-more needs `data-paged-style="load-more"` on the target, plus `data-paged-controls="none"`); `data-label-nav`/`prev`/`next`/`page` ("Page {page}")/`status` ("Page {page} of {total}")/`load-more` ("Load more ({n})")/`no-more`/`missing`; focus kept across renders; event `pager-wc:navigate` `{ page }` (page navigations only, not cancelable) | |
+| `<poll-wc>` | Voting with live counts, percentages and bars over `button[data-option]` children or a native radio/checkbox `<form>` fallback; author confirms with `setCount()` | ✓ |
+| `<pop-over>` | Anchored popover primitive (Popover API + CSS Anchor Positioning, JS fallback) | ✓ |
+| `<popularity-index>` | Most-visited list from `/api/analytics/popular` (or any `{ pages }` endpoint); http(s)/same-origin links only; `data-state` output | ✓ |
+| `<print-page>` | Print button wrapping `window.print()`; `variant` icon (default; label → `aria-label`)\|label\|icon-label; `label` (else authored text, else "Print this page"); `raw-toggle` adds a "print without VB styles" checkbox (sets `data-print-raw` on `<html>` for the print; host becomes a labelled `role="group"`), `data-label-raw`; never printed | |
+| `<progress-tracker>` | Multi-step progress over an inner `<ol>` of `<li data-step? data-error?>`: `data-current` (step id first, else 1-based index), `data-clickable` (completed steps become native `<button>`s), `data-direction="vertical"`; sets `li[data-status=complete\|current\|upcoming\|error]` + `aria-current="step"`; hidden status text via `data-label-step` ("Step {n} of {total}:"), `data-label-complete`/`current`/`upcoming`/`error`, list name `data-label-list`; `--pt-*` colour/size props; event `progress-tracker:step` `{ step, previousStep, source: 'attr'\|'click' }` (not on upgrade) | |
 | `<qr-code>` | QR code generator | ✓ |
 | `<reader-view>` | Reader-mode style stripping | |
 | `<settings-panel>` | Application settings drawer | |
 | `<short-cuts>` | Keyboard shortcut overlay (reads `data-hotkey`) | ✓ |
-| `<site-index>` | Aggregates `vb:topic`/keywords across pages | |
+| `<site-index>` | Enhances a static A–Z keyword index (or `src` JSON): filter (`filter` topic\|all), jump nav (`letters`), counts, `limit`, `sort`. The index is built from keywords / `article:tag` / `<meta name="concept">` | |
 | `<site-map>` | Hierarchical sitemap renderer | |
 | `<site-search>` | Pagefind-backed site search | ✓ |
 | `<slide-accept>` | "Slide to confirm" affordance | ✓ |
@@ -1319,6 +1342,25 @@ Right-click context menu.
 | `context-menu:select` | `{ value, label }` |
 
 Children: `<menu>` with `<button data-command="...">` items.
+
+### `<pop-over>`
+Anchored popover primitive over the native Popover API. Sets `popover` from `data-mode`, appends its own dashed-ident to the anchor's `anchor-name` list (several pop-overs can share one anchor; disconnect removes only its own name), and falls back to fixed positioning (measured after show, flipped and clamped to the viewport) without anchor-positioning support. Composed by `tool-tip`, `drop-down`, `combo-box`, `context-menu`, `selection-menu`, `reaction-bar`. The host has no role — authors supply semantics.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-mode` | `auto` (default), `manual`, `hint` | Popover type. `hint` falls back to `auto` where `popover="hint"` is unsupported; hover is not wired (use `interestfor` / `tool-tip`). An authored `popover` attribute wins at upgrade; later `data-mode` changes re-apply it |
+| `data-anchor` | element ID or selector | Anchor element (default: the `[popovertarget]` trigger pointing at this id) |
+| `data-position` | `bottom` (default), `top`, `left`, `right`, each with `-start`/`-end` | Placement; start/end are logical (mirror in RTL); flips on overflow |
+| `data-offset` | `none`, `xs` (default), `s`, `m`, `l` | Gap to the anchor (`--size-*`) |
+| `data-anchor-name` | (output) | Dashed-ident bound to the anchor; absent with no anchor / no anchor-positioning support |
+
+`data-mode`, `data-anchor` and `data-position` are observed (changes after upgrade re-wire). A manual pop-over with no anchor stays centred in the viewport. An authored `popover` attribute makes it work without script.
+
+| Events | Detail |
+|--------|--------|
+| `pop-over:show`, `pop-over:hide` | `{ state: 'open' \| 'closed' }` (bubbles, composed; fired on `beforetoggle`) |
+
+Methods: `show()`, `hide()`, `toggle()`. Property: `open` (read-only boolean).
 
 ### `<toast-msg>`
 Toast notification container.
@@ -1530,17 +1572,20 @@ Adds permalink anchors to headings. Activating one follows the fragment (`:targe
 After a copy the anchor gets `data-state="copied"` (styling hook).
 
 ### `<page-toc>`
-Auto-generated table of contents from headings.
+Table of contents with scroll-spy, auto-generated from headings or enhancing authored markup.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `levels` | e.g. `h2,h3` | Heading levels to include |
-| `scope` | CSS selector | Container to scan |
-| `title` | string | ToC title text |
+| `scope` | CSS selector | Container to scan (first match; docs layouts use `main article`) |
+| `data-title` | string | Summary text and nav `aria-label` (default "On this page") |
+| `orientation` | `horizontal` | Inline scrollable bar (summary hidden, nesting flattened) |
 
 | Events | Detail |
 |--------|--------|
-| `page-toc:navigate` | `{ id, heading }` |
+| `page-toc:navigate` | `{ id }` |
+
+Properties/methods: `.entries` (read-only `{ id, text, level }[]`), `refresh()`.
 
 ### `<nav-bar>`
 Top-level navigation primitive: keeps `aria-current="page"` on the link that matches the current URL.
@@ -1770,6 +1815,36 @@ Children: `<article data-id data-type="update|alert|watch|system|message|steward
 | `page-watch:remove` | `{ url, subscriptionId }` (Unwatch in the Watching tab) |
 
 A11y: trigger name carries the count ("Notifications, 3 unread"; badge `aria-hidden`); opening focuses the dialog; Escape / tabbing out / outside click close (focus back to the trigger when it was inside); All/Watching is a full tabs pattern (tablist, `aria-controls`, tabpanels, arrows/Home/End, roving tabindex); forced-colors borders on badge, selected tab, unread rows. No-JS (`scripting: none`): banner and articles render as plain content.
+
+### `<poll-wc>`
+Voting + live results; presentational (emits `poll-wc:vote`, author calls `setCount` after the server confirms). Children: `<span slot="question">` + `<button data-option data-count [data-mine]>` (label markup kept), **or** a native `<form><fieldset><legend>` of `<input type="radio|checkbox" value data-count [checked]>` in `<label>`s (no-JS fallback; enhanced into buttons: legend → question, checkbox → `data-multi`, `fieldset[disabled]` → `data-closed`, submit/`<output>` dropped).
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-multi` | boolean | Checkbox group (each option a Tab stop) instead of radio group (roving tabindex; arrows move focus **and** vote, Left/Right flipped in RTL) |
+| `data-closed` | boolean | Results only; total reads "N votes · closed" (DOM text). `open()` / `close()`; fires `poll-wc:closed-change` `{ closed }` |
+| `data-hide-counts` | boolean | Hides counts, percentages and bars — visually and from the accessible name |
+| `disabled` | boolean | Observed; `aria-disabled` on options, dimmed |
+| `aria-label` | string | Group name when there is no question; moved onto `.poll-options` (fallback `data-label-poll`, "Poll") |
+| `data-label-*` | string | `vote` / `votes` (picked with `Intl.PluralRules`), `your-choice`, `closed`, `poll` |
+| `data-pending` (option, output) | boolean | Vote in flight; group gets `aria-busy`; clicks ignored (whole poll in single, that option in multi) until `setCount` / `setCounts` |
+
+Each option shows "count · percent" (`Intl.NumberFormat`, nearest `lang`); accessible name "Label, 33 votes, 60%, your choice". Event `poll-wc:vote` `{ option, action: 'add'|'remove', count, mine }` (single-choice switch = remove then add). API: `setCount(option, count, { mine })` (also the rollback path), `setCounts(counts, { mine })`, `totalVotes`, `myVotes`. De-dupe and persistence are the author's server's job. Forced colors: bars become a `Highlight` strip, own choice gets a 3px border.
+
+### `<popularity-index>`
+Most-visited list from `/api/analytics/popular` (Pages Function over D1 `page.view` hits; `?window=24h|7d|30d&limit=1-50&site=`, returns `{ ok, site, window, pages: [{ url, views }] }`) or any `{ pages: [{ url, title?, views }] }` / array endpoint.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `analytics-src` | URL | Endpoint (default `/api/analytics/popular`) |
+| `window` | string | Forwarded as `?window=` |
+| `limit` | number | Max entries (default 10, min 1) |
+| `data-meta-src` / `data-lens-src` | URL | pages.json for missing `title` + `provenance` chip (fetched in parallel; lens-src is the fallback) |
+| `data-heading-level` | 0–6 | Heading level (default 2); `0` = no heading |
+| `data-label-*` | string | `heading`, `view` / `views` (`Intl.PluralRules`), `unavailable`, `empty` |
+| `data-state` (output) | `loading\|ready\|empty\|unavailable` | `aria-busy` while loading; `data-error` (output) holds the internal reason, never rendered |
+
+All listed attributes are observed: changes re-fetch (coalesced), the previous request is aborted, stale/after-removal responses are ignored. Links: http(s) or same-origin paths only (`javascript:`, `data:`, `//host` dropped); list built with DOM APIs; counts via compact `Intl.NumberFormat`. Event `popularity-index:state` `{ state }`.
 
 ---
 
@@ -2072,6 +2147,7 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-format-bytes` | `<data>` | Byte size formatting (value = precision; `data-unit="decimal"` for ÷1000) |
 | `data-animate-image` | `<img>` | Play/pause for animated images |
 | `data-command` | `<button>` | Command palette trigger |
+| `data-paged` | list-shaped container (`ul`/`ol`/`table`/`card-list`…) | Pagination: `data-paged-size` (10; 0 = off), `data-paged-page`, `data-paged-style` `numbered`\|`prev-next`\|`load-more`\|`infinite`, `data-paged-window` (2), `data-paged-controls` `before`\|`after`\|`both`\|`none` (none also drops the load-more button), `data-paged-url` (History API; back/forward re-render, no param = page 1); events in `paged:goto` `{ page }`, `paged:loadmore`; out `paged:change` `{ page, size, total, totalPages, visible, style }` (bubbles). Drive from elsewhere with `<pager-wc>` |
 
 ---
 
@@ -2124,7 +2200,7 @@ VB ships a stack-agnostic content-provenance contract. Any HTML page that emits 
 | `<meta name="vb:review">` | `unreviewed` (default), `fact-checked`, `editor-reviewed` |
 | `<meta name="vb:status">` | `draft`, `published` (default), `archived` |
 | `<meta name="vb:ai-tools">` | Comma-separated tool names (`Claude, GPT-5`) |
-| `<meta name="vb:topic">` | Dotted-path taxonomy (`engineering.web.css`) — shared with analytics |
+| `<meta name="concept">` (repeated) | SKOS concept IDs from `vocabulary.json` — shared with analytics (replaced `vb:topic` in contract v1.1) |
 | `<meta name="vb:version-url">` | Link to changelog anchor for this page's version |
 
 ### Content-integrity (signing) — Section B + E
@@ -2148,7 +2224,7 @@ These are NOT meta tags. They live on `<article>`, `<section>`, `<aside>`, or in
 | `data-provenance` | How was this content made? | Same vocabulary as `vb:provenance`. Space-composes: `data-provenance="ai-generated translated"`. CSS uses `[data-provenance~="ai-generated"]` |
 | `data-review` | What review did it receive? | Same vocabulary as `vb:review` |
 | `data-status` | What's its publication state? | Same vocabulary as `vb:status` |
-| `data-trust` | **Verification tier** (badge-only) | `undeclared`, `declared`, `domain-anchored`, `verified`, `failed`, `key-unavailable` |
+| `data-trust` | **Verification tier** (badge-only) | `undeclared`, `declared`, `verified`, `failed`, `key-unavailable` (the component also appends visible tier text in `.page-info-tier`; `domain-anchored` was never set by the runtime and is removed) |
 
 **Critical distinction:** `data-provenance` is an author claim about *how content was made*. `data-trust` is a *runtime computation* by `<page-info>` and is reserved for the verification badge. Authorship is never `data-trust`.
 
@@ -2160,9 +2236,9 @@ These are NOT meta tags. They live on `<article>`, `<section>`, `<aside>`, or in
 |---|---|
 | `<page-info>` | All of Sections A, B, and the canonical-document hash/signature for live verification |
 | `<change-set>` | `data-author`, `data-provenance` on `<ins>`/`<del>` blocks |
-| `<site-index>` | `<meta name="keywords">`, `article:tag`, `vb:topic` |
+| `<site-index>` | `<meta name="keywords">`, `article:tag`, `<meta name="concept">` (via the site's index data; the component reads only its markup or `src`) |
 | `<time-index>` | `<meta name="last-modified">`, `itemprop="version"`, `vb:version-url` |
-| Trust / topic lens pages | `vb:provenance`, `vb:review`, `vb:status`, `vb:topic` aggregated across the site |
+| Trust / topic lens pages | `vb:provenance`, `vb:review`, `vb:status`, `<meta name="concept">` aggregated across the site |
 | Analytics subsystem | All `vb:*` tags via `document.querySelectorAll('meta[name^="vb:"]')` |
 
 ---
@@ -2251,20 +2327,20 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-highlight` | Text — draw-in highlight |
 | `data-hotkey` | `<kbd>` — platform key display |
 | `data-icon` | `<status-message>` child — icon slot |
-| `data-indeterminate` | `<progress-ring>` — spinning |
 | ~~`data-indicators`~~ | **Removed** — use `indicators` on `<carousel-wc>` |
 | `data-info` | Pagination — info text |
 | `data-interactive` | Chart legend — clickable toggle |
 | `data-items` | `<card-list>` — inline JSON data |
 | `data-key` | `<card-list>` — unique key field |
-| `data-label` | Table td — mobile card label |
+| `data-label` | Table td — mobile card label; `<progress data-type="ring">` — centre label (`none` hides) |
+| `data-label-raw` | `<print-page>` raw-toggle checkbox text |
 | `data-labels` | Chart — show value labels |
 | `data-layout` | Any — layout mode (see §5) |
 | `data-layout-*` | Layout elements — modifiers (see §5) |
 | ~~`data-lazy`~~ | **Removed** — use `lazy` on `<include-file>` |
 | `data-legend` | Chart — `inline` legend display |
 | `data-legend-position` | Chart — legend position |
-| `data-level` | `<page-toc>` heading indent; `<form-field>` password strength |
+| `data-level` | `<page-toc>` generated item depth (output; only used to flatten the horizontal bar — nest `.list` for hierarchy); `<form-field>` password strength |
 | `data-loading` | Any — loading state |
 | ~~`data-loop`~~ | **Removed** — use `loop` on `<carousel-wc>` |
 | `data-mask` | `<input>` — input masking |
@@ -2338,7 +2414,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-table-status` | `<data-table>` — visually hidden live region (generated) |
 | `data-theme` | `<html>` — active theme |
 | ~~`data-ticker`~~ | **Removed** — use `data-effect="ticker"` on `<data>` |
-| `data-title` | Various — title text |
+| `data-title` | Various — title text (`<page-toc>`: ToC title / nav label) |
 | `data-toggle-tags` | `<fieldset>` — pill chip toggle |
 | `data-tooltip` | Chart td — tooltip text |
 | `data-trust` | `.page-info-badge` only — verification tier (runtime-computed; see §10) |
@@ -2349,7 +2425,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-transition` | Any — View Transition handler. Built-ins: `morph`, `slide`, `fade`, `scale`, `stagger`, `none`, `effect:<class>` (bridges to `data-effect` via `vb:vt-update-done` / `data-trigger="vt"`). |
 | `data-effect-active` | Auto-managed — set by `VB.activate(el)` and trigger handlers. Effects gate on it. |
 | `data-truncated` | Breadcrumb li — truncate text |
-| `data-type` | Chart, `<form-field>` — type variant |
+| `data-type` | Chart, `<form-field>`, `<progress>` (`ring`) — type variant |
 | `data-typewriter` | Text — typing animation |
 | `data-unit` | `<data data-format-bytes>` — `decimal` for 1000-based sizes |
 | `data-upload` | File input — drop zone |

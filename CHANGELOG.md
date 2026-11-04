@@ -8,6 +8,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **P-element review.**
+  - **page-info** — Auto mode no longer builds its panel from `<meta>` values with `innerHTML`; it uses DOM nodes and text, so page metadata cannot inject markup. Author, license, version and concept links render only when they resolve to `http:`/`https:` (a `javascript:` URL becomes plain text).
+  - **popularity-index** — Entry URLs are restricted to http(s) and same-origin paths (`javascript:`, `data:` and `//host` entries are dropped), and the list is built with DOM APIs. Raw error text (HTTP status, JSON parse errors) is no longer shown.
+  - **page-tour / page-tools** — `data-action-hint` (page-tour) is rendered as text and the card is built with DOM APIs; `data-fab-icon` (page-tools) is set with `setAttribute`. Neither goes through `innerHTML` any more.
 - **M+N-element review.**
   - **sanitize-html** — Fixed a confirmed mutation-XSS bypass: `<math><mtext><table><mglyph><style><img src=x onerror=…>` survived because the cleaned tree was serialised and parsed again, and the second parse turned the `<style>` text into a live `<img>`. This reached every consumer (markdown-viewer, the markdown-editor preview, comment-thread, chat-window, include-file, card-list, glossary-wc, `data-markdown-editable`). New `sanitizeToFragment(html, options)` returns the cleaned DocumentFragment, and every in-repo consumer inserts those nodes without re-parsing. `sanitizeHTML()` still returns a string, but re-sanitizes its own output until stable and returns `''` if the parse keeps mutating. A regression corpus of 35 known mXSS payloads runs in the unit tests (parse5 round trip) and in the browser (real insertion, no handler may fire).
   - **sanitize-html** — `<style>` is removed everywhere, as are the raw-text and legacy elements (`xmp`, `noembed`, `noframes`, `plaintext`, `title` outside SVG), MathML `mglyph`/`malignmark`/`annotation-xml`, elements outside the HTML/SVG/MathML namespaces, and comments. An SVG `<title>`/`<desc>` survives only while it holds plain text.
@@ -21,6 +25,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **P-element review.**
+  - **analytics** — `GET /api/analytics/popular` Pages Function: a public most-visited list over the D1 `page.view` hits (`?window=24h|7d|30d`, `?limit=1-50`, `?site=`), returning `{ ok, site, window, pages: [{ url, views }] }`. Failures return a generic `{ ok: false, error: 'unavailable' }` 503 (D1 messages are logged, not echoed). This is the default endpoint of `<popularity-index>`, which previously 404'd.
 - **G+H-element review.**
   - **geo-map**
     - On-screen zoom in / zoom out / recenter / exit buttons, two-finger pinch zoom, click-to-centre, Home/0 to recenter, and a polite live region announcing the new centre.
@@ -33,6 +39,62 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Changes from the P-element review.**
+  - **pager-wc**
+    - Breaking: the control-style attribute is `data-style` (`numbered` | `prev-next` | `load-more`). The global `style` is no longer read, so inline CSS on the host no longer switches the pager. Rename `<pager-wc style="prev-next">` to `<pager-wc data-style="prev-next">`.
+    - Strings are attributes: `data-label-nav`, `-prev`, `-next`, `-page` (`Page {page}`), `-status`, `-load-more`, `-no-more`, `-missing`. Page-number buttons are named "Page N"; give a top and bottom pager distinct landmark names with `data-label-nav`.
+    - Targets resolve lazily and must carry `[data-paged]`; a target inserted after the pager is picked up on its first `paged:change`. The "No paginated target found" note is a plain visible note (no `aria-live`).
+  - **data-paged** — `paged:change` detail adds `visible` (items shown) and `style`. `data-paged-controls="none"` also suppresses the load-more button (the infinite sentinel still renders).
+  - **page-toc**
+    - Breaking: the title is `data-title` (was the global `title`, which also put a tooltip over the whole ToC). No alias.
+    - Link activation scrolls with `behavior: 'auto'` under `prefers-reduced-motion: reduce` and really moves focus to the heading (`tabindex="-1"` added when needed). On wide screens (≥ 64rem) the summary no longer collapses the always-visible ToC.
+  - **page-tools**
+    - Implements the toolbar keyboard pattern: roving tabindex, arrow keys by orientation (mirrored in RTL), Home/End and `aria-orientation` (always `vertical` while collapsed).
+    - Focus returns to the FAB only when it was inside the popover as it closed; a light-dismiss click elsewhere or the resize-driven close no longer steals focus.
+    - `data-orientation` and `data-position` are observed, and `data-resolved-orientation` is reflected for every orientation. `tools` also returns the tools while collapsed.
+  - **page-tour**
+    - Breaking: `data-placement` is `top` / `bottom` / `inline-start` / `inline-end` / `auto`; `left` and `right` are removed. The inline values follow the text direction and the action-hint arrow flips in RTL.
+    - With anchor positioning the card is centred on its side of the target (`position-area`) and flips when it would overflow (`position-try-fallbacks`).
+    - `start()` during a running tour goes to the requested step and reuses the overlay (it used to build a second overlay that `stop()` left behind).
+    - Action gates no longer move focus: Next is `aria-disabled` and described by the hint while waiting, then enabled with a live announcement (`data-label-ready`). The card is `aria-modal="true"` only on ungated steps.
+    - Keyboard handling is on the document while active, so Escape, arrows, Home/End and the Tab trap also work from the target; arrow/Home/End are left alone in text fields.
+    - `data-skippable="false"` on a `<tour-step>` now takes effect. `--tour-spotlight-padding` sets the spotlight padding (`data-spotlight-padding` overrides). New `data-label-step`, `-skip`, `-close`, `-prev`, `-next`, `-finish`, `-nav`, `-ready` replace hardcoded English.
+  - **page-info**
+    - Breaking: the unimplemented `og-preview` attribute and the never-set `domain-anchored` tier are removed.
+    - Breaking markup: the author is plain text in `<summary>` and the author link lives in the panel's Author section (no interactive content in the disclosure control); the panel is a `<section>`, not a `<nav>`.
+    - The trust tier is spelled out in the badge (`.page-info-tier`: Self-declared / Verified / Signature failed / Key unavailable), not shown by colour alone; badge colours use the `--color-*-subtle` / `--color-*-text` tokens (AA in light and dark).
+    - Relative times use `Intl.RelativeTimeFormat` in the closest `[lang]`, keep the absolute date in `title`, and handle future dates. New `data-label-*` overrides, `data-concept-base` (default `/topics/`) and `data-heading-level` (2–6).
+    - Reading time skips `[data-signable="false"]`, nested roots, hidden and script content, uses `Intl.Segmenter`, and shares the 238 wpm constant with page-stats (was 200).
+  - **page-stats**
+    - Breaking: `last-modified` no longer falls back to `document.lastModified` (it showed "just now" on dynamic pages); it reads `meta[name=last-modified]`, then `article:modified_time`.
+    - Words are counted with `Intl.Segmenter` (Japanese, Chinese and Thai count correctly; CJK is timed at 500 characters per minute). Script, style, template, `[hidden]`, `[aria-hidden="true"]`, `[inert]` and `[data-stats-ignore]` content is skipped.
+    - Numbers, plurals and relative dates follow the document language; new `data-label-*` labels with `{n}` templates. Changing `data-for`, `data-show`, `data-wpm` or a label recomputes; only author/SSR `<dl>` markup is adopted (the generated one is marked `data-generated`).
+  - **poll-wc**
+    - Single-choice arrow keys move focus and vote (APG radio group; Left/Right flip in RTL). Multi-choice no longer handles arrow keys (every option is a Tab stop).
+    - A vote marks the option `data-pending` (group `aria-busy`) and ignores further clicks until `setCount()`/`setCounts()` clears it.
+    - Options show their percentage beside the count ("33 · 60%"), formatted with `Intl.NumberFormat`/`PluralRules` for the nearest `lang`, with `data-label-vote|votes|your-choice|closed|poll` overrides. `data-hide-counts` also hides the bars and drops the numbers from the accessible name.
+    - A host `aria-label` moves onto the option group (default name "Poll"). Can enhance a native `<form><fieldset><legend>` of radio/checkbox inputs as a no-JS fallback.
+  - **popularity-index**
+    - The default endpoint now exists (see Added). Reflects `data-state="loading|ready|empty|unavailable"` (with `aria-busy` while loading) and fires `popularity-index:state`; the unavailable message is generic (`data-label-unavailable`), the reason goes to `data-error` and the console.
+    - New `data-heading-level` (1–6, `0` = no heading; default 2) and `data-label-heading|view|views|unavailable|empty`; view counts use compact `Intl.NumberFormat` ("1.8K views").
+    - Provenance chips use the `--color-success-text` / `--color-warning-text` / `--color-error-text` tokens.
+  - **pop-over**
+    - The anchor's `anchor-name` is a comma-separated list: each pop-over appends its own counter-based ident (`--pop-over-anchor-N`, no longer derived from the host id) and removes only that on disconnect, so several pop-overs can share one trigger.
+    - `data-mode`, `data-anchor` and `data-position` are observed and re-wire after upgrade; disconnect clears the anchor name, `position-anchor` and `data-anchor-name`.
+    - `data-mode="hint"` falls back to `auto` where `popover="hint"` is unsupported; unknown modes resolve to `auto`. An unanchored pop-over keeps the viewport centring. `pop-over:not(:defined)` hiding skips hosts with an authored `popover`, so they open via `popovertarget` without script.
+  - **print-page** — The raw-toggle group is named after the button label and the checkbox text can be set with `data-label-raw`. The docs agree that the default variant is `icon`.
+  - **progress**
+    - Colour variants (`.success` / `.warning` / `.error`) now set `--progress-fill` instead of painting the fill pseudo-elements, so one rule covers Blink, Firefox, rings and themes.
+    - The track has a 1px `--progress-track-border` edge (`--control-border`, 3:1), like meter; `.xs` stays a borderless hairline. New tokens `--progress-track-border`, `--progress-fill-warning` (light mode darkened; was 2.76:1) and `--progress-ring-track`.
+    - `.labeled` is scoped to `.labeled:has(> progress)` and accepts a `<header>` row (label + `<output>`), like meter.
+    - The `<progress-ring>` custom element docs and compendium entry are removed: it never existed. Rings are `progress[data-type="ring"]`.
+  - **progress-tracker**
+    - Breaking markup: steps are a native `<ol>` inside the element (`<progress-tracker><ol><li>…</li></ol></progress-tracker>`); direct `<li>` children are no longer decorated. The host no longer gets `role="list"`; the `<ol>` is named from `data-label-list` (default "Progress").
+    - `data-clickable` renders completed step labels inside a native `<button>`; the current step is not activatable. The `<li>` tabindex, roving focus and inline `cursor` are gone.
+    - `data-current` matches `data-step` ids before indexes; `data-step` is optional. Step status is visually hidden text from `data-label-step`/`-complete`/`-current`/`-upcoming`/`-error`, replacing the English `aria-label` on each `<li>`. New `data-direction="vertical"`.
+  - **8bit / nes / win9x themes** — Progress fills are painted from `--progress-fill`, so colour variants apply (8bit's default fill is its green `--progress-fill` instead of `--color-primary` stripes). The theme track no longer hides the indeterminate shimmer, and enhanced rings stay circular.
+  - **pre** — `tab-size: var(--tab-size, 4)` on every `pre`. Code and output blocks (`pre:has(code, samp)`) are `direction: ltr` unless the `pre` has its own `dir`.
+  - **p** — CJK (`:lang(zh|ja|ko)`): `p.lead` keeps the 1.8 body leading and `p.indent` indents one full-width character.
 - **Changes from the O-element review.**
   - **ol**
     - Lists that carry long markers get a `2.5em` indent instead of `1.5rem`, so "VIII." or "100." no longer overflows the list edge and gets clipped (most visible in RTL). This covers roman numerals (`type="i"`/`"I"`), any `start`, `reversed`, an `li[value]`, 27+ lettered items and 100+ items. New `--ol-indent` custom property sets the indent explicitly (for CJK counter styles, a large `start`, and so on).
@@ -311,6 +373,52 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **P-element review.**
+  - **pager-wc / data-paged**
+    - `data-style="load-more"` counts down from the engine's `visible` count instead of `page × size`; the target needs `data-paged-style="load-more"` (console warning otherwise).
+    - Focus stays on the activated control after a page change instead of dropping to `<body>`. The prev-next "Page N of M" live region is one persistent node, so changes are announced; in-place controls keep focus and the live region across renders.
+    - Back/Forward with `data-paged-url` re-renders the slice and every pager; a URL without the parameter shows page 1.
+    - Forced colors: the current page keeps a `Highlight` fill and 2px border. Demo rebuilt with layout primitives; the `pager-wc:navigate` scope and detail are documented.
+  - **page-toc**
+    - Reconnecting no longer switches to manual mode on its own generated markup (which doubled `entries`, `page-toc:navigate` events and history entries); `refresh()` no longer stacks window listeners.
+    - Percent-encoded hashes (`#caf%C3%A9`) match their headings. The active-link radius uses logical corners (correct in RTL).
+    - api.json documents `scope`, `orientation`, `data-title`, `entries`, `refresh()` and the event detail, and drops the phantom `href`.
+  - **page-tools**
+    - P1: the mobile FAB popover was always displayed, pinned at (0,0) under the header with roughly 9px focusable tools. It is now hidden until opened and opens just above the FAB.
+    - Reduced-motion overrides now win and cover watch-wc and the FAB press scale. api.json drops internal attributes and documents the output state, `tools` and `--page-tools-*` properties.
+  - **page-tour**
+    - The spotlight no longer jumps back to an earlier step's target on scroll; the auto-trigger timer is cleared on disconnect, so a removed tour no longer starts late or twice.
+    - Only statically positioned targets get `position: relative` (sticky and fixed targets keep their layout). Forced colors draws the spotlight as a `Highlight` outline.
+    - A missing target at either end no longer leaves a stale card. api.json matches the runtime (`change` action, methods, CSS properties, `data-label-*`).
+  - **page-info**
+    - Signed pages with a relative canonical link, or none, now verify: the signer (`scripts/sign-pages.js`) and the verifier both sign the raw `<link rel="canonical">` href.
+    - Reconnecting no longer appends "— verification failed" to the badge `aria-label` repeatedly; in-flight verification is aborted on disconnect.
+  - **page-stats** — The docs and SSR demo used a non-existent `.sr-only` class (labels showed); they use `visually-hidden`. The separator dot has empty alternative text. The `last-modified` `datetime` keeps the declared date (no UTC day shift).
+  - **poll-wc**
+    - Options stopped responding after the element was removed and reinserted; listeners are delegated on the option group and the built structure is reused on reconnect.
+    - Results vanished in forced-colors mode; bars draw as a `Highlight` strip and the voter's choice gets a thicker border.
+    - `disabled` is observed and styled. The "closed" suffix is DOM text instead of CSS `content`, and author markup inside option buttons is kept.
+  - **popularity-index** — Reacts to `analytics-src`, `window`, `limit`, `data-meta-src`, `data-lens-src` and `data-heading-level` changes; in-flight requests are aborted so stale responses can't win. `limit` below 1 no longer slices from the end; the pages.json enrichment fetch runs in parallel.
+  - **pop-over**
+    - Without `data-position` the popover sits below its anchor (`position-area: bottom`, the documented default) instead of at the viewport's top-left. `role="tooltip"` hosts are excluded.
+    - The JS fallback (no anchor positioning) measures after showing, so `top` and `-end` placements no longer use a 0×0 size; it flips and clamps into the viewport. `show()` positions synchronously. Invalid selector-style `data-anchor` values no longer throw.
+    - api.json documents the methods, the `open` property, the events and `data-anchor-name`.
+  - **print-page** — Raw-toggle mode registers `afterprint` before `window.print()` (Chromium fires it inside `print()`), so `data-print-raw` no longer waits for the 5s fallback. The button hides itself in `@media print`.
+  - **progress**
+    - Forced colours: the bar draws a `Highlight` fill on a `Canvas` track with a `CanvasText` edge; rings draw `Highlight` on `GrayText`.
+    - Indeterminate: Firefox gets the shimmer; the bar shimmer and the ring spin slow down under `prefers-reduced-motion` and `:root[data-motion-reduced]`.
+    - progress-ring-init stores each ring's centre label instead of querying the parent (which could overwrite a sibling's label); a ring that starts indeterminate gets its label once it has a value; `max` changes are observed.
+    - Every demo and doc snippet names its bar. The ring example used a `data-state` the CSS never read; it uses the classes.
+  - **progress-tracker**
+    - Activating the current step no longer leaves the click-suppress flag stuck; no `progress-tracker:step` event fires on upgrade.
+    - Author label markup is wrapped, not flattened; steps added later are decorated; toggling `data-clickable` takes effect.
+    - The connector after an errored step uses the error colour. Forced colors: connectors in `CanvasText`, `Highlight` circles and an outline ring on the current step.
+  - **pre** — Forced colours: code blocks get a `CanvasText` border and `<b>`/`<strong>` highlights use `Mark`/`MarkText`. The long-line demo is a focusable named region. Docs gain Print and RTL sections.
+  - **p** — Docs no longer claim screen readers announce `<strong>`/`<em>`; added a drop-cap section and `p-drop-cap` demo, a `lang` note for `.justify` hyphenation, and a CSS reference matching the source.
+  - **time-relative** — The shared utility localises `time[data-relative]` with `Intl.RelativeTimeFormat` under a non-English `[lang]`, and leaves times inside `<page-info>` alone (it localises its own).
+  - **tool-tip** — Resets `position-area` to `none`, so pop-over's new default `position-area: bottom` cannot zero tool-tip's `anchor()` insets.
+  - **canonical-document spec** — States the `url` rule that signer and verifier share: the raw `<link rel="canonical">` href, absolute hrefs normalised, relative hrefs kept as written, `""` with no canonical link.
+  - **Trust vocabulary** — The never-set `domain-anchored` tier is removed from the vocabulary, specs and docs.
 - **O-element review.**
   - **output**
     - Variant classes now apply. The base chip selector's `:not()` exclusions gave it (0,3,1) specificity, so `.block` stayed inline-block, `.inline` / `.large` kept chip padding, and `.highlight` / `.success` / `.warning` / `.error` kept the grey raised background. The exclusions now sit in `:where()` (element-only specificity).
