@@ -1,278 +1,391 @@
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import {
+  STORAGE_KEY,
+  PAUSE_KEY,
+  SHOW_ANCHORS_KEY,
+  CHANGE_EVENT,
+  read,
+  write,
+  isPaused,
+  isShowingAnchors,
+  setPaused,
+  setShowAnchors,
+  currentUrl,
+  trackCurrent,
+} from '../../utils/recently-visited-init.js';
 
 /**
  * recently-visited: Device-local reader history lens.
  *
- * Renders the reader's local visit history (stored under
- * `vb:recently-visited` in localStorage). Tracking is handled by the
- * sitewide tracker in src/utils/recently-visited-init.js, which is
- * loaded by the autoload bundle so every page gets recorded — not
- * just pages that mount this component.
+ * Renders the reader's local visit history (localStorage key
+ * `vb:recently-visited`). Recording is done by the opt-in tracker in
+ * src/utils/recently-visited-init.js: pages are recorded when they carry
+ * `<meta name="vb:track-history" content="on">` or contain this element, and
+ * never under `<html data-vb-no-track>` or `<meta name="vb:no-track-history">`.
  *
- * Reader sovereignty controls (Pause / Anchors / Clear) live in the
- * component header because they only matter when the lens is on screen.
+ * Reader sovereignty controls (Pause / Anchors / Clear) live in the header.
+ * They are built once and updated in place, so focus stays put when they are
+ * used; toggles keep a static label and carry state in aria-pressed.
  *
- * @attr {number}  limit       Max page-groups rendered (default 25)
- * @attr {string}  empty-text  Message shown when history is empty
+ * @attr {number}  limit               Max page groups rendered (default 25)
+ * @attr {boolean} include-current     Also list the page the reader is on
+ * @attr {number}  data-heading-level  Heading level 1–6 (default 2); 0 renders no heading
+ * @attr {string}  data-label-heading    Heading text (default "Recently visited")
+ * @attr {string}  data-label-explainer  Privacy note under the heading
+ * @attr {string}  data-label-pause      Pause toggle label (default "Pause tracking")
+ * @attr {string}  data-label-anchors    Anchor toggle label (default "Show anchor visits")
+ * @attr {string}  data-label-clear      Clear button label (default "Clear history")
+ * @attr {string}  data-label-empty      Message when there is no history
+ * @attr {string}  data-label-anchor-one   Count noun when Intl.PluralRules selects "one" (default "anchor")
+ * @attr {string}  data-label-anchor-other Count noun otherwise (default "anchors")
+ *
+ * @fires recently-visited:clear          - after the reader clears the history
+ * @fires recently-visited:pause-toggle   - { paused }
+ * @fires recently-visited:anchors-toggle - { showAnchors }
  *
  * @example
  *   <recently-visited limit="20"></recently-visited>
  */
+
+const DEFAULT_LIMIT = 25;
+const REFRESH_MS = 60_000;
+
+const DEFAULT_LABELS = {
+  heading: 'Recently visited',
+  explainer: 'Stored on this device only. Never sent to a server.',
+  pause: 'Pause tracking',
+  anchors: 'Show anchor visits',
+  clear: 'Clear history',
+  empty: 'No recently visited pages yet.',
+  'anchor-one': 'anchor',
+  'anchor-other': 'anchors',
+};
+
+const WATCHED_KEYS = new Set([STORAGE_KEY, PAUSE_KEY, SHOW_ANCHORS_KEY]);
+
 class RecentlyVisited extends VBElement {
-  static STORAGE_KEY = 'vb:recently-visited';
-  static PAUSE_KEY = 'vb:recently-visited:paused';
-  static SHOW_ANCHORS_KEY = 'vb:recently-visited:show-anchors';
+  static observedAttributes = [
+    'limit', 'include-current', 'data-heading-level',
+    ...Object.keys(DEFAULT_LABELS).map((k) => `data-label-${k}`),
+  ];
+
+  /** @type {HTMLElement | null} */
+  #body = null;
+  /** @type {ReturnType<typeof setInterval> | undefined} */
+  #timer;
 
   setup() {
-    this.#render();
-    this.#wireStorage();
+    /* This element's presence opts the page in; record it before rendering
+       (the tracker dedupes, so a reconnect or a second instance is a no-op). */
+    trackCurrent();
+    this.#build();
+    this.#update();
+
+    this.listen(this, 'click', (e) => this.#onClick(/** @type {MouseEvent} */ (e)));
+    this.listen(window, 'storage', (e) => {
+      const { key } = /** @type {StorageEvent} */ (e);
+      if (key === null || WATCHED_KEYS.has(key)) this.#update();
+    });
+    this.listen(window, CHANGE_EVENT, () => this.#update());
+    this.#timer = setInterval(() => this.#refreshTimes(), REFRESH_MS);
+  }
+
+  teardown() {
+    clearInterval(this.#timer);
+    this.#timer = undefined;
+    this.#body = null;
+  }
+
+  attributeChangedCallback(_name, oldVal, newVal) {
+    if (oldVal === newVal || !this.hasAttribute('data-upgraded')) return;
+    this.#build();
+    this.#update();
   }
 
   // ── Data API (read-only — content is derived from localStorage) ──────
 
   /**
-   * Read the current visit history as a plain data array. Each entry:
-   * `{ url, title, timestamp }`. The list is auto-derived from the
-   * `vb:recently-visited` localStorage key — there is no setter, since
-   * the tracker (src/utils/recently-visited-init.js) owns writes.
-   * Frameworks can observe via the `recently-visited:refreshed` event
-   * which fires after every internal re-render (storage event from
-   * another tab, or local write).
+   * The stored visit history, most recent first: `{ url, hash, title,
+   * hashTitle, ts }` records (ts in epoch ms). Expired (30-day TTL),
+   * malformed and off-origin records are already filtered out. There is no
+   * setter — the tracker owns writes.
    *
-   * @returns {any[]} Visit records, or [] when storage is empty or unreadable.
+   * @returns {Array<{ url: string, hash: string, title: string, hashTitle: string, ts: number }>}
    */
   get entries() {
-    try {
-      const raw = localStorage.getItem(RecentlyVisited.STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
+    return read();
   }
 
-  disconnect() {
-    if (this.#storageHandler) {
-      window.removeEventListener('storage', this.#storageHandler);
-      this.#storageHandler = null;
-    }
+  // ── Structure (built once per setup / attribute change) ──────────────
+
+  #build() {
+    const header = document.createElement('header');
+    header.className = 'recently-visited-header';
+    const heading = this.#heading();
+    if (heading) header.append(heading);
+
+    const menu = document.createElement('menu');
+    menu.className = 'recently-visited-actions';
+    menu.append(
+      this.#control('pause', 'pause'),
+      this.#control('anchors', 'hash'),
+      this.#control('clear', 'trash-2'),
+    );
+    header.append(menu);
+
+    const explainer = document.createElement('p');
+    explainer.className = 'recently-visited-explainer';
+    const small = document.createElement('small');
+    small.textContent = this.#label('explainer');
+    explainer.append(small);
+
+    this.#body = document.createElement('section');
+    this.#body.className = 'recently-visited-body';
+
+    this.replaceChildren(header, explainer, this.#body);
   }
 
-  /** @type {((e: StorageEvent) => void) | null} */
-  #storageHandler = null;
-
-  #wireStorage() {
-    /* Re-render when another tab updates any of our keys so the lens
-       stays consistent across windows. */
-    const watched = new Set([
-      RecentlyVisited.STORAGE_KEY,
-      RecentlyVisited.PAUSE_KEY,
-      RecentlyVisited.SHOW_ANCHORS_KEY,
-    ]);
-    this.#storageHandler = (e) => {
-      if (e.key && watched.has(e.key)) this.#render();
-    };
-    window.addEventListener('storage', this.#storageHandler);
-  }
-
-  #isPaused() {
-    try { return localStorage.getItem(RecentlyVisited.PAUSE_KEY) === '1'; }
-    catch { return false; }
-  }
-
-  #setPaused(value) {
-    try {
-      if (value) localStorage.setItem(RecentlyVisited.PAUSE_KEY, '1');
-      else localStorage.removeItem(RecentlyVisited.PAUSE_KEY);
-    } catch { /* private mode */ }
-  }
-
-  #showAnchors() {
-    try { return localStorage.getItem(RecentlyVisited.SHOW_ANCHORS_KEY) === '1'; }
-    catch { return false; }
-  }
-
-  #setShowAnchors(value) {
-    try {
-      if (value) localStorage.setItem(RecentlyVisited.SHOW_ANCHORS_KEY, '1');
-      else localStorage.removeItem(RecentlyVisited.SHOW_ANCHORS_KEY);
-    } catch { /* private mode */ }
-  }
-
-  #read() {
-    try {
-      const raw = localStorage.getItem(RecentlyVisited.STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-
-  #write(entries) {
-    try {
-      localStorage.setItem(RecentlyVisited.STORAGE_KEY, JSON.stringify(entries));
-    } catch { /* quota / private mode */ }
-  }
-
-  #limit() {
-    const raw = parseInt(this.getAttribute('limit') || '25', 10);
-    return Number.isFinite(raw) && raw > 0 ? raw : 25;
+  #heading() {
+    const raw = this.getAttribute('data-heading-level');
+    const n = raw == null || raw === '' ? 2 : Number.parseInt(raw, 10);
+    if (n === 0) return null;
+    const level = Number.isFinite(n) ? Math.min(6, Math.max(1, n)) : 2;
+    const h = document.createElement(`h${level}`);
+    h.className = 'recently-visited-heading';
+    h.textContent = this.#label('heading');
+    return h;
   }
 
   /**
-   * Group flat entries into per-URL records. Each group carries the
-   * page-level info (url, title, most-recent ts) plus an anchors array
-   * of any sub-entries with non-empty hash. Sorted by group ts desc.
+   * @param {'pause' | 'anchors' | 'clear'} action
+   * @param {string} icon
    */
-  #groupByUrl(entries) {
-    const groups = new Map();
-    for (const e of entries) {
-      const url = e.url;
-      let g = groups.get(url);
-      if (!g) {
-        g = { url, title: e.title, ts: e.ts, anchors: [] };
-        groups.set(url, g);
-      }
-      /* Use the most recent ts of any visit (page or anchor) as the
-         group's sort key, and the most recent title we've seen. */
-      if (e.ts > g.ts) {
-        g.ts = e.ts;
-        if (e.title) g.title = e.title;
-      }
-      if (e.hash) {
-        g.anchors.push({
-          hash: e.hash,
-          hashTitle: e.hashTitle || e.hash.slice(1) || e.hash,
-          ts: e.ts,
-        });
-      }
-    }
-    for (const g of groups.values()) {
-      g.anchors.sort((a, b) => b.ts - a.ts);
-    }
-    return [...groups.values()].sort((a, b) => b.ts - a.ts);
+  #control(action, icon) {
+    const li = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'icon-button';
+    button.setAttribute(`data-recently-visited-${action}`, '');
+    const label = this.#label(action);
+    button.setAttribute('aria-label', label);
+    button.title = label;
+    const iconEl = document.createElement('icon-wc');
+    iconEl.setAttribute('name', icon);
+    iconEl.setAttribute('size', 'sm');
+    button.append(iconEl);
+    li.append(button);
+    return li;
   }
 
-  #render() {
-    const entries = this.#read();
-    const grouped = this.#groupByUrl(entries).slice(0, this.#limit());
-    const emptyText = this.getAttribute('empty-text') || 'No recently visited pages yet.';
-    const paused = this.#isPaused();
-    const showAnchors = this.#showAnchors();
+  // ── State + list (updated in place) ──────────────────────────────────
 
-    const pauseLabel = paused ? 'Resume tracking' : 'Pause tracking';
-    const pauseIcon = paused ? 'play' : 'pause';
-    const anchorLabel = showAnchors ? 'Hide anchor visits' : 'Show anchor visits';
-    const clearDisabled = entries.length === 0;
+  #update() {
+    if (!this.#body) return;
+    const entries = read();
+    const paused = isPaused();
+    const showAnchors = isShowingAnchors();
 
-    const parts = [];
-    parts.push('<header class="recently-visited-header">');
-    parts.push('<h2 class="recently-visited-heading">Recently visited</h2>');
-    parts.push('<menu class="recently-visited-actions">');
-    parts.push(`<li><button type="button"
-        data-recently-visited-pause
-        class="icon-button"
-        aria-pressed="${paused}"
-        aria-label="${pauseLabel}"
-        title="${pauseLabel}"
-      ><icon-wc name="${pauseIcon}" size="sm"></icon-wc></button></li>`);
-    parts.push(`<li><button type="button"
-        data-recently-visited-anchors
-        class="icon-button"
-        aria-pressed="${showAnchors}"
-        aria-label="${anchorLabel}"
-        title="${anchorLabel}"
-      ><icon-wc name="hash" size="sm"></icon-wc></button></li>`);
-    parts.push(`<li><button type="button"
-        data-recently-visited-clear
-        class="icon-button"
-        aria-label="Clear history"
-        title="Clear history"
-        ${clearDisabled ? 'disabled' : ''}
-      ><icon-wc name="trash-2" size="sm"></icon-wc></button></li>`);
-    parts.push('</menu>');
-    parts.push('</header>');
-    parts.push('<p class="recently-visited-explainer"><small>Stored on this device only. Never sent to a server.</small></p>');
+    this.querySelector('[data-recently-visited-pause]')?.setAttribute('aria-pressed', String(paused));
+    this.querySelector('[data-recently-visited-anchors]')?.setAttribute('aria-pressed', String(showAnchors));
+    /* aria-disabled (not disabled) so a focused Clear keeps focus once the
+       history is empty. */
+    this.querySelector('[data-recently-visited-clear]')?.setAttribute('aria-disabled', String(entries.length === 0));
 
-    if (grouped.length === 0) {
-      parts.push(`<p class="recently-visited-empty">${escapeHtml(emptyText)}</p>`);
+    /* Remember which link had focus so a re-render (another tab, a hash
+       change) does not drop the reader back to <body>. */
+    const active = document.activeElement;
+    const focusedHref = active instanceof HTMLAnchorElement && this.#body.contains(active)
+      ? active.getAttribute('href')
+      : null;
+    const openUrls = new Set(
+      [...this.#body.querySelectorAll('details[open]')].map((d) => d.getAttribute('data-url')),
+    );
+
+    const exclude = this.hasAttribute('include-current') ? null : currentUrl();
+    const groups = groupByUrl(entries)
+      .filter((g) => g.url !== exclude)
+      .slice(0, this.#limit());
+
+    if (groups.length === 0) {
+      const p = document.createElement('p');
+      p.className = 'recently-visited-empty';
+      p.textContent = this.#label('empty');
+      this.#body.replaceChildren(p);
     } else {
-      parts.push('<ol class="recently-visited-list">');
-      for (const g of grouped) {
-        const renderAnchors = showAnchors && g.anchors.length > 0;
-        if (renderAnchors) {
-          /* Page with anchor sub-visits — render as <details>. */
-          const anchorItems = g.anchors.map((a) => (
-            `<li><a href="${escapeAttr(g.url)}${escapeAttr(a.hash)}">${escapeHtml(a.hashTitle)}</a><small>${relativeTime(a.ts)}</small></li>`
-          )).join('');
-          const countLabel = g.anchors.length === 1 ? '1 anchor' : `${g.anchors.length} anchors`;
-          parts.push(`<li class="has-anchors"><details>
-            <summary>
-              <a href="${escapeAttr(g.url)}">${escapeHtml(g.title || g.url)}</a>
-              <small>${countLabel} &middot; ${relativeTime(g.ts)}</small>
-            </summary>
-            <ul class="recently-visited-anchors">${anchorItems}</ul>
-          </details></li>`);
-        } else {
-          /* Plain page entry — flat link, no expansion. */
-          parts.push(`<li><a href="${escapeAttr(g.url)}">${escapeHtml(g.title || g.url)}</a><small>${relativeTime(g.ts)}</small></li>`);
+      this.#body.replaceChildren(this.#list(groups, showAnchors, openUrls));
+    }
+
+    if (focusedHref !== null) {
+      const match = [...this.#body.querySelectorAll('a')].find((a) => a.getAttribute('href') === focusedHref);
+      match?.focus();
+    }
+  }
+
+  /**
+   * @param {ReturnType<typeof groupByUrl>} groups
+   * @param {boolean} showAnchors
+   * @param {Set<string | null>} openUrls
+   */
+  #list(groups, showAnchors, openUrls) {
+    const locale = this.#locale();
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+    const plural = new Intl.PluralRules(locale);
+    const num = new Intl.NumberFormat(locale);
+
+    const ol = document.createElement('ol');
+    ol.className = 'recently-visited-list';
+    for (const g of groups) {
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = g.url;
+      link.textContent = g.title || g.url;
+
+      if (showAnchors && g.anchors.length > 0) {
+        /* Page with anchor sub-visits — a <details> per page. */
+        li.className = 'has-anchors';
+        const details = document.createElement('details');
+        details.setAttribute('data-url', g.url);
+        if (openUrls.has(g.url)) details.open = true;
+        const summary = document.createElement('summary');
+        const meta = document.createElement('small');
+        const count = g.anchors.length;
+        const noun = this.#label(plural.select(count) === 'one' ? 'anchor-one' : 'anchor-other');
+        meta.append(`${num.format(count)} ${noun} · `, timeEl(g.ts, rtf));
+        summary.append(link, meta);
+
+        const ul = document.createElement('ul');
+        ul.className = 'recently-visited-anchors';
+        for (const a of g.anchors) {
+          const ali = document.createElement('li');
+          const alink = document.createElement('a');
+          alink.href = g.url + a.hash;
+          alink.textContent = a.hashTitle;
+          const asmall = document.createElement('small');
+          asmall.append(timeEl(a.ts, rtf));
+          ali.append(alink, asmall);
+          ul.append(ali);
         }
+        details.append(summary, ul);
+        li.append(details);
+      } else {
+        const small = document.createElement('small');
+        small.append(timeEl(g.ts, rtf));
+        li.append(link, small);
       }
-      parts.push('</ol>');
+      ol.append(li);
     }
-
-    this.innerHTML = parts.join('\n');
-    this.#wireControls();
+    return ol;
   }
 
-  #wireControls() {
-    const clear = this.querySelector('[data-recently-visited-clear]');
-    if (clear) {
-      clear.addEventListener('click', () => {
-        this.#write([]);
-        this.#render();
-        this.dispatchEvent(new CustomEvent('recently-visited:clear', { bubbles: true }));
-      });
+  #refreshTimes() {
+    const rtf = new Intl.RelativeTimeFormat(this.#locale(), { numeric: 'auto' });
+    for (const t of this.querySelectorAll('time[datetime]')) {
+      t.textContent = relativeTime(Date.parse(t.getAttribute('datetime') || ''), rtf);
     }
-    const pause = this.querySelector('[data-recently-visited-pause]');
-    if (pause) {
-      pause.addEventListener('click', () => {
-        this.#setPaused(!this.#isPaused());
-        this.#render();
-        this.dispatchEvent(new CustomEvent('recently-visited:pause-toggle', {
-          bubbles: true,
-          detail: { paused: this.#isPaused() },
-        }));
-      });
+  }
+
+  // ── Actions ──────────────────────────────────────────────────────────
+
+  /** @param {MouseEvent} e */
+  #onClick(e) {
+    const target = /** @type {Element} */ (e.target);
+    const button = target.closest?.('button');
+    if (!button || !this.contains(button)) return;
+
+    if (button.hasAttribute('data-recently-visited-clear')) {
+      if (button.getAttribute('aria-disabled') === 'true') return;
+      write([]);
+      this.dispatchEvent(new CustomEvent('recently-visited:clear', { bubbles: true }));
+    } else if (button.hasAttribute('data-recently-visited-pause')) {
+      const paused = !isPaused();
+      setPaused(paused);
+      this.dispatchEvent(new CustomEvent('recently-visited:pause-toggle', {
+        bubbles: true,
+        detail: { paused },
+      }));
+    } else if (button.hasAttribute('data-recently-visited-anchors')) {
+      const showAnchors = !isShowingAnchors();
+      setShowAnchors(showAnchors);
+      this.dispatchEvent(new CustomEvent('recently-visited:anchors-toggle', {
+        bubbles: true,
+        detail: { showAnchors },
+      }));
     }
-    const anchors = this.querySelector('[data-recently-visited-anchors]');
-    if (anchors) {
-      anchors.addEventListener('click', () => {
-        this.#setShowAnchors(!this.#showAnchors());
-        this.#render();
-        this.dispatchEvent(new CustomEvent('recently-visited:anchors-toggle', {
-          bubbles: true,
-          detail: { showAnchors: this.#showAnchors() },
-        }));
-      });
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────
+
+  #limit() {
+    const n = Number.parseInt(this.getAttribute('limit') ?? '', 10);
+    return Number.isFinite(n) && n > 0 ? n : DEFAULT_LIMIT;
+  }
+
+  /** @param {keyof typeof DEFAULT_LABELS} key */
+  #label(key) {
+    return this.getAttribute(`data-label-${key}`) || DEFAULT_LABELS[key];
+  }
+
+  #locale() {
+    const lang = this.closest('[lang]')?.getAttribute('lang') || undefined;
+    try {
+      return Intl.getCanonicalLocales(lang)[0];
+    } catch {
+      return undefined;
     }
   }
 }
 
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+/**
+ * Group flat entries into per-URL records: page-level info (url, most recent
+ * title and ts) plus the anchor visits. Sorted most recent first.
+ * @param {ReturnType<typeof read>} entries
+ */
+function groupByUrl(entries) {
+  /** @type {Map<string, { url: string, title: string, ts: number, anchors: Array<{ hash: string, hashTitle: string, ts: number }> }>} */
+  const groups = new Map();
+  for (const e of entries) {
+    let g = groups.get(e.url);
+    if (!g) {
+      g = { url: e.url, title: e.title, ts: e.ts, anchors: [] };
+      groups.set(e.url, g);
+    }
+    if (e.ts > g.ts) {
+      g.ts = e.ts;
+      if (e.title) g.title = e.title;
+    } else if (!g.title && e.title) {
+      g.title = e.title;
+    }
+    if (e.hash) {
+      g.anchors.push({ hash: e.hash, hashTitle: e.hashTitle || e.hash.slice(1), ts: e.ts });
+    }
+  }
+  for (const g of groups.values()) g.anchors.sort((a, b) => b.ts - a.ts);
+  return [...groups.values()].sort((a, b) => b.ts - a.ts);
 }
-function escapeAttr(s) {
-  return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+/**
+ * @param {number} ts
+ * @param {Intl.RelativeTimeFormat} rtf
+ */
+function timeEl(ts, rtf) {
+  const t = document.createElement('time');
+  t.dateTime = new Date(ts).toISOString();
+  t.textContent = relativeTime(ts, rtf);
+  return t;
 }
-function relativeTime(ts) {
-  const diff = Date.now() - ts;
-  if (diff < 60_000) return 'just now';
-  if (diff < 3600_000) return `${Math.floor(diff / 60_000)}m ago`;
-  if (diff < 86_400_000) return `${Math.floor(diff / 3600_000)}h ago`;
-  return `${Math.floor(diff / 86_400_000)}d ago`;
+
+/**
+ * @param {number} ts
+ * @param {Intl.RelativeTimeFormat} rtf
+ */
+function relativeTime(ts, rtf) {
+  if (!Number.isFinite(ts)) return '';
+  const secs = Math.max(0, (Date.now() - ts) / 1000);
+  if (secs < 60) return rtf.format(0, 'second');
+  if (secs < 3600) return rtf.format(-Math.floor(secs / 60), 'minute');
+  if (secs < 86_400) return rtf.format(-Math.floor(secs / 3600), 'hour');
+  return rtf.format(-Math.floor(secs / 86_400), 'day');
 }
 
 registerComponent('recently-visited', RecentlyVisited);

@@ -135,6 +135,16 @@ The `link rel="author-key"` claims the rel name for this purpose. See `canonical
 
 These are available for lens components to consume but are **owned by the analytics subsystem**, not the provenance initiative. Changes to their vocabulary belong in the analytics spec.
 
+### Reading-history switches (configuration, not taxonomy)
+
+| Field | Values | Consumer |
+|---|---|---|
+| `vb:track-history` | `on` | `src/utils/recently-visited-init.js` — opts the page in to local reading history (a `<recently-visited>` on the page also opts in) |
+| `vb:track-history-params` | space-separated query parameter names | same — query strings are stripped unless listed here |
+| `vb:no-track-history` | any | same — this page is never recorded |
+
+`<html data-vb-no-track>` also blocks recording site-wide. These are runtime switches: analytics excludes them from its event taxonomy.
+
 ---
 
 ## Section C — DOM attributes (not meta tags)

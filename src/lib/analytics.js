@@ -86,12 +86,17 @@ function readHtmlDataset() {
   return context;
 }
 
+/** vb:* metas that configure runtime behaviour and must not ride on events. */
+const NON_TAXONOMY_META = new Set(['track-history', 'track-history-params', 'no-track-history']);
+
 function readTaxonomy() {
   /** @type {Record<string, string | string[]>} */
   const taxonomy = {};
   for (const meta of document.querySelectorAll('meta[name^="vb:"]')) {
     const key = meta.getAttribute('name')?.slice(3);
     const val = meta.getAttribute('content')?.trim();
+    // Runtime switches (history tracking) are configuration, not taxonomy.
+    if (key && NON_TAXONOMY_META.has(key)) continue;
     if (key && val) taxonomy[key] = val;
   }
   /* meta-tag-contract v1.1: SKOS concept ids ride alongside the vb:*

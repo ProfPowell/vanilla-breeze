@@ -2,40 +2,34 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "recently-visited",
   "type": "web-component",
-  "description": "Device-local reader history lens (localStorage, never aggregated)",
+  "description": "Device-local reader history lens (localStorage, never sent or aggregated). Pages are recorded only when opted in with <meta name=\"vb:track-history\" content=\"on\"> or by this element's presence; <html data-vb-no-track> and <meta name=\"vb:no-track-history\"> opt out.",
   "attributes": [
-    {
-      "name": "limit",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "number",
-      "description": "Max entries kept in local history (default 25)"
-    },
-    {
-      "name": "no-track",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "boolean",
-      "description": "Don't append the current page on connectedCallback"
-    },
-    {
-      "name": "empty-text",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Message rendered when there is no history"
-    }
+    { "name": "limit", "kind": "host-api", "purpose": "config", "type": "number", "default": 25, "description": "Max page groups rendered. Storage itself is capped separately at 100 entries by the tracker." },
+    { "name": "include-current", "kind": "host-api", "purpose": "config", "type": "boolean", "description": "Also list the page the reader is on (excluded by default)." },
+    { "name": "data-heading-level", "kind": "data", "purpose": "config", "type": "number", "default": 2, "description": "Heading level 1-6 for the panel heading; 0 renders no heading (e.g. inside content-lens)." },
+    { "name": "data-label-heading", "kind": "data", "purpose": "config", "type": "string", "default": "Recently visited", "description": "Heading text." },
+    { "name": "data-label-explainer", "kind": "data", "purpose": "config", "type": "string", "default": "Stored on this device only. Never sent to a server.", "description": "Privacy note under the heading." },
+    { "name": "data-label-pause", "kind": "data", "purpose": "config", "type": "string", "default": "Pause tracking", "description": "Pause toggle label (static; aria-pressed carries the state)." },
+    { "name": "data-label-anchors", "kind": "data", "purpose": "config", "type": "string", "default": "Show anchor visits", "description": "Anchor-visits toggle label (static; aria-pressed carries the state)." },
+    { "name": "data-label-clear", "kind": "data", "purpose": "config", "type": "string", "default": "Clear history", "description": "Clear button label." },
+    { "name": "data-label-empty", "kind": "data", "purpose": "config", "type": "string", "default": "No recently visited pages yet.", "description": "Message rendered when there is no history." },
+    { "name": "data-label-anchor-one", "kind": "data", "purpose": "config", "type": "string", "default": "anchor", "description": "Anchor count noun when Intl.PluralRules selects \"one\"." },
+    { "name": "data-label-anchor-other", "kind": "data", "purpose": "config", "type": "string", "default": "anchors", "description": "Anchor count noun for every other plural category." }
   ],
   "events": [
+    { "name": "recently-visited:clear", "description": "Fires when the reader clears the local history." },
+    { "name": "recently-visited:pause-toggle", "detail": "{ paused }", "description": "Fires when the reader pauses or resumes tracking." },
+    { "name": "recently-visited:anchors-toggle", "detail": "{ showAnchors }", "description": "Fires when the reader shows or hides anchor visits." }
+  ],
+  "properties": [
     {
-      "name": "recently-visited:clear",
-      "description": "Fires when the reader clears the local history"
+      "name": "entries",
+      "type": "Array<{ url, hash, title, hashTitle, ts }>",
+      "description": "Read-only. Stored history, most recent first; expired (30-day TTL), malformed and off-origin records are filtered out."
     }
   ],
   "htmlvalidate": {
     "flow": true,
-    "permittedContent": [
-      "@flow"
-    ]
+    "permittedContent": []
   }
 }
