@@ -5,9 +5,20 @@
  * rendered in shadow DOM. The <video> and optional <details class="track-list">
  * stay in light DOM — if JS is unavailable, native controls and track links work.
  *
- * @attr {boolean} autoplay - Start playing on load (subject to browser autoplay policy)
- * @attr {boolean} loop - Loop single track or entire playlist
- * @attr {boolean} muted - Start muted
+ * @attr {boolean} autoplay - Start playing on first connect (subject to browser
+ *   autoplay policy). Skipped under prefers-reduced-motion: reduce, and never
+ *   re-run when the player is moved/reconnected.
+ * @attr {boolean} loop - Single video: loop it. Playlist: wrap to the first track after the last
+ * @attr {boolean} shuffle - Playlist: advance to a random other track
+ * @attr {boolean} muted - Start muted; reflects the inner video.muted afterwards
+ * @attr {boolean} captions - Start with the first caption track showing; reflects it afterwards
+ * @attr {string} data-label-* - Override any UI string (see LABELS), e.g.
+ *   data-label-play="Lire". {rate}, {current}, {duration} are placeholders.
+ *
+ * Keyboard (focus on the player, not inside one of its controls; modifier
+ * chords are ignored): Space/K play-pause, Left/Right seek 10s, Up/Down
+ * volume, M mute, F fullscreen, C captions. On the seek slider Left/Right
+ * seek 5s; the volume slider keeps its native arrow behaviour.
  *
  * @fires video-player:play - Video playback started
  * @fires video-player:pause - Video playback paused
@@ -16,6 +27,7 @@
  * @fires video-player:fullscreen - Fullscreen state changed
  * @fires video-player:speed - Playback speed changed
  * @fires video-player:captions - Captions toggled
+ * @fires video-player:src-changed - The src property was set
  *
  * @example Single video
  * <video-player>
@@ -45,9 +57,39 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { getLocale } from '../../lib/i18n.js';
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2]
 const IDLE_TIMEOUT = 3000
+const SEEK_STEP = 10
+const SLIDER_SEEK_STEP = 5
+
+// Key events from these (inside the player, light or shadow DOM) keep their
+// native behaviour; the host shortcuts only fire when focus is on the host.
+const INTERACTIVE = 'input, button, a[href], summary, select, textarea, video[controls], [contenteditable]:not([contenteditable="false"])'
+
+/** Default English strings; each is overridable with data-label-<key>. */
+const LABELS = {
+  player: 'Video player',
+  controls: 'Video controls',
+  'play-video': 'Play video',
+  play: 'Play',
+  pause: 'Pause',
+  seek: 'Seek',
+  'skip-back': 'Skip back 10 seconds',
+  'skip-forward': 'Skip forward 10 seconds',
+  mute: 'Mute',
+  volume: 'Volume',
+  speed: 'Playback speed {rate}',
+  captions: 'Captions',
+  fullscreen: 'Fullscreen',
+  'exit-fullscreen': 'Exit fullscreen',
+  playing: 'Playing',
+  paused: 'Paused',
+  ended: 'Ended',
+  buffering: 'Buffering',
+  'time-of': '{current} of {duration}',
+}
 
 class VideoPlayerElement extends VBElement {
 
@@ -93,6 +135,15 @@ class VideoPlayerElement extends VBElement {
   #onThemeChange = null
   /** @type {(() => void) | null} */
   #onFullscreenChange = null
+  /** @type {HTMLButtonElement} */
+  #muteBtn = /** @type {*} */ (null)
+  #autoplayHandled = false
+  /** @type {string} */
+  #locale = 'en'
+  /** @type {Intl.NumberFormat | null} */
+  #nf = null
+  /** @type {any} */
+  #df = null
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -105,22 +156,41 @@ class VideoPlayerElement extends VBElement {
     // Suppress native controls — we provide our own
     this.#video.removeAttribute('controls')
 
-    const firstConnect = !this.shadowRoot
     this.#buildShadow()
-    if (firstConnect) {
-      this.#attachVideoEvents()
-      this.#attachControlEvents()
-      this.#attachTrackListEvents()
-      this.#attachIdleTracking()
-    }
+    this.#initFormatters()
 
-    if (this.hasAttribute('muted')) {
-      this.#video.muted = true
-      this.setAttribute('muted', '')
-    }
+    // Every listener goes through listen() on every setup(): listen() removes
+    // them on disconnect, and the light-DOM <video>/.track-list may have been
+    // swapped while disconnected, so nothing may hide behind a "first build"
+    // guard (only the shadow DOM itself is built once).
+    this.#attachVideoEvents()
+    this.#attachControlEvents()
+    this.#attachTrackListEvents()
+    this.#attachIdleTracking()
 
-    if (this.hasAttribute('autoplay')) {
-      this.#video.play().catch(() => {})
+    this.#applyLabels()
+    this.#syncCaptionsButton()
+
+    if (this.hasAttribute('muted')) this.#video.muted = true
+    this.#syncMuted()
+
+    // Single video: host [loop] loops the media natively (playlists wrap in #playNext)
+    if (!this.#trackList && this.hasAttribute('loop')) this.#video.loop = true
+
+    // Autoplay once per element, never on a move/reconnect, and not at all
+    // when the user asked for reduced motion (that also cancels a native
+    // autoplay attribute authored on the inner <video>).
+    if (!this.#autoplayHandled) {
+      this.#autoplayHandled = true
+      const reduce = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      if (reduce) {
+        if (this.#video.autoplay) {
+          this.#video.autoplay = false
+          this.#video.pause()
+        }
+      } else if (this.hasAttribute('autoplay')) {
+        this.#video.play().catch(() => {})
+      }
     }
 
     // Show controls initially
@@ -137,14 +207,17 @@ class VideoPlayerElement extends VBElement {
     }
     this.listen(window, 'vb:theme-change', this.#onThemeChange)
 
-    // Fullscreen change — may exit from Escape key without our button
+    // Fullscreen change — may exit from Escape key without our button. Only
+    // react when THIS player (or its video) enters/leaves fullscreen.
     this.#onFullscreenChange = () => {
-      const active = !!document.fullscreenElement
-      this.toggleAttribute('data-fullscreen', active)
-      this.#fullscreenBtn.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Fullscreen')
+      const active = this.#isFullscreen()
+      if (active === this.hasAttribute('data-fullscreen')) return
+      this.#reflectFullscreen(active)
+      this.#fullscreenBtn.setAttribute('aria-label', this.#label(active ? 'exit-fullscreen' : 'fullscreen'))
       this.#emit('video-player:fullscreen', { active })
     }
     this.listen(document, 'fullscreenchange', this.#onFullscreenChange)
+    this.#reflectFullscreen(this.#isFullscreen())
 
     // Captions: an authored [captions] turns the first caption track on; a
     // `default` track the UA shows on its own is reflected back. The UA
@@ -155,7 +228,14 @@ class VideoPlayerElement extends VBElement {
     this.#syncCaptionsState()
     this.listen(this.#video.textTracks, 'change', () => this.#syncCaptionsState())
 
-    this.setAttribute('state', 'idle')
+    // Derive state from the media element (a reconnect keeps its position)
+    this.#playing = !this.#video.paused && !this.#video.ended
+    this.#setState(this.#video.ended ? 'ended'
+      : this.#playing ? 'playing'
+      : this.#video.currentTime > 0 ? 'paused' : 'idle')
+    this.#playBtn.setAttribute('aria-label', this.#label(this.#playing ? 'pause' : 'play'))
+    this.#updateDuration()
+    this.#handleTimeUpdate()
     return true;
   }
 
@@ -165,6 +245,7 @@ class VideoPlayerElement extends VBElement {
       this.#video.setAttribute('controls', '')
     }
     if (this.#idleTimer != null) clearTimeout(this.#idleTimer)
+    this.#idleTimer = null
   }
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
@@ -179,10 +260,7 @@ class VideoPlayerElement extends VBElement {
     if (this.#video.getAttribute('src') === next) return;
     this.#video.setAttribute('src', next);
     this.#video.load?.();
-    this.dispatchEvent(new CustomEvent('video-player:src-changed', {
-      detail: { src: next, source: 'property' },
-      bubbles: true,
-    }));
+    this.#emit('video-player:src-changed', { src: next, source: 'property' });
   }
 
   get currentTime() { return this.#video?.currentTime ?? 0; }
@@ -215,7 +293,7 @@ class VideoPlayerElement extends VBElement {
           <div class="timeline-wrap">
             <input part="timeline" type="range" class="timeline"
                    min="0" max="100" value="0" step="0.1"
-                   aria-label="Seek">
+                   aria-label="Seek" aria-valuetext="0:00 of 0:00">
             <div class="timeline-buffer"></div>
             <div class="timeline-fill"></div>
           </div>
@@ -241,7 +319,7 @@ class VideoPlayerElement extends VBElement {
               </svg>
             </button>
             <div class="volume-wrap">
-              <button class="mute-btn" type="button" aria-label="Mute">
+              <button part="mute-button" class="mute-btn" type="button" aria-label="Mute" aria-pressed="false">
                 <svg class="icon-vol" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18">
                   <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
                 </svg>
@@ -250,8 +328,8 @@ class VideoPlayerElement extends VBElement {
                 </svg>
               </button>
               <input part="volume" type="range" class="volume"
-                     min="0" max="1" value="1" step="0.01"
-                     aria-label="Volume">
+                     min="0" max="1" value="1" step="0.05"
+                     aria-label="Volume" aria-valuetext="100%">
             </div>
             <span part="time-display" class="time-display">
               <time class="current-time">0:00</time>
@@ -295,12 +373,71 @@ class VideoPlayerElement extends VBElement {
     this.#fullscreenBtn = /** @type {HTMLButtonElement} */ (shadow.querySelector('.fullscreen-btn'))
     this.#bufferIndicator = /** @type {HTMLElement} */ (shadow.querySelector('.buffer-indicator'))
     this.#statusEl = /** @type {HTMLElement} */ (shadow.querySelector('.sr-status'))
+    this.#muteBtn = /** @type {HTMLButtonElement} */ (shadow.querySelector('.mute-btn'))
+  }
 
-    // Hide captions button if no caption/subtitle tracks
+  /** Hide the captions button when the video has no caption/subtitle track. */
+  #syncCaptionsButton() {
     const hasCaptions = this.#video.querySelector('track[kind="captions"], track[kind="subtitles"]')
-    if (!hasCaptions) {
-      this.#captionsBtn.hidden = true
+    this.#captionsBtn.hidden = !hasCaptions
+  }
+
+  // ─── Labels & formatting (i18n) ────────────────────────────────────────────
+
+  /**
+   * Author-overridable UI string from data-label-<key>, with {var} substitution.
+   * @param {string} key
+   * @param {Record<string, string>} [vars]
+   */
+  #label(key, vars = {}) {
+    let text = this.getAttribute(`data-label-${key}`) ?? LABELS[key] ?? key
+    for (const [k, v] of Object.entries(vars)) text = text.replaceAll(`{${k}}`, v)
+    return text
+  }
+
+  /** Locale from the closest [lang]; formatters are rebuilt on every setup(). */
+  #initFormatters() {
+    this.#locale = getLocale(this)
+    try { this.#nf = new Intl.NumberFormat(this.#locale, { useGrouping: false }) }
+    catch { this.#nf = new Intl.NumberFormat('en', { useGrouping: false }) }
+    const DF = /** @type {any} */ (Intl).DurationFormat
+    try { this.#df = DF ? new DF(this.#locale, { style: 'digital', hoursDisplay: 'auto' }) : null }
+    catch { this.#df = null }
+  }
+
+  /** Write every static label (re-run each setup so data-label-* edits apply). */
+  #applyLabels() {
+    const sr = /** @type {ShadowRoot} */ (this.shadowRoot)
+    const set = (sel, key) => sr.querySelector(sel)?.setAttribute('aria-label', this.#label(key))
+    set('.controls', 'controls')
+    set('.play-overlay', 'play-video')
+    set('.timeline', 'seek')
+    set('.skip-back-btn', 'skip-back')
+    set('.skip-forward-btn', 'skip-forward')
+    set('.mute-btn', 'mute')
+    set('.volume', 'volume')
+    set('.captions-btn', 'captions')
+    this.#fullscreenBtn.setAttribute('aria-label', this.#label(this.#isFullscreen() ? 'exit-fullscreen' : 'fullscreen'))
+    this.#updateSpeedLabel()
+
+    // The host is the focus target for the shortcuts (they never fire from
+    // inside a control), so give that tab stop a role, a name and the keys.
+    if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0')
+    if (!this.hasAttribute('role')) this.setAttribute('role', 'group')
+    if (!this.hasAttribute('aria-label') && !this.hasAttribute('aria-labelledby')) {
+      this.setAttribute('aria-label', this.#label('player'))
     }
+    if (!this.hasAttribute('aria-keyshortcuts')) {
+      this.setAttribute('aria-keyshortcuts', 'Space K ArrowLeft ArrowRight ArrowUp ArrowDown M F C')
+    }
+  }
+
+  #updateSpeedLabel() {
+    const rate = /** @type {number} */ (PLAYBACK_RATES[this.#rateIndex])
+    const text = `${this.#nf?.format(rate) ?? rate}x`
+    const speedLabel = /** @type {HTMLElement} */ (this.#speedBtn.querySelector('span'))
+    speedLabel.textContent = text
+    this.#speedBtn.setAttribute('aria-label', this.#label('speed', { rate: text }))
   }
 
   // ─── Styles ────────────────────────────────────────────────────────────────
@@ -310,7 +447,6 @@ class VideoPlayerElement extends VBElement {
       :host {
         display: block;
         --_accent: var(--video-player-accent, var(--color-primary, oklch(55% 0.2 260)));
-        --_controls-bg: var(--video-player-controls-bg, oklch(0% 0 0 / 0.75));
         --_controls-text: var(--video-player-controls-text, #fff);
         --_radius: var(--video-player-radius, var(--radius-m, 0.5rem));
         --_border: var(--video-player-border, none);
@@ -432,7 +568,11 @@ class VideoPlayerElement extends VBElement {
       }
 
       /* ── Controls overlay ───────────────────────── */
+      /* Media transport controls stay left-to-right in RTL pages (the
+         timeline runs start→end of the media, like every platform player);
+         the fill/buffer bars and the volume gradient rely on this. */
       .controls {
+        direction: ltr;
         position: absolute;
         bottom: 0;
         left: 0;
@@ -698,6 +838,61 @@ class VideoPlayerElement extends VBElement {
         border: 0;
       }
 
+      /* ── Forced colors ──────────────────────────── */
+      /* Background-only bars vanish under forced colors (backgrounds become
+         Canvas). Paint progress with system colours and outline the tracks. */
+      @media (forced-colors: active) {
+        .timeline-fill {
+          forced-color-adjust: none;
+          background: Highlight;
+        }
+
+        .timeline-buffer {
+          forced-color-adjust: none;
+          background: GrayText;
+        }
+
+        .timeline::-webkit-slider-runnable-track {
+          border: 1px solid CanvasText;
+        }
+
+        .timeline::-moz-range-track {
+          border: 1px solid CanvasText;
+        }
+
+        .volume {
+          forced-color-adjust: none;
+        }
+
+        .volume::-webkit-slider-runnable-track {
+          border: 1px solid CanvasText;
+          background: linear-gradient(to right,
+            Highlight calc(var(--_vol, 1) * 100%),
+            Canvas calc(var(--_vol, 1) * 100%));
+        }
+
+        .volume::-moz-range-track {
+          border: 1px solid CanvasText;
+          background: Canvas;
+        }
+
+        .volume::-moz-range-progress {
+          background: Highlight;
+        }
+
+        .volume::-webkit-slider-thumb {
+          background: CanvasText;
+        }
+
+        .volume::-moz-range-thumb {
+          background: CanvasText;
+        }
+
+        .play-overlay svg {
+          border: 1px solid CanvasText;
+        }
+      }
+
       /* ── Reduced motion ─────────────────────────── */
       @media (prefers-reduced-motion: reduce) {
         .play-overlay svg,
@@ -738,36 +933,40 @@ class VideoPlayerElement extends VBElement {
   // ─── Video events ──────────────────────────────────────────────────────────
 
   #attachVideoEvents() {
-    this.#video.addEventListener('timeupdate', () => this.#handleTimeUpdate())
-    this.#video.addEventListener('loadedmetadata', () => this.#updateDuration())
-    this.#video.addEventListener('progress', () => this.#updateBuffered())
+    const v = this.#video
+    this.listen(v, 'timeupdate', () => this.#handleTimeUpdate())
+    this.listen(v, 'loadedmetadata', () => { this.#updateDuration(); this.#handleTimeUpdate() })
+    this.listen(v, 'durationchange', () => this.#updateDuration())
+    this.listen(v, 'progress', () => this.#updateBuffered())
+    this.listen(v, 'volumechange', () => this.#syncMuted())
 
-    this.#video.addEventListener('play', () => {
+    this.listen(v, 'play', () => {
       this.#playing = true
-      this.setAttribute('state', 'playing')
-      this.#playBtn.setAttribute('aria-label', 'Pause')
-      this.#announce('Playing')
+      this.#setState('playing')
+      this.#playBtn.setAttribute('aria-label', this.#label('pause'))
+      this.#announce(this.#label('playing'))
       this.#emit('video-player:play', {
-        currentTime: this.#video.currentTime,
-        src: this.#video.currentSrc
+        currentTime: v.currentTime,
+        src: v.currentSrc
       })
     })
 
-    this.#video.addEventListener('pause', () => {
+    this.listen(v, 'pause', () => {
       this.#playing = false
-      this.setAttribute('state', 'paused')
-      this.#playBtn.setAttribute('aria-label', 'Play')
+      // 'ended' fires after a final 'pause'; let it own the state
+      if (!v.ended) this.#setState('paused')
+      this.#playBtn.setAttribute('aria-label', this.#label('play'))
       this.#showControls()
-      this.#announce('Paused')
+      this.#announce(this.#label('paused'))
       this.#emit('video-player:pause', {
-        currentTime: this.#video.currentTime
+        currentTime: v.currentTime
       })
     })
 
-    this.#video.addEventListener('ended', () => {
+    this.listen(v, 'ended', () => {
       this.#playing = false
-      this.setAttribute('state', 'ended')
-      this.#playBtn.setAttribute('aria-label', 'Play')
+      this.#setState('ended')
+      this.#playBtn.setAttribute('aria-label', this.#label('play'))
       this.#showControls()
 
       // Mark track as played
@@ -779,99 +978,111 @@ class VideoPlayerElement extends VBElement {
         this.#playNext()
       }
 
-      this.#announce('Ended')
-      this.#emit('video-player:ended', { src: this.#video.currentSrc })
+      this.#announce(this.#label('ended'))
+      this.#emit('video-player:ended', { src: v.currentSrc })
     })
 
-    this.#video.addEventListener('waiting', () => {
+    this.listen(v, 'waiting', () => {
       if (this.#playing) {
-        this.setAttribute('state', 'buffering')
-        this.#announce('Buffering')
+        this.#setState('buffering')
+        this.#announce(this.#label('buffering'))
       }
     })
 
-    this.#video.addEventListener('playing', () => {
+    this.listen(v, 'playing', () => {
       if (this.getAttribute('state') === 'buffering') {
-        this.setAttribute('state', 'playing')
+        this.#setState('playing')
       }
     })
+  }
+
+  /**
+   * Set the reflected [state]. The big play overlay is only shown in idle and
+   * ended; in every other state it is invisible, so make it inert too (out of
+   * the tab order and the accessibility tree).
+   * @param {'idle' | 'playing' | 'paused' | 'ended' | 'buffering'} state
+   */
+  #setState(state) {
+    this.setAttribute('state', state)
+    if (this.#playOverlay) this.#playOverlay.inert = !(state === 'idle' || state === 'ended')
   }
 
   // ─── Control events ────────────────────────────────────────────────────────
 
   #attachControlEvents() {
+    const sr = /** @type {ShadowRoot} */ (this.shadowRoot)
+    const togglePlay = () => {
+      if (this.#playing) this.#video.pause()
+      else this.#video.play().catch(() => {})
+    }
+
     // Play overlay
-    this.#playOverlay.addEventListener('click', (e) => {
+    this.listen(this.#playOverlay, 'click', (e) => {
       e.stopPropagation()
       this.#video.play().catch(() => {})
     })
 
     // Click on player area to toggle play/pause
-    const player = /** @type {HTMLElement} */ (this.shadowRoot?.querySelector('.player'))
-    player.addEventListener('click', (e) => {
+    const player = /** @type {HTMLElement} */ (sr.querySelector('.player'))
+    this.listen(player, 'click', (e) => {
       // Only respond to clicks on the slot area (video), not on controls
-      if (/** @type {Element} */ (e.target).closest('.controls') || /** @type {Element} */ (e.target).closest('.play-overlay')) return
-      if (this.#playing) {
-        this.#video.pause()
-      } else {
-        this.#video.play().catch(() => {})
-      }
+      const target = /** @type {Element} */ (e.target)
+      if (target.closest('.controls') || target.closest('.play-overlay')) return
+      // Light-DOM content (playlist <details>) is slotted too; only the video toggles
+      if (target !== this.#video && !(target === player)) return
+      togglePlay()
     })
 
     // Play/pause button
-    this.#playBtn.addEventListener('click', () => {
-      if (this.#playing) {
-        this.#video.pause()
-      } else {
-        this.#video.play().catch(() => {})
-      }
-    })
+    this.listen(this.#playBtn, 'click', togglePlay)
 
     // Seek
-    this.#timeline.addEventListener('input', () => {
+    this.listen(this.#timeline, 'input', () => {
       if (!this.#video.duration) return
       this.#video.currentTime = (Number(this.#timeline.value) / 100) * this.#video.duration
+      this.#updateValueText()
+    })
+
+    // Arrow keys on the seek slider move by SLIDER_SEEK_STEP seconds (the
+    // native 0.1% step is imperceptible). The controls are always LTR, so
+    // Left/Down is back. Home/End/PageUp/PageDown stay native.
+    this.listen(this.#timeline, 'keydown', (e) => {
+      const ke = /** @type {KeyboardEvent} */ (e)
+      if (ke.altKey || ke.ctrlKey || ke.metaKey) return
+      const dir = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[ke.key]
+      if (!dir) return
+      ke.preventDefault()
+      this.#seekBy(dir * SLIDER_SEEK_STEP)
     })
 
     // Skip back/forward
-    const skipBack = /** @type {HTMLElement} */ (this.shadowRoot?.querySelector('.skip-back-btn'))
-    skipBack.addEventListener('click', () => {
-      this.#video.currentTime = Math.max(0, this.#video.currentTime - 10)
-    })
-    const skipFwd = /** @type {HTMLElement} */ (this.shadowRoot?.querySelector('.skip-forward-btn'))
-    skipFwd.addEventListener('click', () => {
-      this.#video.currentTime = Math.min(this.#video.duration || 0, this.#video.currentTime + 10)
-    })
+    this.listen(/** @type {HTMLElement} */ (sr.querySelector('.skip-back-btn')), 'click', () => this.#seekBy(-SEEK_STEP))
+    this.listen(/** @type {HTMLElement} */ (sr.querySelector('.skip-forward-btn')), 'click', () => this.#seekBy(SEEK_STEP))
 
-    // Volume
-    this.#volumeSlider.addEventListener('input', () => {
+    // Volume (volumechange → #syncMuted updates the UI)
+    this.listen(this.#volumeSlider, 'input', () => {
       this.#video.volume = Number(this.#volumeSlider.value)
       this.#video.muted = false
-      this.removeAttribute('muted')
-      this.#volumeSlider.style.setProperty('--_vol', this.#volumeSlider.value)
+      this.#syncMuted()
     })
 
-    // Mute toggle
-    const muteBtn = /** @type {HTMLButtonElement} */ (this.shadowRoot?.querySelector('.mute-btn'))
-    muteBtn.addEventListener('click', () => {
+    // Mute toggle (label stays "Mute"; aria-pressed carries the state)
+    this.listen(this.#muteBtn, 'click', () => {
       this.#video.muted = !this.#video.muted
-      this.toggleAttribute('muted', this.#video.muted)
-      this.#volumeSlider.style.setProperty('--_vol', this.#video.muted ? '0' : this.#volumeSlider.value)
+      this.#syncMuted()
     })
 
     // Speed
-    this.#speedBtn.addEventListener('click', () => {
+    this.listen(this.#speedBtn, 'click', () => {
       this.#rateIndex = (this.#rateIndex + 1) % PLAYBACK_RATES.length
       const rate = /** @type {number} */ (PLAYBACK_RATES[this.#rateIndex])
       this.#video.playbackRate = rate
-      const speedLabel = /** @type {HTMLElement} */ (this.#speedBtn.querySelector('span'))
-      speedLabel.textContent = `${rate}x`
-      this.#speedBtn.setAttribute('aria-label', `Playback speed ${rate}x`)
+      this.#updateSpeedLabel()
       this.#emit('video-player:speed', { rate })
     })
 
     // Captions toggle
-    this.#captionsBtn.addEventListener('click', () => {
+    this.listen(this.#captionsBtn, 'click', () => {
       const track = this.#getCaptionTrack()
       if (!track) return
 
@@ -884,15 +1095,34 @@ class VideoPlayerElement extends VBElement {
     })
 
     // Fullscreen
-    this.#fullscreenBtn.addEventListener('click', () => this.#toggleFullscreen())
+    this.listen(this.#fullscreenBtn, 'click', () => this.#toggleFullscreen())
 
-    // Keyboard shortcuts
-    this.addEventListener('keydown', (e) => this.#handleKeydown(e))
+    // Keyboard shortcuts on the host. Events from shadow controls are
+    // retargeted to the host, so e.target is useless here: walk the composed
+    // path and bail if the real target is an interactive control (sliders,
+    // buttons, playlist summary/links), which keep their native keys.
+    this.listen(this, 'keydown', (e) => this.#handleKeydown(/** @type {KeyboardEvent} */ (e)))
+  }
 
-    // Make focusable for keyboard shortcuts
-    if (!this.hasAttribute('tabindex')) {
-      this.setAttribute('tabindex', '0')
+  /**
+   * True when a key event originated inside an interactive control that lives
+   * within this player (light or shadow DOM), up to but excluding the host.
+   * @param {Event} e
+   */
+  #fromInteractive(e) {
+    for (const node of e.composedPath()) {
+      if (node === this) return false
+      if (node instanceof Element && node.matches(INTERACTIVE)) return true
     }
+    return false
+  }
+
+  /** @param {number} delta seconds */
+  #seekBy(delta) {
+    const d = this.#video.duration || 0
+    this.#video.currentTime = Math.min(d, Math.max(0, this.#video.currentTime + delta))
+    this.#showControls()
+    this.#handleTimeUpdate()
   }
 
   // ─── Idle tracking (controls visibility) ───────────────────────────────────
@@ -902,23 +1132,15 @@ class VideoPlayerElement extends VBElement {
 
     const resetIdle = () => {
       this.#showControls()
-      if (this.#idleTimer != null) clearTimeout(this.#idleTimer)
-      if (this.#playing) {
-        this.#idleTimer = setTimeout(() => this.#hideControls(), IDLE_TIMEOUT)
-      }
+      this.#armIdle(IDLE_TIMEOUT)
     }
 
-    player.addEventListener('mousemove', resetIdle)
-    player.addEventListener('mouseenter', resetIdle)
-    player.addEventListener('mouseleave', () => {
-      if (this.#playing) {
-        if (this.#idleTimer != null) clearTimeout(this.#idleTimer)
-        this.#idleTimer = setTimeout(() => this.#hideControls(), 500)
-      }
-    })
+    this.listen(player, 'mousemove', resetIdle)
+    this.listen(player, 'mouseenter', resetIdle)
+    this.listen(player, 'mouseleave', () => this.#armIdle(500))
 
     // Touch: tap to toggle
-    player.addEventListener('touchstart', () => {
+    this.listen(player, 'touchstart', () => {
       if (this.hasAttribute('controls')) {
         this.#hideControls()
       } else {
@@ -927,22 +1149,35 @@ class VideoPlayerElement extends VBElement {
     }, { passive: true })
 
     // Keep controls visible when interacting with them
-    this.#controls.addEventListener('mouseenter', () => {
+    this.listen(this.#controls, 'mouseenter', () => {
       if (this.#idleTimer != null) clearTimeout(this.#idleTimer)
       this.#showControls()
     })
 
-    this.#controls.addEventListener('focusin', () => {
+    this.listen(this.#controls, 'focusin', () => {
       if (this.#idleTimer != null) clearTimeout(this.#idleTimer)
       this.#showControls()
     })
+
+    // Focus left the controls: resume auto-hide
+    this.listen(this.#controls, 'focusout', () => this.#armIdle(IDLE_TIMEOUT))
+  }
+
+  /** @param {number} ms */
+  #armIdle(ms) {
+    if (this.#idleTimer != null) clearTimeout(this.#idleTimer)
+    this.#idleTimer = null
+    if (this.#playing) this.#idleTimer = setTimeout(() => this.#hideControls(), ms)
   }
 
   #showControls() {
     this.setAttribute('controls', '')
   }
 
+  /** Auto-hide — never while keyboard focus is inside the controls. */
   #hideControls() {
+    const active = this.shadowRoot?.activeElement
+    if (active && this.#controls?.contains(active)) return
     this.removeAttribute('controls')
   }
 
@@ -951,7 +1186,7 @@ class VideoPlayerElement extends VBElement {
   #attachTrackListEvents() {
     if (!this.#trackList) return
 
-    this.#trackList.addEventListener('click', (e) => {
+    this.listen(this.#trackList, 'click', (e) => {
       const link = /** @type {HTMLAnchorElement | null} */ (/** @type {Element} */ (e.target).closest('a[href]'))
       if (!link) return
       e.preventDefault()
@@ -1004,9 +1239,7 @@ class VideoPlayerElement extends VBElement {
       }
     }
 
-    // Show/hide captions button
-    const hasCaptions = this.#video.querySelector('track[kind="captions"], track[kind="subtitles"]')
-    this.#captionsBtn.hidden = !hasCaptions
+    this.#syncCaptionsButton()
   }
 
   #playNext() {
@@ -1044,13 +1277,22 @@ class VideoPlayerElement extends VBElement {
 
     this.#currentTimeEl.textContent = this.#formatTime(t)
     this.#timeline.value = String(pct)
-    this.#timeline.setAttribute('aria-valuetext', this.#formatTimeVerbose(t))
+    this.#updateValueText()
     this.#timelineFill.style.width = `${pct}%`
+  }
+
+  /** Spoken value for the seek slider, e.g. "0:05 of 3:20". */
+  #updateValueText() {
+    this.#timeline.setAttribute('aria-valuetext', this.#label('time-of', {
+      current: this.#formatTime(this.#video.currentTime),
+      duration: this.#formatTime(this.#video.duration || 0),
+    }))
   }
 
   #updateDuration() {
     const d = this.#video.duration || 0
     this.#durationEl.textContent = this.#formatTime(d)
+    this.#updateValueText()
   }
 
   #updateBuffered() {
@@ -1064,9 +1306,21 @@ class VideoPlayerElement extends VBElement {
 
   // ─── Fullscreen ────────────────────────────────────────────────────────────
 
+  /** True when this player (or its own video) is the fullscreen element. */
+  #isFullscreen() {
+    const el = document.fullscreenElement
+    return !!el && (el === this || el === this.#video)
+  }
+
+  /** @param {boolean} active */
+  #reflectFullscreen(active) {
+    if (active) this.setAttribute('data-fullscreen', '')
+    else this.removeAttribute('data-fullscreen')
+  }
+
   #toggleFullscreen() {
-    if (document.fullscreenElement) {
-      document.exitFullscreen()
+    if (this.#isFullscreen()) {
+      document.exitFullscreen().catch(() => {})
     } else {
       this.requestFullscreen().catch(() => {
         // Fallback: try the video element directly
@@ -1100,8 +1354,10 @@ class VideoPlayerElement extends VBElement {
 
   // ─── Keyboard ──────────────────────────────────────────────────────────────
 
+  /** @param {KeyboardEvent} e */
   #handleKeydown(e) {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return
+    if (this.#fromInteractive(e)) return
 
     switch (e.key) {
       case ' ':
@@ -1113,33 +1369,28 @@ class VideoPlayerElement extends VBElement {
         break
       case 'ArrowLeft':
         e.preventDefault()
-        this.#video.currentTime = Math.max(0, this.#video.currentTime - 10)
-        this.#showControls()
+        this.#seekBy(-SEEK_STEP)
         break
       case 'ArrowRight':
         e.preventDefault()
-        this.#video.currentTime = Math.min(this.#video.duration || 0, this.#video.currentTime + 10)
-        this.#showControls()
+        this.#seekBy(SEEK_STEP)
         break
       case 'ArrowUp':
         e.preventDefault()
         this.#video.volume = Math.min(1, this.#video.volume + 0.05)
-        this.#volumeSlider.value = String(this.#video.volume)
-        this.#volumeSlider.style.setProperty('--_vol', String(this.#video.volume))
+        this.#syncMuted()
         this.#showControls()
         break
       case 'ArrowDown':
         e.preventDefault()
         this.#video.volume = Math.max(0, this.#video.volume - 0.05)
-        this.#volumeSlider.value = String(this.#video.volume)
-        this.#volumeSlider.style.setProperty('--_vol', String(this.#video.volume))
+        this.#syncMuted()
         this.#showControls()
         break
       case 'm':
       case 'M':
         this.#video.muted = !this.#video.muted
-        this.toggleAttribute('muted', this.#video.muted)
-        this.#volumeSlider.style.setProperty('--_vol', this.#video.muted ? '0' : this.#volumeSlider.value)
+        this.#syncMuted()
         break
       case 'f':
       case 'F':
@@ -1149,39 +1400,56 @@ class VideoPlayerElement extends VBElement {
       case 'C':
         this.#captionsBtn.click()
         break
-      case 'Escape':
-        if (document.fullscreenElement) {
-          document.exitFullscreen()
-        }
-        break
     }
+  }
+
+  /** Reflect video.muted/volume into [muted], aria-pressed and the slider. */
+  #syncMuted() {
+    if (!this.#video || !this.#muteBtn) return
+    const muted = this.#video.muted
+    this.toggleAttribute('muted', muted)
+    this.#muteBtn.setAttribute('aria-pressed', String(muted))
+    const vol = this.#video.volume
+    this.#volumeSlider.value = String(vol)
+    this.#volumeSlider.style.setProperty('--_vol', muted ? '0' : String(vol))
+    let pct
+    try { pct = new Intl.NumberFormat(this.#locale, { style: 'percent' }).format(vol) }
+    catch { pct = `${Math.round(vol * 100)}%` }
+    this.#volumeSlider.setAttribute('aria-valuetext', pct)
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
+  /**
+   * Clock-style time ("3:20", "1:02:05") in the player's locale. Uses
+   * Intl.DurationFormat (digital) when available — its leading unit is
+   * zero-padded, so that part is re-rendered unpadded — and falls back to a
+   * NumberFormat-built m:ss.
+   * @param {number} seconds
+   */
   #formatTime(seconds) {
-    if (!Number.isFinite(seconds)) return '0:00'
-    const h = Math.floor(seconds / 3600)
-    const m = Math.floor((seconds % 3600) / 60)
-    const s = Math.floor(seconds % 60)
+    const total = Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 0
+    const h = Math.floor(total / 3600)
+    const m = Math.floor((total % 3600) / 60)
+    const s = total % 60
+    const nf = this.#nf ?? new Intl.NumberFormat('en', { useGrouping: false })
 
-    if (h > 0) {
-      return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    if (this.#df) {
+      try {
+        const parts = this.#df.formatToParts({ hours: h, minutes: m, seconds: s })
+        let first = true
+        return parts.map((/** @type {{type: string, value: string, unit?: string}} */ p) => {
+          if (first && p.type === 'integer') {
+            first = false
+            return nf.format(p.unit === 'hour' ? h : m)
+          }
+          return p.value
+        }).join('')
+      } catch { /* fall through */ }
     }
-    return `${m}:${String(s).padStart(2, '0')}`
-  }
 
-  #formatTimeVerbose(seconds) {
-    if (!Number.isFinite(seconds)) return '0 seconds'
-    const h = Math.floor(seconds / 3600)
-    const m = Math.floor((seconds % 3600) / 60)
-    const s = Math.floor(seconds % 60)
-
-    const parts = []
-    if (h > 0) parts.push(`${h} hour${h !== 1 ? 's' : ''}`)
-    if (m > 0) parts.push(`${m} minute${m !== 1 ? 's' : ''}`)
-    parts.push(`${s} second${s !== 1 ? 's' : ''}`)
-    return parts.join(' ')
+    const pad = (/** @type {number} */ n) => nf.format(n).padStart(2, nf.format(0))
+    return h > 0 ? `${nf.format(h)}:${pad(m)}:${pad(s)}` : `${nf.format(m)}:${pad(s)}`
   }
 
   #announce(text) {

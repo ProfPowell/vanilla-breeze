@@ -9,6 +9,11 @@
  * native UI (where supported).
  *
  * @attr {string} data-chapter-list - Activates chapter list rendering
+ * @attr {string} data-label - Accessible name for the generated <nav>
+ *   (default "Video chapters"); set it on the <track> to localize.
+ *
+ * The active chapter's button carries aria-current="true" (and its <li>
+ * data-active for styling).
  *
  * @example
  * <video controls>
@@ -48,9 +53,9 @@ function enhanceTrack(trackEl) {
 
   // readyState: 0=NONE, 1=LOADING, 2=LOADED, 3=ERROR
   if (trackEl.readyState >= 2) {
-    buildChapterList(video, textTrack);
+    buildChapterList(video, textTrack, trackEl);
   } else {
-    trackEl.addEventListener('load', () => buildChapterList(video, textTrack), { once: true });
+    trackEl.addEventListener('load', () => buildChapterList(video, textTrack, trackEl), { once: true });
   }
 }
 
@@ -58,13 +63,14 @@ function enhanceTrack(trackEl) {
  * Build and insert the chapter list UI
  * @param {HTMLVideoElement} video
  * @param {TextTrack} textTrack
+ * @param {HTMLTrackElement} trackEl
  */
-function buildChapterList(video, textTrack) {
+function buildChapterList(video, textTrack, trackEl) {
   const cues = textTrack.cues;
   if (!cues || cues.length === 0) return;
 
   const nav = document.createElement('nav');
-  nav.setAttribute('aria-label', 'Video chapters');
+  nav.setAttribute('aria-label', trackEl.getAttribute('data-label') || 'Video chapters');
   nav.classList.add('chapter-list');
 
   const ol = document.createElement('ol');
@@ -86,7 +92,9 @@ function buildChapterList(video, textTrack) {
 
     button.addEventListener('click', () => {
       video.currentTime = cue.startTime;
-      if (video.paused) video.play();
+      // play() rejects when autoplay policy or a missing source blocks it;
+      // the seek already happened, so swallow the rejection.
+      if (video.paused) video.play()?.catch(() => {});
     });
 
     li.appendChild(button);
@@ -111,13 +119,18 @@ function buildChapterList(video, textTrack) {
       }
     }
 
-    if (activeLi) activeLi.removeAttribute('data-active');
+    const next = activeIndex >= 0 ? ol.children[activeIndex] : null;
+    if (next === activeLi) return;
 
-    if (activeIndex >= 0) {
-      activeLi = ol.children[activeIndex];
+    if (activeLi) {
+      activeLi.removeAttribute('data-active');
+      activeLi.querySelector('button')?.removeAttribute('aria-current');
+    }
+
+    activeLi = next;
+    if (activeLi) {
       activeLi.setAttribute('data-active', '');
-    } else {
-      activeLi = null;
+      activeLi.querySelector('button')?.setAttribute('aria-current', 'true');
     }
   });
 }

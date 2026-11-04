@@ -230,6 +230,14 @@ const BEHAVIOUR = [
   { name: 'version-switcher', demo: 'examples/demos/version-switcher-actions.html', selector: 'version-switcher',
     run: `const n = await fired(el, 'version-switcher:open', () => q(el, '.version-switcher-trigger').click());
           return [n, q(el, '.version-switcher-trigger').getAttribute('aria-expanded')];`, expected: [1, 'true'] },
+  // Shadow controls AND the light-DOM <video> media listeners must re-wire
+  // (they used to sit behind a first-connect guard): one speed event, one
+  // play event and the state reflected from the media element.
+  { name: 'video-player', demo: 'examples/demos/video-player-basic.html', selector: 'video-player',
+    run: `const speed = await fired(el, 'video-player:speed', () => q(el.shadowRoot, '.speed-btn').click());
+          const play = await fired(el, 'video-player:play', () => q(el, 'video').dispatchEvent(new Event('play')));
+          return [speed, play, el.getAttribute('state'), q(el.shadowRoot, '.play-btn').getAttribute('aria-label')];`,
+    expected: [1, 1, 'playing', 'Pause'] },
   { name: 'week-view', demo: 'examples/demos/week-view-basic.html', selector: 'week-view',
     run: `return fired(el, 'week-view:event-click', () => q(el, 'calendar-event').click());`, expected: 1 },
 ];

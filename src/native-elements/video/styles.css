@@ -15,23 +15,36 @@ video.full {
   block-size: auto;
 }
 
+/* Aspect-ratio classes letterbox by default (object-fit: contain) so a
+   content video with controls is never silently cropped. Add .cover for
+   decorative/background footage that should fill the box. */
+
 /* 16:9 aspect ratio (standard) */
 video.widescreen {
   aspect-ratio: 16 / 9;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 /* 4:3 aspect ratio (classic) */
 video.standard {
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 /* 21:9 ultrawide */
+video.ultrawide {
+  aspect-ratio: 21 / 9;
+  object-fit: contain;
+}
 
 /* Square video (social) */
 video.square {
   aspect-ratio: 1;
+  object-fit: contain;
+}
+
+/* Opt-in crop-to-fill (decorative / background video) */
+video.cover {
   object-fit: cover;
 }
 
@@ -95,7 +108,8 @@ video::cue {
   background: var(--color-hover-bg);
 }
 
-.chapter-list li[data-active] button {
+.chapter-list li[data-active] button,
+.chapter-list button[aria-current] {
   background: var(--color-primary-subtle, var(--color-surface-raised));
   font-weight: 600;
 }

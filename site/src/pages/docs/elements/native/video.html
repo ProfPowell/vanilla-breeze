@@ -36,7 +36,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Variants and Aspect Ratios</h2>
-    <p>Vanilla Breeze provides variant classes for video styling (<code>.rounded</code>, <code>.full</code>) and aspect ratio classes (<code>.widescreen</code>, <code>.standard</code>, <code>.square</code>, <code>.ultrawide</code>) for consistent video dimensions.</p>
+    <p>Vanilla Breeze provides variant classes for video styling (<code>.rounded</code>, <code>.full</code>) and aspect ratio classes (<code>.widescreen</code>, <code>.standard</code>, <code>.square</code>, <code>.ultrawide</code>) for consistent video dimensions. Aspect classes letterbox the picture (<code>object-fit: contain</code>) so a content video is never cropped; add <code>.cover</code> to crop-to-fill, which suits decorative or background footage.</p>
 
     <browser-window src="/docs/snippets/demos/video-examples.html" url="video-examples.html" title="Video variants, aspect ratios, and background video" style="min-height: 60rem;" shadow></browser-window>
 
@@ -78,19 +78,48 @@ crumbLabel: Native Elements
           <td>21:9</td>
           <td>Cinematic content, ultrawide monitors</td>
         </tr>
+        <tr>
+          <td><code>.cover</code></td>
+          <td>(any)</td>
+          <td>Opt-in: fill the aspect box and crop the overflow instead of letterboxing</td>
+        </tr>
       </tbody>
     </table>
+    <code-block language="html" show-lines label="Letterboxed (default) and cropped aspect boxes" data-escape><video class="square" controls>...</video>        <!-- whole frame, letterboxed -->
+<video class="square cover" controls>...</video>  <!-- fills the square, crops the sides --></code-block>
 
-    <h3>Background Video</h3>
-    <p>Decorative looping video without controls. Combine <code>autoplay</code>, <code>muted</code>, <code>loop</code>, and <code>playsinline</code> for seamless background playback.</p>
-    <code-block language="html" show-lines label="Background video (autoplay, muted, looping)" data-escape><video autoplay muted loop playsinline>
-  <source src="background.mp4" type="video/mp4" />
-</video></code-block>
+    <h3 id="background-video">Background Video</h3>
+    <p>Decorative looping video without native controls. Combine <code>muted</code>, <code>loop</code>, and <code>playsinline</code> for seamless background playback, and <code>.cover</code> to fill the box. Start it from script rather than with <code>autoplay</code>, so you can skip it for users who prefer reduced motion.</p>
+    <p><strong>A pause control is required.</strong> Content that moves automatically for more than five seconds must give users a way to pause or stop it (<a href="https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html">WCAG 2.2.2 Pause, Stop, Hide</a>). Pair every background video with a visible button, or use <code>controls</code>.</p>
+    <code-block language="html" show-lines label="Background video with a pause button" data-escape><figure>
+  <video id="hero-video" class="widescreen cover" muted loop playsinline aria-hidden="true">
+    <source src="background.mp4" type="video/mp4" />
+  </video>
+  <figcaption>
+    <button type="button" data-video-toggle="hero-video">Pause background video</button>
+  </figcaption>
+</figure>
+
+<script type="module">
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  for (const button of document.querySelectorAll('[data-video-toggle]')) {
+    const video = document.getElementById(button.dataset.videoToggle);
+    const sync = () => {
+      button.textContent = video.paused ? 'Play background video' : 'Pause background video';
+    };
+    // Start only when motion is welcome; the button can always start it
+    if (!reduce) video.play().catch(() => {});
+    video.addEventListener('play', sync);
+    video.addEventListener('pause', sync);
+    button.addEventListener('click', () => (video.paused ? video.play() : video.pause()));
+    sync();
+  }
+</script></code-block>
   </section>
 
   <section>
     <h2>Chapter Markers</h2>
-    <p>Add <code>data-chapter-list</code> to a <code>&lt;track kind="chapters"&gt;</code> element to render a clickable chapter list below the video. The current chapter highlights during playback, and clicking a chapter seeks to that timestamp.</p>
+    <p>Add <code>data-chapter-list</code> to a <code>&lt;track kind="chapters"&gt;</code> element to render a clickable chapter list below the video. The current chapter highlights during playback and its button gets <code>aria-current="true"</code>, and clicking a chapter seeks to that timestamp. The list is a <code>&lt;nav&gt;</code> named "Video chapters"; set <code>data-label</code> on the track to rename or localize it.</p>
 
     <p>Without JavaScript, the video plays normally with chapters available in the browser's native UI where supported.</p>
 
@@ -98,7 +127,8 @@ crumbLabel: Native Elements
 
     <code-block language="html" show-lines label="Video with chapter list" data-escape><video controls>
   <source src="tutorial.mp4" type="video/mp4" />
-  <track kind="chapters" src="chapters.vtt" default data-chapter-list />
+  <track kind="chapters" src="chapters.vtt" srclang="en" default
+         data-chapter-list data-label="Tutorial chapters" />
 </video></code-block>
 
     <h3>WebVTT Chapter Format</h3>
@@ -167,21 +197,20 @@ Summary and Next Steps</code-block>
 
   <section>
     <h2>Motion Preferences</h2>
-    <p>Vanilla Breeze respects <code>prefers-reduced-motion</code> for autoplay videos. When a user has indicated they prefer reduced motion, autoplay videos are paused automatically. This ensures background and decorative videos don't cause discomfort for motion-sensitive users.</p>
+    <p>The browser does not pause <code>autoplay</code> video for users who prefer reduced motion, and neither does a plain <code>&lt;video&gt;</code> in Vanilla Breeze: CSS cannot stop media playback. If a page autoplays video, honour the preference yourself and always offer a visible pause control (see <a href="#background-video">Background Video</a>).</p>
 
-    <code-block language="html" show-lines label="Respecting prefers-reduced-motion" data-escape><!-- CSS: Pause autoplay for motion-sensitive users -->
-@media (prefers-reduced-motion: reduce) {
-  video[autoplay] {
-    animation-play-state: paused;
+    <code-block language="js" show-lines label="Pause autoplaying video for reduced-motion users" data-escape>const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+
+function applyMotionPreference() {
+  for (const video of document.querySelectorAll('video[autoplay]')) {
+    if (reduce.matches) video.pause();
   }
 }
 
-<!-- JavaScript alternative -->
-<script>
-if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  document.querySelectorAll('video[autoplay]').forEach(v => v.pause());
-}
-</script></code-block>
+applyMotionPreference();
+reduce.addEventListener('change', applyMotionPreference);</code-block>
+
+    <p>The <a href="/docs/elements/web-components/video-player/"><code>&lt;video-player&gt;</code></a> component does this for you: its <code>autoplay</code> is skipped under <code>prefers-reduced-motion: reduce</code>.</p>
   </section>
 
   <section>
@@ -223,6 +252,19 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     label="Spanish subtitles" />
 </video></code-block>
 
+    <h3>Styling Captions</h3>
+    <p>Vanilla Breeze gives <code>video::cue</code> token-based defaults: the theme's sans font in a light colour on a near-opaque dark plate. Override them per video, or per section, with three custom properties. <code>::cue</code> accepts only a few properties (colour, background, font, text-shadow, outline, line-height, opacity), so there is no padding or radius. Users' system caption settings and forced colours take precedence over these styles in most browsers, and that is intended. See the <a href="/docs/elements/native/track/"><code>&lt;track&gt;</code></a> page for a live captions demo.</p>
+    <code-block language="css" show-lines label="Caption style hooks" data-escape>.brand-video {
+  --cue-text: var(--color-gray-950);
+  --cue-bg: oklch(from var(--color-gray-50) l c h / 0.9);
+  --cue-font: var(--font-serif);
+}
+
+/* Speaker voices from <v Narrator> spans */
+video::cue(v[voice="Narrator"]) {
+  font-style: italic;
+}</code-block>
+
     <h3>Best Practices</h3>
     <ul>
       <li>Always provide captions for videos with speech</li>
@@ -230,7 +272,7 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       <li>Don't autoplay videos with sound - use <code>muted</code> for autoplay</li>
       <li>Provide a text transcript for important video content</li>
       <li>Ensure controls are keyboard accessible (native controls are)</li>
-      <li>Consider users who disable autoplay or animations</li>
+      <li>Give any video that autoplays for more than five seconds a visible pause control (WCAG 2.2.2), and don't autoplay it for users who prefer reduced motion</li>
     </ul>
   </section>
 
@@ -270,19 +312,23 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         </tr>
         <tr>
           <td><code>video.widescreen</code></td>
-          <td><code>aspect-ratio: 16 / 9; object-fit: cover;</code></td>
+          <td><code>aspect-ratio: 16 / 9; object-fit: contain;</code></td>
         </tr>
         <tr>
           <td><code>video.standard</code></td>
-          <td><code>aspect-ratio: 4 / 3; object-fit: cover;</code></td>
+          <td><code>aspect-ratio: 4 / 3; object-fit: contain;</code></td>
         </tr>
         <tr>
           <td><code>video.square</code></td>
-          <td><code>aspect-ratio: 1; object-fit: cover;</code></td>
+          <td><code>aspect-ratio: 1; object-fit: contain;</code></td>
         </tr>
         <tr>
           <td><code>video.ultrawide</code></td>
-          <td><code>aspect-ratio: 21 / 9; object-fit: cover;</code></td>
+          <td><code>aspect-ratio: 21 / 9; object-fit: contain;</code></td>
+        </tr>
+        <tr>
+          <td><code>video.cover</code></td>
+          <td><code>object-fit: cover;</code> (opt-in crop-to-fill)</td>
         </tr>
         <tr>
           <td><code>video.rounded</code></td>
@@ -294,7 +340,11 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         </tr>
         <tr>
           <td><code>.chapter-list li[data-active]</code></td>
-          <td>Highlights the currently playing chapter</td>
+          <td>Highlights the currently playing chapter (its button also carries <code>aria-current="true"</code>)</td>
+        </tr>
+        <tr>
+          <td><code>video::cue</code></td>
+          <td><code>color: var(--cue-text); background-color: var(--cue-bg); font-family: var(--cue-font);</code> with token defaults</td>
         </tr>
       </tbody>
     </table>
