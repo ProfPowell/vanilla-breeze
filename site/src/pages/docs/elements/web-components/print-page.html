@@ -12,11 +12,13 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>&lt;print-page&gt;</code> component wraps <code>window.print()</code> in a progressive enhancement button with a printer icon. It auto-hides itself when printing and optionally lets users toggle VB&rsquo;s print style optimizations on or off.</p>
+  <p>The <code>&lt;print-page&gt;</code> component wraps <code>window.print()</code> in a progressive enhancement button with a printer icon. It never appears on the printed page and optionally lets users toggle VB&rsquo;s print style optimizations on or off.</p>
 
   <code-block language="html" label="Basic print button" data-escape><print-page>Print this page</print-page></code-block>
 
-  <p>By default the button shows both a printer icon and label text. Without JavaScript, the element renders as inert text. With JavaScript, it becomes a functional print button.</p>
+  <p>By default (<code>variant="icon"</code>) the button shows only a printer icon; the label &mdash; the element&rsquo;s text or the <code>label</code> attribute &mdash; becomes its accessible name. Use <code>variant="icon-label"</code> to show the text as well. Without JavaScript, the element renders as inert text. With JavaScript, it becomes a functional print button.</p>
+
+  <browser-window url="print-page" src="/docs/examples/demos/print-page-basic.html"></browser-window>
 </section>
 
 <section>
@@ -38,10 +40,16 @@ crumbLabel: Web Components
         <td>If present, shows a checkbox labeled &ldquo;Print without VB styles&rdquo;</td>
       </tr>
       <tr>
+        <td><code>data-label-raw</code></td>
+        <td>String</td>
+        <td>&ldquo;Print without VB styles&rdquo;</td>
+        <td>Text of the raw-toggle checkbox (for localisation)</td>
+      </tr>
+      <tr>
         <td><code>label</code></td>
         <td>String</td>
         <td>Element text or &ldquo;Print this page&rdquo;</td>
-        <td>Custom button label</td>
+        <td>Button label; the accessible name in every variant</td>
       </tr>
       <tr>
         <td><code>variant</code></td>
@@ -57,11 +65,11 @@ crumbLabel: Web Components
   <h2>Variants</h2>
   <p>Control the visual display with the <code>variant</code> attribute.</p>
 
-  <code-block language="html" label="Icon + label (default)" data-escape><!-- Default: icon and text -->
+  <code-block language="html" label="Icon only (default)" data-escape><!-- Default: printer icon; the text becomes the aria-label -->
 <print-page>Print this page</print-page></code-block>
 
-  <code-block language="html" label="Icon only (compact)" data-escape><!-- Icon only — for toolbars and page-tools -->
-<print-page variant="icon"></print-page></code-block>
+  <code-block language="html" label="Icon + label" data-escape><!-- Icon and visible text -->
+<print-page variant="icon-label">Print this page</print-page></code-block>
 
   <code-block language="html" label="Label only (no icon)" data-escape><!-- Text only — no icon -->
 <print-page variant="label">Print</print-page></code-block>
@@ -69,10 +77,10 @@ crumbLabel: Web Components
 
 <section>
   <h2>In Page Tools</h2>
-  <p>Use <code>variant="icon"</code> when placing inside <code>&lt;page-tools&gt;</code> for a compact toolbar appearance.</p>
+  <p>The default icon variant is what <code>&lt;page-tools&gt;</code> expects for a compact toolbar appearance.</p>
 
   <code-block language="html" label="Page tools integration" data-escape><page-tools data-position="sticky">
-  <print-page variant="icon"></print-page>
+  <print-page></print-page>
   <share-wc variant="icon" size="s"></share-wc>
 </page-tools></code-block>
 </section>
@@ -82,21 +90,24 @@ crumbLabel: Web Components
   <p>When <code>raw-toggle</code> is present, the component adds a checkbox. If checked, it sets <code>data-print-raw</code> on the <code>&lt;html&gt;</code> element before opening the print dialog, which disables all VB print optimizations. The attribute is removed after printing.</p>
 
   <code-block language="html" label="With raw-mode toggle" data-escape><!-- With checkbox to disable VB print optimizations -->
-<print-page raw-toggle>Print this page</print-page></code-block>
+<print-page raw-toggle>Print this page</print-page>
+
+<!-- Localised checkbox text -->
+<print-page raw-toggle data-label-raw="Ohne VB-Stile drucken">Seite drucken</print-page></code-block>
 
   <p>This is useful for users who want to see the page print exactly as it appears on screen &mdash; with theme colors, shadows, and layout intact.</p>
 </section>
 
 <section>
   <h2>Custom Label</h2>
-  <p>Set the button text via <code>label</code> or as the element&rsquo;s text content.</p>
+  <p>Set the button text via <code>label</code> or as the element&rsquo;s text content. It is shown with <code>variant="label"</code> or <code>variant="icon-label"</code>, and is always the accessible name.</p>
 
-  <code-block language="html" label="Custom label" data-escape><print-page label="Save as PDF"></print-page></code-block>
+  <code-block language="html" label="Custom label" data-escape><print-page label="Save as PDF" variant="icon-label"></print-page></code-block>
 </section>
 
 <section>
   <h2>Usage in Context</h2>
-  <p>Place the component wherever makes sense. It hides itself during printing automatically. Adding <code>data-no-print</code> is redundant but makes intent explicit.</p>
+  <p>Place the component wherever makes sense. Its own stylesheet hides it in <code>@media print</code> &mdash; including raw-toggle prints, where VB&rsquo;s print optimisations are switched off. Adding <code>data-no-print</code> is redundant but makes intent explicit.</p>
 
   <code-block language="html" label="Typical placement" data-escape><article>
   <h1>Quarterly Report</h1>
@@ -109,15 +120,8 @@ crumbLabel: Web Components
 </section>
 
 <section>
-  <h2>Demo</h2>
-  <p>Try the print buttons below.</p>
-  <div data-layout="cluster" data-layout-gap="m">
-    <print-page>Print this page</print-page>
-    <print-page variant="icon"></print-page>
-    <print-page raw-toggle>Print with options</print-page>
-  </div>
-
-  <p>Full-page demos: <a href="/docs/examples/demos/print-article.html">Article</a>, <a href="/docs/examples/demos/print-invoice.html">Invoice</a>, <a href="/docs/examples/demos/print-report.html">Report</a></p>
+  <h2>Full-page Demos</h2>
+  <p>See print styles applied to complete documents: <a href="/docs/examples/demos/print-article.html">Article</a>, <a href="/docs/examples/demos/print-invoice.html">Invoice</a>, <a href="/docs/examples/demos/print-report.html">Report</a></p>
 </section>
 
 <section>
@@ -125,7 +129,8 @@ crumbLabel: Web Components
   <ul>
     <li>The component renders a native <code>&lt;button&gt;</code> &mdash; fully keyboard accessible.</li>
     <li>The raw-mode toggle uses a native <code>&lt;input type="checkbox"&gt;</code> inside a <code>&lt;label&gt;</code>.</li>
-    <li>The component sets <code>role="group"</code> on itself when both button and toggle are present.</li>
+    <li>The icon is <code>aria-hidden</code>; the label is always the button&rsquo;s accessible name (as <code>aria-label</code>).</li>
+    <li>With <code>raw-toggle</code>, the component sets <code>role="group"</code> on itself and names the group with the label (unless you provide <code>aria-label</code>/<code>aria-labelledby</code>).</li>
   </ul>
 </section>
 
@@ -136,5 +141,3 @@ crumbLabel: Web Components
     <li><a href="/docs/attributes/data-print/">Print attributes reference</a> &mdash; full reference for all print attributes</li>
   </ul>
 </section>
-
-<script type="module" src="/cdn/components/print-page.js"></script>

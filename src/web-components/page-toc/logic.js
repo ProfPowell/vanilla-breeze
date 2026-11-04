@@ -7,12 +7,15 @@
  *
  * Uses IntersectionObserver for scroll-spy highlighting.
  *
- * @attr {string} levels - Heading levels to include (default: 'h2,h3')
- * @attr {string} scope - CSS selector for content scope (default: 'main')
- * @attr {string} title - ToC title (default: 'On this page')
+ * @attr {string} levels      - Heading levels to include (default: 'h2,h3')
+ * @attr {string} scope       - CSS selector for content scope (default: 'main')
+ * @attr {string} data-title  - ToC title / nav label (default: 'On this page')
+ * @attr {string} orientation - 'horizontal' renders an inline scrollable bar
+ *
+ * Fires `page-toc:navigate` with detail `{ id }` when a ToC link is activated.
  *
  * @example Auto-generated
- * <page-toc levels="h2,h3" title="Contents"></page-toc>
+ * <page-toc levels="h2,h3" data-title="Contents"></page-toc>
  *
  * @example Manual markup (progressive enhancement)
  * <page-toc>
@@ -32,17 +35,41 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 
 class PageToc extends VBElement {
+  /** @type {IntersectionObserver | undefined} */
   #observer;
+  /** @type {HTMLElement[]} */
   #headings = [];
+  /** @type {Map<string, HTMLAnchorElement>} */
   #links = new Map();
+  /** @type {MediaQueryList | undefined} */
   #mediaQuery;
-  #details;
-  #resizeTimer;
+  /** @type {HTMLDetailsElement | null} */
+  #details = null;
+  #resizeTimer = 0;
+  #raf = 0;
   #isManualMode = false;
 
   setup() {
+    this.#mediaQuery = window.matchMedia('(min-width: 64rem)'); /* --bp-l */
+    this.listen(this.#mediaQuery, 'change', this.#handleMediaChange);
+    this.listen(window, 'resize', this.#handleResize);
+    this.listen(window, 'hashchange', this.#handleHashChange);
+    /* One delegated handler for every ToC link (generated or authored),
+       so rebuilds and reconnects never stack per-link listeners. */
+    this.listen(this, 'click', this.#handleClick);
+
     // Delay to ensure headings are processed by heading-links
-    requestAnimationFrame(() => this.#init());
+    this.#raf = requestAnimationFrame(() => {
+      this.#raf = 0;
+      this.#init();
+    });
+  }
+
+  teardown() {
+    cancelAnimationFrame(this.#raf);
+    this.#raf = 0;
+    clearTimeout(this.#resizeTimer);
+    this.#reset();
   }
 
   // ── Data API (read-only — content is derived from page headings) ──────
@@ -62,12 +89,32 @@ class PageToc extends VBElement {
     }));
   }
 
-  teardown() {
+  /**
+   * Refresh ToC (e.g., after dynamic content changes)
+   * In auto-generated mode, rebuilds the entire ToC.
+   * In manual mode, re-scans existing links.
+   */
+  refresh() {
+    if (!this.isConnected) return;
+    cancelAnimationFrame(this.#raf);
+    this.#raf = 0;
+    this.#init();
+  }
+
+  /** Drop observers, generated markup and cached heading/link state. */
+  #reset() {
     this.#observer?.disconnect();
-    clearTimeout(this.#resizeTimer);
+    this.#observer = undefined;
+    for (const el of this.querySelectorAll(':scope > [data-page-toc-generated]')) el.remove();
+    this.#headings = [];
+    this.#links.clear();
+    this.#details = null;
+    this.#isManualMode = false;
   }
 
   #init() {
+    this.#reset();
+
     // Check for existing manual markup (progressive enhancement mode)
     this.#isManualMode = this.#detectManualMarkup();
 
@@ -77,18 +124,21 @@ class PageToc extends VBElement {
       this.#buildToc();
     }
 
+    // Wide screens show the ToC permanently
+    if (this.#details && this.#isWide()) this.#details.open = true;
+
     this.#setupScrollSpy();
-    this.#setupResponsive();
-    this.#setupHashSync();
+    this.#syncFromHash();
   }
 
   /**
-   * Detect if component has manual markup (progressive enhancement mode)
+   * Detect authored (manual) markup. Markup this component generated is
+   * marked with data-page-toc-generated and never counts as manual.
    * @returns {boolean} True if manual content exists
    */
   #detectManualMarkup() {
-    // Check for existing nav or details element
-    return this.querySelector('nav, details') !== null;
+    return Array.from(this.querySelectorAll('nav, details'))
+      .some(el => !el.closest('[data-page-toc-generated]'));
   }
 
   /**
@@ -96,46 +146,21 @@ class PageToc extends VBElement {
    * Finds existing links and maps them to headings
    */
   #enhanceExisting() {
-    // Find existing details element for responsive handling
     this.#details = this.querySelector('details');
 
-    // Find all links with hash hrefs
-    const links = this.querySelectorAll('a[href^="#"]');
-
-    for (const link of links) {
-      const href = link.getAttribute('href');
-      if (!href) continue;
-      const id = href.slice(1); // Remove leading #
-
-      if (id) {
-        // Find corresponding heading
-        const heading = document.getElementById(id);
-        if (heading) {
-          this.#headings.push(heading);
-          this.#links.set(id, link);
-
-          // Add link class if not present (for styling)
-          if (!link.classList.contains('link')) {
-            link.classList.add('link');
-          }
-
-          // Add smooth scroll behavior
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.#scrollToHeading(heading);
-          });
-        }
-      }
+    for (const link of this.querySelectorAll('a[href^="#"]')) {
+      const id = decodeHash(link.getAttribute('href')?.slice(1) || '');
+      if (!id) continue;
+      const heading = document.getElementById(id);
+      if (!heading || this.#links.has(id)) continue;
+      this.#headings.push(heading);
+      this.#links.set(id, /** @type {HTMLAnchorElement} */ (link));
+      link.classList.add('link');
     }
   }
 
-  /**
-   * Handle responsive behavior: details open on wide screens, hash sync on resize
-   */
-  #setupResponsive() {
-    this.#mediaQuery = window.matchMedia('(min-width: 64rem)'); /* --bp-l */
-    this.listen(this.#mediaQuery, 'change', this.#handleMediaChange);
-    this.listen(window, 'resize', this.#handleResize);
+  #isWide() {
+    return this.#mediaQuery?.matches ?? false;
   }
 
   #handleMediaChange = (e) => {
@@ -148,24 +173,38 @@ class PageToc extends VBElement {
   #handleResize = () => {
     // Debounce: restore hash-based active state after resize settles
     clearTimeout(this.#resizeTimer);
-    this.#resizeTimer = setTimeout(() => this.#syncFromHash(), 150);
+    this.#resizeTimer = window.setTimeout(() => this.#syncFromHash(), 150);
   };
-
-  /**
-   * Sync active state with URL hash for reliable state across resizes
-   */
-  #setupHashSync() {
-    this.listen(window, 'hashchange', this.#handleHashChange);
-    // Initial sync
-    this.#syncFromHash();
-  }
 
   #handleHashChange = () => {
     this.#syncFromHash();
   };
 
+  /** @param {MouseEvent} e */
+  #handleClick = (e) => {
+    const target = /** @type {Element | null} */ (e.target instanceof Element ? e.target : null);
+    if (!target) return;
+
+    // Wide screens: the ToC is always visible — the summary is a heading, not a toggle
+    const summary = target.closest('summary');
+    if (summary && this.#details && summary.parentElement === this.#details && this.#isWide()) {
+      e.preventDefault();
+      return;
+    }
+
+    const link = target.closest('a[href^="#"]');
+    if (!link || !this.contains(link)) return;
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const id = decodeHash(link.getAttribute('href')?.slice(1) || '');
+    if (this.#links.get(id) !== link) return;
+    const heading = document.getElementById(id);
+    if (!heading) return;
+    e.preventDefault();
+    this.#scrollToHeading(heading);
+  };
+
   #syncFromHash() {
-    const hash = window.location.hash.slice(1);
+    const hash = decodeHash(window.location.hash.slice(1));
     if (hash && this.#links.has(hash)) {
       this.#setActiveLink(hash);
     }
@@ -190,13 +229,13 @@ class PageToc extends VBElement {
       .split(',')
       .map(l => l.trim().toLowerCase());
     const scope = this.getAttribute('scope') || 'main';
-    const title = this.getAttribute('title') || 'On this page';
+    const title = this.dataset.title || 'On this page';
 
     // Find headings within scope
     const container = document.querySelector(scope);
     if (!container) return;
 
-    this.#headings = Array.from(container.querySelectorAll(levels.join(',')))
+    this.#headings = /** @type {HTMLElement[]} */ (Array.from(container.querySelectorAll(levels.join(','))))
       .filter(h => h.id)
       .filter(h => !h.hasAttribute('data-toc-ignore') && !h.closest('[data-toc-ignore]'));
 
@@ -232,10 +271,6 @@ class PageToc extends VBElement {
         link.href = `#${node.heading.id}`;
         link.className = 'link';
         link.textContent = this.#getHeadingText(node.heading);
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          this.#scrollToHeading(node.heading);
-        });
         li.appendChild(link);
 
         if (node.children.length) {
@@ -251,22 +286,24 @@ class PageToc extends VBElement {
     // Mobile disclosure wrapper — the whole TOC collapses behind a
     // summary on narrow screens. Per-section collapse (above) is
     // orthogonal and works at every width.
-    this.#details = document.createElement('details');
-    this.#details.className = 'details';
-    this.#details.open = true;
+    const details = document.createElement('details');
+    details.className = 'details';
+    details.setAttribute('data-page-toc-generated', '');
+    details.open = true;
 
     const summary = document.createElement('summary');
     summary.className = 'summary';
     summary.textContent = title;
-    this.#details.appendChild(summary);
+    details.appendChild(summary);
 
     const nav = document.createElement('nav');
     nav.className = 'nav';
     nav.setAttribute('aria-label', title);
     nav.appendChild(renderList(sentinel.children));
-    this.#details.appendChild(nav);
+    details.appendChild(nav);
 
-    this.appendChild(this.#details);
+    this.#details = details;
+    this.appendChild(details);
   }
 
   #getHeadingText(heading) {
@@ -277,17 +314,22 @@ class PageToc extends VBElement {
     return clone.textContent.trim();
   }
 
+  /** @param {HTMLElement} heading */
   #scrollToHeading(heading) {
     // Update URL
     const url = new URL(window.location.href);
     url.hash = heading.id;
     window.history.pushState(null, '', url);
 
-    // Smooth scroll
-    heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // An explicit `behavior` overrides CSS scroll-behavior, so honour reduced motion here
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    heading.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
 
-    // Focus heading for accessibility
-    heading.focus();
+    // Move focus to the heading so keyboard / AT users continue from there
+    if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+    heading.focus({ preventScroll: true });
+
+    this.#setActiveLink(heading.id);
 
     this.dispatchEvent(new CustomEvent('page-toc:navigate', {
       bubbles: true,
@@ -336,21 +378,19 @@ class PageToc extends VBElement {
     // No visible headings - fall back to URL hash
     this.#syncFromHash();
   }
+}
 
-  /**
-   * Refresh ToC (e.g., after dynamic content changes)
-   * In auto-generated mode, rebuilds the entire ToC.
-   * In manual mode, re-scans existing links.
-   */
-  refresh() {
-    // Only clear innerHTML in auto-generated mode
-    if (!this.#isManualMode) {
-      this.innerHTML = '';
-    }
-    this.#links.clear();
-    this.#headings = [];
-    this.#observer?.disconnect();
-    this.#init();
+/**
+ * Decode a URL fragment so it can be compared with an element id
+ * (`#caf%C3%A9` → `café`). Malformed sequences fall back to the raw value.
+ * @param {string} hash
+ * @returns {string}
+ */
+function decodeHash(hash) {
+  try {
+    return decodeURIComponent(hash);
+  } catch {
+    return hash;
   }
 }
 

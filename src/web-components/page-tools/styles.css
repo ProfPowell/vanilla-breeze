@@ -198,14 +198,22 @@ page-tools[data-collapsed] {
     }
   }
 
-  /* --- Popover panel --- */
+  /* --- Popover panel ---
+     Author `display` beats the UA `[popover]:not(:popover-open) { display:none }`,
+     so the panel only gets a display while open and the hidden state is
+     re-asserted explicitly. The UA `[popover]` rule also sets `inset: 0`,
+     which must be reset or the panel pins to the top-left corner. */
 
-  .page-tools-popover[hidden] {
+  .page-tools-popover:not(:popover-open) {
     display: none;
   }
 
   .page-tools-popover {
+    /* <section> carries container-type:inline-size from layout-attributes.css;
+       a shrink-to-fit fixed panel would collapse to its padding. */
+    container-type: normal;
     position: fixed;
+    inset: auto;
     inset-block-end: calc(var(--page-tools-fab-bottom, var(--size-l)) + var(--page-tools-fab-size, 3rem) + var(--size-s));
     inset-inline-end: var(--page-tools-fab-end, var(--size-m));
     margin: 0;
@@ -213,13 +221,18 @@ page-tools[data-collapsed] {
     border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-m);
     background: var(--color-surface-raised);
+    color: var(--color-text);
     box-shadow: var(--shadow-l);
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-xs);
     max-block-size: 60vh;
     max-inline-size: 90vw;
     overflow-y: auto;
+  }
+
+  .page-tools-popover:popover-open {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--size-xs);
   }
 }
 
@@ -231,17 +244,25 @@ page-tools[data-collapsed] {
   }
 }
 
-/* --- Reduced motion --- */
+/* --- Reduced motion ---
+   `:root` keeps these at (0,2,3) so they beat the (0,2,3) transition rules
+   above by source order (an unprefixed selector loses on specificity). */
 
 @media (prefers-reduced-motion: reduce) {
   @scope (page-tools) {
     .page-tools-fab {
       transition: none;
+
+      &:active {
+        scale: none;
+      }
     }
   }
-  page-tools print-page .print-trigger,
-  page-tools share-wc[variant="icon"] button,
-  page-tools text-reader[variant="icon"] [part="trigger"] {
+
+  :root page-tools print-page .print-trigger,
+  :root page-tools share-wc[variant="icon"] button,
+  :root page-tools text-reader[variant="icon"] [part="trigger"],
+  :root page-tools watch-wc[data-variant="icon"] > button {
     transition: none;
   }
 }
