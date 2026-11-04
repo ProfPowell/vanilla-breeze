@@ -110,7 +110,7 @@ class CommentBox extends VBElement {
       existingEditor.appendChild(ta);
     }
     this.#editor = existingEditor;
-    // markdown-editor builds its own textarea from ITS placeholder attribute.
+    // markdown-editor applies ITS placeholder attribute to the textarea it adopts.
     // `name` deliberately stays on the host: the host is form-associated, so
     // naming the inner textarea too would submit the value twice.
     if (this.hasAttribute('placeholder')) this.#editor.setAttribute('placeholder', this.getAttribute('placeholder') || '');
@@ -169,9 +169,9 @@ class CommentBox extends VBElement {
     this.listen(this.#submitBtn, 'click', this.#onSubmit);
     if (this.#cancelBtn) this.listen(this.#cancelBtn, 'click', this.#onCancel);
 
-    // Wire textarea events. markdown-editor REPLACES the original textarea
-    // with its own internal one during its setup (and again when it is
-    // reconnected), so we re-bind to the live textarea once that's available.
+    // Wire textarea events. markdown-editor adopts (moves) the authored
+    // textarea and keeps the same object across reconnects; re-binding on
+    // markdown-editor:upgraded is now just a cheap safety net.
     this.#wireTextarea();
     this.listen(this.#editor, 'markdown-editor:upgraded', () => this.#wireTextarea());
 

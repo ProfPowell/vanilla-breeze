@@ -2,26 +2,38 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "markdown-editor",
   "type": "web-component",
-  "description": "Side-by-side markdown editor with live preview. Composes a textarea with markdown-viewer.",
+  "description": "Side-by-side markdown editor with live preview. Adopts the authored textarea and composes markdown-viewer.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": ["textarea", "@flow"]
   },
   "attributes": [
-    { "name": "name",            "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Form field name reflected to the textarea" },
-    { "name": "placeholder",     "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Textarea placeholder text" },
-    { "name": "rows",            "kind": "host-api", "purpose": "config",       "type": "string",  "default": "10", "description": "Textarea rows" },
-    { "name": "highlight",       "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Pass highlight attribute to the preview viewer" },
-    { "name": "data-tab-indent", "kind": "data",     "purpose": "config",       "type": "boolean", "description": "Tab key inserts spaces instead of moving focus" },
-    { "name": "data-theme",      "kind": "data",     "purpose": "config",       "type": "string",  "description": "Theme propagated to the preview pane" },
-    { "name": "data-editing",    "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present when textarea is focused" }
+    { "name": "placeholder",         "kind": "host-api", "purpose": "config",       "type": "string",  "description": "Textarea placeholder; overrides the textarea's own. No default placeholder" },
+    { "name": "rows",                "kind": "host-api", "purpose": "config",       "type": "number",  "default": "10", "description": "Textarea rows; overrides the textarea's own rows" },
+    { "name": "highlight",           "kind": "host-api", "purpose": "config",       "type": "boolean", "description": "Pass highlight attribute to the preview viewer (markdown-viewer:highlight per code block)" },
+    { "name": "data-tab-indent",     "kind": "data",     "purpose": "config",       "type": "boolean", "description": "Tab inserts two spaces instead of moving focus. Escape then Tab moves focus; Shift+Tab is never captured. Read at upgrade" },
+    { "name": "data-auto-mermaid",   "kind": "data",     "purpose": "config",       "type": "boolean", "description": "Upgrade ```mermaid fences in the live preview to diagram-wc (loads the mermaid bridge)" },
+    { "name": "data-theme",          "kind": "data",     "purpose": "config",       "type": "string",  "description": "Theme propagated to the preview pane" },
+    { "name": "data-label-source",   "kind": "data",     "purpose": "config",       "type": "string",  "default": "Markdown source", "description": "Accessible name of the source pane; also names the textarea when nothing else does" },
+    { "name": "data-label-preview",  "kind": "data",     "purpose": "config",       "type": "string",  "default": "Rendered preview", "description": "Accessible name of the preview pane" },
+    { "name": "data-label-tab-hint", "kind": "data",     "purpose": "config",       "type": "string",  "default": "Tab inserts spaces. Press Escape, then Tab, to move focus.", "description": "Description read with the textarea when data-tab-indent is set" },
+    { "name": "data-editing",        "kind": "data",     "purpose": "output-state", "type": "boolean", "direction": "output", "public": false, "description": "Present when textarea is focused" }
+  ],
+  "childAttributes": [
+    { "name": "name",     "on": "textarea", "type": "string",  "description": "Form field name. Goes on the textarea, so the value submits with or without JavaScript" },
+    { "name": "required", "on": "textarea", "type": "boolean", "description": "Native constraint validation (also minlength, maxlength, readonly, form)" },
+    { "name": "id",       "on": "textarea", "type": "string",  "description": "Kept on upgrade, so a <label for> keeps naming the textarea" },
+    { "name": "dir",      "on": "textarea", "type": "string",  "description": "Base direction for the source and the preview (default auto)" }
+  ],
+  "structure": [
+    { "element": "textarea", "required": false, "description": "The editable source. Adopted and moved into the source pane with its attributes; created when absent" }
   ],
   "events": [
-    { "name": "markdown-editor:input",  "detail": "{ value }", "description": "Fired on each keystroke" },
-    { "name": "markdown-editor:change", "detail": "{ value }", "description": "Fired on blur after content changed" }
+    { "name": "markdown-editor:input",  "detail": "{ value }", "description": "Fired on each keystroke. Bubbles, composed" },
+    { "name": "markdown-editor:change", "detail": "{ value, source }", "description": "source \"user\": on blur after the content changed. source \"api\": when .value is assigned (the next blur does not repeat it). Not fired by form reset. Bubbles, composed" }
   ],
   "properties": [
-    { "name": "value",    "type": "string",              "description": "Get/set the current markdown content" },
-    { "name": "textarea", "type": "HTMLTextAreaElement",  "description": "Reference to the internal textarea element" }
+    { "name": "value",    "type": "string",              "description": "Get/set the markdown. Setting updates the preview immediately and fires markdown-editor:change with source \"api\"" },
+    { "name": "textarea", "type": "HTMLTextAreaElement", "readonly": true, "description": "The backing textarea: the authored one when provided. Stable across reconnects" }
   ]
 }
