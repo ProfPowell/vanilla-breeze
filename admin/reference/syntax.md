@@ -355,6 +355,9 @@ Base: border, radius, padding, focus ring. Validation via `:user-invalid` and `[
 | `--meter-fill-suboptimum` | `var(--color-warning)` (darkened to L 0.6 in light mode) | Meter fill in the suboptimum range |
 | `--meter-fill-even-less-good` | `var(--color-error)` | Meter fill in the worst range |
 
+
+> Customizable select (`@supports (appearance: base-select)`, input/select.css) applies to single-row selects only: `select:not([multiple], [size]:not([size="0"], [size="1"]))`. Listbox selects keep `appearance: none`. Group headings are styled on the `optgroup` itself, so a `label` attribute and a `<legend>` look the same: 0.75em, uppercase, muted; options are reset to 1em. Options use `--color-text`. Disabled options are dimmed and get no hover fill. In forced colors: `::picker-icon` is `FieldText`, disabled options/groups are `GrayText`, and the hovered option is `Highlight`.
+
 ### `<form>` Form
 
 | Class | Description |
@@ -528,13 +531,17 @@ Labelled pattern: `<section class="labeled"><header><label for="q">…</label><o
 
 ### `<output>` Output
 
+Base (result outputs only): inline-block mono chip, tabular numerals, raised background; `:empty` collapses. Implicit `role="status"` (polite, atomic) — no `aria-live` needed; `aria-live="off"` for per-keystroke/slider values. Name it with `<label for>`. `for` is metadata only (not exposed to AT); `name` is not submitted.
+
 | Class | Description |
 |-------|-------------|
 | `.block` | Block display with padding |
-| `.inline` | Minimal inline |
-| `.highlight` | Interactive blue background |
+| `.inline` | Minimal inline (no padding/background) |
+| `.highlight` | Interactive-tinted background and text |
 | `.large` | Large font size |
-| `.success`, `.warning`, `.error` | Status colors |
+| `.success`, `.warning`, `.error` | Status colors (`--color-*-subtle` + `--color-*-text`) |
+
+Excluded from all of the above (message outputs): `output.hint`, `form-field output.error`, `output.error-summary`, `fieldset[data-min-checked|data-max-checked] > output`, `output[data-empty|data-loading|data-error]`. Inside `form-field`, `.error` is the validation message, not the chip state. Forced colors: chips get a `CanvasText` border.
 
 ### `<blockquote>` Blockquote
 
@@ -553,6 +560,7 @@ Base: monospace font, `<code>` gets background highlight, `<kbd>` gets border + 
 
 - `ul[data-marker="check|arrow|dash|star"]`: styles direct `> li::marker` only, so nested lists keep their own markers. `arrow` swaps to `--marker-arrow-rtl` (U+2B9C, fallback built in) under `:dir(rtl)`.
 - `ul.meta` / `ol.meta` (`data-separator="pipe|dash|slash"`): separators on direct `> li + li::before` only.
+- `ol` indent: `padding-inline-start: var(--ol-indent, var(--size-l))`. It widens to `var(--ol-indent, 2.5em)` for lists with long markers: `[type="i"]` (either case), `[start]`, `[reversed]`, `:has(> li[value])`, 100+ items, and `type="a|A"` with 27+ items. Set `--ol-indent` for CJK/Arabic-Indic counter styles or a large `start`. `.inline`/`.unstyled`/`.meta` still reset it to 0.
 - `.inline` / `.unstyled` / `.meta`: reset `margin-block-start` on direct `> li` only. They set `list-style: none`, so add `role="list"` where Safari/VoiceOver semantics matter.
 - `:where(li + li)` has zero specificity, so a plain author `li` rule wins over it. Any `[data-layout] > li` gets a margin of 0.
 
@@ -624,7 +632,7 @@ Wrappers: `[data-media][data-ratio]` (preferred; `figure` + `figcaption` puts th
 
 ### `<embed>` / `<object>`
 - `<embed src type width height title>` — void, no fallback, no sandbox. Integer `width`/`height` only. Name it with `title`/`aria-label`. `data-ratio="1:1|4:3|3:2|16:9|21:9|2:3|3:4|9:16|page"` makes it responsive (block size follows width; `width` = preferred width, none = fill). Works inside `[data-media]` and `.embed-responsive`.
-- `<object data type width height>…fallback…</object>` — same sizing; fallback content between the tags. Preferred for PDFs (download-link fallback). No sandbox: use `<iframe sandbox>` / `<img>` for untrusted HTML/SVG; CSP `object-src 'none'` disables both.
+- `<object data type width height>…fallback…</object>` — same sizing; fallback content between the tags. Preferred for PDFs (download-link fallback). No sandbox: use `<iframe sandbox>` / `<img>` for untrusted HTML/SVG; CSP `object-src 'none'` disables both. Name non-image objects with `title`/`aria-label`; with `role="img"` keep the fallback text-only (presentational children) and put links outside. `name` = navigable target name; `form` lists it in `form.elements`, submits nothing.
 
 ### `<canvas>` Canvas
 

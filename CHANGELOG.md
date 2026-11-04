@@ -33,6 +33,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Changes from the O-element review.**
+  - **ol**
+    - Lists that carry long markers get a `2.5em` indent instead of `1.5rem`, so "VIII." or "100." no longer overflows the list edge and gets clipped (most visible in RTL). This covers roman numerals (`type="i"`/`"I"`), any `start`, `reversed`, an `li[value]`, 27+ lettered items and 100+ items. New `--ol-indent` custom property sets the indent explicitly (for CJK counter styles, a large `start`, and so on).
+  - **select / optgroup / option (customizable select)**
+    - `appearance: base-select` and the picker styling now apply to single-row selects only. A `size` > 1 listbox was getting base-select with the flex trigger layout, which centred its rows in the box and clipped the first options out of scroll reach.
+    - Group headings look the same whether they come from the `label` attribute or a `<legend>` (small, muted, uppercase); before, only `<legend>` headings were styled. Grouped options keep full size, case and spacing.
+    - Option text uses `--color-text` to match the themed picker surface.
 - **Changes from the M+N-element review.**
   - **sanitize-html** — Breaking: sanitized output drops `style` attributes and `<style>`, prefixes `id`/`name` with `user-content-`, removes form-submission and invoker attributes, and makes buttons `type="button"` (see Security).
   - **markdown-viewer**
@@ -304,6 +311,22 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **O-element review.**
+  - **output**
+    - Variant classes now apply. The base chip selector's `:not()` exclusions gave it (0,3,1) specificity, so `.block` stayed inline-block, `.inline` / `.large` kept chip padding, and `.highlight` / `.success` / `.warning` / `.error` kept the grey raised background. The exclusions now sit in `:where()` (element-only specificity).
+    - Form-field messages (`output.hint`, `form-field output.error`, `output.error-summary`, checkbox-group fieldset outputs) no longer pick up the monospace chip font, padding and background.
+    - Empty outputs no longer render a blank chip; forced-colors mode draws a chip border (tints are dropped); `.highlight` text mixes toward the text colour so it meets AA in dark mode without `data-mode`; result chips use tabular numerals.
+    - Docs: output is an implicit `role="status"` (polite + atomic), not "aria-live by default"; `for` is not exposed to assistive technology; `name` does not submit the value; range-slider example no longer wraps the output in the slider's label (which left the slider unnamed) and uses `aria-live="off"`; CSS reference matches the source. Demos: labels point at their outputs, no inline styles or `oninput` handlers, the calculated total recomputes, and the error chip is no longer hidden by form-field's validation-message rule.
+  - **object**
+    - Docs: new Security section (no sandbox/allow/referrerpolicy, untrusted HTML/SVG alternatives, `type`, CSP `object-src`), `data-ratio` in the attributes table, corrected `name` / `form` / `width` / `height` descriptions, PDF fallback wording, and a caveat that `role="img"` fallbacks must be text-only (presentational children). Demo adds an unsupported-type fallback example and moves the link out of the `role="img"` object.
+  - **select / optgroup / option**
+    - Disabled options no longer get a hover fill. Disabled options and the headings of disabled groups stay dimmed.
+    - Forced colors: the `::picker-icon` is painted in `FieldText` at full opacity (it inherited the select's forced-colour opt-out). Disabled options and groups use `GrayText`, and the hovered option uses `Highlight`/`HighlightText`.
+    - Docs: the optgroup and option pages no longer say VB cannot style options. They describe the customizable-select styling, the legend form, placeholder validation rules and the default-selection rules, and each has its own demo (`optgroup-basic`, `option-states`). The `select-examples` demo drops its inline style.
+  - **ol**
+    - `ol.meta` honours `data-separator` (`pipe`/`dash`/`slash`). Before, only `ul.meta` did, although the docs said both did.
+    - Docs: corrected the screen-reader claims (position is always announced from 1, and the marker text is not read reliably). Added the Safari `role="list"` note for `.inline`/`.unstyled`/`.meta`, nested numbering via `type`, an `.meta` section, and a "Long markers and other scripts" section with a new `ol-i18n` demo (Arabic-Indic RTL, CJK).
+  - **Themes** — dyslexia list indent only on plain block lists (no longer re-indents `.inline`/`.unstyled`/`.meta`, keeps the wide `ol` indent); memphis select rules scoped to single-row selects and style `optgroup` headings from `label=`; kawaii hearts skip lists with their own counter style; neumorphism no longer sinks form-field messages or the tinted `output` variants.
 - **M+N-element review.**
   - **markdown-viewer** — Removing `src` re-renders from the slots instead of leaving stale fetched content. Overlapping renders (a slow fetch followed by a `src` change) no longer let a stale response overwrite newer output.
   - **markdown-editor**
