@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>style element and cascade layers</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+
+    /* Layered: joins VB's native-elements layer, so it sits below every
+       later VB layer and below all unlayered CSS. */
+    @layer native-elements {
+      body p > mark.layer-demo { background: var(--color-warning-subtle); }
+    }
+
+    /* Unlayered author CSS beats every layer, whatever the specificity:
+       .wins (0,1,0) overrides the layered body p > mark.layer-demo (0,1,3). */
+    .wins { background: var(--color-success-subtle); }
+  </style>
+  <style media="print">
+    mark.layer-demo { background: none; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>style element and cascade layers</h1>
+  <layout-stack data-layout-gap="m">
+    <p><mark class="layer-demo">Layered rule only</mark>: styled from <code>@layer native-elements</code>.</p>
+    <p><mark class="layer-demo wins">Layered + unlayered</mark>: the unlayered rule wins, with no <code>!important</code>.</p>
+    <p>The second <code>&lt;style media="print"&gt;</code> block only applies when printing.</p>
+  </layout-stack>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

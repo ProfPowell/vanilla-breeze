@@ -23,17 +23,18 @@ crumbLabel: Native Elements
     <ul>
       <li><strong>Format fallback</strong> - Serve modern formats (WebP, AVIF, VP9) with older format fallbacks</li>
       <li><strong>Art direction</strong> - Different images for different viewport sizes (with picture)</li>
-      <li><strong>Resolution switching</strong> - Different resolutions for different pixel densities</li>
+      <li><strong>Media conditions</strong> - Different files for different viewports, or for print</li>
       <li><strong>Codec support</strong> - Alternative video/audio codecs for browser compatibility</li>
     </ul>
   </section>
 
   <section>
     <h2>Usage with Picture</h2>
-    <p>In <code>&lt;picture&gt;</code>, use <code>srcset</code> (not <code>src</code>) to specify image sources.</p>
+    <p>In <code>&lt;picture&gt;</code>, use <code>srcset</code> (not <code>src</code>) to specify image sources. The browser picks the first <code>&lt;source&gt;</code> whose <code>type</code> it supports and whose <code>media</code> matches; if none match, it uses the <code>&lt;img&gt;</code>.</p>
+    <browser-window src="/docs/snippets/demos/source-picture.html" url="https://vanilla-breeze.com/source/picture" title="source in picture: format fallback and art direction" shadow></browser-window>
 
     <h3>Format Switching</h3>
-    <p>Serve modern image formats to supporting browsers.</p>
+    <p>Serve modern image formats to supporting browsers. Every format source needs a <code>type</code>: it is the only way the browser can skip a format it cannot decode.</p>
     <code-block language="html" show-lines label="Format switching in picture" data-escape><picture>
   <source srcset="image.avif" type="image/avif" />
   <source srcset="image.webp" type="image/webp" />
@@ -76,12 +77,13 @@ crumbLabel: Native Elements
 </picture></code-block>
 
     <h3>Resolution Switching</h3>
-    <p>Serve high-resolution images to high-DPI displays.</p>
-    <code-block language="html" show-lines label="Resolution switching" data-escape><picture>
-  <source
-    srcset="image-1x.jpg 1x, image-2x.jpg 2x, image-3x.jpg 3x" />
-  <img src="image-1x.jpg" alt="Description" />
-</picture></code-block>
+    <p>When only the size changes (same image, same crop), you do not need <code>&lt;picture&gt;</code> or <code>&lt;source&gt;</code> at all. Put <code>srcset</code> with width descriptors and <code>sizes</code> on the <code>&lt;img&gt;</code>, and let the browser pick a file for the layout width and pixel density. Keep <code>&lt;source&gt;</code> for format fallback and art direction; a <code>&lt;source&gt;</code> takes the same <code>srcset</code>/<code>sizes</code> when you need both.</p>
+    <code-block language="html" show-lines label="Resolution switching with img srcset" data-escape><img
+  src="photo-960.jpg"
+  srcset="photo-480.jpg 480w, photo-960.jpg 960w, photo-1920.jpg 1920w"
+  sizes="(min-width: 60rem) 50vw, 100vw"
+  alt="Description"
+  width="960" height="640" /></code-block>
 
     <h3>Dark Mode Images</h3>
     <code-block language="html" show-lines label="Dark mode images" data-escape><picture>
@@ -90,6 +92,10 @@ crumbLabel: Native Elements
     srcset="logo-dark.svg" />
   <img src="logo-light.svg" alt="Company logo" />
 </picture></code-block>
+    <p><strong>Caveat for VB sites:</strong> <code>prefers-color-scheme</code> follows the operating system only. VB's own light/dark switch sets <code>data-mode</code> on <code>&lt;html&gt;</code> and does not change which <code>&lt;source&gt;</code> is picked, so a visitor who chose dark in the site settings on a light OS gets the light logo. For theme-aware artwork, prefer an inline SVG coloured with <code>currentColor</code> or tokens (which use <code>light-dark()</code>), or switch two images with CSS keyed on <code>data-mode</code>.</p>
+    <code-block language="css" label="Swapping images on VB's mode" data-escape>.logo-dark { display: none; }
+:root[data-mode="dark"] .logo-light { display: none; }
+:root[data-mode="dark"] .logo-dark { display: inline; }</code-block>
   </section>
 
   <section>
@@ -99,7 +105,7 @@ crumbLabel: Native Elements
     <h3>Format Fallback</h3>
     <code-block language="html" show-lines label="Video format fallback" data-escape><video controls>
   <!-- Modern, efficient codec -->
-  <source src="video.webm" type="video/webm; codecs=vp9,opus" />
+  <source src="video.webm" type='video/webm; codecs="vp9, opus"' />
 
   <!-- Widely supported codec -->
   <source src="video.mp4" type="video/mp4" />
@@ -125,18 +131,18 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td>WebM (VP9)</td>
-          <td><code>video/webm</code></td>
+          <td><code>video/webm; codecs="vp9, opus"</code></td>
           <td>Better compression, modern browsers</td>
         </tr>
         <tr>
-          <td>WebM (AV1)</td>
-          <td><code>video/webm; codecs=av01</code></td>
-          <td>Best compression, newest browsers</td>
+          <td>WebM / MP4 (AV1)</td>
+          <td><code>video/webm; codecs="av01.0.05M.08"</code></td>
+          <td>Best compression. AV1 needs the full codec string (profile, level, tier, bit depth); a bare <code>av01</code> is reported as unsupported, so the source is always skipped.</td>
         </tr>
         <tr>
           <td>Ogg (Theora)</td>
-          <td><code>video/ogg</code></td>
-          <td>Open format, older</td>
+          <td><code>video/ogg; codecs="theora"</code></td>
+          <td>Removed from Chromium and no longer reliable. Do not ship Theora; use VP9 or AV1.</td>
         </tr>
       </tbody>
     </table>
@@ -240,11 +246,11 @@ crumbLabel: Native Elements
         <tr>
           <td><code>type</code></td>
           <td>all</td>
-          <td>MIME type of the media file</td>
+          <td>MIME type, optionally with a <code>codecs</code> parameter. Required on format-fallback sources in picture</td>
         </tr>
         <tr>
           <td><code>media</code></td>
-          <td>picture, video</td>
+          <td>all</td>
           <td>Media query for when this source applies</td>
         </tr>
         <tr>
@@ -281,17 +287,18 @@ crumbLabel: Native Elements
 <source srcset="image.webp" type="image/webp" /></code-block>
 
     <h3>Always Include Type</h3>
-    <p>The <code>type</code> attribute lets browsers skip unsupported formats without downloading.</p>
-    <code-block language="html" show-lines label="Include type attribute" data-escape><!-- Good: browser knows to skip if it doesn't support AVIF -->
+    <p>In <code>&lt;picture&gt;</code>, a <code>&lt;source&gt;</code> with no <code>type</code> and no <code>media</code> always matches. The browser picks it and never looks at later sources or the <code>&lt;img&gt;</code>, so a browser that cannot decode the file shows a broken image rather than falling back. <code>type</code> is what makes format fallback work.</p>
+    <code-block language="html" show-lines label="Include type attribute" data-escape><!-- Good: browsers without AVIF skip this source -->
 <source srcset="image.avif" type="image/avif" />
 
-<!-- Less efficient: browser may start downloading before realizing it can't use it -->
+<!-- Broken: always chosen; no AVIF support means a broken image -->
 <source srcset="image.avif" /></code-block>
 
     <h3>Include Codec Information</h3>
-    <p>For video, specify codec in the type for more accurate format selection.</p>
-    <code-block language="html" show-lines label="Include codec information" data-escape><source src="video.webm" type="video/webm; codecs=vp9,opus" />
-<source src="video.mp4" type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" /></code-block>
+    <p>For video, specify codecs in the type for more accurate format selection. Quote the <code>codecs</code> value (it contains commas), and use the full codec string the encoder reports. You can test a string in the console with <code>document.createElement('video').canPlayType(type)</code>: an empty string means the source will be skipped.</p>
+    <code-block language="html" show-lines label="Include codec information" data-escape><source src="video-av1.mp4" type='video/mp4; codecs="av01.0.05M.08, opus"' />
+<source src="video.webm" type='video/webm; codecs="vp9, opus"' />
+<source src="video.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' /></code-block>
   </section>
 
   <section>
