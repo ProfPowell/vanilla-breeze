@@ -1501,19 +1501,47 @@ export default {
         "@flow"
       ]
     },
-    "attributes": [],
+    "attributes": [
+      {
+        "name": "data-justify",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "start",
+          "center",
+          "end",
+          "between"
+        ],
+        "default": "center",
+        "description": "Row alignment (sets --site-legal-justify). start and between also clip the separator that would lead a wrapped row."
+      }
+    ],
     "structure": [
       {
         "element": "<span>",
-        "description": "Copyright or license text"
+        "description": "Copyright or license text (author the year as text, e.g. <time datetime=\"2026\">2026</time>)"
       },
       {
         "element": "<a>",
-        "description": "Legal page link (privacy, terms)"
+        "description": "Legal page link (privacy, terms); always underlined"
+      },
+      {
+        "element": "<ul> / <ol>",
+        "description": "List form: a single list whose <li> children are the items (list semantics and an item count)"
       }
     ],
     "css": {
-      "tokens": []
+      "tokens": [
+        {
+          "name": "--sep-list",
+          "description": "Separator text between items (default \"\\00B7\", a middle dot); decorative, kept out of link names"
+        },
+        {
+          "name": "--site-legal-justify",
+          "description": "justify-content of the row (default center); start or space-between also clip the separator that would lead a wrapped row"
+        }
+      ]
     }
   },
   "site-tools": {
@@ -1540,10 +1568,19 @@ export default {
       {
         "element": "<settings-panel>",
         "description": "Full settings panel"
+      },
+      {
+        "element": "<notification-wc>",
+        "description": "Notification bell (keep it outside site-tools, or repeat it, if it must stay reachable on mobile)"
       }
     ],
     "css": {
-      "tokens": []
+      "tokens": [
+        {
+          "name": "--site-tools-gap",
+          "description": "Space between tools (default var(--size-s))"
+        }
+      ]
     }
   },
   "status-message": {
@@ -11852,7 +11889,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "score-card",
     "type": "web-component",
-    "description": "Single KPI tile for dashboards: title, headline value, optional change indicator, sparkline (composed with <chart-wc>), description, and icon. Wrap in <a href> for drill-down.",
+    "description": "Single KPI tile for dashboards: title, headline value, optional change indicator, sparkline (composed with <chart-wc>), description, and icon. Wrap in <a href> for drill-down. Slotted children must be direct children of the host.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -11903,7 +11940,7 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Skeleton placeholder state via :state(loading)"
+        "description": "Skeleton placeholder state via :state(loading); mirrored to aria-busy=\"true\" on the host"
       }
     ],
     "slots": [
@@ -11967,7 +12004,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "selection-menu",
     "type": "web-component",
-    "description": "Floating toolbar that appears on text selection. Composes action components like highlight-wc, share-wc, note-wc.",
+    "description": "Floating toolbar that appears on text selection (pointer or keyboard). Moves its authored action children into a generated <pop-over data-mode=\"manual\" role=\"toolbar\"> in the top layer; Alt+F10 focuses it, arrow keys rove, Escape returns focus and the selection.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -11980,25 +12017,92 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "ID of a single target element to watch for text selection"
+        "description": "ID of a single target element to watch for text selection. When the menu also has an id, the target is marked data-selection-menu=\"<id>\"."
+      },
+      {
+        "name": "id",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "description": "When set, every element with data-selection-menu=\"<id>\" is a target (many-to-one); targets added or changed later are picked up."
+      },
+      {
+        "name": "data-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Text selection actions",
+        "description": "Accessible name of the toolbar (aria-label on the composed pop-over)"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-selection-menu",
+        "on": "any element",
+        "type": "string",
+        "description": "On a target element: the id of the selection-menu that serves it"
+      }
+    ],
+    "events": [
+      {
+        "name": "selection-menu:select",
+        "detail": "{ range: Range, text: string, target: Element }",
+        "description": "A selection inside a target opened (or moved) the toolbar"
+      },
+      {
+        "name": "selection-menu:dismiss",
+        "description": "The toolbar was hidden (outside pointerdown, Escape, dismiss(), selection collapsed from the keyboard, or scrolled out of view)"
+      },
+      {
+        "name": "selection-menu:actions-changed",
+        "detail": "{ actions: Array<{ tag, attrs?, html? }>, source: 'property' }",
+        "description": "The actions property replaced the toolbar children"
+      }
+    ],
+    "methods": [
+      {
+        "name": "getSelection",
+        "returns": "{ range: Range, text: string, target: Element } | null",
+        "description": "The selection the toolbar is showing for (a cloned range), or null when hidden"
+      },
+      {
+        "name": "dismiss",
+        "returns": "void",
+        "description": "Hide the toolbar; focus inside it returns to the selection's target"
+      }
+    ],
+    "properties": [
+      {
+        "name": "actions",
+        "type": "Array<{ tag: string, attrs?: object, html?: string } | Element>",
+        "description": "Toolbar children as plain data; setting it replaces them and fires selection-menu:actions-changed"
       }
     ],
     "structure": [
       {
+        "element": "<pop-over data-selection-menu-host role=\"toolbar\">",
+        "required": false,
+        "description": "Generated toolbar surface; setup() moves the authored children into it. Style this node, not the host (the host is display: contents)."
+      },
+      {
         "element": "<highlight-wc>",
+        "required": false,
         "description": "Text highlighting with color palette"
       },
       {
-        "element": "<share-wc variant=\"selection\">",
-        "description": "Share selected text quote"
+        "element": "<share-wc>",
+        "required": false,
+        "description": "Share or copy the selected text as a quote (detected via closest('selection-menu'))"
       },
       {
         "element": "<note-wc>",
+        "required": false,
         "description": "Private note on highlight"
       },
       {
         "element": "<comment-wc>",
-        "description": "Inline comment (future)"
+        "required": false,
+        "description": "Inline comment on a review-surface"
       }
     ],
     "css": {
@@ -12009,40 +12113,614 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "settings-panel",
     "type": "web-component",
-    "description": "Compact settings panel",
+    "description": "Compact, non-modal site settings panel (Appearance, Accessibility, Layout, Effects, Environment, System) opened from a gear trigger; shares state with theme-picker through ThemeManager, VBStore and window events",
     "attributes": [
       {
         "name": "open",
         "kind": "native",
-        "purpose": "config",
+        "purpose": "semantic-state",
+        "direction": "output",
         "type": "boolean",
-        "description": "Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup"
+        "description": "Reflected state only — set by open()/close()/toggle(), not intended as initial markup"
       },
+      {
+        "name": "data-label-trigger",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Site settings",
+        "description": "Accessible name of the minted gear trigger (an authored trigger keeps its own name)."
+      },
+      {
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Site settings",
+        "description": "Panel dialog accessible name."
+      },
+      {
+        "name": "data-label-title",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Settings",
+        "description": "Panel heading text."
+      },
+      {
+        "name": "data-label-close",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Close settings",
+        "description": "Close button accessible name."
+      },
+      {
+        "name": "data-label-appearance",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Appearance",
+        "description": "Text for the \"Appearance\" string."
+      },
+      {
+        "name": "data-label-color-mode",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Color mode",
+        "description": "Text for the \"Color mode\" string."
+      },
+      {
+        "name": "data-label-mode-auto",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Auto",
+        "description": "Text for the \"Auto\" string."
+      },
+      {
+        "name": "data-label-mode-light",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Light",
+        "description": "Text for the \"Light\" string."
+      },
+      {
+        "name": "data-label-mode-dark",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Dark",
+        "description": "Text for the \"Dark\" string."
+      },
+      {
+        "name": "data-label-theme",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Theme",
+        "description": "Text for the \"Theme\" string."
+      },
+      {
+        "name": "data-label-accessibility",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Accessibility",
+        "description": "Text for the \"Accessibility\" string."
+      },
+      {
+        "name": "data-label-high-contrast",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "High Contrast",
+        "description": "Text for the \"High Contrast\" string."
+      },
+      {
+        "name": "data-label-large-text",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Large Text",
+        "description": "Text for the \"Large Text\" string."
+      },
+      {
+        "name": "data-label-dyslexia",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Dyslexia-Friendly",
+        "description": "Text for the \"Dyslexia-Friendly\" string."
+      },
+      {
+        "name": "data-label-layout",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Layout",
+        "description": "Text for the \"Layout\" string."
+      },
+      {
+        "name": "data-label-fluid",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Fluid Scaling",
+        "description": "Text for the \"Fluid Scaling\" string."
+      },
+      {
+        "name": "data-label-density",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Density",
+        "description": "Text for the \"Density\" string."
+      },
+      {
+        "name": "data-label-density-compact",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Compact",
+        "description": "Text for the \"Compact\" string."
+      },
+      {
+        "name": "data-label-density-default",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Default",
+        "description": "Text for the \"Default\" string."
+      },
+      {
+        "name": "data-label-density-spacious",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Spacious",
+        "description": "Text for the \"Spacious\" string."
+      },
+      {
+        "name": "data-label-backdrop",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Canvas Backdrop",
+        "description": "Text for the \"Canvas Backdrop\" string."
+      },
+      {
+        "name": "data-label-backdrop-style",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Style",
+        "description": "Text for the \"Style\" string."
+      },
+      {
+        "name": "data-label-backdrop-default",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Default",
+        "description": "Text for the \"Default\" string."
+      },
+      {
+        "name": "data-label-backdrop-flush",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Flush",
+        "description": "Text for the \"Flush\" string."
+      },
+      {
+        "name": "data-label-backdrop-elevated",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Elevated",
+        "description": "Text for the \"Elevated\" string."
+      },
+      {
+        "name": "data-label-chrome",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Chrome",
+        "description": "Text for the \"Chrome\" string."
+      },
+      {
+        "name": "data-label-chrome-card",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Card",
+        "description": "Text for the \"Card\" string."
+      },
+      {
+        "name": "data-label-chrome-stretch",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Stretch",
+        "description": "Text for the \"Stretch\" string."
+      },
+      {
+        "name": "data-label-chrome-integrated",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Integrated",
+        "description": "Text for the \"Integrated\" string."
+      },
+      {
+        "name": "data-label-fixed-header",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Fixed Header",
+        "description": "Text for the \"Fixed Header\" string."
+      },
+      {
+        "name": "data-label-page-bg",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Page Background",
+        "description": "Text for the \"Page Background\" string."
+      },
+      {
+        "name": "data-label-page-bg-default",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Theme Default",
+        "description": "Text for the \"Theme Default\" string."
+      },
+      {
+        "name": "data-label-page-bg-color",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Solid Color",
+        "description": "Text for the \"Solid Color\" string."
+      },
+      {
+        "name": "data-label-page-bg-gradient",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Gradient",
+        "description": "Text for the \"Gradient\" string."
+      },
+      {
+        "name": "data-label-bg-color",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Color",
+        "description": "Text for the \"Color\" string."
+      },
+      {
+        "name": "data-label-grad-start",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Start",
+        "description": "Text for the \"Start\" string."
+      },
+      {
+        "name": "data-label-grad-end",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "End",
+        "description": "Text for the \"End\" string."
+      },
+      {
+        "name": "data-label-grad-direction",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Direction",
+        "description": "Text for the \"Direction\" string."
+      },
+      {
+        "name": "data-label-dir-to-bottom",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Top → Bottom",
+        "description": "Text for the \"Top → Bottom\" string."
+      },
+      {
+        "name": "data-label-dir-to-right",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Left → Right",
+        "description": "Text for the \"Left → Right\" string."
+      },
+      {
+        "name": "data-label-dir-135deg",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Diagonal ↘",
+        "description": "Text for the \"Diagonal ↘\" string."
+      },
+      {
+        "name": "data-label-dir-45deg",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Diagonal ↗",
+        "description": "Text for the \"Diagonal ↗\" string."
+      },
+      {
+        "name": "data-label-sticky",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Sticky Navigation",
+        "description": "Text for the \"Sticky Navigation\" string."
+      },
+      {
+        "name": "data-label-effects",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Effects",
+        "description": "Text for the \"Effects\" string."
+      },
+      {
+        "name": "data-label-motion",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Motion Effects",
+        "description": "Text for the \"Motion Effects\" string."
+      },
+      {
+        "name": "data-label-sounds",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Sound Effects",
+        "description": "Text for the \"Sound Effects\" string."
+      },
+      {
+        "name": "data-label-environment",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Environment",
+        "description": "Text for the \"Environment\" string."
+      },
+      {
+        "name": "data-label-time-of-day",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Time-of-Day Shifts",
+        "description": "Text for the \"Time-of-Day Shifts\" string."
+      },
+      {
+        "name": "data-label-seasonal",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Seasonal Tinting",
+        "description": "Text for the \"Seasonal Tinting\" string."
+      },
+      {
+        "name": "data-label-system",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "System",
+        "description": "Text for the \"System\" string."
+      },
+      {
+        "name": "data-label-sw-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Service Worker:",
+        "description": "Text for the \"Service Worker:\" string."
+      },
+      {
+        "name": "data-label-sw-checking",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "checking…",
+        "description": "Text for the \"checking…\" string."
+      },
+      {
+        "name": "data-label-sw-unsupported",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Not supported",
+        "description": "Text for the \"Not supported\" string."
+      },
+      {
+        "name": "data-label-sw-active",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Active ({n} cached files)",
+        "description": "Service-worker status ({n} = cached file count)."
+      },
+      {
+        "name": "data-label-sw-unregistered",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Not registered",
+        "description": "Text for the \"Not registered\" string."
+      },
+      {
+        "name": "data-label-clear-cache",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Clear Cache",
+        "description": "Text for the \"Clear Cache\" string."
+      },
+      {
+        "name": "data-label-clearing",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Clearing…",
+        "description": "Text for the \"Clearing…\" string."
+      },
+      {
+        "name": "data-label-cleared",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Cache cleared",
+        "description": "Text for the \"Cache cleared\" string."
+      },
+      {
+        "name": "data-label-check-update",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Check for Updates",
+        "description": "Text for the \"Check for Updates\" string."
+      },
+      {
+        "name": "data-label-checking",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Checking…",
+        "description": "Text for the \"Checking…\" string."
+      },
+      {
+        "name": "data-label-update-available",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Update available",
+        "description": "Text for the \"Update available\" string."
+      },
+      {
+        "name": "data-label-up-to-date",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Up to date",
+        "description": "Text for the \"Up to date\" string."
+      },
+      {
+        "name": "data-label-failed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Failed",
+        "description": "Text for the \"Failed\" string."
+      },
+      {
+        "name": "data-label-reset",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reset to Defaults",
+        "description": "Text for the \"Reset to Defaults\" string."
+      },
+      {
+        "name": "data-label-reset-confirm",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reset all settings to defaults?",
+        "description": "In-panel reset confirmation question."
+      },
+      {
+        "name": "data-label-reset-yes",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reset",
+        "description": "Text for the \"Reset\" string."
+      },
+      {
+        "name": "data-label-reset-cancel",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Cancel",
+        "description": "Text for the \"Cancel\" string."
+      },
+      {
+        "name": "data-label-reset-done",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Settings reset to defaults",
+        "description": "Live announcement after a reset."
+      }
+    ],
+    "childAttributes": [
       {
         "name": "data-trigger",
-        "kind": "data",
-        "purpose": "config"
+        "on": "button",
+        "type": "boolean",
+        "description": "Marks an authored trigger button (else the first child <button>, else a minted gear button). The runtime sets aria-haspopup, aria-expanded and aria-controls on it."
+      }
+    ],
+    "properties": [
+      {
+        "name": "data",
+        "type": "{ a11yThemes: string[], extensions: { motionFx: boolean, sounds: boolean }, sticky: boolean }",
+        "description": "Settings snapshot. The setter applies each provided field to the page at once (a11y themes on <html data-theme>, extensions, <html data-sticky>), writes it through to VBStore (vb:settings:a11y / extensions / sticky), updates the controls, and fires settings-panel:data-changed when the writes finish. Safe before the panel renders."
+      }
+    ],
+    "methods": [
+      {
+        "name": "open",
+        "returns": "void",
+        "description": "Open the panel and move focus into it. Queued if called before the element has rendered."
       },
       {
-        "name": "aria-haspopup",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "close",
+        "returns": "void",
+        "description": "Close the panel. close({ returnFocus: true }) also focuses the trigger (what Escape and the close button do)."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "toggle",
+        "returns": "void",
+        "description": "Toggle the panel open/closed."
       }
     ],
     "events": [
       {
-        "name": "vb:a11y-themes-change"
+        "name": "settings-panel:upgraded",
+        "description": "Fired on the host (bubbles) once the element has upgraded and rendered."
       },
       {
-        "name": "vb:extensions-change"
+        "name": "settings-panel:data-changed",
+        "detail": "{ data, source: 'property' }",
+        "description": "Fired on the host (bubbles) after a data setter's VBStore writes finish."
+      },
+      {
+        "name": "vb:a11y-themes-change",
+        "detail": "string[]",
+        "description": "Dispatched on window (not the host) when the accessibility themes change; also listened for, so other components can push changes in."
+      },
+      {
+        "name": "vb:extensions-change",
+        "detail": "{ motionFx, sounds }",
+        "description": "Dispatched on window (not the host) when the effects preferences change; also listened for (theme-picker dispatches it too)."
       }
     ],
-    "childAttributes": [],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -12055,7 +12733,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "share-wc",
     "type": "web-component",
-    "description": "Social share component with native Web Share API and platform fallbacks",
+    "description": "Social share component: native Web Share button (falls back to copying the link), platform buttons, or enhanced slotted links; inside selection-menu, shares or copies the selected text as a quote.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -12068,108 +12746,316 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to share (default: location.href)"
+        "description": "URL to share (default: <link rel=canonical>, then location.href)"
       },
       {
         "name": "title",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Share title (default: document.title)"
+        "description": "Share title (default: og:title, then document.title). Read from the attribute; the JS property is shareTitle."
       },
       {
         "name": "text",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Share description (default: meta description)"
+        "description": "Share description (default: meta description, then og:description)"
       },
       {
         "name": "platforms",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Comma-separated platform list (default: \"x,linkedin,bluesky,mastodon,whatsapp,email,copy\")"
+        "default": "x,linkedin,bluesky,mastodon,whatsapp,email,copy",
+        "description": "Comma-separated platform list (x, twitter, facebook, linkedin, whatsapp, telegram, bluesky, mastodon, email, copy) or \"native-only\""
       },
       {
         "name": "variant",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Visual variant: \"icon\", \"label\", \"icon-label\" (default: \"icon-label\")"
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "icon",
+          "label",
+          "icon-label"
+        ],
+        "default": "icon-label",
+        "description": "Icon only (label visually hidden but still the name), label only, or both"
       },
       {
         "name": "size",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Button size: \"s\", \"m\", \"l\" (default: \"m\")"
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "s",
+          "m",
+          "l"
+        ],
+        "default": "m",
+        "description": "Button size"
       },
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Label for native share button (default: \"Share\")"
+        "default": "Share",
+        "description": "Visible label (and accessible name) of the native share button"
       },
       {
         "name": "color",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Present = use platform brand colours"
+        "description": "Brand colours on each platform button's border and icon (label text stays --color-text)"
       },
       {
         "name": "mastodon-instance",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Mastodon instance (default: \"mastodon.social\")"
+        "default": "mastodon.social",
+        "description": "Mastodon instance"
       },
       {
         "name": "tier",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Force tier: \"native\", \"platforms\" (overrides auto-detection)"
+        "type": "enum",
+        "values": [
+          "native",
+          "platforms"
+        ],
+        "description": "Force a tier instead of auto-detecting navigator.share (native without support resolves to hidden)"
       },
       {
         "name": "data-tier-resolved",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "native",
+          "platforms",
+          "hidden",
+          "selection"
+        ],
+        "description": "The tier the component rendered"
       },
       {
-        "name": "href",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-label-share-page",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Share this page",
+        "description": "Accessible name of the share nav"
       },
       {
-        "name": "content",
-        "kind": "host-api",
-        "purpose": "config"
+        "name": "data-label-share-on",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Share on {platform}",
+        "description": "Platform button name; {platform} is replaced by the platform label"
+      },
+      {
+        "name": "data-label-copy",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Copy link",
+        "description": "Copy button label"
+      },
+      {
+        "name": "data-label-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Copied!",
+        "description": "Copy button label for 2s after copying"
+      },
+      {
+        "name": "data-label-link-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Link copied to clipboard",
+        "description": "Announced after the link is copied"
+      },
+      {
+        "name": "data-label-share-selection",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Share selection",
+        "description": "Selection-menu button name"
+      },
+      {
+        "name": "data-label-selection-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Selection copied",
+        "description": "Announced after a selection quote is copied"
       }
     ],
     "events": [
       {
-        "name": "share-wc:open"
+        "name": "share-wc:open",
+        "detail": "{ platform: string }",
+        "description": "A share was started (platform id or 'native')"
       },
       {
-        "name": "share-wc:success"
+        "name": "share-wc:success",
+        "detail": "{ platform: string }",
+        "description": "A share window opened, the native share resolved, or the link was copied ('copy')"
       },
       {
-        "name": "share-wc:error"
+        "name": "share-wc:error",
+        "detail": "{ platform: string, error?: Error }",
+        "description": "Native share failed (not cancelled) or the clipboard write failed"
       }
     ],
-    "childAttributes": [],
+    "methods": [
+      {
+        "name": "share",
+        "returns": "Promise<boolean>",
+        "description": "Native tier: open the share sheet (copying the link if it fails). Other tiers: copy the link. Resolves true when shared or copied."
+      }
+    ],
+    "properties": [
+      {
+        "name": "url",
+        "type": "string",
+        "description": "Shared URL; setting it wins over the attribute, re-substitutes slotted {url} tokens and survives reconnect"
+      },
+      {
+        "name": "shareTitle",
+        "type": "string",
+        "description": "Shared title (named to avoid shadowing HTMLElement.title); same override rules as url"
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "description": "Shared description; same override rules as url"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-platform",
+        "on": "a, button (slotted)",
+        "type": "string",
+        "description": "Marks a slotted link/button as a platform; \"copy\" copies the URL. {url}, {title}, {text} tokens in href are substituted (encoded)."
+      }
+    ],
     "structure": []
   },
   "short-cuts": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "short-cuts",
     "type": "web-component",
-    "description": "Keyboard shortcuts help overlay",
-    "attributes": [],
-    "childAttributes": [],
+    "description": "Keyboard shortcuts help overlay: a modal dialog listing the command registry ([data-command][data-shortcut]) and data-hotkey actions, toggled by ? (remappable or off) or show()/toggle().",
+    "attributes": [
+      {
+        "name": "hotkey",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "default": "shift+?",
+        "description": "Key combo that toggles the dialog; \"none\" disables the character-key shortcut (WCAG 2.1.4). Observed."
+      },
+      {
+        "name": "data-label-title",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Keyboard shortcuts",
+        "description": "Dialog heading and accessible name"
+      },
+      {
+        "name": "data-label-general",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "General",
+        "description": "Group holding the component's own shortcut"
+      },
+      {
+        "name": "data-label-self",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Show keyboard shortcuts",
+        "description": "Label of the component's own shortcut"
+      },
+      {
+        "name": "data-label-close",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Close",
+        "description": "Close button accessible name"
+      }
+    ],
+    "events": [
+      {
+        "name": "short-cuts:shortcuts-changed",
+        "detail": "{ shortcuts: Record<string, Array<{ label, shortcut }>> | null, source: 'property' }",
+        "description": "The shortcuts property was set"
+      }
+    ],
+    "methods": [
+      {
+        "name": "show",
+        "returns": "void",
+        "description": "Open the dialog (rebuilds the list from the current sources)"
+      },
+      {
+        "name": "close",
+        "returns": "void",
+        "description": "Close the dialog"
+      },
+      {
+        "name": "toggle",
+        "returns": "void",
+        "description": "Open when closed, close when open"
+      }
+    ],
+    "properties": [
+      {
+        "name": "shortcuts",
+        "type": "Record<string, Array<{ label: string, shortcut: string }>> | null",
+        "description": "Override list keyed by group name; replaces the registry sources (the component's own hotkey is still listed). null restores the registries."
+      },
+      {
+        "name": "open",
+        "type": "boolean",
+        "readonly": true,
+        "description": "Whether the dialog is open"
+      },
+      {
+        "name": "hotkey",
+        "type": "string | null",
+        "readonly": true,
+        "description": "Active combo, or null when hotkey=\"none\""
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-shortcut",
+        "on": "[data-command] (anywhere in the page)",
+        "type": "string",
+        "description": "Command-registry source: label from data-command, group from data-command-group"
+      },
+      {
+        "name": "data-hotkey",
+        "on": "any non-kbd element (anywhere in the page)",
+        "type": "string",
+        "description": "Hotkey-action source: label from data-hotkey-label or text, group from data-hotkey-group (default \"Page Actions\")"
+      }
+    ],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -12182,78 +13068,198 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "site-index",
     "type": "web-component",
-    "description": "Interactive site keyword index",
+    "description": "Interactive keyword index: filter, A–Z jump strip, entry counts, display limit and sort over a hand-authored (or src JSON) index",
     "attributes": [
       {
         "name": "placeholder",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Search input placeholder (default \"Filter index…\")"
+        "default": "Filter index…",
+        "description": "Placeholder and accessible name of the filter input"
       },
       {
         "name": "letters",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Jump nav mode: \"entries\" (default) | \"all\" | \"none\""
+        "type": "enum",
+        "values": [
+          "entries",
+          "all",
+          "none"
+        ],
+        "default": "entries",
+        "description": "Jump strip: letters that have entries, the full A–Z plus any other letters present (É, Å…), or none"
       },
       {
         "name": "filter",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Search scope: \"topic\" (default) | \"all\""
+        "type": "enum",
+        "values": [
+          "topic",
+          "all"
+        ],
+        "default": "topic",
+        "description": "Initial filter scope: match terms only, or terms and page titles"
       },
       {
         "name": "sort",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Sort mode: \"alpha\" (default) | \"count\""
+        "type": "enum",
+        "values": [
+          "alpha",
+          "count"
+        ],
+        "default": "alpha",
+        "description": "Initial sort: authored (alphabetical) order, or sections with most entries first"
       },
       {
         "name": "limit",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Max entries per letter before \"Show more\" toggle"
+        "description": "Max entries per letter before a \"Show N more\" toggle"
       },
       {
         "name": "src",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to load index data from (optional)"
+        "description": "URL of index JSON ([{ term, refs: [{ href, label, type? }] }]) that replaces the authored nav. Strings render as text; only http(s), relative and fragment hrefs become links."
       },
       {
-        "name": "data-index-controls",
+        "name": "data-label-controls",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Filter the index",
+        "description": "Accessible name of the controls search landmark"
       },
       {
-        "name": "data-index-search",
+        "name": "data-label-scope",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Search scope",
+        "description": "Accessible name of the scope select"
       },
       {
-        "name": "href",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-index-overflow",
+        "name": "data-label-scope-topic",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "By Topic",
+        "description": "Scope option: match terms only"
       },
       {
-        "name": "data-index-expand",
+        "name": "data-label-scope-all",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "All",
+        "description": "Scope option: match terms and page titles"
+      },
+      {
+        "name": "data-label-sort",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Sort order",
+        "description": "Accessible name of the sort select"
+      },
+      {
+        "name": "data-label-sort-alpha",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Alphabetical",
+        "description": "Sort option"
+      },
+      {
+        "name": "data-label-sort-count",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Most entries",
+        "description": "Sort option"
+      },
+      {
+        "name": "data-label-jump",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Jump to letter",
+        "description": "Accessible name of the letter strip"
+      },
+      {
+        "name": "data-label-more",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Show {count} more",
+        "description": "Show-more button ({count} is replaced)"
+      },
+      {
+        "name": "data-label-less",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Show less",
+        "description": "Show-less button"
+      },
+      {
+        "name": "data-label-matches",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} terms match",
+        "description": "Live filter count ({count} is replaced)"
+      },
+      {
+        "name": "data-label-matches-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "1 term matches",
+        "description": "Live filter count for one match"
+      },
+      {
+        "name": "data-label-no-matches",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No matches",
+        "description": "Live status when the filter matches nothing"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "structure": [
+      {
+        "element": "<nav>",
+        "description": "The index: a direct-child <nav> of <section id=\"index-x\"> letter groups (or any <nav data-index>). Any aria-label works."
+      },
+      {
+        "element": "<section id=\"index-x\">",
+        "description": "One letter group — <h2> plus <ul> of terms. The letter comes from the id, so index-é gives É."
+      },
+      {
+        "element": "<span class=\"index-term\">",
+        "description": "The term text inside each <li>"
+      },
+      {
+        "element": "<ul class=\"index-refs\">",
+        "description": "Page references for a term"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-index",
+        "on": "nav",
+        "type": "boolean",
+        "description": "Explicitly marks the index nav (otherwise the direct-child nav holding sections is used)"
+      }
+    ]
   },
   "site-map": {
     "$schema": "../../../schemas/api.schema.json",
@@ -12271,8 +13277,13 @@ export default {
         "name": "mode",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Behavior mode: nav-enhance (default) | ia-tree"
+        "type": "enum",
+        "description": "Behavior mode: nav-enhance (static sitemap enhancer) or ia-tree (interactive IA tree)",
+        "values": [
+          "nav-enhance",
+          "ia-tree"
+        ],
+        "default": "nav-enhance"
       },
       {
         "name": "current",
@@ -12286,55 +13297,65 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL to JSON data (nav-enhance: { children }, ia-tree: { title, pages })"
+        "description": "URL to JSON data (nav-enhance: { children: [{ title, href, children }] }, ia-tree: { title, pages }). Strings render as text; only http(s), relative and fragment hrefs become links."
       },
       {
         "name": "title",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "[ia-tree] Site map heading"
+        "description": "[ia-tree] Site map heading and tree name. Changing it rebuilds the tree."
       },
       {
         "name": "collapsed",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "[ia-tree] Start all nodes collapsed"
+        "description": "[ia-tree] Start all nodes collapsed. Changing it rebuilds the tree."
       },
       {
         "name": "compact",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "[ia-tree] Reduced spacing variant"
+        "description": "[ia-tree] Reduced spacing variant (CSS only)"
       },
       {
         "name": "data-view",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "[ia-tree] Set to \"visual\" for the org-chart visualization"
+        "type": "enum",
+        "description": "[ia-tree] Set to \"visual\" for the SVG org-chart visualization. Changing it rebuilds.",
+        "values": [
+          "visual"
+        ]
       },
       {
         "name": "data-orientation",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "[ia-tree visual] Layout orientation"
+        "type": "enum",
+        "description": "[ia-tree visual] Layout orientation. The toolbar flips it; setting it re-renders the chart.",
+        "values": [
+          "vertical",
+          "horizontal"
+        ],
+        "default": "vertical"
       },
       {
         "name": "data-detail",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "[ia-tree visual] Node detail level"
-      },
-      {
-        "name": "data-sitemap-controls",
-        "kind": "data",
-        "purpose": "config",
-        "description": "[nav-enhance] Marks the generated expand/collapse-all controls nav"
+        "type": "enum",
+        "description": "[ia-tree visual] Node detail: 0 shape, 1 title, 2 full, 3 full + status, 4 wireframe. The toolbar slider sets it; setting it re-renders the chart.",
+        "values": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "default": "2"
       }
     ],
     "childAttributes": [
@@ -12361,21 +13382,38 @@ export default {
       {
         "name": "site-map:ready",
         "detail": "{ nodeCount, depth }",
-        "description": "[ia-tree] Fired after component initializes"
+        "description": "[ia-tree] Fired after the tree (or visual chart) is built"
       },
       {
         "name": "site-map:select",
         "detail": "{ href, pageType, template }",
-        "description": "[ia-tree] Node clicked — dispatched with page details"
+        "description": "[ia-tree] A node or its link was clicked"
+      },
+      {
+        "name": "site-map:pages-changed",
+        "detail": "{ pages, source: 'property' }",
+        "description": "[ia-tree] Fired after assigning the pages property rebuilds the tree"
       }
     ],
-    "structure": []
+    "structure": [
+      {
+        "element": "<nav>",
+        "description": "The sitemap: nested <ul>/<li><a> (ia-tree) or <details>/<summary> sections (nav-enhance)"
+      }
+    ],
+    "properties": [
+      {
+        "name": "pages",
+        "type": "Array<{ label, href?, pageType?, template?, status?, children? }>",
+        "description": "[ia-tree] Get the page tree as data, or assign one to rebuild (collapse state resets)"
+      }
+    ]
   },
   "site-search": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "site-search",
     "type": "web-component",
-    "description": "Full-page search dialog with keyboard navigation and result highlighting",
+    "description": "Pagefind-powered site search in a native modal <dialog>: combobox input, listbox of results, live result count",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -12390,12 +13428,155 @@ export default {
         "type": "boolean",
         "direction": "output",
         "description": "Reflected state — set by open()/close() methods, not intended as initial markup"
+      },
+      {
+        "name": "data-pagefind-path",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "/pagefind/",
+        "description": "Directory that holds pagefind.js, resolved against the document base. Set it for subpath deploys (e.g. /my-site/pagefind/)."
+      },
+      {
+        "name": "data-base-url",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Pagefind baseUrl prefixed to result URLs. Default: the directory above data-pagefind-path (\"/\" for the default path)."
+      },
+      {
+        "name": "data-label-trigger",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search",
+        "description": "Accessible name of the generated icon trigger (only when no trigger button is authored)"
+      },
+      {
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Site search",
+        "description": "Accessible name of the search dialog"
+      },
+      {
+        "name": "data-label-placeholder",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search documentation...",
+        "description": "Input placeholder"
+      },
+      {
+        "name": "data-label-input",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search",
+        "description": "Accessible name of the search input"
+      },
+      {
+        "name": "data-label-results",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search results",
+        "description": "Accessible name of the results listbox"
+      },
+      {
+        "name": "data-label-searching",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Searching...",
+        "description": "Status text while a search runs"
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No results found",
+        "description": "Status text when a query matches nothing"
+      },
+      {
+        "name": "data-label-count",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} results",
+        "description": "Status text for several results ({count} is replaced)"
+      },
+      {
+        "name": "data-label-count-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "1 result",
+        "description": "Status text for exactly one result"
+      },
+      {
+        "name": "data-label-unavailable",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search unavailable",
+        "description": "Status text when the Pagefind index cannot be loaded (the developer hint goes to the console)"
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Search error. Please try again.",
+        "description": "Status text when a search throws"
+      },
+      {
+        "name": "data-label-untitled",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Untitled",
+        "description": "Title shown for a result without meta.title"
+      },
+      {
+        "name": "data-label-navigate",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "to navigate",
+        "description": "Footer hint after the arrow keys"
+      },
+      {
+        "name": "data-label-select",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "to select",
+        "description": "Footer hint after Enter"
+      },
+      {
+        "name": "data-label-close",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "to close",
+        "description": "Footer hint after Esc"
+      },
+      {
+        "name": "data-label-powered",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Powered by",
+        "description": "Footer credit prefix"
       }
     ],
     "structure": [
       {
         "element": "<button data-trigger>",
-        "description": "Button that opens the search dialog"
+        "description": "Button that opens the search dialog (generated with a search icon when absent)"
       }
     ],
     "childAttributes": [
@@ -12414,7 +13595,45 @@ export default {
       },
       {
         "name": "site-search:close",
-        "description": "Fired when the search dialog closes"
+        "description": "Fired when the search dialog closes (Escape, backdrop click, close(), or choosing a result)"
+      },
+      {
+        "name": "site-search:change",
+        "detail": "{ value, source: 'api' }",
+        "description": "Fired when the value property sets a new query"
+      }
+    ],
+    "methods": [
+      {
+        "name": "open()",
+        "description": "Open the dialog with showModal() and focus the input"
+      },
+      {
+        "name": "close()",
+        "description": "Close the dialog, clear the query and results, and return focus to the trigger"
+      }
+    ],
+    "properties": [
+      {
+        "name": "isOpen",
+        "type": "boolean",
+        "description": "Read-only: whether the dialog is open"
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "description": "The current query. Setting it runs the same debounced search as typing and fires site-search:change"
+      },
+      {
+        "name": "results",
+        "type": "Array<PagefindResultData>",
+        "description": "Read-only copy of the current Pagefind result records (url, meta, excerpt)"
+      }
+    ],
+    "states": [
+      {
+        "name": "input-debounce-pending",
+        "description": "A keystroke is waiting out the 150ms debounce before searching"
       }
     ]
   },
@@ -12422,78 +13641,126 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "slide-accept",
     "type": "web-component",
-    "description": "Slide-to-confirm interaction",
+    "description": "Slide-to-confirm interaction. The inner .slide-handle is a role=\"slider\" (aria-valuenow/-valuetext, aria-describedby hint); a tap, Enter, Space or End also confirms (WCAG 2.5.7 single-pointer alternative)",
+    "formAssociated": true,
     "attributes": [
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Track label text (default: \"Slide to confirm\")"
+        "description": "Track label and handle accessible name. Default: the authored text content, else \"Slide to confirm\". Observed"
       },
       {
         "name": "activated-label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Label after activation (default: \"Confirmed!\")"
+        "description": "Label (and handle aria-valuetext) after activation, announced through a polite live region (default: \"Confirmed!\"). Observed"
+      },
+      {
+        "name": "data-label-hint",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Screen-reader hint wired with aria-describedby (default: \"Press Enter to confirm\"). Observed"
       },
       {
         "name": "attention",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Attention animation: \"shimmer\" | \"pulse\""
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "shimmer",
+          "pulse"
+        ],
+        "description": "Attention animation (off under reduced motion)"
       },
       {
         "name": "threshold",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Activation threshold 0-100 (default: 90)"
+        "default": 90,
+        "description": "Drag activation threshold 0-100"
       },
       {
-        "name": "role",
+        "name": "name",
         "kind": "native",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Form field name; the value is submitted only once activated"
       },
       {
-        "name": "aria-valuemin",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "value",
+        "kind": "native",
+        "purpose": "config",
+        "type": "string",
+        "default": "on",
+        "description": "Submitted value once activated"
       },
       {
-        "name": "aria-valuemax",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "required",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "valueMissing until activated, so the form cannot submit"
       },
       {
-        "name": "aria-valuenow",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "disabled",
+        "kind": "native",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Blocks drag, tap and keys (a disabled fieldset does the same); handle gets aria-disabled"
       },
       {
         "name": "data-activated",
         "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "transitioning",
-        "kind": "host-api",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Present once confirmed"
       },
       {
         "name": "data-dragging",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Present while the handle is being dragged"
+      },
+      {
+        "name": "transitioning",
+        "kind": "host-api",
+        "purpose": "internal-hook",
+        "public": false,
+        "direction": "output",
+        "type": "boolean",
+        "description": "Internal: present during the spring-back transition"
       }
     ],
     "events": [
       {
-        "name": "slide-accept:reset"
+        "name": "slide-accept:accept",
+        "description": "Fired once on activation (drag past threshold, tap, Enter, Space or End)"
       },
       {
-        "name": "slide-accept:accept"
+        "name": "slide-accept:reset",
+        "description": "Fired after reset() (also on form reset when activated)"
+      }
+    ],
+    "properties": [
+      {
+        "name": "activated",
+        "type": "boolean",
+        "readonly": true,
+        "description": "Whether the component has been confirmed"
+      }
+    ],
+    "methods": [
+      {
+        "name": "reset()",
+        "description": "Return the handle to the start, restore the label, clear the form value"
       }
     ],
     "childAttributes": [],
@@ -12509,72 +13776,147 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "social-embed",
     "type": "web-component",
+    "description": "Privacy-first social post embed. Renders the authored fallback link plus a \"Load … post\" button; on activation it builds a sandboxed iframe from the validated post URL (Bluesky, Mastodon, X, Instagram) or a <youtube-player> (YouTube).",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "url",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL of content to embed (required)"
+        "required": true,
+        "description": "Post or video URL. Must be https on the provider's own host (Mastodon: any https host with a /@user/<id> path); anything else is unsupported."
       },
       {
         "name": "provider",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Explicit provider key (auto-detected if omitted)"
+        "description": "Provider key (x, instagram, bluesky, youtube, mastodon or a registered custom key). Skips auto-detection; the provider must still accept the URL."
       },
       {
         "name": "theme",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Theme hint: light | dark | auto (default: auto)"
+        "type": "enum",
+        "values": [
+          "light",
+          "dark",
+          "auto"
+        ],
+        "default": "auto",
+        "description": "Colour hint for themeable providers (X, Bluesky). auto: the host's computed color-scheme, then the page's data-mode, then prefers-color-scheme."
       },
       {
         "name": "activate",
         "kind": "host-api",
         "purpose": "config",
+        "type": "enum",
+        "values": [
+          "click",
+          "visible",
+          "eager"
+        ],
+        "default": "click",
+        "description": "click: load when the reader presses the Load button; visible: when scrolled within 200px of the viewport; eager: at once. YouTube always renders its own facade at once."
+      },
+      {
+        "name": "data-title",
+        "kind": "data",
+        "purpose": "config",
         "type": "string",
-        "description": "Activation trigger: click | visible | eager (default: click)"
+        "description": "Accessible name of the embedded frame (YouTube: the player title). Default: \"{provider} post\" / \"YouTube video\"."
+      },
+      {
+        "name": "data-label-load",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Load {provider} {noun}",
+        "description": "Load button text; {provider} is the platform name, {noun} is post (video for YouTube)."
+      },
+      {
+        "name": "data-label-loading",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loading {provider} {noun}…",
+        "description": "Button text and live-region announcement while loading."
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{provider} {noun} failed to load.",
+        "description": "Visible note and announcement when loading fails (the button stays for a retry)."
+      },
+      {
+        "name": "data-label-note",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loads content from {host}",
+        "description": "Consent note beside the Load button; {host} is the host the embed loads from."
       },
       {
         "name": "state",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Lifecycle state (read-only, set by component)"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "idle",
+          "loading",
+          "loaded",
+          "error",
+          "unsupported"
+        ],
+        "description": "Lifecycle state, set by the component."
+      }
+    ],
+    "properties": [],
+    "methods": [
+      {
+        "name": "SocialEmbed.register(name, provider)",
+        "returns": "void",
+        "description": "Static. Add a provider { canHandle(url), render(host, url, { theme, title }) → Promise<Node | void>, label?, noun?, themeable?, delegatesActivation?, frameHost(url)? }. A returned Node replaces the fallback. Instances left unsupported re-initialise."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "createEmbedFrame(options)",
+        "returns": "HTMLIFrameElement",
+        "description": "Module export. Build a sandboxed, lazy https iframe ({ src: URL, title, sandbox: string[], allow?, height?, measure?(data), onload?(frame) }); measure reads a height from the frame's postMessage (origin and source are checked)."
       },
       {
-        "name": "data-embed-live",
-        "kind": "data",
-        "purpose": "config"
+        "name": "loadScript(src)",
+        "returns": "Promise<void>",
+        "description": "Module export. Idempotent script loader for custom providers; a failed load is evicted so it can be retried. Built-in providers never inject script."
       },
       {
-        "name": "style",
-        "kind": "host-api",
-        "purpose": "config"
+        "name": "fetchOEmbed(endpoint, url, params?)",
+        "returns": "Promise<object>",
+        "description": "Module export. Fetch oEmbed JSON. Never insert its html with innerHTML."
+      }
+    ],
+    "events": [
+      {
+        "name": "social-embed:upgraded",
+        "description": "Fired (bubbles) after the element upgrades."
       }
     ],
     "childAttributes": [],
-    "structure": [],
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    }
+    "structure": []
   },
   "split-surface": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "split-surface",
     "type": "web-component",
-    "description": "Resizable split panel with drag, keyboard, and persistence support",
+    "description": "Resizable split panel with drag, keyboard, collapse, and persistence support. The injected .split-divider is a focusable role=\"separator\" with aria-valuenow/-valuetext",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -12592,7 +13934,7 @@ export default {
           "vertical"
         ],
         "default": "horizontal",
-        "description": "Split axis"
+        "description": "Split axis. Observed"
       },
       {
         "name": "position",
@@ -12600,8 +13942,7 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": "50",
-        "direction": "both",
-        "description": "Split position as percentage (0–100)"
+        "description": "Default split position as a percentage (0–100). A persisted value wins over it on load. Observed (changes apply), not reflected: read the live value from the position property"
       },
       {
         "name": "min",
@@ -12609,7 +13950,7 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": "10",
-        "description": "Minimum panel size percentage"
+        "description": "Minimum panel size percentage. Observed"
       },
       {
         "name": "max",
@@ -12617,21 +13958,21 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": "90",
-        "description": "Maximum panel size percentage"
+        "description": "Maximum panel size percentage. Observed"
       },
       {
         "name": "persist",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "VBStore key suffix under namespace 'layout' (vb:layout:split:{key}) for position persistence"
+        "description": "VBStore key suffix under namespace 'layout' (vb:layout:split:{key}); stores { position, collapsed } after user resizes and wins over the position attribute on load"
       },
       {
         "name": "collapsible",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Double-click divider to collapse first panel"
+        "description": "Enter or double-click on the divider collapses / expands the first panel (collapsed panel is inert; aria-valuemin becomes 0). Observed"
       },
       {
         "name": "data-label-resize",
@@ -12639,13 +13980,21 @@ export default {
         "purpose": "config",
         "type": "string",
         "default": "Resize panels",
-        "description": "Accessible name override for the divider (default \"Resize panels\")."
+        "description": "Accessible name of the divider"
+      },
+      {
+        "name": "data-label-collapsed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Collapsed",
+        "description": "Divider aria-valuetext while the first panel is collapsed (otherwise \"{n}%\")"
       }
     ],
     "structure": [
       {
         "element": "first child",
-        "description": "First panel content"
+        "description": "First panel content (the one the divider resizes and collapses)"
       },
       {
         "element": "second child",
@@ -12655,13 +14004,41 @@ export default {
     "events": [
       {
         "name": "split-surface:resize",
-        "detail": "{ position }",
-        "description": "Fired when panel is resized"
+        "detail": "{ position, source }",
+        "description": "Fired when the split changes; source is 'pointer', 'keyboard', 'api' or 'attribute'. Not fired on initial load / reconnect"
       },
       {
         "name": "split-surface:collapse",
-        "detail": "{ collapsed }",
-        "description": "Fired when panel is collapsed or expanded"
+        "detail": "{ collapsed, source }",
+        "description": "Fired when the first panel is collapsed or expanded"
+      }
+    ],
+    "properties": [
+      {
+        "name": "position",
+        "type": "number",
+        "description": "Live split percentage (0 while collapsed). Settable; non-numeric values are ignored. Safe to set before the element finishes initialising (queued)"
+      },
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "description": "Whether the first panel is collapsed. Settable (queued before init)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "reset()",
+        "description": "Expand, return to the position attribute (or 50), and clear the persisted value"
+      }
+    ],
+    "states": [
+      {
+        "name": "divider-dragging",
+        "description": "The divider is being dragged"
+      },
+      {
+        "name": "collapsed",
+        "description": "The first panel is collapsed"
       }
     ]
   },
@@ -12669,35 +14046,35 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "star-rating",
     "type": "web-component",
-    "description": "Form-associated star rating web component",
+    "description": "Form-associated star rating web component: generates a fieldset[data-rating] of radios (CSS layer) opted into the rating effect (clear, rating:change), and submits one name=value entry via ElementInternals.",
     "attributes": [
       {
         "name": "name",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Form field name (omit for read-only)"
+        "description": "Form field name. FormData gets exactly one name=value entry via ElementInternals; omit for read-only."
       },
       {
         "name": "value",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Current rating value (default: 0)"
+        "description": "Rating value, also the form-reset default (default: 0). Observed: changing it after upgrade updates the rating."
       },
       {
         "name": "max",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Number of stars (default: 5)"
+        "description": "Number of stars (default: 5). Observed: changing it rebuilds the stars, keeping the value."
       },
       {
         "name": "label",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Legend text (default: \"Rating\")"
+        "description": "Legend text (default: \"Rating\"). Observed."
       },
       {
         "name": "allow-half",
@@ -12711,7 +14088,7 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "boolean",
-        "description": "Display-only mode"
+        "description": "Display-only mode (role=\"img\" summary, partial stars). Observed."
       },
       {
         "name": "icon",
@@ -12725,41 +14102,104 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "boolean",
-        "description": "Makes rating required for form validation"
+        "description": "Makes rating required for form validation (valueMissing until a star is chosen). Observed."
       },
       {
-        "name": "data-rating",
+        "name": "data-label-one",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Radio label for the Intl.PluralRules \"one\" category; {n} is the Intl.NumberFormat value (default \"{n} star\"). Any CLDR category works (data-label-few, ...). Locale from the closest [lang]."
+      },
+      {
+        "name": "data-label-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Radio label for categories without their own data-label-* (default \"{n} stars\")"
+      },
+      {
+        "name": "data-label-readonly",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Read-only summary; {label}, {value}, {max} are replaced (default \"{label}: {value} out of {max}\")"
+      },
+      {
+        "name": "data-label-required",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Validation message when required and empty (default \"Please select a rating\")"
+      },
+      {
+        "name": "data-label-cleared",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Live-region announcement when the rating is cleared (default \"Rating cleared\")"
+      }
+    ],
+    "properties": [
+      {
+        "name": "value",
+        "type": "number",
+        "description": "Current rating (0 = none). Settable before connect; applied when the stars are built."
+      }
+    ],
+    "events": [
+      {
+        "name": "rating:change",
+        "description": "Fires (bubbling, from the inner fieldset) when the rating changes, including clear to 0. detail: { value: number }"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-rating",
+        "on": "fieldset",
+        "type": "boolean",
+        "description": "Generated: the CSS-only rating fieldset"
       },
       {
         "name": "data-rating-half",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-effect",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-half",
-        "kind": "data",
-        "purpose": "config"
+        "on": "fieldset",
+        "type": "boolean",
+        "description": "Generated with allow-half: half-star labels"
       },
       {
         "name": "data-rating-readonly",
-        "kind": "data",
-        "purpose": "config"
+        "on": "fieldset",
+        "type": "boolean",
+        "description": "Generated with readonly: display-only stars (role=img)"
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-effect",
+        "on": "fieldset",
+        "type": "string",
+        "description": "Generated: \"rating\" opts the fieldset into the rating effect"
+      },
+      {
+        "name": "data-half",
+        "on": "label",
+        "type": "enum",
+        "values": [
+          "left",
+          "right"
+        ],
+        "description": "Generated with allow-half: which half of the star the label covers"
       }
     ],
-    "childAttributes": [],
     "structure": [],
+    "cssProperties": [
+      {
+        "name": "--rating-color",
+        "description": "Filled star colour (default var(--color-warning)); set on star-rating or any [data-rating]"
+      },
+      {
+        "name": "--rating-color-empty",
+        "description": "Empty star outline colour (default var(--color-text-muted))"
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -12806,32 +14246,46 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Set to \"off\" to suppress live-region announcements (decorative use)"
+        "description": "Set to \"off\" to drop role=\"status\"/aria-live (decorative use)"
+      },
+      {
+        "name": "data-label-*",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden default label per variant, used when the element has no slot text (e.g. data-label-online=\"En ligne\"). Defaults: the English variant name (Live, Recording, Streaming, Error, Online, Running, Away, Paused, Busy, Offline, Stopped); a custom variant falls back to its name."
       },
       {
         "name": "aria-label",
         "kind": "aria",
         "purpose": "config",
         "type": "string",
-        "description": "Required when slot has no text content"
+        "description": "Explicit name; with no slot text it is also used as the visually hidden label text"
       },
       {
         "name": "role",
         "kind": "aria",
         "purpose": "config",
-        "description": "Defaults to \"status\""
+        "description": "Defaults to \"status\" unless the author sets role/aria-live or data-live=\"off\""
       },
       {
         "name": "aria-live",
         "kind": "aria",
         "purpose": "config",
-        "description": "Defaults to \"polite\""
+        "description": "Defaults to \"polite\" alongside role=\"status\""
+      }
+    ],
+    "properties": [
+      {
+        "name": "variant",
+        "type": "string | null",
+        "description": "Reads and writes data-variant (null/empty removes it)"
       }
     ],
     "events": [
       {
         "name": "status-wc:change",
-        "description": "Fires when data-variant mutates. detail: { variant, previousVariant }"
+        "description": "Fires when data-variant mutates after upgrade (not for the initial value). detail: { variant, previousVariant }"
       }
     ],
     "childAttributes": [],
@@ -12844,6 +14298,10 @@ export default {
       {
         "name": "--status-dot-color",
         "description": "Dot color (overrides variant default)"
+      },
+      {
+        "name": "--status-dot-ring",
+        "description": "Dot ring colour (default: a darker shade of the dot colour in light mode, the dot colour in dark mode)"
       },
       {
         "name": "--status-pulse-duration",
@@ -12869,14 +14327,16 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "stepper-wc",
     "type": "web-component",
-    "description": "Stepper for values <input type=\"number\"> + data-stepper cannot reach: formatted units, currency, time, token-snap scales, discrete enums.",
+    "description": "Stepper for values <input type=\"number\"> + data-stepper cannot reach: formatted units, currency, time, token-snap scales, discrete enums. Renders an inner role=\"spinbutton\" that receives the host's label.",
+    "formAssociated": true,
     "attributes": [
       {
         "name": "value",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Current value (string; reflected)"
+        "description": "Current value (string). Authored value is the form-reset target; changes are reflected",
+        "direction": "both"
       },
       {
         "name": "name",
@@ -12956,47 +14416,48 @@ export default {
         "description": "Enable long-press acceleration on the +/- buttons"
       },
       {
+        "name": "data-label-decrease",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Decrease",
+        "description": "Accessible name of the decrease button"
+      },
+      {
+        "name": "data-label-increase",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Increase",
+        "description": "Accessible name of the increase button"
+      },
+      {
+        "name": "aria-label",
+        "kind": "aria",
+        "purpose": "config",
+        "type": "string",
+        "description": "Forwarded to the inner role=\"spinbutton\" (prefer a <label for>)"
+      },
+      {
+        "name": "aria-labelledby",
+        "kind": "aria",
+        "purpose": "config",
+        "type": "string",
+        "description": "Forwarded to the inner role=\"spinbutton\", merged with any <label for> / wrapping <label>"
+      },
+      {
         "name": "disabled",
         "kind": "native",
         "purpose": "config",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Disables stepping and removes the spinbutton from the tab order. A disabled <fieldset> does the same"
       },
       {
         "name": "readonly",
         "kind": "native",
         "purpose": "config",
-        "type": "boolean"
-      },
-      {
-        "name": "role",
-        "kind": "aria",
-        "purpose": "config",
-        "description": "spinbutton on the inner display element"
-      },
-      {
-        "name": "aria-valuenow",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuemin",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuemax",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuetext",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-disabled",
-        "kind": "aria",
-        "purpose": "config"
+        "type": "boolean",
+        "description": "Value cannot change: spinbutton gets aria-readonly, +/- buttons are disabled"
       }
     ],
     "events": [
@@ -13007,6 +14468,25 @@ export default {
       {
         "name": "change",
         "description": "Fires when value changes. Bubbles."
+      }
+    ],
+    "properties": [
+      {
+        "name": "value",
+        "type": "string",
+        "description": "Current canonical value (number as string, token, or enum value). Setting it fires input + change"
+      },
+      {
+        "name": "displayText",
+        "type": "string",
+        "readonly": true,
+        "description": "The user-visible formatted text, e.g. \"$5.00\", \"2.05 KB\", \"Medium\""
+      }
+    ],
+    "methods": [
+      {
+        "name": "recomputeWidth()",
+        "description": "Rebuild the width reserve after changing data-min/-max/-values/-options/-format after upgrade"
       }
     ],
     "childAttributes": [],

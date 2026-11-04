@@ -329,27 +329,14 @@ async function buildComponents() {
     const tagNames = extractTagNames(content);
     if (!tagNames.length) continue;
 
-    // Some components split runtime code into sibling modules that logic.js
-    // cannot import itself (e.g. social-embed's providers/*.js import from
-    // logic.js and self-register — importing them back would be a cycle).
-    // Bundle those into the per-component chunk via a synthesized entry, or
-    // the component ships inert on the autoload path.
-    const providersDir = join(wcDir, dir, 'providers');
-    const extraModules = existsSync(providersDir)
-      ? readdirSync(providersDir).filter(f => f.endsWith('.js')).map(f => `./providers/${f}`)
-      : [];
-
+    // Sibling modules (e.g. social-embed/providers/*.js) must be imported by
+    // logic.js itself, before it defines the element: the chunk is built from
+    // logic.js alone, and a define that runs before registration upgrades
+    // parsed markup against an empty registry.
     try {
       await esbuild.build({
         ...JS_DEFAULTS,
-        ...(extraModules.length
-          ? {
-              stdin: {
-                contents: ['./logic.js', ...extraModules].map(m => `import '${m}';`).join('\n'),
-                resolveDir: join(wcDir, dir),
-              },
-            }
-          : { entryPoints: [logicPath] }),
+        entryPoints: [logicPath],
         outfile: join(outDir, `${dir}.js`),
         logLevel: 'silent',
         ignoreAnnotations: true,

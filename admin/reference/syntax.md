@@ -305,7 +305,7 @@ Base: `text-wrap: pretty`; `p + p` gets `margin-block-start: var(--size-m)`.
 | `.justify` | `text-align: justify` + `hyphens: auto` (hyphenates only with a `lang` the browser has a dictionary for); `a11y-dyslexia` resets it |
 | `data-drop-cap` | Decorative initial letter (`initial-letter: 3`, floated fallback); also on `<article>` (styles in article/styles.css) |
 
-Emphasis in the same file: nested italic toggles upright inside italic contexts (`em`, `i`, `blockquote`, `cite`, `dfn`, `var`); `<mark>` gets background + padding + radius.
+Emphasis in the same file: `strong`/`b` are weight 600 and `em`/`i` italic, both with `font-synthesis: weight style` (a real bold/italic face wins; synthesis only fills in for single-face theme fonts such as DM Serif Display, VT323, Press Start 2P; small-caps/position synthesis stay off). Bold inside inline `<code>` uses `Mark`/`MarkText` in forced colors. Nested italic toggles upright inside italic contexts (`em`, `i`, `blockquote`, `cite`, `dfn`, `var`); `<mark>` gets background + padding + radius. `<small>` is `max(0.875em, var(--font-size-xs))` — relative to its context (smaller inside headings and already-small text), floored at the xs token.
 
 ### `<a>` Anchor
 
@@ -366,7 +366,7 @@ Base: border, radius, padding, focus ring. Validation via `:user-invalid` and `[
 | `--meter-fill-even-less-good` | `var(--color-error)` | Meter fill in the worst range |
 
 
-> Customizable select (`@supports (appearance: base-select)`, input/select.css) applies to single-row selects only: `select:not([multiple], [size]:not([size="0"], [size="1"]))`. Listbox selects keep `appearance: none`. Group headings are styled on the `optgroup` itself, so a `label` attribute and a `<legend>` look the same: 0.75em, uppercase, muted; options are reset to 1em. Options use `--color-text`. Disabled options are dimmed and get no hover fill. In forced colors: `::picker-icon` is `FieldText`, disabled options/groups are `GrayText`, and the hovered option is `Highlight`.
+> Customizable select (`@supports (appearance: base-select)`, input/select.css) applies to single-row selects only: `select:not([multiple], [size]:not([size="0"], [size="1"]))`. Listbox selects keep `appearance: none`. Group headings are styled on the `optgroup` itself, so a `label` attribute and a `<legend>` look the same: 0.75em, uppercase, muted; options are reset to 1em. Options use `--color-text`. Disabled options are dimmed and get no hover fill. In forced colors: `::picker-icon` is `FieldText`, disabled options/groups are `GrayText`, and the hovered option is `Highlight`. A rich trigger (`<select><button><selectedcontent></selectedcontent></button>…`) is reset to a content slot: no padding, border, background, shadow, radius or min size (locked with `!important`, so theme button skins and the global 44px button minimum never reach it). `required` needs a placeholder first option with `value=""` (not inside an optgroup); invalid styling shows via `:user-invalid`. Without base-select, the parser drops the `<button>`/`<selectedcontent>` and each option shows its plain text.
 
 ### `<form>` Form
 
@@ -442,6 +442,8 @@ Counter text via `--wizard-label-step` (default `"Step "`) and `--wizard-label-o
 ### `<details>` / `<summary>` Disclosure
 
 Base: chevron indicator via `summary::after` (physical right+bottom corner; points to the inline end when closed, down when open, RTL-aware). Adjacent `<details>` get joined borders in normal flow only — not inside gap layouts (`layout-*`, `[data-layout]`, `[data-layout-gap]`); `data-layout-gap="none"` joins. Closed panels print open (via `::details-content`).
+
+Themes or contexts that draw their own glyph (`nav.tree` +/−, NES ▶, win9x +/-) remove the core `::after` and use empty alt text (`content: "+" / ""`) so the glyph is not part of the summary's name. `nav.tree` summaries drop the 44px minimum (`min-block-size: auto`, ~37px). A heading inside `<summary>` loses its heading role; put the heading outside the `<details>`.
 
 ### `<dialog>` Dialog
 
@@ -569,7 +571,7 @@ Base: left border accent, muted italic text, `<footer>` for attribution.
 
 ### `<code>`, `<pre>`, `<kbd>`, `<samp>`, `<var>` Code
 
-Base: monospace font, `<code>` gets background highlight, `<kbd>` gets border + shadow key style. A `<kbd>` with a `<kbd>` child (`kbd:has(> kbd)`, nested sequence/combination and the `data-hotkey` wrapper) is unboxed and inherits the font size; only inner caps are drawn. Inside `button`/`.button`/`[role="button"]` a cap takes the button's text colour with a derived edge and translucent fill.
+Base: monospace font, `<code>` gets background highlight, `<kbd>` gets border + shadow key style. A `<kbd>` with a `<kbd>` child (`kbd:has(> kbd)`, nested sequence/combination and the `data-hotkey` wrapper) is unboxed and inherits the font size; only inner caps are drawn. Inside `button`/`.button`/`[role="button"]` a cap takes the button's text colour with a derived edge and translucent fill. Inline `<samp>` has no chip but wraps long output (`overflow-wrap: break-word`, like inline `<code>`). Inline `<code>`/`<samp>` (not inside `<pre>`) are `unicode-bidi: plaintext`: isolated from the surrounding text and directed by their own first strong character, so LTR output keeps its punctuation in place on RTL pages.
 
 `<pre>`: `white-space: pre`, horizontal scroll, `tab-size: var(--tab-size, 4)`. `pre:has(code, samp)` is the code/output block (raised surface, padding, radius) and is `direction: ltr` unless the `pre` has its own `dir`; bare `<pre>` (ASCII art, poetry) follows the page direction. Forced colors: code blocks get a `CanvasText` border; `<b>`/`<strong>` inside `<pre>` use `Mark`/`MarkText`. A scrollable block made focusable with `tabindex="0"` must also get `role="region"` + `aria-label`. Print (`utils/print.css`): `pre-wrap`, `break-inside: avoid`, 1px border.
 
@@ -671,12 +673,14 @@ Wrappers: `[data-media][data-ratio]` (preferred; `figure` + `figcaption` puts th
 | Class | Description |
 |-------|-------------|
 | `.xs`, `.s`, `.m`, `.l`, `.xl`, `.xxl` | Fixed sizes (0.75rem–4rem) |
-| `.currentcolor` | Fill inherits text color |
-| `.interactive` | Fill uses interactive color |
-| `.muted` | Fill uses muted color |
-| `.full`, `.responsive` | Full-width/auto sizing |
-| `.spin` | Rotation animation |
-| `.pulse` | Opacity pulse animation |
+| `.currentcolor` | `fill: currentColor`, skipped when the `<svg>` has `fill="none"` (stroke icons stay outlines) |
+| `.interactive` | Sets `color` to the interactive colour; fills with it unless `fill="none"`; `stroke="currentColor"` follows |
+| `.muted` | Sets `color` to the muted text colour; fills with it unless `fill="none"`; `stroke="currentColor"` follows |
+| `.full` | Fills the container's inline size; height from the viewBox |
+| `.spin` | Rotation animation; stops under reduced motion (`prefers-reduced-motion` or `:root[data-motion-reduced]`) |
+| `.pulse` | Opacity pulse animation; stops under reduced motion |
+
+Unclassed `<svg>` gets `max-inline-size: 100%; block-size: auto` (stays inline-block). `.responsive` was removed (duplicate of `.full`).
 
 ### `<figure>` / `<figcaption>` Figure
 
@@ -741,12 +745,22 @@ Banner landmark only when scoped to `<body>` (no article/aside/main/nav/section 
 | Class | Description |
 |-------|-------------|
 | `.padded` | Vertical padding |
-| `.full` | Full viewport width |
+| `.full` | Generous block + inline padding (no breakout) |
 | `.contained` | Max 1200px centered |
-| `.alt` | Alternate background |
+| `.alt` | Alternate background (block borders in forced-colors mode) |
 | `.bordered` | Top border |
 | `.hero` | Min 50vh, centered content |
 | `.grid` | Auto-fit grid columns |
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-padding` | (bare), `small`, `xsmall`, `none` | Fluid block padding |
+| `data-padding-start`, `data-padding-end` | `none` | Drop block-start / block-end padding |
+| `data-bleed` | boolean, on `section.hero` | Background extends behind `body > header` (transparent until `<html data-scrolled>`) |
+| `data-angle` | `down`, `up`, `down-strong`, `up-strong` | Skewed background edge, padding compensation by container width; mirrors in RTL |
+| `hr[data-position]` (child) | `top`, `bottom` | Edge-to-edge hairline pinned to that edge |
+
+`<section>` is a size query container (`container-type: inline-size`); as a content-sized flex/grid item it collapses to zero width — opt out with `container-type: normal` (or `data-container` inside cluster/reel/centred cover/aligned stack to keep it). A section is a `region` landmark only when named (`aria-labelledby`).
 
 #### `<article>`
 
@@ -793,12 +807,14 @@ Content model: zero+ `<p>`, one h1–h6, zero+ `<p>` (no `<small>`). Put kicker 
 
 #### `<search>`
 
+Variants style controls that are direct children of `<search>` or of its direct `<form>`: `:is(search, search > form) > input|button`. Use `<search class="inline"><form action method="get">…</form></search>` when there is a submit button.
+
 | Class | Description |
 |-------|-------------|
 | `.inline` | Flex inline |
 | `.expanded` | Full-width |
 | `.compact` | Smaller padding/font |
-| `.with-icon` | Icon positioning |
+| `.with-icon` | Icon (`svg`, `.icon`, `<icon-wc>` before the input) positioned at the inline start; input gets start padding |
 | `.rounded` | Full radius on input |
 | `.header` | Compact header search |
 
@@ -834,11 +850,15 @@ Separator: `<li role="separator">` (a vertical rule in row menus, a horizontal r
 | `data[data-variant~="mono"]` | data | Monospace face for identifiers (default `<data>` is prose font + tabular-nums) |
 | `dfn[id]:target` | dfn | Outline highlight when reached by fragment link |
 | `time.relative`, `time.datetime` | time | Time variants |
-| `sup.footnote-ref` | sup | Footnote styling |
+| `sub[data-variant~="opentype"]`, `sup[data-variant~="opentype"]` | sub/sup | Opt-in: use the font's OpenType subs/sups glyphs (`font-variant-position`) and drop the manual size/offset. Only for fonts known to have the glyphs |
+| `sup.footnote-ref` | sup | Footnote marker: medium weight at the normal sup size (sized once); link keeps its underline with a padded hit area |
+| `.status[data-status]` (`success`, `warning`, `error`, `inactive`, `check`, `fail`) | span | Inline status glyph via `::before` with empty alt text (`content: "\25CF" / ""`); the label carries the meaning |
 
 > `dfn` inherits the weight of bold contexts (`dt`, `th`, headings, `strong`, `b`, `legend`). In `:lang(zh|ja|ko)`, `dfn` and `cite` are upright (no synthetic italic): `dfn` uses semibold, `cite` a muted wavy underline (except `cite[data-variant="quoted"]`).
 
 > `<i>` / `<em>` toggle to upright inside italic contexts: `blockquote`, `cite` (not `cite[data-variant~="quoted"]`), `dfn`, `var`, `em`, `i`. Upright islands (`blockquote > footer`, `blockquote > cite`, quoted cite) restore italic. In CJK (`:lang(zh|ja|ko)`, excluding `-Latn`): `<i>` is upright with the `--font-cjk-alternate` face + dotted underline; `<em>` uses emphasis marks; `<dfn>` semibold; `<cite>` wavy underline. Token `--font-cjk-alternate` (optional; default kai/mincho stack) sets the face for CJK `<i>`.
+
+> `<sub>`/`<sup>` are always `0.75em` with `line-height: 0` and a relative offset (sub `-0.25em`, sup `0.5em`). There is no `@supports (font-variant-position)` reset: browsers do not synthesise subs/sups glyphs, so the reset rendered them full-size on the baseline in most fonts. In forced colors `<s>` uses a dashed line-through so it stays distinct from `<del>`.
 
 ### Native Tooltip (`[role="tooltip"][popover]`)
 
@@ -852,9 +872,12 @@ Separator: `<li role="separator">` (a vertical rule in row menus, a horizontal r
 
 | Attribute | Description |
 |-----------|-------------|
-| `data-rating` | Star rating fieldset container |
-| `data-rating-half` | Enable half-star precision |
+| `data-rating` | Star rating fieldset container (radios in labels; `:has()` fill + hover preview) |
+| `data-rating-half` | Enable half-star precision (`label[data-half="left\|right"]`) |
 | `data-rating-readonly` | Read-only display |
+| `data-effect="rating"` | Opt into the rating effect (`src/effects/rating.js`): clear by activating the checked star again (click/Space) or Delete/Backspace, `rating:change` `{ value }` on every change incl. clear to 0, one persistent `[data-rating-live]` polite region announcing the clear (`data-label-cleared`, default "Rating cleared"); re-wires after remove + reinsert |
+
+Empty stars are outlines (`-webkit-text-fill-color: transparent` + text stroke), filled stars solid — shape, not just colour (hover preview too). `--rating-color` (filled, default `--color-warning`), `--rating-color-empty` (default `--color-text-muted`). Forced colours: filled `Highlight`, empty `CanvasText`, `forced-color-adjust: none`.
 
 ---
 
@@ -1043,10 +1066,11 @@ Subtle and outlined variants use `--color-*-text` ink (light-dark) on `--color-*
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-variant` | `success`, `warning`, `error`, `info`, `neutral` | Type (default: info) |
-| `data-filled` | (boolean) | Solid color fill |
+| `data-filled` | (boolean) | Solid accent fill (warning ink falls back to a fixed dark ink without `contrast-color()`) |
 | `data-compact` | (boolean) | Reduced padding |
+| `data-dismiss-focus` | CSS selector | Focus target after dismiss (default: next focusable after the message, else previous) |
 
-Children: `[data-icon]`, `[data-content]`, `[data-title]`, `[data-description]`, `[data-dismiss]`
+Children: `[data-icon]`, `[data-content]` (e.g. `<section>` or a single `<p>`), `[data-title]` (e.g. `<strong>`), `[data-description]` (e.g. `<p>`), `button[data-dismiss]` (direct child; `data-dismiss="remove"` removes instead of `hidden`). Dismiss behaviour: `src/custom-elements/status-message/logic.js` (one delegated document listener) fires cancelable, bubbling `status-message:dismiss` and moves focus if it was inside. Title/compact text uses `--color-*-text`; border and filled background use the base colour. Forced colours: filled messages get a `1px solid CanvasText` border. Live regions only announce content inserted after the region exists — insert the message into a pre-existing `role="status"` container.
 
 #### `<text-divider>`
 Horizontal divider with centered text content. No attributes.
@@ -1142,6 +1166,18 @@ Children pattern: `<button data-trigger popovertarget="m" aria-label="Menu">` + 
 
 Tokens: `--mobile-menu-bg`, `--mobile-menu-radius`, `--mobile-menu-shadow`, `--mobile-menu-padding`, `--mobile-menu-max-width`, `--mobile-menu-backdrop`. Current link: `--color-interactive` fill + `--color-text-on-interactive-auto` text (via the nav `--_active-*` hooks); forced colors add outline + underline.
 
+#### `<site-tools>`
+CSS-only flex cluster for site-wide tools (search, theme picker, settings). `margin-inline-start: auto` pushes it to the inline end of a flex `header.site` / footer. No attributes. Token: `--site-tools-gap` (default `var(--size-s)`; use it instead of overriding `--size-s`, which would re-scale nested components). A sibling `<mobile-menu>` hides it entirely at its breakpoint: repeat the tools inside the mobile panel, or put a tool that must stay visible directly in the header after `<mobile-menu>` (the docs site does this for `<notification-wc>`). Optional `role="group" aria-label="Site tools"`.
+
+#### `<site-legal>`
+CSS-only legal row (copyright, license, privacy/terms links) for footers.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-justify` | `start`, `center` (default), `end`, `between` | Row alignment (sets `--site-legal-justify`). `start`/`between` also clip the separator that would lead a wrapped row |
+
+Children: items as `<span>`/`<a>`, or one `<ul>`/`<ol>` whose `<li>`s are the items (list semantics; add `role="list"` if VoiceOver counts matter). Links are always underlined (thicker on hover/focus). Separators are decorative `::before` content (`content: var(--sep-list, "·") / ""`), absolutely positioned in the gap outside each item: never in a link's hit area, underline or accessible name. Tokens: `--sep-list`, `--site-legal-justify`. Copyright year is authored text (`<time datetime="2026">`) or build-time; no JS.
+
 #### Progress ring
 
 Not a custom element — use `<progress data-type="ring">` (see `<progress>` Progress Bar).
@@ -1167,7 +1203,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 > build (`npm run build:cem`). The entries below are the human-readable companion;
 > when a component is missing detail here, read its `api.json` and `logic.js`.
 
-### Component index (75 elements)
+### Component index (80 elements)
 
 | Element | Purpose | Detail below |
 |---------|---------|:------------:|
@@ -1206,7 +1242,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<image-map>` / `<map-area>` | Percentage-coordinate hotspot image map over a child `<img>` (or host `src`/`alt`): `<map-area shape="rect\|circle\|poly" coords label href target tooltip="hover\|click\|none" disabled>`, content = tooltip (hoverable, Escape anywhere; click mode is a disclosure with focus in/out); `.regions` get/set (round-trips tooltip/disabled/content); events `image-map:area-enter`/`area-leave` (pointer + focus), `area-activate` (pointer + Enter/Space, cancelable), `regions-changed` `{ regions, source }`; `data-label-map` | |
 | `<include-file>` | Same-origin HTML fragment include, sanitized by default: `src` (resolved against the page; blob:/data:/javascript: refused), `mode` replace/append/prepend, `lazy`, `trusted` (skip sanitizing), `allow-scripts` (requires `trusted`), `allow-cross-origin`, `data-label-error`; state `data-loading`/`data-loaded`/`data-error` + `aria-busy`; cycles and nesting > 10 refused; `.src`, `reload()`; events `include-file:loaded` `{ src, url, html }`, `include-file:error` `{ src, error }`, `include-file:src-changed` `{ src, source }`; sanitized with the fragment profile (keeps `id`/`name`, safe `style`, popover/command invokers; drops `<style>`, `on*`, form attrs) and inserted as nodes | ✓ |
 | `<markdown-editor>` | Markdown textarea + live sanitized `<markdown-viewer>` preview. Adopts the authored `<textarea>` (id/`<label for>`, `name`, `required`, `minlength`/`maxlength`, `readonly`, `dir`, `form`, `aria-*` kept; created only when absent): put `name` on the textarea, native submit/validity/reset with or without JS. Host: `placeholder`, `rows` (override the textarea's; no default placeholder), `highlight`, `data-tab-indent` (Escape then Tab leaves; Shift+Tab never captured), `data-auto-mermaid`, `data-theme`, `data-label-source`/`preview`/`tab-hint`; panes stack below ~40em of the editor's own width; `.value` get/set, `.textarea` (stable across reconnects); events `markdown-editor:input` `{ value }`, `markdown-editor:change` `{ value, source: "user"\|"api" }` (composed) | |
-| `<markdown-viewer>` | Render markdown (vendored marked, GFM + `:::note\|info\|tip\|warning\|danger [title]` callouts → `aside.callout[role=note][data-kind]`) from `src`, `<script type="text/markdown">`, `<template data-md>` or `<pre>`; sanitized by default (cleaned nodes inserted, never re-parsed; `<style>`/`style`/form attrs/invokers removed, `id`/`name` → `user-content-*`); `sanitize="off"` = trusted first-party only; `src` same-origin unless `allow-cross-origin`; `highlight`, `ping`, `data-theme`, `data-label-error`, `data-auto-mermaid`; state `data-rendered`/`data-loading`/`data-error`; `.parser`, `.markdown`, `render()`, `reload()`; events `markdown-viewer:fetch` `{ src }`, `:rendered` `{ src, node }`, `:highlight` `{ node, language }`, `:error` `{ error }` | |
+| `<markdown-viewer>` | Render markdown (vendored marked, GFM + `:::note\|info\|tip\|warning\|danger [title]` callouts → `aside.callout[role=note][data-kind]`) from `src`, `<script type="text/markdown">`, `<template data-md>` or `<pre>`; sanitized by default (cleaned nodes inserted, never re-parsed; `<style>`/`style`/form attrs/invokers removed, `id`/`name` → `user-content-*`; untrusted profile also unwraps `<social-embed>`, `<youtube-player>` and `<geo-map>` to their fallback children and strips `src`/`src-dark`/`data-src`/`url`/`endpoint`/`tile-url` from every other custom element (except `<audio-player>`, `<video-player>`, `<image-map>`, `<brand-mark>`, whose `src` is a media/image URL like the native element they wrap); the include-file fragment profile is unchanged); `sanitize="off"` = trusted first-party only; `src` same-origin unless `allow-cross-origin`; `highlight`, `ping`, `data-theme`, `data-label-error`, `data-auto-mermaid`; state `data-rendered`/`data-loading`/`data-error`; `.parser`, `.markdown`, `render()`, `reload()`; events `markdown-viewer:fetch` `{ src }`, `:rendered` `{ src, node }`, `:highlight` `{ node, language }`, `:error` `{ error }` | |
 | `<nav-bar>` | Top-level nav with automatic `aria-current="page"` (URL matching, popstate + Navigation API) | ✓ |
 | `<note-wc>` | Private reader notes on highlights: action in `<selection-menu>` (highlight + note), page-level button with `for="id"`, bare = panel host for margin-annotation clicks (`highlights:request-note`); `openFor(highlight, controller, opener?)`; `data-label-*` | |
 | `<notification-wc>` | `mode="banner"` dismissible strip (`persist`, `variant`, `position`, `expires`) or `mode="panel"` bell + drawer (static `<article data-id data-type data-date>` + `src` feed + `.notifications`), read state in VBStore; `data-label-*` | |
@@ -1226,16 +1262,21 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<reader-view>` | Immersive reading shell: moves its children into `<layout-columns>` with a chrome bar; `mode` scroll\|pages (observed; pages = full-viewport overlay: rest of page `inert`, scroll lock, focus into pager, Escape back with focus to the toggle, `--reader-view-z` default `var(--z-overlay)`), `columns` auto\|1\|2\|3 (observed), `font-controls`/`col-controls`="false", `reader-title`, `persist`="false", `storage-key` (default `vb-reader:<pathname>[#id]`), `data-remember-mode` (opt in to restoring the saved mode); `slot="chrome"` replaces the bar, wired by `data-reader-action` toggle-mode/set-mode-scroll/set-mode-pages/font-increase/font-decrease/set-columns(+`data-reader-value`)/prev-page/next-page and `data-reader-output` page-indicator/mode-label (runtime sets `aria-pressed`); keys in pages mode: arrows (mirrored in RTL), PageUp/PageDown, Space/Shift+Space, Home/End, Escape; events `reader-view:mode` `{ mode }`, `reader-view:page` `{ page, total }`, `reader-view:font` `{ size, index }`; `data-label-*` (incl. `page-indicator` "{page} / {total}"); prints as one static flow | |
 | `<reading-progress>` | Decorative fixed scroll-progress bar (inner `<progress>` always `aria-hidden`): document progress via CSS `animation-timeline: scroll(root block)` (no JS), or `data-for="id"` (observed) for an element's bounds via a passive rAF listener (missing target → document progress until the element appears); `data-position` top\|bottom; `--reading-progress-color`/`-height`/`-offset` (sticky-header gap)/`-z`; RTL fills from the right, forced colors `Highlight`, hidden in print | |
 | `<recently-visited>` | Device-local history lens (localStorage only). Tracking is opt-in: `<meta name="vb:track-history" content="on">` or the element's presence; opt out with `<html data-vb-no-track>`, `<meta name="vb:no-track-history">` or the reader's Pause; query strings are stripped (allowlist with `vb:track-history-params`); 30-day TTL; 100-entry cap; current page excluded (`include-current`); `limit`, `data-heading-level` (0 = none), `data-label-*`; `.entries` | ✓ |
-| `<settings-panel>` | Application settings drawer | |
-| `<short-cuts>` | Keyboard shortcut overlay (reads `data-hotkey`) | ✓ |
-| `<site-index>` | Enhances a static A–Z keyword index (or `src` JSON): filter (`filter` topic\|all), jump nav (`letters`), counts, `limit`, `sort`. The index is built from keywords / `article:tag` / `<meta name="concept">` | |
-| `<site-map>` | Hierarchical sitemap renderer | |
-| `<site-search>` | Pagefind-backed site search | ✓ |
-| `<slide-accept>` | "Slide to confirm" affordance | ✓ |
-| `<social-embed>` | oEmbed-style social media embed | |
+| `<score-card>` | KPI tile: slots `title`/`value`/`change`/`sparkline`/`description`/`icon` (slotted children must be DIRECT children; block `<p>` children make the no-JS form stack); `trend` up\|down\|flat (change text `--color-success-text`/`--color-error-text`), `tone`, `layout` stack\|cluster\|compact, `loading` (skeleton + `aria-busy="true"`; forced-colours `GrayText` outline); wrap in `<a href>` for drill-down (`:state(interactive)`) | |
+| `<selection-menu>` | Floating toolbar on text selection (pointer or keyboard) for `for="id"` / `[data-selection-menu="<id>"]` targets: children move into a generated `<pop-over data-selection-menu-host role="toolbar">` (top layer); Alt+F10 focuses it, arrows/Home/End rove, Escape returns focus + selection; `data-label`; `getSelection()`, `dismiss()`, `actions` | ✓ |
+| `<settings-panel>` | Non-modal site settings dialog from a gear trigger (or an authored `button[data-trigger]` / first child `<button>`): six exclusive `<details>` sections (Appearance: mode + theme; Accessibility: high-contrast/large-text/dyslexia; Layout: fluid + density, canvas backdrop + style/chrome/fixed header/page background, sticky navigation; Effects: motion/sounds; Environment: time-of-day/seasonal; System: version, SW status `role="status"`, clear cache/check update); `open()` (moves focus in; queued before render) / `close({ returnFocus })` / `toggle()`, reflected `open`; Escape + close button return focus, Tab out or outside click closes, no trap; Reset uses an in-panel confirm; `data` `{ a11yThemes, extensions, sticky }` (setter applies + persists, safe before render) → `settings-panel:data-changed`; window events `vb:a11y-themes-change` / `vb:extensions-change` (sent and received; detail applied) + `vb:theme-change`; storage `vb:settings:a11y`/`extensions`/`sticky`; sticky toggle owns only `<html data-sticky>` (sticky-manager owns the banner header); `data-label-*` for every string (trigger, dialog, title, close, sections, controls, sw-*, reset-*) | |
+| `<share-wc>` | Social share: native share button (fails over to copy link), platform buttons, or enhanced slotted `a[data-platform]` with `{url}`/`{title}`/`{text}` tokens; in `<selection-menu>` shares/copies the quote with a `#:~:text=` link; `data-label-*`; `url`/`shareTitle`/`text`, `share()` | ✓ |
+| `<short-cuts>` | Keyboard shortcut dialog listing `[data-command][data-shortcut]` and `[data-hotkey]` actions (or the `shortcuts` property); `hotkey` (default `shift+?`, `none` off — WCAG 2.1.4); `show()`/`close()`/`toggle()`; `data-label-*` | ✓ |
+| `<site-index>` | Enhances a hand-authored A–Z keyword index (or `src` JSON `[{ term, refs: [{ href, label, type? }] }]`, rendered as text, http(s)/relative hrefs only): filter (`filter` topic\|all) with a polite match count, jump strip from section ids (`letters` entries\|all\|none; Intl-sorted, `index-é` → É), counts, `limit`, `sort` alpha\|count; index nav = `nav[data-index]` or the direct-child `<nav>` of sections (any aria-label); controls are a `<search>` landmark; `data-label-*`. Nothing is derived from meta tags — the index is authored | |
+| `<site-map>` | `mode` nav-enhance (default: marks `current`, opens ancestor `<details>`, expand/collapse-all; `src` `{ children }`) \| ia-tree (`li[data-page-type data-template data-status]` → tree with badges, roving tabindex, Enter follows link, Space toggles, RTL-mirrored arrows; `title`, `collapsed`, `compact`; `data-view="visual"` SVG org chart with treeitems + `aria-activedescendant`, `data-orientation`, `data-detail` 0–4; `.pages`; events `site-map:ready`/`select`/`pages-changed`) | |
+| `<site-search>` | Pagefind-backed search in a native modal `<dialog>` (combobox + listbox + `role=status` count); `data-pagefind-path` (default `/pagefind/`), `data-base-url`; `data-label-*`; page-level Cmd/Ctrl+K opens the first visible instance | ✓ |
+| `<slide-accept>` | Slide-to-confirm (form-associated). A tap on the handle, or Enter / Space / End, also confirms (WCAG 2.5.7); the authored text is the default label | ✓ |
+| `<social-embed>` | Click-to-load social post embed: authored fallback link + real `<button data-embed-load>` ("Load {provider} {noun}") + host note; on load a sandboxed iframe built from the validated URL (https + exact host allowlist; no oEmbed HTML, no platform script) — `bluesky` (bsky.app/profile/{handle\|did}/post/{rkey} → embed.bsky.app; handle → DID via public.api.bsky.app), `mastodon` (any https instance /@user/{id} → /embed, tightest sandbox), `x` (→ platform.twitter.com/embed/Tweet.html), `instagram` (→ /p/{code}/embed/), `youtube` (→ `<youtube-player video-id title start>`, renders at once, thumbnail fetched up front); `url` (required), `provider`, `theme` light\|dark\|auto (X + Bluesky only; re-render on `vb:theme-change`), `activate` click\|visible\|eager, `data-title`, `data-label-load`/`loading`/`error`/`note`; `state` idle/loading/loaded/error/unsupported; focus moves into the frame after a button load, stays on the retry button on error; reconnect after load keeps the embed; static `SocialEmbed.register(name, provider)` (re-inits `unsupported` instances); exports `createEmbedFrame`, `loadScript` (failed loads retryable), `fetchOEmbed` | |
 | `<spacing-specimen>` | Token specimen — spacing scale demo | |
 | `<split-surface>` | Resizable split-pane | ✓ |
 | `<star-rating>` | Star rating input (works on `[data-rating]` too) | ✓ |
+| `<status-wc>` | State dot + label: `data-variant` live\|recording\|streaming\|error\|online\|running\|away\|paused\|busy\|offline\|stopped (or custom via CSS), `data-size`, `data-position` before\|after\|only, `data-pulse`; never colour-only — with no slot text a visually hidden default label per variant is rendered (`data-label-<variant>`, else `aria-label`, else English name) and follows `data-variant`; `role="status"`/`aria-live="polite"` unless author role/aria-live or `data-live="off"`; `status-wc:change` `{ variant, previousVariant }` only for post-upgrade changes; `.variant`; 1px darker ring in light mode (`--status-dot-ring`), forced colours system-colour dot | |
+| `<stepper-wc>` | Form-associated stepper for formatted units, currency, duration, bytes, token-snap scales and enums (plain numbers: `<input type="number" data-stepper>`). Inner `role="spinbutton"` is named from `<label for>` / wrapping label / host `aria-labelledby` / `aria-label`; `readonly` (aria-readonly, buttons disabled), `disabled` / disabled fieldset; `data-label-decrease` / `-increase`; `.value`, `.displayText`, `recomputeWidth()` | |
 | `<tab-set>` | Accessible tabs | ✓ |
 | `<text-reader>` | Text-to-speech reader (Web Speech API) | |
 | `<theme-picker>` | Theme switcher dropdown | ✓ |
@@ -1383,11 +1424,11 @@ JS API: `document.querySelector('toast-msg').show({ message, variant, duration }
 Toast variants: `data-variant="info|success|warning|error"` on `.toast` child.
 
 ### `<site-search>`
-Full-text search overlay with keyboard navigation.
+Full-text search in a native modal `<dialog>` (`showModal()`: top layer, page inert, Escape closes). Input is a `role="combobox"`; results are a listbox of `role="option"` links (titles as text, excerpts `<mark>`-only, same-origin http(s) URLs); a separate `role="status"` region announces the count.
 
-| Events |
-|--------|
-| `site-search:open`, `site-search:close` |
+| Attributes | Methods / properties | Events | States |
+|---|---|---|---|
+| `data-pagefind-path` (default `/pagefind/`), `data-base-url`, `data-label-*` (dialog, placeholder, input, results, searching, empty, count "{count} results", count-one, unavailable, error, untitled, navigate, select, close, powered), reflected `open` | `open()`, `close()`, `isOpen`, `value`, `results` | `site-search:open`, `site-search:close`, `site-search:change` `{ value, source }` | `:state(input-debounce-pending)` |
 
 ### `<command-palette>` / `<command-group>` / `<command-item>`
 Command palette (Cmd+K). Opens via `data-command` button or programmatic API.
@@ -1461,34 +1502,41 @@ Resizable split panes.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `direction` | `horizontal`, `vertical` | Split direction |
-| `position` | 0-100 | Initial split position % |
-| `min` | 0-100 | Minimum panel size % |
-| `max` | 0-100 | Maximum panel size % |
-| `collapsible` | (boolean) | Allow panel collapse |
-| `persist` | (string key) | Remember size in localStorage |
+| `direction` | `horizontal`, `vertical` | Split direction (observed) |
+| `position` | 0-100 | Default split position % (observed, not reflected; a persisted layout wins on load) |
+| `min` | 0-100 | Minimum panel size % (observed) |
+| `max` | 0-100 | Maximum panel size % (observed) |
+| `collapsible` | (boolean) | Enter or double-click on the divider collapses / expands the first panel (collapsed panel is `inert`; `aria-valuemin` becomes 0) |
+| `persist` | (string key) | Remember `{ position, collapsed }` in VBStore (`vb:layout:split:{key}`); wins over `position` |
 | `data-label-resize` | string | Divider accessible name (default "Resize panels") |
+| `data-label-collapsed` | string | Divider `aria-valuetext` while collapsed (default "Collapsed"; otherwise "{n}%") |
 
 | Events | Detail |
 |--------|--------|
-| `split-surface:resize` | `{ position }` |
-| `split-surface:collapse` | `{ collapsed }` |
+| `split-surface:resize` | `{ position, source }`, where source is `pointer` \| `keyboard` \| `api` \| `attribute` (not fired on load) |
+| `split-surface:collapse` | `{ collapsed, source }` |
 
-`aria-orientation` is the divider's own axis (`vertical` for side-by-side panels). Drag and arrow keys mirror in RTL. The `data-splitter` attribute utility shares the divider markup but fires `splitter:resize` (`{ position }`), not `split-surface:resize`; it also reads `data-label-resize` on the container.
+Properties `position` and `collapsed` (settable, and queued until the async init finishes), plus `reset()` (expand, return to the `position` attribute, clear persistence); `:state(divider-dragging)` and `:state(collapsed)`. While collapsed, any arrow / Home / End key expands the panel (no keyboard trap). `aria-orientation` is the divider's own axis (`vertical` for side-by-side panels). Drag and arrow keys mirror in RTL, and the grip stays centred. In forced colors the divider is `CanvasText` and turns `Highlight` on hover, drag and focus (this styling is shared with `data-splitter`). The `data-splitter` attribute utility shares the divider markup but fires `splitter:resize` (`{ position }`), not `split-surface:resize`; it also reads `data-label-resize` on the container.
 
 ### `<star-rating>`
-Interactive star rating (form-associated).
+Interactive star rating (form-associated). FormData gets exactly one `name=value` entry (internal radios carry `form="_star-rating-detached"` and a per-instance group name). All attributes are observed; `.value` set before connect is applied on build; `form.reset()` returns to the `value` attribute.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `value` | `0`–`5` | Current value |
+| `value` | number | Current value and reset default |
 | `max` | number | Maximum stars (default: 5) |
-| `readonly` | (boolean) | Read-only mode |
+| `readonly` | (boolean) | Read-only mode (`role="img"` summary; partial star fills from the inline start, RTL-aware) |
 | `allow-half` | (boolean) | Half-star increments |
 | `icon` | string | Custom icon name |
-| `label` | string | Accessible label |
+| `label` | string | Legend text (default "Rating") |
 | `name` | string | Form field name |
 | `required` | (boolean) | Required for form validation |
+| `data-label-one` / `data-label-other` | template | Radio labels per `Intl.PluralRules` category, `{n}` via `Intl.NumberFormat` (defaults "{n} star" / "{n} stars"; any CLDR category) |
+| `data-label-readonly` | template | Read-only summary (default "{label}: {value} out of {max}") |
+| `data-label-required` | string | Validation message (default "Please select a rating") |
+| `data-label-cleared` | string | Clear announcement (forwarded to the inner fieldset) |
+
+Property: `value` (number). Event: `rating:change` `{ value }` (from the inner fieldset, bubbles). Keys: arrows (native), Space on the checked star or Delete/Backspace clears.
 
 ### `<combo-box>`
 Form-associated combobox/autocomplete. Single-select by default; add `multiple` for multi-select tag mode.
@@ -1708,16 +1756,34 @@ Properties: `data` (get / batched set `{ lat, lng, zoom, marker, markerColor }`)
 | `geo-map:error` | `{ message }` |
 
 ### `<slide-accept>`
-Slide-to-confirm action.
+Slide-to-confirm action (form-associated).
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `label` | string | Track label and handle name (default: the authored text, else "Slide to confirm"; observed) |
+| `activated-label` | string | Label and `aria-valuetext` after confirming, announced via a polite status region (default "Confirmed!") |
+| `data-label-hint` | string | Screen-reader hint, wired with `aria-describedby` (default "Press Enter to confirm") |
+| `attention` | `shimmer`, `pulse` | Attention animation (off under reduced motion) |
+| `threshold` | 0-100 | Drag threshold (default 90) |
+| `name` / `value` | string | Submits `value` (default `on`) once confirmed |
+| `required` | (boolean) | `valueMissing` until confirmed |
+| `disabled` | (boolean) | Blocks interaction (a disabled fieldset does too) |
 
 | Events |
 |--------|
 | `slide-accept:accept`, `slide-accept:reset` |
 
-### `<short-cuts>`
-Keyboard shortcut overlay display.
+Confirm by dragging past the threshold, by tapping the handle, or with Enter / Space / End. The handle is `role="slider"` with `aria-valuetext`; after confirming it keeps focus with `aria-disabled="true"`. RTL mirrors the drag, the arrows and the chevron. `.activated` and `reset()`. Output state: `data-activated`, `data-dragging`.
 
-Reads `data-hotkey` and `data-shortcut` attributes from page elements.
+### `<short-cuts>`
+Keyboard shortcuts help dialog. Modal `<dialog>` named by its `<h2>` (`aria-labelledby`) with a visible close button; groups are `<section>` + `<h3>` + `<dl>` (action in `<dt>`, `<kbd class="shortcut-kbd">` in `<dd>` with platform glyphs `aria-hidden` and a visually hidden spoken name from `describeKey()`). Sources, rebuilt on every open: the component's own hotkey ("General"), then the `shortcuts` property if set, else the command registry (`[data-command][data-shortcut]`, grouped by `data-command-group`) and the hotkey-action registry (non-`kbd` `[data-hotkey]`, `data-hotkey-label`, `data-hotkey-group` default "Page Actions").
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `hotkey` | combo \| `none` | Toggle key (default `shift+?`); `none` unbinds it (WCAG 2.1.4 character-key shortcut). Observed |
+| `data-label-title` / `-general` / `-self` / `-close` | string | `Keyboard shortcuts` / `General` / `Show keyboard shortcuts` / `Close` |
+
+Methods: `show()`, `close()`, `toggle()`; getters `open`, `hotkey` (null when off). `shortcuts` get/set `{ [group]: [{ label, shortcut }] } | null` (replaces the registries; re-renders an open dialog). Event: `short-cuts:shortcuts-changed` `{ shortcuts, source }`. Forced colors: dialog border `CanvasText`.
 
 ### `<day-view>`
 Hour-grid schedule. Author `<ol>` > `<li>` > `<time datetime="HH:00">` + `<hour-view>`, or put `<calendar-event>` children directly inside to generate the grid.
@@ -1800,6 +1866,34 @@ Owns the private-note panel (`role="dialog"`: quote, textarea, Save/Cancel; note
 | `data-label-save` / `-cancel` | string | Action text |
 
 Method: `openFor(highlight, controller, opener?)`. Ctrl/Cmd+Enter saves; Escape anywhere in the panel cancels. On Save/Cancel/Escape/outside click focus returns to the opener if visible, else the highlight's `<mark>`, else the target. A static target gets `data-note-host` (→ `position: relative`) while the panel is open.
+
+### `<selection-menu>`
+Floating toolbar for text selections in its targets: `for="id"` (one target; marked `data-selection-menu="<menu id>"` only when the menu has an id, removed on disconnect) and/or every `[data-selection-menu="<id>"]` (MutationObserver, disconnected in teardown; id is `CSS.escape`d). setup() moves the authored children into a generated `<pop-over data-mode="manual" data-selection-menu-host role="toolbar" aria-orientation="horizontal" aria-keyshortcuts="Alt+F10">` — style that node (host is `display: contents`). Opens on pointerup, Shift keyup and a debounced (300 ms) keyboard `selectionchange`; placed above the selection (below for touch), viewport-clamped, repositioned on scroll/resize from the stored range and dismissed once it leaves the viewport. Keys: Alt+F10 focuses the first action (opening the toolbar if needed), ←/→ (mirrored in RTL) / Home / End rove (`tabindex` 0/-1; controls inside nested `[role=group]` etc. keep their own model), Escape (skipped when `defaultPrevented`) closes and, from inside, returns focus to the target (temporary `tabindex=-1`) and re-selects the range; outside pointerdown closes.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `for` | ID | Single target |
+| `id` | ID | Many-to-one: `[data-selection-menu="<id>"]` targets |
+| `data-label` | string | Toolbar name (`Text selection actions`) |
+
+Methods: `getSelection()` → `{ range, text, target } | null`, `dismiss()` (focus inside returns to the target). `actions` get/set `{ tag, attrs?, html? }[]` (or elements). Events: `selection-menu:select` `{ range, text, target }` (once per distinct selection), `selection-menu:dismiss`, `selection-menu:actions-changed` `{ actions, source }`. Children: `highlight-wc`, `share-wc`, `note-wc`, `comment-wc` (each detects `closest('selection-menu')`).
+
+### `<share-wc>`
+Three tiers (`data-tier-resolved` = `native|platforms|hidden|selection`): native single button (visible `label` is its name — no aria-label; a non-abort `navigator.share` failure fires `share-wc:error` then copies the link), platform buttons in `<nav aria-label>` (`button[data-platform]`, names "Share on {platform}"; copy named by its visible label), or enhanced slotted `a[data-platform]` / `button[data-platform="copy"]` whose `{url}`/`{title}`/`{text}` href templates are kept and re-substituted when properties change. Inside `<selection-menu>`: one icon button that shares (or copies, announced via a document-level `role=status`) `"quote" — <url>#:~:text=…` using the resolved URL, then dismisses the menu. URL: property → `url` → canonical → `location.href`; title: `shareTitle` → `title` → `og:title` → `document.title`; text: property → `text` → meta description → `og:description`.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `url` / `title` / `text` | string | Share data |
+| `platforms` | list \| `native-only` | x, twitter, facebook, linkedin, whatsapp, telegram, bluesky, mastodon, email, copy |
+| `tier` | `native` \| `platforms` | Force a tier |
+| `variant` | `icon` \| `label` \| `icon-label` | `icon` keeps labels visually hidden (still the name) |
+| `size` | `s` \| `m` \| `l` | Button size |
+| `label` | string | Native button text (`Share`) |
+| `color` | boolean | Brand colour on border + icon only (label stays `--color-text`) |
+| `mastodon-instance` | host | Default `mastodon.social` |
+| `data-label-share-page` / `-share-on` / `-copy` / `-copied` / `-link-copied` / `-share-selection` / `-selection-copied` | string | `Share this page` / `Share on {platform}` / `Copy link` / `Copied!` / `Link copied to clipboard` / `Share selection` / `Selection copied` |
+
+Properties `url`, `shareTitle` (not `title` — avoids shadowing `HTMLElement.title`), `text`: JS values win over attributes and survive reconnect. `share()` → `Promise<boolean>` (native sheet in the native tier, else copy link). Events: `share-wc:open` / `share-wc:success` `{ platform }`, `share-wc:error` `{ platform, error? }`.
 
 ### `<notification-wc>`
 | Attribute | Mode | Description |
@@ -2275,7 +2369,7 @@ These are NOT meta tags. They live on `<article>`, `<section>`, `<aside>`, or in
 |---|---|
 | `<page-info>` | All of Sections A, B, and the canonical-document hash/signature for live verification |
 | `<change-set>` | `data-author`, `data-provenance` on `<ins>`/`<del>` blocks |
-| `<site-index>` | `<meta name="keywords">`, `article:tag`, `<meta name="concept">` (via the site's index data; the component reads only its markup or `src`) |
+| `<site-index>` | Nothing automatically — the index is hand-authored markup or `src` JSON; a site may generate that JSON from `<meta name="keywords">`, `article:tag` or `<meta name="concept">`, but the component does not read meta tags |
 | `<time-index>` | `<meta name="last-modified">`, `itemprop="version"`, `vb:version-url` |
 | Trust / topic lens pages | `vb:provenance`, `vb:review`, `vb:status`, `<meta name="concept">` aggregated across the site |
 | Analytics subsystem | All `vb:*` tags via `document.querySelectorAll('meta[name^="vb:"]')` |
