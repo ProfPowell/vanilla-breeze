@@ -113,6 +113,7 @@ export const CORE_GUARDS = /** @type {const} */ ([
   { selector: '[data-paged]', load: () => import('../utils/data-paged-init.js') },
   { selector: '[data-sortable], [data-sort-target]', load: () => import('../utils/data-sortable-init.js') },
   { selector: '[data-toggle]', load: () => import('../utils/data-toggle-init.js') },
+  { selector: 'table[data-responsive="card"]', load: () => import('../native-elements/table/card-init.js') },
 ]);
 
 /**

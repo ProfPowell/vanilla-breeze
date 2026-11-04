@@ -14,7 +14,7 @@ crumbLabel: Native Elements
   <!-- Description Section -->
   <section>
     <h2 id="description">Description</h2>
-    <p>The <code>&lt;time&gt;</code> element represents a specific moment or range of time. It encodes dates and times in a machine-readable format via the <code>datetime</code> attribute while displaying human-friendly text. This enables browsers, search engines, and assistive technologies to parse and utilize temporal data.</p>
+    <p>The <code>&lt;time&gt;</code> element represents a specific moment or range of time. It encodes dates and times in a machine-readable format via the <code>datetime</code> attribute while displaying human-friendly text. Search engines, browser features and scripts (including VB's formatters below) read <code>datetime</code>; people, including screen reader users, get the visible text.</p>
   </section>
 
   <!-- When to Use Section -->
@@ -48,12 +48,52 @@ crumbLabel: Native Elements
 
   <!-- Relative Variant Section -->
   <section>
-    <h2 id="relative">Relative Variant</h2>
-    <p>Muted, smaller text for relative time displays. Typically updated by JavaScript to show how long ago something occurred.</p>
+    <h2 id="relative">Relative Time</h2>
+    <p>The <code>relative</code> class is styling only: muted, smaller text. It does not change the text. To keep "3 days ago" text current, pair it with one of VB's two relative-time scripts. Write an absolute date as the element's text, so readers without JavaScript still get a correct date.</p>
 
     <browser-window src="/docs/snippets/demos/time-relative.html" url="https://vanilla-breeze.com/time/relative" title="Relative time display" shadow></browser-window>
-    <code-block language="html" label="Relative time display" data-escape><p>Posted <time class="relative" datetime="2026-02-23">2 days ago</time></p>
-<p>Last edited <time class="relative" datetime="2026-02-25">just now</time></p></code-block>
+    <code-block language="html" label="Relative time display" data-escape><p>Posted <time class="relative" datetime="2026-02-23T09:00:00Z" data-relative>February 23, 2026</time></p>
+<p>Due <time class="relative" datetime="2027-01-15T12:00:00Z" data-format-date="relative">January 15, 2027</time></p></code-block>
+
+    <h3 id="data-relative">data-relative</h3>
+    <p><code>time[data-relative]</code> is the lightweight past-only formatter used by <code>&lt;activity-feed&gt;</code>, <code>&lt;comment-thread&gt;</code> and <code>&lt;time-index&gt;</code>. It is part of the main bundle and needs no setup. It rewrites the text to "just now", "5 minutes ago", "3 days ago" and so on, and refreshes every 60 seconds. Future dates are left as written. Text is English unless the nearest <code>[lang]</code> is another language, in which case it uses <code>Intl.RelativeTimeFormat</code>.</p>
+
+    <h3 id="choosing-relative">Choosing a relative-time mechanism</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Mechanism</th>
+          <th scope="col">What it does</th>
+          <th scope="col">Future dates</th>
+          <th scope="col">Refresh</th>
+          <th scope="col">Locale</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>time.relative</code></td>
+          <td>Styling only (muted, small). Text is whatever you write.</td>
+          <td>n/a</td>
+          <td>None</td>
+          <td>n/a</td>
+        </tr>
+        <tr>
+          <td><code>time[data-relative]</code></td>
+          <td>Rewrites text to "3 days ago"</td>
+          <td>Ignored (text kept)</td>
+          <td>Every 60s</td>
+          <td>English; <code>Intl</code> for a non-English nearest <code>[lang]</code></td>
+        </tr>
+        <tr>
+          <td><code>time[data-format-date="relative"]</code></td>
+          <td>Rewrites text with <code>Intl.RelativeTimeFormat</code>; original text moves to <code>title</code></td>
+          <td>"in 3 days"</td>
+          <td>Adaptive: 60s, 5 min, then hourly</td>
+          <td><code>data-locale</code>, nearest <code>[lang]</code>, <code>&lt;html lang&gt;</code>, browser</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Use <code>data-format-date="relative"</code> for new content: it handles future dates and every locale. <code>data-relative</code> exists for the components that render it.</p>
   </section>
 
   <!-- Datetime Variant Section -->
@@ -88,7 +128,9 @@ crumbLabel: Native Elements
   <!-- Auto-Formatting Section -->
   <section>
     <h2 id="auto-formatting">Auto-Formatting (data-format-date)</h2>
-    <p>VB provides locale-aware date formatting via the <code>data-format-date</code> attribute. Like <a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a>'s <code>data-format-number</code>, the visible text serves as a no-JS fallback and is replaced with formatted output on init.</p>
+    <p>VB provides locale-aware date formatting via the <a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a> attribute. Like <a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a>'s <code>data-format-number</code>, the visible text serves as a no-JS fallback and is replaced with formatted output on init. The original text moves to the element's <code>title</code>, so it stays available on hover.</p>
+
+    <browser-window src="/docs/examples/demos/format-date-basic.html" url="https://vanilla-breeze.com/time/format-date" title="data-format-date" shadow></browser-window>
 
     <table class="props-table">
       <thead>
@@ -99,11 +141,11 @@ crumbLabel: Native Elements
         <tr><td><code>data-format-date="short"</code></td><td>2/9/26</td></tr>
         <tr><td><code>data-format-date="long"</code></td><td>February 9, 2026</td></tr>
         <tr><td><code>data-format-date="full"</code></td><td>Monday, February 9, 2026</td></tr>
-        <tr><td><code>data-format-date="relative"</code></td><td>2 days ago</td></tr>
+        <tr><td><code>data-format-date="relative"</code></td><td>"2 days ago", "in 3 hours"</td></tr>
       </tbody>
     </table>
 
-    <p>Add <code>data-format-time</code> for time display (<code>short</code>, <code>medium</code>, <code>long</code>, <code>full</code>). Override locale per-element with <code>data-locale</code>. See the <a href="/docs/i18n/">i18n guide</a> for locale resolution.</p>
+    <p>Date-only values (<code>2026</code>, <code>2026-02</code>, <code>2026-02-09</code>) are formatted in UTC, so the day never shifts with the reader's time zone, and keep their precision: a year shows only the year, a month shows month and year. Add <code>data-format-time</code> for time display (<code>short</code>, <code>medium</code>, <code>long</code>, <code>full</code>) on values that have a time. The locale comes from <code>data-locale</code>, then the nearest <code>[lang]</code> ancestor, then <code>&lt;html lang&gt;</code>. See the <a href="/docs/i18n/">i18n guide</a> for locale resolution.</p>
   </section>
 
   <!-- Contextual Usage Section -->
@@ -198,7 +240,7 @@ crumbLabel: Native Elements
         <tr>
           <td>Relative</td>
           <td><code>time.relative</code></td>
-          <td>Muted "2 days ago" displays</td>
+          <td>Muted styling for relative displays (pair with <code>data-relative</code> or <code>data-format-date="relative"</code>)</td>
         </tr>
         <tr>
           <td>Datetime</td>
@@ -251,10 +293,9 @@ time[data-badge] {
   <section>
     <h2 id="accessibility">Accessibility</h2>
     <ul>
-      <li><strong>Screen readers</strong> read the visible text content (the human-readable part)</li>
-      <li><strong>Machine parsing</strong> — the <code>datetime</code> attribute enables assistive technologies to parse dates accurately</li>
+      <li><strong>Screen readers</strong> read the visible text content. Mainstream screen readers do not expose the <code>datetime</code> value, so the visible text must be unambiguous on its own: prefer "9 February 2026" over "2/9/26".</li>
       <li><strong>Timezone clarity</strong> — include timezone information when relevant to avoid ambiguity</li>
-      <li><strong>Relative times</strong> — update dynamically via JavaScript or provide the actual date as fallback</li>
+      <li><strong>Relative times</strong> — keep them current with <code>data-relative</code> or <code>data-format-date="relative"</code>, and write the actual date as the fallback text</li>
     </ul>
   </section>
 
@@ -265,6 +306,7 @@ time[data-badge] {
       <li><a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a> &mdash; Machine-readable values that aren't dates (has <code>data-format-number</code> counterpart)</li>
       <li><a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a> / <a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> &mdash; Use <code>datetime</code> attribute for edit timestamps</li>
       <li><a href="/docs/elements/native/small/"><code>&lt;small&gt;</code></a> &mdash; Often paired with time for date caveats</li>
+      <li><a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a> &mdash; Locale-aware absolute and relative formatting</li>
       <li><a href="/docs/i18n/">Internationalization</a> &mdash; Locale resolution for date formatting</li>
     </ul>
   </section>

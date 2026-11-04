@@ -12,12 +12,24 @@ crumbLabel: Custom Elements
 
 <section>
     <h2>Overview</h2>
-    <p>The <code>text-divider</code> element creates a horizontal line with centered text. Common uses include separating form sections ("or"), chapter markers, and content transitions.</p>
+    <p>The <code>text-divider</code> element creates a horizontal line with centered text. Use it for short <em>connective</em> labels between groups of content — the "or" between sign-in options, "continue reading", a date stamp in a feed.</p>
+    <p>It is a styled layout element with no semantics: assistive technology reads its text as plain text, with no heading or separator role. When the label names a section ("Chapter 1", "Pricing"), use a real heading instead. When there is no label, use <a href="/docs/elements/native/hr/"><code>&lt;hr&gt;</code></a>.</p>
   </section>
 
   <section>
     <h2>Attributes</h2>
-    <p>This element has no custom attributes. It's styled purely through CSS.</p>
+    <p>This element has no custom attributes and no JavaScript. It is styled purely through CSS.</p>
+    <table>
+      <thead>
+        <tr><th scope="col">Hook</th><th scope="col">Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--color-border</code></td><td>Line colour (drawn as a <code>border-block-start</code>, so it stays visible in forced colours)</td></tr>
+        <tr><td><code>--border-width-thin</code></td><td>Line thickness</td></tr>
+        <tr><td><code>--color-text-muted</code></td><td>Label colour</td></tr>
+        <tr><td><code>--size-m</code></td><td>Gap between the label and each line (dropped to 0 when the element is empty)</td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
@@ -64,29 +76,33 @@ crumbLabel: Custom Elements
   </section>
 
   <section>
-    <h2>Content Sections</h2>
-    <p>Use to mark transitions between content sections.</p>
+    <h2>Section Breaks</h2>
+    <p>A divider is not a heading. If the text names the section that follows, make it a heading so it appears in the document outline and in screen-reader heading navigation. Use a plain divider (or <code>&lt;hr&gt;</code>) only for the visual break between sections.</p>
 
     <browser-window
       src="/docs/snippets/demos/text-divider-sections.html"
       url="https://vanilla-breeze.com/text-divider/sections"
-      title="Text divider between content sections"
+      title="Section break followed by a real heading"
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Section divider" data-escape><article>
-  <h2>Getting Started</h2>
+    <code-block language="html" show-lines label="Section break with a real heading" data-escape><article>
+  <h1>Getting Started</h1>
   <p>Introduction content...</p>
 
-  <text-divider>Chapter 1</text-divider>
+  <hr />
+  <h2>Chapter 1: Installation</h2>
 
   <p>Chapter content...</p>
 </article></code-block>
+
+    <code-block language="html" show-lines label="Avoid: a section label hidden in a divider" data-escape><!-- Read as plain text, not as a heading -->
+<text-divider>Chapter 1</text-divider></code-block>
   </section>
 
   <section>
     <h2>Variations</h2>
-    <p>The text content can be anything meaningful for the context.</p>
+    <p>Keep the label short and meaningful. Decorative ornaments (asterisms, fleurons) must be hidden from screen readers, otherwise they are announced as "star star star". An empty divider renders one continuous line.</p>
 
     <browser-window
       src="/docs/snippets/demos/text-divider-variations.html"
@@ -94,14 +110,26 @@ crumbLabel: Custom Elements
       title="Text divider variations"
       shadow>
     </browser-window>
+
+    <code-block language="html" show-lines label="Variations" data-escape><text-divider>or</text-divider>
+<text-divider>continue reading</text-divider>
+<text-divider><time datetime="2026-03-01">March 2026</time></text-divider>
+
+<!-- Ornament: hide the glyphs from assistive technology -->
+<text-divider><span aria-hidden="true">* * *</span></text-divider>
+
+<!-- No label: a single line (prefer <hr> when the break is thematic) -->
+<text-divider></text-divider></code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The divider is purely decorative - screen readers will read the text content naturally</li>
-      <li>Avoid using the divider for critical navigation or structural purposes</li>
-      <li>Keep text concise and meaningful</li>
+      <li>The element has no role. Its lines are CSS pseudo-elements and are not exposed; its text is read as ordinary inline text.</li>
+      <li>Do not use it as a heading. Section and chapter labels belong in <code>&lt;h2&gt;</code>–<code>&lt;h6&gt;</code> so they appear in heading navigation.</li>
+      <li>Do not add <code>role="separator"</code>: separator children are presentational, so the label would be lost. For a thematic break without a label, use <code>&lt;hr&gt;</code>.</li>
+      <li>Wrap decorative ornaments in <code>&lt;span aria-hidden="true"&gt;</code>.</li>
+      <li>Lines are drawn with borders, so they stay visible in Windows High Contrast / forced-colours mode.</li>
     </ul>
   </section>
 

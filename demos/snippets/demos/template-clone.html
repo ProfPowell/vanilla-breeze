@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>template: clone and fill</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+  </style>
+</head>
+<body>
+  <h1>Cloning a template</h1>
+  <layout-stack data-layout-gap="m">
+    <form id="add-task" data-layout="cluster">
+      <label for="task-name">Task</label>
+      <input type="text" id="task-name" name="task" required value="Review pull request" />
+      <button type="submit">Add task</button>
+    </form>
+
+    <ul id="tasks" aria-live="polite">
+      <li>Write release notes <small>added at load</small></li>
+    </ul>
+
+    <!-- Inert: parsed, not rendered, not in the accessibility tree -->
+    <template id="task-row">
+      <li><span class="task-name"></span> <small>added just now</small></li>
+    </template>
+  </layout-stack>
+
+  <script type="module">
+    const form = document.getElementById('add-task');
+    const list = document.getElementById('tasks');
+    const template = /** @type {HTMLTemplateElement} */ (document.getElementById('task-row'));
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const name = new FormData(form).get('task')?.toString().trim();
+      if (!name) return;
+      // content is a DocumentFragment: clone it, fill it, then insert it.
+      const row = template.content.cloneNode(true);
+      row.querySelector('.task-name').textContent = name;
+      list.append(row);
+      form.reset();
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -98,8 +98,10 @@
 
     /* ---- 1.3 Page break control ---- */
 
-    /* Prevent breaking inside these */
-    table, blockquote, pre, code, figure, li, hr, ul, ol, tr,
+    /* Prevent breaking inside these. Not table: keeping a whole table
+       together pushes medium tables to the next page and leaves large
+       gaps; rows (tr) stay unbroken and thead/tfoot repeat instead. */
+    blockquote, pre, code, figure, li, hr, ul, ol, tr,
     img, picture, video, iframe, embed, object, details, fieldset {
       break-inside: avoid;
       page-break-inside: avoid;
@@ -228,6 +230,31 @@
       transition: none;
     }
 
+    /* tab-set — print every panel in source order, each under its tab
+       label as a heading (the component only hides closed panels on
+       screen). */
+    tab-set {
+      display: block;
+      border: none;
+    }
+
+    tab-set > details > summary {
+      display: block;
+      padding: 0;
+      margin-block: var(--size-m) var(--size-xs);
+      border: none;
+      color: inherit;
+      font-size: var(--font-size-l);
+      font-weight: 700;
+      transition: none;
+      break-after: avoid;
+    }
+
+    tab-set > details > :not(summary) {
+      padding: 0;
+      border: none;
+    }
+
     /* Hide toggle indicators */
     summary::marker {
       content: "";
@@ -247,13 +274,16 @@
     }
 
     /* Table adjustments */
-    table.striped {
+    /* Keep stripes and row-state tints (selected / highlighted) on paper */
+    table.striped,
+    tr:is([data-selected], [data-state-selected], [data-highlight]) {
       print-color-adjust: exact;
       -webkit-print-color-adjust: exact;
     }
 
     table[data-sticky] thead th,
-    table[data-sticky] :is(td, th):first-child {
+    table[data-sticky] :is(td, th):first-child,
+    table[data-sticky-column] :is(td, th) {
       position: static;
     }
 
@@ -263,9 +293,10 @@
       position: static !important;
     }
 
-    table[data-responsive="scroll"] {
-      display: table;
+    /* Scroll regions print every column, uncapped */
+    [data-table-scroll] {
       overflow: visible;
+      max-block-size: none;
     }
 
     /* Form elements */

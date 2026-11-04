@@ -30,36 +30,24 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>How It Works</h2>
-    <p>Add <code>data-grow</code> to any <code>&lt;textarea&gt;</code>. The init script detects browser support and applies the appropriate strategy:</p>
+    <p>Add <code>data-grow</code> to any <code>&lt;textarea&gt;</code>. The CSS does the work where it can; the init script passes <code>rows</code> and <code>data-max-rows</code> to it as <code>--grow-rows</code> and <code>--grow-max-rows</code>, and runs a measuring fallback where it cannot.</p>
 
     <h3>Modern Browsers (CSS field-sizing)</h3>
     <ol>
-      <li>Sets <code>field-sizing: content</code> on the textarea</li>
-      <li>If <code>data-max-rows</code> is set, applies <code>max-block-size</code> using the <code>lh</code> unit (line height)</li>
-      <li>When content exceeds <code>max-block-size</code>, the textarea stops growing and scrolls</li>
+      <li>CSS sets <code>field-sizing: content</code> and <code>resize: none</code></li>
+      <li>The minimum height is <code>rows</code> lines plus padding and border. <code>field-sizing</code> ignores <code>rows</code>, and VB's usual <code>8rem</code> textarea minimum does not apply to <code>data-grow</code></li>
+      <li>With <code>data-max-rows</code>, <code>max-block-size</code> is that many lines plus padding and border. Past it the textarea stops growing and scrolls (<code>overflow-y: auto</code>)</li>
     </ol>
 
     <h3>Fallback (JavaScript scrollHeight)</h3>
     <ol>
-      <li>Sets <code>resize: none</code> and <code>overflow: hidden</code> on the textarea</li>
-      <li>On each <code>input</code> event, resets height to <code>auto</code> then sets it to <code>scrollHeight</code></li>
-      <li>If <code>data-max-rows</code> is set, calculates max height from line height and caps growth</li>
+      <li>Marks the textarea <code>data-grow-init="fallback"</code>; only this path hides overflow</li>
+      <li>On each <code>input</code> and <code>change</code> event, and after a form reset, resets height to <code>auto</code> then sets it to <code>scrollHeight</code> plus the border</li>
+      <li>If <code>data-max-rows</code> is set, caps growth at that many lines plus padding and border</li>
       <li>Switches to <code>overflow-y: auto</code> when content exceeds the max height</li>
     </ol>
 
-    <p>In both cases, <code>data-grow-init</code> is set to prevent double-binding.</p>
-
-    <code-block language="css" show-lines label="Modern vs. fallback approach" data-escape>/* Modern approach — single CSS property */
-textarea {
-  field-sizing: content;
-  max-block-size: 10lh; /* from data-max-rows */
-}
-
-/* Fallback approach — JavaScript measurement */
-function resize(textarea) {
-  textarea.style.height = 'auto';
-  textarea.style.height = textarea.scrollHeight + 'px';
-}</code-block>
+    <p><code>data-grow-init</code> is set in both cases to prevent double-binding (empty on the CSS path, <code>"fallback"</code> on the JS path).</p>
   </section>
 
   <section>
@@ -86,12 +74,12 @@ function resize(textarea) {
         <tr>
           <td><code>rows</code></td>
           <td>number</td>
-          <td>Standard HTML attribute. Sets the minimum number of visible rows. The textarea never shrinks below this.</td>
+          <td>Standard HTML attribute. Sets the minimum number of visible rows (default 2). The textarea never shrinks below this.</td>
         </tr>
         <tr>
           <td><code>data-grow-init</code></td>
           <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+          <td>Set automatically to prevent double-binding: empty on the CSS path, <code>"fallback"</code> on the JS path. Do not set manually.</td>
         </tr>
       </tbody>
     </table>
@@ -191,6 +179,9 @@ function resize(textarea) {
   <section>
     <h2>Events</h2>
     <p>No custom events are dispatched. The textarea fires standard <code>input</code> and <code>change</code> events. You can observe height changes by reading <code>scrollHeight</code> or <code>style.height</code> on the textarea.</p>
+    <p>Setting <code>.value</code> from script fires no event. With <code>field-sizing</code> the height follows anyway; for the JS fallback (and for a <code>data-count</code> counter on the same textarea) dispatch an <code>input</code> event afterwards. Form resets are handled automatically.</p>
+    <code-block language="javascript" show-lines label="Refresh after a programmatic value" data-escape>textarea.value = savedDraft;
+textarea.dispatchEvent(new Event('input', { bubbles: true }));</code-block>
 
     <code-block language="javascript" show-lines label="Observing height changes" data-escape>const textarea = document.querySelector('[data-grow]');
 
@@ -203,30 +194,39 @@ textarea.addEventListener('input', () => {
 
   <section>
     <h2>Styling</h2>
-    <p>All styles are gated on <code>[data-grow-init]</code>. Without JavaScript, the textarea renders at its normal <code>rows</code> height with the default resize handle.</p>
+    <p>The sizing rules key on <code>[data-grow]</code> itself, so a supporting browser grows the textarea even before the script runs. Without JavaScript the minimum falls back to two rows, and without <code>field-sizing</code> support the textarea keeps its <code>rows</code> height and its resize handle.</p>
 
-    <code-block language="css" show-lines label="Auto-grow CSS" data-escape>/* Modern browsers: CSS field-sizing */
-textarea[data-grow][data-grow-init] {
-  field-sizing: content;
+    <code-block language="css" show-lines label="Auto-grow CSS" data-escape>/* native-elements/input/styles.css: start at rows, not 8rem */
+textarea[data-grow] {
+  min-block-size: calc(
+    var(--grow-rows, 2) * 1lh
+    + 2 * var(--input-padding-inline, 0.5rem)
+    + 2 * var(--border-width-thin, 1px)
+  );
 }
 
-/* Max height via max-rows */
-textarea[data-grow][data-grow-init][data-max-rows] {
-  max-block-size: calc(var(--max-rows) * 1lh);
-  overflow-y: auto;
+/* web-components/_shared/form-enhancements.css */
+@supports (field-sizing: content) {
+  textarea[data-grow] {
+    field-sizing: content;
+    resize: none;
+  }
+
+  textarea[data-grow][data-max-rows] {
+    max-block-size: calc(
+      var(--grow-max-rows, 999) * 1lh
+      + 2 * var(--input-padding-inline, 0.5rem)
+      + 2 * var(--border-width-thin, 1px)
+    );
+    overflow-y: auto;
+  }
 }
 
-/* Fallback browsers: JS-driven sizing */
-textarea[data-grow][data-grow-init].grow-fallback {
-  resize: none;
+/* JS fallback only: hide the scrollbar while measuring */
+textarea[data-grow][data-grow-init="fallback"] {
   overflow: hidden;
-}
-
-textarea[data-grow][data-grow-init].grow-fallback.grow-scrollable {
-  overflow-y: auto;
+  resize: none;
 }</code-block>
-
-    <p>The modern CSS path uses <code>field-sizing: content</code> and <code>lh</code> units for clean, declarative sizing. The fallback path uses JavaScript-driven inline styles.</p>
   </section>
 
   <section>
@@ -250,6 +250,6 @@ document.querySelector('form-field').appendChild(textarea);
       <li>The native <code>&lt;textarea&gt;</code> element is preserved, maintaining full screen reader and keyboard support</li>
       <li><code>rows</code> sets a visible minimum, ensuring the textarea is never unexpectedly small</li>
       <li>When <code>data-max-rows</code> caps growth, <code>overflow-y: auto</code> enables scrolling with standard scroll accessibility</li>
-      <li>Without JavaScript, the textarea renders at its <code>rows</code> height with the native resize handle (progressive enhancement)</li>
+      <li>Without JavaScript, the textarea still grows where <code>field-sizing</code> is supported; elsewhere it renders at its <code>rows</code> height with the native resize handle</li>
     </ul>
   </section>

@@ -146,6 +146,18 @@ textarea {
   resize: vertical;
 }
 
+/* data-grow: start at the authored rows (field-sizing: content ignores the
+   rows attribute, and the 8rem floor above would override it). The grow
+   init writes --grow-rows from rows (default 2); padding and border are
+   added because textareas are border-box. */
+textarea[data-grow] {
+  min-block-size: calc(
+    var(--grow-rows, 2) * 1lh
+    + 2 * var(--input-padding-inline, 0.5rem)
+    + 2 * var(--border-width-thin, 1px)
+  );
+}
+
 label {
   display: block;
   font-weight: 500;

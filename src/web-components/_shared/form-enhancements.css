@@ -21,19 +21,46 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* State colours use the *-text tokens: they are tuned for >= 4.5:1 text
+   contrast in both light and dark mode (the raw --color-warning is ~2.8:1
+   on white). Themes retune the tokens, not this rule. */
 .textarea-counter[data-state="warning"] {
-  color: oklch(75% 0.18 75);
+  color: var(--color-warning-text);
 }
 
 .textarea-counter[data-state="error"] {
-  color: var(--color-error, oklch(55% 0.2 25));
+  color: var(--color-error-text);
+  font-weight: 600;
 }
 
 /* --------------------------------------------------------------------------
    data-grow: Auto-expanding textarea
+   The min-size override (rows) lives with the textarea base rule in
+   native-elements/input/styles.css. Where field-sizing is supported the
+   textarea sizes itself and, past data-max-rows, scrolls normally (the JS
+   writes --grow-max-rows). Only the JS fallback path hides overflow while
+   it measures — it marks itself data-grow-init="fallback".
    -------------------------------------------------------------------------- */
-textarea[data-grow][data-grow-init] {
+@supports (field-sizing: content) {
+  textarea[data-grow] {
+    field-sizing: content;
+    resize: none;
+  }
+
+  textarea[data-grow][data-max-rows] {
+    /* Rows plus padding and border (border-box), so 8 rows shows 8 lines. */
+    max-block-size: calc(
+      var(--grow-max-rows, 999) * 1lh
+      + 2 * var(--input-padding-inline, 0.5rem)
+      + 2 * var(--border-width-thin, 1px)
+    );
+    overflow-y: auto;
+  }
+}
+
+textarea[data-grow][data-grow-init="fallback"] {
   overflow: hidden;
+  resize: none;
 }
 
 /* --------------------------------------------------------------------------

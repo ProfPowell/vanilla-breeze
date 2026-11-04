@@ -146,6 +146,15 @@ class VideoPlayerElement extends VBElement {
     }
     this.listen(document, 'fullscreenchange', this.#onFullscreenChange)
 
+    // Captions: an authored [captions] turns the first caption track on; a
+    // `default` track the UA shows on its own is reflected back. The UA
+    // selects default tracks asynchronously, so follow textTracks' change
+    // event rather than reading the mode once.
+    const captionTrack = this.#getCaptionTrack()
+    if (captionTrack && this.hasAttribute('captions')) captionTrack.mode = 'showing'
+    this.#syncCaptionsState()
+    this.listen(this.#video.textTracks, 'change', () => this.#syncCaptionsState())
+
     this.setAttribute('state', 'idle')
     return true;
   }
@@ -1067,6 +1076,17 @@ class VideoPlayerElement extends VBElement {
   }
 
   // ─── Captions ──────────────────────────────────────────────────────────────
+
+  /** Reflect the caption track's mode into [captions] + aria-pressed. */
+  #syncCaptionsState() {
+    const track = this.#getCaptionTrack()
+    // No track yet (a dynamic data-captions track may follow): keep the
+    // authored [captions] so #updateCaptionTrack can honour it.
+    if (!track || !this.#captionsBtn) return
+    const active = track.mode === 'showing'
+    this.toggleAttribute('captions', active)
+    this.#captionsBtn.setAttribute('aria-pressed', String(active))
+  }
 
   #getCaptionTrack() {
     const tracks = this.#video.textTracks

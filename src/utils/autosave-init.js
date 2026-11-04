@@ -6,6 +6,7 @@
  *
  * @attr {string} data-autosave - Storage key. When empty, derived from form.method + form.action.
  * @attr {string} data-autosave-retain - Space-separated allowlist of field names to persist.
+ * @attr {string} data-label-restored - Toast text shown after a draft is restored (default "Draft restored").
  *
  * @example
  *   <!-- Explicit key -->
@@ -150,16 +151,24 @@ function enhanceForm(form) {
   }
 
   /**
-   * Show a "Draft restored" notification via toast-msg if available
+   * Announce "Draft restored" through the page's toast stack (the first
+   * <toast-msg>, created at the end of <body> when there is none). The
+   * text comes from the form's data-label-restored (default "Draft restored").
    */
   function notifyRestored() {
-    if (customElements.get('toast-msg')) {
-      const toast = document.createElement('toast-msg');
-      toast.setAttribute('variant', 'info');
-      toast.setAttribute('duration', '3000');
-      toast.textContent = 'Draft restored';
-      document.body.appendChild(toast);
+    if (!customElements.get('toast-msg')) return;
+    let host = /** @type {any} */ (document.querySelector('toast-msg'));
+    if (!host) {
+      host = document.createElement('toast-msg');
+      document.body.appendChild(host);
     }
+    if (typeof host.show !== 'function') return;
+    host.show({
+      message: form.dataset.labelRestored || 'Draft restored',
+      variant: 'info',
+      duration: 3000,
+      source: 'autosave',
+    });
   }
 
   // Restore on init (async — wires listeners immediately, restores when ready)

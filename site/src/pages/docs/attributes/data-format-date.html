@@ -33,7 +33,7 @@ crumbLabel: Data Attributes
       <li>For absolute styles: formats using <code>Intl.DateTimeFormat</code> with the specified <code>dateStyle</code></li>
       <li>For <code>"relative"</code>: formats using <code>Intl.RelativeTimeFormat</code> and starts adaptive auto-refresh</li>
     </ol>
-    <p>The formatting uses the user's browser locale by default.</p>
+    <p>The locale is resolved in this order: <code>data-locale</code> on the element, the nearest ancestor with a <code>lang</code> attribute (so a <code>&lt;section lang="de"&gt;</code> formats its dates in German), <code>&lt;html lang&gt;</code>, then the browser language.</p>
   </section>
 
   <section>
@@ -65,7 +65,7 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>data-locale</code></td>
           <td>string</td>
-          <td>Optional locale override (e.g., <code>"de-DE"</code>). Defaults to browser locale.</td>
+          <td>Optional locale override (e.g., <code>"de-DE"</code>). Defaults to the nearest <code>[lang]</code>, then <code>&lt;html lang&gt;</code>, then the browser locale.</td>
         </tr>
         <tr>
           <td><code>title</code></td>
@@ -75,7 +75,7 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>data-format-date-init</code></td>
           <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+          <td>Set automatically to prevent double-binding. Do not set manually. Removed when a relative element leaves the DOM, so a reinserted element restarts its refresh timer.</td>
         </tr>
       </tbody>
     </table>
@@ -90,7 +90,7 @@ crumbLabel: Data Attributes
         <p>Default (medium): <time datetime="2026-02-09" data-format-date>Feb 9, 2026</time></p>
         <p>Short: <time datetime="2026-02-09" data-format-date="short">2/9/26</time></p>
         <p>Long: <time datetime="2026-02-09" data-format-date="long">February 9, 2026</time></p>
-        <p>Full: <time datetime="2026-02-09" data-format-date="full">Sunday, February 9, 2026</time></p>
+        <p>Full: <time datetime="2026-02-09" data-format-date="full">Monday, February 9, 2026</time></p>
       </layout-stack>
     </div>
 
@@ -104,7 +104,15 @@ crumbLabel: Data Attributes
 <time datetime="2026-02-09" data-format-date="long">February 9, 2026</time>
 
 <!-- Full -->
-<time datetime="2026-02-09" data-format-date="full">Sunday, February 9, 2026</time></code-block>
+<time datetime="2026-02-09" data-format-date="full">Monday, February 9, 2026</time></code-block>
+
+    <h3>Date-Only Values</h3>
+    <p>A <code>datetime</code> with no time part names a calendar date, not an instant. VB formats <code>YYYY</code>, <code>YYYY-MM</code> and <code>YYYY-MM-DD</code> values in UTC, so <code>2026-02-09</code> shows 9 February in every time zone (a plain <code>new Date('2026-02-09')</code> would show 8 February west of UTC). The precision is kept: a year shows only the year, a month shows month and year, and <code>data-format-time</code> is ignored.</p>
+
+    <code-block language="html" show-lines label="Date-only precision" data-escape><time datetime="2026" data-format-date>2026</time>          <!-- 2026 -->
+<time datetime="2026-02" data-format-date="long">Feb 2026</time>  <!-- February 2026 -->
+<time datetime="2026-02-09" data-format-date>Feb 9, 2026</time> <!-- Feb 9, 2026 --></code-block>
+    <p>Values with a time (<code>2026-02-09T14:30</code>) are instants and format in the viewer's time zone. Add an offset or <code>Z</code> when the time belongs to a specific zone.</p>
 
     <h3>With Time</h3>
     <p>Add <code>data-format-time</code> to include the time component:</p>
@@ -208,17 +216,17 @@ crumbLabel: Data Attributes
 
     <div class="example">
       <article>
-        <h3 style="margin: 0;">Getting Started with Vanilla Breeze</h3>
-        <p style="color: var(--color-text-muted); margin-block-start: var(--size-xs);">
+        <h3>Getting Started with Vanilla Breeze</h3>
+        <p><small>
           Published <time datetime="${relativeDates.yesterday}" data-format-date="relative">yesterday</time>
-        </p>
+        </small></p>
       </article>
     </div>
   </section>
 
   <section>
     <h2>Dynamic Elements</h2>
-    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed. A relative element that is removed and reinserted (for example when a list is re-sorted) picks up a fresh refresh timer.</p>
 
     <code-block language="javascript" show-lines label="Dynamically added format-date elements" data-escape>// Dynamically added elements are auto-enhanced via MutationObserver
 const time = document.createElement('time');
@@ -239,9 +247,9 @@ document.body.appendChild(time);
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The original human-readable date is preserved as a <code>title</code> attribute, accessible on hover</li>
+      <li>The original human-readable date is preserved as a <code>title</code> attribute, visible on hover. Screen readers do not reliably expose <code>title</code>, so the visible text is what users hear: keep it unambiguous.</li>
       <li>For relative times, the <code>cursor: help</code> style hints that additional information is available</li>
-      <li>The semantic <code>&lt;time&gt;</code> element with <code>datetime</code> attribute provides machine-readable dates for assistive technology</li>
+      <li>Mainstream screen readers announce the visible text, not the <code>datetime</code> value. <code>datetime</code> serves search engines, browser features and scripts.</li>
       <li>Falls back to the original text content when JavaScript is unavailable</li>
       <li>No wrapper element &mdash; the <code>&lt;time&gt;</code> <em>is</em> the enhanced element, keeping the accessibility tree clean</li>
     </ul>

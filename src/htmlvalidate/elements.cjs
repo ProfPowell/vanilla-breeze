@@ -1066,7 +1066,7 @@ module.exports = {
       "expires": {},
       "src": {},
       "poll": {},
-      "toast-new": { boolean: true },
+      "toast-new": {},
       "storage-key": {},
       "data-label-trigger": {},
       "data-label-unread": {},
@@ -1687,6 +1687,7 @@ module.exports = {
     permittedContent: ["details", "nav", "section", "@script"],
     attributes: {
       "aria-label": {},
+      "data-orientation": { enum: ["horizontal", "vertical"] },
       "transition": { enum: ["fade", "slide", "scale"] }
     }
   },
@@ -1696,19 +1697,22 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "for": {},
+      "variant": { enum: ["icon"] },
       "selectors": {},
       "speed": {},
       "voice": {},
       "highlight": {},
       "scroll": {},
-      "part": {},
-      "role": {},
-      "label-play": {},
-      "label-pause": {},
-      "label-stop": {},
-      "data-speed-group": {},
-      "data-speed-value": {},
-      "slot": {}
+      "data-label-play": {},
+      "data-label-pause": {},
+      "data-label-stop": {},
+      "data-label-reader": {},
+      "data-label-controls": {},
+      "data-label-voice": {},
+      "data-label-loading-voices": {},
+      "data-label-speed": {},
+      "data-label-slower": {},
+      "data-label-faster": {}
     }
   },
 
@@ -1716,23 +1720,35 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "variant": {},
+      "variant": { enum: ["popover", "inline"] },
       "compact": { boolean: true },
       "open": { boolean: true },
-      "data-trigger": {},
-      "aria-haspopup": {},
-      "role": {},
-      "aria-busy": {}
+      "data-label-panel": {},
+      "data-label-trigger": {},
+      "data-label-mode": {},
+      "data-label-accent": {},
+      "data-label-style": {},
+      "data-label-featured": {},
+      "data-label-more-themes": {},
+      "data-label-theme": {},
+      "data-label-a11y": {},
+      "data-label-sizing": {},
+      "data-label-extensions": {},
+      "data-label-download": {}
     }
   },
 
   "time-index": {
     attributes: {
-      "group": {},
-      "view": {},
       "versions": { boolean: true },
       "updates-src": {},
-      "data-timeline-controls": {}
+      "data-label-controls": {},
+      "data-label-sort": {},
+      "data-label-filter": {},
+      "data-label-all": {},
+      "data-label-status": {},
+      "data-label-status-all": {},
+      "data-label-recent": {}
     }
   },
 
@@ -1741,23 +1757,22 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "name": {},
-      "data-format": {},
+      "data-format": { enum: ["12h", "24h"] },
       "disabled": { boolean: true },
       "required": { boolean: true },
-      "step": {},
-      "min": {},
-      "max": {},
-      "data-disabled": {},
-      "role": {},
-      "aria-haspopup": {},
-      "autocomplete": {},
-      "placeholder": {},
-      "size": {},
-      "aria-valuemin": {},
-      "aria-valuemax": {},
-      "data-open": {},
-      "aria-valuenow": {},
-      "aria-valuetext": {}
+      "data-label-input": {},
+      "data-label-placeholder": {},
+      "data-label-toggle": {},
+      "data-label-dialog": {},
+      "data-label-hours": {},
+      "data-label-minutes": {},
+      "data-label-seconds": {},
+      "data-label-period": {},
+      "data-label-empty": {},
+      "data-label-required": {},
+      "data-label-range-underflow": {},
+      "data-label-range-overflow": {},
+      "data-label-step-mismatch": {}
     }
   },
 
@@ -1767,7 +1782,13 @@ module.exports = {
     attributes: {
       "position": { enum: ["top-start", "top-center", "top-end", "bottom-start", "bottom-center", "bottom-end"] },
       "duration": {},
-      "max": {}
+      "max": {},
+      "data-label-region": {},
+      "data-label-dismiss": {},
+      "data-label-info": {},
+      "data-label-success": {},
+      "data-label-warning": {},
+      "data-label-error": {}
     }
   },
 
@@ -1776,15 +1797,9 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "content": {},
-      "position": {},
+      "position": { enum: ["top", "bottom", "left", "right"] },
       "delay": {},
-      "variant": {},
-      "data-interest-polyfill": {},
-      "title": {},
-      "role": {},
-      "data-anchor": {},
-      "interestfor": {},
-      "data-content": {}
+      "variant": { enum: ["card"] }
     }
   },
 
@@ -1795,7 +1810,14 @@ module.exports = {
       "data-lens-src": {},
       "src": {},
       "data-vocabulary-src": {},
-      "expand-all": { boolean: true }
+      "expand-all": { boolean: true },
+      "data-heading-level": {},
+      "data-label-heading": {},
+      "data-label-page": {},
+      "data-label-pages": {},
+      "data-label-uncategorized": {},
+      "data-label-topic-link": {},
+      "data-label-error": {}
     }
   },
 
@@ -1804,7 +1826,20 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "data-lens-src": {},
-      "src": {}
+      "src": {},
+      "data-label-form": {},
+      "data-label-provenance": {},
+      "data-label-review": {},
+      "data-label-status": {},
+      "data-label-signed": {},
+      "data-label-yes": {},
+      "data-label-no": {},
+      "data-label-clear": {},
+      "data-label-page": {},
+      "data-label-pages": {},
+      "data-label-has-signature": {},
+      "data-label-error": {},
+      "data-label-no-source": {}
     }
   },
 

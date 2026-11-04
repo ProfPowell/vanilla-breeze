@@ -13,6 +13,11 @@
  * <time datetime="2026-02-09" data-format-date>Feb 9, 2026</time>
  * <time datetime="2026-02-09" data-format-date="full">Sunday, February 9, 2026</time>
  *
+ * Date-only values (YYYY, YYYY-MM, YYYY-MM-DD) are formatted in UTC so they
+ * never shift a day; YYYY shows only the year, YYYY-MM month and year.
+ * Locale: data-locale, else the nearest [lang] ancestor, else <html lang>.
+ * The original text moves to `title`.
+ *
  * @example Relative
  * <time datetime="2026-02-09T10:00:00Z" data-format-date="relative">February 9, 2026</time>
  */
@@ -21,6 +26,20 @@ import { getLocale } from '../lib/i18n.js';
 
 const SELECTOR = 'time[data-format-date]';
 const intervals = new Map();
+/** @type {Record<string, 'numeric'|'short'|'long'>} */
+const MONTH_STYLE = { short: 'numeric', medium: 'short', long: 'long', full: 'long' };
+
+/**
+ * Precision of a date-only datetime value (YYYY, YYYY-MM, YYYY-MM-DD).
+ * @param {string} raw
+ * @returns {'year'|'month'|'day'|null} null when the value has a time part
+ */
+function datePrecision(raw) {
+  if (/^\d{4}$/.test(raw)) return 'year';
+  if (/^\d{4}-\d{2}$/.test(raw)) return 'month';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return 'day';
+  return null;
+}
 
 /**
  * Initialize format-date elements within a root element
@@ -44,19 +63,22 @@ function enhanceDate(el) {
   const datetime = new Date(raw);
   if (isNaN(datetime.getTime())) return;
 
+  // Date-only values (YYYY, YYYY-MM, YYYY-MM-DD) are parsed as UTC midnight.
+  const precision = datePrecision(raw.trim());
+
   // Preserve original text as tooltip
   if (!el.title) {
     el.title = el.textContent.trim();
   }
 
   const style = el.getAttribute('data-format-date') || 'medium';
-  const locale = el.getAttribute('data-locale') || getLocale();
+  const locale = el.getAttribute('data-locale') || getLocale(el);
 
   if (style === 'relative') {
     el.textContent = formatRelative(datetime, locale);
     scheduleRefresh(el, datetime, locale);
   } else {
-    el.textContent = formatAbsolute(datetime, style, el, locale);
+    el.textContent = formatAbsolute(datetime, style, el, locale, precision);
   }
 }
 
@@ -66,16 +88,28 @@ function enhanceDate(el) {
  * @param {string} style - dateStyle value
  * @param {Element} el - The element (for timeStyle)
  * @param {string|undefined} locale
+ * @param {'year'|'month'|'day'|null} [precision] - date-only precision, or null for a date-time
  * @returns {string}
  */
-function formatAbsolute(date, style, el, locale) {
+function formatAbsolute(date, style, el, locale, precision = null) {
   const dateStyle = style || 'medium';
   const timeStyle = el.getAttribute('data-format-time') || undefined;
 
   try {
     /** @type {Intl.DateTimeFormatOptions} */
-    const opts = { dateStyle: /** @type {Intl.DateTimeFormatOptions['dateStyle']} */ (dateStyle) };
-    if (timeStyle) opts.timeStyle = /** @type {Intl.DateTimeFormatOptions['timeStyle']} */ (timeStyle);
+    let opts;
+    if (precision === 'year') {
+      // "2026" names a year, not 1 January: show only the year.
+      opts = { year: 'numeric' };
+    } else if (precision === 'month') {
+      opts = { year: 'numeric', month: MONTH_STYLE[dateStyle] ?? 'short' };
+    } else {
+      opts = { dateStyle: /** @type {Intl.DateTimeFormatOptions['dateStyle']} */ (dateStyle) };
+      if (timeStyle && !precision) opts.timeStyle = /** @type {Intl.DateTimeFormatOptions['timeStyle']} */ (timeStyle);
+    }
+    // Date-only values are parsed as UTC midnight; format them in UTC too,
+    // or every zone west of UTC shows the previous day.
+    if (precision) opts.timeZone = 'UTC';
     return new Intl.DateTimeFormat(locale, opts).format(date);
   } catch {
     return el.textContent;
@@ -162,6 +196,10 @@ function cleanupElement(el) {
   if (intervals.has(el)) {
     clearInterval(intervals.get(el));
     intervals.delete(el);
+    // Allow re-enhancement (and a fresh refresh timer) when reinserted.
+    // Only relative elements own an interval; absolute ones keep the marker
+    // because their text is already formatted.
+    el.removeAttribute('data-format-date-init');
   }
 }
 

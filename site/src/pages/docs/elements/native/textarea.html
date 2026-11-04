@@ -23,7 +23,7 @@ crumbLabel: Native Elements
   </section>
 
   <section>
-    <h2>Basic Usage</h2>
+    <h2 id="basic-usage">Basic Usage</h2>
     <p>Vanilla Breeze styles textarea as a full-width block element with a minimum height of <code>8rem</code>, vertical-only resize, and shared focus/border/placeholder styles with <code>input</code> and <code>select</code>. A simple textarea with label and placeholder:</p>
 
     <browser-window src="/docs/snippets/demos/textarea-examples.html" url="https://vanilla-breeze.com/textarea" title="Textarea examples" shadow></browser-window>
@@ -98,7 +98,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Setting Size</h2>
-    <p>Control the initial height with <code>rows</code>. VB sets a default <code>min-block-size: 8rem</code>, so very small <code>rows</code> values may not reduce the height below that.</p>
+    <p>Control the initial height with <code>rows</code>. VB sets a default <code>min-block-size: 8rem</code>, so very small <code>rows</code> values may not reduce the height below that. A <code>data-grow</code> textarea is the exception: its minimum follows <code>rows</code> (default 2).</p>
     <code-block language="html" show-lines label="Textarea size with rows attribute" data-escape><textarea rows="3"></textarea>  <!-- 3 lines -->
 <textarea rows="5"></textarea>  <!-- 5 lines -->
 <textarea rows="10"></textarea> <!-- 10 lines --></code-block>
@@ -112,10 +112,37 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Textarea States</h2>
-    <p>VB styles three interactive states: disabled (raised background, not-allowed cursor), read-only (normal appearance, not editable), and invalid (<code>aria-invalid="true"</code> or <code>:user-invalid</code> for error border color).</p>
+    <p>VB styles three states. Each has a cue that does not rely on colour alone (disabled relies on the cursor and on being skipped by Tab). The <a href="#basic-usage">examples demo</a> above shows all three in its States section.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">State</th>
+          <th scope="col">Selector</th>
+          <th scope="col">Appearance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Disabled</td>
+          <td><code>:disabled</code></td>
+          <td>Raised background, <code>not-allowed</code> cursor. Not focusable and not submitted.</td>
+        </tr>
+        <tr>
+          <td>Read-only</td>
+          <td><code>:read-only</code></td>
+          <td><code>--input-readonly-bg</code> background and a dashed border (<code>--input-readonly-border-style</code>). Focusable, selectable and submitted, but not editable.</td>
+        </tr>
+        <tr>
+          <td>Invalid</td>
+          <td><code>[aria-invalid="true"]</code>, <code>:user-invalid</code></td>
+          <td>Error border colour plus a thick inline-start edge. In forced colors the whole border becomes a thick double line.</td>
+        </tr>
+      </tbody>
+    </table>
     <code-block language="html" show-lines label="Textarea states" data-escape><textarea disabled>Cannot edit</textarea>
 <textarea readonly>Can select but not edit</textarea>
 <textarea aria-invalid="true">Invalid content</textarea></code-block>
+    <p><code>:user-invalid</code> only matches after the user has interacted with the field, so a required textarea is not shown as invalid on page load.</p>
   </section>
 
   <section>
@@ -169,7 +196,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Character / Word Count (data-count)</h2>
-    <p>Add <code>data-count</code> to any textarea to show a live character or word count. Works with native <code>maxlength</code> for character mode and <code>data-maxwords</code> for word mode. Color shifts at 80% (warning) and 100% (error).</p>
+    <p>Add <code>data-count</code> to any textarea to show a live character or word count. Works with native <code>maxlength</code> for character mode and <code>data-maxwords</code> for word mode. The counter changes colour at 80% (warning) and 100% (error, also bold), using the <code>--color-warning-text</code> and <code>--color-error-text</code> tokens, which meet AA contrast in light and dark mode. Screen readers hear the count only near or over the limit, after typing pauses.</p>
 
     <browser-window
       src="/docs/examples/demos/textarea-count-basic.html"
@@ -179,7 +206,7 @@ crumbLabel: Native Elements
     </browser-window>
 
     <h3>Character Count</h3>
-    <p>The default mode counts characters. Pair with <code>maxlength</code> to show "42 / 500" format.</p>
+    <p>The default mode counts characters. Pair with <code>maxlength</code> to show "42 of 500 characters". Numbers are formatted with <code>Intl.NumberFormat</code> for the nearest <code>[lang]</code>, so a German page shows "1.234 of 2.000".</p>
     <code-block language="html" show-lines label="Character count" data-escape><form-field>
   <label for="bio">Bio</label>
   <textarea id="bio" maxlength="500" data-count></textarea>
@@ -189,6 +216,23 @@ crumbLabel: Native Elements
     <p>Set <code>data-count="words"</code> and <code>data-maxwords</code> for word-based counting.</p>
     <code-block language="html" show-lines label="Word count" data-escape><textarea data-count="words" data-maxwords="200"
   placeholder="Write your essay..."></textarea></code-block>
+    <p>Two limits apply to word mode:</p>
+    <ul>
+      <li><strong>The word limit is advisory.</strong> Unlike <code>maxlength</code>, <code>data-maxwords</code> does not stop typing and does not make the field invalid. Validate it on the server (or with <code>setCustomValidity()</code>) if it must hold.</li>
+      <li><strong>Words are split on whitespace.</strong> Languages written without spaces between words (Chinese, Japanese, Thai) count each unbroken run as one word. Use character mode for them.</li>
+    </ul>
+
+    <h3>Counter Text and Localisation</h3>
+    <p>Override the counter text with <code>data-label-*</code> templates. <code>{count}</code> and <code>{max}</code> are replaced with formatted numbers. Plural variants are picked with <code>Intl.PluralRules</code> for the nearest <code>[lang]</code>: add a suffix for each category the language uses (<code>-zero</code>, <code>-one</code>, <code>-two</code>, <code>-few</code>, <code>-many</code>, <code>-other</code>).</p>
+    <code-block language="html" show-lines label="Localised counter text" data-escape><form-field lang="de">
+  <label for="bio-de">Über mich</label>
+  <textarea id="bio-de" maxlength="200" data-count
+    data-label-limit="{count} von {max} Zeichen"></textarea>
+</form-field>
+
+<textarea data-count
+  data-label-characters-one="{count} Zeichen"
+  data-label-characters-other="{count} Zeichen insgesamt"></textarea></code-block>
 
     <table class="props-table">
       <thead>
@@ -207,15 +251,40 @@ crumbLabel: Native Elements
         <tr>
           <td><code>data-maxwords</code></td>
           <td>number</td>
-          <td>Max word count (word mode only).</td>
+          <td>Max word count (word mode only). Advisory: not enforced and not a validity state.</td>
+        </tr>
+        <tr>
+          <td><code>maxlength</code></td>
+          <td>number</td>
+          <td>Native limit; sets the character-mode maximum and is enforced by the browser.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-limit</code>, <code>data-label-limit-&lt;category&gt;</code></td>
+          <td>template</td>
+          <td>Counter text when a limit applies. Default <code>"{count} of {max} characters"</code> (or <code>words</code>). The plural category is chosen from <code>{max}</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-characters</code>, <code>data-label-characters-&lt;category&gt;</code></td>
+          <td>template</td>
+          <td>Counter text with no limit, character mode. Default <code>"{count} character"</code> / <code>"{count} characters"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-label-words</code>, <code>data-label-words-&lt;category&gt;</code></td>
+          <td>template</td>
+          <td>Counter text with no limit, word mode. Default <code>"{count} word"</code> / <code>"{count} words"</code>.</td>
         </tr>
       </tbody>
     </table>
+
+    <h3>Reset and Programmatic Values</h3>
+    <p>The counter and <code>data-grow</code> update on every <code>input</code> event and after the owning form is reset. Setting <code>.value</code> from script fires no event, so dispatch one afterwards. The same event refreshes both enhancements:</p>
+    <code-block language="javascript" show-lines label="Refresh after a programmatic value" data-escape>textarea.value = draft;
+textarea.dispatchEvent(new Event('input', { bubbles: true }));</code-block>
   </section>
 
   <section>
     <h2>Auto-Expand (data-grow)</h2>
-    <p>Add <code>data-grow</code> to a textarea to make it automatically expand as the user types. Uses CSS <code>field-sizing: content</code> where supported, with a JS <code>scrollHeight</code> fallback. Set <code>data-max-rows</code> to cap the height.</p>
+    <p>Add <code>data-grow</code> to a textarea to make it automatically expand as the user types. Uses CSS <code>field-sizing: content</code> where supported, with a JS <code>scrollHeight</code> fallback. It starts at <code>rows</code> lines (default 2) instead of VB's usual <code>8rem</code> minimum, and the manual resize handle is removed. Set <code>data-max-rows</code> to cap the height.</p>
 
     <browser-window
       src="/docs/examples/demos/textarea-grow-basic.html"
@@ -228,7 +297,7 @@ crumbLabel: Native Elements
   placeholder="Type to see it grow..."></textarea></code-block>
 
     <h3>Max Rows</h3>
-    <p>Set <code>data-max-rows</code> to limit growth. Once the limit is reached, the textarea scrolls normally.</p>
+    <p>Set <code>data-max-rows</code> to limit growth. The cap counts text lines and adds the padding and border, so 10 rows shows 10 full lines. Once the limit is reached, the textarea scrolls normally.</p>
     <code-block language="html" show-lines label="With max-rows" data-escape><textarea data-grow rows="2" data-max-rows="10"
   placeholder="Grows up to 10 rows, then scrolls..."></textarea></code-block>
 
@@ -277,40 +346,75 @@ crumbLabel: Native Elements
 
   <section>
     <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="Textarea CSS styles" data-escape>/* Textarea shares base styles with input and select */
-textarea {
+    <p>From <code>src/native-elements/input/styles.css</code>. Textarea shares its base rule with text inputs and <code>select</code>.</p>
+    <code-block language="css" show-lines label="Textarea CSS styles" data-escape>textarea {
   display: block;
   inline-size: 100%;
-  padding-block: var(--size-s);
-  padding-inline: var(--size-s);
-  min-block-size: 8rem;
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-m);
-  background: var(--color-surface);
-  color: inherit;
+  padding-block: var(--input-padding-inline);
+  padding-inline: var(--input-padding-inline);
+  min-block-size: var(--input-height);
+  border: var(--border-width-thin) solid var(--input-border);
+  border-radius: var(--input-radius);
+  background: var(--input-bg);
+  color: var(--input-text);
+  caret-color: var(--caret-color);
   font: inherit;
-  resize: vertical;
   transition: border-color var(--duration-fast) var(--ease-default);
+
+  /* The halo is decoration; the transparent outline carries focus in
+     forced colors, where box-shadow is dropped */
+  &:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 3px oklch(from var(--input-border-focus) l c h / 0.15);
+  }
+
+  &::placeholder {
+    color: var(--input-placeholder);
+  }
+
+  &:disabled {
+    background: var(--color-surface-raised);
+    cursor: not-allowed;
+  }
+
+  /* Readonly: dashed border is the non-colour cue */
+  &:read-only:not(:disabled) {
+    background: var(--input-readonly-bg);
+    border-style: var(--input-readonly-border-style);
+  }
+
+  /* Invalid: thick inline-start edge is the non-colour cue */
+  &:is([aria-invalid="true"], :user-invalid) {
+    border-color: var(--color-error);
+    border-inline-start-width: var(--border-width-thick, 4px);
+  }
+
+  @media (forced-colors: active) {
+    &:focus {
+      outline: 2px solid Highlight;
+    }
+
+    &:is([aria-invalid="true"], :user-invalid) {
+      border-style: double;
+      border-width: var(--border-width-thick, 4px);
+    }
+  }
 }
 
-textarea:focus {
-  outline: none;
-  border-color: var(--color-interactive);
-  box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+textarea {
+  min-block-size: 8rem;
+  resize: vertical;
 }
 
-textarea::placeholder {
-  color: var(--color-text-muted);
-}
-
-textarea:disabled {
-  background: var(--color-surface-raised);
-  cursor: not-allowed;
-}
-
-textarea[aria-invalid="true"],
-textarea:user-invalid {
-  border-color: var(--color-error);
+/* data-grow starts at its rows (field-sizing ignores rows) */
+textarea[data-grow] {
+  min-block-size: calc(
+    var(--grow-rows, 2) * 1lh
+    + 2 * var(--input-padding-inline, 0.5rem)
+    + 2 * var(--border-width-thin, 1px)
+  );
 }</code-block>
   </section>
 
