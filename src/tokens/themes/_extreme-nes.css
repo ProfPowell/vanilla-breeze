@@ -291,13 +291,25 @@
       align-items: center;
       gap: 0.75rem;
 
-      /* summary is display: flex with the marker hidden in core */
+      justify-content: flex-start;
 
-      /* NES-style arrow indicator */
+      /* summary is display: flex with the marker hidden in core.
+         The NES triangle replaces the core chevron, so drop ::after. */
+      &::after {
+        content: none;
+      }
+
+      /* NES-style arrow indicator. Empty alt text keeps the glyph out
+         of the summary's accessible name. */
       &::before {
-        content: "\25B6"; /* Right-pointing triangle */
+        content: "\25B6" / ""; /* Right-pointing triangle */
         font-size: 0.5rem;
         transition: transform 0.1s steps(2);
+      }
+
+      /* Point toward the inline end in RTL */
+      &:dir(rtl)::before {
+        scale: -1 1;
       }
     }
 

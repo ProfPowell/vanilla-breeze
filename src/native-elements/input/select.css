@@ -192,16 +192,29 @@
      Section B — Rich Content (custom trigger + images in options)
      ================================================================ */
 
-  /* Custom trigger button */
+  /* Custom trigger button.
+     The select itself owns the box (padding, border, radius, touch
+     target); the inner button is only a content slot. The global button
+     rule (44px min block size, radius) and theme button skins (bevels,
+     offset shadows, fills in the higher bundle-theme layer) must not
+     apply here, so the skin reset is a structural invariant: !important
+     in this layer beats normal declarations in any later layer. */
   select:not([multiple], [size]:not([size="0"], [size="1"])) > button {
     display: flex;
     align-items: center;
+    justify-content: start;
     gap: var(--size-xs);
     font: inherit;
     color: inherit;
-    background: none;
-    border: none;
-    padding: 0;
+    background: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    min-block-size: 0 !important;
+    min-inline-size: 0 !important;
+    text-transform: inherit;
+    letter-spacing: inherit;
     cursor: var(--cursor-custom-pointer, pointer);
     inline-size: 100%;
   }

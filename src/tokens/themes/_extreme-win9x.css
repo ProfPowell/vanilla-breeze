@@ -434,11 +434,18 @@
       align-items: center;
       gap: 0.5rem;
 
-      /* summary is display: flex with the marker hidden in core */
+      justify-content: flex-start;
 
-      /* Expand/collapse indicator */
+      /* summary is display: flex with the marker hidden in core.
+         The +/- box replaces the core chevron, so drop ::after. */
+      &::after {
+        content: none;
+      }
+
+      /* Expand/collapse indicator. Empty alt text keeps the glyph out
+         of the summary's accessible name. */
       &::before {
-        content: "+";
+        content: "+" / "";
         font-family: var(--font-mono);
         width: 1em;
         text-align: center;
@@ -446,7 +453,7 @@
     }
 
     & details[open] > summary::before {
-      content: "-";
+      content: "-" / "";
     }
 
     & details > :not(summary) {

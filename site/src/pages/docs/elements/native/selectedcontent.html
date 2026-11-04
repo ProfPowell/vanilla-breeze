@@ -23,7 +23,7 @@ crumbLabel: Native Elements
 
 <section>
   <h2>How It Works</h2>
-  <p>The browser automatically clones the currently selected <code>&lt;option&gt;</code>'s DOM into the <code>&lt;selectedcontent&gt;</code> element using <code>cloneNode()</code>. It updates every time the selection changes via a <code>change</code> event.</p>
+  <p>The browser automatically clones the currently selected <code>&lt;option&gt;</code>'s DOM into the <code>&lt;selectedcontent&gt;</code> element using <code>cloneNode()</code>. It updates whenever the selected option changes, whether the user picks one or a script sets <code>select.value</code>, <code>select.selectedIndex</code> or <code>option.selected</code>. No <code>change</code> event is needed.</p>
 
   <browser-window src="/docs/examples/demos/customizable-select.html" url="https://vanilla-breeze.com/select/selectedcontent" title="Customizable select with selectedcontent" shadow></browser-window>
 </section>
@@ -108,7 +108,7 @@ selectedcontent img {
   <ul>
     <li><code>selectedcontent</code> gets <code>display: flex</code> with <code>align-items: center</code> and <code>gap</code></li>
     <li><code>selectedcontent .detail</code> is hidden by default</li>
-    <li>The parent <code>button</code> fills the select width as a flex container</li>
+    <li>The parent <code>button</code> fills the select width as a flex container, and is reset to a plain content slot (no padding, border, background, shadow or minimum size, even under themes)</li>
   </ul>
 </section>
 
@@ -121,7 +121,7 @@ selectedcontent img {
   <h2>Accessibility</h2>
   <ul>
     <li><strong>Inert by default</strong>: The <code>&lt;button&gt;</code> inside <code>&lt;select&gt;</code> is inert, so <code>&lt;selectedcontent&gt;</code> and its children cannot be focused or interacted with independently</li>
-    <li><strong>Implicit ARIA role</strong>: <code>none</code> &mdash; screen readers treat it as presentation</li>
+    <li><strong>Name and value</strong>: Screen readers announce the select by its <code>&lt;label&gt;</code> and the selected option's text as its value. The clone in the trigger is not announced separately</li>
     <li><strong>Cloned content</strong>: Decorative elements (icons, flags) in options should use <code>aria-hidden="true"</code> since they are cloned into the trigger as well</li>
     <li><strong>Keyboard navigation</strong>: Fully handled by the parent <code>&lt;select&gt;</code> &mdash; no additional keyboard handling needed</li>
   </ul>
@@ -130,7 +130,8 @@ selectedcontent img {
 <section>
   <h2>Caveats</h2>
   <ul>
-    <li><strong>Dynamic content</strong>: The browser only updates <code>&lt;selectedcontent&gt;</code> on <code>change</code> events. If you modify the currently selected option's content dynamically (e.g., via a framework), the clone won't refresh automatically</li>
+    <li><strong>Update triggers</strong>: The clone refreshes when the selected option changes, by user or by script (<code>select.value = …</code>, <code>option.selected = true</code>). Editing the content of the option that is already selected may not refresh the clone; re-select it (for example, set <code>select.value</code> again) after changing its content</li>
+    <li><strong>Fallback</strong>: Browsers without <code>base-select</code> drop the <code>&lt;button&gt;</code> and <code>&lt;selectedcontent&gt;</code> and show each option's plain text, so keep option text short. See <a href="/docs/elements/native/select/">select</a>, "Fallback Without base-select"</li>
     <li><strong>Implicit button</strong>: If you omit <code>&lt;button&gt;</code> and <code>&lt;selectedcontent&gt;</code>, the browser creates an implicit button that cannot be targeted with CSS type selectors</li>
     <li><strong>Experimental</strong>: This element is not yet Baseline &mdash; check <a href="https://caniuse.com/?search=selectedcontent">browser support</a> before relying on it in production</li>
   </ul>
@@ -138,7 +139,7 @@ selectedcontent img {
 
 <section>
   <h2>Browser Support</h2>
-  <p>Requires <code>appearance: base-select</code> support (Chrome 135+). VB gates all related styles behind <code>@supports</code>, so non-supporting browsers fall back gracefully to the standard select rendering.</p>
+  <p>Requires <code>appearance: base-select</code> support (Chrome 135+). VB gates all related styles behind <code>@supports</code>, so non-supporting browsers get the standard select rendering with each option's plain text in the closed select.</p>
 </section>
 
 <section>
