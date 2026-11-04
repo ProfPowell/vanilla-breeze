@@ -84,6 +84,7 @@ crumbLabel: Web Components
       <tr><td><code>theme</code></td><td><code>auto</code></td><td><code>light</code>, <code>dark</code> or <code>auto</code></td></tr>
       <tr><td><code>activate</code></td><td><code>click</code></td><td><code>click</code>, <code>visible</code> or <code>eager</code></td></tr>
       <tr><td><code>data-title</code></td><td>"{provider} post"</td><td>Accessible name of the frame (the player title for YouTube)</td></tr>
+      <tr><td><code>poster</code></td><td>—</td><td>YouTube only: local image passed to <code>&lt;youtube-player poster&gt;</code>, so no thumbnail is fetched from <code>i.ytimg.com</code></td></tr>
       <tr><td><code>data-label-load</code></td><td>"Load {provider} {noun}"</td><td>Button text</td></tr>
       <tr><td><code>data-label-loading</code></td><td>"Loading {provider} {noun}…"</td><td>Button text and announcement while loading</td></tr>
       <tr><td><code>data-label-error</code></td><td>"{provider} {noun} failed to load."</td><td>Visible note and announcement on failure</td></tr>
@@ -143,7 +144,7 @@ SocialEmbed.register('peertube', {
   <h2>Privacy and Security</h2>
   <ul>
     <li><strong>Click to load by default.</strong> No request reaches Bluesky, Mastodon, X or Instagram until the reader presses Load. The note under the button names the host. <code>activate="visible"</code> and <code>"eager"</code> skip that consent step.</li>
-    <li><strong>YouTube is the exception.</strong> <code>&lt;youtube-player&gt;</code> renders its facade at once and fetches the thumbnail from <code>i.ytimg.com</code> on page load; the video itself loads from <code>youtube-nocookie.com</code> on play.</li>
+    <li><strong>YouTube is the exception.</strong> <code>&lt;youtube-player&gt;</code> renders its facade at once and fetches the thumbnail from <code>i.ytimg.com</code> on page load (set <code>poster</code> to a local image to avoid that request); the video itself loads from <code>youtube-nocookie.com</code> on play. Moving the element re-renders the player's facade, so a playing video stops.</li>
     <li><strong>Bluesky handle URLs</strong> make one lookup to <code>public.api.bsky.app</code> on load. Use the DID form of the URL to avoid it.</li>
     <li><strong>Sandboxed, never injected.</strong> Each embed runs in its platform's own origin inside a sandboxed frame. No oEmbed HTML enters your page and no platform script runs with access to your DOM. Platforms may still set their own cookies inside the frame once loaded.</li>
     <li><strong>Untrusted content.</strong> The shared sanitizer (<code>sanitizeHTML</code> / <code>sanitizeToFragment</code>, used by markdown-viewer, chat-window, comment-thread and others) unwraps <code>&lt;social-embed&gt;</code> to its fallback link, so user-supplied markup cannot embed third-party frames.</li>

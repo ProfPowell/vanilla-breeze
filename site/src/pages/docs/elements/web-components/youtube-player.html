@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "youtube-player"
-description: "Privacy-first YouTube embed with facade pattern. Zero iframe bytes until click — renders a thumbnail and play button, then swaps to the real player on interaction."
+description: "YouTube embed behind a facade: a thumbnail (or your own local poster) and one play button. The youtube-nocookie.com player loads only when the reader presses play."
 elementName: youtube-player
 category: component
 currentPath: /docs/elements/web-components/youtube-player/
@@ -12,7 +12,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>A lightweight YouTube embed that uses the <strong>facade pattern</strong> — renders a thumbnail image with a play button on page load, deferring the ~500 KB YouTube iframe until the user actually clicks play. Uses <code>youtube-nocookie.com</code> for privacy: no cookies are set until the user initiates playback.</p>
+  <p>A lightweight YouTube embed that uses the <strong>facade pattern</strong>: it renders a thumbnail and a play button on page load and defers the ~500 KB YouTube iframe until the reader presses play. The player loads from <code>youtube-nocookie.com</code>. The default thumbnail is fetched from <code>i.ytimg.com</code> on render; set a local <code>poster</code> to keep Google out of the page until play (see <a href="#privacy">Privacy</a>).</p>
   <p>Light DOM only (no shadow root), so design tokens and utility classes apply naturally.</p>
 
   <browser-window
@@ -25,7 +25,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Default</h2>
-  <p>Provide a YouTube video ID via <code>video-id</code> and an accessible title via <code>title</code>.</p>
+  <p>Provide a YouTube video ID via <code>video-id</code> and the video's title via <code>title</code>. The play button is named "Play {title}". Without <code>poster</code> the thumbnail comes from <code>i.ytimg.com</code>.</p>
   <browser-window
     src="/docs/snippets/demos/youtube-player-default.html"
     url="https://vanilla-breeze.com/youtube-player/default"
@@ -49,6 +49,7 @@ crumbLabel: Web Components
   </browser-window>
   <code-block language="html" show-lines label="Rounded variant" data-escape><youtube-player
   class="rounded"
+  poster="/src/assets/placeholders/photo-kitchen-sink-13-640x360.svg"
   video-id="dQw4w9WgXcQ"
   title="Rick Astley — Never Gonna Give You Up">
 </youtube-player></code-block>
@@ -66,6 +67,7 @@ crumbLabel: Web Components
   <code-block language="html" show-lines label="Captioned embed" data-escape><figure>
   <youtube-player
     class="rounded"
+    poster="/src/assets/placeholders/photo-kitchen-sink-13-640x360.svg"
     video-id="dQw4w9WgXcQ"
     title="Rick Astley — Never Gonna Give You Up">
   </youtube-player>
@@ -83,6 +85,7 @@ crumbLabel: Web Components
     shadow>
   </browser-window>
   <code-block language="html" show-lines label="Playlist embed" data-escape><youtube-player
+  poster="/src/assets/placeholders/photo-kitchen-sink-13-640x360.svg"
   video-id="dQw4w9WgXcQ"
   list="PLbpi6ZahtOH6Ar_3GPy3j-g4s4zu4jOeJ"
   title="Playlist example">
@@ -90,12 +93,46 @@ crumbLabel: Web Components
 </section>
 
 <section>
-  <h2>Start at Timestamp</h2>
-  <p>Use <code>start</code> to begin playback at a specific second.</p>
-  <code-block language="html" show-lines label="Start at 30 seconds" data-escape><youtube-player
+  <h2>Local Poster</h2>
+  <p>Set <code>poster</code> to a local image URL. The facade shows it instead of the YouTube thumbnail, so nothing is requested from Google until the reader presses play.</p>
+  <browser-window
+    src="/docs/snippets/demos/youtube-player-poster.html"
+    url="https://vanilla-breeze.com/youtube-player/poster"
+    title="Local Poster"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Local poster" data-escape><youtube-player
+  poster="/src/assets/placeholders/photo-kitchen-sink-13-640x360.svg"
+  video-id="dQw4w9WgXcQ"
+  title="Rick Astley — Never Gonna Give You Up">
+</youtube-player></code-block>
+</section>
+
+<section>
+  <h2>Start and End</h2>
+  <p>Use <code>start</code> and <code>end</code> to play a clip, in whole seconds. Other formats (such as <code>1m30s</code>) are ignored with a console warning; <code>&lt;social-embed&gt;</code> converts <code>t=1m30s</code> URLs to seconds for you.</p>
+  <browser-window
+    src="/docs/snippets/demos/youtube-player-timestamp.html"
+    url="https://vanilla-breeze.com/youtube-player/timestamp"
+    title="Start and End"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Play 0:30 to 1:00" data-escape><youtube-player
+  poster="/src/assets/placeholders/photo-kitchen-sink-13-640x360.svg"
   video-id="dQw4w9WgXcQ"
   start="30"
-  title="Starts at 30 seconds">
+  end="60"
+  title="Rick Astley — 0:30 to 1:00">
+</youtube-player></code-block>
+</section>
+
+<section>
+  <h2>Extra Player Parameters</h2>
+  <p><code>params</code> is an escape hatch for any other <a href="https://developers.google.com/youtube/player_parameters">player parameter</a>. Its keys override <code>start</code>, <code>end</code>, <code>list</code> and <code>autoplay</code>; the embed host cannot be changed.</p>
+  <code-block language="html" show-lines label="Captions on by default" data-escape><youtube-player
+  video-id="dQw4w9WgXcQ"
+  params="cc_load_policy=1"
+  title="Rick Astley — Never Gonna Give You Up">
 </youtube-player></code-block>
 </section>
 
@@ -104,13 +141,16 @@ crumbLabel: Web Components
   <table>
     <thead><tr><th>Attribute</th><th>Required</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>video-id</code></td><td>Yes</td><td>string</td><td>—</td><td>YouTube video ID</td></tr>
-      <tr><td><code>title</code></td><td>Recommended</td><td>string</td><td><code>"Play video"</code></td><td>Accessible title for iframe and play button</td></tr>
+      <tr><td><code>video-id</code></td><td>Yes</td><td>string</td><td>—</td><td>YouTube video ID. A missing or invalid ID leaves the element un-upgraded, showing its authored fallback.</td></tr>
+      <tr><td><code>title</code></td><td>Recommended</td><td>string</td><td><code>"YouTube video"</code></td><td>Video title: the iframe title and the <code>{title}</code> in the play button's name</td></tr>
+      <tr><td><code>poster</code></td><td>—</td><td>URL</td><td>—</td><td>Local facade image. When set, no thumbnail is requested from <code>i.ytimg.com</code>.</td></tr>
+      <tr><td><code>thumbnail</code></td><td>—</td><td><code>hq</code> | <code>mq</code> | <code>sd</code> | <code>maxres</code></td><td><code>hq</code></td><td>YouTube thumbnail size (ignored with <code>poster</code>). <code>sd</code> and <code>maxres</code> fall back to <code>hq</code> when the video has none.</td></tr>
       <tr><td><code>start</code></td><td>—</td><td>integer</td><td>—</td><td>Start playback at N seconds</td></tr>
+      <tr><td><code>end</code></td><td>—</td><td>integer</td><td>—</td><td>Stop playback at N seconds</td></tr>
       <tr><td><code>list</code></td><td>—</td><td>string</td><td>—</td><td>YouTube playlist ID</td></tr>
-      <tr><td><code>params</code></td><td>—</td><td>string</td><td>—</td><td>Raw query string appended to embed URL (escape hatch)</td></tr>
-      <tr><td><code>autoplay</code></td><td>—</td><td>boolean</td><td><code>false</code></td><td>Skip facade — load iframe immediately</td></tr>
-      <tr><td><code>thumbnail</code></td><td>—</td><td>string</td><td><code>hq</code></td><td>Thumbnail resolution: <code>hq</code>, <code>mq</code>, <code>sd</code>, <code>maxres</code></td></tr>
+      <tr><td><code>params</code></td><td>—</td><td>string</td><td>—</td><td>Extra query string for the embed URL (escape hatch)</td></tr>
+      <tr><td><code>autoplay</code></td><td>—</td><td>boolean</td><td><code>false</code></td><td>Skip the facade and load the iframe on connect. This contacts YouTube at once. Ignored under <code>prefers-reduced-motion</code> or <code>data-motion-reduced</code>; never moves focus.</td></tr>
+      <tr><td><code>data-label-play</code></td><td>—</td><td>string</td><td><code>"Play {title}"</code></td><td>Accessible name of the play button, for translation</td></tr>
     </tbody>
   </table>
 
@@ -118,9 +158,20 @@ crumbLabel: Web Components
   <table>
     <thead><tr><th>Attribute</th><th>Values</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>state</code></td><td><code>ready</code>, <code>active</code></td><td>Facade showing vs iframe loaded</td></tr>
+      <tr><td><code>state</code></td><td><code>ready</code>, <code>active</code></td><td>Facade showing vs iframe inserted (read-only)</td></tr>
     </tbody>
   </table>
+
+  <h3>Events</h3>
+  <table>
+    <thead><tr><th>Event</th><th>Detail</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>youtube-player:activate</code></td><td><code>{ videoId, fromUser }</code></td><td>Bubbles when the iframe is inserted. <code>fromUser</code> is <code>false</code> for <code>autoplay</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Reconnect</h3>
+  <p>Moving or re-inserting the element renders the facade again (<code>state="ready"</code>). A moved iframe reloads anyway and would restart playback, so the reader presses play again instead. With <code>autoplay</code>, the iframe is loaded again (still without taking focus).</p>
 </section>
 
 <section>
@@ -141,36 +192,57 @@ crumbLabel: Web Components
 <section>
   <h2>Progressive Enhancement</h2>
   <p>Author an <code>&lt;a&gt;</code> fallback inside the element. Without JavaScript, the link takes the user to YouTube. Once the component upgrades, the facade replaces the link.</p>
+  <browser-window
+    src="/docs/snippets/demos/youtube-player-fallback.html"
+    url="https://vanilla-breeze.com/youtube-player/fallback"
+    title="No-JS Fallback"
+    shadow>
+  </browser-window>
   <code-block language="html" show-lines label="No-JS fallback" data-escape><!-- Without JS: renders as a plain link to YouTube -->
 <youtube-player
+  poster="/src/assets/placeholders/photo-kitchen-sink-13-640x360.svg"
   video-id="dQw4w9WgXcQ"
   title="Rick Astley — Never Gonna Give You Up">
   <a href="https://youtu.be/dQw4w9WgXcQ">
-    Watch: Rick Astley — Never Gonna Give You Up
+    Watch on YouTube: Rick Astley — Never Gonna Give You Up
   </a>
 </youtube-player></code-block>
   <table>
     <thead><tr><th>Scenario</th><th>Behaviour</th></tr></thead>
     <tbody>
       <tr><td>No JS</td><td>Anchor link to YouTube visible</td></tr>
-      <tr><td>JS loaded</td><td>Facade: thumbnail + play button</td></tr>
-      <tr><td>User clicks</td><td>Iframe replaces facade, video autoplays</td></tr>
-      <tr><td><code>autoplay</code></td><td>Iframe rendered immediately — no facade step</td></tr>
+      <tr><td>JS loaded</td><td>Facade: thumbnail (or poster) + play button</td></tr>
+      <tr><td>Reader presses play</td><td>Iframe replaces facade, video autoplays, focus moves into the player</td></tr>
+      <tr><td><code>autoplay</code></td><td>Iframe rendered immediately, no facade step and no focus move (facade kept under reduced motion)</td></tr>
     </tbody>
   </table>
 </section>
 
 <section>
+  <h2 id="privacy">Privacy</h2>
+  <p>What reaches Google, and when:</p>
+  <table>
+    <thead><tr><th>Moment</th><th>Without <code>poster</code></th><th>With <code>poster</code></th></tr></thead>
+    <tbody>
+      <tr><td>Page load (facade)</td><td>One image request to <code>i.ytimg.com</code>. It carries the reader's IP address but no referrer (<code>referrerpolicy="no-referrer"</code>) and no cookies.</td><td>Nothing</td></tr>
+      <tr><td>Reader presses play</td><td colspan="2">The player loads from <code>www.youtube-nocookie.com</code> with <code>referrerpolicy="strict-origin-when-cross-origin"</code> (YouTube needs the origin). From here YouTube's own scripts run and may store data.</td></tr>
+      <tr><td><code>autoplay</code></td><td colspan="2">The player loads on page load, with no facade step.</td></tr>
+    </tbody>
+  </table>
+  <p>If your consent policy treats an image request to Google as tracking, always set <code>poster</code>. <a href="/docs/elements/web-components/social-embed/"><code>&lt;social-embed&gt;</code></a> passes its own <code>poster</code> through to the player.</p>
+</section>
+
+<section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Thumbnail image has <code>alt=""</code> (decorative — the button has the label)</li>
-    <li>Play button has <code>aria-label="Play {title}"</code></li>
-    <li>Host element gets <code>tabindex="0"</code> and <code>role="button"</code> in facade state for keyboard access</li>
-    <li>Enter and Space activate the embed</li>
-    <li>After activation, focus moves to the iframe</li>
+    <li>The inner <code>&lt;button&gt;</code> is the only control: one tab stop, named "Play {title}" (override with <code>data-label-play</code>). It covers the whole facade, so a click anywhere on the thumbnail plays.</li>
+    <li>The host has no role or tabindex, so there is no nested interactive control.</li>
+    <li>Thumbnail or poster image has <code>alt=""</code> (decorative; the button has the name)</li>
+    <li>Enter and Space activate the button natively</li>
+    <li>After the reader presses play, focus moves to the iframe. <code>autoplay</code> never moves focus.</li>
     <li>Iframe has a descriptive <code>title</code> attribute</li>
+    <li><code>autoplay</code> is ignored under <code>prefers-reduced-motion</code>; the hover scale uses the motion tokens, which drop to 0 ms under reduced motion</li>
     <li>No-JS fallback is a plain anchor with meaningful text</li>
-    <li>No animations that violate <code>prefers-reduced-motion</code></li>
   </ul>
 </section>
 
@@ -179,10 +251,10 @@ crumbLabel: Web Components
   <table>
     <thead><tr><th>Metric</th><th>Value</th></tr></thead>
     <tbody>
-      <tr><td>JS size</td><td>&lt; 2 KB</td></tr>
-      <tr><td>CSS size</td><td>&lt; 1 KB</td></tr>
-      <tr><td>Network requests before click</td><td>1 (thumbnail image only)</td></tr>
-      <tr><td>YouTube cookies before click</td><td>None (<code>youtube-nocookie.com</code>)</td></tr>
+      <tr><td>JS size</td><td>&lt; 3 KB</td></tr>
+      <tr><td>CSS size</td><td>&lt; 1.5 KB</td></tr>
+      <tr><td>Network requests before play</td><td>1 thumbnail from <code>i.ytimg.com</code>, or only your local <code>poster</code></td></tr>
+      <tr><td>YouTube cookies before play</td><td>None</td></tr>
     </tbody>
   </table>
 </section>

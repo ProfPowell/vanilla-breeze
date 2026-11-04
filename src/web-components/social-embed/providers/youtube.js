@@ -3,7 +3,8 @@
  *
  * delegatesActivation: social-embed skips its own button and renders the
  * player at once; youtube-player shows its own facade (thumbnail + play
- * button). Note the thumbnail is fetched from i.ytimg.com up front.
+ * button). The thumbnail is fetched from i.ytimg.com up front unless the
+ * <social-embed> carries a `poster` (a local image), which is passed through.
  */
 
 import '../../youtube-player/logic.js';
@@ -56,11 +57,11 @@ export const YouTubeProvider = {
   frameHost: () => 'www.youtube-nocookie.com',
 
   /**
-   * @param {HTMLElement} _host
+   * @param {HTMLElement} host
    * @param {string} url
    * @param {{ title: string }} opts
    */
-  async render(_host, url, { title }) {
+  async render(host, url, { title }) {
     const video = parseYouTubeUrl(url);
     if (!video) throw new Error('Could not parse YouTube video ID');
     const yt = document.createElement('youtube-player');
@@ -69,6 +70,8 @@ export const YouTubeProvider = {
     // quotes and angle brackets out of it.
     yt.setAttribute('title', title.replace(/["<>]/g, ''));
     if (video.start) yt.setAttribute('start', String(video.start));
+    const poster = host.getAttribute('poster');
+    if (poster) yt.setAttribute('poster', poster);
     return yt;
   },
 };

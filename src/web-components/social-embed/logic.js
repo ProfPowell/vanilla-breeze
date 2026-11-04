@@ -14,6 +14,7 @@
  *
  * @attr {string}  url       - URL of the post / video (required)
  * @attr {string}  provider  - Explicit provider key (auto-detected if omitted)
+ * @attr {string}  poster    - YouTube only: local poster image passed to youtube-player
  * @attr {string}  theme     - light | dark | auto (default: auto)
  * @attr {string}  activate  - click | visible | eager (default: click)
  * @attr {string}  data-title - Accessible name of the embedded frame
