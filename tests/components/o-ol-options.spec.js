@@ -78,7 +78,7 @@ for (const dir of ['ltr', 'rtl']) {
       const probe = document.getElementById('probe');
       const width = (text) => { probe.textContent = text; return probe.getBoundingClientRect().width; };
       const p = (id) => parseFloat(getComputedStyle(document.getElementById(id)).paddingInlineStart);
-      return { roman: [width('VIII. '), p('roman')], big: [width('100. '), p('big')] };
+      return { roman: [width('VIII.'), p('roman')], big: [width('100.'), p('big')] };
     });
     expect(fit.roman[0]).toBeLessThan(fit.roman[1]);
     expect(fit.big[0]).toBeLessThan(fit.big[1]);
