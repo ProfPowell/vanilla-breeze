@@ -283,7 +283,7 @@ test.describe('aria wiring', () => {
     await page.waitForSelector('#ff .textarea-counter');
     await page.evaluate(() => /** @type {any} */ (document.getElementById('ff')).validate());
     const counter = page.locator('#ff .textarea-counter');
-    await expect(counter).toHaveText('0 / 20');
+    await expect(counter).toHaveText('0 of 20 characters');
     const id = await counter.getAttribute('id');
     expect(await page.locator('#m').getAttribute('aria-describedby')).toContain(id);
     await expect(counter).toHaveAttribute('aria-live', 'off');

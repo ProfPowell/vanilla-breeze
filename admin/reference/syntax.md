@@ -458,23 +458,31 @@ Open dialogs are a flex column: `<header>` / `<footer>` fixed, body (`p`, `secti
 
 | Data Attribute | Values | Description |
 |----------------|--------|-------------|
-| `data-numeric` | (boolean, on th/td) | Right-align numeric data |
-| `data-sticky` | `header`, `column`, `both` | Sticky header/column |
-| `data-density` | `compact`, `comfortable` | Row padding density |
-| `data-align` | `start`, `center`, `end` | Cell alignment |
-| `data-responsive` | `scroll`, `card` | Mobile layout mode |
-| `data-sort` | (on th) | Sortable column |
-| `data-state-sorted` | `asc`, `desc` | Sort direction |
-| `data-selected` | (on tr) | Row highlight |
-| `data-disabled` | (on tr) | Row disabled |
-| `data-highlight` | (on tr) | Row warning highlight |
-| `data-state-hidden` | (on tr) | Hidden row |
-| `data-expand-content` | (on tr) | Expandable row content |
-| `data-state-expanded` | (on tr) | Expanded state |
-| `data-label` | text | Mobile card mode label |
-| `data-sticky-column` | `2` | Sticky first N columns |
+| `data-numeric` | (boolean, on th/td) | Align to inline end (right in LTR, left in RTL) + tabular numerals |
+| `data-align` | `start`, `center`, `end` (on th/td) | Cell alignment (logical; not on `<col>`) |
+| `data-sticky` | `header`, `column`, `both` | Sticky header (at `var(--sticky-offset, 0px)`; `0` inside `[data-table-scroll]`) / first column / both. Frozen cells repeat the row tint; frozen edge flips in RTL |
+| `data-sticky-column` | `2` | Freeze the first two columns; second offset by `--_sticky-col-1-width` (8rem) |
+| `data-density` | `compact`, `comfortable` | Cell padding density |
+| `data-variant` | `minimal` | Low-ink: no header band, no hover, muted uppercase column headers |
+| `data-responsive` | `card` | Cards below a 500px container; thead visually hidden (kept in a11y tree); `card-init.js` restores table/rowgroup/row/columnheader/rowheader/cell roles and fills missing `data-label` from the column header |
+| `data-sort` | (on th) | Sortable column. `<data-table>`: sort TYPE `string`\|`number`\|`date`. `table[data-sortable]`: column KEY (type in `data-sort-type`). Both inject `<button data-sort-button>`; th keeps columnheader + `aria-sort`. Bare `th[data-sort]` has no behaviour/affordance |
+| `data-sort-value` | (on td) | Sort value override (`<data-table>` and `[data-sortable]`; `data-value` alias in `[data-sortable]`) |
+| `data-selected` | (on tr) | Selected: interactive tint + inline-start bar; `Highlight` in forced colors. `<data-table>` writes `data-state-selected` (styled the same). No semantics: pair with text/checkbox |
+| `data-highlight` | (on tr) | Warning tint + inline-start bar; `Mark` in forced colors |
+| `data-disabled` | (on tr) | Muted text colour (no opacity). Visual only: add `inert` (also styled) to disable |
+| `data-state-hidden` | (on tr) | Hidden row (written by `<data-table>` filter/paging); skipped by stripes |
+| `data-expandable` | (on tr) | `<data-table>` trigger row (with `[data-action="toggle-expand"]` button) |
+| `data-state-expanded` | (on the trigger tr) | Written by `<data-table>` while open |
+| `data-expand-content` | (on the detail tr, starts `hidden`) | Detail row; any child of its cell is padded |
+| `data-label` | text (on td/th) | Card-mode label; derived from the column header when absent |
 
-Legacy classes: `.striped`, `.compact`, `.bordered`
+Scroll region (wrapper, not the table): `<section data-table-scroll tabindex="0" aria-labelledby="<caption id>">` — focusable, named region that owns `overflow-x: auto`; `data-table-scroll="block"` also caps height (`--table-scroll-max-block`, 70dvh) so a sticky header pins inside it. Prints expanded. (`table[data-responsive="scroll"]` removed.)
+
+Row paint hooks: rows paint `background: var(--_row-bg)`; first cell `box-shadow: var(--_row-bar), var(--_edge)`. Override `--_row-bg` rather than `background` so frozen cells follow.
+
+Header look: only `thead th` / `th[scope=col|colgroup]` get the raised band; `tbody th[scope=row]` reads as a cell. `tfoot :is(td, th)` share the footer style.
+
+Legacy classes: `.striped` (odd *visible* rows; skips `[data-state-hidden]`, `[hidden]`, `[data-expand-content]`), `.compact`, `.bordered`
 
 ### `<nav>` Navigation
 
@@ -850,6 +858,7 @@ Separator: `<li role="separator">` (a vertical rule in row menus, a horizontal r
 | `data[data-variant~="mono"]` | data | Monospace face for identifiers (default `<data>` is prose font + tabular-nums) |
 | `dfn[id]:target` | dfn | Outline highlight when reached by fragment link |
 | `time.relative`, `time.datetime` | time | Time variants |
+| `video::cue` | video | Caption defaults: `--cue-text`, `--cue-bg`, `--cue-font` (OS caption settings and forced colors override) |
 | `sub[data-variant~="opentype"]`, `sup[data-variant~="opentype"]` | sub/sup | Opt-in: use the font's OpenType subs/sups glyphs (`font-variant-position`) and drop the manual size/offset. Only for fonts known to have the glyphs |
 | `sup.footnote-ref` | sup | Footnote marker: medium weight at the normal sup size (sized once); link keeps its underline with a padded hit area |
 | `.status[data-status]` (`success`, `warning`, `error`, `inactive`, `check`, `fail`) | span | Inline status glyph via `::before` with empty alt text (`content: "\25CF" / ""`); the label carries the meaning |
@@ -1073,7 +1082,7 @@ Subtle and outlined variants use `--color-*-text` ink (light-dark) on `--color-*
 Children: `[data-icon]`, `[data-content]` (e.g. `<section>` or a single `<p>`), `[data-title]` (e.g. `<strong>`), `[data-description]` (e.g. `<p>`), `button[data-dismiss]` (direct child; `data-dismiss="remove"` removes instead of `hidden`). Dismiss behaviour: `src/custom-elements/status-message/logic.js` (one delegated document listener) fires cancelable, bubbling `status-message:dismiss` and moves focus if it was inside. Title/compact text uses `--color-*-text`; border and filled background use the base colour. Forced colours: filled messages get a `1px solid CanvasText` border. Live regions only announce content inserted after the region exists — insert the message into a pre-existing `role="status"` container.
 
 #### `<text-divider>`
-Horizontal divider with centered text content. No attributes.
+Horizontal divider with centered text content. No attributes, no JS. Lines are `border-block-start` pseudo-elements (`--color-border`, `--border-width-thin`), visible in forced colours; an empty `<text-divider></text-divider>` is one continuous line. No semantics: use real headings for section/chapter labels and `<hr>` for an unlabelled thematic break (not `role="separator"` — its children are presentational). Wrap ornaments in `<span aria-hidden="true">`.
 
 #### `<user-avatar>`
 
@@ -1203,7 +1212,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 > build (`npm run build:cem`). The entries below are the human-readable companion;
 > when a component is missing detail here, read its `api.json` and `logic.js`.
 
-### Component index (80 elements)
+### Component index (83 elements)
 
 | Element | Purpose | Detail below |
 |---------|---------|:------------:|
@@ -1278,11 +1287,14 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<status-wc>` | State dot + label: `data-variant` live\|recording\|streaming\|error\|online\|running\|away\|paused\|busy\|offline\|stopped (or custom via CSS), `data-size`, `data-position` before\|after\|only, `data-pulse`; never colour-only — with no slot text a visually hidden default label per variant is rendered (`data-label-<variant>`, else `aria-label`, else English name) and follows `data-variant`; `role="status"`/`aria-live="polite"` unless author role/aria-live or `data-live="off"`; `status-wc:change` `{ variant, previousVariant }` only for post-upgrade changes; `.variant`; 1px darker ring in light mode (`--status-dot-ring`), forced colours system-colour dot | |
 | `<stepper-wc>` | Form-associated stepper for formatted units, currency, duration, bytes, token-snap scales and enums (plain numbers: `<input type="number" data-stepper>`). Inner `role="spinbutton"` is named from `<label for>` / wrapping label / host `aria-labelledby` / `aria-label`; `readonly` (aria-readonly, buttons disabled), `disabled` / disabled fieldset; `data-label-decrease` / `-increase`; `.value`, `.displayText`, `recomputeWidth()` | |
 | `<tab-set>` | Accessible tabs | ✓ |
-| `<text-reader>` | Text-to-speech reader (Web Speech API) | |
-| `<theme-picker>` | Theme switcher dropdown | ✓ |
-| `<time-index>` | Timeline of recently-updated pages (reads `last-modified`) | |
+| `<text-reader>` | Text-to-speech reader (Web Speech API + CSS Custom Highlight API): `for` (target id), `variant="icon"` (trigger + top-layer toolbar placed after it; Escape returns focus), `selectors` (default `p,li`), `speed`, `voice`, `highlight="false"`, `scroll="false"`; `data-label-play`/`-pause`/`-stop`/`-reader`/`-controls`/`-voice`/`-loading-voices`/`-speed`/`-slower`/`-faster`; slots `icon-play`/`icon-pause`/`icon-stop`/`icon-trigger`. Language = target's nearest `[lang]` (utterance.lang + voice preference); skips pre/code/aria-hidden/hidden; `<`/`>` sanitised to spaces; text re-extracted on play; reduced-motion = instant scroll; `play()`/`pause()`/`resume()`/`stop()`, `voices`/`speaking`/`paused`/`progress`; events `text-reader:play`/`pause`/`resume`/`stop`/`end`/`word`/`error` | |
+| `<theme-picker>` | Theme switcher (popover or `variant="inline"`, `compact`); per-instance radio groups; pointer picks auto-dismiss, arrow keys never do; non-modal (Escape / Tab-out / outside click close); `data-label-*`; syncs with sibling pickers + settings-panel via `vb:a11y-themes-change` / `vb:extensions-change` | ✓ |
+| `<time-index>` | Changelog/timeline enhancer: "Oldest first" toggle (`aria-pressed`), `versions` filter (entry version = `data-version` → own `.version-tag` → `v2-1-0` id) with live count, `<time data-relative>` keeps absolute date in `title`, optional `updates-src` JSON feed (http(s)/relative links only); `data-label-controls` / `-sort` / `-filter` / `-all` / `-status` / `-status-all` / `-recent` | |
+| `<time-picker>` | Form-associated time picker (combobox text entry + spinbutton dialog) over `<input type="time">` | ✓ |
 | `<toast-msg>` | Toast notification queue | ✓ |
 | `<tool-tip>` | Anchor-positioned rich tooltip | ✓ |
+| `<topic-map>` | SKOS concept tree from `data-lens-src` pages.json (`concepts: []`) + `data-vocabulary-src` (default `/vocabulary.json`): native `<details>` per concept, text-only summary with distinct-page count per subtree (`data-label-page`/`-pages`, `{count}`, Intl.PluralRules), `p.topic-link` to `/topics/{id}/` (`data-label-topic-link` "{label} topic page") in the body; `expand-all`; `data-heading-level` (default 2, `0` = none) + `data-label-heading`; `data-label-uncategorized`/`-error`; http(s)/relative links only; cycle-safe; `.data = { pages, vocabulary }` + `topic-map:data-changed`; JS-built (no-JS shows fallback only) | |
+| `<trust-filter>` | Provenance lens over `data-lens-src` pages.json: checkbox groups provenance (space tokens) / review / status / "Has signature" (declared `vb:signature`, not verified — see page-info); OR within, AND across; both signature values = no filter; only `output[data-trust-filter-count]` is live ("{count} of {total} pages"), list in sibling `ul[data-trust-filter-results]`; no ids; `data-label-*` (form, provenance, review, status, signed, yes, no, clear, page/pages, has-signature, error, no-source); http(s)/relative links only; `trust-filter:change` `{ selected, count }` on reader input/reset only | |
 | `<type-specimen>` | Token specimen — typography scale demo | |
 | `<video-player>` | Custom-controls video playback | |
 | `<week-view>` | Multi-day hour grid in a semantic table | ✓ |
@@ -1291,11 +1303,20 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 Detailed entries follow for the components with extended attributes/events. See `api.json` per component for the complete attribute & event surface.
 
 ### `<tab-set>`
-Accessible tabbed interface built on `<details name>` / `<summary>` children (no `role="tab"` / `role="tabpanel"` overrides; summary keeps its button role and `aria-expanded`).
+Accessible tabbed interface built on `<details name>` / `<summary>` children with one `<section>` panel each (no `role="tab"` / `role="tabpanel"` overrides; summary keeps its button role and `aria-expanded`). A labelled host gets `role="group"`. Missing or page-shared `<details name>` values are replaced with a per-instance name on upgrade.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `transition` | `fade` \| `slide` \| `scale` | View Transition between panels |
+| `data-orientation` | `horizontal` (default) \| `vertical` | Vertical: tab column at the inline start, panel beside it, ArrowUp/ArrowDown keys |
+
+| Property | Description |
+|----------|-------------|
+| `tabs` | `Array<{ id?, label, content, active? }>` — get as data or assign to rebuild; `content` is trusted HTML |
 
 | Events | Detail |
 |--------|--------|
-| `tab-set:change` | `{ index }` |
+| `tab-set:change` | `{ index, previousIndex, tab, panel }` — once per activation, from the opening tab |
 | `tab-set:tabs-changed` | `{ tabs, source }` |
 
 ### `<accordion-wc>`
@@ -1310,18 +1331,29 @@ Enhanced `<details>`/`<summary>` accordion.
 | `accordion-wc:toggle` | `{ open, summary, details }` |
 
 ### `<tool-tip>`
-Rich tooltip/popover container.
+Tooltip or hover card composed on `<pop-over>`. Hover (with delay) and focus open it; Escape and outside clicks close it. Uses `interestfor` where available. Default variant: `popover="hint"`, or `manual` with its own Escape/outside dismiss where `hint` is unsupported (never `auto`, which would close other open popovers).
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-position` | `top`, `bottom`, `left`, `right` | Position |
-| `data-trigger` | `hover`, `click`, `focus` | Trigger mode |
-| `data-tooltip-delay` | ms value | Show delay |
-| `data-no-flip` | (boolean) | Disable auto-flip |
+| `content` | text | Plain-text content. A `<template data-tooltip>` child wins; the trigger's `title` is the last fallback |
+| `position` | `top` (default), `bottom`, `left`, `right` | Placement (cards default to `bottom`). Without anchor positioning, a JS fallback honours it, flips, and centres |
+| `delay` | ms | Hover show delay on the JS path (default 200; cards 300) |
+| `variant` | `card` | Interactive hover card instead of a text tooltip |
+
+| Child | Description |
+|-------|-------------|
+| `<template data-tooltip>` | Rich HTML content (default variant) |
+| `[data-trigger]` | Card: the element that opens the card |
+| `[data-content]` | Card: the body. Moved into the card while upgraded, put back on disconnect (reconnect-safe) |
+| `title` on the trigger | Fallback text. Removed while upgraded (copied to `aria-label` when it was the trigger's only name), restored on disconnect |
+
+ARIA: the tooltip id is appended to the trigger's `aria-describedby` (authored ids are kept; only the added id is removed on disconnect). Cards set `aria-controls` and `aria-expanded` on the trigger. Keyboard: focus inside a card keeps it open, and Escape closes it and returns focus to the trigger.
 
 | Events |
 |--------|
 | `tool-tip:show`, `tool-tip:hide` |
+
+Methods: `show()`, `hide()`. Property: `isVisible` (read-only boolean).
 
 ### `<drop-down>`
 Action menu (APG menu button) by default; with `hover`, a navigation disclosure (APG disclosure nav — no menu roles).
@@ -1407,21 +1439,26 @@ Anchored popover primitive over the native Popover API. Sets `popover` from `dat
 Methods: `show()`, `hide()`, `toggle()`. Property: `open` (read-only boolean).
 
 ### `<toast-msg>`
-Toast notification container.
+Toast stack: the host is the single polite live region (`role="log"`, `aria-live="polite"`; authored `aria-label`/`aria-live` are kept). Toasts have no role of their own. Each one gets a visually hidden variant prefix ("Error: …"). Auto-dismiss pauses on hover, while focus is inside the stack, and while the page is hidden (WCAG 2.2.1). Escape closes the focused toast, and focus moves to the next toast or back to the opener. Live toasts and the queue survive a reconnect.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-position` | `top-end`, `top-start`, `top-center`, `bottom-end`, `bottom-start`, `bottom-center` | Position |
-| `data-max` | number | Max visible toasts |
+| `position` | `top-end` (default), `top-start`, `top-center`, `bottom-end`, `bottom-start`, `bottom-center` | Stack position (logical; centred positions stay centred in RTL) |
+| `duration` | ms (default 5000; `0` = sticky) | Default auto-dismiss time |
+| `max` | number (default 5) | Max visible toasts; extras queue |
+| `data-label-region` | text (default "Notifications") | Stack name |
+| `data-label-dismiss` | text (default "Dismiss") | Close button label |
+| `data-label-info` / `-success` / `-warning` / `-error` | text | Spoken variant prefixes (default "Info", "Success", "Warning", "Error") |
 
 | Events | Detail |
 |--------|--------|
-| `toast-msg:show` | `{ message, variant }` |
-| `toast-msg:hide` | `{ message, variant }` |
+| `toast-msg:enqueued` | `{ message, variant, duration, source, toast, queued }` (every `show()`) |
+| `toast-msg:show` | `{ toast }` |
+| `toast-msg:hide` | `{ toast }` |
 
-JS API: `document.querySelector('toast-msg').show({ message, variant, duration })`
+JS API: `show({ message, variant, duration, dismissible, action, onAction, source })` returns the toast element. Also `dismiss(toast)` (works for `dismissible: false` too), `dismissAll()`, and the read-only `queue` (`[{ message, variant, state: 'visible'|'queued' }]`).
 
-Toast variants: `data-variant="info|success|warning|error"` on `.toast` child.
+Toast variants: `data-variant="info|success|warning|error"` on the `.toast` child (set by `show()`).
 
 ### `<site-search>`
 Full-text search in a native modal `<dialog>` (`showModal()`: top layer, page inert, Escape closes). Input is a `role="combobox"`; results are a listbox of `role="option"` links (titles as text, excerpts `<mark>`-only, same-origin http(s) URLs); a separate `role="status"` region announces the count.
@@ -1580,13 +1617,34 @@ Form-associated date picker. Wraps a native `<input type="date">` (the no-JS fal
 
 Properties: `value` (ISO; `''` clears), `min`, `max`. Children: `<input type="date">` supplying `value` (reset target), `min`, `max`, `name`, `id` (its `<label for>` names the combobox). Locale = nearest `lang`.
 
+### `<time-picker>`
+Form-associated time picker. Wraps a native `<input type="time">` (the no-JS fallback); on upgrade renders a combobox text input + spinbutton popup (`role="dialog"`). Submitted value is `HH:MM` (or `HH:MM:SS` when seconds are shown); nothing is submitted while empty.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `name` | string | Form field name (a `name` on the inner input moves here on upgrade) |
+| `data-format` | `12h` \| `24h` | Hour cycle (default: nearest `lang`) |
+| `disabled` | (boolean) | Disable (observed; also via disabled `<fieldset>`; inner-input `disabled` moves here) |
+| `required` | (boolean) | `valueMissing` while empty (host or inner input) |
+| `data-label-input` / `-placeholder` / `-toggle` / `-dialog` / `-hours` / `-minutes` / `-seconds` / `-period` / `-empty` / `-required` / `-range-underflow` / `-range-overflow` / `-step-mismatch` | string | Translate built-in UI strings |
+
+| Events | Detail |
+|--------|--------|
+| `time-picker:change` | `{ value, hours, minutes, seconds, source }` (`value` `''` and units `null` when cleared; not fired on reset/restore) |
+
+Properties: `value` (`''` clears). Validity: `valueMissing`, `rangeUnderflow`, `rangeOverflow`, `stepMismatch` (typed values flagged; spinners snap to `step` from `min` and clamp; `min` > `max` = overnight range). Children: `<input type="time">` supplying `value` (reset target), `min`, `max`, `step`, `name`, `id` (its `<label for>` names the combobox). Locale = nearest `lang` (Intl day-period text; period-first locales put AM/PM first).
+
 ### `<theme-picker>`
-Theme picker UI (mode, theme, extensions).
+Theme picker UI (mode, accent, theme, sizing, a11y themes, extensions). `variant` `popover` (default) \| `inline`; `compact`; `open` is reflected state only. Trigger: `[data-trigger]` child, else first child `<button>`, else a generated `type="button"` icon trigger. Labels: `data-label-panel`/`-trigger`/`-mode`/`-accent`/`-style`/`-featured`/`-more-themes`/`-theme`/`-a11y`/`-sizing`/`-extensions`/`-download` (`{name}` placeholder). With no stored a11y list, authored `a11y-*` tokens on `<html data-theme>` are kept.
 
 | Events | Detail |
 |--------|--------|
 | `theme-picker:open`, `theme-picker:close` | — |
-| `extensions-change` (on window) | `{ extension, value }` |
+| `theme-picker:dtcg-download` | `{ themeId, href }` |
+| `vb:a11y-themes-change` (on window; also listened for) | `string[]` of active `a11y-*` ids |
+| `vb:extensions-change` (on window; also listened for) | `{ motionFx, sounds }` |
+
+Methods: `open()`, `close()`, `toggle()`; property `isOpen`.
 
 ### `<foot-notes>` / `<foot-note>`
 Footnote / sidenote system. `<foot-note>` elements anywhere *before* the `<foot-notes>` are collected; content nodes move into a `<section role="doc-endnotes">` list, references become `<a role="doc-noteref">` named "Footnote N", backlinks `role="doc-backlink"`.
@@ -1902,7 +1960,7 @@ Properties `url`, `shareTitle` (not `title` — avoids shadowing `HTMLElement.ti
 | `persist` / `expires` | banner | VBStore key for dismiss state / days until it re-shows |
 | `variant` / `position` | banner | `info\|success\|warning\|error` / `top` (sticky) `\|bottom` (fixed); reactive |
 | `src` / `poll` | panel | Feed URL or VBService role / poll interval (ms) |
-| `toast-new` | panel | Toast new entries (after the first fetch) on the first `<toast-msg>` in the document |
+| `toast-new` | panel | Toast new entries (after the first fetch). Value `"#id"` (any selector) targets a specific `<toast-msg>`; bare / no match = first `<toast-msg>` in the document |
 | `storage-key` | panel | VBStore namespace for read ids (default `notifications`) |
 | `data-label-*` | panel | `trigger`, `unread` (`{n} unread`), `title`, `mark-all`, `tabs`, `all`, `watching`, `empty`, `watch-empty`, `last-checked` (`{date}`), `never`, `changed`, `unwatch` (`{title}`), `new` |
 
@@ -2230,8 +2288,8 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | Attribute | Element | Description |
 |-----------|---------|-------------|
 | `data-switch` | `<input type="checkbox">` | Toggle switch UI (`sm`, `lg` sizes) |
-| `data-grow` | `<textarea>` | Auto-expanding textarea |
-| `data-count` | `<textarea>` | Character/word counter (`data-max`, `data-maxwords`) |
+| `data-grow` | `<textarea>` | Auto-expanding textarea: CSS `field-sizing: content`, starts at `rows` (default 2), `data-max-rows` caps then scrolls; JS fallback marks `data-grow-init="fallback"`. Re-measures on input/change/form reset |
+| `data-count` | `<textarea>` | Character/word counter. Limit from native `maxlength` (characters) or `data-maxwords` (words, advisory — no validity). Text: `data-label-limit[-<plural>]` (`{count} of {max} characters`), `data-label-characters[-<plural>]`, `data-label-words[-<plural>]`; `Intl` numbers for nearest `[lang]`. Recounts on form reset; dispatch `input` after setting `.value` |
 | `data-range` | `<input type="range">` | Enhanced range with value bubble + markers |
 | `data-stepper` | `<input type="number">` | +/- button wrapper. For non-numeric values (formatted units, currency, time, token-snap, enums), see [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) and the [numeric-inputs decision guide](/docs/concepts/numeric-inputs/). Native spinners are hidden only once upgraded (`[data-stepper-init]`). A plain `type="number"` keeps the browser spinners. |
 | `data-color` | `<input type="color">` | Enhanced color picker with swatch + hex |
@@ -2242,6 +2300,7 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-hide-when` | any | Conditional visibility (hide when field matches) |
 | `data-autosave` | `<form>` | Auto-save form to localStorage. Empty value derives key from `method`+`action` |
 | `data-autosave-retain` | `<form data-autosave>` | Space-separated allowlist of field names to persist |
+| `data-label-restored` | `<form data-autosave>` | Text of the "Draft restored" toast (shown via the first `<toast-msg>`, created if absent) |
 | `data-select-all` | `<input type="checkbox">` | Select/deselect all checkboxes |
 
 `data-show-when` / `data-hide-when`: controls in a hidden section are disabled (marked `data-conditional-disabled`) and re-enabled on show; author-disabled controls stay disabled.
@@ -2273,11 +2332,13 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-spoiler` | any | Content concealment (`blur`, `solid`, `noise`) |
 | `data-effect="ticker"` | `<data>` | Animated number count-up (`--vb-ticker-duration`, `--vb-ticker-start`, `--vb-ticker-decimals`) |
 | `data-format-number` | `<data>` | Locale-aware number formatting (`""`, `currency` + `data-currency` [defaults to USD], `percent`, `compact`); re-formats when `value` changes; empty/invalid `value` leaves the text |
-| `data-format-date` | `<time>` | Locale-aware date formatting (`relative`) |
+| `data-format-date` | `<time>` | Locale-aware date formatting (`short`/`medium`/`long`/`full`/`relative`; `data-format-time`, `data-locale`). Date-only `datetime` (`YYYY`, `YYYY-MM`, `YYYY-MM-DD`) formats in UTC at its own precision. Locale: `data-locale` → nearest `[lang]` → `<html lang>` → browser. Original text → `title` |
+| `data-relative` | `<time>` | Past-only "3 days ago" text, 60s refresh, English unless nearest `[lang]` is non-English (Intl). Used by activity-feed, comment-thread, time-index. Prefer `data-format-date="relative"` for new content |
 | `data-format-bytes` | `<data>` | Byte size formatting (value = precision; `data-unit="decimal"` for ÷1000) |
 | `data-animate-image` | `<img>` | Play/pause for animated images |
 | `data-command` | `<button>` | Command palette trigger |
 | `data-paged` | list-shaped container (`ul`/`ol`/`table`/`card-list`…) | Pagination: `data-paged-size` (10; 0 = off), `data-paged-page`, `data-paged-style` `numbered`\|`prev-next`\|`load-more`\|`infinite`, `data-paged-window` (2), `data-paged-controls` `before`\|`after`\|`both`\|`none` (none also drops the load-more button), `data-paged-url` (History API; back/forward re-render, no param = page 1); events in `paged:goto` `{ page }`, `paged:loadmore`; out `paged:change` `{ page, size, total, totalPages, visible, style }` (bubbles). Drive from elsewhere with `<pager-wc>` |
+| `data-sortable` | `<table>` or list-shaped container | Client-side sort. Table: `th[data-sort="key"]` (+ `data-sort-type` `text`\|`number`\|`date`) gets a `<button data-sort-button>` (th keeps columnheader role + `aria-sort`), cycles asc→desc→none; cell value from `data-sort-value`/`data-value`, `<time datetime>`, text. Lists: external `[data-sort-target]` select/button, items `data-sort-{key}`. `data-sortable-default`; reflects `data-sort-by`/`data-sort-direction`; event `sort:change` `{ key, direction, total }`; composes with `data-paged` |
 
 ---
 
@@ -2371,7 +2432,7 @@ These are NOT meta tags. They live on `<article>`, `<section>`, `<aside>`, or in
 | `<change-set>` | `data-author`, `data-provenance` on `<ins>`/`<del>` blocks |
 | `<site-index>` | Nothing automatically — the index is hand-authored markup or `src` JSON; a site may generate that JSON from `<meta name="keywords">`, `article:tag` or `<meta name="concept">`, but the component does not read meta tags |
 | `<time-index>` | `<meta name="last-modified">`, `itemprop="version"`, `vb:version-url` |
-| Trust / topic lens pages | `vb:provenance`, `vb:review`, `vb:status`, `<meta name="concept">` aggregated across the site |
+| `<trust-filter>` / `<topic-map>` | `vb:provenance`, `vb:review`, `vb:status`, `vb:signature` presence (as pages.json `signed` — declared, not verified) / `<meta name="concept">`, aggregated across the site via pages.json |
 | Analytics subsystem | All `vb:*` tags via `document.querySelectorAll('meta[name^="vb:"]')` |
 
 ---
@@ -2469,6 +2530,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-label-copied` | `<qr-code>` — copy announcement |
 | `data-label-prefix` | `<qr-code>` — canvas accessible name |
 | `data-label-raw` | `<print-page>` raw-toggle checkbox text |
+| `data-label-restored` | `<form data-autosave>` — restored-draft toast text |
 | `data-labels` | Chart — show value labels |
 | `data-layout` | Any — layout mode (see §5) |
 | `data-layout-*` | Layout elements — modifiers (see §5) |
@@ -2479,7 +2541,6 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-loading` | Any — loading state |
 | ~~`data-loop`~~ | **Removed** — use `loop` on `<carousel-wc>` |
 | `data-mask` | `<input>` — input masking |
-| `data-max` | `<toast-msg>` — maximum count (combo-box uses `max`) |
 | `data-media` | Container — aspect-ratio lock |
 | `data-met` | Password rules — requirement met |
 | `data-mode` | `<html>` — light/dark mode |
@@ -2487,7 +2548,6 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-name` | Token elements — token name |
 | `data-nav-open` | `<body>` — mobile nav state |
 | `data-next` | Pagination button — next page |
-| `data-no-flip` | `<tool-tip>` — disable auto-flip |
 | `data-no-icon` | `<a>`, `<form-field>` — suppress icons |
 | `data-numeric` | Table th/td — right-align |
 | `data-open` | Various WC — open state |
@@ -2528,7 +2588,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-sidebar` | Body — sidebar state |
 | ~~`data-single`~~ | **Removed** — use `single` on `<accordion-wc>` |
 | `data-size` | Various — size variant |
-| `data-sort` | Table th — sortable column |
+| `data-sort` | Table th — sortable column (`<data-table>`: sort type; `[data-sortable]`: column key) |
 | `data-sort-button` | `<th data-sort>` — generated sort button inside the header |
 | `data-sort-value` | Table td — custom sort value |
 | `data-spoiler` | Any — content concealment |
@@ -2538,7 +2598,6 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-state-expanded` | Table row — expanded |
 | `data-state-hidden` | Table row — hidden |
 | `data-state-selected` | Table row — selection state |
-| `data-state-sorted` | Table th — sort direction |
 | `data-status` | Avatar child — online status; content blocks, `<html>` — publication state (see §10) |
 | `data-stepper` | Number input — +/- buttons. See [numeric-inputs decision guide](/docs/concepts/numeric-inputs/) for when to reach for [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) instead. Native spinners are hidden only once upgraded (`[data-stepper-init]`). A plain `type="number"` keeps the browser spinners. |
 | `data-sticky` | Table — sticky header/column; `<header>`, `<footer>` — sticky; `<html>` — sticky header system |
@@ -2546,6 +2605,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-switch` | Checkbox — toggle switch |
 | `data-table-empty` | `<data-table>` — no-results message element (generated) |
 | `data-table-filter` | `<data-table>` — filter input container |
+| `data-table-scroll` | Focusable, labelled scroll region wrapping a wide table (`block` = also cap height) |
 | `data-table-status` | `<data-table>` — visually hidden live region (generated) |
 | `data-theme` | `<html>` — active theme |
 | ~~`data-ticker`~~ | **Removed** — use `data-effect="ticker"` on `<data>` |
@@ -2553,9 +2613,8 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-toggle-tags` | `<fieldset>` — pill chip toggle |
 | `data-tooltip` | Chart td — tooltip text |
 | `data-trust` | `.page-info-badge` only — verification tier (runtime-computed; see §10) |
-| `data-tooltip-delay` | `<tool-tip>` — show delay |
 | `data-tooltip-position` | Tooltip — position |
-| `data-trigger` | Any with `data-effect` — activation trigger. Built-ins: `scroll`, `hover`, `click`, `time:<ms>`, `intersect[:once\|toggle]`, `media:<query>`, `event:<name>`, `vt`. Also `<tool-tip>` — trigger mode. |
+| `data-trigger` | Any with `data-effect` — activation trigger. Built-ins: `scroll`, `hover`, `click`, `time:<ms>`, `intersect[:once\|toggle]`, `media:<query>`, `event:<name>`, `vt`. Also `<tool-tip variant="card">` — child that opens the card. |
 | `data-stagger` | Parent — child cascade. Empty or CSS time (e.g. `80ms`) → linear; `reverse`, `random`, `grid` → alternate ordering. |
 | `data-transition` | Any — View Transition handler. Built-ins: `morph`, `slide`, `fade`, `scale`, `stagger`, `none`, `effect:<class>` (bridges to `data-effect` via `vb:vt-update-done` / `data-trigger="vt"`). |
 | `data-effect-active` | Auto-managed — set by `VB.activate(el)` and trigger handlers. Effects gate on it. |

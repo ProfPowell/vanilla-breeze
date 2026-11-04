@@ -216,14 +216,12 @@ const BEHAVIOUR = [
   { name: 'stepper-wc', demo: 'examples/demos/stepper-wc-modes.html', selector: 'stepper-wc#px',
     run: `return fired(el, 'change', () => q(el, '.stepper-inc').click());`, expected: 1 },
   { name: 'tab-set', demo: 'examples/demos/dashboard-analytics.html', selector: 'tab-set',
-    // tab-set:change fires for the closing tab too; count the opened one.
-    run: `let opened = 0;
-          el.addEventListener('tab-set:change', (e) => { if (e.detail.index === 1) opened++; });
-          el.querySelectorAll('summary')[1].click(); await tick(150);
-          return [opened, el.querySelectorAll('summary')[1].getAttribute('aria-expanded')];`, expected: [1, 'true'] },
+    // exactly one tab-set:change per activation (from the opening tab)
+    run: `const n = await fired(el, 'tab-set:change', () => el.querySelectorAll('summary')[1].click());
+          return [n, el.querySelectorAll('summary')[1].getAttribute('aria-expanded')];`, expected: [1, 'true'] },
   { name: 'time-index', demo: 'examples/demos/timeline-changelog.html', selector: 'time-index',
     run: `const btn = q(el, '[data-timeline-controls] button'); btn.click(); await tick();
-          return btn.textContent;`, expected: 'Latest first' },
+          return btn.getAttribute('aria-pressed');`, expected: 'true' },
   { name: 'time-picker', demo: 'examples/demos/time-picker-basic.html', selector: 'time-picker',
     run: `q(el, '.time-trigger-icon').click(); await tick();
           return q(el, '.time-input').getAttribute('aria-expanded');`, expected: 'true' },
@@ -334,4 +332,76 @@ test('rating effect (star-rating and plain fieldset) re-wires after a real remov
     'star-rating': { values: [3, 0], live: 1 },
     fieldset: { values: [3, 0], live: 1 },
   });
+});
+
+/* ── Stateful hosts: live content across a reconnect ──────────────────────
+ *
+ * toast-msg keeps its toasts in the DOM; a reconnect used to strand them
+ * (timers cleared, never auto-dismissed, not counted against max). The
+ * tool-tip card variant moved its [data-content] into a pop-over that
+ * teardown() then deleted, so a reconnect left an upgraded-looking but
+ * empty, inert card.
+ */
+test('toast-msg keeps live toasts working across a reconnect', async ({ page }) => {
+  await routeWorkingTree(page, 'toast-msg');
+  await page.goto('/docs/examples/demos/toast-basic.html');
+  await page.waitForSelector('toast-msg[data-upgraded]', { state: 'attached' });
+
+  const result = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const el = /** @type {any} */ (document.querySelector('toast-msg'));
+    el.setAttribute('max', '1');
+    el.show({ message: 'timed', duration: 400 });
+    el.show({ message: 'queued', duration: 0 });
+    for (let i = 0; i < 2; i++) {
+      const parent = el.parentNode;
+      const next = el.nextSibling;
+      parent.removeChild(el);
+      parent.insertBefore(el, next);
+    }
+    const afterMove = el.queue.map((t) => t.state);
+    await wait(1000);
+    const afterTimer = el.queue.map((t) => `${t.message}:${t.state}`);
+    return { afterMove, afterTimer, toasts: el.querySelectorAll('.toast').length };
+  });
+
+  expect(result.afterMove).toEqual(['visible', 'queued']);
+  expect(result.afterTimer).toEqual(['queued:visible']);
+  expect(result.toasts).toBe(1);
+});
+
+test('tool-tip card keeps its content and re-wires after a reconnect', async ({ page }) => {
+  await routeWorkingTree(page, 'tool-tip');
+  await page.goto('/docs/examples/demos/tooltip-cards.html');
+  await page.waitForSelector('tool-tip[variant="card"][data-upgraded]', { state: 'attached' });
+
+  const result = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const el = /** @type {any} */ (document.querySelector('tool-tip[variant="card"]'));
+    const text = () => el.querySelector('pop-over.hover-card')?.textContent.trim() ?? '';
+    const before = { count: el.querySelectorAll('*').length, text: text() };
+    for (let i = 0; i < 2; i++) {
+      const parent = el.parentNode;
+      const next = el.nextSibling;
+      parent.removeChild(el);
+      parent.insertBefore(el, next);
+    }
+    let shows = 0;
+    el.addEventListener('tool-tip:show', () => shows++);
+    el.show();
+    await wait(100);
+    return {
+      before,
+      after: { count: el.querySelectorAll('*').length, text: text() },
+      upgraded: el.hasAttribute('data-upgraded'),
+      shows,
+      visible: el.isVisible,
+    };
+  });
+
+  expect(result.upgraded).toBe(true);
+  expect(result.after).toEqual(result.before);
+  expect(result.before.text).toContain('Jane Smith');
+  expect(result.shows).toBe(1);
+  expect(result.visible).toBe(true);
 });

@@ -9174,8 +9174,8 @@ export default {
         "name": "toast-new",
         "kind": "data",
         "purpose": "config",
-        "type": "boolean",
-        "description": "Panel mode: on each poll after the first, show a toast on the first <toast-msg> in the document for every never-seen dynamic notification"
+        "type": "string",
+        "description": "Panel mode: on each poll after the first, show a toast for every never-seen dynamic notification on the <toast-msg> matched by the value (a selector, e.g. #id); bare, invalid, or no matching <toast-msg> = first <toast-msg> in the document"
       },
       {
         "name": "storage-key",
@@ -14528,7 +14528,19 @@ export default {
         "kind": "aria",
         "purpose": "semantic-state",
         "type": "string",
-        "description": "Accessible label for the tab group"
+        "description": "Names the set of tabs. When the host has aria-label or aria-labelledby (and no role of its own) it gets role=\"group\" on upgrade, so the name is exposed; an unlabelled tab-set stays role-less. Read at upgrade."
+      },
+      {
+        "name": "data-orientation",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "horizontal",
+          "vertical"
+        ],
+        "default": "horizontal",
+        "description": "Vertical puts the tabs in a column at the inline start with the panel beside them, and adds ArrowUp/ArrowDown navigation. Horizontal tabs wrap onto further rows when they don't fit."
       },
       {
         "name": "transition",
@@ -14546,18 +14558,34 @@ export default {
     "structure": [
       {
         "element": "<details>",
-        "description": "One per tab — native disclosure element provides open/close state"
+        "description": "One per tab — native disclosure element provides open/close state. Give every tab the same name for no-JS exclusivity; on upgrade a missing, mixed or page-shared name is replaced with a per-instance one"
       },
       {
         "element": "<summary>",
         "description": "Tab label inside each <details>"
+      },
+      {
+        "element": "<section>",
+        "description": "Exactly one panel element per <details>, after the summary. Use <section>: it is named by its tab (aria-labelledby) and exposed as a region; a <div> panel's name is ignored"
       }
     ],
     "events": [
       {
         "name": "tab-set:change",
-        "detail": "{ index }",
-        "description": "Fired when the active tab changes"
+        "detail": "{ index, previousIndex, tab, panel }",
+        "description": "Fired once per activation (click, arrow key or setting details.open), from the newly opened tab. index is the new tab, previousIndex the one it replaced, tab its <details>, panel its panel element. Not fired during setup or when the active tab is re-selected"
+      },
+      {
+        "name": "tab-set:tabs-changed",
+        "detail": "{ tabs, source: 'property' }",
+        "description": "Fired after the tabs property rebuilds the set"
+      }
+    ],
+    "properties": [
+      {
+        "name": "tabs",
+        "type": "Array<{ id?, label, content, active? }>",
+        "description": "Get the tabs as data, or assign an array to rebuild the set (<details> + <summary> + <section> panel per entry; first tab opens unless one has active: true). content is trusted HTML written with innerHTML — never pass unsanitised user input"
       }
     ]
   },
@@ -14565,6 +14593,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "text-reader",
     "type": "web-component",
+    "description": "Text-to-speech reader with word-level highlighting (Web Speech API + CSS Custom Highlight API)",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -14578,6 +14607,16 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "ID of the element to read (required)"
+      },
+      {
+        "name": "variant",
+        "kind": "host-api",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "icon"
+        ],
+        "description": "\"icon\" renders a compact speaker trigger with a floating mini-toolbar instead of the full control bar"
       },
       {
         "name": "selectors",
@@ -14615,54 +14654,188 @@ export default {
         "description": "Set to \"false\" to disable auto-scroll"
       },
       {
-        "name": "part",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "label-play",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "label-pause",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "label-stop",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-speed-group",
+        "name": "data-label-play",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Play",
+        "description": "Play button label (i18n override)"
       },
       {
-        "name": "data-speed-value",
+        "name": "data-label-pause",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Pause",
+        "description": "Pause button label (i18n override)"
       },
       {
-        "name": "slot",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-label-stop",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Stop",
+        "description": "Stop button label (i18n override)"
+      },
+      {
+        "name": "data-label-reader",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Article reader",
+        "description": "Control-bar group label and icon trigger label (i18n override)"
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reader controls",
+        "description": "Icon-variant toolbar group label (i18n override)"
+      },
+      {
+        "name": "data-label-voice",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Voice",
+        "description": "Voice select label (i18n override)"
+      },
+      {
+        "name": "data-label-loading-voices",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loading voices…",
+        "description": "Voice select placeholder while voices load (i18n override)"
+      },
+      {
+        "name": "data-label-speed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Speed",
+        "description": "Speed slider label (i18n override)"
+      },
+      {
+        "name": "data-label-slower",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Slower",
+        "description": "Icon-toolbar slower button label (i18n override)"
+      },
+      {
+        "name": "data-label-faster",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Faster",
+        "description": "Icon-toolbar faster button label (i18n override)"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "slot",
+        "on": "direct child",
+        "type": "enum",
+        "values": [
+          "icon-play",
+          "icon-pause",
+          "icon-stop",
+          "icon-trigger"
+        ],
+        "description": "Moves the element into the matching generated button (icon-trigger: icon variant only); restored on disconnect"
+      }
+    ],
+    "structure": [],
+    "events": [
+      {
+        "name": "text-reader:play",
+        "detail": "{ voice, speed }",
+        "description": "Speech started"
+      },
+      {
+        "name": "text-reader:pause",
+        "detail": "{}",
+        "description": "Speech paused"
+      },
+      {
+        "name": "text-reader:resume",
+        "detail": "{}",
+        "description": "Speech resumed"
+      },
+      {
+        "name": "text-reader:stop",
+        "detail": "{}",
+        "description": "Speech stopped by stop(), a target change, or another reader taking over the speech queue"
+      },
+      {
+        "name": "text-reader:end",
+        "detail": "{ duration }",
+        "description": "Reached the end of the text (duration in ms)"
+      },
+      {
+        "name": "text-reader:word",
+        "detail": "{ word, charIndex, element }",
+        "description": "Word boundary reached"
+      },
+      {
+        "name": "text-reader:error",
+        "detail": "{ error }",
+        "description": "SpeechSynthesisUtterance error (also logged with console.warn)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "play()",
+        "description": "Start reading from the beginning (re-extracts the target text), or resume if paused"
+      },
+      {
+        "name": "pause()",
+        "description": "Pause speech"
+      },
+      {
+        "name": "resume()",
+        "description": "Resume paused speech"
+      },
+      {
+        "name": "stop()",
+        "description": "Cancel speech and reset; no-op when this reader is not speaking"
+      }
+    ],
+    "properties": [
+      {
+        "name": "voices",
+        "type": "Promise<SpeechSynthesisVoice[]>",
+        "readonly": true,
+        "description": "Available voices"
+      },
+      {
+        "name": "speaking",
+        "type": "boolean",
+        "readonly": true,
+        "description": "Speech is active (including paused)"
+      },
+      {
+        "name": "paused",
+        "type": "boolean",
+        "readonly": true,
+        "description": "Speech is paused"
+      },
+      {
+        "name": "progress",
+        "type": "number",
+        "readonly": true,
+        "description": "Position as a 0–1 fraction of the extracted text"
+      }
+    ]
   },
   "theme-picker": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "theme-picker",
     "type": "web-component",
-    "description": "Theme selection component",
+    "description": "Theme selection: color mode, brand theme, accent, sizing, accessibility themes and extensions, as a popover or inline panel",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -14674,110 +14847,298 @@ export default {
         "name": "variant",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Display variant: 'popover' (default), 'inline'"
+        "type": "enum",
+        "values": [
+          "popover",
+          "inline"
+        ],
+        "default": "popover",
+        "description": "popover: trigger + floating panel; inline: always-visible panel"
       },
       {
         "name": "compact",
         "kind": "host-api",
-        "purpose": "config",
+        "purpose": "visual-variant",
         "type": "boolean",
-        "description": "Render theme section as grouped select dropdown"
+        "description": "Segmented mode control plus selects instead of swatch grids"
       },
       {
         "name": "open",
-        "kind": "native",
-        "purpose": "config",
+        "kind": "host-api",
+        "purpose": "output-state",
+        "direction": "output",
         "type": "boolean",
-        "description": "Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup (popover variant only)"
+        "description": "Reflected state only — set by open()/close()/toggle(), not intended as initial markup (popover variant only)"
       },
       {
-        "name": "data-trigger",
+        "name": "data-label-panel",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Theme settings",
+        "description": "Panel aria-label (i18n override)"
       },
       {
-        "name": "aria-haspopup",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "data-label-trigger",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Theme settings",
+        "description": "Generated trigger icon label (i18n override)"
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-label-mode",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Color Mode",
+        "description": "Color mode legend and radiogroup label (i18n override)"
       },
       {
-        "name": "aria-busy",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "data-label-accent",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Color Accent",
+        "description": "Accent legend and label (i18n override)"
+      },
+      {
+        "name": "data-label-style",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Style",
+        "description": "Style swatch group (i18n override)"
+      },
+      {
+        "name": "data-label-featured",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Featured",
+        "description": "Featured themes legend (i18n override)"
+      },
+      {
+        "name": "data-label-more-themes",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "More Themes",
+        "description": "More themes disclosure (i18n override)"
+      },
+      {
+        "name": "data-label-theme",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Theme",
+        "description": "Compact theme select (i18n override)"
+      },
+      {
+        "name": "data-label-a11y",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Accessibility",
+        "description": "Accessibility legend (i18n override)"
+      },
+      {
+        "name": "data-label-sizing",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Sizing",
+        "description": "Sizing legend and label (i18n override)"
+      },
+      {
+        "name": "data-label-extensions",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Extensions",
+        "description": "Extensions legend / disclosure (i18n override)"
+      },
+      {
+        "name": "data-label-download",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Download {name} as DTCG tokens",
+        "description": "DTCG download link label ({name} = theme name) (i18n override)"
       }
     ],
+    "childAttributes": [
+      {
+        "name": "data-trigger",
+        "on": "button",
+        "type": "boolean",
+        "description": "Marks the popover trigger (else the first child <button>; else a generated type=button icon trigger)"
+      }
+    ],
+    "structure": [],
     "events": [
       {
-        "name": "vb:extensions-change"
+        "name": "theme-picker:open",
+        "detail": "null",
+        "description": "Popover opened"
       },
       {
-        "name": "theme-picker:open"
-      },
-      {
-        "name": "theme-picker:close"
+        "name": "theme-picker:close",
+        "detail": "null",
+        "description": "Popover closed"
       },
       {
         "name": "theme-picker:dtcg-download",
-        "description": "Fired when a user clicks the per-swatch DTCG download link. Native <a download> still handles the save; this event is for analytics / consumer hooks. detail: { themeId, href }"
+        "detail": "{ themeId, href }",
+        "description": "Per-swatch DTCG download link clicked (native <a download> still saves the file)"
+      },
+      {
+        "name": "vb:a11y-themes-change",
+        "detail": "string[]",
+        "description": "Dispatched on window when an accessibility theme is toggled; the picker also listens for it from other pickers and settings-panel and re-syncs"
+      },
+      {
+        "name": "vb:extensions-change",
+        "detail": "{ motionFx, sounds }",
+        "description": "Dispatched on window when extension prefs are applied (load and toggle); also listened for from sibling controls"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "methods": [
+      {
+        "name": "open()",
+        "description": "Open the popover and move focus into it (popover variant only)"
+      },
+      {
+        "name": "close()",
+        "description": "Close the popover"
+      },
+      {
+        "name": "toggle()",
+        "description": "Open or close the popover"
+      }
+    ],
+    "properties": [
+      {
+        "name": "isOpen",
+        "type": "boolean",
+        "readonly": true,
+        "description": "Whether the popover is open"
+      }
+    ]
   },
   "time-index": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "time-index",
     "type": "web-component",
-    "description": "Interactive changelog/timeline component",
+    "description": "Interactive changelog/timeline component: relative dates, sort toggle, version filter and a recently-updated-pages feed",
     "attributes": [
-      {
-        "name": "group",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "'month' (default) or 'version'"
-      },
-      {
-        "name": "view",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "'date' or 'version' — grouping view"
-      },
       {
         "name": "versions",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Enable version jump select"
+        "description": "Add a version filter select. Options come from each entry's data-version, own .version-tag text, or a v2-1-0 style id."
       },
       {
         "name": "updates-src",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "URL for recently updated pages JSON"
+        "description": "URL of a JSON array of { title, href | url, modified | date } rendered as a recently-updated-pages feed. Only http(s) and relative links are kept."
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Timeline controls",
+        "description": "Accessible name of the injected controls nav."
+      },
+      {
+        "name": "data-label-sort",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Oldest first",
+        "description": "Sort toggle text. The label never changes; aria-pressed carries the state."
+      },
+      {
+        "name": "data-label-filter",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Filter by version",
+        "description": "Accessible name of the version select."
+      },
+      {
+        "name": "data-label-all",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "All versions",
+        "description": "Text of the select's show-everything option."
+      },
+      {
+        "name": "data-label-status",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing {count} of {total} entries for {version}",
+        "description": "Polite live-region text after filtering; {count}, {total} and {version} are replaced."
+      },
+      {
+        "name": "data-label-status-all",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Showing all {total} entries",
+        "description": "Live-region text when the filter is cleared; {total} is replaced."
+      },
+      {
+        "name": "data-label-recent",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Recently updated pages",
+        "description": "Heading of the recently-updated-pages feed."
       },
       {
         "name": "data-timeline-controls",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "public": false,
+        "description": "Marks the injected controls nav"
+      },
+      {
+        "name": "data-recent-pages",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "public": false,
+        "description": "Marks the injected recently-updated-pages section"
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "childAttributes": [
+      {
+        "name": "data-version",
+        "on": "li, article, section",
+        "type": "string",
+        "description": "Explicit version of an entry or release for the filter (wins over .version-tag text and the id convention)."
+      }
+    ],
+    "structure": [
+      {
+        "element": ".changelog-entries",
+        "description": "One container: its li/article/section children are the entries. One per release: the host's top-level children holding them are the releases."
+      }
+    ]
   },
   "time-picker": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "time-picker",
     "type": "web-component",
-    "description": "Form-associated time input with combobox text entry",
+    "description": "Form-associated time input with combobox text entry and a spinbutton popup",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -14790,113 +15151,226 @@ export default {
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Form field name"
+        "description": "Form field name. A name on the inner input (the no-JS path) moves here on upgrade so exactly one value submits; the host's own name wins if both are set."
       },
       {
         "name": "data-format",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "\"12h\" or \"24h\" (default: locale-detected)"
+        "type": "enum",
+        "values": [
+          "12h",
+          "24h"
+        ],
+        "description": "Force a 12- or 24-hour display. Default: the hour cycle of the nearest [lang] (else the browser locale)."
       },
       {
         "name": "disabled",
         "kind": "native",
-        "purpose": "config",
+        "purpose": "semantic-state",
         "type": "boolean",
-        "description": "Disables the picker"
+        "description": "Disables the text input and clock button, closes the popup and drops the value from submission. Observed at runtime; a disabled ancestor fieldset has the same effect. A disabled on the inner input moves here on upgrade."
       },
       {
         "name": "required",
         "kind": "native",
         "purpose": "config",
         "type": "boolean",
-        "description": "Makes selection required"
+        "description": "Makes a time required (valueMissing while empty). Observed at runtime; a required on the inner input works too."
       },
       {
-        "name": "step",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "min",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "max",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-disabled",
+        "name": "data-label-input",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Time",
+        "description": "Accessible name for the text input when neither a <label> nor an aria-label/aria-labelledby is present."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-haspopup",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "autocomplete",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "placeholder",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "size",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuemin",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "aria-valuemax",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "data-open",
+        "name": "data-label-placeholder",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "default": "Type a time…",
+        "description": "Placeholder for the text input."
       },
       {
-        "name": "aria-valuenow",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "data-label-toggle",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Toggle time spinners",
+        "description": "Accessible name for the clock button."
       },
       {
-        "name": "aria-valuetext",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose time",
+        "description": "Accessible name for the spinner popup (role=dialog)."
+      },
+      {
+        "name": "data-label-hours",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Hours",
+        "description": "Accessible name of the hours spinbutton."
+      },
+      {
+        "name": "data-label-minutes",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Minutes",
+        "description": "Accessible name of the minutes spinbutton."
+      },
+      {
+        "name": "data-label-seconds",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Seconds",
+        "description": "Accessible name of the seconds spinbutton."
+      },
+      {
+        "name": "data-label-period",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "AM/PM",
+        "description": "Prefix of the AM/PM button's accessible name (\"AM/PM: PM\"). The AM/PM text itself comes from Intl."
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Not set",
+        "description": "Spinbutton value text while no time is set."
+      },
+      {
+        "name": "data-label-required",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Please select a time",
+        "description": "Validation message when required and empty. A data-message-valuemissing on the inner input wins."
+      },
+      {
+        "name": "data-label-range-underflow",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose a time at or after {time}",
+        "description": "Validation message when before min; {time} is the formatted min. A data-message-rangeunderflow on the inner input wins."
+      },
+      {
+        "name": "data-label-range-overflow",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose a time at or before {time}",
+        "description": "Validation message when after max; {time} is the formatted max. A data-message-rangeoverflow on the inner input wins."
+      },
+      {
+        "name": "data-label-step-mismatch",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Choose a valid time. The nearest are {lower} and {upper}",
+        "description": "Validation message when off the step grid; {lower}/{upper} are the nearest valid times. A data-message-stepmismatch on the inner input wins."
       }
     ],
     "events": [
       {
-        "name": "time-picker:change"
+        "name": "time-picker:change",
+        "detail": "{ value, hours, minutes, seconds, source: 'pointer' | 'keyboard' | 'api' }",
+        "description": "Fired when the value changes (not on form reset/restore, not when a commit leaves it unchanged). value is 'HH:MM' or 'HH:MM:SS', '' when cleared (hours/minutes/seconds are then null). source is 'api' for .value assignments, 'pointer' for spinner/AM-PM clicks, 'keyboard' for typed commits and spinner keys."
       }
     ],
-    "childAttributes": [],
-    "structure": []
+    "properties": [
+      {
+        "name": "value",
+        "type": "string",
+        "description": "Get or set the time as 'HH:MM' (or 'HH:MM:SS' when seconds are shown). '' when unset; assigning '' or null clears; malformed values are ignored."
+      },
+      {
+        "name": "form",
+        "type": "HTMLFormElement | null",
+        "description": "The associated form"
+      },
+      {
+        "name": "validity",
+        "type": "ValidityState",
+        "description": "Current validity, owned by the host: valueMissing, rangeUnderflow, rangeOverflow (both for a value outside an overnight range), stepMismatch. Anchored on the text input."
+      },
+      {
+        "name": "validationMessage",
+        "type": "string",
+        "description": "Current validation message"
+      },
+      {
+        "name": "willValidate",
+        "type": "boolean",
+        "description": "Whether the element is a candidate for constraint validation"
+      }
+    ],
+    "methods": [
+      {
+        "name": "checkValidity()",
+        "description": "Run constraint validation without showing UI"
+      },
+      {
+        "name": "reportValidity()",
+        "description": "Run constraint validation and show the browser message, anchored on the text input"
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "value",
+        "on": "input",
+        "type": "string",
+        "description": "Initial time (HH:MM[:SS]). The value attribute is the form-reset target; omit it for an empty field."
+      },
+      {
+        "name": "min",
+        "on": "input",
+        "type": "string",
+        "description": "Earliest valid time. Spinners stay at or after it; a typed earlier time is kept and flagged rangeUnderflow. A min later than max is an overnight range."
+      },
+      {
+        "name": "max",
+        "on": "input",
+        "type": "string",
+        "description": "Latest valid time. Spinners stay at or before it; a typed later time is kept and flagged rangeOverflow."
+      },
+      {
+        "name": "step",
+        "on": "input",
+        "type": "string",
+        "description": "Step in seconds (default 60; 'any' disables step checks), counted from min. Spinners snap to it; typed off-step times are flagged stepMismatch. Under 60 (or not a whole minute) shows a seconds spinner; whole hours (3600, 7200…) step the hours spinner and make minutes read-only."
+      },
+      {
+        "name": "name",
+        "on": "input",
+        "type": "string",
+        "description": "Submission name for the no-JS fallback. Moved to the host on upgrade."
+      }
+    ],
+    "structure": [
+      {
+        "element": "<input type=\"time\">",
+        "description": "Required. Supplies value/min/max/step and is the no-JS fallback. Its <label for> (or a <label for> on the host, or an aria-label) names the generated combobox."
+      }
+    ]
   },
   "toast-msg": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "toast-msg",
     "type": "web-component",
-    "description": "Toast notification container with stacking, auto-dismiss, and position options",
+    "description": "Toast notification stack: one polite live region, queued toasts beyond max, auto-dismiss that pauses on hover/focus, localisable labels",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -14917,21 +15391,101 @@ export default {
           "bottom-center",
           "bottom-end"
         ],
-        "description": "Screen position for the toast stack"
+        "description": "Screen position for the toast stack (default top-end); centred positions stay centred in RTL"
       },
       {
         "name": "duration",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Default auto-dismiss duration in milliseconds"
+        "description": "Default auto-dismiss duration in milliseconds (default 5000; 0 = stay until dismissed). The timer pauses while the pointer is over the stack, focus is inside it, or the page is hidden"
       },
       {
         "name": "max",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Maximum number of visible toasts"
+        "description": "Maximum number of visible toasts (default 5); further toasts queue and appear as others dismiss"
+      },
+      {
+        "name": "data-label-region",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Accessible name of the stack; an authored aria-label wins (default \"Notifications\")"
+      },
+      {
+        "name": "data-label-dismiss",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Close button label (default \"Dismiss\")"
+      },
+      {
+        "name": "data-label-info",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden prefix spoken before info messages (default \"Info\")"
+      },
+      {
+        "name": "data-label-success",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden prefix spoken before success messages (default \"Success\")"
+      },
+      {
+        "name": "data-label-warning",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden prefix spoken before warning messages (default \"Warning\")"
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden prefix spoken before error messages (default \"Error\")"
+      }
+    ],
+    "events": [
+      {
+        "name": "toast-msg:enqueued",
+        "detail": "{ message, variant, duration, source, toast, queued }",
+        "description": "Fired (bubbles) on every show() call; queued is true when the toast waits behind max"
+      },
+      {
+        "name": "toast-msg:show",
+        "detail": "{ toast }",
+        "description": "Fired (bubbles) when a toast becomes visible"
+      },
+      {
+        "name": "toast-msg:hide",
+        "detail": "{ toast }",
+        "description": "Fired (bubbles) when a toast has been removed"
+      }
+    ],
+    "properties": [
+      {
+        "name": "queue",
+        "type": "Array<{ message, variant, state }>",
+        "description": "Read-only. Visible then queued toasts; state is 'visible' or 'queued'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "show(options)",
+        "description": "Show a toast. options: { message, variant ('info'|'success'|'warning'|'error'), duration, dismissible (default true), action, onAction, source }. Returns the toast element"
+      },
+      {
+        "name": "dismiss(toast)",
+        "description": "Dismiss one toast (also non-dismissible ones) or drop it from the queue"
+      },
+      {
+        "name": "dismissAll()",
+        "description": "Dismiss every visible toast and clear the queue"
       }
     ]
   },
@@ -14939,96 +15493,121 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "tool-tip",
     "type": "web-component",
-    "description": "Enhanced tooltip with Popover API + interestfor",
+    "description": "Tooltip or hover card composed on <pop-over>: hover/focus with delay, interestfor where available, Escape and outside dismiss",
     "attributes": [
       {
         "name": "content",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Simple text tooltip content"
+        "description": "Plain-text tooltip content (a <template data-tooltip> child wins; the trigger's title is the last fallback)"
       },
       {
         "name": "position",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Position: 'top' (default), 'bottom', 'left', 'right'"
+        "type": "enum",
+        "values": [
+          "top",
+          "bottom",
+          "left",
+          "right"
+        ],
+        "description": "Placement; tooltips default to top, cards to bottom"
       },
       {
         "name": "delay",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Show delay in ms (default: 200)"
+        "description": "Hover show delay in ms on the JS path (default 200; cards 300)"
       },
       {
         "name": "variant",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
-        "description": "Variant: omit for tooltip (default), 'card' for hover card"
-      },
-      {
-        "name": "data-interest-polyfill",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "title",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
-      },
-      {
-        "name": "data-anchor",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "interestfor",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-content",
-        "kind": "data",
-        "purpose": "config"
+        "type": "enum",
+        "values": [
+          "card"
+        ],
+        "description": "Omit for a text tooltip; card for an interactive hover card"
       }
     ],
     "events": [
       {
-        "name": "tool-tip:show"
+        "name": "tool-tip:show",
+        "description": "Fired (bubbles) as the tooltip or card opens"
       },
       {
-        "name": "tool-tip:hide"
+        "name": "tool-tip:hide",
+        "description": "Fired (bubbles) as the tooltip or card closes"
       }
     ],
-    "childAttributes": [],
+    "childAttributes": [
+      {
+        "name": "data-tooltip",
+        "on": "template",
+        "type": "boolean",
+        "description": "Rich tooltip content (HTML) for the default variant"
+      },
+      {
+        "name": "data-trigger",
+        "on": "*",
+        "type": "boolean",
+        "required": true,
+        "description": "Card variant: the element that opens the card"
+      },
+      {
+        "name": "data-content",
+        "on": "*",
+        "type": "boolean",
+        "required": true,
+        "description": "Card variant: the card body. Moved into the card while upgraded and put back on disconnect"
+      },
+      {
+        "name": "title",
+        "on": "*",
+        "type": "string",
+        "description": "On the trigger: tooltip text fallback. Removed while upgraded (kept as aria-label when it was the trigger's only name) and restored on disconnect"
+      }
+    ],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
         "@flow"
       ]
-    }
+    },
+    "properties": [
+      {
+        "name": "isVisible",
+        "type": "boolean",
+        "description": "Read-only. True while the tooltip or card is open"
+      }
+    ],
+    "methods": [
+      {
+        "name": "show()",
+        "description": "Open now (no delay)"
+      },
+      {
+        "name": "hide()",
+        "description": "Close now"
+      }
+    ]
   },
   "topic-map": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "topic-map",
     "type": "web-component",
-    "description": "SKOS-aware hierarchical view of site concepts. Joins vocabulary.json (skos:broader/narrower edges) with pages.json (each page's concepts:[] array) to render a nested <details> tree rooted at top concepts.",
+    "description": "SKOS-aware hierarchical view of site concepts. Joins vocabulary.json (skos:broader/narrower edges) with pages.json (each page's concepts:[] array) to render a nested <details> tree rooted at top concepts. Counts are distinct pages per subtree; page links are scheme-checked; cyclic edges are skipped. Built by JavaScript (no-JS shows only authored fallback content).",
     "attributes": [
       {
         "name": "data-lens-src",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "URL to pages.json. Each page record must expose a concepts:[] array (per meta-tag-contract v1.1)."
+        "description": "URL to pages.json. Each page record must expose a concepts:[] array (per meta-tag-contract v1.1). Read at setup; forwarded by content-lens."
       },
       {
         "name": "src",
@@ -15050,35 +15629,115 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Render with every level expanded. Default opens only the top-level concepts."
+        "description": "Render with every level expanded. Default opens only the top-level concepts. Read at render (not observed)."
+      },
+      {
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": 2,
+        "description": "Heading level 1-6 for the panel heading; 0 renders no heading (e.g. inside content-lens, which already labels the lens)."
+      },
+      {
+        "name": "data-label-heading",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Topics",
+        "description": "Heading text."
+      },
+      {
+        "name": "data-label-page",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} page",
+        "description": "Count template used when Intl.PluralRules selects \"one\"; {count} is the formatted number."
+      },
+      {
+        "name": "data-label-pages",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} pages",
+        "description": "Count template for every other plural category."
+      },
+      {
+        "name": "data-label-uncategorized",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Uncategorized",
+        "description": "Label of the node holding pages whose concepts are not in the vocabulary."
+      },
+      {
+        "name": "data-label-topic-link",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{label} topic page",
+        "description": "Text of the /topics/{id}/ link inside each node; {label} is the concept prefLabel."
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Topics could not be loaded.",
+        "description": "Message when a data source fails to load or the tree cannot be built (detail goes to console.warn, never rendered)."
       }
     ],
     "childAttributes": [],
+    "properties": [
+      {
+        "name": "data",
+        "type": "{ pages: object[], vocabulary: object } | null",
+        "description": "Assign in-memory payloads to bypass the fetch path (takes precedence over data-lens-src while set). Reading returns the assigned payload, or null when the tree came from src."
+      }
+    ],
+    "events": [
+      {
+        "name": "topic-map:data-changed",
+        "detail": "{ pages, vocabulary, source: 'property' }",
+        "description": "Fires after the data property is assigned and the tree re-rendered."
+      }
+    ],
     "structure": [
+      {
+        "element": "h2.topic-map-heading",
+        "required": false,
+        "description": "Generated heading (level from data-heading-level; omitted when 0) with the total page count in <small>."
+      },
       {
         "element": "details[data-topic-node]",
         "required": false,
-        "description": "Generated. One <details> per concept node. data-topic-node carries the concept @id (or '__uncategorized'). Native disclosure widgets work without JS."
+        "description": "Generated. One <details> per concept node. data-topic-node carries the concept @id (or '__uncategorized'). Top level opens by default."
       },
       {
-        "element": "summary > a.topic-name",
+        "element": "summary > .topic-name",
         "required": false,
-        "description": "Generated. Concept prefLabel linked to /topics/{id}/."
+        "description": "Generated. Concept prefLabel as plain text (the summary holds no link, so it only toggles)."
       },
       {
         "element": "summary > .topic-count",
         "required": false,
-        "description": "Generated. Total page count for the concept and all descendant concepts."
+        "description": "Generated. Distinct pages tagged with the concept or any descendant, with unit (\"5 pages\")."
+      },
+      {
+        "element": "p.topic-link > a",
+        "required": false,
+        "description": "Generated. Link to /topics/{id}/, first item in the disclosure body."
       },
       {
         "element": "ul.topic-pages > li > a",
         "required": false,
-        "description": "Generated. Pages tagged directly with this concept, in source order."
+        "description": "Generated. Pages tagged directly with this concept, in source order. URLs that are not http(s) or relative render as plain text."
       },
       {
         "element": "p[data-topic-map-error]",
         "required": false,
-        "description": "Rendered when either data source fails to load."
+        "description": "Rendered when either data source fails to load; authored fallback content is kept below it."
       }
     ],
     "htmlvalidate": {
@@ -15092,28 +15751,159 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "trust-filter",
     "type": "web-component",
-    "description": "Provenance-based filter lens (vb:provenance, vb:review, vb:status, signed)",
+    "description": "Provenance lens: filter pages.json by vb:provenance, vb:review, vb:status and whether a signature is declared (not verified). OR within a dimension, AND across. Only the count is a live region.",
     "attributes": [
       {
         "name": "data-lens-src",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "URL to pages.json (or compatible source)"
+        "description": "URL to pages.json (or compatible source). Read at setup; forwarded by content-lens."
       },
       {
         "name": "src",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Alias for data-lens-src"
+        "description": "Alias for data-lens-src."
+      },
+      {
+        "name": "data-label-form",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Filter pages",
+        "description": "Accessible name of the controls form."
+      },
+      {
+        "name": "data-label-provenance",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "How was it made",
+        "description": "Legend of the provenance group."
+      },
+      {
+        "name": "data-label-review",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Review",
+        "description": "Legend of the review group."
+      },
+      {
+        "name": "data-label-status",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Status",
+        "description": "Legend of the status group."
+      },
+      {
+        "name": "data-label-signed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Has signature",
+        "description": "Legend of the signature group. pages.json signed means a vb:signature meta is present, not that it verified."
+      },
+      {
+        "name": "data-label-yes",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Yes",
+        "description": "Signature group \"yes\" option text."
+      },
+      {
+        "name": "data-label-no",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No",
+        "description": "Signature group \"no\" option text."
+      },
+      {
+        "name": "data-label-clear",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Clear all",
+        "description": "Reset button text."
+      },
+      {
+        "name": "data-label-page",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} of {total} page",
+        "description": "Count template when Intl.PluralRules selects \"one\" for {total}."
+      },
+      {
+        "name": "data-label-pages",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{count} of {total} pages",
+        "description": "Count template for every other plural category."
+      },
+      {
+        "name": "data-label-has-signature",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "has signature",
+        "description": "Result-row note for pages that declare a signature."
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Pages could not be loaded.",
+        "description": "Message when the source fails (detail goes to console.warn, never rendered)."
+      },
+      {
+        "name": "data-label-no-source",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No data source set.",
+        "description": "Message when neither data-lens-src nor src is set."
       }
     ],
     "events": [
       {
         "name": "trust-filter:change",
         "detail": "{ selected, count }",
-        "description": "Fires when the reader changes any filter chip"
+        "description": "Fires when the reader ticks, unticks or clears a filter. selected is a per-dimension array of values. Not fired on the initial render or on reconnect."
+      }
+    ],
+    "structure": [
+      {
+        "element": "form[data-trust-filter-controls]",
+        "required": false,
+        "description": "Generated. One fieldset[data-dim] per dimension with nested label > input[type=checkbox][data-dim] (no ids), plus a reset button. Rebuilt unchecked on every setup, and the selection is cleared with it."
+      },
+      {
+        "element": "output[data-trust-filter-count]",
+        "required": false,
+        "description": "Generated polite live region holding only \"N of M pages\"; filled on first render without an announcement."
+      },
+      {
+        "element": "ul[data-trust-filter-results]",
+        "required": false,
+        "description": "Generated results list, a sibling of the count (not a live region); hidden when empty. Links that are not http(s) or relative render as plain text."
+      },
+      {
+        "element": "span.trust-filter-prov[data-provenance]",
+        "required": false,
+        "description": "Generated provenance chip; coloured per token (~=) with theme tokens."
+      },
+      {
+        "element": "p[data-trust-filter-error]",
+        "required": false,
+        "description": "Rendered when there is no source or the source fails to load."
       }
     ],
     "htmlvalidate": {
