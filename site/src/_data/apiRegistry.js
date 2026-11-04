@@ -11035,61 +11035,126 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "qr-code",
     "type": "web-component",
-    "description": "QR code generator web component",
+    "description": "QR code generator: black-on-white canvas with quiet zone, author children kept as the caption",
     "attributes": [
       {
         "name": "value",
-        "kind": "native",
+        "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "The text/URL to encode (or uses textContent). Reactive."
+        "description": "The text/URL to encode. Falls back to the element's original text content. Reactive; removing it falls back to the text again."
       },
       {
         "name": "size",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Canvas size in pixels (default: 200). Reactive."
+        "default": "200",
+        "description": "Edge of the drawn box in CSS pixels, quiet zone included. Modules are a whole number of device pixels. Reactive."
       },
       {
         "name": "color",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Foreground color (default: currentColor). Init-only."
+        "default": "#000",
+        "description": "Module colour (any CSS colour). Opt-in; logs a console warning when the pair is inverted, low-contrast or translucent. Reactive."
       },
       {
         "name": "background",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Background color (default: transparent). Init-only."
+        "default": "#fff",
+        "description": "Background colour, always painted, including the 4-module quiet zone. Reactive."
       },
       {
         "name": "error-correction",
         "kind": "host-api",
         "purpose": "config",
-        "type": "number",
-        "description": "Error correction level 0-3 (L/M/Q/H, default: 1/M). Init-only."
+        "type": "enum",
+        "values": [
+          "l",
+          "m",
+          "q",
+          "h",
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "default": "m",
+        "description": "Error-correction level: L (7%), M (15%, default), Q (25%), H (30%), or 0-3. Letters are case-insensitive (listed lower-case because html-validate matches enums lower-cased); other values warn and use M. Reactive."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "data-caption",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "visible"
+        ],
+        "description": "Show the caption (the element's children) under the code. By default it is visually hidden but read by screen readers, and shown while a link inside it has focus."
+      },
+      {
+        "name": "data-label-prefix",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "QR code",
+        "description": "Accessible name of the canvas (role=img). The value itself is read from the caption, so it is not announced twice."
+      },
+      {
+        "name": "data-label-copied",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "QR code copied",
+        "description": "Screen-reader announcement after copy() succeeds."
+      },
+      {
+        "name": "data-error",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "capacity",
+          "encoding"
+        ],
+        "description": "Set when no code could be drawn (the text is longer than the level holds, or cannot be encoded). The caption is then shown."
       }
     ],
     "childAttributes": [],
     "structure": [],
+    "events": [
+      {
+        "name": "qr-code:error",
+        "detail": "{ reason: 'capacity' | 'encoding', value, errorCorrection: 'L' | 'M' | 'Q' | 'H', message }",
+        "description": "Fired when the value cannot be encoded. No code is drawn and the caption (fallback) stays visible."
+      },
+      {
+        "name": "qr-code:upgraded",
+        "description": "Fired once the element has upgraded (canvas and caption in place)."
+      }
+    ],
+    "properties": [
+      {
+        "name": "value",
+        "type": "string",
+        "description": "The encoded text. Setting it sets the value attribute; '' or null removes it."
+      }
+    ],
     "methods": [
       {
         "name": "toDataURL(type?)",
         "returns": "string",
-        "description": "Returns the QR canvas as a data URL (default image/png)."
+        "description": "Returns the code as a data URL (default image/png): opaque, quiet zone included. '' when no code is drawn."
       },
       {
         "name": "copy(options?)",
         "returns": "Promise<boolean>",
-        "description": "Copies the QR to the clipboard as text/plain (the encoded value) + image/png (the canvas). Falls back to text-only on browsers without ClipboardItem support."
+        "description": "Copies the code to the clipboard as text/plain (the encoded value) + image/png. Falls back to text-only without ClipboardItem support. options.button gets data-state=\"copied\" and a copy event. Resolves false when no code is drawn."
       }
     ],
     "htmlvalidate": {
@@ -11116,7 +11181,7 @@ export default {
         "kind": "aria",
         "purpose": "config",
         "type": "string",
-        "description": "Toolbar label (default \"Reactions\")"
+        "description": "Toolbar label (default: data-label-toolbar, then \"Reactions\"). Also names the palette group."
       },
       {
         "name": "data-trigger-icon",
@@ -11133,23 +11198,45 @@ export default {
         "description": "aria-label for the trigger (default \"Add reaction\")"
       },
       {
+        "name": "data-label-toolbar",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Default toolbar label when no aria-label is authored (default \"Reactions\")"
+      },
+      {
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "aria-label of the palette dialog (default \"Choose a reaction\")"
+      },
+      {
+        "name": "data-label-count-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Count phrase in chip names for the Intl.PluralRules \"one\" category; {count} is replaced by the Intl.NumberFormat count (default \"{count} reaction\"). Any CLDR category works: data-label-count-zero, -two, -few, -many."
+      },
+      {
+        "name": "data-label-count-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Count phrase for every category without its own data-label-count-* (default \"{count} reactions\"). Locale comes from the closest [lang]."
+      },
+      {
         "name": "data-disabled",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Read-only mode — chips don't toggle, trigger is disabled"
-      },
-      {
-        "name": "role",
-        "kind": "aria",
-        "purpose": "config",
-        "description": "Set to \"toolbar\""
+        "description": "Read-only mode, observed: chips get aria-disabled and do not toggle, the trigger is disabled and leaves the roving tab order, an open palette closes"
       }
     ],
     "events": [
       {
         "name": "reaction-bar:toggle",
-        "description": "Fires when a chip or palette option is clicked. detail: { reaction, action: 'add'|'remove', count, mine }"
+        "description": "Fires when a chip or palette option is clicked. detail: { reaction, action: 'add'|'remove', count, mine } — count and mine are the values BEFORE the toggle. The chip is then data-pending until setCount() is called for that reaction."
       },
       {
         "name": "reaction-bar:palette-open",
@@ -11178,7 +11265,19 @@ export default {
         "name": "data-mine",
         "on": "button",
         "type": "boolean",
-        "description": "Whether the current user has this reaction"
+        "description": "Whether the current user has this reaction (exposed as aria-pressed)"
+      },
+      {
+        "name": "data-label",
+        "on": "button",
+        "type": "string",
+        "description": "Accessible name of the reaction (e.g. \"Thumbs up\"), on chips and palette buttons; an authored aria-label works too. Falls back to the emoji."
+      },
+      {
+        "name": "data-pending",
+        "on": "button",
+        "type": "boolean",
+        "description": "Output: a toggle for this chip is in flight (also aria-busy); further clicks are ignored until setCount()"
       },
       {
         "name": "data-palette",
@@ -11187,76 +11286,379 @@ export default {
         "description": "Marks a <template> child as the available-reactions palette"
       }
     ],
-    "structure": []
+    "structure": [],
+    "methods": [
+      {
+        "name": "setCount(reaction, count, { mine })",
+        "description": "Update a chip after the server confirms (call it on failure too, with the old values, to roll back). Clears the pending state, creates the chip from the palette template button (keeping its data-label) if missing, and removes the chip at count 0 — focus moves to a neighbour if the chip had it."
+      },
+      {
+        "name": "openPalette()",
+        "description": "Open the palette popover (no-op while data-disabled)"
+      },
+      {
+        "name": "closePalette()",
+        "description": "Close the palette popover"
+      }
+    ]
   },
   "reader-view": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "reader-view",
     "type": "web-component",
-    "description": "Immersive reading shell with scroll and paged modes.",
+    "description": "Immersive reading shell with scroll and paged modes. Moves its children into a layout-columns surface with a chrome bar, page navigation, font and column controls.",
     "attributes": [
-      {
-        "name": "upgraded",
-        "kind": "host-api",
-        "purpose": "config"
-      },
       {
         "name": "mode",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "scroll",
+          "pages"
+        ],
+        "default": "scroll",
+        "direction": "both",
+        "description": "Reading mode. Observed and reflected. pages is a full-viewport overlay: the rest of the page is made inert, document scroll is locked, focus moves into the pager, Escape returns to scroll."
       },
       {
         "name": "columns",
         "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "auto",
+          "1",
+          "2",
+          "3"
+        ],
+        "default": "auto",
+        "direction": "both",
+        "description": "Column count in pages mode. Observed and reflected."
       },
       {
         "name": "font-controls",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Set to false to omit the font-size buttons from the default chrome."
       },
       {
         "name": "col-controls",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Set to false to omit the column picker from the default chrome."
       },
       {
         "name": "reader-title",
         "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "disabled",
-        "kind": "native",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "Chrome bar title. Falls back to the first <h1>, then document.title."
       },
       {
         "name": "persist",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "default": "true",
+        "description": "Set to false to disable localStorage persistence of font size, columns (and mode with data-remember-mode)."
       },
       {
         "name": "storage-key",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "string",
+        "description": "localStorage key. Defaults to vb-reader:<location.pathname>, plus #<id> when the element has an id."
       },
       {
-        "name": "data-reader-state",
+        "name": "data-remember-mode",
         "kind": "data",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Opt in to restoring the persisted mode (including pages) on load. Without it only font size and columns are restored; an authored mode attribute always wins."
+      },
+      {
+        "name": "data-label-kicker",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reader",
+        "description": "Override the \"Reader\" string."
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reading controls",
+        "description": "Override the \"Reading controls\" string."
+      },
+      {
+        "name": "data-label-mode-group",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Reading mode",
+        "description": "Override the \"Reading mode\" string."
+      },
+      {
+        "name": "data-label-mode",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Mode",
+        "description": "Override the \"Mode\" string."
+      },
+      {
+        "name": "data-label-scroll",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Scroll",
+        "description": "Override the \"Scroll\" string."
+      },
+      {
+        "name": "data-label-pages",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Pages",
+        "description": "Override the \"Pages\" string."
+      },
+      {
+        "name": "data-label-font-group",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Font size",
+        "description": "Override the \"Font size\" string."
+      },
+      {
+        "name": "data-label-type",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Type",
+        "description": "Override the \"Type\" string."
+      },
+      {
+        "name": "data-label-font-decrease",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Decrease font size",
+        "description": "Override the \"Decrease font size\" string."
+      },
+      {
+        "name": "data-label-font-increase",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Increase font size",
+        "description": "Override the \"Increase font size\" string."
+      },
+      {
+        "name": "data-label-columns-group",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Page columns",
+        "description": "Override the \"Page columns\" string."
+      },
+      {
+        "name": "data-label-cols",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Cols",
+        "description": "Override the \"Cols\" string."
+      },
+      {
+        "name": "data-label-auto",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Auto",
+        "description": "Override the \"Auto\" string."
+      },
+      {
+        "name": "data-label-column-auto",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Auto columns",
+        "description": "Override the \"Auto columns\" string."
+      },
+      {
+        "name": "data-label-column-1",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "1 column",
+        "description": "Override the \"1 column\" string."
+      },
+      {
+        "name": "data-label-column-2",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "2 columns",
+        "description": "Override the \"2 columns\" string."
+      },
+      {
+        "name": "data-label-column-3",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "3 columns",
+        "description": "Override the \"3 columns\" string."
+      },
+      {
+        "name": "data-label-pages-region",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Article pages",
+        "description": "Override the \"Article pages\" string."
+      },
+      {
+        "name": "data-label-page-nav",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Page navigation",
+        "description": "Override the \"Page navigation\" string."
+      },
+      {
+        "name": "data-label-prev",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Previous page",
+        "description": "Override the \"Previous page\" string."
+      },
+      {
+        "name": "data-label-next",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Next page",
+        "description": "Override the \"Next page\" string."
+      },
+      {
+        "name": "data-label-page-indicator",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{page} / {total}",
+        "description": "Override the \"{page} / {total}\" string ({page} and {total} are replaced)."
+      }
+    ],
+    "events": [
+      {
+        "name": "reader-view:mode",
+        "detail": "{ mode: 'scroll' | 'pages' }",
+        "description": "Mode changed (not fired for the initial mode on upgrade)."
+      },
+      {
+        "name": "reader-view:page",
+        "detail": "{ page: number, total: number }",
+        "description": "Current page changed in pages mode (page is 1-based)."
+      },
+      {
+        "name": "reader-view:font",
+        "detail": "{ size: string, index: number }",
+        "description": "Font size stepped up or down."
+      }
+    ],
+    "slots": [
+      {
+        "name": "chrome",
+        "description": "Replaces the default chrome bar. Wire controls with data-reader-action / data-reader-value / data-reader-output."
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--reader-view-z",
+        "description": "z-index of the pages-mode overlay (default var(--z-overlay))."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-reader-action",
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "toggle-mode",
+          "set-mode-scroll",
+          "set-mode-pages",
+          "font-increase",
+          "font-decrease",
+          "set-columns",
+          "prev-page",
+          "next-page"
+        ],
+        "description": "Action wired by click delegation (default and slotted chrome)."
+      },
+      {
+        "name": "data-reader-value",
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "auto",
+          "1",
+          "2",
+          "3"
+        ],
+        "description": "Column value for data-reader-action=\"set-columns\"."
+      },
+      {
+        "name": "data-reader-output",
+        "on": "output",
+        "type": "enum",
+        "values": [
+          "page-indicator",
+          "mode-label"
+        ],
+        "description": "Filled by the runtime with the page indicator text or the current mode label."
       },
       {
         "name": "aria-pressed",
-        "kind": "aria",
-        "purpose": "config"
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "true",
+          "false"
+        ],
+        "description": "Set by the runtime on set-mode-*, set-columns and toggle-mode buttons (runtime)."
+      },
+      {
+        "name": "data-reader-state",
+        "on": "button",
+        "type": "enum",
+        "values": [
+          "active",
+          ""
+        ],
+        "description": "Styling hook mirroring aria-pressed on mode and column buttons (runtime)."
       }
     ],
-    "childAttributes": [],
     "structure": [],
     "htmlvalidate": {
       "flow": true,
@@ -11269,25 +11671,54 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "reading-progress",
     "type": "web-component",
-    "description": "Fixed-position scroll progress indicator bar",
+    "description": "Decorative fixed-position scroll progress bar (CSS scroll-timeline for the document, JS for data-for targets).",
     "attributes": [
       {
         "name": "data-for",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "ID of the target element to bound progress against. Without it, tracks document scroll."
+        "description": "ID of the element whose bounds define the progress range. Observed. If the element does not exist the bar tracks document scroll until it appears."
       },
       {
         "name": "data-position",
         "kind": "data",
         "purpose": "visual-variant",
-        "type": "string",
-        "description": "Where to anchor the bar: 'top' (default) or 'bottom'"
+        "type": "enum",
+        "values": [
+          "top",
+          "bottom"
+        ],
+        "default": "top",
+        "description": "Viewport edge the bar is anchored to."
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--reading-progress-color",
+        "description": "Fill colour (default var(--color-accent)); Highlight in forced-colors mode."
+      },
+      {
+        "name": "--reading-progress-height",
+        "description": "Bar thickness (default 3px)."
+      },
+      {
+        "name": "--reading-progress-offset",
+        "description": "Distance from the anchored edge, e.g. a sticky header's height (default 0)."
+      },
+      {
+        "name": "--reading-progress-z",
+        "description": "z-index (default var(--z-sticky-header))."
       }
     ],
     "childAttributes": [],
-    "structure": [],
+    "structure": [
+      {
+        "element": "progress",
+        "required": false,
+        "description": "Optional SSR child; created when absent. Always aria-hidden: the bar is decorative."
+      }
+    ],
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -11299,41 +11730,122 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "recently-visited",
     "type": "web-component",
-    "description": "Device-local reader history lens (localStorage, never aggregated)",
+    "description": "Device-local reader history lens (localStorage, never sent or aggregated). Pages are recorded only when opted in with <meta name=\"vb:track-history\" content=\"on\"> or by this element's presence; <html data-vb-no-track> and <meta name=\"vb:no-track-history\"> opt out.",
     "attributes": [
       {
         "name": "limit",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Max entries kept in local history (default 25)"
+        "default": 25,
+        "description": "Max page groups rendered. Storage itself is capped separately at 100 entries by the tracker."
       },
       {
-        "name": "no-track",
+        "name": "include-current",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Don't append the current page on connectedCallback"
+        "description": "Also list the page the reader is on (excluded by default)."
       },
       {
-        "name": "empty-text",
-        "kind": "host-api",
+        "name": "data-heading-level",
+        "kind": "data",
+        "purpose": "config",
+        "type": "number",
+        "default": 2,
+        "description": "Heading level 1-6 for the panel heading; 0 renders no heading (e.g. inside content-lens)."
+      },
+      {
+        "name": "data-label-heading",
+        "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Message rendered when there is no history"
+        "default": "Recently visited",
+        "description": "Heading text."
+      },
+      {
+        "name": "data-label-explainer",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Stored on this device only. Never sent to a server.",
+        "description": "Privacy note under the heading."
+      },
+      {
+        "name": "data-label-pause",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Pause tracking",
+        "description": "Pause toggle label (static; aria-pressed carries the state)."
+      },
+      {
+        "name": "data-label-anchors",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Show anchor visits",
+        "description": "Anchor-visits toggle label (static; aria-pressed carries the state)."
+      },
+      {
+        "name": "data-label-clear",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Clear history",
+        "description": "Clear button label."
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No recently visited pages yet.",
+        "description": "Message rendered when there is no history."
+      },
+      {
+        "name": "data-label-anchor-one",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "anchor",
+        "description": "Anchor count noun when Intl.PluralRules selects \"one\"."
+      },
+      {
+        "name": "data-label-anchor-other",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "anchors",
+        "description": "Anchor count noun for every other plural category."
       }
     ],
     "events": [
       {
         "name": "recently-visited:clear",
-        "description": "Fires when the reader clears the local history"
+        "description": "Fires when the reader clears the local history."
+      },
+      {
+        "name": "recently-visited:pause-toggle",
+        "detail": "{ paused }",
+        "description": "Fires when the reader pauses or resumes tracking."
+      },
+      {
+        "name": "recently-visited:anchors-toggle",
+        "detail": "{ showAnchors }",
+        "description": "Fires when the reader shows or hides anchor visits."
+      }
+    ],
+    "properties": [
+      {
+        "name": "entries",
+        "type": "Array<{ url, hash, title, hashTitle, ts }>",
+        "description": "Read-only. Stored history, most recent first; expired (30-day TTL), malformed and off-origin records are filtered out."
       }
     ],
     "htmlvalidate": {
       "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
+      "permittedContent": []
     }
   },
   "score-card": {

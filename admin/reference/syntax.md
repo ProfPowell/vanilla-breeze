@@ -1167,7 +1167,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 > build (`npm run build:cem`). The entries below are the human-readable companion;
 > when a component is missing detail here, read its `api.json` and `logic.js`.
 
-### Component index (76 elements)
+### Component index (75 elements)
 
 | Element | Purpose | Detail below |
 |---------|---------|:------------:|
@@ -1222,7 +1222,10 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<print-page>` | Print button wrapping `window.print()`; `variant` icon (default; label → `aria-label`)\|label\|icon-label; `label` (else authored text, else "Print this page"); `raw-toggle` adds a "print without VB styles" checkbox (sets `data-print-raw` on `<html>` for the print; host becomes a labelled `role="group"`), `data-label-raw`; never printed | |
 | `<progress-tracker>` | Multi-step progress over an inner `<ol>` of `<li data-step? data-error?>`: `data-current` (step id first, else 1-based index), `data-clickable` (completed steps become native `<button>`s), `data-direction="vertical"`; sets `li[data-status=complete\|current\|upcoming\|error]` + `aria-current="step"`; hidden status text via `data-label-step` ("Step {n} of {total}:"), `data-label-complete`/`current`/`upcoming`/`error`, list name `data-label-list`; `--pt-*` colour/size props; event `progress-tracker:step` `{ step, previousStep, source: 'attr'\|'click' }` (not on upgrade) | |
 | `<qr-code>` | QR code generator | ✓ |
-| `<reader-view>` | Reader-mode style stripping | |
+| `<reaction-bar>` | GitHub-style reaction chips (`button[data-reaction data-count data-mine data-label]`) plus an auto trigger that opens a `<template data-palette>` palette in a `<pop-over>`; author confirms with `setCount()` | ✓ |
+| `<reader-view>` | Immersive reading shell: moves its children into `<layout-columns>` with a chrome bar; `mode` scroll\|pages (observed; pages = full-viewport overlay: rest of page `inert`, scroll lock, focus into pager, Escape back with focus to the toggle, `--reader-view-z` default `var(--z-overlay)`), `columns` auto\|1\|2\|3 (observed), `font-controls`/`col-controls`="false", `reader-title`, `persist`="false", `storage-key` (default `vb-reader:<pathname>[#id]`), `data-remember-mode` (opt in to restoring the saved mode); `slot="chrome"` replaces the bar, wired by `data-reader-action` toggle-mode/set-mode-scroll/set-mode-pages/font-increase/font-decrease/set-columns(+`data-reader-value`)/prev-page/next-page and `data-reader-output` page-indicator/mode-label (runtime sets `aria-pressed`); keys in pages mode: arrows (mirrored in RTL), PageUp/PageDown, Space/Shift+Space, Home/End, Escape; events `reader-view:mode` `{ mode }`, `reader-view:page` `{ page, total }`, `reader-view:font` `{ size, index }`; `data-label-*` (incl. `page-indicator` "{page} / {total}"); prints as one static flow | |
+| `<reading-progress>` | Decorative fixed scroll-progress bar (inner `<progress>` always `aria-hidden`): document progress via CSS `animation-timeline: scroll(root block)` (no JS), or `data-for="id"` (observed) for an element's bounds via a passive rAF listener (missing target → document progress until the element appears); `data-position` top\|bottom; `--reading-progress-color`/`-height`/`-offset` (sticky-header gap)/`-z`; RTL fills from the right, forced colors `Highlight`, hidden in print | |
+| `<recently-visited>` | Device-local history lens (localStorage only). Tracking is opt-in: `<meta name="vb:track-history" content="on">` or the element's presence; opt out with `<html data-vb-no-track>`, `<meta name="vb:no-track-history">` or the reader's Pause; query strings are stripped (allowlist with `vb:track-history-params`); 30-day TTL; 100-entry cap; current page excluded (`include-current`); `limit`, `data-heading-level` (0 = none), `data-label-*`; `.entries` | ✓ |
 | `<settings-panel>` | Application settings drawer | |
 | `<short-cuts>` | Keyboard shortcut overlay (reads `data-hotkey`) | ✓ |
 | `<site-index>` | Enhances a static A–Z keyword index (or `src` JSON): filter (`filter` topic\|all), jump nav (`letters`), counts, `limit`, `sort`. The index is built from keywords / `article:tag` / `<meta name="concept">` | |
@@ -1638,13 +1641,19 @@ SVG icon component. Fetches one sanitized SVG per icon from `<base-path>/<set>/<
 | `data-error` | (output) | Set when the icon could not load |
 
 ### `<qr-code>`
-QR code generator.
+QR code generator (vendored Nayuki qrcodegen, versions 1–40). Black on opaque white with a 4-module quiet zone; children are kept as the caption/no-JS fallback.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-value` | string | Data to encode |
-| `data-size` | number | Canvas size in px |
-| `data-error-correction` | `L`, `M`, `Q`, `H` | Error correction level |
+| `value` | string | Text/URL to encode (falls back to the text content) |
+| `size` | number | Box edge in CSS px, quiet zone included (default `200`) |
+| `error-correction` | `L`, `M`, `Q`, `H` or `0`–`3` | Error-correction level (default `M`) |
+| `color` | CSS colour | Module colour (default `#000`; warns if risky) |
+| `background` | CSS colour | Background, always painted (default `#fff`) |
+| `data-caption` | `visible` | Show the children under the code (default visually hidden) |
+| `data-label-prefix` | string | Canvas accessible name (default "QR code") |
+| `data-label-copied` | string | `copy()` announcement (default "QR code copied") |
+| `data-error` | (output) `capacity`, `encoding` | Set when no code could be drawn; fires `qr-code:error` |
 
 ### `<include-file>`
 Same-origin HTML fragment include. Fetched HTML is sanitized unless `trusted`, using the fragment profile (keeps `id`/`name`, safe `style`, popover/command invokers; drops `<style>`, `on*`, form attrs) and inserted as nodes; `include-file:loaded` `detail.html` is the serialised sanitized fragment.
@@ -1845,6 +1854,33 @@ Most-visited list from `/api/analytics/popular` (Pages Function over D1 `page.vi
 | `data-state` (output) | `loading\|ready\|empty\|unavailable` | `aria-busy` while loading; `data-error` (output) holds the internal reason, never rendered |
 
 All listed attributes are observed: changes re-fetch (coalesced), the previous request is aborted, stale/after-removal responses are ignored. Links: http(s) or same-origin paths only (`javascript:`, `data:`, `//host` dropped); list built with DOM APIs; counts via compact `Intl.NumberFormat`. Event `popularity-index:state` `{ state }`.
+
+### `<reaction-bar>`
+Emoji reactions for a comment, post or message. The component is presentational: it emits `reaction-bar:toggle`, and the author calls `setCount` once the server confirms. Children: `<button data-reaction data-count [data-mine] [data-label]>` chips (decorated with an emoji span, a count span, `aria-pressed` and a derived `aria-label`), and a `<template data-palette>` of `<button data-reaction [data-label]>` options. The palette is cloned into a `<pop-over role="dialog">` once, at upgrade. A trigger button (`😀`) is auto-rendered at the end of the bar.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `aria-label` | string | Toolbar name (fallback `data-label-toolbar`, then "Reactions"); also names the palette group |
+| `data-trigger-icon` / `data-trigger-label` | string | Trigger content (default `😀`) / its `aria-label` (default "Add reaction") |
+| `data-label-dialog` | string | Palette dialog label (default "Choose a reaction") |
+| `data-label-count-{one\|other\|…}` | string | Count phrase in chip names, picked with `Intl.PluralRules` (any CLDR category; `-other` is the fallback); `{count}` is replaced by the `Intl.NumberFormat` count (nearest `lang`). Defaults "{count} reaction" / "{count} reactions" |
+| `data-disabled` | boolean | Observed. Chips get `aria-disabled` and stay focusable but don't toggle; the trigger is disabled and leaves the roving order; an open palette closes |
+| `data-label` (chip / palette button) | string | Accessible name of the reaction ("Thumbs up"); an authored `aria-label` also works. Falls back to the emoji. `setCount` clones new chips from the palette button, so they keep it |
+| `data-pending` (chip, output) | boolean | Toggle in flight (also `aria-busy="true"`); further clicks on that chip, or palette picks of a chip-less reaction, are ignored until `setCount` |
+
+Chip name: "Thumbs up, 3 reactions". Own state is only `aria-pressed`, with no "you reacted" suffix. Event `reaction-bar:toggle` `{ reaction, action: 'add'|'remove', count, mine }`, where `count`/`mine` are the pre-toggle values. Also `reaction-bar:palette-open` / `-close`. API: `setCount(reaction, count, { mine })` (clears pending; creates a missing chip; count 0 removes the chip and moves focus to a neighbour; also the rollback path), `openPalette()` (no-op while disabled), `closePalette()`. Keyboard: the toolbar uses a roving tabindex. Left/Right are mirrored in RTL, Home/End jump to the ends, and `setCount` keeps the current position. Opening the palette focuses its first option. In the palette, arrows (Up/Down too) move between options and Escape closes. After a pick, focus returns to the trigger. Forced colors: a pressed chip is painted `Highlight`/`HighlightText`. Every listener is re-wired on reconnect, and the built DOM is never duplicated.
+
+### `<recently-visited>`
+Device-local reader history from `localStorage`. Nothing is sent to a server. The tracker (`src/utils/recently-visited-init.js`, included in every bundle) records a page only when it has `<meta name="vb:track-history" content="on">` (put this in the site head) or contains `<recently-visited>`. It never records under `<html data-vb-no-track>`, under `<meta name="vb:no-track-history">`, or while paused. Query strings are stripped unless listed in `<meta name="vb:track-history-params" content="q page">`. Entries expire after 30 days (pruned on every read and write); the cap is 100 entries; only same-origin http(s) paths are kept (a leading `//` is collapsed).
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `limit` | number | Page groups shown (default 25) |
+| `include-current` | boolean | Also list the page the reader is on |
+| `data-heading-level` | 0–6 | Heading level (default 2); `0` = no heading |
+| `data-label-*` | string | `heading`, `explainer`, `pause`, `anchors`, `clear`, `empty`, `anchor-one` / `anchor-other` (`Intl.PluralRules`) |
+
+Storage keys: `vb:recently-visited` (`[{ url, hash, title, hashTitle, ts }]`), `vb:recently-visited:paused` and `vb:recently-visited:show-anchors` (both `"1"` when set). The controls have fixed labels; the toggles carry their state in `aria-pressed` and Clear uses `aria-disabled`. Controls are updated in place, so focus is kept. Times are `<time datetime>` formatted with `Intl.RelativeTimeFormat` (nearest `lang`). All instances re-render on `storage` and on the tracker's same-tab `recently-visited:change` event (on `window`). Events: `recently-visited:clear`, `recently-visited:pause-toggle` `{ paused }`, `recently-visited:anchors-toggle` `{ showAnchors }`.
 
 ---
 
@@ -2168,7 +2204,7 @@ Applied to `<html>`. Authored values are page defaults: ThemeManager only replac
 | `data-sticky` | (boolean) | Sticky header system |
 | `data-scrollbar` | `hidden`, `auto`, `primary`, `minimal` | Scrollbar styling (also any scroller) |
 | `data-motion-reduced` | (boolean) | User-toggled motion reduction: `--duration-*` → 0ms, smooth scroll off, view transitions/effects off |
-| `data-ruby` | `show`, `hide`, `auto` (default) | Ruby visibility; default hides `<rt>` on non-CJK pages |
+| `data-ruby` | `show`, `hide`, `auto` | Ruby visibility. Absent = visible (browser default). Works on any element (also the `<ruby>`); nearest wins. `hide` = visually hidden, kept in the a11y tree; `auto` = hide annotations whose own `:lang()` is not ja/zh/ko/yue/wuu; `show` undoes an outer hide/auto |
 | `data-debug` | (boolean) | Debug mode (needs vanilla-breeze-dev.css/.js) |
 | `data-wireframe` | `lo`, `mid`, `hi`, `annotate` | Wireframe mode (needs vanilla-breeze-dev.css) |
 
@@ -2202,6 +2238,9 @@ VB ships a stack-agnostic content-provenance contract. Any HTML page that emits 
 | `<meta name="vb:ai-tools">` | Comma-separated tool names (`Claude, GPT-5`) |
 | `<meta name="concept">` (repeated) | SKOS concept IDs from `vocabulary.json` — shared with analytics (replaced `vb:topic` in contract v1.1) |
 | `<meta name="vb:version-url">` | Link to changelog anchor for this page's version |
+| `<meta name="vb:track-history" content="on">` | Opt the page in to `<recently-visited>` history tracking (put it in the site head) |
+| `<meta name="vb:track-history-params">` | Space- or comma-separated query parameters that history tracking keeps (all others are stripped) |
+| `<meta name="vb:no-track-history">` | Per-page opt-out from history tracking (beats `vb:track-history`) |
 
 ### Content-integrity (signing) — Section B + E
 
@@ -2268,6 +2307,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-backdrop-chrome` | `<html>` — backdrop chrome mode |
 | `data-blur-reveal` | Text — blur-to-clear entrance |
 | `data-bordered` | Various — border variant |
+| `data-caption` | `<qr-code>` — `visible` shows the caption |
 | `data-center-label` | Pie chart — donut center text |
 | `data-collapsed` | Breadcrumb — hide middle items |
 | ~~`data-collapsible`~~ | **Removed** — use `collapsible` on `<split-surface>` |
@@ -2299,8 +2339,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-dragover` | Upload zone — drag active |
 | `data-ellipsis` | Pagination — ellipsis indicator |
 | `data-empty` | `<output>` — empty state content |
-| `data-error` | `<output>` — error state content |
-| `data-error-correction` | `<qr-code>` — QR error level |
+| `data-error` | `<output>` — error state content; `<qr-code>` — capacity/encoding failure |
 | `data-expand-content` | Table row — expandable content |
 | `data-face` | `<content-swap>` child — front/back |
 | `data-fallback` | `<user-avatar>` child — initials/icon fallback |
@@ -2333,6 +2372,8 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-items` | `<card-list>` — inline JSON data |
 | `data-key` | `<card-list>` — unique key field |
 | `data-label` | Table td — mobile card label; `<progress data-type="ring">` — centre label (`none` hides) |
+| `data-label-copied` | `<qr-code>` — copy announcement |
+| `data-label-prefix` | `<qr-code>` — canvas accessible name |
 | `data-label-raw` | `<print-page>` raw-toggle checkbox text |
 | `data-labels` | Chart — show value labels |
 | `data-layout` | Any — layout mode (see §5) |

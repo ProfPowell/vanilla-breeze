@@ -8,6 +8,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **Q+R-element review.**
+  - **recently-visited** — Tracking is opt-in. Before, every page of every site that loaded the VB bundle was written to the reader's history. The tracker now records a page only when it has `<meta name="vb:track-history" content="on">` or contains a `<recently-visited>` element. It never records under `<html data-vb-no-track>` (shared with analytics), under a per-page `<meta name="vb:no-track-history">`, or while the reader has paused it. Query strings are stripped before storing (`<meta name="vb:track-history-params" content="q page">` keeps the listed ones), and entries expire after 30 days. Stored URLs are resolved against `location.origin`, a leading `//` or `/\` is collapsed, and only same-origin http(s) paths are kept and rendered, so a crafted `https://site//evil.example/x` can no longer become an off-site protocol-relative link. The list is built with DOM APIs, so titles are always text.
 - **P-element review.**
   - **page-info** — Auto mode no longer builds its panel from `<meta>` values with `innerHTML`; it uses DOM nodes and text, so page metadata cannot inject markup. Author, license, version and concept links render only when they resolve to `http:`/`https:` (a `javascript:` URL becomes plain text).
   - **popularity-index** — Entry URLs are restricted to http(s) and same-origin paths (`javascript:`, `data:` and `//host` entries are dropped), and the list is built with DOM APIs. Raw error text (HTTP status, JSON parse errors) is no longer shown.
@@ -39,6 +41,42 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Changes from the Q+R-element review.**
+  - **ruby / rt / rp (`data-ruby`)**
+    - Breaking: annotations are visible by default on every page (the browser default). A missing `data-ruby` used to act like `auto` and hid every `<rt>` on non-CJK pages, including VB's own ruby demos. Pages that relied on that must set `data-ruby="hide"` or `"auto"`.
+    - `data-ruby` works on any element (a section, a paragraph, the `<ruby>` itself), not only `<html>`. The nearest one wins (`@scope ([data-ruby=…]) to ([data-ruby])`), and `show` undoes an outer `hide`/`auto`.
+    - `auto` keys on each annotation's own `:lang()` instead of the root's, and counts Cantonese (`yue`) and Wu (`wuu`) as CJK, matching `RUBY_LANGUAGES` in `src/lib/i18n.js`.
+    - `hide` is a real visually-hidden technique (zero size, clipped, kept in the ruby layout), so the reading stays in the accessibility tree; it was `visibility: hidden`. `<rp>` stays `display: none` in every mode.
+  - **q / cite[data-variant="quoted"]**
+    - Locale rules are `:is(q, cite[data-variant="quoted"]):lang(x)`, so `lang` on the `<q>` itself works (a `<q lang="en">` in Japanese text gets English marks).
+    - The base is `quotes: auto`, so languages outside VB's table (nl, sv, cs, he, …) get the browser's locale marks instead of English ones.
+    - New locale marks: `zh` / `zh-Hans` / `zh-CN` get “…” ‘…’ (「…」『…』 is reserved for `zh-Hant` / `zh-TW` / `zh-HK` / `zh-MO`); `pt` / `pt-BR` get “…” ‘…’ («…» “…” is reserved for `pt-PT`); new `de-CH` «…» ‹…›; Polish corrected to „…” «…».
+  - **qr-code**
+    - The encoder is the vendored Project Nayuki qrcodegen (MIT, `src/vendor/qrcodegen/`, pinned commit; `npm run vendor:qrcodegen`): versions 1–40, numeric/alphanumeric/byte (UTF-8) modes. The old encoder produced codes no decoder could read.
+    - Breaking: the default is black on an opaque white background with a 4-module quiet zone. It no longer follows `currentColor` or the theme, so dark mode and forced colours stay scannable. `color` / `background` are opt-ins and warn in the console when inverted, under ~4:1 contrast or translucent. `toDataURL()` / `copy()` export an opaque PNG.
+    - Breaking: `size` is the edge of the whole box, quiet zone included, in CSS pixels.
+    - `error-correction` accepts `L|M|Q|H` (case-insensitive) as well as `0`–`3`, and the level is used as given (no silent boost). Invalid values warn and fall back to M (`4`+ used to throw).
+    - Children are kept as the caption instead of being wiped: visually hidden by default, shown with `data-caption="visible"`, while a link inside has focus, or when no code can be drawn. The canvas is `role="img"` named "QR code" (`data-label-prefix`), so the value is no longer announced twice; `data-label-copied` sets the copy announcement.
+    - `value`, `size`, `color`, `background` and `error-correction` are all reactive; new `value` property.
+  - **reaction-bar**
+    - Chip names come from `data-label` or `aria-label` on the chip and its palette button, with the emoji as fallback ("Thumbs up, 3 reactions"). The ", you reacted" suffix is gone (`aria-pressed` carries it), as is the redundant `role="button"`.
+    - New `data-label-toolbar`, `data-label-dialog` and `data-label-count-{one|other|…}`. Counts use `Intl.NumberFormat` and `Intl.PluralRules` for the closest `lang`.
+    - A chip is `data-pending` / `aria-busy` from the click until `setCount()` for that reaction, so a double click sends one request. Call `setCount()` with the old values to roll back.
+    - `data-disabled` is observed: chips get `aria-disabled` and the disabled trigger leaves the arrow-key order.
+  - **reader-view**
+    - Breaking: the host no longer sets a bare `upgraded` attribute. Use `data-upgraded`.
+    - Breaking: persistence is per page and instance. The default key is `vb-reader:<pathname>[#id]` (was a shared `vb-reader`), and a saved mode is restored only with the new `data-remember-mode`. Font size and columns are still restored; setup no longer writes to storage.
+    - Pages mode is a modal overlay: the rest of the page is `inert`, document scroll is locked, focus moves into the pager, and Escape returns to scroll mode with focus on the mode toggle. It stacks at `--reader-view-z` (default `var(--z-overlay)`; was `z-index: 10`).
+    - The built wrapper is a plain element instead of `<main class="reader-book">`. Control sets are labelled `role="group"`s (the `role="toolbar"` is gone); column buttons carry `aria-pressed` and names such as "2 columns", and the active styling keys off `aria-pressed`.
+    - `mode` and `columns` are observed. `reader-view:mode` no longer fires for the initial mode; `reader-view:page` also fires when the page count changes. Every UI string has a `data-label-*`, including the page indicator `{page} / {total}`.
+  - **reading-progress**
+    - The bar is decorative: the inner `<progress>` is always `aria-hidden` and gets no English `aria-label`. The CSS-driven path used to announce a progressbar stuck at 0%.
+    - New `--reading-progress-offset` (for sticky headers) and `--reading-progress-z` (default `var(--z-sticky-header)`; was 100). `data-for` is observed.
+  - **recently-visited**
+    - Breaking: tracking is opt-in (see Security). The docs site opts in from its shared head.
+    - Breaking: `empty-text` is replaced by `data-label-empty`. New `data-heading-level` (1–6, default 2, `0` = no heading) and `data-label-heading` / `-explainer` / `-pause` / `-anchors` / `-clear` / `-anchor-one` / `-anchor-other`; the anchor count uses `Intl.PluralRules`.
+    - Breaking: removed the `no-track` attribute (never implemented; use `<meta name="vb:no-track-history">`) and the `recently-visited:refreshed` event (documented but never dispatched).
+    - The current page is no longer listed; `include-current` opts back in. Pause and Anchors keep fixed labels and report state through `aria-pressed`; Clear uses `aria-disabled` instead of `disabled`.
 - **Changes from the P-element review.**
   - **pager-wc**
     - Breaking: the control-style attribute is `data-style` (`numbered` | `prev-next` | `load-more`). The global `style` is no longer read, so inline CSS on the host no longer switches the pager. Rename `<pager-wc style="prev-next">` to `<pager-wc data-style="prev-next">`.
@@ -373,6 +411,27 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Q+R-element review.**
+  - **Reconnect sweep** — `reaction-bar`, `version-switcher`, `time-picker`, `share-wc` and `site-index` now survive being removed and reinserted. reaction-bar chip and palette clicks and `aria-expanded` went dead; version-switcher lost its open/close bridge and keyboard navigation; time-picker's clock button, text input, spinners and AM/PM toggle stopped responding; share-wc appended another button inside `selection-menu` on every reconnect and deleted slotted share links on teardown; site-index stacked a second controls bar, more "Show N more" buttons and duplicate count badges. `reconnect-idempotency.spec.js` now removes and reinserts 42 interactive components twice from the working tree and then asserts one representative interaction, not only the descendant count.
+  - **analytics** — `vb:track-history*` metas are excluded from the taxonomy folded into the event envelope.
+  - **ruby / rt / q** — Romanised readings (`lang="zh-Latn"`, `ja-Latn`, `ko-Latn`, `yue-Latn`, `wuu-Latn`) use the body face instead of `--font-cjk`; `yue`/`wuu` readings get `--font-cjk`. Bopomofo (`<rt lang="zh-Bopo">`) sets `ruby-position: inter-character` (Firefox and Safari; Chromium ignores it). The ruby, rt, rp and q pages match the code, the ruby demos set `lang` and show annotations again, and the q table is complete.
+  - **qr-code**
+    - Codes now scan (correct format and version info, Reed–Solomon block interleaving), with whole-pixel modules scaled to `devicePixelRatio` and redrawn when it changes (zoom, moving to another monitor). Forced colours: the canvas has `forced-color-adjust: none` and a `CanvasText` border.
+    - Text over the level's capacity no longer draws a truncated garbage code: no code is drawn, `data-error="capacity"` is set, the caption is shown and `qr-code:error` fires.
+    - Setting `value` on an element that started empty now renders; clearing `value` falls back to the original text instead of leaving the old code.
+    - Docs drop the false "versions 1–10" claim and add a capacity table, `copy()`, `value` and events; demos use `<browser-window>` + `<code-block>`. Codes are round-tripped through jsQR in unit and browser tests.
+  - **reaction-bar** — Opening the palette focuses its first option, and the palette group is labelled. The pressed chip stays distinct in forced colours (`Highlight`/`HighlightText`). `setCount(r, 0)` on the focused chip moves focus to a neighbour, and `setCount` keeps the roving-tabindex position. Arrow keys follow the visual order in RTL.
+  - **reader-view**
+    - The default chrome is no longer a `<header>`, so it no longer maps to a `banner` landmark outside a sectioning element.
+    - Printing in pages mode printed nothing; it now prints one static, unclipped flow in either mode.
+    - RTL paging works (direction-signed scroll offsets, mirrored arrow keys and nav arrows, progress fills from the right, the page-nav pill is centred). Page keys work while focus is on a chrome button, and smooth page turns are tracked to `scrollend` instead of being undone by a 220 ms timer.
+    - Forced colours use `Highlight` for the active segment and progress and `GrayText` for disabled buttons. `static.html` is a real fallback, and api.json is rewritten from the runtime.
+  - **reading-progress** — A `data-for` that points to a missing id falls back to document progress and switches to the element when it appears (the bar was dead). RTL fills from the right, forced colours paint `Highlight`, and the dead reduced-motion rule is gone (the bar is scroll-linked).
+  - **recently-visited**
+    - A `window` `storage` listener leaked on every move or reconnect (the cleanup lived in a `disconnect()` VBElement never calls); listeners go through `listen()` and the 60-second refresh interval is cleared in `teardown()`.
+    - Focus stays on Pause, Anchors and Clear after a press, a focused link keeps focus across re-renders, and open `<details>` stay open.
+    - The tracker dispatches `recently-visited:change` on `window`, so hash changes and a Pause or Clear in another instance re-render every instance on the same page.
+    - Relative times use `Intl.RelativeTimeFormat` for the nearest `[lang]`, render as `<time datetime>` and refresh every minute; malformed records are dropped, so "NaNd ago" no longer appears. api.json and the docs cover the events, the `entries` property, all three storage keys and the record shape.
 - **P-element review.**
   - **pager-wc / data-paged**
     - `data-style="load-more"` counts down from the engine's `visible` count instead of `page × size`; the target needs `data-paged-style="load-more"` (console warning otherwise).

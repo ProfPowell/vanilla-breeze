@@ -1281,8 +1281,11 @@ module.exports = {
       "size": {},
       "color": {},
       "background": {},
-      "error-correction": {},
-      "role": {}
+      "error-correction": { enum: ["l", "m", "q", "h", "0", "1", "2", "3"] },
+      "data-caption": { enum: ["visible"] },
+      "data-label-prefix": {},
+      "data-label-copied": {},
+      "data-error": { enum: ["capacity", "encoding"] }
     }
   },
 
@@ -1293,8 +1296,11 @@ module.exports = {
       "aria-label": {},
       "data-trigger-icon": {},
       "data-trigger-label": {},
-      "data-disabled": { boolean: true },
-      "role": {}
+      "data-label-toolbar": {},
+      "data-label-dialog": {},
+      "data-label-count-one": {},
+      "data-label-count-other": {},
+      "data-disabled": { boolean: true }
     }
   },
 
@@ -1302,18 +1308,36 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "upgraded": {},
-      "mode": {},
-      "columns": {},
-      "role": {},
-      "font-controls": {},
-      "col-controls": {},
+      "mode": { enum: ["scroll", "pages"] },
+      "columns": { enum: ["auto", "1", "2", "3"] },
+      "font-controls": { enum: ["true", "false"] },
+      "col-controls": { enum: ["true", "false"] },
       "reader-title": {},
-      "disabled": {},
-      "persist": {},
+      "persist": { enum: ["true", "false"] },
       "storage-key": {},
-      "data-reader-state": {},
-      "aria-pressed": {}
+      "data-remember-mode": { boolean: true },
+      "data-label-kicker": {},
+      "data-label-controls": {},
+      "data-label-mode-group": {},
+      "data-label-mode": {},
+      "data-label-scroll": {},
+      "data-label-pages": {},
+      "data-label-font-group": {},
+      "data-label-type": {},
+      "data-label-font-decrease": {},
+      "data-label-font-increase": {},
+      "data-label-columns-group": {},
+      "data-label-cols": {},
+      "data-label-auto": {},
+      "data-label-column-auto": {},
+      "data-label-column-1": {},
+      "data-label-column-2": {},
+      "data-label-column-3": {},
+      "data-label-pages-region": {},
+      "data-label-page-nav": {},
+      "data-label-prev": {},
+      "data-label-next": {},
+      "data-label-page-indicator": {}
     }
   },
 
@@ -1322,17 +1346,25 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "data-for": {},
-      "data-position": {}
+      "data-position": { enum: ["top", "bottom"] }
     }
   },
 
   "recently-visited": {
     flow: true,
-    permittedContent: ["@flow"],
+    permittedContent: [],
     attributes: {
       "limit": {},
-      "no-track": { boolean: true },
-      "empty-text": {}
+      "include-current": { boolean: true },
+      "data-heading-level": {},
+      "data-label-heading": {},
+      "data-label-explainer": {},
+      "data-label-pause": {},
+      "data-label-anchors": {},
+      "data-label-clear": {},
+      "data-label-empty": {},
+      "data-label-anchor-one": {},
+      "data-label-anchor-other": {}
     }
   },
 
