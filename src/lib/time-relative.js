@@ -51,11 +51,34 @@ export function formatRelative(date) {
  */
 export function updateRelativeTimes(root = document) {
   for (const el of root.querySelectorAll('time[data-relative]')) {
+    // <page-info> localises its own times (Intl, nearest [lang]); don't clobber them.
+    if (el.closest('page-info')) continue;
     const dt = el.getAttribute('datetime');
     if (!dt) continue;
-    const relative = formatRelative(new Date(dt));
+    const date = new Date(dt);
+    const lang = el.closest('[lang]')?.getAttribute('lang') || '';
+    const relative = lang && !/^en\b/i.test(lang) ? formatRelativeIntl(date, lang) : formatRelative(date);
     if (relative) el.textContent = relative;
   }
+}
+
+/**
+ * Localised relative time for non-English contexts.
+ * @param {Date} date
+ * @param {string} lang
+ * @returns {string|null} null for future or invalid dates
+ */
+export function formatRelativeIntl(date, lang) {
+  const diff = (Date.now() - date.getTime()) / 1000;
+  if (Number.isNaN(diff) || diff < 0) return null;
+  let rtf;
+  try { rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' }); } catch { return formatRelative(date); }
+  if (diff < MINUTE) return rtf.format(0, 'second');
+  if (diff < HOUR) return rtf.format(-Math.floor(diff / MINUTE), 'minute');
+  if (diff < DAY) return rtf.format(-Math.floor(diff / HOUR), 'hour');
+  if (diff < MONTH) return rtf.format(-Math.floor(diff / DAY), 'day');
+  if (diff < YEAR) return rtf.format(-Math.floor(diff / MONTH), 'month');
+  return rtf.format(-Math.floor(diff / YEAR), 'year');
 }
 
 /* Auto-init on DOMContentLoaded, refresh every 60s.

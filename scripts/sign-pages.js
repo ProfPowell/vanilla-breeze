@@ -41,13 +41,14 @@
 import { readFile, writeFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { resolve, join, relative, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseHTML } from 'linkedom';
 
 import {
   buildCanonicalDocument,
   serializeCanonical,
-  canonicalHash
+  canonicalHash,
+  canonicalLinkHref
 } from '../src/lib/canonicalize.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -122,7 +123,7 @@ function bytesToBase64(bytes) {
   return btoa(s);
 }
 
-async function signPage(html, opts) {
+export async function signPage(html, opts) {
   const { document } = parseHTML(html);
 
   const signable = document.querySelector('[data-signable]');
@@ -133,12 +134,12 @@ async function signPage(html, opts) {
     return { skipped: 'already signed' };
   }
 
-  /* Use the canonical absolute URL declared by the page if present, else
-     a deterministic placeholder. The signer doesn't know the deployed
-     hostname; the build can pass it via --canonical-base in a future v2.
-     For now we read from <link rel="canonical"> which Cook's head
-     include emits per page. */
-  const canonical = document.querySelector('link[rel~="canonical" i]')?.getAttribute('href') || '';
+  /* Signed `url` = the RAW <link rel="canonical"> href ('' when absent),
+     the same input <page-info> feeds its verifier (canonicalLinkHref).
+     Absolute hrefs are normalized per §G-1; relative ones are kept as
+     authored, because the signer cannot know the deployed origin and the
+     verifier must not substitute location.href. */
+  const canonical = canonicalLinkHref(document);
 
   const canonicalDoc = buildCanonicalDocument(document, { url: canonical });
   if (!canonicalDoc.content) {
@@ -285,7 +286,10 @@ async function main(argv) {
   }
 }
 
-main(process.argv.slice(2)).catch((err) => {
-  console.error('[sign-pages] fatal:', err);
-  process.exit(1);
-});
+/* Run only as a CLI; importing (tests) just exposes signPage. */
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  main(process.argv.slice(2)).catch((err) => {
+    console.error('[sign-pages] fatal:', err);
+    process.exit(1);
+  });
+}

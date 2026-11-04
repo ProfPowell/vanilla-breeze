@@ -9,33 +9,247 @@
       "kind": "host-api",
       "purpose": "config",
       "type": "boolean",
-      "description": "Render from <meta> tags instead of light DOM"
+      "description": "Render the whole panel from <meta> tags in <head> (meta-tag contract v1): author, link[rel=author] / article:author, last-modified / article:modified_time, article:published_time, itemprop=version, vb:version-url, vb:provenance, vb:ai-tools, vb:review, vb:status, license + link[rel=license], keywords, repeated meta[name=concept]. Values are inserted as text; links are used only when they resolve to http(s)."
     },
     {
-      "name": "og-preview",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "boolean",
-      "description": "Show Open Graph social preview card"
-    },
-    {
-      "name": "datetime",
-      "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "data-trust",
+      "name": "data-concept-base",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "default": "/topics/",
+      "description": "Auto mode: base path for concept links ({base}{id}/). Must be relative or http(s); otherwise concepts render as plain text."
+    },
+    {
+      "name": "data-heading-level",
+      "kind": "data",
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "default": "2",
+      "description": "Auto mode: heading level of the panel section headings."
+    },
+    {
+      "name": "data-label-reading-time",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "~{n}",
+      "description": "Template for [data-reading-time]; {n} is the Intl-formatted minute value (\"5 min\")."
+    },
+    {
+      "name": "data-label-author",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Author",
+      "description": "Auto mode UI string (default \"Author\")."
+    },
+    {
+      "name": "data-label-history",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "History",
+      "description": "Auto mode UI string (default \"History\")."
+    },
+    {
+      "name": "data-label-provenance",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "How this was made",
+      "description": "Auto mode UI string (default \"How this was made\")."
+    },
+    {
+      "name": "data-label-topic",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Topic",
+      "description": "Auto mode UI string (default \"Topic\")."
+    },
+    {
+      "name": "data-label-published",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Published",
+      "description": "Auto mode UI string (default \"Published\")."
+    },
+    {
+      "name": "data-label-updated",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Last updated",
+      "description": "Auto mode UI string (default \"Last updated\")."
+    },
+    {
+      "name": "data-label-version",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Version",
+      "description": "Auto mode UI string (default \"Version\")."
+    },
+    {
+      "name": "data-label-authorship",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Authorship",
+      "description": "Auto mode UI string (default \"Authorship\")."
+    },
+    {
+      "name": "data-label-ai-tools",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "AI tools used",
+      "description": "Auto mode UI string (default \"AI tools used\")."
+    },
+    {
+      "name": "data-label-review",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Review",
+      "description": "Auto mode UI string (default \"Review\")."
+    },
+    {
+      "name": "data-label-status",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Status",
+      "description": "Auto mode UI string (default \"Status\")."
+    },
+    {
+      "name": "data-label-license",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "License",
+      "description": "Auto mode UI string (default \"License\")."
+    },
+    {
+      "name": "data-label-concepts",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Concepts",
+      "description": "Auto mode UI string (default \"Concepts\")."
+    },
+    {
+      "name": "data-label-keywords",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Keywords",
+      "description": "Auto mode UI string (default \"Keywords\")."
+    },
+    {
+      "name": "data-label-tier-declared",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Self-declared",
+      "description": "Visible trust-tier text appended to the badge for data-trust=\"declared\" (default \"Self-declared\")."
+    },
+    {
+      "name": "data-label-tier-verified",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Verified",
+      "description": "Visible trust-tier text appended to the badge for data-trust=\"verified\" (default \"Verified\")."
+    },
+    {
+      "name": "data-label-tier-failed",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Signature failed",
+      "description": "Visible trust-tier text appended to the badge for data-trust=\"failed\" (default \"Signature failed\")."
+    },
+    {
+      "name": "data-label-tier-key-unavailable",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Key unavailable",
+      "description": "Visible trust-tier text appended to the badge for data-trust=\"key-unavailable\" (default \"Key unavailable\")."
     }
   ],
   "events": [
     {
-      "name": "page-info:verified"
+      "name": "page-info:verified",
+      "detail": "{ status: 'undeclared' | 'declared' | 'verified' | 'failed' | 'key-unavailable', tier: 0 | 1 | 3 | -1 | -2, reason?: string }",
+      "description": "Bubbles. Fired on every setup with the declared tier (undeclared/declared, no reason), then again with the verification result when the page carries meta[name=vb:signature]. reason: 'ok', 'mismatch', 'missing-author-key', 'unsupported-algorithm:…', 'canonicalize:…', 'verify:…', or the key fetch error."
     }
   ],
-  "childAttributes": [],
-  "structure": [],
+  "childAttributes": [
+    {
+      "name": "data-trust",
+      "on": ".page-info-badge",
+      "type": "enum",
+      "values": [
+        "undeclared",
+        "declared",
+        "verified",
+        "failed",
+        "key-unavailable"
+      ],
+      "description": "Verification tier, written by the component (the first .page-info-badge without data-status). A .page-info-tier span with the tier text is appended inside the badge."
+    },
+    {
+      "name": "data-provenance",
+      "on": ".page-info-badge",
+      "type": "string",
+      "description": "vb:provenance token(s) the badge describes (styling hook)."
+    },
+    {
+      "name": "data-status",
+      "on": ".page-info-badge",
+      "type": "enum",
+      "values": [
+        "draft",
+        "archived"
+      ],
+      "description": "Publication-status badge (auto mode renders it for non-published pages); excluded from trust updates."
+    },
+    {
+      "name": "data-relative",
+      "on": "time",
+      "type": "boolean",
+      "description": "Rewrite the text as a localized relative time (Intl.RelativeTimeFormat, closest [lang]) from the datetime attribute; the absolute date is put in title unless the author set one. Future dates read \"in 3 days\"."
+    },
+    {
+      "name": "datetime",
+      "on": "time",
+      "type": "string",
+      "description": "ISO date or datetime read by time[data-relative]. Date-only values are formatted in UTC."
+    },
+    {
+      "name": "data-reading-time",
+      "on": "any element",
+      "type": "boolean",
+      "description": "Filled with the estimated reading time of the page's outermost [data-signable] roots (238 wpm / 500 CJK chars per minute, shared with page-stats; skips [data-signable=false], hidden and script content)."
+    }
+  ],
+  "structure": [
+    {
+      "element": "details",
+      "required": false,
+      "description": "Static mode: <details> with a <summary> trust bar (author as plain text, time[data-relative], .page-info-badge) and a .page-info-panel of sections. Keep links out of <summary>."
+    }
+  ],
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [

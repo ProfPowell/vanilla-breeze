@@ -9,24 +9,79 @@
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "ID of the target content element to analyze"
+      "description": "ID of the target content element to analyze. Without it (or with an author-rendered <dl> inside) the component renders nothing and adopts the existing markup."
     },
     {
       "name": "data-wpm",
       "kind": "data",
       "purpose": "config",
       "type": "number",
-      "description": "Words per minute for reading time (default: 238)"
+      "default": "238",
+      "description": "Words per minute for reading time (default 238, shared with page-info). Chinese/Japanese text is timed at 500 characters per minute."
     },
     {
       "name": "data-show",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Comma-separated stats to display:"
+      "default": "reading-time",
+      "description": "Comma-separated list of stats to display, in fixed order: reading-time, word-count, last-modified. Unknown tokens are ignored. last-modified reads meta[name=last-modified], then meta[property=article:modified_time]; it is omitted when neither is present."
+    },
+    {
+      "name": "data-label-reading-time",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Reading time",
+      "description": "Visually hidden dt label for the reading-time item."
+    },
+    {
+      "name": "data-label-word-count",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Word count",
+      "description": "Visually hidden dt label for the word-count item."
+    },
+    {
+      "name": "data-label-last-modified",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Last updated",
+      "description": "Visually hidden dt label for the last-modified item."
+    },
+    {
+      "name": "data-label-min-read",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "{n} read",
+      "description": "Reading-time text template; {n} is the Intl-formatted minute value (\"5 min\"). Default \"{n} read\" for English documents, \"{n}\" otherwise."
+    },
+    {
+      "name": "data-label-words",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "{n} words",
+      "description": "Word-count text template; {n} is the Intl-formatted count. Per-plural overrides: data-label-words-zero/-one/-two/-few/-many (Intl.PluralRules category of the document language)."
     }
   ],
-  "childAttributes": [],
+  "childAttributes": [
+    {
+      "name": "data-generated",
+      "on": "dl",
+      "type": "boolean",
+      "description": "Set by the component on the <dl> it renders itself. A <dl> without it is author/SSR markup and is adopted unchanged."
+    },
+    {
+      "name": "data-stats-ignore",
+      "on": "any element inside the target",
+      "type": "boolean",
+      "description": "Exclude this subtree from the word count (script, style, template, noscript, [hidden], [aria-hidden=true] and [inert] are always excluded)."
+    }
+  ],
   "structure": [],
   "htmlvalidate": {
     "flow": true,
