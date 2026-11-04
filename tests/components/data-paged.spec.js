@@ -8,6 +8,20 @@
  */
 
 import { test, expect } from 'playwright/test';
+import { join } from 'node:path';
+
+const REPO = join(import.meta.dirname, '..', '..');
+
+// Test the working tree: /src and the snippet demos come from disk, not
+// the build on :8123.
+test.beforeEach(async ({ page }) => {
+  await page.route('**/src/**', (route) => route.fulfill({
+    path: join(REPO, decodeURIComponent(new URL(route.request().url()).pathname)),
+  }));
+  await page.route('**/docs/snippets/demos/*.html*', (route) => route.fulfill({
+    path: join(REPO, 'demos/snippets/demos', new URL(route.request().url()).pathname.split('/').pop()),
+  }));
+});
 
 const dataPagedDemo = '/docs/snippets/demos/data-paged-basic.html';
 const pagerWcDemo   = '/docs/snippets/demos/pager-wc-basic.html';
@@ -76,6 +90,8 @@ test.describe('data-paged — numbered style', () => {
     await page.goto(dataPagedDemo);
     const list = page.locator('ul[data-paged]').first();
     const nav  = list.locator('xpath=following-sibling::nav[@data-paged-nav][1]');
+    // Engine has rendered (and fired its initial paged:change) before we listen.
+    await expect(nav).toBeVisible();
 
     const detailPromise = page.evaluate(() => new Promise((resolve) => {
       const list = /** @type {HTMLElement} */ (document.querySelector('ul[data-paged]'));
@@ -167,6 +183,24 @@ test.describe('data-paged — URL sync', () => {
     await page.goBack();
     await expect(page).not.toHaveURL(/\bp=4\b/);
   });
+
+  test('back/forward re-render the slice; no param falls back to page 1', async ({ page }) => {
+    await page.goto(dataPagedDemo);
+    const list = page.locator('ul[data-paged-url="p"]');
+    const nav  = list.locator('xpath=following-sibling::nav[@data-paged-nav][1]');
+    await nav.locator('button[data-paged-action="page"][data-paged-target="4"]').click();
+    await expect(page).toHaveURL(/\bp=4\b/);
+    await expect(nav.locator('button[aria-current="page"]')).toHaveText('4');
+
+    await page.goBack();
+    await expect(page).not.toHaveURL(/\bp=/);
+    await expect(nav.locator('button[aria-current="page"]')).toHaveText('1');
+    await expect(list.locator('li').first()).toBeVisible();
+
+    await page.goForward();
+    await expect(nav.locator('button[aria-current="page"]')).toHaveText('4');
+    await expect(list.locator('li').first()).toBeHidden();
+  });
 });
 
 test.describe('data-paged — MutationObserver re-pagination', () => {
@@ -228,6 +262,21 @@ test.describe('pager-wc — multi-instance sync', () => {
     await page.locator('pager-wc[target="#feed-a"]').first()
       .locator('button[data-paged-action="page"][data-paged-target="3"]').click();
     expect(await navigate).toMatchObject({ page: 3 });
+  });
+});
+
+test.describe('pager-wc — load-more', () => {
+  test('pager button drives a progressive target and counts down', async ({ page }) => {
+    await page.goto(pagerWcDemo);
+    const list = page.locator('#feed-d');
+    const btn = page.locator('pager-wc[target="#feed-d"] button[data-paged-loadmore]');
+    // data-paged-controls="none" → the engine renders no button of its own.
+    await expect(page.locator('#feed-d + nav[data-paged-nav]')).toHaveCount(0);
+    await expect(btn).toHaveText('Load more (5)');
+    await btn.click();
+    await expect(list.locator('li').nth(5)).toBeVisible();
+    await expect(btn).toHaveText('Load more (2)');
+    await expect(btn).toBeFocused();
   });
 });
 

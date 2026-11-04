@@ -2,14 +2,14 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "pager-wc",
   "type": "web-component",
-  "description": "Standalone pagination controls element targeting any [data-paged] container. The element form of the data-paged primitive \u2014 same shape as the layout-grid / data-layout-* element-attribute symmetry across VB. Authors pick the surface that fits the markup; both feed the same engine. Multiple <pager-wc> instances pointing at the same target stay in sync via paged:change.",
+  "description": "Standalone pagination controls element targeting any [data-paged] container. The element form of the data-paged primitive — same shape as the layout-grid / data-layout-* element-attribute symmetry across VB. Authors pick the surface that fits the markup; both feed the same engine. Multiple <pager-wc> instances pointing at the same target stay in sync via paged:change; a target inserted later is picked up.",
   "attributes": [
     {
       "name": "target",
       "kind": "host-api",
       "purpose": "config",
       "type": "string",
-      "description": "CSS selector for the [data-paged] container (preferred form)."
+      "description": "CSS selector for the [data-paged] container (preferred form). Only an element carrying data-paged counts; resolution is retried when a paged:change fires and on click."
     },
     {
       "name": "for",
@@ -19,9 +19,9 @@
       "description": "ID of the target container (HTML-form-style alternative to target)."
     },
     {
-      "name": "style",
-      "kind": "host-api",
-      "purpose": "config",
+      "name": "data-style",
+      "kind": "data",
+      "purpose": "visual-variant",
       "type": "enum",
       "values": [
         "numbered",
@@ -29,13 +29,78 @@
         "load-more"
       ],
       "default": "numbered",
-      "description": "Control style. Infinite is intentionally unsupported \u2014 a sentinel pattern doesn't make sense for decoupled controls."
+      "description": "Control style. load-more needs a progressive target (data-paged-style=\"load-more\" on the container, plus data-paged-controls=\"none\" to drop its own button). Infinite is intentionally unsupported — a sentinel pattern doesn't make sense for decoupled controls."
+    },
+    {
+      "name": "data-label-nav",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Pagination",
+      "description": "Accessible name of the rendered <nav> landmark. Give top and bottom pagers distinct names."
+    },
+    {
+      "name": "data-label-prev",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Previous",
+      "description": "Previous button text."
+    },
+    {
+      "name": "data-label-next",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Next",
+      "description": "Next button text."
+    },
+    {
+      "name": "data-label-page",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Page {page}",
+      "description": "Accessible name of each page-number button; {page} is the number."
+    },
+    {
+      "name": "data-label-status",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Page {page} of {total}",
+      "description": "prev-next status text (polite live region); {page} and {total}."
+    },
+    {
+      "name": "data-label-load-more",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Load more ({n})",
+      "description": "Load-more button text; {n} is the number of items still hidden."
+    },
+    {
+      "name": "data-label-no-more",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "No more",
+      "description": "Load-more button text once every item is shown."
+    },
+    {
+      "name": "data-label-missing",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "No paginated target found",
+      "description": "Visible note rendered while no [data-paged] target resolves (not a live region)."
     }
   ],
   "events": [
     {
       "name": "pager-wc:navigate",
-      "description": "Bubbles before the target's data-paged engine processes the navigation. detail: { page }. Use for analytics / scroll-restore hooks."
+      "detail": "{ page }",
+      "description": "Bubbles from the pager before it dispatches paged:goto on the target. Fired for page navigations only (numbered / prev-next), not for load-more. Not cancelable. Use for analytics / scroll-restore hooks; listen for paged:change on the target for after-navigation work."
     }
   ],
   "htmlvalidate": {

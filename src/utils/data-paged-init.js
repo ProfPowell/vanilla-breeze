@@ -16,10 +16,14 @@
  * @attr {string}  data-paged-style     - "numbered" | "prev-next" | "load-more" | "infinite"
  *                                        (default "numbered")
  * @attr {number}  data-paged-window    - Numbers around current for "numbered" (default 2)
- * @attr {string}  data-paged-controls  - "before" | "after" | "both" | "none" (default "after")
+ * @attr {string}  data-paged-controls  - "before" | "after" | "both" | "none" (default "after").
+ *                                        "none" also suppresses the load-more button (drive it
+ *                                        from <pager-wc data-style="load-more">); the infinite
+ *                                        sentinel is not a control and always renders.
  * @attr {string}  data-paged-url       - Opt-in URL search-param name; uses History API
  *
- * @fires paged:change                  - { page, size, total, totalPages }
+ * @fires paged:change                  - { page, size, total, totalPages, visible, style }
+ *                                        visible = number of items currently shown
  *
  * @example
  *   <ul data-paged data-paged-size="10">
@@ -34,7 +38,7 @@
 
 import { registerInit } from './_init-registry.js';
 import { paginationState } from '../lib/data-paged.js';
-import { buildNav, wireNav } from '../lib/data-paged-controls.js';
+import { buildNav, wireNav, replaceNav } from '../lib/data-paged-controls.js';
 
 const SELECTOR = '[data-paged]';
 const STATE = new WeakMap();
@@ -64,11 +68,12 @@ function enhance(host) {
     if (p && !host.hasAttribute('data-paged-page')) {
       host.setAttribute('data-paged-page', p);
     }
-    // History pop: re-read.
+    // History pop: re-read and re-render. No param means page 1.
     window.addEventListener('popstate', () => {
+      if (!host.isConnected) return;
       const url2 = new URL(window.location.href);
-      const p2 = url2.searchParams.get(urlParam);
-      if (p2) host.setAttribute('data-paged-page', p2);
+      host.setAttribute('data-paged-page', url2.searchParams.get(urlParam) || '1');
+      render(state);
     });
   }
 
@@ -129,12 +134,15 @@ function render(state) {
   // For load-more / infinite, "visible" is a sliding upper bound that
   // grows monotonically with explicit user / sentinel actions.
   const isProgressive = cfg.style === 'load-more' || cfg.style === 'infinite';
+  let shown;
   if (isProgressive) {
     if (state.visible === 0) state.visible = cfg.size || items.length;
     const end = Math.min(state.visible, items.length);
     items.forEach((el, i) => { el.hidden = i >= end; });
+    shown = end;
   } else {
     items.forEach((el, i) => { el.hidden = i < sm.start || i >= sm.end; });
+    shown = Math.max(0, sm.end - sm.start);
   }
 
   renderControls(state, sm, cfg, isProgressive);
@@ -146,24 +154,25 @@ function render(state) {
       size: cfg.size,
       total: items.length,
       totalPages: sm.totalPages,
+      visible: shown,
+      style: cfg.style,
     },
   }));
 }
 
 function renderControls(state, sm, cfg, isProgressive) {
-  // Tear down any existing nav / sentinel.
-  state.nav.before?.remove();
-  state.nav.after?.remove();
+  // The infinite sentinel is rebuilt every render; navs are swapped in
+  // place (replaceNav) so focus and the prev-next live region survive.
   state.sentinel?.remove();
+  state.sentinel = null;
   state.intersect?.disconnect();
   state.intersect = null;
-  state.nav = { before: null, after: null };
 
-  if (cfg.controls === 'none' && !isProgressive) return;
-
-  if (isProgressive) {
+  /** @type {HTMLElement | null} */
+  let nav = null;
+  if (cfg.controls !== 'none') {
     if (cfg.style === 'load-more') {
-      const nav = buildNav({
+      nav = buildNav({
         style: 'load-more',
         page: sm.page,
         totalPages: sm.totalPages,
@@ -171,36 +180,35 @@ function renderControls(state, sm, cfg, isProgressive) {
         total: state.children.length,
         visible: state.visible,
       });
-      placeNav(state, nav, cfg);
-    } else {
-      // infinite — sentinel is a SIBLING (not a child) so it doesn't
-      // trip the host's childObserver and cause a render loop.
-      const sentinel = document.createElement('div');
-      sentinel.setAttribute('data-paged-sentinel', '');
-      sentinel.setAttribute('aria-hidden', 'true');
-      sentinel.style.cssText = 'block-size:1px;inline-size:100%';
-      state.host.parentNode?.insertBefore(sentinel, state.host.nextSibling);
-      state.sentinel = sentinel;
-      state.intersect = new IntersectionObserver((entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) loadMore(state);
-        }
-      }, { rootMargin: '200px' });
-      state.intersect.observe(sentinel);
+    } else if (!isProgressive && sm.totalPages > 1) {
+      nav = buildNav({
+        style: cfg.style,
+        page: sm.page,
+        totalPages: sm.totalPages,
+        pageNumbers: sm.pageNumbers,
+        total: state.children.length,
+        visible: state.visible,
+      });
     }
-    return;
   }
 
-  if (sm.totalPages <= 1) return;
+  if (cfg.style === 'infinite') {
+    // Sentinel is a SIBLING (not a child) so it doesn't trip the host's
+    // childObserver and cause a render loop.
+    const sentinel = document.createElement('div');
+    sentinel.setAttribute('data-paged-sentinel', '');
+    sentinel.setAttribute('aria-hidden', 'true');
+    sentinel.style.cssText = 'block-size:1px;inline-size:100%';
+    state.host.parentNode?.insertBefore(sentinel, state.host.nextSibling);
+    state.sentinel = sentinel;
+    state.intersect = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) loadMore(state);
+      }
+    }, { rootMargin: '200px' });
+    state.intersect.observe(sentinel);
+  }
 
-  const nav = buildNav({
-    style: cfg.style,
-    page: sm.page,
-    totalPages: sm.totalPages,
-    pageNumbers: sm.pageNumbers,
-    total: state.children.length,
-    visible: state.visible,
-  });
   placeNav(state, nav, cfg);
 }
 
@@ -210,18 +218,34 @@ function placeNav(state, nav, cfg) {
     onNavigate: (page) => goTo(state, page),
     onLoadMore: () => loadMore(state),
   };
-  if (cfg.controls === 'before' || cfg.controls === 'both') {
-    const before = nav.cloneNode(true);
+  const wantBefore = !!nav && (cfg.controls === 'before' || cfg.controls === 'both');
+  const wantAfter  = !!nav && (cfg.controls === 'after' || cfg.controls === 'both');
+
+  /** @type {HTMLElement | null} */
+  let before = null;
+  if (wantBefore) {
+    before = /** @type {HTMLElement} */ (wantAfter ? nav.cloneNode(true) : nav);
+    // Only one copy carries the polite live region when both render.
+    if (wantAfter) before.querySelector('[data-paged-status]')?.removeAttribute('aria-live');
     wireNav(before, handlers);
-    host.parentNode?.insertBefore(before, host);
-    state.nav.before = before;
   }
-  if (cfg.controls === 'after' || cfg.controls === 'both' || cfg.controls === 'none') {
-    // (cfg.controls === 'none' shouldn't reach here for non-progressive)
-    wireNav(nav, handlers);
-    host.parentNode?.insertBefore(nav, host.nextSibling);
-    state.nav.after = nav;
-  }
+  const after = wantAfter ? nav : null;
+  if (after) wireNav(after, handlers);
+
+  state.nav.before = swapSlot(state.nav.before, before, (n) => host.parentNode?.insertBefore(n, host));
+  state.nav.after  = swapSlot(state.nav.after, after, (n) => host.parentNode?.insertBefore(n, host.nextSibling));
+}
+
+/**
+ * @param {HTMLElement | null} oldNav
+ * @param {HTMLElement | null} newNav
+ * @param {(n: HTMLElement) => void} insert
+ */
+function swapSlot(oldNav, newNav, insert) {
+  if (oldNav?.isConnected && newNav) { replaceNav(oldNav, newNav); return newNav; }
+  oldNav?.remove();
+  if (newNav) insert(newNav);
+  return newNav;
 }
 
 /* ---------- transitions ---------- */
