@@ -1,8 +1,23 @@
 /* notification-wc: banner + panel modes */
 
-notification-wc:not(:defined) { display: none; }
+/* No-JS fallback: with scripting off, a banner is plain content and a
+   panel's static <article> children render inline as a list. While a
+   script is still on its way (scripting enabled, element not yet
+   defined) hide the panel's articles and persisted banners so they
+   don't flash before upgrade decides what to show. */
+@media (scripting: enabled) {
+  notification-wc:not(:defined):not([mode="banner"]) > article,
+  notification-wc:not(:defined)[mode="banner"][persist] {
+    display: none;
+  }
+}
 
 notification-wc { display: inline-block; }
+/* Before upgrade (and with scripting off) the element is a plain block:
+   the banner spans the page and static articles list normally. An
+   inline-block would shrink-wrap the articles, whose inline-size
+   containment then collapses them to zero width. */
+notification-wc:not([data-mode]) { display: block; }
 
 /* The component sets `this.hidden = true` to dismiss the banner. The UA
    `[hidden] { display: none }` rule loses to our element-level `display`
@@ -108,7 +123,7 @@ notification-wc[data-mode="panel"] > article {
   align-items: center;
   justify-content: center;
   background: var(--color-error, oklch(60% 0.2 20));
-  color: white;
+  color: var(--color-text-on-error-auto, white);
   border-radius: var(--radius-full, 999px);
   font-size: var(--font-size-xs, 0.75rem);
   font-weight: var(--font-weight-medium, 500);
@@ -175,7 +190,8 @@ notification-wc[data-mode="panel"] > article {
    `display: flex` above beats the user-agent `[hidden] { display: none }`,
    so an explicit override is needed — otherwise the All list stays
    visible on top of the Watching list when the user flips the tab. */
-.notification-list[hidden] { display: none; }
+.notification-list[hidden],
+.notification-tabpanel[hidden] { display: none; }
 
 .notification-list > li {
   border-block-end: var(--border-width-thin) solid var(--color-border);
@@ -201,6 +217,7 @@ notification-wc[data-mode="panel"] > article {
 
 .notification-type-icon {
   flex-shrink: 0;
+  margin-inline: 0; /* cancel the global a > icon-wc spacing so link and button rows align */
   color: var(--color-text-muted);
   margin-block-start: 0.15rem;
 }
@@ -217,13 +234,11 @@ notification-wc[data-mode="panel"] > article {
   flex-direction: column;
   gap: 2px;
 }
-.notification-body h4 {
-  margin: 0;
+.notification-title {
   font-size: var(--font-size-s);
   font-weight: var(--font-weight-medium, 500);
 }
-.notification-body p {
-  margin: 0;
+.notification-text {
   color: var(--color-text-muted);
   font-size: var(--font-size-s);
 }
@@ -232,12 +247,13 @@ notification-wc[data-mode="panel"] > article {
   font-size: var(--font-size-xs, 0.75rem);
 }
 
-.notification-list > li[data-read] .notification-body h4 {
+.notification-list > li[data-read] .notification-title {
   font-weight: var(--font-weight-normal, 400);
   color: var(--color-text-muted);
 }
 
 .notification-footer {
+  margin: 0;
   padding: var(--size-m);
   text-align: center;
   color: var(--color-text-muted);
@@ -325,7 +341,7 @@ notification-wc[data-mode="panel"] > article {
   outline-offset: -2px;
 }
 
-.notification-watch-list > li[data-changed] .notification-body h4 {
+.notification-watch-list > li[data-changed] .notification-title {
   font-weight: var(--font-weight-medium, 500);
 }
 
@@ -335,7 +351,8 @@ notification-wc[data-mode="panel"] > article {
   padding: 0 var(--size-2xs);
   border-radius: var(--radius-s);
   background: var(--color-warning, oklch(75% 0.15 85));
-  color: white;
+  /* Dark ink on amber: white on --color-warning is ~2.3:1 (fails AA). */
+  color: var(--color-text-on-warning-auto, var(--color-gray-900, oklch(20% 0.02 70)));
   font-size: var(--font-size-xs, 0.75rem);
   font-weight: var(--font-weight-medium, 500);
   vertical-align: middle;
@@ -357,6 +374,29 @@ notification-wc[data-mode="panel"] > article {
 .notification-unwatch:focus-visible {
   outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
   outline-offset: var(--focus-ring-offset, 2px);
+}
+
+/* Forced colours: backgrounds and box-shadows vanish, so draw borders. */
+@media (forced-colors: active) {
+  .notification-badge {
+    background: Mark;
+    color: MarkText;
+    border: 1px solid CanvasText;
+    forced-color-adjust: none;
+  }
+  .notification-tabs > button[aria-selected="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  .notification-list > li:not([data-read]) .notification-row {
+    border-inline-start: var(--border-width-thick, 3px) solid Highlight;
+  }
+  .notification-changed-badge {
+    border: 1px solid CanvasText;
+  }
+  .notification-panel {
+    border: 1px solid CanvasText;
+  }
 }
 
 /* Reduced motion */

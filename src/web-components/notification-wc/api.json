@@ -33,7 +33,7 @@
         "warning",
         "error"
       ],
-      "description": "Banner mode: color variant"
+      "description": "Banner mode: color variant (reactive)"
     },
     {
       "name": "position",
@@ -44,7 +44,7 @@
         "top",
         "bottom"
       ],
-      "description": "Banner mode: sticky position"
+      "description": "Banner mode: top = sticky to the viewport top, bottom = fixed to the viewport bottom (reactive)"
     },
     {
       "name": "expires",
@@ -58,7 +58,7 @@
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Panel mode: absolute URL or VBService role name for dynamic notifications"
+      "description": "Panel mode: absolute or root-relative URL, or a VBService role name, for dynamic notifications"
     },
     {
       "name": "poll",
@@ -72,7 +72,7 @@
       "kind": "data",
       "purpose": "config",
       "type": "boolean",
-      "description": "Panel mode: fire a toast via the nearest <toast-msg> when a new dynamic notification arrives"
+      "description": "Panel mode: on each poll after the first, show a toast on the first <toast-msg> in the document for every never-seen dynamic notification"
     },
     {
       "name": "storage-key",
@@ -82,36 +82,183 @@
       "description": "Panel mode: VBStore namespace for read state (default: notifications)"
     },
     {
-      "name": "data-trigger",
+      "name": "data-label-trigger",
       "kind": "data",
       "purpose": "config",
-      "description": "Panel mode: marks a custom trigger element, replacing the auto-generated bell"
+      "type": "string",
+      "default": "Notifications",
+      "description": "Panel mode: Trigger accessible name (minted bell; an authored trigger keeps its own name)."
+    },
+    {
+      "name": "data-label-unread",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "{n} unread",
+      "description": "Panel mode: Unread count appended to the trigger name ({n} = count)."
+    },
+    {
+      "name": "data-label-title",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Notifications",
+      "description": "Panel mode: Panel heading and dialog name."
+    },
+    {
+      "name": "data-label-mark-all",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Mark all read",
+      "description": "Panel mode: Mark-all button text."
+    },
+    {
+      "name": "data-label-tabs",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Notification categories",
+      "description": "Panel mode: Tab list accessible name."
+    },
+    {
+      "name": "data-label-all",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "All",
+      "description": "Panel mode: All tab text."
+    },
+    {
+      "name": "data-label-watching",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Watching",
+      "description": "Panel mode: Watching tab text."
+    },
+    {
+      "name": "data-label-empty",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "No notifications",
+      "description": "Panel mode: Empty-state text for the All tab."
+    },
+    {
+      "name": "data-label-watch-empty",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "You aren’t watching any pages yet. Use the “Watch” button on a page to start.",
+      "description": "Panel mode: Empty-state text for the Watching tab."
+    },
+    {
+      "name": "data-label-last-checked",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Last checked: {date}",
+      "description": "Panel mode: Watch row check time ({date} = formatted date)."
+    },
+    {
+      "name": "data-label-never",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "—",
+      "description": "Panel mode: Watch row check time when never checked."
+    },
+    {
+      "name": "data-label-changed",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Changed",
+      "description": "Panel mode: Badge on watched pages whose content changed."
+    },
+    {
+      "name": "data-label-unwatch",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Unwatch {title}",
+      "description": "Panel mode: Unwatch button accessible name ({title} = page title)."
+    },
+    {
+      "name": "data-label-new",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "New notification",
+      "description": "Panel mode: Toast text when a new notification has no title or body."
+    },
+    {
+      "name": "data-label-variant-info",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Information:",
+      "description": "Banner mode: visually hidden prefix announcing the info variant, so it isn't conveyed by colour alone."
+    },
+    {
+      "name": "data-label-variant-success",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Success:",
+      "description": "Banner mode: visually hidden prefix announcing the success variant, so it isn't conveyed by colour alone."
+    },
+    {
+      "name": "data-label-variant-warning",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Warning:",
+      "description": "Banner mode: visually hidden prefix announcing the warning variant, so it isn't conveyed by colour alone."
+    },
+    {
+      "name": "data-label-variant-error",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Error:",
+      "description": "Banner mode: visually hidden prefix announcing the error variant, so it isn't conveyed by colour alone."
     }
   ],
   "events": [
     {
       "name": "notification-wc:new",
-      "detail": {
-        "notification": "object"
-      }
+      "detail": "{ notification }",
+      "description": "A never-seen entry arrived in a dynamic fetch"
     },
     {
       "name": "notification-wc:read",
-      "detail": {
-        "id": "string"
-      }
+      "detail": "{ id }",
+      "description": "An entry was marked read"
     },
     {
       "name": "notification-wc:dismiss",
-      "detail": {
-        "id": "string"
-      }
+      "detail": "{ id }",
+      "description": "Banner was dismissed (id = persist key)"
     },
     {
-      "name": "notification-wc:open"
+      "name": "notification-wc:open",
+      "description": "Panel opened"
     },
     {
-      "name": "notification-wc:close"
+      "name": "notification-wc:close",
+      "description": "Panel closed"
+    },
+    {
+      "name": "notification-wc:notifications-changed",
+      "detail": "{ notifications, source: 'property' }",
+      "description": "The notifications setter replaced the dynamic list"
+    },
+    {
+      "name": "page-watch:remove",
+      "detail": "{ url, subscriptionId }",
+      "description": "A page was unwatched from the Watching tab"
     }
   ],
   "htmlvalidate": {
@@ -119,5 +266,52 @@
     "permittedContent": [
       "@flow"
     ]
-  }
+  },
+  "childAttributes": [
+    {
+      "name": "data-trigger",
+      "on": "button",
+      "type": "boolean",
+      "description": "Panel mode: marks an authored trigger button that replaces the minted bell. An unread badge is appended inside it."
+    },
+    {
+      "name": "data-id",
+      "on": "article",
+      "type": "string",
+      "description": "Panel mode: notification id (read state and dynamic merge key)."
+    },
+    {
+      "name": "data-type",
+      "on": "article",
+      "type": "enum",
+      "values": [
+        "update",
+        "alert",
+        "watch",
+        "system",
+        "message",
+        "stewardship"
+      ],
+      "description": "Panel mode: row icon (default update)."
+    },
+    {
+      "name": "data-date",
+      "on": "article",
+      "type": "string",
+      "description": "Panel mode: ISO date; sorts rows newest first and is shown formatted in the document language."
+    },
+    {
+      "name": "value",
+      "on": "button",
+      "type": "string",
+      "description": "Banner mode: value=\"dismiss\" (or data-dismiss) marks the dismiss button."
+    }
+  ],
+  "properties": [
+    {
+      "name": "notifications",
+      "type": "Array<{ id, title, body?, date?, type?, url?, dismissed? }>",
+      "description": "Panel mode: dynamic notifications merged over static <article> children by id (same shape as the src feed). The getter returns a copy; the setter re-renders and fires notification-wc:notifications-changed. url renders as a link only when it resolves to http(s). Banner mode ignores the setter."
+    }
+  ]
 }
