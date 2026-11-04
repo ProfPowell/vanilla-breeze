@@ -51,7 +51,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Numeric Data</h2>
-    <p>Use the <code>data-numeric</code> attribute for cells containing numbers. This right-aligns the content and applies <code>font-variant-numeric: tabular-nums</code> so digits align vertically across rows.</p>
+    <p>Use the <code>data-numeric</code> attribute for cells containing numbers. This aligns the content to the inline end (right in left-to-right text, left in right-to-left) and applies <code>font-variant-numeric: tabular-nums</code> so digits align vertically across rows.</p>
     <code-block language="html" show-lines label="Numeric data cells" data-escape><td data-numeric>$37,500.00</td>
 <td data-numeric>+12.5%</td>
 <td data-numeric>1,480</td></code-block>
@@ -62,7 +62,7 @@ crumbLabel: Native Elements
     <p>Use <code>data-align</code> when the default (<code>start</code>) or <code>data-numeric</code> (<code>end</code>) are not appropriate for the content.</p>
     <code-block language="html" show-lines label="Explicit alignment" data-escape><td data-align="start">Left-aligned text</td>
 <td data-align="center">Centered status</td>
-<td data-align="end">Right-aligned value</td></code-block>
+<td data-align="end">End-aligned value</td></code-block>
   </section>
 
   <section>
@@ -95,9 +95,23 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Responsive Card-Mode Labels</h2>
-    <p>On narrow screens, the <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> component can switch from a traditional table layout to a stacked card layout. Add <code>data-label</code> to each <code>&lt;td&gt;</code> to provide the column header text that appears as a label in card mode.</p>
-    <code-block language="html" show-lines label="Card-mode labels" data-escape><!-- data-label provides column headers in card mode -->
-<tr>
+    <p>A table with <code>data-responsive="card"</code> switches to a stacked card layout when its container is narrower than 500px. This works on a plain <code>&lt;table&gt;</code> inside any inline-size container (VB sections, articles and <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> all are). Each cell shows its column name as a label, taken from <code>data-label</code>.</p>
+    <p>You don't have to copy the labels by hand: VB's card-mode script fills a missing <code>data-label</code> from the column's header text, for rows added later too. Set <code>data-label</code> yourself only when the card label should differ from the header (for example a shorter word). The script also restores explicit table roles, because the card layout changes the display of rows and cells. See <a href="/docs/elements/native/table/#responsive">table: Responsive</a>.</p>
+    <code-block language="html" show-lines label="Card-mode labels" data-escape><!-- Missing labels come from the column headers;
+     an authored data-label wins -->
+<table data-responsive="card">
+  <thead>
+    <tr><th scope="col">Product</th><th scope="col">Category</th><th scope="col" data-numeric>Stock</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Wireless Mouse</td>
+      <td>Peripherals</td>
+      <td data-label="In stock" data-numeric>245</td>
+    </tr>
+  </tbody>
+</table></code-block>
+    <code-block language="html" show-lines label="Explicit labels on every cell (also fine)" data-escape><tr>
   <td data-label="Product">Wireless Mouse</td>
   <td data-label="Category">Peripherals</td>
   <td data-label="SKU">WM-001</td>
@@ -107,20 +121,32 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Complex Header Associations</h2>
-    <p>For tables with multiple levels of headers where automatic association via <code>scope</code> is insufficient, use the <code>headers</code> attribute to explicitly list the IDs of the associated header cells.</p>
-    <code-block language="html" show-lines label="headers attribute for complex tables" data-escape><table>
+    <p>Most tables need only <code>scope</code>. Use the <code>headers</code> attribute when a cell's headers can't be found by walking its row and column: for example a sub-heading row in the middle of the body, where each cell belongs to that section heading as well as its column header. List the IDs of every header that applies.</p>
+    <code-block language="html" show-lines label="headers attribute for an irregular table" data-escape><table>
+  <caption>Travel expenses by trip</caption>
   <thead>
     <tr>
-      <th id="product">Product</th>
-      <th id="q1">Q1</th>
-      <th id="q2">Q2</th>
+      <th id="date">Date</th>
+      <th id="meals">Meals</th>
+      <th id="hotel">Hotel</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th id="widget" scope="row">Widget</th>
-      <td headers="widget q1">$12,500</td>
-      <td headers="widget q2">$15,200</td>
+      <th id="paris" colspan="3">Paris</th>
+    </tr>
+    <tr>
+      <th id="p-d1" headers="paris date">25 Aug</th>
+      <td headers="paris p-d1 meals">€37</td>
+      <td headers="paris p-d1 hotel">€112</td>
+    </tr>
+    <tr>
+      <th id="rome" colspan="3">Rome</th>
+    </tr>
+    <tr>
+      <th id="r-d1" headers="rome date">27 Aug</th>
+      <td headers="rome r-d1 meals">€29</td>
+      <td headers="rome r-d1 hotel">€98</td>
     </tr>
   </tbody>
 </table></code-block>
@@ -141,7 +167,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>data-numeric</code></td>
           <td>Boolean attribute</td>
-          <td>Right-aligns content and uses tabular numerals</td>
+          <td>Aligns content to the inline end (right in LTR, left in RTL) and uses tabular numerals</td>
         </tr>
         <tr>
           <td><code>data-align</code></td>
@@ -151,7 +177,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>data-sort-value</code></td>
           <td>String</td>
-          <td>Value used for sorting (overrides display text)</td>
+          <td>Value used for sorting (overrides display text). Read by <code>&lt;data-table&gt;</code> and <code>[data-sortable]</code>; <code>[data-sortable]</code> also accepts <code>data-value</code></td>
         </tr>
         <tr>
           <td><code>data-filter-value</code></td>
@@ -161,7 +187,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>data-label</code></td>
           <td>String</td>
-          <td>Column header label for responsive card mode</td>
+          <td>Label shown in <code>data-responsive="card"</code> mode; filled from the column header when absent</td>
         </tr>
       </tbody>
     </table>
@@ -205,7 +231,7 @@ crumbLabel: Native Elements
   text-align: start;
 }
 
-/* Numeric alignment */
+/* Numeric alignment (end: right in LTR, left in RTL) */
 td[data-numeric] {
   text-align: end;
   font-variant-numeric: tabular-nums;
@@ -216,11 +242,20 @@ td[data-align="start"]  { text-align: start; }
 td[data-align="center"] { text-align: center; }
 td[data-align="end"]    { text-align: end; }
 
-/* Card-mode label (responsive tables) */
-td[data-label]::before {
-  content: attr(data-label);
-  font-weight: 600;
-  display: block;
+/* Card-mode label — only inside a narrow container,
+   only for table[data-responsive="card"] */
+@container (max-width: 500px) {
+  table[data-responsive="card"] :is(tbody, tfoot) :is(td, th)[data-label] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--size-s);
+
+    &::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--color-text-muted);
+    }
+  }
 }</code-block>
   </section>
 
@@ -230,7 +265,7 @@ td[data-label]::before {
       <li><strong>Header associations:</strong> Data cells are automatically associated with their column and row headers through the table structure and <code>scope</code></li>
       <li><strong>Screen reader navigation:</strong> When navigating to a <code>&lt;td&gt;</code>, screen readers announce the associated headers</li>
       <li><strong>Complex tables:</strong> Use the <code>headers</code> attribute when automatic association is insufficient</li>
-      <li><strong>Avoid empty cells:</strong> Use meaningful placeholders like "N/A" or "-" for better screen reader experience</li>
+      <li><strong>Empty cells:</strong> an empty cell is fine; screen readers announce it as "blank". Avoid a bare "-": it is read as "dash" or skipped, depending on the screen reader. If you want a visible mark, use an em dash with hidden text, for example <code>&lt;td&gt;&lt;span aria-hidden="true"&gt;—&lt;/span&gt;&lt;span class="visually-hidden"&gt;No data&lt;/span&gt;&lt;/td&gt;</code></li>
       <li><strong>Rich content:</strong> When cells contain structured content (links, buttons, status badges), ensure all interactive elements are keyboard accessible</li>
     </ul>
   </section>

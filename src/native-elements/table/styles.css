@@ -1,33 +1,61 @@
 /* table: Native table styling */
 
 table {
+  /* Row paint is routed through custom properties so every consumer —
+     the row, frozen (sticky) cells, the state bar — agrees on one value.
+     Reset per table so nested tables don't inherit an outer row's state. */
+  --_row-bg: transparent;
+  --_row-bar: 0 0 #0000;
+  --_x: 1; /* inline-start sign for physical box-shadow offsets */
+
   inline-size: 100%;
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
   text-align: start;
 }
 
-/* Table headers */
+table:dir(rtl) {
+  --_x: -1;
+}
+
+/* Header cells: shared type treatment */
 th {
   padding: var(--size-s) var(--size-m);
   text-align: start;
   font-weight: 600;
   color: var(--color-text);
+}
+
+/* The raised header band belongs to column headers only. Row headers
+   (tbody th[scope=row]) read like data cells so row hover, stripe and
+   selection tints reach them. */
+:is(thead th, th:is([scope="col"], [scope="colgroup"])) {
   background: var(--color-surface-raised);
   border-block-end: var(--border-width-medium) solid var(--color-border);
 }
 
-/* Table cells */
-td {
+/* Data cells and row headers */
+td,
+tbody th:not([scope="col"], [scope="colgroup"]) {
   padding: var(--size-s) var(--size-m);
-  text-align: start;
   border-block-end: var(--border-width-thin) solid var(--color-border);
   vertical-align: top;
 }
 
+tr {
+  background: var(--_row-bg);
+}
+
+/* The first cell carries the row's state bar (and, when frozen, the
+   frozen-edge rule). Both are box-shadows composed here so neither
+   clobbers the other. */
+tr > :first-child {
+  box-shadow: var(--_row-bar), var(--_edge, 0 0 #0000);
+}
+
 /* Row hover */
 tbody tr:hover {
-  background: var(--color-hover-bg);
+  --_row-bg: var(--color-hover-bg);
 }
 
 /* Caption */
@@ -38,15 +66,15 @@ caption {
   color: var(--color-text-muted);
 }
 
-/* Table footer */
-tfoot td {
+/* Table footer — label cells are usually <th scope="row">, so style both */
+tfoot :is(td, th) {
   font-weight: 600;
   background: var(--color-surface-raised);
   border-block-start: var(--border-width-medium) solid var(--color-border);
   border-block-end: none;
 }
 
-/* Numeric columns alignment */
+/* Numeric columns alignment (end = right in LTR, left in RTL) */
 :is(td, th)[data-numeric] {
   text-align: end;
   font-variant-numeric: tabular-nums;
@@ -54,24 +82,36 @@ tfoot td {
 
 /* --- Table Data Attributes --- */
 
-/* Sticky headers */
+/* Sticky headers. Offset by the coordinated site header (--sticky-offset,
+   published by lib/sticky-manager.js) so the thead never slides under it.
+   With border-collapse the header rule stays with the table, not the stuck
+   cell, so the rule is redrawn as an inset shadow. */
 table:is([data-sticky="header"], [data-sticky="both"]) thead th {
   position: sticky;
-  inset-block-start: 0;
+  inset-block-start: var(--sticky-offset, 0px);
   z-index: 1;
   background: var(--color-surface-overlay);
+  box-shadow: inset 0 calc(-1 * var(--border-width-medium)) 0 var(--color-border);
 }
 
-/* Sticky first column */
+/* Inside a scroll region the header pins to the region, not the page */
+[data-table-scroll] > table:is([data-sticky="header"], [data-sticky="both"]) thead th {
+  inset-block-start: 0;
+}
+
+/* Sticky first column. Frozen cells must be opaque, so they paint the
+   row tint (--_row-bg) over the surface instead of a flat surface. */
 table:is([data-sticky="column"], [data-sticky="both"]) :is(td, th):first-child {
   position: sticky;
   inset-inline-start: 0;
   z-index: 1;
-  background: var(--color-surface);
+  background: linear-gradient(var(--_row-bg), var(--_row-bg)), var(--color-surface);
+  --_edge: calc(var(--_x) * var(--border-width-thin)) 0 0 var(--color-border);
 }
 
-/* Sticky both - corner cell needs higher z-index */
-table[data-sticky="both"] thead th:first-child {
+/* Frozen header corner keeps the header surface and sits on top */
+table:is([data-sticky="column"], [data-sticky="both"]) thead th:first-child {
+  background: var(--color-surface-overlay);
   z-index: 2;
 }
 
@@ -91,45 +131,77 @@ table[data-density="comfortable"] :is(th, td) {
 :is(th, td)[data-align="center"] { text-align: center; }
 :is(th, td)[data-align="end"] { text-align: end; }
 
-/* Row states */
-tr[data-selected] {
-  background: oklch(from var(--color-interactive) l c h / 0.15);
+/* --- Row States ---
+   Authored tables use data-selected; <data-table> writes
+   data-state-selected. Both get the same tint plus a non-colour cue: a
+   bar on the inline-start edge of the row. Neither carries semantics —
+   pair them with visible text or a checkbox (see the tr docs). */
+tr:is([data-selected], [data-state-selected]) {
+  --_row-bg: oklch(from var(--color-interactive) l c h / 0.15);
+  --_row-bar: inset calc(var(--_x) * var(--border-width-thick)) 0 0 var(--color-interactive);
 }
 
-tr[data-selected]:hover {
-  background: oklch(from var(--color-interactive) l c h / 0.25);
-}
-
-tr[data-disabled] {
-  opacity: 0.5;
-  pointer-events: none;
+tr:is([data-selected], [data-state-selected]):hover {
+  --_row-bg: oklch(from var(--color-interactive) l c h / 0.25);
 }
 
 tr[data-highlight] {
-  background: oklch(from var(--color-warning) l c h / 0.15);
+  --_row-bg: oklch(from var(--color-warning) l c h / 0.15);
+  --_row-bar: inset calc(var(--_x) * var(--border-width-thick)) 0 0 var(--color-warning);
 }
 
 tr[data-highlight]:hover {
-  background: oklch(from var(--color-warning) l c h / 0.25);
+  --_row-bg: oklch(from var(--color-warning) l c h / 0.25);
 }
 
-/* Responsive horizontal scroll */
-table[data-responsive="scroll"] {
+/* Disabled is visual only: a muted colour (keeps AA, unlike opacity).
+   Behaviour comes from the platform — put `inert` on the row so its
+   controls leave the tab order and the pointer can't reach them. */
+tr:is([data-disabled], [inert]) {
+  color: var(--color-text-muted);
+
+  &:hover {
+    --_row-bg: transparent;
+  }
+}
+
+/* --- Scroll region ---
+   Wide tables scroll inside a focusable, labelled wrapper:
+     <section data-table-scroll tabindex="0" aria-labelledby="cap-id">
+   The wrapper (not the table) is the scroll container, so keyboard users
+   can scroll it and screen readers announce it as a named region. Use
+   data-table-scroll="block" to also cap the height, which lets a sticky
+   header pin inside the region. */
+[data-table-scroll] {
   display: block;
+  max-inline-size: 100%;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
+
+  &:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+    outline-offset: var(--focus-ring-offset, 2px);
+  }
 }
 
-/* --- Table Variants (class-based, kept for backward compatibility) --- */
+[data-table-scroll="block"] {
+  overflow: auto;
+  max-block-size: var(--table-scroll-max-block, 70dvh);
+}
+
+/* --- Table Variants (class-based) --- */
 
 table {
-  /* Striped variant */
-  &.striped tbody tr:nth-child(odd) {
-    background: var(--color-surface-raised);
+  /* Striped variant. Hidden rows (filtered/paged by data-table, collapsed
+     detail rows) and expand-content rows are skipped so stripes stay
+     alternating (:where keeps the stripe's specificity low so row states
+     below still win). The stripe is a text-tinted wash, distinct from hover. */
+  &.striped tbody tr:nth-child(odd of :where(:not([data-state-hidden], [hidden], [data-expand-content]))) {
+    --_row-bg: color-mix(in oklch, var(--color-text) 5%, transparent);
   }
 
-  &.striped tbody tr:nth-child(odd):hover {
-    background: var(--color-surface-alt);
+  &.striped tbody tr:hover {
+    --_row-bg: color-mix(in oklch, var(--color-text) 10%, transparent);
   }
 
   /* Compact variant */
@@ -143,33 +215,50 @@ table {
   }
 }
 
-/* --- Sortable Column Indicators --- */
+/* State rows win over stripes */
+table.striped tbody tr:is([data-selected], [data-state-selected]) {
+  --_row-bg: oklch(from var(--color-interactive) l c h / 0.15);
+}
 
-/* State comes from aria-sort (set by data-table and data-sortable), so the
-   visual and the accessible state cannot drift. data-table puts a <button>
-   inside the th (APG sortable table) and the arrow rides on that button;
-   tables with a bare th[data-sort] get it on the th itself. The arrow's
-   alt text is empty: aria-sort already conveys the direction. */
+table.striped tbody tr[data-highlight] {
+  --_row-bg: oklch(from var(--color-warning) l c h / 0.15);
+}
+
+/* --- Sortable Column Indicators ---
+   State comes from aria-sort, so the visual and the accessible state
+   cannot drift. Behaviour lives in <data-table> and [data-sortable]: both
+   put a native <button data-sort-button> inside the th (APG sortable
+   table) and the arrow rides on that button. A bare th[data-sort] with no
+   button has no behaviour, so it shows no affordance — only a static
+   arrow when the author marks it sorted with aria-sort (server-sorted
+   tables). The arrow's alt text is empty: aria-sort conveys direction. */
 th[data-sort] {
-  cursor: var(--cursor-custom-pointer, pointer);
-  user-select: none;
+  &[aria-sort="ascending"]:not(:has(> button[data-sort-button]))::after {
+    content: " ↑" / "";
+  }
 
-  &:not(:has(> button[data-sort-button]))::after,
+  &[aria-sort="descending"]:not(:has(> button[data-sort-button]))::after {
+    content: " ↓" / "";
+  }
+
   & > button[data-sort-button]::after {
     content: " ⇅" / "";
     opacity: 0.3;
   }
 
-  &[aria-sort="ascending"]:not(:has(> button[data-sort-button]))::after,
   &[aria-sort="ascending"] > button[data-sort-button]::after {
     content: " ↑" / "";
     opacity: 1;
   }
 
-  &[aria-sort="descending"]:not(:has(> button[data-sort-button]))::after,
   &[aria-sort="descending"] > button[data-sort-button]::after {
     content: " ↓" / "";
     opacity: 1;
+  }
+
+  &:has(> button[data-sort-button]) {
+    cursor: var(--cursor-custom-pointer, pointer);
+    user-select: none;
   }
 
   /* The sort button reads as the header text but keeps a focus ring */
@@ -200,21 +289,21 @@ tr[data-state-hidden] {
 /* --- Expanded Row Content --- */
 
 tr[data-expand-content] {
-  background: var(--color-surface-raised);
+  --_row-bg: var(--color-surface-raised);
 
   & td {
     padding: 0;
   }
 
-  /* Inner wrapper for content with padding */
-  & > td > div {
+  /* Content wrapper inside the detail cell gets the padding */
+  & > td > * {
     padding: var(--size-m);
   }
 }
 
 /* Highlight the expandable row when expanded */
 tr[data-state-expanded] {
-  background: var(--color-surface-raised);
+  --_row-bg: var(--color-surface-raised);
 }
 
 /* --- Toggle Button Styling --- */
@@ -261,24 +350,26 @@ table[data-sticky-column="2"] {
 
   :is(td, th):nth-child(-n+2) {
     position: sticky;
-    background: var(--color-surface);
+    background: linear-gradient(var(--_row-bg), var(--_row-bg)), var(--color-surface);
     z-index: 1;
   }
 
   :is(td, th):first-child {
     inset-inline-start: 0;
-    /* Shadow masks content scrolling underneath the gap between frozen columns */
-    box-shadow: var(--border-width-thin) 0 0 var(--color-border);
+    /* Edge shadow masks content scrolling underneath the gap between frozen columns */
+    --_edge: calc(var(--_x) * var(--border-width-thin)) 0 0 var(--color-border);
   }
 
   :is(td, th):nth-child(2) {
     inset-inline-start: var(--_sticky-col-1-width, 8rem);
-    /* Right edge shadow for the frozen column group */
-    box-shadow: var(--border-width-thin) 0 0 var(--color-border);
+    /* Inline-end edge of the frozen column group (flips in RTL via --_x) */
+    box-shadow: calc(var(--_x) * var(--border-width-thin)) 0 0 var(--color-border);
   }
 
-  /* Corner cells need higher z-index when combined with sticky header */
+  /* Corner cells keep the header surface and need a higher z-index when
+     combined with a sticky header */
   thead th:nth-child(-n+2) {
+    background: var(--color-surface-raised);
     z-index: 2;
   }
 }
@@ -290,7 +381,7 @@ table[data-variant="minimal"] :is(th, td) {
   border-block-end: var(--border-width-thin) solid var(--color-border);
 }
 
-table[data-variant="minimal"] th {
+table[data-variant="minimal"] :is(thead th, th:is([scope="col"], [scope="colgroup"])) {
   background: transparent;
   font-weight: var(--font-weight-medium);
   color: var(--color-text-muted);
@@ -301,12 +392,12 @@ table[data-variant="minimal"] th {
 }
 
 table[data-variant="minimal"] tbody tr:hover {
-  background: transparent;
+  --_row-bg: transparent;
 }
 
-table[data-variant="minimal"] tfoot td {
+table[data-variant="minimal"] tfoot :is(td, th) {
   background: transparent;
-  border-block-start-width: var(--border-width-medium);
+  border-block-start: var(--border-width-medium) solid var(--color-border);
 }
 
 /* --- Container Query Setup --- */
@@ -316,43 +407,98 @@ data-table {
   display: block;
 }
 
-/* --- Responsive Card Mode --- */
-
+/* --- Responsive Card Mode ---
+   Changing table display values drops table semantics in some engines,
+   so card-init.js (loaded for table[data-responsive="card"]) restores
+   explicit table/rowgroup/row/columnheader/rowheader/cell roles and fills
+   any missing data-label from the column header. The thead is hidden
+   visually only, so column headers stay in the accessibility tree. */
 @container (max-width: 500px) {
   table[data-responsive="card"] {
     thead {
-      display: none;
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
 
-    :is(tbody, tr, td) {
+    :is(tbody, tfoot, tr) {
       display: block;
     }
 
-    tr {
+    :is(tbody, tfoot) tr {
       padding: var(--size-m);
       margin-block-end: var(--size-m);
       border: var(--border-width-thin) solid var(--color-border);
       border-radius: var(--radius-m);
-      background: var(--color-surface);
+      background: linear-gradient(var(--_row-bg), var(--_row-bg)), var(--color-surface);
 
-      &[data-state-selected] {
-        border-color: var(--color-primary);
+      &:is([data-selected], [data-state-selected]) {
+        border-color: var(--color-interactive);
         box-shadow: var(--shadow-s);
       }
     }
 
-    td {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--size-s);
+    :is(tbody, tfoot) :is(td, th) {
+      display: block;
       border: none;
       padding: var(--size-xs) 0;
+      background: transparent;
+      box-shadow: none;
+      text-align: start;
 
-      &::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--color-text-muted);
+      &[data-label] {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--size-s);
+
+        &::before {
+          content: attr(data-label);
+          font-weight: 600;
+          color: var(--color-text-muted);
+        }
       }
     }
+  }
+}
+
+/* --- Forced colors ---
+   Backgrounds and box-shadows are painted out, so row states, the state
+   bar and the frozen edge are redrawn with system colours and real
+   borders. Stripes fall away; rows stay delineated by their borders. */
+@media (forced-colors: active) {
+  tr:is([data-selected], [data-state-selected]) > * {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+
+    & :any-link {
+      color: HighlightText;
+    }
+  }
+
+  tr[data-highlight] > * {
+    forced-color-adjust: none;
+    background: Mark;
+    color: MarkText;
+  }
+
+  tr:is([data-selected], [data-state-selected], [data-highlight]) > :first-child {
+    border-inline-start: var(--border-width-thick) solid CanvasText;
+  }
+
+  tr:is([data-disabled], [inert]) {
+    color: GrayText;
+  }
+
+  table:is([data-sticky="column"], [data-sticky="both"]) :is(td, th):first-child,
+  table[data-sticky-column="2"] :is(td, th):nth-child(2) {
+    border-inline-end: var(--border-width-thin) solid CanvasText;
+  }
+
+  table:is([data-sticky="header"], [data-sticky="both"]) thead th {
+    border-block-end: var(--border-width-medium) solid CanvasText;
   }
 }

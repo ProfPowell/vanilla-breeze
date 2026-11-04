@@ -83,7 +83,7 @@ These attributes go on `<tr>` elements in `<tbody>`.
 |-----------|-------------|
 | `aria-sort` | Set on `<th>` — `none`, `ascending`, or `descending` |
 | `data-state-hidden` | Set on filtered/paginated out rows |
-| `data-state-selected` | Set on selected rows |
+| `data-state-selected` | Set on selected rows; gets the same selected tint and non-colour cue as native `tr[data-selected]` |
 | `data-state-expanded` | Set on expanded rows |
 
 ## Cell Attributes
@@ -254,7 +254,7 @@ table.refresh();
 
 ### Card Mode
 
-Use `data-responsive="card"` with `data-label` on cells:
+Use `data-responsive="card"`. Cell labels are derived from the column headers automatically (and the table roles are restored) by the native card enhancer; an authored `data-label` on a cell wins:
 
 ```html
 <data-table>
@@ -282,12 +282,15 @@ At container widths below 500px, the table transforms:
 
 ### Scroll Mode
 
-Use `data-responsive="scroll"` for horizontal scrolling:
+Wrap the table in a focusable scroll container labelled by the caption (add `data-table-scroll="block"` to also cap its height):
 
 ```html
-<table data-responsive="scroll">
-  <!-- Wide table content -->
-</table>
+<section data-table-scroll tabindex="0" aria-labelledby="orders-caption">
+  <table>
+    <caption id="orders-caption">Orders</caption>
+    <!-- Wide table content -->
+  </table>
+</section>
 ```
 
 ## Accessibility

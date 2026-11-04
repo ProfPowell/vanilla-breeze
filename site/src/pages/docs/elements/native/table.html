@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "table"
-description: "Tables display tabular data with full-width layout, collapsed borders, tabular numerals, and automatic row hover states. Includes variants for striped, compact, and bordered styles plus data attributes for density, sticky headers, and row states."
+description: "Tables display tabular data with full-width layout, collapsed borders, tabular numerals, and automatic row hover states. Includes striped, compact, bordered and minimal variants plus data attributes for density, alignment, sticky headers and columns, responsive card and scroll layouts, and row states."
 elementName: table
 category: native
 nativeGroup: Tables
@@ -13,7 +13,7 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;table&gt;</code> element displays tabular data arranged in rows and columns. Vanilla Breeze styles tables with full-width layout (<code>inline-size: 100%</code>), collapsed borders, and <code>font-variant-numeric: tabular-nums</code> so digits align properly in columns. Header cells get a raised surface background with medium-weight bottom borders, and body rows include automatic hover states for improved scannability.</p>
+    <p>The <code>&lt;table&gt;</code> element displays tabular data arranged in rows and columns. Vanilla Breeze styles tables with full-width layout (<code>inline-size: 100%</code>), collapsed borders, and <code>font-variant-numeric: tabular-nums</code> so digits align properly in columns. Column header cells get a raised surface background with a medium bottom border; row headers (<code>&lt;th scope="row"&gt;</code>) read like data cells so row tints reach them. Body rows include automatic hover states for improved scannability.</p>
     <p>Footer rows (<a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a>) are styled with bold text and a raised background to visually separate summary data from detail rows.</p>
   </section>
 
@@ -36,7 +36,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Basic Usage</h2>
-    <p>A well-structured table includes a <a href="/docs/elements/native/caption/"><code>&lt;caption&gt;</code></a> for accessibility, <a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a> for column headers with <code>scope</code> attributes, <a href="/docs/elements/native/tbody/"><code>&lt;tbody&gt;</code></a> for data rows, and optionally a <a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a> for summary rows. Use <code>data-numeric</code> on cells containing numbers to right-align and enable tabular numerals.</p>
+    <p>A well-structured table includes a <a href="/docs/elements/native/caption/"><code>&lt;caption&gt;</code></a> for accessibility, <a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a> for column headers with <code>scope</code> attributes, <a href="/docs/elements/native/tbody/"><code>&lt;tbody&gt;</code></a> for data rows, and optionally a <a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a> for summary rows. Use <code>data-numeric</code> on cells containing numbers to align them to the inline end (right in left-to-right text, left in right-to-left) and enable tabular numerals.</p>
 
     <browser-window src="/docs/snippets/demos/table-basic.html" url="table-basic.html" title="Basic table with caption, thead, tbody, and tfoot" shadow></browser-window>
     <code-block language="html" show-lines label="Basic table structure" data-escape><table>
@@ -80,7 +80,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Variants</h2>
-    <p>Three class-based variants modify the table appearance. They can be combined freely.</p>
+    <p>Three class-based variants modify the table appearance. They can be combined freely. For a low-ink look use <a href="#minimal"><code>data-variant="minimal"</code></a>.</p>
 
     <browser-window src="/docs/snippets/demos/table-variants.html" url="table-variants.html" title="Striped, compact, and bordered table variants" shadow></browser-window>
     <code-block language="html" show-lines label="Table variants" data-escape><table class="striped">
@@ -109,7 +109,7 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>.striped</code></td>
-          <td>Alternating odd-row backgrounds using <code>var(--color-surface-raised)</code></td>
+          <td>Alternating backgrounds on odd <em>visible</em> rows (filtered, paged and detail rows are skipped), a light text-tinted wash distinct from the hover colour</td>
         </tr>
         <tr>
           <td><code>.compact</code></td>
@@ -158,14 +158,24 @@ crumbLabel: Native Elements
     </table>
 
     <h3><code>data-sticky</code></h3>
-    <p>Makes the header row or first column sticky during scroll.</p>
+    <p>Keeps the header row, the first column, or both in view while the table scrolls. The header pins below a coordinated sticky site header (it offsets by <code>--sticky-offset</code>); inside a <a href="#scroll-region">scroll region</a> it pins to the region instead. Frozen cells are opaque but repeat the row's hover, stripe or state tint, and the frozen edge flips side in right-to-left text.</p>
+
+    <browser-window src="/docs/snippets/demos/table-sticky.html" url="table-sticky.html" title="Sticky header and first column inside a scroll region" shadow></browser-window>
     <code-block language="html" show-lines label="Sticky headers and columns" data-escape><table data-sticky="header">
-  <!-- thead sticks to viewport top on scroll -->
+  <!-- thead sticks below the site header on page scroll -->
 </table>
 
 <table data-sticky="column">
   <!-- First column sticks on horizontal scroll -->
-</table></code-block>
+</table>
+
+<!-- Both, inside a height-capped scroll region -->
+<section data-table-scroll="block" tabindex="0" aria-labelledby="workload-cap">
+  <table data-sticky="both">
+    <caption id="workload-cap">Team workload</caption>
+    …
+  </table>
+</section></code-block>
 
     <table>
       <thead>
@@ -177,29 +187,88 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>header</code></td>
-          <td><code>thead th</code> becomes <code>position: sticky</code> at top</td>
+          <td><code>thead th</code> becomes <code>position: sticky</code> at <code>var(--sticky-offset, 0px)</code></td>
         </tr>
         <tr>
           <td><code>column</code></td>
           <td>First <code>td</code>/<code>th</code> in each row sticks at inline-start</td>
         </tr>
+        <tr>
+          <td><code>both</code></td>
+          <td>Header row and first column; the corner cell stays on top</td>
+        </tr>
       </tbody>
     </table>
 
+    <h3><code>data-sticky-column="2"</code></h3>
+    <p>Freezes the first <em>two</em> columns (for example an ID and a name). The second column is offset by the first column's width, which you set with <code>--_sticky-col-1-width</code> (default <code>8rem</code>) in your stylesheet. This switches the table to <code>border-collapse: separate</code> so the frozen cells keep their borders while scrolling.</p>
+    <code-block language="html" show-lines label="Two frozen columns" data-escape><section data-table-scroll tabindex="0" aria-labelledby="inventory-cap">
+  <table id="inventory" data-sticky-column="2">
+    <caption id="inventory-cap">Inventory</caption>
+    …
+  </table>
+</section></code-block>
+    <code-block language="css" label="Width of the first frozen column" data-escape>#inventory { --_sticky-col-1-width: 6rem; }</code-block>
+
+    <h3 id="scroll-region">Scroll region: <code>data-table-scroll</code></h3>
+    <p>Wide tables scroll inside a wrapper, not on the table itself. Make the wrapper a focusable, named region so keyboard users can scroll it with the arrow keys and screen reader users hear what it holds: a <code>&lt;section&gt;</code> with <code>data-table-scroll</code>, <code>tabindex="0"</code>, and <code>aria-labelledby</code> pointing at the table's caption. (A named <code>&lt;section&gt;</code> is a region; on another element add <code>role="region"</code>.)</p>
+    <p>Because the wrapper is the scroll container, a sticky header pins to the wrapper, not the page. Use <code>data-table-scroll="block"</code> to cap the wrapper's height (<code>--table-scroll-max-block</code>, default <code>70dvh</code>) so the header has something to stick within. In print the wrapper expands and every column prints.</p>
+    <browser-window src="/docs/snippets/demos/table-scroll.html" url="table-scroll.html" title="Horizontally scrolling table in a focusable region" shadow></browser-window>
+    <code-block language="html" show-lines label="Scroll region" data-escape><section data-table-scroll tabindex="0" aria-labelledby="workload-cap">
+  <table>
+    <caption id="workload-cap">Team workload</caption>
+    …
+  </table>
+</section></code-block>
+
+    <h3 id="responsive"><code>data-responsive="card"</code></h3>
+    <p>When the table's container is narrower than 500px, each body and footer row becomes a card and each cell shows its column name as a label. The header row is hidden visually but stays in the accessibility tree, and VB's card script restores explicit table roles (changing the display of rows and cells drops them in some browsers) and fills any missing <code>data-label</code> from the column header text. Set <code>data-label</code> on a cell only to override that label. The container can be a <code>&lt;data-table&gt;</code> or any element with <code>container-type: inline-size</code> (VB sections and articles have it).</p>
+    <browser-window src="/docs/snippets/demos/table-card.html" url="table-card.html" title="Table switching to cards in a narrow container" shadow></browser-window>
+    <code-block language="html" show-lines label="Card mode" data-escape><table data-responsive="card">
+  <caption>Open orders</caption>
+  <thead>
+    <tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col" data-numeric>Total</th></tr>
+  </thead>
+  <tbody>
+    <tr><th scope="row">#1024</th><td>Alice Chen</td><td data-numeric>$149.99</td></tr>
+  </tbody>
+</table></code-block>
+
+    <h3 id="minimal"><code>data-variant="minimal"</code></h3>
+    <p>A low-ink table: no header band, no hover, thin rules between rows, and small uppercase muted column headers. Useful for dense numeric reports where the data should carry the page.</p>
+    <browser-window src="/docs/snippets/demos/table-minimal.html" url="table-minimal.html" title="Minimal table variant" shadow></browser-window>
+    <code-block language="html" show-lines label="Minimal variant" data-escape><table data-variant="minimal">
+  <caption>Monthly signups by plan</caption>
+  …
+</table></code-block>
+
+    <h3><code>data-align</code></h3>
+    <p>Set on individual <code>&lt;th&gt;</code> and <code>&lt;td&gt;</code> cells: <code>start</code>, <code>center</code> or <code>end</code>. Logical values, so <code>end</code> is the left edge in right-to-left text. Put it on the cells, not on <code>&lt;col&gt;</code>: CSS ignores text alignment on table columns.</p>
+    <code-block language="html" show-lines label="Cell alignment" data-escape><th scope="col" data-align="center">Tier</th>
+<td data-align="center">2</td></code-block>
+
     <h3><code>data-numeric</code></h3>
-    <p>Applied to individual <a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a> and <a href="/docs/elements/native/td/"><code>&lt;td&gt;</code></a> cells to right-align content and enforce <code>font-variant-numeric: tabular-nums</code> for proper digit alignment.</p>
+    <p>Applied to individual <a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a> and <a href="/docs/elements/native/td/"><code>&lt;td&gt;</code></a> cells to align content to the inline end (right in LTR, left in RTL) and enforce <code>font-variant-numeric: tabular-nums</code> for proper digit alignment.</p>
     <code-block language="html" show-lines label="Numeric alignment" data-escape><th scope="col" data-numeric>Revenue</th>
 <td data-numeric>$150,000</td></code-block>
 
     <h3><code>data-sort</code></h3>
-    <p>Applied to <code>&lt;th&gt;</code> elements to indicate sortable columns. Adds a pointer cursor and appends a sort indicator character.</p>
-    <code-block language="html" show-lines label="Sortable column header" data-escape><th data-sort>Name</th>
-<!-- Renders cursor: pointer and appends ⇅ indicator --></code-block>
+    <p>Marks a sortable column, but on its own it does nothing: sorting comes from <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> or the <a href="/docs/attributes/data-sortable/"><code>data-sortable</code></a> attribute. Both keep the <code>&lt;th&gt;</code> as a column header with <code>aria-sort</code> and wrap its text in a real <code>&lt;button&gt;</code>; VB styles that button and draws the ⇅ / ↑ / ↓ glyph. Note the attribute's value means different things to the two (sort type vs column key); see <a href="/docs/elements/native/th/#sortable-headers">th: Sortable Headers</a>.</p>
+    <code-block language="html" show-lines label="Sortable table without a web component" data-escape><table data-sortable>
+  <caption>Staff</caption>
+  <thead>
+    <tr>
+      <th scope="col" data-sort="name">Name</th>
+      <th scope="col" data-sort="salary" data-sort-type="number" data-numeric>Salary</th>
+    </tr>
+  </thead>
+  …
+</table></code-block>
   </section>
 
   <section>
     <h2>Row States</h2>
-    <p>Data attributes on <a href="/docs/elements/native/tr/"><code>&lt;tr&gt;</code></a> elements control visual row states without JavaScript class toggling.</p>
+    <p>Data attributes on <a href="/docs/elements/native/tr/"><code>&lt;tr&gt;</code></a> elements control visual row states without JavaScript class toggling. They are visual only: say the state in the row too (text or a checkbox), and add <code>inert</code> to a disabled row.</p>
 
     <browser-window src="/docs/snippets/demos/table-row-states.html" url="table-row-states.html" title="Table row states: selected, highlighted, disabled" shadow></browser-window>
     <code-block language="html" show-lines label="Row state attributes" data-escape><tr data-selected>
@@ -210,8 +279,8 @@ crumbLabel: Native Elements
   <!-- Warning/attention background -->
 </tr>
 
-<tr data-disabled>
-  <!-- Reduced opacity, no pointer events -->
+<tr data-disabled inert>
+  <!-- Muted text; inert removes its controls from use -->
 </tr></code-block>
 
     <table>
@@ -223,16 +292,16 @@ crumbLabel: Native Elements
       </thead>
       <tbody>
         <tr>
-          <td><code>data-selected</code></td>
-          <td>Interactive-tinted background at 15% opacity</td>
+          <td><code>data-selected</code> (<code>data-state-selected</code> from <code>&lt;data-table&gt;</code>)</td>
+          <td>Interactive tint at 15% plus an inline-start bar; <code>Highlight</code> in forced colors</td>
         </tr>
         <tr>
           <td><code>data-highlight</code></td>
-          <td>Warning-tinted background at 15% opacity</td>
+          <td>Warning tint at 15% plus an inline-start bar; <code>Mark</code> in forced colors</td>
         </tr>
         <tr>
           <td><code>data-disabled</code></td>
-          <td>50% opacity with <code>pointer-events: none</code></td>
+          <td>Muted text colour (AA-safe, no opacity). Pair with <code>inert</code></td>
         </tr>
       </tbody>
     </table>
@@ -240,58 +309,25 @@ crumbLabel: Native Elements
 
   <section>
     <h2>CSS Reference</h2>
-    <p>The complete set of table styles applied by Vanilla Breeze. All values use design tokens, so tables adapt automatically to any theme.</p>
-    <code-block language="css" show-lines label="VB table styles" data-escape>table {
-  inline-size: 100%;
-  border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
-  text-align: start;
+    <p>The full stylesheet is <code>src/native-elements/table/styles.css</code>. All values use design tokens, so tables adapt to any theme. The hooks worth knowing when you override it:</p>
+    <code-block language="css" show-lines label="VB table hooks" data-escape>/* Row paint: set --_row-bg on a tr instead of background,
+   so frozen (sticky) cells repeat the tint */
+tr { background: var(--_row-bg); }
+tbody tr:hover { --_row-bg: var(--color-hover-bg); }
+
+/* State bar on the first cell (flips in RTL via --_x) */
+tr > :first-child { box-shadow: var(--_row-bar), var(--_edge, 0 0 #0000); }
+
+/* Sticky header clears the coordinated site header */
+table:is([data-sticky="header"], [data-sticky="both"]) thead th {
+  inset-block-start: var(--sticky-offset, 0px);
 }
 
-th {
-  padding: var(--size-s) var(--size-m);
-  font-weight: 600;
-  background: var(--color-surface-raised);
-  border-block-end: var(--border-width-medium) solid var(--color-border);
-}
+/* Second frozen column offset */
+table[data-sticky-column="2"] { --_sticky-col-1-width: 8rem; }
 
-td {
-  padding: var(--size-s) var(--size-m);
-  border-block-end: var(--border-width-thin) solid var(--color-border);
-  vertical-align: top;
-}
-
-tbody tr:hover {
-  background: var(--color-surface-raised);
-}
-
-tfoot td {
-  font-weight: 600;
-  background: var(--color-surface-raised);
-  border-block-start: var(--border-width-medium) solid var(--color-border);
-  border-block-end: none;
-}
-
-/* Variants */
-table.striped tbody tr:nth-child(odd) { background: var(--color-surface-raised); }
-table.compact :is(th, td) { padding: var(--size-xs) var(--size-s); }
-table.bordered :is(th, td) { border: var(--border-width-thin) solid var(--color-border); }
-
-/* Density */
-table[data-density="compact"] :is(th, td) { padding: var(--size-2xs) var(--size-xs); }
-table[data-density="comfortable"] :is(th, td) { padding: var(--size-m) var(--size-l); }
-
-/* Sticky */
-table[data-sticky="header"] thead th { position: sticky; inset-block-start: 0; z-index: 1; }
-table[data-sticky="column"] :is(td, th):first-child { position: sticky; inset-inline-start: 0; z-index: 1; }
-
-/* Numeric alignment */
-:is(td, th)[data-numeric] { text-align: end; font-variant-numeric: tabular-nums; }
-
-/* Row states */
-tr[data-selected] { background: oklch(from var(--color-interactive) l c h / 0.15); }
-tr[data-disabled] { opacity: 0.5; pointer-events: none; }
-tr[data-highlight] { background: oklch(from var(--color-warning) l c h / 0.15); }</code-block>
+/* Scroll region height cap */
+[data-table-scroll="block"] { max-block-size: var(--table-scroll-max-block, 70dvh); }</code-block>
   </section>
 
   <section>
@@ -300,7 +336,10 @@ tr[data-highlight] { background: oklch(from var(--color-warning) l c h / 0.15); 
       <li><strong>Always include a <a href="/docs/elements/native/caption/"><code>&lt;caption&gt;</code></a>:</strong> provides context for screen reader users navigating to the table</li>
       <li><strong>Use <a href="/docs/elements/native/th/"><code>&lt;th&gt;</code></a> with <code>scope</code>:</strong> define whether headers apply to columns (<code>scope="col"</code>) or rows (<code>scope="row"</code>)</li>
       <li><strong>Structure with <a href="/docs/elements/native/thead/"><code>&lt;thead&gt;</code></a>, <a href="/docs/elements/native/tbody/"><code>&lt;tbody&gt;</code></a>, <a href="/docs/elements/native/tfoot/"><code>&lt;tfoot&gt;</code></a>:</strong> helps assistive technologies understand table regions</li>
-      <li><strong>Avoid empty cells:</strong> use appropriate content or "N/A" rather than leaving cells blank</li>
+      <li><strong>Empty cells are fine:</strong> screen readers announce them as "blank". Avoid a bare "-", which is read as "dash" or skipped; for a visible mark use an em dash with visually hidden "No data"</li>
+      <li><strong>Scrolling tables:</strong> wrap them in a focusable, named <a href="#scroll-region"><code>[data-table-scroll]</code></a> region so keyboard users can scroll</li>
+      <li><strong>Card mode keeps semantics:</strong> <code>data-responsive="card"</code> hides the header row visually only and restores table roles</li>
+      <li><strong>Row states aren't colour-only:</strong> selected and highlighted rows add an edge bar and switch to system colours in forced-colors mode</li>
       <li><strong>Keep tables simple:</strong> avoid complex merged cells when possible; use <code>scope="colgroup"</code> for multi-level headers</li>
     </ul>
   </section>

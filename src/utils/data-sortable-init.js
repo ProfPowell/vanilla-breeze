@@ -4,10 +4,16 @@
  * Two API shapes share one engine:
  *
  *  - **Table mode** — `<table data-sortable>`. Each clickable column header
- *    declares `<th data-sort="key">`. Clicking cycles asc → desc → none → asc.
+ *    declares `<th data-sort="key">`. Each header's content is wrapped in a
+ *    `<button data-sort-button>` (the th keeps its columnheader role and
+ *    `aria-sort`). Activating it cycles asc → desc → none → asc.
  *    Row sort-value comes from the corresponding `<td>` in the same column,
- *    via `data-value` if set, then `<time datetime>` for date types,
- *    otherwise `textContent`.
+ *    via `data-sort-value` (same as `<data-table>`) or `data-value` if set,
+ *    then `<time datetime>` for date types, otherwise `textContent`.
+ *
+ *    Note: `data-sort` here is the column KEY. On `<data-table>` the same
+ *    attribute is the sort TYPE ("string"|"number"|"date"); data-sortable
+ *    takes the type from `data-sort-type`.
  *
  *  - **List mode** — `<ul data-sortable>` (or any non-table container).
  *    External controls (`<select>` / `<button>`) declare
@@ -25,6 +31,7 @@
  * @attr {string}  data-sort                on <th>: column key (table mode)
  * @attr {string}  data-sort-type          on container or <th>: "text"|"number"|"date"
  * @attr {string}  data-sort-target        on external controls: CSS selector
+ * @attr {string}  data-sort-value         on <td>: sort value override (alias: data-value)
  *
  * @fires sort:change                       { key, direction, total }
  *
@@ -76,11 +83,21 @@ function enhance(host) {
 function wireTableHeaders(table) {
   const headers = table.querySelectorAll(':scope > thead th[data-sort]');
   headers.forEach((th) => {
-    th.setAttribute('role', 'button');
-    th.setAttribute('tabindex', '0');
-    th.style.cursor = 'pointer';
+    // APG sortable table: the th stays a columnheader (aria-sort lives
+    // there) and a native <button> inside it is the interactive target, so
+    // focus, Enter/Space activation and the accessible name come from the
+    // platform. Same contract as <data-table>; styling is in the native
+    // table CSS (th[data-sort] > button[data-sort-button]).
+    if (!th.hasAttribute('aria-sort')) th.setAttribute('aria-sort', 'none');
+    ensureSortButton(th);
 
-    const onActivate = () => {
+    // Click anywhere in the th (padding included) or on its button sorts;
+    // Enter/Space on the button fire a native click. Other interactive
+    // content an author put in the header keeps its own behaviour.
+    th.addEventListener('click', (e) => {
+      const target = /** @type {Element} */ (e.target);
+      const other = target.closest?.('a, input, select, textarea, button:not([data-sort-button])');
+      if (other && th.contains(other)) return;
       const key = th.dataset.sort;
       if (!key) return;
       const current = (table.dataset.sortBy === key) ? table.dataset.sortDirection : 'none';
@@ -90,15 +107,24 @@ function wireTableHeaders(table) {
       } else {
         applySort(table, key, next, th.dataset.sortType);
       }
-    };
-    th.addEventListener('click', onActivate);
-    th.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onActivate();
-      }
     });
   });
+}
+
+/**
+ * Wrap the header's content in a <button data-sort-button> once.
+ * @param {Element} th
+ * @returns {HTMLButtonElement}
+ */
+function ensureSortButton(th) {
+  const existing = /** @type {HTMLButtonElement | null} */ (th.querySelector(':scope > button[data-sort-button]'));
+  if (existing) return existing;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.setAttribute('data-sort-button', '');
+  button.append(...th.childNodes);
+  th.appendChild(button);
+  return button;
 }
 
 /* ---------- list mode (external controls) ---------- */
@@ -147,7 +173,7 @@ function wireExternalControls() {
 /**
  * Project a sort-value out of a row / item for the named key.
  *
- * Table cells: prefer data-value, then <time datetime> when type=date,
+ * Table cells: prefer data-sort-value / data-value, then <time datetime> when type=date,
  * otherwise textContent.
  *
  * List items: prefer data-sort-{key}, then a child element matching
@@ -162,7 +188,8 @@ function projectValue(item, key, type, opts = {}) {
     const colIndex = opts.colIndex;
     const cell = item.children[colIndex];
     if (!cell) return '';
-    if (cell.dataset.value != null) return cell.dataset.value;
+    const override = cell.dataset.sortValue ?? cell.dataset.value;
+    if (override != null) return override;
     if (type === 'date') {
       const t = cell.querySelector('time[datetime]');
       if (t) return t.getAttribute('datetime') || '';

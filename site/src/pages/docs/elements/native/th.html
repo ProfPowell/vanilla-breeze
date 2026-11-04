@@ -14,7 +14,7 @@ crumbLabel: Native Elements
 <section>
     <h2>Description</h2>
     <p>The <code>&lt;th&gt;</code> (table header) element defines a cell that acts as a header for a group of table cells. Headers can apply to columns, rows, or groups of either.</p>
-    <p>Vanilla Breeze styles header cells with a raised background (<code>var(--color-surface-raised)</code>), semi-bold font weight (<code>600</code>), and a thicker bottom border (<code>var(--border-width-medium)</code>) to visually distinguish them from data cells.</p>
+    <p>Vanilla Breeze gives every header cell a semi-bold font weight (<code>600</code>). Column headers (in <code>&lt;thead&gt;</code>, or with <code>scope="col"</code> / <code>scope="colgroup"</code>) also get a raised background (<code>var(--color-surface-raised)</code>) and a thicker bottom border (<code>var(--border-width-medium)</code>). Row headers (<code>&lt;th scope="row"&gt;</code> in <code>&lt;tbody&gt;</code>) keep the data-cell look, a transparent background and a thin rule, so row hover, stripe and selection tints run across the whole row.</p>
   </section>
 
   <section>
@@ -92,7 +92,10 @@ crumbLabel: Native Elements
 
     <h3>Column Group Headers</h3>
     <p>Use <code>scope="colgroup"</code> with <code>colspan</code> for headers that span multiple columns, commonly seen in multi-level header rows. Pair it with real <a href="/docs/elements/native/colgroup/"><code>&lt;colgroup span&gt;</code></a> elements so the group the header covers is defined in the markup.</p>
-    <code-block language="html" show-lines label="Column group headers" data-escape><thead>
+    <code-block language="html" show-lines label="Column group headers" data-escape><colgroup span="1"></colgroup>
+<colgroup span="2"></colgroup>
+<colgroup span="2"></colgroup>
+<thead>
   <tr>
     <th scope="col" rowspan="2">Region</th>
     <th scope="colgroup" colspan="2">Q1</th>
@@ -130,30 +133,58 @@ crumbLabel: Native Elements
   </section>
 
   <section>
-    <h2>Sort Indicators</h2>
-    <p>Add <code>data-sort</code> to make a column sortable. Vanilla Breeze appends a sort indicator via <code>::after</code>. The value specifies the data type for sort logic.</p>
-    <ul>
-      <li><code>data-sort="string"</code> - Alphabetical sorting</li>
-      <li><code>data-sort="number"</code> - Numeric sorting</li>
-      <li><code>data-sort="date"</code> - Date sorting</li>
-    </ul>
-    <p>When active, the <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> component sets <code>aria-sort="ascending"</code> or <code>aria-sort="descending"</code> on the <code>&lt;th&gt;</code>, which triggers the directional arrow icon.</p>
+    <h2 id="sortable-headers">Sortable Headers</h2>
+    <p><code>data-sort</code> on a <code>&lt;th&gt;</code> is read by two different enhancements, and it means a different thing to each:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th scope="col">Used with</th>
+          <th scope="col"><code>data-sort</code> means</th>
+          <th scope="col">Sort type from</th>
+          <th scope="col">Cell value override</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a></td>
+          <td>The sort type: <code>string</code>, <code>number</code> or <code>date</code></td>
+          <td><code>data-sort</code> itself</td>
+          <td><code>data-sort-value</code> on the <code>&lt;td&gt;</code></td>
+        </tr>
+        <tr>
+          <td><a href="/docs/attributes/data-sortable/"><code>table[data-sortable]</code></a></td>
+          <td>The column key (any name)</td>
+          <td><code>data-sort-type="text|number|date"</code> on the <code>&lt;th&gt;</code></td>
+          <td><code>data-sort-value</code> (or <code>data-value</code>) on the <code>&lt;td&gt;</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Either way the behaviour follows the <abbr title="ARIA Authoring Practices Guide">APG</abbr> sortable table: the <code>&lt;th&gt;</code> keeps its <code>columnheader</code> role and carries <code>aria-sort</code>, and the script wraps the header text in a native <code>&lt;button data-sort-button&gt;</code> that takes focus and Enter/Space. VB styles that button to read as header text with a focus ring, and draws the direction glyph (⇅, ↑, ↓) from <code>aria-sort</code>, so the visual and accessible state cannot drift.</p>
+    <p>A bare <code>&lt;th data-sort&gt;</code> without either enhancement has no behaviour, so VB draws no sort affordance on it. On a server-sorted static table you can still mark the sorted column with <code>aria-sort="ascending"</code> or <code>"descending"</code>; VB shows the matching arrow.</p>
 
-    <code-block language="html" show-lines label="Sortable column headers" data-escape><thead>
-  <tr>
-    <th scope="col" data-sort="string">Name</th>
-    <th scope="col" data-sort="string">Department</th>
-    <th scope="col" data-sort="date">Start Date</th>
-    <th scope="col" data-sort="number" data-numeric>Salary</th>
-  </tr>
-</thead></code-block>
+    <code-block language="html" show-lines label="Sortable column headers in a data-table" data-escape><data-table>
+  <table>
+    <caption>Staff directory</caption>
+    <thead>
+      <tr>
+        <th scope="col" data-sort="string">Name</th>
+        <th scope="col" data-sort="date">Start Date</th>
+        <th scope="col" data-sort="number" data-numeric>Salary</th>
+      </tr>
+    </thead>
+    <tbody>…</tbody>
+  </table>
+</data-table></code-block>
+    <code-block language="html" show-lines label="Rendered header after enhancement" data-escape><th scope="col" data-sort="string" aria-sort="ascending">
+  <button type="button" data-sort-button>Name</button>
+</th></code-block>
   </section>
 
   <section>
     <h2>Numeric and Alignment Attributes</h2>
 
     <h3>data-numeric</h3>
-    <p>Use <code>data-numeric</code> on header cells for numeric columns. This right-aligns the header text and applies <code>font-variant-numeric: tabular-nums</code> for proper digit alignment.</p>
+    <p>Use <code>data-numeric</code> on header cells for numeric columns. This aligns the header text to the inline end (right in left-to-right text, left in right-to-left) and applies <code>font-variant-numeric: tabular-nums</code> for proper digit alignment.</p>
     <code-block language="html" show-lines label="Numeric column headers" data-escape><th scope="col" data-numeric>Quantity</th>
 <th scope="col" data-numeric>Unit Price</th>
 <th scope="col" data-numeric>Total</th></code-block>
@@ -180,7 +211,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>data-numeric</code></td>
           <td>Boolean attribute</td>
-          <td>Right-aligns content and uses tabular numerals</td>
+          <td>Aligns content to the inline end (right in LTR, left in RTL) and uses tabular numerals</td>
         </tr>
         <tr>
           <td><code>data-align</code></td>
@@ -189,8 +220,8 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>data-sort</code></td>
-          <td><code>string</code>, <code>number</code>, <code>date</code></td>
-          <td>Enables sort indicator; value sets sort data type</td>
+          <td><code>&lt;data-table&gt;</code>: <code>string</code>, <code>number</code>, <code>date</code>; <code>[data-sortable]</code>: a column key</td>
+          <td>Marks a sortable column; see <a href="#sortable-headers">Sortable Headers</a> for the two meanings</td>
         </tr>
       </tbody>
     </table>
@@ -235,41 +266,34 @@ crumbLabel: Native Elements
   padding: var(--size-s) var(--size-m);
   font-weight: 600;
   text-align: start;
-  background: var(--color-surface-raised);
-  border-block-end: var(--border-width-medium) solid
-    var(--color-border);
+  color: var(--color-text);
 }
 
-/* Numeric alignment */
-th[data-numeric] {
+/* Column headers get the header band; row headers read as cells */
+:is(thead th, th:is([scope="col"], [scope="colgroup"])) {
+  background: var(--color-surface-raised);
+  border-block-end: var(--border-width-medium) solid var(--color-border);
+}
+tbody th:not([scope="col"], [scope="colgroup"]) {
+  border-block-end: var(--border-width-thin) solid var(--color-border);
+  vertical-align: top;
+}
+
+/* Numeric alignment (end: right in LTR, left in RTL) */
+:is(td, th)[data-numeric] {
   text-align: end;
   font-variant-numeric: tabular-nums;
 }
 
 /* Explicit alignment */
-th[data-align="start"]  { text-align: start; }
-th[data-align="center"] { text-align: center; }
-th[data-align="end"]    { text-align: end; }
+:is(th, td)[data-align="start"]  { text-align: start; }
+:is(th, td)[data-align="center"] { text-align: center; }
+:is(th, td)[data-align="end"]    { text-align: end; }
 
-/* Sort indicator (unsorted) */
-th[data-sort]::after {
-  content: " \21C5"; /* ⇅ */
-  opacity: 0.4;
-}
-
-/* Sort ascending */
-th[data-sort="asc"]::after,
-th[aria-sort="ascending"]::after {
-  content: " \2191"; /* ↑ */
-  opacity: 1;
-}
-
-/* Sort descending */
-th[data-sort="desc"]::after,
-th[aria-sort="descending"]::after {
-  content: " \2193"; /* ↓ */
-  opacity: 1;
-}</code-block>
+/* Sort glyphs ride on the injected button, driven by aria-sort */
+th[data-sort] > button[data-sort-button]::after { content: " ⇅" / ""; opacity: 0.3; }
+th[data-sort][aria-sort="ascending"] > button[data-sort-button]::after { content: " ↑" / ""; opacity: 1; }
+th[data-sort][aria-sort="descending"] > button[data-sort-button]::after { content: " ↓" / ""; opacity: 1; }</code-block>
   </section>
 
   <section>
@@ -279,7 +303,7 @@ th[aria-sort="descending"]::after {
       <li><strong>Screen reader announcement:</strong> When navigating to a data cell, the associated headers are announced</li>
       <li><strong>Complex tables:</strong> For tables with multiple header levels, consider using the <code>headers</code> attribute on <a href="/docs/elements/native/td/"><code>&lt;td&gt;</code></a> elements</li>
       <li><strong>Implicit roles:</strong> <code>&lt;th&gt;</code> has an implicit ARIA role of <code>columnheader</code> (with <code>scope="col"</code>) or <code>rowheader</code> (with <code>scope="row"</code>)</li>
-      <li><strong>Sort state:</strong> When a column is sorted, use <code>aria-sort="ascending"</code> or <code>aria-sort="descending"</code> on the <code>&lt;th&gt;</code></li>
+      <li><strong>Sort state:</strong> When a column is sorted, use <code>aria-sort="ascending"</code> or <code>aria-sort="descending"</code> on the <code>&lt;th&gt;</code>. Never give the <code>&lt;th&gt;</code> itself <code>role="button"</code>: that replaces the <code>columnheader</code> role, <code>aria-sort</code> is then ignored, and the column's cells lose their header. Put a <code>&lt;button&gt;</code> inside the header instead.</li>
     </ul>
   </section>
 

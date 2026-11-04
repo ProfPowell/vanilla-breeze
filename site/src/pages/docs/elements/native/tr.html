@@ -57,10 +57,10 @@ crumbLabel: Native Elements
 </table></code-block>
 
     <h3>Row States</h3>
-    <p>Vanilla Breeze provides data attributes for common row states. These work with both static tables and the <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> component.</p>
+    <p>Vanilla Breeze provides data attributes for common row states. Selected and highlighted rows get a tint <em>and</em> a bar on the row's inline-start edge, so the state is not carried by colour alone; in forced-colors mode they switch to system colours (<code>Highlight</code>, <code>Mark</code>) with a real border. The attributes are visual only. They add no semantics, so pair each state with visible text or a control, as the demo's Status column does.</p>
     <browser-window src="/docs/snippets/demos/table-row-states.html" url="https://vanilla-breeze.com/table/row-states" title="Table row states" shadow></browser-window>
     <code-block language="html" show-lines label="Row state attributes" data-escape><tbody>
-  <!-- Selected row -->
+  <!-- Selected row: say so in text (or a checked checkbox) too -->
   <tr data-selected>
     <td>Alice Johnson</td>
     <td>Developer</td>
@@ -74,11 +74,11 @@ crumbLabel: Native Elements
     <td>San Francisco</td>
   </tr>
 
-  <!-- Disabled row -->
-  <tr data-disabled>
+  <!-- Disabled row: data-disabled mutes it, inert disables it -->
+  <tr data-disabled inert>
     <td>Carol Williams</td>
-    <td>Manager</td>
-    <td>Chicago</td>
+    <td><a href="/people/carol">Profile</a></td>
+    <td>Chicago (disabled)</td>
   </tr>
 </tbody></code-block>
   </section>
@@ -88,51 +88,65 @@ crumbLabel: Native Elements
     <p>Rows in <code>&lt;tbody&gt;</code> receive a hover effect automatically to help users track data across columns. This is applied by default in Vanilla Breeze and requires no additional attributes.</p>
     <code-block language="css" label="Row hover effect (built-in)" data-escape>/* Vanilla Breeze default — applied automatically */
 tbody tr:hover {
-  background: var(--color-surface-raised);
-}</code-block>
+  --_row-bg: var(--color-hover-bg);
+}
+tr { background: var(--_row-bg); }</code-block>
   </section>
 
   <section>
     <h2>Selectable Rows</h2>
-    <p>Add <code>data-selectable</code> to indicate a row can be selected. Combine with <code>data-selected</code> to mark the current selection. The <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> component manages selection state automatically.</p>
-    <code-block language="html" show-lines label="Selectable rows" data-escape><tbody>
-  <tr data-selectable>
-    <td>Row 1 — click to select</td>
+    <p>In an authored table, mark the selected row with <code>data-selected</code>. <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> manages selection itself: rows with <code>data-selectable</code> get a checkbox, and the component writes <code>data-state-selected</code> on the selected rows. VB styles both attributes identically, so the two can be mixed. The checkbox (or visible "Selected" text in a static table) is the accessible cue; <code>aria-selected</code> is not valid on plain table rows.</p>
+    <code-block language="html" show-lines label="Selected rows" data-escape><!-- Static table: you write the state -->
+<tbody>
+  <tr>
+    <td>Row 1</td>
     <td data-numeric>$49.99</td>
   </tr>
-  <tr data-selectable data-selected>
-    <td>Row 2 — already selected</td>
+  <tr data-selected>
+    <td>Row 2 (selected)</td>
     <td data-numeric>$29.99</td>
   </tr>
-</tbody></code-block>
+</tbody>
+
+<!-- Inside <data-table>: the component writes the state -->
+<tr data-selectable data-state-selected>…</tr></code-block>
+  </section>
+
+  <section>
+    <h2>Disabled Rows</h2>
+    <p><code>data-disabled</code> only changes the look: the row's text switches to the muted text colour (not reduced opacity, which would drop below AA contrast). To actually disable the row, add the native <code>inert</code> attribute as well. It takes every link and button in the row out of the tab order, blocks pointer input, and hides the row's controls from assistive technology. VB styles <code>tr[inert]</code> the same as <code>tr[data-disabled]</code>.</p>
+    <code-block language="html" show-lines label="Disabled row" data-escape><tr data-disabled inert>
+  <td>Archived project</td>
+  <td><a href="/projects/42">Open</a></td>
+</tr></code-block>
   </section>
 
   <section>
     <h2>Expandable Rows</h2>
-    <p>Use <code>data-expandable</code> on the trigger row and <code>data-state-expanded</code> or <code>data-state-hidden</code> on the detail row. Detail rows are typically full-width with <code>colspan</code>.</p>
-    <code-block language="html" show-lines label="Expandable detail rows" data-escape><tbody>
-  <tr data-expandable>
-    <td>Order #1024</td>
-    <td data-numeric>$149.99</td>
-    <td>Shipped</td>
-  </tr>
-  <tr data-state-expanded>
-    <td colspan="3">
-      Tracking: 1Z999AA10123456784
-    </td>
-  </tr>
-
-  <tr data-expandable>
-    <td>Order #1025</td>
-    <td data-numeric>$89.50</td>
-    <td>Processing</td>
-  </tr>
-  <tr data-state-hidden>
-    <td colspan="3">
-      Estimated delivery: March 15, 2026
-    </td>
-  </tr>
-</tbody></code-block>
+    <p>Expandable rows are a <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> feature. Put <code>data-expandable</code> on the trigger row with a toggle button (<code>data-action="toggle-expand"</code>, with an accessible name), and follow it with a detail row marked <code>data-expand-content</code> and <code>hidden</code>. When the user expands it, the component puts <code>data-state-expanded</code> on the <em>trigger</em> row, removes <code>hidden</code> from the detail row, and keeps <code>aria-expanded</code> on the button in sync. The detail row usually spans all columns with <code>colspan</code>; VB pads whatever element you put inside its cell.</p>
+    <code-block language="html" show-lines label="Expandable detail rows" data-escape><data-table>
+  <table>
+    <caption>Orders</caption>
+    <thead>
+      <tr><th scope="col">Order</th><th scope="col" data-numeric>Total</th><th scope="col">Status</th></tr>
+    </thead>
+    <tbody>
+      <tr data-expandable>
+        <td>
+          <button type="button" data-action="toggle-expand" aria-label="Details for order #1024">▸</button>
+          Order #1024
+        </td>
+        <td data-numeric>$149.99</td>
+        <td>Shipped</td>
+      </tr>
+      <tr data-expand-content hidden>
+        <td colspan="3">
+          <p>Tracking: 1Z999AA10123456784</p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</data-table></code-block>
   </section>
 
   <section>
@@ -149,38 +163,43 @@ tbody tr:hover {
       <tbody>
         <tr>
           <td><code>data-selected</code></td>
-          <td>Marks a row as selected (primary subtle background + outline)</td>
+          <td>Marks a row as selected (interactive tint + inline-start bar). <code>&lt;data-table&gt;</code> writes <code>data-state-selected</code>, styled the same</td>
           <td><code>&lt;tr&gt;</code> in <code>&lt;tbody&gt;</code></td>
         </tr>
         <tr>
           <td><code>data-disabled</code></td>
-          <td>Reduces opacity and disables pointer events</td>
+          <td>Mutes the row's text colour. Visual only: add <code>inert</code> to disable it</td>
           <td><code>&lt;tr&gt;</code> in <code>&lt;tbody&gt;</code></td>
         </tr>
         <tr>
           <td><code>data-highlight</code></td>
-          <td>Applies a warning-subtle background highlight</td>
+          <td>Warning tint + inline-start bar</td>
           <td><code>&lt;tr&gt;</code> in <code>&lt;tbody&gt;</code></td>
         </tr>
         <tr>
           <td><code>data-selectable</code></td>
-          <td>Indicates the row is interactive and can be selected</td>
+          <td>In <code>&lt;data-table&gt;</code>: the row gets a selection checkbox</td>
           <td><code>&lt;tr&gt;</code> in <code>&lt;tbody&gt;</code></td>
         </tr>
         <tr>
           <td><code>data-expandable</code></td>
-          <td>Marks a row as having an expandable detail row</td>
-          <td><code>&lt;tr&gt;</code> in <code>&lt;tbody&gt;</code></td>
-        </tr>
-        <tr>
-          <td><code>data-state-hidden</code></td>
-          <td>Hides a detail row (<code>display: none</code>)</td>
-          <td><code>&lt;tr&gt;</code> detail row</td>
+          <td>Marks a row as having an expandable detail row (in <code>&lt;data-table&gt;</code>)</td>
+          <td>Trigger <code>&lt;tr&gt;</code></td>
         </tr>
         <tr>
           <td><code>data-state-expanded</code></td>
-          <td>Shows a detail row with a sunken background</td>
-          <td><code>&lt;tr&gt;</code> detail row</td>
+          <td>Written by <code>&lt;data-table&gt;</code> while the detail row is open; raised background, rotated toggle</td>
+          <td>Trigger <code>&lt;tr&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>data-expand-content</code></td>
+          <td>The detail row; starts <code>hidden</code>, raised background, padded content</td>
+          <td>Detail <code>&lt;tr&gt;</code> after the trigger</td>
+        </tr>
+        <tr>
+          <td><code>data-state-hidden</code></td>
+          <td>Written by <code>&lt;data-table&gt;</code> on rows filtered or paged out (<code>display: none</code>)</td>
+          <td>Any body <code>&lt;tr&gt;</code></td>
         </tr>
       </tbody>
     </table>
@@ -188,27 +207,40 @@ tbody tr:hover {
 
   <section>
     <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="Row state CSS" data-escape>/* Row state styling */
-tr[data-selected] {
-  background: var(--color-primary-subtle);
-  outline: var(--border-width-thin) solid var(--color-primary);
+    <code-block language="css" show-lines label="Row state CSS" data-escape>/* Row paint goes through --_row-bg so frozen cells repeat it */
+tr { background: var(--_row-bg); }
+tr > :first-child { box-shadow: var(--_row-bar), var(--_edge, 0 0 #0000); }
+
+tr:is([data-selected], [data-state-selected]) {
+  --_row-bg: oklch(from var(--color-interactive) l c h / 0.15);
+  --_row-bar: inset calc(var(--_x) * var(--border-width-thick)) 0 0 var(--color-interactive);
 }
 
 tr[data-highlight] {
-  background: var(--color-warning-subtle);
+  --_row-bg: oklch(from var(--color-warning) l c h / 0.15);
+  --_row-bar: inset calc(var(--_x) * var(--border-width-thick)) 0 0 var(--color-warning);
 }
 
-tr[data-disabled] {
-  opacity: 0.5;
-  pointer-events: none;
+tr:is([data-disabled], [inert]) {
+  color: var(--color-text-muted);
 }
 
-tr[data-state-hidden] {
-  display: none;
-}
+tr[data-state-hidden] { display: none; }
 
-tr[data-state-expanded] {
-  background: var(--color-surface-sunken);
+tr[data-state-expanded],
+tr[data-expand-content] { --_row-bg: var(--color-surface-raised); }
+
+@media (forced-colors: active) {
+  tr:is([data-selected], [data-state-selected]) > * {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+  tr[data-highlight] > * {
+    forced-color-adjust: none;
+    background: Mark;
+    color: MarkText;
+  }
 }</code-block>
   </section>
 
@@ -251,8 +283,9 @@ tr[data-state-expanded] {
       <li><strong>Row headers:</strong> Use <a href="/docs/elements/native/th/"><code>&lt;th scope="row"&gt;</code></a> when the first cell identifies the row</li>
       <li><strong>Screen reader navigation:</strong> Users can navigate row by row through table data</li>
       <li><strong>Implicit role:</strong> <code>&lt;tr&gt;</code> has an implicit ARIA role of <code>row</code></li>
-      <li><strong>Disabled rows:</strong> When using <code>data-disabled</code>, also add <code>aria-disabled="true"</code> for assistive technology</li>
-      <li><strong>Selected rows:</strong> When using <code>data-selected</code>, also add <code>aria-selected="true"</code> for assistive technology</li>
+      <li><strong>Disabled rows:</strong> <code>data-disabled</code> is visual only. Add <code>inert</code> so the row's controls can't be reached by keyboard or pointer</li>
+      <li><strong>Selected and highlighted rows:</strong> the attributes carry no semantics and <code>aria-selected</code> is not valid on a plain table row. State it in the row itself: a checked checkbox (as <code>&lt;data-table&gt;</code> does) or visible text such as "Selected"</li>
+      <li><strong>Not colour alone:</strong> selected and highlighted rows show an inline-start bar as well as a tint, and use system colours in forced-colors mode</li>
     </ul>
   </section>
 

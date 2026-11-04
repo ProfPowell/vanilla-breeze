@@ -26,18 +26,22 @@ crumbLabel: Data Attributes
   <h2>Two shapes</h2>
 
   <h3>Table mode</h3>
-  <p>Clicking <code>&lt;th data-sort="key"&gt;</code> cycles the column through asc &rarr; desc &rarr; none &rarr; asc. Row sort-value comes from the matching <code>&lt;td&gt;</code> via (in order): <code>data-value</code>, <code>&lt;time datetime&gt;</code> when type is <code>date</code>, otherwise <code>textContent</code>.</p>
+  <p>Each <code>&lt;th data-sort="key"&gt;</code> gets its content wrapped in a native <code>&lt;button data-sort-button&gt;</code>; activating it (click, <kbd>Enter</kbd> or <kbd>Space</kbd>) cycles the column through asc &rarr; desc &rarr; none &rarr; asc. Row sort-value comes from the matching <code>&lt;td&gt;</code> via (in order): <code>data-sort-value</code> (or its alias <code>data-value</code>), <code>&lt;time datetime&gt;</code> when type is <code>date</code>, otherwise <code>textContent</code>.</p>
+  <aside class="note">
+    <strong><code>data-sort</code> means something different on <code>&lt;data-table&gt;</code>.</strong> Here it is the column <em>key</em> and the type comes from <code>data-sort-type</code> (<code>text</code> &middot; <code>number</code> &middot; <code>date</code>). In <a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> the same attribute holds the sort <em>type</em> (<code>string</code> &middot; <code>number</code> &middot; <code>date</code>). The cell override <code>data-sort-value</code> works in both.
+  </aside>
 
   <code-block language="html" show-lines data-escape><table data-sortable>
+  <caption>Team</caption>
   <thead>
     <tr>
-      <th data-sort="name">Name</th>
-      <th data-sort="score" data-sort-type="number">Score</th>
-      <th data-sort="joined" data-sort-type="date">Joined</th>
+      <th scope="col" data-sort="name">Name</th>
+      <th scope="col" data-sort="score" data-sort-type="number">Score</th>
+      <th scope="col" data-sort="joined" data-sort-type="date">Joined</th>
     </tr>
   </thead>
   <tbody>
-    <tr><td>Alice</td><td>87</td><td><time datetime="2026-03-14">Mar 14</time></td></tr>
+    <tr><td>Alice</td><td data-sort-value="87">87 pts</td><td><time datetime="2026-03-14">Mar 14</time></td></tr>
     ...
   </tbody>
 </table></code-block>
@@ -71,7 +75,7 @@ crumbLabel: Data Attributes
       <tr><td><code>data-sort-target</code></td><td>&mdash;</td><td>On external controls: CSS selector for the target container.</td></tr>
       <tr><td><code>data-sort-by</code></td><td>&mdash;</td><td>On a <code>&lt;button&gt;</code> control: the key to apply on click.</td></tr>
       <tr><td><code>data-sort-{key}</code></td><td>&mdash;</td><td>On list children: per-key sort value.</td></tr>
-      <tr><td><code>data-value</code></td><td>&mdash;</td><td>Per-cell override; takes precedence over <code>textContent</code>.</td></tr>
+      <tr><td><code>data-sort-value</code></td><td>&mdash;</td><td>Per-cell override; takes precedence over <code>textContent</code>. Same name as <code>&lt;data-table&gt;</code>. <code>data-value</code> is accepted as an alias.</td></tr>
     </tbody>
   </table>
 </section>
@@ -97,8 +101,9 @@ crumbLabel: Data Attributes
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Table headers in table mode get <code>role="button"</code>, <code>tabindex="0"</code>, and reflected <code>aria-sort</code> (<code>ascending</code> / <code>descending</code> / <code>none</code>).</li>
-    <li>Headers respond to <kbd>Enter</kbd> and <kbd>Space</kbd>.</li>
+    <li>Follows the <abbr title="ARIA Authoring Practices Guide">APG</abbr> sortable table: each <code>&lt;th&gt;</code> keeps its <code>columnheader</code> role and carries the reflected <code>aria-sort</code> (<code>ascending</code> / <code>descending</code> / <code>none</code>), so the column's cells keep their header.</li>
+    <li>The control is a native <code>&lt;button type="button" data-sort-button&gt;</code> inside the header, named by the header text. Focus, <kbd>Enter</kbd> and <kbd>Space</kbd> come from the platform; the header cell itself is not focusable.</li>
+    <li>The ⇅ / ↑ / ↓ glyph is drawn by the native table CSS from <code>aria-sort</code>, with empty alt text, so it is never announced twice. It is the same glyph set <code>&lt;data-table&gt;</code> uses.</li>
     <li>External controls use native <code>&lt;select&gt;</code> / <code>&lt;button&gt;</code> &mdash; native a11y.</li>
   </ul>
 </section>
