@@ -32,7 +32,7 @@ crumbLabel: Native Elements
   <strong>Site</strong>
 </header>
 <main>
-  <h2>Page Content</h2>
+  <h1>Page Content</h1>
   <p>This is the main content area of the page.</p>
 </main>
 <footer class="minimal">
@@ -40,82 +40,101 @@ crumbLabel: Native Elements
 </footer></code-block>
 
     <h3>.contained</h3>
-    <p>Centered with max-width of 1200px.</p>
+    <p>Centered with a fixed 1200px max-width.</p>
     <browser-window src="/docs/snippets/demos/main-contained.html" url="https://vanilla-breeze.com/main/contained" title="Contained main" shadow></browser-window>
     <code-block language="html" label="Contained main" data-escape><main class="contained">
-  <h2>Contained Layout</h2>
-  <p>Content is contained to a comfortable reading
-  width (1200px) and centered on the page.</p>
+  <h1>Contained Layout</h1>
+  <p>Content is capped at 1200px and centered on the page.</p>
 </main></code-block>
 
     <h3>.narrow</h3>
-    <p>Optimized for reading content (65ch max-width).</p>
+    <p>Optimized for reading. The max-width is the <code>--measure-normal</code> token (65ch by default), so it follows the <a href="/docs/fluid-scaling/">fluid scaling</a> profiles.</p>
     <browser-window src="/docs/snippets/demos/main-narrow.html" url="https://vanilla-breeze.com/main/narrow" title="Narrow main" shadow></browser-window>
     <code-block language="html" label="Narrow main" data-escape><main class="narrow">
-  <h2>Narrow Layout</h2>
+  <h1>Narrow Layout</h1>
   <p>Ideal for long-form reading content like blog
-  posts and documentation, keeping line lengths
-  comfortable at 65ch max-width.</p>
+  posts and documentation.</p>
 </main></code-block>
 
     <h3>.wide</h3>
-    <p>Expanded width (1600px) for dashboards and data-heavy layouts.</p>
+    <p>Expanded to a fixed 1600px max-width for dashboards and data-heavy layouts.</p>
     <browser-window src="/docs/snippets/demos/main-wide.html" url="https://vanilla-breeze.com/main/wide" title="Wide main" shadow></browser-window>
     <code-block language="html" label="Wide main" data-escape><main class="wide">
-  <h2>Wide Layout</h2>
+  <h1>Wide Layout</h1>
   <p>More horizontal space for complex interfaces,
   data tables, and dashboards at 1600px max-width.</p>
 </main></code-block>
 
     <h3>.full</h3>
-    <p>Full viewport width with side padding.</p>
+    <p>The full width of the containing block (<code>inline-size: 100%</code>, not the viewport) with inline padding.</p>
+    <browser-window src="/docs/snippets/demos/main-full.html" url="https://vanilla-breeze.com/main/full" title="Full-width main" shadow></browser-window>
     <code-block language="html" label="Full-width main" data-escape><main class="full">
-  <p>Full-width layout spans the entire viewport
-  with consistent padding.</p>
+  <h1>Full Width</h1>
+  <p>The main element spans the full width of its
+  container, with inline padding.</p>
 </main></code-block>
 
     <h3>.with-sidebar</h3>
-    <p>Two-column layout with sidebar.</p>
+    <p>Two-column grid: a content column and a 200&ndash;300px sidebar, stacking to one column below 48rem. The content column is <code>minmax(0, 1fr)</code>, so a wide <code>&lt;pre&gt;</code> or table scrolls inside it instead of pushing the grid wider than its container.</p>
     <browser-window src="/docs/snippets/demos/main-with-sidebar.html" url="https://vanilla-breeze.com/main/sidebar" title="Main with sidebar" shadow></browser-window>
     <code-block language="html" label="Main with sidebar" data-escape><main class="with-sidebar">
   <article>
-    <h2>Main Content</h2>
+    <h1>Main Content</h1>
     <p>Primary content area that takes up the
     majority of the space.</p>
   </article>
   <aside class="sidebar">
-    <h4>Sidebar</h4>
+    <h2>Sidebar</h2>
     <p>Secondary content or navigation.</p>
   </aside>
 </main></code-block>
+    <p>For a whole-page shell, prefer <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> (<code>sidebar-left</code>, <code>sidebar-right</code>, <code>holy-grail</code>) on the body. For a sidebar inside a region, use <a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a>, which switches by available space rather than by viewport. <code>.with-sidebar</code> remains for a quick two-column main.</p>
 
     <h3>.padded</h3>
-    <p>Adds vertical padding for spacing. Combine with other variants.</p>
+    <p>Adds block padding (<code>--size-xl</code>). Combine it with a width variant.</p>
+    <browser-window src="/docs/snippets/demos/main-padded.html" url="https://vanilla-breeze.com/main/padded" title="Padded main" shadow></browser-window>
     <code-block language="html" label="Padded main" data-escape><main class="padded contained">
-  <p>Padded main has generous vertical spacing,
-  useful when the parent container does not
-  provide padding.</p>
+  <h1>Padded Main</h1>
+  <p>Block padding adds vertical breathing room
+  when the parent provides none.</p>
 </main></code-block>
 
+    <h3>.flex</h3>
+    <p>Sets <code>flex: 1</code> and makes main a flex column. It only grows when its parent is a flex column, typically a body with <code>display: flex; flex-direction: column; min-block-size: 100dvh</code>, which keeps the footer at the bottom of short pages.</p>
+    <browser-window src="/docs/snippets/demos/main-flex.html" url="https://vanilla-breeze.com/main/flex" title="Flex main" shadow></browser-window>
+    <code-block language="html" label="Flex main" data-escape><style>
+  body { display: flex; flex-direction: column; min-block-size: 100dvh; }
+</style>
+<body>
+  <header class="site">...</header>
+  <main class="flex padded contained">
+    <h1>Flex Main</h1>
+    <p>Grows to fill the space between header and footer.</p>
+  </main>
+  <footer class="minimal">...</footer>
+</body></code-block>
+
     <h3>Full page structure</h3>
-    <p>Complete page layout example.</p>
+    <p>A complete page using <code>data-page-layout="stack"</code>: each landmark goes to its grid row and main takes the leftover height. Every heading sits inside a landmark.</p>
     <browser-window src="/docs/snippets/demos/main-full-page.html" url="https://vanilla-breeze.com/main/full-page" title="Full page layout" shadow></browser-window>
-    <code-block language="html" label="Full page layout" data-escape><header class="site">
-  <strong>Site</strong>
-  <nav class="horizontal pills">
-    <ul>
-      <li><a href="#">Home</a></li>
-      <li><a href="#">About</a></li>
-    </ul>
-  </nav>
-</header>
-<main class="contained padded">
-  <h2>Page Title</h2>
-  <p>Page content with proper semantic structure.</p>
-</main>
-<footer class="minimal">
-  <p>Footer content</p>
-</footer></code-block>
+    <code-block language="html" label="Full page layout" data-escape><body data-page-layout="stack" data-layout-gap="none">
+  <header class="site">
+    <strong>Site</strong>
+    <nav class="horizontal pills" aria-label="Main">
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main class="contained padded">
+    <h1>Page Title</h1>
+    <p>Page content with proper semantic structure.</p>
+  </main>
+  <footer class="minimal">
+    <p>Footer content</p>
+  </footer>
+</body></code-block>
   </section>
 
   <section>
@@ -130,34 +149,43 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>.contained</code></td>
-          <td>Max-width 1200px, centered with horizontal padding</td>
+          <td>Max-width 1200px (fixed), centered with inline padding</td>
         </tr>
         <tr>
           <td><code>.narrow</code></td>
-          <td>Max-width 65ch for comfortable reading</td>
+          <td>Max-width <code>--measure-normal</code> (65ch by default), centered, for comfortable reading</td>
         </tr>
         <tr>
           <td><code>.wide</code></td>
-          <td>Max-width 1600px for dashboards and complex UIs</td>
+          <td>Max-width 1600px (fixed) for dashboards and complex UIs</td>
         </tr>
         <tr>
           <td><code>.full</code></td>
-          <td>Full width with horizontal padding</td>
+          <td>Full container width with inline padding</td>
         </tr>
         <tr>
           <td><code>.with-sidebar</code></td>
-          <td>Grid layout with main content and sidebar columns</td>
+          <td>Grid with a <code>minmax(0, 1fr)</code> content column and a 200&ndash;300px sidebar; one column below 48rem</td>
         </tr>
         <tr>
           <td><code>.padded</code></td>
-          <td>Adds vertical padding (--size-xl)</td>
+          <td>Adds block padding (<code>--size-xl</code>)</td>
         </tr>
         <tr>
           <td><code>.flex</code></td>
-          <td>Flex container that fills available vertical space</td>
+          <td><code>flex: 1</code> flex column; fills the free space of a flex-column parent</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section>
+    <h2>In VB layouts</h2>
+    <ul>
+      <li><strong>Query container:</strong> every <code>&lt;main&gt;</code> gets <code>container-type: inline-size</code>, so components inside respond to main's width with <code>@container</code> queries rather than the viewport's.</li>
+      <li><strong>Page grid:</strong> as a direct child of a <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> body, main goes to grid area <code>body-main</code> and is named <code>region-main</code>, so you can write <code>@container region-main (width &gt; 40rem)</code>.</li>
+      <li><strong>Skip link target:</strong> give main <code>id="main"</code> and put a skip link first in the body. Copy the markup and styles from <a href="/docs/accessibility-utilities/#skip-link">Accessibility Utilities &rsaquo; Skip link</a>; VB does not ship a <code>.skip-link</code> class.</li>
+    </ul>
   </section>
 
   <section>
@@ -165,8 +193,8 @@ crumbLabel: Native Elements
     <ul>
       <li>The main element creates a main landmark for screen reader navigation</li>
       <li>Only one visible main element per page (others must have <code>hidden</code> attribute)</li>
-      <li>Skip links should target the main element: <code>&lt;a href="#main"&gt;Skip to content&lt;/a&gt;</code></li>
-      <li>Add <code>id="main"</code> and optionally <code>tabindex="-1"</code> to receive focus from skip links</li>
+      <li>Skip links should target the main element: <code>&lt;a href="#main"&gt;Skip to main content&lt;/a&gt;</code> (see <a href="/docs/accessibility-utilities/#skip-link">the skip link recipe</a>)</li>
+      <li>Add <code>id="main"</code> so the skip link has a target. Optionally add <code>tabindex="-1"</code> so following the link focuses main itself, not just moves the Tab starting point; some screen readers only follow real focus</li>
       <li>Main should not be nested inside article, aside, footer, header, or nav</li>
     </ul>
   </section>
@@ -180,5 +208,8 @@ crumbLabel: Native Elements
       <li><a href="/docs/elements/native/aside/"><code>&lt;aside&gt;</code></a> - Sidebar content can be inside or outside main</li>
       <li><a href="/docs/elements/native/article/"><code>&lt;article&gt;</code></a> - Main content often contains articles</li>
       <li><a href="/docs/elements/native/section/"><code>&lt;section&gt;</code></a> - Thematic grouping within main</li>
+      <li><a href="/docs/elements/native/body/"><code>&lt;body&gt;</code></a> - Landmark skeleton and <code>data-page-layout</code></li>
+      <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> - Page grid templates that place main</li>
+      <li><a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> - Container-aware sidebar layout</li>
     </ul>
   </section>

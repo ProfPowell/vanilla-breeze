@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "meta"
-description: "Provides metadata about the document for browsers and search engines."
+description: "Document metadata that no other head element covers: character encoding, viewport, description, theme colour, pragma directives, and the metadata VB components read."
 elementName: meta
 category: native
 nativeGroup: Document
@@ -11,32 +11,142 @@ crumbHref: /docs/elements/native/
 crumbLabel: Native Elements
 ---
 
-<!-- Description Section -->
   <section>
     <h2>Description</h2>
-    <p>The <code>&lt;meta&gt;</code> element is part of the Document category in HTML.</p>
+    <p>The <code>&lt;meta&gt;</code> element carries document metadata that has no dedicated element. It is a void element that normally lives in <code>&lt;head&gt;</code>. Each <code>&lt;meta&gt;</code> does exactly one job, chosen by which of these attributes it has:</p>
+    <ul>
+      <li><code>charset</code>: declares the character encoding</li>
+      <li><code>name</code> + <code>content</code>: a named metadata value (description, viewport, theme-color, author&hellip;)</li>
+      <li><code>http-equiv</code> + <code>content</code>: a pragma directive that acts like an HTTP header</li>
+      <li><code>itemprop</code> + <code>content</code>: a microdata property (allowed in the body too)</li>
+    </ul>
+    <p>A <code>&lt;meta&gt;</code> must have exactly one of <code>charset</code>, <code>name</code>, <code>http-equiv</code> or <code>itemprop</code>. Open Graph tags use the RDFa <code>property</code> attribute instead of <code>name</code>; browsers ignore them, but crawlers and some VB components read them.</p>
   </section>
 
-  <!-- Basic Example Section -->
   <section>
     <h2>Basic Example</h2>
-    <code-block language="html" label="Basic meta example" data-escape><meta></code-block>
+    <p>The tags almost every page needs. <code>charset</code> must come first, within the first 1024 bytes of the document.</p>
+    <code-block language="html" label="Essential meta tags" data-escape><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A one or two sentence summary shown in search results.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#080d16"></code-block>
+    <p>See <a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> for the full recommended VB head, including theme flash prevention, social metadata and favicons.</p>
   </section>
 
-  <!-- Attributes Section -->
   <section>
     <h2>Attributes</h2>
-    <p>This element supports <a href="/docs/attributes/">global attributes</a>.</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>charset</code></td>
+          <td><code>utf-8</code></td>
+          <td>Character encoding. <code>utf-8</code> is the only valid value. At most one per document.</td>
+        </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>metadata name</td>
+          <td>What the <code>content</code> value describes: <code>description</code>, <code>viewport</code>, <code>theme-color</code>, <code>color-scheme</code>, <code>author</code>, <code>keywords</code>, <code>robots</code>, <code>referrer</code>, <code>generator</code>, or an extension name such as <code>vb:provenance</code>.</td>
+        </tr>
+        <tr>
+          <td><code>content</code></td>
+          <td>string</td>
+          <td>The value. Required with <code>name</code>, <code>http-equiv</code> and <code>itemprop</code>; not allowed with <code>charset</code>.</td>
+        </tr>
+        <tr>
+          <td><code>http-equiv</code></td>
+          <td><code>content-security-policy</code>, <code>refresh</code>, <code>default-style</code>, <code>x-ua-compatible</code>, <code>content-type</code></td>
+          <td>A pragma directive. Prefer real HTTP headers where you control the server; a meta CSP cannot use <code>frame-ancestors</code>, <code>report-uri</code> or <code>sandbox</code>.</td>
+        </tr>
+        <tr>
+          <td><code>media</code></td>
+          <td>media query</td>
+          <td>Only meaningful on <code>name="theme-color"</code>: the first tag whose query matches wins. Used for a light/dark pair.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The element also supports <a href="/docs/attributes/">global attributes</a> and the microdata <code>itemprop</code> attribute.</p>
   </section>
 
-  <!-- Accessibility Section -->
+  <section>
+    <h2>Theme colour and ThemeManager</h2>
+    <p><code>&lt;meta name="theme-color"&gt;</code> tints the browser&rsquo;s address bar and tab strip. Author a single value or a <code>media</code>-scoped light/dark pair as the first-paint default.</p>
+    <p>Once the VB bundle runs, <code>ThemeManager</code> takes over. After every mode, brand or accent change, and when the system colour scheme changes while the mode is <code>auto</code>, it sets <strong>every</strong> <code>meta[name="theme-color"]</code> to the page&rsquo;s painted background colour as <code>#rrggbb</code> and <strong>removes</strong> their <code>media</code> attributes, because the mode is known by then. Pages without a theme-color meta are left alone.</p>
+    <p>So the authored pair only matters before JavaScript runs. Don&rsquo;t write scripts that look for the <code>media</code> attribute later; it will be gone.</p>
+  </section>
+
+  <section>
+    <h2>Metadata VB reads</h2>
+    <p>VB follows a published <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/meta-tag-contract-v1.md">meta-tag contract (v1.1)</a>. Its rule is <strong>public-first</strong>: where a standard name exists (HTML, Open Graph, Schema.org microdata), VB reads that name. The <code>vb:*</code> namespace is used only for VB-specific extensions that no standard covers. Crawlers and social tools can then understand a VB page without knowing anything about VB.</p>
+    <table class="props-table">
+      <thead>
+        <tr><th>Reader</th><th>Meta tags</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a></td>
+          <td><code>author</code>, <code>last-modified</code>, <code>keywords</code>, <code>license</code>, <code>property="article:*"</code>, <code>itemprop="version"</code>, repeated <code>concept</code>, and <code>vb:provenance</code>, <code>vb:review</code>, <code>vb:status</code>, <code>vb:ai-tools</code>, <code>vb:version-url</code>, <code>vb:signature</code>, <code>vb:signature-algorithm</code></td>
+        </tr>
+        <tr>
+          <td>Signing (canonical document)</td>
+          <td>Reads by <code>name</code>, <code>property</code> and <code>itemprop</code>: <code>og:title</code>, <code>keywords</code>, <code>concept</code>, <code>license</code> and others, so the signature covers the metadata</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/analytics/">Analytics</a></td>
+          <td>Every <code>meta[name^="vb:"]</code> plus all <code>concept</code> tags, folded into each event as taxonomy</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/version-switcher/"><code>&lt;version-switcher&gt;</code></a></td>
+          <td><code>itemprop="version"</code>, <code>vb:versions-manifest</code></td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/share/"><code>&lt;share-wc&gt;</code></a></td>
+          <td><code>description</code>, <code>og:title</code>, <code>og:description</code> as share-text fallbacks</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/page-stats/"><code>&lt;page-stats&gt;</code></a></td>
+          <td><code>last-modified</code></td>
+        </tr>
+        <tr>
+          <td><a href="/docs/elements/web-components/geo-map/"><code>&lt;geo-map&gt;</code></a></td>
+          <td><code>geo.position</code> (<code>lat;lng</code>) as a last-resort location</td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="html" label="Public names first, vb:* for extensions" data-escape><meta name="author" content="Ada Lovelace">
+<meta name="last-modified" content="2026-10-30">
+<meta name="license" content="CC BY 4.0">
+<meta property="article:published_time" content="2026-10-01T09:00:00Z">
+<meta itemprop="version" content="1.4.0">
+<meta name="concept" content="design-tokens">
+<meta name="concept" content="theming">
+<meta name="vb:provenance" content="ai-assisted">
+<meta name="vb:status" content="published"></code-block>
+    <p>Topics are repeated <code>&lt;meta name="concept"&gt;</code> tags holding SKOS concept ids. Contract v1.1 removed the old dotted-path <code>vb:topic</code>. For the field families and how signing works, see <a href="/docs/concepts/document-provenance/">Document provenance</a>.</p>
+  </section>
+
   <section>
     <h2>Accessibility</h2>
-    <p>Accessibility considerations for the <code>&lt;meta&gt;</code> element will be documented here.</p>
+    <ul>
+      <li><strong>Never block zoom.</strong> Don&rsquo;t put <code>user-scalable=no</code> or <code>maximum-scale=1</code> in the viewport meta. They stop pinch-zoom and fail WCAG 1.4.4 Resize Text. <code>width=device-width, initial-scale=1</code> is enough.</li>
+      <li><strong>No timed refresh or redirect.</strong> <code>&lt;meta http-equiv="refresh" content="30"&gt;</code> reloads the page, or sends the user elsewhere, without their control. That fails WCAG 2.2.1 Timing Adjustable and 3.2.5 Change on Request. Redirect on the server. If you must use meta refresh as a redirect, use a delay of <code>0</code>.</li>
+      <li><strong>Describe the page.</strong> A specific <code>description</code> is what search results and link previews show, which helps every user choose the right page.</li>
+      <li><strong><code>color-scheme</code>:</strong> lets dark-mode users get a dark canvas and native controls from the first paint, with no bright flash.</li>
+    </ul>
   </section>
 
-  <!-- Related Section -->
   <section>
     <h2>Related</h2>
-    <p>Related elements will be documented here.</p>
+    <ul>
+      <li><a href="/docs/elements/native/head/"><code>&lt;head&gt;</code></a> - Where meta lives, and the recommended VB head</li>
+      <li><a href="/docs/elements/native/title/"><code>&lt;title&gt;</code></a> - The document title</li>
+      <li><a href="/docs/elements/native/link/"><code>&lt;link&gt;</code></a> - Relations such as <code>canonical</code>, <code>author</code> and <code>license</code></li>
+      <li><a href="/docs/elements/native/script/"><code>&lt;script&gt;</code></a> - JSON-LD, the machine-readable mirror of the contract</li>
+      <li><a href="/docs/concepts/document-provenance/">Document provenance</a> - The metadata substrate VB components consume</li>
+      <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> - Renders provenance and history from meta tags</li>
+    </ul>
   </section>
