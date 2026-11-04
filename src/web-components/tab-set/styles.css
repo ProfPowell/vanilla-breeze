@@ -3,36 +3,44 @@ tab-set:not(:defined) {
   display: block;
 }
 
-/* tab-set: Details-based tabs with CSS Grid reordering */
+/* tab-set: Details-based tabs. The summaries line up as a tab row and the
+   open panel takes the full line below them. The row is a wrapping flex
+   line, so many tabs wrap onto a second row instead of pushing the page
+   sideways on narrow screens. */
 
 tab-set {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  /* One auto column per tab (count set by logic.js) plus a filler, so the
-     panel's grid-column: 1 / -1 spans the full width instead of only the
-     first tab's implicit column. */
-  grid-template-columns: repeat(var(--_tab-count, 1), auto) 1fr;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
   border-block-end: var(--border-width-thin) solid var(--color-border);
 }
 
-/* Details elements use display:contents to let children participate in grid */
+/* Details elements use display:contents to let summary + panel be items
+   of the host's layout */
 tab-set > details {
   display: contents;
 }
 
 /* Chromium (131+), Safari and Firefox wrap <details> content in a
    ::details-content box. With the details at display: contents, that box
-   became the grid item and auto-placed into one cell, so the panel's
-   grid-column was ignored. Flatten it for the OPEN tab so the panel itself
-   is the grid item. Closed tabs are hidden at the same box: the browser
-   hid them there before, and author CSS that gives panels a display value
-   (unlayered, so it beats the layered rule below) must not reveal them. */
+   became the layout item instead of the panel. Flatten it for the OPEN tab
+   so the panel itself is the item. Closed tabs are hidden at the same box:
+   the browser hid them there before, and author CSS that gives panels a
+   display value (unlayered, so it beats the layered rule below) must not
+   reveal them. Print shows every panel (see utils/print.css). */
 tab-set > details[open]::details-content {
   display: contents;
 }
 
-tab-set > details:not([open])::details-content {
-  display: none;
+@media not print {
+  tab-set > details:not([open])::details-content {
+    display: none;
+  }
+
+  /* Hide closed panels — open panels keep their natural display value */
+  tab-set > details:not([open]) > :not(summary) {
+    display: none;
+  }
 }
 
 /* Remove default details styling when inside tab-set */
@@ -41,9 +49,9 @@ tab-set > details {
   border-radius: 0;
 }
 
-/* Summaries become horizontal tabs in row 1 */
+/* Summaries become the tab row */
 tab-set > details > summary {
-  grid-row: 1;
+  flex: none;
   padding: var(--size-s) var(--size-m);
   border: none;
   border-block-end: var(--border-width-medium) solid transparent;
@@ -87,21 +95,54 @@ tab-set > details[open] > summary {
   border-block-end-color: var(--color-interactive);
 }
 
-/* Panel content goes to row 2, spanning all columns */
+/* Panel content (exactly one element per <details>, ideally a <section>)
+   takes its own full line after every tab */
 tab-set > details > :not(summary) {
-  grid-row: 2;
-  grid-column: 1 / -1;
+  order: 1;
+  flex: 1 0 100%;
+  min-inline-size: 0;
   padding: var(--size-m);
 }
 
-/* Hide closed panels — open panels keep their natural display value */
-tab-set > details:not([open]) > :not(summary) {
-  display: none;
+/* --- Vertical orientation: tabs in a column at the inline start --- */
+tab-set[data-orientation="vertical"]:defined {
+  display: grid;
+  grid-template-columns: fit-content(40%) minmax(0, 1fr);
+  /* One row per tab (count set by logic.js) plus a filler, so the panel's
+     grid-row: 1 / -1 spans the whole tab column. */
+  grid-template-rows: repeat(var(--_tab-count, 1), auto) 1fr;
+  border-block-end: none;
+
+  & > details > summary {
+    grid-column: 1;
+    white-space: normal;
+    border-block-end: none;
+    margin-block-end: 0;
+    border-inline-end: var(--border-width-medium) solid transparent;
+    margin-inline-end: calc(var(--border-width-thin) * -1);
+  }
+
+  & > details[open] > summary {
+    border-inline-end-color: var(--color-interactive);
+  }
+
+  & > details > :not(summary) {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    border-inline-start: var(--border-width-thin) solid var(--color-border);
+  }
 }
 
-/* Ensure first tab aligns to start */
-tab-set > details:first-of-type > summary {
-  grid-column-start: 1;
+/* Forced colors: the selected cue is a colour + border change; make the
+   border an explicit system colour so it survives colour forcing. */
+@media (forced-colors: active) {
+  tab-set > details[open] > summary {
+    border-block-end-color: Highlight;
+  }
+
+  tab-set[data-orientation="vertical"]:defined > details[open] > summary {
+    border-inline-end-color: Highlight;
+  }
 }
 
 /* Reduced Motion */
