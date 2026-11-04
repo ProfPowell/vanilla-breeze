@@ -8,13 +8,21 @@ import { VBElement } from '../../lib/vb-element.js';
  * interactive spotlight overlay with the web component.
  *
  * @element page-tour
- * @attr {string} data-title - Tour name for aria-label and heading
+ * @attr {string} data-title - Tour name for the card's accessible name (default "Page Tour")
  * @attr {'auto'|'manual'|'button'} data-trigger - How tour starts
- * @attr {'passive'|'active'|'forced'} data-mode - Interaction mode
+ * @attr {'passive'|'active'|'forced'} data-mode - Skip behaviour (forced = no skipping)
  * @attr {'none'|'session'|'local'} data-persist - Progress persistence
  * @attr {string} data-persist-key - Storage key (defaults to page path)
  * @attr {number} data-step - Current step index (0-based), reflects state
- * @attr {number} data-spotlight-padding - px padding around spotlight rect
+ * @attr {number} data-spotlight-padding - px padding around the spotlight (overrides --tour-spotlight-padding)
+ * @attr {string} data-label-step - Step counter template; {n} and {total} are replaced (default "Step {n} of {total}")
+ * @attr {string} data-label-skip - Skip button text (default "Skip tour")
+ * @attr {string} data-label-close - Skip button text on the last step (default "Close")
+ * @attr {string} data-label-prev - Previous button text (default "Previous")
+ * @attr {string} data-label-next - Next button text (default "Next")
+ * @attr {string} data-label-finish - Next button text on the last step (default "Finish")
+ * @attr {string} data-label-nav - Accessible name of the card's button group (default "Tour navigation")
+ * @attr {string} data-label-ready - Announced when a required action completes (default "Done. Next is available.")
  * @fires tour:start
  * @fires tour:step
  * @fires tour:action
@@ -31,9 +39,28 @@ import { VBElement } from '../../lib/vb-element.js';
  */
 
 // Feature detection (module-level, evaluated once)
-const supportsAnchor = CSS.supports('anchor-name', '--x');
+const supportsAnchor = CSS.supports('anchor-name', '--x') && CSS.supports('position-area', 'bottom');
 const prefersReducedMotion = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const ANCHOR_NAME = '--tour-target';
+const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const EDITABLE = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
+
+/** @type {Record<string, string>} */
+const DEFAULT_LABELS = {
+  title: 'Page Tour',
+  step: 'Step {n} of {total}',
+  skip: 'Skip tour',
+  close: 'Close',
+  prev: 'Previous',
+  next: 'Next',
+  finish: 'Finish',
+  nav: 'Tour navigation',
+  ready: 'Done. Next is available.',
+};
+
+let uid = 0;
 
 /**
  * @element tour-step
@@ -48,27 +75,67 @@ class TourStep extends HTMLElement {
   get scrollBehavior() { return this.dataset.scroll ?? 'smooth'; }
 }
 
+/**
+ * Resolve a step's target, tolerating invalid selectors.
+ * @param {TourStep | undefined} step
+ * @returns {HTMLElement | null}
+ */
+function targetOf(step) {
+  if (!step?.target) return null;
+  try {
+    return /** @type {HTMLElement | null} */ (document.querySelector(step.target));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * @template {keyof HTMLElementTagNameMap} K
+ * @param {K} tag
+ * @param {string} [className]
+ * @param {string} [text]
+ * @returns {HTMLElementTagNameMap[K]}
+ */
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text != null) node.textContent = text;
+  return node;
+}
+
 class PageTour extends VBElement {
   /** @type {TourStep[]} */
   #steps = [];
   #currentStep = 0;
   #active = false;
-  /** @type {HTMLDivElement | null} */
+  /** @type {HTMLElement | null} */
   #backdrop = null;
-  /** @type {HTMLDivElement | null} */
+  /** @type {HTMLElement | null} */
   #spotlight = null;
-  /** @type {HTMLDivElement | null} */
+  /** @type {HTMLElement | null} */
   #card = null;
-  /** @type {HTMLDivElement | null} */
+  /** @type {HTMLElement | null} */
   #announcer = null;
   /** @type {Element | null} */
   #returnFocus = null;
+  /** The current step's target (the only element layout sync reads). @type {HTMLElement | null} */
+  #currentTarget = null;
+  /** Anchor name the current target had before the tour claimed it. */
+  #savedAnchorName = '';
   /** @type {ResizeObserver | null} */
   #resizeObserver = null;
-  /** @type {AbortController | null} */
+  /** Lives for the whole active tour (document keydown). @type {AbortController | null} */
+  #tourController = null;
+  /** Lives for one step (scroll/resize sync). @type {AbortController | null} */
+  #layoutController = null;
+  /** Lives for one step's action gate. @type {AbortController | null} */
   #actionController = null;
   /** @type {number | null} */
   #rafId = null;
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  #settleTimer = null;
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  #autoTimer = null;
 
   /** @type {PageTour|null} */
   static #activeTour = null;
@@ -89,7 +156,7 @@ class PageTour extends VBElement {
     if (this.id) {
       this.listen(document, 'click', (e) => {
         const target = /** @type {Element | null} */ (e.target);
-        const trigger = target?.closest?.(`[data-tour="${this.id}"]`);
+        const trigger = target?.closest?.(`[data-tour="${CSS.escape(this.id)}"]`);
         if (trigger) { e.preventDefault(); this.start(); }
       });
     }
@@ -100,7 +167,10 @@ class PageTour extends VBElement {
       if (saved?.complete || saved?.skipped) {
         this.setAttribute('data-complete', '');
       } else {
-        setTimeout(() => this.start(saved?.step ?? 0), 400);
+        this.#autoTimer = setTimeout(() => {
+          this.#autoTimer = null;
+          if (this.isConnected) this.start(saved?.step ?? 0);
+        }, 400);
       }
     }
 
@@ -108,6 +178,10 @@ class PageTour extends VBElement {
   }
 
   teardown() {
+    if (this.#autoTimer) {
+      clearTimeout(this.#autoTimer);
+      this.#autoTimer = null;
+    }
     if (this.#active) this.stop();
   }
 
@@ -115,7 +189,7 @@ class PageTour extends VBElement {
     if (name === 'data-step' && this.#active && old !== null) {
       const idx = parseInt(next, 10);
       if (!Number.isNaN(idx) && idx !== this.#currentStep) {
-        this.#goToStep(idx);
+        this.goto(idx);
       }
     }
   }
@@ -125,6 +199,22 @@ class PageTour extends VBElement {
   // -----------------------------------------------------------
 
   start(stepIndex = 0) {
+    const requested = Math.min(Math.max(0, Number(stepIndex) || 0), this.#steps.length - 1);
+
+    // Already running: just move to the requested step (no second overlay)
+    if (this.#active) {
+      this.goto(requested);
+      return;
+    }
+
+    // Resolve the first step whose target exists (forward, then backward)
+    let index = this.#findStep(requested, 1, true);
+    if (index === -1) index = this.#findStep(requested - 1, -1, true);
+    if (index === -1) {
+      console.warn('[page-tour] No step target found on the page; tour not started');
+      return;
+    }
+
     // Mutex — only one tour active at a time
     if (PageTour.#activeTour && PageTour.#activeTour !== this) {
       PageTour.#activeTour.stop();
@@ -138,11 +228,12 @@ class PageTour extends VBElement {
     this.setAttribute('data-active', '');
     this.removeAttribute('data-complete');
 
-    this.#dispatch('tour:start', { step: stepIndex });
-    this.#goToStep(stepIndex);
+    this.#dispatch('tour:start', { step: index });
+    this.#goToStep(index, 'next');
   }
 
   stop() {
+    if (!this.#active) return;
     this.#teardown();
     this.#active = false;
     this.removeAttribute('data-active');
@@ -153,36 +244,33 @@ class PageTour extends VBElement {
   }
 
   next() {
-    if (!this.#active) return;
-    // Block if action-gated and still waiting
-    const nextBtn = this.#card?.querySelector('[data-action="next"]');
-    if (nextBtn?.hasAttribute('data-waiting')) return;
-
-    if (this.#currentStep < this.#steps.length - 1) {
-      this.#goToStep(this.#currentStep + 1, 'next');
-    } else {
-      this.#complete();
-    }
+    if (!this.#active || this.#isWaiting()) return;
+    const index = this.#findStep(this.#currentStep + 1, 1, true);
+    if (index === -1) this.#complete();
+    else this.#goToStep(index, 'next');
   }
 
   prev() {
     if (!this.#active) return;
-    if (this.#currentStep > 0) {
-      this.#goToStep(this.#currentStep - 1, 'prev');
-    }
+    const index = this.#findStep(this.#currentStep - 1, -1, true);
+    if (index !== -1) this.#goToStep(index, 'prev');
   }
 
   goto(index) {
     if (!this.#active) return;
-    if (index >= 0 && index < this.#steps.length) {
-      this.#goToStep(index);
-    }
+    const n = Number(index);
+    if (!Number.isInteger(n) || n < 0 || n >= this.#steps.length) return;
+    const direction = n >= this.#currentStep ? 'next' : 'prev';
+    const sign = direction === 'next' ? 1 : -1;
+    let resolved = this.#findStep(n, sign, true);
+    if (resolved === -1) resolved = this.#findStep(n - sign, sign === 1 ? -1 : 1, true);
+    if (resolved === -1 || resolved === this.#currentStep) return;
+    this.#goToStep(resolved, direction);
   }
 
   skip() {
     if (!this.#active) return;
-    const mode = this.dataset.mode ?? 'passive';
-    if (mode === 'forced') return;
+    if (!this.#isSkippable(this.#steps[this.#currentStep])) return;
 
     this.#dispatch('tour:skip', { step: this.#currentStep });
     this.#persistState({ skipped: true });
@@ -197,43 +285,81 @@ class PageTour extends VBElement {
   }
 
   // -----------------------------------------------------------
+  // Helpers
+  // -----------------------------------------------------------
+
+  /** @param {string} key */
+  #label(key) {
+    const own = key === 'title' ? this.dataset.title : this.getAttribute(`data-label-${key}`);
+    return own ?? DEFAULT_LABELS[key];
+  }
+
+  /** @param {TourStep | undefined} step */
+  #isSkippable(step) {
+    return (this.dataset.mode ?? 'passive') !== 'forced' && (step?.skippable ?? true);
+  }
+
+  #isWaiting() {
+    return !!this.#card?.querySelector('.page-tour-next[data-waiting]');
+  }
+
+  /**
+   * First step index at or beyond `from` (walking `dir`) whose target exists.
+   * @param {number} from
+   * @param {1|-1} dir
+   * @param {boolean} [warn]
+   */
+  #findStep(from, dir, warn = false) {
+    for (let i = from; i >= 0 && i < this.#steps.length; i += dir) {
+      if (targetOf(this.#steps[i])) return i;
+      if (warn) console.warn(`[page-tour] Target "${this.#steps[i].target}" not found, skipping step ${i}`);
+    }
+    return -1;
+  }
+
+  // -----------------------------------------------------------
   // Overlay construction
   // -----------------------------------------------------------
 
   #buildOverlay() {
     // Backdrop
-    this.#backdrop = document.createElement('div');
-    this.#backdrop.className = 'page-tour-backdrop';
+    this.#backdrop = el('div', 'page-tour-backdrop');
     this.#backdrop.setAttribute('aria-hidden', 'true');
-    this.#backdrop.addEventListener('click', () => {
-      const mode = this.dataset.mode ?? 'passive';
-      if (mode !== 'forced') this.skip();
-    });
+    this.#backdrop.addEventListener('click', () => this.skip());
 
     // Spotlight
-    this.#spotlight = document.createElement('div');
-    this.#spotlight.className = 'page-tour-spotlight';
+    this.#spotlight = el('div', 'page-tour-spotlight');
     this.#spotlight.setAttribute('aria-hidden', 'true');
 
     // Card (popover)
-    this.#card = document.createElement('div');
-    this.#card.className = 'page-tour-card';
+    this.#card = el('div', 'page-tour-card');
     this.#card.setAttribute('popover', 'manual');
     this.#card.setAttribute('role', 'dialog');
-    this.#card.setAttribute('aria-modal', 'true');
-    this.#card.setAttribute('aria-label', this.dataset.title ?? 'Page Tour');
-    this.#card.addEventListener('keydown', (e) => this.#handleKeydown(e));
+    this.#card.setAttribute('aria-label', this.#label('title'));
+    this.#card.setAttribute('tabindex', '-1');
+    this.#card.toggleAttribute('data-anchored', supportsAnchor);
     this.#card.addEventListener('click', (e) => this.#handleCardClick(e));
 
+    // data-spotlight-padding overrides the --tour-spotlight-padding token
+    const pad = parseFloat(this.dataset.spotlightPadding ?? '');
+    if (Number.isFinite(pad) && pad >= 0) {
+      for (const node of [this.#spotlight, this.#card]) {
+        node.style.setProperty('--tour-spotlight-padding', `${pad}px`);
+      }
+    }
+
     // Announcer (screen reader)
-    this.#announcer = document.createElement('div');
+    this.#announcer = el('div', 'visually-hidden');
     this.#announcer.setAttribute('aria-live', 'polite');
     this.#announcer.setAttribute('aria-atomic', 'true');
-    this.#announcer.className = 'visually-hidden';
-    this.#announcer.id = `page-tour-announcer-${crypto.randomUUID().slice(0, 8)}`;
+    this.#announcer.id = `page-tour-announcer-${++uid}`;
 
     this.append(this.#backdrop, this.#spotlight, this.#card, this.#announcer);
     this.#card.showPopover();
+
+    // Keyboard works wherever focus is while the tour runs (card or target)
+    this.#tourController = new AbortController();
+    document.addEventListener('keydown', (e) => this.#handleKeydown(e), { signal: this.#tourController.signal });
 
     // Fade in backdrop on next frame
     requestAnimationFrame(() => {
@@ -242,93 +368,106 @@ class PageTour extends VBElement {
   }
 
   // -----------------------------------------------------------
+  // Target raise / release
+  // -----------------------------------------------------------
+
+  /** @param {HTMLElement} targetEl */
+  #claimTarget(targetEl) {
+    this.#currentTarget = targetEl;
+    // Only static targets need position: relative for z-index to apply;
+    // sticky/fixed/absolute targets keep their own positioning.
+    const raised = getComputedStyle(targetEl).position === 'static';
+    targetEl.setAttribute('data-tour-target', raised ? 'raised' : '');
+    if (supportsAnchor) {
+      this.#savedAnchorName = targetEl.style.getPropertyValue('anchor-name');
+      targetEl.style.setProperty('anchor-name', ANCHOR_NAME);
+    }
+  }
+
+  #releaseTarget() {
+    const t = this.#currentTarget;
+    if (!t) return;
+    t.removeAttribute('data-tour-target');
+    if (supportsAnchor) {
+      if (this.#savedAnchorName) t.style.setProperty('anchor-name', this.#savedAnchorName);
+      else t.style.removeProperty('anchor-name');
+      if (!t.getAttribute('style')) t.removeAttribute('style');
+    }
+    this.#savedAnchorName = '';
+    this.#currentTarget = null;
+  }
+
+  // -----------------------------------------------------------
   // Positioning
   // -----------------------------------------------------------
 
+  /** @param {HTMLElement} targetEl */
   #positionSpotlight(targetEl) {
     if (!this.#spotlight) return;
-    const padding = parseInt(this.dataset.spotlightPadding ?? '', 10) || 8;
+    // Padding comes from CSS (--tour-spotlight-padding); the inline box is the target rect
     const rect = targetEl.getBoundingClientRect();
     Object.assign(this.#spotlight.style, {
-      top: `${rect.top - padding}px`,
-      left: `${rect.left - padding}px`,
-      width: `${rect.width + padding * 2}px`,
-      height: `${rect.height + padding * 2}px`,
+      top: `${rect.top}px`,
+      left: `${rect.left}px`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`,
     });
   }
 
+  /**
+   * Physical side for the card, honouring logical placements and direction.
+   * @param {HTMLElement} targetEl
+   * @param {string} placement
+   * @returns {'top'|'bottom'|'left'|'right'}
+   */
+  #resolveSide(targetEl, placement) {
+    const rtl = getComputedStyle(this).direction === 'rtl';
+    switch (placement) {
+      case 'top':
+      case 'bottom':
+        return placement;
+      case 'inline-start':
+        return rtl ? 'right' : 'left';
+      case 'inline-end':
+        return rtl ? 'left' : 'right';
+      default:
+        return this.#autoPlacement(targetEl);
+    }
+  }
+
+  /**
+   * @param {HTMLElement} targetEl
+   * @param {string} placement
+   */
   #positionCard(targetEl, placement) {
     if (!this.#card) return;
-
-    // If CSS Anchor Positioning is supported, use it
-    if (supportsAnchor) {
-      this.#positionCardAnchor(targetEl, placement);
-      return;
-    }
-
-    this.#positionCardRect(targetEl, placement);
+    const side = this.#resolveSide(targetEl, placement);
+    this.#card.dataset.side = side;
+    // Anchor positioning: CSS (position-area + try fallbacks) does the work
+    if (!supportsAnchor) this.#positionCardRect(targetEl, side);
   }
 
-  #positionCardAnchor(targetEl, placement) {
-    if (!this.#card) return;
-    const anchorName = '--tour-target';
-    targetEl.style.anchorName = anchorName;
-    this.#card.style.positionAnchor = anchorName;
-    this.#card.style.position = 'fixed';
-
-    // Reset inline rect positioning
-    this.#card.style.top = '';
-    this.#card.style.left = '';
-    this.#card.style.bottom = '';
-    this.#card.style.right = '';
-
-    const offset = 'var(--tour-card-offset, 0.75rem)';
-    const resolved = placement === 'auto' ? this.#autoPlacement(targetEl) : placement;
-
-    switch (resolved) {
-      case 'bottom':
-        this.#card.style.top = `anchor(bottom)`;
-        this.#card.style.left = `anchor(center)`;
-        this.#card.style.translate = '0 calc(' + offset + ')';
-        break;
-      case 'top':
-        this.#card.style.bottom = `anchor(top)`;
-        this.#card.style.left = `anchor(center)`;
-        this.#card.style.translate = '0 calc(-1 * ' + offset + ')';
-        break;
-      case 'right':
-        this.#card.style.left = `anchor(right)`;
-        this.#card.style.top = `anchor(center)`;
-        this.#card.style.translate = offset + ' 0';
-        break;
-      case 'left':
-        this.#card.style.right = `anchor(left)`;
-        this.#card.style.top = `anchor(center)`;
-        this.#card.style.translate = 'calc(-1 * ' + offset + ') 0';
-        break;
-    }
-  }
-
-  #positionCardRect(targetEl, placement) {
-    if (!this.#card) return;
+  /**
+   * @param {HTMLElement} targetEl
+   * @param {'top'|'bottom'|'left'|'right'} side
+   */
+  #positionCardRect(targetEl, side) {
+    const card = this.#card;
+    if (!card) return;
     const rect = targetEl.getBoundingClientRect();
     const gap = 12;
     const viewPad = 8;
-    const resolved = placement === 'auto' ? this.#autoPlacement(targetEl) : placement;
+    const spotlightPad = this.#spotlight ? parseFloat(getComputedStyle(this.#spotlight).paddingTop) || 0 : 0;
 
-    // Render card offscreen first to measure it
-    this.#card.style.position = 'fixed';
-    this.#card.style.visibility = 'hidden';
-    this.#card.style.top = '0';
-    this.#card.style.left = '0';
-    this.#card.style.translate = '';
-    const cardRect = this.#card.getBoundingClientRect();
-    this.#card.style.visibility = '';
+    // Measure the card at the origin first
+    card.style.visibility = 'hidden';
+    card.style.top = '0';
+    card.style.left = '0';
+    const cardRect = card.getBoundingClientRect();
+    card.style.visibility = '';
 
     let top = 0, left = 0;
-    const spotlightPad = parseInt(this.dataset.spotlightPadding ?? '', 10) || 8;
-
-    switch (resolved) {
+    switch (side) {
       case 'bottom':
         top = rect.bottom + spotlightPad + gap;
         left = rect.left + (rect.width - cardRect.width) / 2;
@@ -351,21 +490,19 @@ class PageTour extends VBElement {
     left = Math.max(viewPad, Math.min(left, window.innerWidth - cardRect.width - viewPad));
     top = Math.max(viewPad, Math.min(top, window.innerHeight - cardRect.height - viewPad));
 
-    Object.assign(this.#card.style, {
-      top: `${top}px`,
-      left: `${left}px`,
-      translate: '',
-    });
+    card.style.top = `${top}px`;
+    card.style.left = `${left}px`;
   }
 
+  /**
+   * @param {HTMLElement} targetEl
+   * @returns {'top'|'bottom'|'left'|'right'}
+   */
   #autoPlacement(targetEl) {
     const rect = targetEl.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-
-    const spaceBelow = vh - rect.bottom;
+    const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
-    const spaceRight = vw - rect.right;
+    const spaceRight = window.innerWidth - rect.right;
     const spaceLeft = rect.left;
 
     const max = Math.max(spaceBelow, spaceAbove, spaceRight, spaceLeft);
@@ -379,214 +516,208 @@ class PageTour extends VBElement {
   // Card rendering
   // -----------------------------------------------------------
 
+  /**
+   * @param {TourStep} step
+   * @param {number} index
+   */
   #renderCard(step, index) {
-    if (!this.#card) return;
+    const card = this.#card;
+    if (!card) return;
     const total = this.#steps.length;
-    const isLast = index === total - 1;
-    const isFirst = index === 0;
-    const mode = this.dataset.mode ?? 'passive';
-    const skippable = mode !== 'forced';
+    const hasNext = this.#findStep(index + 1, 1) !== -1;
+    const hasPrev = this.#findStep(index - 1, -1) !== -1;
     const isGated = step.action !== 'none';
 
-    this.#card.innerHTML = /* html */`
-      <div class="page-tour-progress" aria-hidden="true">
-        ${this.#steps.map((_, i) => `
-          <span class="page-tour-pip" ${i === index ? 'data-active' : ''} ${i < index ? 'data-visited' : ''}></span>
-        `).join('')}
-      </div>
-      <p class="page-tour-meta">
-        <span class="page-tour-step-count">Step ${index + 1} of ${total}</span>
-      </p>
-      <div class="page-tour-content">
-        ${step.innerHTML}
-      </div>
-      ${isGated && step.actionHint ? `
-        <p class="page-tour-action-hint">${step.actionHint}</p>
-      ` : ''}
-      <footer class="page-tour-footer">
-        ${skippable ? `
-          <button type="button" class="page-tour-skip" data-action="skip">
-            ${isLast ? 'Close' : 'Skip tour'}
-          </button>
-        ` : ''}
-        <nav class="page-tour-nav" aria-label="Tour navigation">
-          ${!isFirst ? `
-            <button type="button" class="page-tour-prev" data-action="prev">
-              Previous
-            </button>
-          ` : ''}
-          <button
-            type="button"
-            class="page-tour-next"
-            data-action="next"
-            ${isGated ? 'data-waiting' : ''}
-          >
-            ${isLast ? 'Finish' : 'Next'}
-          </button>
-        </nav>
-      </footer>
-    `;
+    // Progress pips
+    const progress = el('div', 'page-tour-progress');
+    progress.setAttribute('aria-hidden', 'true');
+    this.#steps.forEach((_, i) => {
+      const pip = el('span', 'page-tour-pip');
+      if (i === index) pip.setAttribute('data-active', '');
+      if (i < index) pip.setAttribute('data-visited', '');
+      progress.append(pip);
+    });
+
+    // Step counter
+    const meta = el('p', 'page-tour-meta');
+    meta.append(el('span', 'page-tour-step-count',
+      this.#label('step').replace('{n}', String(index + 1)).replace('{total}', String(total))));
+
+    // Step content (cloned from the authored <tour-step>)
+    const content = el('div', 'page-tour-content');
+    for (const node of step.childNodes) content.append(node.cloneNode(true));
+
+    // Footer
+    const footer = el('footer', 'page-tour-footer');
+    if (this.#isSkippable(step)) {
+      const skip = el('button', 'page-tour-skip', this.#label(hasNext ? 'skip' : 'close'));
+      skip.type = 'button';
+      skip.dataset.action = 'skip';
+      footer.append(skip);
+    }
+    const nav = el('nav', 'page-tour-nav');
+    nav.setAttribute('aria-label', this.#label('nav'));
+    if (hasPrev) {
+      const prev = el('button', 'page-tour-prev', this.#label('prev'));
+      prev.type = 'button';
+      prev.dataset.action = 'prev';
+      nav.append(prev);
+    }
+    const next = el('button', 'page-tour-next', this.#label(hasNext ? 'next' : 'finish'));
+    next.type = 'button';
+    next.dataset.action = 'next';
+    nav.append(next);
+    footer.append(nav);
+
+    /** @type {HTMLElement[]} */
+    const parts = [progress, meta, content];
+
+    if (isGated) {
+      // aria-disabled (not disabled) keeps the button focusable and discoverable
+      next.setAttribute('data-waiting', '');
+      next.setAttribute('aria-disabled', 'true');
+      if (step.actionHint) {
+        const hint = el('p', 'page-tour-action-hint', step.actionHint);
+        hint.id = `${this.#announcer?.id ?? 'page-tour'}-hint`;
+        next.setAttribute('aria-describedby', hint.id);
+        parts.push(hint);
+      }
+    }
+
+    parts.push(footer);
+    card.replaceChildren(...parts);
+
+    // A gated step needs the user to operate the target outside the card,
+    // so the card must not claim to be modal (AT would hide the target).
+    if (isGated) card.removeAttribute('aria-modal');
+    else card.setAttribute('aria-modal', 'true');
   }
 
   // -----------------------------------------------------------
-  // Step navigation
+  // Step navigation (index must have a live target)
   // -----------------------------------------------------------
 
+  /**
+   * @param {number} index
+   * @param {'next'|'prev'} [direction]
+   */
   #goToStep(index, direction = 'next') {
-    // Abort any pending action gate
+    const step = this.#steps[index];
+    const targetEl = targetOf(step);
+    if (!step || !targetEl) return;
+
+    // Release the previous step: action gate, layout sync, raised target
     this.#actionController?.abort();
     this.#actionController = null;
-
-    // Clean up previous step's target (anchor name + raised state)
-    if (this.#currentStep !== index) {
-      const prevStep = this.#steps[this.#currentStep];
-      const prevTarget = /** @type {HTMLElement | null} */ (prevStep ? document.querySelector(prevStep.target) : null);
-      if (prevTarget) {
-        if (supportsAnchor) prevTarget.style.anchorName = '';
-        prevTarget.removeAttribute('data-tour-target');
-      }
-    }
-
-    // Stop layout sync for previous step
     this.#stopLayoutSync();
+    this.#releaseTarget();
 
     this.#currentStep = index;
-    const step = this.#steps[index];
-    const targetEl = /** @type {HTMLElement | null} */ (document.querySelector(step.target));
-
-    if (!targetEl) {
-      // Target not found — skip to next valid step
-      console.warn(`[page-tour] Target "${step.target}" not found, skipping step ${index}`);
-      if (direction === 'next' && index < this.#steps.length - 1) {
-        this.#goToStep(index + 1, 'next');
-      } else if (direction === 'prev' && index > 0) {
-        this.#goToStep(index - 1, 'prev');
-      }
-      return;
-    }
-
-    // Raise the target element above the backdrop so it's clickable
-    targetEl.setAttribute('data-tour-target', '');
+    this.#claimTarget(targetEl);
 
     // Scroll target into view
-    const scrollBehavior = /** @type {ScrollBehavior} */ (prefersReducedMotion() ? 'instant' : step.scrollBehavior);
     if (step.scrollBehavior !== 'none') {
-      targetEl.scrollIntoView({ block: 'nearest', behavior: scrollBehavior });
+      const behavior = /** @type {ScrollBehavior} */ (prefersReducedMotion() ? 'instant' : step.scrollBehavior);
+      targetEl.scrollIntoView({ block: 'nearest', behavior });
     }
 
-    // Position overlay elements (slight delay for scroll to settle)
-    const positionAll = () => {
-      this.#positionSpotlight(targetEl);
-      this.#positionCard(targetEl, step.placement);
-    };
-
-    // Position immediately, then re-position after scroll settles
-    positionAll();
-    setTimeout(positionAll, prefersReducedMotion() ? 0 : 300);
-
-    // Render card content
+    // Render card content, then position (rect fallback measures the card)
     this.#renderCard(step, index);
+    this.#positionSpotlight(targetEl);
+    this.#positionCard(targetEl, step.placement);
 
     // Focus management — focus card immediately (so keydown stays captured),
     // then refine to heading or Next button on next frame
     const card = this.#card;
-    if (card) {
-      if (!card.hasAttribute('tabindex')) {
-        card.setAttribute('tabindex', '-1');
-      }
-      card.focus();
-    }
+    card?.focus();
     requestAnimationFrame(() => {
-      const heading = /** @type {HTMLElement | null} */ (this.#card?.querySelector('.page-tour-content h3, .page-tour-content h2, .page-tour-content h4') ?? null);
+      if (this.#card !== card || this.#currentStep !== index) return;
+      const heading = /** @type {HTMLElement | null} */ (card?.querySelector('.page-tour-content :is(h2, h3, h4)') ?? null);
       if (heading) {
         if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
         heading.focus();
       } else {
-        const nextBtn = /** @type {HTMLElement | null} */ (this.#card?.querySelector('[data-action="next"]') ?? null);
-        nextBtn?.focus();
+        /** @type {HTMLElement | null} */ (card?.querySelector('.page-tour-next') ?? null)?.focus();
       }
     });
 
     // Announce to screen readers
-    const heading = step.querySelector('h3, h2, h4');
-    const headingText = heading?.textContent ?? `Step ${index + 1}`;
-    this.#announce(`Step ${index + 1} of ${this.#steps.length}: ${headingText}`);
+    const heading = step.querySelector('h2, h3, h4');
+    const count = this.#label('step').replace('{n}', String(index + 1)).replace('{total}', String(this.#steps.length));
+    this.#announce(heading?.textContent ? `${count}: ${heading.textContent.trim()}` : count);
 
-    // Update reflected attribute
+    // Update reflected attribute (after #currentStep, so the observer is a no-op)
     this.dataset.step = String(index);
 
     // Action gating
-    if (step.action !== 'none') {
-      this.#gateOnAction(step);
-    }
+    if (step.action !== 'none') this.#gateOnAction(step, targetEl);
 
-    // Start layout sync
+    // Keep spotlight (and fallback card) in sync with the current target
     this.#startLayoutSync(targetEl);
 
     // Persist progress
     this.#persistState({ step: index });
 
-    // Dispatch step event
-    if (this.#active) {
-      this.#dispatch('tour:step', { step: index, target: targetEl, direction });
-    }
+    this.#dispatch('tour:step', { step: index, target: targetEl, direction });
   }
 
   // -----------------------------------------------------------
   // Action gating
   // -----------------------------------------------------------
 
-  #gateOnAction(step) {
-    const targetEl = document.querySelector(step.target);
-    if (!targetEl) return;
-
-    const nextBtn = /** @type {HTMLElement | null} */ (this.#card?.querySelector('[data-action="next"]') ?? null);
+  /**
+   * @param {TourStep} step
+   * @param {HTMLElement} targetEl
+   */
+  #gateOnAction(step, targetEl) {
     const ac = new AbortController();
     this.#actionController = ac;
 
-    const actionMap = {
-      click: 'click',
-      focus: 'focus',
-      input: 'input',
-      change: 'change',
-    };
-
+    /** @type {Record<string, string>} */
+    const actionMap = { click: 'click', focus: 'focus', input: 'input', change: 'change' };
     const eventName = actionMap[step.action];
 
     if (eventName) {
       targetEl.addEventListener(eventName, () => {
-        nextBtn?.removeAttribute('data-waiting');
-        // Remove action hint
-        this.#card?.querySelector('.page-tour-action-hint')?.remove();
-        nextBtn?.focus();
-        this.#dispatch('tour:action', { step: this.#currentStep, action: step.action });
         ac.abort();
-      }, { signal: ac.signal, once: true });
+        this.#releaseGate();
+        this.#dispatch('tour:action', { step: this.#currentStep, action: step.action });
+      }, { signal: ac.signal });
     } else if (step.action === 'custom') {
       // Author dispatches tour:action on the <page-tour> element
       this.addEventListener('tour:action', () => {
-        nextBtn?.removeAttribute('data-waiting');
-        this.#card?.querySelector('.page-tour-action-hint')?.remove();
-        nextBtn?.focus();
         ac.abort();
-      }, { signal: ac.signal, once: true });
+        this.#releaseGate();
+      }, { signal: ac.signal });
     }
   }
 
+  /** Enable Next and announce it — never move focus (the user may still be typing). */
+  #releaseGate() {
+    const next = this.#card?.querySelector('.page-tour-next');
+    if (!next) return;
+    next.removeAttribute('data-waiting');
+    next.removeAttribute('aria-disabled');
+    next.removeAttribute('aria-describedby');
+    this.#card?.querySelector('.page-tour-action-hint')?.remove();
+    this.#announce(this.#label('ready'));
+  }
+
   // -----------------------------------------------------------
-  // Keyboard navigation
+  // Keyboard navigation (document-level while active)
   // -----------------------------------------------------------
 
+  /** @param {KeyboardEvent} e */
   #handleKeydown(e) {
-    const mode = this.dataset.mode ?? 'passive';
-    const step = this.#steps[this.#currentStep];
-    const isGated = step?.action !== 'none';
-    const nextBtn = this.#card?.querySelector('[data-action="next"]');
-    const isWaiting = nextBtn?.hasAttribute('data-waiting');
+    if (!this.#active || e.defaultPrevented) return;
+    const origin = /** @type {Element | null} */ (e.target instanceof Element ? e.target : null);
+    // Leave caret/selection keys alone inside fields (e.g. a gated input target)
+    const inField = !!origin?.closest(EDITABLE);
+    const modified = e.altKey || e.ctrlKey || e.metaKey;
 
     switch (e.key) {
       case 'Escape':
-        if (mode !== 'forced') {
+        if (this.#isSkippable(this.#steps[this.#currentStep])) {
           e.preventDefault();
           this.skip();
         }
@@ -594,71 +725,71 @@ class PageTour extends VBElement {
 
       case 'ArrowRight':
       case 'ArrowDown':
+        if (inField || modified) return;
         e.preventDefault();
-        if (!(isGated && isWaiting)) this.next();
+        this.next();
         break;
 
       case 'ArrowLeft':
       case 'ArrowUp':
+        if (inField || modified) return;
         e.preventDefault();
         this.prev();
         break;
 
       case 'Home':
+        if (inField || modified) return;
         e.preventDefault();
         this.goto(0);
         break;
 
       case 'End':
+        if (inField || modified) return;
         e.preventDefault();
         this.goto(this.#steps.length - 1);
         break;
 
       case 'Tab':
-        this.#handleTabTrap(e, isGated && isWaiting);
+        this.#handleTabTrap(e);
         break;
     }
   }
 
-  #handleTabTrap(e, isActionGated) {
+  /** @param {KeyboardEvent} e */
+  #handleTabTrap(e) {
     if (!this.#card) return;
-    const focusables = /** @type {HTMLElement[]} */ ([...this.#card.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )]).filter(el => !(/** @type {HTMLButtonElement} */ (el)).disabled && el.offsetParent !== null);
+    /** @param {HTMLElement} node */
+    const usable = (node) => !(/** @type {HTMLButtonElement} */ (node)).disabled
+      && (node.checkVisibility?.() ?? true);
 
-    // When action-gated, include the target element in the focus set
+    const cardFocusables = /** @type {HTMLElement[]} */ ([...this.#card.querySelectorAll(FOCUSABLE)]).filter(usable);
+
+    // Relaxed trap: a gated step's target joins the focus cycle so the user can operate it
     /** @type {HTMLElement[]} */
     let targetFocusables = [];
-    if (isActionGated) {
-      const step = this.#steps[this.#currentStep];
-      const targetEl = /** @type {HTMLElement | null} */ (document.querySelector(step.target));
-      if (targetEl) {
-        const tf = /** @type {HTMLElement[]} */ (targetEl.matches('input, select, textarea, button, [href], [tabindex]')
-          ? [targetEl]
-          : [...targetEl.querySelectorAll(
-              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            )]);
-        targetFocusables = tf.filter(el => !(/** @type {HTMLButtonElement} */ (el)).disabled && el.offsetParent !== null);
-      }
+    const step = this.#steps[this.#currentStep];
+    const targetEl = this.#currentTarget;
+    if (step && step.action !== 'none' && targetEl) {
+      const tf = /** @type {HTMLElement[]} */ (targetEl.matches(FOCUSABLE)
+        ? [targetEl]
+        : [...targetEl.querySelectorAll(FOCUSABLE)]);
+      targetFocusables = tf.filter(usable);
     }
 
-    const allFocusables = [...focusables, ...targetFocusables];
-    if (allFocusables.length === 0) return;
+    const all = [...cardFocusables, ...targetFocusables];
+    if (all.length === 0) return;
 
-    const first = allFocusables[0];
-    const last = allFocusables[allFocusables.length - 1];
+    const first = all[0];
+    const last = all[all.length - 1];
     const active = /** @type {HTMLElement | null} */ (document.activeElement);
+    const outside = !active || !all.includes(active);
+    const idx = outside ? -1 : all.indexOf(active);
 
+    e.preventDefault();
     if (e.shiftKey) {
-      if (active === first || (active && !allFocusables.includes(active))) {
-        e.preventDefault();
-        last.focus();
-      }
+      (outside || active === first ? last : all[idx - 1]).focus();
     } else {
-      if (active === last || (active && !allFocusables.includes(active))) {
-        e.preventDefault();
-        first.focus();
-      }
+      (outside || active === last ? first : all[idx + 1]).focus();
     }
   }
 
@@ -666,12 +797,12 @@ class PageTour extends VBElement {
   // Card click delegation
   // -----------------------------------------------------------
 
+  /** @param {MouseEvent} e */
   #handleCardClick(e) {
-    const btn = e.target.closest('[data-action]');
+    const btn = /** @type {HTMLElement | null} */ (/** @type {Element} */ (e.target).closest?.('[data-action]') ?? null);
     if (!btn) return;
 
-    const action = btn.dataset.action;
-    switch (action) {
+    switch (btn.dataset.action) {
       case 'next': this.next(); break;
       case 'prev': this.prev(); break;
       case 'skip': this.skip(); break;
@@ -679,24 +810,34 @@ class PageTour extends VBElement {
   }
 
   // -----------------------------------------------------------
-  // Layout sync (ResizeObserver + scroll)
+  // Layout sync (ResizeObserver + scroll/resize), one per step
   // -----------------------------------------------------------
 
+  /** @param {HTMLElement} targetEl */
   #startLayoutSync(targetEl) {
-    // ResizeObserver on target
-    this.#resizeObserver = new ResizeObserver(() => {
-      this.#scheduleReposition(targetEl);
-    });
+    const ac = new AbortController();
+    this.#layoutController = ac;
+    const reposition = () => this.#scheduleReposition();
+
+    // Capture catches scrolling in nested scroll containers too
+    document.addEventListener('scroll', reposition, { capture: true, passive: true, signal: ac.signal });
+    window.addEventListener('resize', reposition, { passive: true, signal: ac.signal });
+
+    this.#resizeObserver = new ResizeObserver(reposition);
     this.#resizeObserver.observe(targetEl);
 
-    // Scroll listener
-    this.listen(window, 'scroll', () => this.#scheduleReposition(targetEl), { passive: true });
+    // Re-position once a smooth scrollIntoView has settled
+    this.#settleTimer = setTimeout(reposition, prefersReducedMotion() ? 0 : 300);
   }
 
   #stopLayoutSync() {
-    if (this.#resizeObserver) {
-      this.#resizeObserver.disconnect();
-      this.#resizeObserver = null;
+    this.#layoutController?.abort();
+    this.#layoutController = null;
+    this.#resizeObserver?.disconnect();
+    this.#resizeObserver = null;
+    if (this.#settleTimer) {
+      clearTimeout(this.#settleTimer);
+      this.#settleTimer = null;
     }
     if (this.#rafId) {
       cancelAnimationFrame(this.#rafId);
@@ -704,15 +845,15 @@ class PageTour extends VBElement {
     }
   }
 
-  #scheduleReposition(targetEl) {
+  #scheduleReposition() {
     if (this.#rafId) return;
     this.#rafId = requestAnimationFrame(() => {
       this.#rafId = null;
-      if (!this.#active) return;
+      const targetEl = this.#currentTarget;
+      if (!this.#active || !targetEl) return;
       this.#positionSpotlight(targetEl);
-      const step = this.#steps[this.#currentStep];
       if (!supportsAnchor) {
-        this.#positionCardRect(targetEl, step.placement);
+        this.#positionCard(targetEl, this.#steps[this.#currentStep].placement);
       }
     });
   }
@@ -733,25 +874,21 @@ class PageTour extends VBElement {
   // -----------------------------------------------------------
 
   #teardown() {
-    // Abort action gate
+    this.#tourController?.abort();
+    this.#tourController = null;
     this.#actionController?.abort();
     this.#actionController = null;
-
-    // Stop layout sync
     this.#stopLayoutSync();
+    this.#releaseTarget();
 
-    // Clean up current target (anchor name + raised state)
-    const step = this.#steps[this.#currentStep];
-    const targetEl = /** @type {HTMLElement | null} */ (step ? document.querySelector(step.target) : null);
-    if (targetEl) {
-      if (supportsAnchor) targetEl.style.anchorName = '';
-      targetEl.removeAttribute('data-tour-target');
-    }
+    // Only restore focus when it is still on the tour (or nowhere)
+    const focused = document.activeElement;
+    const focusOnTour = !focused || focused === document.body || !!this.#card?.contains(focused);
 
     // Remove overlay elements
     this.#backdrop?.remove();
     this.#spotlight?.remove();
-    this.#card?.hidePopover?.();
+    if (this.#card?.matches(':popover-open')) this.#card.hidePopover();
     this.#card?.remove();
     this.#announcer?.remove();
 
@@ -760,11 +897,10 @@ class PageTour extends VBElement {
     this.#card = null;
     this.#announcer = null;
 
-    // Restore focus
     const returnFocus = /** @type {HTMLElement | null} */ (this.#returnFocus);
-    if (returnFocus && typeof returnFocus.focus === 'function') {
+    this.#returnFocus = null;
+    if (focusOnTour && returnFocus?.isConnected && typeof returnFocus.focus === 'function') {
       returnFocus.focus();
-      this.#returnFocus = null;
     }
   }
 
@@ -772,14 +908,15 @@ class PageTour extends VBElement {
   // Screen reader announcements
   // -----------------------------------------------------------
 
+  /** @param {string} text */
   #announce(text) {
-    if (this.#announcer) {
-      this.#announcer.textContent = '';
-      // Clear then set on next frame for aria-live to re-announce
-      requestAnimationFrame(() => {
-        if (this.#announcer) this.#announcer.textContent = text;
-      });
-    }
+    const announcer = this.#announcer;
+    if (!announcer) return;
+    announcer.textContent = '';
+    // Clear then set on next frame for aria-live to re-announce
+    requestAnimationFrame(() => {
+      if (this.#announcer === announcer) announcer.textContent = text;
+    });
   }
 
   // -----------------------------------------------------------

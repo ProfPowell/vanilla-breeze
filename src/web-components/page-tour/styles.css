@@ -74,10 +74,15 @@ page-tour:is(:defined) tour-step {
   display: none;
 }
 
-/* Raised target — applied by JS during action-gated steps */
+/* Current step's target — lifted above the backdrop so it stays operable.
+   JS marks only statically positioned targets "raised"; sticky/fixed/absolute
+   targets keep their own position (forcing relative would move them). */
 [data-tour-target] {
-  position: relative;
   z-index: calc(var(--tour-z-index, 9000) + 1);
+}
+
+[data-tour-target="raised"] {
+  position: relative;
 }
 
 /* ----------------------------------------------------------
@@ -148,9 +153,14 @@ page-tour:is(:defined) .page-tour-guide {
     opacity: 1;
   }
 
-  /* Spotlight — box-shadow ring that cuts a "hole" in the backdrop */
+  /* Spotlight — box-shadow ring that cuts a "hole" in the backdrop.
+     JS sets top/left/width/height to the target rect; padding + negative
+     margin grow it by --tour-spotlight-padding on every side. */
   .page-tour-spotlight {
     position: fixed;
+    box-sizing: content-box;
+    padding: var(--tour-spotlight-padding);
+    margin: calc(-1 * var(--tour-spotlight-padding));
     z-index: calc(var(--tour-z-index) + 1);
     pointer-events: none;
     border-radius: var(--tour-spotlight-radius);
@@ -180,6 +190,23 @@ page-tour:is(:defined) .page-tour-guide {
 
   .page-tour-card[popover] {
     margin: 0; /* Reset UA popover margin */
+  }
+
+  /* Anchor positioning: centred on the target's side, flips when it would
+     overflow. data-side is the resolved physical side (logical placements
+     and RTL are resolved in JS). The non-anchor fallback sets top/left. */
+  @supports (anchor-name: --x) and (position-area: bottom) {
+    .page-tour-card[popover][data-anchored] {
+      position-anchor: --tour-target;
+      inset: auto;
+      margin: calc(var(--tour-spotlight-padding) + var(--tour-card-offset));
+      position-area: bottom;
+      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+    }
+
+    .page-tour-card[data-anchored][data-side="top"] { position-area: top; }
+    .page-tour-card[data-anchored][data-side="left"] { position-area: left; }
+    .page-tour-card[data-anchored][data-side="right"] { position-area: right; }
   }
 
   /* ----------------------------------------------------------
@@ -242,9 +269,14 @@ page-tour:is(:defined) .page-tour-guide {
     gap: var(--size-2xs, 0.375rem);
   }
 
+  /* Arrow points toward the inline end; empty alt text keeps AT quiet */
   .page-tour-action-hint::before {
-    content: "\2192"; /* right arrow */
+    content: "\2192" / "";
     color: var(--tour-spotlight-ring);
+  }
+
+  .page-tour-action-hint:dir(rtl)::before {
+    content: "\2190" / "";
   }
 
   /* Footer — navigation buttons */
@@ -281,7 +313,7 @@ page-tour:is(:defined) .page-tour-guide {
     background: var(--color-primary-hover, oklch(48% 0.2 260));
   }
 
-  .page-tour-next[data-waiting] {
+  .page-tour-next[aria-disabled="true"] {
     opacity: 0.5;
     cursor: not-allowed;
   }
@@ -305,6 +337,33 @@ page-tour:is(:defined) .page-tour-guide {
 
   .page-tour-skip:hover {
     color: var(--color-text, #222);
+  }
+}
+
+/* ----------------------------------------------------------
+   Forced colors — box-shadow (ring + dimmed hole) is dropped,
+   so outline the spotlight in the system highlight colour
+   ---------------------------------------------------------- */
+@media (forced-colors: active) {
+  @scope (page-tour) {
+    .page-tour-spotlight {
+      outline: 3px solid Highlight;
+      outline-offset: 0;
+    }
+
+    .page-tour-card {
+      border-color: CanvasText;
+    }
+
+    .page-tour-pip[data-active] {
+      background: Highlight;
+    }
+
+    .page-tour-next[aria-disabled="true"] {
+      color: GrayText;
+      border-color: GrayText;
+      opacity: 1;
+    }
   }
 }
 
