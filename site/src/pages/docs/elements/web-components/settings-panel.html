@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "settings-panel"
-description: "Compact settings panel with gear trigger, details accordion sections, and theme/accessibility/layout/effects controls."
+description: "Compact, non-modal site settings panel with a gear trigger and six accordion sections: appearance, accessibility, layout, effects, environment and system."
 elementName: settings-panel
 category: component
 currentPath: /docs/elements/web-components/settings-panel/
@@ -12,9 +12,9 @@ crumbLabel: Web Components
 
 <section>
   <h2>Overview</h2>
-  <p>A compact settings panel triggered by a gear icon. Uses native <code>&lt;details name="settings"&gt;</code> for exclusive accordion sections with theme selection, accessibility toggles, layout options, and effects controls.</p>
+  <p>A compact settings panel opened from a gear button. It is built from native <code>&lt;details&gt;</code> sections that share a per-instance <code>name</code>, so only one section is open at a time. The sections hold theme selection, accessibility toggles, layout options, effects, environment shifts and system information.</p>
 
-  <p>Runs in parallel with <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> &mdash; both share state through <code>ThemeManager</code> and localStorage events. Changes in one component are reflected in the other.</p>
+  <p>It runs alongside <a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a>. Both components read and write the same <code>ThemeManager</code> state and VBStore keys, and each listens for the other's window events, so a change made in one shows up in the other on the same page. Other tabs are not synced: there is no <code>storage</code> listener, so a second tab picks up changes when it reloads.</p>
 
   <browser-window
     src="/docs/examples/demos/settings-panel-basic.html"
@@ -43,7 +43,31 @@ crumbLabel: Web Components
         <td><code>open</code></td>
         <td>boolean</td>
         <td>&mdash;</td>
-        <td>Reflected attribute indicating the panel is open.</td>
+        <td>Reflected state, set by <code>open()</code>, <code>close()</code> and <code>toggle()</code>. Don't author it.</td>
+      </tr>
+      <tr>
+        <td><code>data-label-*</code></td>
+        <td>string</td>
+        <td>English</td>
+        <td>Overrides for every visible or announced string. See <a href="#labels">Labels</a>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Child attributes</h3>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>On</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-trigger</code></td>
+        <td><code>&lt;button&gt;</code></td>
+        <td>Marks your own trigger. Without one, the first child <code>&lt;button&gt;</code> is used, and if there is none, a gear button is generated. The runtime sets <code>aria-haspopup="dialog"</code>, <code>aria-expanded</code> and <code>aria-controls</code> on the trigger.</td>
       </tr>
     </tbody>
   </table>
@@ -51,37 +75,58 @@ crumbLabel: Web Components
 
 <section>
   <h2>Panel Sections</h2>
-  <p>The panel contains four collapsible <code>&lt;details&gt;</code> sections with exclusive accordion behavior (one open at a time).</p>
+  <p>The panel has six collapsible <code>&lt;details&gt;</code> sections. Only one is open at a time, and Appearance starts open.</p>
 
   <h3>Appearance</h3>
   <ul>
-    <li><strong>Color Mode</strong> &mdash; Segmented control: Auto / Light / Dark</li>
-    <li><strong>Theme</strong> &mdash; <code>&lt;select&gt;</code> with optgroups: Base (Default), Personality (Modern, Minimal, Classic), and Extreme (Swiss, Brutalist, Cyber, Terminal, Organic, Editorial, Kawaii, 8-Bit, NES, Win9x, Rough)</li>
-    <li><strong>Accent Color</strong> &mdash; Row of circular swatches, only visible when "Default" theme is selected. The 10 color themes (Ocean, Forest, Sunset, etc.) are hue variants of Default and are presented here instead of as separate top-level themes.</li>
+    <li><strong>Color Mode</strong> &mdash; segmented control: Auto, Light or Dark (<code>ThemeManager.setMode</code>).</li>
+    <li><strong>Theme</strong> &mdash; a <code>&lt;select&gt;</code> grouped with <code>&lt;optgroup&gt;</code> from the shared theme list (<code>ThemeManager.setBrand</code>). Active accessibility themes are re-applied on top of the new theme.</li>
   </ul>
 
   <h3>Accessibility</h3>
-  <p>Toggle switches (<code>input[data-switch="sm"]</code>) for:</p>
+  <p>Toggle switches (<code>input[data-switch="sm"]</code>) that add the theme to <code>&lt;html data-theme&gt;</code> after the brand theme:</p>
   <ul>
-    <li>High Contrast</li>
-    <li>Large Text</li>
-    <li>Dyslexia-Friendly</li>
+    <li>High Contrast (<code>a11y-high-contrast</code>)</li>
+    <li>Large Text (<code>a11y-large-text</code>)</li>
+    <li>Dyslexia-Friendly (<code>a11y-dyslexia</code>)</li>
   </ul>
 
   <h3>Layout</h3>
   <ul>
-    <li><strong>Fluid Scaling</strong> &mdash; Toggle switch (on/off). When off, static token values are used.</li>
-    <li><strong>Density</strong> &mdash; Segmented control (Compact / Default / Spacious), only visible when fluid scaling is enabled.</li>
+    <li><strong>Fluid Scaling</strong> &mdash; on or off. When it's off, static token values are used.</li>
+    <li><strong>Density</strong> &mdash; Compact, Default or Spacious. Shown only when fluid scaling is on.</li>
+    <li><strong>Canvas Backdrop</strong> &mdash; on or off. When it's on, these controls also appear:
+      <ul>
+        <li><strong>Style</strong> &mdash; Default, Flush or Elevated.</li>
+        <li><strong>Chrome</strong> &mdash; Card, Stretch or Integrated.</li>
+        <li><strong>Fixed Header</strong> &mdash; adds <code>fixed</code> to the backdrop chrome value.</li>
+        <li><strong>Page Background</strong> &mdash; Theme Default, Solid Color (one color input) or Gradient (start color, end color and a direction <code>&lt;select&gt;</code>).</li>
+      </ul>
+    </li>
+    <li><strong>Sticky Navigation</strong> &mdash; toggles <code>&lt;html data-sticky&gt;</code> and starts or stops the sticky manager. The panel touches only the root attribute. The sticky manager owns the banner header's <code>data-sticky</code>: it adds the attribute only when it's missing and removes only what it added. A header you wrote <code>data-sticky</code> on yourself is never changed.</li>
   </ul>
 
   <h3>Effects</h3>
-  <p>Toggle switches for:</p>
   <ul>
-    <li>Motion Effects (default: on)</li>
-    <li>Sound Effects (default: off)</li>
+    <li>Motion Effects (default on). Turning it off sets <code>&lt;html data-motion-reduced&gt;</code>.</li>
+    <li>Sound Effects (default off). The sound manager is loaded only when this is turned on.</li>
   </ul>
 
-  <p>A <strong>Reset to Defaults</strong> button in the footer clears all preferences.</p>
+  <h3>Environment</h3>
+  <ul>
+    <li>Time-of-Day Shifts</li>
+    <li>Seasonal Tinting</li>
+  </ul>
+  <p>Both toggles call <code>EnvironmentManager.setSource()</code>.</p>
+
+  <h3>System</h3>
+  <ul>
+    <li>The Vanilla Breeze version.</li>
+    <li>The service-worker status, in a <code>role="status"</code> line.</li>
+    <li><strong>Clear Cache</strong> and <strong>Check for Updates</strong> buttons. Their results are announced through a polite live region.</li>
+  </ul>
+
+  <p>The <strong>Reset to Defaults</strong> button in the footer asks for confirmation inside the panel, with <strong>Reset</strong> and <strong>Cancel</strong> buttons; there is no browser <code>confirm()</code>. Confirming resets ThemeManager, clears the accessibility, effects and sticky preferences, and turns off the environment sources. Sticky navigation goes back to the page's authored state. The reset is announced.</p>
 
   <browser-window
     src="/docs/examples/demos/settings-panel-panels.html"
@@ -94,7 +139,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Custom Trigger</h2>
-  <p>Provide your own trigger button as a child element with <code>data-trigger</code>. If no trigger is found, a gear icon is auto-generated.</p>
+  <p>Provide your own trigger button as a child element with <code>data-trigger</code>. If no trigger is found, a gear icon is generated.</p>
 
   <browser-window
     src="/docs/examples/demos/settings-panel-custom-trigger.html"
@@ -104,7 +149,7 @@ crumbLabel: Web Components
   </browser-window>
 
   <code-block language="html" show-lines label="Custom trigger button" data-escape><settings-panel>
-  <button data-trigger>
+  <button type="button" data-trigger>
     <icon-wc name="settings" label="Settings"></icon-wc>
     Settings
   </button>
@@ -113,7 +158,7 @@ crumbLabel: Web Components
 
 <section>
   <h2>Footer Integration</h2>
-  <p>The typical placement is inline with footer legal links. The panel opens <strong>upward</strong> from the trigger.</p>
+  <p>The usual place for the panel is next to the footer's legal links. The panel opens <strong>upward</strong> from the trigger, and downward when there isn't room above.</p>
 
   <browser-window
     src="/docs/examples/demos/settings-panel-footer.html"
@@ -124,12 +169,117 @@ crumbLabel: Web Components
   </browser-window>
 
   <code-block language="html" show-lines label="Footer placement" data-escape><footer>
-  <p class="footer-legal">
+  <site-legal>
     <span>&copy; 2026 Your Name</span>
     <a href="/about">About</a>
+  </site-legal>
+  <site-tools>
     <settings-panel></settings-panel>
-  </p>
+  </site-tools>
 </footer></code-block>
+</section>
+
+<section id="labels">
+  <h2>Labels</h2>
+  <p>Every string the panel renders or announces can be overridden with <code>data-label-&lt;key&gt;</code> on the element. Values are inserted as text, not as HTML. <code>{n}</code> in <code>data-label-sw-active</code> is replaced with the number of cached files. An authored trigger keeps its own accessible name; <code>data-label-trigger</code> applies only to the generated gear.</p>
+
+  <browser-window
+    src="/docs/examples/demos/settings-panel-labels.html"
+    url="https://vanilla-breeze.com/es/ajustes"
+    title="Translated labels"
+    style="min-height: 32rem;"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Spanish labels (excerpt)" data-escape><settings-panel lang="es"
+  data-label-trigger="Ajustes del sitio"
+  data-label-dialog="Ajustes del sitio"
+  data-label-title="Ajustes"
+  data-label-close="Cerrar ajustes"
+  data-label-appearance="Apariencia"
+  data-label-reset="Restablecer"
+  data-label-reset-confirm="¿Restablecer todos los ajustes?"
+  data-label-reset-yes="Restablecer"
+  data-label-reset-cancel="Cancelar"></settings-panel></code-block>
+
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-label-trigger</code></td><td>Site settings</td></tr>
+      <tr><td><code>data-label-dialog</code></td><td>Site settings</td></tr>
+      <tr><td><code>data-label-title</code></td><td>Settings</td></tr>
+      <tr><td><code>data-label-close</code></td><td>Close settings</td></tr>
+      <tr><td><code>data-label-appearance</code></td><td>Appearance</td></tr>
+      <tr><td><code>data-label-color-mode</code></td><td>Color mode</td></tr>
+      <tr><td><code>data-label-mode-auto</code></td><td>Auto</td></tr>
+      <tr><td><code>data-label-mode-light</code></td><td>Light</td></tr>
+      <tr><td><code>data-label-mode-dark</code></td><td>Dark</td></tr>
+      <tr><td><code>data-label-theme</code></td><td>Theme</td></tr>
+      <tr><td><code>data-label-accessibility</code></td><td>Accessibility</td></tr>
+      <tr><td><code>data-label-high-contrast</code></td><td>High Contrast</td></tr>
+      <tr><td><code>data-label-large-text</code></td><td>Large Text</td></tr>
+      <tr><td><code>data-label-dyslexia</code></td><td>Dyslexia-Friendly</td></tr>
+      <tr><td><code>data-label-layout</code></td><td>Layout</td></tr>
+      <tr><td><code>data-label-fluid</code></td><td>Fluid Scaling</td></tr>
+      <tr><td><code>data-label-density</code></td><td>Density</td></tr>
+      <tr><td><code>data-label-density-compact</code></td><td>Compact</td></tr>
+      <tr><td><code>data-label-density-default</code></td><td>Default</td></tr>
+      <tr><td><code>data-label-density-spacious</code></td><td>Spacious</td></tr>
+      <tr><td><code>data-label-backdrop</code></td><td>Canvas Backdrop</td></tr>
+      <tr><td><code>data-label-backdrop-style</code></td><td>Style</td></tr>
+      <tr><td><code>data-label-backdrop-default</code></td><td>Default</td></tr>
+      <tr><td><code>data-label-backdrop-flush</code></td><td>Flush</td></tr>
+      <tr><td><code>data-label-backdrop-elevated</code></td><td>Elevated</td></tr>
+      <tr><td><code>data-label-chrome</code></td><td>Chrome</td></tr>
+      <tr><td><code>data-label-chrome-card</code></td><td>Card</td></tr>
+      <tr><td><code>data-label-chrome-stretch</code></td><td>Stretch</td></tr>
+      <tr><td><code>data-label-chrome-integrated</code></td><td>Integrated</td></tr>
+      <tr><td><code>data-label-fixed-header</code></td><td>Fixed Header</td></tr>
+      <tr><td><code>data-label-page-bg</code></td><td>Page Background</td></tr>
+      <tr><td><code>data-label-page-bg-default</code></td><td>Theme Default</td></tr>
+      <tr><td><code>data-label-page-bg-color</code></td><td>Solid Color</td></tr>
+      <tr><td><code>data-label-page-bg-gradient</code></td><td>Gradient</td></tr>
+      <tr><td><code>data-label-bg-color</code></td><td>Color</td></tr>
+      <tr><td><code>data-label-grad-start</code></td><td>Start</td></tr>
+      <tr><td><code>data-label-grad-end</code></td><td>End</td></tr>
+      <tr><td><code>data-label-grad-direction</code></td><td>Direction</td></tr>
+      <tr><td><code>data-label-dir-to-bottom</code></td><td>Top → Bottom</td></tr>
+      <tr><td><code>data-label-dir-to-right</code></td><td>Left → Right</td></tr>
+      <tr><td><code>data-label-dir-135deg</code></td><td>Diagonal ↘</td></tr>
+      <tr><td><code>data-label-dir-45deg</code></td><td>Diagonal ↗</td></tr>
+      <tr><td><code>data-label-sticky</code></td><td>Sticky Navigation</td></tr>
+      <tr><td><code>data-label-effects</code></td><td>Effects</td></tr>
+      <tr><td><code>data-label-motion</code></td><td>Motion Effects</td></tr>
+      <tr><td><code>data-label-sounds</code></td><td>Sound Effects</td></tr>
+      <tr><td><code>data-label-environment</code></td><td>Environment</td></tr>
+      <tr><td><code>data-label-time-of-day</code></td><td>Time-of-Day Shifts</td></tr>
+      <tr><td><code>data-label-seasonal</code></td><td>Seasonal Tinting</td></tr>
+      <tr><td><code>data-label-system</code></td><td>System</td></tr>
+      <tr><td><code>data-label-sw-label</code></td><td>Service Worker:</td></tr>
+      <tr><td><code>data-label-sw-checking</code></td><td>checking…</td></tr>
+      <tr><td><code>data-label-sw-unsupported</code></td><td>Not supported</td></tr>
+      <tr><td><code>data-label-sw-active</code></td><td>Active ({n} cached files)</td></tr>
+      <tr><td><code>data-label-sw-unregistered</code></td><td>Not registered</td></tr>
+      <tr><td><code>data-label-clear-cache</code></td><td>Clear Cache</td></tr>
+      <tr><td><code>data-label-clearing</code></td><td>Clearing…</td></tr>
+      <tr><td><code>data-label-cleared</code></td><td>Cache cleared</td></tr>
+      <tr><td><code>data-label-check-update</code></td><td>Check for Updates</td></tr>
+      <tr><td><code>data-label-checking</code></td><td>Checking…</td></tr>
+      <tr><td><code>data-label-update-available</code></td><td>Update available</td></tr>
+      <tr><td><code>data-label-up-to-date</code></td><td>Up to date</td></tr>
+      <tr><td><code>data-label-failed</code></td><td>Failed</td></tr>
+      <tr><td><code>data-label-reset</code></td><td>Reset to Defaults</td></tr>
+      <tr><td><code>data-label-reset-confirm</code></td><td>Reset all settings to defaults?</td></tr>
+      <tr><td><code>data-label-reset-yes</code></td><td>Reset</td></tr>
+      <tr><td><code>data-label-reset-cancel</code></td><td>Cancel</td></tr>
+      <tr><td><code>data-label-reset-done</code></td><td>Settings reset to defaults</td></tr>
+    </tbody>
+  </table>
 </section>
 
 <section>
@@ -137,67 +287,115 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead>
       <tr>
-        <th>Method</th>
-        <th>Returns</th>
+        <th>Member</th>
+        <th>Type</th>
         <th>Description</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td><code>open()</code></td>
-        <td><code>void</code></td>
-        <td>Open the settings panel.</td>
+        <td>method</td>
+        <td>Opens the panel and moves focus into it. If the element hasn't rendered yet (it isn't connected), the call is queued until it renders.</td>
       </tr>
       <tr>
-        <td><code>close()</code></td>
-        <td><code>void</code></td>
-        <td>Close the settings panel.</td>
+        <td><code>close({ returnFocus })</code></td>
+        <td>method</td>
+        <td>Closes the panel. Pass <code>returnFocus: true</code> to focus the trigger, as Escape and the close button do.</td>
       </tr>
       <tr>
         <td><code>toggle()</code></td>
-        <td><code>void</code></td>
-        <td>Toggle the panel open/closed.</td>
+        <td>method</td>
+        <td>Opens the panel if it's closed and closes it if it's open.</td>
+      </tr>
+      <tr>
+        <td><code>data</code></td>
+        <td>property</td>
+        <td><code>{ a11yThemes, extensions: { motionFx, sounds }, sticky }</code>. Setting it applies each field you provide to the page straight away, writes it to VBStore and updates the controls. It works before the panel renders.</td>
       </tr>
     </tbody>
   </table>
 
   <code-block language="javascript" show-lines label="Programmatic control" data-escape>const settings = document.querySelector('settings-panel');
 
-// Open/close programmatically
 settings.open();
-settings.close();
-settings.toggle();</code-block>
-</section>
+settings.close({ returnFocus: true });
 
-<section>
-  <h2>State Sharing</h2>
-  <p>Both <code>&lt;settings-panel&gt;</code> and <code>&lt;theme-picker&gt;</code> share state through three channels:</p>
+// Apply and persist preferences in one assignment
+settings.data = { a11yThemes: ['a11y-large-text'], sticky: true };
+settings.addEventListener('settings-panel:data-changed', (e) => {
+  console.log(e.detail.data); // { a11yThemes, extensions, sticky }
+});</code-block>
+
+  <h3>Events</h3>
   <table class="props-table">
     <thead>
       <tr>
-        <th>Channel</th>
-        <th>Storage Key</th>
-        <th>Window Event</th>
+        <th>Event</th>
+        <th>Target</th>
+        <th>Detail</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>Theme (mode, brand, fluid)</td>
-        <td><code>vb-theme</code></td>
-        <td><code>vb:theme-change</code></td>
+        <td><code>settings-panel:upgraded</code></td>
+        <td>host</td>
+        <td>&mdash;</td>
       </tr>
       <tr>
-        <td>Extensions (motion, sound)</td>
-        <td><code>vb-extensions</code></td>
-        <td><code>vb:extensions-change</code></td>
+        <td><code>settings-panel:data-changed</code></td>
+        <td>host</td>
+        <td><code>{ data, source: 'property' }</code>, fired after the <code>data</code> setter's writes finish</td>
       </tr>
       <tr>
-        <td>Accessibility themes</td>
-        <td><code>vb-a11y-themes</code></td>
         <td><code>vb:a11y-themes-change</code></td>
+        <td><code>window</code></td>
+        <td><code>string[]</code> of active accessibility themes</td>
+      </tr>
+      <tr>
+        <td><code>vb:extensions-change</code></td>
+        <td><code>window</code></td>
+        <td><code>{ motionFx, sounds }</code></td>
       </tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>State Sharing</h2>
+  <p><code>&lt;settings-panel&gt;</code> and <code>&lt;theme-picker&gt;</code> share state through these channels. When a window event arrives, the panel applies the event's <code>detail</code> before it updates its controls. That way it never shows stale values, and it never writes stale values back.</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Channel</th>
+        <th>localStorage key</th>
+        <th>Window event</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Theme (mode, brand, fluid, backdrop, page background)</td>
+        <td><code>vb:theme:current</code> (ThemeManager)</td>
+        <td><code>vb:theme-change</code></td>
+      </tr>
+      <tr>
+        <td>Accessibility themes</td>
+        <td><code>vb:settings:a11y</code></td>
+        <td><code>vb:a11y-themes-change</code></td>
+      </tr>
+      <tr>
+        <td>Effects (motion, sound)</td>
+        <td><code>vb:settings:extensions</code></td>
+        <td><code>vb:extensions-change</code></td>
+      </tr>
+      <tr>
+        <td>Sticky navigation</td>
+        <td><code>vb:settings:sticky</code> (<code>"on"</code> / <code>"off"</code>)</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>The VBStore values are wrapped in a <code>{ data, timestamp }</code> envelope. The site's head script restores a stored sticky <code>"on"</code> before first paint.</p>
 </section>
 
 <section>
@@ -211,16 +409,16 @@ settings.toggle();</code-block>
     </thead>
     <tbody>
       <tr>
+        <td><kbd>Enter</kbd> / <kbd>Space</kbd> on the trigger</td>
+        <td>Open the panel and move focus into it</td>
+      </tr>
+      <tr>
+        <td><kbd>Tab</kbd> / <kbd>Shift+Tab</kbd></td>
+        <td>Move through the controls. Tabbing out of the panel closes it.</td>
+      </tr>
+      <tr>
         <td><kbd>Escape</kbd></td>
-        <td>Close panel, return focus to trigger</td>
-      </tr>
-      <tr>
-        <td><kbd>Tab</kbd></td>
-        <td>Navigate through controls within the panel</td>
-      </tr>
-      <tr>
-        <td><kbd>Space</kbd> / <kbd>Enter</kbd></td>
-        <td>Toggle trigger, activate controls</td>
+        <td>Close the panel and return focus to the trigger</td>
       </tr>
     </tbody>
   </table>
@@ -229,12 +427,12 @@ settings.toggle();</code-block>
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li>Panel uses <code>role="dialog"</code> with <code>aria-label="Site settings"</code>.</li>
-    <li>Trigger has <code>aria-haspopup="dialog"</code> and <code>aria-expanded</code> reflecting state.</li>
-    <li>Color mode uses a radio group with <code>role="radiogroup"</code>.</li>
-    <li>Accent swatches use a radio group with descriptive <code>title</code> on each swatch.</li>
-    <li>Toggle switches use native <code>&lt;input type="checkbox" data-switch="sm"&gt;</code>.</li>
-    <li>Focus trap: <kbd>Escape</kbd> closes panel and returns focus to trigger.</li>
+    <li>The panel is a non-modal <code>role="dialog"</code>, named by <code>data-label-dialog</code> (default "Site settings"). When it opens, focus moves to the panel. It does <strong>not</strong> trap focus: tabbing out, clicking outside or pressing <kbd>Escape</kbd> closes it.</li>
+    <li>The trigger has <code>aria-haspopup="dialog"</code>, <code>aria-controls</code> and an <code>aria-expanded</code> that tracks the open state, including across a remove and reinsert.</li>
+    <li>Color mode, density, backdrop style and chrome are radio groups inside <code>&lt;fieldset&gt;</code> elements with visually hidden <code>&lt;legend&gt;</code>s. Their radio <code>name</code>s and the control <code>id</code>s carry a per-instance suffix, so two panels on one page don't share groups or labels.</li>
+    <li>Toggle switches are native <code>&lt;input type="checkbox" data-switch="sm"&gt;</code> elements inside their <code>&lt;label&gt;</code>.</li>
+    <li>The service-worker status line is <code>role="status"</code>. Clear Cache, Check for Updates and Reset results are announced through a visually hidden live region.</li>
+    <li>Reset asks for confirmation inside the panel and moves focus to <strong>Cancel</strong>.</li>
   </ul>
 </section>
 
@@ -242,6 +440,8 @@ settings.toggle();</code-block>
   <h2>Related</h2>
   <ul>
     <li><a href="/docs/elements/web-components/theme-picker/"><code>&lt;theme-picker&gt;</code></a> &mdash; Full theme picker with swatch grid (runs in parallel)</li>
+    <li><a href="/docs/elements/custom-elements/site-tools/"><code>&lt;site-tools&gt;</code></a> &mdash; Container for site-wide tools</li>
+    <li><a href="/docs/attributes/data-sticky/"><code>data-sticky</code></a> &mdash; Sticky header system</li>
     <li><a href="/docs/themes/">Themes</a> &mdash; Available theme documentation</li>
   </ul>
 </section>

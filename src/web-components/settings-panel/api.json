@@ -2,40 +2,614 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "settings-panel",
   "type": "web-component",
-  "description": "Compact settings panel",
+  "description": "Compact, non-modal site settings panel (Appearance, Accessibility, Layout, Effects, Environment, System) opened from a gear trigger; shares state with theme-picker through ThemeManager, VBStore and window events",
   "attributes": [
     {
       "name": "open",
       "kind": "native",
-      "purpose": "config",
+      "purpose": "semantic-state",
+      "direction": "output",
       "type": "boolean",
-      "description": "Reflected state only \u2014 set by open()/close()/toggle() methods, not intended as initial markup"
+      "description": "Reflected state only — set by open()/close()/toggle(), not intended as initial markup"
     },
+    {
+      "name": "data-label-trigger",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Site settings",
+      "description": "Accessible name of the minted gear trigger (an authored trigger keeps its own name)."
+    },
+    {
+      "name": "data-label-dialog",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Site settings",
+      "description": "Panel dialog accessible name."
+    },
+    {
+      "name": "data-label-title",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Settings",
+      "description": "Panel heading text."
+    },
+    {
+      "name": "data-label-close",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Close settings",
+      "description": "Close button accessible name."
+    },
+    {
+      "name": "data-label-appearance",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Appearance",
+      "description": "Text for the \"Appearance\" string."
+    },
+    {
+      "name": "data-label-color-mode",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Color mode",
+      "description": "Text for the \"Color mode\" string."
+    },
+    {
+      "name": "data-label-mode-auto",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Auto",
+      "description": "Text for the \"Auto\" string."
+    },
+    {
+      "name": "data-label-mode-light",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Light",
+      "description": "Text for the \"Light\" string."
+    },
+    {
+      "name": "data-label-mode-dark",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Dark",
+      "description": "Text for the \"Dark\" string."
+    },
+    {
+      "name": "data-label-theme",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Theme",
+      "description": "Text for the \"Theme\" string."
+    },
+    {
+      "name": "data-label-accessibility",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Accessibility",
+      "description": "Text for the \"Accessibility\" string."
+    },
+    {
+      "name": "data-label-high-contrast",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "High Contrast",
+      "description": "Text for the \"High Contrast\" string."
+    },
+    {
+      "name": "data-label-large-text",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Large Text",
+      "description": "Text for the \"Large Text\" string."
+    },
+    {
+      "name": "data-label-dyslexia",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Dyslexia-Friendly",
+      "description": "Text for the \"Dyslexia-Friendly\" string."
+    },
+    {
+      "name": "data-label-layout",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Layout",
+      "description": "Text for the \"Layout\" string."
+    },
+    {
+      "name": "data-label-fluid",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Fluid Scaling",
+      "description": "Text for the \"Fluid Scaling\" string."
+    },
+    {
+      "name": "data-label-density",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Density",
+      "description": "Text for the \"Density\" string."
+    },
+    {
+      "name": "data-label-density-compact",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Compact",
+      "description": "Text for the \"Compact\" string."
+    },
+    {
+      "name": "data-label-density-default",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Default",
+      "description": "Text for the \"Default\" string."
+    },
+    {
+      "name": "data-label-density-spacious",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Spacious",
+      "description": "Text for the \"Spacious\" string."
+    },
+    {
+      "name": "data-label-backdrop",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Canvas Backdrop",
+      "description": "Text for the \"Canvas Backdrop\" string."
+    },
+    {
+      "name": "data-label-backdrop-style",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Style",
+      "description": "Text for the \"Style\" string."
+    },
+    {
+      "name": "data-label-backdrop-default",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Default",
+      "description": "Text for the \"Default\" string."
+    },
+    {
+      "name": "data-label-backdrop-flush",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Flush",
+      "description": "Text for the \"Flush\" string."
+    },
+    {
+      "name": "data-label-backdrop-elevated",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Elevated",
+      "description": "Text for the \"Elevated\" string."
+    },
+    {
+      "name": "data-label-chrome",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Chrome",
+      "description": "Text for the \"Chrome\" string."
+    },
+    {
+      "name": "data-label-chrome-card",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Card",
+      "description": "Text for the \"Card\" string."
+    },
+    {
+      "name": "data-label-chrome-stretch",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Stretch",
+      "description": "Text for the \"Stretch\" string."
+    },
+    {
+      "name": "data-label-chrome-integrated",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Integrated",
+      "description": "Text for the \"Integrated\" string."
+    },
+    {
+      "name": "data-label-fixed-header",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Fixed Header",
+      "description": "Text for the \"Fixed Header\" string."
+    },
+    {
+      "name": "data-label-page-bg",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Page Background",
+      "description": "Text for the \"Page Background\" string."
+    },
+    {
+      "name": "data-label-page-bg-default",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Theme Default",
+      "description": "Text for the \"Theme Default\" string."
+    },
+    {
+      "name": "data-label-page-bg-color",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Solid Color",
+      "description": "Text for the \"Solid Color\" string."
+    },
+    {
+      "name": "data-label-page-bg-gradient",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Gradient",
+      "description": "Text for the \"Gradient\" string."
+    },
+    {
+      "name": "data-label-bg-color",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Color",
+      "description": "Text for the \"Color\" string."
+    },
+    {
+      "name": "data-label-grad-start",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Start",
+      "description": "Text for the \"Start\" string."
+    },
+    {
+      "name": "data-label-grad-end",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "End",
+      "description": "Text for the \"End\" string."
+    },
+    {
+      "name": "data-label-grad-direction",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Direction",
+      "description": "Text for the \"Direction\" string."
+    },
+    {
+      "name": "data-label-dir-to-bottom",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Top → Bottom",
+      "description": "Text for the \"Top → Bottom\" string."
+    },
+    {
+      "name": "data-label-dir-to-right",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Left → Right",
+      "description": "Text for the \"Left → Right\" string."
+    },
+    {
+      "name": "data-label-dir-135deg",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Diagonal ↘",
+      "description": "Text for the \"Diagonal ↘\" string."
+    },
+    {
+      "name": "data-label-dir-45deg",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Diagonal ↗",
+      "description": "Text for the \"Diagonal ↗\" string."
+    },
+    {
+      "name": "data-label-sticky",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Sticky Navigation",
+      "description": "Text for the \"Sticky Navigation\" string."
+    },
+    {
+      "name": "data-label-effects",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Effects",
+      "description": "Text for the \"Effects\" string."
+    },
+    {
+      "name": "data-label-motion",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Motion Effects",
+      "description": "Text for the \"Motion Effects\" string."
+    },
+    {
+      "name": "data-label-sounds",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Sound Effects",
+      "description": "Text for the \"Sound Effects\" string."
+    },
+    {
+      "name": "data-label-environment",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Environment",
+      "description": "Text for the \"Environment\" string."
+    },
+    {
+      "name": "data-label-time-of-day",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Time-of-Day Shifts",
+      "description": "Text for the \"Time-of-Day Shifts\" string."
+    },
+    {
+      "name": "data-label-seasonal",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Seasonal Tinting",
+      "description": "Text for the \"Seasonal Tinting\" string."
+    },
+    {
+      "name": "data-label-system",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "System",
+      "description": "Text for the \"System\" string."
+    },
+    {
+      "name": "data-label-sw-label",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Service Worker:",
+      "description": "Text for the \"Service Worker:\" string."
+    },
+    {
+      "name": "data-label-sw-checking",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "checking…",
+      "description": "Text for the \"checking…\" string."
+    },
+    {
+      "name": "data-label-sw-unsupported",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Not supported",
+      "description": "Text for the \"Not supported\" string."
+    },
+    {
+      "name": "data-label-sw-active",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Active ({n} cached files)",
+      "description": "Service-worker status ({n} = cached file count)."
+    },
+    {
+      "name": "data-label-sw-unregistered",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Not registered",
+      "description": "Text for the \"Not registered\" string."
+    },
+    {
+      "name": "data-label-clear-cache",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Clear Cache",
+      "description": "Text for the \"Clear Cache\" string."
+    },
+    {
+      "name": "data-label-clearing",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Clearing…",
+      "description": "Text for the \"Clearing…\" string."
+    },
+    {
+      "name": "data-label-cleared",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Cache cleared",
+      "description": "Text for the \"Cache cleared\" string."
+    },
+    {
+      "name": "data-label-check-update",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Check for Updates",
+      "description": "Text for the \"Check for Updates\" string."
+    },
+    {
+      "name": "data-label-checking",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Checking…",
+      "description": "Text for the \"Checking…\" string."
+    },
+    {
+      "name": "data-label-update-available",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Update available",
+      "description": "Text for the \"Update available\" string."
+    },
+    {
+      "name": "data-label-up-to-date",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Up to date",
+      "description": "Text for the \"Up to date\" string."
+    },
+    {
+      "name": "data-label-failed",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Failed",
+      "description": "Text for the \"Failed\" string."
+    },
+    {
+      "name": "data-label-reset",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Reset to Defaults",
+      "description": "Text for the \"Reset to Defaults\" string."
+    },
+    {
+      "name": "data-label-reset-confirm",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Reset all settings to defaults?",
+      "description": "In-panel reset confirmation question."
+    },
+    {
+      "name": "data-label-reset-yes",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Reset",
+      "description": "Text for the \"Reset\" string."
+    },
+    {
+      "name": "data-label-reset-cancel",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Cancel",
+      "description": "Text for the \"Cancel\" string."
+    },
+    {
+      "name": "data-label-reset-done",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Settings reset to defaults",
+      "description": "Live announcement after a reset."
+    }
+  ],
+  "childAttributes": [
     {
       "name": "data-trigger",
-      "kind": "data",
-      "purpose": "config"
+      "on": "button",
+      "type": "boolean",
+      "description": "Marks an authored trigger button (else the first child <button>, else a minted gear button). The runtime sets aria-haspopup, aria-expanded and aria-controls on it."
+    }
+  ],
+  "properties": [
+    {
+      "name": "data",
+      "type": "{ a11yThemes: string[], extensions: { motionFx: boolean, sounds: boolean }, sticky: boolean }",
+      "description": "Settings snapshot. The setter applies each provided field to the page at once (a11y themes on <html data-theme>, extensions, <html data-sticky>), writes it through to VBStore (vb:settings:a11y / extensions / sticky), updates the controls, and fires settings-panel:data-changed when the writes finish. Safe before the panel renders."
+    }
+  ],
+  "methods": [
+    {
+      "name": "open",
+      "returns": "void",
+      "description": "Open the panel and move focus into it. Queued if called before the element has rendered."
     },
     {
-      "name": "aria-haspopup",
-      "kind": "aria",
-      "purpose": "config"
+      "name": "close",
+      "returns": "void",
+      "description": "Close the panel. close({ returnFocus: true }) also focuses the trigger (what Escape and the close button do)."
     },
     {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
+      "name": "toggle",
+      "returns": "void",
+      "description": "Toggle the panel open/closed."
     }
   ],
   "events": [
     {
-      "name": "vb:a11y-themes-change"
+      "name": "settings-panel:upgraded",
+      "description": "Fired on the host (bubbles) once the element has upgraded and rendered."
     },
     {
-      "name": "vb:extensions-change"
+      "name": "settings-panel:data-changed",
+      "detail": "{ data, source: 'property' }",
+      "description": "Fired on the host (bubbles) after a data setter's VBStore writes finish."
+    },
+    {
+      "name": "vb:a11y-themes-change",
+      "detail": "string[]",
+      "description": "Dispatched on window (not the host) when the accessibility themes change; also listened for, so other components can push changes in."
+    },
+    {
+      "name": "vb:extensions-change",
+      "detail": "{ motionFx, sounds }",
+      "description": "Dispatched on window (not the host) when the effects preferences change; also listened for (theme-picker dispatches it too)."
     }
   ],
-  "childAttributes": [],
   "structure": [],
   "htmlvalidate": {
     "flow": true,

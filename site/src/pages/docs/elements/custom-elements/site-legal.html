@@ -19,6 +19,13 @@ crumbLabel: Custom Elements
 <section>
     <h2>Basic Usage</h2>
 
+    <browser-window
+      src="/docs/snippets/demos/site-legal-basic.html"
+      url="https://vanilla-breeze.com/site-legal"
+      title="Site legal"
+      shadow>
+    </browser-window>
+
 <code-block language="html" label="Copyright and license">
 <site-legal>
   <span>&copy; 2026 Acme Inc</span>
@@ -63,8 +70,41 @@ crumbLabel: Custom Elements
 </section>
 
 <section>
+    <h2>List Form</h2>
+    <p>Wrap the items in a single <code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code> to give them list semantics, so screen readers announce an item count. The separators then go between the <code>&lt;li&gt;</code>s. The list's bullets are removed. VoiceOver in Safari stops announcing lists that have no markers, so if the count matters there, add <code>role="list"</code> to the list.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/site-legal-list.html"
+      url="https://vanilla-breeze.com/site-legal/list"
+      title="Site legal list form and wrapping"
+      shadow>
+    </browser-window>
+
+<code-block language="html" label="List form">
+<site-legal>
+  <ul>
+    <li>&copy; 2026 Acme Inc</li>
+    <li><a href="/privacy">Privacy Policy</a></li>
+    <li><a href="/terms">Terms of Service</a></li>
+  </ul>
+</site-legal>
+</code-block>
+</section>
+
+<section>
+    <h2>Alignment and Wrapping</h2>
+    <p>Items are centered by default. Set <code>data-justify</code> to <code>start</code>, <code>center</code>, <code>end</code> or <code>between</code>, or set the <code>--site-legal-justify</code> token to any <code>justify-content</code> value.</p>
+    <p>Each separator sits in the gap before its item, and the element clips anything that hangs past its inline-start edge. So when a long row wraps and the new row starts at that edge (<code>start</code> or <code>between</code>), the new row doesn't begin with a stray dot. Centered or end-aligned rows don't start at the edge, so a wrapped row there keeps its leading dot. Use <code>data-justify="start"</code> for legal rows that wrap often.</p>
+</section>
+
+<section>
+    <h2>Copyright Year</h2>
+    <p>The year is authored text: <code>&lt;site-legal&gt;</code> has no script and doesn't update it. Write it as <code>&lt;time datetime="2026"&gt;2026&lt;/time&gt;</code>, or have your build or template fill it in (for example, from a build-time year variable).</p>
+</section>
+
+<section>
     <h2>Separator Customization</h2>
-    <p>The dot separator uses the <code>--sep-list</code> token. Override it to change the separator character.</p>
+    <p>The dot separator uses the <code>--sep-list</code> token. Override it to change the separator character. The separator is decorative: its alternative text is empty, it sits outside each link's box, and it is never underlined or clickable.</p>
 
 <code-block language="html" label="Pipe separator">
 <site-legal style="--sep-list: '|'">
@@ -77,7 +117,12 @@ crumbLabel: Custom Elements
 
 <section>
     <h2>Accessibility</h2>
-    <p>No special ARIA requirements. The element is a generic container. Links within it follow standard anchor accessibility patterns.</p>
+    <ul>
+        <li>Links are always underlined, not just on hover. This keeps them distinguishable from the plain-text items without relying on color (WCAG 1.4.1). On hover and keyboard focus, the underline thickens and the link takes the full text color.</li>
+        <li>Separators use CSS generated content with empty alternative text (<code>content: "·" / ""</code>). They aren't part of any link's accessible name or click target.</li>
+        <li>Muted text uses <code>--color-text-muted</code>, which meets AA contrast for small text.</li>
+        <li>Use the list form if the number of items matters to screen-reader users.</li>
+    </ul>
 </section>
 
 <section>

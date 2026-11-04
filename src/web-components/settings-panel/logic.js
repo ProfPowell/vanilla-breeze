@@ -2,16 +2,23 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 
 /**
- * settings-panel: Compact settings panel
+ * settings-panel: Compact site settings panel
  *
- * A gear-button-triggered settings panel using <details> accordion sections,
- * <select> dropdowns, and toggle switches. Runs in parallel with theme-picker
- * and shares state through ThemeManager, VBStore, and custom events.
+ * A gear-button-triggered, non-modal settings dialog built from <details>
+ * accordion sections (Appearance, Accessibility, Layout, Effects,
+ * Environment, System), <select> dropdowns and toggle switches. Runs in
+ * parallel with theme-picker and shares state through ThemeManager, VBStore
+ * and window events.
+ *
+ * Focus: open() moves focus into the panel; Escape and the close button
+ * close it and return focus to the trigger; tabbing out of the panel closes
+ * it. There is no focus trap (the dialog is non-modal).
  *
  * @example Footer integration (auto-generates gear trigger)
  * <settings-panel></settings-panel>
  *
  * @attr {boolean} open - Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup
+ * @attr {string} data-label-* - English string overrides, see LABELS
  *
  * @example With custom trigger
  * <settings-panel>
@@ -30,27 +37,137 @@ let _SoundManager = null;
 const SETTINGS_NS = 'settings';
 const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
 
+/** Was <html data-sticky> present when this module loaded (authored or restored by the head script)? */
+const ROOT_STICKY_AT_LOAD = document.documentElement.hasAttribute('data-sticky');
+/** The authored (pre-preference) sticky state, resolved on first hydrate; Reset restores it. */
+let authoredSticky = /** @type {boolean | null} */ (null);
+
+/** Default English strings; each is overridable with data-label-<key> on the host. */
+const LABELS = {
+  trigger: 'Site settings',
+  dialog: 'Site settings',
+  title: 'Settings',
+  close: 'Close settings',
+  appearance: 'Appearance',
+  'color-mode': 'Color mode',
+  'mode-auto': 'Auto',
+  'mode-light': 'Light',
+  'mode-dark': 'Dark',
+  theme: 'Theme',
+  accessibility: 'Accessibility',
+  'high-contrast': 'High Contrast',
+  'large-text': 'Large Text',
+  dyslexia: 'Dyslexia-Friendly',
+  layout: 'Layout',
+  fluid: 'Fluid Scaling',
+  density: 'Density',
+  'density-compact': 'Compact',
+  'density-default': 'Default',
+  'density-spacious': 'Spacious',
+  backdrop: 'Canvas Backdrop',
+  'backdrop-style': 'Style',
+  'backdrop-default': 'Default',
+  'backdrop-flush': 'Flush',
+  'backdrop-elevated': 'Elevated',
+  chrome: 'Chrome',
+  'chrome-card': 'Card',
+  'chrome-stretch': 'Stretch',
+  'chrome-integrated': 'Integrated',
+  'fixed-header': 'Fixed Header',
+  'page-bg': 'Page Background',
+  'page-bg-default': 'Theme Default',
+  'page-bg-color': 'Solid Color',
+  'page-bg-gradient': 'Gradient',
+  'bg-color': 'Color',
+  'grad-start': 'Start',
+  'grad-end': 'End',
+  'grad-direction': 'Direction',
+  'dir-to-bottom': 'Top → Bottom',
+  'dir-to-right': 'Left → Right',
+  'dir-135deg': 'Diagonal ↘',
+  'dir-45deg': 'Diagonal ↗',
+  sticky: 'Sticky Navigation',
+  effects: 'Effects',
+  motion: 'Motion Effects',
+  sounds: 'Sound Effects',
+  environment: 'Environment',
+  'time-of-day': 'Time-of-Day Shifts',
+  seasonal: 'Seasonal Tinting',
+  system: 'System',
+  'sw-label': 'Service Worker:',
+  'sw-checking': 'checking…',
+  'sw-unsupported': 'Not supported',
+  'sw-active': 'Active ({n} cached files)',
+  'sw-unregistered': 'Not registered',
+  'clear-cache': 'Clear Cache',
+  clearing: 'Clearing…',
+  cleared: 'Cache cleared',
+  'check-update': 'Check for Updates',
+  checking: 'Checking…',
+  'update-available': 'Update available',
+  'up-to-date': 'Up to date',
+  failed: 'Failed',
+  reset: 'Reset to Defaults',
+  'reset-confirm': 'Reset all settings to defaults?',
+  'reset-yes': 'Reset',
+  'reset-cancel': 'Cancel',
+  'reset-done': 'Settings reset to defaults',
+};
+
+const GEAR_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`;
+
+/** @param {unknown} str */
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+/** Apply the sticky-navigation preference: the panel owns only <html data-sticky>; sticky-manager owns the banner header. */
+async function applySticky(on) {
+  const root = document.documentElement;
+  if (on) root.dataset.sticky = '';
+  else delete root.dataset.sticky;
+  try {
+    const mod = await import('../../lib/sticky-manager.js');
+    if (on) mod.initStickyManager();
+    else mod.destroyStickyManager();
+  } catch { /* sticky manager unavailable: the root attribute still applies */ }
+}
+
 class SettingsPanel extends VBElement {
   /** @type {HTMLElement} */
   #trigger = /** @type {*} */ (null);
   /** @type {HTMLDivElement} */
   #panel = /** @type {*} */ (null);
   #isOpen = false;
+  /** open() called before the panel rendered (e.g. before connect) */
+  #openQueued = false;
+  /** Setup generation: bumped by setup() and teardown() so stale async work bails. */
+  #gen = 0;
+  #uid = '';
+  /** Fields written by the data setter whose VBStore writes are still in flight (hydrate must not clobber them). */
+  #dirty = new Set();
+  /** @type {ReturnType<typeof setTimeout>[]} */
+  #timers = [];
 
   // VBStore-backed state cached for synchronous render reads
   /** @type {string[]} */
   #a11yThemes = [];
   /** @type {{ motionFx: boolean, sounds: boolean }} */
   #extensions = { ...EXTENSION_DEFAULTS };
-  #stickyOn = false;
+  #stickyOn = document.documentElement.hasAttribute('data-sticky');
 
   setup() {
-    this.#initAsync();
-    return true;
-  }
+    const gen = ++this.#gen;
+    this.#uid ||= crypto.randomUUID().slice(0, 8);
 
-  async #initAsync() {
-    await this.#hydrateFromStore();
+    // Render synchronously from the cached state so the trigger, panel and
+    // every listener exist as soon as the element upgrades; the VBStore
+    // values are hydrated afterwards and re-synced into the controls.
     this.#render();
     this.#bindEvents();
     this.#syncState();
@@ -58,21 +175,60 @@ class SettingsPanel extends VBElement {
     this.listen(window, 'vb:theme-change', this.#handleExternalChange);
     this.listen(window, 'vb:extensions-change', this.#handleExternalChange);
     this.listen(window, 'vb:a11y-themes-change', this.#handleExternalChange);
+
+    if (this.#openQueued) {
+      this.#openQueued = false;
+      this.open();
+    }
+
+    this.#hydrateFromStore().then(() => {
+      if (!this.#alive(gen)) return;
+      this.#syncState();
+    });
+    return true;
   }
 
   teardown() {
+    this.#gen++;
+    for (const t of this.#timers) clearTimeout(t);
+    this.#timers = [];
+    // Reset open state so a reconnect starts closed with a matching trigger
+    this.#isOpen = false;
+    this.removeAttribute('open');
+    this.#trigger?.setAttribute('aria-expanded', 'false');
     // Remove the rendered panel so a reconnect's setup() doesn't stack a
     // second one (the trigger is find-or-create and safely reused)
     this.#panel?.remove();
     this.#panel = /** @type {*} */ (null);
   }
 
+  /** @param {number} gen */
+  #alive(gen) {
+    return gen === this.#gen && this.isConnected;
+  }
+
+  /**
+   * Resolve a string: data-label-<key> override, else the English default.
+   * @param {string} key
+   * @param {Record<string, unknown>} [vars] {name} placeholders to fill
+   * @returns {string}
+   */
+  #label(key, vars = {}) {
+    let text = this.getAttribute(`data-label-${key}`) ?? LABELS[key] ?? key;
+    for (const [k, v] of Object.entries(vars)) text = text.replaceAll(`{${k}}`, String(v));
+    return text;
+  }
+
+  /** Escaped label for innerHTML templates. @param {string} key */
+  #t(key) {
+    return escapeHtml(this.#label(key));
+  }
+
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
 
   /**
    * Read the current settings as a plain data object combining all the
-   * VBStore-backed state the panel manages. Reactive consumers can use
-   * this to mirror the user's settings into framework state.
+   * VBStore-backed state the panel manages.
    *
    * @returns {{ a11yThemes: any[], extensions: Record<string, any>, sticky: boolean }} Settings snapshot.
    */
@@ -85,29 +241,41 @@ class SettingsPanel extends VBElement {
   }
 
   /**
-   * Replace the panel's settings in one assignment. Writes through to
-   * VBStore for each non-undefined field, then re-syncs the UI.
-   * Setter returns synchronously; the VBStore writes complete in the
-   * background. Emits settings-panel:data-changed { data, source: 'property' }
-   * once the writes finish.
+   * Replace the panel's settings in one assignment. Each non-undefined
+   * field is applied to the page immediately (a11y themes on <html
+   * data-theme>, extensions, sticky navigation), written through to VBStore,
+   * and reflected in the controls. Safe before the panel renders. Emits
+   * settings-panel:data-changed { data, source: 'property' } once the
+   * writes finish.
    */
   set data(value) {
     if (!value || typeof value !== 'object') return;
     const writes = [];
+    const keys = [];
     if (Array.isArray(value.a11yThemes)) {
-      this.#a11yThemes = [...value.a11yThemes];
+      this.#a11yThemes = value.a11yThemes.map(String);
+      keys.push('a11y');
       writes.push(VBStore.set(SETTINGS_NS, 'a11y', this.#a11yThemes));
+      this.#applyA11yThemes();
+      window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: [...this.#a11yThemes] }));
     }
     if (value.extensions && typeof value.extensions === 'object') {
       this.#extensions = { ...EXTENSION_DEFAULTS, ...value.extensions };
+      keys.push('extensions');
       writes.push(VBStore.set(SETTINGS_NS, 'extensions', this.#extensions));
+      this.#applyExtensions();
     }
     if (value.sticky != null) {
       this.#stickyOn = !!value.sticky;
+      keys.push('sticky');
       writes.push(VBStore.set(SETTINGS_NS, 'sticky', this.#stickyOn ? 'on' : 'off'));
+      applySticky(this.#stickyOn);
     }
-    Promise.all(writes).then(() => {
-      this.#syncState?.();
+    for (const k of keys) this.#dirty.add(k);
+    if (this.#panel) this.#syncState();
+    Promise.allSettled(writes).then(() => {
+      for (const k of keys) this.#dirty.delete(k);
+      if (this.#panel) this.#syncState();
       this.dispatchEvent(new CustomEvent('settings-panel:data-changed', {
         detail: { data: this.data, source: 'property' },
         bubbles: true,
@@ -115,16 +283,19 @@ class SettingsPanel extends VBElement {
     });
   }
 
-  /** Pre-load all VBStore-backed state into instance fields so render is sync. */
+  /** Load the VBStore-backed state into the instance caches. */
   async #hydrateFromStore() {
     const [a11y, ext, sticky] = await Promise.all([
       VBStore.get(SETTINGS_NS, 'a11y'),
       VBStore.get(SETTINGS_NS, 'extensions'),
       VBStore.get(SETTINGS_NS, 'sticky'),
     ]);
-    this.#a11yThemes = Array.isArray(a11y) ? a11y : [];
-    this.#extensions = { ...EXTENSION_DEFAULTS, ...(ext ?? {}) };
-    this.#stickyOn = sticky === 'on';
+    if (authoredSticky === null) authoredSticky = ROOT_STICKY_AT_LOAD && sticky !== 'on';
+    if (!this.#dirty.has('a11y')) this.#a11yThemes = Array.isArray(a11y) ? a11y : [];
+    if (!this.#dirty.has('extensions')) this.#extensions = { ...EXTENSION_DEFAULTS, ...(ext ?? {}) };
+    // The root attribute is the truth on the page (the head script restores
+    // a stored "on" before paint; an authored <html data-sticky> also counts).
+    if (!this.#dirty.has('sticky')) this.#stickyOn = document.documentElement.hasAttribute('data-sticky');
   }
 
   // --- Mapping helpers ---
@@ -147,11 +318,6 @@ class SettingsPanel extends VBElement {
     if (density === 'compact') return 'compact';
     if (density === 'spacious') return 'spacious';
     return 'default';
-  }
-
-  /** Is sticky navigation enabled? */
-  #isStickyOn() {
-    return this.#stickyOn;
   }
 
   /** Is backdrop enabled? (any non-empty backdrop value) */
@@ -198,6 +364,11 @@ class SettingsPanel extends VBElement {
     return parts.join(' ') || 'card';
   }
 
+  /** @param {string} selector @returns {any} */
+  #q(selector) {
+    return this.#panel?.querySelector(selector) ?? null;
+  }
+
   // --- Render ---
 
   #render() {
@@ -205,11 +376,15 @@ class SettingsPanel extends VBElement {
     this.#trigger = /** @type {HTMLElement} */ (this.querySelector(':scope > [data-trigger]') || this.querySelector(':scope > button'));
     if (!this.#trigger) {
       this.#trigger = document.createElement('button');
+      this.#trigger.setAttribute('type', 'button');
       this.#trigger.setAttribute('data-trigger', '');
-      this.#trigger.setAttribute('aria-label', 'Site settings');
+      this.#trigger.setAttribute('data-minted', '');
       this.#trigger.className = 'settings-trigger';
-      this.#trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`;
+      this.#trigger.innerHTML = GEAR_SVG;
       this.prepend(this.#trigger);
+    }
+    if (this.#trigger.hasAttribute('data-minted')) {
+      this.#trigger.setAttribute('aria-label', this.#label('trigger'));
     }
 
     this.#trigger.setAttribute('aria-haspopup', 'dialog');
@@ -219,9 +394,10 @@ class SettingsPanel extends VBElement {
     this.#panel = document.createElement('div');
     this.#panel.className = 'settings-panel';
     this.#panel.setAttribute('role', 'dialog');
-    this.#panel.setAttribute('aria-label', 'Site settings');
+    this.#panel.setAttribute('aria-label', this.#label('dialog'));
+    this.#panel.tabIndex = -1;
 
-    const panelId = `settings-panel-${crypto.randomUUID().slice(0, 8)}`;
+    const panelId = `settings-panel-${this.#uid}`;
     this.#panel.id = panelId;
     this.#trigger.setAttribute('aria-controls', panelId);
 
@@ -231,47 +407,58 @@ class SettingsPanel extends VBElement {
 
   #renderPanel() {
     const { mode, brand, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = ThemeManager.getState();
-    const a11yThemes = this.#loadA11yThemes();
-    const extensions = this.#loadExtensions();
+    const a11yThemes = [...this.#a11yThemes];
+    const extensions = { ...this.#extensions };
+    const env = EnvironmentManager.load();
     const fluidOn = this.#isFluidOn(fluid);
     const density = this.#getDensity(fluid);
     const backdropOn = this.#isBackdropOn(backdrop);
     const backdropPreset = this.#getBackdropPreset(backdrop);
+    const u = this.#uid;
+    const t = (k) => this.#t(k);
+
+    /** Segmented radio group. @param {string} field @param {string} legend @param {string[]} values @param {string} current @param {string} prefix */
+    const segmented = (field, legend, values, current, prefix, icons = {}) => `
+      <fieldset data-segmented>
+        <legend class="visually-hidden">${legend}</legend>
+        ${values.map(v => `
+          <label>
+            <input type="radio" name="settings-${field}-${u}" data-field="${field}" value="${v}" ${current === v ? 'checked' : ''} />
+            ${icons[v] ? `<icon-wc name="${icons[v]}" size="xs"></icon-wc> ` : ''}${t(`${prefix}-${v}`)}
+          </label>
+        `).join('')}
+      </fieldset>`;
+
+    /** Toggle switch row. @param {string} key @param {string} attrs @param {boolean} on */
+    const toggle = (key, attrs, on) => `
+      <label class="toggle-row">
+        <span>${t(key)}</span>
+        <input type="checkbox" name="settings-${key}-${u}" data-switch="sm" ${attrs} ${on ? 'checked' : ''} />
+      </label>`;
+
+    const dirs = [['to bottom', 'dir-to-bottom'], ['to right', 'dir-to-right'], ['135deg', 'dir-135deg'], ['45deg', 'dir-45deg']];
 
     return `
       <header class="settings-header">
-        <strong>Settings</strong>
-        <button type="button" class="settings-close" aria-label="Close settings">
+        <strong>${t('title')}</strong>
+        <button type="button" class="settings-close" aria-label="${t('close')}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </header>
 
       <div class="settings-body">
-        <!-- Appearance -->
-        <details name="settings" open>
-          <summary>Appearance</summary>
+        <details name="settings-${u}" open>
+          <summary>${t('appearance')}</summary>
           <div class="settings-section">
-            <span class="settings-label">Color Mode</span>
-            <fieldset data-segmented>
-              <legend class="visually-hidden">Color mode</legend>
-              ${[
-                { id: 'auto', name: 'Auto', icon: 'monitor' },
-                { id: 'light', name: 'Light', icon: 'sun' },
-                { id: 'dark', name: 'Dark', icon: 'moon' },
-              ].map(m => `
-                <label>
-                  <input type="radio" name="settings-mode" value="${m.id}" ${mode === m.id ? 'checked' : ''} />
-                  <icon-wc name="${m.icon}" size="xs"></icon-wc> ${m.name}
-                </label>
-              `).join('')}
-            </fieldset>
+            <span class="settings-label" aria-hidden="true">${t('color-mode')}</span>
+            ${segmented('mode', t('color-mode'), ['auto', 'light', 'dark'], mode, 'mode', { auto: 'monitor', light: 'sun', dark: 'moon' })}
 
-            <label class="settings-label" for="settings-theme">Theme</label>
-            <select id="settings-theme" name="settings-theme">
+            <label class="settings-label" for="settings-theme-${u}">${t('theme')}</label>
+            <select id="settings-theme-${u}" name="settings-theme-${u}" data-field="theme">
               ${THEME_GROUPS.map(group => `
-                <optgroup label="${group.label}">
-                  ${group.themes.map(t => `
-                    <option value="${t.id}" ${brand === t.id ? 'selected' : ''}>${t.name}</option>
+                <optgroup label="${escapeHtml(group.label)}">
+                  ${group.themes.map(th => `
+                    <option value="${escapeHtml(th.id)}" ${brand === th.id ? 'selected' : ''}>${escapeHtml(th.name)}</option>
                   `).join('')}
                 </optgroup>
               `).join('')}
@@ -279,242 +466,145 @@ class SettingsPanel extends VBElement {
           </div>
         </details>
 
-        <!-- Accessibility -->
-        <details name="settings">
-          <summary>Accessibility</summary>
+        <details name="settings-${u}">
+          <summary>${t('accessibility')}</summary>
           <div class="settings-section">
-            <label class="toggle-row">
-              <span>High Contrast</span>
-              <input type="checkbox" name="a11y-high-contrast" data-switch="sm" data-a11y="a11y-high-contrast" ${a11yThemes.includes('a11y-high-contrast') ? 'checked' : ''} />
-            </label>
-            <label class="toggle-row">
-              <span>Large Text</span>
-              <input type="checkbox" name="a11y-large-text" data-switch="sm" data-a11y="a11y-large-text" ${a11yThemes.includes('a11y-large-text') ? 'checked' : ''} />
-            </label>
-            <label class="toggle-row">
-              <span>Dyslexia-Friendly</span>
-              <input type="checkbox" name="a11y-dyslexia" data-switch="sm" data-a11y="a11y-dyslexia" ${a11yThemes.includes('a11y-dyslexia') ? 'checked' : ''} />
-            </label>
+            ${toggle('high-contrast', 'data-a11y="a11y-high-contrast"', a11yThemes.includes('a11y-high-contrast'))}
+            ${toggle('large-text', 'data-a11y="a11y-large-text"', a11yThemes.includes('a11y-large-text'))}
+            ${toggle('dyslexia', 'data-a11y="a11y-dyslexia"', a11yThemes.includes('a11y-dyslexia'))}
           </div>
         </details>
 
-        <!-- Layout -->
-        <details name="settings">
-          <summary>Layout</summary>
+        <details name="settings-${u}">
+          <summary>${t('layout')}</summary>
           <div class="settings-section">
-            <label class="toggle-row">
-              <span>Fluid Scaling</span>
-              <input type="checkbox" name="fluid-scaling" data-switch="sm" data-fluid-toggle ${fluidOn ? 'checked' : ''} />
-            </label>
+            ${toggle('fluid', 'data-fluid-toggle', fluidOn)}
             <div class="density-row" ${fluidOn ? '' : 'hidden'}>
-              <span class="settings-label">Density</span>
-              <fieldset data-segmented>
-                <legend class="visually-hidden">Density</legend>
-                ${['compact', 'default', 'spacious'].map(d => `
-                  <label>
-                    <input type="radio" name="settings-density" value="${d}" ${density === d ? 'checked' : ''} />
-                    ${d[0].toUpperCase() + d.slice(1)}
-                  </label>
-                `).join('')}
-              </fieldset>
+              <span class="settings-label" aria-hidden="true">${t('density')}</span>
+              ${segmented('density', t('density'), ['compact', 'default', 'spacious'], density, 'density')}
             </div>
 
-            <label class="toggle-row">
-              <span>Canvas Backdrop</span>
-              <input type="checkbox" name="canvas-backdrop" data-switch="sm" data-backdrop-toggle ${backdropOn ? 'checked' : ''} />
-            </label>
+            ${toggle('backdrop', 'data-backdrop-toggle', backdropOn)}
             <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
-              <span class="settings-label">Style</span>
-              <fieldset data-segmented>
-                <legend class="visually-hidden">Backdrop style</legend>
-                ${['default', 'flush', 'elevated'].map(p => `
-                  <label>
-                    <input type="radio" name="settings-backdrop" value="${p}" ${backdropPreset === p ? 'checked' : ''} />
-                    ${p[0].toUpperCase() + p.slice(1)}
-                  </label>
-                `).join('')}
-              </fieldset>
+              <span class="settings-label" aria-hidden="true">${t('backdrop-style')}</span>
+              ${segmented('backdrop', t('backdrop-style'), ['default', 'flush', 'elevated'], backdropPreset, 'backdrop')}
             </div>
             <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
-              <span class="settings-label">Chrome</span>
-              <fieldset data-segmented>
-                <legend class="visually-hidden">Backdrop chrome mode</legend>
-                ${['card', 'stretch', 'integrated'].map(c => `
-                  <label>
-                    <input type="radio" name="settings-backdrop-chrome" value="${c}" ${this.#getChromeMode(backdropChrome) === c ? 'checked' : ''} />
-                    ${c[0].toUpperCase() + c.slice(1)}
-                  </label>
-                `).join('')}
-              </fieldset>
+              <span class="settings-label" aria-hidden="true">${t('chrome')}</span>
+              ${segmented('chrome', t('chrome'), ['card', 'stretch', 'integrated'], this.#getChromeMode(backdropChrome), 'chrome')}
             </div>
             <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
-              <label class="toggle-row">
-                <span>Fixed Header</span>
-                <input type="checkbox" name="settings-backdrop-fixed" data-switch="sm" data-backdrop-fixed ${this.#isFixedOn(backdropChrome) ? 'checked' : ''} />
-              </label>
+              ${toggle('fixed-header', 'data-backdrop-fixed', this.#isFixedOn(backdropChrome))}
             </div>
             <div class="backdrop-row" ${backdropOn ? '' : 'hidden'}>
-              <label class="settings-label" for="settings-page-bg">Page Background</label>
-              <select id="settings-page-bg" name="settings-page-bg">
-                <option value="" ${pageBgType === '' ? 'selected' : ''}>Theme Default</option>
-                <option value="color" ${pageBgType === 'color' ? 'selected' : ''}>Solid Color</option>
-                <option value="gradient" ${pageBgType === 'gradient' ? 'selected' : ''}>Gradient</option>
+              <label class="settings-label" for="settings-page-bg-${u}">${t('page-bg')}</label>
+              <select id="settings-page-bg-${u}" name="settings-page-bg-${u}" data-field="page-bg">
+                <option value="" ${pageBgType === '' ? 'selected' : ''}>${t('page-bg-default')}</option>
+                <option value="color" ${pageBgType === 'color' ? 'selected' : ''}>${t('page-bg-color')}</option>
+                <option value="gradient" ${pageBgType === 'gradient' ? 'selected' : ''}>${t('page-bg-gradient')}</option>
               </select>
             </div>
             <div class="page-bg-color-row backdrop-row" ${pageBgType === 'color' && backdropOn ? '' : 'hidden'}>
-              <span class="settings-label">Color</span>
-              <input type="color" name="settings-page-bg-color" value="${pageBgColor || '#1a1a2e'}" />
+              <label class="settings-label" for="settings-bg-color-${u}">${t('bg-color')}</label>
+              <input type="color" id="settings-bg-color-${u}" name="settings-bg-color-${u}" data-field="page-bg-color" value="${escapeHtml(pageBgColor || '#1a1a2e')}" />
             </div>
             <div class="page-bg-grad-row backdrop-row" ${pageBgType === 'gradient' && backdropOn ? '' : 'hidden'}>
-              <span class="settings-label">Start</span>
-              <input type="color" name="settings-page-bg-grad-start" value="${pageBgGradStart || '#1a1a2e'}" />
-              <span class="settings-label">End</span>
-              <input type="color" name="settings-page-bg-grad-end" value="${pageBgGradEnd || '#16213e'}" />
+              <label class="settings-label" for="settings-grad-start-${u}">${t('grad-start')}</label>
+              <input type="color" id="settings-grad-start-${u}" name="settings-grad-start-${u}" data-field="grad-start" value="${escapeHtml(pageBgGradStart || '#1a1a2e')}" />
+              <label class="settings-label" for="settings-grad-end-${u}">${t('grad-end')}</label>
+              <input type="color" id="settings-grad-end-${u}" name="settings-grad-end-${u}" data-field="grad-end" value="${escapeHtml(pageBgGradEnd || '#16213e')}" />
             </div>
             <div class="page-bg-grad-dir-row backdrop-row" ${pageBgType === 'gradient' && backdropOn ? '' : 'hidden'}>
-              <span class="settings-label">Direction</span>
-              <select name="settings-page-bg-grad-dir">
-                <option value="to bottom" ${(pageBgGradDir || 'to bottom') === 'to bottom' ? 'selected' : ''}>Top → Bottom</option>
-                <option value="to right" ${pageBgGradDir === 'to right' ? 'selected' : ''}>Left → Right</option>
-                <option value="135deg" ${pageBgGradDir === '135deg' ? 'selected' : ''}>Diagonal ↘</option>
-                <option value="45deg" ${pageBgGradDir === '45deg' ? 'selected' : ''}>Diagonal ↗</option>
+              <label class="settings-label" for="settings-grad-dir-${u}">${t('grad-direction')}</label>
+              <select id="settings-grad-dir-${u}" name="settings-grad-dir-${u}" data-field="grad-dir">
+                ${dirs.map(([v, k]) => `<option value="${v}" ${(pageBgGradDir || 'to bottom') === v ? 'selected' : ''}>${t(k)}</option>`).join('')}
               </select>
             </div>
 
-            <label class="toggle-row">
-              <span>Sticky Navigation</span>
-              <input type="checkbox" name="sticky-nav" data-switch="sm" data-sticky-toggle ${this.#isStickyOn() ? 'checked' : ''} />
-            </label>
+            ${toggle('sticky', 'data-sticky-toggle', this.#stickyOn)}
           </div>
         </details>
 
-        <!-- Effects -->
-        <details name="settings">
-          <summary>Effects</summary>
+        <details name="settings-${u}">
+          <summary>${t('effects')}</summary>
           <div class="settings-section">
-            <label class="toggle-row">
-              <span>Motion Effects</span>
-              <input type="checkbox" name="ext-motionFx" data-switch="sm" data-ext="motionFx" ${extensions.motionFx ? 'checked' : ''} />
-            </label>
-            <label class="toggle-row">
-              <span>Sound Effects</span>
-              <input type="checkbox" name="ext-sounds" data-switch="sm" data-ext="sounds" ${extensions.sounds ? 'checked' : ''} />
-            </label>
+            ${toggle('motion', 'data-ext="motionFx"', !!extensions.motionFx)}
+            ${toggle('sounds', 'data-ext="sounds"', !!extensions.sounds)}
           </div>
         </details>
 
-        <!-- Environment -->
-        <details name="settings">
-          <summary>Environment</summary>
+        <details name="settings-${u}">
+          <summary>${t('environment')}</summary>
           <div class="settings-section">
-            <label class="toggle-row">
-              <span>Time-of-Day Shifts</span>
-              <input type="checkbox" name="env-timeOfDay" data-switch="sm" data-env="timeOfDay" ${this.#loadEnvPrefs().timeOfDay ? 'checked' : ''} />
-            </label>
-            <label class="toggle-row">
-              <span>Seasonal Tinting</span>
-              <input type="checkbox" name="env-seasonal" data-switch="sm" data-env="seasonal" ${this.#loadEnvPrefs().seasonal ? 'checked' : ''} />
-            </label>
+            ${toggle('time-of-day', 'data-env="timeOfDay"', !!env.timeOfDay)}
+            ${toggle('seasonal', 'data-env="seasonal"', !!env.seasonal)}
           </div>
         </details>
 
-        <!-- System -->
-        <details name="settings">
-          <summary>System</summary>
+        <details name="settings-${u}">
+          <summary>${t('system')}</summary>
           <div class="settings-section system-info">
-            <p class="system-version">Vanilla Breeze <code>v${getVBVersion()}</code></p>
-            <p class="system-sw-status" data-sw-status>Service Worker: <span>checking…</span></p>
+            <p class="system-version">Vanilla Breeze <code>v${escapeHtml(getVBVersion())}</code></p>
+            <p class="system-sw-status" data-sw-status role="status">${t('sw-label')} <span>${t('sw-checking')}</span></p>
             <footer class="system-actions">
-              <button type="button" data-action="clear-cache">Clear Cache</button>
-              <button type="button" data-action="check-update">Check for Updates</button>
+              <button type="button" data-action="clear-cache">${t('clear-cache')}</button>
+              <button type="button" data-action="check-update">${t('check-update')}</button>
             </footer>
           </div>
         </details>
       </div>
 
       <footer class="settings-footer">
-        <button type="button" class="settings-reset">Reset to Defaults</button>
+        <button type="button" class="settings-reset">${t('reset')}</button>
+        <p class="settings-reset-confirm" role="group" aria-labelledby="settings-reset-q-${u}" hidden>
+          <span id="settings-reset-q-${u}">${t('reset-confirm')}</span>
+          <button type="button" data-action="reset-confirm">${t('reset-yes')}</button>
+          <button type="button" data-action="reset-cancel">${t('reset-cancel')}</button>
+        </p>
       </footer>
+      <p class="visually-hidden" data-live role="status"></p>
     `;
   }
 
   // --- Event binding ---
 
   #bindEvents() {
-    // Trigger
-    this.#trigger.addEventListener('click', this.#handleTriggerClick);
+    const panel = this.#panel;
+    this.listen(this.#trigger, 'click', this.#handleTriggerClick);
     this.listen(document, 'click', this.#handleOutsideClick);
     this.listen(document, 'keydown', this.#handleEscape);
+    this.listen(this, 'focusout', this.#handleFocusOut);
 
-    // Close button
-    this.#panel.querySelector('.settings-close')?.addEventListener('click', () => this.close());
+    // Panel-internal listeners die with the panel element (teardown removes it)
+    panel.querySelector('.settings-close')?.addEventListener('click', () => this.close({ returnFocus: true }));
 
-    // Mode (segmented control)
-    this.#panel.querySelectorAll('input[name="settings-mode"]').forEach(input => {
-      input.addEventListener('change', this.#handleModeChange);
-    });
+    panel.querySelectorAll('input[data-field="mode"]').forEach(input => input.addEventListener('change', this.#handleModeChange));
+    this.#q('[data-field="theme"]')?.addEventListener('change', this.#handleThemeChange);
+    this.#q('input[data-fluid-toggle]')?.addEventListener('change', this.#handleFluidToggle);
+    panel.querySelectorAll('input[data-field="density"]').forEach(input => input.addEventListener('change', this.#handleDensityChange));
+    this.#q('input[data-backdrop-toggle]')?.addEventListener('change', this.#handleBackdropToggle);
+    panel.querySelectorAll('input[data-field="backdrop"]').forEach(input => input.addEventListener('change', this.#handleBackdropPreset));
+    panel.querySelectorAll('input[data-field="chrome"]').forEach(input => input.addEventListener('change', this.#handleBackdropChrome));
+    this.#q('input[data-backdrop-fixed]')?.addEventListener('change', this.#handleBackdropFixed);
+    this.#q('input[data-sticky-toggle]')?.addEventListener('change', this.#handleStickyToggle);
+    this.#q('[data-field="page-bg"]')?.addEventListener('change', this.#handlePageBgType);
+    this.#q('[data-field="page-bg-color"]')?.addEventListener('input', this.#handlePageBgChange);
+    this.#q('[data-field="grad-start"]')?.addEventListener('input', this.#handlePageBgChange);
+    this.#q('[data-field="grad-end"]')?.addEventListener('input', this.#handlePageBgChange);
+    this.#q('[data-field="grad-dir"]')?.addEventListener('change', this.#handlePageBgChange);
+    panel.querySelectorAll('input[data-a11y]').forEach(input => input.addEventListener('change', this.#handleA11yChange));
+    panel.querySelectorAll('input[data-ext]').forEach(input => input.addEventListener('change', this.#handleExtensionChange));
+    panel.querySelectorAll('input[data-env]').forEach(input => input.addEventListener('change', this.#handleEnvironmentChange));
 
-    // Theme select
-    this.#panel.querySelector('#settings-theme')?.addEventListener('change', this.#handleThemeChange);
-
-    // Fluid toggle
-    this.#panel.querySelector('input[data-fluid-toggle]')?.addEventListener('change', this.#handleFluidToggle);
-
-    // Density segmented control
-    this.#panel.querySelectorAll('input[name="settings-density"]').forEach(input => {
-      input.addEventListener('change', this.#handleDensityChange);
-    });
-
-    // Backdrop toggle
-    this.#panel.querySelector('input[data-backdrop-toggle]')?.addEventListener('change', this.#handleBackdropToggle);
-
-    // Backdrop preset segmented control
-    this.#panel.querySelectorAll('input[name="settings-backdrop"]').forEach(input => {
-      input.addEventListener('change', this.#handleBackdropPreset);
-    });
-
-    // Backdrop chrome mode segmented control
-    this.#panel.querySelectorAll('input[name="settings-backdrop-chrome"]').forEach(input => {
-      input.addEventListener('change', this.#handleBackdropChrome);
-    });
-
-    // Backdrop fixed header toggle
-    this.#panel.querySelector('input[data-backdrop-fixed]')?.addEventListener('change', this.#handleBackdropFixed);
-
-    // Sticky navigation toggle
-    this.#panel.querySelector('input[data-sticky-toggle]')?.addEventListener('change', this.#handleStickyToggle);
-
-    // Page background type
-    this.#panel.querySelector('[name="settings-page-bg"]')?.addEventListener('change', this.#handlePageBgType);
-
-    // Page background color/gradient inputs
-    this.#panel.querySelector('[name="settings-page-bg-color"]')?.addEventListener('input', this.#handlePageBgChange);
-    this.#panel.querySelector('[name="settings-page-bg-grad-start"]')?.addEventListener('input', this.#handlePageBgChange);
-    this.#panel.querySelector('[name="settings-page-bg-grad-end"]')?.addEventListener('input', this.#handlePageBgChange);
-    this.#panel.querySelector('[name="settings-page-bg-grad-dir"]')?.addEventListener('change', this.#handlePageBgChange);
-
-    // Accessibility toggles
-    this.#panel.querySelectorAll('input[data-a11y]').forEach(input => {
-      input.addEventListener('change', this.#handleA11yChange);
-    });
-
-    // Extension toggles
-    this.#panel.querySelectorAll('input[data-ext]').forEach(input => {
-      input.addEventListener('change', this.#handleExtensionChange);
-    });
-
-    // Environment toggles
-    this.#panel.querySelectorAll('input[data-env]').forEach(input => {
-      input.addEventListener('change', this.#handleEnvironmentChange);
-    });
-
-    // Reset button
-    this.#panel.querySelector('.settings-reset')?.addEventListener('click', this.#handleReset);
+    // Reset (in-panel confirm step)
+    this.#q('.settings-reset')?.addEventListener('click', this.#showResetConfirm);
+    this.#q('[data-action="reset-confirm"]')?.addEventListener('click', this.#handleReset);
+    this.#q('[data-action="reset-cancel"]')?.addEventListener('click', () => this.#hideResetConfirm(true));
 
     // System section
-    this.#panel.querySelector('[data-action="clear-cache"]')?.addEventListener('click', this.#handleClearCache);
-    this.#panel.querySelector('[data-action="check-update"]')?.addEventListener('click', this.#handleCheckUpdate);
-    this.#refreshSWStatus();
+    this.#q('[data-action="clear-cache"]')?.addEventListener('click', this.#handleClearCache);
+    this.#q('[data-action="check-update"]')?.addEventListener('click', this.#handleCheckUpdate);
+    this.#refreshSWStatus(this.#gen);
   }
 
   // --- Event handlers ---
@@ -533,9 +623,15 @@ class SettingsPanel extends VBElement {
   #handleEscape = (e) => {
     if (e.key === 'Escape' && this.#isOpen) {
       e.preventDefault();
-      this.close();
-      this.#trigger?.focus();
+      this.close({ returnFocus: true });
     }
+  };
+
+  /** Tabbing (or programmatic focus) out of the open panel closes it; a window blur does not. */
+  #handleFocusOut = (e) => {
+    if (!this.#isOpen) return;
+    const next = /** @type {Node | null} */ (e.relatedTarget);
+    if (next && !this.contains(next)) this.close();
   };
 
   #handleModeChange = (e) => {
@@ -548,7 +644,7 @@ class SettingsPanel extends VBElement {
 
     try {
       await ThemeManager.setBrand(select.value);
-      this.#reapplyA11yThemes();
+      this.#applyA11yThemes();
     } catch {
       console.warn('[VB] Theme load failed, using default');
     } finally {
@@ -588,58 +684,42 @@ class SettingsPanel extends VBElement {
     ThemeManager.setBackdropChrome(this.#buildChromeValue(mode, e.target.checked));
   };
 
-  #handleStickyToggle = async (e) => {
+  #handleStickyToggle = (e) => {
     const on = e.target.checked;
     this.#stickyOn = on;
-    await VBStore.set(SETTINGS_NS, 'sticky', on ? 'on' : 'off');
-
-    const header = document.querySelector('header');
-
-    if (on) {
-      document.documentElement.dataset.sticky = '';
-      if (header) header.dataset.sticky = '';
-      const { initStickyManager } = await import('../../lib/sticky-manager.js');
-      initStickyManager();
-    } else {
-      delete document.documentElement.dataset.sticky;
-      if (header) delete header.dataset.sticky;
-      const { destroyStickyManager } = await import('../../lib/sticky-manager.js');
-      destroyStickyManager();
-    }
+    VBStore.set(SETTINGS_NS, 'sticky', on ? 'on' : 'off').catch(() => { /* ignore */ });
+    applySticky(on);
   };
 
-  #handlePageBgType = (e) => {
-    const type = e.target.value;
-    this.#updatePageBgVisibility(type);
+  #pageBgValue() {
+    const type = this.#q('[data-field="page-bg"]')?.value || '';
     if (type === 'color') {
-      const color = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-color"]'))?.value || '#1a1a2e';
-      ThemeManager.setPageBg({ type, color });
-    } else if (type === 'gradient') {
-      const gradStart = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-start"]'))?.value || '#1a1a2e';
-      const gradEnd = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-end"]'))?.value || '#16213e';
-      const gradDir = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-dir"]'))?.value || 'to bottom';
-      ThemeManager.setPageBg({ type, gradStart, gradEnd, gradDir });
-    } else {
-      ThemeManager.setPageBg({});
+      return { type, color: this.#q('[data-field="page-bg-color"]')?.value || '#1a1a2e' };
     }
+    if (type === 'gradient') {
+      return {
+        type,
+        gradStart: this.#q('[data-field="grad-start"]')?.value || '#1a1a2e',
+        gradEnd: this.#q('[data-field="grad-end"]')?.value || '#16213e',
+        gradDir: this.#q('[data-field="grad-dir"]')?.value || 'to bottom',
+      };
+    }
+    return null;
+  }
+
+  #handlePageBgType = (e) => {
+    this.#updatePageBgVisibility(e.target.value);
+    ThemeManager.setPageBg(this.#pageBgValue() ?? {});
   };
 
   #handlePageBgChange = () => {
-    const type = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg"]'))?.value || '';
-    if (type === 'color') {
-      const color = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-color"]'))?.value || '';
-      ThemeManager.setPageBg({ type, color });
-    } else if (type === 'gradient') {
-      const gradStart = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-start"]'))?.value || '';
-      const gradEnd = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-end"]'))?.value || '';
-      const gradDir = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-dir"]'))?.value || 'to bottom';
-      ThemeManager.setPageBg({ type, gradStart, gradEnd, gradDir });
-    }
+    const value = this.#pageBgValue();
+    if (value) ThemeManager.setPageBg(value);
   };
 
   #handleA11yChange = (e) => {
     const themeId = e.target.dataset.a11y;
-    const current = this.#loadA11yThemes();
+    const current = [...this.#a11yThemes];
 
     if (e.target.checked && !current.includes(themeId)) {
       current.push(themeId);
@@ -650,25 +730,41 @@ class SettingsPanel extends VBElement {
 
     this.#saveA11yThemes(current);
     this.#applyA11yThemes();
-    window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: current }));
+    window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: [...current] }));
   };
 
   #handleExtensionChange = (e) => {
     const extId = e.target.dataset.ext;
-    const enabled = e.target.checked;
-    this.#saveExtension(extId, enabled);
+    this.#extensions = { ...this.#extensions, [extId]: e.target.checked };
+    VBStore.set(SETTINGS_NS, 'extensions', this.#extensions).catch(() => { /* ignore */ });
     this.#applyExtensions();
   };
 
   #handleEnvironmentChange = (e) => {
-    const source = e.target.dataset.env;
-    const enabled = e.target.checked;
-    EnvironmentManager.setSource(source, enabled);
+    EnvironmentManager.setSource(e.target.dataset.env, e.target.checked);
   };
 
-  #handleReset = () => {
-    if (!confirm('Reset all settings to defaults?')) return;
+  #showResetConfirm = () => {
+    const confirmRow = this.#q('.settings-reset-confirm');
+    const resetBtn = this.#q('.settings-reset');
+    if (!confirmRow || !resetBtn) return;
+    confirmRow.hidden = false;
+    resetBtn.hidden = true;
+    this.#q('[data-action="reset-cancel"]')?.focus();
+  };
 
+  /** @param {boolean} [refocus] move focus back to the Reset button */
+  #hideResetConfirm(refocus = false) {
+    const confirmRow = this.#q('.settings-reset-confirm');
+    const resetBtn = this.#q('.settings-reset');
+    if (confirmRow) confirmRow.hidden = true;
+    if (resetBtn) {
+      resetBtn.hidden = false;
+      if (refocus) resetBtn.focus();
+    }
+  }
+
+  #handleReset = () => {
     ThemeManager.reset();
 
     // Clear a11y themes
@@ -681,139 +777,115 @@ class SettingsPanel extends VBElement {
     VBStore.remove(SETTINGS_NS, 'extensions').catch(() => { /* ignore */ });
     this.#applyExtensions();
 
-    // Reset sticky navigation
-    this.#stickyOn = false;
+    // Reset sticky navigation to the authored state (sticky-manager restores
+    // any header attribute it added; authored header[data-sticky] is kept)
+    this.#stickyOn = !!authoredSticky;
     VBStore.remove(SETTINGS_NS, 'sticky').catch(() => { /* ignore */ });
-    delete document.documentElement.dataset.sticky;
-    import('../../lib/sticky-manager.js').then(m => m.destroyStickyManager()).catch(() => {});
+    applySticky(this.#stickyOn);
 
     // Reset environment
     EnvironmentManager.setSource('timeOfDay', false);
     EnvironmentManager.setSource('seasonal', false);
 
-    // Re-sync UI
+    this.#hideResetConfirm(true);
     this.#syncState();
+    this.#announce(this.#label('reset-done'));
   };
 
-  #handleExternalChange = () => {
+  #handleExternalChange = (e) => {
+    // Apply the other component's new values before re-syncing, so the
+    // controls show them and the next toggle here doesn't write stale state.
+    if (e.type === 'vb:a11y-themes-change' && Array.isArray(e.detail)) {
+      this.#a11yThemes = e.detail.map(String);
+    } else if (e.type === 'vb:extensions-change' && e.detail && typeof e.detail === 'object') {
+      this.#extensions = { ...EXTENSION_DEFAULTS, ...e.detail };
+    } else if (e.type === 'vb:theme-change') {
+      const gen = this.#gen;
+      this.#hydrateFromStore().then(() => { if (this.#alive(gen)) this.#syncState(); });
+    }
     this.#syncState();
   };
 
   // --- State sync ---
 
   #syncState() {
+    if (!this.#panel) return;
     const { mode, brand, fluid, backdrop, backdropChrome, pageBgType, pageBgColor, pageBgGradStart, pageBgGradEnd, pageBgGradDir } = ThemeManager.getState();
-    const a11yThemes = this.#loadA11yThemes();
-    const extensions = this.#loadExtensions();
+    const a11yThemes = this.#a11yThemes;
+    const extensions = this.#extensions;
     const fluidOn = this.#isFluidOn(fluid);
     const density = this.#getDensity(fluid);
     const backdropOn = this.#isBackdropOn(backdrop);
     const backdropPreset = this.#getBackdropPreset(backdrop);
+    const panel = this.#panel;
 
-    // Mode
-    const modeInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector(`input[name="settings-mode"][value="${mode}"]`));
-    if (modeInput) modeInput.checked = true;
+    const check = (selector, on) => { const el = this.#q(selector); if (el) el.checked = on; };
+    const setValue = (selector, value) => { const el = this.#q(selector); if (el && value) el.value = value; };
 
-    // Theme select
-    const themeSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('#settings-theme'));
+    check(`input[data-field="mode"][value="${mode}"]`, true);
+    const themeSelect = this.#q('[data-field="theme"]');
     if (themeSelect) themeSelect.value = brand || 'default';
 
-    // Fluid toggle
-    const fluidToggle = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[data-fluid-toggle]'));
-    if (fluidToggle) fluidToggle.checked = fluidOn;
-
-    // Density
-    const densityInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector(`input[name="settings-density"][value="${density}"]`));
-    if (densityInput) densityInput.checked = true;
+    check('input[data-fluid-toggle]', fluidOn);
+    check(`input[data-field="density"][value="${density}"]`, true);
     this.#updateDensityVisibility(fluidOn);
 
-    // Backdrop toggle
-    const backdropToggle = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[data-backdrop-toggle]'));
-    if (backdropToggle) backdropToggle.checked = backdropOn;
-
-    // Backdrop preset
-    const backdropInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector(`input[name="settings-backdrop"][value="${backdropPreset}"]`));
-    if (backdropInput) backdropInput.checked = true;
-
-    // Backdrop chrome mode (parse space-separated value)
-    const chromeMode = this.#getChromeMode(backdropChrome);
-    const chromeInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector(`input[name="settings-backdrop-chrome"][value="${chromeMode}"]`));
-    if (chromeInput) chromeInput.checked = true;
-
-    // Backdrop fixed header toggle
-    const fixedToggle = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[data-backdrop-fixed]'));
-    if (fixedToggle) fixedToggle.checked = this.#isFixedOn(backdropChrome);
+    check('input[data-backdrop-toggle]', backdropOn);
+    check(`input[data-field="backdrop"][value="${backdropPreset}"]`, true);
+    check(`input[data-field="chrome"][value="${this.#getChromeMode(backdropChrome)}"]`, true);
+    check('input[data-backdrop-fixed]', this.#isFixedOn(backdropChrome));
     this.#updateBackdropVisibility(backdropOn);
 
-    // Page background
-    const pageBgSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg"]'));
+    const pageBgSelect = this.#q('[data-field="page-bg"]');
     if (pageBgSelect) pageBgSelect.value = pageBgType || '';
-    const pageBgColorInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-color"]'));
-    if (pageBgColorInput && pageBgColor) pageBgColorInput.value = pageBgColor;
-    const gradStartInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-start"]'));
-    if (gradStartInput && pageBgGradStart) gradStartInput.value = pageBgGradStart;
-    const gradEndInput = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-end"]'));
-    if (gradEndInput && pageBgGradEnd) gradEndInput.value = pageBgGradEnd;
-    const gradDirSelect = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg-grad-dir"]'));
-    if (gradDirSelect && pageBgGradDir) gradDirSelect.value = pageBgGradDir;
+    setValue('[data-field="page-bg-color"]', pageBgColor);
+    setValue('[data-field="grad-start"]', pageBgGradStart);
+    setValue('[data-field="grad-end"]', pageBgGradEnd);
+    setValue('[data-field="grad-dir"]', pageBgGradDir);
     if (backdropOn) this.#updatePageBgVisibility(pageBgType || '');
 
-    // A11y toggles
-    this.#panel.querySelectorAll('input[data-a11y]').forEach(el => {
+    panel.querySelectorAll('input[data-a11y]').forEach(el => {
       const input = /** @type {HTMLInputElement} */ (el);
       input.checked = a11yThemes.includes(input.dataset.a11y || '');
     });
 
-    // Extension toggles
-    this.#panel.querySelectorAll('input[data-ext]').forEach(el => {
+    panel.querySelectorAll('input[data-ext]').forEach(el => {
       const input = /** @type {HTMLInputElement} */ (el);
       const key = /** @type {string} */ (input.dataset.ext);
-      const val = extensions[key];
-      input.checked = val ?? EXTENSION_DEFAULTS[key];
+      input.checked = extensions[key] ?? EXTENSION_DEFAULTS[key];
     });
 
-    // Sticky navigation toggle
-    const stickyToggle = /** @type {HTMLInputElement | null} */ (this.#panel.querySelector('input[data-sticky-toggle]'));
-    if (stickyToggle) stickyToggle.checked = this.#isStickyOn();
+    check('input[data-sticky-toggle]', this.#stickyOn);
 
-    // Environment toggles
-    const envPrefs = this.#loadEnvPrefs();
-    this.#panel.querySelectorAll('input[data-env]').forEach(el => {
+    const envPrefs = EnvironmentManager.load();
+    panel.querySelectorAll('input[data-env]').forEach(el => {
       const input = /** @type {HTMLInputElement} */ (el);
-      const key = /** @type {string} */ (input.dataset.env);
-      input.checked = envPrefs[key] ?? false;
+      input.checked = envPrefs[/** @type {string} */ (input.dataset.env)] ?? false;
     });
   }
 
   #updateDensityVisibility(show) {
-    const row = /** @type {HTMLElement | null} */ (this.#panel.querySelector('.density-row'));
+    const row = this.#q('.density-row');
     if (row) row.hidden = !show;
   }
 
   #updateBackdropVisibility(show) {
-    this.#panel.querySelectorAll('.backdrop-row').forEach(el => {
+    this.#panel?.querySelectorAll('.backdrop-row').forEach(el => {
       /** @type {HTMLElement} */ (el).hidden = !show;
     });
-    if (show) {
-      const pageBgType = /** @type {HTMLSelectElement | null} */ (this.#panel.querySelector('[name="settings-page-bg"]'))?.value || '';
-      this.#updatePageBgVisibility(pageBgType);
-    }
+    if (show) this.#updatePageBgVisibility(this.#q('[data-field="page-bg"]')?.value || '');
   }
 
   #updatePageBgVisibility(type) {
-    const colorRow = /** @type {HTMLElement | null} */ (this.#panel.querySelector('.page-bg-color-row'));
-    const gradRow = /** @type {HTMLElement | null} */ (this.#panel.querySelector('.page-bg-grad-row'));
-    const gradDirRow = /** @type {HTMLElement | null} */ (this.#panel.querySelector('.page-bg-grad-dir-row'));
+    const colorRow = this.#q('.page-bg-color-row');
+    const gradRow = this.#q('.page-bg-grad-row');
+    const gradDirRow = this.#q('.page-bg-grad-dir-row');
     if (colorRow) colorRow.hidden = type !== 'color';
     if (gradRow) gradRow.hidden = type !== 'gradient';
     if (gradDirRow) gradDirRow.hidden = type !== 'gradient';
   }
 
-  // --- VBStore-backed state helpers (read from cache, write through) ---
-
-  #loadA11yThemes() {
-    return [...this.#a11yThemes];
-  }
+  // --- Page application (document-level; safe without a rendered panel) ---
 
   #saveA11yThemes(themes) {
     this.#a11yThemes = [...themes];
@@ -821,7 +893,7 @@ class SettingsPanel extends VBElement {
   }
 
   #applyA11yThemes() {
-    const a11yThemes = this.#loadA11yThemes();
+    const a11yThemes = [...this.#a11yThemes];
     const { brand } = ThemeManager.getState();
     const root = document.documentElement;
     const parts = brand !== 'default' ? [brand, ...a11yThemes] : [...a11yThemes];
@@ -833,25 +905,8 @@ class SettingsPanel extends VBElement {
     }
   }
 
-  #reapplyA11yThemes() {
-    this.#applyA11yThemes();
-  }
-
-  #loadEnvPrefs() {
-    return EnvironmentManager.load();
-  }
-
-  #loadExtensions() {
-    return { ...this.#extensions };
-  }
-
-  #saveExtension(id, enabled) {
-    this.#extensions = { ...this.#extensions, [id]: enabled };
-    VBStore.set(SETTINGS_NS, 'extensions', this.#extensions).catch(() => { /* ignore */ });
-  }
-
   async #applyExtensions() {
-    const prefs = this.#loadExtensions();
+    const prefs = { ...this.#extensions };
     const root = document.documentElement;
 
     if (prefs.motionFx) {
@@ -875,64 +930,99 @@ class SettingsPanel extends VBElement {
     window.dispatchEvent(new CustomEvent('vb:extensions-change', { detail: prefs }));
   }
 
+  // --- Live announcements ---
+
+  /** @param {string} message */
+  #announce(message) {
+    const live = this.#q('[data-live]');
+    if (!live) return;
+    live.textContent = '';
+    // Next frame so a repeated identical message is still announced
+    requestAnimationFrame(() => { live.textContent = message; });
+  }
+
   // --- System section ---
 
-  async #refreshSWStatus() {
-    const statusEl = this.#panel.querySelector('[data-sw-status] span');
+  /** @param {number} gen */
+  async #refreshSWStatus(gen) {
+    const statusEl = this.#q('[data-sw-status] span');
     if (!statusEl) return;
 
     if (!('serviceWorker' in navigator)) {
-      statusEl.textContent = 'Not supported';
+      statusEl.textContent = this.#label('sw-unsupported');
       return;
     }
 
     try {
       const status = await getSWStatus();
+      if (!this.#alive(gen)) return;
       const count = status.cachedURLs?.length ?? 0;
-      statusEl.textContent = `Active (${count} cached files)`;
+      statusEl.textContent = this.#label('sw-active', { n: count });
     } catch {
-      statusEl.textContent = 'Not registered';
+      if (this.#alive(gen)) statusEl.textContent = this.#label('sw-unregistered');
     }
   }
 
-  #handleClearCache = async (e) => {
-    const btn = e.target;
+  /**
+   * Run a System action with busy text, announce the result, then restore.
+   * @param {HTMLButtonElement} btn
+   * @param {string} idleKey label key for the resting text
+   * @param {string} busyKey label key shown while running
+   * @param {() => Promise<string>} run resolves to the result message
+   */
+  async #runAction(btn, idleKey, busyKey, run) {
+    const gen = this.#gen;
     btn.disabled = true;
-    btn.textContent = 'Clearing…';
+    btn.textContent = this.#label(busyKey);
+    let result;
     try {
-      await clearSWCache();
-      btn.textContent = 'Cleared!';
-      this.#refreshSWStatus();
-      setTimeout(() => { btn.textContent = 'Clear Cache'; btn.disabled = false; }, 2000);
+      result = await run();
     } catch {
-      btn.textContent = 'Failed';
-      setTimeout(() => { btn.textContent = 'Clear Cache'; btn.disabled = false; }, 2000);
+      result = this.#label('failed');
     }
+    if (!this.#alive(gen)) return;
+    btn.textContent = result;
+    this.#announce(result);
+    this.#timers.push(setTimeout(() => {
+      btn.textContent = this.#label(idleKey);
+      btn.disabled = false;
+    }, 2000));
+  }
+
+  #handleClearCache = (e) => {
+    const gen = this.#gen;
+    this.#runAction(e.currentTarget, 'clear-cache', 'clearing', async () => {
+      await clearSWCache();
+      this.#refreshSWStatus(gen);
+      return this.#label('cleared');
+    });
   };
 
-  #handleCheckUpdate = async (e) => {
-    const btn = e.target;
-    btn.disabled = true;
-    btn.textContent = 'Checking…';
-    try {
+  #handleCheckUpdate = (e) => {
+    this.#runAction(e.currentTarget, 'check-update', 'checking', async () => {
       const { updated } = await checkForUpdate();
-      btn.textContent = updated ? 'Update available!' : 'Up to date';
-      setTimeout(() => { btn.textContent = 'Check for Updates'; btn.disabled = false; }, 2000);
-    } catch {
-      btn.textContent = 'Failed';
-      setTimeout(() => { btn.textContent = 'Check for Updates'; btn.disabled = false; }, 2000);
-    }
+      return this.#label(updated ? 'update-available' : 'up-to-date');
+    });
   };
 
   // --- Open/close ---
 
+  /**
+   * Open the panel and move focus into it. Before the panel has rendered
+   * (element not yet connected) the call is queued.
+   */
   open() {
+    if (!this.#panel) {
+      this.#openQueued = true;
+      return;
+    }
     if (this.#isOpen) return;
     this.#isOpen = true;
     this.setAttribute('open', '');
     this.#trigger?.setAttribute('aria-expanded', 'true');
     this.#syncState();
     this.#positionPanel();
+    this.#panel.focus({ preventScroll: true });
   }
 
   #positionPanel() {
@@ -973,13 +1063,21 @@ class SettingsPanel extends VBElement {
     }
   }
 
-  close() {
+  /**
+   * Close the panel.
+   * @param {{ returnFocus?: boolean }} [options] move focus back to the trigger
+   */
+  close({ returnFocus = false } = {}) {
+    this.#openQueued = false;
     if (!this.#isOpen) return;
     this.#isOpen = false;
     this.removeAttribute('open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
+    this.#hideResetConfirm();
+    if (returnFocus) this.#trigger?.focus();
   }
 
+  /** Toggle the panel open/closed. */
   toggle() {
     this.#isOpen ? this.close() : this.open();
   }

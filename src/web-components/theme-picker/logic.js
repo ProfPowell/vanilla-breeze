@@ -642,6 +642,8 @@ class ThemePicker extends VBElement {
   #saveA11yThemes(themes) {
     this.#a11yThemes = [...themes];
     VBStore.set(SETTINGS_NS, 'a11y', this.#a11yThemes).catch(() => { /* ignore */ });
+    // Keep sibling controls (settings-panel) in sync, mirroring vb:extensions-change.
+    window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: [...this.#a11yThemes] }));
   }
 
   /**
