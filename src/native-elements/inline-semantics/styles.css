@@ -148,16 +148,32 @@ rp {
 /* --- Variant Classes --- */
 
 /* Mark variants (extend existing) */
+/* Highlight categories (e.g. review annotations: agreed / query / problem).
+   Each pairs the opaque light-dark -subtle background with its -text
+   colour, so both modes stay AA. For status, use layout-badge instead. */
 mark.success {
   background: var(--color-success-subtle);
+  color: var(--color-success-text);
 }
 
 mark.warning {
   background: var(--color-warning-subtle);
+  color: var(--color-warning-text);
 }
 
 mark.error {
   background: var(--color-error-subtle);
+  color: var(--color-error-text);
+}
+
+/* Forced colours keep author alpha, so the 20%-tint default mark rendered
+   as a near-invisible Mark wash. Re-assert the solid system pair. */
+@media (forced-colors: active) {
+  mark,
+  mark:is(.success, .warning, .error) {
+    background: Mark;
+    color: MarkText;
+  }
 }
 
 /* Abbreviation without underline */

@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "math"
-description: "Native MathML rendering with consistent styling, display/inline modes, numbered equations, and dark mode support."
+description: "Native MathML rendering with a self-hosted math font, display and inline modes, numbered and captioned equations."
 elementName: math
 category: native
 nativeGroup: Embedded
@@ -14,11 +14,11 @@ crumbLabel: Native Elements
 <section>
     <h2>Overview</h2>
     <p>The <code>&lt;math&gt;</code> element renders MathML notation natively in the browser. MathML Core is supported in all major engines: Chrome 109+, Firefox, and Safari. No JavaScript or external libraries required.</p>
-    <p>Vanilla Breeze provides consistent styling across browsers: a math font stack, display and inline modes, numbered equations via CSS counters, and dark mode normalization.</p>
+    <p>Vanilla Breeze adds a self-hosted math font, display-math layout, numbered equations via CSS counters and captioned figures. Everything else (baseline alignment, operator spacing, script sizes) is left to MathML Core and the font's OpenType MATH table. Math inherits the surrounding text colour, so it follows light and dark mode, and <code>mathcolor</code> works on individual tokens.</p>
 
     <browser-window
       src="/docs/snippets/demos/math-examples.html"
-      url="https://vanilla-breeze.com/math"
+      url="math-examples.html"
       title="Native MathML rendering"
       shadow>
     </browser-window>
@@ -26,11 +26,11 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Inline Math</h2>
-    <p>Inline math flows naturally within paragraph text. The element aligns to the text baseline.</p>
+    <p>Inline math flows within paragraph text and sits on the text baseline (MathML Core's default; VB does not override it). Tall inline expressions open up the line box rather than overlapping neighbouring lines.</p>
 
     <browser-window
-      src="/docs/snippets/demos/math-examples.html"
-      url="https://vanilla-breeze.com/math/inline"
+      src="/docs/snippets/demos/math-inline.html"
+      url="math-inline.html"
       title="Inline math within paragraph text"
       shadow>
     </browser-window>
@@ -47,8 +47,8 @@ crumbLabel: Native Elements
     <p>Use <code>display="block"</code> for centered, standalone equations with vertical margins.</p>
 
     <browser-window
-      src="/docs/snippets/demos/math-examples.html"
-      url="https://vanilla-breeze.com/math/display"
+      src="/docs/snippets/demos/math-display.html"
+      url="math-display.html"
       title="Display math: the quadratic formula"
       shadow>
     </browser-window>
@@ -70,26 +70,26 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Numbered Equations</h2>
-    <p>Wrap <code>math[display="block"]</code> in a <code>div.equation</code> for auto-incrementing equation numbers. Numbering uses CSS counters, so it works without JavaScript and respects DOM order.</p>
+    <p>Wrap <code>math[display="block"]</code> in a <code>figure.equation</code> (or <code>p.equation</code>) for auto-incrementing equation numbers. Numbering uses CSS counters, so it works without JavaScript and respects DOM order.</p>
 
     <browser-window
-      src="/docs/snippets/demos/math-examples.html"
-      url="https://vanilla-breeze.com/math/numbered"
+      src="/docs/snippets/demos/math-numbered.html"
+      url="math-numbered.html"
       title="Auto-numbered equations"
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Numbered equations" data-escape><div class="equation">
+    <code-block language="html" show-lines label="Numbered equations" data-escape><figure class="equation">
   <math display="block">
     <mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup>
   </math>
-</div>
+</figure>
 
-<div class="equation">
+<figure class="equation">
   <math display="block">
     <mi>F</mi><mo>=</mo><mi>m</mi><mi>a</mi>
   </math>
-</div></code-block>
+</figure></code-block>
   </section>
 
   <section>
@@ -97,8 +97,8 @@ crumbLabel: Native Elements
 
     <h3>Fractions</h3>
     <browser-window
-      src="/docs/snippets/demos/math-examples.html"
-      url="https://vanilla-breeze.com/math/fractions"
+      src="/docs/snippets/demos/math-fractions.html"
+      url="math-fractions.html"
       title="Fraction notation"
       shadow>
     </browser-window>
@@ -113,8 +113,8 @@ crumbLabel: Native Elements
 
     <h3>Radicals</h3>
     <browser-window
-      src="/docs/snippets/demos/math-examples.html"
-      url="https://vanilla-breeze.com/math/radicals"
+      src="/docs/snippets/demos/math-radicals.html"
+      url="math-radicals.html"
       title="Radical notation: Pythagorean theorem"
       shadow>
     </browser-window>
@@ -130,8 +130,8 @@ crumbLabel: Native Elements
 
     <h3>Summation</h3>
     <browser-window
-      src="/docs/snippets/demos/math-examples.html"
-      url="https://vanilla-breeze.com/math/summation"
+      src="/docs/snippets/demos/math-summation.html"
+      url="math-summation.html"
       title="Summation notation"
       shadow>
     </browser-window>
@@ -146,8 +146,8 @@ crumbLabel: Native Elements
 
     <h3>Matrices</h3>
     <browser-window
-      src="/docs/snippets/demos/math-examples.html"
-      url="https://vanilla-breeze.com/math/matrices"
+      src="/docs/snippets/demos/math-matrix.html"
+      url="math-matrix.html"
       title="Matrix notation"
       shadow>
     </browser-window>
@@ -182,8 +182,8 @@ crumbLabel: Native Elements
     <p>Use <code>figure.math</code> to wrap an equation with a <code>&lt;figcaption&gt;</code>.</p>
 
     <browser-window
-      src="/docs/snippets/demos/math-examples.html"
-      url="https://vanilla-breeze.com/math/captioned"
+      src="/docs/snippets/demos/math-captioned.html"
+      url="math-captioned.html"
       title="Captioned equation with figcaption"
       shadow>
     </browser-window>
@@ -225,6 +225,11 @@ crumbLabel: Native Elements
           <td><code>"block"</code></td>
           <td>Renders as centered block equation. Without this attribute, math renders inline.</td>
         </tr>
+        <tr>
+          <td><code>mathcolor</code></td>
+          <td>Any CSS colour</td>
+          <td>On token elements (<code>mi</code>, <code>mn</code>, <code>mo</code>&hellip;). VB sets no token colours, so the hint is honoured.</td>
+        </tr>
       </tbody>
     </table>
     <p>This element also supports <a href="/docs/attributes/">global attributes</a>.</p>
@@ -240,29 +245,51 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>equation</code></td>
-          <td>Wrapper div that adds auto-incrementing equation number via CSS counters. Contains a <code>math[display="block"]</code>.</td>
+          <td>On a <code>&lt;figure&gt;</code> or <code>&lt;p&gt;</code> wrapping a <code>math[display="block"]</code>: adds an auto-incrementing equation number via CSS counters (MathML elements cannot take <code>::after</code>).</td>
+        </tr>
+        <tr>
+          <td><code>math</code></td>
+          <td>On a <code>&lt;figure&gt;</code>: centres the equation and styles its <code>&lt;figcaption&gt;</code>.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
+    <h2>Colour</h2>
+    <p>Math inherits <code>color</code> from its context and VB applies no per-token colours, so the <code>mathcolor</code> attribute works:</p>
+
+    <browser-window
+      src="/docs/snippets/demos/math-color.html"
+      url="math-color.html"
+      title="Inherited colour and mathcolor"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="mathcolor on tokens" data-escape><math display="block">
+  <mi mathcolor="#c0392b">a</mi><mo>+</mo><mi mathcolor="#1f6feb">b</mi><mo>=</mo><mi>c</mi>
+</math></code-block>
+  </section>
+
+  <section>
     <h2>Font Loading</h2>
-    <p>MathML rendering quality depends on a math-capable font. Vanilla Breeze defaults to <code>Latin Modern Math</code>, falling back to <code>STIX Two Math</code> and <code>Cambria Math</code>.</p>
-    <p>For best results, load the math font explicitly:</p>
+    <p>MathML rendering quality depends on a font with an OpenType MATH table. The core stylesheet declares a self-hosted <code>Latin Modern Math</code> face (woff2, <code>font-display: swap</code>, GUST Font License shipped alongside), falling back to <code>STIX Two Math</code>, <code>Cambria Math</code> and the generic <code>math</code> family.</p>
+    <p>Nothing extra is needed for plain <code>&lt;math&gt;</code>: the browser fetches <code>{cdn}/fonts/latinmodern-math.woff2</code> only when a page actually renders math, and a locally installed Latin Modern Math is used first. Pages without math never download it.</p>
+    <p>If you load only the web-components stylesheet, link the standalone face from the same <code>cdn/</code> folder you serve VB from (on this site, <code>/cdn/fonts/math-fonts.css</code>):</p>
 
-    <code-block language="html" label="Load math font" data-escape><link rel="stylesheet" href="/fonts/math-fonts.css"></code-block>
+    <code-block language="html" label="Load math font (standalone)" data-escape><link rel="stylesheet" href="/cdn/fonts/math-fonts.css"></code-block>
 
-    <p>When using the <a href="/docs/attributes/data-math/"><code>data-math</code></a> attribute, the font is loaded automatically when math elements are detected.</p>
+    <p>The <a href="/docs/attributes/data-math/"><code>data-math</code></a> attribute injects that stylesheet automatically when it renders math.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Native MathML is natively understood by screen readers including VoiceOver (Safari) and NVDA with MathPlayer</li>
-      <li>No ARIA hacks required &mdash; the browser exposes math semantics directly to the accessibility tree</li>
-      <li>Use <code>&lt;semantics&gt;</code> and <code>&lt;annotation&gt;</code> for additional accessible descriptions when needed</li>
-      <li>Equation numbers assist navigation for sighted and non-sighted users</li>
+      <li>Browsers expose native MathML to the accessibility tree. VoiceOver (Safari) reads it directly; NVDA reads and navigates it with the <a href="https://nsoiffer.github.io/MathCAT/">MathCAT</a> add-on (MathPlayer is no longer maintained); JAWS has its own math support. Coverage and verbosity differ between them</li>
+      <li>No ARIA hacks required</li>
+      <li>Use <code>&lt;semantics&gt;</code> and <code>&lt;annotation&gt;</code> to carry the source (LaTeX, ASCIIMath) alongside the presentation markup</li>
+      <li>Equation numbers are generated content and are not reliably announced; refer to equations in prose too</li>
+      <li>Colour set with <code>mathcolor</code> is not announced &mdash; don't rely on it alone</li>
     </ul>
   </section>
 

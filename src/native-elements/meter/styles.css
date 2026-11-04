@@ -1,49 +1,72 @@
-/* meter: Gauge/meter styling */
+/* meter: Gauge/meter styling
+ *
+ * Tokens (src/tokens/forms.css): --meter-h, --meter-track-bg,
+ * --meter-track-border, --meter-fill-optimum, --meter-fill-suboptimum,
+ * --meter-fill-even-less-good. The bordered track keeps the range extent
+ * visible (3:1); colour alone never carries the state — put it in text too.
+ */
 
 meter {
   appearance: none;
   display: block;
   inline-size: 100%;
   block-size: var(--meter-h);
-  border: none;
+  box-sizing: border-box;
+  border: 1px solid var(--meter-track-border);
   border-radius: var(--radius-full);
   overflow: hidden;
-  background: var(--progress-track-bg);
+  background: var(--meter-track-bg);
 
   /* WebKit/Blink meter bar background */
   &::-webkit-meter-bar {
-    background: var(--progress-track-bg);
+    background: var(--meter-track-bg);
     border-radius: var(--radius-full);
     border: none;
+    block-size: 100%;
   }
 
-  /* Optimum value (green) */
+  /* Optimum value */
   &::-webkit-meter-optimum-value {
-    background: var(--color-success);
+    background: var(--meter-fill-optimum);
     border-radius: var(--radius-full);
   }
 
-  /* Sub-optimum value (yellow/orange) */
+  /* Sub-optimum value */
   &::-webkit-meter-suboptimum-value {
-    background: var(--color-warning);
+    background: var(--meter-fill-suboptimum);
     border-radius: var(--radius-full);
   }
 
-  /* Even less optimum value (red) */
+  /* Even less optimum value */
   &::-webkit-meter-even-less-good-value {
-    background: var(--color-error);
+    background: var(--meter-fill-even-less-good);
     border-radius: var(--radius-full);
   }
 
-  /* Firefox meter styling */
+  /* Firefox: one fill pseudo-element, state via pseudo-classes. Kept as
+     separate rules — an unknown pseudo in a selector list drops the list. */
   &::-moz-meter-bar {
     border-radius: var(--radius-full);
   }
 
+  &:-moz-meter-optimum::-moz-meter-bar {
+    background: var(--meter-fill-optimum);
+  }
+
+  &:-moz-meter-sub-optimum::-moz-meter-bar {
+    background: var(--meter-fill-suboptimum);
+  }
+
+  &:-moz-meter-sub-sub-optimum::-moz-meter-bar {
+    background: var(--meter-fill-even-less-good);
+  }
+
   /* --- Size Variants (use element.class scoping) --- */
 
+  /* .xs is a hairline: decorative only, never the sole carrier of a value */
   &.xs {
     block-size: var(--size-3xs);
+    border-width: 0;
   }
 
   &.s {
@@ -63,28 +86,80 @@ meter {
   &.segmented {
     background: repeating-linear-gradient(
       90deg,
-      var(--progress-track-bg),
-      var(--progress-track-bg) 9%,
+      var(--meter-track-bg),
+      var(--meter-track-bg) 9%,
       var(--color-surface) 9%,
       var(--color-surface) 10%
     );
   }
 }
 
-/* --- Labeled Meter (wrapper pattern) --- */
+/* --- Labeled Meter (header row + meter) ---
+   <section class="labeled">
+     <header><label for="m">Storage</label> <output for="m">14.3 GB / 20 GB</output></header>
+     <meter id="m" …>
+   Scoped to wrappers that hold a meter so the generic class name cannot
+   restyle unrelated .labeled elements. */
 
-.labeled {
+.labeled:has(> meter) {
   display: flex;
   flex-direction: column;
   gap: var(--size-2xs);
 
-  & > label {
+  & > :is(header, label) {
     display: flex;
     justify-content: space-between;
+    gap: var(--size-s);
     font-size: var(--font-size-s);
   }
 
   & > meter {
     inline-size: 100%;
+  }
+}
+
+/* --- Forced colours ---
+   Author colours are replaced by the system palette, which erased the track
+   and painted optimum and even-less-good the same blue. Opt out and draw each
+   state with a distinct system colour + pattern, bounded by a CanvasText
+   track edge. */
+
+@media (forced-colors: active) {
+  meter {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+    background: Canvas;
+
+    &::-webkit-meter-bar {
+      background: Canvas;
+    }
+
+    &::-webkit-meter-optimum-value {
+      background: Highlight;
+    }
+
+    &::-webkit-meter-suboptimum-value {
+      background: repeating-linear-gradient(135deg, Highlight 0 3px, Canvas 3px 5px);
+    }
+
+    &::-webkit-meter-even-less-good-value {
+      background: repeating-linear-gradient(90deg, CanvasText 0 2px, Canvas 2px 4px);
+    }
+
+    &:-moz-meter-optimum::-moz-meter-bar {
+      background: Highlight;
+    }
+
+    &:-moz-meter-sub-optimum::-moz-meter-bar {
+      background: repeating-linear-gradient(135deg, Highlight 0 3px, Canvas 3px 5px);
+    }
+
+    &:-moz-meter-sub-sub-optimum::-moz-meter-bar {
+      background: repeating-linear-gradient(90deg, CanvasText 0 2px, Canvas 2px 4px);
+    }
+
+    &.xs {
+      border-width: 1px;
+    }
   }
 }

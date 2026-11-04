@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "mark"
-description: "The mark element represents text highlighted for reference or notation purposes, with VB status variants for success, warning, and error states."
+description: "The mark element represents text highlighted for its relevance in context, with VB highlight categories (success, warning, error) that stay readable in light, dark and forced-colors modes."
 elementName: mark
 category: native
 nativeGroup: Text Semantics
@@ -13,7 +13,7 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;mark&gt;</code> element represents text highlighted for reference due to its relevance in a particular context. VB styles it with a subtle background derived from <code>var(--color-interactive)</code> using relative oklch colors, plus <code>padding-inline</code> and <code>border-radius</code> for a polished highlight. Three status variants provide semantic color coding.</p>
+    <p>The <code>&lt;mark&gt;</code> element represents text highlighted for reference due to its relevance in a particular context. VB styles it with a subtle background derived from <code>var(--color-interactive)</code> using relative oklch colors, sets the text to <code>var(--color-text)</code> so the highlight stays readable in dark mode, and adds <code>padding-inline</code> and <code>border-radius</code>. Three category classes colour-code different kinds of highlight, for example review annotations.</p>
   </section>
 
   <section>
@@ -21,7 +21,7 @@ crumbLabel: Native Elements
     <ul>
       <li><strong>Search results:</strong> Highlight matching search terms</li>
       <li><strong>Quotations:</strong> Mark parts of a quote that are particularly relevant</li>
-      <li><strong>Status indicators:</strong> Build, test, security status badges</li>
+      <li><strong>Annotations:</strong> Categorise highlights in a review (agreed, query, problem)</li>
       <li><strong>Comparisons:</strong> Highlight differences between items</li>
       <li><strong>User selections:</strong> Show text the user has bookmarked or selected</li>
     </ul>
@@ -30,77 +30,98 @@ crumbLabel: Native Elements
       <li>For semantic emphasis &mdash; use <a href="/docs/elements/native/strong/"><code>&lt;strong&gt;</code></a> or <a href="/docs/elements/native/em/"><code>&lt;em&gt;</code></a></li>
       <li>For purely decorative highlighting &mdash; use CSS <code>background-color</code></li>
       <li>For inserted text &mdash; use <a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a></li>
+      <li>For status (build passing, tests failed) &mdash; <code>&lt;mark&gt;</code> means relevance, not state. Use <a href="/docs/elements/custom-elements/layout-badge/"><code>&lt;layout-badge&gt;</code></a> or a status pattern instead</li>
     </ul>
   </section>
 
   <section>
     <h2>Examples</h2>
 
-    <browser-window src="/docs/snippets/demos/mark-variants.html" url="mark-variants.html" title="Mark variants" shadow></browser-window>
+    <browser-window src="/docs/snippets/demos/mark-variants.html" url="mark-variants.html" title="Mark highlight categories" shadow></browser-window>
 
     <code-block language="html" show-lines label="Default highlight" data-escape><p>Search results: The <mark>progressive</mark> enhancement approach.</p></code-block>
   </section>
 
   <section>
-    <h2>Status Variants</h2>
+    <h2>Highlight Categories</h2>
+    <p>Each category pairs an opaque <code>light-dark()</code> background token with its matching text token, so the text keeps AA contrast in light and dark mode.</p>
 
     <table class="props-table">
       <thead>
         <tr>
           <th>Class</th>
           <th>Background</th>
-          <th>Use Case</th>
+          <th>Text</th>
+          <th>Example use</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>(default)</td>
           <td><code>oklch(from var(--color-interactive) l c h / 0.2)</code></td>
-          <td>Search highlights, general relevance</td>
+          <td><code>var(--color-text)</code></td>
+          <td>Search hits, general relevance</td>
         </tr>
         <tr>
           <td><code>.success</code></td>
-          <td><code>oklch(60% 0.18 145 / 0.2)</code> (green)</td>
-          <td>Passed, approved, complete</td>
+          <td><code>var(--color-success-subtle)</code></td>
+          <td><code>var(--color-success-text)</code></td>
+          <td>Agreed, approved passage</td>
         </tr>
         <tr>
           <td><code>.warning</code></td>
-          <td><code>oklch(75% 0.18 75 / 0.2)</code> (amber)</td>
-          <td>Partial, experimental, caution</td>
+          <td><code>var(--color-warning-subtle)</code></td>
+          <td><code>var(--color-warning-text)</code></td>
+          <td>Query, needs checking</td>
         </tr>
         <tr>
           <td><code>.error</code></td>
-          <td><code>oklch(55% 0.2 25 / 0.2)</code> (red)</td>
-          <td>Failed, vulnerabilities, errors</td>
+          <td><code>var(--color-error-subtle)</code></td>
+          <td><code>var(--color-error-text)</code></td>
+          <td>Problem, must change</td>
         </tr>
       </tbody>
     </table>
 
-    <code-block language="html" show-lines label="Success variant" data-escape><mark class="success">Passed all tests</mark></code-block>
-    <code-block language="html" show-lines label="Warning variant" data-escape><mark class="warning">This feature is experimental</mark></code-block>
-    <code-block language="html" show-lines label="Error variant" data-escape><mark class="error">Invalid input detected</mark></code-block>
+    <code-block language="html" show-lines label="Review annotations" data-escape><p>The draft <mark class="success">reads clearly</mark>, but
+<mark class="warning">the retry limit looks arbitrary</mark> and
+<mark class="error">the token is logged in plain text</mark>.</p></code-block>
+
+    <p>In forced-colors mode every <code>&lt;mark&gt;</code>, whatever its class, renders with the system <code>Mark</code>/<code>MarkText</code> pair. The category colour is lost there, which is one more reason to state the category in text, as shown under Accessibility.</p>
   </section>
 
   <section>
     <h2>CSS Reference</h2>
     <code-block language="css" show-lines label="mark CSS" data-escape>mark {
   background: oklch(from var(--color-interactive) l c h / 0.2);
+  color: var(--color-text);
   padding-inline: var(--size-2xs);
   border-radius: var(--radius-s);
 }
 
 mark.success {
-  background: oklch(60% 0.18 145 / 0.2);
+  background: var(--color-success-subtle);
+  color: var(--color-success-text);
 }
 
 mark.warning {
-  background: oklch(75% 0.18 75 / 0.2);
+  background: var(--color-warning-subtle);
+  color: var(--color-warning-text);
 }
 
 mark.error {
-  background: oklch(55% 0.2 25 / 0.2);
+  background: var(--color-error-subtle);
+  color: var(--color-error-text);
+}
+
+@media (forced-colors: active) {
+  mark,
+  mark:is(.success, .warning, .error) {
+    background: Mark;
+    color: MarkText;
+  }
 }</code-block>
-    <p>The default highlight uses relative oklch color derived from the theme's interactive color, so it adapts automatically to each theme. The status variants use fixed oklch values at 20% opacity for consistent, transparent overlays.</p>
+    <p>The default highlight derives from the theme's interactive colour, so it follows each theme. The category tokens are <code>light-dark()</code> pairs from <code>tokens/colors.css</code>. The journal pack maps the three classes onto its highlighter tints (mint, butter, coral).</p>
   </section>
 
   <section>
@@ -111,20 +132,20 @@ mark.error {
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Some screen readers announce marked text, though support varies</li>
-      <li>Don't rely solely on highlight color to convey meaning &mdash; add text labels for status variants</li>
-      <li>Ensure sufficient contrast between highlighted text and background</li>
-      <li>Provide context for why text is highlighted (e.g., "Search results for...")</li>
+      <li><strong>Assume <code>&lt;mark&gt;</code> is not announced.</strong> VoiceOver and JAWS with default settings say nothing about it, and NVDA says &ldquo;highlighted&rdquo; only in browse mode. The highlight is visual.</li>
+      <li>Don't rely on colour alone. Say what a highlight means in text (&ldquo;3 results for &hellip;&rdquo;) or with a visually hidden prefix on each category, as below.</li>
+      <li>Text uses theme tokens, so contrast holds in light mode, dark mode (<code>prefers-color-scheme</code> or <code>data-mode="dark"</code>) and every category.</li>
+      <li>Forced colours draw every mark with <code>Mark</code>/<code>MarkText</code>, so categories look the same there.</li>
     </ul>
 
     <h3>Adding Screen Reader Context</h3>
-    <p>For status variants, add a <code>visually-hidden</code> label so screen readers announce the state:</p>
+    <p>For category highlights, add a <code>visually-hidden</code> prefix so screen readers hear what the highlight means:</p>
 
     <browser-window src="/docs/snippets/demos/mark-accessible.html" url="mark-accessible.html" title="Accessible mark" shadow></browser-window>
 
     <code-block language="html" show-lines label="Accessible mark with hidden context" data-escape><mark class="error">
-  <span class="visually-hidden">Error: </span>
-  Invalid input detected
+  <span class="visually-hidden">Problem: </span>
+  the date range overlaps last quarter
 </mark></code-block>
   </section>
 
@@ -136,5 +157,6 @@ mark.error {
       <li><a href="/docs/elements/native/b/"><code>&lt;b&gt;</code></a> &mdash; Draw attention without importance</li>
       <li><a href="/docs/elements/native/ins/"><code>&lt;ins&gt;</code></a> &mdash; For inserted text (similar appearance, different meaning)</li>
       <li><a href="/docs/elements/native/del/"><code>&lt;del&gt;</code></a> &mdash; For deleted text (often paired with <code>&lt;ins&gt;</code>)</li>
+      <li><a href="/docs/elements/custom-elements/layout-badge/"><code>&lt;layout-badge&gt;</code></a> &mdash; For status labels</li>
     </ul>
   </section>

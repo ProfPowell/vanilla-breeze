@@ -558,12 +558,19 @@ async function buildCDN() {
     cpSync(atkinsonLicence, join(CDN, 'fonts', 'atkinson-hyperlegible-OFL.txt'));
   }
 
-  // math-init lazily injects <link rel="stylesheet" href="{cdn}/fonts/math-fonts.css">
-  // (an @font-face that pulls the Latin Modern Math face from jsDelivr).
-  const mathFontsCss = join(SRC, 'fonts', 'math-fonts.css');
-  if (existsSync(mathFontsCss)) {
-    mkdirSync(join(CDN, 'fonts'), { recursive: true });
-    cpSync(mathFontsCss, join(CDN, 'fonts', 'math-fonts.css'));
+  // Self-hosted Latin Modern Math. The core bundles' @font-face
+  // (native-elements/math/styles.css) already makes esbuild emit
+  // fonts/latinmodern-math.woff2; math-init also lazily injects the standalone
+  // {cdn}/fonts/math-fonts.css, which points at the same file. Copy the face,
+  // its stylesheet and the GUST Font License explicitly so all three always
+  // travel together.
+  mkdirSync(join(CDN, 'fonts'), { recursive: true });
+  for (const target of [
+    join('fonts', 'math-fonts.css'),
+    join('fonts', 'latinmodern-math.woff2'),
+    join('fonts', 'latinmodern-math-GUST-LICENSE.txt'),
+  ]) {
+    if (existsSync(join(SRC, target))) cpSync(join(SRC, target), join(CDN, target));
   }
 
   // Build charts CSS add-on
