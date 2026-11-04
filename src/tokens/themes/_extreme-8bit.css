@@ -449,24 +449,23 @@
       --browser-window-border-color: var(--color-border-strong);
     }
 
-    /* HP bar style progress */
-    & progress {
+    /* HP bar style progress — fill from --progress-fill so .success/.warning/
+       .error still apply; enhanced rings keep their own geometry */
+    & progress:not([data-type="ring"][data-enhanced]) {
       appearance: none;
       height: 1rem;
       border: var(--_8bit-border-pixel) solid var(--color-border-strong);
       background: oklch(10% 0 0);
 
-      &::-webkit-progress-bar {
+      &:not(:indeterminate)::-webkit-progress-bar {
         background: oklch(10% 0 0);
       }
 
       &::-webkit-progress-value {
         background: repeating-linear-gradient(
           90deg,
-          var(--color-primary),
-          var(--color-primary) 8px,
-          var(--color-primary-hover) 8px,
-          var(--color-primary-hover) 16px
+          var(--progress-fill) 0 8px,
+          oklch(from var(--progress-fill) calc(l - 0.1) c h) 8px 16px
         );
       }
     }

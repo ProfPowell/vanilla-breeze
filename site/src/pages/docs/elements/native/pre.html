@@ -18,7 +18,7 @@ crumbLabel: Native Elements
       <li><strong><code>&lt;pre&gt;&lt;code&gt;</code></strong> and <strong><code>&lt;pre&gt;&lt;samp&gt;</code></strong> (code and output blocks) &mdash; Full treatment with background, padding and border-radius</li>
       <li><strong>Bare <code>&lt;pre&gt;</code></strong> (no <code>&lt;code&gt;</code> or <code>&lt;samp&gt;</code> child) &mdash; Lighter treatment with no background, for ASCII art, poetry, or other preformatted text that isn't code</li>
     </ul>
-    <p>Both keep <code>white-space: pre</code> and scroll horizontally when a line is too long &mdash; lines never reflow, so character alignment in ASCII art and code survives narrow viewports. The distinction uses <code>pre:has(code, samp)</code> &mdash; no classes needed.</p>
+    <p>Both keep <code>white-space: pre</code> and scroll horizontally when a line is too long &mdash; on screen lines never reflow (print wraps them; see Print below), so character alignment in ASCII art and code survives narrow viewports. The distinction uses <code>pre:has(code, samp)</code> &mdash; no classes needed.</p>
     <p>Machine translation tools will happily translate code and ASCII art. Add the HTML <code>translate="no"</code> attribute to opt a block out:</p>
     <code-block language="html" label="Opt out of machine translation" data-escape><pre translate="no"><code>const total = items.length;</code></pre></code-block>
   </section>
@@ -97,6 +97,16 @@ And that has made all the difference.</pre></code-block>
   </section>
 
   <section>
+    <h2>Right-to-left Pages</h2>
+    <p>Source code and terminal output read left to right in every language. On a <code>dir="rtl"</code> page an inherited RTL direction would right-align each line and let the bidi algorithm move leading and trailing punctuation to the wrong end, so VB sets <code>direction: ltr</code> on <code>pre:has(code, samp)</code>. RTL strings inside the code still render right to left within the line. To opt a block out, put an explicit <code>dir</code> on the <code>&lt;pre&gt;</code>.</p>
+    <p>Bare <code>&lt;pre&gt;</code> (poetry, ASCII art) follows the page direction, because its content may be in the page's language. Add <code>dir="ltr"</code> yourself for left-to-right ASCII art on an RTL page.</p>
+    <code-block language="html" label="Code block on an RTL page" data-escape><html lang="ar" dir="rtl">
+  …
+  <pre><code>greet('World');</code></pre>  <!-- stays LTR -->
+  <pre dir="rtl"><code>…</code></pre>          <!-- explicit opt-out --></code-block>
+  </section>
+
+  <section>
     <h2>CSS Reference</h2>
     <p>See <code>src/native-elements/code/styles.css</code> for the full rules.</p>
 
@@ -120,10 +130,23 @@ And that has made all the difference.</pre></code-block>
       </tbody>
     </table>
 
+    <p>Both set <code>tab-size: var(--tab-size, 4)</code>, so tab-indented code renders four columns wide instead of the browser default of eight. Set <code>--tab-size</code> on a block or ancestor to change it. Code blocks also get <code>direction: ltr</code> (see above). In forced-colors mode, code blocks get a <code>CanvasText</code> border, because the background fill is removed, and bold highlights inside <code>&lt;pre&gt;</code> use the system <code>Mark</code> / <code>MarkText</code> colours.</p>
+
     <h3>Print</h3>
-    <code-block language="css" label="Print styles" data-escape>/* Print: pre blocks avoid page breaks */
-@media print {
-  pre { break-inside: avoid; }
+    <p>With the opt-in print stylesheet (<code>src/utils/print.css</code>), long lines <em>do</em> wrap on paper, because a page can't scroll. Wrapping keeps code readable, but it breaks the alignment of wide ASCII art, so keep printable ASCII art narrow.</p>
+    <code-block language="css" label="Print styles (src/utils/print.css)" data-escape>@media print {
+  /* Don't split a block across pages */
+  pre {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Wrap instead of overflowing the page */
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 1px solid #999;
+  }
 }</code-block>
   </section>
 
@@ -131,8 +154,7 @@ And that has made all the difference.</pre></code-block>
     <h2>Accessibility</h2>
     <ul>
       <li>Screen readers read <code>&lt;pre&gt;</code> content in its linear order</li>
-      <li>Add <code>tabindex="0"</code> to scrollable code blocks so keyboard users can scroll with arrow keys</li>
-      <li>Add <code>role="region"</code> and <code>aria-label</code> for complex code blocks that benefit from a landmark</li>
+      <li>Make a block that can overflow keyboard-scrollable with <code>tabindex="0"</code>. Chromium and Firefox focus scroll containers automatically; Safari does not. <strong>Whenever you add <code>tabindex</code>, also add <code>role="region"</code> and an <code>aria-label</code></strong> (for example <code>aria-label="Install script"</code>) &mdash; a focusable element with no role or name is announced as an unlabelled stop. See the long-line example above.</li>
       <li>ASCII art is inaccessible to screen readers &mdash; wrap it in a <code>&lt;figure&gt;</code> with <code>role="img"</code> and an <code>aria-label</code> describing what it depicts (<code>&lt;pre&gt;</code> itself has no <code>alt</code>, and <code>aria-label</code> is not allowed on its generic role)</li>
       <li>Add <code>translate="no"</code> to code, output and ASCII art so browser translation leaves it intact</li>
     </ul>

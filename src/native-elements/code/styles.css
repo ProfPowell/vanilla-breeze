@@ -20,19 +20,44 @@ pre {
   font-size: var(--font-size-s);
   overflow-x: auto;
   white-space: pre;
+  /* The UA default of 8 columns spreads tab-indented code far too wide */
+  tab-size: var(--tab-size, 4);
 }
 
-/* Code and output blocks: pre containing code or samp gets full treatment */
+/* Code and output blocks: pre containing code or samp gets full treatment.
+   Source code and terminal output are left-to-right even on a dir="rtl"
+   page — inheriting RTL right-aligns the lines and the bidi algorithm moves
+   leading/trailing punctuation to the wrong end. An explicit dir on the pre
+   still wins. */
 pre:has(code, samp) {
   background: var(--color-surface-raised);
   padding: var(--size-m);
   border-radius: var(--radius-m);
+
+  &:not([dir]) {
+    direction: ltr;
+  }
 
   & :is(code, samp) {
     background: transparent;
     padding: 0;
     font-size: inherit;
     overflow-wrap: normal;
+  }
+}
+
+/* Forced colours drop the surface fill, so the block lost its edge and the
+   bold-in-code highlight (paragraph/styles.css) vanished. Draw the edge in
+   CanvasText and paint highlighted spans with the system Mark colours. */
+@media (forced-colors: active) {
+  pre:has(code, samp) {
+    border: 1px solid CanvasText;
+  }
+
+  pre :where(b, strong) {
+    forced-color-adjust: none;
+    background-color: Mark;
+    color: MarkText;
   }
 }
 
