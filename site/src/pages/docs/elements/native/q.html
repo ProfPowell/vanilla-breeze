@@ -13,7 +13,7 @@ crumbLabel: Native Elements
 
 <section>
     <h2>Description</h2>
-    <p>The <code>&lt;q&gt;</code> element marks an inline quotation. The browser inserts quotation marks automatically via CSS <code>quotes</code>. VB's <a href="/docs/i18n/">i18n system</a> provides locale-specific quotation marks for 11+ languages &mdash; English, German, French, Italian, Spanish, Portuguese, Polish, Japanese, Chinese, Korean, Russian, and Arabic.</p>
+    <p>The <code>&lt;q&gt;</code> element marks an inline quotation. The browser inserts quotation marks automatically via CSS <code>quotes</code>. VB's <a href="/docs/i18n/">i18n system</a> starts from <code>quotes: auto</code> (the browser picks marks for the quotation's language) and pins explicit marks for English, German (incl. Swiss), French, Italian, Spanish, Portuguese (Brazil and Portugal), Polish, Japanese, Chinese (Simplified and Traditional), Korean, Russian, and Arabic.</p>
     <p>For longer quotations that require paragraph breaks, use <a href="/docs/elements/native/blockquote/"><code>&lt;blockquote&gt;</code></a>.</p>
   </section>
 
@@ -49,12 +49,15 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Locale-Aware Quotes</h2>
-    <p>VB's <a href="/docs/i18n/">i18n stylesheet</a> sets the CSS <code>quotes</code> property per language using <code>:lang()</code> selectors. Set <code>lang</code> on the element or any ancestor and the correct quotation marks appear automatically.</p>
+    <p>VB's <a href="/docs/i18n/">i18n stylesheet</a> sets the CSS <code>quotes</code> property per language using <code>:lang()</code> selectors. Set <code>lang</code> on the <code>&lt;q&gt;</code> itself or on any ancestor and the matching quotation marks appear. The nearest <code>lang</code> wins, so a foreign-language quotation inside English text gets its own marks, and a <code>&lt;q lang="en"&gt;</code> inside Japanese text gets English marks.</p>
 
     <code-block language="html" show-lines label="Locale examples" data-escape><p lang="en">English: <q>Hello</q></p>
 <p lang="de">German: <q>Hallo</q></p>
 <p lang="fr">French: <q>Bonjour</q></p>
-<p lang="ja">Japanese: <q>こんにちは</q></p></code-block>
+<p lang="ja">Japanese: <q>こんにちは</q></p>
+
+<!-- lang on the quotation itself -->
+<p>Voltaire wrote <q lang="fr">Il faut cultiver notre jardin</q>.</p></code-block>
 
     <table class="props-table">
       <thead>
@@ -65,29 +68,45 @@ crumbLabel: Native Elements
         </tr>
       </thead>
       <tbody>
-        <tr><td>English (US)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
-        <tr><td>English (GB, AU, NZ)</td><td>&lsquo;...&rsquo;</td><td>&ldquo;...&rdquo;</td></tr>
-        <tr><td>German</td><td>&bdquo;...&ldquo;</td><td>&sbquo;...&lsquo;</td></tr>
-        <tr><td>French</td><td>&laquo;&#x202F;...&#x202F;&raquo;</td><td>&lsaquo;&#x202F;...&#x202F;&rsaquo;</td></tr>
-        <tr><td>Japanese / Chinese</td><td>&#x300C;...&#x300D;</td><td>&#x300E;...&#x300F;</td></tr>
-        <tr><td>Russian</td><td>&laquo;...&raquo;</td><td>&bdquo;...&ldquo;</td></tr>
-        <tr><td>Arabic</td><td>&laquo;...&raquo;</td><td>&lsquo;...&rsquo;</td></tr>
+        <tr><td>English (<code>en</code>)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+        <tr><td>English (<code>en-GB</code>, <code>en-AU</code>, <code>en-NZ</code>)</td><td>&lsquo;...&rsquo;</td><td>&ldquo;...&rdquo;</td></tr>
+        <tr><td>German (<code>de</code>)</td><td>&bdquo;...&ldquo;</td><td>&sbquo;...&lsquo;</td></tr>
+        <tr><td>Swiss German (<code>de-CH</code>)</td><td>&laquo;...&raquo;</td><td>&lsaquo;...&rsaquo;</td></tr>
+        <tr><td>French (<code>fr</code>)</td><td>&laquo;&#x202F;...&#x202F;&raquo;</td><td>&lsaquo;&#x202F;...&#x202F;&rsaquo;</td></tr>
+        <tr><td>Italian / Spanish / European Portuguese (<code>it</code>, <code>es</code>, <code>pt-PT</code>)</td><td>&laquo;...&raquo;</td><td>&ldquo;...&rdquo;</td></tr>
+        <tr><td>Portuguese (<code>pt</code>, <code>pt-BR</code>)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+        <tr><td>Polish (<code>pl</code>)</td><td>&bdquo;...&rdquo;</td><td>&laquo;...&raquo;</td></tr>
+        <tr><td>Japanese (<code>ja</code>)</td><td>&#x300C;...&#x300D;</td><td>&#x300E;...&#x300F;</td></tr>
+        <tr><td>Chinese, Traditional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>, <code>zh-MO</code>)</td><td>&#x300C;...&#x300D;</td><td>&#x300E;...&#x300F;</td></tr>
+        <tr><td>Chinese, Simplified (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+        <tr><td>Korean (<code>ko</code>)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+        <tr><td>Russian (<code>ru</code>)</td><td>&laquo;...&raquo;</td><td>&bdquo;...&ldquo;</td></tr>
+        <tr><td>Arabic (<code>ar</code>)</td><td>&laquo;...&raquo;</td><td>&lsquo;...&rsquo;</td></tr>
+        <tr><td>Any other language</td><td colspan="2"><code>quotes: auto</code> &mdash; the browser's own table for that language</td></tr>
       </tbody>
     </table>
   </section>
 
   <section>
     <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="Locale-aware quotes CSS" data-escape>q { quotes: "\201C" "\201D" "\2018" "\2019"; }  /* English "..." '...' */
+    <code-block language="css" show-lines label="Locale-aware quotes CSS (excerpt)" data-escape>/* Base: the browser's own table for the element's language */
+:is(q, cite[data-variant="quoted"]) { quotes: auto; }
 
-:lang(de) q { quotes: "\201E" "\201C" "\201A" "\2018"; }  /* German „..." */
-:lang(fr) q { quotes: "\00AB\202F" "\202F\00BB" "\2039\202F" "\202F\203A"; }  /* French «...» */
-:lang(ja) q { quotes: "\300C" "\300D" "\300E" "\300F"; }  /* Japanese 「...」 */
-:lang(ru) q { quotes: "\00AB" "\00BB" "\201E" "\201C"; }  /* Russian «...» */
+/* q:lang(x), not :lang(x) q — so lang on the <q> itself works too */
+:is(q, cite[data-variant="quoted"]):lang(en) { quotes: "\201C" "\201D" "\2018" "\2019"; }
+:is(q, cite[data-variant="quoted"]):lang(de) { quotes: "\201E" "\201C" "\201A" "\2018"; }
+:is(q, cite[data-variant="quoted"]):lang(de-CH) { quotes: "\00AB" "\00BB" "\2039" "\203A"; }
+:is(q, cite[data-variant="quoted"]):lang(fr) { quotes: "\00AB\202F" "\202F\00BB" "\2039\202F" "\202F\203A"; }
+:is(q, cite[data-variant="quoted"]):lang(zh) { quotes: "\201C" "\201D" "\2018" "\2019"; }
+:is(q, cite[data-variant="quoted"]):is(:lang(zh-Hant), :lang(zh-TW), :lang(zh-HK), :lang(zh-MO)) {
+  quotes: "\300C" "\300D" "\300E" "\300F";
+}
+/* … full table in src/native-elements/i18n/styles.css */
 
 q::before { content: open-quote; }
 q::after  { content: close-quote; }</code-block>
-    <p>French quotes include narrow non-breaking spaces (<code>\202F</code>) inside the guillemets, matching French typographic convention.</p>
+    <p>French quotes include narrow non-breaking spaces (<code>\202F</code>) inside the guillemets, matching French typographic convention. The same table applies to <code>&lt;cite data-variant="quoted"&gt;</code>.</p>
+    <p><strong>Copy and paste:</strong> the marks are generated by CSS (<code>::before</code> / <code>::after</code> content), so copying a quotation copies the words without the quotation marks. If the marks must survive copying or plain-text export, type them in the text instead of using <code>&lt;q&gt;</code>.</p>
   </section>
 
   <section>
@@ -112,7 +131,7 @@ q::after  { content: close-quote; }</code-block>
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Screen readers typically announce the quotation marks the browser inserts</li>
+      <li>Whether a screen reader speaks the generated quotation marks depends on its punctuation verbosity setting; do not rely on the marks alone to convey that text is quoted when it matters (say who is speaking in the text)</li>
       <li>The semantic markup distinguishes quoted text from regular content</li>
       <li>Nested quotes alternate between outer and inner quote styles</li>
     </ul>

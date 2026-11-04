@@ -50,26 +50,26 @@ toc: true
 }</code-block>
 
 <h2>Ruby Visibility</h2>
-<p>Control ruby annotation display with <code>data-ruby</code> on <code>&lt;html&gt;</code>:</p>
+<p>Ruby annotations are visible by default on every page. Put <code>data-ruby</code> on <code>&lt;html&gt;</code>, any ancestor, or the <code>&lt;ruby&gt;</code> itself to change that for its subtree; the nearest <code>data-ruby</code> wins:</p>
 
 <table>
   <thead>
     <tr><th>Value</th><th>Behavior</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>show</code></td><td>Always visible</td></tr>
-    <tr><td><code>hide</code></td><td>Visually hidden, kept in DOM for accessibility</td></tr>
-    <tr><td><code>auto</code></td><td>Visible for CJK languages, hidden otherwise</td></tr>
-    <tr><td>(absent)</td><td>Browser default</td></tr>
+    <tr><td>(absent)</td><td>Visible (browser default)</td></tr>
+    <tr><td><code>show</code></td><td>Visible; undoes an outer <code>hide</code> or <code>auto</code></td></tr>
+    <tr><td><code>hide</code></td><td>Visually hidden, still in the accessibility tree</td></tr>
+    <tr><td><code>auto</code></td><td>Visible when the annotation's own language is CJK (<code>ja</code>, <code>zh</code>, <code>ko</code>, <code>yue</code>, <code>wuu</code>), visually hidden otherwise</td></tr>
   </tbody>
 </table>
 
 <code-block language="html" label="Ruby visibility control" data-escape><html lang="ja" data-ruby="auto">
 <body>
-  <!-- Ruby visible because lang="ja" -->
+  <!-- Visible: the annotation's language is ja -->
   <ruby>漢<rt>かん</rt></ruby><ruby>字<rt>じ</rt></ruby>
 
-  <!-- English section: ruby hidden in auto mode -->
+  <!-- English section: hidden in auto mode -->
   <section lang="en">
     <ruby>ruby<rt>annotation</rt></ruby>
   </section>
@@ -87,13 +87,17 @@ toc: true
     <tr><td>English (US)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
     <tr><td>English (GB, AU, NZ)</td><td>&lsquo;...&rsquo;</td><td>&ldquo;...&rdquo;</td></tr>
     <tr><td>German</td><td>&bdquo;...&ldquo;</td><td>&sbquo;...&lsquo;</td></tr>
+    <tr><td>Swiss German (de-CH)</td><td>&laquo;...&raquo;</td><td>&lsaquo;...&rsaquo;</td></tr>
     <tr><td>French</td><td>&laquo;&#x202F;...&#x202F;&raquo;</td><td>&lsaquo;&#x202F;...&#x202F;&rsaquo;</td></tr>
-    <tr><td>Italian / Spanish / Portuguese</td><td>&laquo;...&raquo;</td><td>&ldquo;...&rdquo;</td></tr>
-    <tr><td>Polish</td><td>&laquo;...&raquo;</td><td>&bdquo;...&ldquo;</td></tr>
-    <tr><td>Japanese / Chinese</td><td>&#x300C;...&#x300D;</td><td>&#x300E;...&#x300F;</td></tr>
+    <tr><td>Italian / Spanish / Portuguese (pt-PT)</td><td>&laquo;...&raquo;</td><td>&ldquo;...&rdquo;</td></tr>
+    <tr><td>Portuguese (pt, pt-BR)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
+    <tr><td>Polish</td><td>&bdquo;...&rdquo;</td><td>&laquo;...&raquo;</td></tr>
+    <tr><td>Japanese / Chinese Traditional (zh-Hant, TW, HK, MO)</td><td>&#x300C;...&#x300D;</td><td>&#x300E;...&#x300F;</td></tr>
+    <tr><td>Chinese Simplified (zh, zh-Hans)</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
     <tr><td>Korean</td><td>&ldquo;...&rdquo;</td><td>&lsquo;...&rsquo;</td></tr>
     <tr><td>Russian</td><td>&laquo;...&raquo;</td><td>&bdquo;...&ldquo;</td></tr>
     <tr><td>Arabic</td><td>&laquo;...&raquo;</td><td>&lsquo;...&rsquo;</td></tr>
+    <tr><td>Any other language</td><td colspan="2">Browser default (<code>quotes: auto</code>)</td></tr>
   </tbody>
 </table>
 

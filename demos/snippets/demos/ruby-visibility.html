@@ -7,23 +7,25 @@
   <link rel="stylesheet" href="/src/main.css" />
   <style>
     body { padding: var(--size-l); background: var(--color-surface); }
+    section > p { font-size: var(--font-size-xl); }
   </style>
 </head>
 <body>
   <h1>Ruby Visibility Control</h1>
   <layout-stack data-layout-gap="l">
     <section>
-      <h2>Default (always visible)</h2>
-      <p style="font-size: var(--font-size-xl);">
-        <ruby>漢字<rp>(</rp><rt>かんじ</rt><rp>)</rp></ruby>
-      </p>
+      <h2>Default (no data-ruby): visible</h2>
+      <p lang="ja"><ruby>漢字<rp>(</rp><rt>かんじ</rt><rp>)</rp></ruby>を<ruby>読<rp>(</rp><rt>よ</rt><rp>)</rp></ruby>む</p>
     </section>
-    <section>
-      <h2>Simulated "hide" mode</h2>
-      <p style="font-size: var(--font-size-xl);">
-        <ruby>漢字<rp>(</rp><rt style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0);">かんじ</rt><rp>)</rp></ruby>
-        <small>(Ruby text is visually hidden but remains in the DOM for screen readers)</small>
-      </p>
+    <section data-ruby="hide">
+      <h2>data-ruby="hide": visually hidden, kept in the accessibility tree</h2>
+      <p lang="ja"><ruby>漢字<rp>(</rp><rt>かんじ</rt><rp>)</rp></ruby>を<ruby>読<rp>(</rp><rt>よ</rt><rp>)</rp></ruby>む</p>
+      <p data-ruby="show"><ruby lang="ja">漢字<rp>(</rp><rt>かんじ</rt><rp>)</rp></ruby> — nested <code>data-ruby="show"</code> wins</p>
+    </section>
+    <section data-ruby="auto">
+      <h2>data-ruby="auto": only CJK annotations show</h2>
+      <p><ruby lang="ja">漢字<rp>(</rp><rt>かんじ</rt><rp>)</rp></ruby> (Japanese: shown)</p>
+      <p><ruby>Versailles<rp>(</rp><rt>vair-SIGH</rt><rp>)</rp></ruby> (English: hidden)</p>
     </section>
   </layout-stack>
   <script type="module" src="/src/main.js"></script>

@@ -43,7 +43,8 @@ export const RTL_LANGUAGES = new Set([
   'yi',   // Yiddish
 ]);
 
-// Languages where ruby annotation is conventional
+// Languages where ruby annotation is conventional. Keep in sync with the
+// data-ruby="auto" and rt font rules in src/native-elements/i18n/styles.css.
 export const RUBY_LANGUAGES = new Set(['ja', 'zh', 'ko', 'yue', 'wuu']);
 
 /**
