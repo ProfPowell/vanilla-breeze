@@ -2,70 +2,359 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "reader-view",
   "type": "web-component",
-  "description": "Immersive reading shell with scroll and paged modes.",
+  "description": "Immersive reading shell with scroll and paged modes. Moves its children into a layout-columns surface with a chrome bar, page navigation, font and column controls.",
   "attributes": [
-    {
-      "name": "upgraded",
-      "kind": "host-api",
-      "purpose": "config"
-    },
     {
       "name": "mode",
       "kind": "host-api",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "scroll",
+        "pages"
+      ],
+      "default": "scroll",
+      "direction": "both",
+      "description": "Reading mode. Observed and reflected. pages is a full-viewport overlay: the rest of the page is made inert, document scroll is locked, focus moves into the pager, Escape returns to scroll."
     },
     {
       "name": "columns",
       "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "auto",
+        "1",
+        "2",
+        "3"
+      ],
+      "default": "auto",
+      "direction": "both",
+      "description": "Column count in pages mode. Observed and reflected."
     },
     {
       "name": "font-controls",
       "kind": "host-api",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "true",
+        "false"
+      ],
+      "default": "true",
+      "description": "Set to false to omit the font-size buttons from the default chrome."
     },
     {
       "name": "col-controls",
       "kind": "host-api",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "true",
+        "false"
+      ],
+      "default": "true",
+      "description": "Set to false to omit the column picker from the default chrome."
     },
     {
       "name": "reader-title",
       "kind": "host-api",
-      "purpose": "config"
-    },
-    {
-      "name": "disabled",
-      "kind": "native",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "description": "Chrome bar title. Falls back to the first <h1>, then document.title."
     },
     {
       "name": "persist",
       "kind": "host-api",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "true",
+        "false"
+      ],
+      "default": "true",
+      "description": "Set to false to disable localStorage persistence of font size, columns (and mode with data-remember-mode)."
     },
     {
       "name": "storage-key",
       "kind": "host-api",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "string",
+      "description": "localStorage key. Defaults to vb-reader:<location.pathname>, plus #<id> when the element has an id."
     },
     {
-      "name": "data-reader-state",
+      "name": "data-remember-mode",
       "kind": "data",
-      "purpose": "config"
+      "purpose": "config",
+      "type": "boolean",
+      "description": "Opt in to restoring the persisted mode (including pages) on load. Without it only font size and columns are restored; an authored mode attribute always wins."
+    },
+    {
+      "name": "data-label-kicker",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Reader",
+      "description": "Override the \"Reader\" string."
+    },
+    {
+      "name": "data-label-controls",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Reading controls",
+      "description": "Override the \"Reading controls\" string."
+    },
+    {
+      "name": "data-label-mode-group",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Reading mode",
+      "description": "Override the \"Reading mode\" string."
+    },
+    {
+      "name": "data-label-mode",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Mode",
+      "description": "Override the \"Mode\" string."
+    },
+    {
+      "name": "data-label-scroll",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Scroll",
+      "description": "Override the \"Scroll\" string."
+    },
+    {
+      "name": "data-label-pages",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Pages",
+      "description": "Override the \"Pages\" string."
+    },
+    {
+      "name": "data-label-font-group",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Font size",
+      "description": "Override the \"Font size\" string."
+    },
+    {
+      "name": "data-label-type",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Type",
+      "description": "Override the \"Type\" string."
+    },
+    {
+      "name": "data-label-font-decrease",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Decrease font size",
+      "description": "Override the \"Decrease font size\" string."
+    },
+    {
+      "name": "data-label-font-increase",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Increase font size",
+      "description": "Override the \"Increase font size\" string."
+    },
+    {
+      "name": "data-label-columns-group",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Page columns",
+      "description": "Override the \"Page columns\" string."
+    },
+    {
+      "name": "data-label-cols",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Cols",
+      "description": "Override the \"Cols\" string."
+    },
+    {
+      "name": "data-label-auto",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Auto",
+      "description": "Override the \"Auto\" string."
+    },
+    {
+      "name": "data-label-column-auto",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Auto columns",
+      "description": "Override the \"Auto columns\" string."
+    },
+    {
+      "name": "data-label-column-1",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "1 column",
+      "description": "Override the \"1 column\" string."
+    },
+    {
+      "name": "data-label-column-2",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "2 columns",
+      "description": "Override the \"2 columns\" string."
+    },
+    {
+      "name": "data-label-column-3",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "3 columns",
+      "description": "Override the \"3 columns\" string."
+    },
+    {
+      "name": "data-label-pages-region",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Article pages",
+      "description": "Override the \"Article pages\" string."
+    },
+    {
+      "name": "data-label-page-nav",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Page navigation",
+      "description": "Override the \"Page navigation\" string."
+    },
+    {
+      "name": "data-label-prev",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Previous page",
+      "description": "Override the \"Previous page\" string."
+    },
+    {
+      "name": "data-label-next",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Next page",
+      "description": "Override the \"Next page\" string."
+    },
+    {
+      "name": "data-label-page-indicator",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "{page} / {total}",
+      "description": "Override the \"{page} / {total}\" string ({page} and {total} are replaced)."
+    }
+  ],
+  "events": [
+    {
+      "name": "reader-view:mode",
+      "detail": "{ mode: 'scroll' | 'pages' }",
+      "description": "Mode changed (not fired for the initial mode on upgrade)."
+    },
+    {
+      "name": "reader-view:page",
+      "detail": "{ page: number, total: number }",
+      "description": "Current page changed in pages mode (page is 1-based)."
+    },
+    {
+      "name": "reader-view:font",
+      "detail": "{ size: string, index: number }",
+      "description": "Font size stepped up or down."
+    }
+  ],
+  "slots": [
+    {
+      "name": "chrome",
+      "description": "Replaces the default chrome bar. Wire controls with data-reader-action / data-reader-value / data-reader-output."
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--reader-view-z",
+      "description": "z-index of the pages-mode overlay (default var(--z-overlay))."
+    }
+  ],
+  "childAttributes": [
+    {
+      "name": "data-reader-action",
+      "on": "button",
+      "type": "enum",
+      "values": [
+        "toggle-mode",
+        "set-mode-scroll",
+        "set-mode-pages",
+        "font-increase",
+        "font-decrease",
+        "set-columns",
+        "prev-page",
+        "next-page"
+      ],
+      "description": "Action wired by click delegation (default and slotted chrome)."
+    },
+    {
+      "name": "data-reader-value",
+      "on": "button",
+      "type": "enum",
+      "values": [
+        "auto",
+        "1",
+        "2",
+        "3"
+      ],
+      "description": "Column value for data-reader-action=\"set-columns\"."
+    },
+    {
+      "name": "data-reader-output",
+      "on": "output",
+      "type": "enum",
+      "values": [
+        "page-indicator",
+        "mode-label"
+      ],
+      "description": "Filled by the runtime with the page indicator text or the current mode label."
     },
     {
       "name": "aria-pressed",
-      "kind": "aria",
-      "purpose": "config"
+      "on": "button",
+      "type": "enum",
+      "values": [
+        "true",
+        "false"
+      ],
+      "description": "Set by the runtime on set-mode-*, set-columns and toggle-mode buttons (runtime)."
+    },
+    {
+      "name": "data-reader-state",
+      "on": "button",
+      "type": "enum",
+      "values": [
+        "active",
+        ""
+      ],
+      "description": "Styling hook mirroring aria-pressed on mode and column buttons (runtime)."
     }
   ],
-  "childAttributes": [],
   "structure": [],
   "htmlvalidate": {
     "flow": true,

@@ -13,7 +13,7 @@ test.describe('reader-view — baseline', () => {
 
   test('renders with upgraded attribute', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('reader-view[upgraded]');
+    await page.waitForSelector('reader-view[data-upgraded]');
 
     const rv = page.locator('reader-view').first();
     await expect(rv).toBeVisible();
@@ -21,7 +21,7 @@ test.describe('reader-view — baseline', () => {
 
   test('content is readable inside the component', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('reader-view[upgraded]');
+    await page.waitForSelector('reader-view[data-upgraded]');
 
     const hasContent = await page.evaluate(() => {
       const rv = document.querySelector('reader-view');
@@ -35,36 +35,27 @@ test.describe('reader-view — baseline', () => {
 test.describe('reader-view — persistence precedence', () => {
 
   test('explicit mode attribute wins over saved state', async ({ page }) => {
-    // Pre-seed localStorage with a different mode
     await page.goto(demoPage);
-    await page.waitForSelector('reader-view[upgraded]');
+    await page.waitForSelector('reader-view[data-upgraded]');
 
-    const result = await page.evaluate(() => {
-      const rv = document.querySelector('reader-view');
-      const key = rv.getAttribute('storage-key') || 'vb-reader';
-
-      // Save "pages" to storage
+    // A fresh reader that opts into mode persistence, with "pages" saved,
+    // must still honour its authored mode="scroll".
+    const mode = await page.evaluate(() => {
+      const key = 'vb-reader-precedence-test';
       localStorage.setItem(key, JSON.stringify({ mode: 'pages', sizeIdx: 2, columns: 'auto' }));
-
-      // Disconnect and reconnect with explicit mode="scroll"
-      const parent = rv.parentElement;
+      const rv = document.createElement('reader-view');
+      rv.setAttribute('storage-key', key);
+      rv.setAttribute('data-remember-mode', '');
       rv.setAttribute('mode', 'scroll');
-      parent.removeChild(rv);
-      parent.appendChild(rv);
-
-      return new Promise(resolve => {
-        requestAnimationFrame(() => {
-          // Clean up
-          localStorage.removeItem(key);
-          resolve({
-            upgraded: rv.hasAttribute('upgraded'),
-            // The component should honor the authored mode, not the persisted one
-          });
-        });
-      });
+      rv.innerHTML = '<article><p>Precedence</p></article>';
+      document.body.append(rv);
+      const result = rv.getAttribute('mode');
+      rv.remove();
+      localStorage.removeItem(key);
+      return result;
     });
 
-    expect(result.upgraded).toBe(true);
+    expect(mode).toBe('scroll');
   });
 });
 
@@ -72,7 +63,7 @@ test.describe('reader-view — lifecycle', () => {
 
   test('reconnect re-establishes resize handling', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('reader-view[upgraded]');
+    await page.waitForSelector('reader-view[data-upgraded]');
 
     const result = await page.evaluate(() => {
       const rv = document.querySelector('reader-view');
@@ -84,7 +75,7 @@ test.describe('reader-view — lifecycle', () => {
       return new Promise(resolve => {
         requestAnimationFrame(() => {
           resolve({
-            upgraded: rv.hasAttribute('upgraded'),
+            upgraded: rv.hasAttribute('data-upgraded'),
             hasContent: rv.textContent.trim().length > 0,
           });
         });
@@ -100,7 +91,7 @@ test.describe('reader-view — keyboard scope', () => {
 
   test('keyboard paging does not hijack button focus', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('reader-view[upgraded]');
+    await page.waitForSelector('reader-view[data-upgraded]');
 
     // Find a button inside the reader chrome
     const button = page.locator('reader-view button').first();
@@ -125,7 +116,7 @@ test.describe('reader-view — multi-instance', () => {
 
   test('pages mode is exclusive (only one at a time)', async ({ page }) => {
     await page.goto(demoPage);
-    await page.waitForSelector('reader-view[upgraded]');
+    await page.waitForSelector('reader-view[data-upgraded]');
 
     // This documents the constraint — only one reader can be in pages mode
     const result = await page.evaluate(() => {

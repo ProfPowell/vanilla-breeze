@@ -8,15 +8,33 @@ reader-view:not(:defined) {
   display: block;
 }
 
-/* -- Full-viewport shell (pages mode) -- */
+/* -- Full-viewport shell (pages mode) --
+   A fullscreen overlay: JS makes the rest of the page inert and moves
+   focus in; the document scroll is locked below. --reader-view-z defaults
+   to the overlay layer so sticky site headers stay underneath. */
 
 reader-view[mode="pages"] {
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: var(--reader-view-z, var(--z-overlay, 9000));
   display: grid;
   grid-template-rows: var(--_reader-chrome-h, 3.625rem) 2px 1fr;
-  background: var(--color-background, #fff);
+  background: var(--color-background, Canvas);
+}
+
+@media screen {
+  html:has(reader-view[mode="pages"]) {
+    overflow: hidden;
+  }
+}
+
+/* Only the container that holds the content is shown */
+reader-view:not([mode="pages"]) :is(.reader-pager, .reader-page-nav, .reader-progress) {
+  display: none;
+}
+
+reader-view[mode="pages"] .reader-scroll {
+  display: none;
 }
 
 @scope (reader-view) {
@@ -128,7 +146,7 @@ reader-view[mode="pages"] {
     background: var(--color-surface-raised, rgba(0, 0, 0, 0.06));
   }
 
-  .reader-seg-btn[data-reader-state="active"] {
+  .reader-seg-btn[aria-pressed="true"] {
     color: var(--color-text-on-interactive-auto, #fff);
     background: var(--color-interactive, oklch(55% 0.2 260));
   }
@@ -143,7 +161,7 @@ reader-view[mode="pages"] {
 
   .reader-progress {
     background: var(--color-interactive, oklch(55% 0.2 260));
-    transform-origin: left;
+    transform-origin: left center;
     transform: scaleX(var(--_progress, 0));
     transition: transform var(--motion-duration-normal, 180ms) var(--motion-ease-out, ease-out);
     pointer-events: none;
@@ -163,8 +181,13 @@ reader-view[mode="pages"] {
 
   /* -- Pager container -- */
 
+  .reader-book {
+    position: relative;
+    min-block-size: 0;
+    overflow: hidden;
+  }
+
   .reader-pager {
-    display: none;
     position: relative;
     inline-size: 100%;
     block-size: 100%;
@@ -176,6 +199,11 @@ reader-view[mode="pages"] {
   }
 
   .reader-pager::-webkit-scrollbar { display: none; }
+
+  .reader-pager:focus-visible {
+    outline: var(--border-width-medium, 2px) solid var(--color-interactive, Highlight);
+    outline-offset: calc(-1 * var(--border-width-medium, 2px));
+  }
 
   /* Inner layout-columns surface (pages mode)
      Key constraint: column-gap = page-gutter * 2 so that the visual
@@ -208,9 +236,10 @@ reader-view[mode="pages"] {
   .reader-page-nav {
     position: absolute;
     inset-block-end: max(var(--size-l, 1.5rem), calc(var(--size-m, 1rem) + env(safe-area-inset-bottom)));
-    inset-inline-start: 50%;
-    translate: -50% 0;
-    display: none;
+    inset-inline: 0;
+    margin-inline: auto;
+    inline-size: fit-content;
+    display: flex;
     align-items: center;
     gap: var(--size-m, 1rem);
     background: var(--color-surface, #f5f5f5);
@@ -249,6 +278,12 @@ reader-view[mode="pages"] {
     cursor: default;
   }
 
+  /* Arrows point the reading direction */
+  .reader-nav-btn > span:dir(rtl) {
+    display: inline-block;
+    scale: -1 1;
+  }
+
   .reader-page-indicator {
     min-inline-size: 6.5ch;
     text-align: center;
@@ -257,6 +292,42 @@ reader-view[mode="pages"] {
     font-weight: var(--font-weight-semibold, 600);
     font-size: var(--font-size-2xs, 0.625rem);
     letter-spacing: 0.12em;
+  }
+}
+
+/* -- RTL: the progress bar fills from the inline-start edge -- */
+
+reader-view:dir(rtl) .reader-progress {
+  transform-origin: right center;
+}
+
+/* -- Forced colors: background-only states disappear -- */
+
+@media (forced-colors: active) {
+  @scope (reader-view) {
+    .reader-control-group,
+    .reader-page-nav {
+      border-color: CanvasText;
+    }
+
+    .reader-seg-btn[aria-pressed="true"] {
+      forced-color-adjust: none;
+      background: Highlight;
+      color: HighlightText;
+      outline: var(--border-width-thin, 1px) solid CanvasText;
+    }
+
+    .reader-progress {
+      forced-color-adjust: none;
+      background: Highlight;
+    }
+
+    .reader-icon-btn:disabled,
+    .reader-seg-btn:disabled,
+    .reader-nav-btn:disabled {
+      color: GrayText;
+      opacity: 1;
+    }
   }
 }
 
@@ -284,10 +355,13 @@ reader-view[mode="pages"] {
   }
 }
 
-/* -- Print: collapse to scroll mode -- */
+/* -- Print: collapse to a static single-flow article --
+   In pages mode the content lives in the pager, so print shows whichever
+   container holds it, unclipped and with the paging columns reset. */
 
 @media print {
-  reader-view {
+  reader-view,
+  reader-view[mode="pages"] {
     position: static !important;
     display: block !important;
   }
@@ -296,11 +370,20 @@ reader-view[mode="pages"] {
   reader-view .reader-progress,
   reader-view .reader-page-nav { display: none !important; }
 
-  reader-view .reader-pager { display: none !important; }
-
-  reader-view .reader-scroll {
+  reader-view .reader-book,
+  reader-view .reader-scroll,
+  reader-view .reader-pager {
     display: block !important;
     overflow: visible !important;
+    block-size: auto !important;
     padding: 0 !important;
+  }
+
+  reader-view .reader-pager > layout-columns {
+    column-count: auto !important;
+    column-width: auto !important;
+    block-size: auto !important;
+    padding: 0 !important;
+    font-size: inherit !important;
   }
 }

@@ -1,4 +1,4 @@
-/* reading-progress: Scroll progress indicator bar */
+/* reading-progress: Scroll progress indicator bar (decorative) */
 
 /* --vb-reading-progress is registered in src/properties.css. It cannot be
    registered here: this file reaches the bundle via layer(web-components),
@@ -8,23 +8,25 @@ reading-progress:not(:defined) {
   display: none;
 }
 
+/* --reading-progress-offset: distance from the anchored edge, e.g. the
+   height of a sticky site header so the bar sits just below it. */
 reading-progress {
   position: fixed;
   inset-inline: 0;
-  inset-block-start: 0;
+  inset-block-start: var(--reading-progress-offset, 0);
   block-size: var(--reading-progress-height, 3px);
   background: transparent;
-  z-index: 100;
+  z-index: var(--reading-progress-z, var(--z-sticky-header, 200));
   pointer-events: none;
 }
 
 reading-progress[data-position="bottom"] {
   inset-block-start: auto;
-  inset-block-end: 0;
+  inset-block-end: var(--reading-progress-offset, 0);
 }
 
 @scope (reading-progress) {
-  /* Native <progress> kept for AT semantics, visually replaced by ::after */
+  /* The child <progress> is aria-hidden; ::after draws the bar */
   progress {
     position: absolute;
     inset: 0;
@@ -47,7 +49,14 @@ reading-progress::after {
   will-change: transform;
 }
 
-/* CSS-driven path: full document scroll, when no target is bound. */
+/* RTL: fill from the inline-start (right) edge */
+reading-progress:dir(rtl)::after {
+  transform-origin: right center;
+}
+
+/* CSS-driven path: full document scroll, when no target is bound.
+   Scroll-linked (it follows the reader's own scrolling, no autonomous
+   motion), so it is left on under prefers-reduced-motion. */
 @supports (animation-timeline: scroll()) {
   @keyframes vb-reading-progress-fill {
     to { --vb-reading-progress: 1; }
@@ -58,10 +67,11 @@ reading-progress::after {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* Forced colors repaint backgrounds as Canvas, which would erase the bar */
+@media (forced-colors: active) {
   reading-progress::after {
-    animation: none;
-    transition: none;
+    forced-color-adjust: none;
+    background: Highlight;
   }
 }
 
