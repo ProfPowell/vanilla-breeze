@@ -1,7 +1,23 @@
 /* lists: ul, ol, li, dl, dt, dd styling */
 
-ul, ol {
+ul {
   padding-inline-start: var(--size-l);
+}
+
+/* Ordered lists. Markers sit outside the item, in the inline-start padding,
+   so a marker wider than the indent overflows the list edge and is clipped
+   by any overflow container ("VIII.", "100.", "1000."). --ol-indent sets the
+   indent explicitly; otherwise the indent widens to 2.5em for the lists CSS
+   can tell will carry long markers: roman numerals, a custom start, reversed
+   counts, li value jumps, 27+ letter items and 100+ items. CSS cannot measure
+   a marker, so set --ol-indent for wide CSS list-style-types (cjk-ideographic,
+   arabic-indic with long counts) or a large start. */
+ol {
+  padding-inline-start: var(--ol-indent, var(--size-l));
+}
+
+ol:where([type="i"], [start], [reversed], :has(> li[value], > li:nth-child(100)), [type="a"]:has(> li:nth-child(27))) {
+  padding-inline-start: var(--ol-indent, 2.5em);
 }
 
 /* Flow spacing for stacked (block-flow) list items. Wrapped in :where() so it
@@ -247,9 +263,9 @@ ol.meta {
 
 /* Separator variants. Child combinators throughout: a nested list keeps its
    own markers/separators instead of inheriting the parent's. */
-ul.meta[data-separator="pipe"] > li + li::before { content: var(--sep-pipe, "|"); }
-ul.meta[data-separator="dash"] > li + li::before { content: var(--sep-ndash, "\2013"); }
-ul.meta[data-separator="slash"] > li + li::before { content: "/"; }
+.meta:is(ul, ol)[data-separator="pipe"] > li + li::before { content: var(--sep-pipe, "|"); }
+.meta:is(ul, ol)[data-separator="dash"] > li + li::before { content: var(--sep-ndash, "\2013"); }
+.meta:is(ul, ol)[data-separator="slash"] > li + li::before { content: "/"; }
 
 /* --- List Marker Variants --- */
 /* Override list markers using character tokens */

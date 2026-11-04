@@ -127,9 +127,15 @@
       text-underline-offset: 3px;
     }
 
-    /* Lists with more spacing */
-    & :is(main, article) :is(ul, ol) {
+    /* Lists with more spacing — plain block-flow lists only (.inline,
+       .unstyled, .meta and layout lists keep their own 0 indent), and ordered
+       lists that carry long markers keep the wide indent. */
+    & :is(main, article) :is(ul, ol):not([class], [data-layout]) {
       padding-inline-start: 1.5em;
+    }
+
+    & :is(main, article) ol:not([class], [data-layout]):where([type="i"], [start], [reversed], :has(> li[value], > li:nth-child(100)), [type="a"]:has(> li:nth-child(27))) {
+      padding-inline-start: var(--ol-indent, 2.5em);
     }
 
     /* Plain block-flow lists only: layout-primitive, .inline/.meta and other

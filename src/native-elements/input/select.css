@@ -3,6 +3,12 @@
    Unlocks full CSS control over trigger, picker, options, and checkmark
    while retaining native semantics, keyboard nav, and form participation.
    Wrapped in @supports — zero-risk for non-supporting browsers.
+
+   Single-row (dropdown) selects only: a multiple or size > 1 select is a
+   listbox, and base-select + the flex trigger layout below would centre
+   its option list inside the fixed box and clip the top rows out of
+   scroll reach. The selector matches the chevron rule in
+   input/styles.css: not [multiple], and size absent, 0 or 1.
    ---------------------------------------------------------------- */
 
 @supports (appearance: base-select) {
@@ -11,7 +17,7 @@
      Section A — Core Enhancement
      ================================================================ */
 
-  select:not([multiple]) {
+  select:not([multiple], [size]:not([size="0"], [size="1"])) {
     appearance: base-select;
 
     /* base-select needs flex to lay out selected value + ::picker-icon inline.
@@ -25,18 +31,18 @@
   }
 
   /* Picker icon (built-in chevron) */
-  select:not([multiple])::picker-icon {
+  select:not([multiple], [size]:not([size="0"], [size="1"]))::picker-icon {
     color: var(--color-text);
     opacity: 0.55;
     transition: rotate var(--duration-normal) var(--ease-out);
   }
 
-  select:not([multiple]):open::picker-icon {
+  select:not([multiple], [size]:not([size="0"], [size="1"])):open::picker-icon {
     rotate: 180deg;
   }
 
   /* The dropdown picker */
-  select:not([multiple])::picker(select) {
+  select:not([multiple], [size]:not([size="0"], [size="1"]))::picker(select) {
     appearance: base-select;
     background: var(--color-surface-overlay);
     border: var(--border-width-thin) solid var(--color-border);
@@ -59,67 +65,124 @@
 
   /* Starting-style for open animation */
   @starting-style {
-    select:not([multiple])::picker(select) {
+    select:not([multiple], [size]:not([size="0"], [size="1"]))::picker(select) {
       opacity: 0;
       transform: translateY(-0.25rem);
     }
   }
 
-  /* Options */
-  select:not([multiple]) option {
+  /* Options. The colour is set on the option itself (the picker surface is
+     a theme token, so the text is too) — grouped options would otherwise
+     inherit the muted group-heading colour. */
+  select:not([multiple], [size]:not([size="0"], [size="1"])) option {
+    color: var(--color-text);
     padding: var(--size-xs) var(--size-s);
     margin-inline: var(--size-xs);
     border-radius: var(--radius-s);
     transition: background var(--duration-fast) var(--ease-default);
   }
 
-  select:not([multiple]) option:hover {
+  /* Hover only on choosable options — a disabled option must not look
+     interactive. */
+  select:not([multiple], [size]:not([size="0"], [size="1"])) option:not(:disabled):hover {
     background: var(--color-surface-raised);
   }
 
-  select:not([multiple]) option:checked {
+  select:not([multiple], [size]:not([size="0"], [size="1"])) option:checked {
     background: transparent;
     color: var(--color-interactive);
     font-weight: 500;
   }
 
+  /* Disabled options. The explicit option colour (above) outranks the UA's
+     dimming, so dim disabled options here. */
+  select:not([multiple], [size]:not([size="0"], [size="1"])) option:disabled {
+    color: color-mix(in oklab, var(--color-text) 50%, transparent);
+  }
+
   /* Checkmark on selected option */
-  select:not([multiple]) option::checkmark {
+  select:not([multiple], [size]:not([size="0"], [size="1"])) option::checkmark {
     color: var(--color-interactive);
   }
 
-  /* Option groups */
-  select:not([multiple]) optgroup {
+  /* Option groups. The group heading comes from the label attribute
+     (rendered by the UA, no pseudo-element to target) or from a <legend>
+     first child. Styling the optgroup itself and resetting its options
+     gives both forms the same small, muted, uppercase heading. Option weight is
+     reset by the UA stylesheet, colour by the option rule above; size,
+     case and spacing are reset here. */
+  select:not([multiple], [size]:not([size="0"], [size="1"])) optgroup {
+    --_optgroup-label-scale: 0.75;
     padding-block-start: var(--size-xs);
-  }
-
-  select:not([multiple]) optgroup:not(:first-of-type) {
-    border-block-start: var(--border-width-thin) solid var(--color-border);
-    margin-block-start: var(--size-xs);
-  }
-
-  select:not([multiple]) optgroup > legend {
-    padding: var(--size-xs) var(--size-s);
-    font-size: 0.75em;
+    font-size: calc(var(--_optgroup-label-scale) * 1em);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--color-text-muted);
   }
 
+  select:not([multiple], [size]:not([size="0"], [size="1"])) optgroup > option {
+    font-size: calc(1em / var(--_optgroup-label-scale));
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  select:not([multiple], [size]:not([size="0"], [size="1"])) optgroup:disabled {
+    color: color-mix(in oklab, var(--color-text-muted) 50%, transparent);
+  }
+
+  select:not([multiple], [size]:not([size="0"], [size="1"])) optgroup:not(:first-of-type) {
+    border-block-start: var(--border-width-thin) solid var(--color-border);
+    margin-block-start: var(--size-xs);
+  }
+
+  /* The UA gives a legend its own font size; inherit the heading's. */
+  select:not([multiple], [size]:not([size="0"], [size="1"])) optgroup > legend {
+    padding: var(--size-xs) var(--size-s);
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
   /* Focus ring on open select */
-  select:not([multiple]):open {
+  select:not([multiple], [size]:not([size="0"], [size="1"])):open {
     border-color: var(--input-border-focus);
     box-shadow: 0 0 0 3px oklch(from var(--input-border-focus) l c h / 0.15);
   }
 
+  /* Forced colors. The select opts out of forced colours (input/styles.css,
+     to keep its gradient chevron) and ::picker-icon inherits that, so its
+     token colour and 0.55 opacity would survive — repaint it in FieldText
+     at full strength. Disabled options and
+     groups get GrayText (the UA dimming is forced away), and the hovered
+     option a Highlight fill (system colours survive forcing; the
+     surface-token hover fill does not). */
+  @media (forced-colors: active) {
+    select:not([multiple], [size]:not([size="0"], [size="1"]))::picker-icon {
+      color: FieldText;
+      opacity: 1;
+    }
+
+    select:not([multiple], [size]:not([size="0"], [size="1"])) :is(option:disabled, optgroup:disabled) {
+      color: GrayText;
+    }
+
+    select:not([multiple], [size]:not([size="0"], [size="1"])) option:not(:disabled):hover {
+      background: Highlight;
+      color: HighlightText;
+    }
+
+    select:not([multiple], [size]:not([size="0"], [size="1"])) option:not(:disabled):hover::checkmark {
+      color: HighlightText;
+    }
+  }
+
   /* Reduced motion: disable picker animation */
   @media (prefers-reduced-motion: reduce) {
-    select:not([multiple])::picker(select) {
+    select:not([multiple], [size]:not([size="0"], [size="1"]))::picker(select) {
       transition-duration: 0ms;
     }
 
-    select:not([multiple])::picker-icon {
+    select:not([multiple], [size]:not([size="0"], [size="1"]))::picker-icon {
       transition-duration: 0ms;
     }
   }
@@ -130,7 +193,7 @@
      ================================================================ */
 
   /* Custom trigger button */
-  select:not([multiple]) > button {
+  select:not([multiple], [size]:not([size="0"], [size="1"])) > button {
     display: flex;
     align-items: center;
     gap: var(--size-xs);
@@ -144,7 +207,7 @@
   }
 
   /* Mirror selected option content in trigger */
-  select:not([multiple]) selectedcontent {
+  select:not([multiple], [size]:not([size="0"], [size="1"])) selectedcontent {
     display: flex;
     align-items: center;
     gap: var(--size-xs);
@@ -153,19 +216,19 @@
   }
 
   /* Hide detail text in closed trigger to keep it compact */
-  select:not([multiple]) selectedcontent .detail {
+  select:not([multiple], [size]:not([size="0"], [size="1"])) selectedcontent .detail {
     display: none;
   }
 
   /* Rich option layout */
-  select:not([multiple]) option {
+  select:not([multiple], [size]:not([size="0"], [size="1"])) option {
     display: flex;
     align-items: center;
     gap: var(--size-xs);
   }
 
   /* Images / avatars / flags inside options */
-  select:not([multiple]) option img {
+  select:not([multiple], [size]:not([size="0"], [size="1"])) option img {
     inline-size: 1.5em;
     block-size: 1.5em;
     border-radius: var(--radius-s);
