@@ -8,6 +8,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **M+N-element review.**
+  - **sanitize-html** — Fixed a confirmed mutation-XSS bypass: `<math><mtext><table><mglyph><style><img src=x onerror=…>` survived because the cleaned tree was serialised and parsed again, and the second parse turned the `<style>` text into a live `<img>`. This reached every consumer (markdown-viewer, the markdown-editor preview, comment-thread, chat-window, include-file, card-list, glossary-wc, `data-markdown-editable`). New `sanitizeToFragment(html, options)` returns the cleaned DocumentFragment, and every in-repo consumer inserts those nodes without re-parsing. `sanitizeHTML()` still returns a string, but re-sanitizes its own output until stable and returns `''` if the parse keeps mutating. A regression corpus of 35 known mXSS payloads runs in the unit tests (parse5 round trip) and in the browser (real insertion, no handler may fire).
+  - **sanitize-html** — `<style>` is removed everywhere, as are the raw-text and legacy elements (`xmp`, `noembed`, `noframes`, `plaintext`, `title` outside SVG), MathML `mglyph`/`malignmark`/`annotation-xml`, elements outside the HTML/SVG/MathML namespaces, and comments. An SVG `<title>`/`<desc>` survives only while it holds plain text.
+  - **sanitize-html** — The untrusted (default) profile drops every `style` attribute; drops `form`/`formaction`/`formmethod`/`formtarget`/`formenctype`/`formnovalidate`/`action`/`method`, `popovertarget`/`commandfor`/`command`/`interestfor`, `autofocus` and `ping`; and forces buttons and submit/reset/image inputs to `type="button"`. Against DOM clobbering, `id`/`name` are prefixed with `user-content-` and in-fragment references are rewritten to match (`href="#…"`, `for`, `headers`, `list`, `usemap`, ARIA id refs, SVG `url(#…)`); other id references are dropped. include-file uses a fragment profile (`keepIds`, `keepStyle`) that keeps ids, names, filtered `style` attributes, popover/command invokers and button types. Nested `<markdown-viewer>` also loses `allow-cross-origin`.
+  - **markdown-viewer** — `src` is same-origin by default (http(s) only, redirects re-checked); `allow-cross-origin` opts in, as on `<include-file>`.
+  - **math-init** — `data-mathml` is no longer an innerHTML gadget. New `sanitizeMathML()` keeps only MathML-namespace elements (no HTML/SVG, `mglyph`, `malignmark`) and strips `on*`, `href`, `src`, `style`, `id`, `name` and `xlink:`/`xml:` attributes; the cleaned nodes are inserted directly, wrapped in `<math>` when there is no root.
+  - **nav-bar / notification-wc** — URLs from `.items` (nav-bar) and from feeds, the `.notifications` setter and the watch list (notification-wc) render as links only when they resolve to `http:`/`https:` or are relative; `javascript:` and `data:` URLs are refused (nav-bar renders an anchor with no `href`).
 - **I-element review.**
   - **include-file / sanitize-html** — Fixed an XSS chain (vanilla-breeze-9vrm): sanitized content (e.g. markdown rendered by `<markdown-viewer>`) could contain `<include-file src="blob:…">`, and `<include-file>` fetched any URL and inserted it raw, so an `<img onerror>` in the fetched HTML ran. `sanitizeHTML` now neutralises fetch-capable VB elements (`<include-file>` loses `src`/`trusted`/`allow-scripts`/`allow-cross-origin`; `<markdown-viewer>` loses `src`/`sanitize`/`ping`), and `<include-file>` is same-origin and sanitizing by default (below).
   - **sanitize-html** — Hardened denylist: `javascript:`/`vbscript:` detection survives whitespace/control-char obfuscation; `data:` refused on navigation/loader attributes (media `src`/`poster`/`srcset` keep `data:image|audio|video|font`); also removes `frame`/`frameset`/`applet`/`portal`/`fencedframe`/SVG `foreignObject`, href-targeting SVG `animate`/`set`, script-bearing or `@import` `<style>` and `style` attributes; `<template>` contents are sanitized recursively. New `sanitizeSVG(element)` export sanitizes an SVG element in place (used by `<icon-wc>`).
@@ -26,6 +33,52 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Changes from the M+N-element review.**
+  - **sanitize-html** — Breaking: sanitized output drops `style` attributes and `<style>`, prefixes `id`/`name` with `user-content-`, removes form-submission and invoker attributes, and makes buttons `type="button"` (see Security).
+  - **markdown-viewer**
+    - Breaking: `src` on another origin needs `allow-cross-origin`; `blob:`/`data:`/`javascript:` `src` is refused. Use `sanitize="off"` only for trusted first-party markdown.
+    - Callout blocks are built in: `:::note|info|tip|warning|danger [title]` … `:::` renders `<aside class="callout" role="note" data-kind>` with a visible title, using a private vendored-`marked` instance. The broken `vb-extensions.js` import and the bare `'marked'` import in the demo are gone.
+    - The load-failure message is a real `role="alert"` element whose text comes from `data-label-error` (default "Failed to load markdown"), replacing English CSS `content`. `.md-content` gets `dir="auto"` unless the host sets `dir`.
+    - api.json: removed the unimplemented `loading`; added `allow-cross-origin`, `data-label-error`, `data-auto-mermaid` and the `.markdown` property; `sanitize` lists its real values.
+  - **include-file** — Breaking: `<style>` elements in non-`trusted` partials are removed. Sanitized fragments use the fragment profile and are inserted as nodes; `include-file:loaded` `detail.html` is the serialised sanitized fragment.
+  - **markdown-editor**
+    - Breaking: the host `name` attribute is removed. Put `name` (and `required` etc.) on the `<textarea>`, which now submits, validates and resets natively, including without JavaScript. The authored textarea is adopted (moved into the source pane) instead of replaced, keeping `id`/`<label for>`, constraints, `dir`, `form`, `placeholder` and `aria-*`; one is created only when none is authored.
+    - Breaking: no default "Write markdown here..." placeholder; host `placeholder`/`rows` override the textarea's own (`rows` default 10).
+    - `markdown-editor:change` carries `detail.source` (`"user"` on blur, `"api"` on `.value` assignment) and is always `composed`.
+    - The narrow layout follows the editor's own width (intrinsic `auto-fit` grid) instead of a viewport media query. The editor imports `<markdown-viewer>` itself.
+    - New `data-label-source`, `data-label-preview`, `data-label-tab-hint`; `data-auto-mermaid` and `rows` documented in api.json; phantom `persist` removed from JSDoc.
+  - **mobile-menu**
+    - Breaking: `<mobile-menu>` must be a direct child of the `<header>`. Sibling `nav` / `nav-bar` / `site-tools` are hidden by CSS (`header:has(> mobile-menu[data-mobile]) > …`) instead of inline `display: none`, so removing the element or leaving mobile mode always restores the desktop nav.
+    - The default 52rem breakpoint also applies as a CSS media query, so the mobile state paints before upgrade and the native popover menu works without JavaScript. `breakpoint` is observed; changing it re-evaluates mobile mode.
+    - Docs and api.json describe it as a breakpoint observer with an author-supplied trigger and panel (inside `<mobile-menu>`). The docs no longer claim a focus trap: the popover is non-modal.
+  - **nav-bar**
+    - Breaking: the host no longer gets `role="navigation"` when it contains a `<nav>`; label the inner `<nav>` instead. The docs site header no longer nests two navigation landmarks.
+    - Links match by origin plus normalised pathname against the document base URL: relative hrefs, same-origin absolute URLs, `<base>` and `/docs` vs `/docs/` now match; bare `#fragment` links never match.
+    - Re-syncs on the Navigation API `currententrychange` event (new event source `'navigation'`), so `pushState` routers no longer need `refresh()` in supporting browsers. New `data-label-new-tab` overrides the "(opens in new tab)" suffix.
+  - **notification-wc**
+    - Breaking markup: row content is phrasing-only: `<strong class="notification-title">`, `<span class="notification-text">` and `<time>` inside a `<span class="notification-body">`, replacing `<div>`/`<h4>`/`<p>`. CSS hooks on `.notification-body h4` / `p` must move to the new classes.
+    - The All/Watching switcher is a full tabs pattern: a generic tablist (not `<nav>`), tabs with `aria-controls`, lists in `role="tabpanel"` panels, arrow/Home/End keys and a roving tabindex.
+    - The minted trigger name includes the unread count ("Notifications, 2 unread") and the badge is `aria-hidden`. Opening the panel moves focus into the dialog; tabbing out of the component closes it.
+    - `variant` and `position` react to changes after upgrade. Every English string can be overridden with `data-label-*`; dates use `Intl.DateTimeFormat` in the document language, and date-only values are no longer shifted by the time zone.
+    - The `notifications` setter documents the fields that actually render (`date`, `type`, `url`), replacing the old `timestamp`/`variant` fields.
+  - **note-wc** — Without `for` and outside `<selection-menu>`, note-wc no longer renders a dead "View notes" button; it only hosts the note panel. Every string can be overridden with `data-label-*`; the panel heading is uppercased by CSS instead of an uppercase literal.
+  - **menu**
+    - Breaking: `menu.toolbar` no longer forces every button transparent. Non-ghost buttons keep their fill and `aria-pressed="true"` keeps its pressed look; use `.ghost` buttons for the flat toolbar look. A `role="toolbar"` menu needs `<li role="none">` items (documented; the pills demo marks the selected pill with `aria-pressed`).
+    - `menu.context` sizes to its content (`inline-size: fit-content`, `min-inline-size: 10rem`) and uses `--shadow-m`.
+    - win9x and NES themes: the raised dropdown chrome applies only to pop-up menus (`menu.context`, `drop-down menu`, menu-bar menus), not to every `<menu>`. Items use `text-align: start`.
+  - **nav**
+    - The current page link in default, `.horizontal`, `.vertical`, `.minimal` and `.bottom` navs is underlined by default as a non-colour cue (WCAG 1.4.1), locked with a layered `!important` like the colour. `.pills`, `.tabs`, `.pagination`, `.tree`, `.breadcrumb` and `<bread-crumb>` turn it off; opt out with `--nav-active-decoration: none`.
+    - `nav.breadcrumb` and `<bread-crumb>`: in RTL the default and `chevron` separators become "‹" and `arrow` becomes "←". New token `--sep-breadcrumb-rtl`.
+    - Removed the `@media (width < 48rem)` rule hiding `nav drop-down menu`; it never applied and would have stranded mobile users.
+  - **main** — `main.narrow` caps at `var(--measure-normal, 65ch)` so it follows the fluid scaling profiles; `.contained` (1200px) and `.wide` (1600px) are documented as fixed caps. The `main.with-sidebar` content column is `minmax(0, 1fr)`, so a wide `<pre>`/table scrolls inside it instead of widening the grid.
+  - **map / area** — The `map`/`area` rules (including the `area:focus-visible` ring) moved from `native-elements/iframe/styles.css` to a new `native-elements/map/styles.css`. Same output.
+  - **mark** — `.success`, `.warning` and `.error` are documented as highlight categories (for example review annotations), not status badges; status points to `<layout-badge>`. The journal pack maps them to its mint, butter and coral highlighter tints.
+  - **math**
+    - The core CSS declares a self-hosted Latin Modern Math `@font-face` (woff2, `font-display: swap`, GUST Font License shipped as `cdn/fonts/latinmodern-math-GUST-LICENSE.txt`), fetched only when a page renders math. `cdn/fonts/math-fonts.css` (still injected by `data-math`) points at the same file instead of a jsDelivr OTF.
+    - VB no longer colours `mi`/`mn`/`mo`, so `mathcolor` works and math inherits colour. Inline `vertical-align: middle; line-height: 0`, `mo { margin-inline }` and the `0.7em` script size are removed in favour of MathML Core and the font's MATH table. The numbered wrapper is `figure.equation` or `p.equation` (no `div`).
+  - **data-math** — Breaking markup: `copyable` renders a real `<button data-math-copy>` (keyboard operable, `:focus-visible`) instead of a click handler on the wrapper. Its text comes from `data-label-copy` (default "Copy LaTeX") and the announcement from `data-label-copied` (default "Copied to clipboard") in a persistent `role="status"` region.
+  - **meter** — The track has a 1px `--meter-track-border` edge (`--control-border`, 3.8:1 light / 5.8:1 dark; was about 1:1). New tokens `--meter-track-bg`, `--meter-track-border`, `--meter-fill-optimum`, `--meter-fill-suboptimum`, `--meter-fill-even-less-good`. The light suboptimum fill is darkened to 4.06:1 (was 2.76:1). `.labeled` applies only to `.labeled:has(> meter)`, and its header row is `<header>` or `<label>`.
+  - **Docs site** — Every shared layout starts with a "Skip to main content" link to `<main id="main">`; the head include carries the documented `.skip-link` styles.
 - **Changes from the K+L-element review.**
   - **layout-badge** — Breaking: `data-size="sm"` / `"lg"` are renamed `data-size="s"` / `"l"` (matching the other elements; no alias). All docs, demos and patterns are updated. The small size uses the type scale with an 11px floor instead of a fixed 10px.
   - **layout-switcher** — Breaking: `data-layout-reverse` now reverses only the stacked order (`flex-wrap: wrap-reverse`), with or without `data-layout-threshold`; the row keeps DOM order. Before, the bare attribute did `row-reverse` and the stack reversed only when a threshold was also set. The bare `data-layout-threshold` form is gone.
@@ -251,6 +304,51 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **M+N-element review.**
+  - **markdown-viewer** — Removing `src` re-renders from the slots instead of leaving stale fetched content. Overlapping renders (a slow fetch followed by a `src` change) no longer let a stale response overwrite newer output.
+  - **markdown-editor**
+    - Upgrade no longer strips the textarea's accessible name, label association, `name` and constraints. Reconnecting keeps the same textarea and viewer, so the cached `.textarea`, caret and undo history survive.
+    - `form.reset()` resets the preview along with the value. Assigning `.value` no longer produces a second change event on the next blur.
+    - The preview pane is no longer an `aria-live` region (it re-read the whole document while typing).
+    - `data-tab-indent` is no longer a keyboard trap: Escape then Tab moves focus, a described hint says so, and read-only/disabled textareas never capture Tab. Indentation goes through the native undo stack.
+    - The textarea gets `dir="auto"` unless authored, and the preview follows the source direction. `static.html` holds a real no-JS fallback.
+  - **mobile-menu** — The current-page link in the panel was unreadable (interactive-coloured text on the interactive fill); it now uses `--color-text-on-interactive-auto` through the nav `--_active-*` hooks, and has an outline and underline in forced colours. The docs-site menu panel is labelled ("Site menu"); the orphaned `site/src/includes/mobile-menu.html` and dead `.mobile-menu` rules in docs.css are removed.
+  - **nav-bar**
+    - Assigning `.items` while `.current` is explicitly owned no longer moves `aria-current` or fires a false `nav-bar:current-changed`. In nested (`data-nav-link`) mode it no longer pulls anchors out of their `<li>` / `<drop-down>` shells.
+    - The current link has an outline and underline in forced colours.
+    - api.json lists `.items`, `.current`, `releaseCurrent()` and `refresh()`. The docs say `nav-bar:upgraded` fires on every reconnect; the basic demo loses its inline `<style>` and the Composition section is rewritten.
+  - **notification-wc**
+    - Reconnecting or moving the element no longer duplicates the panel (the docs site header hit this); the panel and trigger are reused and `aria-controls` stays valid. Async setup is cancelled on disconnect, so a mid-setup disconnect no longer leaks the poll interval or document listeners. One delegated panel listener replaces per-row listeners that piled up on every poll.
+    - Escape and outside click return focus to the trigger when focus was inside the panel. Dismissing a focused banner moves focus to `<main>` instead of `<body>`. Unwatching keeps focus in the list.
+    - With scripting off, the banner and the static `<article>` fallback render (`:not(:defined)` used to hide both modes); while scripts load, only the panel articles and persisted banners are hidden.
+    - The "Changed" badge uses dark text on amber to meet AA. Forced-colours borders were added for the badge pill, the selected tab and unread rows. Link and button rows align their icons.
+    - Docs: removed the false claims about heading navigation, "nearest `<toast-msg>`" and reduced motion; documented `notifications`, `notification-wc:notifications-changed`, `page-watch:remove` and the `data-trigger` child. The banner demo sets `persist`, so it no longer logs a warning.
+  - **note-wc**
+    - Reconnecting no longer adds a second button. A panel closed before its first frame no longer leaks a document `pointerdown` listener.
+    - Save, Cancel, Escape (anywhere in the panel), Ctrl/Cmd+Enter and outside click return focus to the opener; when the opener is gone, focus goes to the highlight's `<mark>` or the article instead of `<body>`.
+    - The selection-menu note action matches existing highlights by text offset instead of a 20-character substring, so a short highlight such as "the" no longer captures unrelated selections.
+    - The target becomes a positioning context through a `data-note-host` hook while the panel is open, instead of a permanent inline `position: relative`.
+    - api.json covers `for`, `data-label-*` and `openFor()`. The docs cover all three modes and embed the selection-menu demo; static.html text corrected.
+  - **menu**
+    - Focus rings are no longer clipped in `.toolbar` and `.context` (dropped `overflow: hidden`).
+    - `<li role="separator">` renders in default, `.toolbar` and `.pills` menus as a vertical rule (it was zero-size outside `.context`), drawn as a border so it survives forced colours.
+    - `.toolbar` and `.context` hovers are gated by `(hover: hover)`.
+    - Docs: `<menu>` is exposed as a list, not as "commands"; they document `role="toolbar"` + `aria-label` + `role="none"` items and note that no arrow-key roving is provided. The stale CSS snippet and the demos' inline styles are gone.
+  - **nav**
+    - `nav.steps` connectors use logical insets and sizes, so labels-below and vertical steps mirror in RTL. Completed-step text uses `--color-text-on-success-auto` instead of fixed white.
+    - `nav.pagination` wraps instead of overflowing on narrow screens; item sizes are logical. Compact pagination end caps and `.tree` link corners use logical radii. `.pagination` transitions only colour, background and border (was `transition: all`); dead current-item colours on `.pagination` and `.bottom` are removed.
+    - `.horizontal > ul` keeps a gap when a `data-layout` host resets `--_gap`.
+    - Docs: the breadcrumb default separator is "›" (`--sep-breadcrumb`), not "/". `.steps`, `.bottom.frosted`, `.pagination-bar`/`.pagination-info`/`.page-size-selector`, the `<drop-down>`-in-nav composition and RTL are documented, with new nav-steps, nav-rtl and nav-pagination-bar demos.
+  - **main** — `main.contained`, `.narrow` and `.wide` no longer collapse to their padding as a grid or flex item (for example under `data-page-layout`); they set `inline-size: 100%`. The full-page demo uses `data-page-layout="stack"` so main gets the stretch row; main demos keep their `<h1>` inside a landmark, and new `.full`, `.padded` and `.flex` demos plus an "In VB layouts" section are added.
+  - **map** — The doc page no longer claims native areas have no focus indicator, explains that VB's `img { max-inline-size: 100% }` reset is what makes native maps drift, and states that `id` must equal `name`. The demo figcaption matches what clicking does.
+  - **mark** — Text used the UA's black `MarkText` in every mode (1.3:1 in dark mode). The base now uses `var(--color-text)` and the categories `--color-{success,warning,error}-text` (6.4–16:1 in light and dark). In forced colours every mark is solid `Mark`/`MarkText`.
+  - **math** — The "Font Loading" docs no longer point at a 404 `/fonts/math-fonts.css`. The orphaned `native-elements/math/fonts.css`, the no-op `data-theme="dark"` block and the "dark mode support" claim are removed. Each doc section has its own demo.
+  - **data-math** — Math inside `<pre><code data-math>` was inserted inside the hidden `<pre>`, so it never showed; it now renders after the `<pre>`. The docs describe the copy button, its `data-label-copy` / `data-label-copied` labels and the status announcement, and state that `data-mathml` is sanitized to MathML only.
+  - **meter** — Firefox uses the token fills (`:-moz-meter-optimum`, `-sub-optimum`, `-sub-sub-optimum`). Forced colours get a `CanvasText` track edge and a distinct fill per state. Every doc and demo meter is labelled (`for`/`id`, plus `aria-describedby` → `<output>` in the labelled pattern); the demos drop inline styles.
+  - **include-file** — The docs explain the sanitizer policy for non-`trusted` partials: `<style>` elements, `on*` and form-submission attributes are removed; ids and filtered inline styles are kept; `include-file:loaded` `detail.html` is the serialised sanitized fragment and must not be re-inserted with innerHTML.
+  - **markdown-viewer docs** — The Sanitising section no longer contradicts itself and lists what is removed, rewritten and kept. It documents same-origin `src`, `data-label-error`, `data-auto-mermaid`, `.markdown` and escaping `<` in `<pre>`/`<template>` slots.
+  - **meta / noscript** — Both doc pages are written in full, replacing stubs (an invalid bare `<meta>` example; a `<div>`-based noscript example). meta covers attributes, ThemeManager rewriting `theme-color`, the components that read meta tags, the public-first / `vb:*` rule and accessibility (no zoom blocking, no timed refresh). noscript covers head limits, `<noscript>` vs `data-requires-js` vs `data-js-enhanced` vs `@media (scripting: none)`, and caveats.
+  - **topic-map** — The stylesheet header comment describes v1.1 concepts, not the removed `vb:topic` dotted paths.
 - **K+L-element review.**
   - **layout-grid**
     - Tracks are clamped with `minmax(min(var(--_min), 100%), 1fr)`, so `data-layout-min="l"` / `"xl"` no longer overflow containers narrower than the min (phones, sidebars).

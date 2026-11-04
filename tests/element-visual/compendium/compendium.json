@@ -1390,6 +1390,11 @@
           "id": "truncated",
           "name": "Truncated Item",
           "html": "<nav aria-label=\"Breadcrumb\">\n  <bread-crumb>\n    <ol>\n      <li><a href=\"#\">Home</a></li>\n      <li data-truncated><a href=\"#\">A very long section title that will not fit</a></li>\n      <li><span aria-current=\"page\">Comments</span></li>\n    </ol>\n  </bread-crumb>\n</nav>"
+        },
+        {
+          "id": "rtl",
+          "name": "RTL (default + arrow)",
+          "html": "<section dir=\"rtl\" lang=\"ar\"><nav aria-label=\"مسار التنقل\"><bread-crumb><ol><li><a href=\"#\">الرئيسية</a></li><li><a href=\"#\">المستندات</a></li><li><span aria-current=\"page\">التنقل</span></li></ol></bread-crumb></nav><nav aria-label=\"مسار التنقل بالأسهم\"><bread-crumb data-separator=\"arrow\"><ol><li><a href=\"#\">الرئيسية</a></li><li><a href=\"#\">المستندات</a></li><li><span aria-current=\"page\">التنقل</span></li></ol></bread-crumb></nav></section>"
         }
       ]
     },
@@ -4523,7 +4528,7 @@
         {
           "id": "narrow",
           "name": "Narrow Reading",
-          "html": "<main class=\"narrow\">\n  <h2>Reading Content</h2>\n  <p>Constrained to 65 characters wide, ideal for long-form prose and readability.</p>\n</main>"
+          "html": "<main class=\"narrow\">\n  <h2>Reading Content</h2>\n  <p>Constrained to the --measure-normal reading measure, ideal for long-form prose and readability.</p>\n</main>"
         },
         {
           "id": "contained",
@@ -4546,7 +4551,7 @@
           "classes": [
             "full"
           ],
-          "html": "<main class=\"full\"><h2>Full Width</h2><p>Content spans the full width of the viewport with inline padding.</p></main>",
+          "html": "<main class=\"full\"><h2>Full Width</h2><p>Content spans the full width of its container with inline padding.</p></main>",
           "fixtureWidth": "wide"
         },
         {
@@ -4556,6 +4561,41 @@
             "padded"
           ],
           "html": "<main class=\"padded\"><h2>Padded Main</h2><p>Extra block padding for vertical breathing room.</p></main>"
+        },
+        {
+          "id": "with-sidebar",
+          "name": "Main with Sidebar",
+          "classes": [
+            "with-sidebar"
+          ],
+          "fixtureWidth": "wide",
+          "html": "<main class=\"with-sidebar\">\n  <article>\n    <h2>Main Content</h2>\n    <p>Primary content column; a wide block scrolls inside it instead of widening the grid.</p>\n    <pre>const longLine = 'this preformatted line is deliberately much wider than the content column so the minmax(0, 1fr) track is exercised';</pre>\n  </article>\n  <aside>\n    <h3>Sidebar</h3>\n    <p>Secondary content or navigation.</p>\n  </aside>\n</main>"
+        },
+        {
+          "id": "flex",
+          "name": "Flex Main",
+          "classes": [
+            "flex"
+          ],
+          "html": "<section data-layout=\"stack\" data-layout-gap=\"none\">\n  <main class=\"flex padded\">\n    <h2>Flex Main</h2>\n    <p>A flex column that grows to fill a flex-column parent.</p>\n    <p>Children stack in a column.</p>\n  </main>\n</section>"
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "tag": "map",
+      "type": "native",
+      "category": "media",
+      "cssFile": "src/native-elements/map/styles.css",
+      "jsRequired": false,
+      "variants": [
+        {
+          "id": "area-focus",
+          "name": "Area focus ring",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "html": "<img src=\"/src/assets/placeholders/photo-id-10-1200x800.svg\" alt=\"Sample floor plan\" usemap=\"#compendium-plan\" width=\"300\" height=\"200\" />\n<map name=\"compendium-plan\">\n  <area shape=\"rect\" coords=\"20,20,140,100\" href=\"#hall\" alt=\"Conference Hall\" />\n  <area shape=\"circle\" coords=\"220,120,50\" href=\"#server\" alt=\"Server Room\" />\n</map>",
+          "setup": "document.querySelector('area').focus();\n    await new Promise(r => setTimeout(r, 100));"
         }
       ]
     },
@@ -4574,18 +4614,75 @@
         },
         {
           "id": "success",
-          "name": "Success",
-          "html": "<p><mark class=\"success\">All tests passed</mark></p>"
+          "name": "Success category",
+          "html": "<p>The draft <mark class=\"success\">reads clearly</mark>.</p>"
         },
         {
           "id": "warning",
-          "name": "Warning",
-          "html": "<p><mark class=\"warning\">Experimental feature</mark></p>"
+          "name": "Warning category",
+          "html": "<p><mark class=\"warning\">The retry limit looks arbitrary</mark>.</p>"
         },
         {
           "id": "error",
-          "name": "Error",
-          "html": "<p><mark class=\"error\">Invalid input detected</mark></p>"
+          "name": "Error category",
+          "html": "<p><mark class=\"error\">The token is logged in plain text</mark>.</p>"
+        }
+      ]
+    },
+    {
+      "id": "markdown-editor",
+      "tag": "markdown-editor",
+      "type": "web-component",
+      "category": "forms",
+      "cssFile": "src/web-components/markdown-editor/styles.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "default",
+          "name": "Default",
+          "html": "<markdown-editor rows=\"6\">\n  <textarea aria-label=\"Notes\"># Release notes\n\n- **Fixed** the login redirect\n- Added `code` support</textarea>\n</markdown-editor>"
+        },
+        {
+          "id": "labelled",
+          "name": "Labelled + required (name on textarea)",
+          "html": "<label for=\"me-body\">Message</label>\n<markdown-editor rows=\"6\">\n  <textarea id=\"me-body\" name=\"body\" required placeholder=\"Write in markdown\"></textarea>\n</markdown-editor>"
+        },
+        {
+          "id": "rtl",
+          "name": "Right-to-left content",
+          "html": "<markdown-editor rows=\"6\" data-label-source=\"מקור\" data-label-preview=\"תצוגה מקדימה\">\n  <textarea aria-label=\"הערות\">## שלום\n\nזהו **טקסט** מודגש.</textarea>\n</markdown-editor>"
+        }
+      ]
+    },
+    {
+      "id": "markdown-viewer",
+      "tag": "markdown-viewer",
+      "type": "web-component",
+      "category": "text",
+      "cssFile": "src/web-components/markdown-viewer/styles.css",
+      "jsRequired": true,
+      "readySelector": "markdown-viewer:is([data-rendered], [data-error])",
+      "variants": [
+        {
+          "id": "default",
+          "name": "Markdown (heading, list, table, code, quote)",
+          "fixtureWidth": "wide",
+          "html": "<markdown-viewer>\n  <script type=\"text/markdown\">\n# Release notes\n\nVersion **2.4** ships *faster* builds and a new `--watch` flag.\n\n- Incremental rebuilds\n- Smaller bundles\n- [Migration guide](#migrating)\n\n| Command | Purpose |\n|---------|---------|\n| `build` | One-off build |\n| `watch` | Rebuild on change |\n\n```js\nexport default { watch: true };\n```\n\n> Upgrade before the end of the quarter.\n  </script>\n</markdown-viewer>"
+        },
+        {
+          "id": "callouts",
+          "name": "Callout blocks (note, tip, warning, danger)",
+          "html": "<markdown-viewer>\n  <script type=\"text/markdown\">\n:::note\nNotes carry neutral background information.\n:::\n\n:::tip Pro tip\nAdd `highlight` to hook up a syntax highlighter.\n:::\n\n:::warning\n**Careful!** This action cannot be undone.\n:::\n\n:::danger Trust boundary\nNever set `sanitize=\"off\"` on user-influenced markdown.\n:::\n  </script>\n</markdown-viewer>"
+        },
+        {
+          "id": "sanitized",
+          "name": "Sanitized raw HTML (style, handlers, form attrs removed)",
+          "html": "<markdown-viewer>\n  <script type=\"text/markdown\">\n## Comment with raw HTML\n\n<p style=\"position:fixed;inset:0;background:red\">The style attribute is removed, so this stays in flow.</p>\n<style>body { display: none }</style>\n<img src=\"x\" onerror=\"alert(1)\" alt=\"\">\n<details><summary>Inline HTML that survives</summary>Press <kbd>Ctrl</kbd> + <kbd>K</kbd>.</details>\n<button formaction=\"https://evil.example\">Inert button</button>\n  </script>\n</markdown-viewer>"
+        },
+        {
+          "id": "error",
+          "name": "Load error with data-label-error (no fallback)",
+          "html": "<markdown-viewer src=\"/tests/element-visual/fixtures/generated/markdown-viewer-missing.md\" data-label-error=\"This document could not be loaded.\"></markdown-viewer>"
         }
       ]
     },
@@ -4599,12 +4696,27 @@
         {
           "id": "block-equation",
           "name": "Numbered Block Equation",
-          "html": "<div class=\"equation\">\n  <math display=\"block\">\n    <mrow>\n      <mi>E</mi>\n      <mo>=</mo>\n      <mi>m</mi>\n      <msup><mi>c</mi><mn>2</mn></msup>\n    </mrow>\n  </math>\n</div>\n<div class=\"equation\">\n  <math display=\"block\">\n    <mrow>\n      <mi>x</mi>\n      <mo>=</mo>\n      <mfrac>\n        <mrow><mo>−</mo><mi>b</mi><mo>±</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow>\n        <mrow><mn>2</mn><mi>a</mi></mrow>\n      </mfrac>\n    </mrow>\n  </math>\n</div>"
+          "html": "<figure class=\"equation\">\n  <math display=\"block\">\n    <mrow>\n      <mi>E</mi>\n      <mo>=</mo>\n      <mi>m</mi>\n      <msup><mi>c</mi><mn>2</mn></msup>\n    </mrow>\n  </math>\n</figure>\n<figure class=\"equation\">\n  <math display=\"block\">\n    <mrow>\n      <mi>x</mi>\n      <mo>=</mo>\n      <mfrac>\n        <mrow><mo>−</mo><mi>b</mi><mo>±</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow>\n        <mrow><mn>2</mn><mi>a</mi></mrow>\n      </mfrac>\n    </mrow>\n  </math>\n</figure>"
         },
         {
           "id": "figure-caption",
           "name": "Math Figure with Caption",
           "html": "<figure class=\"math\">\n  <math display=\"block\">\n    <mrow>\n      <mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo>\n      <mo>=</mo>\n      <munderover>\n        <mo>∑</mo>\n        <mrow><mi>n</mi><mo>=</mo><mn>0</mn></mrow>\n        <mo>∞</mo>\n      </munderover>\n      <mfrac>\n        <mrow><msup><mi>f</mi><mrow><mo>(</mo><mi>n</mi><mo>)</mo></mrow></msup><mo>(</mo><mi>a</mi><mo>)</mo></mrow>\n        <mrow><mi>n</mi><mo>!</mo></mrow>\n      </mfrac>\n      <msup>\n        <mrow><mo>(</mo><mi>x</mi><mo>−</mo><mi>a</mi><mo>)</mo></mrow>\n        <mi>n</mi>\n      </msup>\n    </mrow>\n  </math>\n  <figcaption>Taylor series expansion of f(x) about the point a</figcaption>\n</figure>"
+        },
+        {
+          "id": "inline",
+          "name": "Inline (baseline)",
+          "html": "<p>The area of a circle is <math><mi>A</mi><mo>=</mo><mi>&#x3C0;</mi><msup><mi>r</mi><mn>2</mn></msup></math>, and a tall fraction <math><mfrac><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow><mrow><mi>c</mi><mo>+</mo><mi>d</mi></mrow></mfrac></math> opens the line box instead of overlapping.</p>"
+        },
+        {
+          "id": "display",
+          "name": "Display (quadratic formula)",
+          "html": "<math display=\"block\"><mi>x</mi><mo>=</mo><mfrac><mrow><mo>&#x2212;</mo><mi>b</mi><mo>&#xB1;</mo><msqrt><msup><mi>b</mi><mn>2</mn></msup><mo>&#x2212;</mo><mn>4</mn><mi>a</mi><mi>c</mi></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math>"
+        },
+        {
+          "id": "mathcolor",
+          "name": "mathcolor + inherited colour",
+          "html": "<p>Inherited: <math><mi>a</mi><mo>+</mo><mi>b</mi></math></p>\n<math display=\"block\"><mi mathcolor=\"#c0392b\">a</mi><mo>+</mo><mi mathcolor=\"#1f6feb\">b</mi><mo>=</mo><mi>c</mi></math>"
         }
       ]
     },
@@ -4637,7 +4749,7 @@
           "classes": [
             "context"
           ],
-          "html": "<menu class=\"context\" style=\"position: relative; display: block\"><li><button>Cut</button></li><li><button>Copy</button></li><li><button>Paste</button></li><li><hr></li><li><button>Select All</button></li></menu>"
+          "html": "<menu class=\"context\"><li><button>Cut</button></li><li><button>Copy</button></li><li><button>Paste</button></li><li role=\"separator\"></li><li><button>Select All</button></li></menu>"
         },
         {
           "id": "compact",
@@ -4646,6 +4758,23 @@
             "compact"
           ],
           "html": "<menu class=\"compact\"><li><button>Action 1</button></li><li><button>Action 2</button></li><li><button>Action 3</button></li></menu>"
+        },
+        {
+          "id": "toolbar-pressed",
+          "name": "Toolbar (pressed + separator + filled button)",
+          "classes": [
+            "toolbar"
+          ],
+          "html": "<menu class=\"toolbar\" role=\"toolbar\" aria-label=\"Text formatting\"><li role=\"none\"><button type=\"button\" class=\"ghost\" aria-pressed=\"true\">Bold</button></li><li role=\"none\"><button type=\"button\" class=\"ghost\" aria-pressed=\"false\">Italic</button></li><li role=\"separator\"></li><li role=\"none\"><button type=\"button\" class=\"ghost\">Link</button></li><li role=\"none\"><button type=\"button\">Publish</button></li></menu>"
+        },
+        {
+          "id": "pills-pressed",
+          "name": "Pills (aria-pressed selection)",
+          "classes": [
+            "toolbar",
+            "pills"
+          ],
+          "html": "<menu class=\"toolbar pills\" role=\"toolbar\" aria-label=\"Filter tasks\"><li role=\"none\"><button type=\"button\" class=\"ghost\" aria-pressed=\"false\">All</button></li><li role=\"none\"><button type=\"button\" class=\"ghost\" aria-pressed=\"true\">Active</button></li><li role=\"none\"><button type=\"button\" class=\"ghost\" aria-pressed=\"false\">Completed</button></li></menu>"
         }
       ]
     },
@@ -4659,17 +4788,17 @@
         {
           "id": "default",
           "name": "Default (Optimum)",
-          "html": "<meter value=\"58\" min=\"0\" max=\"100\" low=\"20\" high=\"80\" optimum=\"50\">58 GB used</meter>"
+          "html": "<meter aria-label=\"Disk used\" value=\"58\" min=\"0\" max=\"100\" low=\"20\" high=\"80\" optimum=\"50\">58 GB used</meter>"
         },
         {
           "id": "suboptimum",
           "name": "Sub-optimum",
-          "html": "<meter value=\"82\" min=\"0\" max=\"100\" low=\"20\" high=\"80\" optimum=\"50\">82 GB used</meter>"
+          "html": "<meter aria-label=\"Disk used\" value=\"82\" min=\"0\" max=\"100\" low=\"20\" high=\"80\" optimum=\"50\">82 GB used</meter>"
         },
         {
           "id": "critical",
           "name": "Critical",
-          "html": "<meter value=\"97\" min=\"0\" max=\"100\" low=\"50\" high=\"85\" optimum=\"30\">97 GB used</meter>"
+          "html": "<meter aria-label=\"Disk used\" value=\"97\" min=\"0\" max=\"100\" low=\"50\" high=\"85\" optimum=\"30\">97 GB used</meter>"
         },
         {
           "id": "segmented",
@@ -4677,7 +4806,7 @@
           "classes": [
             "segmented"
           ],
-          "html": "<meter class=\"segmented\" value=\"58\" min=\"0\" max=\"100\" low=\"20\" high=\"80\" optimum=\"50\">58 GB used</meter>"
+          "html": "<meter aria-label=\"Disk used\" class=\"segmented\" value=\"58\" min=\"0\" max=\"100\" low=\"20\" high=\"80\" optimum=\"50\">58 GB used</meter>"
         },
         {
           "id": "size-xs",
@@ -4685,7 +4814,7 @@
           "classes": [
             "xs"
           ],
-          "html": "<meter class=\"xs\" value=\"0.7\" min=\"0\" max=\"1\" low=\"0.3\" high=\"0.7\" optimum=\"1\">70%</meter>"
+          "html": "<meter aria-label=\"Progress\" class=\"xs\" value=\"0.7\" min=\"0\" max=\"1\" low=\"0.3\" high=\"0.7\" optimum=\"1\">70%</meter>"
         },
         {
           "id": "size-s",
@@ -4693,7 +4822,7 @@
           "classes": [
             "s"
           ],
-          "html": "<meter class=\"s\" value=\"0.7\" min=\"0\" max=\"1\" low=\"0.3\" high=\"0.7\" optimum=\"1\">70%</meter>"
+          "html": "<meter aria-label=\"Progress\" class=\"s\" value=\"0.7\" min=\"0\" max=\"1\" low=\"0.3\" high=\"0.7\" optimum=\"1\">70%</meter>"
         },
         {
           "id": "size-l",
@@ -4701,7 +4830,44 @@
           "classes": [
             "l"
           ],
-          "html": "<meter class=\"l\" value=\"0.7\" min=\"0\" max=\"1\" low=\"0.3\" high=\"0.7\" optimum=\"1\">70%</meter>"
+          "html": "<meter aria-label=\"Progress\" class=\"l\" value=\"0.7\" min=\"0\" max=\"1\" low=\"0.3\" high=\"0.7\" optimum=\"1\">70%</meter>"
+        },
+        {
+          "id": "labeled",
+          "name": "Labeled (header + output)",
+          "classes": [
+            "labeled"
+          ],
+          "html": "<section class=\"labeled\">\n  <header>\n    <label for=\"cmp-meter-quota\">Storage</label>\n    <output id=\"cmp-meter-quota-value\" for=\"cmp-meter-quota\">14.3 GB / 20 GB</output>\n  </header>\n  <meter id=\"cmp-meter-quota\" aria-describedby=\"cmp-meter-quota-value\" value=\"14.3\" min=\"0\" max=\"20\" low=\"5\" high=\"17\" optimum=\"0\">71.5%</meter>\n</section>"
+        },
+        {
+          "id": "states",
+          "name": "All three states (labelled)",
+          "html": "<p><label for=\"cmp-meter-good\">CPU 22% (good)</label><meter id=\"cmp-meter-good\" min=\"0\" max=\"100\" low=\"40\" high=\"75\" optimum=\"20\" value=\"22\">22%</meter></p>\n<p><label for=\"cmp-meter-fair\">Memory 61% (fair)</label><meter id=\"cmp-meter-fair\" min=\"0\" max=\"100\" low=\"40\" high=\"75\" optimum=\"20\" value=\"61\">61%</meter></p>\n<p><label for=\"cmp-meter-poor\">Disk 88% (poor)</label><meter id=\"cmp-meter-poor\" min=\"0\" max=\"100\" low=\"40\" high=\"75\" optimum=\"20\" value=\"88\">88%</meter></p>"
+        }
+      ]
+    },
+    {
+      "id": "mobile-menu",
+      "tag": "mobile-menu",
+      "type": "custom",
+      "category": "navigation",
+      "cssFile": "src/custom-elements/mobile-menu/styles.css",
+      "jsRequired": true,
+      "readySelector": "mobile-menu[data-mobile]",
+      "variants": [
+        {
+          "id": "mobile-closed",
+          "name": "Mobile mode (trigger shown, desktop nav hidden)",
+          "html": "<header class=\"site\">\n  <a href=\"/\"><brand-mark>Acme Inc</brand-mark></a>\n  <nav class=\"horizontal pills\" aria-label=\"Main navigation\"><ul><li><a href=\"/about/\">About</a></li><li><a href=\"/docs/\">Docs</a></li><li><a href=\"/blog/\">Blog</a></li></ul></nav>\n  <mobile-menu breakpoint=\"200rem\">\n    <button type=\"button\" data-trigger popovertarget=\"cmp-menu\" aria-label=\"Menu\"><icon-wc name=\"menu\"></icon-wc></button>\n    <nav popover id=\"cmp-menu\" class=\"mobile-menu-panel\" aria-label=\"Site menu\">\n      <button type=\"button\" class=\"mobile-menu-close\" popovertarget=\"cmp-menu\" popovertargetaction=\"hide\" aria-label=\"Close menu\"><icon-wc name=\"x\"></icon-wc></button>\n      <ul><li><a href=\"/about/\">About</a></li><li><a href=\"/docs/\" aria-current=\"page\">Docs</a></li><li><a href=\"/blog/\">Blog</a></li></ul>\n    </nav>\n  </mobile-menu>\n</header>"
+        },
+        {
+          "id": "panel-open",
+          "name": "Panel open with current link",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "document.getElementById('cmp-menu').showPopover();\n    await new Promise(r => setTimeout(r, 100));",
+          "html": "<header class=\"site\">\n  <a href=\"/\"><brand-mark>Acme Inc</brand-mark></a>\n  <nav class=\"horizontal pills\" aria-label=\"Main navigation\"><ul><li><a href=\"/about/\">About</a></li><li><a href=\"/docs/\">Docs</a></li><li><a href=\"/blog/\">Blog</a></li></ul></nav>\n  <mobile-menu breakpoint=\"200rem\">\n    <button type=\"button\" data-trigger popovertarget=\"cmp-menu\" aria-label=\"Menu\"><icon-wc name=\"menu\"></icon-wc></button>\n    <nav popover id=\"cmp-menu\" class=\"mobile-menu-panel\" aria-label=\"Site menu\">\n      <button type=\"button\" class=\"mobile-menu-close\" popovertarget=\"cmp-menu\" popovertargetaction=\"hide\" aria-label=\"Close menu\"><icon-wc name=\"x\"></icon-wc></button>\n      <ul><li><a href=\"/about/\">About</a></li><li><a href=\"/docs/\" aria-current=\"page\">Docs</a></li><li><a href=\"/blog/\">Blog</a></li></ul>\n    </nav>\n  </mobile-menu>\n</header>"
         }
       ]
     },
@@ -4802,7 +4968,7 @@
           "classes": [
             "steps"
           ],
-          "html": "<nav class=\"steps\" aria-label=\"Progress\"><ol><li data-complete><a href=\"#\">Account</a></li><li aria-current=\"step\"><a href=\"#\">Profile</a></li><li><a href=\"#\">Review</a></li><li><a href=\"#\">Confirm</a></li></ol></nav>",
+          "html": "<nav class=\"steps\" aria-label=\"Progress\"><ol><li data-completed><a href=\"#\">Account</a></li><li aria-current=\"step\"><a href=\"#\">Profile</a></li><li><a href=\"#\">Review</a></li><li><a href=\"#\">Confirm</a></li></ol></nav>",
           "fixtureWidth": "wide"
         },
         {
@@ -4829,6 +4995,139 @@
             "vertical"
           ],
           "html": "<nav class=\"vertical\"><ul><li><a href=\"#\">Dashboard</a></li><li><a href=\"#\" aria-current=\"page\">Settings</a></li><li><a href=\"#\">Profile</a></li><li><a href=\"#\">Logout</a></li></ul></nav>"
+        },
+        {
+          "id": "steps-rtl",
+          "name": "Steps (RTL, labels below + vertical)",
+          "classes": [
+            "steps"
+          ],
+          "fixtureWidth": "wide",
+          "html": "<section dir=\"rtl\" lang=\"ar\"><nav class=\"steps\" data-labels=\"below\" aria-label=\"تقدم الإعداد\"><ol><li data-completed>الحساب</li><li aria-current=\"step\">التفاصيل</li><li>التفضيلات</li><li>المراجعة</li></ol></nav><nav class=\"steps\" data-direction=\"vertical\" aria-label=\"تقدم البدء\"><ol><li data-completed>إنشاء مساحة العمل</li><li aria-current=\"step\">دعوة الفريق</li><li>ربط الأدوات</li></ol></nav></section>"
+        },
+        {
+          "id": "pagination-narrow",
+          "name": "Pagination (narrow, wraps)",
+          "classes": [
+            "pagination"
+          ],
+          "html": "<section style=\"max-inline-size: 272px\"><nav class=\"pagination\" aria-label=\"Pagination\"><ul><li><a href=\"#\" data-prev>Previous</a></li><li><a href=\"#\">1</a></li><li><span data-ellipsis>&hellip;</span></li><li><a href=\"#\">4</a></li><li><a href=\"#\" aria-current=\"page\">5</a></li><li><a href=\"#\">6</a></li><li><span data-ellipsis>&hellip;</span></li><li><a href=\"#\">20</a></li><li><a href=\"#\" data-next>Next</a></li></ul></nav></section>"
+        },
+        {
+          "id": "breadcrumb-rtl",
+          "name": "Breadcrumb (RTL: default, chevron, arrow)",
+          "classes": [
+            "breadcrumb"
+          ],
+          "html": "<section dir=\"rtl\" lang=\"ar\"><nav class=\"breadcrumb\" aria-label=\"مسار التنقل\"><ol><li><a href=\"#\">الرئيسية</a></li><li><a href=\"#\">المستندات</a></li><li><span aria-current=\"page\">التنقل</span></li></ol></nav><nav class=\"breadcrumb\" data-separator=\"chevron\" aria-label=\"مسار التنقل\"><ol><li><a href=\"#\">الرئيسية</a></li><li><a href=\"#\">المستندات</a></li><li><span aria-current=\"page\">التنقل</span></li></ol></nav><nav class=\"breadcrumb\" data-separator=\"arrow\" aria-label=\"مسار التنقل\"><ol><li><a href=\"#\">الرئيسية</a></li><li><a href=\"#\">المستندات</a></li><li><span aria-current=\"page\">التنقل</span></li></ol></nav></section>"
+        },
+        {
+          "id": "pagination-compact-rtl",
+          "name": "Pagination compact (RTL)",
+          "classes": [
+            "pagination"
+          ],
+          "attributes": {
+            "data-variant": "compact"
+          },
+          "html": "<section dir=\"rtl\" lang=\"ar\"><nav class=\"pagination\" data-variant=\"compact\" aria-label=\"ترقيم الصفحات\"><ul><li><a href=\"#\" data-prev>السابق</a></li><li><a href=\"#\">1</a></li><li><a href=\"#\" aria-current=\"page\">2</a></li><li><a href=\"#\">3</a></li><li><a href=\"#\" data-next>التالي</a></li></ul></nav></section>"
+        }
+      ]
+    },
+    {
+      "id": "nav-bar",
+      "tag": "nav-bar",
+      "type": "web-component",
+      "category": "navigation",
+      "cssFile": "src/web-components/nav-bar/styles.css",
+      "jsRequired": true,
+      "readySelector": "nav-bar[data-upgraded]",
+      "variants": [
+        {
+          "id": "default",
+          "name": "Links with explicit current",
+          "interactive": true,
+          "setup": "document.querySelector('nav-bar').current = '/docs/';",
+          "html": "<nav-bar aria-label=\"Main\">\n  <a href=\"/\">Home</a>\n  <a href=\"/docs/\">Docs</a>\n  <a href=\"/blog/\">Blog</a>\n  <a href=\"/about/\">About</a>\n</nav-bar>"
+        },
+        {
+          "id": "items",
+          "name": "JS-first items (icon, badge, external)",
+          "interactive": true,
+          "setup": "const nb = document.querySelector('nav-bar');\n    nb.items = [{ href: '/', label: 'Home' }, { href: '/inbox/', label: 'Inbox', icon: 'inbox', badge: 3 }, { href: '/settings/', label: 'Settings' }, { href: 'https://example.com/', label: 'Help', external: true }];\n    nb.current = '/inbox/';\n    await new Promise(r => setTimeout(r, 100));",
+          "html": "<nav-bar aria-label=\"App\"></nav-bar>"
+        },
+        {
+          "id": "nested-pills",
+          "name": "Wrapped nav (nested data-nav-link)",
+          "interactive": true,
+          "setup": "document.querySelector('nav-bar').current = '/docs/';",
+          "html": "<nav-bar>\n  <nav class=\"horizontal pills\" aria-label=\"Main navigation\">\n    <ul>\n      <li><a href=\"/\" data-nav-link>Home</a></li>\n      <li><a href=\"/docs/\" data-nav-link>Docs</a></li>\n      <li><a href=\"/blog/\" data-nav-link>Blog</a></li>\n    </ul>\n  </nav>\n</nav-bar>"
+        }
+      ]
+    },
+    {
+      "id": "note-wc",
+      "tag": "note-wc",
+      "type": "web-component",
+      "category": "interactive",
+      "cssFile": "src/web-components/note-wc/styles.css",
+      "jsRequired": true,
+      "readySelector": "note-wc[data-upgraded]",
+      "variants": [
+        {
+          "id": "page-button",
+          "name": "Page-level button (for)",
+          "html": "<note-wc for=\"cmp-note-art\"></note-wc>\n<article id=\"cmp-note-art\" data-highlights=\"compendium-note-button\">\n  <p>Typography has evolved dramatically since movable type.</p>\n</article>"
+        },
+        {
+          "id": "panel-open",
+          "name": "Note panel open",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "fixtureWidth": "wide",
+          "setup": "await customElements.whenDefined('note-wc');\nconst { initHighlights } = await import('/src/utils/highlights-init.js');\nconst art = document.getElementById('cmp-note-panel-art');\nconst c = initHighlights(art);\nconst t = art.querySelector('p').firstChild;\nconst r = document.createRange(); r.setStart(t, 0); r.setEnd(t, 10);\nconst s = getSelection(); s.removeAllRanges(); s.addRange(r);\nc._createFromSelection('yellow');\ndocument.querySelector('note-wc > button').click();\nawait new Promise(res => setTimeout(res, 200));",
+          "html": "<note-wc for=\"cmp-note-panel-art\"></note-wc>\n<article id=\"cmp-note-panel-art\" data-highlights=\"compendium-note-panel\">\n  <p>Typography has evolved dramatically since movable type. Variable fonts and text-wrap: balance bring print quality to the browser.</p>\n</article>"
+        }
+      ]
+    },
+    {
+      "id": "notification-wc",
+      "tag": "notification-wc",
+      "type": "web-component",
+      "category": "feedback",
+      "cssFile": "src/web-components/notification-wc/styles.css",
+      "jsRequired": true,
+      "readySelector": "notification-wc[data-mode]",
+      "variants": [
+        {
+          "id": "banner-info",
+          "name": "Banner (info)",
+          "fixtureWidth": "wide",
+          "html": "<notification-wc mode=\"banner\" persist=\"compendium-banner-info\" variant=\"info\">\n  <strong>v3.0 is out.</strong> <a href=\"#changelog\">See what’s new</a>\n  <button type=\"button\" value=\"dismiss\">Dismiss</button>\n</notification-wc>"
+        },
+        {
+          "id": "banner-warning",
+          "name": "Banner (warning)",
+          "fixtureWidth": "wide",
+          "html": "<notification-wc mode=\"banner\" persist=\"compendium-banner-warning\" variant=\"warning\">\n  <strong>Maintenance tonight.</strong> Saving may be unavailable 02:00–04:00 UTC.\n  <button type=\"button\" value=\"dismiss\">Dismiss</button>\n</notification-wc>"
+        },
+        {
+          "id": "panel-badge",
+          "name": "Panel trigger with unread badge",
+          "interactive": true,
+          "setup": "await customElements.whenDefined('notification-wc');\nawait new Promise(r => { const t = () => document.querySelector('notification-wc .notification-list li') ? r() : setTimeout(t, 20); t(); });",
+          "html": "<layout-cluster data-layout-justify=\"between\">\n  <strong>Inbox</strong>\n  <notification-wc storage-key=\"compendium-notifications\">\n    <article data-id=\"cmp-release\" data-type=\"update\" data-date=\"2026-04-10\">\n      <h3>v3.0 released</h3>\n      <p>New notification system and service layer.</p>\n      <a href=\"#changelog\">Read more</a>\n    </article>\n    <article data-id=\"cmp-maint\" data-type=\"alert\" data-date=\"2026-04-12\">\n      <h3>Scheduled maintenance</h3>\n      <p>Brief downtime Sunday 02:00–04:00 UTC.</p>\n    </article>\n  </notification-wc>\n</layout-cluster>",
+          "fixtureWidth": "wide"
+        },
+        {
+          "id": "panel-open",
+          "name": "Panel open (All tab)",
+          "interactive": true,
+          "screenshotTarget": "page",
+          "setup": "await customElements.whenDefined('notification-wc');\nawait new Promise(r => { const t = () => document.querySelector('notification-wc .notification-list li') ? r() : setTimeout(t, 20); t(); });\ndocument.querySelector('notification-wc > [data-trigger]').click();\nawait new Promise(r => setTimeout(r, 100));",
+          "html": "<layout-cluster data-layout-justify=\"between\">\n  <strong>Inbox</strong>\n  <notification-wc storage-key=\"compendium-notifications\">\n    <article data-id=\"cmp-release\" data-type=\"update\" data-date=\"2026-04-10\">\n      <h3>v3.0 released</h3>\n      <p>New notification system and service layer.</p>\n      <a href=\"#changelog\">Read more</a>\n    </article>\n    <article data-id=\"cmp-maint\" data-type=\"alert\" data-date=\"2026-04-12\">\n      <h3>Scheduled maintenance</h3>\n      <p>Brief downtime Sunday 02:00–04:00 UTC.</p>\n    </article>\n  </notification-wc>\n</layout-cluster>",
+          "fixtureWidth": "wide"
         }
       ]
     },

@@ -186,7 +186,8 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "breakpoint": {}
+      "breakpoint": {},
+      "data-mobile": { boolean: true }
     }
   },
 
@@ -998,12 +999,15 @@ module.exports = {
     flow: true,
     permittedContent: ["textarea", "@flow"],
     attributes: {
-      "name": {},
       "placeholder": {},
       "rows": {},
       "highlight": { boolean: true },
       "data-tab-indent": { boolean: true },
-      "data-theme": {}
+      "data-auto-mermaid": { boolean: true },
+      "data-theme": {},
+      "data-label-source": {},
+      "data-label-preview": {},
+      "data-label-tab-hint": {}
     }
   },
 
@@ -1012,11 +1016,13 @@ module.exports = {
     permittedContent: ["pre", "script", "template", "@flow"],
     attributes: {
       "src": {},
-      "loading": { enum: ["eager", "lazy"] },
-      "sanitize": { enum: ["on", "off"] },
+      "allow-cross-origin": { boolean: true },
+      "sanitize": { enum: ["on", "off", "false"] },
       "highlight": { boolean: true },
       "ping": {},
-      "data-theme": {}
+      "data-theme": {},
+      "data-label-error": {},
+      "data-auto-mermaid": { boolean: true }
     }
   },
 
@@ -1025,13 +1031,25 @@ module.exports = {
     permittedContent: ["@flow"],
     attributes: {
       "aria-label": {},
-      "data-match": { enum: ["exact"] }
+      "data-match": { enum: ["exact"] },
+      "data-label-new-tab": {}
     }
   },
 
   "note-wc": {
     flow: true,
-    permittedContent: ["@flow"]
+    permittedContent: ["@flow"],
+    attributes: {
+      "for": {},
+      "data-label-add": {},
+      "data-label-view": {},
+      "data-label-dialog": {},
+      "data-label-heading": {},
+      "data-label-placeholder": {},
+      "data-label-textarea": {},
+      "data-label-save": {},
+      "data-label-cancel": {}
+    }
   },
 
   "notification-wc": {
@@ -1047,7 +1065,24 @@ module.exports = {
       "poll": {},
       "toast-new": { boolean: true },
       "storage-key": {},
-      "data-trigger": {}
+      "data-label-trigger": {},
+      "data-label-unread": {},
+      "data-label-title": {},
+      "data-label-mark-all": {},
+      "data-label-tabs": {},
+      "data-label-all": {},
+      "data-label-watching": {},
+      "data-label-empty": {},
+      "data-label-watch-empty": {},
+      "data-label-last-checked": {},
+      "data-label-never": {},
+      "data-label-changed": {},
+      "data-label-unwatch": {},
+      "data-label-new": {},
+      "data-label-variant-info": {},
+      "data-label-variant-success": {},
+      "data-label-variant-warning": {},
+      "data-label-variant-error": {}
     }
   },
 

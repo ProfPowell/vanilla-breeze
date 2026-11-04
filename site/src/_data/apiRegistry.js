@@ -1423,7 +1423,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "mobile-menu",
     "type": "custom-element",
-    "description": "Responsive mobile navigation menu with hamburger toggle and popover panel",
+    "description": "Breakpoint observer for a header menu. Sets [data-mobile] at or below the breakpoint, which shows the author's trigger and hides sibling nav, nav-bar and site-tools in the parent header. The author supplies the trigger and the native popover panel.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -1436,17 +1436,29 @@ export default {
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "CSS length at which mobile mode activates (default: 52rem)"
+        "default": "52rem",
+        "description": "Viewport max-width (CSS length) at or below which mobile mode activates. Observed: changing it re-evaluates. The default 52rem also applies via a CSS media query before upgrade."
+      },
+      {
+        "name": "data-mobile",
+        "kind": "data",
+        "purpose": "output-state",
+        "type": "boolean",
+        "description": "Set by the element while mobile mode is active. Read-only state for styling."
       }
     ],
     "structure": [
       {
-        "element": "<button data-trigger>",
-        "description": "Hamburger toggle button (auto-generated or slotted)"
+        "element": "<button data-trigger popovertarget>",
+        "description": "Author-supplied menu toggle; popovertarget names the panel's id. Give it an aria-label."
       },
       {
-        "element": "<nav popover>",
-        "description": "Popover panel containing mobile navigation"
+        "element": "<nav popover class=\"mobile-menu-panel\">",
+        "description": "Author-supplied native popover panel, placed inside <mobile-menu> so the link styles apply. Label it (aria-label). Esc closes and focus returns to the trigger; it is not modal (no focus trap or scroll lock)."
+      },
+      {
+        "element": "<button class=\"mobile-menu-close\" popovertargetaction=\"hide\">",
+        "description": "Optional author-supplied close button inside the panel."
       }
     ],
     "css": {
@@ -8561,7 +8573,7 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "markdown-editor",
     "type": "web-component",
-    "description": "Side-by-side markdown editor with live preview. Composes a textarea with markdown-viewer.",
+    "description": "Side-by-side markdown editor with live preview. Adopts the authored textarea and composes markdown-viewer.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -8571,40 +8583,40 @@ export default {
     },
     "attributes": [
       {
-        "name": "name",
-        "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Form field name reflected to the textarea"
-      },
-      {
         "name": "placeholder",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Textarea placeholder text"
+        "description": "Textarea placeholder; overrides the textarea's own. No default placeholder"
       },
       {
         "name": "rows",
         "kind": "host-api",
         "purpose": "config",
-        "type": "string",
+        "type": "number",
         "default": "10",
-        "description": "Textarea rows"
+        "description": "Textarea rows; overrides the textarea's own rows"
       },
       {
         "name": "highlight",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Pass highlight attribute to the preview viewer"
+        "description": "Pass highlight attribute to the preview viewer (markdown-viewer:highlight per code block)"
       },
       {
         "name": "data-tab-indent",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Tab key inserts spaces instead of moving focus"
+        "description": "Tab inserts two spaces instead of moving focus. Escape then Tab moves focus; Shift+Tab is never captured. Read at upgrade"
+      },
+      {
+        "name": "data-auto-mermaid",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Upgrade ```mermaid fences in the live preview to diagram-wc (loads the mermaid bridge)"
       },
       {
         "name": "data-theme",
@@ -8612,6 +8624,30 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Theme propagated to the preview pane"
+      },
+      {
+        "name": "data-label-source",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Markdown source",
+        "description": "Accessible name of the source pane; also names the textarea when nothing else does"
+      },
+      {
+        "name": "data-label-preview",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Rendered preview",
+        "description": "Accessible name of the preview pane"
+      },
+      {
+        "name": "data-label-tab-hint",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Tab inserts spaces. Press Escape, then Tab, to move focus.",
+        "description": "Description read with the textarea when data-tab-indent is set"
       },
       {
         "name": "data-editing",
@@ -8623,28 +8659,62 @@ export default {
         "description": "Present when textarea is focused"
       }
     ],
+    "childAttributes": [
+      {
+        "name": "name",
+        "on": "textarea",
+        "type": "string",
+        "description": "Form field name. Goes on the textarea, so the value submits with or without JavaScript"
+      },
+      {
+        "name": "required",
+        "on": "textarea",
+        "type": "boolean",
+        "description": "Native constraint validation (also minlength, maxlength, readonly, form)"
+      },
+      {
+        "name": "id",
+        "on": "textarea",
+        "type": "string",
+        "description": "Kept on upgrade, so a <label for> keeps naming the textarea"
+      },
+      {
+        "name": "dir",
+        "on": "textarea",
+        "type": "string",
+        "description": "Base direction for the source and the preview (default auto)"
+      }
+    ],
+    "structure": [
+      {
+        "element": "textarea",
+        "required": false,
+        "description": "The editable source. Adopted and moved into the source pane with its attributes; created when absent"
+      }
+    ],
     "events": [
       {
         "name": "markdown-editor:input",
         "detail": "{ value }",
-        "description": "Fired on each keystroke"
+        "description": "Fired on each keystroke. Bubbles, composed"
       },
       {
         "name": "markdown-editor:change",
-        "detail": "{ value }",
-        "description": "Fired on blur after content changed"
+        "detail": "{ value, source }",
+        "description": "source \"user\": on blur after the content changed. source \"api\": when .value is assigned (the next blur does not repeat it). Not fired by form reset. Bubbles, composed"
       }
     ],
     "properties": [
       {
         "name": "value",
         "type": "string",
-        "description": "Get/set the current markdown content"
+        "description": "Get/set the markdown. Setting updates the preview immediately and fires markdown-editor:change with source \"api\""
       },
       {
         "name": "textarea",
         "type": "HTMLTextAreaElement",
-        "description": "Reference to the internal textarea element"
+        "readonly": true,
+        "description": "The backing textarea: the authored one when provided. Stable across reconnects"
       }
     ]
   },
@@ -8671,16 +8741,11 @@ export default {
         "description": "URL of external markdown file"
       },
       {
-        "name": "loading",
+        "name": "allow-cross-origin",
         "kind": "host-api",
         "purpose": "config",
-        "type": "enum",
-        "values": [
-          "eager",
-          "lazy"
-        ],
-        "default": "eager",
-        "description": "Defer fetch until element enters viewport (Phase 3)"
+        "type": "boolean",
+        "description": "Permit a src on another origin (CORS still applies; content is still sanitized unless sanitize=\"off\"). Without it src must be same-origin http(s); redirects are re-checked"
       },
       {
         "name": "sanitize",
@@ -8689,10 +8754,11 @@ export default {
         "type": "enum",
         "values": [
           "on",
-          "off"
+          "off",
+          "false"
         ],
         "default": "on",
-        "description": "Strip scripts, embeds, on* handlers and javascript: URLs from rendered HTML via the shared sanitizer. On by default; set sanitize=\"off\" only for trusted first-party markdown that needs raw embeds"
+        "description": "Sanitizing is on unless this is \"off\" or \"false\" (any other value, or no attribute, keeps it on). Off writes parser output raw with innerHTML: trusted first-party markdown only, never with a cross-origin or user-influenced src"
       },
       {
         "name": "highlight",
@@ -8714,6 +8780,21 @@ export default {
         "purpose": "config",
         "type": "string",
         "description": "Theme name propagated to .md-content container"
+      },
+      {
+        "name": "data-label-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Failed to load markdown",
+        "description": "Text of the role=\"alert\" message shown when src fails to load or parse and no <pre> fallback is visible"
+      },
+      {
+        "name": "data-auto-mermaid",
+        "kind": "data",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Upgrade ```mermaid fences in the rendered output to <diagram-wc> (main.js loads the markdown-mermaid bridge when present)"
       },
       {
         "name": "data-rendered",
@@ -8769,7 +8850,12 @@ export default {
       {
         "name": "parser",
         "type": "Function|null",
-        "description": "Custom parser function (markdown string → HTML string). Overrides the default marked parser."
+        "description": "Custom parser function (markdown string → HTML string). Overrides the default marked parser. Its output is still sanitized unless sanitize=\"off\""
+      },
+      {
+        "name": "markdown",
+        "type": "string",
+        "description": "Get the current markdown source, or set a string to render it instead of the slots/src (null or '' falls back to them)"
       }
     ],
     "methods": [
@@ -8789,7 +8875,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "nav-bar",
     "type": "web-component",
-    "description": "Top-level site/app navigation primitive. HTML-first wrap or JSON-first .items setter; auto aria-current sync via pathname matching with popstate listener.",
+    "description": "Top-level site/app navigation primitive. HTML-first wrap or JSON-first .items setter; auto aria-current sync via URL matching (origin + normalised pathname) on popstate and Navigation API entry changes.",
     "attributes": [
       {
         "name": "aria-label",
@@ -8807,19 +8893,51 @@ export default {
           "exact"
         ],
         "description": "Pathname matching strictness. 'exact' requires exact match. Default: exact wins, longest prefix breaks ties, first-in-DOM-order breaks remaining ties."
+      },
+      {
+        "name": "data-label-new-tab",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Screen-reader suffix appended to external .items links. Default: '(opens in new tab)'."
+      }
+    ],
+    "properties": [
+      {
+        "name": "items",
+        "type": "Array<{ href, label, route?, icon?, external?, badge? }>",
+        "description": "Read returns the last assigned array, else { href, label } inferred from the managed links. Assigning replaces the direct <a> children with the default renderer (deep-equal assignment is a no-op). Only http(s) and relative hrefs render as links."
+      },
+      {
+        "name": "current",
+        "type": "string | null",
+        "description": "Read returns the active route (data-route or href of the aria-current link, or the explicit value). Assigning takes ownership: URL sync stops until releaseCurrent()."
+      }
+    ],
+    "methods": [
+      {
+        "name": "releaseCurrent()",
+        "description": "Drop explicit ownership of .current and re-run URL matching."
+      },
+      {
+        "name": "refresh()",
+        "description": "Re-run URL matching manually (for routers that change the URL without popstate or the Navigation API). No-op while .current is explicitly owned."
       }
     ],
     "events": [
       {
-        "name": "nav-bar:upgraded"
+        "name": "nav-bar:upgraded",
+        "description": "Fired after every connect, including reconnects after a move."
       },
       {
         "name": "nav-bar:items-changed",
-        "detail": "{ items, source: 'property' }"
+        "detail": "{ items, source: 'property' }",
+        "description": "Fired after .items is assigned a new (not deep-equal) value."
       },
       {
         "name": "nav-bar:current-changed",
-        "detail": "{ current, previous, source: 'property' | 'popstate' | 'pathname' }"
+        "detail": "{ current, previous, source: 'property' | 'popstate' | 'navigation' | 'pathname' }",
+        "description": "Fired when the active link changes."
       }
     ],
     "childAttributes": [
@@ -8827,7 +8945,7 @@ export default {
         "name": "href",
         "on": "a",
         "type": "string",
-        "description": "Standard anchor href. Used for both navigation and pathname matching."
+        "description": "Standard anchor href. Resolved against the document base URL and matched by origin + normalised pathname (trailing slash, query and hash ignored)."
       },
       {
         "name": "data-route",
@@ -8854,14 +8972,93 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "note-wc",
     "type": "web-component",
-    "description": "Private note action button for use inside selection-menu",
+    "description": "Private reader notes on highlights: a note action inside selection-menu, a page-level button with for=\"id\", and the note panel itself. Also opens the panel for margin-annotation clicks (it listens for highlights:request-note on document).",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
         "@flow"
       ]
     },
-    "attributes": [],
+    "attributes": [
+      {
+        "name": "for",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "ID of the target article (page-level mode). The button opens the panel for the first noted, else first, highlight on it. Without for and outside selection-menu, note-wc renders no button and only hosts the panel."
+      },
+      {
+        "name": "data-label-add",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Add private note",
+        "description": "Accessible name of the button inside selection-menu."
+      },
+      {
+        "name": "data-label-view",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "View notes",
+        "description": "Accessible name of the page-level (for=\"id\") button."
+      },
+      {
+        "name": "data-label-dialog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Private note",
+        "description": "Accessible name of the note panel dialog."
+      },
+      {
+        "name": "data-label-heading",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Private note",
+        "description": "Visible panel heading (uppercased by CSS)."
+      },
+      {
+        "name": "data-label-placeholder",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Add a note…",
+        "description": "Textarea placeholder."
+      },
+      {
+        "name": "data-label-textarea",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Note for highlighted text",
+        "description": "Textarea accessible name."
+      },
+      {
+        "name": "data-label-save",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Save",
+        "description": "Save button text."
+      },
+      {
+        "name": "data-label-cancel",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Cancel",
+        "description": "Cancel button text."
+      }
+    ],
+    "methods": [
+      {
+        "name": "openFor",
+        "returns": "void",
+        "description": "openFor(highlight, controller, opener?) opens the note panel for a highlight record on a highlights controller (from initHighlights). Focus returns to opener (default: the element focused when it opened) on close. The highlights:request-note document event calls this on the first connected note-wc."
+      }
+    ],
     "structure": [],
     "css": {
       "tokens": []
@@ -8902,7 +9099,7 @@ export default {
           "warning",
           "error"
         ],
-        "description": "Banner mode: color variant"
+        "description": "Banner mode: color variant (reactive)"
       },
       {
         "name": "position",
@@ -8913,7 +9110,7 @@ export default {
           "top",
           "bottom"
         ],
-        "description": "Banner mode: sticky position"
+        "description": "Banner mode: top = sticky to the viewport top, bottom = fixed to the viewport bottom (reactive)"
       },
       {
         "name": "expires",
@@ -8927,7 +9124,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Panel mode: absolute URL or VBService role name for dynamic notifications"
+        "description": "Panel mode: absolute or root-relative URL, or a VBService role name, for dynamic notifications"
       },
       {
         "name": "poll",
@@ -8941,7 +9138,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Panel mode: fire a toast via the nearest <toast-msg> when a new dynamic notification arrives"
+        "description": "Panel mode: on each poll after the first, show a toast on the first <toast-msg> in the document for every never-seen dynamic notification"
       },
       {
         "name": "storage-key",
@@ -8951,36 +9148,183 @@ export default {
         "description": "Panel mode: VBStore namespace for read state (default: notifications)"
       },
       {
-        "name": "data-trigger",
+        "name": "data-label-trigger",
         "kind": "data",
         "purpose": "config",
-        "description": "Panel mode: marks a custom trigger element, replacing the auto-generated bell"
+        "type": "string",
+        "default": "Notifications",
+        "description": "Panel mode: Trigger accessible name (minted bell; an authored trigger keeps its own name)."
+      },
+      {
+        "name": "data-label-unread",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{n} unread",
+        "description": "Panel mode: Unread count appended to the trigger name ({n} = count)."
+      },
+      {
+        "name": "data-label-title",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Notifications",
+        "description": "Panel mode: Panel heading and dialog name."
+      },
+      {
+        "name": "data-label-mark-all",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Mark all read",
+        "description": "Panel mode: Mark-all button text."
+      },
+      {
+        "name": "data-label-tabs",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Notification categories",
+        "description": "Panel mode: Tab list accessible name."
+      },
+      {
+        "name": "data-label-all",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "All",
+        "description": "Panel mode: All tab text."
+      },
+      {
+        "name": "data-label-watching",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Watching",
+        "description": "Panel mode: Watching tab text."
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No notifications",
+        "description": "Panel mode: Empty-state text for the All tab."
+      },
+      {
+        "name": "data-label-watch-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "You aren’t watching any pages yet. Use the “Watch” button on a page to start.",
+        "description": "Panel mode: Empty-state text for the Watching tab."
+      },
+      {
+        "name": "data-label-last-checked",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Last checked: {date}",
+        "description": "Panel mode: Watch row check time ({date} = formatted date)."
+      },
+      {
+        "name": "data-label-never",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "—",
+        "description": "Panel mode: Watch row check time when never checked."
+      },
+      {
+        "name": "data-label-changed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Changed",
+        "description": "Panel mode: Badge on watched pages whose content changed."
+      },
+      {
+        "name": "data-label-unwatch",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Unwatch {title}",
+        "description": "Panel mode: Unwatch button accessible name ({title} = page title)."
+      },
+      {
+        "name": "data-label-new",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "New notification",
+        "description": "Panel mode: Toast text when a new notification has no title or body."
+      },
+      {
+        "name": "data-label-variant-info",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Information:",
+        "description": "Banner mode: visually hidden prefix announcing the info variant, so it isn't conveyed by colour alone."
+      },
+      {
+        "name": "data-label-variant-success",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Success:",
+        "description": "Banner mode: visually hidden prefix announcing the success variant, so it isn't conveyed by colour alone."
+      },
+      {
+        "name": "data-label-variant-warning",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Warning:",
+        "description": "Banner mode: visually hidden prefix announcing the warning variant, so it isn't conveyed by colour alone."
+      },
+      {
+        "name": "data-label-variant-error",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Error:",
+        "description": "Banner mode: visually hidden prefix announcing the error variant, so it isn't conveyed by colour alone."
       }
     ],
     "events": [
       {
         "name": "notification-wc:new",
-        "detail": {
-          "notification": "object"
-        }
+        "detail": "{ notification }",
+        "description": "A never-seen entry arrived in a dynamic fetch"
       },
       {
         "name": "notification-wc:read",
-        "detail": {
-          "id": "string"
-        }
+        "detail": "{ id }",
+        "description": "An entry was marked read"
       },
       {
         "name": "notification-wc:dismiss",
-        "detail": {
-          "id": "string"
-        }
+        "detail": "{ id }",
+        "description": "Banner was dismissed (id = persist key)"
       },
       {
-        "name": "notification-wc:open"
+        "name": "notification-wc:open",
+        "description": "Panel opened"
       },
       {
-        "name": "notification-wc:close"
+        "name": "notification-wc:close",
+        "description": "Panel closed"
+      },
+      {
+        "name": "notification-wc:notifications-changed",
+        "detail": "{ notifications, source: 'property' }",
+        "description": "The notifications setter replaced the dynamic list"
+      },
+      {
+        "name": "page-watch:remove",
+        "detail": "{ url, subscriptionId }",
+        "description": "A page was unwatched from the Watching tab"
       }
     ],
     "htmlvalidate": {
@@ -8988,7 +9332,54 @@ export default {
       "permittedContent": [
         "@flow"
       ]
-    }
+    },
+    "childAttributes": [
+      {
+        "name": "data-trigger",
+        "on": "button",
+        "type": "boolean",
+        "description": "Panel mode: marks an authored trigger button that replaces the minted bell. An unread badge is appended inside it."
+      },
+      {
+        "name": "data-id",
+        "on": "article",
+        "type": "string",
+        "description": "Panel mode: notification id (read state and dynamic merge key)."
+      },
+      {
+        "name": "data-type",
+        "on": "article",
+        "type": "enum",
+        "values": [
+          "update",
+          "alert",
+          "watch",
+          "system",
+          "message",
+          "stewardship"
+        ],
+        "description": "Panel mode: row icon (default update)."
+      },
+      {
+        "name": "data-date",
+        "on": "article",
+        "type": "string",
+        "description": "Panel mode: ISO date; sorts rows newest first and is shown formatted in the document language."
+      },
+      {
+        "name": "value",
+        "on": "button",
+        "type": "string",
+        "description": "Banner mode: value=\"dismiss\" (or data-dismiss) marks the dismiss button."
+      }
+    ],
+    "properties": [
+      {
+        "name": "notifications",
+        "type": "Array<{ id, title, body?, date?, type?, url?, dismissed? }>",
+        "description": "Panel mode: dynamic notifications merged over static <article> children by id (same shape as the src feed). The getter returns a copy; the setter re-renders and fires notification-wc:notifications-changed. url renders as a link only when it resolves to http(s). Banner mode ignores the setter."
+      }
+    ]
   },
   "page-info": {
     "$schema": "../../../schemas/api.schema.json",

@@ -264,7 +264,9 @@ Theme and runtime `<link>` hooks:
 - `<link rel="stylesheet" href="{cdn}/themes/<name>.css" data-vb-theme="<name>">`: the theme loader adopts an authored link instead of loading the theme again. Link order relative to the core CSS does not matter, because theme files self-declare `@layer bundle-theme` and carry the layer-order prefix.
 - `data-vb-theme-state="loading|ready|error|timeout"`: set by the loader and the boot snippet.
 - `data-vb-theme-preload="<name>"`: the `rel="preload"` hint from `preloadTheme()` (at most one per theme), removed when the theme loads.
-- `data-vb-math-font`: `<link rel="stylesheet" href="{cdn}/fonts/math-fonts.css">`, injected by math-init.
+- `data-vb-math-font`: `<link rel="stylesheet" href="{cdn}/fonts/math-fonts.css">`, injected by math-init. It points at the self-hosted `{cdn}/fonts/latinmodern-math.woff2`, the same face the core CSS declares for plain `<math>`.
+- `data-math="copyable"` renders `<button type="button" data-math-copy>` inside `[data-math-rendered]`. `data-label-copy` sets the button text (default "Copy LaTeX"); `data-label-copied` sets the announcement in the persistent `role="status"` span (default "Copied to clipboard").
+- `data-mathml`: precompiled MathML string, passed through `sanitizeMathML()` (MathML-namespace elements only; no `on*`/`href`/`src`/`style`/`id`/`name`/`xlink:`/`xml:` attributes; no `mglyph`/`malignmark`) and inserted as nodes. Do not rely on it to carry anything but MathML.
 - Runtime `rel` reads are token-list and case-insensitive (`[rel~="x" i]`): `canonical` (share-wc, page-info; resolved via `.href`), `author`, `license`, `author-key` (page-info, canonicalize).
 - `theme-loader.js` exports `getCdnBase()`, the detected CDN base (`__VB_THEME_BASE` → `setThemeBase()` → `<script src*="vanilla-breeze">` dir → `/cdn`).
 
@@ -347,6 +349,11 @@ Base: border, radius, padding, focus ring. Validation via `:user-invalid` and `[
 | `--switch-track-checked-bg` | `var(--color-interactive)` | Checked switch track |
 | `--switch-knob-bg` | `var(--color-white)` | Switch knob |
 | `--range-pct` | unset (0%) | Range fill stop; set by data-range, or set it yourself for a static fill |
+| `--meter-track-bg` | `var(--progress-track-bg)` | Meter track fill |
+| `--meter-track-border` | `var(--control-border)` | Meter track 1px edge (≥3:1) |
+| `--meter-fill-optimum` | `var(--color-success)` | Meter fill in the optimum range |
+| `--meter-fill-suboptimum` | `var(--color-warning)` (darkened to L 0.6 in light mode) | Meter fill in the suboptimum range |
+| `--meter-fill-even-less-good` | `var(--color-error)` | Meter fill in the worst range |
 
 ### `<form>` Form
 
@@ -464,15 +471,21 @@ Legacy classes: `.striped`, `.compact`, `.bordered`
 | `.tabs` | Tab-style with border indicator |
 | `.breadcrumb` | Breadcrumb trail |
 | `.minimal` | Text-only links |
-| `.pagination` | Page navigation controls |
+| `.pagination` | Page navigation controls (wraps on narrow screens) |
 | `.tree` | Hierarchical tree |
-| `.steps` | Multi-step progress |
+| `.steps` | Multi-step progress (`data-labels="below"`, `data-direction="vertical"`, `data-size`) |
+| `.bottom` | Sticky bottom tab bar (mobile) |
+| `.bottom.frosted` | Translucent, blurred bottom tab bar |
+
+Helper classes (not on nav): `.pagination-bar` (grid wrapper), `.pagination-info` (result count), `.page-size-selector` (label + select).
+
+Current page: `aria-current="page"` (or `.active`) is underlined as a non-colour cue in default/`.horizontal`/`.vertical`/`.minimal`/`.bottom` navs; `--nav-active-decoration: none` opts out.
 
 #### Breadcrumb data attributes
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-separator` | `chevron`, `arrow`, `dot`, `pipe` | Separator character |
+| `data-separator` | `chevron`, `arrow`, `dot`, `pipe` | Separator character (default "›" from `--sep-breadcrumb`; default/chevron/arrow flip in `dir="rtl"`, via `--sep-breadcrumb-rtl`) |
 | `data-collapsed` | (boolean) | Hide middle items |
 | `data-truncated` | (on li) | Truncate long items |
 
@@ -507,8 +520,11 @@ Legacy classes: `.striped`, `.compact`, `.bordered`
 
 | Class | Description |
 |-------|-------------|
-| `.xs`, `.s`, `.m`, `.l` | Size variants |
+| `.xs`, `.s`, `.m`, `.l` | Size variants (`.xs` is a decorative hairline with no track border) |
 | `.segmented` | Visual segments |
+| `.labeled` (wrapper) | `.labeled:has(> meter)`: a `<header>` or `<label>` row plus the `<meter>` |
+
+Labelled pattern: `<section class="labeled"><header><label for="q">…</label><output id="q-value" for="q">…</output></header><meter id="q" aria-describedby="q-value">…</meter></section>`.
 
 ### `<output>` Output
 
@@ -680,13 +696,15 @@ Banner landmark only when scoped to `<body>` (no article/aside/main/nav/section 
 
 | Class | Description |
 |-------|-------------|
-| `.contained` | Max 1200px centered |
-| `.narrow` | Max 65ch reading width |
-| `.wide` | Max 1600px |
-| `.full` | 100% width |
-| `.with-sidebar` | Grid + sidebar layout |
-| `.padded` | Vertical padding |
-| `.flex` | Flex column, flex-1 |
+| `.contained` | Max 1200px (fixed), centered |
+| `.narrow` | Max `--measure-normal` (65ch default; follows fluid profiles), centered |
+| `.wide` | Max 1600px (fixed), centered |
+| `.full` | 100% of the container width (not the viewport) |
+| `.with-sidebar` | Grid `minmax(0, 1fr)` + 200–300px sidebar; one column below 48rem. For page shells prefer `data-page-layout` / `<layout-sidebar>` |
+| `.padded` | Block padding (`--size-xl`) |
+| `.flex` | `flex: 1` flex column; fills a flex-column parent |
+
+`<main>` is a size query container (`container-type: inline-size`); under `[data-page-layout]` it takes grid-area `body-main` and container-name `region-main`. Give it `id="main"` as the skip-link target.
 
 #### `<section>`
 
@@ -758,20 +776,24 @@ Content model: zero+ `<p>`, one h1–h6, zero+ `<p>` (no `<small>`). Put kicker 
 
 | Class | Description |
 |-------|-------------|
-| `.toolbar` | Flex toolbar with buttons |
+| `.toolbar` | Raised toolbar row; keeps button variants and `aria-pressed` state (use `.ghost` for flat items) |
 | `.vertical` | Flex column |
-| `.context` | Dropdown menu style |
+| `.context` | Pop-up menu style; sizes to content |
 | `.icons` | Icon button grid |
 | `.pills` | Rounded items |
 | `.compact` | Reduced spacing |
 
-Separator: `<li role="separator">`
+Separator: `<li role="separator">` (a vertical rule in row menus, a horizontal rule in `.context`/`.vertical`).
+
+`<menu>` is exposed as a list (role=list), not as commands. For a toolbar add `role="toolbar"` + `aria-label` and `role="none"` on the `<li>`s; no arrow-key roving is provided.
 
 ### Inline Semantics (`<abbr>`, `<cite>`, `<del>`, `<ins>`, `<time>`, etc.)
 
 | Class | Element | Description |
 |-------|---------|-------------|
-| `mark.success/warning/error` | mark | Colored highlights |
+| `mark.success/warning/error` | mark | Highlight categories (subtle background, `-text` colour), not status; use `<layout-badge>` for status. Journal pack maps them to mint, butter and coral |
+| `figure.equation` / `p.equation` | math | Numbered display math (CSS counter); replaces `div.equation` |
+| `figure.math` | math | Captioned equation |
 | `abbr[data-variant="plain"]` | abbr | No underline |
 | `cite[data-variant="quoted"]` | cite | Title in locale quotation marks instead of italics |
 | `del.diff`, `ins.diff` | del/ins | Diff display (pill tokens) |
@@ -1076,6 +1098,20 @@ Features: silent `*` on the field's only label / legend, validation icons (force
 
 A11y: standalone spinner → `role="status"` + `aria-label` (CSS cannot add a role); next to visible text → `aria-hidden="true"`. Custom properties: `--spinner-size`, `--spinner-width`, `--spinner-color`, `--spinner-track`, `--spinner-speed`.
 
+#### `<mobile-menu>`
+Breakpoint observer for a header menu. The author writes the trigger and the native popover panel inside it; nothing is generated. Must be a direct child of the `<header>`.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `breakpoint` | CSS length (default `52rem`) | Viewport max-width at or below which mobile mode activates. Observed |
+| `data-mobile` | (boolean, state) | Set by the element while mobile mode is active |
+
+Mobile mode: the element shows (`display: contents`) and CSS hides `header:has(> mobile-menu[data-mobile]) > :is(nav, nav-bar, site-tools)` (no inline styles, so removal restores them). The default 52rem state also applies via `@media (width <= 52rem)` before upgrade / without JS. Leaving mobile mode closes an open panel.
+
+Children pattern: `<button data-trigger popovertarget="m" aria-label="Menu">` + `<nav popover id="m" class="mobile-menu-panel" aria-label="Site menu">` (optional `<button class="mobile-menu-close" popovertarget="m" popovertargetaction="hide">`). Keep the panel inside `<mobile-menu>`: link/section/current styles are scoped to it. The panel is non-modal: Esc + focus return are native; no focus trap or scroll lock.
+
+Tokens: `--mobile-menu-bg`, `--mobile-menu-radius`, `--mobile-menu-shadow`, `--mobile-menu-padding`, `--mobile-menu-max-width`, `--mobile-menu-backdrop`. Current link: `--color-interactive` fill + `--color-text-on-interactive-auto` text (via the nav `--_active-*` hooks); forced colors add outline + underline.
+
 #### `<progress-ring>`
 
 | Attribute | Values | Description |
@@ -1107,7 +1143,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 > build (`npm run build:cem`). The entries below are the human-readable companion;
 > when a component is missing detail here, read its `api.json` and `logic.js`.
 
-### Component index (66 elements)
+### Component index (69 elements)
 
 | Element | Purpose | Detail below |
 |---------|---------|:------------:|
@@ -1144,9 +1180,12 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<icon-wc>` | Lucide icon insertion | ✓ |
 | `<image-gallery>` | Thumbnail grid (`a > img` or `figure > a > img + figcaption`) → native `<dialog>` lightbox: `columns`, `gap`, `ratio`, `controls` edge/bar/minimal, `loop`, `captions` auto/overlay/hidden, `transition` morph/fade/none; direction-aware arrows/swipe; `.images` get/set `{ href, thumbSrc, alt, caption }` (string caption = text; Node/`<template>` = rich), `open(i)`/`close()`/`next()`/`prev()`, event `image-gallery:images-changed` `{ images, source }`; `data-label-dialog`/`close`/`prev`/`next`/`show-details`/`hide-details`/`counter` ("Image {n} of {total}") | |
 | `<image-map>` / `<map-area>` | Percentage-coordinate hotspot image map over a child `<img>` (or host `src`/`alt`): `<map-area shape="rect\|circle\|poly" coords label href target tooltip="hover\|click\|none" disabled>`, content = tooltip (hoverable, Escape anywhere; click mode is a disclosure with focus in/out); `.regions` get/set (round-trips tooltip/disabled/content); events `image-map:area-enter`/`area-leave` (pointer + focus), `area-activate` (pointer + Enter/Space, cancelable), `regions-changed` `{ regions, source }`; `data-label-map` | |
-| `<include-file>` | Same-origin HTML fragment include, sanitized by default: `src` (resolved against the page; blob:/data:/javascript: refused), `mode` replace/append/prepend, `lazy`, `trusted` (skip sanitizing), `allow-scripts` (requires `trusted`), `allow-cross-origin`, `data-label-error`; state `data-loading`/`data-loaded`/`data-error` + `aria-busy`; cycles and nesting > 10 refused; `.src`, `reload()`; events `include-file:loaded` `{ src, url, html }`, `include-file:error` `{ src, error }`, `include-file:src-changed` `{ src, source }` | ✓ |
-| `<markdown-editor>` | Markdown authoring textarea + preview | |
-| `<markdown-viewer>` | Render markdown to sanitized HTML | |
+| `<include-file>` | Same-origin HTML fragment include, sanitized by default: `src` (resolved against the page; blob:/data:/javascript: refused), `mode` replace/append/prepend, `lazy`, `trusted` (skip sanitizing), `allow-scripts` (requires `trusted`), `allow-cross-origin`, `data-label-error`; state `data-loading`/`data-loaded`/`data-error` + `aria-busy`; cycles and nesting > 10 refused; `.src`, `reload()`; events `include-file:loaded` `{ src, url, html }`, `include-file:error` `{ src, error }`, `include-file:src-changed` `{ src, source }`; sanitized with the fragment profile (keeps `id`/`name`, safe `style`, popover/command invokers; drops `<style>`, `on*`, form attrs) and inserted as nodes | ✓ |
+| `<markdown-editor>` | Markdown textarea + live sanitized `<markdown-viewer>` preview. Adopts the authored `<textarea>` (id/`<label for>`, `name`, `required`, `minlength`/`maxlength`, `readonly`, `dir`, `form`, `aria-*` kept; created only when absent): put `name` on the textarea, native submit/validity/reset with or without JS. Host: `placeholder`, `rows` (override the textarea's; no default placeholder), `highlight`, `data-tab-indent` (Escape then Tab leaves; Shift+Tab never captured), `data-auto-mermaid`, `data-theme`, `data-label-source`/`preview`/`tab-hint`; panes stack below ~40em of the editor's own width; `.value` get/set, `.textarea` (stable across reconnects); events `markdown-editor:input` `{ value }`, `markdown-editor:change` `{ value, source: "user"\|"api" }` (composed) | |
+| `<markdown-viewer>` | Render markdown (vendored marked, GFM + `:::note\|info\|tip\|warning\|danger [title]` callouts → `aside.callout[role=note][data-kind]`) from `src`, `<script type="text/markdown">`, `<template data-md>` or `<pre>`; sanitized by default (cleaned nodes inserted, never re-parsed; `<style>`/`style`/form attrs/invokers removed, `id`/`name` → `user-content-*`); `sanitize="off"` = trusted first-party only; `src` same-origin unless `allow-cross-origin`; `highlight`, `ping`, `data-theme`, `data-label-error`, `data-auto-mermaid`; state `data-rendered`/`data-loading`/`data-error`; `.parser`, `.markdown`, `render()`, `reload()`; events `markdown-viewer:fetch` `{ src }`, `:rendered` `{ src, node }`, `:highlight` `{ node, language }`, `:error` `{ error }` | |
+| `<nav-bar>` | Top-level nav with automatic `aria-current="page"` (URL matching, popstate + Navigation API) | ✓ |
+| `<note-wc>` | Private reader notes on highlights: action in `<selection-menu>` (highlight + note), page-level button with `for="id"`, bare = panel host for margin-annotation clicks (`highlights:request-note`); `openFor(highlight, controller, opener?)`; `data-label-*` | |
+| `<notification-wc>` | `mode="banner"` dismissible strip (`persist`, `variant`, `position`, `expires`) or `mode="panel"` bell + drawer (static `<article data-id data-type data-date>` + `src` feed + `.notifications`), read state in VBStore; `data-label-*` | |
 | `<page-info>` | Document provenance disclosure (auto-reads §11 metadata) | (see §11) |
 | `<page-toc>` | Auto-generated table of contents | ✓ |
 | `<page-tour>` / `<tour-step>` | Guided product tour overlays | |
@@ -1495,6 +1534,27 @@ Auto-generated table of contents from headings.
 |--------|--------|
 | `page-toc:navigate` | `{ id, heading }` |
 
+### `<nav-bar>`
+Top-level navigation primitive: keeps `aria-current="page"` on the link that matches the current URL.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `aria-label` | string | Landmark name (put it on the inner `<nav>` when wrapping one) |
+| `data-match` | `exact` | Exact pathname only (default: exact wins, longest prefix breaks ties, then DOM order) |
+| `data-label-new-tab` | string | SR suffix for external `.items` links (default `(opens in new tab)`) |
+
+Child attributes: `href` (resolved against the base URL; matched by origin + pathname, trailing slash/query/hash ignored; other-origin, non-http(s) and `#` links never match), `data-route` (`.current` target, falls back to `href`), `data-nav-link` (nested mode: when any descendant `<a>` has it, those are the candidates instead of direct `<a>` children).
+
+Landmark: host gets `role="navigation"` unless it contains a `<nav>`.
+
+API: `.items` (get/set `[{ href, label, route?, icon?, external?, badge? }]`; replaces direct `<a>` children, deep-equal no-op; only http(s)/relative hrefs render, others become href-less; in nested mode rendered links get `data-nav-link`), `.current` (get/set; setting takes ownership, survives `.items`), `releaseCurrent()`, `refresh()`.
+
+| Events | Detail |
+|--------|--------|
+| `nav-bar:upgraded` | — (every connect, incl. reconnect) |
+| `nav-bar:items-changed` | `{ items, source: 'property' }` |
+| `nav-bar:current-changed` | `{ current, previous, source: 'property' \| 'popstate' \| 'navigation' \| 'pathname' }` |
+
 ### `<card-list>`
 Data-driven card list from JSON.
 
@@ -1534,7 +1594,7 @@ QR code generator.
 | `data-error-correction` | `L`, `M`, `Q`, `H` | Error correction level |
 
 ### `<include-file>`
-Same-origin HTML fragment include. Fetched HTML is sanitized unless `trusted`.
+Same-origin HTML fragment include. Fetched HTML is sanitized unless `trusted`, using the fragment profile (keeps `id`/`name`, safe `style`, popover/command invokers; drops `<style>`, `on*`, form attrs) and inserted as nodes; `include-file:loaded` `detail.html` is the serialised sanitized fragment.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
@@ -1665,6 +1725,43 @@ Primary usage is as a `<selection-menu>` child: renders a highlighter `<button>`
 | `data-label-annotation` / `-added` / `-removed` | string | Forwarded to the target as `data-highlights-label-*` (margin text, announcements) |
 
 Methods: `highlightSelection(color?)`, `getHighlights()`, `removeHighlight(id)`, `clearAll()`, `exportHighlights()`, `importHighlights(json)` → `{ imported, rejected }` (drops bad shape / out-of-range offsets / non-palette colours). In selection-menu mode methods act on the last highlighted (else first) target. Events on the target, bubbling: `highlights:added` `{ id, text, color, note }`, `highlights:removed` `{ id }`, `highlights:selected` `{ text, rect }`, `highlights:clicked` `{ id, highlight }`, `highlights:note-changed` `{ id, note }`. Tokens: `--highlight-{yellow,green,blue,pink}` (`light-dark()` pairs), `--highlight-ink`, optional `--highlight-{name}-ink`. Forced colors: `Mark`/`MarkText` + per-colour underline style. Highlight API ranges are not exposed to AT (announcement only); margin annotations are `aria-hidden`.
+
+### `<note-wc>`
+Owns the private-note panel (`role="dialog"`: quote, textarea, Save/Cancel; notes stored with the highlight in localStorage via the highlights controller). Three modes: inside `<selection-menu>` a "Add private note" button highlights the selection — reusing a highlight only when the selection lies inside its stored offsets — and opens the panel; with `for="id"` a "View notes" button opens the first noted (else first) highlight on the target; without `for` outside a menu it renders **no button** and only hosts the panel. Margin-annotation clicks dispatch `highlights:request-note` `{ id, highlight, controller }` on the target; the first connected note-wc opens its panel.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `for` | ID | Page-level target |
+| `data-label-add` / `-view` | string | Button names (`Add private note` / `View notes`) |
+| `data-label-dialog` / `-heading` | string | Panel name / visible heading (`Private note`; heading uppercased by CSS) |
+| `data-label-placeholder` / `-textarea` | string | Textarea placeholder / name (`Add a note…` / `Note for highlighted text`) |
+| `data-label-save` / `-cancel` | string | Action text |
+
+Method: `openFor(highlight, controller, opener?)`. Ctrl/Cmd+Enter saves; Escape anywhere in the panel cancels. On Save/Cancel/Escape/outside click focus returns to the opener if visible, else the highlight's `<mark>`, else the target. A static target gets `data-note-host` (→ `position: relative`) while the panel is open.
+
+### `<notification-wc>`
+| Attribute | Mode | Description |
+|-----------|------|-------------|
+| `mode` | both | `panel` (default) or `banner` |
+| `persist` / `expires` | banner | VBStore key for dismiss state / days until it re-shows |
+| `variant` / `position` | banner | `info\|success\|warning\|error` / `top` (sticky) `\|bottom` (fixed); reactive |
+| `src` / `poll` | panel | Feed URL or VBService role / poll interval (ms) |
+| `toast-new` | panel | Toast new entries (after the first fetch) on the first `<toast-msg>` in the document |
+| `storage-key` | panel | VBStore namespace for read ids (default `notifications`) |
+| `data-label-*` | panel | `trigger`, `unread` (`{n} unread`), `title`, `mark-all`, `tabs`, `all`, `watching`, `empty`, `watch-empty`, `last-checked` (`{date}`), `never`, `changed`, `unwatch` (`{title}`), `new` |
+
+Children: `<article data-id data-type="update|alert|watch|system|message|stewardship" data-date>` (heading = title, first `<p>` = body, first `<a>` = url); `<button data-trigger>` replaces the minted bell; banner dismiss = `[value="dismiss"]` or `[data-dismiss]`. `.notifications` get/set `{ id, title, body?, date?, type?, url?, dismissed? }[]` (feed shape; merges over articles by id). Row/watch links render only for http(s)/relative URLs. Dates via `Intl.DateTimeFormat` in the element's `lang` (date-only values in UTC).
+
+| Events | Detail |
+|--------|--------|
+| `notification-wc:new` | `{ notification }` |
+| `notification-wc:read` | `{ id }` |
+| `notification-wc:dismiss` | `{ id }` (persist key) |
+| `notification-wc:open` / `:close` | — |
+| `notification-wc:notifications-changed` | `{ notifications, source: 'property' }` |
+| `page-watch:remove` | `{ url, subscriptionId }` (Unwatch in the Watching tab) |
+
+A11y: trigger name carries the count ("Notifications, 3 unread"; badge `aria-hidden`); opening focuses the dialog; Escape / tabbing out / outside click close (focus back to the trigger when it was inside); All/Watching is a full tabs pattern (tablist, `aria-controls`, tabpanels, arrows/Home/End, roving tabindex); forced-colors borders on badge, selected tab, unread rows. No-JS (`scripting: none`): banner and articles render as plain content.
 
 ---
 
@@ -1906,6 +2003,8 @@ Children: `<output data-empty>`, `<output data-loading>`, `<output data-error>`,
 |-----------|-------------|
 | `hide-until-ready` | Hidden until custom element is defined |
 | `show-until-ready` | Visible until custom element is defined |
+| `[data-requires-js]` | Hidden (`display: none !important`) under `@media (scripting: none)`: JS-only controls with no static equivalent |
+| `[data-js-enhanced]` | Hidden (`display: none`, overridable) under `@media (scripting: none)`: JS-driven internals of components with a static fallback |
 
 ---
 
@@ -1993,7 +2092,7 @@ Applied to `<html>`. Authored values are page defaults: ThemeManager only replac
 
 ## 10. Provenance & Authorship Surface
 
-VB ships a stack-agnostic content-provenance contract. Any HTML page that emits the tags below lights up VB's `<page-info>`, `<change-set>`, and lens components. The contract is authoritative in `admin/specs/meta-tag-contract-v1.md` (v1.0, stable). Canonicalization rules for signing live in `admin/specs/canonical-document-v1.md`.
+VB ships a stack-agnostic content-provenance contract. Any HTML page that emits the tags below lights up VB's `<page-info>`, `<change-set>`, and lens components. The contract is authoritative in `admin/specs/meta-tag-contract-v1.md` (v1.1, stable; v1.1 replaced `vb:topic` with repeated `<meta name="concept">` tags). Canonicalization rules for signing live in `admin/specs/canonical-document-v1.md`.
 
 **Principle: public-first.** Where an open-standard name exists (Schema.org, Open Graph, HTML5), VB reads the open name. The `vb:*` namespace is reserved for VB-specific extensions only.
 
