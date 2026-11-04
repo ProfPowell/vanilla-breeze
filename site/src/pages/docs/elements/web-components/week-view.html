@@ -41,7 +41,8 @@ crumbLabel: Web Components
   </calendar-event>
 </week-view></code-block>
 
-    <p>Each <code>&lt;calendar-event&gt;</code> must have <code>data-date="YYYY-MM-DD"</code> to assign it to a day column, and a <code>&lt;time datetime&gt;</code> for the hour slot. The <code>datetime</code> may be <code>HH:MM</code> or a full ISO datetime; the wall-clock time is used as written (offsets are not converted). Events without a date in range or without a time are not placed.</p>
+    <p>Each <code>&lt;calendar-event&gt;</code> must have <code>data-date="YYYY-MM-DD"</code> to assign it to a day column, and a <code>&lt;time datetime&gt;</code> for the hour slot. The <code>datetime</code> may be <code>HH:MM</code> or a full ISO datetime; the wall-clock time is used as written (offsets are not converted). Events without a date in range or without a time are not placed: once the component upgrades they are hidden (they stay in the <code>events</code> getter, so a set&rarr;get round-trips).</p>
+    <p>Without <code>data-start-date</code> the view shows the <strong>current week</strong>, starting on the first day of the week for the closest <code>[lang]</code> (Sunday for <code>en-US</code>, Monday for <code>de</code> or <code>en-GB</code>; read from <code>Intl.Locale</code> week info). An empty <code>&lt;week-view&gt;</code> still renders the grid. Today&rsquo;s day header carries <code>aria-current="date"</code> and is highlighted.</p>
   </section>
 
   <section>
@@ -52,14 +53,14 @@ crumbLabel: Web Components
         <tr>
           <td><code>data-start-date</code></td>
           <td>ISO date</td>
-          <td>&mdash;</td>
-          <td>First day of the week (e.g., <code>2026-04-06</code>).</td>
+          <td>current week</td>
+          <td>First day of the view (e.g., <code>2026-04-06</code>). Defaults to the current week, starting on the locale&rsquo;s first day of the week.</td>
         </tr>
         <tr>
           <td><code>data-days</code></td>
           <td>number</td>
           <td><code>7</code></td>
-          <td>Number of day columns. Use <code>5</code> for a workweek.</td>
+          <td>Number of day columns, 1&ndash;14. Use <code>5</code> for a workweek. Invalid values fall back to 7.</td>
         </tr>
         <tr>
           <td><code>data-start-hour</code></td>
@@ -79,13 +80,20 @@ crumbLabel: Web Components
           <td><code>"continues after the visible hours"</code></td>
           <td>Appended to the accessible name of a spanning event clipped at the last visible hour. Localisation hook.</td>
         </tr>
+        <tr>
+          <td><code>data-label-time</code></td>
+          <td>string</td>
+          <td><code>"Time"</code></td>
+          <td>Visually hidden name of the corner header above the hour labels. Localisation hook.</td>
+        </tr>
       </tbody>
     </table>
+    <p>Changing any of these attributes after upgrade rebuilds the generated table (an authored <code>&lt;table&gt;</code> is left alone).</p>
   </section>
 
   <section>
     <h2>Workweek</h2>
-    <p>Set <code>data-days="5"</code> to show Monday through Friday only.</p>
+    <p>Set <code>data-days="5"</code> with a Monday <code>data-start-date</code> to show Monday through Friday only.</p>
 
     <code-block language="html" show-lines label="5-day workweek" data-escape><week-view data-start-date="2026-04-06" data-days="5">
   ...events...
@@ -112,7 +120,7 @@ crumbLabel: Web Components
       <thead><tr><th>Element</th><th>Purpose</th></tr></thead>
       <tbody>
         <tr><td><code>&lt;table&gt;</code></td><td>Grid container for the hours &times; days layout</td></tr>
-        <tr><td><code>&lt;thead&gt; &lt;th&gt;</code></td><td>Day column headers with <code>&lt;time&gt;</code> elements</td></tr>
+        <tr><td><code>&lt;thead&gt; &lt;th&gt;</code></td><td>Day column headers with <code>&lt;time&gt;</code> elements. The visible text is short (&ldquo;Mon 6&rdquo;, with the month added when the range crosses one); the header&rsquo;s accessible text is the full date. Today&rsquo;s has <code>aria-current="date"</code>.</td></tr>
         <tr><td><code>&lt;tbody&gt; &lt;th&gt;</code></td><td>Hour row headers with <code>&lt;time datetime="HH:00"&gt;</code></td></tr>
         <tr><td><code>&lt;td&gt;</code></td><td>Day/hour cell containing <code>&lt;hour-view&gt;</code> + events</td></tr>
       </tbody>
@@ -164,15 +172,24 @@ crumbLabel: Web Components
     <table class="props-table">
       <thead><tr><th>Key</th><th>Action</th></tr></thead>
       <tbody>
-        <tr><td><kbd>Arrow Down</kbd></td><td>Next event in same day column</td></tr>
-        <tr><td><kbd>Arrow Up</kbd></td><td>Previous event in same day column</td></tr>
-        <tr><td><kbd>Arrow Right</kbd></td><td>Next event in same hour row (previous in right-to-left layouts)</td></tr>
-        <tr><td><kbd>Arrow Left</kbd></td><td>Previous event in same hour row (next in right-to-left layouts)</td></tr>
-        <tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td>First / last event of the week</td></tr>
+        <tr><td><kbd>Arrow Down</kbd></td><td>Next event of the same day, in time order (including events that share an hour cell)</td></tr>
+        <tr><td><kbd>Arrow Up</kbd></td><td>Previous event of the same day, in time order</td></tr>
+        <tr><td><kbd>Arrow Right</kbd></td><td>The event closest in time on the next day that has any events (the previous day in right-to-left layouts)</td></tr>
+        <tr><td><kbd>Arrow Left</kbd></td><td>The event closest in time on the previous day that has any events (the next day in right-to-left layouts)</td></tr>
+        <tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td>First / last event of the view, by date and then time</td></tr>
         <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Fire <code>week-view:event-click</code> for the focused event</td></tr>
       </tbody>
     </table>
-    <p>Events are one roving tab stop. Each gets <code>role="group"</code> and an accessible name from its time and title (author-supplied <code>role</code> / <code>aria-label</code> are kept).</p>
+    <p>Every placed event can be reached with the arrow keys. Events are one roving tab stop, starting on the first event by date and time. Each gets <code>role="group"</code> and an accessible name from its time and title (author-supplied <code>role</code> / <code>aria-label</code> are kept).</p>
+  </section>
+
+  <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li>The grid is a real <code>&lt;table&gt;</code>: day headers are <code>&lt;th scope="col"&gt;</code> named with the full date, hour labels are <code>&lt;th scope="row"&gt;</code>, and the corner header has visually hidden text (<code>data-label-time</code>).</li>
+      <li>Grid lines are logical borders, so they mirror in right-to-left layouts and stay visible in forced-colors (Windows High Contrast) mode.</li>
+      <li>Today is conveyed by <code>aria-current="date"</code> as well as colour and a thicker rule.</li>
+    </ul>
   </section>
 
   <section>
