@@ -95,6 +95,26 @@ i:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(
   text-decoration-thickness: from-font;
 }
 
+/* CJK <u>: the proper-name mark (專名號 / 专名号), a solid underline in the
+   text colour under the line. VB's default <u> is a red wavy spell-check
+   line, which here would make every personal or place name look like a
+   typo, and would collide with <cite>'s wavy book-title mark above. */
+u:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
+  text-decoration: underline solid currentColor;
+  text-underline-position: under;
+  text-decoration-thickness: from-font;
+}
+
+/* CJK <var>: no synthesised oblique. A dashed underline marks the
+   placeholder instead, distinct from the solid (u), dotted (i) and wavy
+   (cite) lines. */
+var:is(:lang(zh), :lang(ja), :lang(ko)):not(:lang(zh-Latn), :lang(ja-Latn), :lang(ko-Latn)) {
+  font-style: normal;
+  text-decoration: underline dashed var(--color-text-muted);
+  text-underline-position: under;
+  text-decoration-thickness: from-font;
+}
+
 /* Japanese: proportional alternates for punctuation */
 :where(:lang(ja)) {
   font-feature-settings: "palt" 1;

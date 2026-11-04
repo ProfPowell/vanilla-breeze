@@ -255,25 +255,66 @@ ol.meta {
     margin-block-start: 0;
   }
 
+  /* Separators are decorative: the "/ ''" alt text keeps screen readers
+     from reading "dot", "vertical line" or "slash" between items (the same
+     silent form as hgroup and nav.breadcrumb). Each rule declares the plain
+     form first as the fallback for engines without content alt text. */
   & > li + li::before {
     content: var(--sep-list, "\00B7");
+    content: var(--sep-list, "\00B7") / "";
     padding-inline: 0.35em;
   }
 }
 
 /* Separator variants. Child combinators throughout: a nested list keeps its
    own markers/separators instead of inheriting the parent's. */
-.meta:is(ul, ol)[data-separator="pipe"] > li + li::before { content: var(--sep-pipe, "|"); }
-.meta:is(ul, ol)[data-separator="dash"] > li + li::before { content: var(--sep-ndash, "\2013"); }
-.meta:is(ul, ol)[data-separator="slash"] > li + li::before { content: "/"; }
+.meta:is(ul, ol)[data-separator="pipe"] > li + li::before {
+  content: var(--sep-pipe, "|");
+  content: var(--sep-pipe, "|") / "";
+}
+
+.meta:is(ul, ol)[data-separator="dash"] > li + li::before {
+  content: var(--sep-ndash, "\2013");
+  content: var(--sep-ndash, "\2013") / "";
+}
+
+.meta:is(ul, ol)[data-separator="slash"] > li + li::before {
+  content: var(--sep-slash, "/");
+  content: var(--sep-slash, "/") / "";
+}
 
 /* --- List Marker Variants --- */
-/* Override list markers using character tokens */
+/* Override list markers using character tokens. The glyphs are decorative:
+   "/ ''" alt text keeps "heavy check mark" or "black star" out of the
+   spoken list item. A data-marker list carries no state; a real task list
+   needs checkboxes. */
 
-ul[data-marker="check"] > li::marker { content: var(--marker-check, "\2714") "\2009"; color: var(--color-success, currentColor); }
-ul[data-marker="arrow"] > li::marker { content: var(--marker-arrow, "\27A4") "\2009"; color: var(--color-interactive); }
-ul[data-marker="dash"] > li::marker  { content: var(--marker-dash, "\2043") "\2009"; }
-ul[data-marker="star"] > li::marker  { content: "\2605\2009"; color: var(--color-interactive); }
+ul[data-marker="check"] > li::marker {
+  content: var(--marker-check, "\2714") "\2009";
+  content: var(--marker-check, "\2714") "\2009" / "";
+  color: var(--color-success, currentColor);
+}
 
-/* ::marker cannot be transformed, so RTL swaps in a left-pointing glyph */
-ul[data-marker="arrow"]:dir(rtl) > li::marker { content: var(--marker-arrow-rtl, "\2B9C") "\2009"; }
+ul[data-marker="arrow"] > li::marker {
+  content: var(--marker-arrow, "\25B8") "\2009";
+  content: var(--marker-arrow, "\25B8") "\2009" / "";
+  color: var(--color-interactive);
+}
+
+ul[data-marker="dash"] > li::marker {
+  content: var(--marker-dash, "\2043") "\2009";
+  content: var(--marker-dash, "\2043") "\2009" / "";
+}
+
+ul[data-marker="star"] > li::marker {
+  content: var(--marker-star, "\2605") "\2009";
+  content: var(--marker-star, "\2605") "\2009" / "";
+  color: var(--color-interactive);
+}
+
+/* ::marker cannot be transformed, so RTL swaps in the mirrored glyph of the
+   same pair */
+ul[data-marker="arrow"]:dir(rtl) > li::marker {
+  content: var(--marker-arrow-rtl, "\25C2") "\2009";
+  content: var(--marker-arrow-rtl, "\25C2") "\2009" / "";
+}

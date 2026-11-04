@@ -62,13 +62,13 @@ crumbLabel: Native Elements
 
     <browser-window src="/docs/snippets/demos/ul-variants.html" url="ul-variants.html" title="List variants" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Inline list variant" data-escape><ul class="inline">
+    <code-block language="html" show-lines label="Inline list variant" data-escape><ul class="inline" role="list">
   <li>Home</li>
   <li>About</li>
   <li>Services</li>
   <li>Contact</li>
 </ul></code-block>
-    <code-block language="html" show-lines label="Unstyled list variant" data-escape><ul class="unstyled">
+    <code-block language="html" show-lines label="Unstyled list variant" data-escape><ul class="unstyled" role="list">
   <li>No bullets here</li>
   <li>Just plain text</li>
   <li>Useful for navigation</li>
@@ -78,13 +78,14 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Custom Markers</h2>
-    <p>Use the <code>data-marker</code> attribute to replace default bullets with character tokens. Available markers: <code>check</code>, <code>arrow</code>, <code>dash</code>, and <code>star</code>. The marker applies only to the list's direct items, so a nested list keeps its own bullets or numbers. In right-to-left text the arrow points left.</p>
+    <p>Use the <code>data-marker</code> attribute to replace default bullets with character tokens. Available markers: <code>check</code>, <code>arrow</code>, <code>dash</code>, and <code>star</code>. The marker applies only to the list's direct items, so a nested list keeps its own bullets or numbers. In right-to-left text the arrow points left, using the mirrored glyph of the same pair.</p>
+    <p>The markers are decorative. Each glyph has empty alternative text (<code>content: "&#x2714;" / ""</code>), so screen readers announce the item text, not "heavy check mark". A <code>data-marker="check"</code> list therefore carries no state: it says nothing to assistive technology about whether anything is done. For a real task list use checkboxes, for example <code>&lt;input type="checkbox"&gt;</code> inside <a href="/docs/elements/custom-elements/form-field/"><code>&lt;form-field&gt;</code></a> or a <code>&lt;label&gt;</code>.</p>
 
     <browser-window src="/docs/snippets/demos/ul-markers.html" url="ul-markers.html" title="Custom list markers" shadow></browser-window>
 
     <code-block language="html" show-lines label="Custom marker variants" data-escape><ul data-marker="check">
-  <li>Task completed</li>
-  <li>Another done item</li>
+  <li>Free shipping</li>
+  <li>30-day returns</li>
 </ul>
 
 <ul data-marker="arrow">
@@ -105,6 +106,7 @@ crumbLabel: Native Elements
         <tr>
           <th>Attribute Value</th>
           <th>Marker</th>
+          <th>Token</th>
           <th>Color</th>
         </tr>
       </thead>
@@ -112,21 +114,25 @@ crumbLabel: Native Elements
         <tr>
           <td><code>data-marker="check"</code></td>
           <td>&#x2714; (check mark)</td>
+          <td><code>--marker-check</code></td>
           <td><code>--color-success</code></td>
         </tr>
         <tr>
           <td><code>data-marker="arrow"</code></td>
-          <td>&#x27A4; (arrow)</td>
+          <td>&#x25B8; (right-pointing triangle; &#x25C2; in RTL)</td>
+          <td><code>--marker-arrow</code>, <code>--marker-arrow-rtl</code></td>
           <td><code>--color-interactive</code></td>
         </tr>
         <tr>
           <td><code>data-marker="dash"</code></td>
-          <td>&#x2043; (dash)</td>
+          <td>&#x2043; (hyphen bullet)</td>
+          <td><code>--marker-dash</code></td>
           <td><code>currentColor</code></td>
         </tr>
         <tr>
           <td><code>data-marker="star"</code></td>
           <td>&#x2605; (star)</td>
+          <td><code>--marker-star</code></td>
           <td><code>--color-interactive</code></td>
         </tr>
       </tbody>
@@ -135,44 +141,50 @@ crumbLabel: Native Elements
 
   <section>
     <h2>Metadata List</h2>
-    <p>The <code>.meta</code> class creates an inline list with separator characters between items. Ideal for article bylines, breadcrumbs, or tag displays.</p>
+    <p>The <code>.meta</code> class creates an inline list with separator characters between items. Ideal for article bylines, version facts or tag displays. The separators are decorative and have empty alternative text, so screen readers do not read "dot" or "slash" between items.</p>
+    <p>Not for breadcrumbs: a breadcrumb trail is navigation, with an ordered list, <code>aria-current="page"</code> and direction-aware separators. Use <a href="/docs/elements/native/nav/"><code>nav.breadcrumb</code></a> or <a href="/docs/elements/web-components/bread-crumb/"><code>&lt;bread-crumb&gt;</code></a>.</p>
 
     <browser-window src="/docs/snippets/demos/ul-meta.html" url="ul-meta.html" title="Metadata list" shadow></browser-window>
 
-    <code-block language="html" show-lines label="Metadata list with separators" data-escape><ul class="meta">
+    <code-block language="html" show-lines label="Metadata list with separators" data-escape><ul class="meta" role="list">
   <li>Jane Smith</li>
   <li><time datetime="2024-01-15">Jan 15, 2024</time></li>
   <li>5 min read</li>
 </ul>
 
 <!-- Separator variants -->
-<ul class="meta" data-separator="pipe">...</ul>
-<ul class="meta" data-separator="dash">...</ul>
-<ul class="meta" data-separator="slash">...</ul></code-block>
+<ul class="meta" role="list" data-separator="pipe">...</ul>
+<ul class="meta" role="list" data-separator="dash">...</ul>
+<ul class="meta" role="list" data-separator="slash">...</ul></code-block>
 
     <table class="props-table">
       <thead>
         <tr>
           <th>Attribute</th>
           <th>Separator</th>
+          <th>Token</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>(default)</td>
           <td>&middot; (middle dot)</td>
+          <td><code>--sep-list</code></td>
         </tr>
         <tr>
           <td><code>data-separator="pipe"</code></td>
           <td>| (pipe)</td>
+          <td><code>--sep-pipe</code></td>
         </tr>
         <tr>
           <td><code>data-separator="dash"</code></td>
           <td>&ndash; (en dash)</td>
+          <td><code>--sep-ndash</code></td>
         </tr>
         <tr>
           <td><code>data-separator="slash"</code></td>
           <td>/ (slash)</td>
+          <td><code>--sep-slash</code></td>
         </tr>
       </tbody>
     </table>
@@ -237,7 +249,7 @@ crumbLabel: Native Elements
     </ul>
 
     <h3>Safari / VoiceOver</h3>
-    <p>The <code>.unstyled</code>, <code>.inline</code> and <code>.meta</code> classes remove the visual bullets with <code>list-style: none</code>. Most browsers still expose the list, but Safari with VoiceOver may stop announcing it as one. Add <code>role="list"</code> to keep the semantics explicitly:</p>
+    <p>The <code>.unstyled</code>, <code>.inline</code> and <code>.meta</code> classes remove the visual bullets with <code>list-style: none</code>. Most browsers still expose the list, but Safari with VoiceOver may stop announcing it as one. Add <code>role="list"</code> to keep the semantics explicitly, as every sample on this page does. Safari keeps list semantics for a list inside <code>&lt;nav&gt;</code>, so navigation menus do not need it:</p>
 
     <code-block language="html" show-lines label="Preserving list semantics in Safari" data-escape><ul class="unstyled" role="list">
   <li>Item with explicit list role</li>
@@ -311,6 +323,102 @@ crumbLabel: Native Elements
         </tr>
       </tbody>
     </table>
+
+    <h3>Variant: <code>.meta</code></h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>display</code></td>
+          <td><code>flex</code> (wrapping, items centred)</td>
+        </tr>
+        <tr>
+          <td><code>color</code></td>
+          <td><code>var(--color-text-muted)</code></td>
+        </tr>
+        <tr>
+          <td><code>font-size</code></td>
+          <td><code>var(--font-size-s)</code></td>
+        </tr>
+        <tr>
+          <td><code>list-style</code></td>
+          <td><code>none</code></td>
+        </tr>
+        <tr>
+          <td><code>li + li::before</code></td>
+          <td><code>content: var(--sep-list) / ""</code>, <code>padding-inline: 0.35em</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p><code>.inline</code>, <code>.unstyled</code> and <code>.meta</code> work on <code>&lt;ol&gt;</code> as well. <code>data-marker</code> is for <code>&lt;ul&gt;</code> only.</p>
+
+    <h3>Custom Properties</h3>
+    <p>The separator and marker glyphs are character tokens defined in <code>src/tokens/characters.css</code>. Override them on <code>:root</code> or on a single list:</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Default</th>
+          <th>Used by</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--sep-list</code></td>
+          <td>&middot; (U+00B7)</td>
+          <td><code>.meta</code></td>
+        </tr>
+        <tr>
+          <td><code>--sep-pipe</code></td>
+          <td>| (U+007C)</td>
+          <td><code>.meta[data-separator="pipe"]</code></td>
+        </tr>
+        <tr>
+          <td><code>--sep-ndash</code></td>
+          <td>&ndash; (U+2013)</td>
+          <td><code>.meta[data-separator="dash"]</code></td>
+        </tr>
+        <tr>
+          <td><code>--sep-slash</code></td>
+          <td>/ (U+002F)</td>
+          <td><code>.meta[data-separator="slash"]</code></td>
+        </tr>
+        <tr>
+          <td><code>--marker-check</code></td>
+          <td>&#x2714; (U+2714)</td>
+          <td><code>data-marker="check"</code></td>
+        </tr>
+        <tr>
+          <td><code>--marker-arrow</code></td>
+          <td>&#x25B8; (U+25B8)</td>
+          <td><code>data-marker="arrow"</code></td>
+        </tr>
+        <tr>
+          <td><code>--marker-arrow-rtl</code></td>
+          <td>&#x25C2; (U+25C2)</td>
+          <td><code>data-marker="arrow"</code> under <code>:dir(rtl)</code></td>
+        </tr>
+        <tr>
+          <td><code>--marker-dash</code></td>
+          <td>&#x2043; (U+2043)</td>
+          <td><code>data-marker="dash"</code></td>
+        </tr>
+        <tr>
+          <td><code>--marker-star</code></td>
+          <td>&#x2605; (U+2605)</td>
+          <td><code>data-marker="star"</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <code-block language="css" show-lines label="Overriding a token" data-escape>/* Bullet separators in article bylines only */
+.byline {
+  --sep-list: "\2022";
+}</code-block>
   </section>
 
   <section>
