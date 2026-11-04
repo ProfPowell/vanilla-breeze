@@ -39,7 +39,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
-import { sanitizeHTML } from '../../lib/sanitize-html.js';
+import { sanitizeToFragment } from '../../lib/sanitize-html.js';
 import { fragmentClick } from '../_shared/fragment-link.js';
 
 const LABELS = /** @type {Record<string, string>} */ ({
@@ -115,7 +115,7 @@ function buildSourceDl(terms, seeAlsoLabel) {
     dt.textContent = String(t.term ?? '');
     const dd = document.createElement('dd');
     if (typeof t.definitionHtml === 'string' && t.definitionHtml) {
-      dd.innerHTML = sanitizeHTML(t.definitionHtml);
+      dd.replaceChildren(sanitizeToFragment(t.definitionHtml));
     } else {
       dd.textContent = String(t.definition ?? '');
     }

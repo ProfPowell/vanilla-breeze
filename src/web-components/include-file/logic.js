@@ -47,7 +47,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
-import { sanitizeHTML } from '../../lib/sanitize-html.js';
+import { sanitizeToFragment } from '../../lib/sanitize-html.js';
 
 /** Maximum include-file nesting depth before a load is refused. */
 const MAX_DEPTH = 10;
@@ -259,13 +259,22 @@ class IncludeFile extends VBElement {
         console.warn('<include-file>: allow-scripts is ignored without trusted');
       }
       const runScripts = trusted && this.hasAttribute('allow-scripts');
-      const html = trusted ? raw : sanitizeHTML(raw, { allowIncludeFile: true });
-
-      // Parse into an inert template so only THIS fragment's nodes are
+      // Parse into an inert fragment so only THIS fragment's nodes are
       // processed — author content and earlier appends are never touched.
-      const tpl = document.createElement('template');
-      tpl.innerHTML = html;
-      const fragment = tpl.content;
+      // Sanitized nodes are inserted as-is (never serialised + re-parsed:
+      // that round trip is the mXSS vector). Fragment profile: ids, names
+      // and safe style attributes are kept for same-origin partials.
+      let fragment;
+      if (trusted) {
+        const tpl = document.createElement('template');
+        tpl.innerHTML = raw;
+        fragment = tpl.content;
+      } else {
+        fragment = sanitizeToFragment(raw, { allowIncludeFile: true, keepIds: true, keepStyle: true });
+      }
+      const holder = document.createElement('template');
+      holder.content.append(fragment.cloneNode(true));
+      const html = holder.innerHTML;
       const scripts = [...fragment.querySelectorAll('script')];
       if (!runScripts) scripts.forEach((s) => s.remove());
 

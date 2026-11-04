@@ -23,14 +23,21 @@
 
 import { registerInit } from './_init-registry.js';
 import { marked } from '../vendor/marked/marked.esm.js';
-import { sanitizeHTML } from '../lib/sanitize-html.js';
+import { sanitizeToFragment } from '../lib/sanitize-html.js';
 
 const SELECTOR = '[data-markdown-editable]';
 
-/** Parse inline markdown and sanitize the output. */
-function renderInline(md) {
-  if (!md.trim()) return '';
-  return sanitizeHTML(/** @type {string} */ (marked.parseInline(md, { gfm: true })));
+/**
+ * Parse inline markdown into `target` as sanitized nodes (never re-parsed).
+ * @param {Element} target
+ * @param {string} md
+ * @returns {string} the rendered HTML (serialised, for event details)
+ */
+function renderInline(target, md) {
+  target.replaceChildren(md.trim()
+    ? sanitizeToFragment(/** @type {string} */ (marked.parseInline(md, { gfm: true })))
+    : '');
+  return target.innerHTML;
 }
 
 /** Emit the change event with both raw and rendered values. */
@@ -52,7 +59,7 @@ function enhanceContentEditable(el) {
   const initial = el.textContent.trim();
   el.dataset.markdownValue = initial;
   if (initial) {
-    el.innerHTML = renderInline(initial);
+    renderInline(el, initial);
   }
 
   let composing = false;
@@ -84,7 +91,7 @@ function enhanceContentEditable(el) {
     el.removeAttribute('data-md-editing');
 
     if (raw) {
-      el.innerHTML = renderInline(raw);
+      renderInline(el, raw);
     } else {
       el.textContent = '';
     }
@@ -111,9 +118,7 @@ function enhanceTextarea(el) {
   }
 
   function renderPreview() {
-    const html = renderInline(el.value);
-    if (preview) preview.innerHTML = html;
-    return html;
+    return preview ? renderInline(preview, el.value) : '';
   }
 
   el.addEventListener('blur', () => {

@@ -35,6 +35,7 @@ crumbLabel: Data Attributes
       <li>Add <code>data-mathml</code> with the precompiled MathML string</li>
       <li>On page load, the script reads <code>data-mathml</code>, injects a <code>&lt;math&gt;</code> element, and hides the original <code>&lt;code&gt;</code></li>
       <li>Without <code>data-mathml</code>, the LaTeX source displays as-is &mdash; readable fallback with no JS dependency</li>
+      <li>The <code>data-mathml</code> string is sanitized before insertion: only MathML elements survive, and event handlers, <code>href</code>, <code>src</code>, <code>style</code>, <code>id</code>, <code>name</code> and <code>xlink:</code>/<code>xml:</code> attributes are removed. Treat it as author-controlled markup all the same &mdash; generate it at build time, not from user input.</li>
     </ol>
   </section>
 
@@ -141,7 +142,7 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>Copyable Math</h2>
-    <p>The <code>copyable</code> token adds a click-to-copy interaction. Clicking copies the LaTeX source to the clipboard and announces it to screen readers.</p>
+    <p>The <code>copyable</code> token adds a <strong>Copy LaTeX</strong> button after the rendered math. Activating it (click, Enter or Space) copies the LaTeX source to the clipboard and announces the result through a persistent status region. Localise the button text with <code>data-label-copy</code> and the announcement with <code>data-label-copied</code> on the element.</p>
 
     <div class="example">
       <code data-math="copyable"

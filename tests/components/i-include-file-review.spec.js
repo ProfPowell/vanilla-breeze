@@ -431,6 +431,8 @@ test('sanitizeHTML denylist (real DOM)', async ({ page }) => {
       inc: t('<include-file src="/x.html" trusted allow-scripts allow-cross-origin mode="append"><p>fb</p></include-file>'),
       incAllowed: sanitizeHTML('<include-file src="/x.html" trusted></include-file>', { allowIncludeFile: true }),
       safe: t('<p class="c"><a href="/ok" title="t">ok</a> <img src="/i.png" alt="i"></p>'),
+      // include-file's fragment profile keeps ids + safe style attributes
+      frag: sanitizeHTML('<p id="a" style="color: red">p</p><p style="width: expression(alert(1))">q</p><style>p{}</style>', { keepIds: true, keepStyle: true }),
     };
   });
   expect(out.tabJs).toBe('<a>x</a>');
@@ -440,11 +442,11 @@ test('sanitizeHTML denylist (real DOM)', async ({ page }) => {
   expect(out.dataHref).toBe('<a>x</a>');
   expect(out.dataImg).toBe('<img src="data:image/png;base64,AAAA">');
   expect(out.dataSvgHref).toBe('<svg><use></use></svg>');
-  expect(out.action).toBe('<button>b</button>');
+  expect(out.action).toBe('<button type="button">b</button>');
   expect(out.srcdoc).toBe('<p>p</p>');
-  expect(out.styleAttr).toBe('<p>p</p><p style="color: red">q</p>');
+  expect(out.styleAttr).toBe('<p>p</p><p>q</p>'); // untrusted profile drops style attributes
   expect(out.styleExpr).toBe('<p>p</p>');
-  expect(out.styleEl).toBe('<style>p{color:red}</style>');
+  expect(out.styleEl).toBe(''); // <style> is always removed (global CSS + mXSS carrier)
   expect(out.meta).toBe('');
   expect(out.embeds).toBe('');
   expect(out.template).toBe('<template><img src="x"></template>');
@@ -453,6 +455,7 @@ test('sanitizeHTML denylist (real DOM)', async ({ page }) => {
   expect(out.inc).toBe('<include-file mode="append"><p>fb</p></include-file>');
   expect(out.incAllowed).toBe('<include-file src="/x.html"></include-file>');
   expect(out.safe).toBe('<p class="c"><a href="/ok" title="t">ok</a> <img src="/i.png" alt="i"></p>');
+  expect(out.frag).toBe('<p id="a" style="color: red">p</p><p>q</p>');
 });
 
 test('sanitizeSVG mutates an SVG element in place (real DOM)', async ({ page }) => {

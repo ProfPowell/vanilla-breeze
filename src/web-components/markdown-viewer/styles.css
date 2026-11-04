@@ -38,51 +38,56 @@ markdown-viewer[data-loading] {
   min-block-size: 2em;
 }
 
-/* Error fallback message */
-markdown-viewer[data-error]::after {
-  content: "Failed to load markdown";
-  display: block;
+/* Load-failure message: a real role="alert" element whose text comes from
+   data-label-error (shown only when no <pre> fallback is visible) */
+markdown-viewer > [data-md-error] {
+  margin: 0;
   padding: var(--size-s);
   color: var(--color-text-muted);
   font-size: var(--font-size-s);
   font-style: italic;
 }
 
-/* Hide error message if element has fallback content */
-markdown-viewer[data-error]:not(:empty)::after {
-  display: none;
-}
-
-/* --- Callout blocks (rendered by VB callout extension) --- */
+/* --- Callout blocks (:::note|info|tip|warning|danger [title] … :::) --- */
 
 markdown-viewer .callout {
   padding: var(--size-s) var(--size-m);
-  border-inline-start: var(--border-width-thick, 3px) solid;
+  border-inline-start: var(--border-width-thick) solid var(--color-border);
   border-radius: var(--radius-s);
   margin-block: var(--size-m);
 }
 
+markdown-viewer .callout > :first-child { margin-block-start: 0; }
+markdown-viewer .callout > :last-child { margin-block-end: 0; }
+
 markdown-viewer .callout[data-kind="warning"] {
-  border-color: var(--color-warning, oklch(80% 0.15 85));
-  background: var(--color-warning-subtle, oklch(95% 0.03 85));
+  border-inline-start-color: var(--color-warning);
+  background: var(--color-warning-subtle);
 }
 
 markdown-viewer .callout[data-kind="info"] {
-  border-color: var(--color-info, oklch(60% 0.15 250));
-  background: var(--color-info-subtle, oklch(95% 0.03 250));
+  border-inline-start-color: var(--color-info);
+  background: var(--color-info-subtle);
 }
 
 markdown-viewer .callout[data-kind="tip"] {
-  border-color: var(--color-success, oklch(65% 0.18 145));
-  background: var(--color-success-subtle, oklch(95% 0.03 145));
+  border-inline-start-color: var(--color-success);
+  background: var(--color-success-subtle);
 }
 
 markdown-viewer .callout[data-kind="danger"] {
-  border-color: var(--color-error, oklch(55% 0.22 25));
-  background: var(--color-error-subtle, oklch(95% 0.03 25));
+  border-inline-start-color: var(--color-error);
+  background: var(--color-error-subtle);
 }
 
 markdown-viewer .callout[data-kind="note"] {
-  border-color: var(--color-text-muted, oklch(70% 0.02 260));
-  background: var(--color-surface-raised, oklch(96% 0.005 260));
+  border-inline-start-color: var(--color-text-muted);
+  background: var(--color-surface-raised);
+}
+
+@media (forced-colors: active) {
+  markdown-viewer .callout {
+    border: 1px solid CanvasText;
+    border-inline-start: var(--border-width-thick) solid CanvasText;
+  }
 }

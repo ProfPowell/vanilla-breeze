@@ -73,7 +73,7 @@ test.describe('data-math', () => {
       document.body.appendChild(code);
     });
 
-    const copyable = page.locator('[data-math-rendered][data-math-copyable]').last();
+    const copyable = page.locator('[data-math-rendered][data-math-copyable] [data-math-copy]').last();
     await expect(copyable).toHaveCount(1);
     await copyable.click();
 

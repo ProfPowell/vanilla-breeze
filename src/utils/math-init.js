@@ -5,7 +5,11 @@
  * MathML from a data-mathml attribute, and hides the original source code.
  *
  * @attr {string} data-math - Space-separated tokens: inline, numbered, copyable
- * @attr {string} data-mathml - Precompiled MathML string to inject
+ * @attr {string} data-mathml - Precompiled MathML string to inject. Sanitized to MathML elements only
+ *   (no event handlers, href/src/style/id/name, xlink:/xml: attributes, mglyph/malignmark) and
+ *   inserted as nodes — still treat it as author-controlled, not user input.
+ * @attr {string} data-label-copy - Copy button text (copyable; default "Copy LaTeX")
+ * @attr {string} data-label-copied - Announcement after copying (default "Copied to clipboard")
  *
  * @example Precompiled block math
  * <code data-math data-mathml="<math display='block'><mi>x</mi></math>">x</code>
@@ -15,9 +19,10 @@
  */
 
 import { getCdnBase } from '../lib/theme-loader.js';
+import { sanitizeMathML } from '../lib/sanitize-html.js';
 
 const SELECTOR = '[data-math], code.language-math';
-const ANNOUNCE_DURATION = 1000;
+const ANNOUNCE_DURATION = 3000;
 
 let equationCounter = 0;
 
@@ -72,7 +77,11 @@ function enhanceElement(el) {
     : document.createElement('div');
 
   wrapper.setAttribute('data-math-rendered', '');
-  wrapper.innerHTML = mathml;
+  // data-mathml is treated as untrusted-ish: only MathML-namespace elements
+  // survive (no HTML/SVG, mglyph, on*, href, src, style, id), inserted as
+  // nodes — sanitizers like DOMPurify keep data-* attributes, so this
+  // attribute must not be an innerHTML gadget.
+  wrapper.replaceChildren(sanitizeMathML(mathml));
 
   // Move source id to the rendered wrapper so hash links target visible math.
   const sourceId = el.id || null;
@@ -100,26 +109,38 @@ function enhanceElement(el) {
     }
   }
 
-  // Handle copyable
+  // Handle copyable: a real <button> (keyboard + focus for free). Labels are
+  // overridable per element: data-label-copy (button text) and
+  // data-label-copied (the polite status announcement).
   if (tokens.has('copyable')) {
     wrapper.setAttribute('data-math-copyable', '');
-    wrapper.style.cursor = 'copy';
-    wrapper.addEventListener('click', async () => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.setAttribute('data-math-copy', '');
+    button.textContent = el.getAttribute('data-label-copy') || 'Copy LaTeX';
+    const copied = el.getAttribute('data-label-copied') || 'Copied to clipboard';
+    // Live region exists before the message is written so it is announced.
+    const status = document.createElement('span');
+    status.setAttribute('role', 'status');
+    status.className = 'visually-hidden';
+    button.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(latex);
-        announce('Copied to clipboard', wrapper);
+        announce(copied, status);
       } catch {
         // Clipboard API unavailable
       }
     });
+    wrapper.append(button, status);
   }
 
   // Insert rendered math and hide original source
   el.setAttribute('data-math-state', 'rendered');
-  el.insertAdjacentElement('afterend', wrapper);
 
-  // If the element is inside a <pre>, hide the <pre> too
+  // If the element is inside a <pre>, hide the <pre> too — and render after
+  // the <pre>, not inside it, or the hidden <pre> would hide the math as well.
   const parentPre = el.closest('pre');
+  (parentPre || el).insertAdjacentElement('afterend', wrapper);
   if (parentPre) {
     parentPre.setAttribute('data-math-state', 'rendered');
     parentPre.hidden = true;
@@ -152,18 +173,13 @@ function ensureMathFont() {
 }
 
 /**
- * Announce a message to screen readers
+ * Write a message into a persistent status region, then clear it
  * @param {string} message
- * @param {Element} context
+ * @param {Element} status - role="status" element already in the DOM
  */
-function announce(message, context) {
-  const el = document.createElement('div');
-  el.setAttribute('role', 'status');
-  el.setAttribute('aria-live', 'polite');
-  el.className = 'visually-hidden';
-  el.textContent = message;
-  context.appendChild(el);
-  setTimeout(() => el.remove(), ANNOUNCE_DURATION);
+function announce(message, status) {
+  status.textContent = message;
+  setTimeout(() => { status.textContent = ''; }, ANNOUNCE_DURATION);
 }
 
 // Auto-init on DOMContentLoaded
