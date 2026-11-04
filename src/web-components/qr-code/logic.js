@@ -1,127 +1,238 @@
 /**
  * qr-code: QR code generator web component
  *
- * Generates a QR code from text content or a URL. Progressive enhancement:
- * the text content is visible before JS loads. After upgrade, the QR canvas
- * is shown alongside a visually-hidden caption preserving the readable baseline.
+ * Encodes text or a URL as a QR code drawn on a canvas, using the vendored
+ * Project Nayuki qrcodegen library (versions 1-40, numeric / alphanumeric /
+ * byte modes, ISO/IEC 18004). Progressive enhancement: the element's
+ * children (text, or an <a href> to the same URL) are the no-JS fallback,
+ * and after upgrade they stay in place as the code's caption, visually
+ * hidden unless `data-caption="visible"`.
  *
- * @attr {string} value - The text/URL to encode (or uses textContent). Reactive.
- * @attr {number} size - Canvas size in pixels (default: 200). Reactive.
- * @attr {string} color - Foreground color (default: currentColor). Init-only.
- * @attr {string} background - Background color (default: transparent). Init-only.
- * @attr {number} error-correction - Error correction level 0-3 (L/M/Q/H, default: 1/M). Init-only.
+ * Output is black modules on an opaque white background with a 4-module
+ * quiet zone, drawn at a whole number of device pixels per module. It does
+ * not follow the theme, dark mode or forced colours, because inverted or
+ * low-contrast codes do not scan. `color` / `background` are explicit
+ * opt-ins and log a console warning when the pair is risky.
+ *
+ * @attr {string} value - The text/URL to encode (falls back to the text content). Reactive.
+ * @attr {number} size - Edge of the drawn box in CSS pixels, quiet zone included (default: 200). Reactive.
+ * @attr {string} color - Module colour (default: #000). Reactive.
+ * @attr {string} background - Background colour, always painted (default: #fff). Reactive.
+ * @attr {string} error-correction - L, M, Q, H or 0-3 (default: M). Reactive.
+ * @attr {string} data-caption - "visible" shows the caption under the code (default: visually hidden).
+ * @attr {string} data-label-prefix - Accessible name of the canvas (default: "QR code").
+ * @attr {string} data-label-copied - Announcement after copy() (default: "QR code copied").
+ * @attr {string} data-error - (output) "capacity" or "encoding" when no code could be drawn.
+ *
+ * @fires qr-code:error - detail { reason: 'capacity' | 'encoding', value, errorCorrection, message }
  *
  * @example
- * <qr-code value="https://example.com">https://example.com</qr-code>
+ * <qr-code value="https://example.com"><a href="https://example.com">example.com</a></qr-code>
  */
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { copyRich } from '../../utils/copy-init.js';
+import { encodeQR, parseErrorCorrection, layout, colorProblems, EC_LEVELS } from './encode.js';
+
+const DEFAULT_SIZE = 200;
+const DEFAULT_FG = '#000';
+const DEFAULT_BG = '#fff';
 
 class QrCodeWc extends VBElement {
-  #canvas;
-  /** @type {string | null} Saved source value (captured once) */
-  #savedValue = null;
-
-  setup() {
-    // Capture source value once before clearing DOM
-    if (this.#savedValue === null) {
-      this.#savedValue = this.getAttribute('value') || this.textContent.trim();
-    }
-
-    const value = this.#savedValue;
-    if (!value) return false;
-
-    const size = parseInt(this.getAttribute('size') ?? '200', 10) || 200;
-    const ecl = parseInt(this.getAttribute('error-correction') ?? '1', 10) || 1;
-
-    this.#canvas = document.createElement('canvas');
-    this.#canvas.width = size;
-    this.#canvas.height = size;
-    this.#canvas.setAttribute('role', 'img');
-    this.#canvas.setAttribute('aria-label', `QR code: ${value}`);
-
-    this.#render(value, size, ecl);
-    return true;
-  }
+  /** @type {HTMLCanvasElement | null} */
+  #canvas = null;
+  /** @type {HTMLElement | null} Wrapper holding the author's children (the caption). */
+  #caption = null;
+  /** Text content captured at first upgrade; the value when no `value` attribute. */
+  #sourceText = '';
+  /** Whether the caption was generated from the value (so it may be rewritten). */
+  #generatedCaption = false;
+  /** Value the canvas currently shows ('' = none). */
+  #rendered = '';
+  /** Last colour pair warned about, so re-renders do not repeat the warning. */
+  #warnedPair = '';
 
   static get observedAttributes() {
-    return ['value', 'size'];
-  }
-
-  attributeChangedCallback(name, oldVal, newVal) {
-    if (!this.#canvas || !this.isConnected) return;
-
-    if (name === 'value' && newVal) {
-      this.#savedValue = newVal;
-    }
-
-    const value = this.#savedValue || this.getAttribute('value') || '';
-    if (!value) return;
-
-    const size = parseInt(this.getAttribute('size') ?? '200', 10) || 200;
-    const ecl = parseInt(this.getAttribute('error-correction') ?? '1', 10) || 1;
-    this.#canvas.width = size;
-    this.#canvas.height = size;
-    this.#canvas.setAttribute('aria-label', `QR code: ${value}`);
-    this.#render(value, size, ecl);
-  }
-
-  #render(text, size, ecl) {
-    const modules = generateQR(text, ecl);
-    const ctx = this.#canvas.getContext('2d');
-    const moduleCount = modules.length;
-    const cellSize = size / moduleCount;
-
-    // Resolve colors
-    const style = getComputedStyle(this);
-    const fg = this.getAttribute('color') || style.color || '#000';
-    const bg = this.getAttribute('background') || 'transparent';
-
-    // Clear
-    ctx.clearRect(0, 0, size, size);
-
-    // Background
-    if (bg !== 'transparent') {
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, size, size);
-    }
-
-    // Draw modules
-    ctx.fillStyle = fg;
-    for (let row = 0; row < moduleCount; row++) {
-      for (let col = 0; col < moduleCount; col++) {
-        if (modules[row][col]) {
-          ctx.fillRect(
-            Math.round(col * cellSize),
-            Math.round(row * cellSize),
-            Math.ceil(cellSize),
-            Math.ceil(cellSize)
-          );
-        }
-      }
-    }
-
-    // Build content: canvas + sr-only caption preserving the readable baseline
-    this.textContent = '';
-    this.appendChild(this.#canvas);
-
-    // Keep the encoded value accessible as text (visually hidden but available to AT)
-    const caption = document.createElement('span');
-    caption.className = 'visually-hidden';
-    caption.textContent = text;
-    this.appendChild(caption);
+    return ['value', 'size', 'color', 'background', 'error-correction', 'data-label-prefix'];
   }
 
   /**
-   * Get the QR code as a data URL
+   * The encoded text: the `value` attribute, else the original text content.
+   * @returns {string}
+   */
+  get value() {
+    return this.getAttribute('value') || this.#sourceText;
+  }
+
+  set value(v) {
+    if (v == null || v === '') this.removeAttribute('value');
+    else this.setAttribute('value', String(v));
+  }
+
+  setup() {
+    if (!this.#caption) {
+      this.#sourceText = (this.textContent ?? '').trim();
+      const caption = document.createElement('span');
+      caption.setAttribute('data-qr-caption', '');
+      caption.append(...this.childNodes);
+      // No author content: the caption mirrors the value (kept in sync by #render).
+      if (!this.#sourceText && !caption.children.length) {
+        caption.textContent = this.value;
+        this.#generatedCaption = true;
+      }
+      this.#caption = caption;
+    }
+    if (!this.#canvas) {
+      this.#canvas = document.createElement('canvas');
+      this.#canvas.setAttribute('role', 'img');
+    }
+    if (this.#canvas.parentNode !== this) this.prepend(this.#canvas);
+    if (this.#caption.parentNode !== this) this.append(this.#caption);
+    this.#render();
+    this.#watchPixelRatio();
+    return true;
+  }
+
+  /**
+   * Redraw when devicePixelRatio changes (browser zoom, moving to another
+   * monitor) so modules stay whole device pixels. A resolution query only
+   * matches the ratio it was built for, so re-arm after every change.
+   */
+  #watchPixelRatio() {
+    if (typeof window.matchMedia !== 'function') return;
+    const mql = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+    this.listen(mql, 'change', () => {
+      if (!this.isConnected) return;
+      this.#render();
+      this.#watchPixelRatio();
+    }, { once: true });
+  }
+
+  attributeChangedCallback() {
+    // Before upgrade (or while disconnected) connectedCallback renders.
+    if (!this.hasAttribute('data-upgraded') || !this.isConnected) return;
+    this.#render();
+  }
+
+  #render() {
+    const canvas = /** @type {HTMLCanvasElement} */ (this.#canvas);
+    const text = this.value;
+    canvas.setAttribute('aria-label', this.getAttribute('data-label-prefix') || 'QR code');
+
+    if (this.#generatedCaption && this.#caption && this.#caption.textContent !== text) {
+      this.#caption.textContent = text;
+    }
+
+    this.removeAttribute('data-error');
+    if (!text) {
+      this.#clear();
+      return;
+    }
+
+    const rawEcl = this.getAttribute('error-correction');
+    let ecl = parseErrorCorrection(rawEcl);
+    if (ecl === null) {
+      console.warn(`<qr-code>: error-correction="${rawEcl}" is not L, M, Q, H or 0-3; using M.`);
+      ecl = 1;
+    }
+
+    let qr;
+    try {
+      qr = encodeQR(text, ecl);
+    } catch (err) {
+      const reason = /** @type {any} */ (err).reason || 'encoding';
+      this.#clear();
+      this.setAttribute('data-error', reason);
+      this.dispatchEvent(new CustomEvent('qr-code:error', {
+        bubbles: true,
+        detail: { reason, value: text, errorCorrection: EC_LEVELS[ecl], message: err.message },
+      }));
+      return;
+    }
+
+    const cssSize = Math.max(1, parseInt(this.getAttribute('size') ?? '', 10) || DEFAULT_SIZE);
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const { cell, offset, edge } = layout(qr.size, Math.round(cssSize * dpr));
+
+    canvas.hidden = false;
+    canvas.width = edge;
+    canvas.height = edge;
+    canvas.style.inlineSize = `${cssSize}px`;
+
+    const fg = this.#resolveColor(this.getAttribute('color'), DEFAULT_FG);
+    const bg = this.#resolveColor(this.getAttribute('background'), DEFAULT_BG);
+    this.#checkColors(fg, bg);
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, edge, edge);
+    ctx.fillStyle = bg.css;
+    ctx.fillRect(0, 0, edge, edge);
+    ctx.fillStyle = fg.css;
+    for (let y = 0; y < qr.size; y++) {
+      for (let x = 0; x < qr.size; x++) {
+        if (qr.modules[y][x]) ctx.fillRect(offset + x * cell, offset + y * cell, cell, cell);
+      }
+    }
+    this.#rendered = text;
+  }
+
+  #clear() {
+    const canvas = /** @type {HTMLCanvasElement} */ (this.#canvas);
+    canvas.hidden = true;
+    canvas.width = 0;
+    canvas.height = 0;
+    this.#rendered = '';
+  }
+
+  /**
+   * Resolve any CSS colour (tokens, var(), named) to rgba channels by letting
+   * the canvas compute it. The canvas has forced-color-adjust: none, so forced
+   * colours do not rewrite the result.
+   *
+   * @param {string | null} raw
+   * @param {string} fallback
+   * @returns {{ css: string, rgba: number[] }}
+   */
+  #resolveColor(raw, fallback) {
+    const canvas = /** @type {HTMLCanvasElement} */ (this.#canvas);
+    const value = raw?.trim() || fallback;
+    const prev = canvas.style.color;
+    canvas.style.color = '';
+    canvas.style.color = value;
+    if (!canvas.style.color) {
+      console.warn(`<qr-code>: "${value}" is not a valid colour; using ${fallback}.`);
+      canvas.style.color = fallback;
+    }
+    const css = getComputedStyle(canvas).color;
+    canvas.style.color = prev;
+    const nums = (css.match(/[\d.]+/g) || []).map(Number);
+    const rgba = [nums[0] ?? 0, nums[1] ?? 0, nums[2] ?? 0, nums[3] ?? 1];
+    return { css, rgba };
+  }
+
+  /** Warn once per colour pair when a custom pair is unlikely to scan. */
+  #checkColors(fg, bg) {
+    if (!this.hasAttribute('color') && !this.hasAttribute('background')) return;
+    const key = `${fg.css}|${bg.css}`;
+    if (key === this.#warnedPair) return;
+    this.#warnedPair = key;
+    const problems = colorProblems(fg.rgba, bg.rgba);
+    if (problems.length) {
+      console.warn(`<qr-code>: color="${fg.css}" on background="${bg.css}" may not scan: ${problems.join('; ')}.`, this);
+    }
+  }
+
+  /**
+   * Get the QR code as a data URL (opaque, quiet zone included).
    *
    * @param {string} [type='image/png'] - Image MIME type.
-   * @returns {string} The data URL, or '' before render.
+   * @returns {string} The data URL, or '' when no code is drawn.
    */
   toDataURL(type = 'image/png') {
-    return this.#canvas?.toDataURL(type) ?? '';
+    if (!this.#canvas || !this.#rendered) return '';
+    return this.#canvas.toDataURL(type);
   }
 
   /**
@@ -132,407 +243,18 @@ class QrCodeWc extends VBElement {
    *
    * @param {object} [options]
    * @param {HTMLElement} [options.button] - Trigger button for data-state + copy event.
-   * @returns {Promise<boolean>}
+   * @returns {Promise<boolean>} False when no code is drawn or the write failed.
    */
   async copy({ button } = {}) {
-    if (!this.#canvas) return false;
-    const text = this.#savedValue || this.getAttribute('value') || '';
-    const blob = await new Promise((resolve) => this.#canvas.toBlob(resolve, 'image/png'));
+    const canvas = this.#canvas;
+    if (!canvas || !this.#rendered) return false;
+    const text = this.#rendered;
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
     return copyRich(
       { text, blob: blob || undefined },
-      { button, announceMessage: 'QR code copied' },
+      { button, announceMessage: this.getAttribute('data-label-copied') || 'QR code copied' },
     );
   }
-}
-
-// ==================== QR Code Generator ====================
-// Minimal QR code encoder — supports byte mode, versions 1-10
-
-const ECL_CODEWORDS = [
-  // [total, ec] per version (1-10) for L, M, Q, H
-  // L
-  [[26,7],[44,10],[70,15],[100,20],[134,26],[172,18],[196,20],[242,24],[292,30],[346,18]],
-  // M
-  [[26,10],[44,16],[70,26],[100,18],[134,24],[172,16],[196,18],[242,22],[292,22],[346,26]],
-  // Q
-  [[26,13],[44,22],[70,18],[100,26],[134,18],[172,24],[196,18],[242,22],[292,20],[346,28]],
-  // H
-  [[26,17],[44,28],[70,22],[100,16],[134,22],[172,28],[196,26],[242,26],[292,24],[346,28]],
-];
-
-const ALIGNMENT_PATTERNS = [
-  [], // v1 — none
-  [6, 18],
-  [6, 22],
-  [6, 26],
-  [6, 30],
-  [6, 34],
-  [6, 22, 38],
-  [6, 24, 42],
-  [6, 26, 46],
-  [6, 28, 52],
-];
-
-function generateQR(text, ecl = 1) {
-  const data = new TextEncoder().encode(text);
-  const version = selectVersion(data.length, ecl);
-  const totalCodewords = ECL_CODEWORDS[ecl][version - 1][0];
-  const ecCodewords = ECL_CODEWORDS[ecl][version - 1][1];
-  const dataCodewords = totalCodewords - ecCodewords;
-
-  // Encode data
-  const bits = encodeData(data, version, dataCodewords);
-
-  // Generate error correction
-  const allCodewords = addErrorCorrection(bits, dataCodewords, ecCodewords);
-
-  // Create matrix
-  const size = version * 4 + 17;
-  const matrix = Array.from({ length: size }, () => new Uint8Array(size));
-  const reserved = Array.from({ length: size }, () => new Uint8Array(size));
-
-  // Place patterns
-  placeFinders(matrix, reserved, size);
-  placeAlignment(matrix, reserved, version);
-  placeTiming(matrix, reserved, size);
-
-  // Reserve format + version info areas
-  reserveFormatArea(reserved, size);
-
-  // Place data
-  placeData(matrix, reserved, allCodewords, size);
-
-  // Apply best mask
-  const masked = applyBestMask(matrix, reserved, size, ecl);
-
-  return masked;
-}
-
-function selectVersion(dataLen, ecl) {
-  for (let v = 1; v <= 10; v++) {
-    const total = ECL_CODEWORDS[ecl][v - 1][0];
-    const ec = ECL_CODEWORDS[ecl][v - 1][1];
-    const dataCap = total - ec;
-    // Byte mode: 4 bits mode + char count bits + data + terminator
-    const charCountBits = v <= 9 ? 8 : 16;
-    const overhead = Math.ceil((4 + charCountBits) / 8);
-    if (dataLen <= dataCap - overhead) return v;
-  }
-  return 10; // fallback, may truncate
-}
-
-function encodeData(data, version, dataCodewords) {
-  const bits = [];
-  const push = (val, len) => {
-    for (let i = len - 1; i >= 0; i--) {
-      bits.push((val >> i) & 1);
-    }
-  };
-
-  // Mode indicator (byte mode = 0100)
-  push(4, 4);
-
-  // Character count
-  const charCountBits = version <= 9 ? 8 : 16;
-  push(data.length, charCountBits);
-
-  // Data
-  for (const byte of data) {
-    push(byte, 8);
-  }
-
-  // Terminator (up to 4 zero bits)
-  const maxBits = dataCodewords * 8;
-  const termLen = Math.min(4, maxBits - bits.length);
-  push(0, termLen);
-
-  // Pad to byte boundary
-  while (bits.length % 8 !== 0) bits.push(0);
-
-  // Pad codewords
-  const padBytes = [0xEC, 0x11];
-  let padIdx = 0;
-  while (bits.length < maxBits) {
-    push(padBytes[padIdx % 2], 8);
-    padIdx++;
-  }
-
-  // Convert to bytes
-  const bytes = [];
-  for (let i = 0; i < bits.length; i += 8) {
-    let byte = 0;
-    for (let j = 0; j < 8; j++) byte = (byte << 1) | (bits[i + j] || 0);
-    bytes.push(byte);
-  }
-
-  return bytes;
-}
-
-function addErrorCorrection(dataBytes, dataCount, ecCount) {
-  const generator = gfPolyGenerator(ecCount);
-  const msgPoly = new Uint8Array(dataCount + ecCount);
-  for (let i = 0; i < dataCount; i++) msgPoly[i] = dataBytes[i];
-
-  for (let i = 0; i < dataCount; i++) {
-    const coef = msgPoly[i];
-    if (coef === 0) continue;
-    const logCoef = GF_LOG[coef];
-    for (let j = 0; j < generator.length; j++) {
-      msgPoly[i + j] ^= GF_EXP[(logCoef + GF_LOG[generator[j]]) % 255];
-    }
-  }
-
-  const result = [...dataBytes.slice(0, dataCount)];
-  for (let i = 0; i < ecCount; i++) {
-    result.push(msgPoly[dataCount + i]);
-  }
-  return result;
-}
-
-// GF(256) tables
-const GF_EXP = new Uint8Array(512);
-const GF_LOG = new Uint8Array(256);
-(function initGF() {
-  let x = 1;
-  for (let i = 0; i < 255; i++) {
-    GF_EXP[i] = x;
-    GF_LOG[x] = i;
-    x <<= 1;
-    if (x >= 256) x ^= 0x11D;
-  }
-  for (let i = 255; i < 512; i++) GF_EXP[i] = GF_EXP[i - 255];
-})();
-
-function gfPolyGenerator(degree) {
-  let gen = new Uint8Array([1]);
-  for (let i = 0; i < degree; i++) {
-    const next = new Uint8Array(gen.length + 1);
-    const rootLog = i; // alpha^i
-    for (let j = 0; j < gen.length; j++) {
-      next[j] ^= gen[j];
-      next[j + 1] ^= GF_EXP[(GF_LOG[gen[j]] + rootLog) % 255];
-    }
-    gen = next;
-  }
-  return gen;
-}
-
-function placeFinders(m, r, s) {
-  const positions = [[0, 0], [s - 7, 0], [0, s - 7]];
-  for (const [row, col] of positions) {
-    for (let dr = 0; dr < 7; dr++) {
-      for (let dc = 0; dc < 7; dc++) {
-        const on = dr === 0 || dr === 6 || dc === 0 || dc === 6 ||
-                   (dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4);
-        m[row + dr][col + dc] = on ? 1 : 0;
-        r[row + dr][col + dc] = 1;
-      }
-    }
-    // Separators
-    for (let i = -1; i <= 7; i++) {
-      for (const [dr, dc] of [[i, -1], [i, 7], [-1, i], [7, i]]) {
-        const rr = row + dr, cc = col + dc;
-        if (rr >= 0 && rr < s && cc >= 0 && cc < s) {
-          m[rr][cc] = 0;
-          r[rr][cc] = 1;
-        }
-      }
-    }
-  }
-}
-
-function placeAlignment(m, r, version) {
-  if (version < 2) return;
-  const coords = ALIGNMENT_PATTERNS[version - 1];
-  for (const row of coords) {
-    for (const col of coords) {
-      // Skip if overlapping with finder
-      if (r[row][col]) continue;
-      for (let dr = -2; dr <= 2; dr++) {
-        for (let dc = -2; dc <= 2; dc++) {
-          const on = Math.abs(dr) === 2 || Math.abs(dc) === 2 || (dr === 0 && dc === 0);
-          m[row + dr][col + dc] = on ? 1 : 0;
-          r[row + dr][col + dc] = 1;
-        }
-      }
-    }
-  }
-}
-
-function placeTiming(m, r, s) {
-  for (let i = 8; i < s - 8; i++) {
-    const on = i % 2 === 0 ? 1 : 0;
-    if (!r[6][i]) { m[6][i] = on; r[6][i] = 1; }
-    if (!r[i][6]) { m[i][6] = on; r[i][6] = 1; }
-  }
-}
-
-function reserveFormatArea(r, s) {
-  // Format info near finders
-  for (let i = 0; i <= 8; i++) {
-    if (i < s) r[8][i] = 1;
-    if (i < s) r[i][8] = 1;
-  }
-  for (let i = 0; i <= 7; i++) {
-    r[8][s - 1 - i] = 1;
-    r[s - 1 - i][8] = 1;
-  }
-  // Dark module
-  r[s - 8][8] = 1;
-}
-
-function placeData(m, r, codewords, s) {
-  const bits = [];
-  for (const cw of codewords) {
-    for (let i = 7; i >= 0; i--) bits.push((cw >> i) & 1);
-  }
-
-  let bitIdx = 0;
-  let upward = true;
-
-  for (let right = s - 1; right >= 1; right -= 2) {
-    if (right === 6) right = 5; // skip timing column
-
-    const rows = upward
-      ? Array.from({ length: s }, (_, i) => s - 1 - i)
-      : Array.from({ length: s }, (_, i) => i);
-
-    for (const row of rows) {
-      for (const col of [right, right - 1]) {
-        if (col < 0 || col >= s) continue;
-        if (r[row][col]) continue;
-        m[row][col] = bitIdx < bits.length ? bits[bitIdx] : 0;
-        bitIdx++;
-      }
-    }
-    upward = !upward;
-  }
-}
-
-const FORMAT_INFO = [
-  0x77C4, 0x72F3, 0x7DAA, 0x789D, 0x662F, 0x6318, 0x6C41, 0x6976,
-  0x5412, 0x5125, 0x5E7C, 0x5B4B, 0x45F9, 0x40CE, 0x4F97, 0x4AA0,
-  0x355F, 0x3068, 0x3F31, 0x3A06, 0x24B4, 0x2183, 0x2EDA, 0x2BED,
-  0x1689, 0x13BE, 0x1CE7, 0x19D0, 0x0762, 0x0255, 0x0D0C, 0x083B,
-];
-
-function getFormatInfo(ecl, mask) {
-  const eclMap = [1, 0, 3, 2]; // L=01,M=00,Q=11,H=10
-  const idx = eclMap[ecl] * 8 + mask;
-  return FORMAT_INFO[idx];
-}
-
-const MASK_FNS = [
-  (r, c) => (r + c) % 2 === 0,
-  (r) => r % 2 === 0,
-  (_, c) => c % 3 === 0,
-  (r, c) => (r + c) % 3 === 0,
-  (r, c) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0,
-  (r, c) => ((r * c) % 2 + (r * c) % 3) === 0,
-  (r, c) => ((r * c) % 2 + (r * c) % 3) % 2 === 0,
-  (r, c) => ((r + c) % 2 + (r * c) % 3) % 2 === 0,
-];
-
-function applyMask(matrix, reserved, size, maskIdx) {
-  const result = matrix.map(row => new Uint8Array(row));
-  const fn = MASK_FNS[maskIdx];
-
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      if (!reserved[r][c] && fn(r, c)) {
-        result[r][c] ^= 1;
-      }
-    }
-  }
-  return result;
-}
-
-function placeFormatInfo(m, size, ecl, mask) {
-  const info = getFormatInfo(ecl, mask);
-
-  // Place around top-left finder
-  const positions1 = [
-    [0, 8], [1, 8], [2, 8], [3, 8], [4, 8], [5, 8], [7, 8], [8, 8],
-    [8, 7], [8, 5], [8, 4], [8, 3], [8, 2], [8, 1], [8, 0],
-  ];
-  for (let i = 0; i < 15; i++) {
-    const [r, c] = positions1[i];
-    m[r][c] = (info >> (14 - i)) & 1;
-  }
-
-  // Place around bottom-left and top-right finders
-  const positions2 = [
-    [8, size - 1], [8, size - 2], [8, size - 3], [8, size - 4],
-    [8, size - 5], [8, size - 6], [8, size - 7], [8, size - 8],
-    [size - 7, 8], [size - 6, 8], [size - 5, 8], [size - 4, 8],
-    [size - 3, 8], [size - 2, 8], [size - 1, 8],
-  ];
-  for (let i = 0; i < 15; i++) {
-    const [r, c] = positions2[i];
-    m[r][c] = (info >> (14 - i)) & 1;
-  }
-
-  // Dark module
-  m[size - 8][8] = 1;
-}
-
-function scoreMask(m, s) {
-  let score = 0;
-
-  // Rule 1: runs of same color
-  for (let r = 0; r < s; r++) {
-    let run = 1;
-    for (let c = 1; c < s; c++) {
-      if (m[r][c] === m[r][c - 1]) {
-        run++;
-        if (run === 5) score += 3;
-        else if (run > 5) score += 1;
-      } else {
-        run = 1;
-      }
-    }
-  }
-  for (let c = 0; c < s; c++) {
-    let run = 1;
-    for (let r = 1; r < s; r++) {
-      if (m[r][c] === m[r - 1][c]) {
-        run++;
-        if (run === 5) score += 3;
-        else if (run > 5) score += 1;
-      } else {
-        run = 1;
-      }
-    }
-  }
-
-  // Rule 2: 2x2 blocks
-  for (let r = 0; r < s - 1; r++) {
-    for (let c = 0; c < s - 1; c++) {
-      const val = m[r][c];
-      if (val === m[r][c + 1] && val === m[r + 1][c] && val === m[r + 1][c + 1]) {
-        score += 3;
-      }
-    }
-  }
-
-  return score;
-}
-
-function applyBestMask(matrix, reserved, size, ecl) {
-  let bestScore = Infinity;
-  let bestResult = null;
-
-  for (let mask = 0; mask < 8; mask++) {
-    const masked = applyMask(matrix, reserved, size, mask);
-    placeFormatInfo(masked, size, ecl, mask);
-    const score = scoreMask(masked, size);
-    if (score < bestScore) {
-      bestScore = score;
-      bestResult = masked;
-    }
-  }
-
-  return bestResult;
 }
 
 registerComponent('qr-code', QrCodeWc);
