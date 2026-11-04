@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "share-wc",
   "type": "web-component",
-  "description": "Social share component with native Web Share API and platform fallbacks",
+  "description": "Social share component: native Web Share button (falls back to copying the link), platform buttons, or enhanced slotted links; inside selection-menu, shares or copies the selected text as a quote.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -10,103 +10,40 @@
     ]
   },
   "attributes": [
-    {
-      "name": "url",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "URL to share (default: location.href)"
-    },
-    {
-      "name": "title",
-      "kind": "native",
-      "purpose": "config",
-      "type": "string",
-      "description": "Share title (default: document.title)"
-    },
-    {
-      "name": "text",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Share description (default: meta description)"
-    },
-    {
-      "name": "platforms",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Comma-separated platform list (default: \"x,linkedin,bluesky,mastodon,whatsapp,email,copy\")"
-    },
-    {
-      "name": "variant",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Visual variant: \"icon\", \"label\", \"icon-label\" (default: \"icon-label\")"
-    },
-    {
-      "name": "size",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Button size: \"s\", \"m\", \"l\" (default: \"m\")"
-    },
-    {
-      "name": "label",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Label for native share button (default: \"Share\")"
-    },
-    {
-      "name": "color",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "boolean",
-      "description": "Present = use platform brand colours"
-    },
-    {
-      "name": "mastodon-instance",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Mastodon instance (default: \"mastodon.social\")"
-    },
-    {
-      "name": "tier",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Force tier: \"native\", \"platforms\" (overrides auto-detection)"
-    },
-    {
-      "name": "data-tier-resolved",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "href",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "content",
-      "kind": "host-api",
-      "purpose": "config"
-    }
+    { "name": "url", "kind": "host-api", "purpose": "config", "type": "string", "description": "URL to share (default: <link rel=canonical>, then location.href)" },
+    { "name": "title", "kind": "native", "purpose": "config", "type": "string", "description": "Share title (default: og:title, then document.title). Read from the attribute; the JS property is shareTitle." },
+    { "name": "text", "kind": "host-api", "purpose": "config", "type": "string", "description": "Share description (default: meta description, then og:description)" },
+    { "name": "platforms", "kind": "host-api", "purpose": "config", "type": "string", "default": "x,linkedin,bluesky,mastodon,whatsapp,email,copy", "description": "Comma-separated platform list (x, twitter, facebook, linkedin, whatsapp, telegram, bluesky, mastodon, email, copy) or \"native-only\"" },
+    { "name": "variant", "kind": "host-api", "purpose": "visual-variant", "type": "enum", "values": ["icon", "label", "icon-label"], "default": "icon-label", "description": "Icon only (label visually hidden but still the name), label only, or both" },
+    { "name": "size", "kind": "host-api", "purpose": "visual-variant", "type": "enum", "values": ["s", "m", "l"], "default": "m", "description": "Button size" },
+    { "name": "label", "kind": "host-api", "purpose": "config", "type": "string", "default": "Share", "description": "Visible label (and accessible name) of the native share button" },
+    { "name": "color", "kind": "host-api", "purpose": "visual-variant", "type": "boolean", "description": "Brand colours on each platform button's border and icon (label text stays --color-text)" },
+    { "name": "mastodon-instance", "kind": "host-api", "purpose": "config", "type": "string", "default": "mastodon.social", "description": "Mastodon instance" },
+    { "name": "tier", "kind": "host-api", "purpose": "config", "type": "enum", "values": ["native", "platforms"], "description": "Force a tier instead of auto-detecting navigator.share (native without support resolves to hidden)" },
+    { "name": "data-tier-resolved", "kind": "data", "purpose": "output-state", "direction": "output", "type": "enum", "values": ["native", "platforms", "hidden", "selection"], "description": "The tier the component rendered" },
+    { "name": "data-label-share-page", "kind": "data", "purpose": "config", "type": "string", "default": "Share this page", "description": "Accessible name of the share nav" },
+    { "name": "data-label-share-on", "kind": "data", "purpose": "config", "type": "string", "default": "Share on {platform}", "description": "Platform button name; {platform} is replaced by the platform label" },
+    { "name": "data-label-copy", "kind": "data", "purpose": "config", "type": "string", "default": "Copy link", "description": "Copy button label" },
+    { "name": "data-label-copied", "kind": "data", "purpose": "config", "type": "string", "default": "Copied!", "description": "Copy button label for 2s after copying" },
+    { "name": "data-label-link-copied", "kind": "data", "purpose": "config", "type": "string", "default": "Link copied to clipboard", "description": "Announced after the link is copied" },
+    { "name": "data-label-share-selection", "kind": "data", "purpose": "config", "type": "string", "default": "Share selection", "description": "Selection-menu button name" },
+    { "name": "data-label-selection-copied", "kind": "data", "purpose": "config", "type": "string", "default": "Selection copied", "description": "Announced after a selection quote is copied" }
   ],
   "events": [
-    {
-      "name": "share-wc:open"
-    },
-    {
-      "name": "share-wc:success"
-    },
-    {
-      "name": "share-wc:error"
-    }
+    { "name": "share-wc:open", "detail": "{ platform: string }", "description": "A share was started (platform id or 'native')" },
+    { "name": "share-wc:success", "detail": "{ platform: string }", "description": "A share window opened, the native share resolved, or the link was copied ('copy')" },
+    { "name": "share-wc:error", "detail": "{ platform: string, error?: Error }", "description": "Native share failed (not cancelled) or the clipboard write failed" }
   ],
-  "childAttributes": [],
+  "methods": [
+    { "name": "share", "returns": "Promise<boolean>", "description": "Native tier: open the share sheet (copying the link if it fails). Other tiers: copy the link. Resolves true when shared or copied." }
+  ],
+  "properties": [
+    { "name": "url", "type": "string", "description": "Shared URL; setting it wins over the attribute, re-substitutes slotted {url} tokens and survives reconnect" },
+    { "name": "shareTitle", "type": "string", "description": "Shared title (named to avoid shadowing HTMLElement.title); same override rules as url" },
+    { "name": "text", "type": "string", "description": "Shared description; same override rules as url" }
+  ],
+  "childAttributes": [
+    { "name": "data-platform", "on": "a, button (slotted)", "type": "string", "description": "Marks a slotted link/button as a platform; \"copy\" copies the URL. {url}, {title}, {text} tokens in href are substituted (encoded)." }
+  ],
   "structure": []
 }

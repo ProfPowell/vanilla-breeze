@@ -17,14 +17,70 @@ crumbLabel: Web Components
 
   <section>
     <h2>Basic Usage</h2>
-    <p>Drop <code>&lt;short-cuts&gt;</code> anywhere on the page. It renders nothing visible &mdash; it only binds the <kbd>?</kbd> hotkey. Press <kbd>?</kbd> on this page to try it (it's already included in the layout).</p>
+    <p>Drop <code>&lt;short-cuts&gt;</code> anywhere on the page. It renders nothing visible &mdash; it binds the <kbd>?</kbd> hotkey and exposes <code>show()</code> for a visible button, so pointer and touch users can reach the list too. Press <kbd>?</kbd> on this page to try it (it's already included in the layout).</p>
+    <browser-window src="/docs/examples/demos/short-cuts-basic.html" url="https://vanilla-breeze.com/shortcuts" title="Shortcuts overlay" shadow></browser-window>
     <code-block language="html" show-lines label="Basic usage" data-escape><!-- Place once per page, typically in your layout -->
-<short-cuts></short-cuts></code-block>
+<short-cuts></short-cuts>
+
+<!-- A visible way in for pointer and touch users -->
+<button type="button" id="open-shortcuts">Keyboard shortcuts</button>
+<script type="module">
+  document.getElementById('open-shortcuts')
+    .addEventListener('click', () => document.querySelector('short-cuts').show());
+</script></code-block>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <table class="props-table">
+      <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>hotkey</code></td><td><code>shift+?</code></td><td>Key combo that toggles the dialog. <code>none</code> turns the shortcut off. Changes are applied live.</td></tr>
+        <tr><td><code>data-label-title</code></td><td>Keyboard shortcuts</td><td>Dialog heading, which also names the dialog</td></tr>
+        <tr><td><code>data-label-general</code></td><td>General</td><td>Group holding the component's own shortcut</td></tr>
+        <tr><td><code>data-label-self</code></td><td>Show keyboard shortcuts</td><td>Label of the component's own shortcut</td></tr>
+        <tr><td><code>data-label-close</code></td><td>Close</td><td>Close button name</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Remapping or Turning Off <kbd>?</kbd></h2>
+    <p><kbd>?</kbd> is a single printable character, so under WCAG 2.1.4 (Character Key Shortcuts) users must be able to turn it off or remap it. They might be using speech input or a keyboard layout where <kbd>?</kbd> is awkward. Set <code>hotkey</code> to a combo with a modifier, or to <code>none</code>, and give the dialog a visible button.</p>
+    <code-block language="html" show-lines label="Remap or disable" data-escape><!-- Remap to a modifier combo -->
+<short-cuts hotkey="alt+shift+k"></short-cuts>
+
+<!-- Turn the hotkey off; open it from a button instead -->
+<short-cuts hotkey="none"></short-cuts></code-block>
+  </section>
+
+  <section>
+    <h2>JavaScript API</h2>
+    <table class="props-table">
+      <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>show()</code></td><td>method</td><td>Open the dialog, rebuilding the list from the current sources</td></tr>
+        <tr><td><code>close()</code></td><td>method</td><td>Close the dialog</td></tr>
+        <tr><td><code>toggle()</code></td><td>method</td><td>Open when closed, close when open</td></tr>
+        <tr><td><code>open</code></td><td>boolean (read-only)</td><td>Whether the dialog is open</td></tr>
+        <tr><td><code>hotkey</code></td><td>string | null (read-only)</td><td>Active combo, or <code>null</code> when <code>hotkey="none"</code></td></tr>
+        <tr><td><code>shortcuts</code></td><td>get/set</td><td>Override list <code>{ [group]: [{ label, shortcut }] }</code>. When set, it replaces the registry sources (the component's own shortcut is still listed) and re-renders an open dialog. Set <code>null</code> to go back to the registries. Fires <code>short-cuts:shortcuts-changed</code> with <code>{ shortcuts, source }</code>.</td></tr>
+      </tbody>
+    </table>
+    <code-block language="javascript" show-lines label="Supplying the list from JavaScript">const sc = document.querySelector('short-cuts');
+
+sc.shortcuts = {
+  Editing: [
+    { label: 'Bold', shortcut: 'meta+b' },
+    { label: 'Italic', shortcut: 'meta+i' },
+  ],
+};
+sc.show();</code-block>
   </section>
 
   <section>
     <h2>How It Works</h2>
-    <p>When opened, the overlay reads from the <strong>command registry</strong> (<code>window.__commandRegistry</code>) to find all registered commands that have a <code>data-shortcut</code> attribute. Shortcuts are displayed grouped by their <code>data-command-group</code>.</p>
+    <p>When opened, the overlay reads two registries, unless the <code>shortcuts</code> property is set. The <strong>command registry</strong> (<code>window.__commandRegistry</code>) supplies registered commands that have a <code>data-shortcut</code> attribute, grouped by <code>data-command-group</code>. The <strong>hotkey-action registry</strong> supplies every non-<code>&lt;kbd&gt;</code> element with <a href="/docs/attributes/data-hotkey/"><code>data-hotkey</code></a>. It is labelled by <code>data-hotkey-label</code> (or its text) and grouped by <code>data-hotkey-group</code>, which defaults to "Page Actions".</p>
     <code-block language="html" show-lines label="With commands" data-escape><!-- Shortcuts overlay discovers data-shortcut bindings automatically -->
 <short-cuts></short-cuts>
 
@@ -34,6 +90,11 @@ crumbLabel: Web Components
 </button>
 <button data-command="Save Draft" data-shortcut="meta+s">
   Save
+</button>
+
+<!-- data-hotkey actions are listed too -->
+<button type="button" data-hotkey="alt+p" data-hotkey-label="Print preview">
+  Print
 </button></code-block>
   </section>
 
@@ -52,8 +113,16 @@ crumbLabel: Web Components
           <td>Label from <code>data-command</code>, group from <code>data-command-group</code></td>
         </tr>
         <tr>
-          <td><code>?</code> itself</td>
-          <td>"Show keyboard shortcuts" in "General" group (always present)</td>
+          <td><code>[data-hotkey]</code> elements (not <code>&lt;kbd&gt;</code>)</td>
+          <td>Label from <code>data-hotkey-label</code> or text, group from <code>data-hotkey-group</code> (default "Page Actions")</td>
+        </tr>
+        <tr>
+          <td><code>shortcuts</code> property</td>
+          <td>Replaces both registries while set</td>
+        </tr>
+        <tr>
+          <td>The component's own <code>hotkey</code></td>
+          <td>"Show keyboard shortcuts" in the "General" group (left out when <code>hotkey="none"</code>)</td>
         </tr>
       </tbody>
     </table>
@@ -69,19 +138,21 @@ crumbLabel: Web Components
         </tr>
       </thead>
       <tbody>
-        <tr><td><kbd>?</kbd></td><td>Open/close the shortcuts overlay</td></tr>
+        <tr><td><kbd>?</kbd> (or the <code>hotkey</code> combo)</td><td>Open/close the shortcuts overlay</td></tr>
         <tr><td><kbd>Escape</kbd></td><td>Close the overlay</td></tr>
       </tbody>
     </table>
-    <p>The <kbd>?</kbd> hotkey does <strong>not</strong> fire when focus is inside an input, textarea, or content-editable element.</p>
+    <p>The hotkey does <strong>not</strong> fire when focus is inside an input, textarea, or content-editable element.</p>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Opens as native <code>&lt;dialog&gt;</code> with focus trapping</li>
-      <li>Escape closes (native dialog behavior)</li>
-      <li>Shortcuts displayed using <code>&lt;kbd&gt;</code> elements</li>
-      <li>Platform-aware formatting (&#x2318; on Mac, Ctrl on others)</li>
+      <li>Opens as a modal <code>&lt;dialog&gt;</code> named by its heading (<code>aria-labelledby</code>), with a visible close button</li>
+      <li>Escape, the close button or a backdrop click closes it, and focus returns to where it was</li>
+      <li>Each group is a <code>&lt;section&gt;</code> with an <code>&lt;h3&gt;</code>, and rows form a <code>&lt;dl&gt;</code> (action in <code>&lt;dt&gt;</code>, keys in <code>&lt;dd&gt;</code>), so screen-reader users can jump between groups by heading</li>
+      <li>Key badges show platform glyphs (&#x2318;, &#x21E7; on Mac; Ctrl, Shift elsewhere) and carry visually hidden spoken names ("Command K", "Shift ?")</li>
+      <li>The hotkey can be remapped or turned off (WCAG 2.1.4)</li>
+      <li>In forced-colors mode the dialog keeps a visible border</li>
     </ul>
   </section>

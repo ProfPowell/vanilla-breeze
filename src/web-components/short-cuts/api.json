@@ -2,9 +2,31 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "short-cuts",
   "type": "web-component",
-  "description": "Keyboard shortcuts help overlay",
-  "attributes": [],
-  "childAttributes": [],
+  "description": "Keyboard shortcuts help overlay: a modal dialog listing the command registry ([data-command][data-shortcut]) and data-hotkey actions, toggled by ? (remappable or off) or show()/toggle().",
+  "attributes": [
+    { "name": "hotkey", "kind": "host-api", "purpose": "config", "type": "string", "default": "shift+?", "description": "Key combo that toggles the dialog; \"none\" disables the character-key shortcut (WCAG 2.1.4). Observed." },
+    { "name": "data-label-title", "kind": "data", "purpose": "config", "type": "string", "default": "Keyboard shortcuts", "description": "Dialog heading and accessible name" },
+    { "name": "data-label-general", "kind": "data", "purpose": "config", "type": "string", "default": "General", "description": "Group holding the component's own shortcut" },
+    { "name": "data-label-self", "kind": "data", "purpose": "config", "type": "string", "default": "Show keyboard shortcuts", "description": "Label of the component's own shortcut" },
+    { "name": "data-label-close", "kind": "data", "purpose": "config", "type": "string", "default": "Close", "description": "Close button accessible name" }
+  ],
+  "events": [
+    { "name": "short-cuts:shortcuts-changed", "detail": "{ shortcuts: Record<string, Array<{ label, shortcut }>> | null, source: 'property' }", "description": "The shortcuts property was set" }
+  ],
+  "methods": [
+    { "name": "show", "returns": "void", "description": "Open the dialog (rebuilds the list from the current sources)" },
+    { "name": "close", "returns": "void", "description": "Close the dialog" },
+    { "name": "toggle", "returns": "void", "description": "Open when closed, close when open" }
+  ],
+  "properties": [
+    { "name": "shortcuts", "type": "Record<string, Array<{ label: string, shortcut: string }>> | null", "description": "Override list keyed by group name; replaces the registry sources (the component's own hotkey is still listed). null restores the registries." },
+    { "name": "open", "type": "boolean", "readonly": true, "description": "Whether the dialog is open" },
+    { "name": "hotkey", "type": "string | null", "readonly": true, "description": "Active combo, or null when hotkey=\"none\"" }
+  ],
+  "childAttributes": [
+    { "name": "data-shortcut", "on": "[data-command] (anywhere in the page)", "type": "string", "description": "Command-registry source: label from data-command, group from data-command-group" },
+    { "name": "data-hotkey", "on": "any non-kbd element (anywhere in the page)", "type": "string", "description": "Hotkey-action source: label from data-hotkey-label or text, group from data-hotkey-group (default \"Page Actions\")" }
+  ],
   "structure": [],
   "htmlvalidate": {
     "flow": true,
