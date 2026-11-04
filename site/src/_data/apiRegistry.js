@@ -1606,15 +1606,73 @@ export default {
     "attributes": []
   },
   "user-avatar": {
+    "$schema": "../../schemas/api.schema.json",
     "element": "user-avatar",
     "type": "custom-element",
+    "description": "CSS-only avatar shell: a photo <img>, an initials / icon fallback stacked under it, and an optional presence dot. No JavaScript; the accessible name comes from the img alt, or from role=\"img\" + aria-label on the host when the avatar is initials-only.",
     "htmlvalidate": {
       "flow": true,
+      "phrasing": true,
       "permittedContent": [
         "@flow"
       ]
     },
-    "attributes": []
+    "attributes": [
+      {
+        "name": "data-size",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "xs",
+          "sm",
+          "md",
+          "lg",
+          "xl",
+          "2xl"
+        ],
+        "default": "md",
+        "description": "Size: xs (1.5rem) to 2xl (8rem); omit for md (3rem). Initials never drop below 0.625rem."
+      },
+      {
+        "name": "data-shape",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "rounded",
+          "square"
+        ],
+        "description": "rounded (large radius) or square (medium radius) instead of a circle."
+      },
+      {
+        "name": "data-ring",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean",
+        "description": "Decorative ring (surface gap + border colour); kept inside overlap clusters, drawn as an outline in forced colours."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-fallback",
+        "on": "span",
+        "type": "boolean",
+        "description": "Initials or icon shown when there is no photo; stacked under the <img>, so a failed or transparent image reveals it. Add aria-hidden=\"true\" when the host or img already carries the name."
+      },
+      {
+        "name": "data-status",
+        "on": "span",
+        "type": "enum",
+        "values": [
+          "online",
+          "away",
+          "busy",
+          "offline"
+        ],
+        "description": "Presence dot (colour + shape). Give it text: role=\"img\" aria-label=\"Online\", or text content, which is read but clipped visually."
+      }
+    ]
   },
   "vb-canvas": {
     "element": "vb-canvas",
@@ -13800,6 +13858,13 @@ export default {
         "description": "Provider key (x, instagram, bluesky, youtube, mastodon or a registered custom key). Skips auto-detection; the provider must still accept the URL."
       },
       {
+        "name": "poster",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "string",
+        "description": "YouTube only: local image passed to <youtube-player poster>, so no thumbnail is fetched from i.ytimg.com."
+      },
+      {
         "name": "theme",
         "kind": "host-api",
         "purpose": "config",
@@ -15917,70 +15982,215 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "version-switcher",
     "type": "web-component",
-    "description": "Surface and switch between versions of a page over time. Inline data source + trigger + picker popover; three actions (navigate / swap / diff). Modes auto-derived from data shape (releases vs history).",
+    "description": "Surface and switch between versions of a page over time. Data from inline JSON, a data-src manifest or the vb:versions-manifest meta tag; a trigger + picker popover; three actions (navigate / swap / diff). Mode (releases vs history) is derived from the data. Entry URLs are scheme-checked (javascript:/data: entries dropped); swap and diff fetch same-origin URLs only and swapped markup is sanitized.",
     "attributes": [
       {
         "name": "data-versions",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Inline JSON array of version entries: { id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }. Alternative: a <script type=\"application/json\" data-versions> child."
+        "description": "Inline JSON array of version entries: { id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }. Alternative: a <script type=\"application/json\" data-versions> child. Entries whose url is a script/data URL are dropped; an unsafe versionUrl drops only the changelog link. Stripped by the untrusted sanitizer profile."
       },
       {
         "name": "data-src",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "URL of a JSON manifest to fetch when no inline data is provided. Falls back to <meta name=\"vb:versions-manifest\"> if neither is set."
+        "description": "URL of a JSON manifest (same entry shape) fetched when no inline data is provided. Falls back to <meta name=\"vb:versions-manifest\"> if neither is set. Stripped by the untrusted sanitizer profile."
       },
       {
         "name": "data-mode",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "\"releases\" | \"history\" — override the auto-detected mode"
+        "type": "enum",
+        "description": "Override the derived mode: releases (entries have distinct URLs) or history (entries share one URL). Sets the picker heading; observed.",
+        "values": [
+          "releases",
+          "history"
+        ]
       },
       {
         "name": "data-action",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "\"navigate\" (default) | \"swap\" | \"diff\""
+        "type": "enum",
+        "description": "navigate sets location.href to the entry url (skipped, with an error event, when that url is the current page); swap fetches the same-origin entry url and replaces the versioned region in place (sanitized, view-transition crossfade); diff mounts a <change-set> line diff beside the versioned region.",
+        "values": [
+          "navigate",
+          "swap",
+          "diff"
+        ],
+        "default": "navigate"
       },
       {
         "name": "data-versioned-region",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "CSS selector for the swappable / diffable region (default: \"[data-versioned], main\")"
+        "description": "CSS selector for the swappable / diffable region (default: \"[data-versioned], main\")",
+        "default": "[data-versioned], main"
       },
       {
         "name": "data-diff-position",
         "kind": "data",
         "purpose": "config",
-        "type": "string",
-        "description": "\"before\" (default) | \"after\" — where to mount the diff render"
+        "type": "enum",
+        "description": "Where to mount the diff render relative to the versioned region.",
+        "values": [
+          "before",
+          "after"
+        ],
+        "default": "before"
       },
       {
         "name": "data-banner",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Render an archived-version warning banner above the trigger when current is archived AND a non-archived \"latest\" exists."
+        "description": "Render an archived-version notice (an <aside> with a polite status line, filled after insertion so it is announced) when the current entry is archived AND a non-archived latest exists; the latest is a link only when it has a safe url."
       },
       {
         "name": "data-page-info-target",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "ID of a <page-info> to mount inside as a section in its expandable panel; standalone trigger is hidden in this mode."
+        "description": "ID of a <page-info> to mount inside as a section in its expandable panel; the standalone trigger is hidden in this mode. The section is removed when the switcher disconnects."
       },
       {
         "name": "aria-label",
         "kind": "aria",
         "purpose": "config",
         "type": "string",
-        "description": "Trigger / popover label (default \"Version\")"
+        "description": "What the switcher picks (e.g. \"API version\"). Not applied to the host (it has no role): it names the trigger (\"API version: v2.1\") and the picker dialog. Falls back to data-label-trigger.",
+        "default": "Version"
+      },
+      {
+        "name": "data-label-trigger",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Version",
+        "description": "Fallback name for the trigger / picker when no aria-label is set, and trigger text with no current entry."
+      },
+      {
+        "name": "data-label-loading",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loading…",
+        "description": "Trigger text while the manifest is fetched."
+      },
+      {
+        "name": "data-label-loading-versions",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Loading versions…",
+        "description": "Trigger title and panel row while the manifest is fetched."
+      },
+      {
+        "name": "data-label-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "No versions available.",
+        "description": "Empty-state row and disabled-trigger title."
+      },
+      {
+        "name": "data-label-heading-releases",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Versions",
+        "description": "Picker / panel heading in releases mode."
+      },
+      {
+        "name": "data-label-heading-history",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "History",
+        "description": "Picker / panel heading in history mode."
+      },
+      {
+        "name": "data-label-archived",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "archived",
+        "description": "Archived badge."
+      },
+      {
+        "name": "data-label-draft",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "draft",
+        "description": "Draft badge."
+      },
+      {
+        "name": "data-label-current",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "current",
+        "description": "Current badge."
+      },
+      {
+        "name": "data-label-by",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "by {author}",
+        "description": "Author line ({author})."
+      },
+      {
+        "name": "data-label-changelog",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Changelog",
+        "description": "Changelog link text."
+      },
+      {
+        "name": "data-label-changelog-for",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{version} changelog",
+        "description": "Changelog link accessible name ({version})."
+      },
+      {
+        "name": "data-label-banner-label",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Archived version notice",
+        "description": "Banner landmark name."
+      },
+      {
+        "name": "data-label-banner",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "You’re viewing {version} (archived).",
+        "description": "Banner status text ({version})."
+      },
+      {
+        "name": "data-label-banner-latest",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Latest: {version}",
+        "description": "Banner latest link / text ({version})."
+      },
+      {
+        "name": "data-label-diff",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Diff: {from} → {to}",
+        "description": "Caption above the diff render ({from}, {to})."
       }
     ],
     "events": [
@@ -16000,17 +16210,17 @@ export default {
       {
         "name": "version-switcher:before-navigate",
         "detail": "{ entry }",
-        "description": "Cancellable. Fires before location.href is set; preventDefault() blocks navigation."
+        "description": "Cancellable. Fires before location.href is set (only for a safe url that is not the current page); preventDefault() blocks navigation."
       },
       {
         "name": "version-switcher:before-swap",
         "detail": "{ entry }",
-        "description": "Cancellable. Fires before swap fetches and replaces the versioned region."
+        "description": "Cancellable. Fires before swap fetches (same-origin only) and replaces the versioned region."
       },
       {
         "name": "version-switcher:swap",
         "detail": "{ entry, previousId }",
-        "description": "Fires after swap completes. Versioned region replaced + vb:version meta updated."
+        "description": "Fires after swap completes: versioned region replaced (sanitized) and <meta itemprop=\"version\"> updated."
       },
       {
         "name": "version-switcher:before-diff",
@@ -16025,37 +16235,19 @@ export default {
       {
         "name": "version-switcher:error",
         "detail": "{ message, entry?, error? }",
-        "description": "Parse / fetch / action failure"
+        "description": "Parse / fetch / action failure, a dropped unsafe entry, a cross-origin swap/diff url, or a navigate to the current page."
       }
     ],
     "properties": [
       {
         "name": "versions",
         "type": "VersionEntry[]",
-        "description": "Resolved version entries"
+        "description": "Resolved (URL-checked) version entries; read-only copy."
       },
       {
         "name": "currentId",
         "type": "string|null",
-        "description": "Id of the current entry"
-      },
-      {
-        "name": "openPicker",
-        "type": "() => void"
-      },
-      {
-        "name": "closePicker",
-        "type": "() => void"
-      },
-      {
-        "name": "switchTo",
-        "type": "(id) => void",
-        "description": "Programmatic selection; honors data-action"
-      },
-      {
-        "name": "refresh",
-        "type": "() => void",
-        "description": "Re-resolve the data source"
+        "description": "Id of the current entry."
       }
     ],
     "childAttributes": [
@@ -16072,133 +16264,449 @@ export default {
       "permittedContent": [
         "@flow"
       ]
-    }
+    },
+    "methods": [
+      {
+        "name": "openPicker()",
+        "returns": "void",
+        "description": "Open the picker popover."
+      },
+      {
+        "name": "closePicker()",
+        "returns": "void",
+        "description": "Close the picker popover."
+      },
+      {
+        "name": "switchTo(id)",
+        "returns": "void",
+        "description": "Programmatic selection; fires select then runs data-action."
+      },
+      {
+        "name": "refresh()",
+        "returns": "void",
+        "description": "Re-resolve the data source and re-render."
+      }
+    ]
   },
   "video-player": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "video-player",
     "type": "web-component",
-    "description": "Platform video player web component",
+    "description": "Platform video player: custom, keyboard-accessible controls (shadow DOM) over a light-DOM <video>, with optional playlist",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "autoplay",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Start playing on load (subject to browser autoplay policy)"
+        "description": "Start playing on first connect (subject to browser autoplay policy). Skipped under prefers-reduced-motion: reduce (which also cancels a native autoplay on the inner video) and never re-run when the player is moved/reconnected"
       },
       {
         "name": "loop",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Loop single track or entire playlist"
+        "description": "Single video: sets the native video.loop. Playlist: after the last track, wrap to the first"
+      },
+      {
+        "name": "shuffle",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Playlist: advance to a random other track when one ends"
       },
       {
         "name": "muted",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Start muted"
-      },
-      {
-        "name": "controls",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-fullscreen",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "state",
-        "kind": "host-api",
-        "purpose": "config"
-      },
-      {
-        "name": "data-video-played",
-        "kind": "data",
-        "purpose": "config"
+        "description": "Start muted. Afterwards reflects the inner video.muted (mute button, M key, an authored <video muted> or script)"
       },
       {
         "name": "captions",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "config",
+        "type": "boolean",
+        "description": "Start with the first captions/subtitles track showing. Afterwards reflects whether captions are showing"
       },
       {
-        "name": "aria-pressed",
-        "kind": "aria",
-        "purpose": "config"
-      },
-      {
-        "name": "data-video-active",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-poster",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-captions",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "data-dynamic",
-        "kind": "data",
-        "purpose": "config"
-      },
-      {
-        "name": "shuffle",
+        "name": "state",
         "kind": "host-api",
-        "purpose": "config"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "idle",
+          "playing",
+          "paused",
+          "buffering",
+          "ended"
+        ],
+        "description": "Reflected playback state, derived from the media element (also on reconnect)"
       },
       {
-        "name": "aria-valuetext",
-        "kind": "aria",
-        "purpose": "config"
+        "name": "controls",
+        "kind": "host-api",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Set while the overlay controls are visible; removed by the auto-hide timer during playback (never while focus is inside the controls). Not the native controls attribute"
+      },
+      {
+        "name": "data-fullscreen",
+        "kind": "data",
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "boolean",
+        "description": "Set while THIS player (or its video) is the fullscreen element"
+      },
+      {
+        "name": "data-label-player",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Video player",
+        "description": "Host accessible name (role=group) unless aria-label/aria-labelledby is authored"
+      },
+      {
+        "name": "data-label-controls",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Video controls",
+        "description": "Name of the controls group"
+      },
+      {
+        "name": "data-label-play-video",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Play video",
+        "description": "Big play overlay button"
+      },
+      {
+        "name": "data-label-play",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Play",
+        "description": "Play/pause button while paused"
+      },
+      {
+        "name": "data-label-pause",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Pause",
+        "description": "Play/pause button while playing"
+      },
+      {
+        "name": "data-label-seek",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Seek",
+        "description": "Seek slider"
+      },
+      {
+        "name": "data-label-skip-back",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Skip back 10 seconds",
+        "description": "Skip-back button"
+      },
+      {
+        "name": "data-label-skip-forward",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Skip forward 10 seconds",
+        "description": "Skip-forward button"
+      },
+      {
+        "name": "data-label-mute",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Mute",
+        "description": "Mute toggle (state is carried by aria-pressed)"
+      },
+      {
+        "name": "data-label-volume",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Volume",
+        "description": "Volume slider"
+      },
+      {
+        "name": "data-label-speed",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Playback speed {rate}",
+        "description": "Speed button; {rate} is the localized rate, e.g. \"1.5x\""
+      },
+      {
+        "name": "data-label-captions",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Captions",
+        "description": "Captions toggle"
+      },
+      {
+        "name": "data-label-fullscreen",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Fullscreen",
+        "description": "Fullscreen button"
+      },
+      {
+        "name": "data-label-exit-fullscreen",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Exit fullscreen",
+        "description": "Fullscreen button while this player is fullscreen"
+      },
+      {
+        "name": "data-label-playing",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Playing",
+        "description": "Live-region announcement"
+      },
+      {
+        "name": "data-label-paused",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Paused",
+        "description": "Live-region announcement"
+      },
+      {
+        "name": "data-label-ended",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Ended",
+        "description": "Live-region announcement"
+      },
+      {
+        "name": "data-label-buffering",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Buffering",
+        "description": "Live-region announcement"
+      },
+      {
+        "name": "data-label-time-of",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "{current} of {duration}",
+        "description": "Seek slider aria-valuetext; {current}/{duration} are locale clock times, e.g. \"0:05 of 3:20\""
+      }
+    ],
+    "properties": [
+      {
+        "name": "src",
+        "type": "string",
+        "description": "Get/set the inner <video> source. Setting loads it and fires video-player:src-changed"
+      },
+      {
+        "name": "currentTime",
+        "type": "number",
+        "description": "Playback position in seconds (proxies video.currentTime)"
       }
     ],
     "events": [
       {
-        "name": "video-player:play"
+        "name": "video-player:play",
+        "detail": "{ currentTime, src }",
+        "description": "Playback started"
       },
       {
-        "name": "video-player:pause"
+        "name": "video-player:pause",
+        "detail": "{ currentTime }",
+        "description": "Playback paused"
       },
       {
-        "name": "video-player:ended"
+        "name": "video-player:ended",
+        "detail": "{ src }",
+        "description": "A video played to the end"
       },
       {
-        "name": "video-player:track-change"
+        "name": "video-player:track-change",
+        "detail": "{ src, title }",
+        "description": "A playlist track was activated (click or auto-advance)"
       },
       {
-        "name": "video-player:fullscreen"
+        "name": "video-player:fullscreen",
+        "detail": "{ active }",
+        "description": "This player entered or left fullscreen"
       },
       {
-        "name": "video-player:speed"
+        "name": "video-player:speed",
+        "detail": "{ rate }",
+        "description": "Playback speed changed (cycles 0.5–2x)"
       },
       {
-        "name": "video-player:captions"
+        "name": "video-player:captions",
+        "detail": "{ active, label }",
+        "description": "Captions toggled by the button or C key"
+      },
+      {
+        "name": "video-player:src-changed",
+        "detail": "{ src, source: 'property' }",
+        "description": "The src property was set"
       }
     ],
-    "childAttributes": [],
-    "structure": [],
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    }
+    "childAttributes": [
+      {
+        "name": "controls",
+        "on": "video",
+        "type": "boolean",
+        "description": "Native controls for the no-JS fallback. Removed while the component is upgraded, restored when it disconnects"
+      },
+      {
+        "name": "data-video-active",
+        "on": "li",
+        "type": "boolean",
+        "description": "The loaded playlist track. Author sets the initial one; the component moves it"
+      },
+      {
+        "name": "data-video-played",
+        "on": "li",
+        "type": "boolean",
+        "description": "Set by the component when the track plays to the end"
+      },
+      {
+        "name": "data-poster",
+        "on": "a",
+        "type": "string",
+        "description": "Playlist link: poster image to show for that track"
+      },
+      {
+        "name": "data-captions",
+        "on": "a",
+        "type": "string",
+        "description": "Playlist link: WebVTT captions URL; the component swaps in a captions <track> (marked data-dynamic) for that track"
+      }
+    ],
+    "structure": [
+      {
+        "element": "video",
+        "required": true,
+        "description": "The native video element (light DOM), with <source>/<track> children and fallback content"
+      },
+      {
+        "element": "ol.track-list",
+        "required": false,
+        "description": "Optional playlist (usually inside <details>): one <li> per video with an <a href> to the file"
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--video-player-accent",
+        "description": "Progress fill, slider thumbs and focus ring fallback"
+      },
+      {
+        "name": "--video-player-controls-text",
+        "description": "Controls icon/text colour"
+      },
+      {
+        "name": "--video-player-radius",
+        "description": "Player border radius"
+      },
+      {
+        "name": "--video-player-border",
+        "description": "Player border (default none)"
+      },
+      {
+        "name": "--video-player-shadow",
+        "description": "Player box shadow (default none)"
+      },
+      {
+        "name": "--video-player-controls-padding",
+        "description": "Controls bar padding"
+      },
+      {
+        "name": "--video-player-overlay-bg",
+        "description": "Big play button disc background"
+      },
+      {
+        "name": "--video-player-timeline-height",
+        "description": "Seek track thickness"
+      },
+      {
+        "name": "--video-player-timeline-buffer",
+        "description": "Buffered-range bar colour"
+      }
+    ],
+    "parts": [
+      {
+        "name": "player",
+        "description": "Outer player container"
+      },
+      {
+        "name": "play-overlay",
+        "description": "Big centered play button (shown idle/ended; inert otherwise)"
+      },
+      {
+        "name": "controls",
+        "description": "Controls overlay (role=group)"
+      },
+      {
+        "name": "timeline",
+        "description": "Seek range input"
+      },
+      {
+        "name": "play-button",
+        "description": "Play/pause button"
+      },
+      {
+        "name": "mute-button",
+        "description": "Mute toggle (aria-pressed)"
+      },
+      {
+        "name": "volume",
+        "description": "Volume range input"
+      },
+      {
+        "name": "time-display",
+        "description": "Current time / duration readout"
+      },
+      {
+        "name": "speed-button",
+        "description": "Playback speed cycle button"
+      },
+      {
+        "name": "captions-button",
+        "description": "Captions toggle (hidden without a captions/subtitles track)"
+      },
+      {
+        "name": "fullscreen-button",
+        "description": "Fullscreen toggle"
+      }
+    ]
   },
   "watch-wc": {
     "$schema": "../../../schemas/api.schema.json",
     "element": "watch-wc",
     "type": "web-component",
-    "description": "Drop-in wrapper for the data-watch-page button. Renders an icon, compact, or full-button variant that toggles whether the current page is in the user's VBStore('watches') list. State machine lives in src/utils/page-watch-init.js — this is a one-tag author convenience.",
+    "description": "Drop-in wrapper for the data-watch-page button. Renders an icon, compact, or full-button toggle (aria-pressed) that adds or removes the current page from the user's VBStore('watches') list. The state machine lives in src/utils/page-watch-init.js; the component repaints its label, icon and title from the button's aria-pressed.",
     "attributes": [
       {
         "name": "variant",
@@ -16210,27 +16718,54 @@ export default {
           "compact",
           "button"
         ],
-        "description": "Visual preset (default: icon)"
+        "default": "icon",
+        "description": "Visual preset. icon is named by aria-label (data-label-action); compact and button are named by their visible text. Changing it after upgrade re-renders."
       },
       {
         "name": "label",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "Override the visible text in compact and button variants. Defaults to 'Watch for updates' / 'Watching'."
+        "description": "Constant visible text for the compact and button variants, used in both states (overrides data-label-watch / data-label-watching). Ignored by the icon variant."
       },
       {
         "name": "server-sync",
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Per-instance opt-in for server-side sync via VBService('notify'). Sets window.vbPageWatch.serverSync = true before page-watch-init evaluates."
+        "description": "Turns on server-side sync via VBService('notify') for the whole page: sets the page-global window.vbPageWatch.serverSync flag, which every watch button (and the notification panel's unwatch) uses from then on. Equivalent to <meta name=\"vb-page-watch-server\" content=\"true\">."
       },
       {
-        "name": "data-variant",
+        "name": "data-label-watch",
         "kind": "data",
         "purpose": "config",
-        "description": "Reflected by the component to pick the visual variant in CSS"
+        "type": "string",
+        "default": "Watch for updates",
+        "description": "Visible text (and accessible name) of the compact/button variants while the page is not watched. Localisation hook."
+      },
+      {
+        "name": "data-label-watching",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Watching",
+        "description": "Visible text (and accessible name) of the compact/button variants while the page is watched. Localisation hook."
+      },
+      {
+        "name": "data-label-action",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Watch this page for updates",
+        "description": "Icon variant: the button's aria-label, and its tooltip while not watched. Localisation hook."
+      },
+      {
+        "name": "data-label-stop",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Stop watching this page",
+        "description": "Icon variant: tooltip while the page is watched. Localisation hook."
       }
     ],
     "events": [
@@ -16247,7 +16782,17 @@ export default {
           "url": "string",
           "subscriptionId": "string|null"
         },
-        "description": "Bubbles from the inner button when the user stops watching"
+        "description": "Bubbles from the inner button when the user stops watching (also dispatched by notification-wc's Watching tab)"
+      }
+    ],
+    "structure": [
+      {
+        "element": "button[data-watch-page][data-watch-wc]",
+        "description": "Generated toggle button with aria-pressed; icon variant carries aria-label, text variants a <span> label"
+      },
+      {
+        "element": "icon-wc",
+        "description": "bookmark / bookmark-check icon, aria-hidden"
       }
     ],
     "htmlvalidate": {
@@ -16261,14 +16806,14 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "week-view",
     "type": "web-component",
-    "description": "7-day time grid composing day-view-style columns in a semantic table",
+    "description": "Week time grid composing day-view-style columns in a semantic table. Defaults to the current week (locale first day); today's header has aria-current=\"date\". Changing data-start-date, data-days, data-start-hour, data-end-hour or a data-label-* after upgrade rebuilds a generated table.",
     "attributes": [
       {
         "name": "data-start-date",
         "kind": "data",
         "purpose": "config",
         "type": "string",
-        "description": "ISO date for the first day of the week (e.g., 2026-04-06)"
+        "description": "ISO date for the first day of the view (e.g., 2026-04-06). Default: the current week, starting on the locale's first day of week (Intl.Locale weekInfo, closest [lang])."
       },
       {
         "name": "data-days",
@@ -16276,7 +16821,7 @@ export default {
         "purpose": "config",
         "type": "number",
         "default": 7,
-        "description": "Number of day columns (e.g., 5 for workweek)"
+        "description": "Number of day columns, clamped to 1-14 (e.g., 5 for a workweek). Invalid values fall back to 7."
       },
       {
         "name": "data-start-hour",
@@ -16301,6 +16846,14 @@ export default {
         "type": "string",
         "default": "continues after the visible hours",
         "description": "Text appended to the accessible name of a spanning event that runs past the last visible hour (localisation hook)."
+      },
+      {
+        "name": "data-label-time",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Time",
+        "description": "Visually hidden name of the corner header over the hour labels (localisation hook)."
       }
     ],
     "events": [
@@ -16319,7 +16872,7 @@ export default {
       {
         "name": "events",
         "type": "Array<{ date?, time, text, category?, duration? }>",
-        "description": "Get the week's events as data, or assign an array to rebuild the table. time is HH:MM or a full ISO datetime (its date is used when date is omitted). Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour."
+        "description": "Get the week's events as data (including unplaced ones outside the range), or assign an array to rebuild the table. time is HH:MM or a full ISO datetime (its date is used when date is omitted). Durations (data-duration): 2h, 1.5h, 45m, 90m, 1h30m, bare minutes (60), ISO-8601 (PT1H30M); unparseable values fall back to 1 hour."
       }
     ],
     "methods": [
@@ -16333,7 +16886,7 @@ export default {
         "name": "data-date",
         "on": "calendar-event",
         "type": "string",
-        "description": "ISO date assigning this event to a day column (auto mode)"
+        "description": "ISO date assigning this event to a day column (auto mode). Events outside the range, or without a time, are not placed and are hidden."
       },
       {
         "name": "data-duration",
@@ -16355,7 +16908,7 @@ export default {
       },
       {
         "element": "thead > tr > th",
-        "description": "Day column headers with <time> elements"
+        "description": "Day column headers: <time datetime> with a short visible date (month added when the range crosses one) and a visually hidden full date; today's has aria-current=\"date\""
       },
       {
         "element": "tbody > tr > th",
@@ -16385,76 +16938,121 @@ export default {
     "$schema": "../../../schemas/api.schema.json",
     "element": "youtube-player",
     "type": "web-component",
+    "description": "YouTube embed behind a facade: a thumbnail (or local poster) and one play button; the youtube-nocookie.com iframe loads only when the reader presses play. Without poster the thumbnail is requested from i.ytimg.com on render.",
+    "htmlvalidate": {
+      "flow": true,
+      "permittedContent": [
+        "@flow"
+      ]
+    },
     "attributes": [
       {
         "name": "video-id",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "YouTube video ID (required)"
+        "required": true,
+        "description": "YouTube video ID (6–20 of A–Z a–z 0–9 _ -). Missing or invalid: the element does not upgrade and the authored fallback stays."
       },
       {
         "name": "title",
         "kind": "native",
         "purpose": "config",
         "type": "string",
-        "description": "Accessible title for iframe + play button"
+        "default": "YouTube video",
+        "description": "Video title: the iframe title and the {title} in the play-button name."
       },
       {
         "name": "start",
         "kind": "host-api",
         "purpose": "config",
         "type": "number",
-        "description": "Start playback at N seconds"
+        "description": "Start playback at N seconds. Whole non-negative seconds only; anything else is ignored with a console warning."
+      },
+      {
+        "name": "end",
+        "kind": "host-api",
+        "purpose": "config",
+        "type": "number",
+        "description": "Stop playback at N seconds. Whole non-negative seconds only."
       },
       {
         "name": "list",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "YouTube playlist ID"
+        "description": "YouTube playlist ID."
       },
       {
         "name": "params",
         "kind": "host-api",
         "purpose": "config",
         "type": "string",
-        "description": "Raw query string appended to embed URL"
+        "description": "Extra query string for the embed URL (escape hatch); its keys override start, end, list and autoplay. The embed host is fixed."
       },
       {
         "name": "autoplay",
         "kind": "host-api",
         "purpose": "config",
         "type": "boolean",
-        "description": "Auto-initialise iframe on load (no facade)"
+        "description": "Load the iframe on connect instead of the facade (this contacts YouTube at once). Ignored under prefers-reduced-motion or data-motion-reduced. Never moves focus."
       },
       {
         "name": "thumbnail",
         "kind": "host-api",
         "purpose": "config",
+        "type": "enum",
+        "values": [
+          "hq",
+          "mq",
+          "sd",
+          "maxres"
+        ],
+        "default": "hq",
+        "description": "i.ytimg.com thumbnail size. sd and maxres fall back to hq when the video has none."
+      },
+      {
+        "name": "poster",
+        "kind": "host-api",
+        "purpose": "config",
         "type": "string",
-        "description": "Thumbnail resolution: hq | mq | sd | maxres"
+        "description": "Local image URL for the facade. When set, no thumbnail is requested from i.ytimg.com; nothing contacts Google until play."
+      },
+      {
+        "name": "data-label-play",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Play {title}",
+        "description": "Accessible name of the play button; {title} is replaced with the title."
       },
       {
         "name": "state",
         "kind": "host-api",
-        "purpose": "config",
-        "type": "string",
-        "description": "Component-managed: \"ready\" (facade) or \"active\" (iframe)"
+        "purpose": "output-state",
+        "direction": "output",
+        "type": "enum",
+        "values": [
+          "ready",
+          "active"
+        ],
+        "description": "Set by the component: ready = facade shown, active = iframe inserted. Reconnect (move or reinsert) renders the facade again."
+      }
+    ],
+    "properties": [],
+    "methods": [],
+    "events": [
+      {
+        "name": "youtube-player:activate",
+        "detail": "{ videoId: string, fromUser: boolean }",
+        "description": "Fired (bubbles) when the iframe is inserted; fromUser is false for the autoplay attribute."
       },
       {
-        "name": "role",
-        "kind": "native",
-        "purpose": "config"
+        "name": "youtube-player:upgraded",
+        "description": "Fired (bubbles) after the element upgrades."
       }
     ],
     "childAttributes": [],
-    "structure": [],
-    "htmlvalidate": {
-      "flow": true,
-      "permittedContent": [
-        "@flow"
-      ]
-    }
+    "structure": []
   }
 };

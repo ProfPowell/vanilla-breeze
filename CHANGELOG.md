@@ -8,6 +8,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **U–Y-element review.**
+  - **version-switcher** — Entries whose `url` is a `javascript:` / `vbscript:` / `data:` URL are dropped (with a `version-switcher:error`); an unsafe `versionUrl` drops only the changelog link, and the banner's latest pointer is a link only for a safe url. `swap` and `diff` only fetch same-origin URLs, and the swapped region is inserted through `sanitizeToFragment`, so inline `on*` handlers never go live.
+  - **sanitize-html** — The untrusted profile also strips `data-versions` from custom elements, so user content cannot carry a version-switcher entry list.
 - **T-element review.**
   - **time-index** — The `updates-src` feed is built with DOM APIs. Titles are always text, and a link is kept only when its `href`/`url` resolves to http(s) through `new URL(href, baseURI)` (relative is fine); `javascript:`, `data:` and other schemes are dropped, as are items with no title. Before, `title`, `href` and `modified` from the JSON went straight into `innerHTML`, so a compromised or third-party feed could inject script. Version `<option>`s are built with `new Option()` instead of re-parsing `.version-tag` text as HTML.
   - **topic-map / trust-filter** — Page and result links are scheme-checked (http(s) and relative only, the author-index `safeHref` pattern); `javascript:` / `data:` URLs from `src`, `data-lens-src` or `.data` render as plain text. Both build their output with DOM APIs, and load errors show a generic message (the URL and detail go to `console.warn`).
@@ -37,6 +40,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **U–Y-element review.**
+  - **youtube-player**
+    - `poster` attribute: a local facade image. When set, no thumbnail is requested from i.ytimg.com, so nothing contacts Google until play. `<social-embed poster>` passes it through for YouTube URLs.
+    - `end` attribute (whole seconds).
+    - `youtube-player:activate` event (bubbles), detail `{ videoId, fromUser }`.
 - **P-element review.**
   - **analytics** — `GET /api/analytics/popular` Pages Function: a public most-visited list over the D1 `page.view` hits (`?window=24h|7d|30d`, `?limit=1-50`, `?site=`), returning `{ ok, site, window, pages: [{ url, views }] }`. Failures return a generic `{ ok: false, error: 'unavailable' }` 503 (D1 messages are logged, not echoed). This is the default endpoint of `<popularity-index>`, which previously 404'd.
 - **G+H-element review.**
@@ -51,6 +59,43 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Changes from the U–Y-element review.**
+  - **ul** — `data-marker="arrow"` now uses a matched glyph pair from one Unicode block, ▸ U+25B8 / ◂ U+25C2 for RTL. The old pair was ➤ U+27A4 / ⮜ U+2B9C, two mismatched shapes, and the RTL glyph had patchy font coverage. `--marker-arrow` and `--marker-arrow-rtl` changed to match.
+  - **user-avatar**
+    - Layout is now `inline-grid` with the `[data-fallback]` stacked under the `<img>` (a failed or transparent photo shows the initials), `vertical-align: middle`, and `isolation: isolate`.
+    - Status dots differ in shape as well as colour (away crescent, busy bar, offline hollow ring); text inside `[data-status]` is read but clipped visually.
+    - The `xs` initials size is now 0.625rem (was 0.5rem).
+  - **var** — No longer uses the link colour (`--color-interactive`), which made variables look clickable where links are not underlined. It now takes the surrounding text colour; set the new `--var-color` hook to tint it. Added `font-synthesis: weight style` so single-face fonts still get a slant.
+  - **version-switcher**
+    - The host no longer gets a default `aria-label`; the trigger is named "<aria-label>: <current>" (e.g. "API version: v2.1"), and the picker is named the same way.
+    - Entry markup: each `<li class="version-switcher-item">` holds the entry button (label, badges, date), then author / summary (linked by `aria-describedby`) and the changelog link as siblings. The link is no longer nested in the button, and the overriding `aria-label` is gone.
+    - Navigating to an entry whose url is the current page (history entries sharing one URL) no longer reloads; it fires `version-switcher:error`. Give revisions distinct URLs or use `swap` / `diff`.
+    - The banner is a labelled `<aside>` with a `role="status"` line filled after insertion (it now announces); `role="region"` / `aria-live` on the aside are gone.
+    - All strings are overridable with `data-label-*`; dates use `Intl.RelativeTimeFormat` / `Intl.DateTimeFormat` with the nearest `[lang]`; the diff caption reads `data-diff-label`.
+  - **video** — Aspect-ratio classes (`.widescreen`, `.standard`, `.square`, `.ultrawide`) now letterbox (`object-fit: contain`) instead of always cropping; add the new `.cover` class to crop-to-fill (decorative/background video). The documented `.ultrawide` (21:9) rule is restored.
+  - **video-player**
+    - `autoplay` is skipped under `prefers-reduced-motion: reduce` (which also cancels a native `autoplay` on the inner `<video>`) and runs only on first connect, never again on a move/reconnect.
+    - The host is now a `role="group"` named "Video player" with `aria-keyshortcuts`; all UI strings are overridable with `data-label-*` and times/numbers follow the closest `[lang]` (Intl.DurationFormat, NumberFormat fallback). Controls are always laid out LTR, also in RTL pages. Host `loop` now loops a single video. The volume slider steps by 5%. The undocumented `--video-player-controls-bg` hook (never applied) is removed.
+  - **watch-wc**
+    - The compact and button variants no longer carry an `aria-label`: the visible text is the accessible name (WCAG 2.5.3); only the icon variant is named by `aria-label`. State stays on `aria-pressed`.
+    - Authored children are now a real no-JS fallback: shown until upgrade, hidden afterwards (the `watch-wc:not(:defined) { display: none }` rule is gone).
+    - New `data-label-watch`, `data-label-watching`, `data-label-action`, `data-label-stop` overrides. `variant`, `label` and `data-label-*` changes after upgrade re-render.
+    - `server-sync` is documented as page-global (it always was).
+  - **page-watch (`[data-watch-page]`)**
+    - Watches are keyed by a normalised path: `/x`, `/x/` and `/x/index.html` share one key. Entries under an old key move to the new key on the next page load. `entry.url` stays the real pathname.
+    - Plain buttons take `data-label-watch`, `data-label-watching`, `data-label-action` and `data-label-stop` overrides.
+  - **week-view**
+    - Without `data-start-date` the view shows the current week, starting on the locale's first day (`Intl.Locale` week info, with a region fallback). An empty `<week-view>` renders the grid. Today's header carries `aria-current="date"`.
+    - Keyboard: Up/Down walk the day's events in time order, including events that share a cell. Left/Right move to the event nearest in time on the next or previous day that has events. Home/End use date-then-time order. Every placed event is now reachable.
+    - `data-days` is clamped to 1–14 (invalid values fall back to 7). Changing `data-start-date`, `data-days`, `data-start-hour`, `data-end-hour` or `data-label-*` after upgrade rebuilds the generated table.
+    - Unplaced events (date out of range, or no time) are hidden after upgrade and stay in the `events` getter.
+  - **youtube-player**
+    - The inner play `<button>` is now the only control: the host no longer gets `role="button"`, `tabindex="0"` or `aria-label` in the facade state (removes the nested-interactive double tab stop). The button covers the whole facade, so clicking anywhere on the thumbnail still plays.
+    - Default `title` is now "YouTube video" (was "Play video", which produced "Play Play video"). The play-button name is a template, `data-label-play` (default "Play {title}").
+    - `autoplay` no longer moves focus into the iframe on page load or reconnect, and is ignored under `prefers-reduced-motion` / `data-motion-reduced` (the facade is shown instead).
+    - `start` accepts whole seconds only; other values (e.g. `1m30s`) are ignored with a console warning.
+    - Reconnect (move/reinsert) renders the facade again, by design: a moved iframe reloads and would restart playback.
+    - api.json rewritten from the runtime: `state` is output-state (`ready|active`), `thumbnail` is an enum, `role` removed, `poster`/`end`/`data-label-play` and events added.
 - **Changes from the T-element review.**
   - **tab-set**
     - Breaking: `tab-set:change` fires once per activation, from the newly opened tab, with detail `{ index, previousIndex, tab, panel }` (`tab` is the `<details>`). It no longer fires for the closing tab, during setup, or when the open tab is selected again.
@@ -509,6 +554,40 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **U–Y-element review.**
+  - **u** — In Chinese, Japanese and Korean text (`:lang(zh|ja|ko)`, but not `*-Latn`), `<u>` is now the proper-name mark, a solid `currentColor` underline under the line. Before, it was the red wavy spell-check line, which made names look like typos and clashed with CJK `<cite>`'s wavy book-title mark.
+  - **ul**
+    - `.meta` separators (all four variants) and the `data-marker` glyphs now have empty alt text (`content: "…" / ""`), so screen readers no longer read "dot", "vertical line", "slash" or "heavy check mark". The plain declaration stays first as the fallback.
+    - Added the `--sep-slash` and `--marker-star` tokens. The slash separator and the star marker were the only hardcoded glyphs.
+  - **user-avatar**
+    - `data-ring` now survives inside `[data-layout-overlap]` clusters (it is composed through `--_ring`). In the `<ul>`/`<li>` group form the avatar draws its own separator.
+    - The initials disc uses `light-dark()` tokens (it showed as a bright disc in dark mode). Forced colours draw a `CanvasText` border, a ring outline, and status dots in system colours.
+    - Demos use local placeholder photos instead of `i.pravatar.cc`. The docs gained an Accessibility section (alt text, initials label, "+N" label, list groups, status text), and there is a new `api.json`.
+  - **comment-thread, activity-feed** — Stopped setting a `name` attribute on `<user-avatar>` that nothing read.
+  - **var** — CJK text no longer gets a synthesised oblique. `<var>` stays upright with a dashed muted underline, which differs from the CJK cues on u (solid), i (dotted) and cite (wavy).
+  - **version-switcher**
+    - The picker / panel heading follows fetched data and `data-mode` (it was frozen at "History" for manifest-backed switchers); `data-mode` and `aria-label` are now observed.
+    - Entries mounted in a `<page-info>` panel are styled (rules now scope to `.version-switcher-panel-section` too).
+    - `teardown()` removes the page-info panel section and stops the mount observer and timeout; reconnect mounts exactly one section.
+    - The swap crossfade timing no longer retimes every root view transition on the site (scoped to the `version-swap` transition type).
+  - **video-player**
+    - Keyboard shortcuts no longer hijack the player's own controls: arrows on the volume slider change volume (not seek), arrows on the seek slider seek 5 s (not volume), Space on a button is the button's, and Ctrl/Cmd/Alt chords (e.g. Cmd+F, Ctrl+C) are never intercepted (ported audio-player's composedPath + modifier guard).
+    - Auto-hide never hides the controls while keyboard focus is inside them; the invisible big play button is `inert` outside idle/ended; fullscreen state is per player (no cross-talk between players on one page).
+    - Media, track-list and control listeners are re-attached on every connect (a `<video>` swapped while disconnected used to freeze the UI); state, time and captions-button visibility are recomputed on reconnect; clicking playlist links no longer also toggles play/pause.
+    - Mute button exposes `aria-pressed` (incl. an authored `<video muted>`); seek `aria-valuetext` reads "0:05 of 3:20" from the start, volume reads "37%"; progress/volume fills stay visible in forced-colors mode; `video-player:src-changed` is now `composed` like the other events. api.json rewritten from the runtime.
+  - **video (chapter list)** — The active chapter's button carries `aria-current="true"`; the nav name is overridable with `data-label` on the track; a rejected `play()` after a chapter click is no longer an unhandled rejection.
+  - **watch-wc** — An already-watched page now shows "Watching" and the bookmark-check icon on load. The component repaints from the button's `aria-pressed`, which page-watch-init sets.
+  - **page-watch / notification-wc**
+    - The "content changed" notice now appears in the bell. notification-wc panels ingest a document-level `notification-wc:new` (deduped by id). page-watch-init waits for `notification-wc` to be defined before dispatching.
+    - Unwatching from the bell's Watching tab now calls the server unsubscribe (when server sync is on). Every `[data-watch-page]` button resyncs on any `page-watch:add/remove`.
+    - page-watch-init loaded twice (autoload bundle + watch-wc chunk) no longer runs twice. A global sentinel makes the second copy inert: one observer, one change check.
+  - **week-view, day-view** — Grid lines are logical borders instead of box-shadows, so they stay visible in forced colors and mirror correctly in RTL.
+  - **week-view** — Day headers carry the full date as accessible text, and the month is shown when the range crosses one. The corner header uses visually hidden text (`data-label-time`) instead of `aria-label`.
+  - **youtube-player**
+    - `thumbnail="sd"` / `"maxres"` fall back to `hqdefault` when the video has no such image (404 or YouTube's 120×90 placeholder).
+    - The thumbnail `<img>` sends no referrer (`referrerpolicy="no-referrer"`); the iframe sets `referrerpolicy="strict-origin-when-cross-origin"` explicitly so a page-wide `no-referrer` policy does not break the player.
+    - `widescreen` class now has a rule (16:9, same as the default).
+  - **Docs** — wbr: removed the false claim that VB uses `word-break: break-all` for CJK (VB deliberately avoids it); added how `<wbr>` relates to VB's `overflow-wrap: break-word`, a copy/paste/search table (wbr vs `&shy;` vs zero-width space), and a correct CJK example with `<wbr>` inside the Latin URL; demo inline styles moved to a class. u: quotes theme tokens (`--color-error`, `--color-success`) instead of stale oklch values, uses real Hanzi instead of pinyin, adds a forced-colours note, and the table is renamed "VB text decorations". ul: breadcrumbs point to `nav.breadcrumb` / `<bread-crumb>`, not `.meta`; documents `.meta` CSS and the separator/marker custom properties, adds `role="list"` in the list-style:none samples and demos, and notes that markers are decorative (a task list needs checkboxes). version-switcher: removed the "Phase 1/2/3" and "coming" copy, corrected `meta[itemprop="version"]` (not `vb:version`), embedded the actions and provenance demos, and added Security and Localisation sections; `api.json` rewritten from the runtime (enums, `data-label-*`, methods). video: removed the false claim that autoplay pauses automatically under reduced motion (now guidance + snippet); background-video guidance includes a pause control (WCAG 2.2.2); documented the `video::cue` hooks (`--cue-text`, `--cue-bg`, `--cue-font`); demos use local media with captions and a background-video example. youtube-player: new Privacy section naming the i.ytimg.com request, Local Poster / Start and End / params / no-JS fallback demos, accessibility list corrected, static.html filled in.
 - **T-element review.**
   - **tab-set** — The `tabs` setter created unnamed `<details>`, so a second click left two panels open. Arrow keys mirror in RTL. Printing shows every panel under its tab label. Forced colours mark the selected tab with `Highlight` (including the extreme-neumorphism theme). A `<details>` without a `<summary>` no longer throws on toggle.
   - **table** — `data-responsive="card"` keeps table semantics: the thead is hidden visually, and a new `card-init.js` restores table/row/cell roles and fills missing `data-label` from the column header, including for rows added later; card mode covers `tbody th` and `tfoot`. The sticky header honours `--sticky-offset` and keeps its rule once stuck. `data-state-selected` rows get the `data-selected` tint, and selected/highlighted rows add a non-colour inline-start bar. Frozen cells show the row's hover, stripe and state tint, and the frozen edge flips in RTL. Stripes skip hidden rows. `tfoot th` matches the other footer cells. New forced-colours block (`Highlight` / `Mark` rows, real borders for the state bar, frozen edge and stuck header).

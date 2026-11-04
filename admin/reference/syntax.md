@@ -590,8 +590,8 @@ Base: monospace font, `<code>` gets background highlight, `<kbd>` gets border + 
 | `.inline` | Horizontal flex, no bullets |
 | `.unstyled` | No bullets, no padding |
 
-- `ul[data-marker="check|arrow|dash|star"]`: styles direct `> li::marker` only, so nested lists keep their own markers. `arrow` swaps to `--marker-arrow-rtl` (U+2B9C, fallback built in) under `:dir(rtl)`.
-- `ul.meta` / `ol.meta` (`data-separator="pipe|dash|slash"`): separators on direct `> li + li::before` only.
+- `ul[data-marker="check|arrow|dash|star"]`: styles direct `> li::marker` only, so nested lists keep their own markers. Glyphs come from `--marker-check`, `--marker-arrow`, `--marker-dash` and `--marker-star`, and are decorative (empty alt text, `content: "…" / ""`). `arrow` is U+25B8 and swaps to `--marker-arrow-rtl` (U+25C2, the same pair) under `:dir(rtl)`.
+- `ul.meta` / `ol.meta` with `data-separator="pipe|dash|slash"`: separators on direct `> li + li::before` only, from `--sep-list`, `--sep-pipe`, `--sep-ndash` and `--sep-slash`, and are silent (empty alt text). Not for breadcrumbs: use `nav.breadcrumb`.
 - `ol` indent: `padding-inline-start: var(--ol-indent, var(--size-l))`. It widens to `var(--ol-indent, 2.5em)` for lists with long markers: `[type="i"]` (either case), `[start]`, `[reversed]`, `:has(> li[value])`, 100+ items, and `type="a|A"` with 27+ items. Set `--ol-indent` for CJK/Arabic-Indic counter styles or a large `start`. `.inline`/`.unstyled`/`.meta` still reset it to 0.
 - `.inline` / `.unstyled` / `.meta`: reset `margin-block-start` on direct `> li` only. They set `list-style: none`, so add `role="list"` where Safari/VoiceOver semantics matter.
 - `:where(li + li)` has zero specificity, so a plain author `li` rule wins over it. Any `[data-layout] > li` gets a margin of 0.
@@ -641,13 +641,18 @@ Themes restyle only plain rules (`hr:not([data-ornament], .decorative, .wave, .z
 | Class | Element | Description |
 |-------|---------|-------------|
 | `.full` | video | Full-width |
-| `.widescreen` | video | 16:9 |
-| `.standard` | video | 4:3 |
-| `.ultrawide` | video | 21:9 |
-| `.square` | video | 1:1 |
+| `.widescreen` | video | 16:9, letterboxed (`object-fit: contain`) |
+| `.standard` | video | 4:3, letterboxed |
+| `.ultrawide` | video | 21:9, letterboxed (rule restored) |
+| `.square` | video | 1:1, letterboxed |
+| `.cover` | video | Opt-in crop-to-fill (`object-fit: cover`) for decorative/background video |
 | `.rounded` | video | Border-radius |
 | `.minimal` | audio | 2.5rem height |
 | `.compact` | audio | 300px max-width |
+
+| Attribute | Element | Description |
+|-----------|---------|-------------|
+| `data-chapter-list` | `track[kind=chapters]` | Renders `nav.chapter-list` (seek buttons) after the video; active chapter's button gets `aria-current="true"` (+ `li[data-active]`); `data-label` names the nav (default "Video chapters") |
 
 ### `<iframe>` Embed
 
@@ -864,6 +869,9 @@ Separator: `<li role="separator">` (a vertical rule in row menus, a horizontal r
 | `.status[data-status]` (`success`, `warning`, `error`, `inactive`, `check`, `fail`) | span | Inline status glyph via `::before` with empty alt text (`content: "\25CF" / ""`); the label carries the meaning |
 
 > `dfn` inherits the weight of bold contexts (`dt`, `th`, headings, `strong`, `b`, `legend`). In `:lang(zh|ja|ko)`, `dfn` and `cite` are upright (no synthetic italic): `dfn` uses semibold, `cite` a muted wavy underline (except `cite[data-variant="quoted"]`).
+
+- `<u>` in `:lang(zh|ja|ko)` (not `*-Latn`): a solid `currentColor` underline under the line (proper-name mark). Otherwise a wavy `--color-error` underline.
+- `<var>`: italic in the text colour; `--var-color` hook. In `:lang(zh|ja|ko)` (not `*-Latn`) it is upright with a dashed underline.
 
 > `<i>` / `<em>` toggle to upright inside italic contexts: `blockquote`, `cite` (not `cite[data-variant~="quoted"]`), `dfn`, `var`, `em`, `i`. Upright islands (`blockquote > footer`, `blockquote > cite`, quoted cite) restore italic. In CJK (`:lang(zh|ja|ko)`, excluding `-Latn`): `<i>` is upright with the `--font-cjk-alternate` face + dotted underline; `<em>` uses emphasis marks; `<dfn>` semibold; `<cite>` wavy underline. Token `--font-cjk-alternate` (optional; default kai/mincho stack) sets the face for CJK `<i>`.
 
@@ -1085,14 +1093,15 @@ Children: `[data-icon]`, `[data-content]` (e.g. `<section>` or a single `<p>`), 
 Horizontal divider with centered text content. No attributes, no JS. Lines are `border-block-start` pseudo-elements (`--color-border`, `--border-width-thin`), visible in forced colours; an empty `<text-divider></text-divider>` is one continuous line. No semantics: use real headings for section/chapter labels and `<hr>` for an unlabelled thematic break (not `role="separator"` — its children are presentational). Wrap ornaments in `<span aria-hidden="true">`.
 
 #### `<user-avatar>`
+CSS-only (no JS). `api.json`: `src/custom-elements/user-avatar/api.json`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-size` | `xs`, `sm`, `md`, `lg`, `xl`, `2xl` | Size |
+| `data-size` | `xs`, `sm`, `md`, `lg`, `xl`, `2xl` | 1.5rem–8rem (default `md` 3rem); initials floor 0.625rem |
 | `data-shape` | `square`, `rounded` (default: circle) | Shape |
-| `data-ring` | (boolean) | Border ring effect |
+| `data-ring` | (boolean) | Decorative ring via private `--_ring`; survives `[data-layout-overlap]` clusters; outline in forced colours |
 
-Children: `<img>`, `[data-fallback]` (initials), `[data-status]` (`online`, `offline`, `busy`, `away`)
+Children: `<img>` (photo, paints on top), `span[data-fallback]` (initials / icon, stacked under the img in the same grid cell — a failed or transparent photo reveals it; UA alt text / broken icon suppressed), `span[data-status]` (`online` solid, `away` crescent, `busy` bar, `offline` hollow ring — shape + colour; text content is read but clipped, or use `role="img" aria-label`). A11y: `alt` = name when standalone, `alt=""` when the name is printed beside it; initials-only → `role="img" aria-label="Jane Doe"` on the host + `aria-hidden="true"` on the fallback; "+N" chip → `aria-label="N more …"`; groups → `<ul class="unstyled" data-layout="cluster" data-layout-overlap aria-labelledby>` with one `<li>` per avatar (the avatar draws its own 2px separator inside an li). Disc uses `light-dark()` tokens; forced colours: `CanvasText` border, ring outline, status in system colours.
 
 #### `<brand-mark>`
 
@@ -1212,7 +1221,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 > build (`npm run build:cem`). The entries below are the human-readable companion;
 > when a component is missing detail here, read its `api.json` and `logic.js`.
 
-### Component index (83 elements)
+### Component index (85 elements)
 
 | Element | Purpose | Detail below |
 |---------|---------|:------------:|
@@ -1280,7 +1289,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<site-map>` | `mode` nav-enhance (default: marks `current`, opens ancestor `<details>`, expand/collapse-all; `src` `{ children }`) \| ia-tree (`li[data-page-type data-template data-status]` → tree with badges, roving tabindex, Enter follows link, Space toggles, RTL-mirrored arrows; `title`, `collapsed`, `compact`; `data-view="visual"` SVG org chart with treeitems + `aria-activedescendant`, `data-orientation`, `data-detail` 0–4; `.pages`; events `site-map:ready`/`select`/`pages-changed`) | |
 | `<site-search>` | Pagefind-backed search in a native modal `<dialog>` (combobox + listbox + `role=status` count); `data-pagefind-path` (default `/pagefind/`), `data-base-url`; `data-label-*`; page-level Cmd/Ctrl+K opens the first visible instance | ✓ |
 | `<slide-accept>` | Slide-to-confirm (form-associated). A tap on the handle, or Enter / Space / End, also confirms (WCAG 2.5.7); the authored text is the default label | ✓ |
-| `<social-embed>` | Click-to-load social post embed: authored fallback link + real `<button data-embed-load>` ("Load {provider} {noun}") + host note; on load a sandboxed iframe built from the validated URL (https + exact host allowlist; no oEmbed HTML, no platform script) — `bluesky` (bsky.app/profile/{handle\|did}/post/{rkey} → embed.bsky.app; handle → DID via public.api.bsky.app), `mastodon` (any https instance /@user/{id} → /embed, tightest sandbox), `x` (→ platform.twitter.com/embed/Tweet.html), `instagram` (→ /p/{code}/embed/), `youtube` (→ `<youtube-player video-id title start>`, renders at once, thumbnail fetched up front); `url` (required), `provider`, `theme` light\|dark\|auto (X + Bluesky only; re-render on `vb:theme-change`), `activate` click\|visible\|eager, `data-title`, `data-label-load`/`loading`/`error`/`note`; `state` idle/loading/loaded/error/unsupported; focus moves into the frame after a button load, stays on the retry button on error; reconnect after load keeps the embed; static `SocialEmbed.register(name, provider)` (re-inits `unsupported` instances); exports `createEmbedFrame`, `loadScript` (failed loads retryable), `fetchOEmbed` | |
+| `<social-embed>` | Click-to-load social post embed: authored fallback link + real `<button data-embed-load>` ("Load {provider} {noun}") + host note; on load a sandboxed iframe built from the validated URL (https + exact host allowlist; no oEmbed HTML, no platform script) — `bluesky` (bsky.app/profile/{handle\|did}/post/{rkey} → embed.bsky.app; handle → DID via public.api.bsky.app), `mastodon` (any https instance /@user/{id} → /embed, tightest sandbox), `x` (→ platform.twitter.com/embed/Tweet.html), `instagram` (→ /p/{code}/embed/), `youtube` (→ `<youtube-player video-id title start poster>`, renders at once, thumbnail fetched up front unless `poster`); `url` (required), `provider`, `theme` light\|dark\|auto (X + Bluesky only; re-render on `vb:theme-change`), `activate` click\|visible\|eager, `data-title`, `poster` (YouTube only), `data-label-load`/`loading`/`error`/`note`; `state` idle/loading/loaded/error/unsupported; focus moves into the frame after a button load, stays on the retry button on error; reconnect after load keeps the embed (YouTube: the inner player re-renders its facade); static `SocialEmbed.register(name, provider)` (re-inits `unsupported` instances); exports `createEmbedFrame`, `loadScript` (failed loads retryable), `fetchOEmbed` | |
 | `<spacing-specimen>` | Token specimen — spacing scale demo | |
 | `<split-surface>` | Resizable split-pane | ✓ |
 | `<star-rating>` | Star rating input (works on `[data-rating]` too) | ✓ |
@@ -1296,9 +1305,11 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<topic-map>` | SKOS concept tree from `data-lens-src` pages.json (`concepts: []`) + `data-vocabulary-src` (default `/vocabulary.json`): native `<details>` per concept, text-only summary with distinct-page count per subtree (`data-label-page`/`-pages`, `{count}`, Intl.PluralRules), `p.topic-link` to `/topics/{id}/` (`data-label-topic-link` "{label} topic page") in the body; `expand-all`; `data-heading-level` (default 2, `0` = none) + `data-label-heading`; `data-label-uncategorized`/`-error`; http(s)/relative links only; cycle-safe; `.data = { pages, vocabulary }` + `topic-map:data-changed`; JS-built (no-JS shows fallback only) | |
 | `<trust-filter>` | Provenance lens over `data-lens-src` pages.json: checkbox groups provenance (space tokens) / review / status / "Has signature" (declared `vb:signature`, not verified — see page-info); OR within, AND across; both signature values = no filter; only `output[data-trust-filter-count]` is live ("{count} of {total} pages"), list in sibling `ul[data-trust-filter-results]`; no ids; `data-label-*` (form, provenance, review, status, signed, yes, no, clear, page/pages, has-signature, error, no-source); http(s)/relative links only; `trust-filter:change` `{ selected, count }` on reader input/reset only | |
 | `<type-specimen>` | Token specimen — typography scale demo | |
-| `<video-player>` | Custom-controls video playback | |
+| `<version-switcher>` | Switch between versions of a page (releases or history): inline / `data-src` / `vb:versions-manifest` data, navigate / swap / diff actions, archived banner, page-info mount; URL-checked entries, same-origin sanitized swap; `data-label-*` + Intl dates | ✓ |
+| `<video-player>` | Custom-controls video over a light-DOM `<video>` (+ optional `ol.track-list` playlist): `autoplay` (first connect only; skipped under prefers-reduced-motion), `loop` (single: video.loop; playlist: wrap), `shuffle`, `muted`, `captions`; host becomes `tabindex=0` `role=group` "Video player" with `aria-keyshortcuts`; shortcuts (Space/K, ←/→ 10s, ↑/↓ volume, M, F, C) only when the host has focus, never from its own controls or with Ctrl/Cmd/Alt; seek slider ←/→ 5s; `aria-valuetext` "0:05 of 3:20" / volume "37%"; mute `aria-pressed`; `data-label-*` (player, controls, play-video, play, pause, seek, skip-back, skip-forward, mute, volume, speed `{rate}`, captions, fullscreen, exit-fullscreen, playing, paused, ended, buffering, time-of `{current}`/`{duration}`) + locale digits from closest `[lang]` (Intl.DurationFormat, NumberFormat fallback); controls always LTR; state `state` (idle/playing/paused/buffering/ended), `controls` (auto-hide flag, never cleared while focus is inside), `data-fullscreen` (this player only); `.src`, `.currentTime`; events `video-player:play` `{ currentTime, src }`, `:pause`, `:ended`, `:track-change` `{ src, title }`, `:fullscreen` `{ active }`, `:speed` `{ rate }`, `:captions` `{ active, label }`, `:src-changed` `{ src, source }` | |
+| `<watch-wc>` | One-tag watch-this-page toggle over `[data-watch-page]` (`aria-pressed`): `variant` icon\|compact\|button, `label`, `server-sync`, `data-label-*`; no-JS fallback children | ✓ |
 | `<week-view>` | Multi-day hour grid in a semantic table | ✓ |
-| `<youtube-player>` | Privacy-respecting YouTube embed | |
+| `<youtube-player>` | YouTube embed behind a facade: thumbnail `<img alt="">` + one `<button>` named `data-label-play` (default "Play {title}") that covers the facade (host has no role/tabindex); press → `www.youtube-nocookie.com/embed/{id}?autoplay=1` iframe (`referrerpolicy="strict-origin-when-cross-origin"`), focus moves into it; `video-id` (required, `[A-Za-z0-9_-]{6,20}`, invalid → not upgraded, fallback `<a>` stays), `title` (default "YouTube video"), `poster` (local image; no i.ytimg.com request), `thumbnail` hq\|mq\|sd\|maxres (sd/maxres fall back to hq; img `referrerpolicy="no-referrer"`), `start`/`end` (whole seconds), `list`, `params` (overrides; host fixed), `autoplay` (loads at once, never moves focus, ignored under reduced motion); classes `widescreen`/`standard`/`ultrawide`/`rounded`/`full`; state `ready`/`active` (read-only); event `youtube-player:activate` `{ videoId, fromUser }`; reconnect re-renders the facade | |
 
 Detailed entries follow for the components with extended attributes/events. See `api.json` per component for the complete attribute & event surface.
 
@@ -1867,17 +1878,18 @@ Child `calendar-event`: `<time datetime>` = `HH:MM` or full ISO (wall-clock as w
 | `day-view:events-changed` | `{ events, source: 'property' }` |
 
 ### `<week-view>`
-Same parsing and keyboard model as `<day-view>`, one column per day.
+Same parsing as `<day-view>`, one column per day. Keyboard: Up/Down walk the day's events in time order (cell siblings included); Left/Right go to the nearest-in-time event of the closest day (visual direction) that has events; Home/End first/last by date then time; Enter/Space activate.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-start-date` | ISO date | First day column |
-| `data-days` | number (default `7`) | Day columns |
+| `data-start-date` | ISO date (default: current week, locale first day) | First day column |
+| `data-days` | `1`–`14` (default `7`) | Day columns (invalid → 7) |
 | `data-start-hour` | `0`–`23` \| `auto` (default `auto`) | First hour; grows to fit events |
 | `data-end-hour` | `0`–`23` (default `19`) | Last hour |
 | `data-label-continues` | string | Suffix for a clipped span's accessible name |
+| `data-label-time` | string (default `Time`) | Visually hidden corner header text |
 
-Child `calendar-event[data-date]` assigns the day column. `events` get/set (`{ date?, time, text, category?, duration? }`; date derived from an ISO `time`), `refresh()`. Events: `week-view:event-click`, `week-view:events-changed`.
+Child `calendar-event[data-date]` assigns the day column; events out of range / without a time are hidden after upgrade (kept in the getter). Attribute changes after upgrade rebuild a generated table. Today's header: `aria-current="date"`; headers show a short date (month when the range crosses one) with the full date as hidden text. Grid lines are logical borders (RTL, forced colors). `events` get/set (`{ date?, time, text, category?, duration? }`; date derived from an ISO `time`), `refresh()`. Events: `week-view:event-click`, `week-view:events-changed`.
 
 ### `<flow-diagram>`
 Progressively enhances a nested `<ol>` into a flow chart. Renders a `<figure>` (named by the heading or `data-label`) holding a nested list of node `<button>`s; one tab stop, arrow keys/Home/End move, Enter/Space select. Source `<ol>` is hidden while upgraded.
@@ -1975,7 +1987,22 @@ Children: `<article data-id data-type="update|alert|watch|system|message|steward
 | `notification-wc:notifications-changed` | `{ notifications, source: 'property' }` |
 | `page-watch:remove` | `{ url, subscriptionId }` (Unwatch in the Watching tab) |
 
+Panels also listen on `document` for `notification-wc:new` `{ notification }` dispatched by other scripts (page-watch's "content changed" notice) and add it to the list, deduped by `id`.
+
 A11y: trigger name carries the count ("Notifications, 3 unread"; badge `aria-hidden`); opening focuses the dialog; Escape / tabbing out / outside click close (focus back to the trigger when it was inside); All/Watching is a full tabs pattern (tablist, `aria-controls`, tabpanels, arrows/Home/End, roving tabindex); forced-colors borders on badge, selected tab, unread rows. No-JS (`scripting: none`): banner and articles render as plain content.
+
+### `<watch-wc>`
+One-tag wrapper for the `[data-watch-page]` toggle (`aria-pressed`). Repaints label/icon/title from `aria-pressed`, which page-watch-init keeps in sync (load, click, any `page-watch:add/remove`, the bell's unwatch). Authored children = no-JS fallback, hidden after upgrade.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `variant` | `icon` (default) \| `compact` \| `button` | icon is named by `aria-label`; text variants by their visible text |
+| `label` | string | Constant text for compact/button in both states |
+| `server-sync` | boolean | Page-global server sync (sets `window.vbPageWatch.serverSync`) |
+| `data-label-watch` / `data-label-watching` | string | Text when not watching / watching |
+| `data-label-action` / `data-label-stop` | string | Icon variant name + tooltip / tooltip while watching |
+
+Events (bubble from the inner button): `page-watch:add` `{ entry }`, `page-watch:remove` `{ url, subscriptionId }`. Watches keyed by normalised path (`/x` = `/x/` = `/x/index.html`).
 
 ### `<poll-wc>`
 Voting + live results; presentational (emits `poll-wc:vote`, author calls `setCount` after the server confirms). Children: `<span slot="question">` + `<button data-option data-count [data-mine]>` (label markup kept), **or** a native `<form><fieldset><legend>` of `<input type="radio|checkbox" value data-count [checked]>` in `<label>`s (no-JS fallback; enhanced into buttons: legend → question, checkbox → `data-multi`, `fieldset[disabled]` → `data-closed`, submit/`<output>` dropped).
@@ -2033,6 +2060,24 @@ Device-local reader history from `localStorage`. Nothing is sent to a server. Th
 | `data-label-*` | string | `heading`, `explainer`, `pause`, `anchors`, `clear`, `empty`, `anchor-one` / `anchor-other` (`Intl.PluralRules`) |
 
 Storage keys: `vb:recently-visited` (`[{ url, hash, title, hashTitle, ts }]`), `vb:recently-visited:paused` and `vb:recently-visited:show-anchors` (both `"1"` when set). The controls have fixed labels; the toggles carry their state in `aria-pressed` and Clear uses `aria-disabled`. Controls are updated in place, so focus is kept. Times are `<time datetime>` formatted with `Intl.RelativeTimeFormat` (nearest `lang`). All instances re-render on `storage` and on the tracker's same-tab `recently-visited:change` event (on `window`). Events: `recently-visited:clear`, `recently-visited:pause-toggle` `{ paused }`, `recently-visited:anchors-toggle` `{ showAnchors }`.
+
+### `<version-switcher>`
+| Attribute | Description |
+|-----------|-------------|
+| `data-versions` | Inline JSON entries `{ id, label?, url?, date?, author?, summary?, archived?, draft?, current?, versionUrl? }` (or `<script type="application/json" data-versions>` child) |
+| `data-src` | Manifest URL; fallback `<meta name="vb:versions-manifest">` |
+| `data-mode` | `releases` \| `history` (derived: distinct urls → releases); observed, sets heading |
+| `data-action` | `navigate` (default) \| `swap` \| `diff` |
+| `data-versioned-region` | Selector for the swap/diff region (default `[data-versioned], main`) |
+| `data-diff-position` | `before` (default) \| `after` |
+| `data-banner` | Archived notice when current is archived and a non-archived latest exists |
+| `data-page-info-target` | `<page-info>` id: mount the list as a panel section (trigger hidden; section removed on disconnect) |
+| `aria-label` | What is picked; names the trigger ("API version: v2.1") and picker — not applied to the host |
+| `data-label-*` | `trigger`, `loading`, `loading-versions`, `empty`, `heading-releases`, `heading-history`, `archived`, `draft`, `current`, `by` (`{author}`), `changelog`, `changelog-for` (`{version}`), `banner-label`, `banner` (`{version}`), `banner-latest` (`{version}`), `diff` (`{from}`, `{to}`) |
+
+Security: entry `url` checked with `isDangerousUrl` (javascript:/vbscript:/data: entry dropped, error event); unsafe `versionUrl` drops the changelog link; banner latest is a link only for a safe url. `swap`/`diff` fetch same-origin URLs only; swapped region inserted via `sanitizeToFragment` (fragment profile — no live `on*`). Untrusted sanitizer strips `data-versions`/`data-src` from custom elements. Navigate to the current page URL (history entries sharing one url) is a no-op + `version-switcher:error`; give revisions distinct URLs (`?rev=`). Swap updates `<meta itemprop="version">`; its crossfade timing is scoped to the `version-swap` view-transition type.
+
+A11y: entry `<li>` = button (label + badges + date = its name, `aria-current`) + sibling author/summary (`aria-describedby`) + sibling changelog link (never nested in the button); heading follows mode; banner = labelled `<aside>` with a `role="status"` line filled after insertion. Dates via `Intl.RelativeTimeFormat` / `Intl.DateTimeFormat` with the nearest `[lang]` (date-only in UTC). Events: `version-switcher:open` / `:close` / `:select {entry}` / `:before-navigate` / `:before-swap` / `:swap {entry, previousId}` / `:before-diff` / `:diff {entry, previousId, diffElement, opCount}` / `:error {message, entry?, error?}`. Methods: `openPicker()`, `closePicker()`, `switchTo(id)`, `refresh()`; props `versions`, `currentId`.
 
 ---
 
@@ -2497,7 +2542,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-error` | `<output>` — error state content; `<qr-code>` — capacity/encoding failure |
 | `data-expand-content` | Table row — expandable content |
 | `data-face` | `<content-swap>` child — front/back |
-| `data-fallback` | `<user-avatar>` child — initials/icon fallback |
+| `data-fallback` | `<user-avatar>` child — initials/icon fallback, stacked under the `<img>` |
 | `data-feedback` | State container — presentation mode |
 | `data-filled` | `<status-message>` — solid fill |
 | ~~`data-filter`~~ | **Removed** — use `filter` on `<combo-box>` |
@@ -2573,7 +2618,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-responsive` | Table — mobile layout |
 | `data-reveal` | Text — reveal entrance |
 | `data-review` | Content blocks, `<html>` — review state (see §10) |
-| `data-ring` | `<user-avatar>` — border ring |
+| `data-ring` | `<user-avatar>` — decorative ring (kept in overlap groups) |
 | `data-scramble` | Text — decode effect |
 | `data-scrollbar` | `<html>` or any scroller — scrollbar style |
 | `data-select-all` | Checkbox — select-all toggle |

@@ -216,7 +216,13 @@ module.exports = {
 
   "user-avatar": {
     flow: true,
-    permittedContent: ["@flow"]
+    phrasing: true,
+    permittedContent: ["@flow"],
+    attributes: {
+      "data-size": { enum: ["xs", "sm", "md", "lg", "xl", "2xl"] },
+      "data-shape": { enum: ["rounded", "square"] },
+      "data-ring": { boolean: true }
+    }
   },
 
   "brand-mark": {
@@ -1595,6 +1601,7 @@ module.exports = {
     attributes: {
       "url": { required: true },
       "provider": {},
+      "poster": {},
       "theme": { enum: ["light", "dark", "auto"] },
       "activate": { enum: ["click", "visible", "eager"] },
       "data-title": {},
@@ -1849,13 +1856,29 @@ module.exports = {
     attributes: {
       "data-versions": {},
       "data-src": {},
-      "data-mode": {},
-      "data-action": {},
+      "data-mode": { enum: ["releases", "history"] },
+      "data-action": { enum: ["navigate", "swap", "diff"] },
       "data-versioned-region": {},
-      "data-diff-position": {},
+      "data-diff-position": { enum: ["before", "after"] },
       "data-banner": { boolean: true },
       "data-page-info-target": {},
-      "aria-label": {}
+      "aria-label": {},
+      "data-label-trigger": {},
+      "data-label-loading": {},
+      "data-label-loading-versions": {},
+      "data-label-empty": {},
+      "data-label-heading-releases": {},
+      "data-label-heading-history": {},
+      "data-label-archived": {},
+      "data-label-draft": {},
+      "data-label-current": {},
+      "data-label-by": {},
+      "data-label-changelog": {},
+      "data-label-changelog-for": {},
+      "data-label-banner-label": {},
+      "data-label-banner": {},
+      "data-label-banner-latest": {},
+      "data-label-diff": {}
     }
   },
 
@@ -1865,19 +1888,31 @@ module.exports = {
     attributes: {
       "autoplay": { boolean: true },
       "loop": { boolean: true },
+      "shuffle": { boolean: true },
       "muted": { boolean: true },
-      "controls": {},
-      "data-fullscreen": {},
-      "state": {},
-      "data-video-played": {},
-      "captions": {},
-      "aria-pressed": {},
-      "data-video-active": {},
-      "data-poster": {},
-      "data-captions": {},
-      "data-dynamic": {},
-      "shuffle": {},
-      "aria-valuetext": {}
+      "captions": { boolean: true },
+      "state": { enum: ["idle", "playing", "paused", "buffering", "ended"] },
+      "controls": { boolean: true },
+      "data-fullscreen": { boolean: true },
+      "data-label-player": {},
+      "data-label-controls": {},
+      "data-label-play-video": {},
+      "data-label-play": {},
+      "data-label-pause": {},
+      "data-label-seek": {},
+      "data-label-skip-back": {},
+      "data-label-skip-forward": {},
+      "data-label-mute": {},
+      "data-label-volume": {},
+      "data-label-speed": {},
+      "data-label-captions": {},
+      "data-label-fullscreen": {},
+      "data-label-exit-fullscreen": {},
+      "data-label-playing": {},
+      "data-label-paused": {},
+      "data-label-ended": {},
+      "data-label-buffering": {},
+      "data-label-time-of": {}
     }
   },
 
@@ -1888,7 +1923,10 @@ module.exports = {
       "variant": { enum: ["icon", "compact", "button"] },
       "label": {},
       "server-sync": { boolean: true },
-      "data-variant": {}
+      "data-label-watch": {},
+      "data-label-watching": {},
+      "data-label-action": {},
+      "data-label-stop": {}
     }
   },
 
@@ -1900,7 +1938,8 @@ module.exports = {
       "data-days": {},
       "data-start-hour": {},
       "data-end-hour": {},
-      "data-label-continues": {}
+      "data-label-continues": {},
+      "data-label-time": {}
     }
   },
 
@@ -1908,15 +1947,17 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
-      "video-id": {},
+      "video-id": { required: true },
       "title": {},
       "start": {},
+      "end": {},
       "list": {},
       "params": {},
       "autoplay": { boolean: true },
-      "thumbnail": {},
-      "state": {},
-      "role": {}
+      "thumbnail": { enum: ["hq", "mq", "sd", "maxres"] },
+      "poster": {},
+      "data-label-play": {},
+      "state": { enum: ["ready", "active"] }
     }
   },
 
