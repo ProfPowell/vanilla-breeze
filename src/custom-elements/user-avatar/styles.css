@@ -1,23 +1,51 @@
+/* --------------------------------------------------------------------------
+   user-avatar — CSS-only avatar shell.
+   Children: <img> (photo), [data-fallback] (initials / icon, stacked UNDER
+   the img so a transparent or failed image reveals it), [data-status]
+   (presence dot; carries its own accessible text). See the docs page for
+   the alt-text and group (ul/li) patterns.
+   -------------------------------------------------------------------------- */
+
 user-avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  --_ring: none;
+
+  display: inline-grid;
+  place-items: center;
   position: relative;
+  /* Own stacking context: the img / status z-index stays inside the avatar
+     (otherwise an earlier avatar's photo paints over a later "+N" chip in an
+     overlap group). */
+  isolation: isolate;
   width: var(--_size, 3rem);
   height: var(--_size, 3rem);
   border-radius: var(--_radius, var(--radius-full));
-  background: var(--color-gray-200);
-  color: var(--color-gray-600);
+  background: light-dark(var(--color-gray-200), var(--color-gray-700));
+  color: light-dark(var(--color-gray-600), var(--color-gray-100));
   font-weight: var(--font-weight-medium);
   font-size: var(--_font-size, 1rem);
+  line-height: 1;
+  vertical-align: middle;
   flex-shrink: 0;
+  box-shadow: var(--_ring);
 
-  /* Image */
-  & > img {
+  /* Image and fallback share one grid cell; the image paints on top. */
+  & > :is(img, [data-fallback]) {
+    grid-area: 1 / 1;
     width: 100%;
     height: 100%;
-    object-fit: cover;
     border-radius: inherit;
+  }
+
+  & > img {
+    z-index: 1;
+    object-fit: cover;
+    /* A broken image keeps its box: hide the UA alt text / broken icon so
+       the initials underneath show through instead of spilling out. */
+    overflow: hidden;
+    color: transparent;
+    font-size: 0;
+    text-indent: 100%;
+    white-space: nowrap;
   }
 
   /* Fallback (initials or icon) */
@@ -25,14 +53,16 @@ user-avatar {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
     text-transform: uppercase;
   }
 
-  /* Status indicator */
+  /* Status indicator. Colour + shape: online solid, away crescent, busy
+     solid with a bar, offline hollow ring. Give it text (role="img"
+     aria-label, or text content, which is clipped visually) — colour alone
+     is not announced. */
   & > [data-status] {
     position: absolute;
+    z-index: 2;
     inset-block-end: 0;
     inset-inline-end: 0;
     width: 25%;
@@ -42,17 +72,36 @@ user-avatar {
     border-radius: var(--radius-full);
     border: 2px solid var(--color-surface);
     background: var(--color-gray-400);
+    /* Text content is read by assistive tech but never painted. */
+    overflow: hidden;
+    white-space: nowrap;
+    color: transparent;
+    font-size: 0;
 
     &[data-status="online"] { background: var(--color-success); }
-    &[data-status="offline"] { background: var(--color-gray-400); }
-    &[data-status="busy"] { background: var(--color-error); }
-    &[data-status="away"] { background: var(--color-warning); }
+
+    &[data-status="offline"] {
+      background: var(--color-surface);
+      box-shadow: inset 0 0 0 2px var(--color-text-muted);
+    }
+
+    &[data-status="busy"] {
+      background:
+        linear-gradient(var(--color-surface), var(--color-surface)) center / 60% 22% no-repeat,
+        var(--color-error);
+    }
+
+    &[data-status="away"] {
+      background:
+        radial-gradient(circle at 30% 30%, var(--color-surface) 0 32%, transparent 34%),
+        var(--color-warning);
+    }
   }
 
-  /* Sizes */
+  /* Sizes. Initials never drop below 0.625rem (10px). */
   &[data-size="xs"] {
     --_size: 1.5rem;
-    --_font-size: 0.5rem;
+    --_font-size: 0.625rem;
   }
 
   &[data-size="sm"] {
@@ -89,8 +138,61 @@ user-avatar {
     --_radius: var(--radius-l);
   }
 
-  /* Ring/border */
+  /* Ring: composed through --_ring so contexts that set their own
+     box-shadow (the overlap cluster's separator) can keep it. The ring
+     already starts with a surface-coloured gap, so it doubles as the
+     separator. */
   &[data-ring] {
-    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-border);
+    --_ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-border);
+  }
+
+  /* An overlap cluster gives every item a 2px surface separator at higher
+     specificity; a ringed avatar keeps its ring there. */
+  :is(layout-cluster, [data-layout="cluster"])[data-layout-overlap] > &[data-ring] {
+    box-shadow: var(--_ring);
+  }
+
+  /* List form (<ul data-layout="cluster" data-layout-overlap><li>…): the
+     separator lands on the square <li>, so the avatar draws its own. */
+  :is(layout-cluster, [data-layout="cluster"])[data-layout-overlap] > * > &:only-child:not([data-ring]) {
+    box-shadow: 0 0 0 2px var(--color-surface);
+  }
+}
+
+/* Forced colours: backgrounds and box-shadows are dropped, so draw the disc,
+   ring and status dot with system-colour borders / outlines. */
+@media (forced-colors: active) {
+  user-avatar {
+    border: 1px solid CanvasText;
+
+    &[data-ring] {
+      outline: 2px solid CanvasText;
+      outline-offset: 2px;
+    }
+
+    & > [data-status] {
+      border-color: Canvas;
+      background: CanvasText;
+      forced-color-adjust: none;
+
+      &[data-status="online"] { background: CanvasText; }
+
+      &[data-status="offline"] {
+        background: Canvas;
+        box-shadow: inset 0 0 0 2px CanvasText;
+      }
+
+      &[data-status="busy"] {
+        background:
+          linear-gradient(Canvas, Canvas) center / 60% 22% no-repeat,
+          CanvasText;
+      }
+
+      &[data-status="away"] {
+        background:
+          radial-gradient(circle at 30% 30%, Canvas 0 32%, transparent 34%),
+          CanvasText;
+      }
+    }
   }
 }

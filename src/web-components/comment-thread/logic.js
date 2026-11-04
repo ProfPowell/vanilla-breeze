@@ -165,7 +165,6 @@ class CommentThread extends VBElement {
       // <user-avatar> is CSS-only: the picture is a child <img>. It is
       // decorative — the author is named in the text right after it.
       const av = document.createElement('user-avatar');
-      av.setAttribute('name', author);
       const img = document.createElement('img');
       img.src = avatar;
       img.alt = '';
