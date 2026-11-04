@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>social-embed frame stub</title>
+</head>
+<body>
+  <p id="where">stub</p>
+  <script>
+    /*
+      Stand-in for a platform embed page, served by Playwright route stubs
+      (tests/components/s-social-embed.spec.js) at the real embed URL so no
+      test reaches a live network. Speaks each platform's resize protocol.
+    */
+    const host = location.hostname;
+    const params = new URLSearchParams(location.search);
+    document.getElementById('where').textContent = host + location.pathname + location.search;
+    if (host === 'platform.twitter.com') {
+      parent.postMessage(JSON.stringify({ 'twttr.embed': { method: 'twttr.private.resize', params: [{ height: 222, width: 500 }] } }), '*');
+    } else if (host === 'www.instagram.com') {
+      parent.postMessage(JSON.stringify({ type: 'MEASURE', details: { height: 333 } }), '*');
+    } else if (host === 'embed.bsky.app') {
+      parent.postMessage({ id: 'not-this-frame', height: 999 }, '*');
+      parent.postMessage({ id: params.get('id'), height: 444 }, '*');
+    } else {
+      // Mastodon: answer the parent's { type: 'setHeight', id } request
+      addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'setHeight') {
+          parent.postMessage({ type: 'setHeight', id: e.data.id, height: 555 }, '*');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

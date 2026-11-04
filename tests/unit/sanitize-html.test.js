@@ -67,6 +67,13 @@ class P5Node {
     const a = this.#find(name);
     if (a) this.n.attrs.splice(this.n.attrs.indexOf(a), 1);
   }
+  /** @param {P5Node} child @param {P5Node} ref */
+  insertBefore(child, ref) {
+    child.remove();
+    const kids = this.n.childNodes;
+    kids.splice(kids.indexOf(ref.n), 0, child.n);
+    child.n.parentNode = this.n;
+  }
   remove() {
     const parent = this.n.parentNode;
     if (!parent) return;
@@ -195,6 +202,50 @@ describe('sanitizeHTML', () => {
 
   it('removes comments', { skip: !parse5 }, () => {
     assert.equal(sanitizeHTML('<p>a<!-- hidden --></p>'), '<p>a</p>');
+  });
+
+  it('unwraps third-party embed elements to their fallback content', { skip: !parse5 }, () => {
+    assert.equal(
+      sanitizeHTML('<social-embed url="https://x.com/a/status/1" activate="eager"><a href="https://x.com/a/status/1">View post</a></social-embed>'),
+      '<a href="https://x.com/a/status/1">View post</a>',
+    );
+    assert.equal(
+      sanitizeHTML('<p>v</p><youtube-player video-id="dQw4w9WgXcQ" autoplay=""></youtube-player>'),
+      '<p>v</p>',
+    );
+    assert.equal(
+      sanitizeHTML('<geo-map lat="1" lng="2" tile-url="https://evil.example/{z}/{x}/{y}.png"><address>Main St</address></geo-map>'),
+      '<address>Main St</address>',
+    );
+  });
+
+  it('sanitizes the fallback children of an unwrapped embed', { skip: !parse5 }, () => {
+    const out = sanitizeHTML('<social-embed url="https://bsky.app/x"><a href="javascript:__hit()" onclick="__hit()">x</a><img src=x onerror=__hit()><social-embed url="u"><b id="n">n</b></social-embed></social-embed>');
+    assert.equal(out, '<a>x</a><img src="x"><b id="user-content-n">n</b>');
+  });
+
+  it('strips fetch / post attributes from other custom elements', { skip: !parse5 }, () => {
+    assert.equal(
+      sanitizeHTML('<card-list src="https://evil.example/data.json" data-src="/x"></card-list><chat-window endpoint="https://evil.example/collect" model="m"></chat-window><site-map url="https://evil.example"></site-map>'),
+      '<card-list></card-list><chat-window model="m"></chat-window><site-map></site-map>',
+    );
+    assert.equal(sanitizeHTML('<browser-window src="https://evil.example/" url="https://evil.example/"></browser-window>'), '<browser-window></browser-window>');
+  });
+
+  it('keeps media src on native-equivalent wrappers (still URL-checked)', { skip: !parse5 }, () => {
+    assert.equal(sanitizeHTML('<audio-player src="/a.mp3"></audio-player>'), '<audio-player src="/a.mp3"></audio-player>');
+    assert.equal(sanitizeHTML('<image-map src="/m.png" alt="m"></image-map>'), '<image-map src="/m.png" alt="m"></image-map>');
+    assert.equal(sanitizeHTML('<video-player src="javascript:__hit()"></video-player>'), '<video-player></video-player>');
+  });
+
+  it('custom-element policy is untrusted-profile only (fragment profile keeps embeds)', { skip: !parse5 }, () => {
+    const html = '<social-embed url="https://bsky.app/profile/bsky.app/post/3l6oveex3ii2l"><a href="https://bsky.app/">p</a></social-embed><card-list src="/data.json"></card-list>';
+    assert.equal(sanitizeHTML(html, { keepIds: true }), html);
+  });
+
+  it('include-file keeps its own src rule', { skip: !parse5 }, () => {
+    assert.equal(sanitizeHTML('<include-file src="/p.html"></include-file>'), '<include-file></include-file>');
+    assert.equal(sanitizeHTML('<include-file src="/p.html"></include-file>', { allowIncludeFile: true }), '<include-file src="/p.html"></include-file>');
   });
 });
 

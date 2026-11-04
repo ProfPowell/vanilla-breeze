@@ -24,18 +24,30 @@ const PLAY_SVG = `<svg viewBox="0 0 68 48" width="68" height="48" aria-hidden="t
 
 const THUMB_MAP = { hq: 'hqdefault', mq: 'mqdefault', sd: 'sddefault', maxres: 'maxresdefault' };
 
+/** Escape a string for use inside a double-quoted HTML attribute. */
+function escapeAttr(value) {
+  return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 class YouTubePlayer extends VBElement {
   #id;
   #title;
 
   setup() {
-    this.#id = this.getAttribute('video-id');
+    const id = this.getAttribute('video-id');
     this.#title = this.getAttribute('title') ?? 'Play video';
 
-    if (!this.#id) {
+    if (!id) {
       console.warn('youtube-player: missing required video-id attribute');
       return false;
     }
+    // YouTube ids are [A-Za-z0-9_-]; anything else would be interpolated into
+    // markup and URLs, so refuse it.
+    if (!/^[A-Za-z0-9_-]{6,20}$/.test(id)) {
+      console.warn(`youtube-player: invalid video-id ${JSON.stringify(id)}`);
+      return false;
+    }
+    this.#id = id;
 
     if (this.hasAttribute('autoplay')) {
       this.#activate();
@@ -72,7 +84,7 @@ class YouTubePlayer extends VBElement {
     this.setAttribute('role', 'button');
     this.setAttribute('aria-label', `Play ${this.#title}`);
 
-    this.innerHTML = `<img src="${this.#thumbnailURL()}" alt="" loading="lazy" decoding="async"><button type="button" aria-label="Play ${this.#title}">${PLAY_SVG}</button>`;
+    this.innerHTML = `<img src="${this.#thumbnailURL()}" alt="" loading="lazy" decoding="async"><button type="button" aria-label="Play ${escapeAttr(this.#title)}">${PLAY_SVG}</button>`;
 
     this.addEventListener('click', this.#handleActivate, { once: true });
     this.addEventListener('keydown', this.#handleKey);
@@ -97,7 +109,7 @@ class YouTubePlayer extends VBElement {
     this.removeAttribute('role');
     this.removeAttribute('aria-label');
 
-    this.innerHTML = `<iframe src="${this.#buildEmbedURL()}" title="${this.#title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`;
+    this.innerHTML = `<iframe src="${this.#buildEmbedURL()}" title="${escapeAttr(this.#title)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`;
 
     this.querySelector('iframe')?.focus();
   }

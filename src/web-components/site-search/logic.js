@@ -1,10 +1,14 @@
 /**
  * site-search: Site search component powered by Pagefind
  *
- * Provides a search interface with keyboard shortcuts, result highlighting,
- * and keyboard navigation. Uses Pagefind for fast client-side search.
+ * Opens a native modal <dialog> (showModal: top layer, the page behind is
+ * inert, Escape closes) holding a combobox input and a listbox of results.
+ * Uses Pagefind for fast client-side search.
  *
  * @attr {boolean} open - Reflected state only — set by open()/close() methods, not intended as initial markup
+ * @attr {string} data-pagefind-path - Directory holding pagefind.js (default "/pagefind/")
+ * @attr {string} data-base-url - Pagefind baseUrl for result URLs (default: the directory above data-pagefind-path)
+ * @attr {string} data-label-* - Override UI strings (dialog, placeholder, input, results, searching, empty, count, count-one, unavailable, error, untitled, navigate, select, close, powered)
  *
  * @example Basic usage
  * <site-search>
@@ -14,23 +18,144 @@
  *   </button>
  * </site-search>
  *
- * @example Icon-only trigger
- * <site-search>
- *   <button data-trigger aria-label="Search">
- *     <icon-wc name="search"></icon-wc>
- *   </button>
- * </site-search>
- *
  * Keyboard shortcuts:
- * - Cmd/Ctrl+K: Open search
+ * - Cmd/Ctrl+K: Open search (bound once for the page; opens the first visible instance)
  * - Escape: Close search
  * - Up/Down arrows: Navigate results
- * - Enter: Go to selected result
+ * - Enter: Go to the selected result (the first result when none is selected)
  */
 
 import { bindHotkey, getBoundHotkeys } from '../../utils/hotkey-bind.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+
+/** Default UI strings — each overridable with data-label-<key>. */
+const LABELS = {
+  trigger: 'Search',
+  dialog: 'Site search',
+  placeholder: 'Search documentation...',
+  input: 'Search',
+  results: 'Search results',
+  searching: 'Searching...',
+  empty: 'No results found',
+  count: '{count} results',
+  'count-one': '1 result',
+  unavailable: 'Search unavailable',
+  error: 'Search error. Please try again.',
+  untitled: 'Untitled',
+  navigate: 'to navigate',
+  select: 'to select',
+  close: 'to close',
+  powered: 'Powered by',
+};
+
+let idCounter = 0;
+
+/* ── Hotkey: one page-level Cmd/Ctrl+K for every instance ─────────── */
+
+/** @type {Set<SiteSearch>} */
+const instances = new Set();
+/** @type {(() => void) | null} */
+let unbindHotkey = null;
+
+/** @param {Element} el */
+function isVisible(el) {
+  if (typeof el.checkVisibility === 'function') return el.checkVisibility();
+  return el.getClientRects().length > 0;
+}
+
+function onHotkey() {
+  const all = [...instances].filter((el) => el.isConnected);
+  const open = all.find((el) => el.isOpen);
+  if (open) { open.close(); return; }
+  const target = all.find((el) => isVisible(el)) ?? all[0];
+  target?.open();
+}
+
+/** @param {SiteSearch} el */
+function register(el) {
+  instances.add(el);
+  // Another component (e.g. a command palette) may own the shortcut
+  if (!unbindHotkey && !getBoundHotkeys().includes('meta+k')) {
+    unbindHotkey = /** @type {() => void} */ (bindHotkey('meta+k', onHotkey, { global: true }));
+  }
+}
+
+/** @param {SiteSearch} el */
+function unregister(el) {
+  instances.delete(el);
+  if (instances.size === 0 && unbindHotkey) {
+    unbindHotkey();
+    unbindHotkey = null;
+  }
+}
+
+/* ── Helpers ───────────────────────────────────────────────────────── */
+
+/**
+ * Build an element.
+ * @param {string} tag
+ * @param {Record<string, string>} [attrs]
+ * @param {(Node|string)[]} [children]
+ */
+function h(tag, attrs = {}, children = []) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  el.append(...children);
+  return el;
+}
+
+/**
+ * Pagefind excerpts are HTML-escaped text with <mark> around matches.
+ * Rebuild them keeping only text and bare <mark> elements: everything else
+ * is flattened to its text. Parsed in an inert <template>, inserted as nodes.
+ * @param {string} html
+ * @returns {DocumentFragment}
+ */
+function markOnlyFragment(html) {
+  const out = document.createDocumentFragment();
+  if (!html || typeof html !== 'string') return out;
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  /**
+   * @param {Node} src
+   * @param {Node} dest
+   */
+  const walk = (src, dest) => {
+    for (const node of src.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        dest.appendChild(document.createTextNode(node.textContent ?? ''));
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        if (/** @type {Element} */ (node).localName === 'mark') {
+          const mark = document.createElement('mark');
+          walk(node, mark);
+          dest.appendChild(mark);
+        } else {
+          walk(node, dest);
+        }
+      }
+    }
+  };
+  walk(tpl.content, out);
+  return out;
+}
+
+/**
+ * Resolve a result URL; only same-origin http(s) URLs are allowed.
+ * @param {unknown} url
+ * @returns {string|null}
+ */
+function safeUrl(url) {
+  if (typeof url !== 'string' || !url) return null;
+  try {
+    const u = new URL(url, document.baseURI);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+    if (u.origin !== location.origin) return null;
+    return u.href;
+  } catch {
+    return null;
+  }
+}
 
 class SiteSearch extends VBElement {
   static #DEBOUNCE_MS = 150;
@@ -38,40 +163,55 @@ class SiteSearch extends VBElement {
 
   /** @type {HTMLElement} */
   #trigger = /** @type {*} */ (null);
-  /** @type {HTMLElement} */
+  /** @type {HTMLDialogElement} */
   #dialog = /** @type {*} */ (null);
   /** @type {HTMLInputElement} */
   #input = /** @type {*} */ (null);
   /** @type {HTMLElement} */
   #resultsList = /** @type {*} */ (null);
+  /** @type {HTMLElement} */
+  #status = /** @type {*} */ (null);
   /** @type {any[]} */
   #results = [];
   #activeIndex = -1;
   #isOpen = false;
+  #searchSeq = 0;
+  #uid = '';
   /** @type {any} */
   #pagefind = null;
+  #pagefindFailed = false;
   /** @type {ReturnType<typeof setTimeout> | null} */
   #debounceTimer = null;
-  /** @type {(() => void) | null} */
-  #unbindHotkey = null;
 
   setup() {
+    if (!this.#uid) this.#uid = `site-search-${++idCounter}`;
     this.#render();
     this.#bindEvents();
+    register(this);
   }
 
   teardown() {
+    unregister(this);
     if (this.#isOpen) {
       document.body.style.overflow = '';
       this.removeAttribute('open');
+      this.#trigger?.setAttribute('aria-expanded', 'false');
       this.#isOpen = false;
     }
-    this.#unbindHotkey?.();
     this.#clearDebounce();
+    this.#searchSeq++;
+    this.#results = [];
+    this.#activeIndex = -1;
     // Remove the rendered dialog so a reconnect's setup() doesn't stack a
     // second one (the trigger is find-or-create and safely reused)
     this.#dialog?.remove();
     this.#dialog = /** @type {*} */ (null);
+  }
+
+  /** @param {keyof typeof LABELS} key */
+  #label(key) {
+    const attr = `data-label-${key}`;
+    return this.getAttribute(attr) ?? LABELS[key];
   }
 
   // ── Data API (HTML-first / JS-first dual contract) ──────────────
@@ -115,113 +255,120 @@ class SiteSearch extends VBElement {
       this.#trigger = /** @type {HTMLElement} */ (this.querySelector(':scope > button'));
     }
     if (!this.#trigger) {
-      this.#trigger = document.createElement('button');
-      this.#trigger.setAttribute('data-trigger', '');
-      this.#trigger.innerHTML = `
-        <icon-wc name="search" label="Search"></icon-wc>
-      `;
+      this.#trigger = h('button', { type: 'button', 'data-trigger': '' }, [
+        h('icon-wc', { name: 'search', label: this.#label('trigger') }),
+      ]);
       this.prepend(this.#trigger);
     }
+
+    const dialogId = `${this.#uid}-dialog`;
+    const listId = `${this.#uid}-results`;
 
     // Set up ARIA for trigger
     this.#trigger.setAttribute('aria-haspopup', 'dialog');
     this.#trigger.setAttribute('aria-expanded', 'false');
+    this.#trigger.setAttribute('aria-controls', dialogId);
 
-    // Create dialog
-    this.#dialog = document.createElement('div');
-    this.#dialog.className = 'dialog';
-    this.#dialog.setAttribute('role', 'dialog');
-    this.#dialog.setAttribute('aria-label', 'Site search');
-    this.#dialog.id = `search-dialog-${crypto.randomUUID().slice(0, 8)}`;
-    this.#trigger.setAttribute('aria-controls', this.#dialog.id);
+    this.#input = /** @type {HTMLInputElement} */ (h('input', {
+      type: 'search',
+      name: 'search',
+      class: 'input',
+      placeholder: this.#label('placeholder'),
+      autocomplete: 'off',
+      autocorrect: 'off',
+      autocapitalize: 'off',
+      spellcheck: 'false',
+      role: 'combobox',
+      'aria-label': this.#label('input'),
+      'aria-autocomplete': 'list',
+      'aria-controls': listId,
+      'aria-expanded': 'false',
+    }));
 
-    this.#dialog.innerHTML = `
-      <div class="backdrop"></div>
-      <div class="panel">
-        <div class="input-wrapper">
-          <icon-wc name="search" class="icon"></icon-wc>
-          <input
-            type="search"
-            name="search"
-            class="input"
-            placeholder="Search documentation..."
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            aria-label="Search"
-            aria-autocomplete="list"
-          />
-          <kbd class="shortcut">Esc</kbd>
-        </div>
-        <div class="results" role="listbox" aria-label="Search results"></div>
-        <div class="footer">
-          <span class="hint">
-            <kbd>↑</kbd><kbd>↓</kbd> to navigate
-            <kbd>↵</kbd> to select
-            <kbd>esc</kbd> to close
-          </span>
-          <span class="powered">
-            Powered by <a href="https://pagefind.app" target="_blank" rel="noopener">Pagefind</a>
-          </span>
-        </div>
-      </div>
-    `;
+    this.#resultsList = h('div', {
+      class: 'results',
+      id: listId,
+      role: 'listbox',
+      'aria-label': this.#label('results'),
+    });
+
+    this.#status = h('p', { class: 'status', role: 'status' });
+
+    const kbd = (/** @type {string} */ t) => h('kbd', {}, [t]);
+
+    this.#dialog = /** @type {HTMLDialogElement} */ (h('dialog', {
+      class: 'dialog',
+      id: dialogId,
+      'aria-label': this.#label('dialog'),
+    }, [
+      // The input, status and results sit in a search landmark
+      h('search', { class: 'search' }, [
+        h('div', { class: 'input-wrapper' }, [
+          h('icon-wc', { name: 'search', class: 'icon' }),
+          this.#input,
+          h('kbd', { class: 'shortcut', 'aria-hidden': 'true' }, ['Esc']),
+        ]),
+        this.#status,
+        this.#resultsList,
+      ]),
+      h('div', { class: 'footer' }, [
+        h('span', { class: 'hint' }, [
+          kbd('↑'), kbd('↓'), ` ${this.#label('navigate')} `,
+          kbd('↵'), ` ${this.#label('select')} `,
+          kbd('esc'), ` ${this.#label('close')}`,
+        ]),
+        h('span', { class: 'powered' }, [
+          `${this.#label('powered')} `,
+          h('a', { href: 'https://pagefind.app', target: '_blank', rel: 'noopener' }, ['Pagefind']),
+        ]),
+      ]),
+    ]));
 
     this.appendChild(this.#dialog);
-
-    // Cache references
-    this.#input = /** @type {HTMLInputElement} */ (this.#dialog.querySelector('.input'));
-    this.#resultsList = /** @type {HTMLElement} */ (this.#dialog.querySelector('.results'));
   }
 
   #bindEvents() {
-    // Trigger click
-    this.#trigger.addEventListener('click', this.#handleTriggerClick);
+    // The trigger survives reconnects, so its listener goes through listen()
+    this.listen(this.#trigger, 'click', this.#handleTriggerClick);
 
-    // Global keyboard shortcut (Cmd/Ctrl+K) — skip if another instance already bound
-    if (!getBoundHotkeys().includes('meta+k')) {
-      this.#unbindHotkey = /** @type {() => void} */ (bindHotkey('meta+k', () => {
-        if (this.#isOpen) {
-          this.close();
-        } else {
-          this.open();
-        }
-      }, { global: true }));
-    }
-
-    // Escape to close (not a global hotkey — only when open)
-    this.listen(document, 'keydown', this.#handleEscape);
-
-    // Dialog events
-    this.#dialog.querySelector('.backdrop')?.addEventListener('click', () => this.close());
+    // Fresh dialog nodes every setup(): plain listeners are dropped with them
+    this.#dialog.addEventListener('close', this.#handleDialogClose);
+    this.#dialog.addEventListener('click', this.#handleDialogClick);
     this.#input.addEventListener('input', this.#handleInput);
     this.#input.addEventListener('keydown', this.#handleInputKeyDown);
     this.#resultsList.addEventListener('click', this.#handleResultClick);
   }
 
-  #handleTriggerClick = (e) => {
+  #handleTriggerClick = (/** @type {Event} */ e) => {
     e.stopPropagation();
     this.open();
   };
 
-  #handleEscape = (e) => {
-    if (e.key === 'Escape' && this.#isOpen) {
-      e.preventDefault();
-      this.close();
-    }
+  /** Native close (Escape / cancel, or dialog.close()) → sync state. */
+  #handleDialogClose = () => {
+    if (this.#isOpen && !this.#dialog?.open) this.#finishClose();
+  };
+
+  /** Clicks on the ::backdrop target the dialog itself, outside its box. */
+  #handleDialogClick = (/** @type {MouseEvent} */ e) => {
+    if (e.target !== this.#dialog) return;
+    const r = this.#dialog.getBoundingClientRect();
+    const inside = e.clientX >= r.left && e.clientX <= r.right
+      && e.clientY >= r.top && e.clientY <= r.bottom;
+    if (!inside) this.close();
   };
 
   #handleInput = () => {
     this.#clearDebounce();
     this.setState('input-debounce-pending', true);
     this.#debounceTimer = setTimeout(() => {
+      this.#debounceTimer = null;
       this.setState('input-debounce-pending', false);
       this.#search(this.#input.value);
     }, SiteSearch.#DEBOUNCE_MS);
   };
 
-  #handleInputKeyDown = (e) => {
+  #handleInputKeyDown = (/** @type {KeyboardEvent} */ e) => {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -231,147 +378,172 @@ class SiteSearch extends VBElement {
         e.preventDefault();
         this.#focusResult(this.#activeIndex - 1);
         break;
-      case 'Enter':
+      case 'Escape':
+        // A type=search input would swallow the first Escape to clear itself
         e.preventDefault();
-        if (this.#activeIndex >= 0 && this.#results[this.#activeIndex]) {
-          this.#navigateToResult(this.#results[this.#activeIndex]);
+        this.close();
+        break;
+      case 'Enter': {
+        e.preventDefault();
+        const index = this.#activeIndex >= 0 ? this.#activeIndex : 0;
+        const href = this.#resultsList.querySelector(`[data-result-index="${index}"]`)?.getAttribute('href');
+        if (href) {
+          this.close();
+          window.location.assign(href);
         }
         break;
-    }
-  };
-
-  #handleResultClick = (e) => {
-    const resultEl = e.target.closest('[data-result-index]');
-    if (resultEl) {
-      const index = parseInt(resultEl.dataset.resultIndex, 10);
-      if (this.#results[index]) {
-        this.#navigateToResult(this.#results[index]);
       }
     }
   };
 
+  /**
+   * Results are real links: let the anchor navigate (so Cmd/Ctrl/Shift and
+   * middle clicks open new tabs as usual). A plain click also closes the
+   * dialog — after the click's default action has started.
+   */
+  #handleResultClick = (/** @type {MouseEvent} */ e) => {
+    const target = /** @type {Element} */ (e.target);
+    if (!target.closest('[data-result-index]')) return;
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    setTimeout(() => this.close(), 0);
+  };
+
+  get #pagefindPath() {
+    const raw = this.getAttribute('data-pagefind-path') || '/pagefind/';
+    return raw.endsWith('/') ? raw : `${raw}/`;
+  }
+
   async #initPagefind() {
-    if (this.#pagefind) return;
+    if (this.#pagefind || this.#pagefindFailed) return;
+
+    const dir = new URL(this.#pagefindPath, document.baseURI);
+    const baseUrl = this.getAttribute('data-base-url')
+      ?? new URL('..', dir).pathname;
 
     try {
-      // Dynamic import with @vite-ignore to prevent Vite from rewriting the path
       // @ts-ignore — Pagefind is generated at build time; path won't resolve in TS
-      this.#pagefind = await import(/* @vite-ignore */ '/pagefind/pagefind.js');
-      await this.#pagefind.options({
-        excerptLength: 20
-      });
-    } catch (error) {
-      console.warn('Pagefind not available. Run `npm run search:index` to build the search index.');
-      this.#pagefind = null;
+      const mod = await import(/* @vite-ignore */ new URL('pagefind.js', dir).href);
+      await mod.options({ excerptLength: 20, baseUrl });
+      this.#pagefind = mod;
+    } catch {
+      this.#pagefindFailed = true;
+      // Developer hint stays in the console; users see a neutral status
+      console.warn(`[site-search] Pagefind not found at ${dir.pathname}pagefind.js. Run \`npm run search:index\` after building, or set data-pagefind-path.`);
     }
   }
 
+  /** @param {string} text */
+  #setStatus(text) {
+    if (this.#status) this.#status.textContent = text;
+  }
+
+  /** @param {string} query */
   async #search(query) {
+    const seq = ++this.#searchSeq;
+
     if (!query.trim()) {
       this.#renderResults([]);
       return;
     }
 
+    this.#setStatus(this.#label('searching'));
     await this.#initPagefind();
+    if (seq !== this.#searchSeq) return;
 
     if (!this.#pagefind) {
-      this.#renderNoPagefind();
+      this.#results = [];
+      this.#renderResults([]);
+      this.#setStatus(this.#label('unavailable'));
       return;
     }
 
     try {
-      this.#resultsList.innerHTML = '<div class="loading">Searching...</div>';
-
       const search = await this.#pagefind.search(query);
       const results = await Promise.all(
-        search.results.slice(0, SiteSearch.#MAX_RESULTS).map(r => r.data())
+        (search?.results ?? []).slice(0, SiteSearch.#MAX_RESULTS).map((/** @type {any} */ r) => r.data())
       );
-
+      if (seq !== this.#searchSeq) return;
       this.#results = results;
       this.#renderResults(results);
     } catch (error) {
-      console.error('Search error:', error);
-      this.#resultsList.innerHTML = '<div class="error">Search error. Please try again.</div>';
+      if (seq !== this.#searchSeq) return;
+      console.error('[site-search] Search error:', error);
+      this.#results = [];
+      this.#renderResults([]);
+      this.#setStatus(this.#label('error'));
     }
   }
 
+  /** @param {any[]} results */
   #renderResults(results) {
     this.#activeIndex = -1;
+    this.#input.removeAttribute('aria-activedescendant');
 
-    if (results.length === 0) {
-      if (this.#input.value.trim()) {
-        this.#resultsList.innerHTML = '<div class="empty">No results found</div>';
-      } else {
-        this.#resultsList.innerHTML = '';
-      }
-      return;
+    const items = [];
+    for (const result of results) {
+      const href = safeUrl(result?.url);
+      if (!href) continue;
+      const title = h('span', { class: 'result-title' });
+      title.textContent = String(result.meta?.title || this.#label('untitled'));
+      const excerpt = h('span', { class: 'result-excerpt' });
+      excerpt.append(markOnlyFragment(result.excerpt || ''));
+      items.push(h('a', {
+        id: `${this.#uid}-result-${items.length}`,
+        href,
+        class: 'result',
+        role: 'option',
+        'aria-selected': 'false',
+        'data-result-index': String(items.length),
+        tabindex: '-1',
+      }, [title, excerpt]));
     }
 
-    this.#resultsList.innerHTML = results.map((result, index) => `
-      <a
-        id="search-result-${index}"
-        href="${result.url}"
-        class="result"
-        role="option"
-        data-result-index="${index}"
-        tabindex="-1"
-      >
-        <span class="result-title">${result.meta?.title || 'Untitled'}</span>
-        <span class="result-excerpt">${result.excerpt || ''}</span>
-      </a>
-    `).join('');
+    this.#resultsList.replaceChildren(...items);
+    this.#input.setAttribute('aria-expanded', items.length ? 'true' : 'false');
+
+    if (!this.#input.value.trim()) {
+      this.#setStatus('');
+    } else if (items.length === 0) {
+      this.#setStatus(this.#label('empty'));
+    } else {
+      this.#setStatus(items.length === 1
+        ? this.#label('count-one')
+        : this.#label('count').replace('{count}', String(items.length)));
+    }
   }
 
-  #renderNoPagefind() {
-    this.#resultsList.innerHTML = `
-      <div class="error">
-        Search index not found.<br>
-        Run <code>npm run search:index</code> after building.
-      </div>
-    `;
-  }
-
+  /** @param {number} index */
   #focusResult(index) {
-    if (this.#results.length === 0) return;
+    const options = this.#resultsList.querySelectorAll('[data-result-index]');
+    if (options.length === 0) return;
 
     // Wrap around
-    if (index < 0) index = this.#results.length - 1;
-    if (index >= this.#results.length) index = 0;
+    if (index < 0) index = options.length - 1;
+    if (index >= options.length) index = 0;
 
-    // Remove previous active
-    const prevActive = this.#resultsList.querySelector('[data-active]');
-    if (prevActive) {
-      prevActive.removeAttribute('data-active');
+    for (const opt of options) {
+      opt.removeAttribute('data-active');
+      opt.setAttribute('aria-selected', 'false');
     }
-    this.#input?.removeAttribute('aria-activedescendant');
 
-    // Set new active
     this.#activeIndex = index;
-    const resultEl = this.#resultsList.querySelector(`[data-result-index="${index}"]`);
-    if (resultEl) {
-      resultEl.setAttribute('data-active', '');
-      this.#input?.setAttribute('aria-activedescendant', resultEl.id);
-      resultEl.scrollIntoView({ block: 'nearest' });
-    }
-  }
-
-  #navigateToResult(result) {
-    if (result.url) {
-      this.close();
-      window.location.href = result.url;
-    }
+    const resultEl = options[index];
+    resultEl.setAttribute('data-active', '');
+    resultEl.setAttribute('aria-selected', 'true');
+    this.#input.setAttribute('aria-activedescendant', resultEl.id);
+    resultEl.scrollIntoView({ block: 'nearest' });
   }
 
   #clearDebounce() {
     if (this.#debounceTimer) {
       clearTimeout(this.#debounceTimer);
       this.#debounceTimer = null;
-      this.setState('input-debounce-pending', false);
     }
+    this.setState('input-debounce-pending', false);
   }
 
   open() {
-    if (this.#isOpen) return;
+    if (this.#isOpen || !this.#dialog) return;
 
     this.#isOpen = true;
     this.setAttribute('open', '');
@@ -380,11 +552,12 @@ class SiteSearch extends VBElement {
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
 
-    // Focus input
-    requestAnimationFrame(() => {
-      this.#input?.focus();
-      this.#input?.select();
-    });
+    // Native modal: top layer, the rest of the page is inert, Escape closes
+    if (!this.#dialog.open) {
+      try { this.#dialog.showModal(); } catch { this.#dialog.setAttribute('open', ''); }
+    }
+    this.#input.focus();
+    this.#input.select();
 
     // Initialize pagefind in background
     this.#initPagefind();
@@ -394,7 +567,11 @@ class SiteSearch extends VBElement {
 
   close() {
     if (!this.#isOpen) return;
+    if (this.#dialog?.open) this.#dialog.close(); // fires 'close' → #finishClose
+    if (this.#isOpen) this.#finishClose();
+  }
 
+  #finishClose() {
     this.#isOpen = false;
     this.removeAttribute('open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
@@ -404,11 +581,16 @@ class SiteSearch extends VBElement {
 
     // Clear state
     this.#clearDebounce();
-    this.#input.value = '';
-    this.#input?.removeAttribute('aria-activedescendant');
+    this.#searchSeq++;
     this.#results = [];
     this.#activeIndex = -1;
-    this.#resultsList.innerHTML = '';
+    if (this.#input) {
+      this.#input.value = '';
+      this.#input.removeAttribute('aria-activedescendant');
+      this.#input.setAttribute('aria-expanded', 'false');
+    }
+    this.#resultsList?.replaceChildren();
+    this.#setStatus('');
 
     // Return focus to trigger
     this.#trigger?.focus();

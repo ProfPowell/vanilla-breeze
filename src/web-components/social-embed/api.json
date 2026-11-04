@@ -2,64 +2,35 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "social-embed",
   "type": "web-component",
-  "attributes": [
-    {
-      "name": "url",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "URL of content to embed (required)"
-    },
-    {
-      "name": "provider",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Explicit provider key (auto-detected if omitted)"
-    },
-    {
-      "name": "theme",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Theme hint: light | dark | auto (default: auto)"
-    },
-    {
-      "name": "activate",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Activation trigger: click | visible | eager (default: click)"
-    },
-    {
-      "name": "state",
-      "kind": "host-api",
-      "purpose": "config",
-      "type": "string",
-      "description": "Lifecycle state (read-only, set by component)"
-    },
-    {
-      "name": "role",
-      "kind": "native",
-      "purpose": "config"
-    },
-    {
-      "name": "data-embed-live",
-      "kind": "data",
-      "purpose": "config"
-    },
-    {
-      "name": "style",
-      "kind": "host-api",
-      "purpose": "config"
-    }
-  ],
-  "childAttributes": [],
-  "structure": [],
+  "description": "Privacy-first social post embed. Renders the authored fallback link plus a \"Load … post\" button; on activation it builds a sandboxed iframe from the validated post URL (Bluesky, Mastodon, X, Instagram) or a <youtube-player> (YouTube).",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
       "@flow"
     ]
-  }
+  },
+  "attributes": [
+    { "name": "url", "kind": "host-api", "purpose": "config", "type": "string", "required": true, "description": "Post or video URL. Must be https on the provider's own host (Mastodon: any https host with a /@user/<id> path); anything else is unsupported." },
+    { "name": "provider", "kind": "host-api", "purpose": "config", "type": "string", "description": "Provider key (x, instagram, bluesky, youtube, mastodon or a registered custom key). Skips auto-detection; the provider must still accept the URL." },
+    { "name": "theme", "kind": "host-api", "purpose": "config", "type": "enum", "values": ["light", "dark", "auto"], "default": "auto", "description": "Colour hint for themeable providers (X, Bluesky). auto: the host's computed color-scheme, then the page's data-mode, then prefers-color-scheme." },
+    { "name": "activate", "kind": "host-api", "purpose": "config", "type": "enum", "values": ["click", "visible", "eager"], "default": "click", "description": "click: load when the reader presses the Load button; visible: when scrolled within 200px of the viewport; eager: at once. YouTube always renders its own facade at once." },
+    { "name": "data-title", "kind": "data", "purpose": "config", "type": "string", "description": "Accessible name of the embedded frame (YouTube: the player title). Default: \"{provider} post\" / \"YouTube video\"." },
+    { "name": "data-label-load", "kind": "data", "purpose": "config", "type": "string", "default": "Load {provider} {noun}", "description": "Load button text; {provider} is the platform name, {noun} is post (video for YouTube)." },
+    { "name": "data-label-loading", "kind": "data", "purpose": "config", "type": "string", "default": "Loading {provider} {noun}…", "description": "Button text and live-region announcement while loading." },
+    { "name": "data-label-error", "kind": "data", "purpose": "config", "type": "string", "default": "{provider} {noun} failed to load.", "description": "Visible note and announcement when loading fails (the button stays for a retry)." },
+    { "name": "data-label-note", "kind": "data", "purpose": "config", "type": "string", "default": "Loads content from {host}", "description": "Consent note beside the Load button; {host} is the host the embed loads from." },
+    { "name": "state", "kind": "host-api", "purpose": "output-state", "direction": "output", "type": "enum", "values": ["idle", "loading", "loaded", "error", "unsupported"], "description": "Lifecycle state, set by the component." }
+  ],
+  "properties": [],
+  "methods": [
+    { "name": "SocialEmbed.register(name, provider)", "returns": "void", "description": "Static. Add a provider { canHandle(url), render(host, url, { theme, title }) → Promise<Node | void>, label?, noun?, themeable?, delegatesActivation?, frameHost(url)? }. A returned Node replaces the fallback. Instances left unsupported re-initialise." },
+    { "name": "createEmbedFrame(options)", "returns": "HTMLIFrameElement", "description": "Module export. Build a sandboxed, lazy https iframe ({ src: URL, title, sandbox: string[], allow?, height?, measure?(data), onload?(frame) }); measure reads a height from the frame's postMessage (origin and source are checked)." },
+    { "name": "loadScript(src)", "returns": "Promise<void>", "description": "Module export. Idempotent script loader for custom providers; a failed load is evicted so it can be retried. Built-in providers never inject script." },
+    { "name": "fetchOEmbed(endpoint, url, params?)", "returns": "Promise<object>", "description": "Module export. Fetch oEmbed JSON. Never insert its html with innerHTML." }
+  ],
+  "events": [
+    { "name": "social-embed:upgraded", "description": "Fired (bubbles) after the element upgrades." }
+  ],
+  "childAttributes": [],
+  "structure": []
 }

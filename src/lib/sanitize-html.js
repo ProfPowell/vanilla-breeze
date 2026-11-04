@@ -77,6 +77,21 @@
  *       loses `trusted`, `allow-scripts`, `allow-cross-origin`
  *     - `<markdown-viewer>` loses `src`, `sanitize` (cannot opt out),
  *       `allow-cross-origin` and `ping`
+ * - Remote-loading custom elements (untrusted profile only — the fragment
+ *   profile keeps them, since include-file partials are author content):
+ *     - Third-party embeds are unwrapped to their (sanitized) fallback
+ *       children: `<social-embed>` (platform iframes), `<youtube-player>`
+ *       (YouTube thumbnail + iframe), `<geo-map>` (map tiles from any
+ *       tile-url host). The authored link / address inside survives.
+ *     - Every other custom element (any tag with a hyphen) loses the
+ *       attributes VB components fetch or post through: `src`, `src-dark`,
+ *       `data-src`, `url`, `endpoint`, `tile-url` — card-list, glossary-wc,
+ *       site-map, topic-map, notification-wc, version-switcher, chat-window /
+ *       ai-chat / ai-summary (which POST page or user text to `endpoint`) and
+ *       any future component. Exception: `<audio-player>`, `<video-player>`,
+ *       `<image-map>` and `<brand-mark>`, whose `src` is a media / image URL
+ *       exactly like the native `<audio>` / `<video>` / `<img>` it wraps
+ *       (still checked as a media URL).
  *
  * What SURVIVES: ordinary formatting markup, links (http(s), relative,
  * mailto, fragment), remote images (tracking pixels are possible), media
@@ -160,6 +175,22 @@ const NEUTRALISE = /** @type {Record<string, string[]>} */ ({
   'include-file': ['trusted', 'allow-scripts', 'allow-cross-origin'],
   'markdown-viewer': ['src', 'sanitize', 'ping', 'allow-cross-origin'],
 });
+
+/**
+ * Untrusted profile: custom elements that embed third-party documents or
+ * tiles. They are replaced by their own children (the authored fallback).
+ */
+const EMBED_ELEMENTS = new Set(['social-embed', 'youtube-player', 'geo-map']);
+
+/**
+ * Untrusted profile: attributes through which a custom element fetches,
+ * embeds or posts to a URL. Stripped from every custom element except
+ * MEDIA_SRC_ELEMENTS (include-file keeps its own allowIncludeFile rule).
+ */
+const REMOTE_ATTRS = ['src', 'src-dark', 'data-src', 'url', 'endpoint', 'tile-url'];
+
+/** Custom elements whose src is a plain media / image URL (native-equivalent). */
+const MEDIA_SRC_ELEMENTS = new Set(['audio-player', 'video-player', 'image-map', 'brand-mark']);
 
 /**
  * @typedef {object} SanitizeOptions
@@ -359,6 +390,13 @@ function sanitizeTree(root, opts) {
       continue;
     }
 
+    if (!opts.keepIds && !opts.svgOnly && EMBED_ELEMENTS.has(name)) {
+      // Keep the fallback: children move up (and are visited later in this
+      // pass — the snapshot is in document order), the embed host goes.
+      unwrap(el);
+      continue;
+    }
+
     if (name === 'template') {
       const content = /** @type {HTMLTemplateElement} */ (el).content;
       if (content) sanitizeTree(content, { ...opts, includeRoot: false });
@@ -370,10 +408,25 @@ function sanitizeTree(root, opts) {
     const neutralise = NEUTRALISE[name];
     if (neutralise) for (const a of neutralise) el.removeAttribute(a);
     if (name === 'include-file' && !opts.allowIncludeFile) el.removeAttribute('src');
+    if (!opts.keepIds && !opts.svgOnly && name.includes('-') && name !== 'include-file'
+      && !MEDIA_SRC_ELEMENTS.has(name)) {
+      for (const a of REMOTE_ATTRS) el.removeAttribute(a);
+    }
     kept.push(el);
   }
 
   if (!opts.keepIds && ids.size) rewriteReferences(kept, ids);
+}
+
+/**
+ * Replace an element with its child nodes.
+ * @param {Element} el
+ */
+function unwrap(el) {
+  const parent = /** @type {any} */ (el).parentNode;
+  if (!parent) return;
+  for (const child of [.../** @type {any} */ (el).childNodes]) parent.insertBefore(child, el);
+  el.remove();
 }
 
 /**

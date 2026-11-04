@@ -2,22 +2,227 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "site-search",
   "type": "web-component",
-  "description": "Full-page search dialog with keyboard navigation and result highlighting",
+  "description": "Pagefind-powered site search in a native modal <dialog>: combobox input, listbox of results, live result count",
   "htmlvalidate": {
     "flow": true,
-    "permittedContent": ["@flow"]
+    "permittedContent": [
+      "@flow"
+    ]
   },
   "attributes": [
-    { "name": "open", "kind": "host-api", "purpose": "output-state", "type": "boolean", "direction": "output", "description": "Reflected state — set by open()/close() methods, not intended as initial markup" }
+    {
+      "name": "open",
+      "kind": "host-api",
+      "purpose": "output-state",
+      "type": "boolean",
+      "direction": "output",
+      "description": "Reflected state — set by open()/close() methods, not intended as initial markup"
+    },
+    {
+      "name": "data-pagefind-path",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "/pagefind/",
+      "description": "Directory that holds pagefind.js, resolved against the document base. Set it for subpath deploys (e.g. /my-site/pagefind/)."
+    },
+    {
+      "name": "data-base-url",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "description": "Pagefind baseUrl prefixed to result URLs. Default: the directory above data-pagefind-path (\"/\" for the default path)."
+    },
+    {
+      "name": "data-label-trigger",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Search",
+      "description": "Accessible name of the generated icon trigger (only when no trigger button is authored)"
+    },
+    {
+      "name": "data-label-dialog",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Site search",
+      "description": "Accessible name of the search dialog"
+    },
+    {
+      "name": "data-label-placeholder",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Search documentation...",
+      "description": "Input placeholder"
+    },
+    {
+      "name": "data-label-input",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Search",
+      "description": "Accessible name of the search input"
+    },
+    {
+      "name": "data-label-results",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Search results",
+      "description": "Accessible name of the results listbox"
+    },
+    {
+      "name": "data-label-searching",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Searching...",
+      "description": "Status text while a search runs"
+    },
+    {
+      "name": "data-label-empty",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "No results found",
+      "description": "Status text when a query matches nothing"
+    },
+    {
+      "name": "data-label-count",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "{count} results",
+      "description": "Status text for several results ({count} is replaced)"
+    },
+    {
+      "name": "data-label-count-one",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "1 result",
+      "description": "Status text for exactly one result"
+    },
+    {
+      "name": "data-label-unavailable",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Search unavailable",
+      "description": "Status text when the Pagefind index cannot be loaded (the developer hint goes to the console)"
+    },
+    {
+      "name": "data-label-error",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Search error. Please try again.",
+      "description": "Status text when a search throws"
+    },
+    {
+      "name": "data-label-untitled",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Untitled",
+      "description": "Title shown for a result without meta.title"
+    },
+    {
+      "name": "data-label-navigate",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "to navigate",
+      "description": "Footer hint after the arrow keys"
+    },
+    {
+      "name": "data-label-select",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "to select",
+      "description": "Footer hint after Enter"
+    },
+    {
+      "name": "data-label-close",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "to close",
+      "description": "Footer hint after Esc"
+    },
+    {
+      "name": "data-label-powered",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Powered by",
+      "description": "Footer credit prefix"
+    }
   ],
   "structure": [
-    { "element": "<button data-trigger>", "description": "Button that opens the search dialog" }
+    {
+      "element": "<button data-trigger>",
+      "description": "Button that opens the search dialog (generated with a search icon when absent)"
+    }
   ],
   "childAttributes": [
-    { "name": "data-trigger", "on": "button", "type": "boolean", "required": true, "description": "Marks the button that opens the search dialog. Falls back to first <button> if absent." }
+    {
+      "name": "data-trigger",
+      "on": "button",
+      "type": "boolean",
+      "required": true,
+      "description": "Marks the button that opens the search dialog. Falls back to first <button> if absent."
+    }
   ],
   "events": [
-    { "name": "site-search:open",  "description": "Fired when the search dialog opens" },
-    { "name": "site-search:close", "description": "Fired when the search dialog closes" }
+    {
+      "name": "site-search:open",
+      "description": "Fired when the search dialog opens"
+    },
+    {
+      "name": "site-search:close",
+      "description": "Fired when the search dialog closes (Escape, backdrop click, close(), or choosing a result)"
+    },
+    {
+      "name": "site-search:change",
+      "detail": "{ value, source: 'api' }",
+      "description": "Fired when the value property sets a new query"
+    }
+  ],
+  "methods": [
+    {
+      "name": "open()",
+      "description": "Open the dialog with showModal() and focus the input"
+    },
+    {
+      "name": "close()",
+      "description": "Close the dialog, clear the query and results, and return focus to the trigger"
+    }
+  ],
+  "properties": [
+    {
+      "name": "isOpen",
+      "type": "boolean",
+      "description": "Read-only: whether the dialog is open"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "description": "The current query. Setting it runs the same debounced search as typing and fires site-search:change"
+    },
+    {
+      "name": "results",
+      "type": "Array<PagefindResultData>",
+      "description": "Read-only copy of the current Pagefind result records (url, meta, excerpt)"
+    }
+  ],
+  "states": [
+    {
+      "name": "input-debounce-pending",
+      "description": "A keystroke is waiting out the 150ms debounce before searching"
+    }
   ]
 }

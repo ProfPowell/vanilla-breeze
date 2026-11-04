@@ -9,45 +9,61 @@ site-search {
   display: inline-block;
   position: relative;
 
-  /* Dialog open state */
-  &[open] .dialog {
-    display: block;
+  &[hidden] {
+    display: none;
   }
 }
 
 @scope (site-search) {
-  /* --- Dialog (hidden by default) --- */
+  /* --- Dialog: native modal <dialog> (top layer). Only style display on
+     [open] — an author display rule would override the UA's closed
+     display:none (see popover/hidden gotcha). --- */
   .dialog {
-    display: none;
     position: fixed;
     inset: 0;
-    z-index: 9999;
-  }
-
-  /* --- Backdrop --- */
-  .backdrop {
-    position: absolute;
-    inset: 0;
-    background: oklch(0% 0 0 / 0.5);
-    animation: vb-fade-in var(--motion-enter-duration) var(--ease-out);
-  }
-
-  /* --- Panel --- */
-  .panel {
-    position: absolute;
-    inset-block-start: 10vh;
-    inset-inline: 50%;
-    transform: translateX(-50%);
+    margin-block: 10vh auto;
+    margin-inline: auto;
+    padding: 0;
     inline-size: min(90vw, 600px);
+    max-inline-size: 100%;
     max-block-size: 70vh;
-    display: flex;
-    flex-direction: column;
     background: var(--color-surface-overlay);
+    color: var(--color-text);
     border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-l);
     box-shadow: var(--shadow-xl);
     overflow: hidden;
+  }
+
+  .dialog[open] {
+    display: flex;
+    flex-direction: column;
     animation: slide-in var(--motion-enter-duration) var(--ease-out);
+  }
+
+  .dialog::backdrop {
+    background: oklch(0% 0 0 / 0.5);
+    animation: vb-fade-in var(--motion-enter-duration) var(--ease-out);
+  }
+
+  /* Search landmark: passes the dialog's column layout through */
+  .search {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-block-size: 0;
+  }
+
+  /* Result count / searching / unavailable — announced politely */
+  .status {
+    margin: 0;
+    padding-inline: var(--size-l);
+    font-size: var(--font-size-s);
+    color: var(--color-text-muted);
+
+    &:not(:empty) {
+      padding-block: var(--size-xs);
+    }
   }
 
   /* --- Input Wrapper --- */
@@ -98,6 +114,10 @@ site-search {
     flex: 1;
     overflow-y: auto;
     padding: var(--size-xs);
+
+    &:empty {
+      padding: 0;
+    }
   }
 
   .result {
@@ -138,29 +158,6 @@ site-search {
       color: inherit;
       border-radius: 2px;
       padding-inline: 1px;
-    }
-  }
-
-  /* --- States --- */
-  .loading,
-  .empty,
-  .error {
-    padding: var(--size-xl);
-    text-align: center;
-    color: var(--color-text-muted);
-  }
-
-  .error {
-    color: var(--color-error);
-
-    & code {
-      display: inline-block;
-      margin-block-start: var(--size-xs);
-      padding: var(--size-2xs) var(--size-xs);
-      background: var(--color-surface-raised);
-      border-radius: var(--radius-s);
-      font-size: var(--font-size-s);
-      color: var(--color-text);
     }
   }
 
@@ -208,19 +205,19 @@ site-search {
 @keyframes slide-in {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-1rem);
+    translate: 0 -1rem;
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    translate: 0 0;
   }
 }
 
 /* --- Reduced Motion --- */
 @media (prefers-reduced-motion: reduce) {
   @scope (site-search) {
-    .backdrop,
-    .panel {
+    .dialog[open],
+    .dialog::backdrop {
       animation: none;
     }
   }
@@ -229,13 +226,14 @@ site-search {
 /* --- Mobile adjustments --- */
 @media (width < 37.5rem) { /* --bp-s */
   @scope (site-search) {
-    .panel {
-      inset-block-start: 0;
-      inset-inline: 0;
-      transform: none;
+    .dialog {
+      margin-block: 0 auto;
       inline-size: 100%;
       max-block-size: 100vh;
       border-radius: 0;
+    }
+
+    .dialog[open] {
       animation: vb-slide-down var(--motion-enter-duration) var(--ease-out);
     }
 
@@ -245,4 +243,18 @@ site-search {
     }
   }
 
+}
+
+/* --- Forced colors: keep the active result visible --- */
+@media (forced-colors: active) {
+  @scope (site-search) {
+    .result[data-active] {
+      outline-color: Highlight;
+    }
+
+    .result-excerpt mark {
+      background: Mark;
+      color: MarkText;
+    }
+  }
 }

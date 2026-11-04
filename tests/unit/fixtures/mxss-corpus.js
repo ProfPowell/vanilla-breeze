@@ -55,4 +55,10 @@ export const MXSS_CORPUS = /** @type {Array<[string, string]>} */ ([
   // Template / nested
   ['template style', '<template><style></template><img src=x onerror=__hit()></style></template>'],
   ['nested math svg', '<svg><math><mtext><mglyph><style><img src=x onerror=__hit()>'],
+
+  // Remote-loading custom elements (unwrapped / stripped in the untrusted
+  // profile; the payloads ride in attribute values a provider might reflect)
+  ['social-embed attribute breakout', '<social-embed url="https://x.com/a/status/1&quot;&gt;&lt;img src=x onerror=__hit()&gt;" activate="eager"><a href="https://x.com/a/status/1">x</a></social-embed>'],
+  ['social-embed fallback onerror', '<social-embed url="https://bsky.app/profile/a.b/post/c"><img src=x onerror=__hit()></social-embed>'],
+  ['youtube-player title breakout', '<youtube-player video-id="dQw4w9WgXcQ" title="&quot;&gt;&lt;img src=x onerror=__hit()&gt;" autoplay></youtube-player>'],
 ]);
