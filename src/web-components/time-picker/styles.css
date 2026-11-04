@@ -29,9 +29,22 @@ time-picker:not(:defined) {
     border-color: var(--color-interactive);
   }
 
+  /* The outline is transparent normally (the ring is the box-shadow) but
+     becomes the visible focus cue in forced colors, which drops shadows. */
   .time-trigger:focus-within {
     border-color: var(--color-interactive);
     box-shadow: 0 0 0 3px oklch(from var(--color-interactive) l c h / 0.15);
+    outline: var(--focus-ring-width, 2px) solid transparent;
+    outline-offset: var(--focus-ring-offset, 2px);
+  }
+
+  /* Invalid once meaningful (out of range / off-step, or touched while required and empty) */
+  .time-trigger:has(> .time-input[aria-invalid="true"]) {
+    border-color: var(--color-error);
+  }
+
+  .time-trigger:has(> .time-input[aria-invalid="true"]):focus-within {
+    box-shadow: 0 0 0 3px oklch(from var(--color-error) l c h / 0.15);
   }
 
   /* Text input — combobox */
@@ -99,9 +112,10 @@ time-picker:not(:defined) {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    /* visibility flips at once so the spinners are focusable immediately */
     transition:
       opacity var(--motion-enter-duration, 200ms) var(--ease-out, ease-out),
-      visibility var(--motion-enter-duration, 200ms) var(--ease-out, ease-out),
+      visibility 0s,
       transform var(--motion-enter-duration, 200ms) var(--ease-out, ease-out);
   }
 
@@ -113,11 +127,21 @@ time-picker:not(:defined) {
     min-inline-size: 2.5rem;
     user-select: none;
     border-radius: var(--radius-s);
-    outline: none;
   }
 
   .time-spinner:focus-visible {
     background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+    outline-offset: var(--focus-ring-offset, 2px);
+  }
+
+  .time-spinner[aria-readonly="true"] {
+    color: var(--color-text-muted);
+  }
+
+  .time-trigger-icon:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-interactive));
+    outline-offset: calc(-1 * var(--focus-ring-width, 2px));
   }
 
   /* Inc/Dec buttons */
@@ -194,11 +218,39 @@ time-picker:not(:defined) {
     outline-offset: var(--focus-ring-offset, 2px);
   }
 
-  /* Disabled state */
-  :scope[data-disabled] .time-trigger {
+  .time-inc:disabled,
+  .time-dec:disabled {
+    visibility: hidden;
+  }
+
+  /* Disabled (own attribute or a disabled fieldset): the text input and
+     clock button are disabled, so this is presentation only. */
+  .time-trigger:has(> .time-input:disabled) {
     opacity: 0.4;
     cursor: not-allowed;
-    pointer-events: none;
+  }
+}
+
+@media (forced-colors: active) {
+  @scope (time-picker) {
+    .time-trigger:focus-within {
+      outline-color: Highlight;
+    }
+
+    .time-spinner:focus-visible,
+    .period-toggle:focus-visible,
+    .time-trigger-icon:focus-visible {
+      outline-color: Highlight;
+    }
+
+    .time-panel {
+      border-color: CanvasText;
+    }
+
+    .time-trigger:has(> .time-input:disabled) {
+      border-color: GrayText;
+      color: GrayText;
+    }
   }
 }
 

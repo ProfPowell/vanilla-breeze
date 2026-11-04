@@ -36,7 +36,7 @@
  * @attr {number} [expires] - (banner) days until the banner re-shows after dismiss
  * @attr {string} [src] - (panel) URL or VBService role name for dynamic notifications
  * @attr {number} [poll] - (panel) polling interval in ms
- * @attr {boolean} [toast-new] - (panel) fire a toast on new dynamic notifications
+ * @attr {string} [toast-new] - (panel) fire a toast on new dynamic notifications; value "#id" targets a specific <toast-msg> (bare = first in document)
  * @attr {string} [storage-key="notifications"] - (panel) VBStore namespace for read state
  * @attr {string} data-label-* - (panel) English string overrides, see LABELS
  */
@@ -195,6 +195,16 @@ class NotificationWc extends VBElement {
     let text = this.getAttribute(`data-label-${key}`) ?? LABELS[key] ?? key;
     for (const [k, v] of Object.entries(vars)) text = text.replaceAll(`{${k}}`, String(v));
     return text;
+  }
+
+  #toastTarget() {
+    const ref = (this.getAttribute('toast-new') || '').trim();
+    let el = null;
+    if (ref) {
+      try { el = document.querySelector(ref); } catch { el = null; }
+      if (el && el.localName !== 'toast-msg') el = null;
+    }
+    return el ?? document.querySelector('toast-msg');
   }
 
   #lang() {
@@ -747,9 +757,10 @@ class NotificationWc extends VBElement {
     // Detect new-to-us entries for toast emission
     const prevSeen = this.#seenIds;
     const firstLoad = prevSeen.size === 0;
-    // The first <toast-msg> in the document receives toast-new toasts.
+    // toast-new="#id" targets a specific <toast-msg>; a bare toast-new
+    // (or a selector that matches nothing) uses the first one in the document.
     const toastEl = this.hasAttribute('toast-new')
-      ? /** @type {{ show?: Function } | null} */ (document.querySelector('toast-msg'))
+      ? /** @type {{ show?: Function } | null} */ (this.#toastTarget())
       : null;
 
     for (const n of list) {

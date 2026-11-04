@@ -76,13 +76,16 @@ export function usesRuby(locale) {
 
 /**
  * Get the active locale, in priority order:
- *   1. <html lang> attribute
- *   2. navigator.language
- *   3. 'en' fallback
+ *   1. nearest [lang] ancestor of `el` (when an element is passed)
+ *   2. <html lang> attribute
+ *   3. navigator.language
+ *   4. 'en' fallback
+ * @param {Element} [el] - element whose nearest `[lang]` wins over the document
  * @returns {string}
  */
-export function getLocale() {
+export function getLocale(el) {
   return (
+    (el && /** @type {HTMLElement|null} */ (el.closest('[lang]'))?.lang) ||
     document.documentElement.lang ||
     navigator.language ||
     'en'

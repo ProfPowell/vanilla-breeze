@@ -19,9 +19,11 @@ theme-picker {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    /* visibility flips at once (opacity still fades) so open() can move
+       focus into the panel on the next frame */
     transition:
       opacity var(--motion-enter-duration) var(--ease-out),
-      visibility var(--motion-enter-duration) var(--ease-out),
+      visibility 0s,
       transform var(--motion-enter-duration) var(--ease-out);
   }
 
@@ -723,6 +725,62 @@ theme-picker {
 
     .option-content {
       transition: none;
+    }
+  }
+}
+
+/* Forced colors: backgrounds are replaced with Canvas, so selection and
+   swatch identity must not depend on background colour alone. */
+@media (forced-colors: active) {
+  @scope (theme-picker) {
+    .panel {
+      border-color: CanvasText;
+    }
+
+    /* Compact mode segment: selected = Highlight fill */
+    .compact-seg input:checked + .compact-seg-visual {
+      forced-color-adjust: none;
+      background: Highlight;
+      color: HighlightText;
+
+      & icon-wc {
+        color: HighlightText;
+      }
+    }
+
+    /* Full-mode options (mode, sizing, a11y checkboxes) */
+    .option input:checked + .option-content,
+    .options--a11y input:checked + .option-content {
+      border-color: Highlight;
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+    }
+
+    .options--a11y input:checked + .option-content::before {
+      forced-color-adjust: none;
+      background-color: Highlight;
+      border-color: Highlight;
+    }
+
+    /* Swatches and accent dots keep their real colours (they ARE the
+       content), outlined in CanvasText; the selected one in Highlight. */
+    .swatch-visual,
+    .accent-dot-visual {
+      forced-color-adjust: none;
+      border-color: CanvasText;
+    }
+
+    .swatch-cell input:checked + .swatch-visual,
+    .accent-dot input:checked + .accent-dot-visual {
+      outline: 3px solid Highlight;
+      outline-offset: 2px;
+    }
+
+    .swatch-cell input:focus-visible + .swatch-visual,
+    .accent-dot input:focus-visible + .accent-dot-visual,
+    .compact-seg input:focus-visible + .compact-seg-visual {
+      outline: 2px dashed CanvasText;
+      outline-offset: 4px;
     }
   }
 }

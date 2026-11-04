@@ -8,6 +8,7 @@
  * @attr {string} variant - Display variant: 'popover' (default), 'inline'
  * @attr {boolean} compact - Render theme section as grouped select dropdown
  * @attr {boolean} open - Reflected state only — set by open()/close()/toggle() methods, not intended as initial markup (popover variant only)
+ * @attr {string} data-label-* - i18n overrides for generated strings (see LABELS)
  *
  * @example Popover variant (default)
  * <theme-picker>
@@ -49,6 +50,29 @@ let _SoundManager = null;
 const SETTINGS_NS = 'settings';
 const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
 
+/** English fallbacks for every generated string; override with data-label-<key>. */
+const LABELS = {
+  panel: 'Theme settings',
+  trigger: 'Theme settings',
+  mode: 'Color Mode',
+  accent: 'Color Accent',
+  style: 'Style',
+  featured: 'Featured',
+  'more-themes': 'More Themes',
+  theme: 'Theme',
+  a11y: 'Accessibility',
+  sizing: 'Sizing',
+  extensions: 'Extensions',
+  download: 'Download {name} as DTCG tokens',
+};
+
+/** @param {unknown} v */
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => (
+  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+));
+
+let _instanceCount = 0;
+
 // Module-level singleton fetch of /cdn/themes/manifest.json. Shared
 // across every <theme-picker> instance on the page (per vanilla-breeze-hojq).
 // Returns the parsed manifest or null on failure (component degrades to
@@ -75,6 +99,19 @@ class ThemePicker extends VBElement {
   /** @type {ReturnType<typeof setTimeout> | null} */
   #autoDismissTimer = null;
   #extensionsExpanded = false;
+  /** Per-instance suffix for radio-group names (two pickers on one page
+   *  must not share a group — same-name radios with no form owner do). */
+  #uid = ++_instanceCount;
+  /** Bumped on every setup()/teardown(); a stale async init bails out. */
+  #gen = 0;
+  /** True while this instance dispatches a shared window event, so its
+   *  own listener ignores it. */
+  #emitting = false;
+  /** Last interaction with the panel was a pointer (vs. keyboard). Only
+   *  pointer selections auto-dismiss; arrow-key browsing never does. */
+  #pointerIntent = false;
+  /** VBStore had an a11y list. Without one, authored a11y-* tokens rule. */
+  #a11yStored = false;
 
   // VBStore-backed state cached for synchronous render reads
   /** @type {string[]} */
@@ -88,17 +125,22 @@ class ThemePicker extends VBElement {
   setup() {
     this.#isInline = this.getAttribute('variant') === 'inline';
     this.#isCompact = this.hasAttribute('compact');
-    this.#initAsync();
+    this.#initAsync(++this.#gen);
     return true;
   }
 
-  async #initAsync() {
+  /** @param {number} gen */
+  async #initAsync(gen) {
     // When loaded from the ui pack bundle, this file's ThemeManager import is
     // a separate singleton from the core bundle's — so its _state stays null
     // until we init it ourselves. Without this, #applyA11yThemes below reads
     // brand='default' (DEFAULTS), finds a mismatch with the boot-applied
     // data-theme, and wipes it. init() is idempotent.
     await Promise.all([ThemeManager.init(), this.#hydrateFromStore()]);
+    // Disconnected (or disconnected and reconnected) while awaiting: a newer
+    // setup() owns the element now, or nobody does. Rendering here would
+    // orphan a second panel and leak listeners pushed after teardown.
+    if (!this.isConnected || gen !== this.#gen || this.#panel) return;
     this.#render();
     this.#bindEvents();
     this.#syncState();
@@ -107,14 +149,19 @@ class ThemePicker extends VBElement {
     // resolves; links materialize when it does.
     this.#enhanceWithDtcg();
 
-    // Listen for external theme changes
+    // Listen for external theme changes, and for a11y/extension changes
+    // made by sibling controls (another picker, settings-panel)
     this.listen(window, 'vb:theme-change', this.#handleThemeChange);
+    this.listen(window, 'vb:a11y-themes-change', this.#handleExternalA11y);
+    this.listen(window, 'vb:extensions-change', this.#handleExternalExtensions);
 
     // Apply extension preferences on load
     this.#applyExtensions();
 
-    // Apply accessibility themes on load
-    this.#applyA11yThemes();
+    // Apply stored accessibility themes on load. With nothing stored the
+    // page's authored a11y-* tokens stand (seeded in #hydrateFromStore), so
+    // there is nothing to rewrite.
+    if (this.#a11yStored) this.#applyA11yThemes();
   }
 
   /** Pre-load shared settings state into instance fields so render is sync. */
@@ -123,14 +170,25 @@ class ThemePicker extends VBElement {
       VBStore.get(SETTINGS_NS, 'a11y'),
       VBStore.get(SETTINGS_NS, 'extensions'),
     ]);
-    this.#a11yThemes = Array.isArray(a11y) ? a11y : [];
+    this.#a11yStored = Array.isArray(a11y);
+    this.#a11yThemes = this.#a11yStored
+      ? /** @type {unknown[]} */ (a11y).map(String)
+      // No visitor preference: reflect the a11y tokens already on <html>
+      // (authored, or restored by the boot script) instead of stripping them
+      : (document.documentElement.dataset.theme || '').split(/\s+/).filter(t => t.startsWith('a11y-'));
     this.#extensions = { ...EXTENSION_DEFAULTS, ...(ext ?? {}) };
   }
 
   teardown() {
+    this.#gen++;
     window.removeEventListener('scroll', this.#onReposition, { capture: true });
     window.removeEventListener('resize', this.#onReposition);
     this.#clearAutoDismiss();
+    // Reset open state so a reinserted picker starts closed and consistent
+    this.#isOpen = false;
+    this.#pointerIntent = false;
+    this.removeAttribute('open');
+    this.#trigger?.setAttribute('aria-expanded', 'false');
     // Remove rendered DOM so a reconnect's setup() doesn't stack a second
     // panel (setup re-runs after disconnect clears data-upgraded)
     this.#panel?.remove();
@@ -148,9 +206,10 @@ class ThemePicker extends VBElement {
       // If no trigger provided, create default one
       if (!this.#trigger) {
         this.#trigger = document.createElement('button');
+        this.#trigger.type = 'button';
         this.#trigger.setAttribute('data-trigger', '');
         this.#trigger.innerHTML = `
-          <icon-wc name="palette" label="Theme settings"></icon-wc>
+          <icon-wc name="palette" label="${esc(this.#label('trigger'))}"></icon-wc>
         `;
         this.prepend(this.#trigger);
       }
@@ -164,7 +223,7 @@ class ThemePicker extends VBElement {
     this.#panel = document.createElement('div');
     this.#panel.className = 'panel';
     this.#panel.setAttribute('role', 'dialog');
-    this.#panel.setAttribute('aria-label', 'Theme settings');
+    this.#panel.setAttribute('aria-label', this.#label('panel'));
 
     if (!this.#isInline) {
       this.#panel.id = `theme-panel-${crypto.randomUUID().slice(0, 8)}`;
@@ -173,6 +232,16 @@ class ThemePicker extends VBElement {
 
     this.#panel.innerHTML = this.#renderContent();
     this.appendChild(this.#panel);
+  }
+
+  /** @param {keyof typeof LABELS} key */
+  #label(key) {
+    return this.getAttribute(`data-label-${key}`) || LABELS[key];
+  }
+
+  /** Per-instance radio-group name for a field. @param {string} field */
+  #name(field) {
+    return `theme-${field}-${this.#uid}`;
   }
 
   #renderContent() {
@@ -188,7 +257,8 @@ class ThemePicker extends VBElement {
       <label class="swatch-cell" title="${label}">
         <input
           type="radio"
-          name="theme-brand"
+          name="${this.#name('brand')}"
+          data-field="brand"
           value="${t.id}"
           ${brand === t.id ? 'checked' : ''}
         />
@@ -206,13 +276,14 @@ class ThemePicker extends VBElement {
 
     return `
       <fieldset class="section">
-        <legend>Color Mode</legend>
-        <div class="options" role="radiogroup" aria-label="Color mode">
+        <legend>${esc(this.#label('mode'))}</legend>
+        <div class="options" role="radiogroup" aria-label="${esc(this.#label('mode'))}">
           ${MODES.map(m => `
             <label class="option">
               <input
                 type="radio"
-                name="theme-mode"
+                name="${this.#name('mode')}"
+                data-field="mode"
                 value="${m.id}"
                 ${mode === m.id ? 'checked' : ''}
               />
@@ -226,11 +297,11 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Color Accent</legend>
-        <div class="options options--accent-dots" role="radiogroup" aria-label="Color accent">
+        <legend>${esc(this.#label('accent'))}</legend>
+        <div class="options options--accent-dots" role="radiogroup" aria-label="${esc(this.#label('accent'))}">
           ${COLOR_ACCENTS.map(a => `
             <label class="accent-dot" title="${a.name}">
-              <input type="radio" name="theme-accent" value="${a.id}" ${accent === a.id ? 'checked' : ''} />
+              <input type="radio" name="${this.#name('accent')}" data-field="accent" value="${a.id}" ${accent === a.id ? 'checked' : ''} />
               <span class="accent-dot-visual" style="background: ${a.swatchBg}"></span>
               <span class="visually-hidden">${a.name}</span>
             </label>
@@ -239,18 +310,18 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Style</legend>
-        <div class="options options--swatch-grid" role="radiogroup" aria-label="Style">
+        <legend>${esc(this.#label('style'))}</legend>
+        <div class="options options--swatch-grid" role="radiogroup" aria-label="${esc(this.#label('style'))}">
           ${PERSONALITY_THEMES.map(t => this.#renderSwatch(t, brand)).join('')}
         </div>
       </fieldset>
 
       <fieldset class="section">
-        <legend>Featured</legend>
+        <legend>${esc(this.#label('featured'))}</legend>
         ${showcaseGroups.map(group => `
           <div class="theme-category">
             <span class="category-label">${group.label}</span>
-            <div class="options options--swatch-grid">
+            <div class="options options--swatch-grid" role="radiogroup" aria-label="${esc(group.label)}">
               ${group.themes.map(t => this.#renderSwatch(t, brand)).join('')}
             </div>
           </div>
@@ -259,17 +330,17 @@ class ThemePicker extends VBElement {
 
       <details class="section section--more-themes">
         <summary class="more-themes-toggle">
-          <span>More Themes</span>
+          <span>${esc(this.#label('more-themes'))}</span>
           <icon-wc name="chevron-down" class="chevron"></icon-wc>
         </summary>
-        <div class="options options--swatch-grid">
+        <div class="options options--swatch-grid" role="radiogroup" aria-label="${esc(this.#label('more-themes'))}">
           ${COMMUNITY_THEMES.map(t => this.#renderSwatch(t, brand)).join('')}
         </div>
       </details>
 
       <fieldset class="section section--a11y">
-        <legend>Accessibility</legend>
-        <div class="options options--a11y" aria-label="Accessibility themes">
+        <legend>${esc(this.#label('a11y'))}</legend>
+        <div class="options options--a11y">
           ${ACCESSIBILITY_THEMES.map(t => {
             const a11yThemes = this.#loadA11yThemes();
             const isChecked = a11yThemes.includes(t.id);
@@ -292,13 +363,14 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Sizing</legend>
-        <div class="options options--sizing" role="radiogroup" aria-label="Fluid sizing">
+        <legend>${esc(this.#label('sizing'))}</legend>
+        <div class="options options--sizing" role="radiogroup" aria-label="${esc(this.#label('sizing'))}">
           ${FLUID_PRESETS.map(f => `
             <label class="option option--sizing">
               <input
                 type="radio"
-                name="theme-fluid"
+                name="${this.#name('fluid')}"
+                data-field="fluid"
                 value="${f.id}"
                 ${fluid === f.id ? 'checked' : ''}
               />
@@ -317,7 +389,7 @@ class ThemePicker extends VBElement {
       <details class="section section--extensions" ${this.#extensionsExpanded ? 'open' : ''}>
         <summary class="extensions-toggle">
           <icon-wc name="sliders-horizontal"></icon-wc>
-          <span>Extensions</span>
+          <span>${esc(this.#label('extensions'))}</span>
           <icon-wc name="chevron-down" class="chevron"></icon-wc>
         </summary>
         <div class="extensions-content">
@@ -351,11 +423,11 @@ class ThemePicker extends VBElement {
 
     return `
       <fieldset class="section">
-        <legend>Color Mode</legend>
-        <div class="compact-segmented" role="radiogroup" aria-label="Color mode">
+        <legend>${esc(this.#label('mode'))}</legend>
+        <div class="compact-segmented" role="radiogroup" aria-label="${esc(this.#label('mode'))}">
           ${MODES.map(m => `
             <label class="compact-seg">
-              <input type="radio" name="theme-mode" value="${m.id}" ${mode === m.id ? 'checked' : ''} />
+              <input type="radio" name="${this.#name('mode')}" data-field="mode" value="${m.id}" ${mode === m.id ? 'checked' : ''} />
               <span class="compact-seg-visual">
                 <icon-wc name="${m.icon}" size="xs"></icon-wc>
                 <span class="compact-seg-label">${m.name}</span>
@@ -366,8 +438,8 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Color Accent</legend>
-        <select class="compact-select" name="theme-accent-select" aria-label="Color accent">
+        <legend>${esc(this.#label('accent'))}</legend>
+        <select class="compact-select" name="theme-accent-select" aria-label="${esc(this.#label('accent'))}">
           ${COLOR_ACCENTS.map(a => `
             <option value="${a.id}" ${accent === a.id ? 'selected' : ''}>${a.name}</option>
           `).join('')}
@@ -375,8 +447,8 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Theme</legend>
-        <select class="compact-select" name="theme-brand-select" aria-label="Theme">
+        <legend>${esc(this.#label('theme'))}</legend>
+        <select class="compact-select" name="theme-brand-select" aria-label="${esc(this.#label('theme'))}">
           ${THEME_GROUPS.map(group => `
             <optgroup label="${group.label}">
               ${group.themes.map(t => `
@@ -388,8 +460,8 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Sizing</legend>
-        <select class="compact-select" name="theme-fluid-select" aria-label="Sizing">
+        <legend>${esc(this.#label('sizing'))}</legend>
+        <select class="compact-select" name="theme-fluid-select" aria-label="${esc(this.#label('sizing'))}">
           ${FLUID_PRESETS.map(f => `
             <option value="${f.id}" ${fluid === f.id ? 'selected' : ''}>${f.name}</option>
           `).join('')}
@@ -397,7 +469,7 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Accessibility</legend>
+        <legend>${esc(this.#label('a11y'))}</legend>
         <div class="compact-toggles">
           ${ACCESSIBILITY_THEMES.map(t => `
             <label class="extension-toggle">
@@ -411,7 +483,7 @@ class ThemePicker extends VBElement {
       </fieldset>
 
       <fieldset class="section">
-        <legend>Extensions</legend>
+        <legend>${esc(this.#label('extensions'))}</legend>
         <div class="compact-toggles">
           ${EXTENSIONS.map(ext => `
             <label class="extension-toggle">
@@ -428,12 +500,12 @@ class ThemePicker extends VBElement {
 
   #bindEvents() {
     // Mode change
-    this.#panel.querySelectorAll('input[name="theme-mode"]').forEach(input => {
+    this.#panel.querySelectorAll('input[data-field="mode"]').forEach(input => {
       input.addEventListener('change', this.#handleModeChange);
     });
 
     // Brand change — swatch grid (radio buttons)
-    this.#panel.querySelectorAll('input[name="theme-brand"]').forEach(input => {
+    this.#panel.querySelectorAll('input[data-field="brand"]').forEach(input => {
       input.addEventListener('change', this.#handleBrandChange);
       // Preload theme CSS on hover/focus so selection applies instantly
       input.addEventListener('focus', this.#handleBrandPreload);
@@ -447,7 +519,7 @@ class ThemePicker extends VBElement {
     }
 
     // Fluid change — radio buttons (full mode)
-    this.#panel.querySelectorAll('input[name="theme-fluid"]').forEach(input => {
+    this.#panel.querySelectorAll('input[data-field="fluid"]').forEach(input => {
       input.addEventListener('change', this.#handleFluidChange);
     });
 
@@ -458,7 +530,7 @@ class ThemePicker extends VBElement {
     }
 
     // Accent change — dot radios (full mode)
-    this.#panel.querySelectorAll('input[name="theme-accent"]').forEach(input => {
+    this.#panel.querySelectorAll('input[data-field="accent"]').forEach(input => {
       input.addEventListener('change', this.#handleAccentChange);
     });
 
@@ -484,13 +556,26 @@ class ThemePicker extends VBElement {
       this.#extensionsExpanded = e.target.open;
     });
 
+    // Pointer vs keyboard intent: only pointer picks auto-dismiss. Native
+    // radio groups fire change on every arrow key, so dismissing on change
+    // would close the popover on the first arrow press.
+    this.#panel.addEventListener('pointerdown', () => { this.#pointerIntent = true; });
+    this.#panel.addEventListener('keydown', () => { this.#pointerIntent = false; });
+
     // Popover controls
     if (!this.#isInline) {
       this.listen(this.#trigger, 'click', this.#handleTriggerClick);
       this.listen(document, 'click', this.#handleOutsideClick);
       this.listen(document, 'keydown', this.#handleEscape);
+      // Non-modal: tabbing out of the picker closes it (no focus trap)
+      this.listen(this, 'focusout', this.#handleFocusOut);
     }
   }
+
+  #handleFocusOut = (e) => {
+    const next = /** @type {FocusEvent} */ (e).relatedTarget;
+    if (this.#isOpen && next instanceof Node && !this.contains(next)) this.close();
+  };
 
   #handleTriggerClick = (e) => {
     e.stopPropagation();
@@ -520,7 +605,7 @@ class ThemePicker extends VBElement {
     const el = /** @type {HTMLElement} */ (e.currentTarget);
     const input = el instanceof HTMLInputElement
       ? el
-      : /** @type {HTMLInputElement|null} */ (el.querySelector('input[name="theme-brand"]'));
+      : /** @type {HTMLInputElement|null} */ (el.querySelector('input[data-field="brand"]'));
     if (input?.value) preloadTheme(input.value);
   };
 
@@ -620,10 +705,44 @@ class ThemePicker extends VBElement {
       _SoundManager.disable();
     }
 
-    // Dispatch event for listeners
-    window.dispatchEvent(new CustomEvent('vb:extensions-change', {
-      detail: prefs
-    }));
+    // Dispatch event for listeners (sibling pickers, settings-panel)
+    this.#emitWindow('vb:extensions-change', prefs);
+  }
+
+  /** Dispatch a shared window event without reacting to it ourselves. */
+  #emitWindow(name, detail) {
+    this.#emitting = true;
+    try {
+      window.dispatchEvent(new CustomEvent(name, { detail }));
+    } finally {
+      this.#emitting = false;
+    }
+  }
+
+  /** Another control changed the a11y themes: adopt the list, re-sync checkboxes. */
+  #handleExternalA11y = (e) => {
+    if (this.#emitting || !Array.isArray(e.detail)) return;
+    this.#a11yThemes = e.detail.map(String);
+    this.#a11yStored = true;
+    this.#syncToggles();
+  };
+
+  /** Another control changed extensions: adopt them, re-sync checkboxes. */
+  #handleExternalExtensions = (e) => {
+    if (this.#emitting || !e.detail || typeof e.detail !== 'object') return;
+    this.#extensions = { ...EXTENSION_DEFAULTS, ...e.detail };
+    this.#syncToggles();
+  };
+
+  #syncToggles() {
+    if (!this.#panel) return;
+    for (const input of this.#panel.querySelectorAll('input[data-a11y-theme]')) {
+      /** @type {HTMLInputElement} */ (input).checked = this.#a11yThemes.includes(input.dataset.a11yTheme || '');
+    }
+    for (const input of this.#panel.querySelectorAll('input[data-extension]')) {
+      const id = input.dataset.extension || '';
+      /** @type {HTMLInputElement} */ (input).checked = !!(this.#extensions[id] ?? EXTENSION_DEFAULTS[id]);
+    }
   }
 
   /**
@@ -641,9 +760,10 @@ class ThemePicker extends VBElement {
    */
   #saveA11yThemes(themes) {
     this.#a11yThemes = [...themes];
+    this.#a11yStored = true;
     VBStore.set(SETTINGS_NS, 'a11y', this.#a11yThemes).catch(() => { /* ignore */ });
-    // Keep sibling controls (settings-panel) in sync, mirroring vb:extensions-change.
-    window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: [...this.#a11yThemes] }));
+    // Keep sibling controls (settings-panel, other pickers) in sync.
+    this.#emitWindow('vb:a11y-themes-change', [...this.#a11yThemes]);
   }
 
   /**
@@ -688,8 +808,9 @@ class ThemePicker extends VBElement {
   };
 
   #autoDismiss() {
-    // Only auto-dismiss in popover mode
-    if (this.#isInline) return;
+    // Only auto-dismiss in popover mode, and only for pointer selections:
+    // keyboard users browse with arrows and close with Escape.
+    if (this.#isInline || !this.#pointerIntent) return;
 
     // Clear any pending timer
     this.#clearAutoDismiss();
@@ -713,14 +834,15 @@ class ThemePicker extends VBElement {
   };
 
   #syncState() {
+    if (!this.#panel) return;
     const { mode, brand, fluid, accent } = ThemeManager.getState();
 
     // Update mode radios
-    const modeInput = this.#panel.querySelector(`input[name="theme-mode"][value="${mode}"]`);
+    const modeInput = this.#panel.querySelector(`input[data-field="mode"][value="${mode}"]`);
     if (modeInput) modeInput.checked = true;
 
     // Update brand radios (swatch mode)
-    const brandInput = this.#panel.querySelector(`input[name="theme-brand"][value="${brand}"]`);
+    const brandInput = this.#panel.querySelector(`input[data-field="brand"][value="${brand}"]`);
     if (brandInput) brandInput.checked = true;
 
     // Update brand select (compact mode)
@@ -728,7 +850,7 @@ class ThemePicker extends VBElement {
     if (brandSelect) brandSelect.value = brand;
 
     // Update fluid radios (full mode)
-    const fluidInput = this.#panel.querySelector(`input[name="theme-fluid"][value="${fluid}"]`);
+    const fluidInput = this.#panel.querySelector(`input[data-field="fluid"][value="${fluid}"]`);
     if (fluidInput) fluidInput.checked = true;
 
     // Update fluid select (compact mode)
@@ -736,7 +858,7 @@ class ThemePicker extends VBElement {
     if (fluidSelect) fluidSelect.value = fluid;
 
     // Update accent radios (full mode)
-    const accentInput = this.#panel.querySelector(`input[name="theme-accent"][value="${accent || 'default'}"]`);
+    const accentInput = this.#panel.querySelector(`input[data-field="accent"][value="${accent || 'default'}"]`);
     if (accentInput) accentInput.checked = true;
 
     // Update accent select (compact mode)
@@ -755,7 +877,7 @@ class ThemePicker extends VBElement {
     const manifest = await loadDtcgManifest();
     if (!manifest || !this.#panel?.isConnected) return;
 
-    for (const input of this.#panel.querySelectorAll('input[name="theme-brand"]')) {
+    for (const input of this.#panel.querySelectorAll('input[data-field="brand"]')) {
       const id = input.value;
       const entry = manifest[id];
       if (!entry?.dtcg) continue;
@@ -777,8 +899,9 @@ class ThemePicker extends VBElement {
       if (entry.dtcgDark) link.dataset.dtcgDark = entry.dtcgDark;
       link.setAttribute('download', '');
       const themeName = label.getAttribute('title') || id;
-      link.setAttribute('aria-label', `Download ${themeName} as DTCG tokens.json`);
-      link.setAttribute('title', `Download ${themeName} as DTCG`);
+      const downloadLabel = this.#label('download').replace('{name}', themeName);
+      link.setAttribute('aria-label', downloadLabel);
+      link.setAttribute('title', downloadLabel);
       link.innerHTML = '<icon-wc name="download" size="xs"></icon-wc>';
 
       this.#updateDtcgLinkHref(link);
@@ -818,9 +941,11 @@ class ThemePicker extends VBElement {
       window.addEventListener('scroll', this.#onReposition, { capture: true, passive: true });
       window.addEventListener('resize', this.#onReposition, { passive: true });
 
-      // Focus first option after positioning
-      const firstInput = this.#panel.querySelector('input[type="radio"]:checked');
-      firstInput?.focus();
+      // Move focus into the panel: the checked mode radio, else the first control
+      if (!this.#isOpen || !this.#panel) return;
+      const firstInput = this.#panel.querySelector('input[type="radio"]:checked')
+        || this.#panel.querySelector('input, select, button, summary, a[href]');
+      /** @type {HTMLElement | null} */ (firstInput)?.focus();
     });
 
     this.dispatchEvent(new CustomEvent('theme-picker:open', { bubbles: true }));
@@ -892,6 +1017,7 @@ class ThemePicker extends VBElement {
     if (this.#isInline || !this.#isOpen) return;
 
     this.#clearAutoDismiss();
+    this.#pointerIntent = false;
     this.#isOpen = false;
     this.removeAttribute('open');
     this.#trigger?.setAttribute('aria-expanded', 'false');
