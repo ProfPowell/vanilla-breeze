@@ -12,6 +12,9 @@ nav {
   --_hover-color: var(--color-hover-text);
   --_active-bg: var(--color-active-bg);
   --_active-color: var(--color-active-text);
+  /* Non-colour current-page cue (WCAG 1.4.1). Variants that already mark
+     the current item another way (fill, border, bar) set it to none. */
+  --_active-decoration: var(--nav-active-decoration, underline);
   --_gap: var(--size-xs);
 }
 
@@ -57,13 +60,19 @@ nav a:focus-visible {
    Sites change it through --color-active-text / --color-active-bg (documented
    on the nav page); tests/components/nav-active-link-themes.spec.js renders
    it under every theme (vanilla-breeze-s3e3).
-   Supports both aria-current (semantic) and .active (build-system). */
+   Supports both aria-current (semantic) and .active (build-system).
+   The underline is the non-colour cue: themes strip link underlines with
+   `a:not([class]) { text-decoration: none }`, so it is locked the same way
+   and changed through --nav-active-decoration (or per variant). */
 nav a[aria-current="page"],
 nav [aria-current="page"] > a,
 nav a.active {
   background: var(--_active-bg);
   color: var(--_active-color) !important;
   font-weight: 500;
+  text-decoration-line: var(--_active-decoration) !important;
+  text-decoration-thickness: var(--border-width-medium);
+  text-underline-offset: 0.3em;
 }
 
 /* Reset details/summary for nav context — nav uses details for grouping, not accordions */
@@ -85,7 +94,8 @@ nav {
   &.horizontal > ol {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--_gap);
+    /* Layout hosts (data-layout) reset --_gap: keep a gap anyway. */
+    gap: var(--_gap, var(--size-xs));
   }
 
   /* Vertical navigation (explicit) */
@@ -105,8 +115,8 @@ nav {
        a fixed white failed in dark themes that lighten primary
        (vanilla-breeze-s3e3). Falls back where contrast-color() is missing. */
     --_active-color: var(--color-text-on-interactive-auto, var(--color-text-on-primary, white));
+    --_active-decoration: none;
   }
-
 
   &.pills a {
     border-radius: var(--radius-full);
@@ -116,6 +126,7 @@ nav {
   &.tabs {
     --_hover-bg: transparent;
     --_active-bg: transparent;
+    --_active-decoration: none;
     border-block-end: var(--border-width-thin) solid var(--color-border);
   }
 
@@ -144,6 +155,7 @@ nav {
     --_hover-bg: transparent;
     --_active-bg: transparent;
     --_active-color: var(--color-text);
+    --_active-decoration: none;
   }
 
   &.breadcrumb > ol {
@@ -164,8 +176,8 @@ nav {
   /* Separators are decoration: alt text "" keeps screen readers quiet.
      First declaration is the fallback for browsers without alt syntax. */
   &.breadcrumb li:not(:last-child)::after {
-    content: var(--_separator, var(--sep-breadcrumb, "/"));
-    content: var(--_separator, var(--sep-breadcrumb, "/")) / "";
+    content: var(--_separator, var(--_sep-default, var(--sep-breadcrumb, "/")));
+    content: var(--_separator, var(--_sep-default, var(--sep-breadcrumb, "/"))) / "";
     margin-inline-start: var(--size-2xs);
     color: var(--color-text-muted);
     display: inline-flex;
@@ -207,6 +219,21 @@ nav {
     --_separator: "|";
   }
 
+  /* RTL: the trail reads right to left, so directional separators point
+     left. The default comes from --sep-breadcrumb-rtl (pair it with
+     --sep-breadcrumb when a theme changes the glyph). */
+  &.breadcrumb:dir(rtl) {
+    --_sep-default: var(--sep-breadcrumb-rtl, "\2039");
+  }
+
+  &.breadcrumb[data-separator="chevron"]:dir(rtl) {
+    --_separator: "\2039"; /* ‹ */
+  }
+
+  &.breadcrumb[data-separator="arrow"]:dir(rtl) {
+    --_separator: "\2190"; /* ← */
+  }
+
   /* Breadcrumb truncated items — on the link, not the flex <li>, or
      text-overflow never reaches the text */
   &.breadcrumb [data-truncated] > :is(a, span) {
@@ -245,6 +272,7 @@ nav {
   /* Pagination navigation */
   &.pagination > ul {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: var(--size-2xs);
@@ -259,8 +287,8 @@ nav {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 2.25rem;
-    height: 2.25rem;
+    min-inline-size: 2.25rem;
+    block-size: 2.25rem;
     padding-inline: var(--size-xs);
     font-size: var(--font-size-s);
     font-weight: var(--font-weight-medium);
@@ -270,7 +298,10 @@ nav {
     border-radius: var(--radius-m);
     text-decoration: none;
     cursor: var(--cursor-custom-pointer, pointer);
-    transition: all 0.15s ease;
+    transition:
+      color var(--duration-fast) var(--ease-default),
+      background-color var(--duration-fast) var(--ease-default),
+      border-color var(--duration-fast) var(--ease-default);
   }
 
   &.pagination a:hover:not([disabled]):not([aria-current]),
@@ -279,15 +310,16 @@ nav {
     color: var(--color-text);
   }
 
-  /* Override --_active-color so the generic nav !important rule
-     uses white (not interactive blue) on the colored background */
+  /* Text colour comes from --_active-color: the generic nav !important
+     rule applies it on the filled background (a plain color here would
+     never win). */
   &.pagination {
     --_active-color: var(--color-text-on-interactive-auto, var(--color-text-on-primary, white));
+    --_active-decoration: none;
   }
 
   &.pagination [aria-current="page"] {
     background: var(--color-interactive);
-    color: var(--color-text-on-primary, white);
     border-color: var(--color-interactive);
   }
 
@@ -307,7 +339,7 @@ nav {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.25rem;
+    inline-size: 2.25rem;
     color: var(--color-text-muted);
     pointer-events: none;
   }
@@ -335,21 +367,32 @@ nav {
     gap: 0;
   }
 
+  /* Neighbours overlap by one border instead of dropping it, so items
+     that wrap onto a new line keep all four borders. */
   &.pagination[data-variant="compact"] a,
   &.pagination[data-variant="compact"] button {
     border-radius: 0;
-    border-inline-start-width: 0;
+  }
+
+  &.pagination[data-variant="compact"] li + li {
+    margin-inline-start: calc(var(--border-width-thin) * -1);
+  }
+
+  &.pagination[data-variant="compact"] [aria-current="page"] {
+    position: relative;
+    z-index: 1;
   }
 
   &.pagination[data-variant="compact"] li:first-child a,
   &.pagination[data-variant="compact"] li:first-child button {
-    border-radius: var(--radius-m) 0 0 var(--radius-m);
-    border-inline-start-width: var(--border-width-thin);
+    border-start-start-radius: var(--radius-m);
+    border-end-start-radius: var(--radius-m);
   }
 
   &.pagination[data-variant="compact"] li:last-child a,
   &.pagination[data-variant="compact"] li:last-child button {
-    border-radius: 0 var(--radius-m) var(--radius-m) 0;
+    border-start-end-radius: var(--radius-m);
+    border-end-end-radius: var(--radius-m);
   }
 
   &.pagination[data-variant="compact"] a:not([aria-current]),
@@ -360,15 +403,15 @@ nav {
   /* Size variants */
   &.pagination[data-size="sm"] a,
   &.pagination[data-size="sm"] button {
-    min-width: 1.75rem;
-    height: 1.75rem;
+    min-inline-size: 1.75rem;
+    block-size: 1.75rem;
     font-size: var(--font-size-xs);
   }
 
   &.pagination[data-size="lg"] a,
   &.pagination[data-size="lg"] button {
-    min-width: 2.75rem;
-    height: 2.75rem;
+    min-inline-size: 2.75rem;
+    block-size: 2.75rem;
     font-size: var(--font-size-m);
   }
 
@@ -376,6 +419,7 @@ nav {
   /* Hierarchical navigation using details/summary for collapsible sections */
 
   &.tree {
+    --_active-decoration: none;
     --_link-color: var(--color-text-muted);
     --_hover-bg: var(--color-hover-bg);
     --_hover-color: var(--color-hover-text);
@@ -451,12 +495,14 @@ nav {
   &.tree a {
     padding: var(--size-2xs) var(--size-s);
     border-inline-start: var(--border-width-medium) solid transparent;
-    border-radius: 0 var(--radius-s) var(--radius-s) 0;
+    border-radius: 0;
+    border-start-end-radius: var(--radius-s);
+    border-end-end-radius: var(--radius-s);
     margin-inline-start: calc(1.25em + var(--size-xs));
     background-clip: padding-box;
   }
 
-  /* Left border accent for active tree links */
+  /* Inline-start border accent for active tree links */
   &.tree a[aria-current="page"],
   &.tree a.active {
     border-inline-start-color: var(--color-interactive);
@@ -505,7 +551,7 @@ nav {
     --_active-text: var(--color-text-on-primary, white);
     --_completed-bg: var(--color-success);
     --_completed-border: var(--color-success);
-    --_completed-text: white;
+    --_completed-text: var(--color-text-on-success-auto, white);
   }
 
 
@@ -549,8 +595,8 @@ nav {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: var(--_step-size);
-    height: var(--_step-size);
+    inline-size: var(--_step-size);
+    block-size: var(--_step-size);
     border-radius: 50%;
     background: var(--_future-bg);
     border: 2px solid var(--_future-border);
@@ -564,9 +610,9 @@ nav {
   &.steps li:not(:last-child)::after {
     content: "";
     flex: 1;
-    height: var(--_connector-height);
+    block-size: var(--_connector-height);
     background: var(--_connector-color);
-    min-width: 1.5rem;
+    min-inline-size: 1.5rem;
     order: 1;
   }
 
@@ -643,11 +689,11 @@ nav {
   /* Connector repositioned: absolute at circle height */
   &.steps[data-labels="below"] li:not(:last-child)::after {
     position: absolute;
-    top: calc(var(--_step-size) / 2);
-    left: calc(50% + var(--_step-size) / 2 + var(--size-xs));
-    right: calc(-50% + var(--_step-size) / 2 + var(--size-xs));
-    width: auto;
-    min-width: 0;
+    inset-block-start: calc(var(--_step-size) / 2);
+    inset-inline-start: calc(50% + var(--_step-size) / 2 + var(--size-xs));
+    inset-inline-end: calc(-50% + var(--_step-size) / 2 + var(--size-xs));
+    inline-size: auto;
+    min-inline-size: 0;
     flex: none;
     order: 0;
   }
@@ -671,11 +717,11 @@ nav {
   /* Vertical connector: absolute line running downward */
   &.steps[data-direction="vertical"] li:not(:last-child)::after {
     position: absolute;
-    left: calc(var(--_step-size) / 2);
-    top: var(--_step-size);
-    width: var(--_connector-height);
-    height: calc(100% - var(--_step-size));
-    min-width: 0;
+    inset-inline-start: calc(var(--_step-size) / 2);
+    inset-block-start: var(--_step-size);
+    inline-size: var(--_connector-height);
+    block-size: calc(100% - var(--_step-size));
+    min-inline-size: 0;
     flex: none;
     order: 0;
   }
@@ -714,9 +760,10 @@ nav {
     min-inline-size: 3.5rem;
   }
 
+  /* Current item colour comes from --_active-color (base !important
+     rule); the underline under the label is the non-colour cue. */
   &.bottom a[aria-current="page"],
   &.bottom [aria-current="page"] > a {
-    color: var(--color-interactive);
     font-weight: var(--font-weight-medium, 500);
   }
 
@@ -756,6 +803,7 @@ nav {
   gap: var(--size-xs);
   font-size: var(--font-size-s);
   color: var(--color-text-muted);
+  white-space: nowrap;
 
   & label {
     display: inline;
@@ -764,6 +812,7 @@ nav {
 
   & select {
     display: inline;
+    flex: none;
     inline-size: auto;
     padding: var(--size-2xs) var(--size-xs);
     font-size: var(--font-size-s);
@@ -873,12 +922,5 @@ nav drop-down menu a {
     background: var(--color-hover-bg);
     color: var(--color-active-text) !important;
     font-weight: 500;
-  }
-}
-
-/* Hide dropdown on mobile - mobile nav has its own expanded pattern */
-@media (width < 48rem) { /* --bp-m */
-  nav drop-down menu {
-    display: none;
   }
 }

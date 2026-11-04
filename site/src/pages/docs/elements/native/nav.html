@@ -101,7 +101,7 @@ crumbLabel: Native Elements
 </nav></code-block>
 
     <h3>.breadcrumb separators</h3>
-    <p>Use <code>data-separator</code> to change the separator character.</p>
+    <p>The default separator is &ldquo;&rsaquo;&rdquo;, from the <code>--sep-breadcrumb</code> token. Use <code>data-separator</code> to change it. In a right-to-left trail (<code>dir="rtl"</code>) the directional separators flip: the default and <code>chevron</code> become &ldquo;&lsaquo;&rdquo; and <code>arrow</code> becomes &ldquo;&larr;&rdquo;. The RTL default comes from <code>--sep-breadcrumb-rtl</code>, so set both tokens if you change the glyph.</p>
     <browser-window src="/docs/snippets/demos/nav-breadcrumb-separators.html" url="https://vanilla-breeze.com/nav/breadcrumb/separators" title="Breadcrumb separators" shadow></browser-window>
     <code-block language="html" label="Breadcrumb separator variants" data-escape><nav class="breadcrumb" data-separator="chevron" aria-label="Breadcrumb">
   <ol>
@@ -136,7 +136,7 @@ crumbLabel: Native Elements
 </nav></code-block>
 
     <h3>.bottom</h3>
-    <p>Sticky bottom tab bar for mobile navigation. Stacks icon and label vertically in each link.</p>
+    <p>Sticky bottom tab bar for mobile navigation. Stacks icon and label vertically in each link and pads for the device safe area. Add <code>.frosted</code> (<code>class="bottom frosted"</code>) for a translucent, blurred background that lets content show through; it uses the <code>--glass-*</code> tokens.</p>
     <browser-window src="/docs/snippets/demos/nav-bottom.html" url="https://vanilla-breeze.com/nav/bottom" title="Bottom tab bar" shadow></browser-window>
     <code-block language="html" label="Bottom tab bar" data-escape><nav class="bottom" aria-label="Bottom tab bar">
   <ul>
@@ -191,6 +191,56 @@ crumbLabel: Native Elements
     <li><a href="#" aria-current="page">2</a></li>
     <li><a href="#">3</a></li>
     <li><a href="#" data-next>Next</a></li>
+  </ul>
+</nav></code-block>
+
+    <h3>.pagination-bar</h3>
+    <p>A three-column bar for result lists: result count, the pagination nav, and a page-size picker. Put <code>.pagination-bar</code> on a wrapper such as <code>&lt;footer&gt;</code>, with <code>.pagination-info</code> and <code>.page-size-selector</code> on its other children. Inside a container narrower than 500px the bar stacks, with the pagination first. The pagination list itself wraps onto more lines on narrow screens rather than overflowing.</p>
+    <browser-window src="/docs/snippets/demos/nav-pagination-bar.html" url="https://vanilla-breeze.com/nav/pagination/bar" title="Pagination bar" shadow></browser-window>
+    <code-block language="html" label="Pagination bar" data-escape><footer class="pagination-bar">
+  <p class="pagination-info">Showing <strong>21</strong> to <strong>30</strong> of <strong>97</strong> results</p>
+  <nav class="pagination" aria-label="Results pages">
+    <ul>…</ul>
+  </nav>
+  <p class="page-size-selector">
+    <label for="page-size">Show</label>
+    <select id="page-size">…</select>
+    <span>per page</span>
+  </p>
+</footer></code-block>
+    <p>For the full pattern, see <a href="/docs/patterns/navigation/pagination/">Pagination</a>.</p>
+
+    <h3>.steps</h3>
+    <p>A step indicator for multi-step flows (checkout, onboarding). Use an <code>&lt;ol&gt;</code>; the circles are numbered by a CSS counter. Mark the current step <code>aria-current="step"</code> and finished steps <code>data-completed</code> (the number becomes a check mark). A link inside a completed step lets people go back. <code>data-labels="below"</code> puts labels under the circles, <code>data-direction="vertical"</code> stacks the steps, and <code>data-size="sm|lg"</code> changes the circle size. Connectors use logical properties, so the indicator mirrors in right-to-left pages.</p>
+    <browser-window src="/docs/snippets/demos/nav-steps.html" url="https://vanilla-breeze.com/nav/steps" title="Step indicator" shadow></browser-window>
+    <code-block language="html" label="Step indicator" data-escape><nav class="steps" aria-label="Checkout progress">
+  <ol>
+    <li data-completed><a href="/cart/">Cart</a></li>
+    <li aria-current="step">Shipping</li>
+    <li>Payment</li>
+    <li>Review</li>
+  </ol>
+</nav></code-block>
+    <p>Interactive wizards, validation and more layouts are on the <a href="/docs/patterns/navigation/steps/">Steps pattern</a> page.</p>
+
+    <h3>Right to left</h3>
+    <p>Every variant uses logical properties. Breadcrumb separators flip, step connectors run from the inline start, and compact pagination and tree links round the correct ends.</p>
+    <browser-window src="/docs/snippets/demos/nav-rtl.html" url="https://vanilla-breeze.com/nav/rtl" title="Navigation in a right-to-left page" shadow></browser-window>
+
+    <h3>Dropdowns in a nav</h3>
+    <p>Put a <a href="/docs/elements/web-components/dropdown/"><code>&lt;drop-down&gt;</code></a> in a nav list item for a sub-menu. The trigger picks up the nav&rsquo;s link padding, colours and hover, and gets a chevron that turns when open. Mark the trigger <code>aria-current="true"</code> (or <code>.active</code>) when the current page is in its section. The menu keeps its pop-up behaviour at every width; a phone layout that needs a different pattern should use <a href="/docs/elements/web-components/nav-bar/"><code>&lt;nav-bar&gt;</code></a> or a mobile menu.</p>
+    <code-block language="html" label="Dropdown in a nav" data-escape><nav class="horizontal" aria-label="Main navigation">
+  <ul>
+    <li>
+      <drop-down>
+        <button type="button" data-trigger class="ghost">Products</button>
+        <menu>
+          <li><a href="/software/">Software</a></li>
+          <li><a href="/hardware/">Hardware</a></li>
+        </menu>
+      </drop-down>
+    </li>
+    <li><a href="/pricing/">Pricing</a></li>
   </ul>
 </nav></code-block>
 
@@ -313,6 +363,38 @@ crumbLabel: Native Elements
           <td><code>.bottom</code></td>
           <td>Sticky bottom tab bar for mobile; flex row with icon+label stacking and safe-area padding</td>
         </tr>
+        <tr>
+          <td><code>.bottom.frosted</code></td>
+          <td>Translucent, blurred bottom bar (<code>--glass-*</code> tokens)</td>
+        </tr>
+        <tr>
+          <td><code>.steps</code></td>
+          <td>Step indicator; supports <code>data-labels="below"</code>, <code>data-direction="vertical"</code>, <code>data-size</code>; steps use <code>aria-current="step"</code> and <code>data-completed</code>. See the <a href="/docs/patterns/navigation/steps/">Steps pattern</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Helper Classes</h3>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>.pagination-bar</code></td>
+          <td>Grid wrapper: info, pagination, page-size picker; stacks below a 500px container</td>
+        </tr>
+        <tr>
+          <td><code>.pagination-info</code></td>
+          <td>Muted result-count text; <code>&lt;strong&gt;</code> inside is emphasised</td>
+        </tr>
+        <tr>
+          <td><code>.page-size-selector</code></td>
+          <td>Inline label + <code>&lt;select&gt;</code> for items per page, aligned to the end</td>
+        </tr>
       </tbody>
     </table>
 
@@ -329,7 +411,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>data-separator</code></td>
           <td><code>chevron</code>, <code>arrow</code>, <code>dot</code>, <code>pipe</code></td>
-          <td>Changes the separator character (default is "/")</td>
+          <td>Changes the separator character (default is &ldquo;&rsaquo;&rdquo; from <code>--sep-breadcrumb</code>; flips in RTL)</td>
         </tr>
         <tr>
           <td><code>data-collapsed</code></td>
@@ -426,7 +508,8 @@ crumbLabel: Native Elements
   --color-active-text: white;
   --color-active-bg: oklch(35% 0.08 260);
 }</code-block>
-    <p><code>.minimal</code> marks the current item with body text color and weight only. <code>.pills</code> and <code>.pagination</code> fill the current item with <code>--color-interactive</code> and pick black or white text for it automatically (<code>contrast-color()</code>, with <code>--color-text-on-primary</code> as the fallback in older browsers).</p>
+    <p>Colour is not the only cue: in the default, <code>.horizontal</code>, <code>.vertical</code>, <code>.minimal</code> and <code>.bottom</code> navs the current link is also underlined (WCAG 1.4.1). Variants that mark it another way turn the underline off: <code>.pills</code> and <code>.pagination</code> (fill), <code>.tabs</code> (border), <code>.tree</code> (inline-start bar) and <code>.breadcrumb</code> (position). Set <code>--nav-active-decoration: none</code> on a nav to remove it when you add your own non-colour cue. The underline is locked the same way as the colour, because many themes remove link underlines.</p>
+    <p><code>.minimal</code> uses body text color and weight as well as the underline. <code>.pills</code> and <code>.pagination</code> fill the current item with <code>--color-interactive</code> and pick black or white text for it automatically (<code>contrast-color()</code>, with <code>--color-text-on-primary</code> as the fallback in older browsers).</p>
     <p>Why tokens rather than a <code>color</code> rule: many themes color links, and theme styles sit in a higher cascade layer than nav. Nav therefore locks the current item's text color with <code>!important</code> so no theme can make it vanish; that rule reads the tokens above, so they are the way to change it. A test renders the current item under every theme to keep it legible.</p>
   </section>
 
