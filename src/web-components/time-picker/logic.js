@@ -178,6 +178,7 @@ class TimePicker extends VBElement {
 
     this.#buildTrigger();
     this.#buildPanel();
+    this.#wire();
     this.#updateDisplay();
     this.#updateTextInput();
     this.#syncFormValue();
@@ -228,7 +229,15 @@ class TimePicker extends VBElement {
     this.#trigger.appendChild(this.#iconBtn);
 
     this.appendChild(this.#trigger);
+  }
 
+  /**
+   * Wire the trigger, period toggle and spinner listeners. Runs on every
+   * setup(), outside the #buildTrigger/#buildPanel reconnect guards: listen()
+   * drops these on disconnect, so wiring them inside the guards would leave a
+   * moved picker inert.
+   */
+  #wire() {
     // Icon button toggles panel
     this.listen(this.#iconBtn, 'click', (e) => {
       e.stopPropagation();
@@ -240,6 +249,46 @@ class TimePicker extends VBElement {
     this.listen(this.#textInput, 'focus', () => this.#textInput.select());
     this.listen(this.#textInput, 'keydown', this.#handleTextKeydown);
     this.listen(this.#textInput, 'blur', this.#handleTextBlur);
+
+    if (this.#periodBtn) {
+      this.listen(this.#periodBtn, 'click', () => {
+        this.#period = this.#period === 'AM' ? 'PM' : 'AM';
+        this.#periodBtn.textContent = this.#period;
+        this.#hours = this.#to24h(this.#displayHour(), this.#period);
+        this.#commit();
+      });
+
+      this.listen(this.#periodBtn, 'keydown', (/** @type {Event} */ ev) => {
+        const e = /** @type {KeyboardEvent} */ (ev);
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          this.#focusSpinner(this.#spinners.length - 1);
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          this.#close();
+          this.#textInput.focus();
+        }
+      });
+    }
+
+    for (const spinner of this.#spinners) {
+      this.listen(spinner.incBtn, 'click', () => {
+        this.#adjustSpinner(spinner, spinner.step);
+      });
+
+      this.listen(spinner.decBtn, 'click', () => {
+        this.#adjustSpinner(spinner, -spinner.step);
+      });
+
+      this.listen(spinner.el, 'keydown', (e) => {
+        this.#handleSpinnerKey(e, spinner);
+      });
+
+      this.listen(spinner.el, 'focus', () => {
+        this.#focusedIndex = this.#spinners.indexOf(spinner);
+      });
+    }
   }
 
   #buildPanel() {
@@ -289,26 +338,6 @@ class TimePicker extends VBElement {
       this.#periodBtn.setAttribute('aria-label', 'Toggle AM/PM');
       this.#periodBtn.textContent = this.#period;
       this.#panel.appendChild(this.#periodBtn);
-
-      this.listen(this.#periodBtn, 'click', () => {
-        this.#period = this.#period === 'AM' ? 'PM' : 'AM';
-        this.#periodBtn.textContent = this.#period;
-        this.#hours = this.#to24h(this.#displayHour(), this.#period);
-        this.#commit();
-      });
-
-      this.listen(this.#periodBtn, 'keydown', (/** @type {Event} */ ev) => {
-        const e = /** @type {KeyboardEvent} */ (ev);
-        if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          this.#focusSpinner(this.#spinners.length - 1);
-        }
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          this.#close();
-          this.#textInput.focus();
-        }
-      });
     }
 
     this.appendChild(this.#panel);
@@ -344,25 +373,8 @@ class TimePicker extends VBElement {
     wrapper.appendChild(valueEl);
     wrapper.appendChild(decBtn);
 
-    const spinner = { el: wrapper, valueEl, label, min, max, step };
-
-    this.listen(incBtn, 'click', () => {
-      this.#adjustSpinner(spinner, step);
-    });
-
-    this.listen(decBtn, 'click', () => {
-      this.#adjustSpinner(spinner, -step);
-    });
-
-    this.listen(wrapper, 'keydown', (e) => {
-      this.#handleSpinnerKey(e, spinner);
-    });
-
-    this.listen(wrapper, 'focus', () => {
-      this.#focusedIndex = this.#spinners.indexOf(spinner);
-    });
-
-    return spinner;
+    // Listeners are wired in #wire() so they survive a reconnect.
+    return { el: wrapper, valueEl, incBtn, decBtn, label, min, max, step };
   }
 
   #createSep() {

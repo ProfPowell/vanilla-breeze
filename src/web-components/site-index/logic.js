@@ -82,7 +82,9 @@ class SiteIndex extends VBElement {
         sectionTotal += count;
 
         const term = item.querySelector('.index-term');
-        if (term && count > 0 && !term.querySelector('.index-count')) {
+        // The badge is the term's next sibling (term.after) — check there, or a
+        // reconnect's setup() adds a second one.
+        if (term && count > 0 && !term.nextElementSibling?.classList.contains('index-count')) {
           const badge = document.createElement('span');
           badge.className = 'index-count';
           badge.textContent = `(${count})`;
@@ -103,6 +105,11 @@ class SiteIndex extends VBElement {
   /* ── Controls bar ── */
 
   #buildControls() {
+    // Reconnect guard: setup() re-runs on every reconnect, but the controls
+    // (and their listeners, which are not listen()-tracked) moved back with
+    // the host — building again would stack a second controls bar.
+    if (this.querySelector('[data-index-controls]')) return;
+
     const controls = document.createElement('nav');
     controls.setAttribute('data-index-controls', '');
     controls.setAttribute('aria-label', 'Index controls');
@@ -256,6 +263,8 @@ class SiteIndex extends VBElement {
     for (const section of sections) {
       const items = [...section.querySelectorAll(':scope > ul > li')];
       if (items.length <= limit) continue;
+      // Reconnect guard — see #buildControls.
+      if (section.querySelector(':scope > [data-index-expand]')) continue;
 
       const overflow = /** @type {HTMLElement[]} */ (items.slice(limit));
       for (const item of overflow) {

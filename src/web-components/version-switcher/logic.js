@@ -65,6 +65,7 @@ class VersionSwitcher extends VBElement {
 
     this.#buildTrigger();
     this.#buildPopover();
+    this.#wirePopover();
     this.#renderTrigger();
     this.#renderPicker();
     this.#updateBanner();
@@ -345,7 +346,15 @@ class VersionSwitcher extends VBElement {
 
     this.#popover.append(heading, this.#pickerList);
     this.appendChild(this.#popover);
+  }
 
+  /**
+   * Wire the popover + picker listeners. Runs on every setup(), outside the
+   * #buildPopover reconnect guard: listen() drops them on disconnect, so a
+   * guarded wiring would leave a moved switcher inert.
+   */
+  #wirePopover() {
+    if (!this.#popover || !this.#pickerList) return;
     // Bridge open/close events to friendly names + aria-expanded.
     this.listen(this.#popover, 'pop-over:show', () => {
       this.#trigger.setAttribute('aria-expanded', 'true');
