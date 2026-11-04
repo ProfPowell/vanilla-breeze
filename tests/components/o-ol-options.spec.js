@@ -91,9 +91,9 @@ test('ol.meta honours data-separator like ul.meta', async ({ page }) => {
     <ol class="meta" data-separator="slash"><li>A</li><li id="slash">B</li></ol>
     <ul class="meta" data-separator="dash"><li>A</li><li id="dash">B</li></ul>`);
   const before = (sel) => page.$eval(sel, (el) => getComputedStyle(el, '::before').content);
-  expect(await before('#pipe')).toBe('"|"');
-  expect(await before('#slash')).toBe('"/"');
-  expect(await before('#dash')).toBe('"–"');
+  expect(await before('#pipe')).toBe('"|" / ""');
+  expect(await before('#slash')).toBe('"/" / ""');
+  expect(await before('#dash')).toBe('"–" / ""');
 });
 
 /* ---------- select / optgroup / option ---------- */

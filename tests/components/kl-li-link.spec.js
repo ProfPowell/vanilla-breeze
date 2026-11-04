@@ -68,7 +68,7 @@ test('data-marker applies to direct items only; a nested ol keeps its numbers', 
 
 test('.meta separators and .inline resets do not leak into nested lists', async ({ page }) => {
   await load(page, NESTED);
-  expect(await before(page, '#meta2')).toBe('"|"');
+  expect(await before(page, '#meta2')).toBe('"|" / ""');
   expect(await before(page, '#metaNested2')).toBe('none');
   // Nested block-flow list keeps the default li + li gap
   expect(await css(page, '#inlineNested2', 'margin-block-start')).not.toBe('0px');
@@ -77,13 +77,13 @@ test('.meta separators and .inline resets do not leak into nested lists', async 
 test('arrow marker points toward the text in RTL', async ({ page }) => {
   await load(page, NESTED, { dir: 'rtl' });
   const m = await marker(page, '#arrow1');
-  expect(m).toContain('⮜');
-  expect(m).not.toContain('➤');
+  expect(m).toContain('◂');
+  expect(m).not.toContain('▸');
 });
 
 test('arrow marker keeps the right-pointing glyph in LTR', async ({ page }) => {
   await load(page, NESTED);
-  expect(await marker(page, '#arrow1')).toContain('➤');
+  expect(await marker(page, '#arrow1')).toContain('▸');
 });
 
 /* ---------- kawaii theme ---------- */
