@@ -11,18 +11,18 @@
 </head>
 <body>
   <h1>Output Variants</h1>
-  <layout-stack data-layout-gap="xl" style="max-inline-size: 30rem;">
+  <layout-stack data-layout-gap="xl">
 
     <section>
       <h2>Basic Output</h2>
       <layout-stack data-layout-gap="m">
         <form-field>
-          <label>Calculated Total</label>
-          <output>$124.99</output>
+          <label for="ov-total">Calculated Total</label>
+          <output id="ov-total">$124.99</output>
         </form-field>
         <form-field>
-          <label>Result</label>
-          <output>42</output>
+          <label for="ov-result">Result</label>
+          <output id="ov-result">42</output>
         </form-field>
       </layout-stack>
     </section>
@@ -31,21 +31,21 @@
       <h2>Style Variants</h2>
       <layout-stack data-layout-gap="m">
         <form-field>
-          <label>Default</label>
-          <output>Default output</output>
+          <label for="ov-default">Default</label>
+          <output id="ov-default">Default output</output>
         </form-field>
         <form-field>
-          <label>.block</label>
-          <output class="block">Block-level output spanning full width</output>
+          <label for="ov-block">.block</label>
+          <output id="ov-block" class="block">Block-level output spanning full width</output>
         </form-field>
         <p>Inline variant: Your total is <output class="inline">$99.99</output> including tax.</p>
         <form-field>
-          <label>.highlight</label>
-          <output class="highlight">$1,234.56</output>
+          <label for="ov-highlight">.highlight</label>
+          <output id="ov-highlight" class="highlight">$1,234.56</output>
         </form-field>
         <form-field>
-          <label>.large</label>
-          <output class="large">$2,499.00</output>
+          <label for="ov-large">.large</label>
+          <output id="ov-large" class="large">$2,499.00</output>
         </form-field>
       </layout-stack>
     </section>
@@ -70,7 +70,7 @@
                  required
                  autocomplete="email"
                  aria-describedby="output-email-msg" />
-          <output id="output-email-msg" for="output-email" aria-live="polite">
+          <output id="output-email-msg" class="error" for="output-email">
             Enter a valid email address
           </output>
         </form-field>
@@ -81,9 +81,9 @@
     <section>
       <h2>Range Slider</h2>
       <form-field>
-        <label for="range-slider">Volume:</label> <output id="volume-val">50</output>%
-        <input type="range" id="range-slider" min="0" max="100" value="50"
-               oninput="document.getElementById('volume-val').value = this.value" />
+        <label for="range-slider">Volume</label>
+        <input type="range" id="range-slider" min="0" max="100" value="50" />
+        <p><output id="volume-val" for="range-slider" aria-live="off">50</output>%</p>
       </form-field>
     </section>
 
@@ -91,17 +91,22 @@
       <h2>Live Status</h2>
       <layout-stack data-layout-gap="m">
         <form-field>
-          <label>Connection Status</label>
-          <output class="success" aria-live="polite">Connected</output>
+          <label for="ov-conn">Connection Status</label>
+          <output id="ov-conn" class="success">Connected</output>
         </form-field>
         <form-field>
-          <label>Save Status</label>
-          <output aria-live="polite">All changes saved</output>
+          <label for="ov-save">Save Status</label>
+          <output id="ov-save">All changes saved</output>
         </form-field>
       </layout-stack>
     </section>
 
   </layout-stack>
   <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    const slider = document.getElementById('range-slider');
+    const out = document.getElementById('volume-val');
+    slider.addEventListener('input', () => { out.value = slider.value; });
+  </script>
 </body>
 </html>

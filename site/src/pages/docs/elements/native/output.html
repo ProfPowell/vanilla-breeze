@@ -27,8 +27,9 @@ crumbLabel: Native Elements
     <p>The <code>&lt;output&gt;</code> element is purpose-built for displaying results of calculations and user actions. It has three advantages that <code>&lt;div&gt;</code> and <code>&lt;span&gt;</code> lack:</p>
     <ul>
       <li><strong>Semantic meaning</strong>: Browsers and assistive technology understand that output contains a computed result</li>
-      <li><strong><code>aria-live</code> by default</strong>: Output has an implicit <code>aria-live="polite"</code> role, so screen readers announce changes automatically</li>
-      <li><strong><code>for</code> attribute</strong>: Directly associates the result with the input(s) that produced it, giving assistive technology a clear relationship</li>
+      <li><strong>A live region by default</strong>: Output has the implicit role <code>status</code>, which carries <code>aria-live="polite"</code> and <code>aria-atomic="true"</code>, so screen readers announce the whole new value when its content changes</li>
+      <li><strong>Labelable and form-associated</strong>: A <code>&lt;label for&gt;</code> names it, <code>form.elements</code> lists it, and <code>form.reset()</code> restores its default value</li>
+      <li><strong><code>for</code> attribute</strong>: Records which inputs produced the result (readable from script as <code>output.htmlFor</code>). Browsers do not expose this relationship to assistive technology; use <code>aria-describedby</code> or <code>aria-controls</code> for that</li>
     </ul>
 
     <table class="props-table">
@@ -44,7 +45,7 @@ crumbLabel: Native Elements
         <tr>
           <td><code>&lt;output&gt;</code></td>
           <td>Result of action</td>
-          <td>Native support with <code>for</code> attribute</td>
+          <td>Implicit <code>status</code> live region, labelable</td>
           <td>Recommended</td>
         </tr>
         <tr>
@@ -68,8 +69,8 @@ crumbLabel: Native Elements
     <p>Vanilla Breeze styles output as an <code>inline-block</code> element with monospace font, subtle raised background, and small border radius. Display a simple calculated or dynamic value:</p>
 
     <browser-window src="/docs/snippets/demos/output-variants.html" url="https://vanilla-breeze.com/output" title="Output variants and states" shadow></browser-window>
-    <code-block language="html" show-lines label="Basic output usage" data-escape><label>Calculated Total</label>
-<output>$124.99</output></code-block>
+    <code-block language="html" show-lines label="Basic output usage" data-escape><label for="total">Calculated Total</label>
+<output id="total">$124.99</output></code-block>
   </section>
 
   <section>
@@ -85,7 +86,7 @@ crumbLabel: Native Elements
       <tbody>
         <tr>
           <td><code>for</code></td>
-          <td>Space-separated IDs of related inputs</td>
+          <td>Space-separated IDs of the inputs the result is computed from. Metadata only (<code>output.htmlFor</code>); not exposed to assistive technology</td>
           <td><code>for="qty price"</code></td>
         </tr>
         <tr>
@@ -95,11 +96,12 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>name</code></td>
-          <td>Name for form submission</td>
+          <td>Name in <code>form.elements</code>. An output is <strong>not submitted</strong> with the form &mdash; copy the value into a hidden input if the server needs it</td>
           <td><code>name="total"</code></td>
         </tr>
       </tbody>
     </table>
+    <p>Set the result through the <code>value</code> property (same as <code>textContent</code>). The markup content is its <code>defaultValue</code>, which <code>form.reset()</code> restores.</p>
   </section>
 
   <section>
@@ -147,7 +149,7 @@ crumbLabel: Native Elements
 
   <section>
     <h2>State Variants</h2>
-    <p>Semantic colors for different message types. Each state uses an OKLCH-based tinted background with matching text color.</p>
+    <p>Semantic colors for different message types. Each state pairs a subtle tinted background token (<code>--color-success-subtle</code>, <code>--color-warning-subtle</code>, <code>--color-error-subtle</code>) with its matching text token, so they follow light/dark mode and themes. Color is not the only signal: the text itself must say what happened. In forced-colors mode the tints are dropped and every chip gets a system-color border instead.</p>
 
     <table class="props-table">
       <thead>
@@ -179,14 +181,14 @@ crumbLabel: Native Elements
 
   <section>
     <h2>For Validation Messages</h2>
-    <p>The primary use case in Vanilla Breeze. Pair with <a href="/docs/elements/custom-elements/form-field/">form-field</a> and <code>aria-describedby</code> for CSS-only validation feedback.</p>
+    <p>The primary use case in Vanilla Breeze. Pair with <a href="/docs/elements/custom-elements/form-field/">form-field</a> and <code>aria-describedby</code> for CSS-only validation feedback. Inside <code>form-field</code>, <code>output.hint</code> and <code>output.error</code> are messages, not results: they skip the monospace chip and take form-field's small message styling. The same applies to <code>output.error-summary</code>, checkbox-group outputs, and the <code>data-empty</code> / <code>data-loading</code> / <code>data-error</code> feedback outputs.</p>
     <code-block language="html" show-lines label="Output for form validation" data-escape><form-field>
   <label for="email">Email</label>
   <input type="email"
          id="email"
          required
          aria-describedby="email-msg" />
-  <output id="email-msg" for="email" aria-live="polite">
+  <output id="email-msg" class="error" for="email">
     Enter a valid email address
   </output>
 </form-field></code-block>
@@ -194,34 +196,45 @@ crumbLabel: Native Elements
 
   <section>
     <h2>With Range Slider</h2>
-    <p>Display the current value of a range input. The <code>for</code> attribute links the output to its source.</p>
-    <code-block language="html" show-lines label="Output with range slider" data-escape><label>Volume: <output id="volume">50</output>%</label>
-<input type="range" min="0" max="100" value="50"
-       oninput="document.getElementById('volume').value = this.value" /></code-block>
+    <p>Display the current value of a range input. Keep the <code>&lt;label&gt;</code> pointed at the slider with <code>for</code>: a label that <em>wraps</em> an output labels the output (the first labelable element inside it), leaving the slider unnamed. The slider already announces its own value, so <code>aria-live="off"</code> stops the output from repeating every step.</p>
+    <code-block language="html" show-lines label="Output with range slider" data-escape><label for="volume">Volume</label>
+<input type="range" id="volume" min="0" max="100" value="50" />
+<output id="volume-value" for="volume" aria-live="off">50</output>%
+
+<script type="module">
+  const slider = document.getElementById('volume');
+  const out = document.getElementById('volume-value');
+  slider.addEventListener('input', () => { out.value = slider.value; });
+</script></code-block>
   </section>
 
   <section>
     <h2>Calculated Values</h2>
-    <p>Display computed results from multiple inputs. The <code>for</code> attribute accepts a space-separated list of input IDs.</p>
+    <p>Display computed results from multiple inputs. The <code>for</code> attribute accepts a space-separated list of input IDs; give the output an <code>id</code> so a <code>&lt;label for&gt;</code> can name it.</p>
 
     <browser-window src="/docs/snippets/demos/output-calculated.html" url="https://vanilla-breeze.com/output/calculated" title="Calculated values and combined variants" shadow></browser-window>
-    <code-block language="html" show-lines label="Output for calculated values" data-escape><input type="number" id="qty" value="2" />
+    <code-block language="html" show-lines label="Output for calculated values" data-escape><label for="qty">Quantity</label>
+<input type="number" id="qty" value="2" />
+<label for="price">Price per item</label>
 <input type="number" id="price" value="29.99" />
-<output for="qty price" class="large highlight">$59.98</output></code-block>
+<label for="total">Total</label>
+<output id="total" for="qty price" class="large highlight">$59.98</output></code-block>
   </section>
 
   <section>
     <h2>Live Status Updates</h2>
-    <p>Use <code>aria-live="polite"</code> for dynamic content that should be announced by screen readers when it changes.</p>
-    <code-block language="html" show-lines label="Live status updates" data-escape><output class="success" aria-live="polite">Connected</output>
-<output aria-live="polite">All changes saved</output></code-block>
+    <p>An output is already a polite live region, so status text written into it is announced without extra ARIA. Keep the element in the page from the start and change its content; a live region inserted at the same moment as its text is often not announced.</p>
+    <code-block language="html" show-lines label="Live status updates" data-escape><output class="success">Connected</output>
+<output>All changes saved</output></code-block>
   </section>
 
   <section>
     <h2>Accessibility Notes</h2>
     <ul>
-      <li><strong>Use <code>for</code> attribute</strong>: Associates output with related input(s) for assistive technology</li>
-      <li><strong>Add <code>aria-live</code></strong>: Use <code>polite</code> for updates that should be announced (output has implicit live region semantics, but explicit is clearer)</li>
+      <li><strong>Implicit <code>role="status"</code></strong>: Changes are announced politely and atomically (the whole content is re-read). No <code>aria-live</code> is needed</li>
+      <li><strong>Silence chatty outputs</strong>: For values that change on every keystroke or slider step, set <code>aria-live="off"</code> &mdash; the control already announces its own value</li>
+      <li><strong>Name it with a label</strong>: <code>&lt;label for="output-id"&gt;</code> gives the output an accessible name; don't wrap a control and its output in one label</li>
+      <li><strong><code>for</code> is not an ARIA relationship</strong>: Browsers don't expose it to assistive technology</li>
       <li><strong>Link with <code>aria-describedby</code></strong>: Connect inputs to their validation outputs so screen readers announce the message when the input is focused</li>
       <li><strong>Don't use for static content</strong>: Output is for dynamic/calculated values</li>
       <li><strong>Include meaningful content</strong>: Always have useful text, not just icons</li>
@@ -230,51 +243,76 @@ crumbLabel: Native Elements
 
   <section>
     <h2>CSS Reference</h2>
-    <code-block language="css" show-lines label="Output CSS styles" data-escape>output {
+    <p>Message outputs (form-field hints and errors, the error summary, checkbox-group and feedback-state outputs) are excluded from all of these rules.</p>
+    <code-block language="css" show-lines label="Output CSS styles" data-escape>output:where(:not(
+  [data-empty], [data-loading], [data-error],
+  .hint, .error-summary, form-field .error,
+  :is(fieldset[data-min-checked], fieldset[data-max-checked]) > output
+)) {
   display: inline-block;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   padding: var(--size-2xs) var(--size-xs);
   background: var(--color-surface-raised);
   border-radius: var(--radius-s);
-}
 
-/* --- Style Variants --- */
+  /* An empty output (a result not computed yet) collapses to nothing
+     instead of rendering a blank chip. */
+  &:empty {
+    padding: 0;
+    background: transparent;
+  }
 
-output.block {
-  display: block;
-  padding: var(--size-s) var(--size-m);
-}
+  /* --- Output Variants --- */
 
-output.inline {
-  padding: 0;
-  background: transparent;
-}
+  /* Block output */
+  &.block {
+    display: block;
+    padding: var(--size-s) var(--size-m);
+  }
 
-output.highlight {
-  background: oklch(from var(--color-interactive) l c h / 0.1);
-  color: var(--color-interactive);
-}
+  /* Inline output (minimal) */
+  &.inline {
+    padding: 0;
+    background: transparent;
+  }
 
-output.large {
-  font-size: var(--font-size-xl);
-  padding: var(--size-s) var(--size-m);
-}
+  /* Highlighted output */
+  &.highlight {
+    background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
+    color: color-mix(in oklab, var(--color-interactive) 70%, var(--color-text));
+  }
 
-/* --- State Variants --- */
+  /* Large output (for prominent results) */
+  &.large {
+    font-size: var(--font-size-xl);
+    padding: var(--size-s) var(--size-m);
+  }
 
-output.success {
-  background: oklch(60% 0.18 145 / 0.1);
-  color: oklch(45% 0.15 145);
-}
+  /* --- Output States --- */
 
-output.warning {
-  background: oklch(75% 0.18 75 / 0.1);
-  color: oklch(55% 0.15 75);
-}
+  &.success {
+    background: var(--color-success-subtle);
+    color: var(--color-success-text);
+  }
 
-output.error {
-  background: oklch(55% 0.2 25 / 0.1);
-  color: oklch(50% 0.18 25);
+  &.warning {
+    background: var(--color-warning-subtle);
+    color: var(--color-warning-text);
+  }
+
+  &.error {
+    background: var(--color-error-subtle);
+    color: var(--color-error-text);
+  }
+
+  /* Forced colors drop the tinted backgrounds, so the chip and the state
+     variants would vanish into the text. Draw the chip edge instead. */
+  @media (forced-colors: active) {
+    &:not(:empty, .inline) {
+      border: 1px solid CanvasText;
+    }
+  }
 }</code-block>
   </section>
 

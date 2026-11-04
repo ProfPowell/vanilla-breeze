@@ -1,56 +1,83 @@
-/* output: Calculated result display */
-/* Exclude feedback outputs (data-empty, data-loading, data-error) which have their own styling */
+/* output: Calculated result display
+ *
+ * Result outputs (totals, slider values, status chips) get a small mono
+ * "readout" chip. Message outputs owned by other systems are excluded so the
+ * chip never leaks into them (font, padding, background they don't reset):
+ *   - feedback outputs: [data-empty] / [data-loading] / [data-error]
+ *     (utils/feedback-states.css)
+ *   - form-field messages: output.hint, form-field output.error,
+ *     output.error-summary, checkbox-group fieldset > output
+ *     (custom-elements/form-field, lib/form-coordinator.js)
+ * The exclusion list sits in :where() so the base rule has element-only
+ * specificity (0,0,1) and every variant class below wins over it. */
 
-output:not([data-empty]):not([data-loading]):not([data-error]) {
+output:where(:not(
+  [data-empty], [data-loading], [data-error],
+  .hint, .error-summary, form-field .error,
+  :is(fieldset[data-min-checked], fieldset[data-max-checked]) > output
+)) {
   display: inline-block;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   padding: var(--size-2xs) var(--size-xs);
   background: var(--color-surface-raised);
   border-radius: var(--radius-s);
-}
 
-/* --- Output Variants --- */
+  /* An empty output (a result not computed yet) collapses to nothing
+     instead of rendering a blank chip. */
+  &:empty {
+    padding: 0;
+    background: transparent;
+  }
 
-/* Block output */
-output.block {
-  display: block;
-  padding: var(--size-s) var(--size-m);
-}
+  /* --- Output Variants --- */
 
-/* Inline output (minimal) */
-output.inline {
-  padding: 0;
-  background: transparent;
-}
+  /* Block output */
+  &.block {
+    display: block;
+    padding: var(--size-s) var(--size-m);
+  }
 
-/* Highlighted output */
-output.highlight {
-  background: oklch(from var(--color-interactive) l c h / 0.1);
-  color: var(--color-interactive);
-}
+  /* Inline output (minimal) */
+  &.inline {
+    padding: 0;
+    background: transparent;
+  }
 
-/* Large output (for prominent results) */
-output.large {
-  font-size: var(--font-size-xl);
-  padding: var(--size-s) var(--size-m);
-}
+  /* Highlighted output */
+  &.highlight {
+    background: color-mix(in oklab, var(--color-interactive) 10%, transparent);
+    color: color-mix(in oklab, var(--color-interactive) 70%, var(--color-text));
+  }
 
-/* --- Output States --- */
+  /* Large output (for prominent results) */
+  &.large {
+    font-size: var(--font-size-xl);
+    padding: var(--size-s) var(--size-m);
+  }
 
-/* Success output */
-output.success {
-  background: var(--color-success-subtle);
-  color: var(--color-success-text);
-}
+  /* --- Output States --- */
 
-/* Warning output */
-output.warning {
-  background: var(--color-warning-subtle);
-  color: var(--color-warning-text);
-}
+  &.success {
+    background: var(--color-success-subtle);
+    color: var(--color-success-text);
+  }
 
-/* Error output */
-output.error {
-  background: var(--color-error-subtle);
-  color: var(--color-error-text);
+  &.warning {
+    background: var(--color-warning-subtle);
+    color: var(--color-warning-text);
+  }
+
+  &.error {
+    background: var(--color-error-subtle);
+    color: var(--color-error-text);
+  }
+
+  /* Forced colors drop the tinted backgrounds, so the chip and the state
+     variants would vanish into the text. Draw the chip edge instead. */
+  @media (forced-colors: active) {
+    &:not(:empty, .inline) {
+      border: 1px solid CanvasText;
+    }
+  }
 }
