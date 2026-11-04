@@ -1,25 +1,24 @@
 /**
  * Rating effect — progressive enhancement for star rating fieldsets.
- * Adds clear/unrate, rating:change events, and screen reader announcements.
+ *
+ * Opt in with `data-effect="rating"` on a `fieldset[data-rating]`. Adds:
+ *   - clear/unrate: activate the already-checked star again (click, Space)
+ *     or press Delete / Backspace on it
+ *   - `rating:change` events ({ detail: { value } }) on every change and clear
+ *   - a persistent polite live region that announces the clear (the checked
+ *     radio already announces its own "N stars, checked" state, so selection
+ *     is not announced twice)
+ *
+ * @attr {string} data-label-cleared - Clear announcement (default "Rating cleared")
+ *
+ * No init-marker attribute: VB's per-element instance map dedupes, and
+ * cleanup() removes everything init added (and VB's processed marker), so a
+ * removed + re-inserted fieldset is wired again from scratch.
  */
 
 import { VB } from '../lib/vb.js'
 
-const ANNOUNCE_DURATION = 1000
-
-function announce(message) {
-  const el = document.createElement('div')
-  el.setAttribute('role', 'status')
-  el.setAttribute('aria-live', 'polite')
-  Object.assign(el.style, {
-    position: 'absolute', width: '1px', height: '1px', padding: '0',
-    margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)',
-    whiteSpace: 'nowrap', border: '0',
-  })
-  el.textContent = message
-  document.body.appendChild(el)
-  setTimeout(() => el.remove(), ANNOUNCE_DURATION)
-}
+const DEFAULT_CLEARED = 'Rating cleared'
 
 function dispatch(fieldset, value) {
   fieldset.dispatchEvent(new CustomEvent('rating:change', {
@@ -27,58 +26,87 @@ function dispatch(fieldset, value) {
   }))
 }
 
-function getCheckedValue(fieldset) {
-  const checked = fieldset.querySelector('input[type="radio"]:checked')
-  return checked ? checked.value : '0'
+/** @param {EventTarget | null} t */
+function asRadio(t) {
+  return t instanceof HTMLInputElement && t.type === 'radio' ? t : null
 }
 
 VB.effect('rating', (el) => {
-  if (el.hasAttribute('data-effect-rating-init')) return
-  el.setAttribute('data-effect-rating-init', '')
-
   if (el.hasAttribute('data-rating-readonly')) return
 
-  let lastValue = getCheckedValue(el)
-  let pendingClear = false
+  // One persistent live region per fieldset: a region inserted with its
+  // text already set is often not announced, so it must exist up front.
+  const live = document.createElement('span')
+  live.setAttribute('data-rating-live', '')
+  live.setAttribute('role', 'status')
+  el.appendChild(live)
 
-  function onMousedown(e) {
-    const label = e.target.closest('label')
-    if (!label) return
-    const radio = label.querySelector('input[type="radio"]')
-    if (!radio) return
-    pendingClear = radio.checked && radio.value === lastValue
+  let clearTimer = 0
+  function announce(message) {
+    // Reset first so the same message twice in a row is announced again.
+    live.textContent = ''
+    clearTimeout(clearTimer)
+    clearTimer = window.setTimeout(() => { live.textContent = message }, 50)
   }
 
-  function onClick(e) {
-    if (!pendingClear) return
-    pendingClear = false
-    const label = e.target.closest('label')
-    if (!label) return
-    const radio = label.querySelector('input[type="radio"]')
-    if (!radio) return
+  function clear(radio) {
     radio.checked = false
-    lastValue = '0'
     dispatch(el, 0)
-    announce('Rating cleared')
+    announce(el.getAttribute('data-label-cleared') || DEFAULT_CLEARED)
+  }
+
+  // Click on the radio (direct, via its label, Space, or arrow keys). The
+  // radio is already checked when click listeners run, so the pre-click
+  // state is unknown here; `change` follows the click synchronously only
+  // when the selection really changed. Decide after the activation settles:
+  // no change event means the star was already checked, so clear it. This
+  // also stays correct after programmatic value changes and form resets.
+  let changedSinceClick = false
+  let clickTimer = 0
+  function onClick(e) {
+    const radio = asRadio(e.target)
+    if (!radio || !radio.checked) return
+    changedSinceClick = false
+    clearTimeout(clickTimer)
+    clickTimer = window.setTimeout(() => {
+      if (!changedSinceClick && radio.checked) clear(radio)
+    }, 0)
+  }
+
+  function onKeydown(e) {
+    if (e.key !== 'Delete' && e.key !== 'Backspace') return
+    const radio = asRadio(e.target)
+    if (!radio || !radio.checked) return
+    e.preventDefault()
+    clear(radio)
   }
 
   function onChange(e) {
-    if (e.target.type !== 'radio') return
-    if (pendingClear) return
-    lastValue = e.target.value
-    dispatch(el, Number(e.target.value))
-    announce(`Rating: ${e.target.value} ${Number(e.target.value) === 1 ? 'star' : 'stars'}`)
+    const radio = asRadio(e.target)
+    // Only a newly checked radio is a selection; ignore anything else.
+    if (!radio || !radio.checked) return
+    changedSinceClick = true
+    dispatch(el, Number(radio.value))
   }
 
-  el.addEventListener('mousedown', onMousedown)
   el.addEventListener('click', onClick)
+  el.addEventListener('keydown', onKeydown)
   el.addEventListener('change', onChange)
 
   return {
     cleanup() {
-      el.removeEventListener('mousedown', onMousedown)
+      clearTimeout(clearTimer)
+      clearTimeout(clickTimer)
       el.removeEventListener('click', onClick)
+      el.removeEventListener('keydown', onKeydown)
       el.removeEventListener('change', onChange)
+      live.remove()
+      // VB._cleanupElement drops the instance but leaves VB's own
+      // data-effect-processed marker, and _processElement skips marked
+      // nodes — so a removed + re-inserted fieldset would never be wired
+      // again. Clear the marker so re-insertion re-runs init. (Framework
+      // fix belongs in vb.js _cleanupElement; this keeps rating correct.)
+      el.removeAttribute('data-effect-processed')
     },
   }
 })

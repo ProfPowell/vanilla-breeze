@@ -23,8 +23,8 @@ const styles = `
     --_text:            var(--score-card-text, var(--color-text, #1a1a1a));
     --_muted:           var(--score-card-muted, var(--color-text-muted, #6b7280));
     --_accent:          var(--score-card-tone-accent, var(--color-interactive, var(--color-primary, #6366f1)));
-    --_trend-up:        var(--score-card-trend-up, var(--color-success, #16a34a));
-    --_trend-down:      var(--score-card-trend-down, var(--color-error, #dc2626));
+    --_trend-up:        var(--score-card-trend-up, var(--color-success-text, var(--color-success, #15803d)));
+    --_trend-down:      var(--score-card-trend-down, var(--color-error-text, var(--color-error, #b91c1c)));
     --_trend-flat:      var(--score-card-trend-flat, var(--color-text-muted, #6b7280));
     --_focus:           var(--color-focus-ring, var(--color-interactive, currentColor));
     --_duration:        var(--score-card-duration, var(--duration-fast, 150ms));
@@ -37,7 +37,6 @@ const styles = `
     border: var(--_border);
     border-radius: var(--_radius);
     padding: var(--_padding);
-    container-type: inline-size;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -86,6 +85,12 @@ const styles = `
   .sparkline   { grid-area: sparkline; }
   .description { grid-area: description; }
   .icon        { grid-area: icon; }
+
+  /* Slotted children are often block elements (<p>) so the no-JS form
+     stacks; outer-scope margins beat ::slotted() unless important. */
+  ::slotted(*) {
+    margin-block: 0 !important;
+  }
 
   .title ::slotted(*) {
     margin: 0;
@@ -180,6 +185,17 @@ const styles = `
   }
   :host(:state(loading)) .value { min-block-size: var(--_value-size); }
   :host(:state(loading)) .change { min-block-size: 1.4em; }
+
+  /* Forced colours drop the shimmer gradient; keep a visible skeleton edge
+     so hidden regions don't read as empty gaps. */
+  @media (forced-colors: active) {
+    :host(:state(loading)) .value,
+    :host(:state(loading)) .sparkline,
+    :host(:state(loading)) .change {
+      outline: 1px solid GrayText;
+      outline-offset: -1px;
+    }
+  }
 
   @keyframes score-card-shimmer {
     from { background-position: 200% 0; }

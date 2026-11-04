@@ -203,8 +203,16 @@ const BEHAVIOUR = [
             h.dispatchEvent(new KeyboardEvent('keyup', { key: 'End', bubbles: true })); await tick(600); });`, expected: 1 },
   { name: 'split-surface', demo: 'examples/demos/split-surface-basic.html', selector: 'split-surface',
     run: `return fired(el, 'split-surface:resize', () => key(q(el, '[role="separator"]'), 'ArrowRight'));`, expected: 1 },
+  // rating:change comes from the rating effect on the inner fieldset; the
+  // host's listen() wiring must sync the value exactly once.
   { name: 'star-rating', demo: 'examples/demos/rating-basic.html', selector: 'star-rating',
-    run: `q(el, 'input[value="4"]').click(); await tick(); return el.value;`, expected: 4 },
+    run: `const n = await fired(el, 'rating:change', () => q(el, 'input[value="4"]').click());
+          return [n, el.value, el.querySelectorAll('[data-rating-live]').length];`, expected: [1, 4, 1] },
+  // status-wc used to wrap its own dot + label in a new label on every setup().
+  { name: 'status-wc', demo: 'examples/demos/status-wc-variants.html', selector: 'status-wc',
+    run: `const n = await fired(el, 'status-wc:change', () => { el.variant = 'offline'; });
+          return [n, el.querySelectorAll('.status-dot').length, el.querySelectorAll('.status-label').length,
+                  el.querySelectorAll('.status-label .status-label').length];`, expected: [1, 1, 1, 0] },
   { name: 'stepper-wc', demo: 'examples/demos/stepper-wc-modes.html', selector: 'stepper-wc#px',
     run: `return fired(el, 'change', () => q(el, '.stepper-inc').click());`, expected: 1 },
   { name: 'tab-set', demo: 'examples/demos/dashboard-analytics.html', selector: 'tab-set',
@@ -281,3 +289,49 @@ for (const { name, demo, selector, run, expected } of BEHAVIOUR) {
     expect(result.value).toEqual(expected);
   });
 }
+
+/* ── Effects after a REAL removal ──────────────────────────────────────────
+ *
+ * The loop above reinserts synchronously, which VB's effect observer treats
+ * as a move (no cleanup). A real removal — remove, let the observer run,
+ * reinsert — runs the effect's cleanup(); the effect must then be wired
+ * again. The rating effect used to stay inert (init-marker attribute guard
+ * plus VB's data-effect-processed marker surviving cleanup).
+ */
+test('rating effect (star-rating and plain fieldset) re-wires after a real removal', async ({ page }) => {
+  await routeWorkingTree(page, 'star-rating');
+  await page.goto('/docs/examples/demos/rating-basic.html');
+  await page.waitForSelector('star-rating[name="wc-rating"][data-upgraded]', { state: 'attached' });
+  await page.waitForSelector('#js-rating [data-rating-live]', { state: 'attached' });
+
+  const result = await page.evaluate(async () => {
+    const frames = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const out = {};
+    for (const [label, el] of [
+      ['star-rating', document.querySelector('star-rating[name="wc-rating"]')],
+      ['fieldset', document.getElementById('js-rating')],
+    ]) {
+      const parent = el.parentNode;
+      const next = el.nextSibling;
+      el.remove();
+      await frames();
+      parent.insertBefore(el, next);
+      await frames();
+      const values = [];
+      const h = (e) => values.push(e.detail.value);
+      el.addEventListener('rating:change', h);
+      const radio = el.querySelector('input[value="3"]');
+      radio.click(); await wait(40);
+      radio.click(); await wait(40); // same star again: clear
+      el.removeEventListener('rating:change', h);
+      out[label] = { values, live: el.querySelectorAll('[data-rating-live]').length };
+    }
+    return out;
+  });
+
+  expect(result).toEqual({
+    'star-rating': { values: [3, 0], live: 1 },
+    fieldset: { values: [3, 0], live: 1 },
+  });
+});

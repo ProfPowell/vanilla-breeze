@@ -527,6 +527,10 @@ const VB = g[VB_SINGLETON_KEY] ?? {
       this._triggerCleanups.delete(el)
     }
     this._wiredTriggers?.delete(el)
+    // The instances are gone, so let _processElement initialise the element
+    // again if it is reinserted (otherwise every effect stays inert after a
+    // real remove + reinsert).
+    el.removeAttribute('data-effect-processed')
   },
 
   _reconcileEffects(el) {

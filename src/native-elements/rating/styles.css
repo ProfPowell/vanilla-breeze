@@ -35,32 +35,65 @@
   border: 0;
 }
 
-/* Base label (empty star) */
+/*
+ * Star colours. Filled vs empty is carried by SHAPE as well as colour:
+ * an empty text-glyph star is drawn as an outline (transparent fill +
+ * stroke), a filled one is solid. Icon children (icon-wc) inherit `color`.
+ *   --rating-color        filled star colour
+ *   --rating-color-empty  empty star outline colour
+ */
+[data-rating] {
+  --_rating-filled: var(--rating-color, var(--color-warning, oklch(75% 0.15 85)));
+  --_rating-empty: var(--rating-color-empty, var(--color-text-muted, oklch(50% 0 0)));
+}
+
+/* Base label (empty star: outline) */
 [data-rating] > label {
+  --_ink: var(--_rating-empty);
+  --_fill: transparent;
   font-size: 1.5rem;
   line-height: 1;
   cursor: var(--cursor-custom-pointer, pointer);
-  color: var(--color-border, oklch(75% 0 0));
-  transition: color var(--duration-fast) var(--ease-default);
+  color: var(--_ink);
+  -webkit-text-fill-color: var(--_fill);
+  -webkit-text-stroke: 0.06em var(--_ink);
+  transition: color var(--duration-fast) var(--ease-default),
+    -webkit-text-fill-color var(--duration-fast) var(--ease-default);
   padding: 0.1em;
   user-select: none;
 }
 
-/* Fill up to checked star */
+/* Fill up to checked star (solid) */
 [data-rating] > label:has(input:checked),
 [data-rating] > label:has(~ label > input:checked) {
-  color: var(--color-warning, oklch(75% 0.15 85));
+  --_ink: var(--_rating-filled);
+  --_fill: var(--_rating-filled);
 }
 
-/* Hover: reset non-hovered stars back to gray */
+/* Hover: reset non-hovered stars back to outline */
 [data-rating]:hover > label:not(:hover, :has(~ label:hover)) {
-  color: var(--color-border, oklch(75% 0 0));
+  --_ink: var(--_rating-empty);
+  --_fill: transparent;
 }
 
-/* Hover: fill up to hovered star */
+/* Hover: preview fill up to hovered star (solid, so not colour-only) */
 [data-rating]:hover > label:hover,
 [data-rating]:hover > label:has(~ label:hover) {
-  color: var(--color-warning, oklch(75% 0.15 85));
+  --_ink: var(--_rating-filled);
+  --_fill: var(--_rating-filled);
+}
+
+/* Persistent live region added by the rating effect (visually hidden) */
+[data-rating] > [data-rating-live] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Focus-visible outline on label when its input is focused */
@@ -93,6 +126,27 @@
 
 [data-rating-readonly] > label {
   cursor: default;
+}
+
+/* --- Forced colours ---
+ * System colours replace every author colour, which would make filled and
+ * empty stars identical. Opt the stars out and map them explicitly; the
+ * outline-vs-solid shape cue survives either way. */
+
+@media (forced-colors: active) {
+  [data-rating] {
+    --_rating-filled: Highlight;
+    --_rating-empty: CanvasText;
+  }
+
+  [data-rating] > label,
+  [data-rating] > span {
+    forced-color-adjust: none;
+  }
+
+  [data-rating] > label:has(input:focus-visible) {
+    outline-color: Highlight;
+  }
 }
 
 /* --- Reduced motion --- */
