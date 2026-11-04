@@ -1,20 +1,26 @@
 /**
  * version-switcher: surface and switch between versions of a page over time.
  *
- * Phase 1 of the plan at admin/shipped/version-switcher.md:
- *   - Inline data source (data-versions JSON OR <script type="application/json" data-versions>)
- *   - Trigger button + picker popover (composes <pop-over>)
- *   - 'navigate' action only (default; sets location.href)
- *   - Mode auto-detection (releases vs history; data-mode override)
- *   - A11y: aria-haspopup=dialog on trigger, role=dialog on picker
+ * Data sources (first match wins): inline `data-versions` JSON, a
+ * `<script type="application/json" data-versions>` child, a `data-src`
+ * manifest URL, or the `<meta name="vb:versions-manifest">` fallback.
+ * Actions: navigate (default), swap (same-origin region replace) and diff
+ * (line diff rendered into a <change-set>). Can mount inside a <page-info>
+ * panel and show an archived-version banner.
  *
- * Phase 2 (swap / diff actions) and Phase 3 (page-info integration,
- * banner, meta-fallback) ship as separate beads (c42e, j6uo, smb8).
+ * URL safety: every entry `url` / `versionUrl` is checked with
+ * `isDangerousUrl` (javascript:, vbscript:, data: …). An entry whose `url` is
+ * unsafe is dropped; an unsafe `versionUrl` drops only the changelog link.
+ * swap / diff only fetch same-origin URLs, and swapped markup is inserted
+ * through `sanitizeToFragment` so no inline `on*` handler goes live.
  *
  * @attr {string} data-versions  - Inline JSON array of version entries
+ * @attr {string} data-src       - URL of a JSON manifest
  * @attr {string} data-mode      - "releases" | "history" (default: derived)
- * @attr {string} data-action    - "navigate" (Phase 1 only; "swap"/"diff" in Phase 2)
- * @attr {string} aria-label     - Trigger label (default "Version")
+ * @attr {string} data-action    - "navigate" (default) | "swap" | "diff"
+ * @attr {string} aria-label     - What the switcher picks (default "Version");
+ *                                 names the trigger, picker and panel section
+ * @attr {string} data-label-*   - English string overrides, see LABELS
  *
  * Version entry shape:
  *   { id (required), label?, url?, date?, author?, summary?,
@@ -29,28 +35,57 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { getLocale } from '../../lib/i18n.js';
+import { isDangerousUrl, sanitizeToFragment } from '../../lib/sanitize-html.js';
 // Compose pop-over for the picker surface (mirrors reaction-bar / selection-menu).
 import '../pop-over/logic.js';
-// Phase 2: diff action composes <change-set> as the diff renderer.
-// text-diff was promoted from this component's private _diff.js to a
-// shared utility so any author can compose runtime diffs into <change-set>
-// directly. See /docs/concepts/diff-display/ for the recipe.
+// The diff action composes <change-set> as the diff renderer, fed by the
+// shared text-diff utility (see /docs/concepts/diff-display/).
 import '../change-set/logic.js';
 import { diffLines, renderDiffFragment } from '../../utils/text-diff.js';
+
+/** Default English strings; each is overridable with data-label-<key>. */
+const LABELS = {
+  trigger: 'Version',
+  loading: 'Loading…',
+  'loading-versions': 'Loading versions…',
+  empty: 'No versions available.',
+  'heading-releases': 'Versions',
+  'heading-history': 'History',
+  archived: 'archived',
+  draft: 'draft',
+  current: 'current',
+  by: 'by {author}',
+  changelog: 'Changelog',
+  'changelog-for': '{version} changelog',
+  'banner-label': 'Archived version notice',
+  banner: 'You’re viewing {version} (archived).',
+  'banner-latest': 'Latest: {version}',
+  diff: 'Diff: {from} → {to}',
+};
+
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
 let switcherSeq = 0;
 
 class VersionSwitcher extends VBElement {
-  static observedAttributes = ['data-versions', 'data-src'];
+  static observedAttributes = ['data-versions', 'data-src', 'data-mode', 'aria-label'];
 
   #versions = [];        // resolved entries
   #currentId = null;
   /** @type {HTMLButtonElement} */
   #trigger;
   #popover;
+  /** @type {HTMLElement} */
+  #pickerHeading;
+  /** @type {HTMLUListElement} */
   #pickerList;
   /** @type {HTMLElement | null} */
   #panelSection = null;  // set when mounted inside a <page-info> panel
+  /** @type {MutationObserver | null} */
+  #panelObserver = null;
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  #panelTimer = null;
   /** @type {HTMLElement | null} */
   #banner = null;        // set when data-banner is on AND current is archived
   /** @type {string | null} */
@@ -59,10 +94,6 @@ class VersionSwitcher extends VBElement {
   setup() {
     this.#resolveVersions();
 
-    if (!this.hasAttribute('aria-label')) {
-      this.setAttribute('aria-label', 'Version');
-    }
-
     this.#buildTrigger();
     this.#buildPopover();
     this.#wirePopover();
@@ -70,25 +101,52 @@ class VersionSwitcher extends VBElement {
     this.#renderPicker();
     this.#updateBanner();
 
-    // Phase 3: page-info mount target — render as a section inside the
-    // targeted page-info's expandable panel rather than (or in addition to)
-    // the standalone trigger.
+    // page-info mount target: render as a section inside the targeted
+    // page-info's expandable panel instead of the standalone trigger.
     if (this.hasAttribute('data-page-info-target')) {
       this.#mountInPageInfo();
     }
 
-    // Phase 3: if no inline data was found, kick off a fetch from data-src
-    // or the meta-tag fallback. Async — the trigger renders in a "Loading…"
-    // disabled state until the fetch resolves.
+    // No inline data: fetch from data-src or the meta-tag fallback. The
+    // trigger renders a disabled "Loading…" state until the fetch resolves.
     if (this.#versions.length === 0 && (this.getAttribute('data-src') || this.#metaManifestUrl())) {
       this.#fetchManifest();
     }
   }
 
+  teardown() {
+    // The panel section lives outside the host (inside <page-info>), so it
+    // does not move with the switcher: remove it and stop watching for it.
+    // setup() re-mounts on reconnect.
+    this.#panelObserver?.disconnect();
+    this.#panelObserver = null;
+    if (this.#panelTimer != null) clearTimeout(this.#panelTimer);
+    this.#panelTimer = null;
+    this.#panelSection?.remove();
+    this.#panelSection = null;
+    this.#pendingFetch = null;
+  }
+
   attributeChangedCallback(name, oldVal, newVal) {
-    if (!this.isConnected || oldVal === newVal) return;
+    if (!this.isConnected || oldVal === newVal || !this.#trigger) return;
     if (name === 'data-versions') this.refresh();
     if (name === 'data-src') this.#fetchManifest();
+    if (name === 'data-mode' || name === 'aria-label') this.#renderAll();
+  }
+
+  #label(key, vars = {}) {
+    let text = this.getAttribute(`data-label-${key}`) ?? LABELS[key] ?? key;
+    for (const [k, v] of Object.entries(vars)) text = text.replaceAll(`{${k}}`, String(v));
+    return text;
+  }
+
+  /** What this switcher picks: the author's aria-label, else data-label-trigger. */
+  #name() {
+    return this.getAttribute('aria-label') || this.#label('trigger');
+  }
+
+  #heading() {
+    return this.#label(this.#mode() === 'history' ? 'heading-history' : 'heading-releases');
   }
 
   // ── Data resolution ────────────────────────────────────────────────
@@ -116,11 +174,31 @@ class VersionSwitcher extends VBElement {
       }
     }
 
-    // Priority 3 (Phase 3): data-src + meta-tag fallback — out of scope here.
-
-    if (!Array.isArray(raw)) raw = [];
-    this.#versions = raw.filter((e) => e && typeof e.id === 'string');
+    // Priority 3: data-src / meta fallback — fetched asynchronously in setup().
+    this.#versions = this.#normalise(raw);
     this.#currentId = this.#deriveCurrentId();
+  }
+
+  /**
+   * Keep well-formed entries with safe URLs. An entry whose `url` is a
+   * script / data URL is dropped (it could only ever navigate there); an
+   * unsafe `versionUrl` loses just the changelog link.
+   * @param {unknown} raw
+   */
+  #normalise(raw) {
+    if (!Array.isArray(raw)) return [];
+    const out = [];
+    for (const e of raw) {
+      if (!e || typeof e.id !== 'string') continue;
+      const entry = { ...e };
+      if (entry.url != null && !isSafeUrl(entry.url)) {
+        this.#emitError(`Dropped version "${entry.id}": unsafe url.`, { entry });
+        continue;
+      }
+      if (entry.versionUrl != null && !isSafeUrl(entry.versionUrl)) delete entry.versionUrl;
+      out.push(entry);
+    }
+    return out;
   }
 
   #deriveCurrentId() {
@@ -147,7 +225,7 @@ class VersionSwitcher extends VBElement {
     return urls.size > 1 ? 'releases' : 'history';
   }
 
-  // ── Phase 3: data-src + meta-tag fallback fetch ────────────────────
+  // ── data-src + meta-tag fallback fetch ─────────────────────────────
 
   #metaManifestUrl() {
     return document.querySelector('meta[name="vb:versions-manifest"]')?.getAttribute('content');
@@ -166,13 +244,14 @@ class VersionSwitcher extends VBElement {
       if (!res.ok) throw new Error(`Fetch failed (${res.status}) for ${url}`);
       raw = await res.json();
     } catch (err) {
+      if (this.#pendingFetch !== url) return;
       this.#pendingFetch = null;
       this.#emitError(`Failed to load versions manifest: ${err.message}`, { error: err });
       this.#renderTrigger();
       return;
     }
 
-    // Bail if a newer fetch superseded us mid-request.
+    // Bail if a newer fetch (or a disconnect) superseded us mid-request.
     if (this.#pendingFetch !== url) return;
     this.#pendingFetch = null;
 
@@ -182,24 +261,28 @@ class VersionSwitcher extends VBElement {
       return;
     }
 
-    this.#versions = raw.filter((e) => e && typeof e.id === 'string');
+    this.#versions = this.#normalise(raw);
     this.#currentId = this.#deriveCurrentId();
+    this.#renderAll();
+  }
+
+  #renderAll() {
     this.#renderTrigger();
     this.#renderPicker();
     this.#updateBanner();
     if (this.#panelSection) this.#renderPanelSection();
   }
 
-  // ── Phase 3: archived-version banner ───────────────────────────────
+  // ── Archived-version banner ────────────────────────────────────────
 
   #updateBanner() {
-    if (!this.hasAttribute('data-banner')) return;
-    const current = this.#versions.find((e) => e.id === this.#currentId);
-    const latest = this.#versions.find((e) => !e.archived && !e.draft);
-
     // Tear down any prior banner first so a re-render doesn't duplicate.
     this.#banner?.remove();
     this.#banner = null;
+    if (!this.hasAttribute('data-banner')) return;
+
+    const current = this.#versions.find((e) => e.id === this.#currentId);
+    const latest = this.#versions.find((e) => !e.archived && !e.draft);
 
     // Banner only renders when current is archived AND a non-archived
     // "latest" exists to point at.
@@ -207,25 +290,41 @@ class VersionSwitcher extends VBElement {
 
     const banner = document.createElement('aside');
     banner.className = 'version-switcher-banner';
-    banner.setAttribute('role', 'region');
-    banner.setAttribute('aria-live', 'polite');
-    banner.setAttribute('aria-label', 'Archived version notice');
+    banner.setAttribute('aria-label', this.#label('banner-label'));
 
-    const text = document.createElement('span');
-    text.className = 'version-switcher-banner-text';
-    text.textContent = `You're viewing ${current.label || current.id} (archived).`;
-
-    const link = document.createElement('a');
-    link.className = 'version-switcher-banner-link';
-    if (latest.url) link.href = latest.url;
-    link.textContent = `Latest: ${latest.label || latest.id} →`;
-
-    banner.append(text, ' ', link);
+    // A polite status region, inserted EMPTY: live regions only announce
+    // changes made after the region is in the accessibility tree, so the
+    // notice text is filled in a couple of frames later.
+    const status = document.createElement('p');
+    status.className = 'version-switcher-banner-text';
+    status.setAttribute('role', 'status');
+    banner.append(status);
     this.prepend(banner);
     this.#banner = banner;
+
+    const fill = () => {
+      if (this.#banner !== banner) return;
+      status.textContent = this.#label('banner', { version: current.label || current.id });
+      const latestText = this.#label('banner-latest', { version: latest.label || latest.id });
+      // Only a real, safe URL becomes a link; otherwise plain text (an <a>
+      // without href is not focusable and reads as nothing useful).
+      if (latest.url && isSafeUrl(latest.url)) {
+        const link = document.createElement('a');
+        link.className = 'version-switcher-banner-link';
+        link.href = latest.url;
+        link.textContent = latestText;
+        banner.append(link);
+      } else {
+        const text = document.createElement('span');
+        text.className = 'version-switcher-banner-latest';
+        text.textContent = latestText;
+        banner.append(text);
+      }
+    };
+    requestAnimationFrame(() => requestAnimationFrame(fill));
   }
 
-  // ── Phase 3: mount inside <page-info>'s expandable panel ──────────
+  // ── Mount inside <page-info>'s expandable panel ────────────────────
 
   #mountInPageInfo() {
     const id = this.getAttribute('data-page-info-target');
@@ -250,18 +349,26 @@ class VersionSwitcher extends VBElement {
     if (tryMount()) return;
 
     // page-info hasn't rendered its panel yet (auto mode upgrade pending).
-    // Watch for it.
     const obs = new MutationObserver(() => {
-      if (tryMount()) obs.disconnect();
+      if (tryMount()) this.#stopPanelWatch();
     });
     obs.observe(target, { childList: true, subtree: true });
+    this.#panelObserver = obs;
 
-    // Safety timeout — give up after 5s and log the miss.
-    setTimeout(() => {
+    // Safety timeout — give up after 5s and report the miss.
+    this.#panelTimer = setTimeout(() => {
+      this.#panelTimer = null;
       if (this.#panelSection) return;
-      obs.disconnect();
+      this.#stopPanelWatch();
       this.#emitError(`<page-info id="${id}"> never rendered .page-info-panel within 5s.`);
     }, 5000);
+  }
+
+  #stopPanelWatch() {
+    this.#panelObserver?.disconnect();
+    this.#panelObserver = null;
+    if (this.#panelTimer != null) clearTimeout(this.#panelTimer);
+    this.#panelTimer = null;
   }
 
   /** @param {ParentNode} [panel] */
@@ -273,35 +380,23 @@ class VersionSwitcher extends VBElement {
     if (!section) {
       section = document.createElement('section');
       section.className = 'version-switcher-panel-section';
-      section.setAttribute('aria-label', this.getAttribute('aria-label') || 'Versions');
       const heading = document.createElement('h3');
       heading.className = 'version-switcher-panel-heading';
-      heading.textContent = this.#mode() === 'history' ? 'History' : 'Versions';
-      section.appendChild(heading);
+      heading.id = `version-switcher-panel-${++switcherSeq}`;
+      section.setAttribute('aria-labelledby', heading.id);
+      const list = document.createElement('ul');
+      list.className = 'version-switcher-panel-list';
+      section.append(heading, list);
       host.appendChild(section);
       this.#panelSection = section;
+      // The section is outside the host, so wire it here; listen() releases
+      // it on disconnect and teardown() removes the section.
+      this.listen(list, 'click', this.#onListClick);
     }
 
-    // Populate / repopulate the version list inside the section.
-    let list = /** @type {HTMLUListElement | null} */ (section.querySelector('ul.version-switcher-panel-list'));
-    if (!list) {
-      list = document.createElement('ul');
-      list.className = 'version-switcher-panel-list';
-      section.appendChild(list);
-    }
-    list.replaceChildren();
-
-    if (this.#versions.length === 0) {
-      const li = document.createElement('li');
-      li.className = 'version-switcher-empty';
-      li.textContent = this.#pendingFetch ? 'Loading versions…' : 'No versions available.';
-      list.appendChild(li);
-      return;
-    }
-
-    for (const entry of this.#versions) {
-      list.appendChild(this.#renderEntry(entry));
-    }
+    /** @type {HTMLElement} */ (section.querySelector('.version-switcher-panel-heading')).textContent = this.#heading();
+    const list = /** @type {HTMLUListElement} */ (section.querySelector('ul.version-switcher-panel-list'));
+    this.#fillList(list, this.#pendingFetch ? 'loading-versions' : 'empty');
   }
 
   // ── DOM build ──────────────────────────────────────────────────────
@@ -318,7 +413,7 @@ class VersionSwitcher extends VBElement {
     this.#trigger.className = 'version-switcher-trigger';
     this.#trigger.setAttribute('aria-haspopup', 'dialog');
     this.#trigger.setAttribute('aria-expanded', 'false');
-    // Initial label set in #renderTrigger.
+    // Label set in #renderTrigger.
     this.appendChild(this.#trigger);
   }
 
@@ -334,17 +429,15 @@ class VersionSwitcher extends VBElement {
     this.#popover.className = 'version-switcher-popover';
     this.#popover.dataset.position = 'bottom-end';
     this.#popover.setAttribute('role', 'dialog');
-    this.#popover.setAttribute('aria-label', this.getAttribute('aria-label') || 'Version');
 
-    const heading = document.createElement('h3');
-    heading.className = 'version-switcher-heading';
-    heading.textContent = this.#mode() === 'history' ? 'History' : 'Versions';
+    this.#pickerHeading = document.createElement('h3');
+    this.#pickerHeading.className = 'version-switcher-heading';
 
     this.#pickerList = document.createElement('ul');
     this.#pickerList.className = 'version-switcher-list';
     this.#pickerList.setAttribute('role', 'list');
 
-    this.#popover.append(heading, this.#pickerList);
+    this.#popover.append(this.#pickerHeading, this.#pickerList);
     this.appendChild(this.#popover);
   }
 
@@ -362,7 +455,7 @@ class VersionSwitcher extends VBElement {
       // Focus the current entry's row for keyboard users.
       const current = this.#pickerList.querySelector('[data-current="true"] button')
                   || this.#pickerList.querySelector('button');
-      requestAnimationFrame(() => current?.focus());
+      requestAnimationFrame(() => /** @type {HTMLElement|null} */ (current)?.focus());
     });
     this.listen(this.#popover, 'pop-over:hide', () => {
       this.#trigger.setAttribute('aria-expanded', 'false');
@@ -370,25 +463,33 @@ class VersionSwitcher extends VBElement {
     });
 
     this.listen(this.#pickerList, 'keydown', this.#onPickerKeydown);
+    this.listen(this.#pickerList, 'click', this.#onListClick);
   }
 
   #renderTrigger() {
+    if (!this.#trigger) return;
     const current = this.#versions.find((e) => e.id === this.#currentId);
     const loading = !!this.#pendingFetch && this.#versions.length === 0;
-    const label = loading ? 'Loading…' : (current?.label || current?.id || 'Version');
-    this.#trigger.replaceChildren();
+    const value = loading ? this.#label('loading') : (current?.label || current?.id || this.#label('trigger'));
     const text = document.createElement('span');
     text.className = 'version-switcher-trigger-label';
-    text.textContent = label;
+    text.textContent = value;
     const chevron = document.createElement('span');
     chevron.className = 'version-switcher-trigger-chevron';
     chevron.setAttribute('aria-hidden', 'true');
     chevron.textContent = '▾';
-    this.#trigger.append(text, chevron);
+    this.#trigger.replaceChildren(text, chevron);
+
+    // The visible text is only the version ("v2.1"); the accessible name says
+    // what is being picked too ("API version: v2.1"). The author's aria-label
+    // names the switcher; the host itself has no role, so it is applied here.
+    const name = this.#name();
+    this.#trigger.setAttribute('aria-label', value === name ? name : `${name}: ${value}`);
+    this.#popover?.setAttribute('aria-label', name);
 
     if (this.#versions.length === 0) {
       this.#trigger.disabled = true;
-      this.#trigger.setAttribute('title', loading ? 'Loading versions…' : 'No versions available');
+      this.#trigger.setAttribute('title', this.#label(loading ? 'loading-versions' : 'empty'));
     } else {
       this.#trigger.disabled = false;
       this.#trigger.removeAttribute('title');
@@ -397,108 +498,124 @@ class VersionSwitcher extends VBElement {
 
   #renderPicker() {
     if (!this.#pickerList) return;
-    this.#pickerList.replaceChildren();
+    // Heading is derived from the mode, which depends on the (possibly
+    // fetched) data and data-mode — so it is re-rendered with the list.
+    this.#pickerHeading.textContent = this.#heading();
+    this.#fillList(this.#pickerList, 'empty');
+  }
 
+  /**
+   * @param {HTMLUListElement} list
+   * @param {string} emptyKey label key for the empty-state row
+   */
+  #fillList(list, emptyKey) {
+    list.replaceChildren();
     if (this.#versions.length === 0) {
       const li = document.createElement('li');
       li.className = 'version-switcher-empty';
-      li.textContent = 'No versions available.';
-      this.#pickerList.appendChild(li);
+      li.textContent = this.#label(emptyKey);
+      list.appendChild(li);
       return;
     }
-
-    for (const entry of this.#versions) {
-      this.#pickerList.appendChild(this.#renderEntry(entry));
-    }
+    for (const entry of this.#versions) list.appendChild(this.#renderEntry(entry));
   }
 
   #renderEntry(entry) {
+    const isCurrent = entry.id === this.#currentId;
+    const name = entry.label || entry.id;
     const li = document.createElement('li');
     li.setAttribute('role', 'listitem');
+    li.className = 'version-switcher-item';
     li.dataset.versionId = entry.id;
-    if (entry.id === this.#currentId) li.dataset.current = 'true';
+    if (isCurrent) li.dataset.current = 'true';
     if (entry.archived) li.dataset.archived = '';
     if (entry.draft) li.dataset.draft = '';
 
+    // The button holds the label, badges and date: its accessible name is
+    // its own visible text. Author and summary sit beside it (described by),
+    // and the changelog link is a sibling — never interactive content
+    // nested inside a button.
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'version-switcher-entry';
-    button.setAttribute('aria-current', entry.id === this.#currentId ? 'true' : 'false');
+    button.setAttribute('aria-current', isCurrent ? 'true' : 'false');
 
     const labelLine = document.createElement('span');
     labelLine.className = 'version-switcher-entry-label';
-    labelLine.textContent = entry.label || entry.id;
-    if (entry.archived) {
+    labelLine.append(name);
+    const badge = (kind) => {
       const tag = document.createElement('span');
-      tag.className = 'version-switcher-badge version-switcher-badge-archived';
-      tag.textContent = 'archived';
-      labelLine.appendChild(tag);
-    }
-    if (entry.draft) {
-      const tag = document.createElement('span');
-      tag.className = 'version-switcher-badge version-switcher-badge-draft';
-      tag.textContent = 'draft';
-      labelLine.appendChild(tag);
-    }
-    if (entry.id === this.#currentId) {
-      const tag = document.createElement('span');
-      tag.className = 'version-switcher-badge version-switcher-badge-current';
-      tag.textContent = 'current';
-      labelLine.appendChild(tag);
-    }
+      tag.className = `version-switcher-badge version-switcher-badge-${kind}`;
+      tag.textContent = this.#label(kind);
+      labelLine.append(' ', tag);
+    };
+    if (entry.archived) badge('archived');
+    if (entry.draft) badge('draft');
+    if (isCurrent) badge('current');
     button.appendChild(labelLine);
 
     if (entry.date) {
       const date = document.createElement('time');
       date.className = 'version-switcher-entry-date';
       date.setAttribute('datetime', entry.date);
-      try { date.title = new Date(entry.date).toLocaleString(); } catch { /* ignore */ }
-      date.textContent = relativeTime(entry.date) || entry.date;
-      button.appendChild(date);
+      const locale = getLocale(this);
+      const absolute = formatAbsolute(entry.date, locale);
+      if (absolute) date.title = absolute;
+      date.textContent = formatRelative(entry.date, locale) || absolute || entry.date;
+      button.append(' ', date);
     }
+    li.appendChild(button);
 
+    const described = [];
+    const uid = `${this.#popover?.id || 'version-switcher'}-${cssSafe(entry.id)}-${++switcherSeq}`;
     if (entry.author) {
       const author = document.createElement('span');
       author.className = 'version-switcher-entry-author';
-      author.textContent = `by ${entry.author}`;
-      button.appendChild(author);
+      author.id = `${uid}-author`;
+      author.textContent = this.#label('by', { author: entry.author });
+      li.appendChild(author);
+      described.push(author.id);
     }
-
     if (entry.summary) {
       const summary = document.createElement('span');
       summary.className = 'version-switcher-entry-summary';
+      summary.id = `${uid}-summary`;
       summary.textContent = entry.summary;
-      button.appendChild(summary);
+      li.appendChild(summary);
+      described.push(summary.id);
     }
+    if (described.length) button.setAttribute('aria-describedby', described.join(' '));
 
-    if (entry.versionUrl) {
+    if (entry.versionUrl && isSafeUrl(entry.versionUrl)) {
       const link = document.createElement('a');
       link.className = 'version-switcher-entry-changelog';
       link.href = entry.versionUrl;
-      link.textContent = 'Changelog →';
-      // Stop click on the link from also triggering the entry button.
-      this.listen(link, 'click', (e) => e.stopPropagation());
-      button.appendChild(link);
+      link.setAttribute('aria-label', this.#label('changelog-for', { version: name }));
+      link.append(this.#label('changelog'));
+      const arrow = document.createElement('span');
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = ' →';
+      link.append(arrow);
+      li.appendChild(link);
     }
 
-    // Derived aria-label so AT users hear the whole picture in one announcement.
-    const parts = [entry.label || entry.id];
-    if (entry.date) parts.push(`released ${relativeTime(entry.date) || entry.date}`);
-    if (entry.archived) parts.push('archived');
-    if (entry.draft) parts.push('draft');
-    if (entry.id === this.#currentId) parts.push('current');
-    button.setAttribute('aria-label', parts.join(', '));
-
-    this.listen(button, 'click', () => this.#onEntryClick(entry));
-    li.appendChild(button);
     return li;
   }
 
-  // ── Picker keyboard nav ────────────────────────────────────────────
+  // ── Picker interaction ─────────────────────────────────────────────
+
+  /** Delegated click on a picker / panel list. */
+  #onListClick = (e) => {
+    const button = /** @type {Element} */ (e.target).closest?.('button.version-switcher-entry');
+    if (!button) return;
+    const id = /** @type {HTMLElement} */ (button.closest('[data-version-id]'))?.dataset.versionId;
+    const entry = this.#versions.find((v) => v.id === id);
+    if (entry) this.#onEntryClick(entry);
+  };
 
   #onPickerKeydown = (e) => {
     const entries = [...this.#pickerList.querySelectorAll('button.version-switcher-entry')];
-    const i = entries.indexOf(document.activeElement);
+    const i = entries.indexOf(/** @type {HTMLButtonElement} */ (document.activeElement));
     if (i === -1) return;
     let next = i;
     switch (e.key) {
@@ -508,7 +625,7 @@ class VersionSwitcher extends VBElement {
       case 'End':       e.preventDefault(); next = entries.length - 1; break;
       default: return;
     }
-    entries[next]?.focus();
+    /** @type {HTMLElement} */ (entries[next])?.focus();
   };
 
   // ── Selection / action ────────────────────────────────────────────
@@ -530,8 +647,16 @@ class VersionSwitcher extends VBElement {
   }
 
   #actionNavigate(entry) {
-    if (!entry?.url) {
-      this.#emitError('Cannot navigate: entry has no url.', { entry });
+    if (!entry?.url || !isSafeUrl(entry.url)) {
+      this.#emitError('Cannot navigate: entry has no safe url.', { entry });
+      return;
+    }
+    const target = new URL(entry.url, location.href);
+    // History-mode entries usually share the page URL. Navigating there
+    // would only reload the page you are on, so it is a no-op: give each
+    // revision its own URL (e.g. ?rev=…) or use data-action="swap" / "diff".
+    if (target.href === location.href) {
+      this.#emitError('Cannot navigate: entry url is the current page.', { entry });
       return;
     }
     const evt = new CustomEvent('version-switcher:before-navigate', {
@@ -540,10 +665,8 @@ class VersionSwitcher extends VBElement {
     const proceed = this.dispatchEvent(evt);
     if (!proceed) return;
     this.closePicker();
-    location.href = entry.url;
+    location.href = target.href;
   }
-
-  // ── Phase 2: swap action ──────────────────────────────────────────
 
   /** Selector that locates the swappable / diffable region in the page
    *  AND inside the fetched response document. */
@@ -555,23 +678,42 @@ class VersionSwitcher extends VBElement {
     return root.querySelector(this.#versionedSelector());
   }
 
+  /**
+   * swap / diff fetch the entry URL and read markup from it, so only
+   * same-origin, non-script URLs are allowed.
+   * @param {object} entry
+   * @param {string} verb
+   * @returns {URL | null}
+   */
+  #sameOriginUrl(entry, verb) {
+    if (!entry?.url || !isSafeUrl(entry.url)) {
+      this.#emitError(`Cannot ${verb}: entry has no safe url.`, { entry });
+      return null;
+    }
+    const url = new URL(entry.url, location.href);
+    if (url.origin !== location.origin) {
+      this.#emitError(`Cannot ${verb}: ${url.href} is not same-origin.`, { entry });
+      return null;
+    }
+    return url;
+  }
+
+  /** @param {URL} url */
   async #fetchVersionedRegion(url) {
     const res = await fetch(url, { credentials: 'same-origin' });
-    if (!res.ok) throw new Error(`Fetch failed (${res.status}) for ${url}`);
+    if (!res.ok) throw new Error(`Fetch failed (${res.status}) for ${url.href}`);
     const html = await res.text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const region = this.#findVersionedRegion(doc);
     if (!region) {
-      throw new Error(`No versioned region (${this.#versionedSelector()}) found in ${url}`);
+      throw new Error(`No versioned region (${this.#versionedSelector()}) found in ${url.href}`);
     }
     return region;
   }
 
   async #actionSwap(entry) {
-    if (!entry?.url) {
-      this.#emitError('Cannot swap: entry has no url.', { entry });
-      return;
-    }
+    const url = this.#sameOriginUrl(entry, 'swap');
+    if (!url) return;
 
     const target = this.#findVersionedRegion(document);
     if (!target) {
@@ -589,8 +731,11 @@ class VersionSwitcher extends VBElement {
 
     const apply = async () => {
       try {
-        const incoming = await this.#fetchVersionedRegion(entry.url);
-        target.replaceChildren(...incoming.childNodes);
+        const incoming = await this.#fetchVersionedRegion(url);
+        // Same-origin author content, but still sanitized: DOMParser keeps
+        // scripts inert, yet adopted on* handlers (<img onerror>) would fire
+        // once inserted. Fragment profile = include-file's (ids kept).
+        target.replaceChildren(sanitizeToFragment(incoming.innerHTML, { keepIds: true, keepStyle: true }));
       } catch (err) {
         this.#emitError(err.message, { entry, error: err });
         throw err;
@@ -599,12 +744,15 @@ class VersionSwitcher extends VBElement {
 
     try {
       if ('startViewTransition' in document) {
-        // updateCallbackDone resolves as soon as apply() finishes (after the
-        // DOM swap). We do NOT await .finished — that would block until the
-        // crossfade animation completes (potentially seconds), delaying the
-        // swap event + post-swap meta/render work. The animation runs in
-        // the background unaffected.
-        await document.startViewTransition(apply).updateCallbackDone;
+        // Typed transition so the crossfade timing in styles.css applies to
+        // this swap only, not to every view transition on the site. Older
+        // engines take only the callback form.
+        let vt;
+        try { vt = document.startViewTransition({ update: apply, types: ['version-swap'] }); }
+        catch { vt = document.startViewTransition(apply); }
+        // updateCallbackDone resolves as soon as apply() finishes; .finished
+        // would wait for the crossfade animation.
+        await vt.updateCallbackDone;
       } else {
         await apply();
       }
@@ -612,9 +760,7 @@ class VersionSwitcher extends VBElement {
       return; // error already emitted
     }
 
-    // Reflect the swapped state via the existing provenance meta tag.
-    // Uses meta[itemprop="version"] (open standard, what the provenance
-    // generator emits) rather than the non-standard meta[name=vb:version].
+    // Reflect the swapped state via the provenance meta tag.
     let meta = document.querySelector('meta[itemprop="version"]');
     if (!meta) {
       meta = document.createElement('meta');
@@ -624,21 +770,16 @@ class VersionSwitcher extends VBElement {
     meta.setAttribute('content', entry.id);
 
     this.#currentId = entry.id;
-    this.#renderTrigger();
-    this.#renderPicker();
+    this.#renderAll();
 
     this.dispatchEvent(new CustomEvent('version-switcher:swap', {
       bubbles: true, detail: { entry, previousId },
     }));
   }
 
-  // ── Phase 2: diff action ──────────────────────────────────────────
-
   async #actionDiff(entry) {
-    if (!entry?.url) {
-      this.#emitError('Cannot diff: entry has no url.', { entry });
-      return;
-    }
+    const url = this.#sameOriginUrl(entry, 'diff');
+    if (!url) return;
     const current = this.#findVersionedRegion(document);
     if (!current) {
       this.#emitError(`No versioned region (${this.#versionedSelector()}) on this page to diff against.`, { entry });
@@ -657,7 +798,7 @@ class VersionSwitcher extends VBElement {
 
     let other;
     try {
-      other = await this.#fetchVersionedRegion(entry.url);
+      other = await this.#fetchVersionedRegion(url);
     } catch (err) {
       this.#emitError(err.message, { entry, error: err });
       return;
@@ -666,13 +807,14 @@ class VersionSwitcher extends VBElement {
     // Drop any existing diff render before producing a new one.
     document.querySelectorAll('.version-switcher-diff-host').forEach((el) => el.remove());
 
-    // Line-level diff over textContent (markup-aware deferred per the plan).
+    // Line-level diff over textContent (markup-aware diffing is out of scope).
     const ops = diffLines(current.textContent.trim(), other.textContent.trim());
 
     const host = document.createElement('change-set');
     host.classList.add('version-switcher-diff-host');
     host.dataset.versionFrom = this.#currentId ?? '';
     host.dataset.versionTo = entry.id;
+    host.dataset.diffLabel = this.#label('diff', { from: this.#currentId ?? '', to: entry.id });
     host.appendChild(renderDiffFragment(ops));
 
     const position = this.getAttribute('data-diff-position') || 'before';
@@ -719,13 +861,10 @@ class VersionSwitcher extends VBElement {
   refresh() {
     this.#resolveVersions();
     // Guard: attributeChangedCallback can fire for initial attributes before
-    // setup() builds the trigger and picker DOM. In that case there's nothing
-    // to re-render — the upcoming setup() call will pick up the resolved data.
+    // setup() builds the trigger and picker DOM. The upcoming setup() call
+    // will pick up the resolved data.
     if (!this.#trigger || !this.#pickerList) return;
-    this.#renderTrigger();
-    this.#renderPicker();
-    this.#updateBanner();
-    if (this.#panelSection) this.#renderPanelSection();
+    this.#renderAll();
   }
 
   // ── Errors ─────────────────────────────────────────────────────────
@@ -737,20 +876,61 @@ class VersionSwitcher extends VBElement {
   }
 }
 
-// ── Local relative-time helper (keeps Phase 1 dependency-free) ─────────
+// ── Helpers ──────────────────────────────────────────────────────────
 
-function relativeTime(iso) {
+/** @param {unknown} url */
+function isSafeUrl(url) {
+  return typeof url === 'string' && url.trim() !== '' && !isDangerousUrl(url, false);
+}
+
+/** @param {string} s */
+function cssSafe(s) {
+  return String(s).replace(/[^\w-]/g, '_');
+}
+
+/**
+ * Parse an entry date; date-only ISO strings are calendar dates (UTC midnight
+ * by spec), so they are formatted in UTC to avoid an off-by-one day.
+ * @param {string} iso
+ */
+function parseDate(iso) {
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return null;
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * @param {string} iso
+ * @param {string} locale
+ */
+function formatAbsolute(iso, locale) {
+  const d = parseDate(iso);
+  if (!d) return null;
+  const opts = DATE_ONLY.test(iso)
+    ? { dateStyle: 'long', timeZone: 'UTC' }
+    : { dateStyle: 'long', timeStyle: 'short' };
+  try { return new Intl.DateTimeFormat(locale, /** @type {Intl.DateTimeFormatOptions} */ (opts)).format(d); }
+  catch { return d.toISOString(); }
+}
+
+/**
+ * @param {string} iso
+ * @param {string} locale
+ */
+function formatRelative(iso, locale) {
+  const d = parseDate(iso);
+  if (!d) return null;
   const diff = (Date.now() - d.getTime()) / 1000;
   if (diff < 0) return null;
+  let rtf;
+  try { rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }); }
+  catch { rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' }); }
   const MIN = 60, HOUR = 3600, DAY = 86400, MONTH = 2592000, YEAR = 31536000;
-  if (diff < MIN)   return 'just now';
-  if (diff < HOUR)  { const n = Math.floor(diff / MIN);   return `${n} minute${n!==1?'s':''} ago`; }
-  if (diff < DAY)   { const n = Math.floor(diff / HOUR);  return `${n} hour${n!==1?'s':''} ago`; }
-  if (diff < MONTH) { const n = Math.floor(diff / DAY);   return `${n} day${n!==1?'s':''} ago`; }
-  if (diff < YEAR)  { const n = Math.floor(diff / MONTH); return `${n} month${n!==1?'s':''} ago`; }
-  const y = Math.floor(diff / YEAR); return `${y} year${y!==1?'s':''} ago`;
+  if (diff < MIN)   return rtf.format(0, 'second');
+  if (diff < HOUR)  return rtf.format(-Math.floor(diff / MIN), 'minute');
+  if (diff < DAY)   return rtf.format(-Math.floor(diff / HOUR), 'hour');
+  if (diff < MONTH) return rtf.format(-Math.floor(diff / DAY), 'day');
+  if (diff < YEAR)  return rtf.format(-Math.floor(diff / MONTH), 'month');
+  return rtf.format(-Math.floor(diff / YEAR), 'year');
 }
 
 registerComponent('version-switcher', VersionSwitcher);

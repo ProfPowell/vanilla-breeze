@@ -232,6 +232,21 @@ describe('sanitizeHTML', () => {
     assert.equal(sanitizeHTML('<browser-window src="https://evil.example/" url="https://evil.example/"></browser-window>'), '<browser-window></browser-window>');
   });
 
+  it('strips inline version-switcher entries (data-versions carries navigation URLs)', { skip: !parse5 }, () => {
+    assert.equal(
+      sanitizeHTML('<version-switcher data-versions=\'[{"id":"a","url":"javascript:__hit()"}]\' data-src="/v.json" data-action="swap" aria-label="API version"></version-switcher>'),
+      '<version-switcher data-action="swap" aria-label="API version"></version-switcher>',
+    );
+    // the <script data-versions> child form is removed with every <script>
+    assert.equal(
+      sanitizeHTML('<version-switcher><script type="application/json" data-versions>[{"id":"a","url":"javascript:__hit()"}]</script></version-switcher>'),
+      '<version-switcher></version-switcher>',
+    );
+    // fragment profile (include-file partials are author content) keeps it
+    const authored = '<version-switcher data-versions="[]"></version-switcher>';
+    assert.equal(sanitizeHTML(authored, { keepIds: true }), authored);
+  });
+
   it('keeps media src on native-equivalent wrappers (still URL-checked)', { skip: !parse5 }, () => {
     assert.equal(sanitizeHTML('<audio-player src="/a.mp3"></audio-player>'), '<audio-player src="/a.mp3"></audio-player>');
     assert.equal(sanitizeHTML('<image-map src="/m.png" alt="m"></image-map>'), '<image-map src="/m.png" alt="m"></image-map>');

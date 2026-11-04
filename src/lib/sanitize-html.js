@@ -42,6 +42,9 @@
  * - `glossary-wc`    — sanitizes `definitionHtml` from `src` JSON or `.terms`
  * - `icon-wc`        — `sanitizeSVG` on fetched icon SVG
  * - `math-init`      — `sanitizeMathML` on `data-mathml`
+ * - `version-switcher` — swap action inserts the fetched (same-origin)
+ *   versioned region through the fragment profile; `isDangerousUrl` gates
+ *   every entry `url` / `versionUrl`
  *
  * ### What this strips (default "untrusted" profile)
  *
@@ -85,7 +88,9 @@
  *       tile-url host). The authored link / address inside survives.
  *     - Every other custom element (any tag with a hyphen) loses the
  *       attributes VB components fetch or post through: `src`, `src-dark`,
- *       `data-src`, `url`, `endpoint`, `tile-url` — card-list, glossary-wc,
+ *       `data-src`, `url`, `endpoint`, `tile-url`, plus `data-versions`
+ *       (inline version-switcher entries carry navigation / fetch URLs) —
+ *       card-list, glossary-wc,
  *       site-map, topic-map, notification-wc, version-switcher, chat-window /
  *       ai-chat / ai-summary (which POST page or user text to `endpoint`) and
  *       any future component. Exception: `<audio-player>`, `<video-player>`,
@@ -187,7 +192,7 @@ const EMBED_ELEMENTS = new Set(['social-embed', 'youtube-player', 'geo-map']);
  * embeds or posts to a URL. Stripped from every custom element except
  * MEDIA_SRC_ELEMENTS (include-file keeps its own allowIncludeFile rule).
  */
-const REMOTE_ATTRS = ['src', 'src-dark', 'data-src', 'url', 'endpoint', 'tile-url'];
+const REMOTE_ATTRS = ['src', 'src-dark', 'data-src', 'url', 'endpoint', 'tile-url', 'data-versions'];
 
 /** Custom elements whose src is a plain media / image URL (native-equivalent). */
 const MEDIA_SRC_ELEMENTS = new Set(['audio-player', 'video-player', 'image-map', 'brand-mark']);

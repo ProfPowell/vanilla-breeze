@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "version-switcher"
-description: "Surface and switch between versions of a page over time. Two modes (release versions / per-page history); navigate action ships in Phase 1."
+description: "Surface and switch between versions of a page over time: release versions or per-page history, with navigate, swap and diff actions, an archived-version banner and page-info mounting."
 elementName: version-switcher
 category: component
 currentPath: /docs/elements/web-components/version-switcher/
@@ -22,17 +22,13 @@ crumbLabel: Web Components
   <browser-window
     src="/docs/examples/demos/version-switcher-modes.html"
     url="https://vanilla-breeze.com/version-switcher"
-    title="version-switcher — Phase 1 demo"
+    title="version-switcher: modes"
     shadow>
   </browser-window>
 </section>
 
-<aside class="note">
-  <strong>All three phases shipped.</strong> All three actions (<code>navigate</code>, <code>swap</code>, <code>diff</code>), all three data sources (inline / <code>data-src</code> URL / <code>vb:versions-manifest</code> meta fallback), the archived-version banner, and <code>&lt;page-info&gt;</code> mounting all work today. See <a href="https://github.com/profpowell/vanilla-breeze/blob/main/admin/shipped/version-switcher.md">the full plan</a>.
-</aside>
-
 <section>
-  <h2>Phase 3: provenance integration</h2>
+  <h2>Provenance integration</h2>
 
   <h3>Meta-tag manifest fallback</h3>
   <p>If no inline <code>data-versions</code> and no <code>data-src</code> are provided, the component falls back to <code>&lt;meta name="vb:versions-manifest"&gt;</code> and fetches the URL listed there. The provenance build pipeline emits this tag from the page's <code>versionsManifest</code> frontmatter (per <a href="https://github.com/ProfPowell/vanilla-breeze/blob/main/admin/specs/meta-tag-contract-v1.md">meta-tag-contract-v1</a>).</p>
@@ -45,7 +41,7 @@ crumbLabel: Web Components
 <version-switcher aria-label="API version"></version-switcher></code-block>
 
   <h3>Archived-version banner</h3>
-  <p>Set <code>data-banner</code> to render a full-width warning banner above the trigger when the current version is archived AND a non-archived "latest" version exists. The banner uses <code>role="region"</code> + <code>aria-live="polite"</code> so screen-reader users hear the notice when it appears.</p>
+  <p>Set <code>data-banner</code> to render a full-width warning banner above the trigger when the current version is archived AND a non-archived "latest" version exists. The banner is a labelled <code>&lt;aside&gt;</code> holding a <code>role="status"</code> line. The line is inserted empty and filled a moment later, so screen readers announce the notice. The <q>Latest</q> pointer is a link only when the latest entry has a safe <code>url</code>.</p>
 
   <code-block language="html" show-lines label="Banner on archived pages" data-escape><version-switcher data-banner data-versions='[
   {"id":"v2.1","label":"v2.1","url":"/v2.1/api"},
@@ -53,16 +49,16 @@ crumbLabel: Web Components
 ]'></version-switcher>
 
 <!-- Renders an aside above the trigger:
-     "You're viewing v1.0 (archived). Latest: v2.1 →" -->
+     "You’re viewing v1.0 (archived). Latest: v2.1" -->
 </code-block>
 
   <h3>Mount inside <code>&lt;page-info&gt;</code></h3>
-  <p>Set <code>data-page-info-target="ID"</code> to render the version list as a section inside the named <code>&lt;page-info&gt;</code>'s expandable panel rather than as a standalone trigger. The standalone trigger is hidden in this mode — readers find versions inside the page-info panel alongside authorship + provenance.</p>
+  <p>Set <code>data-page-info-target="ID"</code> to render the version list as a section inside the named <code>&lt;page-info&gt;</code>'s expandable panel instead of a standalone trigger. The standalone trigger is hidden in this mode, so readers find versions in the page-info panel next to authorship and provenance. The section gets the same entry styling as the picker, and it is removed when the switcher leaves the page.</p>
 
   <code-block language="html" show-lines label="Mounted inside page-info" data-escape><page-info id="docs-page-info">
   <details>
     <summary>…</summary>
-    <div class="page-info-panel">…</div>
+    <section class="page-info-panel">…</section>
   </details>
 </page-info>
 
@@ -70,6 +66,13 @@ crumbLabel: Web Components
   data-page-info-target="docs-page-info"
   data-src="/data/versions/api.json"
 ></version-switcher></code-block>
+
+  <browser-window
+    src="/docs/examples/demos/version-switcher-phase3.html"
+    url="https://vanilla-breeze.com/version-switcher/provenance"
+    title="version-switcher: manifest, banner and page-info"
+    shadow>
+  </browser-window>
 </section>
 
 <section>
@@ -78,9 +81,9 @@ crumbLabel: Web Components
   <table class="props-table">
     <thead><tr><th>Action</th><th>Behavior</th></tr></thead>
     <tbody>
-      <tr><td><code>navigate</code> (default)</td><td>Sets <code>location.href</code> to the picked entry's <code>url</code>. Cancellable via <code>version-switcher:before-navigate</code>.</td></tr>
-      <tr><td><code>swap</code></td><td>Fetches the picked URL, extracts its versioned region, and replaces the current versioned region in place. Updates <code>&lt;meta name="vb:version"&gt;</code> with the picked id. Uses <code>document.startViewTransition</code> for a crossfade when supported. Emits <code>version-switcher:before-swap</code> (cancellable) then <code>version-switcher:swap</code>.</td></tr>
-      <tr><td><code>diff</code></td><td>Fetches the picked URL, computes a line-level diff against the current versioned region, and mounts a <a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a> sibling containing the diff (use the change-set's tracking-view buttons to flip between final / original / both). <code>data-diff-position="before|after"</code> controls placement. Emits <code>version-switcher:before-diff</code> (cancellable) then <code>version-switcher:diff</code>.</td></tr>
+      <tr><td><code>navigate</code> (default)</td><td>Sets <code>location.href</code> to the picked entry's <code>url</code>. Cancellable via <code>version-switcher:before-navigate</code>. If the url is the page you are on, as with history entries that share one URL, nothing reloads; a <code>version-switcher:error</code> fires instead. Give each revision its own URL (for example <code>/policy?rev=2026-04-01</code>), or use <code>swap</code> or <code>diff</code>.</td></tr>
+      <tr><td><code>swap</code></td><td>Fetches the picked URL (same-origin only), extracts its versioned region, sanitizes it, and replaces the current versioned region in place. Updates <code>&lt;meta itemprop="version"&gt;</code> with the picked id. Uses <code>document.startViewTransition</code> for a crossfade when supported. Emits <code>version-switcher:before-swap</code> (cancellable) then <code>version-switcher:swap</code>.</td></tr>
+      <tr><td><code>diff</code></td><td>Fetches the picked URL (same-origin only), computes a line-level diff against the current versioned region, and mounts a <a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a> sibling containing the diff (use the change-set's tracking-view buttons to flip between final / original / both). <code>data-diff-position="before|after"</code> controls placement. Emits <code>version-switcher:before-diff</code> (cancellable) then <code>version-switcher:diff</code>.</td></tr>
     </tbody>
   </table>
 
@@ -99,6 +102,13 @@ crumbLabel: Web Components
 <!-- A <change-set class="version-switcher-diff-host"> appears here on diff -->
 </code-block>
 
+  <browser-window
+    src="/docs/examples/demos/version-switcher-actions.html"
+    url="https://vanilla-breeze.com/version-switcher/actions"
+    title="version-switcher: swap and diff"
+    shadow>
+  </browser-window>
+
   <aside class="note">
     The diff action uses the shared <a href="/src/utils/text-diff.js"><code>text-diff</code></a> utility (line-level LCS). For other diff shapes (image, editorial, custom inputs), see the <a href="/docs/concepts/diff-display/">diff-display recipe</a>.
   </aside>
@@ -112,7 +122,7 @@ crumbLabel: Web Components
       <tr><td><code>&lt;version-switcher&gt;</code></td><td>Switch between known versions of THIS page (releases or history snapshots).</td></tr>
       <tr><td><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a></td><td>Show the current version + provenance + authors. <strong>Complementary &mdash; not the same.</strong> page-info answers "what version is this?"; version-switcher answers "what other versions exist?".</td></tr>
       <tr><td><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a></td><td>Site-wide changelog timeline (releases of the whole project).</td></tr>
-      <tr><td><a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a></td><td>Inline visual diff of authored markup (<code>&lt;ins&gt;</code>/<code>&lt;del&gt;</code>). version-switcher Phase 2's <code>diff</code> action will reuse this as its renderer.</td></tr>
+      <tr><td><a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a></td><td>Inline visual diff of authored markup (<code>&lt;ins&gt;</code>/<code>&lt;del&gt;</code>). The <code>diff</code> action renders into one.</td></tr>
     </tbody>
   </table>
 </section>
@@ -146,16 +156,25 @@ crumbLabel: Web Components
     <tbody>
       <tr><td><code>id</code></td><td>string</td><td>yes</td><td>Stable identifier (semver, commit sha, "current", etc.).</td></tr>
       <tr><td><code>label</code></td><td>string</td><td>no</td><td>Display label (defaults to <code>id</code>).</td></tr>
-      <tr><td><code>url</code></td><td>string</td><td>recommended</td><td>URL to navigate to. Required for the <code>navigate</code> action.</td></tr>
-      <tr><td><code>date</code></td><td>string (ISO-8601)</td><td>no</td><td>Renders as relative time with absolute on hover.</td></tr>
+      <tr><td><code>url</code></td><td>string</td><td>recommended</td><td>URL to navigate to (or fetch, for <code>swap</code> / <code>diff</code>). An entry whose url is a <code>javascript:</code>, <code>vbscript:</code> or <code>data:</code> URL is dropped.</td></tr>
+      <tr><td><code>date</code></td><td>string (ISO-8601)</td><td>no</td><td>Renders as a localised relative time (<code>Intl.RelativeTimeFormat</code>, nearest <code>[lang]</code>) with the full date in the tooltip.</td></tr>
       <tr><td><code>author</code></td><td>string</td><td>no</td><td>Useful in history mode.</td></tr>
       <tr><td><code>summary</code></td><td>string</td><td>no</td><td>One-line description (release-note excerpt or commit message).</td></tr>
       <tr><td><code>archived</code></td><td>boolean</td><td>no</td><td>Renders the "archived" badge and mutes the entry.</td></tr>
       <tr><td><code>draft</code></td><td>boolean</td><td>no</td><td>Renders the "draft" badge.</td></tr>
-      <tr><td><code>current</code></td><td>boolean</td><td>no</td><td>Marks the current entry. If absent, derived from a matching <code>&lt;meta name="vb:version"&gt;</code> or the first entry.</td></tr>
-      <tr><td><code>versionUrl</code></td><td>string</td><td>no</td><td>Optional link out to a changelog anchor (matches the <code>vb:version-url</code> meta tag semantics).</td></tr>
+      <tr><td><code>current</code></td><td>boolean</td><td>no</td><td>Marks the current entry. If absent, derived from a matching <code>&lt;meta itemprop="version"&gt;</code> or the first entry.</td></tr>
+      <tr><td><code>versionUrl</code></td><td>string</td><td>no</td><td>Optional link out to a changelog anchor (matches the <code>vb:version-url</code> meta tag semantics). Rendered beside the entry button, never inside it; an unsafe URL drops the link.</td></tr>
     </tbody>
   </table>
+</section>
+
+<section>
+  <h2>Security</h2>
+  <ul>
+    <li>Every entry <code>url</code> and <code>versionUrl</code>, and the banner's latest link, is checked against the shared sanitizer's <code>isDangerousUrl</code>. Script and <code>data:</code> URLs never reach an <code>href</code> or <code>location.href</code>.</li>
+    <li><code>swap</code> and <code>diff</code> only fetch same-origin URLs. Swapped markup goes through <code>sanitizeToFragment</code> (the include-file fragment profile), so scripts and inline <code>on*</code> handlers never go live.</li>
+    <li>The untrusted sanitizer profile removes <code>data-versions</code> and <code>data-src</code> from any custom element, and removes every <code>&lt;script&gt;</code>. User-generated markup cannot carry a version list.</li>
+  </ul>
 </section>
 
 <section>
@@ -177,13 +196,29 @@ sw.switchTo('v2.0');</code-block>
 <section>
   <h2>Accessibility</h2>
   <ul>
-    <li><strong>Trigger:</strong> <code>aria-haspopup="dialog"</code>, <code>aria-expanded</code> tracks open state, <code>aria-label</code> describes the version (default "Version").</li>
-    <li><strong>Picker:</strong> <code>role="dialog"</code> rendered by <code>&lt;pop-over&gt;</code> in the top layer; light-dismiss via Escape and outside click.</li>
-    <li><strong>Each entry:</strong> a button with derived <code>aria-label</code> like <q>v1.4, released 9 months ago, archived</q>.</li>
+    <li><strong>Trigger:</strong> <code>aria-haspopup="dialog"</code>, and <code>aria-expanded</code> tracks the open state. Its accessible name says what is being picked as well as the current value: the host's <code>aria-label</code> plus the version, such as <q>API version: v2.1</q>. The default is <q>Version</q> (<code>data-label-trigger</code>). The host itself has no role, so the label is applied to the trigger and the picker.</li>
+    <li><strong>Picker:</strong> <code>role="dialog"</code> rendered by <code>&lt;pop-over&gt;</code> in the top layer, named like the trigger; light-dismiss via Escape and outside click. The heading (<q>Versions</q> or <q>History</q>) follows the current mode, including after a manifest loads or <code>data-mode</code> changes.</li>
+    <li><strong>Each entry:</strong> a button whose name is its visible text: the label, any badges and the date, such as <q>v1.4 archived last year</q>. Author and summary sit beside the button and are linked with <code>aria-describedby</code>. The changelog link is a sibling of the button, never nested inside it.</li>
     <li><strong>Current entry:</strong> <code>aria-current="true"</code> + visual highlight; focused first when the picker opens.</li>
     <li><strong>Keyboard inside the picker:</strong> ArrowUp / ArrowDown move between entries; Home / End jump to first / last; Enter / Space activate.</li>
     <li><strong>Focus return:</strong> after the picker closes, focus returns to the trigger.</li>
+    <li><strong>Banner:</strong> a labelled <code>&lt;aside&gt;</code> with a <code>role="status"</code> line that is filled after insertion, so it is announced.</li>
   </ul>
+</section>
+
+<section id="localisation">
+  <h2>Localisation</h2>
+  <p>Every built-in string has a <code>data-label-*</code> override; <code>{placeholders}</code> are substituted. Dates use <code>Intl.RelativeTimeFormat</code> and <code>Intl.DateTimeFormat</code> with the nearest <code>[lang]</code>.</p>
+  <code-block language="html" show-lines label="French labels" data-escape><section lang="fr">
+  <version-switcher aria-label="Version de l’API"
+    data-label-heading-releases="Versions publiées"
+    data-label-current="actuelle"
+    data-label-archived="archivée"
+    data-label-banner="Vous consultez {version} (archivée)."
+    data-label-banner-latest="Dernière : {version}"
+    data-src="/data/versions/api.json"></version-switcher>
+</section></code-block>
+  <p>Keys: <code>trigger</code>, <code>loading</code>, <code>loading-versions</code>, <code>empty</code>, <code>heading-releases</code>, <code>heading-history</code>, <code>archived</code>, <code>draft</code>, <code>current</code>, <code>by</code> (<code>{author}</code>), <code>changelog</code>, <code>changelog-for</code> (<code>{version}</code>), <code>banner-label</code>, <code>banner</code> (<code>{version}</code>), <code>banner-latest</code> (<code>{version}</code>), <code>diff</code> (<code>{from}</code>, <code>{to}</code>).</p>
 </section>
 
 <section>
@@ -193,13 +228,14 @@ sw.switchTo('v2.0');</code-block>
     <tbody>
       <tr><td><code>data-versions</code></td><td>string (JSON)</td><td>&mdash;</td><td>Inline JSON array of version entries.</td></tr>
       <tr><td><code>data-src</code></td><td>string (URL)</td><td>&mdash;</td><td>URL of a JSON manifest to fetch when no inline data is provided. Falls back to <code>&lt;meta name="vb:versions-manifest"&gt;</code> if neither is set.</td></tr>
-      <tr><td><code>data-mode</code></td><td>string</td><td><em>derived</em></td><td><code>releases</code> | <code>history</code> &mdash; override the auto-detected mode.</td></tr>
+      <tr><td><code>data-mode</code></td><td>string</td><td><em>derived</em></td><td><code>releases</code> | <code>history</code> &mdash; override the auto-detected mode (sets the heading; observed).</td></tr>
       <tr><td><code>data-action</code></td><td>string</td><td><code>navigate</code></td><td><code>navigate</code> | <code>swap</code> | <code>diff</code>.</td></tr>
       <tr><td><code>data-versioned-region</code></td><td>string (CSS selector)</td><td><code>[data-versioned], main</code></td><td>Selector for the swappable / diffable region in this page AND in the fetched response document.</td></tr>
       <tr><td><code>data-diff-position</code></td><td>string</td><td><code>before</code></td><td><code>before</code> | <code>after</code> &mdash; where to mount the diff render relative to the versioned region.</td></tr>
       <tr><td><code>data-banner</code></td><td>boolean</td><td><code>false</code></td><td>Render an archived-version warning banner above the trigger when the current entry is archived AND a non-archived "latest" exists.</td></tr>
       <tr><td><code>data-page-info-target</code></td><td>string (ID)</td><td>&mdash;</td><td>ID of a <code>&lt;page-info&gt;</code> to mount inside as a section in its expandable panel; the standalone trigger is hidden in this mode.</td></tr>
-      <tr><td><code>aria-label</code></td><td>string</td><td><code>Version</code></td><td>Trigger / picker label.</td></tr>
+      <tr><td><code>aria-label</code></td><td>string</td><td><code>Version</code></td><td>What the switcher picks; names the trigger (<q>API version: v2.1</q>) and the picker.</td></tr>
+      <tr><td><code>data-label-*</code></td><td>string</td><td>English</td><td>String overrides; see <a href="#localisation">Localisation</a>.</td></tr>
     </tbody>
   </table>
 </section>
@@ -217,7 +253,7 @@ sw.switchTo('v2.0');</code-block>
       <tr><td><code>version-switcher:swap</code></td><td>yes</td><td><code>{ entry, previousId }</code></td></tr>
       <tr><td><code>version-switcher:before-diff</code></td><td>yes (cancellable)</td><td><code>{ entry }</code></td></tr>
       <tr><td><code>version-switcher:diff</code></td><td>yes</td><td><code>{ entry, previousId, diffElement, opCount }</code></td></tr>
-      <tr><td><code>version-switcher:error</code></td><td>yes</td><td><code>{ message, entry?, error? }</code></td></tr>
+      <tr><td><code>version-switcher:error</code></td><td>yes</td><td><code>{ message, entry?, error? }</code> &mdash; parse / fetch failures, dropped unsafe entries, cross-origin swap / diff, navigate to the current page.</td></tr>
     </tbody>
   </table>
 </section>
@@ -239,8 +275,8 @@ sw.switchTo('v2.0');</code-block>
 <section>
   <h2>See also</h2>
   <ul>
-    <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> &mdash; current-version provenance display (Phase 3 will mount switcher inside it).</li>
-    <li><a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a> &mdash; the diff renderer Phase 2 will compose.</li>
+    <li><a href="/docs/elements/web-components/page-info/"><code>&lt;page-info&gt;</code></a> &mdash; current-version provenance display; the switcher can mount inside its panel.</li>
+    <li><a href="/docs/elements/web-components/change-set/"><code>&lt;change-set&gt;</code></a> &mdash; the renderer the <code>diff</code> action composes.</li>
     <li><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a> &mdash; site-wide release timeline.</li>
     <li><a href="/docs/elements/web-components/pop-over/"><code>&lt;pop-over&gt;</code></a> &mdash; the picker surface.</li>
   </ul>
