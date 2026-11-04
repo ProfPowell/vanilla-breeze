@@ -155,6 +155,8 @@ class NotificationWc extends VBElement {
   #activeTab = 'all';
   /** @type {Array<{key: string, data: any, timestamp: number}>} Watch list rows */
   #watches = [];
+  /** @type {Array<any>} Notifications ingested from document-level notification-wc:new (page-watch) */
+  #ingested = [];
 
   setup() {
     const gen = ++this.#gen;
@@ -327,6 +329,9 @@ class NotificationWc extends VBElement {
 
   async #setupPanel(gen) {
     this.dataset.mode = 'panel';
+    // Attached before the first await so a page-watch change event that
+    // fires right after upgrade is not missed.
+    this.listen(document, 'notification-wc:new', this.#onExternalNew);
     await this.#loadReadState();
     if (!this.#alive(gen)) return;
     this.#renderTrigger();
@@ -456,7 +461,7 @@ class NotificationWc extends VBElement {
       });
     }
 
-    for (const n of this.#dynamic) {
+    for (const n of [...this.#ingested, ...this.#dynamic]) {
       if (!n || typeof n.id !== 'string') continue;
       if (n.dismissed) { byId.delete(n.id); continue; }
       byId.set(n.id, { ...byId.get(n.id), ...n, source: 'dynamic' });
@@ -522,6 +527,21 @@ class NotificationWc extends VBElement {
   }
 
   // ── Watch list (page-watch surface) ────────────────────────────────
+
+  /**
+   * Ingest a notification dispatched on the document by another script
+   * (page-watch-init's "content changed" record). Events a notification-wc
+   * emits itself for its own fetch path are ignored; ids are deduped.
+   * @param {Event} e
+   */
+  #onExternalNew = (e) => {
+    if (e.target instanceof Element && e.target.localName === 'notification-wc') return;
+    const n = /** @type {CustomEvent} */ (e).detail?.notification;
+    if (!n || typeof n.id !== 'string') return;
+    if (this.#ingested.some((x) => x.id === n.id)) return;
+    this.#ingested.push(n);
+    this.#renderList();
+  };
 
   #onWatchesChanged = () => { this.#loadWatches(); };
 

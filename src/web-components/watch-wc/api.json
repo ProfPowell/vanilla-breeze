@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/api.schema.json",
   "element": "watch-wc",
   "type": "web-component",
-  "description": "Drop-in wrapper for the data-watch-page button. Renders an icon, compact, or full-button variant that toggles whether the current page is in the user's VBStore('watches') list. State machine lives in src/utils/page-watch-init.js \u2014 this is a one-tag author convenience.",
+  "description": "Drop-in wrapper for the data-watch-page button. Renders an icon, compact, or full-button toggle (aria-pressed) that adds or removes the current page from the user's VBStore('watches') list. The state machine lives in src/utils/page-watch-init.js; the component repaints its label, icon and title from the button's aria-pressed.",
   "attributes": [
     {
       "name": "variant",
@@ -14,27 +14,54 @@
         "compact",
         "button"
       ],
-      "description": "Visual preset (default: icon)"
+      "default": "icon",
+      "description": "Visual preset. icon is named by aria-label (data-label-action); compact and button are named by their visible text. Changing it after upgrade re-renders."
     },
     {
       "name": "label",
       "kind": "data",
       "purpose": "config",
       "type": "string",
-      "description": "Override the visible text in compact and button variants. Defaults to 'Watch for updates' / 'Watching'."
+      "description": "Constant visible text for the compact and button variants, used in both states (overrides data-label-watch / data-label-watching). Ignored by the icon variant."
     },
     {
       "name": "server-sync",
       "kind": "data",
       "purpose": "config",
       "type": "boolean",
-      "description": "Per-instance opt-in for server-side sync via VBService('notify'). Sets window.vbPageWatch.serverSync = true before page-watch-init evaluates."
+      "description": "Turns on server-side sync via VBService('notify') for the whole page: sets the page-global window.vbPageWatch.serverSync flag, which every watch button (and the notification panel's unwatch) uses from then on. Equivalent to <meta name=\"vb-page-watch-server\" content=\"true\">."
     },
     {
-      "name": "data-variant",
+      "name": "data-label-watch",
       "kind": "data",
       "purpose": "config",
-      "description": "Reflected by the component to pick the visual variant in CSS"
+      "type": "string",
+      "default": "Watch for updates",
+      "description": "Visible text (and accessible name) of the compact/button variants while the page is not watched. Localisation hook."
+    },
+    {
+      "name": "data-label-watching",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Watching",
+      "description": "Visible text (and accessible name) of the compact/button variants while the page is watched. Localisation hook."
+    },
+    {
+      "name": "data-label-action",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Watch this page for updates",
+      "description": "Icon variant: the button's aria-label, and its tooltip while not watched. Localisation hook."
+    },
+    {
+      "name": "data-label-stop",
+      "kind": "data",
+      "purpose": "config",
+      "type": "string",
+      "default": "Stop watching this page",
+      "description": "Icon variant: tooltip while the page is watched. Localisation hook."
     }
   ],
   "events": [
@@ -51,7 +78,17 @@
         "url": "string",
         "subscriptionId": "string|null"
       },
-      "description": "Bubbles from the inner button when the user stops watching"
+      "description": "Bubbles from the inner button when the user stops watching (also dispatched by notification-wc's Watching tab)"
+    }
+  ],
+  "structure": [
+    {
+      "element": "button[data-watch-page][data-watch-wc]",
+      "description": "Generated toggle button with aria-pressed; icon variant carries aria-label, text variants a <span> label"
+    },
+    {
+      "element": "icon-wc",
+      "description": "bookmark / bookmark-check icon, aria-hidden"
     }
   ],
   "htmlvalidate": {
