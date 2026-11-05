@@ -20,6 +20,16 @@ layout-badge {
     oklch(from var(--_badge-hue) 0.42 min(c, 0.16) h),
     oklch(from var(--_badge-hue) 0.84 min(c, 0.12) h)
   );
+  /* Solid-badge text where contrast-color() is unsupported: black or white,
+     whichever contrasts more with the badge's own background, so it works in
+     either mode and under any theme. WCAG relative luminance is the y channel
+     of xyz-d65; at y = 0.1791 black and white give equal contrast. k is 1
+     (white, the D65 white point) below that and 0 (black) above it. */
+  --_badge-auto-k: clamp(0, (0.1791 - y) * 100000, 1);
+  --_badge-auto-ink: color(from var(--_badge-bg) xyz-d65
+    calc(0.9505 * var(--_badge-auto-k))
+    var(--_badge-auto-k)
+    calc(1.089 * var(--_badge-auto-k)));
 
   display: inline-flex;
   align-items: center;
@@ -52,46 +62,46 @@ layout-badge {
   &[data-color="primary"] {
     --_badge-hue: var(--color-interactive);
     --_badge-bg: var(--color-interactive);
-    --_badge-color: var(--color-text-on-interactive-auto, white);
+    --_badge-color: var(--color-text-on-interactive-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="success"] {
     --_badge-bg: var(--color-success);
-    --_badge-color: var(--color-text-on-success-auto, white);
+    --_badge-color: var(--color-text-on-success-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="warning"] {
     --_badge-bg: var(--color-warning);
-    --_badge-color: var(--color-text-on-warning-auto, var(--color-gray-900));
+    --_badge-color: var(--color-text-on-warning-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="error"] {
     --_badge-bg: var(--color-error);
-    --_badge-color: var(--color-text-on-error-auto, white);
+    --_badge-color: var(--color-text-on-error-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="info"] {
     --_badge-bg: var(--color-info);
-    --_badge-color: var(--color-text-on-info-auto, white);
+    --_badge-color: var(--color-text-on-info-auto, var(--_badge-auto-ink));
   }
 
   /* Theme-aware colors (respond to --hue-* variables) */
   &[data-color="brand"] {
     --_badge-hue: var(--color-primary);
     --_badge-bg: var(--color-primary);
-    --_badge-color: var(--color-text-on-primary-auto, var(--color-text-on-primary, white));
+    --_badge-color: var(--color-text-on-primary-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="secondary"] {
     --_badge-hue: var(--color-secondary);
     --_badge-bg: var(--color-secondary);
-    --_badge-color: var(--color-text-on-secondary-auto, white);
+    --_badge-color: var(--color-text-on-secondary-auto, var(--_badge-auto-ink));
   }
 
   &[data-color="accent"] {
     --_badge-hue: var(--color-accent);
     --_badge-bg: var(--color-accent);
-    --_badge-color: var(--color-text-on-accent-auto, var(--color-gray-900));
+    --_badge-color: var(--color-text-on-accent-auto, var(--_badge-auto-ink));
   }
 
   /* Variant: Subtle — tinted surface, mode-aware text */
