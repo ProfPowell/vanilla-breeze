@@ -16,6 +16,8 @@
 @layer bundle-theme {
   :root[data-theme~="nes"],
   [data-theme~="nes"] {
+    color-scheme: light;
+
     /* ===== COLORS ===== */
     /* Classic NES 4-color grayscale base */
     --_nes-color-black: oklch(0% 0 0);
@@ -668,13 +670,20 @@
 
     & :is(main, article) browser-window {
       --browser-window-bg: var(--color-surface);
-      --browser-window-header-bg: var(--color-primary);
+      /* Deep NES blue: dark enough for the status dots and a white focus ring */
+      --browser-window-header-bg: oklch(35% 0.15 250);
       --browser-window-content-bg: var(--_nes-color-white);
       --browser-window-border-color: var(--_nes-color-black);
       --browser-window-text-color: var(--_nes-color-white);
-      --browser-window-text-muted: var(--_nes-color-light);
-      --browser-window-url-bg: var(--color-surface);
-      --browser-window-hover-bg: var(--color-surface-alt);
+      /* White URL field with dark text; hovered icons go white on NES blue */
+      --browser-window-text-muted: var(--_nes-color-dark);
+      --browser-window-url-bg: var(--_nes-color-white);
+      --browser-window-hover-bg: var(--color-primary);
+      --browser-window-active-bg: var(--color-primary);
+      --browser-window-accent-color: var(--_nes-color-white);
+      --browser-window-close-color: oklch(68% 0.22 25);
+      --browser-window-minimize-color: var(--color-warning);
+      --browser-window-maximize-color: oklch(68% 0.18 145);
     }
 
     /* Tables */
@@ -732,6 +741,12 @@
   /* ===== DARK MODE ===== */
   :root[data-theme~="nes"][data-mode="dark"],
   [data-theme~="nes"][data-mode="dark"] {
+    /* Primary buttons: the 90% "white" label on the L65% dark primary was
+       2.41:1; use a deeper NES blue fill under it (4vhi). */
+    & :is(main, article) :is(button, .button):is(.primary, [data-variant="primary"]) {
+      background: oklch(44% 0.17 250);
+    }
+
     color-scheme: dark;
 
     --_nes-color-black: oklch(0% 0 0);
@@ -821,13 +836,19 @@
 
     & :is(main, article) browser-window {
       --browser-window-bg: var(--color-surface);
-      --browser-window-header-bg: linear-gradient(90deg, oklch(30% 0.15 250), oklch(45% 0.08 250));
+      /* Gradient ends at 38% so the dots and focus ring hold 3:1 across it */
+      --browser-window-header-bg: linear-gradient(90deg, oklch(30% 0.15 250), oklch(38% 0.08 250));
       --browser-window-content-bg: var(--color-surface-sunken);
       --browser-window-border-color: var(--_nes-color-light);
       --browser-window-text-color: var(--_nes-color-white);
       --browser-window-text-muted: var(--_nes-color-light);
       --browser-window-url-bg: var(--color-surface-sunken);
       --browser-window-hover-bg: var(--color-surface-alt);
+      --browser-window-active-bg: var(--color-surface-alt);
+      --browser-window-accent-color: var(--_nes-color-white);
+      --browser-window-close-color: oklch(70% 0.2 25);
+      --browser-window-minimize-color: var(--color-warning);
+      --browser-window-maximize-color: oklch(70% 0.18 145);
     }
   }
 }
