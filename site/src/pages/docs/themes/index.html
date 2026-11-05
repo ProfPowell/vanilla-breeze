@@ -856,6 +856,8 @@ currentPath: /docs/themes/
     </tbody>
   </table>
 
+  <p>Following the system preference needs no JavaScript. With no <code>data-mode</code> on <code>&lt;html&gt;</code> and a dark system setting, the core tokens use the same brighter primary and tinted dark surfaces as <code>data-mode="dark"</code>, so links and buttons keep 4.5:1 contrast on CSS-only pages. <code>data-mode="light"</code> still forces light mode under a dark system setting.</p>
+
   <h3>Theme + Mode Combinations</h3>
   <p>Themes can be combined with mode overrides:</p>
 
@@ -924,6 +926,16 @@ currentPath: /docs/themes/
   /* Optional: tinted surfaces */
   --color-background: oklch(12% 0.02 var(--hue-primary));
   --color-surface: oklch(16% 0.02 var(--hue-primary));
+}
+
+/* Same values for a dark system setting when no script sets data-mode */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="my-brand"]:not([data-mode="light"]) {
+    color-scheme: dark;
+    --color-primary: oklch(65% 0.15 var(--hue-primary));
+    --color-background: oklch(12% 0.02 var(--hue-primary));
+    --color-surface: oklch(16% 0.02 var(--hue-primary));
+  }
 }</code-block>
 
   <h3>Personality Theme</h3>
