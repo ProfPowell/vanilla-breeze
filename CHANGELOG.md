@@ -554,6 +554,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Contrast pass (themes, buttons, system dark mode).**
+  - **Colour tokens** — A dark system setting with no `data-mode` (CSS-only / no-JS pages) now gets the same dark primary seeds, hue-tinted dark surfaces, text, border and shadow tokens as `data-mode="dark"`: links went from 3.31 / 3.15 / 2.55:1 to 6.14 / 5.89 / 5.49:1 on background / surface / surface-raised. `data-mode="light"` still forces light under a dark OS. classic, minimal, modern and win9x mirror their own dark blocks the same way (links 2.48 → 5.40, 1.84 → 7.77, 3.99 → 5.99, 1.34 → 8.99), the brand and theme templates show the pattern, and a11y-dyslexia keeps its light primary seeds under dark mode. (3650)
+  - **button** — Without `contrast-color()` the label now falls back to black or white picked from the button's own fill (WCAG luminance), matching what `contrast-color()` chooses; fixed white was 3.3:1 on the dark-mode primary and failed on pale `--btn-color` fills. Labels now reach 4.5:1 on the button's own background in every theme: `.secondary` uses the interactive hover tone in nord, organic, glassmorphism, super2026, gruvbox and rose-pine; startup paints its gradient pill only on primary buttons (secondary/ghost were 1:1 / ~3:1); vaporwave's gradient is dimmed (white label 5.1:1, was 3.4 / 2.75); genai's gradient primary keeps a white label; nes dark primary buttons get a deeper blue fill (2.41 → 5.65). (4vhi)
+  - **layout-badge** — Solid badges without `contrast-color()` fall back to black or white from the badge's own luminance (dark-mode primary/brand 3.3 → 6.36:1, success 4.37 → 4.81:1). (nkfy)
+  - **browser-window (themes)** — URL text ≥ 4.5:1 and window dots, hover and focus ring ≥ 3:1 on the header: nes light (URL 1.17 → 13.58, focus ring 1 → 11.06) and dark, super2026 dark (dots 1.04 → 4.95, URL 3.99 → 7.56), 8bit light (dots 1:1 → 3.95+), win9x both modes (all three dots and the focus ring; the minimize dot was 1.11 against the gradient's light end), journal light (URL 3.81 → 4.91). Removed the unused `--browser-window-url-color` mapping. (5kag, m8vd, qvhc, 3yhd, hm8h, yciu)
+  - **Themes** — Fixed-palette themes declare a `color-scheme` matching their surfaces with no `data-mode`: 8bit, cyber and terminal `dark`; nes, win9x and alpha1999 `light`. Scrollbars, form controls and `light-dark()` now follow the theme. (aw6w)
+  - **Clones** — Cloning an upgraded component (`cloneNode`/`importNode`) now upgrades the copy; it carried `data-upgraded` and skipped `setup()`, so it had no listeners. (kkmj)
+
 - **U–Y-element review.**
   - **u** — In Chinese, Japanese and Korean text (`:lang(zh|ja|ko)`, but not `*-Latn`), `<u>` is now the proper-name mark, a solid `currentColor` underline under the line. Before, it was the red wavy spell-check line, which made names look like typos and clashed with CJK `<cite>`'s wavy book-title mark.
   - **ul**
