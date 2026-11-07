@@ -24,15 +24,21 @@ article.blog {
   }
 }
 
-/* Prose reading enhancements — Rutter readability triad */
+/* Prose reading enhancements — Rutter readability triad.
+   .blog is data-prose's typography plus a measure, centring and header/footer
+   spacing (it does not float images); both share these rules. */
 article.blog,
 article[data-prose] {
   line-height: var(--prose-line-height, 1.6);
   font-variant-numeric: oldstyle-nums proportional-nums;
 }
 
-/* Reading-distance model — larger text on wider viewports (prose only) */
-@media (width >= 64rem) {
+/* Reading-distance model — larger text when the surrounding column is wide.
+   Keyed to the nearest container (main, section, aside…), not the viewport,
+   so a prose article in a narrow sidebar column keeps body-size text on a
+   wide screen. (An element cannot query its own size, so this is the
+   column the article sits in.) */
+@container (inline-size >= 40rem) {
   article.blog,
   article[data-prose] {
     font-size: var(--font-size-l);
@@ -99,21 +105,33 @@ article.nested {
 
 /* Drop cap — large first letter for editorial content.
    The section arm applies only when the article has no direct <p>, so an
-   article with both an intro paragraph and sections gets one drop cap. */
+   article with both an intro paragraph and sections gets one drop cap.
+   Hooks (themes set these; they never restyle the geometry):
+     --drop-cap-lines   lines the cap spans (default 3)
+     --drop-cap-color   default --color-primary (not the link colour)
+     --drop-cap-font    default inherit
+     --drop-cap-weight  default 700
+   The float is the fallback; initial-letter replaces it where supported.
+   Both are logical, so the cap sits at the inline start in RTL. */
 article[data-drop-cap] > p:first-of-type::first-letter,
 article[data-drop-cap]:not(:has(> p)) > section:first-of-type > p:first-of-type::first-letter,
 p[data-drop-cap]::first-letter {
-  font-size: 3.5em;
+  font-size: calc(var(--drop-cap-lines, 3) * 1.1667em);
   float: inline-start;
   line-height: 0.75;
   margin-inline-end: 0.1em;
   margin-block-start: 0.05em;
-  font-weight: 700;
-  color: var(--color-interactive);
+  font-family: var(--drop-cap-font, inherit);
+  font-weight: var(--drop-cap-weight, 700);
+  color: var(--drop-cap-color, var(--color-primary));
 }
 
-/* Prose mode — auto-float images inside paragraphs (markdown/CMS content) */
-article[data-prose] p > img:not(:only-child) {
+/* Prose mode — float images inside paragraphs (markdown/CMS content).
+   CSS cannot see text nodes, so `<p><img> Text…</p>` and `<p><img></p>`
+   look the same to a selector (the img is the only element child of both):
+   every image that is a direct child of a paragraph floats. Put an image
+   that should span the column in a <figure> instead. */
+article[data-prose] p > :is(img, picture) {
   float: inline-end;
   margin-inline-start: var(--size-m);
   margin-block-end: var(--size-s);
@@ -121,12 +139,17 @@ article[data-prose] p > img:not(:only-child) {
   border-radius: var(--radius-m);
 }
 
+/* A float never spills past the next heading, rule or the footer. */
+article[data-prose] :where(h2, h3, h4, hr, footer) {
+  clear: both;
+}
+
 /* Drop cap upgrade — use initial-letter when supported */
 @supports (initial-letter: 3) {
   article[data-drop-cap] > p:first-of-type::first-letter,
   article[data-drop-cap]:not(:has(> p)) > section:first-of-type > p:first-of-type::first-letter,
   p[data-drop-cap]::first-letter {
-    initial-letter: 3;
+    initial-letter: var(--drop-cap-lines, 3);
     float: none;
     font-size: unset;
     line-height: unset;
@@ -136,7 +159,7 @@ article[data-prose] p > img:not(:only-child) {
   }
 }
 
-/* Prose hyphenation — requires lang attribute on <html> */
+/* Prose hyphenation — needs a lang attribute on the article or any ancestor */
 article.blog,
 article[data-prose] {
   hyphens: auto;

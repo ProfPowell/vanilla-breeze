@@ -63,9 +63,10 @@ const CALLOUT_RE = /^:::[ \t]*(note|info|tip|warning|danger)(?:[ \t]+([^\n]*?))?
 const escapeHTML = (s) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 /**
- * VB callout blocks: `:::warning Optional title` … `:::`. Rendered as
- * `<aside class="callout" role="note" data-kind>` with a visible title so the
- * kind is not conveyed by colour alone.
+ * VB callout blocks: `:::warning Optional title` … `:::`. Rendered as the
+ * shared callout primitive — `<aside data-callout="kind" role="note">` (styled
+ * by src/shapes/callouts.css, not by this component) — with a visible
+ * `[data-callout-title]` so the kind is not conveyed by colour alone.
  */
 const calloutExtension = {
   name: 'vbCallout',
@@ -84,8 +85,8 @@ const calloutExtension = {
   },
   /** @param {{ kind: string, title: string, tokens: any[] }} token */
   renderer(token) {
-    return `<aside class="callout" role="note" data-kind="${token.kind}">`
-      + `<p class="callout-title"><strong>${escapeHTML(token.title)}</strong></p>`
+    return `<aside data-callout="${token.kind}" role="note">`
+      + `<p data-callout-title><strong>${escapeHTML(token.title)}</strong></p>`
       + `${this.parser.parse(token.tokens)}</aside>\n`;
   },
 };

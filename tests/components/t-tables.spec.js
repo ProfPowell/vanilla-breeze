@@ -182,7 +182,7 @@ test.describe('row states and cells', () => {
 
 test('stripes skip hidden and detail rows', async ({ page }) => {
   await load(page, `
-    <table class="striped"><caption>Stripes</caption>
+    <table data-striped><caption>Stripes</caption>
       <thead><tr><th scope="col">N</th></tr></thead>
       <tbody>
         <tr><td>1</td></tr>

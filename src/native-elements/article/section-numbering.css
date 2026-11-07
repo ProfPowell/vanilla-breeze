@@ -1,31 +1,35 @@
 /* article[data-section-numbers]: Section-sign (§) numbering for legal/doc content.
-   Distinct from data-numbered (outline-style 1.1, 1.2 numbering). */
+   Distinct from data-numbered (outline-style 1.1, 1.2 numbering).
+
+   Counters span <section>s: layout-attributes.css drops the container-type
+   (whose style containment would scope the counters) from sections and
+   asides inside the article. Headings in a nested <aside> or <article> are
+   not numbered. The counter styles follow --numbered-style (default
+   decimal) and --numbered-sub-style (default lower-alpha), as in
+   data-numbered. */
 
 article[data-section-numbers] {
   counter-reset: vb-sec;
 }
 
-article[data-section-numbers] :is(h2, h3) {
+article[data-section-numbers] h2:not(article[data-section-numbers] :is(aside, article) h2) {
   counter-increment: vb-sec;
+  counter-reset: vb-subsec;
 }
 
-article[data-section-numbers] h2::before {
-  content: var(--sep-section, "\00A7") "\00A0" counter(vb-sec) "\2002";
+article[data-section-numbers] h2:not(article[data-section-numbers] :is(aside, article) h2)::before {
+  content: var(--sep-section, "\00A7") "\00A0" counter(vb-sec, var(--numbered-style, decimal)) "\2002";
   color: var(--color-interactive);
   font-variant-numeric: tabular-nums;
 }
 
 /* Nested: §1a, §1b style for h3 under data-section-numbers */
-article[data-section-numbers] h3 {
+article[data-section-numbers] h3:not(article[data-section-numbers] :is(aside, article) h3) {
   counter-increment: vb-subsec;
 }
 
-article[data-section-numbers] h2 {
-  counter-reset: vb-subsec;
-}
-
-article[data-section-numbers] h3::before {
-  content: var(--sep-section, "\00A7") "\00A0" counter(vb-sec) counter(vb-subsec, lower-alpha) "\2002";
+article[data-section-numbers] h3:not(article[data-section-numbers] :is(aside, article) h3)::before {
+  content: var(--sep-section, "\00A7") "\00A0" counter(vb-sec, var(--numbered-style, decimal)) counter(vb-subsec, var(--numbered-sub-style, lower-alpha)) "\2002";
   color: var(--color-interactive);
   font-variant-numeric: tabular-nums;
 }

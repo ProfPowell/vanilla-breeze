@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "table"
-description: "Tables display tabular data with full-width layout, collapsed borders, tabular numerals, and automatic row hover states. Includes striped, compact, bordered and minimal variants plus data attributes for density, alignment, sticky headers and columns, responsive card and scroll layouts, and row states."
+description: "Tables display tabular data with full-width layout, collapsed borders, tabular numerals, and automatic row hover states. Includes data-striped, data-bordered, data-density and minimal variants plus data attributes for density, alignment, sticky headers and columns, responsive card and scroll layouts, and row states."
 elementName: table
 category: native
 nativeGroup: Tables
@@ -79,55 +79,57 @@ crumbLabel: Native Elements
   </section>
 
   <section>
-    <h2>Variants</h2>
-    <p>Three class-based variants modify the table appearance. They can be combined freely. For a low-ink look use <a href="#minimal"><code>data-variant="minimal"</code></a>.</p>
+    <h2 id="variants">Variants</h2>
+    <p>Variants are data attributes on the <code>&lt;table&gt;</code> and combine freely. For a low-ink look use <a href="#minimal"><code>data-variant="minimal"</code></a>.</p>
 
     <browser-window src="/docs/snippets/demos/table-variants.html" url="table-variants.html" title="Striped, compact, and bordered table variants" shadow></browser-window>
-    <code-block language="html" show-lines label="Table variants" data-escape><table class="striped">
+    <code-block language="html" show-lines label="Table variants" data-escape><table data-striped>
   <!-- Alternating row backgrounds -->
 </table>
 
-<table class="compact">
+<table data-density="compact">
   <!-- Reduced cell padding -->
 </table>
 
-<table class="bordered">
+<table data-bordered>
   <!-- Full borders on all cells -->
 </table>
 
-<table class="striped compact bordered">
+<table data-striped data-bordered data-density="compact">
   <!-- Variants can be combined -->
 </table></code-block>
 
     <table>
       <thead>
         <tr>
-          <th scope="col">Class</th>
+          <th scope="col">Attribute</th>
           <th scope="col">Effect</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>.striped</code></td>
-          <td>Alternating backgrounds on odd <em>visible</em> rows (filtered, paged and detail rows are skipped), a light text-tinted wash distinct from the hover colour</td>
+          <td><code>data-striped</code></td>
+          <td>Alternating backgrounds on odd <em>visible</em> body rows (filtered, paged and detail rows are skipped). The stripe is the <code>--color-row-stripe</code> token, a light text-tinted wash distinct from the hover colour, shared with <a href="/docs/elements/native/dl/#striped"><code>dl[data-striped]</code></a>. Selected and highlighted rows keep their state tint over the stripe.</td>
         </tr>
         <tr>
-          <td><code>.compact</code></td>
-          <td>Reduced cell padding (<code>size-xs</code> / <code>size-s</code>)</td>
+          <td><code>data-bordered</code></td>
+          <td>Full borders on every cell using <code>var(--border-width-thin)</code> and <code>--color-border</code></td>
         </tr>
         <tr>
-          <td><code>.bordered</code></td>
-          <td>Full borders on every cell using <code>var(--border-width-thin)</code></td>
+          <td><code>data-density</code></td>
+          <td><code>compact</code> or <code>comfortable</code> cell padding (<a href="#data-density">below</a>)</td>
         </tr>
       </tbody>
     </table>
+
+    <p>Restyle the stripe for every striped table and description list at once by setting the token, for example <code>:root { --color-row-stripe: var(--color-primary-subtle); }</code>. Stripes are kept when printing. In forced-colours mode the system removes them, which is fine: they are a scanning aid, not information.</p>
   </section>
 
   <section>
     <h2>Data Attributes</h2>
 
-    <h3><code>data-density</code></h3>
-    <p>Controls cell padding independently of the <code>.compact</code> class. Useful when you want density control via attributes rather than classes. (Not the same as <a href="/docs/attributes/data-layout-density/"><code>data-layout-density</code></a>, which swaps the spacing scale for a whole region.)</p>
+    <h3 id="data-density"><code>data-density</code></h3>
+    <p>Controls cell padding. (Not the same as <a href="/docs/attributes/data-layout-density/"><code>data-layout-density</code></a>, which swaps the spacing scale for a whole region.)</p>
 
     <browser-window src="/docs/snippets/demos/table-density.html" url="table-density.html" title="Table density variants" shadow></browser-window>
     <code-block language="html" show-lines label="Density attribute" data-escape><table data-density="compact">

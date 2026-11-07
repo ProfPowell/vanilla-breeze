@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-bubble"
-description: "Chat bubble shapes for messaging UIs — incoming, outgoing, assistant, thought, typing, error, system variants with CSS shape() tails."
+description: "Chat bubble shapes for messaging UIs: incoming, outgoing, assistant, thought, typing, error and system variants with CSS shape() tails that mirror in right-to-left text."
 attributeName: data-bubble
 category: shapes
 attributeType: data
@@ -11,133 +11,99 @@ crumbHref: /docs/attributes/data/
 crumbLabel: Data Attributes
 ---
 
-<nav class="subnav" aria-label="Bubble sections">
-  <ul>
-    <li><a href="#overview">Overview</a></li>
-    <li><a href="#variants">Variants</a></li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#accessibility">Accessibility</a></li>
-    <li><a href="#demos">Demos</a></li>
-  </ul>
-</nav>
-
 <section id="overview">
   <h2>Overview</h2>
-  <p>The <code>data-bubble</code> attribute provides a full taxonomy of chat bubble shapes for messaging UIs. Each variant has a distinctive tail direction, background color, and alignment built from CSS <code>shape()</code> paths.</p>
+  <p><code>data-bubble</code> styles a paragraph as a chat bubble. Each value sets a background, an alignment and a tail drawn with CSS <code>shape()</code>. It is CSS-only, and it is meant for static or server-rendered conversations: transcripts, documentation and marketing pages.</p>
+  <p>For a live chat, use the components instead. <a href="/docs/elements/web-components/chat-window/"><code>&lt;chat-window&gt;</code></a> renders <a href="/docs/elements/custom-elements/chat-message/"><code>&lt;chat-message&gt;</code></a> and <a href="/docs/elements/custom-elements/chat-bubble/"><code>&lt;chat-bubble&gt;</code></a> elements, which have their own rounded styling and do not use <code>data-bubble</code>.</p>
 
-  <p>Bubbles are designed to be used inside a flex column container. Each variant sets its own <code>align-self</code> for correct left/right/center positioning.</p>
-</section>
-
-<section id="variants">
-  <h2>Variants</h2>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Value</th>
-        <th>Tail</th>
-        <th>Background</th>
-        <th>Alignment</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>incoming</code></td>
-        <td>Bottom-left</td>
-        <td><code>--color-surface-raised</code></td>
-        <td>Left</td>
-      </tr>
-      <tr>
-        <td><code>outgoing</code></td>
-        <td>Bottom-right</td>
-        <td><code>--color-primary</code></td>
-        <td>Right</td>
-      </tr>
-      <tr>
-        <td><code>assistant</code></td>
-        <td>Top-left</td>
-        <td>Tinted secondary</td>
-        <td>Left</td>
-      </tr>
-      <tr>
-        <td><code>thought</code></td>
-        <td>Cloud shape (no tail)</td>
-        <td><code>--color-surface-raised</code></td>
-        <td>Left</td>
-      </tr>
-      <tr>
-        <td><code>typing</code></td>
-        <td>Bottom-left (like incoming)</td>
-        <td><code>--color-surface-raised</code></td>
-        <td>Left</td>
-      </tr>
-      <tr>
-        <td><code>error</code></td>
-        <td>Left accent border (no clip)</td>
-        <td>Danger tint</td>
-        <td>Left</td>
-      </tr>
-      <tr>
-        <td><code>system</code></td>
-        <td>Pill (no clip)</td>
-        <td><code>--color-surface-sunken</code></td>
-        <td>Center</td>
-      </tr>
-    </tbody>
-  </table>
+  <browser-window src="/docs/examples/demos/css-shapes-chat.html" url="https://vanilla-breeze.com/shapes/chat" title="CSS Shapes: Chat Bubbles" shadow></browser-window>
 </section>
 
 <section id="usage">
   <h2>Usage</h2>
-
-  <h3>Basic chat conversation</h3>
-    <code-block language="html" label="Chat conversation" data-escape><!-- Chat container: flex column with gap -->
-<section class="chat-window">
+  <p>Put bubbles in a flex column. Each variant sets its own <code>align-self</code>, so incoming messages sit at the start and outgoing ones at the end. Name the sender in every message: a visible name, or visually hidden text as below. Side and colour alone do not tell a screen reader user who is speaking.</p>
+  <code-block language="html" show-lines label="A conversation" data-escape><section class="conversation" role="log" aria-label="Conversation with Alice">
   <p data-bubble="system">Today, 2:34 PM</p>
-
-  <p data-bubble="incoming">Hey, have you seen this?</p>
-  <p data-bubble="outgoing">Yes! Looks great.</p>
-
-  <p data-bubble="assistant">I can help with that.</p>
-  <p data-bubble="thought">Hmm, interesting idea...</p>
-
-  <!-- Typing indicator with animated dots -->
-  <p data-bubble="typing">
-    <span></span>
-    <span></span>
-    <span></span>
+  <p data-bubble="incoming"><span class="visually-hidden">Alice:</span> Have you seen this?</p>
+  <p data-bubble="outgoing"><span class="visually-hidden">You:</span> Yes! Looks great.</p>
+  <p data-bubble="typing" role="status">
+    <span class="visually-hidden">Alice is typing</span>
+    <span></span><span></span><span></span>
   </p>
-
-  <p data-bubble="error">Failed to send. Check connection.</p>
-  <p data-bubble="system">Alice left the conversation</p>
+</section></code-block>
+  <code-block language="css" label="The container" data-escape>.conversation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-s);
+}</code-block>
+  <p>The attribute name is shared with the range slider's value bubble (<code>&lt;input type="range" data-range data-bubble&gt;</code>). Chat styling skips <code>&lt;input&gt;</code>, so the two never collide.</p>
 </section>
 
-<style>
-  .chat-window {
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-s);
-    max-width: 500px;
-    padding: var(--size-l);
-  }
-</style></code-block>
+<section id="options">
+  <h2>Options</h2>
+  <table class="prose">
+    <thead><tr><th>Value</th><th>Tail / outline</th><th>Background</th><th>Alignment</th></tr></thead>
+    <tbody>
+      <tr><td><code>incoming</code></td><td>Bottom start corner</td><td><code>--color-surface-raised</code></td><td>Start</td></tr>
+      <tr><td><code>outgoing</code></td><td>Bottom end corner</td><td><code>--color-primary</code>, with <code>--color-text-on-primary-auto</code> text</td><td>End</td></tr>
+      <tr><td><code>assistant</code></td><td>Top start corner</td><td>20% <code>--color-secondary</code> tint</td><td>Start</td></tr>
+      <tr><td><code>thought</code></td><td>Cloud, no tail</td><td><code>--color-surface-raised</code></td><td>Start</td></tr>
+      <tr><td><code>typing</code></td><td>Bottom start corner, like <code>incoming</code></td><td><code>--color-surface-raised</code></td><td>Start</td></tr>
+      <tr><td><code>error</code></td><td>Accent border on the start edge, no shape</td><td>12% <code>--color-error</code> tint</td><td>Start</td></tr>
+      <tr><td><code>system</code></td><td>Pill, no shape</td><td><code>--color-surface-sunken</code></td><td>Centre</td></tr>
+    </tbody>
+  </table>
+  <p>The tails need CSS <code>shape()</code>. Without it, bubbles are rounded rectangles with the same colours and alignment. "Start" and "end" follow the writing direction, and in right-to-left text the tails mirror with the alignment.</p>
+  <p>The <code>typing</code> bubble animates its <strong>empty</strong> <code>&lt;span&gt;</code> children as dots. Spans with text, such as the visually hidden label, are left alone.</p>
+</section>
 
-  <h3>Typing indicator</h3>
-  <p>The <code>typing</code> bubble expects three empty <code>&lt;span&gt;</code> children for the animated dot indicators. The animation respects <code>prefers-reduced-motion</code>.</p>
+<section id="styling">
+  <h2>Styling</h2>
+  <table class="prose">
+    <thead><tr><th>Custom property</th><th>Default</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>--bubble-bg</code></td><td>Set by the variant</td><td>Bubble fill. It accepts gradients. Shaped variants paint it inside the tail shape.</td></tr>
+    </tbody>
+  </table>
+  <p>The shape is painted on a <code>::before</code> layer behind the text, and the bubble itself is not clipped. To recolour a variant, set <code>--bubble-bg</code> rather than <code>background</code>: a plain <code>background</code> would paint a rectangle behind the tail. For a shadow that follows the tail, use <code>filter: drop-shadow()</code>. The kawaii and cyber themes do both. Text colour is ordinary <code>color</code>. If you change <code>--bubble-bg</code> on <code>outgoing</code>, check the text contrast.</p>
 </section>
 
 <section id="accessibility">
   <h2>Accessibility</h2>
   <ul>
-    <li>Use semantic elements (<code>&lt;p&gt;</code>, <code>&lt;blockquote&gt;</code>) for bubble content</li>
-    <li>The typing indicator uses <code>opacity</code> animation, not content changes, to avoid screen reader noise</li>
-    <li>System messages use <code>text-align: center</code> and a pill shape for visual distinction</li>
-    <li>Error bubbles use a colored left border rather than color alone to indicate errors</li>
-    <li>All <code>data-morph</code> and typing animations are disabled when <code>prefers-reduced-motion: reduce</code> is active</li>
+    <li><strong>Name the sender in every message.</strong> Side, colour and tail are visual only.</li>
+    <li><strong>Mark the conversation as a log.</strong> <code>role="log"</code> on the container lets screen readers announce new messages that you append.</li>
+    <li><strong>Announce typing.</strong> Put <code>role="status"</code> on the <code>typing</code> bubble, with visually hidden text such as "Alice is typing". The dots are decorative and say nothing on their own.</li>
+    <li><strong>Errors need words.</strong> The error tint and border are decoration, so the text must say what failed. Use <code>role="alert"</code> when the error appears in response to an action.</li>
+    <li><strong>Reduced motion.</strong> The typing dots stop animating under <code>prefers-reduced-motion: reduce</code>.</li>
+    <li><strong>Forced colours and print.</strong> Every bubble gets a real border, with a thick edge on the side the tail was on, so incoming and outgoing messages stay distinguishable.</li>
+    <li><strong>Focus rings survive.</strong> Nothing is clipped, so links inside a bubble keep their full focus outline.</li>
   </ul>
 </section>
 
-<section id="demos">
-  <h2>Demos</h2>
-  <browser-window src="/docs/examples/demos/css-shapes-chat.html" url="https://vanilla-breeze.com/shapes/chat" title="CSS Shapes: Chat Bubbles" shadow></browser-window>
+<section id="examples">
+  <h2>Examples</h2>
+  <h3>Every variant</h3>
+  <code-block language="html" label="Variants" data-escape><p data-bubble="incoming">Incoming</p>
+<p data-bubble="outgoing">Outgoing</p>
+<p data-bubble="assistant">Assistant</p>
+<p data-bubble="thought">Thought</p>
+<p data-bubble="error" role="alert">Failed to send. Check your connection.</p>
+<p data-bubble="system">Alice left the conversation</p></code-block>
+  <h3>Right-to-left</h3>
+  <code-block language="html" label="RTL conversation" data-escape><section class="conversation" dir="rtl" lang="ar">
+  <p data-bubble="incoming">مرحبا!</p>
+  <p data-bubble="outgoing">الذيل ينعكس تلقائيا.</p>
+</section></code-block>
+  <p>The demo at the top of this page shows both.</p>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/custom-elements/chat-bubble/"><code>&lt;chat-bubble&gt;</code></a> &mdash; the component bubble used by <code>&lt;chat-message&gt;</code>.</li>
+    <li><a href="/docs/elements/web-components/chat-window/"><code>&lt;chat-window&gt;</code></a> and <a href="/docs/elements/web-components/ai-chat/"><code>&lt;ai-chat&gt;</code></a> &mdash; interactive chat UIs.</li>
+    <li><a href="/docs/attributes/data-callout/"><code>data-callout</code></a> &mdash; shaped callout boxes built the same way, including a <code>speech</code> shape.</li>
+    <li><a href="/docs/attributes/data-range/"><code>data-range</code></a> &mdash; the range slider, whose <code>data-bubble</code> is the value tooltip.</li>
+  </ul>
 </section>

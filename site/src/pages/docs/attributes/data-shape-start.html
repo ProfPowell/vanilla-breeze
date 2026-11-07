@@ -1,0 +1,118 @@
+---
+layout: attribute
+title: "data-shape-start / data-shape-end"
+description: "Section edges: clip the top or bottom edge of a section into a wave, chevron, scallop or diagonal with CSS shape(). Any start shape combines with any end shape."
+attributeName: data-shape-start
+category: shapes
+attributeType: data
+currentPath: /docs/attributes/data-shape-start/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p><code>data-shape-start</code> clips the top edge of an element and <code>data-shape-end</code> clips its bottom edge, so stacked page sections flow into each other with a wave, chevron, scallop or diagonal instead of a straight line. Use them on <code>&lt;section&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code> or <code>&lt;aside&gt;</code> that has a background colour; without a background there is nothing to see.</p>
+  <p>The shapes are pure CSS (<code>clip-path: shape()</code>), live in the <code>utils</code> layer and sit behind <code>@supports</code>, so browsers without <code>shape()</code> show a plain rectangle.</p>
+  <p>These are not <code>data-shape</code>: that attribute sets the shape of a <a href="/docs/elements/custom-elements/layout-badge/"><code>&lt;layout-badge&gt;</code></a>.</p>
+</section>
+
+<section id="usage">
+  <h2>Usage</h2>
+  <code-block language="html" label="Bottom edge, top edge, and both" data-escape><section data-shape-end="wave">
+  <h2>Our services</h2>
+  <p>The bottom edge is a wave.</p>
+</section>
+
+<section data-shape-start="chevron" data-shape-end="scallop">
+  <h2>How it works</h2>
+  <p>Chevron on top, scallop at the bottom.</p>
+</section></code-block>
+  <p>Every start value combines with every end value on the same element. VB adds padding on each shaped side equal to the shape depth plus a gap, so the content never runs into the clipped area.</p>
+</section>
+
+<section id="options">
+  <h2>Options</h2>
+  <table>
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-shape-start</code></td>
+        <td><code>wave</code>, <code>chevron</code>, <code>scallop</code>, <code>diagonal</code></td>
+        <td>Clips the top edge and adds <code>padding-block-start</code></td>
+      </tr>
+      <tr>
+        <td><code>data-shape-end</code></td>
+        <td><code>wave</code>, <code>chevron</code>, <code>scallop</code>, <code>diagonal</code></td>
+        <td>Clips the bottom edge and adds <code>padding-block-end</code></td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Any other value (including <code>none</code>) does nothing: no clip and no extra padding.</p>
+  <p>The edges are physical: the start edge is the top and the end edge is the bottom. They do not rotate in vertical writing modes. <code>diagonal</code> slopes the other way in right-to-left pages; the other shapes are symmetric.</p>
+</section>
+
+<section id="styling">
+  <h2>Styling</h2>
+  <table>
+    <thead>
+      <tr><th>Custom property</th><th>Default</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>--shape-depth</code></td>
+        <td><code>48px</code></td>
+        <td>How far the shape cuts into the element. A registered <code>&lt;length&gt;</code>, so it can be responsive (<code>clamp(2rem, 6vw, 5rem)</code>) but not a percentage. The cyber theme sets <code>40px</code>, kawaii <code>32px</code>.</td>
+      </tr>
+      <tr>
+        <td><code>--shape-edge-padding</code></td>
+        <td><code>var(--size-l)</code></td>
+        <td>The gap between the shape and the content. The padding on a shaped side is <code>--shape-depth</code> + <code>--shape-edge-padding</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>The padding on a shaped side is load-bearing and set with <code>!important</code>, so a <code>padding</code> rule on the section cannot shrink it below the depth and let the text be clipped. Change the gap with <code>--shape-edge-padding</code> instead. The unshaped sides keep your padding.</p>
+  <code-block language="css" label="A subtler, responsive edge" data-escape>.subtle-edge {
+  --shape-depth: clamp(1rem, 3vw, 2rem);
+  --shape-edge-padding: var(--size-m);
+}</code-block>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The shapes are decorative. They add no role and no text, so the section still needs its own heading.</li>
+    <li>Content is never clipped: the depth and the compensating padding are the same length, so on a narrow, tall section the last line stays clear of the edge.</li>
+    <li>The clip runs past the straight sides and the unshaped edge, so focus rings, outlines and shadows of links near those sides are not cut off. Only the shaped edge itself clips; the padding keeps content (and its focus rings) away from it.</li>
+    <li>In forced colours mode and in print the clip is removed. Backgrounds are flattened there, so the shape would only cut into the content.</li>
+  </ul>
+</section>
+
+<section id="examples">
+  <h2>Examples</h2>
+  <p>Bottom-only, top-only, mixed start and end, stacked sections and custom depths.</p>
+  <browser-window src="/docs/examples/demos/css-shapes-dividers.html" url="https://vanilla-breeze.com/shapes/dividers" title="CSS Shapes: Dividers and section edges" shadow></browser-window>
+  <code-block language="html" label="Stacked sections" data-escape><section data-shape-end="wave">
+  <h3>First section</h3>
+</section>
+<section data-shape-start="wave" data-shape-end="chevron">
+  <h3>Middle section</h3>
+</section>
+<section data-shape-start="chevron">
+  <h3>Final section</h3>
+</section></code-block>
+</section>
+
+<section id="related">
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/hr/"><code>&lt;hr&gt;</code></a> &mdash; shaped dividers (<code>hr.wave</code>, <code>hr.zigzag</code>, <code>hr.scallop</code>, <code>hr.diamonds</code>, <code>hr.dots</code>).</li>
+    <li><a href="/docs/attributes/data-clip/"><code>data-clip</code></a> &mdash; shape masks for images.</li>
+    <li><a href="/docs/attributes/data-cutout/"><code>data-cutout</code></a> &mdash; punch a hole through an element.</li>
+    <li><a href="/docs/attributes/data-border-shape/"><code>data-border-shape</code></a> &mdash; shaped frames around images.</li>
+    <li><a href="/docs/attributes/data-morph/"><code>data-morph</code></a> &mdash; animated clip shapes.</li>
+  </ul>
+</section>

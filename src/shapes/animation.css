@@ -1,16 +1,47 @@
 /* Shape animation
-   [data-morph] keyframe morphing between matching-point shapes.
-   All animations respect prefers-reduced-motion. */
+   [data-morph] animates clip-path between matching-point shapes.
+
+   Contract (WCAG 2.2.2 Pause, Stop, Hide):
+   - Finite by default: one cycle (2.5–4s), then the element is a plain
+     rectangle again.
+   - data-morph-loop opts into an infinite loop. A loop pauses on hover and
+     while the element or an ancestor has data-paused, and stops (clip
+     removed) while focus is inside it.
+   - prefers-reduced-motion, forced colours and print: no animation.
+   - The clip cuts at most --shape-morph-depth (default 0.75rem) into the
+     element, and non-media elements get that much padding by default, so
+     text is not clipped. Author padding wins; keep it >= the depth.
+   - data-morph yields to a static shape on the same element
+     (data-clip, data-cutout, data-border-shape, data-shape-start/-end):
+     both write clip-path and the animation would replace the shape. */
 
 @supports (clip-path: shape(from 0% 0%, close)) {
 
 [data-morph] {
+  --_morph-depth: var(--shape-morph-depth, 0.75rem);
   animation-duration: 3s;
-  animation-iteration-count: infinite;
+  animation-iteration-count: 1;
   animation-timing-function: ease-in-out;
 }
 
-/* ── Pulse ── subtle scale-like clip-path throb */
+[data-morph]:not(img, video, canvas, svg, picture, iframe) {
+  padding: var(--_morph-depth);
+}
+
+[data-morph][data-morph-loop] {
+  animation-iteration-count: infinite;
+}
+
+[data-morph][data-morph-loop]:is(:hover, [data-paused], [data-paused] *) {
+  animation-play-state: paused;
+}
+
+[data-morph]:focus-within,
+[data-morph]:is([data-clip], [data-cutout], [data-border-shape], [data-shape-start], [data-shape-end]) {
+  animation-name: none;
+}
+
+/* ── Pulse ── subtle inset throb */
 [data-morph="pulse"] {
   animation-name: shape-pulse;
 }
@@ -27,16 +58,16 @@
   }
   50% {
     clip-path: shape(
-      from 2% 2%,
-      line to 98% 2%,
-      line to 98% 98%,
-      line to 2% 98%,
+      from calc(var(--_morph-depth) / 2) calc(var(--_morph-depth) / 2),
+      line to calc(100% - var(--_morph-depth) / 2) calc(var(--_morph-depth) / 2),
+      line to calc(100% - var(--_morph-depth) / 2) calc(100% - var(--_morph-depth) / 2),
+      line to calc(var(--_morph-depth) / 2) calc(100% - var(--_morph-depth) / 2),
       close
     );
   }
 }
 
-/* ── Breathe ── organic breathing motion between curved shapes */
+/* ── Breathe ── curved bottom morphs into a curved top */
 [data-morph="breathe"] {
   animation-name: shape-breathe;
   animation-duration: 4s;
@@ -47,17 +78,17 @@
     clip-path: shape(
       from 0% 0%,
       line to 100% 0%,
-      line to 100% 80%,
-      curve to 50% 100% with 75% 115%,
-      curve to 0% 80% with 25% 115%,
+      line to 100% calc(100% - var(--_morph-depth)),
+      curve to 50% 100% with 75% calc(100% + var(--_morph-depth) * 0.75),
+      curve to 0% calc(100% - var(--_morph-depth)) with 25% calc(100% + var(--_morph-depth) * 0.75),
       close
     );
   }
   50% {
     clip-path: shape(
-      from 0% 20%,
-      curve to 50% 0% with 25% -15%,
-      curve to 100% 20% with 75% -15%,
+      from 0% var(--_morph-depth),
+      curve to 50% 0% with 25% calc(0% - var(--_morph-depth) * 0.75),
+      curve to 100% var(--_morph-depth) with 75% calc(0% - var(--_morph-depth) * 0.75),
       line to 100% 100%,
       line to 0% 100%,
       close
@@ -65,7 +96,7 @@
   }
 }
 
-/* ── Wave ── horizontal wave undulation */
+/* ── Wave ── top and bottom edges undulate */
 [data-morph="wave"] {
   animation-name: shape-wave;
   animation-duration: 2.5s;
@@ -74,31 +105,31 @@
 @keyframes shape-wave {
   0%, 100% {
     clip-path: shape(
-      from 0% 10%,
+      from 0% var(--_morph-depth),
       curve to 25% 0% with 12.5% 0%,
-      curve to 50% 10% with 37.5% 0%,
+      curve to 50% var(--_morph-depth) with 37.5% 0%,
       curve to 75% 0% with 62.5% 0%,
-      curve to 100% 10% with 87.5% 0%,
-      line to 100% 90%,
+      curve to 100% var(--_morph-depth) with 87.5% 0%,
+      line to 100% calc(100% - var(--_morph-depth)),
       curve to 75% 100% with 87.5% 100%,
-      curve to 50% 90% with 62.5% 100%,
+      curve to 50% calc(100% - var(--_morph-depth)) with 62.5% 100%,
       curve to 25% 100% with 37.5% 100%,
-      curve to 0% 90% with 12.5% 100%,
+      curve to 0% calc(100% - var(--_morph-depth)) with 12.5% 100%,
       close
     );
   }
   50% {
     clip-path: shape(
       from 0% 0%,
-      curve to 25% 10% with 12.5% 10%,
-      curve to 50% 0% with 37.5% 10%,
-      curve to 75% 10% with 62.5% 10%,
-      curve to 100% 0% with 87.5% 10%,
+      curve to 25% var(--_morph-depth) with 12.5% var(--_morph-depth),
+      curve to 50% 0% with 37.5% var(--_morph-depth),
+      curve to 75% var(--_morph-depth) with 62.5% var(--_morph-depth),
+      curve to 100% 0% with 87.5% var(--_morph-depth),
       line to 100% 100%,
-      curve to 75% 90% with 87.5% 90%,
-      curve to 50% 100% with 62.5% 90%,
-      curve to 25% 90% with 37.5% 90%,
-      curve to 0% 100% with 12.5% 90%,
+      curve to 75% calc(100% - var(--_morph-depth)) with 87.5% calc(100% - var(--_morph-depth)),
+      curve to 50% 100% with 62.5% calc(100% - var(--_morph-depth)),
+      curve to 25% calc(100% - var(--_morph-depth)) with 37.5% calc(100% - var(--_morph-depth)),
+      curve to 0% 100% with 12.5% calc(100% - var(--_morph-depth)),
       close
     );
   }
@@ -106,7 +137,7 @@
 
 } /* end @supports */
 
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce), (forced-colors: active), print {
   [data-morph] {
     animation: none;
   }

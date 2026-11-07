@@ -113,14 +113,17 @@ dl[data-striped] > dd + dt {
 }
 
 /* Flat pairs: stripe odd dt and the dd run that follows it (up to four dd).
-   Flat striping counts <dt> elements, so a group with several <dt> shifts
-   the parity — wrap multi-term groups in <div> (or <dl-item>) instead. */
-dl[data-striped] > dt:nth-of-type(odd),
-dl[data-striped] > dt:nth-of-type(odd) + dd,
-dl[data-striped] > dt:nth-of-type(odd) + dd + dd,
-dl[data-striped] > dt:nth-of-type(odd) + dd + dd + dd,
-dl[data-striped] > dt:nth-of-type(odd) + dd + dd + dd + dd {
-  background: var(--color-surface-raised);
+   Flat striping counts visible <dt> elements, so a group with several <dt>
+   shifts the parity — wrap multi-term groups in <div> (or <dl-item>)
+   instead. Hidden (filtered) entries are skipped so the alternation holds.
+   The stripe is the shared --color-row-stripe token, the same wash as
+   table[data-striped]. */
+dl[data-striped] > dt:nth-child(odd of dt:not([hidden])),
+dl[data-striped] > dt:nth-child(odd of dt:not([hidden])) + dd,
+dl[data-striped] > dt:nth-child(odd of dt:not([hidden])) + dd + dd,
+dl[data-striped] > dt:nth-child(odd of dt:not([hidden])) + dd + dd + dd,
+dl[data-striped] > dt:nth-child(odd of dt:not([hidden])) + dd + dd + dd + dd {
+  background: var(--color-row-stripe);
 }
 
 /* Wrapped groups (<div> or <dl-item>): stripe odd groups as a whole */
@@ -129,8 +132,8 @@ dl[data-striped] > :is(div, dl-item) {
   padding-block: var(--size-2xs);
 }
 
-dl[data-striped] > :is(div, dl-item):nth-of-type(odd) {
-  background: var(--color-surface-raised);
+dl[data-striped] > :nth-child(odd of :is(div, dl-item):not([hidden])) {
+  background: var(--color-row-stripe);
 }
 
 /* --- Description list variants ---

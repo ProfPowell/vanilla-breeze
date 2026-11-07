@@ -157,10 +157,142 @@ layout-badge {
   }
 }
 
+/* Decorative shapes: ribbon | notch | flag | double-arrow | stamp.
+   The shape is painted on a ::before layer behind the text instead of
+   clipping the badge itself, so the badge's own focus outline, a theme's
+   filter: drop-shadow() and its text are never cut off. Notch depth is an
+   absolute length (--badge-notch, default 0.75em) and the padding on the
+   notched side grows by the same length, so long labels never run under a
+   notch. Coordinates are drawn for left-to-right; in RTL the layer is
+   mirrored, so notches and points follow the inline direction like the
+   logical padding does. polygon() works everywhere; only the stamp's concave
+   corners need shape() and fall back to chamfered corners. */
+layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"]) {
+  --_badge-notch: var(--badge-notch, 0.75em);
+  --_badge-notch-start: 0px;
+  --_badge-notch-end: 0px;
+  --_badge-clip: none;
+
+  position: relative;
+  isolation: isolate;
+  padding-inline:
+    calc(var(--_badge-padding-x) + 0.35em + var(--_badge-notch-start))
+    calc(var(--_badge-padding-x) + 0.35em + var(--_badge-notch-end));
+  padding-block: max(var(--_badge-padding-y), 0.3em);
+  border: 0;
+  border-radius: 0;
+  background: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--badge-shape-fill, var(--_badge-bg));
+    clip-path: var(--_badge-clip);
+  }
+
+  &:dir(rtl)::before {
+    scale: -1 1;
+  }
+
+  /* An outline cannot follow a clipped edge, so an outlined shape badge is
+     drawn as a light wash of its own ink instead of a border. */
+  &[data-variant="outlined"] {
+    --_badge-bg: color-mix(in oklch, currentColor 12%, transparent);
+    border: 0;
+  }
+}
+
+/* Ribbon: V cut into the inline-end edge */
+layout-badge[data-shape="ribbon"] {
+  --_badge-notch-end: var(--_badge-notch);
+  --_badge-clip: polygon(
+    0 0, 100% 0,
+    calc(100% - var(--_badge-notch)) 50%,
+    100% 100%, 0 100%
+  );
+}
+
+/* Notch: V cut into the inline-start edge, like a bookmark */
+layout-badge[data-shape="notch"] {
+  --_badge-notch-start: var(--_badge-notch);
+  --_badge-clip: polygon(
+    0 0, 100% 0, 100% 100%, 0 100%,
+    var(--_badge-notch) 50%
+  );
+}
+
+/* Flag: point on the inline-end edge */
+layout-badge[data-shape="flag"] {
+  --_badge-notch-end: var(--_badge-notch);
+  --_badge-clip: polygon(
+    0 0, calc(100% - var(--_badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--_badge-notch)) 100%, 0 100%
+  );
+}
+
+/* Double arrow: points on both edges, breadcrumb style */
+layout-badge[data-shape="double-arrow"] {
+  --_badge-notch-start: var(--_badge-notch);
+  --_badge-notch-end: var(--_badge-notch);
+  --_badge-clip: polygon(
+    var(--_badge-notch) 0, calc(100% - var(--_badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--_badge-notch)) 100%, var(--_badge-notch) 100%,
+    0 50%
+  );
+}
+
+/* Stamp: small concave bites out of each corner (chamfers without shape()) */
+layout-badge[data-shape="stamp"] {
+  --_badge-corner: calc(var(--_badge-notch) * 0.5);
+  --_badge-clip: polygon(
+    var(--_badge-corner) 0, calc(100% - var(--_badge-corner)) 0,
+    100% var(--_badge-corner), 100% calc(100% - var(--_badge-corner)),
+    calc(100% - var(--_badge-corner)) 100%, var(--_badge-corner) 100%,
+    0 calc(100% - var(--_badge-corner)), 0 var(--_badge-corner)
+  );
+
+  @supports (clip-path: shape(from 0 0, line to 1px 1px)) {
+    --_badge-clip: shape(
+      from var(--_badge-corner) 0,
+      line to calc(100% - var(--_badge-corner)) 0,
+      curve to 100% var(--_badge-corner) with calc(100% - var(--_badge-corner)) var(--_badge-corner),
+      line to 100% calc(100% - var(--_badge-corner)),
+      curve to calc(100% - var(--_badge-corner)) 100% with calc(100% - var(--_badge-corner)) calc(100% - var(--_badge-corner)),
+      line to var(--_badge-corner) 100%,
+      curve to 0 calc(100% - var(--_badge-corner)) with var(--_badge-corner) calc(100% - var(--_badge-corner)),
+      line to 0 var(--_badge-corner),
+      curve to var(--_badge-corner) 0 with var(--_badge-corner) var(--_badge-corner),
+      close
+    );
+  }
+}
+
 /* Forced colors drop backgrounds, so solid/subtle badges would read as plain
-   inline text. Give every badge a system-colour edge. */
+   inline text. Give every badge a system-colour edge. Shaped badges lose
+   their (now invisible) shape layer and show the same rectangular edge. */
 @media (forced-colors: active) {
   layout-badge {
     border: 1px solid CanvasText;
+  }
+
+  /* Shaped badges zero their border; restore the edge */
+  layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"]) {
+    border: 1px solid CanvasText;
+  }
+
+  layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"])::before {
+    display: none;
+  }
+}
+
+/* Paper: browsers drop backgrounds when printing, which would leave a shaped
+   badge as bare text (the shape lives only in its fill). Keep the fill. */
+@media print {
+  layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"])::before {
+    print-color-adjust: exact;
   }
 }

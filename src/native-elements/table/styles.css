@@ -189,38 +189,34 @@ tr:is([data-disabled], [inert]) {
   max-block-size: var(--table-scroll-max-block, 70dvh);
 }
 
-/* --- Table Variants (class-based) --- */
+/* --- Table Variants (data attributes) ---
+   data-striped and data-bordered are booleans and combine with each other
+   and with data-density / data-variant="minimal". */
 
-table {
-  /* Striped variant. Hidden rows (filtered/paged by data-table, collapsed
-     detail rows) and expand-content rows are skipped so stripes stay
-     alternating (:where keeps the stripe's specificity low so row states
-     below still win). The stripe is a text-tinted wash, distinct from hover. */
-  &.striped tbody tr:nth-child(odd of :where(:not([data-state-hidden], [hidden], [data-expand-content]))) {
-    --_row-bg: color-mix(in oklch, var(--color-text) 5%, transparent);
-  }
+/* Striped. Hidden rows (filtered/paged by data-table, collapsed detail rows)
+   and expand-content rows are skipped so stripes stay alternating (:where
+   keeps the stripe's specificity low so row states below still win). The
+   stripe is the shared --color-row-stripe wash (also used by
+   dl[data-striped]), distinct from hover. */
+table[data-striped] tbody tr:nth-child(odd of :where(:not([data-state-hidden], [hidden], [data-expand-content]))) {
+  --_row-bg: var(--color-row-stripe);
+}
 
-  &.striped tbody tr:hover {
-    --_row-bg: color-mix(in oklch, var(--color-text) 10%, transparent);
-  }
+table[data-striped] tbody tr:hover {
+  --_row-bg: color-mix(in oklch, var(--color-text) 10%, transparent);
+}
 
-  /* Compact variant */
-  &.compact :is(th, td) {
-    padding: var(--size-xs) var(--size-s);
-  }
-
-  /* Bordered variant */
-  &.bordered :is(th, td) {
-    border: var(--border-width-thin) solid var(--color-border);
-  }
+/* Bordered: a border on every cell */
+table[data-bordered] :is(th, td) {
+  border: var(--border-width-thin) solid var(--color-border);
 }
 
 /* State rows win over stripes */
-table.striped tbody tr:is([data-selected], [data-state-selected]) {
+table[data-striped] tbody tr:is([data-selected], [data-state-selected]) {
   --_row-bg: oklch(from var(--color-interactive) l c h / 0.15);
 }
 
-table.striped tbody tr[data-highlight] {
+table[data-striped] tbody tr[data-highlight] {
   --_row-bg: oklch(from var(--color-warning) l c h / 0.15);
 }
 

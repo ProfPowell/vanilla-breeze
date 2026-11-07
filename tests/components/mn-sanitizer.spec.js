@@ -342,11 +342,11 @@ Use \`highlight\`.
 Plain paragraph.
 </script></markdown-viewer>`);
   await settled(page, '#v');
-  const r = await page.evaluate(() => [...document.querySelectorAll('#v .callout')].map((c) => ({
-    kind: c.getAttribute('data-kind'),
+  const r = await page.evaluate(() => [...document.querySelectorAll('#v aside[data-callout]')].map((c) => ({
+    kind: c.getAttribute('data-callout'),
     role: c.getAttribute('role'),
-    title: c.querySelector('.callout-title')?.textContent,
-    strong: c.querySelector('p:not(.callout-title) strong')?.textContent ?? null,
+    title: c.querySelector('[data-callout-title]')?.textContent,
+    strong: c.querySelector('p:not([data-callout-title]) strong')?.textContent ?? null,
   })));
   expect(r).toEqual([
     { kind: 'warning', role: 'note', title: 'Warning', strong: 'Careful!' },

@@ -1,7 +1,7 @@
 ---
 layout: element
 title: "layout-badge"
-description: "Small status indicators, labels, and counts. Perfect for tags, statuses, and notification counts."
+description: "Small status indicators, labels, and counts, with optional ribbon, notch, flag, double-arrow and stamp shapes. Perfect for tags, statuses, and notification counts."
 elementName: layout-badge
 category: custom
 currentPath: /docs/elements/custom-elements/layout-badge/
@@ -49,9 +49,9 @@ crumbLabel: Custom Elements
         </tr>
         <tr>
           <td><code>data-shape</code></td>
-          <td><code>square</code></td>
+          <td><code>square</code>, <code>ribbon</code>, <code>notch</code>, <code>flag</code>, <code>double-arrow</code>, <code>stamp</code></td>
           <td>&mdash;</td>
-          <td>square corners instead of a pill.</td>
+          <td><code>square</code> gives square corners instead of a pill. The other values are <a href="#shapes">decorative shapes</a>.</td>
         </tr>
       </tbody>
     </table>
@@ -129,6 +129,54 @@ crumbLabel: Custom Elements
 <layout-badge data-size="l">Large</layout-badge></code-block>
   </section>
 
+  <section id="shapes">
+    <h2>Shapes</h2>
+    <p><code>data-shape</code> also takes five decorative shapes for promotional labels, steps and stamps. They combine with every colour, variant and size. Shapes are drawn with <code>clip-path: polygon()</code> (the stamp's concave corners use <code>shape()</code> where supported and chamfered corners elsewhere), so they work in every current browser.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-badge-shapes.html"
+      url="https://vanilla-breeze.com/layout-badge/shapes"
+      title="Badge shapes"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Badge shapes" data-escape><layout-badge data-shape="ribbon" data-color="brand">Ribbon</layout-badge>
+<layout-badge data-shape="notch" data-color="brand">Notch</layout-badge>
+<layout-badge data-shape="flag" data-color="brand">Flag</layout-badge>
+<layout-badge data-shape="double-arrow" data-color="brand">Double arrow</layout-badge>
+<layout-badge data-shape="stamp" data-color="accent" data-size="l">Certified</layout-badge></code-block>
+
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Value</th>
+          <th scope="col">Shape</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ribbon</code></td><td>V cut into the inline-end edge, like a tag</td></tr>
+        <tr><td><code>notch</code></td><td>V cut into the inline-start edge, like a bookmark</td></tr>
+        <tr><td><code>flag</code></td><td>Point on the inline-end edge, like a pennant</td></tr>
+        <tr><td><code>double-arrow</code></td><td>Points on both edges, breadcrumb style</td></tr>
+        <tr><td><code>stamp</code></td><td>Concave bites out of every corner, like a ticket or stamp</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="shape-behaviour">How shapes behave</h3>
+    <ul>
+      <li><strong>Labels are never clipped.</strong> The notch depth is a fixed length, <code>--badge-notch</code> (default <code>0.75em</code>), and the padding on the notched side grows by the same amount, so a long label stops short of the notch.</li>
+      <li><strong>Right-to-left.</strong> Shapes follow the inline direction: in <code>dir="rtl"</code> the ribbon's notch and the flag's point move to the left along with the padding.</li>
+      <li><strong>Outlined</strong> cannot draw a border along a slanted edge, so an outlined shape is filled with a light wash of its text colour instead.</li>
+      <li><strong>Themes.</strong> The shape is painted on a layer behind the text, so set <code>--badge-shape-fill</code> (it accepts gradients) and use <code>filter: drop-shadow()</code> rather than <code>box-shadow</code>, which would draw a rectangle. The cyber and kawaii themes restyle shaped badges this way.</li>
+    </ul>
+
+    <code-block language="css" label="Shape hooks" data-escape>layout-badge[data-shape="ribbon"] {
+  --badge-notch: 1em;  /* deeper notch; padding follows */
+  --badge-shape-fill: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  filter: drop-shadow(0 1px 2px oklch(0% 0 0 / 0.25));
+}</code-block>
+  </section>
+
   <section>
     <h2>Usage Examples</h2>
 
@@ -173,7 +221,9 @@ crumbLabel: Custom Elements
       <li>A badge is static text. If its count changes while the page is open and the change matters, announce it through a live region (for example <code>role="status"</code> on a container) rather than relying on the badge alone.</li>
       <li>Every colour and variant combination meets 4.5:1 text contrast in both light and dark mode with the default theme. If a theme overrides the status tokens, check its <code>--color-*-text</code> and <code>-subtle</code> pairs too.</li>
       <li>Solid badges take their text colour from <code>contrast-color()</code>. Browsers without it get black or white text, whichever contrasts more with the badge background, worked out from the background itself. This holds in either mode and with any theme.</li>
-      <li>In forced-colors mode every badge gets a <code>CanvasText</code> border, because the system removes the background that would otherwise mark its edges.</li>
+      <li>In forced-colors mode every badge gets a <code>CanvasText</code> border, because the system removes the background that would otherwise mark its edges. Shaped badges show the same rectangular border: the shape is decoration and its meaning must be in the text.</li>
+      <li>Shapes are painted on a layer behind the badge rather than clipping the badge itself, so when a badge sits inside a link or button the focus outline and the label stay whole. The shape fill is kept when printing.</li>
+      <li>A shape is not announced. &ldquo;Sale&rdquo; in a ribbon reads as &ldquo;Sale&rdquo;; do not rely on the shape (for example a flag pointing forward) to carry meaning.</li>
     </ul>
   </section>
 
@@ -183,5 +233,7 @@ crumbLabel: Custom Elements
       <li><a href="/docs/elements/custom-elements/status-message/"><code>&lt;status-message&gt;</code></a> - Larger notification banners</li>
       <li><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a> - Group badges horizontally</li>
       <li><a href="/docs/elements/custom-elements/user-avatar/"><code>&lt;user-avatar&gt;</code></a> - Avatar with status badges</li>
+      <li><a href="/docs/elements/native/time/#badge"><code>time[data-badge]</code></a> - Bordered chip for key dates</li>
+      <li><a href="/docs/attributes/data-clip/"><code>data-clip</code></a> - Shape images and figures</li>
     </ul>
   </section>

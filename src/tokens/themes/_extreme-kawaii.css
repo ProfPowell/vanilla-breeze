@@ -143,7 +143,7 @@
 
     & :is(main, article) {
     /* Cute dividers with hearts — exclude shape HR classes */
-    & hr:not([data-ornament], .decorative, .wave, .zigzag, .scallop, .diamonds, .dots) {
+    & hr:not([data-ornament], [class]) {
       border: none;
       height: 2rem;
       background: transparent;
@@ -448,7 +448,7 @@
 
     /* ===== SHAPE OVERRIDES ===== */
     /* Soft, rounded shapes — scallop defaults */
-    --shape-depth: 8%;
+    --shape-depth: 32px;
     --shape-bevel: 16px;
 
     /* Kawaii HR dividers: pastel gradient */
@@ -464,45 +464,49 @@
       );
     }
 
-    /* Kawaii badges: pastel gradient pill */
-    & [data-badge] {
-      background: linear-gradient(135deg, var(--color-primary), var(--_kawaii-color-lavender));
+    /* Kawaii shaped badges: pastel gradient fill. The shape is painted on
+       the badge's ::before layer, so the shadow is a drop-shadow that
+       follows it (a box-shadow would draw a rectangle). */
+    & layout-badge:is([data-shape="ribbon"], [data-shape="notch"], [data-shape="flag"], [data-shape="double-arrow"], [data-shape="stamp"]) {
+      --badge-shape-fill: linear-gradient(135deg, var(--color-primary), var(--_kawaii-color-lavender));
       color: var(--color-surface-raised);
       font-weight: 700;
-      box-shadow: var(--shadow-s);
+      filter: drop-shadow(0 1px 2px oklch(0% 0 0 / 0.25));
     }
 
-    /* Kawaii callouts: pastel backgrounds */
-    & [data-callout="speech"] {
-      background: linear-gradient(135deg, var(--color-primary-subtle), oklch(95% 0.04 290));
+    /* Kawaii callouts: pastel backgrounds via the --callout-* hooks (shaped
+       callouts paint on ::before, so a plain background would be a rectangle) */
+    & [data-callout~="speech"] {
+      --callout-bg: linear-gradient(135deg, var(--color-primary-subtle), oklch(95% 0.04 290));
     }
 
-    & [data-callout="notched"] {
-      background: var(--color-accent-subtle);
+    & [data-callout~="notched"] {
+      --callout-bg: var(--color-accent-subtle);
     }
 
-    & [data-callout="tip"] {
-      border-inline-start-color: var(--_kawaii-color-lavender);
-      background: oklch(97% 0.02 290);
+    & [data-callout~="tip"] {
+      --callout-accent: var(--_kawaii-color-lavender);
+      --callout-bg: oklch(97% 0.02 290);
     }
 
-    /* Kawaii bubbles: pastel with rounded tails */
+    /* Kawaii bubbles: pastel with rounded tails (via the --bubble-bg hook;
+       the soft shadow is a drop-shadow so it follows the tail) */
     & [data-bubble="outgoing"] {
-      background: linear-gradient(135deg, var(--color-primary), var(--_kawaii-color-lavender));
+      --bubble-bg: linear-gradient(135deg, var(--color-primary), var(--_kawaii-color-lavender));
       color: var(--color-surface-raised);
     }
 
     & [data-bubble="incoming"] {
-      background: var(--color-surface-raised);
-      box-shadow: var(--shadow-s);
+      --bubble-bg: var(--color-surface-raised);
+      filter: drop-shadow(0 1px 2px oklch(0% 0 0 / 0.12));
     }
 
     & [data-bubble="assistant"] {
-      background: linear-gradient(135deg, var(--color-accent-subtle), oklch(95% 0.03 220));
+      --bubble-bg: linear-gradient(135deg, var(--color-accent-subtle), oklch(95% 0.03 220));
     }
 
     & [data-bubble="system"] {
-      background: linear-gradient(135deg, var(--color-primary-subtle), var(--color-accent-subtle));
+      --bubble-bg: linear-gradient(135deg, var(--color-primary-subtle), var(--color-accent-subtle));
       border-color: transparent;
     }
 

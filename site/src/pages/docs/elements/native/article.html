@@ -108,64 +108,98 @@ crumbLabel: Native Elements
   </article>
 </article></code-block>
 
-    <h3>data-numbered</h3>
-    <p>Academic-style auto-numbering for headings, figures, and tables. CSS counters automatically prefix h2-h4 headings with hierarchical numbers, and prepend "Figure" / "Table" labels to captions.</p>
+    <h3 id="data-numbered">data-numbered</h3>
+    <p>Academic-style auto-numbering. CSS counters prefix <code>h2</code>–<code>h4</code> headings with hierarchical numbers (1., 1.1., 1.1.1.) and prepend "Figure N:", "Table N:" and "Listing N:" labels to captions. The numbering runs through the whole article, across <code>&lt;section&gt;</code> elements. For numbered lists use <a href="/docs/elements/native/ol/"><code>&lt;ol&gt;</code></a>; for legal-style § numbering use <a href="#data-section-numbers"><code>data-section-numbers</code></a>.</p>
     <browser-window src="/docs/snippets/demos/article-numbered.html" url="https://vanilla-breeze.com/article/numbered" title="Auto-numbered article" shadow></browser-window>
     <code-block language="html" label="Auto-numbered article" data-escape><article data-numbered>
-  <h2>Origins of Movable Type</h2>
-  <p>Movable type was first developed in China...</p>
-  <h3>Gutenberg's Press</h3>
-  <p>Johannes Gutenberg independently invented...</p>
-  <h2>The Typographic Tradition</h2>
-  <figure>
-    <img src="press.jpg" alt="Historical printing press" />
-    <figcaption>A reconstructed printing press.</figcaption>
-  </figure>
+  <section>
+    <h2>Origins of Movable Type</h2>
+    <p>Movable type was first developed in China...</p>
+    <h3>Gutenberg's Press</h3>
+    <p>Johannes Gutenberg independently invented...</p>
+    <aside>
+      <h3>A note on dates</h3>
+      <p>Headings in an aside are not part of the outline, so this one is not numbered.</p>
+    </aside>
+    <h3>Spread Across Europe</h3>
+  </section>
+  <section>
+    <h2>The Typographic Tradition</h2>
+    <figure>
+      <img src="press.jpg" alt="Historical printing press" />
+      <figcaption>A reconstructed printing press.</figcaption>
+    </figure>
+    <figure>
+      <figure>
+        <img src="blackletter.jpg" alt="A page set in blackletter type" />
+        <figcaption>Blackletter</figcaption>
+      </figure>
+      <figure>
+        <img src="roman.jpg" alt="A page set in roman type" />
+        <figcaption>Roman</figcaption>
+      </figure>
+      <figcaption>Two early type styles.</figcaption>
+    </figure>
+    <table>
+      <caption>Key milestones in the history of printing</caption>
+      ...
+    </table>
+  </section>
 </article></code-block>
 
-    <h4>Labels, listings and subfigures</h4>
-    <p>The caption labels come from custom properties set on <code>article[data-numbered]</code>, so a locale or theme can translate them:</p>
+    <h4>What gets numbered</h4>
     <ul>
-      <li><code>--label-figure</code> (default <code>"Figure"</code>): prefixes <code>figure &gt; figcaption</code></li>
-      <li><code>--label-table</code> (default <code>"Table"</code>): prefixes <code>table caption</code></li>
-      <li><code>--label-listing</code> (default <code>"Listing"</code>): prefixes the caption of <code>figure.code</code>, which is counted separately as "Listing N"</li>
+      <li><strong>Headings:</strong> <code>h2</code>, <code>h3</code> and <code>h4</code> anywhere in the article, sections included. Headings inside a nested <code>&lt;aside&gt;</code> or <code>&lt;article&gt;</code> (a sidebar note, a comment) are left unnumbered.</li>
+      <li><strong>Figures:</strong> a <code>&lt;figure&gt;</code> with a <code>&lt;figcaption&gt;</code>. Quote figures (<code>figure.quote</code>) are skipped, and a figure without a caption does not use up a number.</li>
+      <li><strong>Tables:</strong> a <code>&lt;table&gt;</code> with a <code>&lt;caption&gt;</code>. Uncaptioned tables are not counted.</li>
+      <li><strong>Listings:</strong> a captioned <code>figure.code</code> is counted separately as "Listing N".</li>
+      <li><strong>Subfigures:</strong> a <code>&lt;figure&gt;</code> nested directly in another figure sits inline beside its siblings, and its caption is lettered (a), (b) and so on.</li>
     </ul>
-    <p>A <code>&lt;figure&gt;</code> nested directly in another figure is a subfigure: subfigures sit inline side by side and their captions are lettered (a), (b), and so on.</p>
-    <code-block language="html" label="Listings, subfigures and translated labels" data-escape><article data-numbered lang="de">
-  <figure class="code">
-    <pre><code>display: grid;</code></pre>
-    <figcaption>A minimal grid.</figcaption>
-  </figure>
-  <figure>
-    <figure>
-      <img src="before.jpg" alt="Before" />
-      <figcaption>Before</figcaption>
-    </figure>
-    <figure>
-      <img src="after.jpg" alt="After" />
-      <figcaption>After</figcaption>
-    </figure>
-    <figcaption>Before and after.</figcaption>
-  </figure>
-</article></code-block>
-    <code-block language="css" label="Translating the labels">article[data-numbered]:lang(de) {
+    <p>Number from <code>h2</code> down. An <code>h3</code> that comes before the first <code>h2</code> renders as "0.1." because there is no <code>h2</code> number yet.</p>
+    <p>Articles, sections and asides are normally <a href="/docs/attributes/data-container/">container-query containers</a>. A container's style containment would restart the counters in every section, so a numbered article and the sections and asides inside it are not containers; container queries inside resolve against the next container out, usually <code>&lt;main&gt;</code>. Adding <code>data-container</code> to one of them turns it back into a container, and numbering inside it then starts again from 1.</p>
+
+    <h4>Styling and translation</h4>
+    <table class="props-table">
+      <thead>
+        <tr><th>Custom property</th><th>Default</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--label-figure</code></td><td><code>"Figure"</code></td><td>Prefix for figure captions</td></tr>
+        <tr><td><code>--label-table</code></td><td><code>"Table"</code></td><td>Prefix for table captions</td></tr>
+        <tr><td><code>--label-listing</code></td><td><code>"Listing"</code></td><td>Prefix for <code>figure.code</code> captions</td></tr>
+        <tr><td><code>--numbered-style</code></td><td><code>decimal</code></td><td>Counter style for the heading numbers, for example <code>arabic-indic</code>, <code>devanagari</code>, <code>cjk-decimal</code> or your own <code>@counter-style</code> name</td></tr>
+      </tbody>
+    </table>
+    <p>Set them on <code>article[data-numbered]</code>, typically per language:</p>
+    <code-block language="css" label="Translating the labels and numerals">article[data-numbered]:lang(de) {
   --label-figure: "Abbildung";
   --label-table: "Tabelle";
-  --label-listing: "Listing";
-}</code-block>
+}
 
-    <h3>data-section-numbers</h3>
-    <p>Section-sign numbering for legal and policy documents, separate from the outline numbering of <code>data-numbered</code>. Each <code>h2</code> is prefixed <code>§ 1</code>, <code>§ 2</code>, and each <code>h3</code> beneath it <code>§ 1a</code>, <code>§ 1b</code>, in the interactive colour. Set <code>--sep-section</code> to replace the <code>§</code> sign.</p>
+article[data-numbered]:lang(ar) {
+  --label-figure: "شكل";
+  --numbered-style: arabic-indic;
+}</code-block>
+    <p>The numbers are generated content in <code>--color-text-muted</code>. Screen readers read generated content, so the numbers are announced with the heading, which helps when a document cross-references "section 2.1".</p>
+
+    <h3 id="data-section-numbers">data-section-numbers</h3>
+    <p>Section-sign numbering for legal and policy documents, separate from the outline numbering of <a href="#data-numbered"><code>data-numbered</code></a>. Each <code>h2</code> is prefixed <code>§ 1</code>, <code>§ 2</code>, and each <code>h3</code> beneath it <code>§ 1a</code>, <code>§ 1b</code>, in the interactive colour. Like <code>data-numbered</code>, the count runs across sections and skips headings in a nested <code>&lt;aside&gt;</code> or <code>&lt;article&gt;</code>. Set <code>--sep-section</code> to replace the <code>§</code> sign.</p>
     <browser-window src="/docs/snippets/demos/article-section-numbers.html" url="https://vanilla-breeze.com/article/section-numbers" title="Section-sign numbering" shadow></browser-window>
     <code-block language="html" label="Section-sign numbering" data-escape><article data-section-numbers>
-  <h2>Definitions</h2>
-  <h3>Service</h3>
-  <h3>User</h3>
-  <h2>Acceptable use</h2>
+  <section>
+    <h2>Definitions</h2>
+    <h3>Account</h3>
+    <h3>Content</h3>
+  </section>
+  <section>
+    <h2>Use of the Service</h2>
+    <h3>Restrictions</h3>
+  </section>
 </article></code-block>
 
-    <h3>data-drop-cap</h3>
-    <p>Adds a large decorative initial letter to the opening paragraph, a convention borrowed from illuminated manuscripts and editorial print design. The drop cap goes on the article's first direct <code>&lt;p&gt;</code>; if the article has no direct paragraph, it goes on the first paragraph of the first direct <code>&lt;section&gt;</code>. Uses <code>initial-letter: 3</code> where supported, with a floated fallback. <code>data-drop-cap</code> also works on a single <code>&lt;p&gt;</code>.</p>
+    <h3 id="data-drop-cap">data-drop-cap</h3>
+    <p>Adds a large decorative initial letter to the opening paragraph, a convention borrowed from illuminated manuscripts and editorial print design. The drop cap goes on the article's first direct <code>&lt;p&gt;</code>; if the article has no direct paragraph, it goes on the first paragraph of the first direct <code>&lt;section&gt;</code>. <code>data-drop-cap</code> also works on a single <code>&lt;p&gt;</code>.</p>
+    <p>Browsers that support <code>initial-letter</code> sink the letter into the first lines of text; others get a floated letter of about the same size. Both are logical, so in right-to-left text the cap sits on the right. Themes never add a drop cap on their own: only elements with <code>data-drop-cap</code> get one, and themes such as editorial and Swiss only change its colour, font and weight.</p>
     <browser-window src="/docs/snippets/demos/article-drop-cap.html" url="https://vanilla-breeze.com/article/drop-cap" title="Drop cap article" shadow></browser-window>
     <code-block language="html" label="Drop cap article" data-escape><article data-drop-cap>
   <p>When the first rays of morning light crept through
@@ -173,8 +207,27 @@ crumbLabel: Native Elements
   of hand-set lead type...</p>
 </article></code-block>
 
-    <h3>data-prose</h3>
-    <p>Floats images that sit inside a paragraph alongside text to the inline-end, capped at half the content width. An image that is the only child of its paragraph is left in the flow. Ideal for markdown or CMS-generated content where images are placed directly within paragraph text. <code>data-prose</code> also applies the prose typography below, without the width cap of <code>.blog</code>.</p>
+    <h4>Styling hooks</h4>
+    <table class="props-table">
+      <thead>
+        <tr><th>Custom property</th><th>Default</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--drop-cap-lines</code></td><td><code>3</code></td><td>Number of lines the letter spans</td></tr>
+        <tr><td><code>--drop-cap-color</code></td><td><code>var(--color-primary)</code></td><td>Letter colour</td></tr>
+        <tr><td><code>--drop-cap-font</code></td><td><code>inherit</code></td><td>Letter font family</td></tr>
+        <tr><td><code>--drop-cap-weight</code></td><td><code>700</code></td><td>Letter font weight</td></tr>
+      </tbody>
+    </table>
+    <code-block language="css" label="A two-line display-face cap">.essay[data-drop-cap] {
+  --drop-cap-lines: 2;
+  --drop-cap-font: var(--font-heading);
+}</code-block>
+    <p>The browser decides what <code>::first-letter</code> covers: an opening quotation mark or other punctuation is enlarged together with the letter after it. Drop caps are designed for horizontal text; in a vertical <code>writing-mode</code>, test before using one. Screen readers read the paragraph normally, because the cap is a style on the real first letter.</p>
+
+    <h3 id="data-prose">data-prose</h3>
+    <p>Long-form typography for markdown or CMS content you do not control: the reading line height, old-style numerals and hyphenation listed under <a href="#prose-typography">Prose typography</a>, plus floated images. Every image (or <code>&lt;picture&gt;</code>) that is a direct child of a paragraph floats to the inline-end, capped at half the content width, so text that shares the paragraph wraps around it. Headings (<code>h2</code>–<code>h4</code>), <code>&lt;hr&gt;</code> and the footer clear the float, so an image never spills into the next section.</p>
+    <p>CSS cannot see text, so a paragraph that holds only an image floats too. Wrap an image that should span the column in a <a href="/docs/elements/native/figure/"><code>&lt;figure&gt;</code></a>.</p>
     <browser-window src="/docs/snippets/demos/article-prose.html" url="https://vanilla-breeze.com/article/prose" title="Prose mode article" shadow></browser-window>
     <code-block language="html" label="Prose mode article" data-escape><article data-prose>
   <p>
@@ -185,13 +238,20 @@ crumbLabel: Native Elements
   </p>
 </article></code-block>
 
+    <h4>data-prose, .blog or data-layout="prose"?</h4>
+    <ul>
+      <li><code>article[data-prose]</code> styles the text: prose typography and image floats. It sets no width.</li>
+      <li><code>article.blog</code> is the same typography plus a centred column capped at <code>--prose-measure</code> (65ch) with spaced header and footer. It does not float images. Combine both (<code>class="blog" data-prose</code>) for a centred column with floats.</li>
+      <li><a href="/docs/elements/custom-elements/layout-text/"><code>data-layout="prose"</code> / <code>&lt;layout-text&gt;</code></a> is layout: reading measure and vertical rhythm between blocks, on any element. It pairs with <code>data-prose</code> on the same article.</li>
+    </ul>
+
     <h3 id="prose-typography">Prose typography (.blog and data-prose)</h3>
     <p>Both <code>.blog</code> and <code>data-prose</code> apply the same reading typography:</p>
     <ul>
       <li>Line height of <code>--prose-line-height</code> (default <code>1.6</code>)</li>
       <li>Old-style, proportional numerals (<code>font-variant-numeric: oldstyle-nums proportional-nums</code>)</li>
-      <li>Body text stepped up to <code>--font-size-l</code> at viewports of <code>64rem</code> and wider</li>
-      <li>Automatic hyphenation with conservative limits. This needs a <code>lang</code> attribute on <code>&lt;html&gt;</code></li>
+      <li>Body text stepped up to <code>--font-size-l</code> when the surrounding column (the nearest <code>main</code>, <code>section</code>, <code>aside</code> or other container) is at least <code>40rem</code> wide, so the same article keeps body-size text in a narrow sidebar column</li>
+      <li>Automatic hyphenation with conservative limits. It needs a <code>lang</code> attribute on the article or any ancestor, usually <code>&lt;html&gt;</code></li>
     </ul>
 
     <h3>data-highlights</h3>
@@ -274,7 +334,7 @@ crumbLabel: Native Elements
         </tr>
         <tr>
           <td><code>data-prose</code></td>
-          <td>Prose typography plus auto-floated images inside paragraphs for markdown/CMS content</td>
+          <td>Prose typography plus floated paragraph images for markdown/CMS content</td>
         </tr>
         <tr>
           <td><code>data-highlights</code></td>
@@ -431,5 +491,7 @@ hl.importHighlights(json); // Restore from an export (string or object)</code-bl
       <li><a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a> - For article attribution, related links, tags</li>
       <li><a href="/docs/elements/native/aside/"><code>&lt;aside&gt;</code></a> - For tangentially related content like pull quotes</li>
       <li><a href="/docs/elements/native/address/"><code>&lt;address&gt;</code></a> - For author contact information</li>
+      <li><a href="/docs/elements/custom-elements/layout-text/"><code>&lt;layout-text&gt;</code> / <code>data-layout="prose"</code></a> - Reading measure and rhythm, to pair with <code>data-prose</code></li>
+      <li><a href="/docs/elements/native/ol/"><code>&lt;ol&gt;</code></a> - Numbered lists (for numbered headings, see <a href="#data-numbered"><code>data-numbered</code></a>)</li>
     </ul>
   </section>

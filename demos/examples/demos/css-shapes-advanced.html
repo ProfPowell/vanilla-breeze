@@ -31,14 +31,12 @@
       font-size: var(--font-size-s);
     }
 
-    /* Cutout cards */
+    /* Cutout cards: the hole removes whatever the card paints there,
+       including text, so the labels live in the figcaption. */
     .cutout-card {
       aspect-ratio: 1;
       background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
-      display: grid;
-      place-items: center;
-      color: white;
-      font-weight: 600;
+      margin: 0;
     }
 
     /* Border shape containers */
@@ -59,7 +57,7 @@
       background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
       display: grid;
       place-items: center;
-      color: white;
+      color: var(--color-text-on-primary);
       font-weight: 600;
       font-size: var(--font-size-l);
     }
@@ -72,37 +70,37 @@
   </header>
 
   <h2>Cutouts</h2>
-  <p>Using <code>data-cutout</code> with the <code>evenodd</code> fill rule to punch shapes through elements.</p>
+  <p>Using <code>data-cutout</code> with the <code>evenodd</code> fill rule to punch shapes through elements. The hole also removes the element's own content, so each label sits in the caption.</p>
 
   <section class="demo-grid">
     <figure>
-      <section class="cutout-card" data-cutout="circle">Circle</section>
-      <figcaption><code>data-cutout="circle"</code></figcaption>
+      <p class="cutout-card" data-cutout="circle"></p>
+      <figcaption>Circle: <code>data-cutout="circle"</code></figcaption>
     </figure>
 
     <figure>
-      <section class="cutout-card" data-cutout="diamond">Diamond</section>
-      <figcaption><code>data-cutout="diamond"</code></figcaption>
+      <p class="cutout-card" data-cutout="diamond"></p>
+      <figcaption>Diamond: <code>data-cutout="diamond"</code></figcaption>
     </figure>
 
     <figure>
-      <section class="cutout-card" data-cutout="arch-window">Arch</section>
-      <figcaption><code>data-cutout="arch-window"</code></figcaption>
+      <p class="cutout-card" data-cutout="arch-window"></p>
+      <figcaption>Arch: <code>data-cutout="arch-window"</code></figcaption>
     </figure>
 
     <figure>
-      <section class="cutout-card" data-cutout="hex">Hex</section>
-      <figcaption><code>data-cutout="hex"</code></figcaption>
+      <p class="cutout-card" data-cutout="hex"></p>
+      <figcaption>Hex: <code>data-cutout="hex"</code></figcaption>
     </figure>
 
     <figure>
-      <section class="cutout-card" data-cutout="badge-corner">Badge</section>
-      <figcaption><code>data-cutout="badge-corner"</code></figcaption>
+      <p class="cutout-card" data-cutout="badge-corner"></p>
+      <figcaption>Badge: <code>data-cutout="badge-corner"</code></figcaption>
     </figure>
   </section>
 
-  <h2>Shaped Borders</h2>
-  <p>Using <code>data-border-shape</code> with a <code>::before</code> pseudo-element for colored shape outlines. Thickness controlled by <code>--shape-border</code>.</p>
+  <h2 id="shaped-borders">Shaped Borders</h2>
+  <p>Using <code>data-border-shape</code>: a <code>::before</code> layer paints the border colour across the shape and the image is clipped to the same shape <code>--shape-border</code> inside it. The last frame wraps a link: tab to it and the border turns to the focus-ring colour.</p>
 
   <section class="demo-grid">
     <figure>
@@ -121,14 +119,14 @@
 
     <figure>
       <span data-border-shape="arch" class="border-demo">
-        <img src="/src/assets/placeholders/photo-barch-200x200.svg" alt="Arch bordered photo" width="200" height="200" />
+        <a href="#shaped-borders"><img src="/src/assets/placeholders/photo-barch-200x200.svg" alt="Arch bordered photo" width="200" height="200" /></a>
       </span>
       <figcaption><code>data-border-shape="arch"</code></figcaption>
     </figure>
   </section>
 
   <h2>Shape Animation</h2>
-  <p>Using <code>data-morph</code> for keyframe morphing between matching-point shapes. Respects <code>prefers-reduced-motion</code>.</p>
+  <p>Using <code>data-morph</code> for keyframe morphing between matching-point shapes. One cycle by default; the last card adds <code>data-morph-loop</code>, which pauses on hover and while focus is inside. Respects <code>prefers-reduced-motion</code>.</p>
 
   <section class="demo-grid">
     <figure>
@@ -142,8 +140,8 @@
     </figure>
 
     <figure>
-      <section class="morph-card" data-morph="wave">Wave</section>
-      <figcaption><code>data-morph="wave"</code></figcaption>
+      <section class="morph-card" data-morph="wave" data-morph-loop>Wave (loop)</section>
+      <figcaption><code>data-morph="wave" data-morph-loop</code></figcaption>
     </figure>
   </section>
 

@@ -1,108 +1,63 @@
 # Add Callout Block
 
-Insert a callout/admonition block for highlighting important information.
+Insert a callout/admonition using Vanilla Breeze's one callout primitive, `data-callout` (docs: `/docs/attributes/data-callout/`).
 
 ## Arguments
 
-- `$ARGUMENTS` - Callout type: `note`, `tip`, `warning`, `danger`, `info`
+- `$ARGUMENTS` - Callout kind, optionally followed by a shape: `note` (default), `info`, `tip`, `warning`, `danger`; shapes `speech`, `notched` (e.g. `warning notched`)
 
 ## Instructions
 
-1. Determine the callout type from arguments:
-   - `note` - General information (default)
-   - `tip` - Helpful suggestions
-   - `warning` - Caution, potential issues
-   - `danger` - Critical warnings, breaking changes
-   - `info` - Informational context
+1. Determine the kind (and optional shape) from the arguments:
+   - `note` - General information (default; bare `data-callout` is the same)
+   - `info` - Background context
+   - `tip` - Shortcuts and recommendations (success colour)
+   - `warning` - Things that can go wrong
+   - `danger` - Data loss, security, anything irreversible
+   - Shapes: `speech` (rounded box with a tail), `notched` (bevelled corner)
 
-2. Insert the callout at the current location using blockquote syntax:
+2. **In HTML** (doc pages, demos), insert an `<aside>` with `role="note"` and a visible title. The title states the meaning in words, so the callout never relies on colour alone:
 
-   **Note:**
-   ```markdown
-   > **Note:** Your message here.
+   ```html
+   <aside data-callout="warning" role="note">
+     <p data-callout-title><strong>Warning</strong></p>
+     <p>Deleting a project also deletes its deploy history.</p>
+   </aside>
    ```
 
-   **Tip:**
-   ```markdown
-   > **Tip:** Your helpful suggestion here.
+   With a shape, add it as a second token:
+
+   ```html
+   <aside data-callout="info notched" role="note">
+     <p data-callout-title><strong>Configuration</strong></p>
+     <p>The bevel size follows --shape-bevel.</p>
+   </aside>
    ```
 
-   **Warning:**
+   Use `<blockquote data-callout="speech">` for a quoted speech callout.
+
+3. **In markdown rendered by `<markdown-viewer>`**, use a `:::kind [title]` block. It renders the same `<aside data-callout="kind" role="note">` markup:
+
    ```markdown
-   > **Warning:** Your caution message here.
+   :::warning Deploy history
+   Deleting a project also deletes its deploy history.
+   :::
    ```
 
-   **Danger:**
-   ```markdown
-   > **Danger:** Your critical warning here.
-   ```
-
-   **Info:**
-   ```markdown
-   > **Info:** Your informational content here.
-   ```
-
-3. For multi-line callouts:
-   ```markdown
-   > **Warning:** This is a longer callout.
-   >
-   > It can span multiple paragraphs.
-   >
-   > - And include lists
-   > - Or other formatting
-   ```
-
-4. With emoji (optional, for visual distinction):
-   ```markdown
-   > 📝 **Note:** Information to highlight.
-
-   > 💡 **Tip:** Helpful suggestion.
-
-   > ⚠️ **Warning:** Proceed with caution.
-
-   > 🚨 **Danger:** Critical warning.
-
-   > ℹ️ **Info:** Additional context.
-   ```
+   (Plain GitHub markdown has no callouts; there, fall back to `> **Warning:** …`.)
 
 ## Usage Examples
 
 ```
 /add-callout
-/add-callout note
-/add-callout warning
 /add-callout tip
+/add-callout warning notched
 /add-callout danger
 ```
 
-## Callout Types Reference
+## Rules
 
-| Type | Use Case | Emoji |
-|------|----------|-------|
-| `note` | General highlights, reminders | 📝 |
-| `tip` | Best practices, shortcuts | 💡 |
-| `warning` | Potential issues, deprecations | ⚠️ |
-| `danger` | Breaking changes, security | 🚨 |
-| `info` | Background context, explanations | ℹ️ |
-
-## Accessibility Notes
-
-- The bold label (Note:, Warning:, etc.) provides semantic meaning
-- Screen readers announce the blockquote structure
-- Emoji are decorative and have text alternatives in the label
-- Avoid using color alone to convey meaning
-
-## GFM Compatibility
-
-This syntax works in:
-- GitHub README files
-- GitHub issues and pull requests
-- Most markdown processors
-- Documentation systems (Docusaurus, VuePress, etc.)
-
-## Notes
-
-- Keep callouts concise - use for important highlights only
-- Too many callouts reduce their effectiveness
-- Consider using `<details>` for longer supplementary content
-- The emoji are optional - omit for a cleaner look
+- No `<div>`: use `<aside>` (or `<blockquote>` for speech).
+- Do not use the removed `aside.callout[data-kind]` / `.callout-title` markup.
+- Themes restyle callouts through `--callout-bg` / `--callout-accent`; don't hard-code colours.
+- Keep callouts short and rare; too many reduce their effect.

@@ -774,6 +774,29 @@ main, article, section, aside:not(.float):not(.sidenote) {
   container-type: normal;
 }
 
+/* Numbered articles: container-type applies style containment, which scopes
+   CSS counters, so headings, figures and tables restarted at 1 in every
+   <section> ("1." in each section). That happens when either the article
+   (where the counters are reset) or the section is a container, so neither
+   is one: a numbered article and the sections/asides inside it are plain
+   boxes, and container queries inside them resolve against the next
+   container out (usually <main>). The counter rules live in
+   native-elements/article/{numbered,section-numbering}.css. Same
+   data-container escape hatch, at the cost of numbering inside that box. */
+:is(article[data-numbered], article[data-section-numbers]):not([data-container]),
+:is(article[data-numbered], article[data-section-numbers]) :is(section, aside):not([data-container]) {
+  container-type: normal;
+}
+
+/* Numbered equations (native-elements/math: .equation, reset on article and
+   body) hit the same counter scoping: every <section> restarted at (1).
+   Only an article that contains an equation drops its containers. Outside
+   an article, equations are numbered per container (main, section). */
+article:has(.equation):not([data-container]),
+article:has(.equation) :is(section, aside):not([data-container]) {
+  container-type: normal;
+}
+
 /* Explicit container establishment via data attribute */
 [data-container] {
   container-type: inline-size;
