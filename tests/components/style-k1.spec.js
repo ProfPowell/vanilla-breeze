@@ -143,7 +143,12 @@ test('data-numbered: --numbered-style paints other numerals (RTL)', async ({ pag
     </article>
     <style>.ar { --numbered-style: arabic-indic; } .ar :is(h2, h3) { text-align: start !important; }</style>`);
   const cands = [`١.${NB}`, `٢.${NB}`, `١.١.${NB}`, `1.${NB}`, `2.${NB}`, `1.1.${NB}`];
-  expect(await prefixes(page, 'article :is(h2, h3)', cands)).toEqual([`١.${NB}`, `١.١.${NB}`, `٢.${NB}`]);
+  // ١ and ٢ can paint at the same width in some fonts (the Linux CI runner),
+  // so this test only proves the numerals are Arabic-Indic, not Latin;
+  // continuous numbering across sections is covered by the Latin tests above.
+  const got = await prefixes(page, 'article :is(h2, h3)', cands);
+  expect(got[1]).toBe(`١.١.${NB}`);
+  for (const p of [got[0], got[2]]) expect([`١.${NB}`, `٢.${NB}`]).toContain(p);
 });
 
 test('data-section-numbers counts across sections, skips asides', async ({ page }) => {
