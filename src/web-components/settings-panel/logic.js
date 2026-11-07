@@ -31,11 +31,15 @@ import { EnvironmentManager } from '../../lib/environment-manager.js';
 import { getVBVersion, getSWStatus, clearSWCache, checkForUpdate } from '../../lib/sw-register.js';
 import { THEME_GROUPS } from '../../lib/theme-data.js';
 import { VBStore } from '../../lib/vb-store.js';
+import { authoredCharShortcuts, charShortcutsEnabled, setCharShortcutsEnabled } from '../../lib/char-shortcuts.js';
 // SoundManager is lazy-loaded when sounds are enabled
 let _SoundManager = null;
 
 const SETTINGS_NS = 'settings';
-const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
+const EXTENSION_DEFAULTS = { motionFx: true, sounds: false, charShortcuts: true };
+/** Defaults with the page's current single-key shortcut state (an authored
+ *  <html data-char-shortcuts="off"> stands until the user chooses). */
+const currentExtensionDefaults = () => ({ ...EXTENSION_DEFAULTS, charShortcuts: charShortcutsEnabled() });
 
 /** Was <html data-sticky> present when this module loaded (authored or restored by the head script)? */
 const ROOT_STICKY_AT_LOAD = document.documentElement.hasAttribute('data-sticky');
@@ -58,6 +62,7 @@ const LABELS = {
   'high-contrast': 'High Contrast',
   'large-text': 'Large Text',
   dyslexia: 'Dyslexia-Friendly',
+  'char-shortcuts': 'Single-Key Shortcuts',
   layout: 'Layout',
   fluid: 'Fluid Scaling',
   density: 'Density',
@@ -157,8 +162,8 @@ class SettingsPanel extends VBElement {
   // VBStore-backed state cached for synchronous render reads
   /** @type {string[]} */
   #a11yThemes = [];
-  /** @type {{ motionFx: boolean, sounds: boolean }} */
-  #extensions = { ...EXTENSION_DEFAULTS };
+  /** @type {{ motionFx: boolean, sounds: boolean, charShortcuts: boolean }} */
+  #extensions = { ...EXTENSION_DEFAULTS, charShortcuts: charShortcutsEnabled() };
   #stickyOn = document.documentElement.hasAttribute('data-sticky');
 
   setup() {
@@ -260,7 +265,7 @@ class SettingsPanel extends VBElement {
       window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: [...this.#a11yThemes] }));
     }
     if (value.extensions && typeof value.extensions === 'object') {
-      this.#extensions = { ...EXTENSION_DEFAULTS, ...value.extensions };
+      this.#extensions = { ...currentExtensionDefaults(), ...value.extensions };
       keys.push('extensions');
       writes.push(VBStore.set(SETTINGS_NS, 'extensions', this.#extensions));
       this.#applyExtensions();
@@ -292,7 +297,10 @@ class SettingsPanel extends VBElement {
     ]);
     if (authoredSticky === null) authoredSticky = ROOT_STICKY_AT_LOAD && sticky !== 'on';
     if (!this.#dirty.has('a11y')) this.#a11yThemes = Array.isArray(a11y) ? a11y : [];
-    if (!this.#dirty.has('extensions')) this.#extensions = { ...EXTENSION_DEFAULTS, ...(ext ?? {}) };
+    if (!this.#dirty.has('extensions')) {
+      // No stored charShortcuts choice: the page's state (authored or default) stands.
+      this.#extensions = { ...currentExtensionDefaults(), ...(ext ?? {}) };
+    }
     // The root attribute is the truth on the page (the head script restores
     // a stored "on" before paint; an authored <html data-sticky> also counts).
     if (!this.#dirty.has('sticky')) this.#stickyOn = document.documentElement.hasAttribute('data-sticky');
@@ -472,6 +480,7 @@ class SettingsPanel extends VBElement {
             ${toggle('high-contrast', 'data-a11y="a11y-high-contrast"', a11yThemes.includes('a11y-high-contrast'))}
             ${toggle('large-text', 'data-a11y="a11y-large-text"', a11yThemes.includes('a11y-large-text'))}
             ${toggle('dyslexia', 'data-a11y="a11y-dyslexia"', a11yThemes.includes('a11y-dyslexia'))}
+            ${toggle('char-shortcuts', 'data-ext="charShortcuts"', extensions.charShortcuts !== false)}
           </div>
         </details>
 
@@ -765,6 +774,13 @@ class SettingsPanel extends VBElement {
   }
 
   #handleReset = () => {
+    // ThemeManager.reset() fires vb:theme-change, whose re-hydration reads
+    // the store before the removals below: keep it off these keys until the
+    // reset has settled, or the controls show the pre-reset values.
+    const keys = ['a11y', 'extensions', 'sticky'];
+    for (const k of keys) this.#dirty.add(k);
+    setTimeout(() => { for (const k of keys) this.#dirty.delete(k); }, 0);
+
     ThemeManager.reset();
 
     // Clear a11y themes
@@ -772,8 +788,8 @@ class SettingsPanel extends VBElement {
     this.#applyA11yThemes();
     window.dispatchEvent(new CustomEvent('vb:a11y-themes-change', { detail: [] }));
 
-    // Reset extensions
-    this.#extensions = { ...EXTENSION_DEFAULTS };
+    // Reset extensions (single-key shortcuts return to the page's authored state)
+    this.#extensions = { ...EXTENSION_DEFAULTS, charShortcuts: authoredCharShortcuts() };
     VBStore.remove(SETTINGS_NS, 'extensions').catch(() => { /* ignore */ });
     this.#applyExtensions();
 
@@ -798,7 +814,7 @@ class SettingsPanel extends VBElement {
     if (e.type === 'vb:a11y-themes-change' && Array.isArray(e.detail)) {
       this.#a11yThemes = e.detail.map(String);
     } else if (e.type === 'vb:extensions-change' && e.detail && typeof e.detail === 'object') {
-      this.#extensions = { ...EXTENSION_DEFAULTS, ...e.detail };
+      this.#extensions = { ...currentExtensionDefaults(), ...e.detail };
     } else if (e.type === 'vb:theme-change') {
       const gen = this.#gen;
       this.#hydrateFromStore().then(() => { if (this.#alive(gen)) this.#syncState(); });
@@ -914,6 +930,9 @@ class SettingsPanel extends VBElement {
     } else {
       root.dataset.motionReduced = '';
     }
+
+    // WCAG 2.1.4: single-character shortcuts on/off (hotkey-bind reads the root attribute).
+    setCharShortcutsEnabled(prefs.charShortcuts !== false);
 
     // Sound effects - lazy-load SoundManager only when needed
     if (prefs.sounds) {

@@ -300,10 +300,10 @@ function updateSummary(form, summary, { focus = false } = {}) {
       const heading = summary.el.querySelector('[data-summary-heading]');
       if (heading) heading.textContent = summaryHeading(form, errors.length);
     }
-    if (summary.el.hidden || !summary.el.hasAttribute('data-visible')) {
+    if (summary.el.hidden || !summary.el.hasAttribute('data-state-visible')) {
       summary.el.hidden = false;
       void summary.el.offsetHeight; // start the expand transition from the collapsed state
-      summary.el.dataset.visible = '';
+      summary.el.dataset.stateVisible = '';
     }
   } else if (changed) {
     const p = document.createElement('p');
@@ -330,9 +330,9 @@ function clearSummary(summary) {
   summary.signature = '';
   if (summary.type === 'authored') {
     const el = summary.el;
-    delete el.dataset.visible;
+    delete el.dataset.stateVisible;
     const done = () => {
-      if (el.hasAttribute('data-visible')) return; // re-shown meanwhile
+      if (el.hasAttribute('data-state-visible')) return; // re-shown meanwhile
       el.hidden = true;
       el.querySelector('[data-summary-list]')?.replaceChildren();
     };

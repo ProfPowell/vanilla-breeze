@@ -14,8 +14,12 @@ import { VBElement } from '../../lib/vb-element.js';
  * default "Page Actions").
  *
  * WCAG 2.1.4: the ? hotkey is a character-key shortcut, so it can be
- * remapped (hotkey="alt+k") or turned off (hotkey="none"). The dialog can
- * always be opened from script or a button via show()/toggle().
+ * remapped (hotkey="alt+k") or turned off (hotkey="none"). It also stops
+ * firing while the user has character-key shortcuts turned off
+ * (settings-panel → Accessibility, <html data-char-shortcuts="off">); the
+ * dialog then leaves out every unscoped character-key shortcut, since none
+ * of them work. The dialog can always be opened from script or a button
+ * via show()/toggle().
  *
  * @attr {string} hotkey             - Key combo that toggles the dialog (default "shift+?"); "none" disables it
  * @attr {string} data-label-title   - Dialog heading (default "Keyboard shortcuts")
@@ -34,8 +38,9 @@ import { VBElement } from '../../lib/vb-element.js';
  * // pointer/touch: myButton.addEventListener('click', () => shortCuts.show());
  */
 
-import { isMac, formatHotkey, splitHotkey, describeKey } from '../../utils/hotkey-format.js';
+import { isMac, formatHotkey, splitHotkey, describeKey, isCharacterShortcut } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
+import { charShortcutsEnabled, CHAR_SHORTCUTS_EVENT } from '../../lib/char-shortcuts.js';
 
 const DEFAULT_HOTKEY = 'shift+?';
 const LABELS = {
@@ -62,6 +67,8 @@ class ShortCuts extends VBElement {
   setup() {
     this.#build();
     this.#bind();
+    // The preference toggles at runtime: re-render an open list.
+    this.listen(window, CHAR_SHORTCUTS_EVENT, () => { if (this.#dialog?.open) this.#render(); });
   }
 
   teardown() {
@@ -199,15 +206,24 @@ class ShortCuts extends VBElement {
     /** @type {Map<string, Array<{ label: string, shortcut: string }>>} */
     const grouped = new Map();
 
+    // Character-key shortcuts that are switched off are not listed.
+    const charOff = !charShortcutsEnabled();
+    /**
+     * @param {string} combo
+     * @param {boolean} [scoped]
+     */
+    const works = (combo, scoped = false) => !(charOff && !scoped && isCharacterShortcut(combo));
+
     const own = this.hotkey;
-    if (own) grouped.set(this.#label('general'), [{ label: this.#label('self'), shortcut: own }]);
+    if (own && works(own)) grouped.set(this.#label('general'), [{ label: this.#label('self'), shortcut: own }]);
 
     /**
      * @param {string} group
-     * @param {{ label: string, shortcut: string }} entry
+     * @param {{ label: string, shortcut: string, scoped?: boolean }} entry
      */
     const add = (group, entry) => {
       if (!entry?.shortcut) return;
+      if (!works(String(entry.shortcut), !!entry.scoped)) return;
       const list = grouped.get(group) || [];
       list.push({ label: String(entry.label ?? ''), shortcut: String(entry.shortcut) });
       grouped.set(group, list);

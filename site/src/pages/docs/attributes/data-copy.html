@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-copy"
-description: "Clipboard copy and paste via data attributes. Add data-copy, data-copy-target, or data-paste-target to any button for clipboard functionality with visual and screen-reader feedback."
+description: "Clipboard copy and paste via data attributes. Add data-copy, data-copy-target, or data-paste-target to any button for clipboard functionality with visible, screen-reader and failure feedback."
 attributeName: data-copy
 category: clipboard
 attributeType: data
@@ -12,354 +12,306 @@ crumbLabel: Data Attributes
 ---
 
 <section>
-    <h2>Overview</h2>
-    <p>The <code>data-copy</code> attribute enhances native buttons with clipboard copy behavior. No wrapper element needed &mdash; just add the attribute directly to a <code>&lt;button&gt;</code>.</p>
+  <h2>Overview</h2>
+  <p>The <code>data-copy</code> attribute turns a native <code>&lt;button&gt;</code> into a clipboard copy control. There is no wrapper element: put the attribute on the button itself. Its siblings <code>data-copy-target</code>, <code>data-copy-attr</code> and <code>data-paste-target</code> copy from another element, copy an attribute value, or paste into a field.</p>
 
-    <browser-window
-      src="/docs/examples/demos/copy-wc-basic.html"
-      url="https://vanilla-breeze.com/copy"
-      title="Copy Button"
-      shadow>
-    </browser-window>
+  <browser-window
+    src="/docs/examples/demos/copy-wc-basic.html"
+    url="https://vanilla-breeze.com/copy"
+    title="Copy Button"
+    shadow>
+  </browser-window>
 
-    <code-block language="html" show-lines label="Copy static text" data-escape><button data-copy="npm install vanilla-breeze">Copy install command</button></code-block>
-  </section>
+  <code-block language="html" show-lines label="Copy static text" data-escape><button type="button" data-copy="npm install vanilla-breeze">Copy install command</button></code-block>
+</section>
 
-  <section>
-    <h2>How It Works</h2>
-    <p>Add one of these attributes to any <code>&lt;button&gt;</code>:</p>
-    <ul>
-      <li><code>data-copy</code> &mdash; the attribute value is the text to copy</li>
-      <li><code>data-copy-target</code> &mdash; a CSS selector pointing to another element whose <code>textContent</code> will be copied</li>
-      <li><code>data-copy-target</code> + <code>data-copy-attr</code> &mdash; copies the named attribute of the target instead of its textContent</li>
-      <li><code>data-paste-target</code> &mdash; a CSS selector for an element to receive the clipboard text on click</li>
-    </ul>
-    <p>On click, the text is written to the clipboard, <code>data-state="copied"</code> is set for 1.5 seconds, a screen reader announcement fires, and a <code>copy</code> custom event is dispatched.</p>
-  </section>
+<section>
+  <h2>Usage</h2>
+  <p>Add one of these attributes to a <code>&lt;button&gt;</code>:</p>
+  <ul>
+    <li><code>data-copy</code> &mdash; the attribute value is the text to copy.</li>
+    <li><code>data-copy-target</code> &mdash; a CSS selector for the element to copy from. Inputs and textareas give their current value, and other elements give their <code>textContent</code>.</li>
+    <li><code>data-copy-target</code> + <code>data-copy-attr</code> &mdash; copies the named attribute of the target instead.</li>
+    <li><code>data-paste-target</code> &mdash; a CSS selector for the element that receives the clipboard text.</li>
+  </ul>
+  <p>On click, the text goes to the clipboard and the button gets <code>data-state="copied"</code> for 1.5 seconds. A polite announcement is made, and a <code>copy:done</code> event fires from the button. One delegated click listener on the document serves every button, so buttons added later, cloned with <code>cloneNode()</code> or restored from saved markup work without set-up. Disabled buttons (<code>disabled</code> or <code>aria-disabled="true"</code>) do nothing.</p>
+</section>
 
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-copy</code></td>
-          <td>string</td>
-          <td>Static text to copy to the clipboard.</td>
-        </tr>
-        <tr>
-          <td><code>data-copy-target</code></td>
-          <td>string</td>
-          <td>CSS selector for the element whose <code>textContent</code> to copy.</td>
-        </tr>
-        <tr>
-          <td><code>data-copy-attr</code></td>
-          <td>string</td>
-          <td>When paired with <code>data-copy-target</code>, copies the named attribute of the target instead of its <code>textContent</code>. Missing attributes copy an empty string.</td>
-        </tr>
-        <tr>
-          <td><code>data-paste-target</code></td>
-          <td>string</td>
-          <td>CSS selector for the element to receive the pasted clipboard text. Form controls get <code>.value</code>; other elements get <code>.textContent</code>.</td>
-        </tr>
-        <tr>
-          <td><code>data-state</code></td>
-          <td>string</td>
-          <td>Set to <code>"copied"</code> after a successful copy, or <code>"pasted"</code> after a successful paste. Held for 1.5s. Use in CSS for feedback styling.</td>
-        </tr>
-        <tr>
-          <td><code>data-copy-init</code></td>
-          <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+<section>
+  <h2>Options</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-copy</code></td>
+        <td>string</td>
+        <td>Static text to copy to the clipboard.</td>
+      </tr>
+      <tr>
+        <td><code>data-copy-target</code></td>
+        <td>selector</td>
+        <td>Element to copy from: <code>.value</code> for <code>&lt;input&gt;</code> / <code>&lt;textarea&gt;</code>, else <code>textContent</code>. If copying fails, this element's text is selected so the user can copy it by hand.</td>
+      </tr>
+      <tr>
+        <td><code>data-copy-attr</code></td>
+        <td>string</td>
+        <td>With <code>data-copy-target</code>: copy the named attribute of the target instead (read at click time). A missing attribute copies nothing.</td>
+      </tr>
+      <tr>
+        <td><code>data-paste-target</code></td>
+        <td>selector</td>
+        <td>Element that receives the clipboard text. Form controls get <code>.value</code>, other elements get <code>.textContent</code>, and an <code>input</code> event is dispatched on the target.</td>
+      </tr>
+      <tr>
+        <td><code>data-label-copied</code></td>
+        <td>string</td>
+        <td>Announcement after a copy. Default "Copied to clipboard". Read from the button or any ancestor, so it can be set once on <code>&lt;html&gt;</code>.</td>
+      </tr>
+      <tr>
+        <td><code>data-label-pasted</code></td>
+        <td>string</td>
+        <td>Announcement after a paste. Default "Pasted from clipboard".</td>
+      </tr>
+      <tr>
+        <td><code>data-label-copy-failed</code></td>
+        <td>string</td>
+        <td>Announcement when copying fails. Default "Copy failed. Text selected, press Ctrl+C to copy" when the source text could be selected, else "Copy failed".</td>
+      </tr>
+      <tr>
+        <td><code>data-label-paste-failed</code></td>
+        <td>string</td>
+        <td>Announcement when reading the clipboard fails. Default "Paste failed".</td>
+      </tr>
+      <tr>
+        <td><code>data-state</code></td>
+        <td>(reflected)</td>
+        <td><code>"copied"</code>, <code>"pasted"</code> or <code>"failed"</code>, held for 1.5 seconds. Set by the script. Do not author it.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
 
-  <section>
-    <h2>Copy from Target Element</h2>
-    <p>Use <code>data-copy-target</code> with a CSS selector to copy text from another element on the page.</p>
+<section>
+  <h2>Events</h2>
+  <p>Events fire from the button and bubble. They are namespaced. Earlier versions dispatched CustomEvents named <code>copy</code> and <code>paste</code>, which reached page-level native <code>ClipboardEvent</code> handlers (analytics, paste sanitizers) without <code>clipboardData</code> and broke them.</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Detail</th>
+        <th>When</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>copy:done</code></td>
+        <td><code>{ text }</code> (<code>{ payload }</code> from <code>copyRich</code>)</td>
+        <td>The clipboard write succeeded.</td>
+      </tr>
+      <tr>
+        <td><code>copy:error</code></td>
+        <td><code>{ text, error }</code></td>
+        <td>The Clipboard API and the <code>execCommand</code> fallback both failed.</td>
+      </tr>
+      <tr>
+        <td><code>paste:done</code></td>
+        <td><code>{ text, target }</code></td>
+        <td>Clipboard text was written into the target.</td>
+      </tr>
+      <tr>
+        <td><code>paste:error</code></td>
+        <td><code>{ target, error }</code></td>
+        <td>Reading the clipboard failed (no Clipboard API, permission denied).</td>
+      </tr>
+    </tbody>
+  </table>
 
-    <div class="example">
-      <layout-stack data-layout-gap="m">
-        <pre><code id="code-example">const greeting = "Hello, world!";</code></pre>
-        <button type="button" data-copy-target="#code-example" class="secondary">Copy code</button>
-      </layout-stack>
-    </div>
+  <browser-window
+    src="/docs/examples/demos/copy-events-basic.html"
+    url="https://vanilla-breeze.com/copy-events"
+    title="Copy Events"
+    shadow>
+  </browser-window>
 
-    <code-block language="html" show-lines label="Copy from a target element" data-escape><pre><code id="code-block">const greeting = "Hello, world!";</code></pre>
+  <code-block language="javascript" show-lines label="Listening for copy events" data-escape>const btn = document.querySelector('[data-copy]');
 
-<button data-copy-target="#code-block">Copy code</button></code-block>
-  </section>
-
-  <section>
-    <h2>Copy from an Attribute</h2>
-    <p>For state-bearing elements where the value you want is stored in an attribute rather than the text content, add <code>data-copy-attr</code> alongside <code>data-copy-target</code>. The button reads <code>target.getAttribute(attrName)</code> at click time.</p>
-
-    <browser-window
-      src="/docs/examples/demos/data-copy-attr-basic.html"
-      url="https://vanilla-breeze.com/copy-attr"
-      title="Copy from Attribute"
-      shadow>
-    </browser-window>
-
-    <code-block language="html" show-lines label="Copy a value attribute" data-escape><output id="swatch" value="#3366cc">#3366cc</output>
-
-<button data-copy-target="#swatch" data-copy-attr="value">Copy hex value</button></code-block>
-
-    <p>Common targets:</p>
-    <ul>
-      <li><code>&lt;output value="..."&gt;</code> &mdash; computed values that don&apos;t appear as text</li>
-      <li>Custom elements that reflect state to an attribute (e.g. <code>&lt;color-picker value="..."&gt;</code>)</li>
-      <li>Any element where authored data lives in an attribute</li>
-    </ul>
-
-    <p><strong>Note:</strong> Form controls&apos; live <code>.value</code> property does not reflect to the <code>value</code> attribute after user input. <code>data-copy-attr="value"</code> on an <code>&lt;input&gt;</code> copies the initial markup value, not what the user has typed. For live form state, use the <a href="#javascript-api">JavaScript API</a>.</p>
-  </section>
-
-  <section>
-    <h2>With Icons</h2>
-    <p>Pair with <code>&lt;icon-wc&gt;</code> for a more visual button.</p>
-
-    <div class="example">
-      <button type="button" data-copy="https://vanilla-breeze.com">
-        <icon-wc name="copy" size="sm"></icon-wc>
-        Copy link
-      </button>
-    </div>
-
-    <code-block language="html" show-lines label="Copy button with icon" data-escape><button data-copy="https://vanilla-breeze.com">
-  <icon-wc name="copy" size="sm"></icon-wc>
-  Copy link
-</button></code-block>
-  </section>
-
-  <section>
-    <h2>Events</h2>
-    <p>The button dispatches a <code>copy</code> event on successful clipboard write.</p>
-
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Event</th>
-          <th>Detail</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>copy</code></td>
-          <td><code>{ text: string }</code></td>
-          <td>Fired after text is copied. The <code>detail.text</code> property contains the copied string.</td>
-        </tr>
-        <tr>
-          <td><code>paste</code></td>
-          <td><code>{ text: string }</code></td>
-          <td>Fired after text is pasted into the target. The <code>detail.text</code> property contains the pasted string.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <code-block language="javascript" show-lines label="Listening for copy events" data-escape>const btn = document.querySelector('[data-copy]');
-
-btn.addEventListener('copy', (e) => {
+btn.addEventListener('copy:done', (e) => {
   console.log('Copied:', e.detail.text);
-});</code-block>
-  </section>
-
-  <section>
-    <h2>Common Use Cases</h2>
-
-    <h3>Code Block Copy Button</h3>
-    <p>Position a copy button inside a code block:</p>
-
-    <div class="example">
-      <div style="position: relative;">
-        <pre><code id="snippet-demo">npm install vanilla-breeze</code></pre>
-        <button type="button" data-copy-target="#snippet-demo" class="ghost small" style="position: absolute; top: 0.5rem; right: 0.5rem;">
-          <icon-wc name="copy" size="sm"></icon-wc>
-        </button>
-      </div>
-    </div>
-
-    <code-block language="html" show-lines label="Code block with copy button" data-escape><div style="position: relative;">
-  <pre><code id="snippet">npm install vanilla-breeze</code></pre>
-  <button data-copy-target="#snippet" class="ghost small"
-    style="position: absolute; top: 0.5rem; right: 0.5rem;">
-    <icon-wc name="copy" size="sm"></icon-wc>
-  </button>
-</div></code-block>
-
-    <h3>Share Link</h3>
-    <p>Quick share-by-link button:</p>
-
-    <div class="example">
-      <button type="button" data-copy="https://vanilla-breeze.com/docs" class="secondary">
-        <icon-wc name="link" size="sm"></icon-wc>
-        Share link
-      </button>
-    </div>
-
-    <code-block language="html" show-lines label="Share link button" data-escape><button data-copy="https://vanilla-breeze.com/docs" class="secondary">
-  <icon-wc name="link" size="sm"></icon-wc>
-  Share link
-</button></code-block>
-  </section>
-
-  <section>
-    <h2>Styling Feedback</h2>
-    <p>The <code>data-state="copied"</code> attribute is set for 1.5 seconds after copying. Use it to style the copied state:</p>
-
-    <code-block language="css" show-lines label="Custom copied state styling" data-escape>[data-copy][data-state="copied"],
-[data-copy-target][data-state="copied"] {
-  color: var(--color-success);
-}</code-block>
-
-    <p>The default styles change the button text color to <code>--color-success</code> during the copied state.</p>
-  </section>
-
-  <section>
-    <h2>JavaScript API</h2>
-    <p>For components that need to copy computed strings (formatted output, JSON, CSS), import <code>copyText()</code> from the same module. It performs the clipboard write with the same visual feedback, screen-reader announcement, and <code>copy</code> event dispatch as the attribute pattern.</p>
-
-    <code-block language="javascript" show-lines label="Programmatic copy with feedback" data-escape>import { copyText } from '/src/utils/copy-init.js';
-
-// Minimal — text only, announces to document.body
-await copyText('hello');
-
-// With a button — applies data-state="copied" and dispatches the copy event
-await copyText(generateCSS(), { button: myButton });
-
-// Custom announcement + duration
-await copyText(json, {
-  button: myButton,
-  announceMessage: 'Settings exported',
-  duration: 2000
-});</code-block>
-
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Option</th>
-          <th>Type</th>
-          <th>Default</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>button</code></td>
-          <td>HTMLElement</td>
-          <td>—</td>
-          <td>Receives <code>data-state="copied"</code> and dispatches the <code>copy</code> event. Omit for "fire and forget" copies.</td>
-        </tr>
-        <tr>
-          <td><code>announceMessage</code></td>
-          <td>string</td>
-          <td><code>"Copied to clipboard"</code></td>
-          <td>Screen-reader announcement text.</td>
-        </tr>
-        <tr>
-          <td><code>duration</code></td>
-          <td>number</td>
-          <td><code>1500</code></td>
-          <td>Milliseconds to hold <code>data-state="copied"</code>.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p>Returns <code>Promise&lt;boolean&gt;</code> — resolves to <code>true</code> on success, <code>false</code> if the Clipboard API is unavailable or permission is denied. Never throws.</p>
-  </section>
-
-  <section>
-    <h2>Paste from clipboard</h2>
-    <p>The symmetric counterpart to <code>data-copy-target</code>. Add <code>data-paste-target="&lt;selector&gt;"</code> to a button to read the clipboard and write it into another element on click. Form controls (<code>input</code>, <code>textarea</code>, <code>select</code>) receive <code>.value</code>; other elements receive <code>.textContent</code>. An <code>input</code> event is dispatched on the target so framework listeners notice the change.</p>
-
-    <browser-window
-      src="/docs/examples/demos/paste-target-basic.html"
-      url="https://vanilla-breeze.com/paste"
-      title="Paste Button"
-      shadow>
-    </browser-window>
-
-    <code-block language="html" show-lines label="Paste into an input" data-escape><input id="dest" type="text">
-
-<button data-paste-target="#dest">Paste</button></code-block>
-
-    <p>On success, <code>data-state="pasted"</code> is set for 1.5s, the screen reader hears <em>"Pasted from clipboard"</em>, and a <code>paste</code> CustomEvent fires from the button with <code>detail.text</code>. Failures (permission denied, no clipboard text) are silent.</p>
-
-    <p>Most browsers prompt the user the first time a page calls <code>navigator.clipboard.readText()</code>. The button stays inert if the user denies permission.</p>
-
-    <code-block language="javascript" show-lines label="Programmatic paste" data-escape>import { pasteFromClipboard } from '/src/utils/copy-init.js';
-
-// Read clipboard into an element
-const text = await pasteFromClipboard(document.querySelector('#dest'), {
-  button: myButton,
 });
 
-// Or read without writing anywhere — just inspect/transform
-const raw = await pasteFromClipboard(null);
-if (raw?.startsWith('http')) { /* ... */ }</code-block>
+btn.addEventListener('copy:error', (e) => {
+  console.warn('Copy failed', e.detail.error);
+});</code-block>
+</section>
 
-    <p>Returns <code>Promise&lt;string | null&gt;</code> — the pasted text on success, <code>null</code> on failure. Never throws.</p>
-  </section>
+<section>
+  <h2>Styling</h2>
+  <p>The hooks are the reflected <code>data-state</code> values:</p>
+  <ul>
+    <li><code>[data-state="copied"]</code> and <code>[data-state="pasted"]</code> &mdash; success colour (<code>--color-success</code>) plus a &#x2713; mark after the label.</li>
+    <li><code>[data-state="failed"]</code> &mdash; error colour (<code>--color-error</code>) plus a &#x2715; mark.</li>
+    <li>The marks use CSS generated content with empty alternative text (<code>content: "\2713" / ""</code>), so they do not change the button's accessible name.</li>
+    <li>In forced-colors mode, any state also draws an outline, because colour changes are not visible there.</li>
+  </ul>
+  <code-block language="css" show-lines label="Custom feedback styling" data-escape>:is([data-copy], [data-copy-target])[data-state="copied"],
+[data-paste-target][data-state="pasted"] {
+  background: var(--color-success-subtle);
+}
 
-  <section>
-    <h2>Rich clipboard (multi-format)</h2>
-    <p>For payloads richer than text — copying a color as both hex and a swatch image, or a QR code as both the URL and a PNG — import <code>copyRich()</code>. It writes a <code>ClipboardItem</code> with any combination of <code>text/plain</code>, <code>text/html</code>, and a binary <code>Blob</code> (typically <code>image/png</code>). When the browser doesn&apos;t support <code>ClipboardItem</code> or rejects a specific MIME type, it transparently falls back to text-only via <code>copyText()</code>.</p>
+:is([data-copy], [data-copy-target], [data-paste-target])[data-state="failed"] {
+  background: var(--color-error-subtle);
+}</code-block>
+</section>
 
-    <browser-window
-      src="/docs/examples/demos/copy-rich-basic.html"
-      url="https://vanilla-breeze.com/copy-rich"
-      title="Rich Clipboard Copy"
-      shadow>
-    </browser-window>
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>Announcements go through one shared, visually hidden live region on <code>&lt;body&gt;</code> (<code>src/lib/announce.js</code>), never inside the button. The button's accessible name stays the same, and repeating a copy is announced again.</li>
+    <li>Failure is never silent. If <code>navigator.clipboard</code> is missing or refuses (an insecure <code>http:</code> page, denied permission), a hidden-textarea <code>execCommand('copy')</code> is tried. If that fails too, the button gets <code>data-state="failed"</code>, the source text (<code>data-copy-target</code>) is selected for a manual copy, the failure is announced, and <code>copy:error</code> fires.</li>
+    <li>Colour is not the only cue: a mark is added (WCAG 1.4.1), and forced-colors mode gets an outline.</li>
+    <li>The button stays a native <code>&lt;button&gt;</code>, so it keeps keyboard support and its own name. Icon-only buttons need an <code>aria-label</code>.</li>
+    <li>Pasting asks for permission in most browsers the first time. A denial sets <code>data-state="failed"</code> and is announced.</li>
+  </ul>
+</section>
 
-    <code-block language="javascript" show-lines label="Multi-format copy" data-escape>import { copyRich } from '/src/utils/copy-init.js';
+<section>
+  <h2>Examples</h2>
 
-// Text + HTML — pastes as styled into rich-text targets, plain into code editors
-await copyRich({
-  text: 'Vanilla Breeze',
-  html: '&lt;strong&gt;Vanilla Breeze&lt;/strong&gt;',
-}, { button: myButton });
+  <h3>Copy from a target element</h3>
+  <p>Point <code>data-copy-target</code> at the element to copy from. A form field gives its current value.</p>
+  <browser-window
+    src="/docs/examples/demos/copy-target-basic.html"
+    url="https://vanilla-breeze.com/copy-target"
+    title="Copy from Target"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Copy from a target element" data-escape><pre><code id="code-example">const greeting = "Hello, world!";</code></pre>
+<button type="button" data-copy-target="#code-example">Copy code</button>
 
-// Text + image (e.g. a color swatch)
-const blob = await new Promise(r =&gt; canvas.toBlob(r, 'image/png'));
-await copyRich({
-  text: '#3366cc',
-  blob,
-}, { button: myButton, announceMessage: 'Color copied as text + image' });</code-block>
+<input id="token" type="text" value="vb_live_3f9a2c" readonly>
+<button type="button" data-copy-target="#token">Copy token</button></code-block>
 
-    <p>Receiving apps choose the format they understand. Pasting into Slack or Figma uses the image; pasting into a code editor uses the text. The screen-reader announcement, <code>data-state="copied"</code> hook, and <code>copy</code> event behave exactly as with <code>copyText()</code>.</p>
+  <h3>Copy from an attribute</h3>
+  <p>When the value lives in an attribute rather than in the text, add <code>data-copy-attr</code> next to <code>data-copy-target</code>. Common targets are <code>&lt;output value&gt;</code>, <code>&lt;data value&gt;</code>, <code>&lt;time datetime&gt;</code>, <code>&lt;a href&gt;</code> and any <code>data-*</code> attribute.</p>
+  <browser-window
+    src="/docs/examples/demos/data-copy-attr-basic.html"
+    url="https://vanilla-breeze.com/copy-attr"
+    title="Copy from Attribute"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Copy a value attribute" data-escape><output id="swatch" value="#3366cc">#3366cc</output>
+<button type="button" data-copy-target="#swatch" data-copy-attr="value">Copy hex value</button></code-block>
 
-    <p>VB&apos;s <code>&lt;qr-code&gt;</code> uses <code>copyRich()</code> internally via its <code>copy()</code> method.</p>
-  </section>
+  <h3>Icons, share links and snippets</h3>
+  <p>For a snippet copy button, lay the code and the button out with a VB layout. Absolute positioning is not needed. An icon-only button needs an <code>aria-label</code>.</p>
+  <browser-window
+    src="/docs/examples/demos/copy-patterns-basic.html"
+    url="https://vanilla-breeze.com/copy-patterns"
+    title="Copy Button Patterns"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Icon, share link and snippet buttons" data-escape><button type="button" data-copy="https://vanilla-breeze.com">
+  <icon-wc name="copy" size="sm"></icon-wc>
+  Copy link
+</button>
 
-  <section>
-    <h2>Dynamic Buttons</h2>
-    <p>Buttons added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+<figure data-layout="cluster" data-layout-gap="s" data-layout-align="center">
+  <pre><code id="snippet">npm install vanilla-breeze</code></pre>
+  <button type="button" data-copy-target="#snippet" class="ghost small"
+          aria-label="Copy install command">
+    <icon-wc name="copy" size="sm"></icon-wc>
+  </button>
+</figure></code-block>
 
-    <code-block language="javascript" show-lines label="Dynamically added copy buttons" data-escape>// Dynamically added buttons are auto-enhanced via MutationObserver
-const btn = document.createElement('button');
-btn.dataset.copy = 'Hello from JS';
-btn.textContent = 'Copy greeting';
-document.body.appendChild(btn);
-// btn is ready to use — no manual init needed</code-block>
-  </section>
+  <h3>Paste from the clipboard</h3>
+  <p><code>data-paste-target</code> is the counterpart of <code>data-copy-target</code>. It reads the clipboard and writes the text into the target.</p>
+  <browser-window
+    src="/docs/examples/demos/paste-target-basic.html"
+    url="https://vanilla-breeze.com/paste"
+    title="Paste Button"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Paste into an input" data-escape><input id="dest" type="text">
+<button type="button" data-paste-target="#dest">Paste</button></code-block>
 
-  <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li>Uses <code>aria-live="polite"</code> to announce "Copied to clipboard" to screen readers</li>
-      <li>The announcement element is visually hidden with <code>sr-only</code> and removed after 1 second</li>
-      <li>Works with any focusable button element, preserving keyboard accessibility</li>
-      <li>No wrapper element &mdash; the button <em>is</em> the interactive element, improving the accessibility tree</li>
-      <li>Falls gracefully when the Clipboard API is unavailable or permission is denied</li>
-    </ul>
-  </section>
+  <h3>Rich clipboard (multi-format)</h3>
+  <p><code>copyRich()</code> writes a <code>ClipboardItem</code> that combines <code>text/plain</code>, <code>text/html</code> and a binary <code>Blob</code> (typically <code>image/png</code>). If the browser has no <code>ClipboardItem</code>, or rejects one of the types, it falls back to copying the text with <code>copyText()</code>. <code>&lt;qr-code&gt;</code>'s <code>copy()</code> method uses it.</p>
+  <browser-window
+    src="/docs/examples/demos/copy-rich-basic.html"
+    url="https://vanilla-breeze.com/copy-rich"
+    title="Rich Clipboard Copy"
+    shadow>
+  </browser-window>
+  <code-block language="javascript" show-lines label="Multi-format copy" data-escape>import { copyRich } from '/src/utils/copy-init.js';
+
+const blob = await new Promise((r) => canvas.toBlob(r, 'image/png'));
+await copyRich({ text: '#3366cc', blob }, {
+  button: myButton,
+  announceMessage: 'Color copied as text and image',
+});</code-block>
+</section>
+
+<section>
+  <h2>JavaScript helpers</h2>
+  <p>Components that copy or paste import the same helpers, so they get the same feedback:</p>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Function</th>
+        <th>Returns</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>copyText(text, options)</code></td>
+        <td><code>Promise&lt;boolean&gt;</code></td>
+        <td>Writes text, falling back to <code>execCommand('copy')</code>, then gives feedback.</td>
+      </tr>
+      <tr>
+        <td><code>copyRich({ text, html, blob }, options)</code></td>
+        <td><code>Promise&lt;boolean&gt;</code></td>
+        <td>Multi-format write. If that fails, copies the text only.</td>
+      </tr>
+      <tr>
+        <td><code>pasteFromClipboard(target, options)</code></td>
+        <td><code>Promise&lt;string | null&gt;</code></td>
+        <td>Reads the clipboard and writes it into <code>target</code> (pass <code>null</code> to only read). Never throws.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Options:</p>
+  <ul>
+    <li><code>button</code> &mdash; gets <code>data-state</code> and dispatches the events.</li>
+    <li><code>announceMessage</code> &mdash; success announcement (default: the button's <code>data-label-copied</code> / <code>data-label-pasted</code>, else the English default).</li>
+    <li><code>failureMessage</code> &mdash; failure announcement.</li>
+    <li><code>source</code> &mdash; the element whose text is selected when copying fails.</li>
+    <li><code>duration</code> &mdash; how long <code>data-state</code> is held, in milliseconds (default 1500).</li>
+  </ul>
+  <code-block language="javascript" show-lines label="Programmatic copy and paste" data-escape>import { copyText, pasteFromClipboard } from '/src/utils/copy-init.js';
+
+const ok = await copyText(url, { button, source: urlField });
+const text = await pasteFromClipboard(document.querySelector('#dest'), { button });</code-block>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/integrations/web-components/code-block/"><code>&lt;code-block&gt;</code></a> &mdash; has its own copy button for code samples.</li>
+    <li><a href="/docs/elements/web-components/qr-code/"><code>&lt;qr-code&gt;</code></a> &mdash; <code>copy()</code> copies the encoded text and a PNG.</li>
+    <li><a href="/docs/elements/web-components/color-picker/"><code>&lt;color-picker&gt;</code></a> &mdash; its built-in copy button copies the current colour.</li>
+    <li><a href="/docs/elements/web-components/share/"><code>&lt;share-wc&gt;</code></a> &mdash; a "Copy link" platform next to the share targets.</li>
+    <li><a href="/docs/elements/web-components/heading-links/"><code>&lt;heading-links&gt;</code></a> &mdash; copies a heading's permalink.</li>
+  </ul>
+  <h3>Attribute or component?</h3>
+  <ul>
+    <li><strong><code>data-copy</code></strong> &mdash; any button that copies one known string, field or attribute: install commands, API tokens, hex values, share URLs.</li>
+    <li><strong>A component</strong> &mdash; when copying is part of a larger widget. Use <code>&lt;code-block&gt;</code> for highlighted code, <code>&lt;qr-code&gt;</code> for images, <code>&lt;color-picker&gt;</code> for colours, <code>&lt;share-wc&gt;</code> for share menus. They use the same helpers, so they give the same feedback.</li>
+  </ul>
+</section>

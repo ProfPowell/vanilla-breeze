@@ -28,7 +28,7 @@
  * </context-menu>
  */
 
-import { formatHotkey, isMac } from '../../utils/hotkey-format.js';
+import { formatHotkey, toAriaKeyShortcuts } from '../../utils/hotkey-format.js';
 import { bindHotkey } from '../../utils/hotkey-bind.js';
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
@@ -44,22 +44,6 @@ const FOCUSABLE = 'a[href], button, input, select, textarea, summary, iframe, [t
 function isDisabled(item) {
   return item.hasAttribute('data-disabled') || item.getAttribute('aria-disabled') === 'true'
     || !!(/** @type {any} */ (item).disabled);
-}
-
-/**
- * hotkey-bind combo ("meta+shift+d") → aria-keyshortcuts value
- * ("Meta+Shift+D" on macOS, "Control+Shift+D" elsewhere).
- * @param {string} combo
- */
-function toAriaKeyShortcut(combo) {
-  return combo.split('+').map(part => {
-    const k = part.trim().toLowerCase();
-    if (k === 'meta' || k === 'cmd') return isMac ? 'Meta' : 'Control';
-    if (k === 'ctrl') return 'Control';
-    if (k === 'alt') return 'Alt';
-    if (k === 'shift') return 'Shift';
-    return k.length === 1 ? k.toUpperCase() : k.charAt(0).toUpperCase() + k.slice(1);
-  }).join('+');
 }
 
 /**
@@ -155,7 +139,7 @@ class ContextMenuWc extends VBElement {
           kbd.textContent = formatHotkey(shortcut);
           item.appendChild(kbd);
         }
-        item.setAttribute('aria-keyshortcuts', toAriaKeyShortcut(shortcut));
+        item.setAttribute('aria-keyshortcuts', toAriaKeyShortcuts(shortcut));
 
         const unbind = bindHotkey(shortcut, () => {
           if (!isDisabled(item)) item.click();

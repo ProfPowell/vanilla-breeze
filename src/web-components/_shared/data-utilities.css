@@ -12,12 +12,37 @@ input[data-mask][data-mask-init] {
   font-variant-numeric: tabular-nums;
 }
 
-/* data-copy: Clipboard copy button feedback (attribute + programmatic via copyText) */
+/* data-copy: Clipboard copy button feedback (attribute + programmatic via copyText).
+   Colour is never the only cue (WCAG 1.4.1): a check / cross mark is added
+   with empty alt text ("/ ''") so it does not change the button's name, and
+   forced-colors mode gets an outline. */
 [data-copy][data-state="copied"],
 [data-copy-target][data-state="copied"],
 [data-paste-target][data-state="pasted"],
 :where(color-picker) button[data-state="copied"] {
   color: var(--color-success, oklch(50% 0.15 145));
+}
+
+:is([data-copy], [data-copy-target], [data-paste-target])[data-state="failed"] {
+  color: var(--color-error, oklch(55% 0.2 25));
+}
+
+:is([data-copy], [data-copy-target])[data-state="copied"]::after,
+[data-paste-target][data-state="pasted"]::after {
+  content: "\2713" / "";
+  margin-inline-start: 0.35em;
+}
+
+:is([data-copy], [data-copy-target], [data-paste-target])[data-state="failed"]::after {
+  content: "\2715" / "";
+  margin-inline-start: 0.35em;
+}
+
+@media (forced-colors: active) {
+  :is([data-copy], [data-copy-target], [data-paste-target])[data-state] {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
 }
 /* data-format-date: Locale-aware date formatting */
 time[data-format-date="relative"] {
@@ -147,9 +172,26 @@ kbd[data-hotkey] > kbd {
   user-select: auto;
 }
 
+/* Keyboard focus: the generated buttons reset every UA style (all: unset),
+   so the ring is restored here; the revealed content receives focus after
+   a keyboard reveal and shows where reading continues. */
+[data-spoiler][data-spoiler-init] > :is([data-spoiler-trigger], [data-spoiler-hide]):focus-visible,
+[data-spoiler][data-spoiler-init] > [data-spoiler-content]:focus-visible {
+  outline: 2px solid var(--color-interactive, currentColor);
+  outline-offset: 2px;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   [data-spoiler][data-spoiler-init] > [data-spoiler-content] {
     transition-duration: 0s;
+  }
+}
+
+/* Print: spoilers print revealed (print.css); data-spoiler-print="hidden"
+   keeps quiz answers and the like concealed on paper. */
+@media print {
+  [data-spoiler][data-spoiler-print="hidden"]:not([data-spoiler-visible]) > [data-spoiler-content] {
+    visibility: hidden !important;
   }
 }

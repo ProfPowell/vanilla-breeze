@@ -21,6 +21,16 @@
  *                                        from <pager-wc data-style="load-more">); the infinite
  *                                        sentinel is not a control and always renders.
  * @attr {string}  data-paged-url       - Opt-in URL search-param name; uses History API
+ * @attr {string}  data-label-nav       - Nav landmark name (default "Pagination")
+ * @attr {string}  data-label-prev      - Previous button text (default "Previous")
+ * @attr {string}  data-label-next      - Next button text (default "Next")
+ * @attr {string}  data-label-page      - Page button name, {page} (default "Page {page}")
+ * @attr {string}  data-label-status    - Page status, {page}/{total} (default "Page {page} of {total}")
+ * @attr {string}  data-label-load-more - Load-more text, {n} remaining (default "Load more ({n})")
+ * @attr {string}  data-label-no-more   - Exhausted load-more text (default "No more")
+ * @attr {string}  data-label-showing   - Announced after load-more, {visible}/{total} (default "Showing {visible} of {total}")
+ *                                        The data-label-* strings are the same set <pager-wc> reads; they are read
+ *                                        from the container or any ancestor (set once on <html lang> / <main>).
  *
  * @fires paged:change                  - { page, size, total, totalPages, visible, style }
  *                                        visible = number of items currently shown
@@ -38,7 +48,9 @@
 
 import { registerInit } from './_init-registry.js';
 import { paginationState } from '../lib/data-paged.js';
-import { buildNav, wireNav, replaceNav } from '../lib/data-paged-controls.js';
+import { buildNav, wireNav, replaceNav, fillTemplate } from '../lib/data-paged-controls.js';
+import { announce, readLabel } from '../lib/announce.js';
+import { getLocale } from '../lib/i18n.js';
 
 const SELECTOR = '[data-paged]';
 const STATE = new WeakMap();
@@ -160,6 +172,25 @@ function render(state) {
   }));
 }
 
+/**
+ * Nav strings: data-label-* on the host or an ancestor, numbers formatted
+ * for the host's language. Same keys as <pager-wc>.
+ * @param {HTMLElement} host
+ */
+function navLabels(host) {
+  const nf = new Intl.NumberFormat(getLocale(host));
+  const label = (/** @type {string} */ name, /** @type {string} */ fallback) => readLabel(host, name, fallback);
+  return {
+    navLabel: label('nav', 'Pagination'),
+    prevLabel: label('prev', 'Previous'),
+    nextLabel: label('next', 'Next'),
+    pageLabel: (/** @type {number} */ n) => fillTemplate(label('page', 'Page {page}'), { page: nf.format(n) }),
+    statusLabel: (/** @type {number} */ p, /** @type {number} */ t) => fillTemplate(label('status', 'Page {page} of {total}'), { page: nf.format(p), total: nf.format(t) }),
+    loadMoreLabel: (/** @type {number} */ n) => fillTemplate(label('load-more', 'Load more ({n})'), { n: nf.format(n) }),
+    noMoreLabel: label('no-more', 'No more'),
+  };
+}
+
 function renderControls(state, sm, cfg, isProgressive) {
   // The infinite sentinel is rebuilt every render; navs are swapped in
   // place (replaceNav) so focus and the prev-next live region survive.
@@ -179,6 +210,7 @@ function renderControls(state, sm, cfg, isProgressive) {
         pageNumbers: sm.pageNumbers,
         total: state.children.length,
         visible: state.visible,
+        ...navLabels(state.host),
       });
     } else if (!isProgressive && sm.totalPages > 1) {
       nav = buildNav({
@@ -188,6 +220,7 @@ function renderControls(state, sm, cfg, isProgressive) {
         pageNumbers: sm.pageNumbers,
         total: state.children.length,
         visible: state.visible,
+        ...navLabels(state.host),
       });
     }
   }
@@ -263,13 +296,25 @@ function goTo(state, page) {
     window.history.pushState({}, '', url);
   }
   render(state);
+  // prev-next carries its own live status; numbered pages are announced here.
+  if (cfg.style !== 'prev-next') {
+    announce(navLabels(host).statusLabel(sm.page, sm.totalPages));
+  }
 }
 
 function loadMore(state) {
   const cfg = readConfig(state.host);
   const step = cfg.size || 10;
+  const before = state.visible;
   state.visible = Math.min(state.visible + step, state.children.length);
   render(state);
+  if (state.visible > before) {
+    const nf = new Intl.NumberFormat(getLocale(state.host));
+    announce(readLabel(state.host, 'showing', 'Showing {visible} of {total}', {
+      visible: nf.format(state.visible),
+      total: nf.format(state.children.length),
+    }));
+  }
 }
 
 /* ---------- registration ---------- */

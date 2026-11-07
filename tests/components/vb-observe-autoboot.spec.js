@@ -58,6 +58,9 @@ test('an effect that wraps its element keeps its control after the observer sees
   await page.goto('/docs/examples/demos/animate-image-basic.html');
   await page.waitForFunction(() => Boolean(window.VB?._effects?.has('animate-image')));
   await page.waitForTimeout(200);
-  await expect(page.locator('.animate-image-toggle')).toHaveCount(2);
-  await expect(page.locator('.animate-image-wrapper > img[data-effect~="animate-image"]')).toHaveCount(2);
+  // Three images: two plain <img> and one inside a <picture> (the wrapper
+  // then holds the whole <picture>, so its <source>s stay its children).
+  await expect(page.locator('.animate-image-toggle')).toHaveCount(3);
+  await expect(page.locator('.animate-image-wrapper img[data-effect~="animate-image"]')).toHaveCount(3);
+  await expect(page.locator('.animate-image-wrapper > picture > img')).toHaveCount(1);
 });

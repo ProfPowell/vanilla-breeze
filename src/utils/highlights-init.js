@@ -25,6 +25,7 @@
  */
 
 import { VBStore } from '../lib/vb-store.js';
+import { announce } from '../lib/announce.js';
 
 const SELECTOR = '[data-highlights]';
 const STORAGE_NS = 'highlights';
@@ -232,20 +233,7 @@ function setOwnerRanges(owner, groups) {
 // and CSS Custom Highlight API rendering.
 
 // ---------- Live region for screen readers ----------
-
-let liveRegion = null;
-
-function announce(message) {
-  if (!liveRegion) {
-    liveRegion = document.createElement('div');
-    liveRegion.setAttribute('aria-live', 'polite');
-    liveRegion.setAttribute('aria-atomic', 'true');
-    liveRegion.className = 'hn-sr-only';
-    document.body.appendChild(liveRegion);
-  }
-  liveRegion.textContent = '';
-  requestAnimationFrame(() => { liveRegion.textContent = message; });
-}
+// The shared body-level announcer (src/lib/announce.js).
 
 // ---------- TreeWalker utilities ----------
 

@@ -1,9 +1,9 @@
 ---
 layout: attribute
 title: "data-select-all"
-description: "Master checkbox for bulk selection. Add data-select-all to a checkbox to control a group of related checkboxes with indeterminate state and count display."
+description: "Master checkbox for bulk selection. Add data-select-all to a checkbox to control a group of related checkboxes, with indeterminate state, disabled items skipped and a live count."
 attributeName: data-select-all
-category: clipboard
+category: form-behavior
 attributeType: data
 currentPath: /docs/attributes/data-select-all/
 
@@ -12,214 +12,193 @@ crumbLabel: Data Attributes
 ---
 
 <section>
-    <h2>Overview</h2>
-    <p>The <code>data-select-all</code> attribute enhances a checkbox to act as a master toggle for a group of target checkboxes. When toggled, all targets check or uncheck together. When individual targets are changed, the master reflects an indeterminate state if some (but not all) are selected.</p>
+  <h2>Overview</h2>
+  <p>The <code>data-select-all</code> attribute makes a checkbox the master toggle for a group of target checkboxes. Toggling the master checks or unchecks every enabled target. When targets change one by one, the master shows the result: checked when all are selected, indeterminate ("mixed") when some are, unchecked when none are.</p>
 
-    <browser-window
-      src="/docs/examples/demos/select-all-basic.html"
-      url="https://vanilla-breeze.com/select-all"
-      title="Select All"
-      shadow>
-    </browser-window>
+  <browser-window
+    src="/docs/examples/demos/select-all-basic.html"
+    url="https://vanilla-breeze.com/select-all"
+    title="Select All"
+    shadow>
+  </browser-window>
 
-    <code-block language="html" show-lines label="Basic table with select all" data-escape><table>
+  <code-block language="html" show-lines label="Table with select all" data-escape><table>
   <thead>
     <tr>
-      <th><input type="checkbox" data-select-all=".row-select" aria-label="Select all"></th>
-      <th>Name</th>
-      <th>Email</th>
+      <th scope="col"><input type="checkbox" data-select-all=".row-select" aria-label="Select all"></th>
+      <th scope="col">Name</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><input type="checkbox" class="row-select"></td>
+      <td><input type="checkbox" class="row-select" aria-label="Select Alice Johnson"></td>
       <td>Alice Johnson</td>
-      <td>alice@example.com</td>
     </tr>
     <tr>
-      <td><input type="checkbox" class="row-select"></td>
+      <td><input type="checkbox" class="row-select" aria-label="Select Bob Smith"></td>
       <td>Bob Smith</td>
-      <td>bob@example.com</td>
-    </tr>
-    <tr>
-      <td><input type="checkbox" class="row-select"></td>
-      <td>Carol White</td>
-      <td>carol@example.com</td>
     </tr>
   </tbody>
 </table></code-block>
-  </section>
+</section>
 
-  <section>
-    <h2>How It Works</h2>
-    <ol>
-      <li>Add <code>data-select-all</code> to a checkbox, with the value set to a CSS selector matching the target checkboxes</li>
-      <li>The init script scopes targets to the nearest <code>&lt;table&gt;</code>, <code>&lt;form&gt;</code>, <code>&lt;fieldset&gt;</code>, or <code>[data-select-all-scope]</code> ancestor &mdash; falling back to <code>document</code></li>
-      <li>Toggling the master checks/unchecks all targets and dispatches <code>change</code> events on each</li>
-      <li>Toggling any individual target syncs the master: all checked = checked, some checked = indeterminate, none checked = unchecked</li>
-      <li>A <code>select-all:change</code> custom event is dispatched on every state change</li>
-    </ol>
-  </section>
+<section>
+  <h2>Usage</h2>
+  <ol>
+    <li>Put <code>data-select-all</code> on an <code>&lt;input type="checkbox"&gt;</code>. Its value is a CSS selector for the target checkboxes.</li>
+    <li>Targets are searched for in the <strong>nearest</strong> ancestor that is <code>[data-select-all-scope]</code>, <code>&lt;table&gt;</code>, <code>&lt;form&gt;</code> or <code>&lt;fieldset&gt;</code>. Without such an ancestor, the whole document is searched.</li>
+    <li>Disabled targets (<code>disabled</code>, or inside a disabled <code>&lt;fieldset&gt;</code>) are never toggled and do not count toward the total. The master can still reach "all" while a locked item stays unchecked.</li>
+    <li>Toggling the master changes each enabled target that needs it and fires a real <code>change</code> event on each one.</li>
+    <li>The master re-syncs when a target changes, after a form reset, when targets are added, removed, disabled or hidden inside the scope, and when <code>data-select-all</code> itself changes.</li>
+  </ol>
+  <p>State is kept in script, not in a marker attribute, so a cloned master (for example in a duplicated fieldset) works on its own. When the master leaves the document, its listeners and observer are removed.</p>
+</section>
 
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-select-all</code></td>
-          <td>string</td>
-          <td>CSS selector for the target checkboxes (e.g., <code>.row-select</code>).</td>
-        </tr>
-        <tr>
-          <td><code>data-selected-count</code></td>
-          <td>boolean</td>
-          <td>Place on a separate element to display the number of selected items. Updated automatically.</td>
-        </tr>
-        <tr>
-          <td><code>data-select-all-scope</code></td>
-          <td>boolean</td>
-          <td>Place on an ancestor element to scope the master/target relationship. Useful when the same target selector appears in multiple groups.</td>
-        </tr>
-        <tr>
-          <td><code>data-select-all-init</code></td>
-          <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+<section>
+  <h2>Options</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>On</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-select-all</code></td>
+        <td>master checkbox</td>
+        <td>CSS selector for the target checkboxes (e.g. <code>.row-select</code>), searched inside the scope.</td>
+      </tr>
+      <tr>
+        <td><code>data-select-all-scope</code></td>
+        <td>ancestor</td>
+        <td>Limits the search for targets and for the count element. Use it when the same target selector appears in several groups, or when the master sits outside the table or fieldset it controls.</td>
+      </tr>
+      <tr>
+        <td><code>data-selected-count</code></td>
+        <td>any element in the scope</td>
+        <td>Shows how many targets are checked, formatted for the element's language (<code>Intl.NumberFormat</code> with the nearest <code>lang</code>). On an <code>&lt;output&gt;</code> its value is set.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
 
-  <section>
-    <h2>Selected Count Display</h2>
-    <p>Add <code>data-selected-count</code> to any element within the same scope to show a live count of selected items.</p>
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Detail</th>
+        <th>When</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>select-all:change</code></td>
+        <td><code>{ checked: number, total: number, selected: HTMLInputElement[] }</code></td>
+        <td>Fired from the master (bubbles) whenever the set of checked targets changes, whether through the master, a single target, a reset or added rows. <code>total</code> counts enabled targets only.</td>
+      </tr>
+    </tbody>
+  </table>
 
-    <code-block language="html" show-lines label="Count display" data-escape><p>Selected: <strong data-selected-count>0</strong> items</p>
+  <code-block language="javascript" show-lines label="Listening for select-all:change" data-escape>const master = document.querySelector('[data-select-all]');
 
-<table>
-  <thead>
-    <tr>
-      <th><input type="checkbox" data-select-all=".row-select" aria-label="Select all"></th>
-      <th>Name</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><input type="checkbox" class="row-select"></td>
-      <td>Alice</td>
-    </tr>
-    <tr>
-      <td><input type="checkbox" class="row-select"></td>
-      <td>Bob</td>
-    </tr>
-  </tbody>
-</table></code-block>
+master.addEventListener('select-all:change', (e) => {
+  const { checked, total, selected } = e.detail;
+  bulkActions.hidden = checked === 0;
+  console.log(`${checked} of ${total}`, selected.map((cb) => cb.value));
+});</code-block>
+</section>
 
-    <p>The count element's <code>textContent</code> is updated on every state change, including the initial sync.</p>
-  </section>
+<section>
+  <h2>Styling</h2>
+  <p>There are no utility-specific styles. The master is a native checkbox, so <code>:checked</code> and <code>:indeterminate</code> style it, and VB's checkbox styles already cover the mixed state.</p>
+</section>
 
-  <section>
-    <h2>Checkbox List</h2>
-    <p>Works with any checkbox group, not just tables. Use a <code>&lt;fieldset&gt;</code> with <code>data-select-all-scope</code> to scope the group:</p>
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The master uses the native <code>indeterminate</code> property, which screen readers announce as "mixed".</li>
+    <li>Give the master a name. Without a visible label (for example in a table header), use <code>aria-label="Select all"</code>. Give each row checkbox a name that says which row it selects ("Select Alice Johnson"), not just "Select row".</li>
+    <li>Use an <code>&lt;output data-selected-count&gt;</code> for the count. <code>&lt;output&gt;</code> has an implicit <code>status</code> role, so changes are announced politely. A plain <code>&lt;span&gt;</code> or <code>&lt;strong&gt;</code> is updated silently.</li>
+    <li>Targets get real <code>change</code> events, so validation and other listeners run.</li>
+    <li>Disabled targets stay as they are. Explain why an item is locked in its label.</li>
+    <li>Without JavaScript, every checkbox still works on its own.</li>
+  </ul>
+</section>
 
-    <code-block language="html" show-lines label="Checkbox list with select all" data-escape><fieldset data-select-all-scope>
+<section>
+  <h2>Examples</h2>
+
+  <h3>Count display and form reset</h3>
+  <p>The required option is checked and disabled, so the master ignores it. Reset puts the defaults back and the master and count follow.</p>
+  <browser-window
+    src="/docs/examples/demos/select-all-count.html"
+    url="https://vanilla-breeze.com/select-all-count"
+    title="Select All with Count"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Count with an output" data-escape><form>
+  <fieldset>
+    <legend>Notifications</legend>
+    <label><input type="checkbox" data-select-all=".notify"> All notifications</label>
+    <label><input type="checkbox" class="notify" name="notify" value="mentions"> Mentions</label>
+    <label><input type="checkbox" class="notify" name="notify" value="replies"> Replies</label>
+    <label><input type="checkbox" class="notify" name="notify" value="follows"> New followers</label>
+    <label><input type="checkbox" class="notify" name="notify" value="billing" checked disabled> Billing (required)</label>
+    <p><output data-selected-count>0</output> of 3 optional notifications on</p>
+  </fieldset>
+  <button type="reset">Reset</button>
+</form></code-block>
+
+  <h3>Checkbox list</h3>
+  <p>A master in a <code>&lt;legend&gt;</code> controls the options in its <code>&lt;fieldset&gt;</code>. The second half of the overview demo shows it.</p>
+  <code-block language="html" show-lines label="Checkbox list" data-escape><fieldset>
   <legend>
-    <label>
-      <input type="checkbox" data-select-all=".option-check">
-      Select all options
-    </label>
+    <label><input type="checkbox" data-select-all=".option-check"> Select all options</label>
   </legend>
   <label><input type="checkbox" class="option-check"> Option A</label>
   <label><input type="checkbox" class="option-check"> Option B</label>
   <label><input type="checkbox" class="option-check"> Option C</label>
-  <label><input type="checkbox" class="option-check"> Option D</label>
 </fieldset></code-block>
-  </section>
 
-  <section>
-    <h2>Scoping</h2>
-    <p>The master checkbox automatically scopes its target lookup to the nearest ancestor that is a <code>&lt;table&gt;</code>, <code>&lt;form&gt;</code>, <code>&lt;fieldset&gt;</code>, or an element with <code>[data-select-all-scope]</code>. This allows multiple independent select-all groups on the same page, even with the same CSS selector for targets.</p>
-
-    <code-block language="html" show-lines label="Multiple scoped groups" data-escape><!-- Scoping to a fieldset -->
-<fieldset data-select-all-scope>
-  <legend>
-    <label>
-      <input type="checkbox" data-select-all=".item">
-      Select all in this group
-    </label>
-  </legend>
-  <label><input type="checkbox" class="item"> Item 1</label>
-  <label><input type="checkbox" class="item"> Item 2</label>
+  <h3>Scoping</h3>
+  <p>Two groups use the same <code>.pick</code> selector. Each master controls only the checkboxes in its own fieldset, and each count shows only its own group.</p>
+  <browser-window
+    src="/docs/examples/demos/select-all-scope.html"
+    url="https://vanilla-breeze.com/select-all-scope"
+    title="Select All Scoping"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Two scoped groups" data-escape><fieldset>
+  <legend>Fruit</legend>
+  <label><input type="checkbox" data-select-all=".pick"> All fruit</label>
+  <label><input type="checkbox" class="pick"> Apple</label>
+  <label><input type="checkbox" class="pick"> Pear</label>
+  <p>Selected: <output data-selected-count>0</output></p>
 </fieldset>
 
-<!-- Another group with the same selector, scoped separately -->
-<fieldset data-select-all-scope>
-  <legend>
-    <label>
-      <input type="checkbox" data-select-all=".item">
-      Select all in this group
-    </label>
-  </legend>
-  <label><input type="checkbox" class="item"> Item 3</label>
-  <label><input type="checkbox" class="item"> Item 4</label>
+<fieldset>
+  <legend>Vegetables</legend>
+  <label><input type="checkbox" data-select-all=".pick"> All vegetables</label>
+  <label><input type="checkbox" class="pick"> Carrot</label>
+  <p>Selected: <output data-selected-count>0</output></p>
 </fieldset></code-block>
-  </section>
+  <p>When the master is outside the element that holds the targets, wrap both in <code>data-select-all-scope</code>. The nearest scope wins, so a master inside a table that sits inside a <code>[data-select-all-scope]</code> section controls only that table.</p>
+</section>
 
-  <section>
-    <h2>Events</h2>
-    <p>The master checkbox dispatches a <code>select-all:change</code> event on every state change (master toggle or individual target change).</p>
-
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Event</th>
-          <th>Detail</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>select-all:change</code></td>
-          <td><code>{ checked: number, total: number, selected: Element[] }</code></td>
-          <td>Fired on every state change. <code>checked</code> is the count of selected targets, <code>total</code> is the total target count, and <code>selected</code> is an array of checked target elements.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <code-block language="javascript" show-lines label="Listening for select-all:change" data-escape>const master = document.querySelector('[data-select-all]');
-
-master.addEventListener('select-all:change', (e) => {
-  console.log('Checked:', e.detail.checked);
-  console.log('Total:', e.detail.total);
-  console.log('Selected elements:', e.detail.selected);
-});</code-block>
-  </section>
-
-  <section>
-    <h2>Dynamic Elements</h2>
-    <p>Select-all checkboxes added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
-
-    <code-block language="javascript" show-lines label="Dynamically added select-all" data-escape>// Dynamically added select-all checkboxes are auto-enhanced via MutationObserver
-const master = document.createElement('input');
-master.type = 'checkbox';
-master.dataset.selectAll = '.dynamic-check';
-document.body.appendChild(master);
-// master is ready to use — no manual init needed</code-block>
-  </section>
-
-  <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li>Uses the native <code>indeterminate</code> property on the master checkbox, which is announced by screen readers as "mixed"</li>
-      <li>Each target checkbox receives a real <code>change</code> event when toggled by the master, ensuring form validation and other listeners fire correctly</li>
-      <li>Works with any focusable checkbox element, preserving keyboard accessibility</li>
-      <li>Add <code>aria-label="Select all"</code> to the master checkbox when it lacks a visible label (e.g., in a table header)</li>
-      <li>Without JavaScript, checkboxes remain functional &mdash; progressive enhancement</li>
-    </ul>
-  </section>
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/data-table/"><code>&lt;data-table&gt;</code></a> &mdash; row selection with bulk actions, built in.</li>
+    <li><a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; labels, hints and errors for form controls.</li>
+    <li><a href="/docs/elements/native/input/"><code>&lt;input type="checkbox"&gt;</code></a> &mdash; the native checkbox and its states.</li>
+  </ul>
+  <h3>data-select-all or &lt;data-table&gt;?</h3>
+  <ul>
+    <li><strong><code>data-select-all</code></strong> &mdash; any checkbox group: settings lists, plain tables, filters. You keep your own markup.</li>
+    <li><strong><code>&lt;data-table&gt;</code></strong> &mdash; when the table also needs sorting, filtering, pagination or a bulk-action bar.</li>
+  </ul>
+</section>

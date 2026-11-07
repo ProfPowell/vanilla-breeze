@@ -42,6 +42,7 @@ import {
   EXTENSIONS, THEME_GROUPS
 } from '../../lib/theme-data.js';
 import { VBStore } from '../../lib/vb-store.js';
+import { charShortcutsEnabled, setCharShortcutsEnabled } from '../../lib/char-shortcuts.js';
 // SoundManager is lazy-loaded when sounds are enabled
 let _SoundManager = null;
 
@@ -49,6 +50,9 @@ let _SoundManager = null;
 // extension and a11y-theme state in sync via the same key.
 const SETTINGS_NS = 'settings';
 const EXTENSION_DEFAULTS = { motionFx: true, sounds: false };
+/** Defaults plus the page's current single-key shortcut state, so the shared
+ *  extensions record keeps settings-panel's charShortcuts preference. */
+const currentExtensionDefaults = () => ({ ...EXTENSION_DEFAULTS, charShortcuts: charShortcutsEnabled() });
 
 /** English fallbacks for every generated string; override with data-label-<key>. */
 const LABELS = {
@@ -176,7 +180,7 @@ class ThemePicker extends VBElement {
       // No visitor preference: reflect the a11y tokens already on <html>
       // (authored, or restored by the boot script) instead of stripping them
       : (document.documentElement.dataset.theme || '').split(/\s+/).filter(t => t.startsWith('a11y-'));
-    this.#extensions = { ...EXTENSION_DEFAULTS, ...(ext ?? {}) };
+    this.#extensions = { ...currentExtensionDefaults(), ...(ext ?? {}) };
   }
 
   teardown() {
@@ -693,6 +697,9 @@ class ThemePicker extends VBElement {
       root.dataset.motionReduced = '';
     }
 
+    // WCAG 2.1.4 single-key shortcuts (toggled in settings-panel; kept in sync here)
+    setCharShortcutsEnabled(prefs.charShortcuts !== false);
+
     // Sound effects - lazy-load SoundManager only when needed
     if (prefs.sounds) {
       if (!_SoundManager) {
@@ -730,7 +737,7 @@ class ThemePicker extends VBElement {
   /** Another control changed extensions: adopt them, re-sync checkboxes. */
   #handleExternalExtensions = (e) => {
     if (this.#emitting || !e.detail || typeof e.detail !== 'object') return;
-    this.#extensions = { ...EXTENSION_DEFAULTS, ...e.detail };
+    this.#extensions = { ...currentExtensionDefaults(), ...e.detail };
     this.#syncToggles();
   };
 

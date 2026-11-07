@@ -12,6 +12,7 @@ import {
   parseKey,
   compareBy,
   sortIndices,
+  parseSortNumber,
   cycleDirection,
 } from '../../src/lib/data-sortable.js';
 
@@ -126,5 +127,39 @@ describe('cycleDirection', () => {
     assert.equal(cycleDirection(undefined), 'asc');
     assert.equal(cycleDirection(''), 'asc');
     assert.equal(cycleDirection('weird'), 'asc');
+  });
+});
+
+describe('parseSortNumber — formatted text', () => {
+  it('ignores grouping, currency, units and spaces', () => {
+    assert.equal(parseSortNumber('1,234'), 1234);
+    assert.equal(parseSortNumber('$5'), 5);
+    assert.equal(parseSortNumber('12 %'), 12);
+    assert.equal(parseSortNumber('1.234.567'), 1234567);
+  });
+  it('treats the last of , and . as the decimal separator', () => {
+    assert.equal(parseSortNumber('1.234,5'), 1234.5);
+    assert.equal(parseSortNumber('1,234.5'), 1234.5);
+    assert.equal(parseSortNumber('1,5'), 1.5);
+  });
+  it('reads negatives (minus sign, hyphen, accounting parentheses)', () => {
+    assert.equal(parseSortNumber('−3'), -3);
+    assert.equal(parseSortNumber('-3'), -3);
+    assert.equal(parseSortNumber('(4)'), -4);
+  });
+  it('NaN for text without digits', () => {
+    assert.ok(Number.isNaN(parseSortNumber('n/a')));
+  });
+  it('number comparator sorts formatted values', () => {
+    const order = sortIndices(['1,234', '$5', '12 %'], (v) => v, 'number', 'asc');
+    assert.deepEqual(order, [1, 2, 0]);
+  });
+});
+
+describe('compareBy — locale', () => {
+  it('collates text in the given locale', () => {
+    // Swedish: ö sorts after z; German: ö sorts with o.
+    assert.ok(compareBy('text', 'asc', 'sv')('ö', 'z') > 0);
+    assert.ok(compareBy('text', 'asc', 'de')('ö', 'z') < 0);
   });
 });

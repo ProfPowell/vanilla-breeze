@@ -89,7 +89,7 @@ test.describe('data-transition presets', () => {
     }));
     expect(r.fa).toEqual(['fade-fa', 'fade']);
     expect(r.sc).toBe('scale');
-    expect(r.no).toBe('none');
+    expect(r.no).toBe('vt-none');
     expect(r.morph).not.toBe('none');
     expect(r.morph).toContain('morph-photo');
   });
@@ -134,7 +134,7 @@ test.describe('data-transition presets', () => {
   test('none also freezes the group; reduced motion zeroes delays', async ({ page }) => {
     await load(page, '', { modules: VB_MODULES });
     const rules = await allRuleText(page);
-    expect(rules).toMatch(/::view-transition-group\(\*\.none\)[^{]*\{[^}]*animation-duration: 0s/);
+    expect(rules).toMatch(/::view-transition-group\(\*\.vt-none\)[^{]*\{[^}]*animation-duration: 0s/);
     expect(rules).toMatch(/:root\[data-motion-reduced\] ::view-transition-group\(\*\)[^{]*\{[^}]*animation-delay: 0s !important/);
   });
 });
