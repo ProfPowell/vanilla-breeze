@@ -40,6 +40,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Layout docs and layout fixes.**
+  - **data-canvas / data-container** — New attribute pages. `data-canvas` covers values, `data-max` / `data-padding` / `data-canvas-depth`, `--canvas-*` one-offs, nesting, mobile flush and backdrop coupling. `data-container` covers the bare and `card` / `panel` / `media` presets, where VB removes containment and how the escape hatch works, with a new `data-container-basic.html` demo. `<layout-canvas>`'s api.json now lists `data-canvas` (bare, `flush`, `elevated`) as its attribute form.
+  - **data-layout reference** — `/docs/attributes/data-layout/` is the complete layout reference. Its value tables, modifier table (an anchored row per modifier: `#modifier-gap`, `#modifier-sticky`, …) and general-purpose table (`#data-container`, `#data-bleed`, `#data-measure`, `#data-scroll-hint`) are generated at build time from the layout CSS and the layout api.json manifests (`site/data/layoutReference.js`, `site/plugins/generate-layout-reference.js`), so they can't drift. `tests/unit/layout-reference-drift.test.js` keeps the hub and `admin/reference/syntax.md` in step with the CSS. The attribute index gains a generated "Layout Modifiers" category plus `data-container`, `data-canvas`, `data-paged`, `data-sortable`, `data-responsive` and `data-visible`, and its search matches descriptions.
+  - **data-page-layout="dashboard"** — `data-nav-toggle` marks the drawer toggle button; it is hidden at 48rem and up and with `data-layout-nowrap`. A `<nav popover>` opened by `<button popovertarget>` is the no-script drawer, and it renders in flow as the nav column at 48rem and up.
+  - **data-layout-density** — Compact and spacious steps are `--size-unit` multiples (rem) instead of px, so density regions follow the root font size, the `data-fluid` profiles and the large-text theme. Values at the default size are unchanged.
+  - **Conformance** — `vb/layout-attr-value` also checks presence-only modifiers per layout: `data-layout-centered` on a cluster or reel (bare or `=""`) is now reported, because no rule reads it there.
+
 - **U–Y-element review.**
   - **youtube-player**
     - `poster` attribute: a local facade image. When set, no thumbnail is requested from i.ytimg.com, so nothing contacts Google until play. `<social-embed poster>` passes it through for YouTube URLs.
@@ -58,6 +65,25 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   - **drag-surface**: `data-move-controls` renders per-item Move buttons: up/down (left/right for horizontal, RTL-aware) and "Move <item> to <surface>" for adjacent grouped surfaces. This is the single-pointer alternative to dragging (WCAG 2.5.7). The buttons fire the same `reorder`/`transfer` events and keep focus, using `aria-disabled` at the ends of the list. New `disabled` property reflects the attribute.
 
 ### Changed
+
+- **Layout docs and layout fixes.**
+  - **data-layout (breaking)** — `data-layout="holy-grail"` and `data-layout="dashboard"` are removed, with no shim. They were a drifted second copy of the page templates. Use `data-page-layout="holy-grail"` / `"dashboard"`, which work on any element. `data-header-height` is gone with them; the dashboard drawer is full height. For a sticky header or nav, use `data-layout-sticky` with `<html data-sticky>`.
+  - **data-page-layout (breaking)** — The `--tpl-*` template tokens and `--_sidebar-width` / `--_sidebar-collapsed` are declared on the layout host (`:where([data-page-layout])`) instead of `:root`. Override a template on the host (`body { --tpl-sidebar-left: … }`); a `:root` override of `--tpl-*` no longer reaches the grid. `--sidebar-collapsed` defaults to `4rem` (was `64px`). A bare `data-page-layout` is a `stack`.
+  - **data-page-layout="dashboard"** — Below 48rem the nav is an off-canvas drawer: fixed to the inline-start edge, full height, `min(sidebar width, 85vw)` wide, sliding in from the right in RTL (no slide with reduced motion). While closed it is `visibility: hidden`, so its links are out of the tab order and the accessibility tree. It opens with `data-nav-open` on the host or as a native popover. Before, it stacked the nav above main.
+  - **data-page-layout="app-shell" / "dashboard"** — `data-layout-sidebar-width` and `data-sidebar="collapsed"` switch the content-sized nav column to a fixed `--_sidebar-width` column.
+  - **data-layout="regions" (breaking)** — Now a flex column: the header region first, the footer region last, and every other child in between in DOM order. A `section` / `[slot="content"]` grows; with no section, the footer is pinned to the bottom. The `header` / `content` / `footer` grid areas no longer exist.
+  - **data-layout="media" (breaking)** — Every non-figure child takes its own row in the content column, and the figure spans them (up to five content children; the last row absorbs a taller figure). When stacked (container under 25rem), the figure stays on top, also when reversed. The `figure` / `content` grid areas no longer exist.
+  - **data-layout-area (breaking)** — Only `hero`, `feature` and `cta` (the `landing` template's areas) remain. The `sidebar`, `content`, `banner` and `toc` selectors named areas that no VB template defines, so a child using them dropped into an implicit zero-width track. With your own `grid-template-areas`, set `grid-area` directly.
+  - **layout-sidebar / data-layout="sidebar"** — The narrow-region rule (`@container region-main (width < 40rem)`) now applies to both forms and respects `data-layout-nowrap`. It stacks by giving every child a full row. Before, it was attribute-only and used `flex-direction: column`, which turned the 16rem basis into a height and overrode `side="end"`.
+  - **Docs** — Every layout element page (stack, cluster, sidebar, center, cover, grid, imposter, reel, switcher, columns, text, canvas, card) follows one template:
+    - a live "Element and attribute forms" demo, or an explicit "element only" note with alternatives
+    - an Attributes table with an "Applies to" column
+    - Child attributes
+    - Examples, each demo with matching code
+    - Accessibility
+    - Related links
+
+    data-page-layout, data-sticky, data-layout-density and data-splitter were rewritten against the shipped CSS. The Semantic Layouts, Grid Identity and Fluid Scaling guides were corrected: no `<div>`s, real area names, and the placement order for regions and media. The custom-elements index treats `data-layout` as an equal form of each layout, not a tool for one-off adjustments.
 
 - **Changes from the U–Y-element review.**
   - **ul** — `data-marker="arrow"` now uses a matched glyph pair from one Unicode block, ▸ U+25B8 / ◂ U+25C2 for RTL. The old pair was ➤ U+27A4 / ⮜ U+2B9C, two mismatched shapes, and the RTL glyph had patchy font coverage. `--marker-arrow` and `--marker-arrow-rtl` changed to match.
@@ -553,6 +579,24 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   - **dl-item** — html-validate now requires `<dl> > <dl-item>`: a `<dl-item>` outside a `<dl>`, and the `<dt>`/`<dd>` in it, are flagged.
 
 ### Fixed
+
+- **Layout docs and layout fixes.**
+  - **data-page-layout** — `data-layout-sidebar-width` and `data-sidebar="collapsed"` had no effect on `sidebar-left`, `sidebar-right` and `holy-grail`, because the templates resolved `--_sidebar-width` on `:root`. Host-level `--sidebar-width` overrides now reach the grid too.
+  - **data-page-layout** — `sidebar-left` without a `<nav>` rendered `<main>` 0px wide (main fell into an implicit auto column and its container-type zeroed it). `sidebar-right` without an aside had the same problem. `data-sidebar="hidden"` left an empty sidebar-width column. In all three cases the template now drops the column.
+  - **data-page-layout** — `@container region-nav (…)` never matched, because nav was not a size container. nav is now `container-type: inline-size` where its column has a definite width: bare/stack, sidebar-left, holy-grail, landing, and dashboard with a set width or collapsed. App-shell, the default dashboard and `nav.bottom` keep `normal`, so the content-sized column does not collapse.
+  - **main[data-layout="sidebar-left|right"]** — Resets `--_gap`, which used to inherit an outer stack's or grid's gap. Supports `data-layout-gap` and `data-layout-sidebar-width`, and no longer inherits a page layout's sidebar width. Without its nav/aside, the article takes the full width (it was 0px wide).
+  - **data-layout="regions" / "media"** — Extra children no longer overlap in a single content cell.
+  - **data-layout-subgrid** — `main` / `article` / `section` / `aside` children now align on the subgrid. They were query containers, and the layout containment that requires made each child an independent grid, so its rows ignored its siblings'. As with cluster and reel, `data-container` on such a child keeps the container, and the child then sizes its own rows.
+  - **Layout vocabulary** — `readLayoutVocabularyByLayout()` expands `:is()` / `:where()` arms. It used to credit `data-layout-centered` to cluster and reel, through the cover arm of a shared `:is()` group.
+  - **header** — The `header[data-sticky]` comment said the header drops its sticky positioning on mobile. Only the coordinated `<html data-sticky>` mode does that; a standalone sticky header stays sticky at every width.
+  - **Docs** — The dashboard `data-nav-open` script pattern also closes on an outside tap and has a close button inside the nav; touch users have no Escape key. `admin/handoffs/vanilla-press-integration.md` lists the real `data-layout` values and moves the page templates to `data-page-layout`. Fixed several layout element docs:
+    - layout-cluster: the overlap demo uses the accessible avatar-group pattern
+    - layout-cover: the 404 demo and code match
+    - layout-center: the narrow width (40rem) is labelled correctly
+    - layout-imposter: the badge is `aria-hidden` and the count is in the button's name
+    - layout-reel: samples are named, focusable regions
+    - layout-switcher: the threshold is the switcher's own width
+    - layout-columns: the reader-view sample keeps the rhythm
 
 - **Contrast pass (themes, buttons, system dark mode).**
   - **Colour tokens** — A dark system setting with no `data-mode` (CSS-only / no-JS pages) now gets the same dark primary seeds, hue-tinted dark surfaces, text, border and shadow tokens as `data-mode="dark"`: links went from 3.31 / 3.15 / 2.55:1 to 6.14 / 5.89 / 5.49:1 on background / surface / surface-raised. `data-mode="light"` still forces light under a dark OS. classic, minimal, modern and win9x mirror their own dark blocks the same way (links 2.48 → 5.40, 1.84 → 7.77, 3.99 → 5.99, 1.34 → 8.99), the brand and theme templates show the pattern, and a11y-dyslexia keeps its light primary seeds under dark mode. (3650)
