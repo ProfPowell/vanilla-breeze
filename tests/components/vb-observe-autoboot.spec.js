@@ -24,7 +24,8 @@ test('a data-effect element inserted after load activates on a core-only page', 
     el.textContent = 'late';
     document.querySelector('main').append(el);
     await new Promise((r) => setTimeout(r, 200));
-    return el.hasAttribute('data-effect-processed');
+    // Processed state lives in a WeakSet (an attribute was copied by clones).
+    return /** @type {any} */ (globalThis).__vbEffectsRuntime._processed.has(el);
   });
   expect(processed).toBe(true);
 });

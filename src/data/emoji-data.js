@@ -1,8 +1,11 @@
 /**
  * emoji-data: Curated emoji dataset for Vanilla Breeze
  *
- * 211 commonly used emoji organized by group (the extended set adds the
- * full gemoji shortcode list — see emoji-data-extended.js).
+ * 209 commonly used emoji organized into 9 groups, reachable through 252
+ * shortcodes (209 canonical + 43 aliases in EMOJI_ALIASES). The extended set
+ * adds the full gemoji shortcode list — see emoji-data-extended.js.
+ * Aliases must name the same glyph the gemoji shortcode does, so that
+ * loading the extended set never changes what a shortcode renders.
  * Shared by emoji-init.js (shortcode replacement) and emoji-picker (browsing).
  *
  * @example
@@ -266,7 +269,6 @@ export const EMOJI_ALIASES = new Map([
   ['mad', 'angry'],
   ['shrug', 'person_shrugging'],
   ['facepalm', 'person_facepalming'],
-  ['raised_fist', 'muscle'],
   ['pray_hands', 'pray'],
   ['hi', 'wave'],
   ['bye', 'wave'],
@@ -288,7 +290,6 @@ export const EMOJI_ALIASES = new Map([
   ['love', 'red_heart'],
   ['star_eyes', 'star_struck'],
   ['mindblown', 'exploding_head'],
-  ['poop', 'skull'],
   ['memo_pad', 'memo'],
   ['notes', 'memo'],
   ['coffee_cup', 'coffee'],

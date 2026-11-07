@@ -5,14 +5,13 @@
 import { VB } from '../lib/vb.js'
 
 VB.effect('animate-image', (el) => {
-  if (el.hasAttribute('data-effect-animate-image-init')) return
-  el.setAttribute('data-effect-animate-image-init', '')
-
   const img = /** @type {HTMLImageElement} */ (el)
+  if (!img.parentNode) return { cleanup() {} }
+  // A clone of an enhanced image carries the marker but not the wrapper.
+  img.setAttribute('data-effect-animate-image-init', '')
 
   const wrapper = document.createElement('div')
   wrapper.className = 'animate-image-wrapper'
-  if (!img.parentNode) return
   img.parentNode.insertBefore(wrapper, img)
   wrapper.appendChild(img)
 
@@ -68,7 +67,8 @@ VB.effect('animate-image', (el) => {
     else img.addEventListener('load', () => { captureFrame(); pause() }, { once: true })
   }
 
-  mq.addEventListener('change', (e) => { if (e.matches) pause() })
+  const onMotionChange = (e) => { if (e.matches) pause() }
+  mq.addEventListener('change', onMotionChange)
 
   if (img.hasAttribute('data-animate-image-paused')) {
     if (img.complete) { captureFrame(); isPaused = false; pause() }
@@ -77,6 +77,9 @@ VB.effect('animate-image', (el) => {
 
   return {
     cleanup() {
+      mq.removeEventListener('change', onMotionChange)
+      img.removeAttribute('data-effect-animate-image-init')
+      if (isPaused) img.src = animatedSrc
       if (wrapper.parentNode) {
         wrapper.parentNode.insertBefore(img, wrapper)
         wrapper.remove()

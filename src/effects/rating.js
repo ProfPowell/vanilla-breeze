@@ -12,8 +12,9 @@
  * @attr {string} data-label-cleared - Clear announcement (default "Rating cleared")
  *
  * No init-marker attribute: VB's per-element instance map dedupes, and
- * cleanup() removes everything init added (and VB's processed marker), so a
- * removed + re-inserted fieldset is wired again from scratch.
+ * cleanup() removes everything init added; the runtime tracks processed
+ * state in a WeakSet, so a removed + re-inserted (or cloned) fieldset is
+ * wired again from scratch.
  */
 
 import { VB } from '../lib/vb.js'
@@ -101,12 +102,6 @@ VB.effect('rating', (el) => {
       el.removeEventListener('keydown', onKeydown)
       el.removeEventListener('change', onChange)
       live.remove()
-      // VB._cleanupElement drops the instance but leaves VB's own
-      // data-effect-processed marker, and _processElement skips marked
-      // nodes — so a removed + re-inserted fieldset would never be wired
-      // again. Clear the marker so re-insertion re-runs init. (Framework
-      // fix belongs in vb.js _cleanupElement; this keeps rating correct.)
-      el.removeAttribute('data-effect-processed')
     },
   }
 })

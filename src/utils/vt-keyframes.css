@@ -20,6 +20,10 @@
   --view-transition-duration: 0.3s;
   --view-transition-duration-fast: 0.15s;
   --view-transition-duration-slow: 0.5s;
+  /* Delay between rungs of data-transition="stagger". Set it on :root:
+     the ::view-transition-* tree inherits from the root, not from the
+     element that carries data-transition. */
+  --view-transition-stagger: 40ms;
 }
 
 
@@ -99,11 +103,100 @@
   animation: vt-fade-in var(--view-transition-duration) var(--ease-out);
 }
 
-/* None (instant swap, no animation) */
+/* None (instant swap, no animation). The group is included so the
+   element does not glide to its new position or size either. */
 
+::view-transition-group(*.none),
+::view-transition-image-pair(*.none),
 ::view-transition-old(*.none),
 ::view-transition-new(*.none) {
   animation-duration: 0s;
+}
+
+/* ── Stagger delay ladder ────────────────────────────── */
+/* data-transition="stagger" gives child N (0-based) the class
+   vt-stagger-min(N, 11) next to `fade`. Rung N waits N steps of
+   --view-transition-stagger; children from the 12th on share the last rung.
+   Longhands only, after the presets, so the `fade` shorthand above does not
+   reset them. fill-mode both keeps the old image visible and the new one
+   hidden while a rung waits. Written out (not generated at runtime) so the
+   ladder works under a strict CSP. */
+
+::view-transition-group(*.vt-stagger-1),
+::view-transition-old(*.vt-stagger-1),
+::view-transition-new(*.vt-stagger-1) {
+  animation-delay: calc(1 * var(--view-transition-stagger));
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*.vt-stagger-2),
+::view-transition-old(*.vt-stagger-2),
+::view-transition-new(*.vt-stagger-2) {
+  animation-delay: calc(2 * var(--view-transition-stagger));
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*.vt-stagger-3),
+::view-transition-old(*.vt-stagger-3),
+::view-transition-new(*.vt-stagger-3) {
+  animation-delay: calc(3 * var(--view-transition-stagger));
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*.vt-stagger-4),
+::view-transition-old(*.vt-stagger-4),
+::view-transition-new(*.vt-stagger-4) {
+  animation-delay: calc(4 * var(--view-transition-stagger));
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*.vt-stagger-5),
+::view-transition-old(*.vt-stagger-5),
+::view-transition-new(*.vt-stagger-5) {
+  animation-delay: calc(5 * var(--view-transition-stagger));
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*.vt-stagger-6),
+::view-transition-old(*.vt-stagger-6),
+::view-transition-new(*.vt-stagger-6) {
+  animation-delay: calc(6 * var(--view-transition-stagger));
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*.vt-stagger-7),
+::view-transition-old(*.vt-stagger-7),
+::view-transition-new(*.vt-stagger-7) {
+  animation-delay: calc(7 * var(--view-transition-stagger));
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*.vt-stagger-8),
+::view-transition-old(*.vt-stagger-8),
+::view-transition-new(*.vt-stagger-8) {
+  animation-delay: calc(8 * var(--view-transition-stagger));
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*.vt-stagger-9),
+::view-transition-old(*.vt-stagger-9),
+::view-transition-new(*.vt-stagger-9) {
+  animation-delay: calc(9 * var(--view-transition-stagger));
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*.vt-stagger-10),
+::view-transition-old(*.vt-stagger-10),
+::view-transition-new(*.vt-stagger-10) {
+  animation-delay: calc(10 * var(--view-transition-stagger));
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*.vt-stagger-11),
+::view-transition-old(*.vt-stagger-11),
+::view-transition-new(*.vt-stagger-11) {
+  animation-delay: calc(11 * var(--view-transition-stagger));
+  animation-fill-mode: both;
 }
 
 /* ── Reduced Motion ──────────────────────────────────── */
@@ -113,6 +206,7 @@
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
   }
 }
 
@@ -121,4 +215,5 @@
 :root[data-motion-reduced] ::view-transition-old(*),
 :root[data-motion-reduced] ::view-transition-new(*) {
   animation-duration: 0.01ms !important;
+  animation-delay: 0s !important;
 }

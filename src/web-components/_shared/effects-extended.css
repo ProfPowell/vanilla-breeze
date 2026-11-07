@@ -18,7 +18,11 @@
 
 [data-effect~="glitch"][data-effect-glitch-init]::before,
 [data-effect~="glitch"][data-effect-glitch-init]::after {
+  /* The copies are decoration: empty alternative text keeps them out of the
+     accessible name (the first line is the fallback for engines without
+     content alt text). */
   content: attr(data-glitch-text);
+  content: attr(data-glitch-text) / "";
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -42,9 +46,15 @@
   opacity: 0;
 }
 
-[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:hover::before,
-[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:hover::after {
+/* The hover trigger also activates on keyboard focus. */
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:is(:hover, :focus-visible, :focus-within, [data-effect-active])::before,
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:is(:hover, :focus-visible, :focus-within, [data-effect-active])::after {
   opacity: 1;
+}
+
+[data-effect~="glitch"]:is([data-paused], [data-paused] *)::before,
+[data-effect~="glitch"]:is([data-paused], [data-paused] *)::after {
+  animation-play-state: paused;
 }
 
 @keyframes vb-glitch-1 {
@@ -77,30 +87,46 @@
    -------------------------------------------------------------------------- */
 [data-effect~="blur-reveal"][data-effect-blur-reveal-init] .vb-blur-chunk {
   display: inline-block;
-  opacity: 0;
-  filter: blur(8px);
   transition:
     opacity 400ms var(--ease-out, ease-out),
     filter 400ms var(--ease-out, ease-out);
   transition-delay: calc(var(--i, 0) * var(--blur-delay, 80ms));
 }
 
-[data-effect~="blur-reveal"][data-effect-blur-reveal-init][data-effect-active] .vb-blur-chunk {
-  opacity: 1;
-  filter: blur(0);
+/* Hidden only while an armed trigger has not fired yet. */
+[data-effect~="blur-reveal"][data-effect-blur-reveal-init][data-effect-armed]:not([data-effect-active]) .vb-blur-chunk {
+  opacity: 0;
+  filter: blur(8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-effect~="blur-reveal"] .vb-blur-chunk {
+    opacity: 1 !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}
+:root[data-motion-reduced] [data-effect~="blur-reveal"] .vb-blur-chunk {
+  opacity: 1 !important;
+  filter: none !important;
+  transition: none !important;
 }
 
 /* --------------------------------------------------------------------------
    data-effect~="blink": Flashing text (CSS-only)
    -------------------------------------------------------------------------- */
 
+/* WCAG 2.2.2: blinking stops by itself after about five seconds
+   (--vb-blink-count cycles). Set --vb-blink-count: infinite only together
+   with a control that pauses it (data-paused). */
 [data-effect~="blink"] {
   --vb-blink-rate: 1s;
-  --vb-anim-attention: vb-blink var(--vb-blink-rate) steps(1) infinite;
+  --vb-blink-count: 5;
+  --vb-anim-attention: vb-blink var(--vb-blink-rate) steps(1) var(--vb-blink-count);
 }
 
-[data-effect~="blink"].slow  { --vb-blink-rate: 2s; }
-[data-effect~="blink"].fast  { --vb-blink-rate: 0.4s; }
+[data-effect~="blink"].slow  { --vb-blink-rate: 2s; --vb-blink-count: 2; }
+[data-effect~="blink"].fast  { --vb-blink-rate: 0.4s; --vb-blink-count: 12; }
 
 @keyframes vb-blink {
   0%, 49% { opacity: 1; }
@@ -351,13 +377,26 @@
 [data-effect~="marquee"].fast > *    { --vb-marquee-speed: 8s; }
 [data-effect~="marquee"].pause > *   { animation-play-state: paused; }
 
-[data-effect~="marquee"].hover-pause:hover > * {
+/* RTL scrolls toward the inline end (rightward). */
+[data-effect~="marquee"]:dir(rtl) > * { animation-name: vb-marquee-rtl; }
+
+/* Pause (WCAG 2.2.2): always while keyboard focus is inside (a moving link
+   is hard to operate), on hover with .hover-pause, and under data-paused on
+   the marquee or an ancestor. */
+[data-effect~="marquee"]:focus-within > *,
+[data-effect~="marquee"].hover-pause:hover > *,
+[data-effect~="marquee"]:is([data-paused], [data-paused] *) > * {
   animation-play-state: paused;
 }
 
 @keyframes vb-marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-100%); }
+}
+
+@keyframes vb-marquee-rtl {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -372,10 +411,16 @@
    -------------------------------------------------------------------------- */
 
 .vb-flap-board {
+  display: inline-block;
+  font-family: var(--font-mono, ui-monospace, 'Cascadia Code', monospace);
+}
+
+/* The cells sit in the aria-hidden visual part (the text is read from the
+   visually hidden copy beside it). */
+.vb-flap-board > .vb-split {
   display: inline-flex;
   gap: 2px;
   perspective: 400px;
-  font-family: var(--font-mono, ui-monospace, 'Cascadia Code', monospace);
 }
 
 .vb-flap-char {
@@ -425,7 +470,8 @@
 .vb-flap-flip-top.vb-flap-flipping {
   opacity: 1;
   animation: vb-flap-fall-top ease-in forwards;
-  animation-duration: calc(var(--vb-flip-ms, 60) * 1ms);
+  /* Set by flipboard.js from --vb-flip-ms (a number of ms or a time). */
+  animation-duration: var(--_vb-flip-duration, 60ms);
 }
 
 .vb-flap-flip-bottom {
@@ -441,7 +487,7 @@
 .vb-flap-flip-bottom.vb-flap-flipping {
   opacity: 1;
   animation: vb-flap-fall-bottom ease-out forwards;
-  animation-duration: calc(var(--vb-flip-ms, 60) * 1ms);
+  animation-duration: var(--_vb-flip-duration, 60ms);
 }
 
 .vb-flap-hinge {
@@ -505,12 +551,23 @@
   .vb-typewriter-cursor { animation: none; }
 }
 :root[data-motion-reduced] .vb-typewriter-cursor { animation: none; }
+[data-paused] .vb-typewriter-cursor { animation-play-state: paused; }
+
+/* Nothing typed yet while an armed trigger waits (the text stays readable
+   to assistive technology in the hidden copy). */
+[data-effect~="typewriter"][data-effect-typewriter-init][data-effect-armed]:not([data-effect-active]) > .vb-split {
+  visibility: hidden;
+}
 
 /* --------------------------------------------------------------------------
    data-effect~="scramble": Decode effect (minimal CSS — JS drives animation)
    -------------------------------------------------------------------------- */
 [data-effect~="scramble"][data-effect-scramble-init] {
   font-variant-numeric: tabular-nums;
+}
+
+[data-effect~="scramble"][data-effect-scramble-init][data-effect-armed]:not([data-effect-active]) > .vb-split {
+  visibility: hidden;
 }
 
 /* --------------------------------------------------------------------------
@@ -523,14 +580,17 @@
   to { opacity: 1; }
 }
 
-/* Only hide before activation when a trigger is present (scroll, time) */
-[data-effect~="fade-in"][data-trigger] {
+/* Hidden pre-state only once the runtime has wired a real trigger
+   ([data-effect-armed], set by src/lib/vb.js). No JS, an unknown trigger or an
+   unprocessed clone leave the content visible. The slot uses fill-mode `both`
+   so a --vb-delay (data-stagger) wait still shows the `from` keyframe. */
+[data-effect~="fade-in"][data-effect-armed]:not([data-effect-active]) {
   opacity: 0;
 }
 
 [data-effect~="fade-in"][data-effect-active],
 [data-effect~="fade-in"]:not([data-trigger]) {
-  --vb-anim-entrance: vb-fade-in var(--vb-duration, 300ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-fade-in var(--vb-duration, 300ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) both;
 }
 
 /* ── Entrance: slide-up ── */
@@ -539,14 +599,14 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-[data-effect~="slide-up"][data-trigger] {
+[data-effect~="slide-up"][data-effect-armed]:not([data-effect-active]) {
   opacity: 0;
   transform: translateY(var(--vb-slide-distance, 40px));
 }
 
 [data-effect~="slide-up"][data-effect-active],
 [data-effect~="slide-up"]:not([data-trigger]) {
-  --vb-anim-entrance: vb-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) both;
 }
 
 /* ── Entrance: pop ── */
@@ -555,14 +615,14 @@
   to { opacity: 1; transform: scale(1); }
 }
 
-[data-effect~="pop"][data-trigger] {
+[data-effect~="pop"][data-effect-armed]:not([data-effect-active]) {
   opacity: 0;
   transform: scale(0.8);
 }
 
 [data-effect~="pop"][data-effect-active],
 [data-effect~="pop"]:not([data-trigger]) {
-  --vb-anim-entrance: vb-pop var(--vb-duration, 300ms) var(--vb-easing, cubic-bezier(0.68, -0.55, 0.27, 1.55)) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-pop var(--vb-duration, 300ms) var(--vb-easing, cubic-bezier(0.68, -0.55, 0.27, 1.55)) var(--vb-delay, 0ms) both;
 }
 
 /* ── Exit: fade-out ── */
@@ -627,14 +687,14 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-[data-effect~="fade-in"][data-effect~="slide-up"][data-trigger] {
+[data-effect~="fade-in"][data-effect~="slide-up"][data-effect-armed]:not([data-effect-active]) {
   opacity: 0;
   transform: translateY(var(--vb-slide-distance, 40px));
 }
 
 [data-effect~="fade-in"][data-effect~="slide-up"][data-effect-active],
 [data-effect~="fade-in"][data-effect~="slide-up"]:not([data-trigger]) {
-  --vb-anim-entrance: vb-fade-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-fade-slide-up var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) both;
 }
 
 /* --------------------------------------------------------------------------
@@ -697,7 +757,7 @@
     [data-trigger~="view-progress:contain"],
     [data-trigger~="scroll-progress"]
   ) {
-    --vb-anim-entrance: vb-fade-in 1s linear forwards;
+    --vb-anim-entrance: vb-fade-in 1s linear both;
   }
 
   [data-effect~="slide-up"]:is(
@@ -708,7 +768,7 @@
     [data-trigger~="view-progress:contain"],
     [data-trigger~="scroll-progress"]
   ) {
-    --vb-anim-entrance: vb-slide-up 1s linear forwards;
+    --vb-anim-entrance: vb-slide-up 1s linear both;
   }
 
   [data-effect~="slide-in"]:is(
@@ -719,7 +779,19 @@
     [data-trigger~="view-progress:contain"],
     [data-trigger~="scroll-progress"]
   ) {
-    --vb-anim-entrance: vb-slide-in-ltr 1s linear forwards;
+    --vb-anim-entrance: vb-slide-in-ltr 1s linear both;
+  }
+
+  /* RTL: the same vb-slide-in-rtl keyframe as the one-shot form. */
+  [data-effect~="slide-in"]:dir(rtl):is(
+    [data-trigger~="view-progress"],
+    [data-trigger~="view-progress:entry"],
+    [data-trigger~="view-progress:exit"],
+    [data-trigger~="view-progress:cover"],
+    [data-trigger~="view-progress:contain"],
+    [data-trigger~="scroll-progress"]
+  ) {
+    --vb-anim-entrance: vb-slide-in-rtl 1s linear both;
   }
 
   [data-effect~="pop"]:is(
@@ -730,7 +802,7 @@
     [data-trigger~="view-progress:contain"],
     [data-trigger~="scroll-progress"]
   ) {
-    --vb-anim-entrance: vb-pop 1s linear forwards;
+    --vb-anim-entrance: vb-pop 1s linear both;
   }
 
   /* Composed fade-in + slide-up under view-progress */
@@ -742,7 +814,7 @@
     [data-trigger~="view-progress:contain"],
     [data-trigger~="scroll-progress"]
   ) {
-    --vb-anim-entrance: vb-fade-slide-up 1s linear forwards;
+    --vb-anim-entrance: vb-fade-slide-up 1s linear both;
   }
 }
 
@@ -791,26 +863,26 @@
   to { opacity: 1; transform: translateX(0); }
 }
 
-[data-effect~="slide-in"][data-trigger] {
+[data-effect~="slide-in"][data-effect-armed]:not([data-effect-active]) {
   opacity: 0;
   transform: translateX(calc(-1 * var(--vb-slide-distance, 40px)));
 }
 
-:where([dir="rtl"]) [data-effect~="slide-in"][data-trigger],
-[data-effect~="slide-in"][dir="rtl"][data-trigger] {
+:where([dir="rtl"]) [data-effect~="slide-in"][data-effect-armed]:not([data-effect-active]),
+[data-effect~="slide-in"][dir="rtl"][data-effect-armed]:not([data-effect-active]) {
   transform: translateX(calc(-0.5 * var(--vb-slide-distance, 40px)));
 }
 
 [data-effect~="slide-in"][data-effect-active],
 [data-effect~="slide-in"]:not([data-trigger]) {
-  --vb-anim-entrance: vb-slide-in-ltr var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-slide-in-ltr var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) both;
 }
 
 :where([dir="rtl"]) [data-effect~="slide-in"][data-effect-active],
 :where([dir="rtl"]) [data-effect~="slide-in"]:not([data-trigger]),
 [data-effect~="slide-in"][dir="rtl"][data-effect-active],
 [data-effect~="slide-in"][dir="rtl"]:not([data-trigger]) {
-  --vb-anim-entrance: vb-slide-in-rtl var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-slide-in-rtl var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) both;
 }
 
 /* ── Exit: collapse ── */
@@ -867,13 +939,13 @@
   }
 }
 
-[data-effect~="shadow"][data-trigger] {
+[data-effect~="shadow"][data-effect-armed]:not([data-effect-active]) {
   box-shadow: var(--vb-shadow, 0 2px 8px oklch(0% 0 0 / 0.12));
 }
 
 [data-effect~="shadow"][data-effect-active],
 [data-effect~="shadow"]:not([data-trigger]) {
-  --vb-anim-entrance: vb-shadow-lift var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) forwards;
+  --vb-anim-entrance: vb-shadow-lift var(--vb-duration, 400ms) var(--vb-easing, ease-out) var(--vb-delay, 0ms) both;
 }
 
 /* fade-in + glow now composes automatically — fade-in publishes into entrance,
@@ -909,32 +981,56 @@
 [data-effect].fast { --vb-duration: 150ms; }
 [data-effect].bouncy { --vb-easing: cubic-bezier(0.68, -0.55, 0.27, 1.55); }
 
-/* ── Stagger system ── */
-[data-stagger] > * {
-  --vb-delay: calc(var(--vb-stagger-index, 0) * var(--vb-stagger, 80ms));
-}
+/* Looping effects: .slow doubles the cycle and .fast halves it (the shared
+   900ms / 150ms above are one-shot durations and would speed a 3s float up). */
+[data-effect~="pulse"].slow { --vb-duration: 3s; }
+[data-effect~="pulse"].fast { --vb-duration: 0.75s; }
+[data-effect~="bounce"].slow { --vb-duration: 2s; }
+[data-effect~="bounce"].fast { --vb-duration: 0.5s; }
+[data-effect~="float"].slow { --vb-duration: 6s; }
+[data-effect~="float"].fast { --vb-duration: 1.5s; }
+[data-effect~="glow"].slow { --vb-duration: 4s; }
+[data-effect~="glow"].fast { --vb-duration: 1s; }
 
-/* ── Reduced motion ──
-   With the slot system, blanking every slot kills every animation in one rule.
-   Static decoration paint (neon text-shadow, outline stroke, rainbow color,
-   text-3d shadow, hard-shadow) lives outside @keyframes so it stays visible.
-   For triggered entrance effects we also assert their final visual state so
-   the element doesn't sit at opacity:0 / translated when the animation
-   never runs. */
+/* ── Stagger system ──
+   The [data-stagger] > * delay rule lives in effects-core.css: the runtime
+   that sets --vb-stagger-index ships in every bundle. */
+
+/* ── Reduced motion: one rule that wins ──
+   Applies to `prefers-reduced-motion: reduce` AND the settings-panel switch
+   (:root[data-motion-reduced]). Instead of blanking the animation slots
+   (which left a triggered entrance stuck in its hidden pre-state), every slot
+   animation on an effect host runs as a single zero-length iteration with
+   no delay, so it lands on its FINAL state at once:
+     entrance → visible, exit → gone, attention/decoration loops → stopped
+     at rest.
+   animationend still fires, so vb:effect-phase-end chains keep working.
+   !important on the longhands beats the composer shorthand and every
+   per-effect slot publisher regardless of selector specificity.
+   An armed entrance that has not been activated yet (hover/click/event not
+   fired) is shown in its final state too: reduced motion never hides
+   content. Descendant / pseudo-element animations that do not go through
+   the slots (marquee track, flipboard flaps, typewriter cursor, glitch
+   layers, reveal chunks) carry their own reduced-motion rules. */
 @media (prefers-reduced-motion: reduce) {
-  [data-effect] {
-    --vb-anim-entrance: none;
-    --vb-anim-attention: none;
-    --vb-anim-decoration: none;
-    --vb-anim-exit: none;
+  [data-effect],
+  [data-effect]::before,
+  [data-effect]::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
   }
 
-  [data-effect~="fade-in"][data-trigger]:not([data-effect-active]),
-  [data-effect~="slide-up"][data-trigger]:not([data-effect-active]),
-  [data-effect~="slide-in"][data-trigger]:not([data-effect-active]),
-  [data-effect~="pop"][data-trigger]:not([data-effect-active]) {
-    opacity: 1;
-    transform: none;
+  :is(
+    [data-effect~="fade-in"],
+    [data-effect~="slide-up"],
+    [data-effect~="slide-in"],
+    [data-effect~="pop"]
+  )[data-effect-armed]:not([data-effect-active]) {
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   [data-effect~="shadow"] {
@@ -945,19 +1041,25 @@
   [data-effect~="marquee"] { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
 }
 
-:root[data-motion-reduced] [data-effect] {
-  --vb-anim-entrance: none;
-  --vb-anim-attention: none;
-  --vb-anim-decoration: none;
-  --vb-anim-exit: none;
+/* (Pseudo-elements are not allowed inside :is(), hence three selectors.) */
+:root[data-motion-reduced] [data-effect],
+:root[data-motion-reduced] [data-effect]::before,
+:root[data-motion-reduced] [data-effect]::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
 }
 
-:root[data-motion-reduced] [data-effect~="fade-in"][data-trigger]:not([data-effect-active]),
-:root[data-motion-reduced] [data-effect~="slide-up"][data-trigger]:not([data-effect-active]),
-:root[data-motion-reduced] [data-effect~="slide-in"][data-trigger]:not([data-effect-active]),
-:root[data-motion-reduced] [data-effect~="pop"][data-trigger]:not([data-effect-active]) {
-  opacity: 1;
-  transform: none;
+:root[data-motion-reduced] :is(
+  [data-effect~="fade-in"],
+  [data-effect~="slide-up"],
+  [data-effect~="slide-in"],
+  [data-effect~="pop"]
+)[data-effect-armed]:not([data-effect-active]) {
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 :root[data-motion-reduced] [data-effect~="shadow"] {
@@ -965,6 +1067,7 @@
 }
 
 :root[data-motion-reduced] [data-effect~="marquee"] > * { animation: none; }
+:root[data-motion-reduced] [data-effect~="marquee"] { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
 
 /* --------------------------------------------------------------------------
    data-math: MathML enhancement for code elements

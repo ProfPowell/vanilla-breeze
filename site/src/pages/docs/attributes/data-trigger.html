@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-trigger"
-description: "Controls when effects activate. Separates effect behavior from activation timing."
+description: "Controls when a data-effect activates: on scroll, hover or focus, click, after a delay, on a media query, an event, a view transition, or continuously with scroll position."
 attributeName: data-trigger
 category: visual-effects
 attributeType: data
@@ -13,215 +13,235 @@ crumbLabel: Data Attributes
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>data-trigger</code> attribute controls <em>when</em> an effect activates. It separates the visual effect from its activation moment, allowing the same effect to be triggered by scroll, hover, click, or a timed delay.</p>
-  <p>If no <code>data-trigger</code> is set, CSS-only effects activate immediately and JS effects run on load.</p>
+  <p><code>data-trigger</code> decides <em>when</em> an element's <a href="/docs/attributes/data-effect/"><code>data-effect</code></a> activates. The effect describes what moves; the trigger describes the moment. The same <code>fade-in slide-up</code> runs identically whether a scroll, a click or a timer starts it.</p>
+  <p>Without <code>data-trigger</code> the effect plays as soon as the page loads. With a trigger, the runtime adds <code>data-effect-active</code> to the element when the trigger fires, and the effect's CSS and JavaScript react to that attribute.</p>
 
   <browser-window src="/docs/examples/demos/trigger-demo.html" url="https://vanilla-breeze.com/triggers" title="Trigger Types" shadow></browser-window>
 </section>
 
-<section id="scroll">
-  <h2>scroll</h2>
-  <p>Activates when the element scrolls into the viewport (10% visible threshold). Uses <code>IntersectionObserver</code> and fires once.</p>
-
-  <code-block language="html" label="Scroll trigger">
-&lt;h1 data-effect="fade-in slide-up" data-trigger="scroll"&gt;Appears on scroll&lt;/h1&gt;
-&lt;p data-effect="reveal" data-trigger="scroll"&gt;Words reveal when visible&lt;/p&gt;
-  </code-block>
+<section>
+  <h2>Usage</h2>
+  <code-block language="html" show-lines label="Triggers" data-escape><h2 data-effect="fade-in slide-up" data-trigger="scroll">Appears when scrolled into view</h2>
+<button type="button" data-effect="shake" data-trigger="hover">Shakes on hover or focus</button>
+<p data-effect="pop" data-trigger="time:1.5s">Pops in after 1.5 seconds</p></code-block>
+  <ul>
+    <li>Put <code>data-trigger</code> on the same element as <code>data-effect</code>. Children of a <a href="/docs/attributes/data-stagger/"><code>data-stagger</code></a> container each need their own pair.</li>
+    <li>Several triggers can be listed, separated by spaces. Any of them activates the effect: <code>data-trigger="scroll time:3000"</code> plays on scroll or after three seconds, whichever comes first.</li>
+    <li>A value takes a parameter after its first colon (<code>time:2000</code>, <code>media:(min-width:60rem)</code>). Because values are split on spaces, a parameter cannot contain one.</li>
+    <li>The trigger handlers ship in every Vanilla Breeze script bundle that contains the effects runtime (core, extras, the full and autoload bundles, and the effects pack).</li>
+  </ul>
 </section>
 
-<section id="hover">
-  <h2>hover</h2>
-  <p>Activates on pointer enter, deactivates on pointer leave. For CSS-only effects, the <code>:hover</code> pseudo-class drives the animation directly.</p>
-
-  <code-block language="html" label="Hover trigger">
-&lt;span data-effect="wiggle" data-trigger="hover"&gt;Hover to wiggle&lt;/span&gt;
-&lt;h2 data-effect="glitch" data-trigger="hover"&gt;Hover for glitch&lt;/h2&gt;
-  </code-block>
-</section>
-
-<section id="click">
-  <h2>click</h2>
-  <p>Toggles the effect on click. Adds <code>[data-effect-active]</code> on first click, removes it on second.</p>
-
-  <code-block language="html" label="Click trigger">
-&lt;button data-effect="shake" data-trigger="click"&gt;Click to shake&lt;/button&gt;
-&lt;h2 data-effect="pop" data-trigger="click"&gt;Click to pop&lt;/h2&gt;
-  </code-block>
-</section>
-
-<section id="time">
-  <h2>time:<var>n</var></h2>
-  <p>Activates after a delay of <var>n</var> milliseconds. Uses <code>setTimeout</code>.</p>
-
-  <code-block language="html" label="Time trigger">
-&lt;h1 data-effect="fade-in" data-trigger="time:2000"&gt;Appears after 2 seconds&lt;/h1&gt;
-&lt;p data-effect="slide-up" data-trigger="time:500"&gt;Half-second delay&lt;/p&gt;
-  </code-block>
-</section>
-
-<section id="view-progress">
-  <h2>view-progress, view-progress:<var>range</var></h2>
-  <p>Drives the effect&apos;s animation <strong>continuously</strong> from the element&apos;s view progress through the scrollport, via CSS <code>animation-timeline: view()</code>. Unlike <code>scroll</code> (which fires once via <code>IntersectionObserver</code>), <code>view-progress</code> ties the animation directly to scroll position — stop scrolling mid-reveal and the animation pauses at that exact frame.</p>
-
-  <browser-window src="/docs/examples/demos/view-progress-vs-binary.html" url="https://vanilla-breeze.com/view-progress-vs-binary" title="view-progress vs. scroll (side by side)" shadow></browser-window>
-
-  <code-block language="html" label="Continuous fade-in">
-&lt;article data-effect="fade-in" data-trigger="view-progress"&gt;
-  Opacity follows scroll position
-&lt;/article&gt;
-  </code-block>
-
-  <h3>Range variants</h3>
-  <p>The range controls <em>which slice</em> of the element&apos;s scrollport journey drives the animation. Default is <code>entry 0% cover 50%</code> — animation reaches its end keyframe by the time the element is halfway covered.</p>
-
+<section>
+  <h2>Options</h2>
   <table class="props-table">
-    <thead><tr><th>Variant</th><th>animation-range</th><th>When the animation plays</th></tr></thead>
+    <thead>
+      <tr><th>Value</th><th>Activates</th><th>Deactivates</th><th>Notes</th></tr>
+    </thead>
     <tbody>
-      <tr><td><code>view-progress</code></td><td><code>entry 0% cover 50%</code></td><td>Default. Starts as element enters viewport, finishes when half-covered.</td></tr>
-      <tr><td><code>view-progress:entry</code></td><td><code>entry 0% entry 100%</code></td><td>Only while entering the viewport (bottom edge crossing).</td></tr>
-      <tr><td><code>view-progress:exit</code></td><td><code>exit 0% exit 100%</code></td><td>Only while leaving the viewport (top edge crossing). Pair with exit-slot effects (<code>fade-out</code>, <code>collapse</code>).</td></tr>
-      <tr><td><code>view-progress:cover</code></td><td><code>cover 0% cover 100%</code></td><td>Across the entire time the element is in view.</td></tr>
-      <tr><td><code>view-progress:contain</code></td><td><code>contain 0% contain 100%</code></td><td>Only while element is fully visible (smaller than the scrollport).</td></tr>
+      <tr>
+        <td><code>scroll</code></td>
+        <td>Once, when 10% of the element is in the viewport (<code>IntersectionObserver</code>).</td>
+        <td>Never.</td>
+        <td>Same as <code>intersect</code>. Under reduced motion it activates immediately.</td>
+      </tr>
+      <tr>
+        <td><code>intersect</code>, <code>intersect:once</code></td>
+        <td>Once, on first viewport entry.</td>
+        <td>Never.</td>
+        <td>Under reduced motion it activates immediately.</td>
+      </tr>
+      <tr>
+        <td><code>intersect:toggle</code></td>
+        <td>Every time the element enters the viewport.</td>
+        <td>Every time it leaves.</td>
+        <td>For decoration that should only run while visible.</td>
+      </tr>
+      <tr>
+        <td><code>hover</code></td>
+        <td>When the pointer enters <strong>or</strong> the element (or anything inside it) receives focus.</td>
+        <td>When it is neither hovered nor holds focus.</td>
+        <td>Each new hover or focus replays the effect. Moving focus between children of the element does not.</td>
+      </tr>
+      <tr>
+        <td><code>click</code></td>
+        <td>On a click when inactive.</td>
+        <td>On the next click.</td>
+        <td>A toggle: first click on, second click off.</td>
+      </tr>
+      <tr>
+        <td><code>click:replay</code></td>
+        <td>On every click.</td>
+        <td>Briefly, to restart the animation.</td>
+        <td>For one-shot attention effects such as <code>shake</code>.</td>
+      </tr>
+      <tr>
+        <td><code>time:<var>delay</var></code></td>
+        <td>Once, after <var>delay</var>.</td>
+        <td>Never.</td>
+        <td><var>delay</var> is milliseconds (<code>2000</code>, <code>2000ms</code>) or seconds (<code>2s</code>).</td>
+      </tr>
+      <tr>
+        <td><code>media:<var>(query)</var></code></td>
+        <td>While the media query matches (checked at load and on every change).</td>
+        <td>When it stops matching.</td>
+        <td>Write the query without spaces: <code>media:(prefers-color-scheme:dark)</code>.</td>
+      </tr>
+      <tr>
+        <td><code>event:<var>name</var></code></td>
+        <td>Every time an event called <var>name</var> is dispatched on the element.</td>
+        <td>Briefly, to restart the animation.</td>
+        <td>Lets your code choose the moment without touching <code>data-effect-active</code>.</td>
+      </tr>
+      <tr>
+        <td><code>vt</code></td>
+        <td>Every time a <code>VB.swap()</code> view transition has committed the new DOM.</td>
+        <td>Briefly, to restart the animation.</td>
+        <td>Pairs with <a href="/docs/attributes/data-transition/"><code>data-transition="effect:<var>class</var>"</code></a>.</td>
+      </tr>
+      <tr>
+        <td><code>view-progress</code>, <code>view-progress:entry|exit|cover|contain</code></td>
+        <td>Continuously: the animation follows the element's progress through the viewport (CSS <code>animation-timeline: view()</code>).</td>
+        <td>&mdash;</td>
+        <td>Entrance effects only (<code>fade-in</code>, <code>slide-up</code>, <code>slide-in</code>, <code>pop</code>, <code>fade-in slide-up</code>). Without timeline support it falls back to <code>scroll</code>.</td>
+      </tr>
+      <tr>
+        <td><code>scroll-progress</code></td>
+        <td>Continuously: the animation follows the whole page's scroll position (<code>animation-timeline: scroll()</code>).</td>
+        <td>&mdash;</td>
+        <td>Without timeline support it falls back to <code>scroll</code>.</td>
+      </tr>
     </tbody>
   </table>
 
-  <code-block language="html" label="Range variants">
-&lt;h1 data-effect="slide-up" data-trigger="view-progress:entry"&gt;
-  Slides up only during entry
-&lt;/h1&gt;
+  <h3>view-progress ranges</h3>
+  <table class="props-table">
+    <thead><tr><th>Value</th><th><code>animation-range</code></th><th>The animation plays</th></tr></thead>
+    <tbody>
+      <tr><td><code>view-progress</code></td><td><code>entry 0% cover 50%</code></td><td>From when the element starts entering until it is half way through the viewport.</td></tr>
+      <tr><td><code>view-progress:entry</code></td><td><code>entry 0% entry 100%</code></td><td>Only while the element is entering.</td></tr>
+      <tr><td><code>view-progress:exit</code></td><td><code>exit 0% exit 100%</code></td><td>Only while it is leaving.</td></tr>
+      <tr><td><code>view-progress:cover</code></td><td><code>cover 0% cover 100%</code></td><td>The whole time any part of it is visible.</td></tr>
+      <tr><td><code>view-progress:contain</code></td><td><code>contain 0% contain 100%</code></td><td>Only while it is fully visible.</td></tr>
+    </tbody>
+  </table>
+  <p>Scroll-driven animations run in Chromium 115+ and Safari 26+; Firefox has them behind a flag. Where they are not supported, <code>view-progress</code> and <code>scroll-progress</code> play the normal one-shot entrance when the element scrolls into view. When an element lists both <code>scroll</code> and <code>view-progress</code>, supporting browsers use the timeline: its rules come later in the stylesheet than the one-shot rules (the selectors have equal specificity).</p>
 
-&lt;p data-effect="fade-in" data-trigger="view-progress:cover"&gt;
-  Fades across the full time in view
-&lt;/p&gt;
-  </code-block>
+  <h3>Unknown values</h3>
+  <p>A value with no registered trigger, for example a typo such as <code>scrol</code>, never hides the element. After the page has loaded the runtime logs one console warning per unknown name and activates the element, so the effect plays once instead of never.</p>
+</section>
 
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Fired on</th><th><code>detail</code></th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>vb:phase-change</code></td><td>The effect element (bubbles)</td><td><code>{ active: boolean }</code></td><td>Every activation and deactivation, including the brief reset when <code>hover</code>, <code>click:replay</code>, <code>event</code> and <code>vt</code> replay an effect.</td></tr>
+      <tr><td><code>vb:effect-phase-end</code></td><td>The effect element (bubbles)</td><td><code>{ phase, animationName }</code></td><td>When an entrance, exit, attention or decoration animation finishes. Also fires under reduced motion.</td></tr>
+      <tr><td><code>vb:vt-update-done</code></td><td>Every <code>[data-trigger~="vt"]</code> element</td><td><code>{}</code></td><td>After <code>VB.swap()</code> has committed its DOM update. The <code>vt</code> trigger listens for it.</td></tr>
+    </tbody>
+  </table>
+  <code-block language="javascript" show-lines label="Chain work after an entrance" data-escape>const hero = document.querySelector('#hero');
+VB.onPhaseEnd(hero, 'entrance', () => {
+  document.querySelector('#cta').focus();
+});
+
+// Drive an event trigger from your own code
+document.querySelector('#title').dispatchEvent(new CustomEvent('order-confirmed'));</code-block>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <table class="props-table">
+    <thead><tr><th>Hook</th><th>Set by</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>[data-effect-armed]</code></td><td>Runtime</td><td>A registered trigger is wired and waiting. Entrance effects are hidden only while an element is armed and not yet active, so content without JavaScript, with an unknown trigger, or under reduced motion stays visible.</td></tr>
+      <tr><td><code>[data-effect-active]</code></td><td>Runtime</td><td>The trigger has fired. Effects publish their animation when this is present.</td></tr>
+    </tbody>
+  </table>
+  <code-block language="css" show-lines label="Your own effect, gated like the built-ins" data-escape>[data-effect~="drop-in"][data-effect-armed]:not([data-effect-active]) {
+  opacity: 0;
+}
+[data-effect~="drop-in"][data-effect-active],
+[data-effect~="drop-in"]:not([data-trigger]) {
+  --vb-anim-entrance: my-drop-in 400ms ease-out var(--vb-delay, 0ms) both;
+}</code-block>
+  <p>Use fill mode <code>both</code> so an element keeps its starting keyframe during a <code>--vb-delay</code> wait (for example inside <code>data-stagger</code>).</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Content is never hidden for good.</strong> An entrance effect hides its element only after the runtime has wired a real trigger. Without JavaScript, with an unknown trigger, or with reduced motion the content is visible. When the script loads after the first paint, an element that will animate can show briefly before it is hidden and fades in.</li>
+    <li><strong>Do not gate essential content on <code>hover</code> or <code>click</code>.</strong> An entrance effect with these triggers stays hidden until someone hovers, focuses or clicks it. <code>hover</code> also responds to keyboard focus, but only focusable elements (or containers with focusable children) receive focus. Prefer <code>scroll</code> or no trigger for content, and keep hover and click for emphasis.</li>
+    <li><strong>Put click triggers on buttons.</strong> A click on a <code>&lt;p&gt;</code> or <code>&lt;h2&gt;</code> cannot come from the keyboard. Use a <code>&lt;button&gt;</code>, or wrap the effect element in one.</li>
+    <li><strong>Reduced motion.</strong> With <code>prefers-reduced-motion: reduce</code>, or the settings-panel switch (<code>:root[data-motion-reduced]</code>), every effect jumps to its final state: entrances are visible at once, exits finish at once, and looping effects stop at rest. <code>scroll</code>, <code>intersect</code> and the view-progress fallback activate immediately, and <code>view-progress</code> does not bind the scroll timeline.</li>
+    <li><strong>Looping effects (WCAG 2.2.2).</strong> A trigger such as <code>media</code> or <code>intersect:toggle</code> can start an effect that loops forever (<code>pulse</code>, <code>bounce</code>, <code>blink</code>). Anything that moves for more than five seconds next to other content needs a way to pause it. The reduced-motion setting is one; a visible pause control is better.</li>
+    <li><strong>Scroll-linked motion (WCAG 2.3.3).</strong> <code>view-progress</code> and <code>scroll-progress</code> move content as the user scrolls, which can trigger vestibular symptoms. Keep the distance small, and the reduced-motion paths above switch it off.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Trigger independence</h3>
+  <p>The same effect under four different triggers.</p>
+  <browser-window src="/docs/examples/demos/trigger-independence.html" url="https://vanilla-breeze.com/trigger-independence" title="Trigger Independence" shadow></browser-window>
+  <code-block language="html" show-lines label="Same effect, different triggers" data-escape><h2 data-effect="fade-in slide-up" data-trigger="scroll">Scroll triggered entrance</h2>
+<h2 data-effect="fade-in slide-up" data-trigger="time:2000">Delayed entrance</h2>
+<button type="button" data-effect="shake" data-trigger="hover">Hover or focus to shake</button>
+<button type="button" data-effect="shake" data-trigger="click:replay">Click to shake</button></code-block>
+
+  <h3>Click toggle and replay</h3>
+  <code-block language="html" show-lines label="click vs click:replay" data-escape><button type="button" data-effect="pulse" data-trigger="click">Click to toggle pulse</button>
+<button type="button" data-effect="shake" data-trigger="click:replay">Click to shake</button></code-block>
+
+  <h3>view-progress</h3>
+  <browser-window src="/docs/examples/demos/view-progress-vs-binary.html" url="https://vanilla-breeze.com/view-progress-vs-binary" title="view-progress vs. scroll (side by side)" shadow></browser-window>
+  <code-block language="html" show-lines label="Scroll-linked entrances" data-escape><article data-effect="fade-in" data-trigger="view-progress">
+  Opacity follows scroll position
+</article>
+<h2 data-effect="slide-up" data-trigger="view-progress:entry">
+  Slides up only while entering
+</h2></code-block>
   <browser-window src="/docs/examples/demos/view-progress-fade-in.html" url="https://vanilla-breeze.com/view-progress" title="Continuous fade-in via view-progress" shadow></browser-window>
 
-  <h3>scroll-progress (root scroller)</h3>
-  <p><code>data-trigger="scroll-progress"</code> ties the animation to the <em>root scroller&apos;s</em> total progress (0% at top, 100% at bottom of the page) rather than the element&apos;s view progress. Useful for whole-page indicators and parallax decoration.</p>
+  <h3>scroll-progress</h3>
+  <code-block language="html" show-lines label="Bound to page scroll" data-escape><aside data-effect="float" data-trigger="scroll-progress">
+  Drifts with page scroll
+</aside></code-block>
 
-  <code-block language="html" label="scroll-progress">
-&lt;div data-effect="float" data-trigger="scroll-progress"&gt;
-  Drift bound to page scroll
-&lt;/div&gt;
-  </code-block>
+  <h3>Media and intersect</h3>
+  <code-block language="html" show-lines label="media and intersect:toggle" data-escape><h1 data-effect="neon" data-trigger="media:(prefers-color-scheme:dark)">Neon only in dark mode</h1>
+<aside data-effect="neon" data-trigger="intersect:toggle">Glows only while on screen</aside></code-block>
 
-  <h3>Browser support and fallback</h3>
-  <ul>
-    <li>Chromium 115+ (July 2023): stable.</li>
-    <li>Safari 26+: partial (<code>view()</code> supported, <code>scroll()</code> more limited).</li>
-    <li>Firefox: behind <code>layout.css.scroll-driven-animations.enabled</code>.</li>
-  </ul>
-  <p>The rules are wrapped in <code>@supports (animation-timeline: view())</code>. Browsers without support see the element&apos;s idle (hidden) state — no broken layout. For a one-shot fallback, add <code>scroll</code> as a peer trigger: <code>data-trigger="scroll view-progress"</code> — the existing <code>IntersectionObserver</code> trigger fires in older browsers; newer browsers run the timeline-driven version (CSS specificity favors the timeline rule).</p>
-  <p><code>prefers-reduced-motion: reduce</code> (and the project-wide <code>:root[data-motion-reduced]</code> opt-in) suppress the timeline binding entirely and snap the element to its final state — no scroll-linked motion at all.</p>
-</section>
+  <h3>Events and view transitions</h3>
+  <code-block language="html" show-lines label="event and vt" data-escape><h1 id="title" data-effect="pop" data-trigger="event:order-confirmed">Thanks for your order!</h1>
 
-<section id="intersect">
-  <h2>intersect, intersect:once, intersect:toggle</h2>
-  <p>Generalised <code>IntersectionObserver</code> trigger. <code>intersect</code> and <code>intersect:once</code> fire once on first viewport entry (same behaviour as <code>scroll</code>). <code>intersect:toggle</code> re-activates on every viewport entry and deactivates on every exit — useful for decoration effects that should follow the viewport.</p>
+<section data-transition="effect:fade">
+  <h2 data-effect="pop" data-trigger="vt">Pops in after the cross-fade</h2>
+</section></code-block>
 
-  <code-block language="html" label="Intersect modes">
-&lt;h2 data-effect="fade-in slide-up" data-trigger="intersect"&gt;Fires once&lt;/h2&gt;
-&lt;aside data-effect="neon" data-trigger="intersect:toggle"&gt;Glows only while on screen&lt;/aside&gt;
-  </code-block>
-</section>
-
-<section id="media">
-  <h2>media:<var>(query)</var></h2>
-  <p>Activates while a <code>matchMedia</code> query matches, deactivates on mismatch. Reacts to media-query change events so a decoration switches on at a breakpoint, in dark mode, or when reduced-motion lifts.</p>
-
-  <code-block language="html" label="Media trigger">
-&lt;h1 data-effect="neon" data-trigger="media:(prefers-color-scheme:dark)"&gt;
-  Neon only in dark mode
-&lt;/h1&gt;
-&lt;p data-effect="float" data-trigger="media:(min-width:60rem)"&gt;
-  Floats only on wide screens
-&lt;/p&gt;
-  </code-block>
-
-  <p><strong>Note:</strong> the query must not contain whitespace — <code>data-trigger</code> is split on whitespace into multiple triggers.</p>
-</section>
-
-<section id="event">
-  <h2>event:<var>name</var></h2>
-  <p>Listens for a custom DOM event by <var>name</var> on the element. Pairs with <code>VB.activate(el)</code> so app code can drive effect timing without touching <code>data-effect-active</code> directly.</p>
-
-  <code-block language="html" label="Event trigger">
-&lt;h1 id="title" data-effect="pop" data-trigger="event:order-confirmed"&gt;
-  Thanks for your order!
-&lt;/h1&gt;
-&lt;script&gt;
-  document.getElementById('title').dispatchEvent(
-    new CustomEvent('order-confirmed')
-  );
-&lt;/script&gt;
-  </code-block>
-</section>
-
-<section id="vt">
-  <h2>vt (View Transition bridge)</h2>
-  <p>Defers activation until <code>VB.swap()</code>'s view transition commits the new DOM. Bridges the <a href="/docs/attributes/data-transition/">data-transition</a> system into the effect lifecycle, so an entrance animation runs <em>in sync with</em> the cross-fade instead of before it.</p>
-
-  <code-block language="html" label="VT-coordinated entrance">
-&lt;section data-transition="effect:fade"&gt;
-  &lt;h2 data-effect="pop" data-trigger="vt"&gt;
-    Pops in after the cross-fade
-  &lt;/h2&gt;
-&lt;/section&gt;
-  </code-block>
-</section>
-
-<section id="no-trigger">
-  <h2>No trigger (immediate)</h2>
-  <p>When <code>data-trigger</code> is omitted, CSS-only effects activate immediately via their CSS selectors. JS effects run their <code>activate()</code> function on initialization.</p>
-
-  <code-block language="html" label="Immediate (no trigger)">
-&lt;h1 data-effect="shimmer"&gt;Shimmers immediately&lt;/h1&gt;
-&lt;h2 data-effect="neon" class="pink"&gt;Glows immediately&lt;/h2&gt;
-  </code-block>
-</section>
-
-<section id="independence">
-  <h2>Trigger independence</h2>
-  <p>An effect doesn't know what triggered it. The same <code>fade-in slide-up</code> effect behaves identically whether activated by scroll, hover, click, or a timer.</p>
-  <browser-window src="/docs/examples/demos/trigger-independence.html" url="https://vanilla-breeze.com/trigger-independence" title="Trigger Independence" shadow></browser-window>
-</section>
-
-<section id="custom">
-  <h2>Custom triggers</h2>
-  <p>Register custom triggers via the <code>VB.trigger()</code> API. Custom triggers work identically to built-in ones.</p>
-  <code-block language="js" label="Custom trigger registration">
-VB.trigger('visible', (el, activate, param) => {
+  <h3>Custom triggers</h3>
+  <p>Register your own with <code>VB.trigger(name, handler)</code>. The handler receives the element, an <code>activate</code> function and the parameter after the colon, and returns a cleanup function. Elements already on the page are wired as soon as the trigger registers.</p>
+  <browser-window src="/docs/examples/demos/custom-trigger.html" url="https://vanilla-breeze.com/custom-trigger" title="Custom Trigger" shadow></browser-window>
+  <code-block language="javascript" show-lines label="Custom trigger registration" data-escape>VB.trigger('visible', (el, activate, param) => {
   const threshold = parseInt(param || '50', 10) / 100;
   const io = new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting) { io.disconnect(); activate(); }
   }, { threshold });
   io.observe(el);
   return () => io.disconnect();
-});
-  </code-block>
-  <code-block language="html" label="Custom trigger usage">
-&lt;h2 data-effect="fade-in" data-trigger="visible:50"&gt;50% visibility&lt;/h2&gt;
-  </code-block>
-
-  <browser-window src="/docs/examples/demos/custom-trigger.html" url="https://vanilla-breeze.com/custom-trigger" title="Custom Trigger" shadow></browser-window>
+});</code-block>
+  <code-block language="html" label="Custom trigger usage" data-escape><h2 data-effect="fade-in" data-trigger="visible:50">Appears at 50% visibility</h2></code-block>
 </section>
 
-<section id="api">
-  <h2>Attribute reference</h2>
-  <table class="props-table">
-    <thead><tr><th>Trigger</th><th>Implementation</th><th>Notes</th></tr></thead>
-    <tbody>
-      <tr><td><code>scroll</code></td><td><code>IntersectionObserver</code></td><td>Fires once at 10% visible, then disconnects. Alias of <code>intersect:once</code>.</td></tr>
-      <tr><td><code>hover</code></td><td>CSS <code>:hover</code> + JS events</td><td>CSS-only effects use <code>:hover</code>. JS effects use pointer events.</td></tr>
-      <tr><td><code>click</code></td><td><code>addEventListener('click')</code></td><td>Toggles <code>[data-effect-active]</code>.</td></tr>
-      <tr><td><code>time:<var>n</var></code></td><td><code>setTimeout</code></td><td><var>n</var> is delay in milliseconds.</td></tr>
-      <tr><td><code>intersect:<var>once|toggle</var></code></td><td><code>IntersectionObserver</code></td><td><code>once</code> (default) fires on first entry; <code>toggle</code> activates/deactivates on every enter/leave.</td></tr>
-      <tr><td><code>view-progress<var>[:entry|:exit|:cover|:contain]</var></code></td><td><code>animation-timeline: view()</code></td><td>Continuous, scroll-linked. Drives the animation from the element&apos;s view progress through the scrollport.</td></tr>
-      <tr><td><code>scroll-progress</code></td><td><code>animation-timeline: scroll()</code></td><td>Continuous, bound to root-scroller progress (0% top, 100% bottom).</td></tr>
-      <tr><td><code>media:<var>(query)</var></code></td><td><code>matchMedia</code></td><td>Activates while query matches; deactivates on mismatch. No whitespace in the query.</td></tr>
-      <tr><td><code>event:<var>name</var></code></td><td><code>addEventListener</code></td><td>Activates when the named DOM event fires on the element.</td></tr>
-      <tr><td><code>vt</code></td><td><code>vb:vt-update-done</code></td><td>Fires after <code>VB.swap()</code>'s view transition commits. Pairs with <code>data-transition="effect:<var>class</var>"</code>.</td></tr>
-    </tbody>
-  </table>
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-effect/"><code>data-effect</code></a> &mdash; the effects a trigger activates.</li>
+    <li><a href="/docs/attributes/data-stagger/"><code>data-stagger</code></a> &mdash; cascade the timing of triggered children.</li>
+    <li><a href="/docs/attributes/data-transition/"><code>data-transition</code></a> &mdash; view transitions; pairs with the <code>vt</code> trigger.</li>
+    <li><a href="/docs/attributes/view-transitions/">View transitions</a> &mdash; <code>VB.swap()</code> and shared-element names.</li>
+  </ul>
 </section>

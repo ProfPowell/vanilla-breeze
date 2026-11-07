@@ -44,9 +44,15 @@ import './comment-wc/logic.js';
 // Specialty utility inits
 import '../utils/chapter-list-init.js';
 import '../utils/command-init.js';
+// The effect modules below bring the VB runtime; its triggers and
+// data-transition presets ship with it (effects-bundle-parity test).
+import '../lib/vb-triggers.js';
+import '../lib/vb-transitions.js';
 import '../effects/glitch.js';
 import '../effects/blur-reveal.js';
 import '../effects/typewriter.js';
 import '../effects/scramble.js';
 import '../effects/animate-image.js';
+import '../effects/stamp.js';
+import '../effects/flipboard.js';
 import '../utils/emoji-init.js';

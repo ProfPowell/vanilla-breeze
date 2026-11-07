@@ -74,7 +74,9 @@ data[data-effect~="ticker"] {
 
 [data-effect~="glitch"][data-effect-glitch-init]::before,
 [data-effect~="glitch"][data-effect-glitch-init]::after {
+  /* Decoration: empty alt text keeps the copies out of the accessible name. */
   content: attr(data-glitch-text);
+  content: attr(data-glitch-text) / "";
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -98,9 +100,14 @@ data[data-effect~="ticker"] {
   opacity: 0;
 }
 
-[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:hover::before,
-[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:hover::after {
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:is(:hover, :focus-visible, :focus-within, [data-effect-active])::before,
+[data-effect~="glitch"][data-trigger~="hover"][data-effect-glitch-init]:is(:hover, :focus-visible, :focus-within, [data-effect-active])::after {
   opacity: 1;
+}
+
+[data-effect~="glitch"]:is([data-paused], [data-paused] *)::before,
+[data-effect~="glitch"]:is([data-paused], [data-paused] *)::after {
+  animation-play-state: paused;
 }
 
 @keyframes vb-glitch-1 {
@@ -131,17 +138,29 @@ data[data-effect~="ticker"] {
 /* data-effect~="blur-reveal": Word/line blur-to-clear reveal */
 [data-effect~="blur-reveal"][data-effect-blur-reveal-init] .vb-blur-chunk {
   display: inline-block;
-  opacity: 0;
-  filter: blur(8px);
   transition:
     opacity 400ms var(--ease-out, ease-out),
     filter 400ms var(--ease-out, ease-out);
   transition-delay: calc(var(--i, 0) * var(--blur-delay, 80ms));
 }
 
-[data-effect~="blur-reveal"][data-effect-blur-reveal-init][data-effect-active] .vb-blur-chunk {
-  opacity: 1;
-  filter: blur(0);
+/* Hidden only while an armed trigger has not fired yet. */
+[data-effect~="blur-reveal"][data-effect-blur-reveal-init][data-effect-armed]:not([data-effect-active]) .vb-blur-chunk {
+  opacity: 0;
+  filter: blur(8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-effect~="blur-reveal"] .vb-blur-chunk {
+    opacity: 1 !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}
+:root[data-motion-reduced] [data-effect~="blur-reveal"] .vb-blur-chunk {
+  opacity: 1 !important;
+  filter: none !important;
+  transition: none !important;
 }
 
 /* data-typewriter: Character-by-character typing */
@@ -161,8 +180,18 @@ data[data-effect~="ticker"] {
   .vb-typewriter-cursor { animation: none; }
 }
 :root[data-motion-reduced] .vb-typewriter-cursor { animation: none; }
+[data-paused] .vb-typewriter-cursor { animation-play-state: paused; }
+
+/* Nothing typed yet while an armed trigger waits. */
+[data-effect~="typewriter"][data-effect-typewriter-init][data-effect-armed]:not([data-effect-active]) > .vb-split {
+  visibility: hidden;
+}
 
 /* data-effect~="scramble": Decode effect (minimal CSS — JS drives animation) */
 [data-effect~="scramble"][data-effect-scramble-init] {
   font-variant-numeric: tabular-nums;
+}
+
+[data-effect~="scramble"][data-effect-scramble-init][data-effect-armed]:not([data-effect-active]) > .vb-split {
+  visibility: hidden;
 }

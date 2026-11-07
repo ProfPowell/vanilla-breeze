@@ -6,6 +6,10 @@
  * ticker, star-rating, and rating.
  */
 
+// The runtime's triggers and data-transition presets ship wherever the
+// runtime does (tests/unit/effects-bundle-parity.test.js).
+import '../../lib/vb-triggers.js'
+import '../../lib/vb-transitions.js'
 import '../../effects/glitch.js'
 import '../../effects/typewriter.js'
 import '../../effects/scramble.js'

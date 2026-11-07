@@ -1,70 +1,78 @@
 /**
  * Scramble effect — text decode animation.
  * Characters resolve left-to-right with random character fill.
+ *
+ * Grapheme-safe and accessible: the text is split with the shared splitter
+ * (inline markup kept, Intl.Segmenter graphemes), the scrambling copy is
+ * aria-hidden and assistive technology reads the real text once.
+ *
+ * Custom properties: --vb-scramble-duration (default 1500ms),
+ * --vb-scramble-speed (frame interval, default 30ms), --vb-scramble-chars
+ * (fill characters; quotes around the value are optional).
  */
 
 import { VB } from '../lib/vb.js'
+import { splitText, unsplit, graphemes } from '../lib/split-text.js'
 
+const INIT = 'data-effect-scramble-init'
 const DEFAULT_CHARS = '!<>-_\\/[]{}=+*^?#'
 
-function randomChar(chars) {
-  return chars[Math.floor(Math.random() * chars.length)]
+/** Fill characters from --vb-scramble-chars, without CSS string quotes. */
+function charset(host) {
+  let raw = VB.params(host).get('scramble-chars')
+  const quoted = /^(['"])(.*)\1$/.exec(raw)
+  if (quoted) raw = quoted[2]
+  const list = graphemes(raw)
+  return list.length ? list : graphemes(DEFAULT_CHARS)
 }
 
-function runScramble(el) {
-  const text = el.getAttribute('data-scramble-text')
-  const params = VB.params(el)
-  const duration = params.getTime('scramble-duration', 1500)
-  const chars = params.get('scramble-chars') || DEFAULT_CHARS
-  const speed = params.getTime('scramble-speed', 30)
-
-  const length = text.length
-  let frame = 0
-  const totalFrames = Math.ceil(duration / speed)
-
-  function step() {
-    const progress = frame / totalFrames
-    const resolved = Math.floor(progress * length)
-    let output = ''
-
-    for (let i = 0; i < length; i++) {
-      if (i < resolved) {
-        output += text[i]
-      } else if (text[i] === ' ') {
-        output += ' '
-      } else {
-        output += randomChar(chars)
-      }
-    }
-
-    el.textContent = output
-    frame++
-
-    if (frame <= totalFrames) {
-      setTimeout(step, speed)
-    } else {
-      el.textContent = text
-    }
-  }
-
-  step()
-}
+const pick = (list) => list[Math.floor(Math.random() * list.length)]
 
 VB.effect('scramble', (el) => {
-  if (el.hasAttribute('data-effect-scramble-init')) return
-  el.setAttribute('data-effect-scramble-init', '')
+  const host = /** @type {HTMLElement} */ (el)
+  unsplit(host)
+  host.removeAttribute(INIT)
 
-  const text = el.textContent.trim()
-  el.setAttribute('data-scramble-text', text)
-  el.setAttribute('aria-label', text)
+  if (VB.prefersReducedMotion()) return { cleanup() {} }
 
-  if (VB.prefersReducedMotion()) return
+  const chars = splitText(host, { unit: 'grapheme', className: 'vb-scramble-char' })
+  const targets = chars.map((c) => c.textContent || '')
+  /** Indices of the non-space graphemes, in reading order. */
+  const letters = chars.flatMap((c, i) => (c.hasAttribute('data-space') ? [] : [i]))
+  host.setAttribute(INIT, '')
 
-  const chars = VB.params(el).get('scramble-chars') || DEFAULT_CHARS
-  el.textContent = text.replace(/\S/g, () => randomChar(chars))
+  let timer = 0
+  const stop = () => { clearTimeout(timer); timer = 0 }
+  const settle = () => chars.forEach((c, i) => { c.textContent = targets[i] })
+
+  function run() {
+    stop()
+    const params = VB.params(host)
+    const duration = params.getTime('scramble-duration', 1500)
+    const speed = Math.max(1, params.getTime('scramble-speed', 30))
+    const fill = charset(host)
+    const total = Math.max(1, Math.ceil(duration / speed))
+    let frame = 0
+
+    const tick = () => {
+      const resolved = Math.floor((frame / total) * letters.length)
+      letters.forEach((idx, i) => {
+        chars[idx].textContent = i < resolved ? targets[idx] : pick(fill)
+      })
+      frame++
+      if (frame <= total) timer = window.setTimeout(tick, speed)
+      else settle()
+    }
+    tick()
+  }
 
   return {
-    activate() { runScramble(el) },
-    cleanup() {},
+    // Re-activation restarts the one decode instead of running two.
+    activate() { run() },
+    cleanup() {
+      stop()
+      unsplit(host)
+      host.removeAttribute(INIT)
+    },
   }
 })

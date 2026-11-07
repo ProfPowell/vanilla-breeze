@@ -56,12 +56,17 @@ function buildFormatter(el, decimals) {
   } catch { return null }
 }
 
+/**
+ * Count up to the value. Returns a cancel function (or null when there is
+ * nothing to animate) so cleanup and re-activation stop the rAF loop.
+ * @returns {(() => void) | null}
+ */
 function animateTicker(el) {
   const raw = el.getAttribute('value')
-  if (raw == null || raw.trim() === '') return
+  if (raw == null || raw.trim() === '') return null
 
   const endValue = Number(raw)
-  if (isNaN(endValue)) return
+  if (isNaN(endValue)) return null
 
   const params = VB.params(el)
   const startValue = params.getNumber('ticker-start', 0)
@@ -71,9 +76,10 @@ function animateTicker(el) {
 
   const formatter = buildFormatter(el, decimals)
   const range = endValue - startValue
-  if (range === 0) return
+  if (range === 0) return null
 
   let startTime = null
+  let frame = 0
 
   function tick(timestamp) {
     if (!startTime) startTime = timestamp
@@ -85,7 +91,7 @@ function animateTicker(el) {
     el.textContent = formatter ? formatter.format(current) : current.toFixed(decimals)
 
     if (progress < 1) {
-      requestAnimationFrame(tick)
+      frame = requestAnimationFrame(tick)
     } else {
       el.textContent = formatter ? formatter.format(endValue) : endValue.toFixed(decimals)
       if (el.hasAttribute('data-format-number')) {
@@ -94,17 +100,28 @@ function animateTicker(el) {
     }
   }
 
-  requestAnimationFrame(tick)
+  frame = requestAnimationFrame(tick)
+  return () => cancelAnimationFrame(frame)
 }
 
 VB.effect('ticker', (el) => {
-  if (el.hasAttribute('data-effect-ticker-init')) return
-  el.setAttribute('data-effect-ticker-init', '')
+  if (VB.prefersReducedMotion()) return { cleanup() {} }
 
-  if (VB.prefersReducedMotion()) return
+  /** @type {(() => void) | null} */
+  let cancel = null
+  const original = el.textContent
 
   return {
-    activate() { animateTicker(el) },
-    cleanup() {},
+    // Re-activation restarts the count instead of running two loops.
+    activate() {
+      cancel?.()
+      cancel = animateTicker(el)
+    },
+    cleanup() {
+      cancel?.()
+      cancel = null
+      // A count stopped mid-way would leave a wrong number behind.
+      if (el.textContent !== original) el.textContent = original
+    },
   }
 })

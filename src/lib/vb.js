@@ -77,6 +77,19 @@ const VB = g[VB_SINGLETON_KEY] ?? {
   _wiredTriggers: new WeakMap(),   // el → Set<triggerName> already wired
   _transitionCleanups: new WeakMap(), // el → cleanup function
   _transitionFallback: new WeakSet(), // els named before their handler registered
+  // Processed state lives in WeakSets, never in DOM attributes: an attribute
+  // is copied by cloneNode() and survives a remove + reinsert, which left
+  // clones with no trigger and clones of [data-transition] elements with a
+  // duplicate view-transition-name (that aborts every view transition).
+  _processed: new WeakSet(),           // [data-effect] els already wired
+  _transitionProcessed: new WeakSet(), // [data-transition] els already named
+  _staggerTime: new WeakSet(),         // [data-stagger] els whose --vb-stagger we set
+  /** @type {Set<Element>} els with a data-trigger value that has no handler (yet) */
+  _unresolved: new Set(),
+  /** @type {Set<string>} unknown trigger names already warned about */
+  _warnedTriggers: new Set(),
+  /** @type {any} */
+  _unresolvedTimer: null,
   _keyframePhase: KEYFRAME_PHASE,
   /** @type {MutationObserver | null} */
   _observer: null,
@@ -118,7 +131,8 @@ const VB = g[VB_SINGLETON_KEY] ?? {
    */
   trigger(name, handler) {
     this._triggers.set(name, handler)
-    document.querySelectorAll('[data-effect-processed][data-trigger]').forEach(el => {
+    document.querySelectorAll('[data-effect][data-trigger]').forEach(el => {
+      if (!this._processed.has(el)) return
       const effectNames = el.getAttribute('data-effect')?.split(/\s+/).filter(Boolean) || []
       this._wireTrigger(el, effectNames)
     })
@@ -136,8 +150,8 @@ const VB = g[VB_SINGLETON_KEY] ?? {
    */
   transition(name, handler) {
     this._transitions.set(name, handler)
-    document.querySelectorAll('[data-transition-processed][data-transition]').forEach(el => {
-      if (!this._transitionFallback.has(el)) return
+    document.querySelectorAll('[data-transition]').forEach(el => {
+      if (!this._transitionProcessed.has(el) || !this._transitionFallback.has(el)) return
       const attr = el.getAttribute('data-transition') || ''
       const colonIdx = attr.indexOf(':')
       if ((colonIdx > -1 ? attr.slice(0, colonIdx) : attr) !== name) return
@@ -279,8 +293,14 @@ const VB = g[VB_SINGLETON_KEY] ?? {
     if (this._observer) return
 
     this._observer = new MutationObserver(mutations => {
+      // Containers whose children changed: re-index [data-stagger] once per
+      // batch, after the per-node work (children added later got no index).
+      // (data-transition="stagger" watches its own children in its handler.)
+      const restagger = new Set()
       for (const mutation of mutations) {
         if (mutation.type === 'childList') {
+          const parent = /** @type {Element} */ (mutation.target)
+          if (parent.hasAttribute?.('data-stagger')) restagger.add(parent)
           for (const node of mutation.addedNodes) {
             if (node.nodeType !== Node.ELEMENT_NODE) continue
             this._processTree(node)
@@ -296,7 +316,7 @@ const VB = g[VB_SINGLETON_KEY] ?? {
           }
         }
         if (mutation.type === 'attributes') {
-          const el = mutation.target
+          const el = /** @type {Element} */ (mutation.target)
           if (mutation.attributeName === 'data-effect') {
             this._reconcileEffects(el)
           }
@@ -304,13 +324,15 @@ const VB = g[VB_SINGLETON_KEY] ?? {
             this._reconcileTrigger(el)
           }
           if (mutation.attributeName === 'data-stagger') {
-            this._processStagger(el)
+            if (el.hasAttribute('data-stagger')) restagger.add(el)
+            else this._cleanupStagger(el)
           }
           if (mutation.attributeName === 'data-transition') {
-            this._processTransition(el)
+            this._reconcileTransition(el)
           }
         }
       }
+      for (const el of restagger) if (el.isConnected) this._processStagger(el)
     })
 
     const target = root === document ? document.body : root
@@ -343,7 +365,10 @@ const VB = g[VB_SINGLETON_KEY] ?? {
   },
 
   /**
-   * Full teardown — disconnect observer and clean up all instances.
+   * Stop observing: disconnects the MutationObserver and the delegated
+   * animationend listener. Effect instances and trigger wiring on elements
+   * already in the page are left as they are (they are cleaned up when their
+   * element is removed while the observer runs).
    */
   disconnect() {
     if (this._observer) {
@@ -415,8 +440,13 @@ const VB = g[VB_SINGLETON_KEY] ?? {
   },
 
   _processElement(el) {
-    if (el.hasAttribute('data-effect-processed')) return
-    el.setAttribute('data-effect-processed', '')
+    if (this._processed.has(el)) return
+    this._processed.add(el)
+    // Stale copies from cloneNode() (or markup saved from a live page): the
+    // legacy processed flag, and an armed pre-state that this element's own
+    // trigger has not earned yet. _wireTrigger re-arms it in the same task.
+    el.removeAttribute('data-effect-processed')
+    el.removeAttribute('data-effect-armed')
 
     const effectNames = el.getAttribute('data-effect')?.split(/\s+/).filter(Boolean) || []
 
@@ -437,11 +467,8 @@ const VB = g[VB_SINGLETON_KEY] ?? {
     let instances = this._instances.get(el)
     if (instances?.has(name)) return
 
-    if (prefersReducedMotion()) {
-      // For JS effects with reduced motion, don't initialize animations
-      // The handler can check VB.prefersReducedMotion() internally
-    }
-
+    // Reduced motion is the handler's call (VB.prefersReducedMotion()); the
+    // CSS reduced-motion rule already snaps every slot animation to its end.
     const result = handler(el)
 
     if (result) {
@@ -457,11 +484,23 @@ const VB = g[VB_SINGLETON_KEY] ?? {
     }
   },
 
+  /**
+   * Split a trigger token at its FIRST colon: `time:2000` → ['time', '2000'],
+   * `media:(min-width:60rem)` keeps the query's own colon.
+   * @param {string} token
+   * @returns {[string, string | null]}
+   */
+  _parseTrigger(token) {
+    const i = token.indexOf(':')
+    return i > -1 ? [token.slice(0, i), token.slice(i + 1)] : [token, null]
+  },
+
   _wireTrigger(el, effectNames) {
     const triggerAttr = el.getAttribute('data-trigger')
 
-    if (!triggerAttr) {
+    if (!triggerAttr || !triggerAttr.trim()) {
       // No trigger — activate immediately for JS effects
+      el.removeAttribute('data-effect-armed')
       this._activateEffects(el)
       return
     }
@@ -474,15 +513,14 @@ const VB = g[VB_SINGLETON_KEY] ?? {
       this._wiredTriggers.set(el, wired)
     }
 
+    let missing = false
     for (const trigger of triggerNames) {
       if (wired.has(trigger)) continue
       // Parse trigger name and optional parameter (e.g. "time:2000")
-      const colonIdx = trigger.indexOf(':')
-      const triggerName = colonIdx > -1 ? trigger.slice(0, colonIdx) : trigger
-      const triggerParam = colonIdx > -1 ? trigger.slice(colonIdx + 1) : null
+      const [triggerName, triggerParam] = this._parseTrigger(trigger)
 
       const triggerHandler = this._triggers.get(triggerName)
-      if (!triggerHandler) continue // not registered yet — trigger() wires it later
+      if (!triggerHandler) { missing = true; continue } // trigger() wires it later
       wired.add(trigger)
 
       const cleanup = triggerHandler(el, () => this._activateEffects(el), triggerParam)
@@ -496,6 +534,60 @@ const VB = g[VB_SINGLETON_KEY] ?? {
         } else {
           this._triggerCleanups.set(el, cleanup)
         }
+      }
+    }
+
+    // The hidden entrance pre-state is gated on this marker, so content is
+    // only hidden once something is actually going to reveal it. No JS, an
+    // unknown or not-yet-loaded trigger, or an unprocessed clone all leave
+    // the element visible.
+    if (wired.size) el.setAttribute('data-effect-armed', '')
+
+    if (missing) {
+      this._unresolved.add(el)
+      this._scheduleUnresolvedCheck()
+    } else {
+      this._unresolved.delete(el)
+    }
+  },
+
+  /**
+   * After the page has loaded (every module, pack and author script has had
+   * its chance to call VB.trigger()), warn once per unknown trigger name and
+   * activate elements none of whose triggers could be wired, so JS effects
+   * that hide their own content until activation (reveal, typewriter…) still
+   * show it.
+   */
+  _scheduleUnresolvedCheck() {
+    if (this._unresolvedTimer) return
+    const run = () => {
+      this._unresolvedTimer = null
+      this._resolveUnknownTriggers()
+    }
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return
+    if (document.readyState === 'complete') {
+      this._unresolvedTimer = setTimeout(run, 0)
+    } else {
+      this._unresolvedTimer = true
+      window.addEventListener('load', () => setTimeout(run, 0), { once: true })
+    }
+  },
+
+  _resolveUnknownTriggers() {
+    for (const el of [...this._unresolved]) {
+      this._unresolved.delete(el)
+      if (!el.isConnected || !this._processed.has(el)) continue
+      const tokens = (el.getAttribute('data-trigger') || '').split(/\s+/).filter(Boolean)
+      const missing = tokens.filter(t => !this._triggers.has(this._parseTrigger(t)[0]))
+      if (!missing.length) continue
+      for (const token of missing) {
+        const name = this._parseTrigger(token)[0]
+        if (this._warnedTriggers.has(name)) continue
+        this._warnedTriggers.add(name)
+        console.warn(`[VB] data-trigger="${token}": no trigger named "${name}" is registered. The effect runs immediately instead. Register it with VB.trigger('${name}', …) or check the spelling.`, el)
+      }
+      if (!el.hasAttribute('data-effect-armed') && !el.hasAttribute('data-effect-active')) {
+        this._activateEffects(el)
       }
     }
   },
@@ -527,13 +619,21 @@ const VB = g[VB_SINGLETON_KEY] ?? {
       this._triggerCleanups.delete(el)
     }
     this._wiredTriggers?.delete(el)
+    this._unresolved.delete(el)
+    el.removeAttribute('data-effect-armed')
     // The instances are gone, so let _processElement initialise the element
     // again if it is reinserted (otherwise every effect stays inert after a
     // real remove + reinsert).
-    el.removeAttribute('data-effect-processed')
+    this._processed.delete(el)
   },
 
   _reconcileEffects(el) {
+    if (!el.hasAttribute('data-effect')) {
+      // Attribute removed: undo everything the runtime did to the element.
+      this._cleanupElement(el)
+      el.removeAttribute('data-effect-active')
+      return
+    }
     const newEffects = el.getAttribute('data-effect')?.split(/\s+/).filter(Boolean) || []
     const instances = this._instances.get(el)
 
@@ -554,14 +654,12 @@ const VB = g[VB_SINGLETON_KEY] ?? {
       }
     }
 
-    // Re-wire trigger if needed
-    if (!el.hasAttribute('data-effect-processed')) {
-      el.setAttribute('data-effect-processed', '')
-      this._wireTrigger(el, newEffects)
-    }
+    // First time this element has an effect: wire its trigger
+    if (!this._processed.has(el)) this._processElement(el)
   },
 
   _reconcileTrigger(el) {
+    if (!el.hasAttribute('data-effect')) return
     // Clean up old trigger
     const cleanup = this._triggerCleanups.get(el)
     if (cleanup) {
@@ -569,15 +667,37 @@ const VB = g[VB_SINGLETON_KEY] ?? {
       this._triggerCleanups.delete(el)
     }
     this._wiredTriggers?.delete(el)
+    this._unresolved.delete(el)
+    el.removeAttribute('data-effect-armed')
 
+    if (!this._processed.has(el)) { this._processElement(el); return }
     // Re-wire
     const effectNames = el.getAttribute('data-effect')?.split(/\s+/).filter(Boolean) || []
     this._wireTrigger(el, effectNames)
   },
 
+  /**
+   * data-stagger="[reverse|random|grid] [<time>]" — tokens in any order.
+   * A CSS time (80ms, 0.1s) sets --vb-stagger on the container.
+   */
+  _parseStagger(value) {
+    const tokens = (value || '').trim().split(/\s+/).filter(Boolean)
+    const time = tokens.find(t => /^(\d+(\.\d+)?|\.\d+)(ms|s)$/i.test(t)) || null
+    const mode = tokens.find(t => t === 'reverse' || t === 'random' || t === 'grid') || ''
+    return { mode, time }
+  },
+
   _processStagger(el) {
-    const mode = el.getAttribute('data-stagger') || ''
-    const children = el.children
+    const { mode, time } = this._parseStagger(el.getAttribute('data-stagger'))
+    if (time) {
+      el.style.setProperty('--vb-stagger', time)
+      this._staggerTime.add(el)
+    } else if (this._staggerTime.has(el)) {
+      el.style.removeProperty('--vb-stagger')
+      this._staggerTime.delete(el)
+    }
+
+    const children = Array.from(el.children)
     const n = children.length
 
     // Compute the index array based on mode, then assign.
@@ -596,24 +716,7 @@ const VB = g[VB_SINGLETON_KEY] ?? {
         ;[indices[i], indices[j]] = [indices[j], indices[i]]
       }
     } else if (mode === 'grid') {
-      // Manhattan distance from top-left corner using each child's
-      // computed grid-row / grid-column. Children outside a CSS grid
-      // fall back to their DOM order.
-      const positions = []
-      for (let i = 0; i < n; i++) {
-        const cs = getComputedStyle(children[i])
-        const r = parseInt(cs.gridRowStart, 10)
-        const c = parseInt(cs.gridColumnStart, 10)
-        positions.push({
-          i,
-          dist: Number.isFinite(r) && Number.isFinite(c)
-            ? (r - 1) + (c - 1)
-            : i,
-        })
-      }
-      positions.sort((a, b) => a.dist - b.dist)
-      indices = new Array(n)
-      positions.forEach((p, rank) => { indices[p.i] = rank })
+      indices = this._gridStaggerIndices(el, children)
     } else {
       // Default: linear DOM order.
       indices = Array.from({ length: n }, (_, i) => i)
@@ -624,6 +727,69 @@ const VB = g[VB_SINGLETON_KEY] ?? {
     }
   },
 
+  /**
+   * Grid mode: Manhattan distance (row + column) from the inline-start / top
+   * cell, so every cell on the same diagonal shares a delay. Explicit
+   * grid-row-start / grid-column-start are used when every child has them;
+   * auto-placed items (computed `auto`) are located from their layout boxes
+   * instead. Without layout (display:none, no DOM) it falls back to DOM order.
+   */
+  _gridStaggerIndices(el, children) {
+    const n = children.length
+    const domOrder = () => Array.from({ length: n }, (_, i) => i)
+    if (!n) return []
+
+    const explicit = children.map(child => {
+      const cs = getComputedStyle(child)
+      return [parseInt(cs.gridRowStart, 10), parseInt(cs.gridColumnStart, 10)]
+    })
+    if (explicit.every(([r, c]) => Number.isFinite(r) && Number.isFinite(c))) {
+      const minR = Math.min(...explicit.map(([r]) => r))
+      const minC = Math.min(...explicit.map(([, c]) => c))
+      return explicit.map(([r, c]) => (r - minR) + (c - minC))
+    }
+
+    const rects = children.map(child => child.getBoundingClientRect?.())
+    if (!rects.every(Boolean) || rects.every(r => r.width === 0 && r.height === 0)) return domOrder()
+    const rtl = getComputedStyle(el).direction === 'rtl'
+    const rows = this._trackRanks(rects.map(r => [r.top, r.bottom]))
+    const cols = this._trackRanks(rects.map(r => (rtl ? [-r.right, -r.left] : [r.left, r.right])))
+    return rows.map((row, i) => row + cols[i])
+  },
+
+  /**
+   * Assign each box to a track (row or column) by overlap along one axis.
+   * Boxes in one track overlap; the next track starts at or after the
+   * shortest box of the current one. Margins (e.g. `li + li` flow spacing)
+   * shift a box's start without moving it out of its track.
+   * @param {Array<[number, number]>} spans [start, end] per box
+   */
+  _trackRanks(spans) {
+    const order = spans.map((_, i) => i).sort((a, b) => spans[a][0] - spans[b][0])
+    const ranks = new Array(spans.length)
+    let track = -1
+    let trackEnd = -Infinity
+    for (const i of order) {
+      const [start, end] = spans[i]
+      if (start >= trackEnd - 0.5) {
+        track++
+        trackEnd = end
+      } else {
+        trackEnd = Math.min(trackEnd, end)
+      }
+      ranks[i] = track
+    }
+    return ranks
+  },
+
+  _cleanupStagger(el) {
+    if (this._staggerTime.has(el)) {
+      el.style.removeProperty('--vb-stagger')
+      this._staggerTime.delete(el)
+    }
+    for (const child of Array.from(el.children)) child.style?.removeProperty('--vb-stagger-index')
+  },
+
   /** Simple 32-bit string hash used to seed the random stagger mode. */
   _hashString(s) {
     let h = 5381
@@ -631,39 +797,69 @@ const VB = g[VB_SINGLETON_KEY] ?? {
     return h | 0
   },
 
-  _processTransition(el) {
-    if (el.hasAttribute('data-transition-processed')) return
-    el.setAttribute('data-transition-processed', '')
+  /**
+   * A valid CSS <custom-ident> for view-transition-name. Characters outside
+   * the ident set (colon, space, dot…) become `-`; a leading digit or `--`
+   * gets a `vb-` prefix.
+   * @param {string} raw
+   */
+  _vtIdent(raw) {
+    let out = String(raw).replace(/[^A-Za-z0-9_ -￿-]/g, '-')
+    if (!out || /^(-?\d|--)/.test(out)) out = `vb-${out}`
+    return out
+  },
 
-    const transitionAttr = el.getAttribute('data-transition')
+  _processTransition(el) {
+    if (this._transitionProcessed.has(el)) return
+    // On a content-swap host data-transition names the swap effect, which
+    // <content-swap> / [data-swap] animate themselves (view-transition-class:
+    // content-swap). A preset's inline class would override theirs.
+    if (el.matches?.('[data-swap], content-swap')) return
+
+    const transitionAttr = (el.getAttribute('data-transition') || '').trim()
     if (!transitionAttr) return
+    this._transitionProcessed.add(el)
+    el.removeAttribute('data-transition-processed') // legacy flag on old clones
 
     // Mirror the trigger parser: split on first colon for parametric
     // transitions like `effect:fade` or `slide:left`.
-    const colonIdx = transitionAttr.indexOf(':')
-    const transitionName = colonIdx > -1 ? transitionAttr.slice(0, colonIdx) : transitionAttr
-    const transitionParam = colonIdx > -1 ? transitionAttr.slice(colonIdx + 1) : null
+    const [transitionName, transitionParam] = this._parseTrigger(transitionAttr)
 
     const handler = this._transitions.get(transitionName)
     if (handler) {
       const cleanup = handler(el, transitionParam)
       if (cleanup) this._transitionCleanups.set(el, cleanup)
     } else {
-      // Default behavior: auto-assign view-transition-name from the
-      // whole attribute (so legacy `data-transition="foo"` still works).
-      el.style.viewTransitionName = `${transitionAttr}-${this.uid(el)}`
+      // Default behavior: auto-assign a view-transition-name from the NAME
+      // (never the param: `effect:fade-vb-4` is not a valid ident and the
+      // browser drops it silently). VB.transition() re-runs it with the real
+      // handler if that registers later.
+      el.style.viewTransitionName = this._vtIdent(`${transitionName}-${this.uid(el)}`)
       this._transitionFallback.add(el)
     }
   },
 
   _cleanupTransition(el) {
+    if (!this._transitionProcessed.has(el)) return
     const cleanup = this._transitionCleanups.get(el)
     if (cleanup) {
       cleanup()
       this._transitionCleanups.delete(el)
     }
-    this._transitionFallback.delete(el)
-    el.style.viewTransitionName = ''
+    // Only the fallback name is ours to clear; a handler cleanup removes
+    // exactly what its handler set (an author inline name survives).
+    if (this._transitionFallback.has(el)) {
+      this._transitionFallback.delete(el)
+      el.style.viewTransitionName = ''
+    }
+    // Forget it, so a reinserted element (separate task) is named again.
+    this._transitionProcessed.delete(el)
+  },
+
+  /** data-transition value changed or removed: undo, then apply the new one. */
+  _reconcileTransition(el) {
+    this._cleanupTransition(el)
+    if (el.hasAttribute('data-transition')) this._processTransition(el)
   },
 }
 

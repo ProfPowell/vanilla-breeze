@@ -100,13 +100,14 @@ crumbLabel: Data Attributes
 <img data-vt-name="hero-1" src="full-1.jpg" /></code-block>
 
     <p>The init script (<code>view-transition-init.js</code>) sets <code>view-transition-name</code> from the attribute value. This replaces the need for inline <code>style</code> attributes.</p>
+    <p>The same names work within one page: a <code>data-vt-name</code> morphs into the element that carries it after a <code>VB.swap()</code>, as long as only one rendered element holds it at a time. For preset animations on same-page swaps (slide, fade, scale, a staggered list), see <a href="/docs/attributes/data-transition/"><code>data-transition</code></a> and its <a href="/docs/attributes/data-transition/#morph">shared-element morph</a> pattern.</p>
 
     <h3>How the Init Script Works</h3>
     <ol>
       <li>On <code>DOMContentLoaded</code>, discovers all <code>[data-vt-name]</code> elements</li>
       <li>Sets <code>el.style.viewTransitionName</code> from the attribute value</li>
-      <li>Marks each element with <code>data-vt-name-init</code> to prevent double-processing</li>
-      <li>A <code>MutationObserver</code> handles dynamically added elements</li>
+      <li>A <code>MutationObserver</code> handles dynamically added elements and changes to <code>data-vt-name</code> (changing the value renames the element; removing the attribute clears the name)</li>
+      <li>No marker attribute is added, so cloned and re-inserted elements are named from their own attribute</li>
     </ol>
 
         <code-block language="js" label="Import the init script" data-escape>// Already included in doc site layouts
