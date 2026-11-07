@@ -879,6 +879,38 @@ nav drop-down [data-trigger][aria-current="true"] {
   color: var(--_active-color) !important;
 }
 
+/* Split trigger: the link navigates and a sibling
+   <button data-dropdown-toggle> opens the menu (drop-down's disclosure
+   pattern). The pair is one nav item, so the host paints the hover, open and
+   current backgrounds and the link stops painting its own. Painted on the
+   link alone, the pill ended just after the text (drop-down trims the link's
+   end padding so the chevron sits close) and the chevron sat outside it.
+   Each part keeps its own target and focus ring. */
+nav drop-down:has(> button[data-dropdown-toggle]) {
+  align-items: center;
+  border-radius: var(--radius-full);
+  padding-inline-end: var(--size-2xs);
+  color: var(--_link-color);
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+
+  & > [data-trigger] {
+    background: transparent;
+  }
+
+  &:hover,
+  &:has(> button[data-dropdown-toggle][aria-expanded="true"]) {
+    background: var(--_hover-bg);
+    color: var(--_hover-color);
+  }
+
+  &:has(> [data-trigger]:is([aria-current="page"], [aria-current="true"], .active)) {
+    background: var(--_active-bg);
+    color: var(--_active-color);
+  }
+}
+
 /* Chevron indicator for dropdown triggers */
 nav drop-down [data-trigger]::after {
   content: '';
