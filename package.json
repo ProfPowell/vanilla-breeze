@@ -85,7 +85,8 @@
     "vendor:marked": "cp node_modules/marked/lib/marked.esm.js src/vendor/marked/marked.esm.js && cp node_modules/marked/lib/marked.d.ts src/vendor/marked/marked.esm.d.ts",
     "vendor:qrcodegen": "node scripts/vendor-qrcodegen.mjs",
     "lint:js": "eslint --config .claude/eslint.config.js --ignore-pattern 'src/htmlvalidate/' --ignore-pattern 'src/vendor/' 'src/**/*.js' --max-warnings 0",
-    "lint:theme-tokens": "node scripts/quality/theme-token-coverage.js",
+    "lint:theme-tokens": "node scripts/quality/theme-token-coverage.js && npm run lint:undefined-tokens",
+    "lint:undefined-tokens": "node scripts/quality/undefined-token-lint.js",
     "lint": "npm run lint:html",
     "test": "node --test 'tests/unit/**/*.test.js'",
     "health": "node scripts/quality/health-check.js",
@@ -112,7 +113,9 @@
     "test:all": "npm test && npx playwright test",
     "budget": "node scripts/bundle-budget.js",
     "budget:themes": "node scripts/theme-budget.js",
-    "prepublishOnly": "npm run build:cdn"
+    "prepublishOnly": "npm run build:cdn",
+    "generate:shape-edges": "node scripts/generate-shape-edges.mjs",
+    "check:shape-edges": "node scripts/generate-shape-edges.mjs --check"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.11.0",

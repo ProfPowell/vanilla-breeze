@@ -155,7 +155,7 @@ module.exports = {
       "data-size": { enum: ["s", "l"] },
       "data-color": { enum: ["primary", "success", "warning", "error", "info", "brand", "secondary", "accent"] },
       "data-variant": { enum: ["subtle", "outlined"] },
-      "data-shape": { enum: ["square"] }
+      "data-shape": { enum: ["square", "ribbon", "notch", "flag", "double-arrow", "stamp"] }
     }
   },
 
@@ -279,7 +279,11 @@ module.exports = {
       "data-label-rule-uppercase": {},
       "data-label-rule-lowercase": {},
       "data-label-rule-number": {},
-      "data-label-rule-special": {}
+      "data-label-rule-special": {},
+      "data-label-strength-empty": {},
+      "data-label-strength-too-weak": {},
+      "data-label-rule-met": {},
+      "data-label-rule-unmet": {}
     }
   },
 
@@ -1697,6 +1701,14 @@ module.exports = {
       "aria-label": {},
       "data-orientation": { enum: ["horizontal", "vertical"] },
       "transition": { enum: ["fade", "slide", "scale"] }
+    }
+  },
+
+  "table": {
+    attributes: {
+      "data-striped": { boolean: true },
+      "data-bordered": { boolean: true },
+      "data-density": { enum: ["compact", "comfortable"] }
     }
   },
 

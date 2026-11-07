@@ -58,9 +58,24 @@ export default {
         "purpose": "config",
         "type": "enum",
         "values": [
-          "square"
+          "square",
+          "ribbon",
+          "notch",
+          "flag",
+          "double-arrow",
+          "stamp"
         ],
-        "description": "square corners instead of a pill."
+        "description": "square: square corners instead of a pill. ribbon (V cut at the inline end), notch (V cut at the inline start), flag (point at the inline end), double-arrow (points at both ends) and stamp (concave corners) are decorative shapes painted behind the text; they mirror in RTL, never clip the label or the focus outline, and fall back to a bordered rectangle in forced colours. Tune the notch depth with --badge-notch."
+      }
+    ],
+    "cssProperties": [
+      {
+        "name": "--badge-notch",
+        "description": "Notch / point depth of the decorative data-shape values (default 0.75em); the padding on the notched side grows by the same length."
+      },
+      {
+        "name": "--badge-shape-fill",
+        "description": "Fill of a decorative shape (default: the badge background for its data-color / data-variant). Accepts gradients."
       }
     ]
   },
@@ -7051,6 +7066,38 @@ export default {
         "default": "One special character"
       },
       {
+        "name": "data-label-strength-empty",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Meter value text (aria-valuetext) when the password is empty.",
+        "default": "No password entered"
+      },
+      {
+        "name": "data-label-strength-too-weak",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Validity message when the password is below data-strength-min.",
+        "default": "Choose a stronger password. Meet more of the requirements."
+      },
+      {
+        "name": "data-label-rule-met",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden state text appended to a met rule.",
+        "default": "met"
+      },
+      {
+        "name": "data-label-rule-unmet",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "description": "Visually hidden state text appended to an unmet rule.",
+        "default": "not met"
+      },
+      {
         "name": "data-floating-label-ready",
         "kind": "data",
         "purpose": "internal-hook",
@@ -7112,7 +7159,18 @@ export default {
         "on": "input",
         "type": "string",
         "default": "length:8",
-        "description": "Comma-separated strength rules: length:N, uppercase, lowercase, number, special."
+        "description": "Comma-separated strength rules: length:N, uppercase, lowercase, number, special. Unicode-aware; unknown rules are skipped with a warning."
+      },
+      {
+        "name": "data-strength-min",
+        "on": "input",
+        "type": "string",
+        "enum": [
+          "fair",
+          "good",
+          "strong"
+        ],
+        "description": "Minimum strength level; weaker non-empty passwords get a custom validity error. Advisory when absent."
       },
       {
         "name": "data-count",
@@ -14671,6 +14729,34 @@ export default {
         "name": "tabs",
         "type": "Array<{ id?, label, content, active? }>",
         "description": "Get the tabs as data, or assign an array to rebuild the set (<details> + <summary> + <section> panel per entry; first tab opens unless one has active: true). content is trusted HTML written with innerHTML — never pass unsanitised user input"
+      }
+    ]
+  },
+  "table": {
+    "element": "table",
+    "type": "native",
+    "attributes": [
+      {
+        "name": "data-striped",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean"
+      },
+      {
+        "name": "data-bordered",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "boolean"
+      },
+      {
+        "name": "data-density",
+        "kind": "data",
+        "purpose": "visual-variant",
+        "type": "enum",
+        "values": [
+          "compact",
+          "comfortable"
+        ]
       }
     ]
   },

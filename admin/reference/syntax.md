@@ -108,6 +108,7 @@ Legacy aliases: `--space-unit`, `--space-3xs` … `--space-3xl` map to `--size-*
 | `--color-border-strong` | light-dark(gray-300, gray-600) | Strong border |
 | `--color-border-subtle` | light-dark(gray-100, gray-800) | Subtle border |
 | `--color-border-focus` | primary | Focus ring |
+| `--color-row-stripe` | `color-mix(in oklch, var(--color-text) 5%, transparent)` | Stripe for `table[data-striped]` and `dl[data-striped]`; override once to restyle both |
 | **Interactive** | | |
 | `--color-interactive` | primary | Links, buttons |
 | `--color-interactive-hover` | primary-hover | Interactive hover |
@@ -272,7 +273,7 @@ Theme and runtime `<link>` hooks:
 
 ### Accents (`data-accent`)
 
-`data-accent` on `<html>` or any element: `ocean`, `forest`, `sunset`, `rose`, `lavender`, `coral`, `slate`, `emerald`, `amber`, `indigo`. Swaps brand hue seeds only; written by `<theme-picker>` / `ThemeManager.setAccent()`.
+`data-accent` on `<html>` or any element: `ocean`, `forest`, `sunset`, `rose`, `lavender`, `coral`, `slate`, `emerald`, `amber`, `indigo`. Sets the brand hue/lightness/chroma seeds (dark-mode seed variants included) and re-derives, at zero specificity inside `:where([data-accent])`, the brand colours plus `--color-interactive(-hover/-active)`, `--color-hover-text`, `--color-active-text`, `--color-border-focus`, `--color-focus-ring`, `--focus-ring-color` and (with `contrast-color()`) `--color-text-on-{primary,secondary,accent,interactive}-auto` — so a scoped accent repaints buttons, links, focus rings and solid badges inside it. One value per element (`~=` match, but two accents set the same tokens; later in source wins). Seed changes on `<html>` transition (registered properties). Fixed-palette themes keep their palette for a root accent. Generated from `COLOR_ACCENTS` (`scripts/generate-accent-css.mjs`); written by `<theme-picker>` / `ThemeManager.setAccent()`.
 
 ---
 
@@ -303,7 +304,7 @@ Base: `text-wrap: pretty`; `p + p` gets `margin-block-start: var(--size-m)`.
 | `.balance` | `text-wrap: balance` (short centred text; browsers cap at ~6 lines) |
 | `.indent` | First-line indent 1.5em (CJK: 1em); `.indent + .indent` drops the paragraph gap |
 | `.justify` | `text-align: justify` + `hyphens: auto` (hyphenates only with a `lang` the browser has a dictionary for); `a11y-dyslexia` resets it |
-| `data-drop-cap` | Decorative initial letter (`initial-letter: 3`, floated fallback); also on `<article>` (styles in article/styles.css) |
+| `data-drop-cap` | Decorative initial letter (`initial-letter: var(--drop-cap-lines, 3)`, logical floated fallback); also on `<article>` (first direct `p`, else first `section > p`; styles in article/styles.css). Hooks: `--drop-cap-lines` (3), `--drop-cap-color` (`--color-primary`), `--drop-cap-font` (inherit), `--drop-cap-weight` (700). Themes only set the hooks and only for `[data-drop-cap]` (organic/editorial primary + heading font/400 in editorial; swiss `--color-text`/700) |
 
 Emphasis in the same file: `strong`/`b` are weight 600 and `em`/`i` italic, both with `font-synthesis: weight style` (a real bold/italic face wins; synthesis only fills in for single-face theme fonts such as DM Serif Display, VT323, Press Start 2P; small-caps/position synthesis stay off). Bold inside inline `<code>` uses `Mark`/`MarkText` in forced colors. Nested italic toggles upright inside italic contexts (`em`, `i`, `blockquote`, `cite`, `dfn`, `var`); `<mark>` gets background + padding + radius. `<small>` is `max(0.875em, var(--font-size-xs))` — relative to its context (smaller inside headings and already-small text), floored at the xs token.
 
@@ -340,13 +341,14 @@ Base: border, radius, padding, focus ring. Validation via `:user-invalid` and `[
 | Selector | Description |
 |----------|-------------|
 | `input[data-switch]` | Toggle switch (default size) |
-| `input[data-switch="sm"]` | Small toggle switch |
-| `input[data-switch="lg"]` | Large toggle switch |
+| `input[data-switch="s"]` | Small toggle switch (renamed from `sm`, no alias) |
+| `input[data-switch="l"]` | Large toggle switch (renamed from `lg`, no alias) |
+| `input[data-switch]:user-invalid` | Required switch left off: dashed `--color-error` outline |
 | `input[list]` (text-like types: none, text, search, url, email, tel, number) | Datalist dropdown arrow (currentColor gradient, mirrors in RTL); range/color/date/time inputs with `list` are left untouched |
 | `input[list].no-arrow` | Hide dropdown arrow |
 | `input[list].search` | Search icon on the inline-start side |
 
-> The switch knob slides toward the inline end, so it mirrors under `dir="rtl"`. Colour tokens: `--switch-track-bg`, `--switch-track-checked-bg`, `--switch-knob-bg`. In forced colors the track is outlined in CanvasText and filled with Highlight when on.
+> The switch knob slides toward the inline end, so it mirrors under `dir="rtl"`. Colour tokens: `--switch-track-bg`, `--switch-track-checked-bg`, `--switch-knob-bg`. In forced colors the track is outlined in CanvasText and filled with Highlight when on. `readonly` does not apply to checkboxes (a `readonly` switch still toggles); use `disabled`. Styles key off `input[data-switch]`, not `[data-switch-init]`; JS only adds `role="switch"` (an authored role is kept).
 
 > `label` wrapping a checkbox/radio is `inline-flex` (24px min row, pointer). Checkbox/radio boxes align with the first line of text (`first baseline` + translate), switches centre on the row; the alignment rule has single-element specificity so `[data-segmented]` / `[data-rating]` labels keep their own. Inside `<form-field>` a required control adds a silent red `*` to the field's only label / the grouped field's legend — never type `*` into the label text.
 
@@ -358,7 +360,7 @@ Base: border, radius, padding, focus ring. Validation via `:user-invalid` and `[
 | `--switch-track-bg` | `var(--control-border)` | Unchecked switch track |
 | `--switch-track-checked-bg` | `var(--color-interactive)` | Checked switch track |
 | `--switch-knob-bg` | `var(--color-white)` | Switch knob |
-| `--range-pct` | unset (0%) | Range fill stop; set by data-range, or set it yourself for a static fill |
+| `--range-pct` | unset (0%) | Range fill stop. On a plain range set it yourself for a static fill; under `data-range` the script owns it (and `--range-frac`, 0–1) on `.range-wrapper` — read, don't set |
 | `--meter-track-bg` | `var(--progress-track-bg)` | Meter track fill |
 | `--meter-track-border` | `var(--control-border)` | Meter track 1px edge (≥3:1) |
 | `--meter-fill-optimum` | `var(--color-success)` | Meter fill in the optimum range |
@@ -422,22 +424,38 @@ Events: `vb:beforesubmit` (cancelable, detail `{ form, submitter }`, after valid
 
 ### `<form data-wizard>` Form Wizard
 
-| Data Attribute | Description |
-|----------------|-------------|
-| `data-wizard` | Base wizard form container |
-| `data-wizard-step` | Individual step fieldset |
-| `data-wizard-progress` | Progress indicator element |
-| `data-wizard-nav` | Navigation button container |
-| `data-wizard-prev` | Previous button |
-| `data-wizard-next` | Next button |
-| `data-wizard-status` | Screen reader status |
-| `data-wizard-current` | Current step number |
-| `data-wizard-total` | Total steps |
-| `data-wizard-last` | Applied when on final step |
-| `data-wizard-if` | Conditional step visibility |
-| `data-wizard-optional` | Optional step marker |
+| Data Attribute | On | Description |
+|----------------|----|-------------|
+| `data-wizard` | `<form>` | Base wizard form container |
+| `data-wizard-step` | `<fieldset>` | One step; its `<legend>` names it and receives focus on step change |
+| `data-wizard-if` | step | Conditional step. Shared condition language (`name`, `!name`, `name:value` / `name=value`, `name:!value` / `name!=value`, `&&`, `\|\|`). While false the step gets `data-wizard-hidden` and its controls are disabled (`data-conditional-disabled`) |
+| `data-wizard-optional` | step | Next skips this step's validation |
+| `data-wizard-summary` | step | Review step: fills `[data-wizard-field]` or generates a `<dl data-wizard-summary-list>` |
+| `data-wizard-field` | in summary step | Text becomes the named field's value(s) |
+| `data-wizard-progress` | `<progress>` | value/max follow current/included steps |
+| `data-wizard-nav` | `<nav>` | Back/Next/Submit container (injected when missing) |
+| `data-wizard-prev` | `<button>` | Previous step (visibility:hidden on step 1) |
+| `data-wizard-next` | `<button>` | Next step after validation (hidden on the last step; Submit shows there — hidden, not disabled) |
+| `data-wizard-steps` | `<form>` | Selector for the step list: `nav.steps` or `<progress-tracker>` (sets `data-current`; tracker clicks go back). Default: `nav.steps` inside the form |
+| `data-wizard-validate` | `<form>` | `step` (default) or `none` (validate on submit; submit jumps to the first invalid step) |
+| `data-wizard-history` | `<form>` | `#step=N` in the URL; pushes an entry per step change (browser Back steps back) |
+| `data-wizard-persist` | `<form id>` | `session` \| `local` — VBStore `vb:wizard:{id}`, filtered by `isPersistable()` |
+| `data-wizard-persist-hours` | `<form>` | Saved-state lifetime, default 24 |
+| `data-label-back` / `-next` / `-submit` | `<form>` | Injected button text |
+| `data-label-step` | `<form>` | Unnamed step, `{n}` (default `Step {n}`) |
+| `data-label-status` | `<form>` | Announcement, `{current}` `{total}` `{name}` (default `Now on step {current} of {total}: {name}`) |
+| `data-label-completed` | `<form>` | Completed nav.steps item name, `{name}` (default `Go to {name} (completed)`) |
+| `data-wizard-enhanced` | form (set) | Wizard running; gates all hiding CSS |
+| `data-wizard-current` / `data-wizard-total` | form (set) | 1-based current step / included steps |
+| `data-wizard-last` | form (set) | On the last included step |
+| `data-wizard-active` | step (set) | The step on screen (inactive steps simply lack it) |
+| `data-wizard-hidden` | step (set) | `data-wizard-if` is false: skipped, not counted, controls disabled |
+| `data-wizard-status` | `<p role="status">` (injected) | Live region |
+| `data-wizard-summary-list` | `<dl>` (generated) | Auto summary |
 
-Counter text via `--wizard-label-step` (default `"Step "`) and `--wizard-label-of` (default `" of "`).
+Events (bubble from the form): `wizard:step-change` `{ from, to }`, `wizard:complete`, `wizard:reset`, `wizard:restore` `{ step, fields }`.
+API: `form.wizardNext()`, `form.wizardPrev()`, `form.wizardGoTo(i)`, `form.wizardReset()`, `form.wizardController` (`currentStep`, `totalSteps`).
+Enter in a text field before the last step = Next. Counter text via `--wizard-label-step` (default `"Step "`) and `--wizard-label-of` (default `" of "`); `--wizard-gap` sets the row gap.
 
 ### `<details>` / `<summary>` Disclosure
 
@@ -463,6 +481,8 @@ Open dialogs are a flex column: `<header>` / `<footer>` fixed, body (`p`, `secti
 | `data-sticky` | `header`, `column`, `both` | Sticky header (at `var(--sticky-offset, 0px)`; `0` inside `[data-table-scroll]`) / first column / both. Frozen cells repeat the row tint; frozen edge flips in RTL |
 | `data-sticky-column` | `2` | Freeze the first two columns; second offset by `--_sticky-col-1-width` (8rem) |
 | `data-density` | `compact`, `comfortable` | Cell padding density |
+| `data-striped` | (boolean) | Alternating `--color-row-stripe` on odd *visible* body rows (skips `[data-state-hidden]`, `[hidden]`, `[data-expand-content]`); selected/highlighted rows keep their tint; kept in print |
+| `data-bordered` | (boolean) | Border on every cell (`--border-width-thin`, `--color-border`) |
 | `data-variant` | `minimal` | Low-ink: no header band, no hover, muted uppercase column headers |
 | `data-responsive` | `card` | Cards below a 500px container; thead visually hidden (kept in a11y tree); `card-init.js` restores table/rowgroup/row/columnheader/rowheader/cell roles and fills missing `data-label` from the column header |
 | `data-sort` | (on th) | Sortable column. `<data-table>`: sort TYPE `string`\|`number`\|`date`. `table[data-sortable]`: column KEY (type in `data-sort-type`). Both inject `<button data-sort-button>`; th keeps columnheader + `aria-sort`. Bare `th[data-sort]` has no behaviour/affordance |
@@ -482,7 +502,7 @@ Row paint hooks: rows paint `background: var(--_row-bg)`; first cell `box-shadow
 
 Header look: only `thead th` / `th[scope=col|colgroup]` get the raised band; `tbody th[scope=row]` reads as a cell. `tfoot :is(td, th)` share the footer style.
 
-Legacy classes: `.striped` (odd *visible* rows; skips `[data-state-hidden]`, `[hidden]`, `[data-expand-content]`), `.compact`, `.bordered`
+Classes `.striped`, `.compact`, `.bordered` were **removed** (pre-release, aqmv): use `data-striped`, `data-density="compact"`, `data-bordered`. html-validate knows `data-striped`/`data-bordered`/`data-density` via `src/htmlvalidate/api-overrides.json`.
 
 ### `<nav>` Navigation
 
@@ -605,7 +625,7 @@ Base: `<dt>` bold, `<dd>` indented (inline-start). Groups may be flat or wrapped
 | `data-variant` | `horizontal`, `stacked` | Term/description columns (subgrid; stacks below 24rem) or muted label above value |
 | `data-bordered` | (boolean) | Separator lines between wrapped groups |
 | `data-density` | `compact` | Tighter spacing |
-| `data-striped` | (boolean) | Alternating backgrounds (wrapped groups stripe whole; flat: odd dt + following dd run) |
+| `data-striped` | (boolean) | Alternating `--color-row-stripe` (same token as `table[data-striped]`); wrapped groups stripe whole; flat: odd visible dt + following dd run (up to 4 dd); `[hidden]` entries are skipped |
 
 Custom properties: `--dl-term-min` (default `10ch`), `--dl-term-max` (default `40%`) bound the horizontal term column.
 
@@ -616,11 +636,11 @@ Custom properties: `--dl-term-min` (default `10ch`), `--dl-term-max` (default `4
 | Class / Attribute | Description |
 |-------------------|-------------|
 | `.decorative` | "• • •" glyphs (silent: empty alt text) |
-| `data-ornament="…"` | Custom glyph(s) from the attribute (silent: `attr() / ""`); kept across themes |
+| `data-ornament="…"` | Custom glyph(s) from the attribute (silent: `attr() / ""`); kept across themes. Bare/empty value shows `--hr-ornament` (default `⁂`). Pack value: `doodle` (journal pack only; prints the word under other themes) |
 | `.wave`, `.zigzag`, `.scallop`, `.diamonds` | `shape()` dividers (fall back to a plain rule without `shape()` support) |
 | `.dots` | Radial-gradient dot row (works everywhere) |
 
-Themes restyle only plain rules (`hr:not([data-ornament], .decorative, .wave, .zigzag, .scallop, .diamonds, .dots)`). Forced colors: every plain/shape hr becomes a 1px `CanvasText` line (overrides theme backgrounds). Print: shape dividers set `print-color-adjust: exact`.
+Themes restyle only plain rules (`hr:not([data-ornament], [class])`: any class or ornament opts an hr out, so new variants need no theme edits). Forced colors: every plain/shape hr becomes a 1px `CanvasText` line (overrides theme backgrounds). Print: shape dividers set `print-color-adjust: exact`.
 
 ### `<img>`, `<picture>` Image
 
@@ -709,7 +729,7 @@ Unclassed `<svg>` gets `max-inline-size: 100%; block-size: auto` (stays inline-b
 | `.end` | figcaption | End-align (right in LTR, left in RTL) |
 | `.hidden` | figcaption | Visually hidden (same as `.visually-hidden`); still names the figure |
 
-Caption first (`<figcaption>` as first child) moves spacing, the `.bordered` divider and `.code` corners to suit. `figure[data-media]` with a `<figcaption>` applies the ratio to the media child; the caption flows below. In `article[data-numbered]`, `.quote` figures are not numbered and `.code` figures are numbered as Listings.
+Caption first (`<figcaption>` as first child) moves spacing, the `.bordered` divider and `.code` corners to suit. `figure[data-media]` with a `<figcaption>` applies the ratio to the media child; the caption flows below. In `article[data-numbered]`, `.quote` figures are not numbered and `.code` figures are numbered as Listings; uncaptioned figures and tables are not counted.
 
 ### Content Sectioning
 
@@ -777,13 +797,16 @@ Banner landmark only when scoped to `<body>` (no article/aside/main/nav/section 
 
 #### `<article>`
 
-| Class | Description |
+| Class / Attribute | Description |
 |-------|-------------|
-| `.blog` | Max 65ch centered |
+| `.blog` | Max `--prose-measure` (65ch) centered, spaced header/footer, prose typography (no image floats) |
 | `.card` | Bordered card style |
 | `.feature` | Grid with centered header |
 | `.compact` | Flex with bottom borders |
 | `.nested` | Indented (comments/replies) |
+| `data-prose` | Prose typography (`--prose-line-height` 1.6, oldstyle nums, hyphenation with any ancestor `lang`, `--font-size-l` when the nearest container is ≥ 40rem) + every `p > img`/`p > picture` floats inline-end (max 50%); `h2`–`h4`/`hr`/`footer` clear. Not a width: pair with `data-layout="prose"` for measure + rhythm |
+| `data-numbered` | Counters: `h2`–`h4` (1., 1.1., 1.1.1.; not inside nested `aside`/`article`), captioned figures "Figure N:", captioned tables "Table N:", captioned `figure.code` "Listing N:", `figure > figure` subfigures "(a)". Spans sections: the article and its `section`/`aside` get `container-type: normal` (`data-container` opts back in and restarts numbering). Hooks: `--label-figure`/`--label-table`/`--label-listing`, `--numbered-style` (decimal), `--numbered-sub-style` (lower-alpha). An `h3` before the first `h2` shows "0.1." |
+| `data-section-numbers` | `h2` "§ 1", `h3` "§ 1a" in `--color-interactive`; `--sep-section` replaces §; same section/aside/container rules and counter-style hooks as `data-numbered` |
 
 #### `<aside>`
 
@@ -851,7 +874,7 @@ Separator: `<li role="separator">` (a vertical rule in row menus, a horizontal r
 | Class | Element | Description |
 |-------|---------|-------------|
 | `mark.success/warning/error` | mark | Highlight categories (subtle background, `-text` colour), not status; use `<layout-badge>` for status. Journal pack maps them to mint, butter and coral |
-| `figure.equation` / `p.equation` | math | Numbered display math (CSS counter); replaces `div.equation` |
+| `figure.equation` / `p.equation` | math | Numbered display math (CSS counter, reset per `article`/`body`); runs across an article's sections: `article:has(.equation)` and its `section`/`aside` get `container-type: normal` (`data-container` opts out, numbering separately). Outside an article each container numbers separately. Replaces `div.equation` |
 | `figure.math` | math | Captioned equation |
 | `abbr[data-variant="plain"]` | abbr | No underline |
 | `cite[data-variant="quoted"]` | cite | Title in locale quotation marks instead of italics |
@@ -863,6 +886,7 @@ Separator: `<li role="separator">` (a vertical rule in row menus, a horizontal r
 | `data[data-variant~="mono"]` | data | Monospace face for identifiers (default `<data>` is prose font + tabular-nums) |
 | `dfn[id]:target` | dfn | Outline highlight when reached by fragment link |
 | `time.relative`, `time.datetime` | time | Time variants |
+| `time[data-badge]` | time | Boolean. Bordered chip (raised surface, `--radius-s`, mono, `--color-border`) for key dates. Not the badge shapes (those are `<layout-badge data-shape>`) |
 | `video::cue` | video | Caption defaults: `--cue-text`, `--cue-bg`, `--cue-font` (OS caption settings and forced colors override) |
 | `sub[data-variant~="opentype"]`, `sup[data-variant~="opentype"]` | sub/sup | Opt-in: use the font's OpenType subs/sups glyphs (`font-variant-position`) and drop the manual size/offset. Only for fonts known to have the glyphs |
 | `sup.footnote-ref` | sup | Footnote marker: medium weight at the normal sup size (sized once); link keeps its underline with a padded hit area |
@@ -895,6 +919,56 @@ Separator: `<li role="separator">` (a vertical rule in row menus, a horizontal r
 | `data-effect="rating"` | Opt into the rating effect (`src/effects/rating.js`): clear by activating the checked star again (click/Space) or Delete/Backspace, `rating:change` `{ value }` on every change incl. clear to 0, one persistent `[data-rating-live]` polite region announcing the clear (`data-label-cleared`, default "Rating cleared"); re-wires after remove + reinsert |
 
 Empty stars are outlines (`-webkit-text-fill-color: transparent` + text stroke), filled stars solid — shape, not just colour (hover preview too). `--rating-color` (filled, default `--color-warning`), `--rating-color-empty` (default `--color-text-muted`). Forced colours: filled `Highlight`, empty `CanvasText`, `forced-color-adjust: none`.
+
+### Shapes (`src/shapes/`)
+
+CSS `clip-path: shape()` utilities in the `utils` layer, each behind `@supports (clip-path: shape(from 0% 0%, close))` (plain rectangle otherwise). Docs: one page per family under `/docs/attributes/`. Badge shapes live on `<layout-badge data-shape>` (§3).
+
+| Attribute | Values | Notes |
+|-----------|--------|-------|
+| `data-shape-start` / `data-shape-end` | `wave`, `chevron`, `scallop`, `diagonal` | Clip the top / bottom edge of a section. Any start combines with any end (all 16 pairs; `src/shapes/edges.css` is generated by `npm run generate:shape-edges`, checked by a unit test). Shaped side gets `padding-block-*: calc(var(--shape-depth) + var(--shape-edge-padding, var(--size-l))) !important`; unknown values add nothing. Clip bleeds 1rem past straight sides (focus rings/shadows survive). `diagonal` mirrors under `:dir(rtl)`; edges are physical (no vertical writing modes). Page: `/docs/attributes/data-shape-start/` (old `/data-shape/` redirects). |
+| `data-clip` | `hexagon`, `arch`, `swoosh`, `leaf`, `diagonal-frame`, `torn` | On `<img>`, or on `<figure>` to clip its direct `img` / `picture > img` (caption unclipped). `object-fit: cover`. `swoosh`/`diagonal-frame`/`torn` mirror in RTL. |
+| `data-cutout` | `circle`, `diamond`, `arch-window`, `hex`, `badge-corner` | evenodd hole; removes the element's own content in the hole (keep text out). `circle` uses arcs (round on square boxes). `badge-corner` = concave bite at top inline-end (mirrors in RTL). Outer clip bleeds 1rem (own focus ring survives). |
+| `data-border-shape` | `hexagon`, `diamond`, `arch` | Wrapper (inline-block, isolation) + `::before` coloured layer clipped to the shape; each direct child `display:block; margin: var(--shape-border)` clipped to the same shape. Wrapper unclipped. Focus on wrapper/child → frame uses `--color-focus-ring`. Not combinable with `data-border-effect` (both use `::before`). |
+| `data-morph` | `pulse`, `breathe`, `wave` | One cycle (2.5–4s) by default. `data-morph-loop` = infinite; pauses on `:hover` and under `[data-paused]` (self or ancestor); `:focus-within` removes the animation. Non-media elements get `padding: var(--shape-morph-depth, 0.75rem)`. Skipped on elements that also have `data-clip`/`data-cutout`/`data-border-shape`/`data-shape-start`/`data-shape-end`. |
+| `data-callout` | kind + optional shape | See Callouts below. |
+| `data-bubble` | `incoming`, `outgoing`, … | See Chat Bubbles below. |
+
+Tokens: `--shape-depth` (registered `<length>`, `48px`; cyber `40px`, kawaii `32px`), `--shape-edge-padding` (default `--size-l`), `--shape-border` (`<length>`, `4px`), `--shape-border-color` (default `--color-primary`), `--shape-morph-depth` (default `0.75rem`), `--shape-bevel` (callouts). `--shape-curve` removed.
+
+Forced colours: edge and cutout clips removed; border-shape `::before` drawn in `CanvasText` (`Highlight` focused, `forced-color-adjust: none`); morph off. Print: edge and cutout clips removed, morph off, border-shape `print-color-adjust: exact`. `data-clip` images keep their clip in both. `prefers-reduced-motion`: morph off.
+
+#### Callouts (`data-callout`)
+
+`src/shapes/callouts.css` — VB's one admonition primitive. Value = token list: one kind + optional shape.
+
+| Token | Kind | Accent / fill |
+|-------|------|---------------|
+| (bare), `note` | Neutral | `--color-border-strong` / `--color-surface-raised` |
+| `info` | Context | `--color-info` / `--color-info-subtle` |
+| `tip` | Recommendation | `--color-success` / `--color-success-subtle` |
+| `warning` | Caution | `--color-warning` / `--color-warning-subtle` |
+| `danger` | Irreversible / security | `--color-error` / `--color-error-subtle` |
+| `speech` | Shape: rounded box + tail at bottom-start (no accent border) | |
+| `notched` | Shape: bevelled top-end corner (`--shape-bevel`) | |
+
+Accent `--border-width-thick` on the start edge, logical radii on the end side. Title: first child `<p data-callout-title><strong>…</strong></p>` (kind in words, not colour). Hooks `--callout-accent`, `--callout-bg` (gradients ok), `--callout-tail` (1rem, speech). Shapes need `shape()`; painted on `::before` (host never clipped — focus rings/themes survive), mirrored under `:dir(rtl)` (`scale: -1 1`). Forced colours/print: `CanvasText`/`currentColor` frame + thick start edge, shape layer hidden; print keeps `aside[data-callout]` (excluded from the sidebar reset). Packs: journal adds `sticky`. `<markdown-viewer>` `:::kind [title]` renders `<aside data-callout="kind" role="note"><p data-callout-title>`. Replaces `aside.callout[data-kind]`.
+
+#### Chat Bubbles (`data-bubble`)
+
+`src/shapes/bubbles.css` — CSS-only bubbles for static transcripts (components: `<chat-message>`/`<chat-bubble>`). Skips `<input>` (range `data-bubble` = value tooltip).
+
+| Value | Tail / outline | Fill | Align |
+|-------|----------------|------|-------|
+| `incoming` | bottom-start | `--color-surface-raised` | start |
+| `outgoing` | bottom-end | `--color-primary`, text `--color-text-on-primary-auto` → `--color-text-on-primary` | end |
+| `assistant` | top-start | 20% `--color-secondary` | start |
+| `thought` | cloud | `--color-surface-raised` | start |
+| `typing` | bottom-start; empty `<span>`s = dots, text spans (visually hidden label) untouched | `--color-surface-raised` | start |
+| `error` | start-edge 3px `--color-error` border, logical radii | 12% `--color-error` | start |
+| `system` | pill | `--color-surface-sunken` | center |
+
+Hook `--bubble-bg` (themes set this, not `background`; shadows via `filter: drop-shadow()`). Tails on `::before`, mirrored under `:dir(rtl)`; no `shape()` → rounded rectangles. A11y: sender name per message (visible or `.visually-hidden`), container `role="log"`, typing bubble `role="status"` + hidden "X is typing". Forced colours/print: 1px frame + thick edge on the tail side; reduced motion stops the dots. Kawaii's outgoing gradient (primary → lavender) keeps AA on both stops (worst 5.1:1, light).
 
 ---
 
@@ -1081,9 +1155,11 @@ Structured children: `<header>` / `slot="header"`, `<footer>` / `slot="footer"`;
 | `data-size` | `s`, (default), `l` | Size (`s` = type-scale token with an 11px floor). Renamed from `sm` / `lg` |
 | `data-color` | `primary`, `success`, `warning`, `error`, `info`, `brand`, `secondary`, `accent` | Color |
 | `data-variant` | (default solid), `subtle`, `outlined` | Style variant |
-| `data-shape` | `square` (default: pill) | Shape |
+| `data-shape` | `square`, `ribbon`, `notch`, `flag`, `double-arrow`, `stamp` (default: pill) | `square` corners, or a decorative shape painted on `::before` (`polygon()`; stamp corners via `shape()` with chamfer fallback). Notch depth `--badge-notch` (0.75em) is added to the padding on the notched side; mirrors in RTL; host is never clipped (focus outline / `filter: drop-shadow()` survive); fill hook `--badge-shape-fill` (gradients OK); outlined shapes render as a 12% wash of the ink; forced colors: shape layer hidden, `CanvasText` border; print keeps the fill |
 
 Subtle and outlined variants use `--color-*-text` ink (light-dark) on `--color-*-subtle` / transparent; primary/brand/secondary/accent derive a mode-aware tint + ink from their colour. Forced colors: `CanvasText` border on every badge.
+
+The old shape attribute `[data-badge="ribbon|notch|flag|double-arrow|stamp"]` (src/shapes/badges.css) was **removed** — use `<layout-badge data-shape>`. `data-badge` is now only the boolean `time[data-badge]`.
 
 #### `<status-message>`
 
@@ -1157,9 +1233,9 @@ Accessible form field: binds its control (native input/textarea/select, or a for
 | `data-pending` | (boolean) | Dim + block pointer input |
 | `data-state` | `validating` | Async spinner hook |
 | `data-message-invalid` | string | Last-resort error message |
-| `data-label-*` | string | i18n: `show-password`, `hide-password`, `digit`, `incomplete`, `strength`, `strength-weak/fair/good/strong`, `requirements`, `rule-length/uppercase/lowercase/number/special` |
+| `data-label-*` | string | i18n: `show-password`, `hide-password`, `digit`, `incomplete`, `strength`, `strength-weak/fair/good/strong`, `strength-empty`, `strength-too-weak`, `requirements`, `rule-length/uppercase/lowercase/number/special`, `rule-met`, `rule-unmet` |
 
-On the control: `data-message-<validitykey>` (`valuemissing`, `badinput`, `typemismatch`, `patternmismatch`, `tooshort`, `toolong`, `rangeunderflow`, `rangeoverflow`, `stepmismatch`, `customerror`); `data-type="otp|pin"` + `data-length`; `data-strength` + `data-rules`; `data-count` on textarea.
+On the control: `data-message-<validitykey>` (`valuemissing`, `badinput`, `typemismatch`, `patternmismatch`, `tooshort`, `toolong`, `rangeunderflow`, `rangeoverflow`, `stepmismatch`, `customerror`); `data-type="otp|pin"` + `data-length`; `data-strength` + `data-rules` (+ optional `data-strength-min="fair|good|strong"`, which sets `setCustomValidity` below that level; advisory otherwise); `data-count` on textarea.
 
 Children pattern: `<label>` + control + `<output class="hint">` + `<output class="error">` (authored error text = no-JS message and JS fallback).
 
@@ -1267,7 +1343,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<image-map>` / `<map-area>` | Percentage-coordinate hotspot image map over a child `<img>` (or host `src`/`alt`): `<map-area shape="rect\|circle\|poly" coords label href target tooltip="hover\|click\|none" disabled>`, content = tooltip (hoverable, Escape anywhere; click mode is a disclosure with focus in/out); `.regions` get/set (round-trips tooltip/disabled/content); events `image-map:area-enter`/`area-leave` (pointer + focus), `area-activate` (pointer + Enter/Space, cancelable), `regions-changed` `{ regions, source }`; `data-label-map` | |
 | `<include-file>` | Same-origin HTML fragment include, sanitized by default: `src` (resolved against the page; blob:/data:/javascript: refused), `mode` replace/append/prepend, `lazy`, `trusted` (skip sanitizing), `allow-scripts` (requires `trusted`), `allow-cross-origin`, `data-label-error`; state `data-loading`/`data-loaded`/`data-error` + `aria-busy`; cycles and nesting > 10 refused; `.src`, `reload()`; events `include-file:loaded` `{ src, url, html }`, `include-file:error` `{ src, error }`, `include-file:src-changed` `{ src, source }`; sanitized with the fragment profile (keeps `id`/`name`, safe `style`, popover/command invokers; drops `<style>`, `on*`, form attrs) and inserted as nodes | ✓ |
 | `<markdown-editor>` | Markdown textarea + live sanitized `<markdown-viewer>` preview. Adopts the authored `<textarea>` (id/`<label for>`, `name`, `required`, `minlength`/`maxlength`, `readonly`, `dir`, `form`, `aria-*` kept; created only when absent): put `name` on the textarea, native submit/validity/reset with or without JS. Host: `placeholder`, `rows` (override the textarea's; no default placeholder), `highlight`, `data-tab-indent` (Escape then Tab leaves; Shift+Tab never captured), `data-auto-mermaid`, `data-theme`, `data-label-source`/`preview`/`tab-hint`; panes stack below ~40em of the editor's own width; `.value` get/set, `.textarea` (stable across reconnects); events `markdown-editor:input` `{ value }`, `markdown-editor:change` `{ value, source: "user"\|"api" }` (composed) | |
-| `<markdown-viewer>` | Render markdown (vendored marked, GFM + `:::note\|info\|tip\|warning\|danger [title]` callouts → `aside.callout[role=note][data-kind]`) from `src`, `<script type="text/markdown">`, `<template data-md>` or `<pre>`; sanitized by default (cleaned nodes inserted, never re-parsed; `<style>`/`style`/form attrs/invokers removed, `id`/`name` → `user-content-*`; untrusted profile also unwraps `<social-embed>`, `<youtube-player>` and `<geo-map>` to their fallback children and strips `src`/`src-dark`/`data-src`/`url`/`endpoint`/`tile-url` from every other custom element (except `<audio-player>`, `<video-player>`, `<image-map>`, `<brand-mark>`, whose `src` is a media/image URL like the native element they wrap); the include-file fragment profile is unchanged); `sanitize="off"` = trusted first-party only; `src` same-origin unless `allow-cross-origin`; `highlight`, `ping`, `data-theme`, `data-label-error`, `data-auto-mermaid`; state `data-rendered`/`data-loading`/`data-error`; `.parser`, `.markdown`, `render()`, `reload()`; events `markdown-viewer:fetch` `{ src }`, `:rendered` `{ src, node }`, `:highlight` `{ node, language }`, `:error` `{ error }` | |
+| `<markdown-viewer>` | Render markdown (vendored marked, GFM + `:::note\|info\|tip\|warning\|danger [title]` callouts → `aside[data-callout=kind][role=note]` + `p[data-callout-title]`, the shared primitive, see §2 Shapes) from `src`, `<script type="text/markdown">`, `<template data-md>` or `<pre>`; sanitized by default (cleaned nodes inserted, never re-parsed; `<style>`/`style`/form attrs/invokers removed, `id`/`name` → `user-content-*`; untrusted profile also unwraps `<social-embed>`, `<youtube-player>` and `<geo-map>` to their fallback children and strips `src`/`src-dark`/`data-src`/`url`/`endpoint`/`tile-url` from every other custom element (except `<audio-player>`, `<video-player>`, `<image-map>`, `<brand-mark>`, whose `src` is a media/image URL like the native element they wrap); the include-file fragment profile is unchanged); `sanitize="off"` = trusted first-party only; `src` same-origin unless `allow-cross-origin`; `highlight`, `ping`, `data-theme`, `data-label-error`, `data-auto-mermaid`; state `data-rendered`/`data-loading`/`data-error`; `.parser`, `.markdown`, `render()`, `reload()`; events `markdown-viewer:fetch` `{ src }`, `:rendered` `{ src, node }`, `:highlight` `{ node, language }`, `:error` `{ error }` | |
 | `<nav-bar>` | Top-level nav with automatic `aria-current="page"` (URL matching, popstate + Navigation API) | ✓ |
 | `<note-wc>` | Private reader notes on highlights: action in `<selection-menu>` (highlight + note), page-level button with `for="id"`, bare = panel host for margin-annotation clicks (`highlights:request-note`); `openFor(highlight, controller, opener?)`; `data-label-*` | |
 | `<notification-wc>` | `mode="banner"` dismissible strip (`persist`, `variant`, `position`, `expires`) or `mode="panel"` bell + drawer (static `<article data-id data-type data-date>` + `src` feed + `.notifications`), read state in VBStore; `data-label-*` | |
@@ -2371,23 +2447,25 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 
 | Attribute | Element | Description |
 |-----------|---------|-------------|
-| `data-switch` | `<input type="checkbox">` | Toggle switch UI (`sm`, `lg` sizes) |
-| `data-grow` | `<textarea>` | Auto-expanding textarea: CSS `field-sizing: content`, starts at `rows` (default 2), `data-max-rows` caps then scrolls; JS fallback marks `data-grow-init="fallback"`. Re-measures on input/change/form reset |
-| `data-count` | `<textarea>` | Character/word counter. Limit from native `maxlength` (characters) or `data-maxwords` (words, advisory — no validity). Text: `data-label-limit[-<plural>]` (`{count} of {max} characters`), `data-label-characters[-<plural>]`, `data-label-words[-<plural>]`; `Intl` numbers for nearest `[lang]`. Recounts on form reset; dispatch `input` after setting `.value` |
-| `data-range` | `<input type="range">` | Enhanced range with value bubble + markers |
-| `data-stepper` | `<input type="number">` | +/- button wrapper. For non-numeric values (formatted units, currency, time, token-snap, enums), see [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) and the [numeric-inputs decision guide](/docs/concepts/numeric-inputs/). Native spinners are hidden only once upgraded (`[data-stepper-init]`). A plain `type="number"` keeps the browser spinners. |
-| `data-color` | `<input type="color">` | Enhanced color picker with swatch + hex |
-| `data-upload` | `<input type="file">` | Drop zone file upload |
-| `data-mask` | `<input>` | Input masking (`data-pattern` for format) |
-| `data-toggle-tags` | `<fieldset>` | Checkbox pill chips |
-| `data-show-when` | any | Conditional visibility (show when field matches) |
-| `data-hide-when` | any | Conditional visibility (hide when field matches) |
-| `data-autosave` | `<form>` | Auto-save form to localStorage. Empty value derives key from `method`+`action` |
-| `data-autosave-retain` | `<form data-autosave>` | Space-separated allowlist of field names to persist |
-| `data-label-restored` | `<form data-autosave>` | Text of the "Draft restored" toast (shown via the first `<toast-msg>`, created if absent) |
+| `data-switch` | `<input type="checkbox">` | Toggle switch UI (`s`, `l` sizes). CSS-only look; JS adds `role="switch"` |
+| `data-grow` | `<textarea>` | Auto-expanding textarea: CSS `field-sizing: content`, starts at `rows` (default 2), `data-max-rows` caps then scrolls; JS fallback marks `data-grow-init="fallback"`. Re-measures on input/change/form reset. Without JS, typed `attr()` browsers still honour `data-max-rows` (and `rows` as the minimum). Clone-safe (WeakSet guard). |
+| `data-count` | `<textarea>` | Character/word counter. Limit from native `maxlength` (characters) or `data-maxwords` (words, advisory — no validity). Text: `data-label-limit[-<plural>]` (`{count} of {max} characters`), `data-label-characters[-<plural>]`, `data-label-words[-<plural>]`; `Intl` numbers for nearest `[lang]`. Recounts on form reset; dispatch `input` after setting `.value`. A clone adopts its copied counter (WeakMap guard). |
+| `data-range` | `<input type="range">` | Enhanced range: filled track, `data-bubble`, `data-prefix` / `data-suffix`, `data-markers` (≤100 steps), `<datalist>` labels. `aria-valuetext` = matching datalist label, else prefix + `Intl` number (closest `[lang]`) + suffix; bubble/markers/labels `aria-hidden`. `max="0"` honoured. Re-syncs on input/change/form reset; RTL-centred bubble |
+| `data-stepper` | `<input type="number">` | +/- button wrapper; steps via native `stepUp()`/`stepDown()` (step base honoured). Buttons disabled for `disabled` / `readonly` / disabled fieldset and at bounds; re-sync on form reset. `data-label-decrease` / `data-label-increase` (as `<stepper-wc>`). For non-numeric values (formatted units, currency, time, token-snap, enums), see [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) and the [numeric-inputs decision guide](/docs/concepts/numeric-inputs/). Native spinners are hidden only once upgraded (`[data-stepper-init]`). A plain `type="number"` keeps the browser spinners. |
+| `data-color` | `<input type="color">` | Swatch + hex display; the native input stays the only control (transparent overlay), display is `aria-hidden`; re-syncs on input/change/form reset; swatch keeps its colour in forced colors. Not the `data-color` colour variant of `<layout-badge>` / buttons |
+| `data-upload` | `<input type="file">` | Drop zone around the native input (single tab stop). Drops obey `accept` (`.ext`, `type/*`, `type/subtype`) and `multiple`; rejected files announced in a `role="status"` line. `data-label-prompt`, `-browse`, `-files`, `-rejected` (`{files}`), `-single` (`{file}`); `Intl` sizes (decimal kB) for nearest `[lang]`. Re-renders on form reset. No size/count limits |
+| `data-mask` | `<input>` text / tel / search | Input masking: presets `phone`, `credit-card`, `date`, `ssn`, `zip` (US formats) or `custom` + `data-pattern` (`#` digit, `A` letter, `*` letter or digit; case kept). Incomplete value → `setCustomValidity` (`data-mask-message`); `data-raw-value` for scripts (not submitted); reformats on form reset |
+| `data-accept` | `<input>` (text-like) | Character filter: presets `digits`, `alpha` (ASCII), `letters` (`\p{L}\p{M}`), `alphanum`, `phone`, `date`, `hex`, `currency`, `cc`, or a `[class]` (Unicode-mode RegExp). No validation of its own — pair with `pattern`. Re-filters on form reset. `data-mask` wins if both |
+| `data-toggle-tags` | `<fieldset>` | Checkbox pill chips (CSS). `data-max` caps selections: unchecked boxes get `aria-disabled` + `data-max-blocked` (stay focusable, clicks cancelled), limit announced via `.toggle-tags-status` (`data-label-limit`, `{max}`); author-disabled boxes untouched; re-syncs on reset and `data-max` change |
+| `data-show-when` | any | Show while the condition is true: `name`, `!name`, `name=value` / `name:value`, `name!=value`, `&&`, `\|\|`. Checkbox groups / multi-select match any value; form-associated components count |
+| `data-hide-when` | any | Hide while the condition is true (ignored when `data-show-when` is also present) |
+| `data-autosave` | `<form>` | Draft persistence via VBStore (`vb:autosave:{key}`, `{data,timestamp}`, 24h, expired drafts deleted). Empty value derives key from `method`+`action`. Never stores password/hidden/file, buttons, `autocomplete="off"`, cc-*/one-time-code/new-/current-password, `data-autosave-ignore`; restore skips readonly/disabled. Checkbox groups stored as arrays of checked values. Clears (and cancels pending save) on submit/reset. Fires `autosave:restore` `{key, fields}` |
+| `data-autosave-retain` | `<form data-autosave>` | Space-separated allowlist of field names to persist (privacy filter still applies) |
+| `data-autosave-ignore` | control or container inside `<form data-autosave>` / `<form data-wizard-persist>` | Never persist this control / anything inside |
+| `data-label-restored` | `<form data-autosave>` | Restore announcement text (first `<toast-msg>`, created if absent; else a visually hidden `role="status"` `[data-autosave-status]` in the form) |
 | `data-select-all` | `<input type="checkbox">` | Select/deselect all checkboxes |
 
-`data-show-when` / `data-hide-when`: controls in a hidden section are disabled (marked `data-conditional-disabled`) and re-enabled on show; author-disabled controls stay disabled.
+`data-show-when` / `data-hide-when`: hidden sections get `hidden` + `inert`; their controls are disabled (marked `data-conditional-disabled`), so they skip validation and are not submitted, and re-enabled on show; author-disabled controls stay disabled. Sections re-evaluate after form reset and work in forms added later and outside forms. Same condition language and disabling as `data-wizard-if`.
 
 ### Text Effects
 
@@ -2400,11 +2478,12 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-reveal` | `word`, `line` | Word/line reveal entrance |
 | `data-blur-reveal` | `word`, `line` | Blur-to-clear reveal |
 | `data-highlight` | (default/underline), `box`, `circle` | Draw-in highlight effect |
-| `data-typewriter` | text content | Character-by-character typing |
+| ~~`data-typewriter`~~ | — | **Removed** — use `data-effect="typewriter"` |
 | `data-scramble` | text content | Decode/unscramble effect |
-| `data-emoji` | any container | Replace `:shortcode:` with Unicode emoji |
+| `data-emoji` | any container, `<input>`, `<textarea>` | Replace `:shortcode:` with Unicode emoji (text nodes + `alt`/`title`/`aria-label`; live in inputs, undoable) |
 | `data-emoji-scan` | `once`, `observe` | Scan mode (default: `once`) |
-| `data-emoji-unknown` | `keep`, `strip` | Unresolved shortcode handling |
+| `data-emoji-unknown` | `keep`, `strip` | Unresolved tokens: keep, or remove the whole token (letter-containing names only) |
+| `data-emoji-skip` | (boolean) on a descendant | Leave this subtree alone (code/pre/kbd/samp/var/code-block are skipped automatically) |
 
 ### Interactive Enhancers
 
@@ -2415,6 +2494,11 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-hotkey` | `<kbd>` | Platform-aware key display (⌘/Ctrl). Caps `aria-hidden` + visually hidden spoken combo ("Command Shift P"). Modifiers `meta`/`cmd`, `alt`/`option`, `shift`, `ctrl`/`control`; named keys `escape` (Esc), `enter`, `tab`, `space`, `backspace`, `delete` (Del), `insert`, `home`, `end`, `pageup`/`pagedown` (PgUp/PgDn), `arrowup`/`down`/`left`/`right` (↑↓←→); plus key = `plus` or `ctrl++`. `data-label-<key>` (element or ancestor, e.g. `<html data-label-ctrl="Strg">`) localises labels/spoken names. LTR key order in RTL. `data-hotkey-init` = rendered combo (idempotent; changed combo re-renders) |
 | `data-spoiler` | any | Content concealment (`blur`, `solid`, `noise`) |
 | `data-effect="ticker"` | `<data>` | Animated number count-up (`--vb-ticker-duration`, `--vb-ticker-start`, `--vb-ticker-decimals`) |
+| `data-effect="blink"` | Any | Flashing that stops after `--vb-blink-count` cycles (default 5 ≈ 5s; `.slow` 2, `.fast` 12) |
+| `data-effect="flipboard"` | Any | Split-flap board; `--vb-flip-ms` = number of ms or CSS time (default 60) |
+| `data-effect="scramble"` | Any | `--vb-scramble-duration` (1500ms), `--vb-scramble-speed` (30ms), `--vb-scramble-chars` (quotes optional) |
+| `data-effect="typewriter"` | Any | `--vb-typewriter-speed` (50ms), `--vb-typewriter-delay` (0); `.loop` (honours `data-paused`), `.no-cursor` |
+| `data-effect="reveal"` / `"blur-reveal"` | Any | `--vb-reveal-delay` / `--vb-blur-reveal-delay` (80ms), `--vb-reveal-duration` (400ms); `.line` = stagger by rendered line (re-measured on resize) |
 | `data-format-number` | `<data>` | Locale-aware number formatting (`""`, `currency` + `data-currency` [defaults to USD], `percent`, `compact`); re-formats when `value` changes; empty/invalid `value` leaves the text |
 | `data-format-date` | `<time>` | Locale-aware date formatting (`short`/`medium`/`long`/`full`/`relative`; `data-format-time`, `data-locale`). Date-only `datetime` (`YYYY`, `YYYY-MM`, `YYYY-MM-DD`) formats in UTC at its own precision. Locale: `data-locale` → nearest `[lang]` → `<html lang>` → browser. Original text → `title` |
 | `data-relative` | `<time>` | Past-only "3 days ago" text, 60s refresh, English unless nearest `[lang]` is non-English (Intl). Used by activity-feed, comment-thread, time-index. Prefer `data-format-date="relative"` for new content |
@@ -2529,6 +2613,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 |-----------|------------|
 | `data-a11y-theme` | `<html>` — accessibility theme |
 | `data-accent` | `<html>` or any element — colour accent |
+| `data-accept` | `<input>` — character filter |
 | `data-align` | Table cells — text alignment |
 | ~~`data-allow-custom`~~ | **Removed** — use `custom` on `<combo-box>` |
 | `data-anchor` | Tooltip — CSS anchor positioning |
@@ -2541,26 +2626,35 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | ~~`data-autoplay-delay`~~ | **Removed** — use `autoplay-delay` on `<carousel-wc>` |
 | `data-autosave` | `<form>` — localStorage save (boolean form derives key from method+action) |
 | `data-autosave-retain` | `<form data-autosave>` — field-name allowlist for persistence |
+| `data-autosave-ignore` | Any control or container in an autosave/wizard-persist form — never persisted |
 | `data-axes` | `.vb-chart` — axis display |
 | `data-backdrop` | `<html>` — canvas backdrop |
 | `data-backdrop-chrome` | `<html>` — backdrop chrome mode |
 | `data-blur-reveal` | Text — blur-to-clear entrance |
-| `data-bordered` | Various — border variant |
+| `data-badge` | `<time>` only — bordered date chip |
+| `data-border-shape` | Wrapper of an image — shaped coloured frame (see §2 Shapes) |
+| `data-bordered` | `<table>`, `<dl>` — borders |
+| `data-bubble` | `input[data-range]` — value bubble over the thumb; any other element — chat bubble shape (`incoming`, `outgoing`, `assistant`, `thought`, `typing`, `error`, `system`, see §2 Shapes) |
+| `data-callout` | Block element — callout: kind `note`/`info`/`tip`/`warning`/`danger` + optional shape `speech`/`notched` (token list, see §2 Shapes) |
+| `data-callout-title` | First child of `[data-callout]` — the visible title |
 | `data-caption` | `<qr-code>` — `visible` shows the caption |
 | `data-center-label` | Pie chart — donut center text |
 | `data-collapsed` | Breadcrumb — hide middle items |
 | ~~`data-collapsible`~~ | **Removed** — use `collapsible` on `<split-surface>` |
-| `data-color` | `<input type="color">` — enhanced picker |
+| `data-color` | `<input type="color">` — swatch + hex display (not the badge/button colour variant) |
 | `data-command` | `<button>` — command palette trigger |
 | `data-compact` | Various — reduced spacing |
 | `data-completed` | Steps — completed state |
+| `data-clip` | `<img>`, `<figure>` — shape mask (see §2 Shapes) |
 | `data-container` | Any — `container-type: inline-size`; `card`/`panel`/`media` add a container name; escape hatch for sectioning children of cluster/reel/centred cover/aligned stack/subgrid grid and for text hosts with a `data-bleed` child |
 | `data-copy` | `<button>` — clipboard copy |
 | `data-copy-target` | `<button>` — copy source selector |
 | `data-count` | `<textarea>` — character counter |
-| `data-emoji` | Any container — replace `:shortcode:` with emoji |
+| `data-cutout` | Any — punched hole (see §2 Shapes) |
+| `data-emoji` | Any container, input or textarea — replace `:shortcode:` with emoji |
 | `data-emoji-scan` | `[data-emoji]` — scan mode (`once`, `observe`) |
 | `data-emoji-unknown` | `[data-emoji]` — unknown handling (`keep`, `strip`) |
+| `data-emoji-skip` | Descendant of `[data-emoji]` — opt out |
 | `data-debug` | `<html>` — debug mode |
 | `data-debug-invalid` | Any — mark invalid structure |
 | `data-debug-message` | Any — debug hover message |
@@ -2612,6 +2706,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-key` | `<card-list>` — unique key field |
 | `data-label` | Table td — mobile card label; `<progress data-type="ring">` — centre label (`none` hides) |
 | `data-label-copied` | `<qr-code>` — copy announcement |
+| `data-label-decrease` / `data-label-increase` | `input[data-stepper]`, `<stepper-wc>` — button names |
 | `data-label-prefix` | `<qr-code>` — canvas accessible name |
 | `data-label-raw` | `<print-page>` raw-toggle checkbox text |
 | `data-label-restored` | `<form data-autosave>` — restored-draft toast text |
@@ -2624,10 +2719,15 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-level` | `<page-toc>` generated item depth (output; only used to flatten the horizontal bar — nest `.list` for hierarchy); `<form-field>` password strength |
 | `data-loading` | Any — loading state |
 | ~~`data-loop`~~ | **Removed** — use `loop` on `<carousel-wc>` |
-| `data-mask` | `<input>` — input masking |
+| `data-markers` | `input[data-range]` — tick per step (skipped above 100) |
+| `data-mask` | `<input>` (text/tel/search) — input masking |
+| `data-mask-message` | `input[data-mask]` — incomplete-value validation message |
+| `data-max-blocked` | `[data-toggle-tags]` checkbox — blocked by `data-max` (generated) |
 | `data-media` | Container — aspect-ratio lock |
 | `data-met` | Password rules — requirement met |
 | `data-mode` | `<html>` — light/dark mode |
+| `data-morph` | Any — clip-path morph, one cycle (see §2 Shapes) |
+| `data-morph-loop` | `[data-morph]` — loop (pauses on hover, `data-paused`, focus) |
 | `data-motion-reduced` | `<html>` — reduce motion |
 | `data-name` | Token elements — token name |
 | `data-nav-open` | `data-page-layout="dashboard"` host — opens the mobile nav drawer |
@@ -2641,9 +2741,10 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-overlay` | `<loading-spinner>` — absolute overlay mode (needs a positioned ancestor) |
 | `data-padding` | Cards — padding preset |
 | `data-page-layout` | `<body>` — page layout (see §5) |
-| `data-pattern` | `[data-mask]` — mask format |
+| `data-pattern` | `[data-mask="custom"]` — mask format |
 | ~~`data-persist`~~ | **Removed** — use `persist` on `<split-surface>` |
 | `data-position` | Various — positioning |
+| `data-prefix` / `data-suffix` | `input[data-range]` — bubble + `aria-valuetext` affixes |
 | `data-prev` | Pagination button — previous page |
 | `data-provenance` | Content blocks, `<html>` — authorship claim (see §10) |
 | `data-radius` | `[data-media]` — border radius |
@@ -2666,7 +2767,8 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-selected-count` | `<data-table>` — selection count display |
 | `data-separator` | Breadcrumb — separator char |
 | `data-series` | Chart elements — series color |
-| `data-shape` | Badge, avatar — shape variant |
+| `data-shape` | `<layout-badge>` (square + ribbon/notch/flag/double-arrow/stamp), `<user-avatar>` — shape variant |
+| `data-shape-start` / `data-shape-end` | `<section>`, `<article>`, `<header>`, `<footer>`, `<aside>` — shaped top/bottom edge (see §2 Shapes) |
 | `data-shimmer` | Text — shimmer effect |
 | `data-shortcut` | Elements — keyboard shortcut |
 | `data-show-when` | Any — conditional show |
@@ -2679,6 +2781,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-spoiler` | Any — content concealment |
 | `data-stack` | `<brand-mark>` — vertical layout |
 | `data-stacked` | Chart — stacked series |
+| `data-striped` | `<table>`, `<dl>` — row stripes (`--color-row-stripe`) |
 | `data-state` | Feedback container — active state |
 | `data-state-expanded` | Table row — expanded |
 | `data-state-hidden` | Table row — hidden |
@@ -2687,7 +2790,8 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-stepper` | Number input — +/- buttons. See [numeric-inputs decision guide](/docs/concepts/numeric-inputs/) for when to reach for [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) instead. Native spinners are hidden only once upgraded (`[data-stepper-init]`). A plain `type="number"` keeps the browser spinners. |
 | `data-sticky` | Table — sticky header/column; `<header>`, `<footer>` — sticky; `<html>` — sticky header system |
 | `data-sticky-column` | Table — sticky N columns |
-| `data-switch` | Checkbox — toggle switch |
+| `data-strength-min` | `input[data-strength]` — minimum level for validity |
+| `data-switch` | Checkbox — toggle switch (`s`, `l`) |
 | `data-table-empty` | `<data-table>` — no-results message element (generated) |
 | `data-table-filter` | `<data-table>` — filter input container |
 | `data-table-scroll` | Focusable, labelled scroll region wrapping a wide table (`block` = also cap height) |
@@ -2699,20 +2803,26 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-tooltip` | Chart td — tooltip text |
 | `data-trust` | `.page-info-badge` only — verification tier (runtime-computed; see §10) |
 | `data-tooltip-position` | Tooltip — position |
-| `data-trigger` | Any with `data-effect` — activation trigger. Built-ins: `scroll`, `hover`, `click`, `time:<ms>`, `intersect[:once\|toggle]`, `media:<query>`, `event:<name>`, `vt`. Also `<tool-tip variant="card">` — child that opens the card. |
-| `data-stagger` | Parent — child cascade. Empty or CSS time (e.g. `80ms`) → linear; `reverse`, `random`, `grid` → alternate ordering. |
-| `data-transition` | Any — View Transition handler. Built-ins: `morph`, `slide`, `fade`, `scale`, `stagger`, `none`, `effect:<class>` (bridges to `data-effect` via `vb:vt-update-done` / `data-trigger="vt"`). |
+| `data-trigger` | Any with `data-effect` — activation trigger; space-separated values are OR'd. Built-ins: `scroll`, `intersect[:once\|toggle]`, `hover` (pointer or focus/focus-within), `click` (toggle), `click:replay`, `time:<n>` (`2000`, `2000ms`, `2s`), `media:<query>` (no spaces), `event:<name>`, `vt`, `view-progress[:entry\|exit\|cover\|contain]`, `scroll-progress` (CSS timeline; falls back to `scroll` without support). Unknown values: console warning + activated after load. Also `<tool-tip variant="card">` — child that opens the card. |
+| `data-stagger` | Parent — child cascade. Tokens in any order: mode (`reverse`, `random`, `grid` = row+column diagonal wave, auto-placed OK) and/or a CSS time (`40ms`, `0.1s`) which sets `--vb-stagger` (default 80ms). Re-indexes on child add/remove. |
+| `data-transition` | Any — View Transition handler. Built-ins: `morph`, `slide` (`:forward` default, follows dir; `:back`, `:left`, `:right`), `fade`, `scale`, `stagger` (per-child names + delay ladder for the first 12 children, step `--view-transition-stagger` on :root, default 40ms), `none`, `effect:<class>` (bridges to `data-effect` via `vb:vt-update-done` / `data-trigger="vt"`). Shared-element morph across a swap: id-based name `morph-<id>` or `data-vt-name`. |
+| `data-effect` | Any — visual effect(s), space-separated. Catalogue (names, slots, JS, bundles, classes, `--vb-*`) is generated from source on /docs/attributes/data-effect/ (`site/data/effectReference.js`). Text effects split text nodes accessibly (`src/lib/split-text.js`: `.vb-split-sr` hidden copy + `aria-hidden` `.vb-split`). |
+| `data-effect-armed` | Auto-managed — set while a registered trigger is wired and waiting; entrance / text-effect pre-states hide only under `[data-effect-armed]:not([data-effect-active])`. |
 | `data-effect-active` | Auto-managed — set by `VB.activate(el)` and trigger handlers. Effects gate on it. |
+| `data-paused` | Any `[data-effect]` or `[data-morph-loop]`, or an ancestor — pauses looping effects (slot loops, glitch layers, marquee children, typewriter cursor and `.loop`, morph loops). WCAG 2.2.2 pause hook. |
 | `data-truncated` | Breadcrumb li — truncate text |
 | `data-type` | Chart, `<form-field>`, `<progress>` (`ring`) — type variant |
-| `data-typewriter` | Text — typing animation |
+| ~~`data-typewriter`~~ | **Removed** — use `data-effect="typewriter"` |
 | `data-unit` | `<data data-format-bytes>` — `decimal` for 1000-based sizes |
 | `data-upload` | File input — drop zone |
 | `data-value` | Various — value binding |
 | `data-variant` | Various — style variant |
 | `data-vt` | Any — view transition group |
 | `data-vt-class` | Any — transition animation |
-| `data-vt-name` | Any — custom transition name |
+| `data-vt-name` | Any — custom transition name (sets `view-transition-name`; no marker attribute, so clones / value changes / removal re-apply) |
+| `data-parallax` | Media layer inside a section — scroll-driven depth (CSS only). Values: (empty), `subtle`, `medium`, `strong`. Props `--vb-parallax-from` / `-to` / `-scale`. Off under prefers-reduced-motion and `:root[data-motion-reduced]` |
+| `data-parallax-group` | Section holding a `data-parallax` layer — `overflow: clip` + `isolation: isolate` |
+| `data-animate` | Any — scroll-driven reveal: `fade-up`, `fade-in`, `slide-left`, `scale-up`, `blur-in` (off under both reduced-motion switches) |
 | `data-wf-label` | Wireframe — custom element label |
 | `data-wireframe` | `<html>` — wireframe mode |
 | `data-wizard` | `<form>` — wizard form |
