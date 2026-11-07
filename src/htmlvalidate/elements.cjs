@@ -139,6 +139,7 @@ module.exports = {
     flow: true,
     permittedContent: ["@flow"],
     attributes: {
+      "data-canvas": { enum: ["flush", "elevated"], omit: true },
       "data-variant": { enum: ["flush", "elevated"] },
       "data-max": { enum: ["narrow", "normal", "wide", "prose"] },
       "data-padding": { enum: ["none", "s", "m", "l", "xl"] },

@@ -18,6 +18,35 @@ crumbLabel: Custom Elements
   </browser-window>
 
   <section>
+    <h2>Overview</h2>
+    <p>A grid fits as many equal-width columns as its width allows, then wraps the rest onto new rows. It is a CSS grid with <code>grid-template-columns: repeat(auto-fit, minmax(min(var(--_min), 100%), 1fr))</code>: every column is at least the minimum width (<code>15rem</code> by default) and the columns share any leftover space equally.</p>
+    <p>The column count depends on the grid's own width, not the viewport, so the same grid shows more columns in a wide main area than in a narrow sidebar. Items flow in source order, row by row.</p>
+  </section>
+
+  <section>
+    <h2>Element and attribute forms</h2>
+    <p>Any element can be a grid with <code>data-layout="grid"</code>. The same <code>data-layout-*</code> modifiers work on both forms; the two below produce the same columns. A list of items is a natural fit for the attribute form on a <code>&lt;ul&gt;</code>.</p>
+    <browser-window
+      src="/docs/snippets/demos/grid-forms.html"
+      url="https://vanilla-breeze.com/grid/forms"
+      title="Grid element and attribute forms"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Element form and attribute form" data-escape><layout-grid data-layout-min="s" data-layout-gap="s">
+  <layout-card data-variant="outlined" data-padding="s"><p>Alpha</p></layout-card>
+  <layout-card data-variant="outlined" data-padding="s"><p>Beta</p></layout-card>
+  <layout-card data-variant="outlined" data-padding="s"><p>Gamma</p></layout-card>
+</layout-grid>
+
+<ul class="unstyled" data-layout="grid" data-layout-min="s" data-layout-gap="s">
+  <li><layout-card data-variant="outlined" data-padding="s"><p>Alpha</p></layout-card></li>
+  <li><layout-card data-variant="outlined" data-padding="s"><p>Beta</p></layout-card></li>
+  <li><layout-card data-variant="outlined" data-padding="s"><p>Gamma</p></layout-card></li>
+</ul></code-block>
+    <p><strong>Which to choose:</strong> use the attribute form when the grid is already a semantic element: a <code>&lt;ul&gt;</code> of products, a <code>&lt;section&gt;</code> of features. Use <code>&lt;layout-grid&gt;</code> when there is no such element and you would otherwise add a wrapper. In the attribute form, <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are also container-query containers, which the element is not, so container queries inside the grid resolve against it. See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison and <a href="/docs/semantic-layouts/">Semantic Layouts</a> for the approach.</p>
+  </section>
+
+  <section>
     <h2>Attributes</h2>
     <table class="props-table">
       <thead>
@@ -25,6 +54,7 @@ crumbLabel: Custom Elements
           <th>Attribute</th>
           <th>Values</th>
           <th>Default</th>
+          <th>Applies to</th>
           <th>Description</th>
         </tr>
       </thead>
@@ -33,37 +63,68 @@ crumbLabel: Custom Elements
           <td><code>data-layout-min</code></td>
           <td><code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td>
           <td><code>m</code></td>
+          <td>both</td>
           <td>Minimum column width before wrapping: 8 / 10 / 15 / 20 / 25rem. Tracks are clamped to the container, so a grid narrower than the minimum shows one full-width column instead of overflowing. One-off lengths: see <a href="#escape-hatch">the escape hatch</a>.</td>
         </tr>
         <tr>
           <td><code>data-layout-gap</code></td>
           <td><code>none</code>, <code>3xs</code>, <code>2xs</code>, <code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code>, <code>2xl</code>, <code>3xl</code></td>
           <td><code>m</code></td>
+          <td>both</td>
           <td>Gap between cells, on the shared size scale.</td>
         </tr>
         <tr>
           <td><code>data-layout-subgrid</code></td>
           <td>(bare), <code>2</code>, <code>3</code>, <code>4</code></td>
-          <td>bare = <code>3</code></td>
+          <td><code>3</code> (bare)</td>
+          <td>both</td>
           <td>Each child becomes a subgrid spanning that many rows so header/content/footer align across cells. Bare means 3; any other value also spans 3. See <a href="#subgrid">Subgrid</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Custom properties</h3>
+    <table class="props-table">
+      <thead>
+        <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--layout-min</code></td>
+          <td>(unset)</td>
+          <td>A minimum column width that beats <code>data-layout-min</code>, set inline: <code>style="--layout-min: 220px"</code>. Registered with <code>inherits: false</code>, so a nested grid does not pick it up. <code>&lt;layout-cover&gt;</code> reads the same property as its minimum height.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section>
-    <h2>Attribute form</h2>
-    <p>Every attribute works the same on a semantic element with <code>data-layout="grid"</code>. Use it when the grid is a list or a section in its own right, so you don't need a wrapper element.</p>
-
-    <code-block language="html" show-lines label="Attribute form" data-escape><ul data-layout="grid" data-layout-min="s" data-layout-gap="s">
-  <li>Alpha</li>
-  <li>Beta</li>
-  <li>Gamma</li>
-</ul></code-block>
+    <h2>Child attributes</h2>
+    <p>Every direct child is a cell. With <code>data-layout-subgrid</code>, each child's own direct children become its rows.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>On</th>
+          <th>Applies to</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/attributes/data-container/"><code>data-container</code></a></td>
+          <td><code>main</code>, <code>article</code>, <code>section</code>, <code>aside</code></td>
+          <td>both</td>
+          <td>With <code>data-layout-subgrid</code>, these children are not query containers, so they can be subgrids. <code>data-container</code> restores the container; the child then sizes its own rows.</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
-    <h2>Minimum Width Variants</h2>
+    <h2>Examples</h2>
+
+    <h3>Minimum width</h3>
     <p>The <code>data-layout-min</code> attribute sets the minimum width each column can shrink to before the grid reflows.</p>
 
     <browser-window
@@ -73,34 +134,37 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Minimum width variants example" data-escape><layout-grid data-layout-min="s" data-layout-gap="m">
-  <layout-card>Card 1</layout-card>
-  <layout-card>Card 2</layout-card>
-  <layout-card>Card 3</layout-card>
+    <code-block language="html" show-lines label="Minimum width variants example" data-escape><layout-grid data-layout-min="xs" data-layout-gap="m">
+  <layout-card data-variant="outlined" data-padding="s"><p>Card 1</p></layout-card>
+  <layout-card data-variant="outlined" data-padding="s"><p>Card 2</p></layout-card>
+  <!-- ... -->
 </layout-grid>
 
-<layout-grid data-layout-min="l" data-layout-gap="m">
-  <!-- Wider minimum columns -->
-</layout-grid></code-block>
+<layout-grid data-layout-min="s" data-layout-gap="m">...</layout-grid>  <!-- 10rem -->
+<layout-grid data-layout-min="m" data-layout-gap="m">...</layout-grid>  <!-- 15rem (default) -->
+<layout-grid data-layout-min="l" data-layout-gap="m">...</layout-grid>  <!-- 20rem -->
+<layout-grid data-layout-min="xl" data-layout-gap="m">...</layout-grid> <!-- 25rem -->
+
+<!-- One-off length -->
+<layout-grid data-layout-gap="m" style="--layout-min: 12rem">...</layout-grid></code-block>
 
     <p>Each track is <code>minmax(min(min-width, 100%), 1fr)</code>. In a container narrower than the minimum (an <code>xl</code> grid in a 300px sidebar, or on a phone) the grid shows one column at the container's width instead of overflowing.</p>
 
     <h3 id="escape-hatch">One-off widths: <code>--layout-min</code></h3>
-    <p>When none of the tokens fit, set <code>--layout-min</code> on the grid. It beats the <code>data-layout-min</code> token. It is registered as non-inheriting, so a grid nested inside goes back to its own token or the default.</p>
+    <p>When none of the tokens fit, set <code>--layout-min</code> inline on the grid, as in the last example above. It beats the <code>data-layout-min</code> token. It is registered as non-inheriting, so a grid nested inside goes back to its own token or the default. <code>&lt;layout-cover&gt;</code> uses the same property for its minimum height.</p>
 
     <code-block language="html" show-lines label="--layout-min escape hatch" data-escape><layout-grid style="--layout-min: 220px">
   <layout-card>Card 1</layout-card>
   <layout-card>Card 2</layout-card>
 </layout-grid></code-block>
-  </section>
 
-  <section>
-    <h2 id="subgrid">Subgrid</h2>
+    <h3 id="subgrid">Subgrid</h3>
     <p>With <code>data-layout-subgrid</code>, each child becomes a grid whose rows are <code>subgrid</code>. The child spans 3 rows (bare or <code>"3"</code>), 2, or 4. A header that wraps to two lines in one card then pushes the body row down in every card on that row, so titles, bodies and footers line up.</p>
     <ul>
       <li>Give each child as many direct children as rows: <code>header</code>, <code>section</code> and <code>footer</code> for the default 3, title and body for <code>2</code>.</li>
       <li>The subgridded rows use the grid's <em>row gap</em>. <code>data-layout-gap</code> sets both the space between cards and the space between the parts inside each card. To space the parts differently, set <code>row-gap</code> on the children.</li>
       <li><code>&lt;layout-card&gt;</code> children with <code>header</code>/<code>section</code>/<code>footer</code> drop their own row template and follow the subgrid.</li>
+      <li>Any element can be the child: <code>&lt;layout-card&gt;</code>, <code>&lt;li&gt;</code>, or <code>&lt;article&gt;</code>/<code>&lt;section&gt;</code>. VB normally makes <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> query containers; as direct children of a subgrid layout they are not, because the layout containment a query container needs would make them independent grids. A child with <code>data-container</code> keeps its container and sizes its own rows instead.</li>
       <li>Browsers without subgrid fall back to cards that size their own rows.</li>
     </ul>
 
@@ -121,14 +185,20 @@ crumbLabel: Custom Elements
 </layout-grid>
 
 <!-- Two-row children, attribute form -->
-<section data-layout="grid" data-layout-subgrid="2">
-  <article><h3>Title</h3><p>Body</p></article>
-  <article><h3>Longer title</h3><p>Body</p></article>
-</section></code-block>
-  </section>
+<ul class="unstyled" data-layout="grid" data-layout-min="s" data-layout-gap="m" data-layout-subgrid="2">
+  <li><h3>Title</h3><p>Body</p></li>
+  <li><h3>A much longer title that wraps onto a second line</h3><p>Body</p></li>
+  <li><h3>Short</h3><p>Body</p></li>
+</ul>
 
-  <section>
-    <h2>Gap Variants</h2>
+<!-- Article children align too -->
+<layout-grid data-layout-min="s" data-layout-gap="m" data-layout-subgrid="2">
+  <article><h3>Release notes</h3><p>Body</p></article>
+  <article><h3>Migration guide for the new page templates</h3><p>Body</p></article>
+  <article><h3>FAQ</h3><p>Body</p></article>
+</layout-grid></code-block>
+
+    <h3>Gap</h3>
     <p>The <code>data-layout-gap</code> attribute controls spacing between grid items.</p>
 
     <browser-window
@@ -137,12 +207,19 @@ crumbLabel: Custom Elements
       title="Gap variants"
       shadow>
     </browser-window>
-  </section>
 
-  <section>
-    <h2>Usage Examples</h2>
+    <code-block language="html" show-lines label="Gap variants" data-escape><layout-grid data-layout-min="xs" data-layout-gap="xs">
+  <p class="grid-cell">1</p>
+  <p class="grid-cell">2</p>
+  <p class="grid-cell">3</p>
+  <p class="grid-cell">4</p>
+</layout-grid>
 
-    <h3>Product Grid</h3>
+<layout-grid data-layout-min="xs" data-layout-gap="l">
+  <!-- Same cells, larger gap -->
+</layout-grid></code-block>
+
+    <h3>Product grid</h3>
 
     <browser-window
       src="/docs/snippets/demos/grid-product.html"
@@ -164,7 +241,7 @@ crumbLabel: Custom Elements
   <!-- More products... -->
 </layout-grid></code-block>
 
-    <h3>Feature Cards</h3>
+    <h3>Feature cards</h3>
 
     <browser-window
       src="/docs/snippets/demos/grid-feature-cards.html"
@@ -194,7 +271,7 @@ crumbLabel: Custom Elements
   </layout-card>
 </layout-grid></code-block>
 
-    <h3>Stats Grid</h3>
+    <h3>Stats grid</h3>
 
     <browser-window
       src="/docs/snippets/demos/grid-stats.html"
@@ -202,14 +279,44 @@ crumbLabel: Custom Elements
       title="Stats grid"
       shadow>
     </browser-window>
+
+    <code-block language="html" show-lines label="Stats grid" data-escape><layout-grid data-layout-min="s" data-layout-gap="m">
+  <layout-card data-variant="outlined" data-padding="l">
+    <layout-stack data-layout-gap="xs" data-layout-align="center">
+      <span class="stat-value">1,234</span>
+      <span class="stat-label">Total Users</span>
+    </layout-stack>
+  </layout-card>
+  <layout-card data-variant="outlined" data-padding="l">
+    <layout-stack data-layout-gap="xs" data-layout-align="center">
+      <span class="stat-value">567</span>
+      <span class="stat-label">Active Today</span>
+    </layout-stack>
+  </layout-card>
+  <!-- More stats... -->
+</layout-grid></code-block>
+  </section>
+
+  <section>
+    <h2 id="accessibility">Accessibility</h2>
+    <ul>
+      <li>Items flow in source order, left to right and then row by row (right to left in RTL pages), so reading and focus order match what is on screen. Don't reorder cells with <code>order</code> or explicit grid placement.</li>
+      <li>When the cells are a collection (products, team members, features), use the attribute form on a <code>&lt;ul&gt;</code> so screen readers announce how many items there are. <code>&lt;layout-grid&gt;</code> has no role of its own.</li>
+      <li>Keep heading levels inside cells consistent with the page outline; subgrid alignment is visual only.</li>
+      <li>The column count follows the grid's width, so at high zoom the grid drops to fewer columns instead of scrolling sideways (<a href="https://www.w3.org/WAI/WCAG22/Understanding/reflow.html">WCAG 1.4.10 Reflow</a>).</li>
+    </ul>
   </section>
 
   <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> — The attribute form (<code>data-layout="grid"</code>) and every layout modifier</li>
+      <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> — When to use a layout element and when an attribute</li>
+      <li><a href="/docs/grid-identity/">Grid Identity</a> — Semantic elements placed into named grid areas</li>
       <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> — Vertical stacking layout</li>
       <li><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a> — Horizontal grouping with wrapping</li>
       <li><a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> — Two-column layout with sidebar</li>
-      <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> — Card container</li>
+      <li><a href="/docs/elements/custom-elements/cover/"><code>&lt;layout-cover&gt;</code></a> — Full-height layout; shares the <code>--layout-min</code> escape hatch</li>
+      <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> — Card container (subgrid-aware)</li>
     </ul>
   </section>

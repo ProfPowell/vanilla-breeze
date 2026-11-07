@@ -18,47 +18,7 @@ crumbLabel: Custom Elements
   </browser-window>
 
   <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Values</th>
-          <th>Default</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-layout-measure</code></td>
-          <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
-          <td><code>normal</code></td>
-          <td>Line measure: <code>--measure-narrow</code> / <code>--measure-normal</code> / <code>--measure-wide</code> (45 / 65 / 80ch by default). See <a href="#measure">Measure</a>.</td>
-        </tr>
-        <tr>
-          <td><code>data-layout-max</code></td>
-          <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
-          <td><code>normal</code></td>
-          <td>Same as <code>data-layout-measure</code> (the prose attribute form spells it this way). ch-based: <code>narrow</code> is 45ch here but 40rem on <code>layout-center</code>.</td>
-        </tr>
-        <tr>
-          <td><code>data-layout-centered</code></td>
-          <td>(boolean)</td>
-          <td>&mdash;</td>
-          <td>Center the container (<code>margin-inline: auto</code>). Off by default: the text keeps its position.</td>
-        </tr>
-        <tr>
-          <td><code>data-bleed</code> <small>(on a direct child)</small></td>
-          <td>(boolean)</td>
-          <td>&mdash;</td>
-          <td>Break out to the full width of the nearest query container. See <a href="#bleed">Full-width breakout</a>.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>How It Works</h2>
+    <h2>Overview</h2>
     <p>The layout-text element creates a container optimized for long-form reading content. It:</p>
     <ul>
       <li>Sets a maximum line width of <code>--measure-normal</code> (65ch by default; <code>data-fluid</code> makes it fluid, and the dyslexia and large-text themes shorten it)</li>
@@ -71,17 +31,89 @@ crumbLabel: Custom Elements
   </section>
 
   <section>
-    <h2>Attribute forms</h2>
-    <p>The same typographic core (measure, rhythm, centering, bleed) is available without a wrapper element:</p>
+    <h2>Element and attribute forms</h2>
+    <p>The same typographic core (measure, rhythm, centering, bleed) is available without a wrapper element. The attribute value is <strong><code>prose</code></strong>, not <code>text</code>: there is no <code>data-layout="text"</code>.</p>
     <ul>
-      <li><code>data-layout="prose"</code>: identical to <code>&lt;layout-text&gt;</code>. Spell the measure <code>data-layout-max</code> (or <code>data-layout-measure</code>; both work).</li>
+      <li><code>data-layout="prose"</code>: identical to <code>&lt;layout-text&gt;</code>. Spell the measure <code>data-layout-max</code> or <code>data-layout-measure</code>; both work on both forms.</li>
       <li><code>data-layout="columns"</code>: adds multi-column flow; see <a href="/docs/elements/custom-elements/layout-columns/"><code>&lt;layout-columns&gt;</code></a>.</li>
+      <li><code>article[data-measure]</code>: the reading width only, always centered, with no rhythm. See <a href="#data-measure">Reading width only</a>.</li>
     </ul>
+    <browser-window
+      src="/docs/snippets/demos/layout-text-forms.html"
+      url="https://vanilla-breeze.com/layout-text/forms"
+      title="Layout text element and attribute forms"
+      shadow>
+    </browser-window>
+    <code-block language="html" show-lines label="Element form, prose attribute form and data-measure" data-escape><layout-text data-layout-measure="narrow">
+  <h2>Reading Width</h2>
+  <p>Measure and vertical rhythm on a wrapper element.</p>
+</layout-text>
 
-    <code-block language="html" show-lines label="Prose attribute form" data-escape><article data-layout="prose" data-layout-max="narrow" data-layout-centered>
-  <h1>Article Title</h1>
-  <p>Measure, rhythm and centering on the article itself.</p>
+<article data-layout="prose" data-layout-max="narrow">
+  <h2>Reading Width</h2>
+  <p>The same measure and rhythm on the article itself.</p>
+</article>
+
+<article data-measure="narrow">
+  <h2>Reading Width</h2>
+  <p>Capped and centered, browser-default spacing.</p>
 </article></code-block>
+    <p><strong>Which to choose:</strong> when the text already lives in an <code>&lt;article&gt;</code> or <code>&lt;section&gt;</code>, put <code>data-layout="prose"</code> on it: no wrapper, and its headings and paragraphs are direct children, so the rhythm reaches them. Use <code>&lt;layout-text&gt;</code> when there is no such element, for example inside a sidebar layout's content slot. In the attribute form, <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are also container-query containers, which the element is not (that matters for <a href="#bleed"><code>data-bleed</code></a>). See <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> for the full comparison.</p>
+  </section>
+
+  <section>
+    <h2>Attributes</h2>
+    <p>Every row applies to <code>&lt;layout-text&gt;</code> and <code>[data-layout="prose"]</code>, and also to <code>&lt;layout-columns&gt;</code> and <code>[data-layout="columns"]</code>, which share the typographic core.</p>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Applies to</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-layout-measure</code></td>
+          <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
+          <td><code>normal</code></td>
+          <td>both</td>
+          <td>Line measure: <code>--measure-narrow</code> / <code>--measure-normal</code> / <code>--measure-wide</code> (45 / 65 / 80ch by default). See <a href="#measure">Measure</a>.</td>
+        </tr>
+        <tr>
+          <td><code>data-layout-max</code></td>
+          <td><code>narrow</code>, <code>normal</code>, <code>wide</code></td>
+          <td><code>normal</code></td>
+          <td>both</td>
+          <td>Same as <code>data-layout-measure</code>. ch-based: <code>narrow</code> is 45ch here but 40rem on <code>layout-center</code>.</td>
+        </tr>
+        <tr>
+          <td><code>data-layout-centered</code></td>
+          <td>(boolean)</td>
+          <td>&mdash;</td>
+          <td>both</td>
+          <td>Center the container (<code>margin-inline: auto</code>). Off by default: the text keeps its position.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Child attributes</h2>
+    <table class="props-table">
+      <thead>
+        <tr><th>Attribute</th><th>On</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>data-bleed</code></td>
+          <td>a direct child</td>
+          <td>Break out to the full width of the nearest query container. Also works on direct children of <code>article[data-measure]</code>. See <a href="#bleed">Full-width breakout</a>.</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
@@ -89,8 +121,9 @@ crumbLabel: Custom Elements
     <p>The default line width is <code>--measure-normal</code>. <code>data-layout-measure</code> (or <code>data-layout-max</code>) picks <code>narrow</code>, <code>normal</code> or <code>wide</code>. The tokens are 45, 65 and 80ch by default. Under <code>data-fluid</code> they become clamps that grow with the viewport, and the accessibility themes adjust them (dyslexia 55ch, large text 60ch).</p>
     <p><strong>Narrow containers:</strong> in a query container narrower than 30rem (a sidebar, a card, a phone-width column), the measure is released to 100%, so the text fills the space rather than leaving a gap.</p>
 
-    <h3>Reading width only: <code>article[data-measure]</code></h3>
+    <h3 id="data-measure">Reading width only: <code>article[data-measure]</code></h3>
     <p>For an article that needs the reading width but not the rhythm, use <code>data-measure</code> on the <code>&lt;article&gt;</code>. It is always centered. Bare or <code>normal</code> uses <code>--measure-normal</code>; <code>narrow</code> and <code>wide</code> use the other two tokens. <code>data-bleed</code> works on its direct children too.</p>
+    <p>It is not a <code>data-layout</code> value and only works on <code>&lt;article&gt;</code>. Choose it when the content brings its own spacing (a CMS body with its own styles, a stack of components) and you only want the line length; choose <code>data-layout="prose"</code> when you also want the rhythm. Unlike the prose and columns forms, <code>data-measure</code> is not released to the full width in narrow containers.</p>
 
     <code-block language="html" show-lines label="article data-measure" data-escape><article data-measure="narrow">
   <p>Constrained to --measure-narrow, centered, no rhythm rules.</p>
@@ -98,82 +131,7 @@ crumbLabel: Custom Elements
   </section>
 
   <section>
-    <h2>Centering</h2>
-    <p>layout-text keeps its position by default. Add <code>data-layout-centered</code> to center it in its container. Since it already limits its own width, it needs no <code>layout-center</code> wrapper.</p>
-
-    <browser-window
-      src="/docs/snippets/demos/layout-text-centered.html"
-      url="https://vanilla-breeze.com/layout-text/centered"
-      title="Centered article layout"
-      shadow>
-    </browser-window>
-
-    <code-block language="html" show-lines label="Centered article layout" data-escape><layout-text data-layout-centered data-layout-measure="narrow">
-  <h2>Centered Article</h2>
-  <p>layout-text limits its own line length; data-layout-centered centers it.</p>
-</layout-text></code-block>
-  </section>
-
-  <section>
-    <h2 id="bleed">Full-width breakout</h2>
-    <p>Add <code>data-bleed</code> to a <em>direct child</em> (a figure, a table, a code block) to break it out of the measure. The child spans the full width of the nearest query container: <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are query containers by default, as is any element with <code>data-container</code>.</p>
-    <ul>
-      <li>It works centered or not. Uncentered text bleeds from its start edge across the container; centered text bleeds evenly on both sides.</li>
-      <li>It measures the container, not the viewport, so it never adds a horizontal scrollbar.</li>
-      <li>If the text host is itself a query container (<code>&lt;article data-layout="prose"&gt;</code>, <code>article[data-measure]</code>), it stops being one while it holds a bleed child, so the bleed reaches the next container out. Add <code>data-container</code> to the host to keep it as a container (the bleed then fills only the host).</li>
-      <li>With no query container above it at all, the bleed falls back to the viewport width.</li>
-      <li>In <code>layout-columns</code>, a bleed child also spans every column.</li>
-    </ul>
-
-    <browser-window
-      src="/docs/snippets/demos/layout-text-bleed.html"
-      url="https://vanilla-breeze.com/layout-text/bleed"
-      title="Full-width breakout"
-      shadow>
-    </browser-window>
-
-    <code-block language="html" show-lines label="Bleed" data-escape><main>
-  <layout-text data-layout-centered>
-    <p>Text at the reading measure…</p>
-    <figure data-bleed>
-      <img src="wide.jpg" alt="…" />
-    </figure>
-    <p>…and back to the measure.</p>
-  </layout-text>
-</main></code-block>
-  </section>
-
-  <section>
-    <h2>Live Example</h2>
-
-    <browser-window
-      src="/docs/snippets/demos/layout-text-live.html"
-      url="https://vanilla-breeze.com/layout-text/live"
-      title="Typography with vertical rhythm"
-      shadow>
-    </browser-window>
-
-    <code-block language="html" show-lines label="Basic layout-text usage" data-escape><layout-text>
-  <h2>Article Title</h2>
-  <p>First paragraph of content...</p>
-  <p>Second paragraph continues...</p>
-
-  <h3>Section Heading</h3>
-  <p>Content for this section...</p>
-
-  <ul>
-    <li>List item</li>
-    <li>Another item</li>
-  </ul>
-
-  <blockquote>
-    <p>A notable quote...</p>
-  </blockquote>
-</layout-text></code-block>
-  </section>
-
-  <section>
-    <h2>Spacing Rules</h2>
+    <h2>Spacing rules</h2>
     <p>layout-text spaces its direct children according to their element type:</p>
 
     <table class="props-table">
@@ -225,9 +183,79 @@ crumbLabel: Custom Elements
   </section>
 
   <section>
-    <h2>Usage Examples</h2>
+    <h2>Examples</h2>
 
-    <h3>Blog Post</h3>
+    <h3>Vertical rhythm</h3>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-text-live.html"
+      url="https://vanilla-breeze.com/layout-text/live"
+      title="Typography with vertical rhythm"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Basic layout-text usage" data-escape><layout-text>
+  <h2>Article Title</h2>
+  <p>First paragraph of content...</p>
+  <p>Second paragraph continues...</p>
+
+  <h3>Section Heading</h3>
+  <p>Content for this section...</p>
+
+  <ul>
+    <li>List item</li>
+    <li>Another item</li>
+  </ul>
+
+  <blockquote>
+    <p>A notable quote...</p>
+  </blockquote>
+</layout-text></code-block>
+
+    <h3>Centering</h3>
+    <p>layout-text keeps its position by default. Add <code>data-layout-centered</code> to center it in its container. Since it already limits its own width, it needs no <code>layout-center</code> wrapper.</p>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-text-centered.html"
+      url="https://vanilla-breeze.com/layout-text/centered"
+      title="Centered article layout"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Centered article layout" data-escape><layout-text data-layout-centered data-layout-measure="narrow">
+  <h2>Centered Article</h2>
+  <p>layout-text limits its own line length; data-layout-centered centers it.</p>
+</layout-text></code-block>
+
+    <h3 id="bleed">Full-width breakout</h3>
+    <p>Add <code>data-bleed</code> to a <em>direct child</em> (a figure, a table, a code block) to break it out of the measure. The child spans the full width of the nearest query container: <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> are query containers by default, as is any element with <a href="/docs/attributes/data-container/"><code>data-container</code></a>. (Not to be confused with <code>data-layout-bleed</code>, which spans a direct child of a <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> grid across every column.)</p>
+    <ul>
+      <li>It works centered or not. Uncentered text bleeds from its start edge across the container; centered text bleeds evenly on both sides.</li>
+      <li>It measures the container, not the viewport, so it never adds a horizontal scrollbar.</li>
+      <li>If the text host is itself a query container (<code>&lt;article data-layout="prose"&gt;</code>, <code>article[data-measure]</code>), it stops being one while it holds a bleed child, so the bleed reaches the next container out. Add <code>data-container</code> to the host to keep it as a container (the bleed then fills only the host).</li>
+      <li>With no query container above it at all, the bleed falls back to the viewport width.</li>
+      <li>In <code>layout-columns</code>, a bleed child also spans every column.</li>
+    </ul>
+
+    <browser-window
+      src="/docs/snippets/demos/layout-text-bleed.html"
+      url="https://vanilla-breeze.com/layout-text/bleed"
+      title="Full-width breakout"
+      shadow>
+    </browser-window>
+
+    <code-block language="html" show-lines label="Bleed" data-escape><main>
+  <layout-text data-layout-centered>
+    <p>Text at the reading measure…</p>
+    <figure data-bleed>
+      <img src="wide.jpg" alt="…" />
+    </figure>
+    <p>…and back to the measure.</p>
+  </layout-text>
+</main></code-block>
+
+    <h3>Blog post</h3>
+    <p>The article is the reading container: <code>data-layout="prose"</code> with a narrow measure, centered. No wrapper elements.</p>
 
     <browser-window
       src="/docs/snippets/demos/layout-text-blog-post.html"
@@ -236,22 +264,19 @@ crumbLabel: Custom Elements
       shadow>
     </browser-window>
 
-    <code-block language="html" show-lines label="Blog post with centered layout" data-escape><layout-center data-layout-max="narrow">
-  <article>
-    <layout-text>
-      <h1>Getting Started with Web Components</h1>
-      <p class="lead">Learn how to build reusable HTML elements.</p>
-      <p>Web Components are built on web standards...</p>
-      <h2>Why Web Components?</h2>
-      <ul>
-        <li>Work everywhere HTML works</li>
-        <li>Don't require a build step</li>
-      </ul>
-    </layout-text>
-  </article>
-</layout-center></code-block>
+    <code-block language="html" show-lines label="Blog post with centered layout" data-escape><article data-layout="prose" data-layout-max="narrow" data-layout-centered>
+  <h1>Getting Started with Web Components</h1>
+  <p class="lead">Learn how to build reusable HTML elements.</p>
+  <p>Web Components are built on web standards...</p>
+  <h2>Why Web Components?</h2>
+  <ul>
+    <li>Work everywhere HTML works</li>
+    <li>Don't require a build step</li>
+  </ul>
+</article></code-block>
 
-    <h3>Documentation Page</h3>
+    <h3>Documentation page</h3>
+    <p>Inside a sidebar layout there is no article to carry the attribute, so the element form fits. The measure is released to the full width when the content column gets narrower than 30rem.</p>
 
     <browser-window
       src="/docs/snippets/demos/layout-text-documentation.html"
@@ -259,24 +284,54 @@ crumbLabel: Custom Elements
       title="Documentation page with sidebar navigation"
       shadow>
     </browser-window>
-
+    <code-block language="html" show-lines label="Documentation page with sidebar navigation" data-escape><layout-sidebar data-layout-gap="l">
+  <nav aria-labelledby="contents-heading">
+    <layout-stack data-layout-gap="s">
+      <h2 id="contents-heading">Contents</h2>
+      <ul>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#usage">Usage</a></li>
+      </ul>
+    </layout-stack>
+  </nav>
+  <layout-text>
+    <h2 id="installation">Installation</h2>
+    <p>Install the package using npm:</p>
+    <pre><code>npm install vanilla-breeze</code></pre>
+    <h2 id="usage">Usage</h2>
+    <p>Then use the custom elements in your HTML.</p>
+  </layout-text>
+</layout-sidebar></code-block>
   </section>
 
   <section>
-    <h2>Best Practices</h2>
+    <h2>Best practices</h2>
     <ul>
       <li><strong>Use for long-form content only</strong> - layout-text is designed for articles, documentation, and similar content. Don't use it for UI layouts.</li>
-      <li><strong>Center with <code>data-layout-centered</code></strong> - layout-text already limits its own width, so it doesn't need a <code>layout-center</code> wrapper to constrain it. Use <code>layout-center</code> only when the page needs a wider frame around the text (the blog post example above). Note that the two <code>data-layout-max</code> attributes use different scales: <code>narrow</code> is 40rem on <code>layout-center</code> and 45ch on layout-text.</li>
+      <li><strong>Center with <code>data-layout-centered</code></strong> - layout-text already limits its own width, so it doesn't need a <code>layout-center</code> wrapper to constrain it. Use <code>layout-center</code> only when the page needs a wider frame around the text. Note that the two <code>data-layout-max</code> attributes use different scales: <code>narrow</code> is 40rem on <code>layout-center</code> and 45ch on layout-text.</li>
       <li><strong>Semantic HTML</strong> - The spacing rules work best with proper semantic markup (h2 before h3, etc.).</li>
       <li><strong>Avoid nesting layout elements</strong> - layout-stack, layout-grid, and similar elements inside prose may have unexpected spacing.</li>
     </ul>
   </section>
 
   <section>
+    <h2>Accessibility</h2>
+    <ul>
+      <li><strong>Line length:</strong> the measure keeps lines between roughly 45 and 80 characters, the range that is easiest to track from one line to the next. <a href="https://www.w3.org/WAI/WCAG22/Understanding/visual-presentation.html">WCAG 1.4.8 Visual Presentation</a> (AAA) recommends no more than 80.</li>
+      <li><strong>Reader preferences:</strong> the dyslexia and large-text themes shorten the measure tokens (55ch and 60ch), and line height comes from <code>--prose-line-height</code> (1.6 by default), which those themes and user settings can raise. Set spacing through these tokens rather than fixed values so the preferences reach your text.</li>
+      <li><strong>Zoom and reflow:</strong> the measure is in <code>ch</code>, so it grows with the text size, and it is released to the full width in containers narrower than 30rem, so enlarged text reflows instead of overflowing (<a href="https://www.w3.org/WAI/WCAG22/Understanding/reflow.html">WCAG 1.4.10 Reflow</a>).</li>
+      <li><strong>Structure:</strong> the rhythm follows the heading levels, so use them in order (h2 before h3) and the visual hierarchy matches what screen readers announce.</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Related</h2>
     <ul>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> — The attribute form (<code>data-layout="prose"</code>) and every layout modifier</li>
+      <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> — When to use a layout element and when an attribute</li>
+      <li><a href="/docs/typography/">Typography</a> — Prose hyphenation, drop caps and other text features</li>
+      <li><a href="/docs/elements/custom-elements/layout-columns/"><code>&lt;layout-columns&gt;</code></a> — The same typographic core with multi-column flow</li>
       <li><a href="/docs/elements/custom-elements/center/"><code>&lt;layout-center&gt;</code></a> — Horizontally centered container</li>
       <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> — Vertical stacking layout</li>
-      <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> — Card container</li>
     </ul>
   </section>

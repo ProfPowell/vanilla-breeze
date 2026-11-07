@@ -2,7 +2,7 @@
   "$schema": "../../schemas/api.schema.json",
   "element": "layout-canvas",
   "type": "custom-element",
-  "description": "Elevated content surface (a panel with radius, shadow and a 1px edge: a hairline on a plain page, transparent under data-backdrop, CanvasText in forced colours). Attribute form: data-canvas on a semantic element, with the variant as its value (data-canvas=\"flush\" | \"elevated\"). Below 37.5rem every canvas goes flush. Surface elements use bare data-* attributes.",
+  "description": "Elevated content surface (a panel with radius, shadow and a 1px edge: a hairline on a plain page, transparent under data-backdrop, CanvasText in forced colours). Attribute form: data-canvas on a semantic element (not data-layout), with the variant as its value: data-canvas (default), data-canvas=\"flush\" or data-canvas=\"elevated\". Below 37.5rem every canvas goes flush with reduced inline padding unless data-padding is set. Surface elements use bare data-* attributes.",
   "htmlvalidate": {
     "flow": true,
     "permittedContent": [
@@ -10,6 +10,18 @@
     ]
   },
   "attributes": [
+    {
+      "name": "data-canvas",
+      "kind": "data",
+      "purpose": "config",
+      "type": "enum",
+      "values": [
+        "",
+        "flush",
+        "elevated"
+      ],
+      "description": "Attribute form: makes any element a canvas; the value is the variant (bare = default, flush, elevated). Use data-variant on the <layout-canvas> element instead."
+    },
     {
       "name": "data-variant",
       "kind": "data",
@@ -47,7 +59,7 @@
         "xl"
       ],
       "default": "l",
-      "description": "Padding on all sides."
+      "description": "Padding on all sides. An explicit value is kept below 37.5rem (otherwise the inline padding drops to --size-m there)."
     },
     {
       "name": "data-canvas-depth",
@@ -58,7 +70,7 @@
         "1",
         "2"
       ],
-      "description": "Stacked-paper effect with 1 or 2 sheets behind the surface."
+      "description": "Stacked-paper effect with 1 or 2 sheets behind the surface (37.5rem and wider; not on flush)."
     }
   ]
 }

@@ -68,7 +68,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-canvas",
     "type": "custom-element",
-    "description": "Elevated content surface (a panel with radius, shadow and a 1px edge: a hairline on a plain page, transparent under data-backdrop, CanvasText in forced colours). Attribute form: data-canvas on a semantic element, with the variant as its value (data-canvas=\"flush\" | \"elevated\"). Below 37.5rem every canvas goes flush. Surface elements use bare data-* attributes.",
+    "description": "Elevated content surface (a panel with radius, shadow and a 1px edge: a hairline on a plain page, transparent under data-backdrop, CanvasText in forced colours). Attribute form: data-canvas on a semantic element (not data-layout), with the variant as its value: data-canvas (default), data-canvas=\"flush\" or data-canvas=\"elevated\". Below 37.5rem every canvas goes flush with reduced inline padding unless data-padding is set. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -76,6 +76,18 @@ export default {
       ]
     },
     "attributes": [
+      {
+        "name": "data-canvas",
+        "kind": "data",
+        "purpose": "config",
+        "type": "enum",
+        "values": [
+          "",
+          "flush",
+          "elevated"
+        ],
+        "description": "Attribute form: makes any element a canvas; the value is the variant (bare = default, flush, elevated). Use data-variant on the <layout-canvas> element instead."
+      },
       {
         "name": "data-variant",
         "kind": "data",
@@ -113,7 +125,7 @@ export default {
           "xl"
         ],
         "default": "l",
-        "description": "Padding on all sides."
+        "description": "Padding on all sides. An explicit value is kept below 37.5rem (otherwise the inline padding drops to --size-m there)."
       },
       {
         "name": "data-canvas-depth",
@@ -124,7 +136,7 @@ export default {
           "1",
           "2"
         ],
-        "description": "Stacked-paper effect with 1 or 2 sheets behind the surface."
+        "description": "Stacked-paper effect with 1 or 2 sheets behind the surface (37.5rem and wider; not on flush)."
       }
     ]
   },
@@ -132,7 +144,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-card",
     "type": "custom-element",
-    "description": "Card surface. A plain padded block by default; a header / section / footer child (or slot=\"header|content|footer\") switches it to structured mode: header pinned on top, footer pinned at the bottom, every other child stacked between in source order. Surface elements use bare data-* attributes.",
+    "description": "Card surface. Element only: there is no data-layout or data-card attribute form; for a surface on a semantic element use data-canvas, for collections use <card-list>. A plain padded block by default; a header / section / footer child (or slot=\"header|content|footer\") switches it to structured mode: header pinned on top, footer pinned at the bottom, every other child stacked between in source order. Surface elements use bare data-* attributes.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -238,7 +250,7 @@ export default {
           "prose"
         ],
         "default": "normal",
-        "description": "Max inline size: narrow (--content-narrow, 40rem), normal (--content-normal, 60rem), wide (--content-wide, 80rem) or prose (65ch)."
+        "description": "Max inline size of the content box (box-sizing: content-box; the gutter is added outside): narrow (--content-narrow, 40rem), normal (--content-normal, 60rem), wide (--content-wide, 80rem) or prose (65ch)."
       },
       {
         "name": "data-layout-intrinsic",
@@ -265,7 +277,7 @@ export default {
           "l"
         ],
         "default": "m",
-        "description": "Inline padding: none, s or l (default m)."
+        "description": "Inline padding on each side: none, s or l. The default --size-m applies when the attribute is omitted; there is no m value. The box is content-box, so the gutter adds to the max width."
       },
       {
         "name": "data-layout-gap",
@@ -286,7 +298,7 @@ export default {
           "3xl"
         ],
         "default": "m",
-        "description": "Become a flex column with this gap between children, on the shared size scale. Bare attribute = m."
+        "description": "Become a full-width flex column (inline-size fills the parent minus the gutters) with this gap between children, on the shared size scale. Bare attribute = m."
       }
     ]
   },
@@ -356,7 +368,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Keep everything on one line; no wrapping."
+        "description": "Keep everything on one line; no wrapping. Items overflow a narrow container, so let it scroll (overflow-x: auto)."
       },
       {
         "name": "data-layout-overlap",
@@ -371,7 +383,7 @@ export default {
           "l"
         ],
         "default": "s",
-        "description": "Overlap items (avatar groups) in DOM order, later items on top, each with a surface-coloured ring. Forces gap 0. Bare attribute = s."
+        "description": "Overlap items (avatar groups) in DOM order, later items on top, each with a surface-coloured ring. Items after the first are pulled back by xs 0.25rem, s 0.5rem, m 0.75rem or l 1rem. Forces gap 0. Bare attribute = s. Use a ul with one li per avatar, aria-labelledby on the list and an aria-label on the \"+N\" chip."
       }
     ],
     "childAttributes": [
@@ -387,7 +399,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-columns",
     "type": "custom-element",
-    "description": "Multi-column text flow with a readable measure, vertical rhythm, column rules and break hygiene. Attribute form: data-layout=\"columns\".",
+    "description": "Multi-column text flow with a readable measure, vertical rhythm (between direct children), column rules and break hygiene. Attribute form: data-layout=\"columns\" (same modifiers), usually on an <article data-prose>. <reader-view> needs the element form.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -403,7 +415,7 @@ export default {
         "values": [
           "justify"
         ],
-        "description": "justify: justified text with automatic hyphenation."
+        "description": "justify: justified text with automatic hyphenation. Justified narrow columns form uneven word gaps (WCAG 1.4.8, AAA): prefer ragged-right for long text."
       },
       {
         "name": "data-layout-column-count",
@@ -466,7 +478,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-cover",
     "type": "custom-element",
-    "description": "Full-height (min-block-size) container that vertically centers a principal element, with optional top and bottom elements. Attribute form: data-layout=\"cover\".",
+    "description": "Full-height (min-block-size) flex column that vertically centers a principal element (data-layout-principal; a sole child auto-centers), with header/footer or cover-top/-bottom children pinned to the edges. Attribute form: data-layout=\"cover\".",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -487,7 +499,7 @@ export default {
           "auto"
         ],
         "default": "xl",
-        "description": "Minimum block size: 50 / 70 / 80vh, xl = 100dvh, auto = none. One-off: set --layout-min in a stylesheet rule (e.g. .hero { --layout-min: 65vh; })."
+        "description": "Minimum block size: 50 / 70 / 80vh, xl = 100dvh, auto = none. One-off: style=\"--layout-min: 65vh\" (beats the token; registered inherits:false so it never reaches nested layouts; layout-grid reads the same property as its minimum column width)."
       },
       {
         "name": "data-layout-padding",
@@ -618,7 +630,15 @@ export default {
           "4"
         ],
         "default": "3",
-        "description": "Each child becomes a subgrid spanning 2, 3 or 4 rows (bare = 3; any other value also spans 3) so header/content/footer line up across siblings. The subgridded rows use the grid's row gap, so data-layout-gap also spaces the parts inside each child — set row-gap on the children to override."
+        "description": "Each child becomes a subgrid spanning 2, 3 or 4 rows (bare = 3; any other value also spans 3) so header/content/footer line up across siblings. The subgridded rows use the grid's row gap, so data-layout-gap also spaces the parts inside each child — set row-gap on the children to override. Any child works, including article/section (they are not query containers here unless they carry data-container, which opts them out of subgrid alignment)."
+      }
+    ],
+    "childAttributes": [
+      {
+        "name": "data-container",
+        "on": "main, article, section, aside",
+        "description": "Opt a semantic child of a data-layout-subgrid grid back into container queries. The layout removes container-type from such children so they can be subgrids; this restores it, and the child then sizes its own rows.",
+        "type": "boolean"
       }
     ]
   },
@@ -626,7 +646,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-imposter",
     "type": "custom-element",
-    "description": "Positioned overlay centred over (or pinned to an edge or corner of) its containing block, logically (mirrored in RTL). The container needs position: relative. Visual positioning only: no focus trap, inert background or dialog semantics; use <dialog> or [popover] for modal UI. Stacking order: --imposter-z (default 1, --z-float when fixed).",
+    "description": "Positioned overlay centred over (or pinned to an edge or corner of) its containing block, logically (mirrored in RTL). Element only: there is no data-layout form. Prerequisite: the element it sits over needs position: relative (any non-static position); data-layout-fixed positions against the viewport instead. Visual positioning only: no focus trap, inert background or dialog semantics; use <dialog> or [popover] for modal UI. Stacking order: --imposter-z (default 1, --z-float when fixed).",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -686,7 +706,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-reel",
     "type": "custom-element",
-    "description": "Horizontal scrolling strip with proximity snap points, an optional scrollbar and edge hints. Attribute form: data-layout=\"reel\". When the items hold no focusable content, add role=\"region\", aria-label and tabindex=\"0\" so keyboard users can scroll it.",
+    "description": "Horizontal scrolling strip with proximity snap points, an optional scrollbar and edge hints. Attribute form: data-layout=\"reel\" (same modifiers). When the items hold no focusable content, name the reel and make it focusable: <section data-layout=\"reel\" aria-label=\"…\" tabindex=\"0\">, or <layout-reel role=\"region\" aria-label=\"…\" tabindex=\"0\">.",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -790,7 +810,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-sidebar",
     "type": "custom-element",
-    "description": "Two-column layout: a fixed-basis sidebar beside a flexible content column that wraps below it when there is no room. nav and aside children are the sidebar; every other child is content; without nav/aside the first child is the sidebar. Attribute form: data-layout=\"sidebar\".",
+    "description": "Two-column layout: a fixed-basis sidebar beside a flexible content column that wraps below it when there is no room. nav and aside children are the sidebar; every other child is content (hr, [role=separator], template, script and style are skipped); without nav/aside the first child is the sidebar and the last the content. Attribute form: data-layout=\"sidebar\".",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -826,7 +846,7 @@ export default {
         "values": [
           "end"
         ],
-        "description": "end: put the sidebar on the end side. nav/aside children keep DOM order (order: 1); the positional fallback reverses the row."
+        "description": "end: put the sidebar on the end side. Omit the attribute for the start side (there is no start value). nav/aside children keep DOM order (order: 1); the positional fallback reverses the row (flex-direction: row-reverse), so visual order then differs from DOM order."
       },
       {
         "name": "data-layout-sidebar-width",
@@ -859,7 +879,7 @@ export default {
         "kind": "data",
         "purpose": "config",
         "type": "boolean",
-        "description": "Never wrap; the sidebar stays beside the content."
+        "description": "Never wrap; the sidebar stays beside the content, also inside a narrow (< 40rem) data-page-layout main."
       }
     ],
     "childAttributes": [
@@ -931,7 +951,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-switcher",
     "type": "custom-element",
-    "description": "Flex row that switches to a column once the container is narrower than the threshold. Attribute form: data-layout=\"switcher\".",
+    "description": "Flex row that switches to a column once the switcher's own width drops below the threshold (a flex-basis formula, no media or container query). Attribute form: data-layout=\"switcher\" (same modifiers).",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [
@@ -970,7 +990,7 @@ export default {
           "l"
         ],
         "default": "m",
-        "description": "Container width at which the row becomes a column: 25 / 30 / 40rem. One-off: style=\"--layout-threshold: 35rem\"."
+        "description": "The switcher's own width below which the row becomes a column: 25 / 30 / 40rem. No container query is involved. One-off: style=\"--layout-threshold: 35rem\" (not inherited by nested switchers)."
       },
       {
         "name": "data-layout-limit",
@@ -997,7 +1017,7 @@ export default {
     "$schema": "../../schemas/api.schema.json",
     "element": "layout-text",
     "type": "custom-element",
-    "description": "Long-form reading container: a readable measure plus vertical rhythm between block children. Owns the typographic core shared with layout-columns and data-layout=\"columns\" / \"prose\".",
+    "description": "Long-form reading container: a readable measure plus vertical rhythm between direct children. Attribute form: data-layout=\"prose\" (there is no data-layout=\"text\"). article[data-measure] gives the measure (centered) without the rhythm. Owns the typographic core shared with layout-columns and data-layout=\"columns\".",
     "htmlvalidate": {
       "flow": true,
       "permittedContent": [

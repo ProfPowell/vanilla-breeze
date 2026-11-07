@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>data-container</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body { padding: var(--size-l); background: var(--color-surface); }
+
+    /* Component CSS that adapts to the card container, not the viewport */
+    [data-container="card"] {
+      padding: var(--size-s);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: var(--radius-m);
+    }
+    [data-container="card"] ul {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--size-s);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    [data-container="card"] strong { display: block; font-size: var(--font-size-xl); }
+    @container card (width < 22rem) {
+      [data-container="card"] ul { grid-template-columns: 1fr; }
+    }
+
+    /* Content-sized cluster children need a width once they are containers */
+    [data-layout="cluster"] > article { padding: var(--size-s); border: var(--border-width-thin) dashed var(--color-border); }
+    [data-layout="cluster"] > article[data-container] { inline-size: 14rem; }
+  </style>
+</head>
+<body>
+  <h1><code>data-container</code></h1>
+
+  <section aria-labelledby="named">
+    <h2 id="named">Named container: <code>data-container="card"</code></h2>
+    <p>The same card in a narrow and a wide column. Its figures switch to one column when the <em>card</em> is narrower than 22rem.</p>
+    <layout-sidebar data-layout-sidebar-width="normal" data-layout-gap="l">
+      <aside aria-label="Narrow column">
+        <article data-container="card">
+          <h3>Downloads</h3>
+          <ul>
+            <li><strong>128</strong> today</li>
+            <li><strong>904</strong> this week</li>
+            <li><strong>3,410</strong> this month</li>
+          </ul>
+        </article>
+      </aside>
+      <section aria-label="Wide column">
+        <article data-container="card">
+          <h3>Downloads</h3>
+          <ul>
+            <li><strong>128</strong> today</li>
+            <li><strong>904</strong> this week</li>
+            <li><strong>3,410</strong> this month</li>
+          </ul>
+        </article>
+      </section>
+    </layout-sidebar>
+  </section>
+
+  <section aria-labelledby="escape">
+    <h2 id="escape">Escape hatch inside a cluster</h2>
+    <p>Cluster children size to their content, so VB stops <code>article</code> children being containers there. The second article opts back in with <code>data-container</code> and is given a width.</p>
+    <section data-layout="cluster" data-layout-gap="s">
+      <article><p>Content-sized article</p></article>
+      <article data-container><p>Container article (14rem)</p></article>
+    </section>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
