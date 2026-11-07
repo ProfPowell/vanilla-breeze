@@ -4,7 +4,7 @@
  * Enhances every `[data-back-to-top]` element so that:
  *   - Click smooth-scrolls the page to the top (preventing href="#" jumps).
  *   - The element is hidden until the user scrolls past ~1 viewport, then
- *     fades in via `data-visible`. Toggling stops near the top so the
+ *     fades in via `data-state-visible`. Toggling stops near the top so the
  *     button doesn't sit on top of hero content.
  *   - Respects `prefers-reduced-motion`: instant scroll, no opacity ramp.
  *
@@ -31,7 +31,7 @@ function enhance(el) {
   el.setAttribute('data-back-to-top-init', '');
 
   // Initial state: hidden until scroll listener decides otherwise.
-  el.toggleAttribute('data-visible', false);
+  el.toggleAttribute('data-state-visible', false);
 
   el.addEventListener('click', onClick);
   activeElements.add(el);
@@ -122,7 +122,7 @@ function syncVisibility() {
   const visible = y > showThreshold;
   const nearTop = y < HIDE_NEAR_TOP_PX;
   for (const el of activeElements) {
-    el.toggleAttribute('data-visible', visible && !nearTop);
+    el.toggleAttribute('data-state-visible', visible && !nearTop);
   }
 }
 

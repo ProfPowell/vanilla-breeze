@@ -39,9 +39,9 @@ import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
 import { copyText } from '../../utils/copy-init.js';
 import { goToFragment } from '../_shared/fragment-link.js';
+import { isSkippedHeading } from '../_shared/toc-skip.js';
 
 const DEFAULT_LEVELS = ['h2', 'h3'];
-const SKIP_CONTEXT = 'dialog, [data-toc-ignore], browser-window';
 const COPIED_DURATION = 1500;
 
 let seq = 0;
@@ -122,7 +122,7 @@ class HeadingLinks extends VBElement {
   /** @param {Element} heading */
   #owns(heading) {
     if (heading.closest('heading-links') !== this) return false;
-    return !heading.closest(SKIP_CONTEXT);
+    return !isSkippedHeading(heading);
   }
 
   #processHeadings() {

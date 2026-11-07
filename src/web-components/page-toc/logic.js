@@ -33,6 +33,7 @@
 
 import { registerComponent } from '../../lib/bundle-registry.js';
 import { VBElement } from '../../lib/vb-element.js';
+import { isSkippedHeading, isRenderedHeading } from '../_shared/toc-skip.js';
 
 class PageToc extends VBElement {
   /** @type {IntersectionObserver | undefined} */
@@ -47,6 +48,9 @@ class PageToc extends VBElement {
   #details = null;
   #resizeTimer = 0;
   #raf = 0;
+  /** Watches the scope for headings added/removed/ignored (auto mode). @type {MutationObserver | undefined} */
+  #scopeObserver;
+  #liveRaf = 0;
   #isManualMode = false;
 
   setup() {
@@ -68,6 +72,8 @@ class PageToc extends VBElement {
   teardown() {
     cancelAnimationFrame(this.#raf);
     this.#raf = 0;
+    cancelAnimationFrame(this.#liveRaf);
+    this.#liveRaf = 0;
     clearTimeout(this.#resizeTimer);
     this.#reset();
   }
@@ -105,6 +111,8 @@ class PageToc extends VBElement {
   #reset() {
     this.#observer?.disconnect();
     this.#observer = undefined;
+    this.#scopeObserver?.disconnect();
+    this.#scopeObserver = undefined;
     for (const el of this.querySelectorAll(':scope > [data-page-toc-generated]')) el.remove();
     this.#headings = [];
     this.#links.clear();
@@ -122,6 +130,7 @@ class PageToc extends VBElement {
       this.#enhanceExisting();
     } else {
       this.#buildToc();
+      this.#watchScope();
     }
 
     // Wide screens show the ToC permanently
@@ -224,20 +233,65 @@ class PageToc extends VBElement {
     }
   }
 
-  #buildToc() {
-    const levels = (this.getAttribute('levels') || 'h2,h3')
+  #levels() {
+    return (this.getAttribute('levels') || 'h2,h3')
       .split(',')
       .map(l => l.trim().toLowerCase());
-    const scope = this.getAttribute('scope') || 'main';
+  }
+
+  #scope() {
+    return document.querySelector(this.getAttribute('scope') || 'main');
+  }
+
+  /**
+   * Headings that get an entry: in scope, with an id (heading-links supplies
+   * ids), outside the shared skip contexts ([data-toc-ignore], dialog,
+   * browser-window — same list as heading-links) and rendered.
+   * @param {Element} container
+   * @returns {HTMLElement[]}
+   */
+  #collectHeadings(container) {
+    return /** @type {HTMLElement[]} */ (Array.from(container.querySelectorAll(this.#levels().join(','))))
+      .filter(h => h.id && !this.contains(h) && !isSkippedHeading(h) && isRenderedHeading(h));
+  }
+
+  /**
+   * Keep an auto-generated ToC live: rebuild when headings are added or
+   * removed, or data-toc-ignore / id / hidden change in scope. Mutations are
+   * batched per frame and only rebuild when the heading list really changed
+   * (heading-links adding anchors, or unrelated DOM churn, costs one query).
+   */
+  #watchScope() {
+    const container = this.#scope();
+    if (!container) return;
+    this.#scopeObserver = new MutationObserver((records) => {
+      if (records.every(r => this.contains(r.target))) return;
+      if (this.#liveRaf) return;
+      this.#liveRaf = requestAnimationFrame(() => {
+        this.#liveRaf = 0;
+        const next = this.#collectHeadings(container);
+        const same = next.length === this.#headings.length
+          && next.every((h, i) => h === this.#headings[i] && this.#links.has(h.id));
+        if (!same) this.#init();
+      });
+    });
+    this.#scopeObserver.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-toc-ignore', 'id', 'hidden'],
+    });
+  }
+
+  #buildToc() {
+    const levels = this.#levels();
     const title = this.dataset.title || 'On this page';
 
     // Find headings within scope
-    const container = document.querySelector(scope);
+    const container = this.#scope();
     if (!container) return;
 
-    this.#headings = /** @type {HTMLElement[]} */ (Array.from(container.querySelectorAll(levels.join(','))))
-      .filter(h => h.id)
-      .filter(h => !h.hasAttribute('data-toc-ignore') && !h.closest('[data-toc-ignore]'));
+    this.#headings = this.#collectHeadings(container);
 
     if (this.#headings.length === 0) return;
 

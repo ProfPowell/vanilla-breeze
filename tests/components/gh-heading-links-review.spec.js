@@ -82,9 +82,10 @@ test('click: announcement in a live region outside the link, icon toggles and re
   await anchor.click();
   await expect(anchor).toHaveAttribute('data-state', 'copied');
   await expect(anchor.locator('icon-wc')).toHaveAttribute('name', 'check');
-  const live = await page.evaluate(() => [...document.querySelectorAll('[role="status"]')]
-    .map((el) => ({ text: el.textContent, inLink: !!el.closest('a') })));
-  expect(live).toContainEqual({ text: 'Link copied to clipboard', inLink: false });
+  // The shared announcer clears, then writes ~50ms later so repeats are spoken.
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('[role="status"]')]
+    .map((el) => ({ text: el.textContent, inLink: !!el.closest('a') }))))
+    .toContainEqual({ text: 'Link copied to clipboard', inLink: false });
   await anchor.click(); // within the 1.5s window
   await expect(anchor).not.toHaveAttribute('data-state', 'copied', { timeout: 3000 });
   await expect(anchor.locator('icon-wc')).toHaveAttribute('name', 'link');

@@ -180,7 +180,7 @@ test.describe('summary rendering', () => {
     await page.locator('#nm').blur();
     await expect(summary).toHaveAttribute('hidden', '');
     await expect(summary).toBeHidden();
-    await expect(summary).not.toHaveAttribute('data-visible');
+    await expect(summary).not.toHaveAttribute('data-state-visible');
     await expect(page.locator('[data-summary-list] a')).toHaveCount(0);
   });
 });

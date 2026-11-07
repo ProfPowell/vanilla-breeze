@@ -85,7 +85,9 @@ VB.transition('slide', (el, param) => assign(el, vtName('slide', el), slideClass
 
 VB.transition('fade', (el) => assign(el, vtName('fade', el), 'fade'))
 VB.transition('scale', (el) => assign(el, vtName('scale', el), 'scale'))
-VB.transition('none', (el) => assign(el, vtName('none', el), 'none'))
+// `none` maps to the class vt-none: view-transition-class: none means "no
+// class", so a *.none rule could never match.
+VB.transition('none', (el) => assign(el, vtName('none', el), 'vt-none'))
 
 // ─── Stagger ─────────────────────────────────────────────────────────────────
 // Each child gets its own name (keyed to the child, so a reordered child

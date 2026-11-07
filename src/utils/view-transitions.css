@@ -18,10 +18,15 @@
  * - data-vt="footer"  → site-footer
  *
  * Animation presets (via data-vt-class):
- * - slide-left, slide-right, scale, fade, none
+ * - slide-forward, slide-back (follow dir), slide-left, slide-right
+ *   (physical), scale, fade, none (class vt-none)
  *
- * Browser support: Chrome 111+, Safari 18+
+ * Browser support (cross-document): Chrome 126+, Safari 18.2+.
+ * view-transition-class: Chrome 125+, Safari 18.2+.
  * Gracefully ignored in unsupported browsers.
+ *
+ * Package: vanilla-breeze/view-transitions-css (dist/cdn/view-transitions.css,
+ * built by scripts/build-cdn.js with vt-keyframes.css inlined).
  */
 
 /* Shared keyframes, so this file still works when loaded on its own. */
@@ -77,7 +82,15 @@
 [data-vt-class="slide-right"] { view-transition-class: slide-right; }
 [data-vt-class="scale"] { view-transition-class: scale; }
 [data-vt-class="fade"] { view-transition-class: fade; }
-[data-vt-class="none"] { view-transition-class: none; }
+/* view-transition-class: none means "no class"; the preset class is vt-none */
+[data-vt-class="none"] { view-transition-class: vt-none; }
+
+/* Logical slides: forward moves content toward the start of the line
+   (left in LTR, right in RTL), the same as data-transition="slide". */
+[data-vt-class="slide-forward"]:dir(ltr),
+[data-vt-class="slide-back"]:dir(rtl) { view-transition-class: slide-left; }
+[data-vt-class="slide-forward"]:dir(rtl),
+[data-vt-class="slide-back"]:dir(ltr) { view-transition-class: slide-right; }
 
 /* Keyframes, duration tokens, class presets and the reduced-motion rule
    live in vt-keyframes.css, imported above and always shipped. */

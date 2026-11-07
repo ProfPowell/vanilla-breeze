@@ -585,6 +585,17 @@ async function buildCDN() {
     });
   }
 
+  // Cross-document view transitions opt-in (never in the main bundles: it
+  // turns on @view-transition for every navigation). Bundled so the
+  // vt-keyframes.css it imports is inlined. Exported as
+  // vanilla-breeze/view-transitions-css; served at /cdn/view-transitions.css.
+  await esbuild.build({
+    ...CSS_DEFAULTS,
+    entryPoints: [join(SRC, 'utils', 'view-transitions.css')],
+    outfile: join(CDN, 'view-transitions.css'),
+    logLevel: 'info',
+  });
+
   // Build dev CSS add-on
   const devCssPath = join(SRC, 'dev.css');
   if (existsSync(devCssPath)) {

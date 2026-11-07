@@ -363,7 +363,7 @@ class PageTour extends VBElement {
 
     // Fade in backdrop on next frame
     requestAnimationFrame(() => {
-      this.#backdrop?.setAttribute('data-visible', '');
+      this.#backdrop?.setAttribute('data-state-visible', '');
     });
   }
 

@@ -43,7 +43,7 @@ const allRuleText = (page) => page.evaluate(() => {
 test('main bundle animates every data-transition preset class', async ({ page }) => {
   await load(page);
   const rules = (await allRuleText(page)).join('\n');
-  for (const cls of ['slide-left', 'slide-right', 'scale', 'fade', 'none']) {
+  for (const cls of ['slide-left', 'slide-right', 'scale', 'fade', 'vt-none']) {
     expect(rules, `::view-transition-new(*.${cls})`).toContain(`::view-transition-new(*.${cls})`);
   }
 });

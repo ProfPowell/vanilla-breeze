@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "hide-until-ready / show-until-ready"
-description: "CSS utility attributes for FOUC prevention. Hide custom elements until defined, or show placeholder content that disappears when the component is ready."
+description: "CSS-only FOUC guards for custom elements: hide an element until its definition loads (with a no-JS and timeout escape), or show placeholder content until then."
 attributeName: hide-until-ready
 category: infrastructure
 attributeType: data
@@ -13,123 +13,98 @@ crumbLabel: Data Attributes
 
 <section>
     <h2>Overview</h2>
-    <p>Custom elements go through a brief undefined state before their JavaScript loads and registers them. During this window, the browser renders their raw HTML content, causing a <strong>flash of unstyled content (FOUC)</strong>. The <code>hide-until-ready</code> and <code>show-until-ready</code> attributes solve this with pure CSS &mdash; no JavaScript needed.</p>
-
+    <p>A custom element renders its raw children until its JavaScript defines it, which can flash unstyled markup (FOUC). Two CSS-only attributes handle that gap:</p>
     <ul>
-      <li><code>hide-until-ready</code> &mdash; hides the element until its custom element is defined</li>
-      <li><code>show-until-ready</code> &mdash; shows the element only while its custom element is undefined (placeholder content)</li>
+      <li><code>hide-until-ready</code> &mdash; hides a custom element until it is defined.</li>
+      <li><code>show-until-ready</code> &mdash; shows a custom element only until it is defined.</li>
     </ul>
+    <p>They key off <code>:defined</code>, so they only make sense on custom elements: a native element is always defined. (Unprefixed attributes are valid on custom elements.)</p>
+
+    <browser-window
+      src="/docs/snippets/demos/hide-until-ready-basic.html"
+      url="https://vanilla-breeze.com/hide-until-ready"
+      title="hide-until-ready with a sibling placeholder"
+      shadow>
+    </browser-window>
   </section>
 
   <section>
-    <h2>How It Works</h2>
-    <p>These attributes use the CSS <code>:defined</code> pseudo-class, which matches elements that have been registered via <code>customElements.define()</code>. The CSS rules are simple:</p>
+    <h2>Usage</h2>
+    <code-block language="html" show-lines label="Hide until defined" data-escape><tab-set hide-until-ready>
+  <details name="plan" open>
+    <summary>Monthly</summary>
+    <p>Billed every month.</p>
+  </details>
+  <details name="plan">
+    <summary>Yearly</summary>
+    <p>Two months free.</p>
+  </details>
+</tab-set></code-block>
+    <p>Prefer components that look right before they upgrade &mdash; most VB components do (a <code>&lt;tab-set&gt;</code> is a working accordion without JavaScript). Reach for <code>hide-until-ready</code> only when the raw markup really is worse than nothing.</p>
+  </section>
 
-    <code-block language="css" show-lines label="The complete CSS" data-escape>/* How it works — pure CSS, no JavaScript needed */
-
-[hide-until-ready]:not(:defined) {
-  display: none;
+  <section>
+    <h2>Options</h2>
+    <p>Both attributes are boolean. The complete CSS (<code>src/utils/readiness.css</code>):</p>
+    <code-block language="css" show-lines label="readiness.css (simplified)" data-escape>@media (scripting: enabled) {
+  /* hide only while the root still says "waiting" (see Timeout) */
+  @container style(--vb-until-ready: waiting) {
+    [hide-until-ready]:not(:defined) { display: none !important; }
+  }
 }
 
-[show-until-ready]:defined {
-  display: none;
-}</code-block>
+[show-until-ready]:defined { display: none !important; }</code-block>
 
-    <p>Because this is pure CSS evaluated by the browser's style engine, it works immediately &mdash; before any JavaScript runs. There is no flicker or timing issue.</p>
-
-    <h3>The :defined Pseudo-Class</h3>
-    <p>The <code>:defined</code> pseudo-class matches any element that is defined. For custom elements (elements with a hyphen in their tag name), this means <code>customElements.define()</code> has been called for that tag. Standard HTML elements are always <code>:defined</code>.</p>
-
+    <h3>Never hidden for good</h3>
     <ul>
-      <li><code>:not(:defined)</code> &mdash; matches custom elements before their class is registered</li>
-      <li><code>:defined</code> &mdash; matches custom elements after registration, and all standard HTML elements always</li>
+      <li><strong>No JavaScript</strong> &mdash; under <code>@media (scripting: none)</code> nothing is hidden, because nothing would ever define the element.</li>
+      <li><strong>Timeout</strong> &mdash; if scripting is on but the definition never arrives (a blocked or failed module, a CSP error, a 404), the content is revealed after <code>--vb-until-ready-timeout</code> (default <code>3s</code>). Set it on <code>:root</code> to change it. A one-shot animation on the root flips <code>--vb-until-ready</code> from <code>waiting</code> to <code>expired</code>; the hide rule is a container style query on that value. Browsers without container style queries never hide the element (you get the FOUC, not lost content). Do not set <code>animation</code> on <code>:root</code> yourself, or the timer is replaced.</li>
+      <li><strong>VB's CSS-only elements</strong> (<code>&lt;layout-stack&gt;</code>, <code>&lt;layout-card&gt;</code>, <code>&lt;user-avatar&gt;</code>&hellip;) are defined inertly by VB, so on them the attribute has no effect.</li>
     </ul>
+
+    <h3>It always wins</h3>
+    <p>The rules live in the lowest framework layer with <code>!important</code> (like <code>[hidden]</code>), so a component that locks its own <code>display</code> (<code>&lt;content-swap&gt;</code>'s <code>display: grid !important</code>) or your own unlayered <code>display</code> rule cannot un-hide it.</p>
   </section>
 
   <section>
-    <h2>hide-until-ready</h2>
-    <p>Add <code>hide-until-ready</code> to any custom element to prevent it from rendering until its definition is loaded. The element is set to <code>display: none</code> while undefined, then automatically appears once the browser registers the custom element.</p>
-
-    <code-block language="html" show-lines label="Hide until defined" data-escape><!-- Hidden until the custom element is defined -->
-<my-component hide-until-ready>
-  Content that should only show when the component is ready.
-</my-component></code-block>
-
-    <p>This is the most common use case. It prevents raw, unstyled content from flashing before the component's styles and behavior are applied.</p>
+    <h2>Events</h2>
+    <p>None. To run code when an element is defined, use <code>customElements.whenDefined('tag-name')</code>.</p>
   </section>
 
   <section>
-    <h2>show-until-ready</h2>
-    <p>Add <code>show-until-ready</code> to an element to display it only while the custom element is undefined. Once the element is defined, it disappears. This is useful for loading placeholders, skeleton screens, or fallback content.</p>
-
-    <code-block language="html" show-lines label="Placeholder content" data-escape><!-- Shown until the custom element is defined, then hidden -->
-<my-component show-until-ready>
-  Loading placeholder...
-</my-component>
-
-<my-component>
-  Actual component content.
-</my-component></code-block>
-
-    <p>The placeholder element uses the same tag name as the real component so that <code>:defined</code> triggers at the right time. When the custom element class is registered, all elements with that tag become <code>:defined</code> simultaneously.</p>
+    <h2>Styling</h2>
+    <p>Hiding and revealing changes layout: the element takes no space while hidden. To avoid a shift, reserve its space on a placeholder (<code>min-block-size</code>) or with <code>contain-intrinsic-size</code>, as the demo does.</p>
   </section>
 
   <section>
-    <h2>Combined Pattern</h2>
-    <p>Use both attributes together for a smooth loading experience: show a skeleton or placeholder while the component loads, then swap to the real content.</p>
-
-    <code-block language="html" show-lines label="Skeleton to component swap" data-escape><!-- Loading skeleton shown until component is ready -->
-<card-wc show-until-ready>
-  <div class="skeleton" style="height: 200px;"></div>
-</card-wc>
-
-<!-- Real component hidden until defined -->
-<card-wc hide-until-ready>
-  <h3>Card Title</h3>
-  <p>Card content loads without a flash of unstyled markup.</p>
-</card-wc></code-block>
-
-    <p>This pattern ensures the user always sees something meaningful &mdash; a placeholder while loading, then the real component once ready. No layout shift, no flash of raw markup.</p>
-  </section>
-
-  <section>
-    <h2>Common Use Cases</h2>
-
-    <h3>Preventing FOUC on Complex Components</h3>
-    <p>Components like dialogs, tab groups, and accordions often render incorrectly before their JavaScript initializes. Use <code>hide-until-ready</code> to avoid showing broken layouts:</p>
-
-    <code-block language="html" show-lines label="FOUC prevention on components" data-escape><!-- Prevent FOUC on a dialog component -->
-<dialog-wc hide-until-ready trigger="open-settings">
-  <h2 slot="heading">Settings</h2>
-  <p>Dialog content here.</p>
-</dialog-wc>
-
-<!-- Prevent layout shift on a tabs component -->
-<tab-group hide-until-ready>
-  <tab-panel label="First">Panel 1 content</tab-panel>
-  <tab-panel label="Second">Panel 2 content</tab-panel>
-</tab-group></code-block>
-
-    <h3>Loading Placeholders</h3>
-    <p>For components that may take time to load (charts, maps, heavy widgets), show lightweight placeholder content:</p>
-
-    <code-block language="html" show-lines label="Loading placeholder pattern" data-escape><!-- Show a lightweight placeholder until the heavy component loads -->
-<chart-wc show-until-ready>
-  <p>Loading chart...</p>
-</chart-wc>
-
-<chart-wc hide-until-ready data-src="/api/chart-data">
-  <!-- Full chart renders here once the element is defined -->
+    <h2>Placeholders</h2>
+    <p>Prefer a <strong>sibling placeholder</strong> that steps aside with <code>:has()</code>. It is a plain element, so it never upgrades into a second component:</p>
+    <code-block language="html" show-lines label="Sibling placeholder" data-escape><p class="chart-placeholder" aria-busy="true">Loading chart&hellip;</p>
+<chart-wc hide-until-ready data-type="bar">
+  <table>&hellip;</table>
 </chart-wc></code-block>
+    <code-block language="css" show-lines label="Placeholder CSS" data-escape>.chart-placeholder { min-block-size: 16rem; }
+.chart-placeholder:has(+ chart-wc:defined) { display: none; }</code-block>
+    <p><code>show-until-ready</code> goes on an element with the <strong>same tag</strong> as the component. Once the tag is defined that placeholder upgrades too (its <code>connectedCallback</code> runs, so a <code>&lt;chart-wc&gt;</code> placeholder may render or fetch) and is merely hidden. Use it only for light components; for heavy ones, use a sibling placeholder or the component's own loading state (<a href="/docs/prototyping/"><code>data-loading="skeleton"</code></a>).</p>
+    <code-block language="html" show-lines label="show-until-ready (light components only)" data-escape><user-greeting show-until-ready>Hello!</user-greeting>
+<user-greeting hide-until-ready name="Ada"></user-greeting></code-block>
   </section>
 
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>Content hidden with <code>display: none</code> is removed from the accessibility tree &mdash; screen readers will not announce it</li>
-      <li>When the component becomes defined, it appears in the accessibility tree automatically</li>
-      <li>Placeholder content (<code>show-until-ready</code>) is accessible while visible, providing context during loading</li>
-      <li>No JavaScript dependency &mdash; if scripts fail to load, <code>hide-until-ready</code> elements stay hidden (graceful degradation), while <code>show-until-ready</code> placeholders remain visible as fallback</li>
-      <li>No ARIA attributes needed &mdash; the browser's native rendering handles visibility</li>
+      <li>Hidden content is out of the accessibility tree and the tab order until it appears. Appearing is not announced.</li>
+      <li>A placeholder such as &ldquo;Loading chart&hellip;&rdquo; is read while visible and removed without announcement. For a long wait, mark the region <code>aria-busy="true"</code> and clear it when the content is ready.</li>
+      <li>With JavaScript off nothing is hidden, and the timeout reveals content whose script failed, so no content is lost for good.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/noscript/"><code>data-requires-js</code> / <code>data-js-enhanced</code></a> &mdash; hide controls that need JavaScript when scripting is off (the opposite case).</li>
+      <li><a href="/docs/prototyping/"><code>data-loading</code></a> &mdash; skeleton and spinner states on the element itself.</li>
+      <li><a href="/docs/attributes/data-visible/"><code>data-visible</code></a> &mdash; hiding by viewport width.</li>
+      <li><a href="/docs/elements/native/noscript/"><code>&lt;noscript&gt;</code></a> &mdash; content only for no-JS visitors.</li>
     </ul>
   </section>

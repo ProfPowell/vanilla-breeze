@@ -29,9 +29,11 @@ crumbLabel: Data Attributes
   <!-- Quick Start -->
   <section id="quick-start">
     <h2>Quick Start</h2>
-    <p>Import the opt-in CSS utility. This single import gives you smooth crossfade transitions on all same-origin navigations:</p>
+    <p>Load the opt-in stylesheet after the VB bundle. It is not in the bundles, because it turns on transitions for every same-origin navigation:</p>
 
-        <code-block language="css" label="Import view transitions" data-escape>@import "vanilla-breeze/utils/view-transitions.css";</code-block>
+        <code-block language="html" label="Link the stylesheet" data-escape><link rel="stylesheet" href="https://unpkg.com/vanilla-breeze/dist/cdn/view-transitions.css"></code-block>
+
+        <code-block language="css" label="Or import it through a bundler (package export)" data-escape>@import "vanilla-breeze/view-transitions-css";</code-block>
 
     <p>That&rsquo;s it for basic crossfade: the whole page fades between same-origin navigations. To give the main content its own transition group, mark it with <code>data-vt="main"</code> (see <a href="#named-groups">Named Groups</a>). VB does not name <code>&lt;main&gt;</code> automatically, because a <code>view-transition-name</code> on it traps <code>position: fixed</code> children such as a maximized <code>&lt;browser-window&gt;</code>.</p>
 
@@ -47,7 +49,7 @@ crumbLabel: Data Attributes
 <img data-vt-name="product-123" src="hero.jpg" />
 <h1 data-vt-name="title-123">Product Name</h1></code-block>
 
-    <p>The <code>data-vt-name</code> attribute requires the init script (included in all doc site layouts, or import <code>view-transition-init.js</code>).</p>
+    <p><code>data-vt-name</code> is applied by a small init script that ships in every VB JavaScript bundle; there is nothing to import.</p>
 
     <p><strong>Changing content without leaving the page?</strong> That&rsquo;s a same-document transition, and it needs none of this page&rsquo;s setup. Tabs, accordions, carousels, galleries, charts and diagrams already animate their own changes, and <a href="/docs/attributes/data-transition/"><code>data-transition</code></a> with <code>VB.swap()</code> covers your own content. See <a href="/docs/attributes/data-transition/#components">Built into components</a>.</p>
   </section>
@@ -110,10 +112,6 @@ crumbLabel: Data Attributes
       <li>No marker attribute is added, so cloned and re-inserted elements are named from their own attribute</li>
     </ol>
 
-        <code-block language="js" label="Import the init script" data-escape>// Already included in doc site layouts
-// For standalone pages:
-import 'vanilla-breeze/utils/view-transition-init.js';</code-block>
-
     <p><strong>Important:</strong> Each <code>view-transition-name</code> must be unique per page. Two elements with the same name on the same page will cause errors.</p>
   </section>
 
@@ -130,16 +128,20 @@ import 'vanilla-breeze/utils/view-transition-init.js';</code-block>
         </tr>
       </thead>
       <tbody>
-        <tr><td><code>slide-left</code></td><td>Old content slides out left, new slides in from right</td></tr>
-        <tr><td><code>slide-right</code></td><td>Old content slides out right, new slides in from left</td></tr>
+        <tr><td><code>slide-forward</code></td><td>Content moves toward the start of the line: left in LTR, right under <code>dir="rtl"</code> (like <code>data-transition="slide"</code>)</td></tr>
+        <tr><td><code>slide-back</code></td><td>The reverse of <code>slide-forward</code></td></tr>
+        <tr><td><code>slide-left</code></td><td>Old content slides out left, new slides in from right (physical, ignores direction)</td></tr>
+        <tr><td><code>slide-right</code></td><td>Old content slides out right, new slides in from left (physical, ignores direction)</td></tr>
         <tr><td><code>scale</code></td><td>Old content scales down and fades, new scales up</td></tr>
         <tr><td><code>fade</code></td><td>Pure opacity crossfade (no morphing)</td></tr>
-        <tr><td><code>none</code></td><td>Instant swap with no animation</td></tr>
+        <tr><td><code>none</code></td><td>Instant swap with no animation (sets the class <code>vt-none</code>: <code>view-transition-class: none</code> would mean &ldquo;no class&rdquo;)</td></tr>
       </tbody>
     </table>
 
-        <code-block language="html" label="Animation presets" data-escape><!-- Slide main content from the left -->
-<main data-vt-class="slide-left">...</main>
+    <p>A class only applies to an element that has a <code>view-transition-name</code>, so pair <code>data-vt-class</code> with <code>data-vt</code> or <code>data-vt-name</code>.</p>
+
+        <code-block language="html" label="Animation presets" data-escape><!-- Slide the main content forward (mirrors in RTL) -->
+<main data-vt="main" data-vt-class="slide-forward">...</main>
 
 <!-- Scale the hero section -->
 <section data-vt="hero" data-vt-class="scale">...</section>
@@ -180,7 +182,7 @@ import 'vanilla-breeze/utils/view-transition-init.js';</code-block>
     <p>Interactive examples showing view transitions in action. Open in a new tab for the full MPA navigation experience.</p>
 
     <layout-grid data-layout-min="m" data-layout-gap="m">
-      <a href="/docs/examples/demos/view-transitions/" class="section-card" style="border: 2px solid var(--color-primary);">
+      <a href="/docs/examples/demos/view-transitions/" class="section-card">
         <h3>Gallery Morph</h3>
         <p>Card grid with shared element morphing to detail pages.</p>
       </a>

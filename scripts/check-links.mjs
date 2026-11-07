@@ -60,6 +60,7 @@ export function parseLevels(value) {
   return tokens.length ? [...new Set(tokens)] : ['h2', 'h3'];
 }
 
+// Mirrors SKIP_CONTEXT in src/web-components/_shared/toc-skip.js (heading-links + page-toc).
 const HEADING_LINKS_SKIP = 'dialog, [data-toc-ignore], browser-window';
 
 /** Demo-ish pages: only their asset references are checked. */

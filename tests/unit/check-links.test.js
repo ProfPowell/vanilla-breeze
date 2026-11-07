@@ -30,7 +30,10 @@ const runtime = (() => {
     if (!m) throw new Error(`pattern not found in heading-links logic.js: ${re}`);
     return m[1];
   };
-  const skip = match(/const SKIP_CONTEXT = '([^']+)'/);
+  // The skip list is shared with page-toc (src/web-components/_shared/toc-skip.js).
+  const skipSrc = readFileSync(new URL('../../src/web-components/_shared/toc-skip.js', import.meta.url), 'utf8');
+  const skip = /export const SKIP_CONTEXT = '([^']+)'/.exec(skipSrc)?.[1];
+  if (!skip) throw new Error('SKIP_CONTEXT not found in _shared/toc-skip.js');
   const defaults = match(/const DEFAULT_LEVELS = (\[[^\]]+\])/);
   return new Function(`const DEFAULT_LEVELS = ${defaults};
     ${grab('headingSlug')} ${grab('uniqueSlug')} ${grab('parseLevels')}

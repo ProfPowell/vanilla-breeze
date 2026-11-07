@@ -3,98 +3,77 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>data-responsive — responsive image upscale</title>
+  <title>data-responsive — measured sizes and srcset shorthand</title>
   <link rel="stylesheet" href="/src/main.css" />
-  <style>
-    body { padding: var(--size-l); background: var(--color-surface); }
-    section + section { margin-block-start: var(--size-xl); }
-    h3 { margin-block: 0 var(--size-s); }
-    figure { margin: 0; }
-    figure img { inline-size: 100%; block-size: auto; display: block; border-radius: var(--radius-m); }
-    figcaption {
-      margin-block-start: var(--size-2xs);
-      font-size: var(--font-size-s);
-      color: var(--color-text-muted);
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-      gap: var(--size-m);
-    }
-    .note {
-      font-size: var(--font-size-s);
-      color: var(--color-text-muted);
-    }
-  </style>
 </head>
 <body>
-  <h1>data-responsive — responsive image upscale</h1>
-  <layout-stack data-layout-gap="xl">
+  <layout-center data-layout-max="wide">
+    <layout-stack data-layout-gap="xl">
+      <h1>data-responsive</h1>
+      <p>Each placeholder prints its own size in the corner, so you can see which candidate the browser picked. Resize the window and reload: <code>sizes</code> follows the rendered width.</p>
 
-    <section>
-      <h2>Auto-sizes (srcset already provided)</h2>
-      <p class="note">
-        A <code>ResizeObserver</code> watches the rendered width and keeps <code>sizes</code> in sync, so the browser always picks the closest source for the actual layout. Loading and decoding defaults are added too.
-      </p>
-      <figure>
-        <img data-responsive
-             src="/cdn/icons/lucide/image.svg"
-             srcset="/cdn/icons/lucide/image.svg 400w,
-                     /cdn/icons/lucide/image.svg 800w,
-                     /cdn/icons/lucide/image.svg 1200w"
-             sizes="100vw"
-             alt="Sample image with explicit srcset"/>
-        <figcaption>Resize the window: <code>sizes</code> updates with the rendered CSS pixel width.</figcaption>
-      </figure>
-    </section>
-
-    <section>
-      <h2>Srcset shorthand from a width list</h2>
-      <p class="note">
-        Drop the verbose <code>srcset</code>; let <code>data-responsive="400,800,1200"</code> synthesize it from <code>src</code> by inserting <code>-{width}</code> before the file extension.
-      </p>
-      <figure>
-        <img data-responsive="400,800,1200"
-             src="/cdn/icons/lucide/layout.svg"
-             alt="Same shorthand as srcset='layout-400.svg 400w, layout-800.svg 800w, layout-1200.svg 1200w'"/>
-        <figcaption>The generated <code>srcset</code> + auto-<code>sizes</code> ship together.</figcaption>
-      </figure>
-    </section>
-
-    <section>
-      <h2>Dev overlay (data-responsive-debug)</h2>
-      <p class="note">
-        Add <code>data-responsive-debug</code> to inspect the chosen source &mdash; useful while tuning <code>sizes</code> or checking which width the browser picked.
-      </p>
-      <section class="grid">
+      <section>
+        <h2>Measured sizes (srcset in markup)</h2>
+        <p>The <code>srcset</code> is written in the markup, so the browser can choose from it while parsing. <code>data-responsive</code> measures the rendered width and writes it to <code>sizes</code>.</p>
         <figure>
-          <img data-responsive
-               data-responsive-debug
-               src="/cdn/icons/lucide/sun.svg"
-               srcset="/cdn/icons/lucide/sun.svg 200w, /cdn/icons/lucide/sun.svg 400w"
-               sizes="100vw"
-               alt="Sunrise"/>
-        </figure>
-        <figure>
-          <img data-responsive
-               data-responsive-debug
-               src="/cdn/icons/lucide/moon.svg"
-               srcset="/cdn/icons/lucide/moon.svg 200w, /cdn/icons/lucide/moon.svg 400w"
-               sizes="100vw"
-               alt="Moon"/>
-        </figure>
-        <figure>
-          <img data-responsive
-               data-responsive-debug
-               src="/cdn/icons/lucide/star.svg"
-               srcset="/cdn/icons/lucide/star.svg 200w, /cdn/icons/lucide/star.svg 400w"
-               sizes="100vw"
-               alt="Star"/>
+          <img data-responsive data-responsive-debug
+               src="/src/assets/placeholders/responsive-800.svg"
+               srcset="/src/assets/placeholders/responsive-400.svg 400w,
+                       /src/assets/placeholders/responsive-800.svg 800w,
+                       /src/assets/placeholders/responsive-1200.svg 1200w"
+               width="1200" height="600"
+               alt="Placeholder landscape chosen from a 400, 800 and 1200 pixel srcset"/>
+          <figcaption>The badge names the source the browser selected.</figcaption>
         </figure>
       </section>
-    </section>
 
-  </layout-stack>
+      <section>
+        <h2>Srcset shorthand</h2>
+        <p><code>data-responsive="400,800,1200"</code> on <code>responsive.svg</code> generates <code>responsive-400.svg 400w, responsive-800.svg 800w, responsive-1200.svg 1200w</code>. The script runs after the parser has requested <code>src</code>, so this costs a second request; write <code>srcset</code> in markup when that matters.</p>
+        <figure>
+          <img data-responsive="400,800,1200" data-responsive-debug
+               src="/src/assets/placeholders/responsive.svg"
+               width="1200" height="600"
+               alt="Placeholder landscape whose srcset is generated from a list of widths"/>
+          <figcaption>Every generated candidate exists next to the source file.</figcaption>
+        </figure>
+      </section>
+
+      <section>
+        <h2>In a grid</h2>
+        <p>Narrow grid cells measure narrow, so the small candidate is enough.</p>
+        <ul data-layout="grid" data-layout-min="m">
+          <li>
+            <img data-responsive data-responsive-debug
+                 src="/src/assets/placeholders/responsive-400.svg"
+                 srcset="/src/assets/placeholders/responsive-400.svg 400w,
+                         /src/assets/placeholders/responsive-800.svg 800w,
+                         /src/assets/placeholders/responsive-1200.svg 1200w"
+                 width="1200" height="600"
+                 alt="Placeholder landscape, first grid cell"/>
+          </li>
+          <li>
+            <img data-responsive data-responsive-debug
+                 src="/src/assets/placeholders/responsive-400.svg"
+                 srcset="/src/assets/placeholders/responsive-400.svg 400w,
+                         /src/assets/placeholders/responsive-800.svg 800w,
+                         /src/assets/placeholders/responsive-1200.svg 1200w"
+                 width="1200" height="600"
+                 alt="Placeholder landscape, second grid cell"/>
+          </li>
+          <li>
+            <img data-responsive data-responsive-debug
+                 src="/src/assets/placeholders/responsive-400.svg"
+                 srcset="/src/assets/placeholders/responsive-400.svg 400w,
+                         /src/assets/placeholders/responsive-800.svg 800w,
+                         /src/assets/placeholders/responsive-1200.svg 1200w"
+                 width="1200" height="600"
+                 alt="Placeholder landscape, third grid cell"/>
+          </li>
+        </ul>
+      </section>
+    </layout-stack>
+  </layout-center>
 
   <script type="module" src="/src/main.js"></script>
 </body>
