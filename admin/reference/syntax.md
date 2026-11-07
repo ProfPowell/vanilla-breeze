@@ -720,7 +720,7 @@ Caption first (`<figcaption>` as first child) moves spacing, the `.bordered` div
 | `.site` | Top navigation (flex between, bordered) |
 | `.page` | Page title (bordered bottom) |
 | `.card` | Card header (bordered bottom) |
-| `[data-sticky]` | Sticks to top; a body-level sticky header adds `scroll-padding-block-start` to `<html>` (`--sticky-offset`, else `--header-sticky-size`, default header.site height) |
+| `[data-sticky]` | Sticks to top; a body-level sticky header adds `scroll-padding-block-start` to `<html>` (`--sticky-offset`, else `--header-sticky-size`, default header.site height). Sticky on its own (z-index 100, no mobile opt-out); `<html data-sticky>` raises it to `--z-sticky-header` and un-sticks it below 48rem |
 | `[data-scroll-hide]` | Sticky; hides on scroll down, reveals after ~40px cumulative scroll up or when focus enters (sets `data-hidden`; JS auto-loaded) |
 | `.transparent` | Absolute overlay (for hero sections) |
 | `.centered` | Text centered |
@@ -773,7 +773,7 @@ Banner landmark only when scoped to `<body>` (no article/aside/main/nav/section 
 | `data-angle` | `down`, `up`, `down-strong`, `up-strong` | Skewed background edge, padding compensation by container width; mirrors in RTL |
 | `hr[data-position]` (child) | `top`, `bottom` | Edge-to-edge hairline pinned to that edge |
 
-`<section>` is a size query container (`container-type: inline-size`); as a content-sized flex/grid item it collapses to zero width — opt out with `container-type: normal` (or `data-container` inside cluster/reel/centred cover/aligned stack to keep it). A section is a `region` landmark only when named (`aria-labelledby`).
+`<section>` is a size query container (`container-type: inline-size`); as a content-sized flex/grid item it collapses to zero width — opt out with `container-type: normal` (or `data-container` inside cluster/reel/centred cover/aligned stack/subgrid grid to keep it). A section is a `region` landmark only when named (`aria-labelledby`).
 
 #### `<article>`
 
@@ -911,8 +911,10 @@ CSS-only custom HTML tags. No JavaScript required. Use as regular HTML elements.
 > property instead: `style="--layout-min: 220px"`. Full contract:
 > [`layout-value-vocabulary-v1.md`](../specs/layout-value-vocabulary-v1.md).
 
+Every layout below except `<layout-imposter>`, `<layout-card>` and `<layout-badge>` also has an attribute form (`data-layout="x"`, or `data-canvas` for the canvas) that shares the same rule and modifiers; values and the per-layout modifier matrix are in §5 and on `/docs/attributes/data-layout/`. In attribute form, `main`/`article`/`section`/`aside` hosts are query containers (`container-type: inline-size`).
+
 #### `<layout-stack>`
-Vertical flex layout with configurable gap.
+Vertical flex layout with configurable gap. Attribute form: `data-layout="stack"`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
@@ -922,63 +924,66 @@ Vertical flex layout with configurable gap.
 Child attribute: `data-container` (on `main`/`article`/`section`/`aside`): keeps the child a query container in a start/center/end stack. Give it an explicit width.
 
 #### `<layout-cluster>`
-Horizontal flexbox with wrapping.
+Horizontal flexbox with wrapping. Attribute form: `data-layout="cluster"`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between items |
 | `data-layout-justify` | `start`, `end`, `center`, `between` | Horizontal alignment |
 | `data-layout-align` | `start`, `end`, `center`, `stretch`, `baseline` | Vertical alignment |
-| `data-layout-nowrap` | (boolean) | Disable wrapping |
-| `data-layout-overlap` | `xs`, `s`, `m`, `l` | Overlap mode (avatar groups) |
+| `data-layout-nowrap` | (boolean) | Disable wrapping; items overflow a narrow container, so give it `overflow-x: auto` |
+| `data-layout-overlap` | (bare), `xs`, `s`, `m`, `l` | Overlap mode (avatar groups): items after the first are pulled back 0.25 / 0.5 / 0.75 / 1rem; bare = `s`. Forces gap 0. Mark up as `<ul class="unstyled" data-layout="cluster" data-layout-overlap aria-labelledby>` with one `<li>` per avatar and an `aria-label` on the "+N" chip |
+
+Child attribute: `data-container` (on `main`/`article`/`section`/`aside`): keeps a content-sized child a query container. Give it an explicit width.
 
 #### `<layout-center>`
-Centered content container.
+Centered content container. Attribute form: `data-layout="center"`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-max` | `narrow`, `normal`, `wide`, `prose` | Max-width constraint |
+| `data-layout-max` | `narrow`, `normal`, `wide`, `prose` | Max width of the content box (`box-sizing: content-box`): 40rem / 60rem / 80rem / 65ch; the gutter is added outside, so the box is max + 2 × gutter |
 | `data-layout-intrinsic` | (boolean) | Flex centering for narrow content |
 | `data-layout-text` | (boolean) | Center text content |
-| `data-layout-gutter` | `none`, `s`, `l` | Horizontal padding |
-| `data-layout-gap` | `none`, `3xs`…`3xl` | Vertical gap between children |
+| `data-layout-gutter` | `none`, `s`, `l` | Inline padding each side. Default `--size-m` applies when the attribute is omitted; there is no `m` value |
+| `data-layout-gap` | (bare), `none`, `3xs`…`3xl` | Makes it a full-width flex column (inline-size = 100% − 2 × gutter) with this gap; bare = `m`. Without it, no gap (block flow) |
 
 #### `<layout-grid>`
-Auto-fit responsive grid.
+Auto-fit responsive grid. Attribute form: `data-layout="grid"`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-layout-min` | `xs` \| `s` \| `m` \| `l` \| `xl` | Minimum column width (8/10/15/20/25rem), clamped to the container (`minmax(min(min, 100%), 1fr)`): a grid narrower than the min shows one full-width column instead of overflowing. One-off: `style="--layout-min: 220px"` (not inherited by nested grids) |
 | `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between items |
-| `data-layout-subgrid` | (bare), `2`, `3`, `4` | Each child becomes a `grid-template-rows: subgrid` spanning N rows (bare = 3; other values also span 3) so header/body/footer align across siblings. The subgridded rows use the grid's row gap, so `data-layout-gap` also spaces the parts inside each child; set `row-gap` on the children to override |
+| `data-layout-subgrid` | (bare), `2`, `3`, `4` | Each child becomes a `grid-template-rows: subgrid` spanning N rows (bare = 3; other values also span 3) so header/body/footer align across siblings. The subgridded rows use the grid's row gap, so `data-layout-gap` also spaces the parts inside each child; set `row-gap` on the children to override. Any child works: direct `main`/`article`/`section`/`aside` children drop `container-type` here (a query container cannot be a subgrid) |
+
+Child attribute: `data-container` (on `main`/`article`/`section`/`aside` in a subgrid grid): keeps the child a query container; it then sizes its own rows.
 
 #### `<layout-cover>`
-Full-height container with centered principal element.
+Full-height container with centered principal element. Attribute form: `data-layout="cover"`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-layout-min` | `s` \| `m` \| `l` \| `xl` \| `auto` | Minimum block size (50/70/80vh, 100dvh). One-off: `style="--layout-min: 65vh"` |
+| `data-layout-min` | `s` \| `m` \| `l` \| `xl` \| `auto` | Minimum block size (50/70/80vh, 100dvh). One-off: `style="--layout-min: 65vh"` (inherits: false; the same property is layout-grid's min column width) |
 | `data-layout-padding` | `none`, `s`, `m`, `l`, `xl` | Padding |
-| `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between items |
-| `data-layout-nospace` | (boolean) | Remove padding |
-| `data-layout-centered` | (boolean) | Center items horizontally |
+| `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Minimum space between all children; the principal's auto margins still centre it |
+| `data-layout-centered` | (boolean) | Center the principal and text horizontally; header/footer and cover-top/-bottom children stretch to full width |
 
-Child attributes: `data-layout-principal`, `data-layout-cover-top`, `data-layout-cover-bottom`
+Child attributes: `data-layout-principal` (centred; a sole child centres without it; with 2+ children and no principal nothing is centred on purpose), `data-layout-cover-top` / `data-layout-cover-bottom` (a `<header>` / `<footer>` child is pinned automatically), `data-container` (on `main`/`article`/`section`/`aside` in a centered cover).
 
 #### `<layout-sidebar>`
-Two-column layout (sidebar + content). Element or attribute form (`data-layout="sidebar"`). `nav`/`aside` children are the sidebar; every other child is content; without `nav`/`aside` the first child is the sidebar and the last the content. Wraps on *container* width. Nested sidebars start from their own defaults. Pair with `data-splitter` for resizable panels.
+Two-column layout (sidebar + content). Element or attribute form (`data-layout="sidebar"`). `nav`/`aside` children are the sidebar; every other child is content; `hr`, `[role=separator]`, `template`, `script` and `style` children are skipped; without `nav`/`aside` the first child is the sidebar and the last the content. Wraps on *container* width. Nested sidebars start from their own defaults. Pair with `data-splitter` for resizable panels. Inside a `data-page-layout` `<main>` narrower than 40rem every child takes a full row (both forms) unless `data-layout-nowrap`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
 | `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between columns |
-| `data-layout-side` | `end` | Sidebar on right. `nav`/`aside` children are the sidebar and keep DOM order; with no `nav`/`aside` child the first child is the sidebar and the row is reversed |
+| `data-layout-side` | `end` | Sidebar on the end side; omit for start (there is no `start` value). `nav`/`aside` children are the sidebar and keep DOM order; with no `nav`/`aside` child the first child is the sidebar and the row is reversed (`row-reverse`: visual order then differs from DOM order) |
 | `data-layout-sidebar-width` | `narrow`, `normal`, `wide` | Sidebar width (12 / 16 / 20rem — the same three values in every sidebar context; `--sidebar-width` token default 16rem) |
 | `data-layout-content-min` | `s` \| `m` \| `l` | Min content width (40/50/60%). One-off: `style="--layout-content-min: 45%"` |
-| `data-layout-nowrap` | (boolean) | Prevent stacking |
+| `data-layout-nowrap` | (boolean) | Prevent stacking, including in a narrow `data-page-layout` main |
 | `data-layout-sticky` (on `nav`/`aside`) | (boolean) | Sticky sidebar with own scroll; requires `<html data-sticky>` |
 
 #### `<layout-switcher>`
-Flexbox that flips horizontal↔vertical based on available space.
+Flexbox row that becomes a column once the switcher's OWN width drops below the threshold (flex-basis `calc((threshold - 100%) * 999)`; no media or container query, so it stacks in a narrow sidebar on a wide screen).
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
@@ -1002,7 +1007,7 @@ Horizontal scrolling container with proximity snap. Element or attribute form (`
 | `data-scroll-hint` | (bare), `start` | Logical edge fades (mirrored in RTL); with scroll-driven animations each edge fades only while there is more content that way. `start`: end edge only. Size: `--scroll-hint-size` |
 
 #### `<layout-imposter>`
-Positioning helper for overlays (visual only — use `<dialog>`/`popover` for modal UI). Logical in RTL; centred overlays use the full container width. `--imposter-z` sets stacking (default 1, `--z-float` when fixed).
+Element only — there is no `data-layout="imposter"`. Positioning helper for overlays (visual only — use `<dialog>`/`popover` for modal UI). Logical in RTL; centred overlays use the full container width. `--imposter-z` sets stacking (default 1, `--z-float` when fixed).
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
@@ -1012,7 +1017,7 @@ Positioning helper for overlays (visual only — use `<dialog>`/`popover` for mo
 | `data-layout-contain` | (boolean) | Cap at the containing block (positioned ancestor, or viewport when fixed) minus the margin; scrolls inside |
 
 #### `<layout-canvas>` / `[data-canvas]`
-Elevated content surface. Attribute form puts the variant in the value; the element form uses `data-variant`. 1px edge: hairline on plain pages, transparent under `data-backdrop`, CanvasText in forced colours. Below 37.5rem every canvas goes flush (both forms). Nested canvases set `--canvas-bg` to `--color-surface-raised`.
+Elevated content surface. Attribute form puts the variant in the value; the element form uses `data-variant`. 1px edge: hairline on plain pages, transparent under `data-backdrop`, CanvasText in forced colours. Nested canvases set `--canvas-bg` to `--color-surface-raised`.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
@@ -1022,8 +1027,10 @@ Elevated content surface. Attribute form puts the variant in the value; the elem
 | `data-padding` | `none`, `s`, `m`, `l`, `xl` | Padding |
 | `data-canvas-depth` | `1`, `2` | Stacked-paper sheets (37.5rem and up) |
 
+Below 37.5rem every canvas goes flush (no radius/shadow/elevated/depth) and drops to `--size-m` inline padding, except that an explicit `data-padding` keeps its value (and `data-max` still caps the width).
+
 #### `<layout-text>`
-Content container with optimal line-length and vertical rhythm. Default max-width: `--measure-normal` (65ch; fluid under `data-fluid`, shorter in the dyslexia/large-text themes). Released to 100% in query containers narrower than 30rem.
+Content container with optimal line-length and vertical rhythm. Attribute form: `data-layout="prose"` (there is no `data-layout="text"`); `article[data-measure]` gives the measure without the rhythm. Default max-width: `--measure-normal` (65ch; fluid under `data-fluid`, shorter in the dyslexia/large-text themes). Released to 100% in query containers narrower than 30rem.
 
 `layout-text/styles.css` owns the typographic core shared with `<layout-columns>`, `[data-layout="columns"]` and `[data-layout="prose"]`: measure, `--prose-line-height`, vertical rhythm, `[data-bleed]` breakout and the narrow-container width release.
 
@@ -1045,17 +1052,17 @@ Multi-column reading flow. Measure, rhythm, centering and `[data-bleed]` come fr
 |-----------|--------|-------------|
 | `data-layout-column-count` | `1`, `2`, `3`, `auto` | `1` (default) = single measured column. `2`/`3` are maximums (`columns: 14rem N`): they drop to fewer columns in narrow containers, down to one on a phone. `auto` = as many `--column-min-width` (38ch) columns as the element's own width fits (no viewport query) |
 | `data-layout-measure` / `data-layout-max` | `narrow`, `normal`, `wide` | Count 1: caps the block. Counts 2/3: caps each column (block ≤ count × measure + gaps); without it they fill the container. `auto`: sets the column width |
-| `data-layout-align` | `justify` | Justified text with hyphenation |
+| `data-layout-align` | `justify` | Justified text with hyphenation. Narrow justified columns form rivers (WCAG 1.4.8 AAA): prefer ragged-right for long text |
 | `data-layout-centered` | (boolean) | No effect (columns are always centered) |
 
 Custom properties: `--column-min-width` (38ch, auto mode), `--column-gap` (`--size-2xl`).
 Child attribute: `data-bleed` (direct child): spans all columns and the nearest query container's width.
-Rhythm applies to direct children. Wrapping the content in one `<article>` turns it off, so put `data-layout="columns"` on the article instead. Headings and paragraphs in the flow drop theme borders (`!important`, so the reset beats the bundle-theme layer); nested components keep theirs.
+Rhythm applies to direct children. Wrapping the content in one `<article>` turns it off, so put `data-layout="columns"` on the article instead. `<reader-view>` looks for a direct `<layout-columns>` child (and wraps the content in one), so it needs the element form; put headings/paragraphs directly inside it. Headings and paragraphs in the flow drop theme borders (`!important`, so the reset beats the bundle-theme layer); nested components keep theirs.
 
 ### Card Elements
 
 #### `<layout-card>`
-Block container by default. A `<header>`, `<section>` or `<footer>` child, or any `slot="header|content|footer"` child, switches it to structured mode: header pinned on top, footer pinned at the bottom (`margin-block-start: auto`), every other child stacked between them in source order.
+Element only: no `data-layout="card"` / `data-card` form. For a surface on a semantic element use `data-canvas`; for collections use `<card-list>`. Block container by default. A `<header>`, `<section>` or `<footer>` child, or any `slot="header|content|footer"` child, switches it to structured mode: header pinned on top, footer pinned at the bottom (`margin-block-start: auto`), every other child stacked between them in source order.
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
@@ -2085,26 +2092,28 @@ A11y: entry `<li>` = button (label + badges + date = its name, `aria-current`) +
 
 ### `data-layout` Attribute Values
 
-Apply `data-layout="value"` on any element. Shared CSS in `src/custom-elements/layout-attributes.css`.
+Apply `data-layout="value"` on any element. Layouts with an element twin are defined once in `src/custom-elements/layout-<name>/styles.css` as `:is(layout-x, [data-layout="x"])`; the attribute-only layouts live in `src/custom-elements/layout-attributes.css`. Generated reference (values, every modifier per layout, defaults): `/docs/attributes/data-layout/` (from `site/data/layoutReference.js`; `tests/unit/layout-reference-drift.test.js` keeps this table in step with the CSS).
 
-| Value | Description |
-|-------|-------------|
-| `stack` | Vertical flex |
-| `cluster` | Horizontal flex with wrap |
-| `grid` | Auto-fit responsive grid |
-| `center` | Centered with max-width |
-| `cover` | Full-height with centered principal |
-| `sidebar` | Two-column sidebar layout |
-| `switcher` | Responsive horizontal↔vertical |
-| `reel` | Horizontal scroll |
-| `imposter` | Positioned overlay |
-| `text` | Typographic text container |
-| `split` | Equal two-column split |
-| `holy-grail` | Header + sidebar + content + sidebar + footer |
-| `dashboard` | App shell with sidebar nav |
-| `regions` | Named grid template areas |
-| `media` | Media object (image + text) |
-| `page-stack` | Full-page vertical stack |
+| Value | Element twin | Description |
+|-------|--------------|-------------|
+| `stack` | `<layout-stack>` | Vertical flex with gap |
+| `cluster` | `<layout-cluster>` | Horizontal flex with wrap |
+| `grid` | `<layout-grid>` | Auto-fit responsive grid |
+| `center` | `<layout-center>` | Centered with max-width and gutters |
+| `cover` | `<layout-cover>` | Minimum block size with a vertically centered principal |
+| `sidebar` | `<layout-sidebar>` | Sidebar beside content; wraps on container width |
+| `switcher` | `<layout-switcher>` | Row ↔ column below a threshold of the switcher's own width |
+| `reel` | `<layout-reel>` | Horizontal scroll |
+| `columns` | `<layout-columns>` | Multi-column reading flow |
+| `prose` | `<layout-text>` | Reading measure + vertical rhythm (there is no `data-layout="text"`) |
+| `split` | — | Two columns at a ratio (default 1:1, gap `xl`, align center); stacks below 48rem viewport |
+| `media` | — | Figure (`figure`/`img`/`picture`/`video`/`[slot="figure"]`) beside content (default gap `m`, align start). Every other child takes its own row in the content column; the figure spans them. Stacks (figure on top) in containers < 25rem |
+| `regions` | — | Flex column: header region (`header`/`[slot="header"]`) first, footer region (`footer`/`[slot="footer"]`) last, every other child between in DOM order (gap 0). `section`/`[slot="content"]` grows; with no section the footer is pinned to the bottom |
+| `page-stack` | — | 100dvh column, direct `main` grows (sticky footer); no modifiers |
+| `sidebar-left` | — | `main` only: nav beside article (16rem, gap `m`); below 48rem viewport stacks article → aside → nav |
+| `sidebar-right` | — | `main` only: aside beside article; same defaults and collapse as `sidebar-left` |
+
+No `data-layout` form: `<layout-imposter>`, `<layout-card>`, `<layout-badge>` (element only); `<layout-canvas>` → `[data-canvas]`. Page templates (holy-grail, dashboard, app-shell, sidebar, article, landing) are `data-page-layout` values only — `data-layout="holy-grail"` and `data-layout="dashboard"` were removed.
 
 ### `data-page-layout` Values (on `<body>`)
 
@@ -2115,43 +2124,73 @@ Apply `data-layout="value"` on any element. Shared CSS in `src/custom-elements/l
 | `sidebar-right` | Right sidebar layout |
 | `holy-grail` | Three-column holy grail |
 | `app-shell` | App shell with sidebar |
-| `dashboard` | Dashboard layout |
+| `dashboard` | Header over a nav + main. Nav column sized to content unless `data-layout-sidebar-width` / `data-sidebar="collapsed"` is set. Below 48rem the nav is an off-canvas drawer, `visibility: hidden` until opened by `data-nav-open` on the host or as a native popover (`<nav id popover>` + `<button popovertarget data-nav-toggle>`) |
 | `article` | Article/reading layout |
-| `landing` | Landing page layout |
+| `landing` | Landing page layout (defines the `hero`, `feature`, `cta` areas) |
 
 The old `data-layout="body-*"` spellings of these templates were removed (tfcw).
 
-### Shared Layout Modifier Attributes
+Templates (`--tpl-*`) and `--_sidebar-width` / `--_sidebar-collapsed` are declared on the layout host (`:where([data-page-layout])`, zero specificity), not `:root`: override them on the host. `--sidebar-collapsed` defaults to 4rem. Works on any element, not only `<body>` (only the 87.5rem cap is `body`-scoped). A missing nav/aside, or `data-sidebar="hidden"`, drops that column from the template. `nav` is a `region-nav` size container only where its column has a definite width (bare/stack, sidebar-left, holy-grail, landing, dashboard with a width modifier or collapsed); not in app-shell, default dashboard or `nav.bottom`. `data-layout-order` does not apply to page-layout children (they are placed by area).
 
-These `data-layout-*` attributes work on layout elements and `data-layout` containers:
+### Layout Modifier Attributes
 
-| Attribute | Values | Description |
-|-----------|--------|-------------|
-| `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl` | Gap between children |
-| `data-layout-align` | `start`, `center`, `end`, `stretch`, `baseline` | Cross-axis alignment |
-| `data-layout-justify` | `start`, `end`, `center`, `between` | Main-axis alignment |
-| `data-layout-padding` | `none`, `s`, `m`, `l`, `xl` | Container padding |
-| `data-layout-min` | grid: `xs`\|`s`\|`m`\|`l`\|`xl`; cover: `s`\|`m`\|`l`\|`xl`\|`auto` (no `xs`) | Minimum size; scale is context-dependent per element — see the layout vocabulary spec |
-| `data-layout-max` | `narrow`, `normal`, `wide`, `prose` | Max-width constraint |
-| `data-layout-nowrap` | (boolean) | Prevent wrapping |
-| `data-layout-sticky` | (boolean) | Sticky positioning |
-| `data-layout-bleed` | (boolean) | Span full grid width |
-| `data-layout-density` | `compact`, `spacious` | Density variant |
-| `data-layout-principal` | (boolean, on child) | Center this element |
-| `data-layout-area` | `hero`, `sidebar`, `content`, `feature`, `cta`, `banner`, `toc` | Grid area assignment |
-| `data-layout-fill` | (boolean) | Full viewport height (split layouts) |
-| `data-layout-order` | `-1`, `1`, `99` | Order utilities |
-| `data-layout-ratio` | `2:1`, `1:2`, `3:1`, `1:3`, `golden` | Split layout ratio |
-| `data-container` | (boolean) | Establish container query context |
+Modifiers are per layout: a modifier on a layout that does not read it has no effect, and value sets differ by layout. Full per-layout meanings: `/docs/attributes/data-layout/#modifiers`.
 
-Modifiers apply only to the element they are on: layout private custom properties are reset on every layout host, so a nested layout never inherits an outer layout's gap/min/threshold/measure/padding/align tokens.
+| Attribute | Values | Layouts | Description |
+|-----------|--------|---------|-------------|
+| `data-layout-gap` | `none`, `3xs`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl`; center also bare (= `m`) | stack, cluster, grid, center, cover, sidebar, switcher, reel, split, media, regions, `main` sidebar-left/right, `data-page-layout` | Gap. Defaults: cluster `s`, cover `none`, split `xl`, regions `none`, center none until set, others `m` |
+| `data-layout-align` | `start`, `center`, `end`, `stretch`; cluster also `baseline`; columns only `justify` | stack, cluster, reel, split, media, columns | Cross-axis alignment (columns: justified text) |
+| `data-layout-justify` | `start`, `end`, `center`, `between` | cluster | Main-axis distribution |
+| `data-layout-padding` | `none`, `s`, `m`, `l`, `xl` (reel: up to `l`) | cover, reel | Padding on all sides |
+| `data-layout-min` | grid: `xs`–`xl`; cover: `s`–`xl`, `auto` | grid, cover | Grid: min column width; cover: min block size. One-off: `style="--layout-min: …"` |
+| `data-layout-max` | `narrow`, `normal`, `wide`; center also `prose` | center, columns, prose | center: 40/60/80rem (prose 65ch); columns/prose: 45/65/80ch measure |
+| `data-layout-measure` | `narrow`, `normal`, `wide` | columns, prose | Line measure (same as `-max` there) |
+| `data-layout-centered` | (boolean) | cover, prose, columns (no effect) | Center horizontally |
+| `data-layout-nowrap` | (boolean) | cluster, sidebar, split, `main` sidebar-left/right, `data-page-layout` | Don't wrap / don't collapse below the breakpoint |
+| `data-layout-overlap` | (bare = `s`), `xs`, `s`, `m`, `l` | cluster | Overlapping items (avatar groups) |
+| `data-layout-intrinsic`, `data-layout-text` | (boolean) | center | Intrinsic centering; centered text |
+| `data-layout-gutter` | `none`, `s`, `l` | center | Inline padding (default `m`) |
+| `data-layout-subgrid` | (bare = `3`), `2`, `3`, `4` | grid | Children become row subgrids |
+| `data-layout-item-width` | `auto`, `s`, `m`, `l`, `xl`, `full` | reel | Item width |
+| `data-layout-scrollbar` | (boolean) | reel | Show the scrollbar |
+| `data-layout-side` | `end` | sidebar | Sidebar on the end side |
+| `data-layout-sidebar-width` | `narrow`, `normal`, `wide` | sidebar, `main` sidebar-left/right, `data-page-layout` | 12 / 16 / 20rem |
+| `data-layout-content-min` | `s`, `m`, `l` | sidebar | Content floor before wrapping (40/50/60%) |
+| `data-layout-threshold` | `s`, `m`, `l` | switcher | Switch width (25/30/40rem) |
+| `data-layout-limit` | `2`, `3`, `4` | switcher | Column layout above N items |
+| `data-layout-reverse` | (boolean) | switcher, media | Visual reverse (DOM/focus order unchanged) |
+| `data-layout-column-count` | `1`, `2`, `3`, `auto` | columns | Column count |
+| `data-layout-ratio` | `2:1`, `1:2`, `3:1`, `1:3`, `golden` | split only | Column ratio |
+| `data-layout-fill` | (boolean) | split only | `min-block-size: 100dvh` |
+| `data-layout-fixed`, `data-layout-contain` | (boolean) | `<layout-imposter>` (element only) | Viewport positioning; cap to containing block |
+| `data-layout-position` | `center`, `top`, `bottom`, `start`, `end`, `top-start`, `top-end`, `bottom-start`, `bottom-end` | `<layout-imposter>` | Placement |
+| `data-layout-margin` | `s`, `m`, `l`, `xl` | `<layout-imposter>` | Inset from the edges |
+| `data-layout-principal`, `data-layout-cover-top`, `data-layout-cover-bottom` | (boolean, on child) | cover children | Centered principal; pinned top / bottom |
+| `data-layout-sticky` | (boolean, on child) | `nav`/`aside` of sidebar; `header`/`nav`/`aside` of `data-page-layout` | Sticky with own scroll; requires `<html data-sticky>` |
+| `data-layout-bleed` | (boolean, on child) | direct children of `data-page-layout` only | `grid-column: 1 / -1`. In reading containers use `data-bleed` |
+| `data-layout-area` | `hero`, `feature`, `cta` | direct children of `data-page-layout="landing"` | Named grid area. No other template defines extra areas (an unknown area name creates an implicit zero-width track); with your own `grid-template-areas`, set `grid-area` directly |
+| `data-layout-order` | `-1`, `1`, `99` | children of flex / auto-placed grid layouts | `order`; no effect on area-placed children (`data-page-layout`, `main` sidebar-*) or on the header/footer of regions (pinned first/last); visual only |
+| `data-layout-density` | `compact`, `spacious` | any element (utility, not a layout modifier) | Re-tokens the spacing scale for a subtree as `--size-unit` multiples (rem: follows root font size, `data-fluid`, large-text) — compact 3xs–3xl = 0.0625/0.125/0.25/0.5/0.75/1/1.5/2/3rem, spacious = 0.25/0.5/0.75/1/1.5/2/3/4/6rem. Not `data-density` (table/dl/nav.tree padding); see `/docs/attributes/data-layout-density/` |
+
+Layout utilities without the `data-layout-` prefix:
+
+| Attribute | Values | Applies to | Description |
+|-----------|--------|------------|-------------|
+| `data-container` | (bare), `card`, `panel`, `media` | any element | `container-type: inline-size` (+ container name). Escape hatch for `main`/`article`/`section`/`aside` children of cluster, reel, centered cover, start/center/end stack and `data-layout-subgrid` grids, which drop `container-type`, and for text hosts with a `data-bleed` child. Page: `/docs/attributes/data-container/` |
+| `data-bleed` | (boolean, on child) | direct children of prose/`<layout-text>`, columns/`<layout-columns>`, `article[data-measure]`; `section.hero` | Break out to the nearest query container's width (`100cqi`); on `section.hero`, background behind a transparent header |
+| `data-measure` | (bare = normal), `narrow`, `wide` | `article` | Reading width only, no rhythm |
+| `data-scroll-hint` | (bare), `start` | reel | Edge fades hinting at overflow |
+| `data-canvas` | (bare), `flush`, `elevated` | any element | Attribute form of `<layout-canvas>`; page: `/docs/attributes/data-canvas/` |
+
+Modifiers apply only to the element they are on: layout private custom properties are reset on every layout host, so a nested layout never inherits an outer layout's gap/min/threshold/measure/padding/align tokens. Custom-property one-offs via inline `style` (`--layout-min`, `--layout-threshold`, `--layout-content-min`) are endorsed on every layout, cover included.
 
 ### Page-Level State Attributes
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `data-sidebar` | `collapsed`, `hidden` | Sidebar state |
-| `data-nav-open` | (boolean) | Mobile nav toggle |
+| `data-sidebar` | `collapsed`, `hidden` | On a `data-page-layout` host: `collapsed` = sidebar columns at `--sidebar-collapsed` (default 4rem); `hidden` = nav hidden and its column dropped |
+| `data-nav-open` | (boolean) | On a `data-page-layout="dashboard"` host: opens the nav drawer below 48rem (alternative: native `popover` nav). A script toggle must also close on Escape and outside tap |
+| `data-nav-toggle` | (boolean) | Marks the drawer toggle button inside a `data-page-layout="dashboard"`; hidden at 48rem+ and with `data-layout-nowrap` |
 
 ---
 
@@ -2401,7 +2440,7 @@ Applied to `<html>`. Authored values are page defaults: ThemeManager only replac
 | `data-backdrop-chrome` | `card`, `stretch`, `integrated` + `fixed` | Backdrop header/footer treatment |
 | `data-border-style` | `clean`, `sharp`, `soft`, `sketch`, … | Border aesthetic |
 | `data-icon-set` | `lucide`, … | Default icon set |
-| `data-sticky` | (boolean) | Sticky header system |
+| `data-sticky` | (boolean) | Sticky coordination: StickyManager marks the banner header sticky and measures it into `--sticky-offset`; enables `data-layout-sticky` sidebars; header un-sticks below 48rem. (`header`/`footer[data-sticky]` stick on their own without it.) |
 | `data-scrollbar` | `hidden`, `auto`, `primary`, `minimal` | Scrollbar styling (also any scroller) |
 | `data-motion-reduced` | (boolean) | User-toggled motion reduction: `--duration-*` → 0ms, smooth scroll off, view transitions/effects off |
 | `data-ruby` | `show`, `hide`, `auto` | Ruby visibility. Absent = visible (browser default). Works on any element (also the `<ruby>`); nearest wins. `hide` = visually hidden, kept in the a11y tree; `auto` = hide annotations whose own `:lang()` is not ja/zh/ko/yue/wuu; `show` undoes an outer hide/auto |
@@ -2515,7 +2554,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-command` | `<button>` — command palette trigger |
 | `data-compact` | Various — reduced spacing |
 | `data-completed` | Steps — completed state |
-| `data-container` | Any — establish container query |
+| `data-container` | Any — `container-type: inline-size`; `card`/`panel`/`media` add a container name; escape hatch for sectioning children of cluster/reel/centred cover/aligned stack/subgrid grid and for text hosts with a `data-bleed` child |
 | `data-copy` | `<button>` — clipboard copy |
 | `data-copy-target` | `<button>` — copy source selector |
 | `data-count` | `<textarea>` — character counter |
@@ -2591,7 +2630,8 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-mode` | `<html>` — light/dark mode |
 | `data-motion-reduced` | `<html>` — reduce motion |
 | `data-name` | Token elements — token name |
-| `data-nav-open` | `<body>` — mobile nav state |
+| `data-nav-open` | `data-page-layout="dashboard"` host — opens the mobile nav drawer |
+| `data-nav-toggle` | Button inside `data-page-layout="dashboard"` — drawer toggle, hidden at 48rem+ |
 | `data-next` | Pagination button — next page |
 | `data-no-icon` | `<a>`, `<form-field>` — suppress icons |
 | `data-numeric` | Table th/td — right-align |

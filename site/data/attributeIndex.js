@@ -1,3 +1,5 @@
+import { modifierIndexItems } from './layoutReference.js';
+
 const nativeAttributes = {
   global: {
     label: 'Global',
@@ -97,12 +99,22 @@ const dataAttributes = {
   layout: {
     label: 'Layout',
     items: [
-      { name: 'data-layout', type: 'layout', href: '/docs/attributes/data-layout/', description: 'Apply stack, cluster, grid, center, sidebar, split, cover, and other layouts to any element' },
-      { name: 'data-page-layout', type: 'layout', href: '/docs/attributes/data-page-layout/', description: 'Full-page grid layouts with semantic area assignment' },
+      { name: 'data-layout', type: 'layout', href: '/docs/attributes/data-layout/', description: 'Apply stack, cluster, grid, center, sidebar, split, media, regions and the other component layouts to any element' },
+      { name: 'data-page-layout', type: 'layout', href: '/docs/attributes/data-page-layout/', description: 'Whole-page templates on body (sidebar, holy-grail, dashboard, landing…) with semantic area assignment' },
       { name: 'data-layout-density', type: 'layout', href: '/docs/attributes/data-layout-density/', description: 'Compact or spacious spacing modes that cascade to descendants' },
-      { name: 'data-sticky', type: 'layout', href: '/docs/attributes/data-sticky/', description: 'Sticky positioning for header and footer elements — sticks to top or bottom on scroll' },
+      { name: 'data-container', type: 'layout', href: '/docs/attributes/data-container/', description: 'Make any element a query container (card, panel, media presets); the escape hatch for content-sized layout children' },
+      { name: 'data-canvas', type: 'layout', href: '/docs/attributes/data-canvas/', description: 'Attribute form of layout-canvas: a centered content surface on any element (flush or elevated)' },
+      { name: 'data-sticky', type: 'layout', href: '/docs/attributes/data-sticky/', description: 'Sticky header or footer on its own; on <html> it coordinates --sticky-offset so sticky headers, sidebars and TOCs line up' },
       { name: 'data-stage', type: 'layout', href: '/docs/attributes/data-stage/', description: 'Scrollytelling layout — pinned visual plus sequential semantic steps, no JS' },
     ],
+  },
+  'layout-modifiers': {
+    label: 'Layout Modifiers',
+    // Generated from the layout CSS (site/data/layoutReference.js): one entry
+    // per data-layout-* modifier and layout utility, linking to its anchored
+    // row in the data-layout reference. Attributes with their own page are
+    // listed under Layout instead.
+    items: modifierIndexItems().filter((item) => !item.href.startsWith('/docs/attributes/data-container/')),
   },
   formatting: {
     label: 'Formatting',
@@ -144,6 +156,15 @@ const dataAttributes = {
       { name: 'data-spoiler', type: 'behavior', href: '/docs/attributes/data-spoiler/', description: 'Content concealment with blur, solid, or noise effects' },
       { name: 'data-animate-image', type: 'behavior', href: '/docs/attributes/data-animate-image/', description: 'Play/pause control for animated GIF, WebP, and APNG images', pack: 'effects' },
       { name: 'data-splitter', type: 'behavior', href: '/docs/attributes/data-splitter/', description: 'Resizable drag divider between panels with keyboard support' },
+      { name: 'data-paged', type: 'behavior', href: '/docs/attributes/data-paged/', description: 'Pagination for any list-shaped container: numbered, prev/next, load-more or infinite, with optional URL state' },
+      { name: 'data-sortable', type: 'behavior', href: '/docs/attributes/data-sortable/', description: 'Client-side sorting for lists and tables via column headers or an external control; composes with data-paged' },
+    ],
+  },
+  responsive: {
+    label: 'Responsive',
+    items: [
+      { name: 'data-responsive', type: 'behavior', href: '/docs/attributes/data-responsive/', description: 'Simplified responsive images: auto-calculated sizes and srcset shorthand' },
+      { name: 'data-visible', type: 'styling', href: '/docs/attributes/data-visible/', description: 'Show or hide elements by viewport width without custom media queries' },
     ],
   },
   'form-controls': {
@@ -199,9 +220,9 @@ const dataAttributes = {
   infrastructure: {
     label: 'Infrastructure',
     items: [
-      { name: 'data-print', type: 'layout', href: '/docs/attributes/data-print/', description: 'Print optimization modes, visibility control, page breaks, and opt-out for printed output' },
-      { name: 'hide-until-ready', type: 'layout', href: '/docs/attributes/hide-until-ready/', description: 'Prevent FOUC by hiding elements until custom elements are defined' },
-      { name: 'view-transitions', type: 'layout', href: '/docs/attributes/view-transitions/', description: 'CSS View Transitions with named groups, shared elements, and presets' },
+      { name: 'data-print', type: 'styling', href: '/docs/attributes/data-print/', description: 'Print optimization modes, visibility control, page breaks, and opt-out for printed output' },
+      { name: 'hide-until-ready', type: 'styling', href: '/docs/attributes/hide-until-ready/', description: 'Prevent FOUC by hiding elements until custom elements are defined' },
+      { name: 'view-transitions', type: 'behavior', href: '/docs/attributes/view-transitions/', description: 'CSS View Transitions with named groups, shared elements, and presets' },
       { name: 'data-toc-ignore', type: 'behavior', href: '/docs/elements/web-components/page-toc/', description: 'Exclude headings or containers from page-toc generation' },
     ],
   },

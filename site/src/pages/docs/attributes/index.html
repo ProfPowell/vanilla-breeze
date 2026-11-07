@@ -243,8 +243,10 @@ currentPath: /docs/attributes/
 
     entries.forEach(function(entry) {
       var type = entry.dataset.type;
-      var name = (entry.querySelector('code')?.textContent || '').toLowerCase();
-      entry.hidden = !(activeTypes.has(type) && (!query || name.includes(query)));
+      // Match the attribute name and its description, so "split" or
+      // "sticky" finds the layout modifiers that apply to it.
+      var text = (entry.textContent || '').toLowerCase();
+      entry.hidden = !(activeTypes.has(type) && (!query || text.includes(query)));
     });
 
     catHeadings.forEach(function(h) {
