@@ -29,9 +29,9 @@ crumbLabel: Data Attributes
     <h2>How It Works</h2>
     <ol>
       <li>Reads the <code>datetime</code> attribute from the <code>&lt;time&gt;</code> element</li>
-      <li>Stores the original text content as a <code>title</code> attribute (visible on hover)</li>
-      <li>For absolute styles: formats using <code>Intl.DateTimeFormat</code> with the specified <code>dateStyle</code></li>
-      <li>For <code>"relative"</code>: formats using <code>Intl.RelativeTimeFormat</code> and starts adaptive auto-refresh</li>
+      <li>For absolute styles: formats using <code>Intl.DateTimeFormat</code> with the specified <code>dateStyle</code>, and keeps the authored text as the <code>title</code> tooltip</li>
+      <li>For <code>"relative"</code>: formats using <code>Intl.RelativeTimeFormat</code>, puts the exact date and time in <code>title</code>, and starts an adaptive auto-refresh</li>
+      <li>Formats again whenever <code>datetime</code>, <code>data-format-date</code>, <code>data-format-time</code>, <code>data-time-zone</code>, <code>data-locale</code> or a <code>lang</code> attribute changes</li>
     </ol>
     <p>The locale is resolved in this order: <code>data-locale</code> on the element, the nearest ancestor with a <code>lang</code> attribute (so a <code>&lt;section lang="de"&gt;</code> formats its dates in German), <code>&lt;html lang&gt;</code>, then the browser language.</p>
   </section>
@@ -55,12 +55,17 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>datetime</code></td>
           <td>string</td>
-          <td>Standard HTML <code>datetime</code> attribute. Must be a valid date string (ISO 8601 recommended).</td>
+          <td>Standard HTML <code>datetime</code> attribute. Must be a valid date string (ISO 8601 recommended). An invalid or missing value leaves the text as written.</td>
         </tr>
         <tr>
           <td><code>data-format-time</code></td>
           <td>string</td>
-          <td>Optional time style: <code>"short"</code>, <code>"medium"</code>, <code>"long"</code>, <code>"full"</code>. Ignored when <code>"relative"</code>.</td>
+          <td>Optional time style: <code>"short"</code>, <code>"medium"</code>, <code>"long"</code>, <code>"full"</code>. Ignored for <code>"relative"</code> and for date-only values.</td>
+        </tr>
+        <tr>
+          <td><code>data-time-zone</code></td>
+          <td>string</td>
+          <td>Optional IANA time zone (e.g. <code>"Europe/Paris"</code>) for date-time values. Default: the viewer's zone. Unknown zones are ignored. Date-only values always format as calendar dates.</td>
         </tr>
         <tr>
           <td><code>data-locale</code></td>
@@ -70,12 +75,12 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>title</code></td>
           <td>string</td>
-          <td>Set automatically to the original text content (unless already set). Provides hover tooltip.</td>
+          <td>Set automatically unless you author one: the original text for absolute styles, the exact date and time for <code>"relative"</code>.</td>
         </tr>
         <tr>
           <td><code>data-format-date-init</code></td>
           <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually. Removed when a relative element leaves the DOM, so a reinserted element restarts its refresh timer.</td>
+          <td>State hook, set once the element is enhanced. Read it for styling or tests; do not set it. Enhancement is tracked internally, so a cloned element is still formatted when it is inserted.</td>
         </tr>
       </tbody>
     </table>
@@ -85,14 +90,14 @@ crumbLabel: Data Attributes
     <h2>Absolute Date Styles</h2>
     <p>Date styles map directly to <code>Intl.DateTimeFormat</code>'s <code>dateStyle</code> option:</p>
 
-    <div class="example">
+    <section class="example">
       <layout-stack data-layout-gap="s">
         <p>Default (medium): <time datetime="2026-02-09" data-format-date>Feb 9, 2026</time></p>
         <p>Short: <time datetime="2026-02-09" data-format-date="short">2/9/26</time></p>
         <p>Long: <time datetime="2026-02-09" data-format-date="long">February 9, 2026</time></p>
         <p>Full: <time datetime="2026-02-09" data-format-date="full">Monday, February 9, 2026</time></p>
       </layout-stack>
-    </div>
+    </section>
 
     <code-block language="html" show-lines label="Date style options" data-escape><!-- Medium (default) -->
 <time datetime="2026-02-09" data-format-date>Feb 9, 2026</time>
@@ -112,35 +117,39 @@ crumbLabel: Data Attributes
     <code-block language="html" show-lines label="Date-only precision" data-escape><time datetime="2026" data-format-date>2026</time>          <!-- 2026 -->
 <time datetime="2026-02" data-format-date="long">Feb 2026</time>  <!-- February 2026 -->
 <time datetime="2026-02-09" data-format-date>Feb 9, 2026</time> <!-- Feb 9, 2026 --></code-block>
-    <p>Values with a time (<code>2026-02-09T14:30</code>) are instants and format in the viewer's time zone. Add an offset or <code>Z</code> when the time belongs to a specific zone.</p>
 
     <h3>With Time</h3>
     <p>Add <code>data-format-time</code> to include the time component:</p>
 
-    <div class="example">
-      <time datetime="2026-02-09T14:30:00" data-format-date="long" data-format-time="short">February 9, 2026, 2:30 PM</time>
-    </div>
+    <section class="example">
+      <p><time datetime="2026-02-09T14:30:00Z" data-format-date="long" data-format-time="short" data-time-zone="UTC">February 9, 2026 at 2:30 PM</time></p>
+    </section>
 
-    <code-block language="html" show-lines label="Date with time" data-escape><time datetime="2026-02-09T14:30:00" data-format-date="long" data-format-time="short">
-  February 9, 2026, 2:30 PM
+    <code-block language="html" show-lines label="Date with time" data-escape><time datetime="2026-02-09T14:30:00Z" data-format-date="long" data-format-time="short" data-time-zone="UTC">
+  February 9, 2026 at 2:30 PM
 </time></code-block>
+
+    <h3>Time Zones</h3>
+    <p>Values with a time (<code>2026-02-09T14:30Z</code>) are instants. By default they format in the viewer's time zone, so a reader in Tokyo and one in New York see different clock times for the same moment. When the time belongs to a place &mdash; a meetup in Paris, a store's opening hours &mdash; set <code>data-time-zone</code>, and add <code>data-format-time="full"</code> if readers need to see the zone name.</p>
+
+    <code-block language="html" show-lines label="Fixed time zone" data-escape><time datetime="2026-03-12T18:30:00Z" data-format-date="long" data-format-time="full"
+      data-time-zone="Europe/Paris">12 March 2026, 19:30 Paris time</time></code-block>
   </section>
 
   <section>
     <h2>Relative Time</h2>
-    <p>Use <code>data-format-date="relative"</code> for auto-refreshing relative time strings like "3 hours ago" or "in 2 days".</p>
+    <p>Use <code>data-format-date="relative"</code> for auto-refreshing relative time strings like "3 hours ago" or "in 2 days". The exact date and time go into the <code>title</code> tooltip. Write the real date as the fallback text, so readers without JavaScript still see when it happened.</p>
 
-    <div class="example">
-      <layout-stack data-layout-gap="s">
-        <p>5 minutes ago: <time datetime="${relativeDates.fiveMinAgo}" data-format-date="relative">Loading...</time></p>
-        <p>2 hours ago: <time datetime="${relativeDates.twoHoursAgo}" data-format-date="relative">Loading...</time></p>
-        <p>Yesterday: <time datetime="${relativeDates.yesterday}" data-format-date="relative">Loading...</time></p>
-        <p>Last week: <time datetime="${relativeDates.lastWeek}" data-format-date="relative">Loading...</time></p>
-        <p>In 1 hour: <time datetime="${relativeDates.inOneHour}" data-format-date="relative">Loading...</time></p>
-      </layout-stack>
-    </div>
+    <browser-window
+      src="/docs/examples/demos/format-date-relative.html"
+      url="https://vanilla-breeze.com/format-date/relative"
+      title="Relative times"
+      shadow>
+    </browser-window>
 
     <code-block language="html" show-lines label="Relative time" data-escape><time datetime="2026-02-09T10:00:00Z" data-format-date="relative">February 9, 2026</time></code-block>
+
+    <p>The demo stamps its <code>datetime</code> values relative to the moment you open it, so the phrases stay current. A real page renders <code>datetime</code> on the server.</p>
 
     <h3>Auto-Refresh Intervals</h3>
     <p>Relative times update automatically on an adaptive schedule:</p>
@@ -168,19 +177,19 @@ crumbLabel: Data Attributes
       </tbody>
     </table>
 
-    <p>Intervals are automatically cleared when elements are removed from the DOM (tracked via MutationObserver).</p>
+    <p>Timers stop when an element is removed from the DOM. Units round up to the next larger one when they reach it, so 350 days reads "last year", not "12 months ago".</p>
   </section>
 
   <section>
     <h2>Locale Override</h2>
     <p>Use <code>data-locale</code> to force a specific locale for formatting:</p>
 
-    <div class="example">
+    <section class="example">
       <layout-stack data-layout-gap="s">
         <p>German: <time datetime="2026-02-09" data-format-date="long" data-locale="de-DE">9. Februar 2026</time></p>
         <p>Japanese: <time datetime="2026-02-09" data-format-date="long" data-locale="ja-JP">2026&#24180;2&#26376;9&#26085;</time></p>
       </layout-stack>
-    </div>
+    </section>
 
     <code-block language="html" show-lines label="Locale override" data-escape><time datetime="2026-02-09" data-format-date="long" data-locale="de-DE">9. Februar 2026</time>
 <time datetime="2026-02-09" data-format-date="long" data-locale="ja-JP">2026年2月9日</time></code-block>
@@ -190,43 +199,33 @@ crumbLabel: Data Attributes
     <h2>Common Use Cases</h2>
 
     <h3>Activity Feeds</h3>
-    <p>Show when events happened in a list:</p>
-
-    <div class="example">
-      <layout-stack data-layout-gap="s">
-        <p>Alice commented <time datetime="${relativeDates.fiveMinAgo}" data-format-date="relative">just now</time></p>
-        <p>Bob pushed a commit <time datetime="${relativeDates.twoHoursAgo}" data-format-date="relative">earlier today</time></p>
-        <p>Carol opened an issue <time datetime="${relativeDates.lastWeek}" data-format-date="relative">last week</time></p>
-      </layout-stack>
-    </div>
+    <p>Show when events happened in a list (live in the relative-time demo above):</p>
 
     <code-block language="html" show-lines label="Activity feed timestamps" data-escape><ul>
   <li>
     Alice commented
-    <time datetime="..." data-format-date="relative">5 minutes ago</time>
+    <time datetime="2026-02-09T09:55:00Z" data-format-date="relative">9 Feb 2026, 09:55</time>
   </li>
   <li>
     Bob pushed a commit
-    <time datetime="..." data-format-date="relative">2 hours ago</time>
+    <time datetime="2026-02-09T08:00:00Z" data-format-date="relative">9 Feb 2026, 08:00</time>
   </li>
 </ul></code-block>
 
     <h3>Content Metadata</h3>
     <p>Display article or post timestamps:</p>
 
-    <div class="example">
-      <article>
-        <h3>Getting Started with Vanilla Breeze</h3>
-        <p><small>
-          Published <time datetime="${relativeDates.yesterday}" data-format-date="relative">yesterday</time>
-        </small></p>
-      </article>
-    </div>
+    <code-block language="html" show-lines label="Article timestamp" data-escape><article>
+  <h2>Getting Started with Vanilla Breeze</h2>
+  <p><small>
+    Published <time datetime="2026-02-08T10:00:00Z" data-format-date="relative">8 February 2026</time>
+  </small></p>
+</article></code-block>
   </section>
 
   <section>
     <h2>Dynamic Elements</h2>
-    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed. A relative element that is removed and reinserted (for example when a list is re-sorted) picks up a fresh refresh timer.</p>
+    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed. Changing <code>datetime</code> later re-formats the element (and restarts a relative refresh). A relative element that is removed and reinserted (for example when a list is re-sorted) picks up a fresh refresh timer, and a cloned element is formatted like a new one.</p>
 
     <code-block language="javascript" show-lines label="Dynamically added format-date elements" data-escape>// Dynamically added elements are auto-enhanced via MutationObserver
 const time = document.createElement('time');
@@ -234,7 +233,9 @@ time.setAttribute('datetime', new Date().toISOString());
 time.dataset.formatDate = 'relative';
 time.textContent = 'just now';
 document.body.appendChild(time);
-// time is enhanced automatically — no manual init needed</code-block>
+
+// Later: point it at another moment — it re-formats on its own
+time.setAttribute('datetime', '2026-03-01T09:00:00Z');</code-block>
   </section>
 
   <section>
@@ -247,10 +248,21 @@ document.body.appendChild(time);
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The original human-readable date is preserved as a <code>title</code> attribute, visible on hover. Screen readers do not reliably expose <code>title</code>, so the visible text is what users hear: keep it unambiguous.</li>
-      <li>For relative times, the <code>cursor: help</code> style hints that additional information is available</li>
+      <li>The visible text is what screen readers announce; <code>title</code> is not reliably exposed. Keep the visible text unambiguous, and use an absolute style where the exact date matters.</li>
+      <li>For relative times the exact date and time are in the <code>title</code> tooltip, and the <code>cursor: help</code> style hints that it is there.</li>
+      <li>Relative refreshes rewrite the text silently: there is no live region, so a page full of timestamps does not interrupt a screen-reader user every minute.</li>
       <li>Mainstream screen readers announce the visible text, not the <code>datetime</code> value. <code>datetime</code> serves search engines, browser features and scripts.</li>
       <li>Falls back to the original text content when JavaScript is unavailable</li>
       <li>No wrapper element &mdash; the <code>&lt;time&gt;</code> <em>is</em> the enhanced element, keeping the accessibility tree clean</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/time/"><code>&lt;time&gt;</code></a> &mdash; the element this attribute enhances.</li>
+      <li><a href="/docs/elements/native/time/#choosing-relative">Choosing a relative-time mechanism</a> &mdash; <code>data-format-date="relative"</code> versus <code>time[data-relative]</code>. Use <code>data-format-date="relative"</code> for new content: it handles future dates and every locale and puts the exact date in the tooltip. <code>data-relative</code> is the lightweight past-only formatter that <code>&lt;activity-feed&gt;</code>, <code>&lt;comment-thread&gt;</code> and <code>&lt;time-index&gt;</code> render.</li>
+      <li><a href="/docs/elements/web-components/time-index/"><code>&lt;time-index&gt;</code></a> &mdash; a dated index of entries.</li>
+      <li><a href="/docs/attributes/data-format-number/"><code>data-format-number</code></a> and <a href="/docs/attributes/data-format-bytes/"><code>data-format-bytes</code></a> &mdash; the same locale-aware formatting for numbers and file sizes.</li>
     </ul>
   </section>

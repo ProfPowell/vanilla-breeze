@@ -200,7 +200,8 @@ test('math-init: data-mathml is sanitized to MathML', async ({ page }) => {
     const w = document.querySelector('[data-math-rendered]');
     return { html: w?.querySelector('math')?.outerHTML, imgs: document.querySelectorAll('#out img').length };
   });
-  expect(r.html).toBe('<math display="block"><mi>x</mi></math>');
+  // math-init adds alttext from the source so the equation has a text alternative.
+  expect(r.html).toBe('<math display="block" alttext="x"><mi>x</mi></math>');
   expect(r.imgs).toBe(0);
   expect(await hits(page)).toBe(0);
 });

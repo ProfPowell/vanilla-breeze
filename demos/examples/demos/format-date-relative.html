@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relative Time Demo</title>
+  <link rel="stylesheet" href="/src/main.css" />
+  <style>
+    body {
+      padding: var(--size-xl);
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <layout-stack data-layout-gap="l">
+    <h1>Relative times</h1>
+    <section aria-labelledby="relative-heading">
+      <h2 id="relative-heading">From now</h2>
+      <p>Hover a time to see the exact date in its tooltip.</p>
+      <ul>
+        <li>5 minutes ago: <time data-demo-offset="-5" data-format-date="relative">5 minutes ago</time></li>
+        <li>2 hours ago: <time data-demo-offset="-120" data-format-date="relative">2 hours ago</time></li>
+        <li>Yesterday: <time data-demo-offset="-1440" data-format-date="relative">yesterday</time></li>
+        <li>Last week: <time data-demo-offset="-10080" data-format-date="relative">last week</time></li>
+        <li>In 1 hour: <time data-demo-offset="60" data-format-date="relative">in 1 hour</time></li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="feed-heading">
+      <h2 id="feed-heading">Activity feed</h2>
+      <ul>
+        <li>Alice commented <time data-demo-offset="-5" data-format-date="relative">5 minutes ago</time></li>
+        <li>Bob pushed a commit <time data-demo-offset="-120" data-format-date="relative">2 hours ago</time></li>
+        <li>Carol opened an issue <time data-demo-offset="-10080" data-format-date="relative">last week</time></li>
+      </ul>
+    </section>
+
+    <article aria-labelledby="post-heading">
+      <h2 id="post-heading">Getting Started with Vanilla Breeze</h2>
+      <p><small>Published <time data-demo-offset="-1440" data-format-date="relative">yesterday</time></small></p>
+    </article>
+  </layout-stack>
+
+  <!-- Demo only: real pages render datetime on the server. These times are
+       stamped relative to now so the examples never go stale. -->
+  <script type="module">
+    for (const time of document.querySelectorAll('time[data-demo-offset]')) {
+      const minutes = Number(time.dataset.demoOffset);
+      time.setAttribute('datetime', new Date(Date.now() + minutes * 60000).toISOString());
+    }
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

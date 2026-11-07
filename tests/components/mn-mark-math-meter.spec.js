@@ -211,7 +211,8 @@ test('data-math copy is a keyboard-operable button with overridable labels', asy
   await button.focus();
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => /** @type {any} */ (window).__copied)).toBe('x^2');
-  await expect(page.locator('[data-math-rendered] [role="status"]')).toHaveText('Copié');
+  // Announced through the shared live region (src/lib/announce.js), outside the button
+  await expect(page.locator('[data-vb-announcer="polite"]')).toHaveText('Copié');
   const outline = await button.evaluate((b) => getComputedStyle(b).outlineStyle);
   expect(outline).not.toBe('none');
 });

@@ -292,9 +292,9 @@ export const PROP_DOCS = {
   '--vb-scramble-duration': 'Total decode time.',
   '--vb-scramble-speed': 'Frame interval between random fills.',
   '--vb-scramble-chars': 'Fill characters, e.g. <code>01</code> (quotes are optional and stripped).',
-  '--vb-ticker-duration': 'Count-up time (a CSS time; a bare number is ms).',
+  '--vb-ticker-duration': 'Count-up time (a CSS time; a bare number is ms). Capped at 5s.',
   '--vb-ticker-start': 'Number to count from.',
-  '--vb-ticker-decimals': 'Decimal places (default: the precision of <code>value</code>).',
+  '--vb-ticker-decimals': 'Fixed decimal places for every frame, the last included. Default: with <code>data-format-number</code>, its own format (the last frame equals the static output); otherwise the precision of <code>value</code>.',
   '--vb-highlight-color': 'Highlight colour (default: the text colour).',
 };
 

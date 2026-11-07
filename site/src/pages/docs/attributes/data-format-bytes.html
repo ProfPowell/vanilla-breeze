@@ -13,7 +13,7 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>Overview</h2>
-    <p>The <code>data-format-bytes</code> attribute enhances native <code>&lt;data&gt;</code> elements by replacing their text content with a human-readable file size string. Uses binary math (&divide;1024) by default with familiar units (KB, MB, GB).</p>
+    <p>The <code>data-format-bytes</code> attribute enhances native <code>&lt;data&gt;</code> elements by replacing their text content with a human-readable file size string. Uses binary math (&divide;1024) by default, with unit labels localised by <code>Intl.NumberFormat</code> (<code>kB</code>, <code>MB</code>, <code>GB</code> in English; <code>ko</code>, <code>Mo</code>, <code>Go</code> in French).</p>
 
     <browser-window
       src="/docs/examples/demos/format-bytes-basic.html"
@@ -28,12 +28,13 @@ crumbLabel: Data Attributes
   <section>
     <h2>How It Works</h2>
     <ol>
-      <li>Reads the <code>value</code> attribute from the <code>&lt;data&gt;</code> element and parses it as bytes</li>
-      <li>Stores the original text content as a <code>title</code> attribute (visible on hover)</li>
-      <li>Divides by 1024 (or 1000 for decimal) to find the best unit</li>
-      <li>Formats the numeric part using <code>Intl.NumberFormat</code> for locale-aware digits</li>
-      <li>Replaces the text with the formatted value and unit label</li>
+      <li>Reads the <code>value</code> attribute from the <code>&lt;data&gt;</code> element and parses it as bytes. A missing, empty or non-numeric value leaves the text as written.</li>
+      <li>Divides by 1024 (or 1000 for decimal) to find the best unit, from bytes up to petabytes</li>
+      <li>Formats value and unit with <code>Intl.NumberFormat</code>'s unit style, so digits, separators and unit labels follow the locale</li>
+      <li>Replaces the text with the result (no <code>title</code> is added: the visible text is the size)</li>
+      <li>Formats again whenever <code>value</code>, <code>data-format-bytes</code>, <code>data-unit</code>, <code>data-locale</code> or a <code>lang</code> attribute changes</li>
     </ol>
+    <p>Values below one byte stay in bytes (<code>0.5 bytes</code>), zero is <code>0 bytes</code>, and negative values keep their sign (<code>-1.5 MB</code>), which suits size differences.</p>
   </section>
 
   <section>
@@ -50,7 +51,7 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>data-format-bytes</code></td>
           <td>string</td>
-          <td>Decimal precision for the formatted value. Default <code>"0"</code> (no decimals). Use <code>"1"</code> or <code>"2"</code> for more detail.</td>
+          <td>Decimal places for the formatted value, <code>0</code>&ndash;<code>20</code> (out-of-range values are clamped). Default <code>"0"</code> (no decimals). Use <code>"1"</code> or <code>"2"</code> for more detail.</td>
         </tr>
         <tr>
           <td><code>value</code></td>
@@ -65,12 +66,12 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>data-locale</code></td>
           <td>string</td>
-          <td>Optional locale override (e.g., <code>"de-DE"</code>). Defaults to browser locale.</td>
+          <td>Optional locale override (e.g., <code>"de-DE"</code>). Defaults to the nearest <code>[lang]</code>, then <code>&lt;html lang&gt;</code>, then the browser locale.</td>
         </tr>
         <tr>
           <td><code>data-format-bytes-init</code></td>
           <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
+          <td>State hook, set once the element is enhanced. Read it for styling or tests; do not set it. Enhancement is tracked internally, so a cloned element is still formatted when it is inserted.</td>
         </tr>
       </tbody>
     </table>
@@ -80,13 +81,13 @@ crumbLabel: Data Attributes
     <h2>Precision</h2>
     <p>The attribute value controls decimal places in the output:</p>
 
-    <div class="example">
+    <section class="example">
       <layout-stack data-layout-gap="s">
         <p>0 decimals (default): <data value="1536000" data-format-bytes>1 MB</data></p>
         <p>1 decimal: <data value="1536000" data-format-bytes="1">1.5 MB</data></p>
         <p>2 decimals: <data value="5368709120" data-format-bytes="2">5.00 GB</data></p>
       </layout-stack>
-    </div>
+    </section>
 
     <code-block language="html" show-lines label="Precision control" data-escape><data value="1536000" data-format-bytes="1">1.5 MB</data>
 <data value="5368709120" data-format-bytes="2">5.00 GB</data></code-block>
@@ -94,14 +95,15 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>Binary vs. Decimal</h2>
-    <p>By default, <code>data-format-bytes</code> uses binary math (&divide;1024), matching how operating systems report file sizes. Add <code>data-unit="decimal"</code> to use &divide;1000 (how storage manufacturers report capacity).</p>
+    <p>By default, <code>data-format-bytes</code> uses binary math (&divide;1024), matching how most operating systems report file sizes. Add <code>data-unit="decimal"</code> to use &divide;1000 (how storage manufacturers report capacity).</p>
+    <p>Both modes use the same labels. <code>Intl</code> has no binary units (KiB, MiB), so binary sizes are labelled <code>kB</code>, <code>MB</code>&hellip; the way file managers label them. If the distinction matters in your interface, say which one you use next to the figures.</p>
 
-    <div class="example">
+    <section class="example">
       <layout-stack data-layout-gap="s">
         <p>Binary (default): <data value="1048576" data-format-bytes>1 MB</data></p>
         <p>Decimal: <data value="1000000" data-format-bytes data-unit="decimal">1 MB</data></p>
       </layout-stack>
-    </div>
+    </section>
 
     <code-block language="html" show-lines label="Binary vs decimal" data-escape><!-- Binary (default): ÷1024 -->
 <data value="1048576" data-format-bytes>1 MB</data>
@@ -110,6 +112,7 @@ crumbLabel: Data Attributes
 <data value="1000000" data-format-bytes data-unit="decimal">1 MB</data></code-block>
 
     <h3>Unit Reference</h3>
+    <p>English labels shown; other locales use their own (<code>Mo</code>, <code>Go</code>&hellip;).</p>
     <table class="props-table">
       <thead>
         <tr>
@@ -119,8 +122,8 @@ crumbLabel: Data Attributes
         </tr>
       </thead>
       <tbody>
-        <tr><td>B</td><td>1</td><td>1</td></tr>
-        <tr><td>KB</td><td>1,024</td><td>1,000</td></tr>
+        <tr><td>bytes</td><td>1</td><td>1</td></tr>
+        <tr><td>kB</td><td>1,024</td><td>1,000</td></tr>
         <tr><td>MB</td><td>1,048,576</td><td>1,000,000</td></tr>
         <tr><td>GB</td><td>1,073,741,824</td><td>1,000,000,000</td></tr>
         <tr><td>TB</td><td>1,099,511,627,776</td><td>1,000,000,000,000</td></tr>
@@ -131,13 +134,17 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>Locale Override</h2>
-    <p>Use <code>data-locale</code> to format the numeric part in a specific locale:</p>
+    <p>Use <code>data-locale</code> (or a <code>lang</code> attribute on the element or an ancestor) to format number and unit in a specific locale:</p>
 
-    <div class="example">
-      <p>German: <data value="1536000" data-format-bytes="1" data-locale="de-DE">1,5 MB</data></p>
-    </div>
+    <section class="example">
+      <layout-stack data-layout-gap="s">
+        <p>German: <data value="1536000" data-format-bytes="1" data-locale="de-DE">1,5 MB</data></p>
+        <p>French: <data value="1536000" data-format-bytes="1" data-locale="fr">1,5 Mo</data></p>
+      </layout-stack>
+    </section>
 
-    <code-block language="html" show-lines label="Locale override" data-escape><data value="1536000" data-format-bytes="1" data-locale="de-DE">1,5 MB</data></code-block>
+    <code-block language="html" show-lines label="Locale override" data-escape><data value="1536000" data-format-bytes="1" data-locale="de-DE">1,5 MB</data>
+<data value="1536000" data-format-bytes="1" data-locale="fr">1,5 Mo</data></code-block>
   </section>
 
   <section>
@@ -146,7 +153,7 @@ crumbLabel: Data Attributes
     <h3>File List</h3>
     <p>Display file sizes in a table. The <code>font-variant-numeric: tabular-nums</code> CSS ensures columns align:</p>
 
-    <div class="example">
+    <section class="example">
       <table>
         <thead>
           <tr><th>File</th><th>Size</th></tr>
@@ -158,7 +165,7 @@ crumbLabel: Data Attributes
           </tr>
           <tr>
             <td>document.pdf</td>
-            <td><data value="524288" data-format-bytes="1">512.0 KB</data></td>
+            <td><data value="524288" data-format-bytes="1">512.0 kB</data></td>
           </tr>
           <tr>
             <td>video.mp4</td>
@@ -166,7 +173,7 @@ crumbLabel: Data Attributes
           </tr>
         </tbody>
       </table>
-    </div>
+    </section>
 
     <code-block language="html" show-lines label="File list table" data-escape><table>
   <thead>
@@ -179,7 +186,7 @@ crumbLabel: Data Attributes
     </tr>
     <tr>
       <td>document.pdf</td>
-      <td><data value="524288" data-format-bytes="1">512.0 KB</data></td>
+      <td><data value="524288" data-format-bytes="1">512.0 kB</data></td>
     </tr>
     <tr>
       <td>video.mp4</td>
@@ -191,13 +198,13 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>Dynamic Elements</h2>
-    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+    <p>Elements added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed. Changing <code>value</code> (or any formatting attribute) re-formats the element, and a cloned element is formatted like a new one.</p>
 
     <code-block language="javascript" show-lines label="Dynamically added format-bytes elements" data-escape>// Dynamically added elements are auto-enhanced via MutationObserver
 const el = document.createElement('data');
 el.value = '2147483648';
 el.dataset.formatBytes = '1';
-el.textContent = '2 GB';
+el.textContent = '2.0 GB';
 document.body.appendChild(el);
 // el is enhanced automatically — no manual init needed</code-block>
   </section>
@@ -212,9 +219,18 @@ document.body.appendChild(el);
   <section>
     <h2>Accessibility</h2>
     <ul>
-      <li>The original text is preserved as a <code>title</code> attribute, accessible on hover</li>
+      <li>Unit labels are abbreviations; screen readers usually read "MB" as letters or "megabytes". Bytes use the long form ("512 bytes").</li>
       <li>The semantic <code>&lt;data&gt;</code> element with <code>value</code> attribute provides machine-readable byte counts</li>
       <li>Falls back to the original text content when JavaScript is unavailable</li>
       <li>No wrapper element &mdash; the <code>&lt;data&gt;</code> <em>is</em> the enhanced element, keeping the accessibility tree clean</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/docs/elements/native/data/"><code>&lt;data&gt;</code></a> &mdash; the element this attribute enhances.</li>
+      <li><a href="/docs/attributes/data-format-number/"><code>data-format-number</code></a> &mdash; plain numbers, currency, percentages and compact notation. Use it for counts; use <code>data-format-bytes</code> for sizes.</li>
+      <li><a href="/docs/attributes/data-format-date/"><code>data-format-date</code></a> &mdash; the same locale-aware formatting for dates.</li>
     </ul>
   </section>
