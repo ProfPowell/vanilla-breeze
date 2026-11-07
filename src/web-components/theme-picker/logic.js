@@ -406,7 +406,7 @@ class ThemePicker extends VBElement {
                 type="checkbox"
                 name="ext-${ext.id}"
                 data-extension="${ext.id}"
-                data-switch="sm"
+                data-switch="s"
                 ${isChecked ? 'checked' : ''}
               />
             </label>
@@ -476,7 +476,7 @@ class ThemePicker extends VBElement {
               <span class="extension-info">
                 <span class="extension-name">${t.name}</span>
               </span>
-              <input type="checkbox" name="a11y-theme" value="${t.id}" data-a11y-theme="${t.id}" data-switch="sm" ${a11yThemes.includes(t.id) ? 'checked' : ''} />
+              <input type="checkbox" name="a11y-theme" value="${t.id}" data-a11y-theme="${t.id}" data-switch="s" ${a11yThemes.includes(t.id) ? 'checked' : ''} />
             </label>
           `).join('')}
         </div>
@@ -490,7 +490,7 @@ class ThemePicker extends VBElement {
               <span class="extension-info">
                 <span class="extension-name">${ext.name}</span>
               </span>
-              <input type="checkbox" name="ext-${ext.id}" data-extension="${ext.id}" data-switch="sm" ${prefs[ext.id] ?? EXTENSION_DEFAULTS[ext.id] ? 'checked' : ''} />
+              <input type="checkbox" name="ext-${ext.id}" data-extension="${ext.id}" data-switch="s" ${prefs[ext.id] ?? EXTENSION_DEFAULTS[ext.id] ? 'checked' : ''} />
             </label>
           `).join('')}
         </div>

@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-autosave"
-description: "Automatically save form drafts to localStorage as the user types. Restores on page reload with a toast notification. Clears on submit or reset."
+description: "Save form drafts to localStorage as the user types and restore them on the next visit. Skips passwords, hidden inputs, buttons and card or one-time codes. Clears on submit or reset; drafts expire after 24 hours."
 attributeName: data-autosave
 category: form-behavior
 attributeType: data
@@ -12,278 +12,314 @@ crumbLabel: Data Attributes
 ---
 
 <section>
-    <h2>Overview</h2>
-    <p>The <code>data-autosave</code> attribute automatically persists form data to <code>localStorage</code> as the user types. If the page is accidentally closed or refreshed, the draft is restored on the next visit with a toast notification. The draft is cleared when the form is submitted or reset.</p>
+  <h2>Overview</h2>
+  <p><code>data-autosave</code> on a <code>&lt;form&gt;</code> keeps a draft of what the user has typed. If the page is closed or reloaded, the draft is restored on the next visit and announced. The draft is deleted when the form is submitted or reset, and a draft older than 24 hours is deleted instead of restored.</p>
+  <p>Drafts are written through <a href="/docs/concepts/vb-store/">VBStore</a> to <code>localStorage</code>. Secrets and server-owned values are never written: see <a href="#privacy">Privacy</a>.</p>
+</section>
 
-    <browser-window
-      src="/docs/examples/demos/autosave-basic.html"
-      url="https://vanilla-breeze.com/autosave"
-      title="Form Autosave"
-      shadow>
-    </browser-window>
+<section>
+  <h2>Usage</h2>
+  <p>Give the form a key that is unique across your site. Fill in some fields in the demo, then reload the frame.</p>
 
-    <code-block language="html" show-lines label="Basic autosave form" data-escape><form data-autosave="contact-form">
-  <input name="name" placeholder="Name">
-  <textarea name="message" placeholder="Message"></textarea>
+  <browser-window
+    src="/docs/examples/demos/autosave-basic.html"
+    url="https://vanilla-breeze.com/autosave"
+    title="Form autosave"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Basic autosave form" data-escape><form data-autosave="demo-contact">
+  <form-field>
+    <label for="name">Full Name</label>
+    <input type="text" id="name" name="name" autocomplete="name">
+  </form-field>
+  <form-field>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" autocomplete="email">
+  </form-field>
+  <form-field>
+    <label for="subject">Subject</label>
+    <select id="subject" name="subject">
+      <option value="">Select a topic...</option>
+      <option value="general">General Inquiry</option>
+      <option value="support">Support</option>
+    </select>
+  </form-field>
+  <form-field>
+    <label for="topics">Topics of interest (multi-select)</label>
+    <select id="topics" name="topics" multiple size="4">
+      <option value="css">CSS</option>
+      <option value="a11y">Accessibility</option>
+    </select>
+  </form-field>
+  <form-field>
+    <label for="message">Message</label>
+    <textarea id="message" name="message" data-grow rows="3" data-count maxlength="1000"></textarea>
+  </form-field>
   <button type="submit">Send</button>
+  <button type="reset">Clear Draft</button>
 </form></code-block>
-  </section>
 
-  <section>
-    <h2>How It Works</h2>
-    <p>Add <code>data-autosave</code> to any <code>&lt;form&gt;</code> element with a unique key as the value. The init script:</p>
-    <ol>
-      <li>Attaches delegated <code>input</code> and <code>change</code> event listeners on the form</li>
-      <li>On every field change, debounces for 500ms then serializes all named fields to a JSON object</li>
-      <li>Saves the object to <code>localStorage</code> with the key <code>vb-autosave:{<em>key</em>}</code> and a timestamp</li>
-      <li>On page load, checks for a non-expired draft (24-hour expiry)</li>
-      <li>If a draft exists, restores field values and fires <code>input</code> events so other enhancements update</li>
-      <li>Shows a "Draft restored" toast notification via <code>toast-msg</code> if available</li>
-      <li>Sets <code>data-autosave-init</code> to prevent double-binding</li>
-    </ol>
-    <p>Password fields (<code>type="password"</code>) and file inputs (<code>type="file"</code>) are always skipped &mdash; sensitive data and file references are never stored.</p>
+  <p>What happens:</p>
+  <ol>
+    <li><code>input</code> and <code>change</code> events on the form schedule a save 500ms after the last one.</li>
+    <li>The save collects every named, <a href="#privacy">persistable</a> control in <code>form.elements</code>, including form-associated custom elements such as <code>&lt;combo-box&gt;</code>.</li>
+    <li>On load, a draft younger than 24 hours is written back into those controls. Readonly and disabled controls are left alone.</li>
+    <li>Each restored control receives <code>input</code> and <code>change</code> events, so <a href="/docs/attributes/data-count/"><code>data-count</code></a>, <a href="/docs/attributes/data-grow/"><code>data-grow</code></a> and <a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> catch up, then the form fires <code>autosave:restore</code> and the restore is announced.</li>
+    <li>Submit deletes the draft and cancels any pending save. Reset does the same once the reset has gone through (a cancelled reset keeps the draft).</li>
+  </ol>
+</section>
 
-    <p>Multi-select dropdowns (<code>&lt;select multiple&gt;</code>) round-trip correctly: every selected option is stored, and all matching options are reselected on restore.</p>
-  </section>
+<section>
+  <h2>Options</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>On</th><th>Values</th><th>Default</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-autosave</code></td>
+        <td><code>&lt;form&gt;</code></td>
+        <td>string, or empty</td>
+        <td>&mdash;</td>
+        <td>Turns autosave on. The value is the storage key. Empty (<code>&lt;form data-autosave&gt;</code>) derives the key from the form's method and resolved action, for example <code>post https://example.com/contact</code>.</td>
+      </tr>
+      <tr>
+        <td><code>data-autosave-retain</code></td>
+        <td><code>&lt;form&gt;</code></td>
+        <td>space-separated field names</td>
+        <td>all fields</td>
+        <td>Allowlist. Only the named fields are saved and restored. The privacy filter still applies to them.</td>
+      </tr>
+      <tr>
+        <td><code>data-autosave-ignore</code></td>
+        <td>any control, or a container such as <code>&lt;fieldset&gt;</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Never save or restore this control (or anything inside the container).</td>
+      </tr>
+      <tr>
+        <td><code>data-label-restored</code></td>
+        <td><code>&lt;form&gt;</code></td>
+        <td>string</td>
+        <td><code>Draft restored</code></td>
+        <td>Text of the restore announcement. Set it to localize the message.</td>
+      </tr>
+      <tr>
+        <td><code>data-autosave-init</code></td>
+        <td><code>&lt;form&gt;</code></td>
+        <td>set by the script</td>
+        <td>&mdash;</td>
+        <td>Marks a wired form, for styling and tests. Do not set it yourself. It is not the double-binding guard, so a cloned form (which copies the attribute) is still wired.</td>
+      </tr>
+    </tbody>
+  </table>
 
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Value</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-autosave</code></td>
-          <td>string (optional)</td>
-          <td>Storage key for this form. When the value is empty (boolean form, e.g. <code>&lt;form data-autosave&gt;</code>), the key is derived from the form's <code>method</code> and <code>action</code>.</td>
-        </tr>
-        <tr>
-          <td><code>data-autosave-retain</code></td>
-          <td>space-separated field names</td>
-          <td>Allowlist of fields to persist. When set, only listed fields are saved and restored. Useful for opting out of sensitive or large fields.</td>
-        </tr>
-        <tr>
-          <td><code>data-label-restored</code></td>
-          <td>string</td>
-          <td>Message for the "draft restored" toast. Defaults to <code>Draft restored</code>. Set it on the form to localize the message.</td>
-        </tr>
-        <tr>
-          <td><code>data-autosave-init</code></td>
-          <td>boolean</td>
-          <td>Set automatically to prevent double-binding. Do not set manually.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+  <table class="props-table">
+    <caption>Fixed behaviour</caption>
+    <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Storage</td><td><code>localStorage</code> through VBStore</td></tr>
+      <tr><td>Storage key</td><td><code>vb:autosave:{<em>key</em>}</code></td></tr>
+      <tr><td>Stored value</td><td><code>{ "data": { <em>name</em>: <em>value</em>, … }, "timestamp": <em>ms</em> }</code></td></tr>
+      <tr><td>Debounce</td><td>500ms after the last <code>input</code> or <code>change</code></td></tr>
+      <tr><td>Expiry</td><td>24 hours after the last save; an expired draft is deleted on the next load</td></tr>
+    </tbody>
+  </table>
 
-  <section>
-    <h2>Auto-derived Storage Key</h2>
-    <p>If you omit the value, the storage key is derived from the form's <code>method</code> and <code>action</code>. Two pages pointing at the same endpoint will share state, which is usually what you want.</p>
+  <p>Values are stored per field name: a string for text-like controls and the checked radio, an array of checked values for checkboxes (so a group sharing one name round-trips), and an array of selected values for <code>&lt;select multiple&gt;</code>.</p>
+</section>
 
-    <code-block language="html" show-lines label="Boolean data-autosave" data-escape><!-- Key derived as "post https://example.com/contact" -->
+<section>
+  <h2>Events</h2>
+  <table class="props-table">
+    <thead><tr><th>Event</th><th>Fired on</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>autosave:restore</code></td>
+        <td>the form (bubbles)</td>
+        <td><code>{ key, fields }</code> &mdash; the storage key and the names of the restored fields</td>
+        <td>After a draft was written into at least one control and the controls received their <code>input</code>/<code>change</code> events.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Saving and clearing fire no events of their own. Use <code>autosave:restore</code> to offer a way out of a restored draft: <code>form.reset()</code> puts every control back to its default and deletes the draft.</p>
+
+  <code-block language="javascript" show-lines label="Offer a Discard draft button" data-escape>form.addEventListener('autosave:restore', (event) => {
+  const discard = form.querySelector('.discard-draft');
+  discard.hidden = false;
+  discard.addEventListener('click', () => form.reset(), { once: true });
+  console.log('Restored', event.detail.fields, 'from', event.detail.key);
+});</code-block>
+</section>
+
+<section id="privacy">
+  <h2>Privacy</h2>
+  <p>Drafts sit in <code>localStorage</code> as plain JSON for up to 24 hours. Anyone using the same browser profile can read them, and so can any script running on your origin (including injected script after an XSS bug). Keep that in mind on shared or kiosk devices, and leave autosave off for forms where the risk is not worth the convenience.</p>
+
+  <h3>Never stored</h3>
+  <p>These controls are skipped when saving and are never written to when restoring, whatever <code>data-autosave-retain</code> says:</p>
+  <ul>
+    <li><code>type="password"</code>, <code>type="hidden"</code> (CSRF tokens, record versions and nonces always keep their fresh server value) and <code>type="file"</code></li>
+    <li>Buttons: <code>&lt;button&gt;</code> and <code>input[type=submit|button|reset|image]</code>, so named submit buttons keep their own values</li>
+    <li><code>&lt;output&gt;</code> and <code>&lt;fieldset&gt;</code></li>
+    <li>Controls with <code>autocomplete="off"</code></li>
+    <li>Controls whose <code>autocomplete</code> names a secret: <code>cc-number</code>, <code>cc-csc</code>, <code>cc-exp</code>, <code>cc-exp-month</code>, <code>cc-exp-year</code>, <code>one-time-code</code>, <code>new-password</code>, <code>current-password</code></li>
+    <li>Controls marked <code>data-autosave-ignore</code>, or inside an element marked with it</li>
+    <li>Unnamed controls</li>
+  </ul>
+  <p>Restore also skips readonly and disabled controls. Everything else that has a <code>name</code> is stored, so mark anything sensitive that the rules above do not catch (a national ID number, a medical note) with <code>data-autosave-ignore</code>, or list only the safe fields in <code>data-autosave-retain</code>. The same filter backs <a href="/docs/attributes/data-wizard/"><code>data-wizard-persist</code></a>.</p>
+
+  <p>In this demo only the name is kept; reload after filling every field. The form uses <code>method="dialog"</code> so submitting does not leave the page.</p>
+
+  <browser-window
+    src="/docs/snippets/demos/data-autosave-privacy.html"
+    url="https://vanilla-breeze.com/autosave-privacy"
+    title="What autosave stores"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Fields that are never stored" data-escape><form data-autosave="privacy-demo" method="dialog">
+  <input type="hidden" name="csrf" value="server-token-123">
+  <form-field>
+    <label for="pv-name">Name (saved)</label>
+    <input type="text" id="pv-name" name="name" autocomplete="name">
+  </form-field>
+  <form-field>
+    <label for="pv-card">Card number (never saved: autocomplete=cc-number)</label>
+    <input type="text" id="pv-card" name="card" inputmode="numeric" autocomplete="cc-number">
+  </form-field>
+  <form-field>
+    <label for="pv-pass">Password (never saved)</label>
+    <input type="password" id="pv-pass" name="password" autocomplete="new-password">
+  </form-field>
+  <form-field>
+    <label for="pv-note">Private note (never saved: data-autosave-ignore)</label>
+    <textarea id="pv-note" name="note" rows="2" data-autosave-ignore></textarea>
+  </form-field>
+  <button type="submit" name="action" value="send">Send</button>
+  <button type="reset">Clear draft</button>
+</form></code-block>
+</section>
+
+<section>
+  <h2>Styling</h2>
+  <p><code>data-autosave</code> draws nothing and has no public styling hooks. The restore announcement is a <a href="/docs/elements/web-components/toast/"><code>&lt;toast-msg&gt;</code></a> toast when that component is registered; style it through <code>toast-msg</code>. Without it, the announcement goes to a visually hidden <code>role="status"</code> region appended to the form (marked <code>data-autosave-status</code>).</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>A restore is always announced: through the toast's live region when <code>&lt;toast-msg&gt;</code> is registered (variant <code>info</code>, 3 seconds, paused while hovered or focused), otherwise through a polite status region in the form. Users of assistive technology learn that fields were pre-filled.</li>
+    <li>Restored controls receive <code>input</code> and <code>change</code> events, so counters, conditional sections and other enhancements are in the right state before the user reaches them.</li>
+    <li>Fields are filled in place; the layout does not move.</li>
+    <li>Without JavaScript the form is an ordinary form; nothing is stored.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Derived key and selective retention</h3>
+  <p>Leave the value empty to derive the key from method and action. Two forms posting to the same endpoint then share one draft, which suits duplicate copies of one form but not two different forms on the same action (an inline editor and a full editor, say): give those explicit keys. The second form keeps only the fields listed in <code>data-autosave-retain</code>; the message is not stored. Narrowing the list later does not bring back fields stored under the old list.</p>
+
+  <browser-window
+    src="/docs/examples/demos/autosave-advanced.html"
+    url="https://vanilla-breeze.com/autosave-advanced"
+    title="Derived key and retention"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Derived key and data-autosave-retain" data-escape><!-- Key: "post https://vanilla-breeze.com/contact" -->
 <form action="/contact" method="post" data-autosave>
-  <input name="name" autocomplete="name">
-  <input name="email" type="email" autocomplete="email">
+  <form-field>
+    <label for="adv-name">Name</label>
+    <input type="text" id="adv-name" name="name" autocomplete="name">
+  </form-field>
+  <form-field>
+    <label for="adv-email">Email</label>
+    <input type="email" id="adv-email" name="email" autocomplete="email">
+  </form-field>
   <button type="submit">Send</button>
+  <button type="reset">Clear Draft</button>
 </form>
 
-<!-- Equivalent explicit form -->
-<form data-autosave="post https://example.com/contact">…</form></code-block>
-
-    <p>Provide an explicit value when two forms on the same endpoint should not share drafts (e.g. an inline edit form and a full edit form).</p>
-  </section>
-
-  <section>
-    <h2>Selective Retention</h2>
-    <p>Use <code>data-autosave-retain</code> to limit which fields are persisted. Useful when a form mixes lookup-friendly identity fields (name, email) with sensitive or transient content (a message body, a one-time code).</p>
-
-    <code-block language="html" show-lines label="data-autosave-retain" data-escape><form data-autosave="checkout" data-autosave-retain="name email">
-  <input name="name" autocomplete="name">       <!-- persisted -->
-  <input name="email" type="email">             <!-- persisted -->
-  <textarea name="message"></textarea>          <!-- NOT persisted -->
-  <input name="cvv" autocomplete="cc-csc">      <!-- NOT persisted -->
-  <button type="submit">Pay</button>
+<form data-autosave="advanced-contact" data-autosave-retain="name email">
+  <form-field>
+    <label for="ret-name">Name (retained)</label>
+    <input type="text" id="ret-name" name="name" autocomplete="name">
+  </form-field>
+  <form-field>
+    <label for="ret-email">Email (retained)</label>
+    <input type="email" id="ret-email" name="email" autocomplete="email">
+  </form-field>
+  <form-field>
+    <label for="ret-message">Message (NOT retained)</label>
+    <textarea id="ret-message" name="message" rows="3"></textarea>
+  </form-field>
+  <button type="submit">Send</button>
+  <button type="reset">Clear Draft</button>
 </form></code-block>
 
-    <p>Field names not in the retain list are skipped during both save and restore. Tightening the list later will not surface previously-saved fields that fall outside the new allowlist.</p>
-  </section>
+  <h3>Checkbox groups and radios</h3>
+  <p>Checkboxes that share a name are stored as the list of checked values and restored by value. Radios store the checked value.</p>
 
-  <section>
-    <h2>Storage Format</h2>
-    <p>The draft is stored as a JSON object in <code>localStorage</code>. Each named field in the form becomes a key-value pair. A <code>_ts</code> timestamp is included for expiry checking.</p>
+  <browser-window
+    src="/docs/snippets/demos/data-autosave-choices.html"
+    url="https://vanilla-breeze.com/autosave-choices"
+    title="Checkbox group and radios"
+    shadow>
+  </browser-window>
 
-    <code-block language="javascript" show-lines label="Storage key and format" data-escape>// Storage key format
-localStorage.getItem('vb-autosave:contact-form');
-
-// Stored value is a JSON object of field name/value pairs
-// {
-//   "name": "Jane",
-//   "message": "Hello...",
-//   "_ts": 1700000000000
-// }</code-block>
-
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Detail</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Key format</td>
-          <td><code>vb-autosave:{<em>key</em>}</code></td>
-        </tr>
-        <tr>
-          <td>Debounce</td>
-          <td>500ms after last input</td>
-        </tr>
-        <tr>
-          <td>Expiry</td>
-          <td>24 hours from last save</td>
-        </tr>
-        <tr>
-          <td>Skipped types</td>
-          <td><code>password</code>, <code>file</code></td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Multiple Forms</h2>
-    <p>Each form on a page must have a unique <code>data-autosave</code> key. The key is used directly in the <code>localStorage</code> key, so collisions between forms on different pages are avoided by using descriptive names.</p>
-
-    <code-block language="html" show-lines label="Multiple forms with unique keys" data-escape><!-- Each form needs a unique key -->
-<form data-autosave="signup-form">
-  <input name="email" type="email" placeholder="Email">
-  <input name="username" placeholder="Username">
-  <button type="submit">Sign Up</button>
-</form>
-
-<form data-autosave="feedback-form">
-  <textarea name="feedback" placeholder="Your feedback"></textarea>
-  <button type="submit">Submit</button>
-</form></code-block>
-  </section>
-
-  <section>
-    <h2>Checkboxes and Radios</h2>
-    <p>Checkbox and radio inputs are handled correctly during both save and restore:</p>
-    <ul>
-      <li><strong>Checkboxes</strong> &mdash; stored as <code>"on"</code> when checked, <code>""</code> when unchecked. On restore, the <code>checked</code> property is set accordingly.</li>
-      <li><strong>Radio buttons</strong> &mdash; only the checked radio's value is stored for the group name. On restore, the matching radio is checked.</li>
-    </ul>
-
-    <code-block language="html" show-lines label="Checkboxes and radios with autosave" data-escape><form data-autosave="preferences">
+  <code-block language="html" show-lines label="Checkbox group and radios" data-escape><form data-autosave="preferences-demo" method="dialog">
   <fieldset>
-    <legend>Notifications</legend>
-    <label>
-      <input type="checkbox" name="email-notify" value="yes">
-      Email notifications
-    </label>
-    <label>
-      <input type="checkbox" name="sms-notify" value="yes">
-      SMS notifications
-    </label>
+    <legend>Notify me by</legend>
+    <label><input type="checkbox" name="notify" value="email"> Email</label>
+    <label><input type="checkbox" name="notify" value="sms"> SMS</label>
+    <label><input type="checkbox" name="notify" value="push"> Push</label>
   </fieldset>
-
   <fieldset>
     <legend>Theme</legend>
-    <label>
-      <input type="radio" name="theme" value="light"> Light
-    </label>
-    <label>
-      <input type="radio" name="theme" value="dark"> Dark
-    </label>
+    <label><input type="radio" name="theme" value="light"> Light</label>
+    <label><input type="radio" name="theme" value="dark"> Dark</label>
   </fieldset>
-
   <button type="submit">Save</button>
+  <button type="reset">Clear draft</button>
 </form></code-block>
-  </section>
 
-  <section>
-    <h2>With Other Enhancements</h2>
-    <p>When a draft is restored, <code>input</code> events are fired on each restored field. This ensures other Vanilla Breeze enhancements that listen for input events &mdash; such as <code>data-count</code>, <code>data-grow</code>, and <code>data-show-when</code> &mdash; update correctly.</p>
+  <h3>With other enhancements</h3>
+  <p>Restored values reach <code>data-count</code>, <code>data-grow</code> and <code>data-show-when</code> through the events dispatched on restore. The character limit comes from <code>maxlength</code>; <code>data-count</code> itself only takes <code>""</code> or <code>"words"</code>.</p>
 
-    <code-block language="html" show-lines label="Autosave with other form enhancements" data-escape><form data-autosave="registration" class="stacked">
+  <code-block language="html" show-lines label="Autosave with other form enhancements" data-escape><form data-autosave="registration">
   <form-field>
     <label for="reg-email">Email</label>
     <input type="email" id="reg-email" name="email" required>
   </form-field>
-
-  <form-field>
-    <label for="reg-name">Full Name</label>
-    <input type="text" id="reg-name" name="fullname" required>
-    <small slot="help">As it appears on your ID.</small>
-  </form-field>
-
   <form-field>
     <label for="reg-bio">Bio</label>
-    <textarea id="reg-bio" name="bio" data-count="200" data-grow></textarea>
+    <textarea id="reg-bio" name="bio" maxlength="200" data-count data-grow></textarea>
   </form-field>
-
   <button type="submit">Register</button>
 </form></code-block>
-  </section>
 
-  <section>
-    <h2>Toast Notification</h2>
-    <p>When a draft is restored and the <code>toast-msg</code> component is registered, a toast is shown on the first <code>&lt;toast-msg&gt;</code> in the document. If the page has none, one is created. The toast uses the following configuration:</p>
-    <ul>
-      <li><strong>Message:</strong> the form's <code>data-label-restored</code> value, or "Draft restored"</li>
-      <li><strong>Variant:</strong> <code>info</code></li>
-      <li><strong>Duration:</strong> 3000ms (auto-dismisses, paused while hovered or focused)</li>
-      <li><strong>Source:</strong> <code>autosave</code> (in the toast event detail)</li>
-    </ul>
-    <code-block language="html" label="Localized restore message" data-escape><form data-autosave="contact" data-label-restored="Brouillon restauré">…</form></code-block>
-    <p>If <code>toast-msg</code> is not registered, the draft is still restored silently without a notification.</p>
-  </section>
+  <h3>Clearing a draft from script</h3>
+  <p>Submit and reset clear the draft for you. To drop it from script without resetting the form, remove the key through <code>VB.store</code> (the public VBStore). Typing in the form afterwards starts a new draft.</p>
+  <code-block language="javascript" show-lines label="Remove a draft" data-escape>// <form data-autosave="contact-form">
+await VB.store.remove('autosave', 'contact-form');
 
-  <section>
-    <h2>Clear Behavior</h2>
-    <p>The autosave draft is automatically cleared in two scenarios:</p>
-    <ul>
-      <li><strong>Form submit</strong> &mdash; the draft is removed from <code>localStorage</code> when the form is submitted</li>
-      <li><strong>Form reset</strong> &mdash; the draft is removed when the form is reset via a reset button or <code>form.reset()</code></li>
-    </ul>
+// Without the VB runtime: the raw localStorage key
+localStorage.removeItem('vb:autosave:contact-form');</code-block>
+  <p>The draft is deleted when the <code>submit</code> event reaches the form, whether or not a handler later cancels the submission. If your handler submits with <code>fetch</code> and the request fails, the draft is already gone; the values are still in the fields, so the user can retry.</p>
+</section>
 
-    <code-block language="javascript" show-lines label="Draft clearing behavior" data-escape>// Drafts are cleared automatically on submit and reset
-form.addEventListener('submit', () => {
-  // autosave data is cleared before the submit handler runs
-});
-
-// You can also clear manually
-localStorage.removeItem('vb-autosave:contact-form');</code-block>
-  </section>
-
-  <section>
-    <h2>Styling</h2>
-    <p>The autosave attribute itself has no visual output. The only visible indicator is the toast notification on restore, which inherits styles from <code>toast-msg</code>.</p>
-
-    <code-block language="css" show-lines label="Toast notification styling" data-escape>/* The toast notification uses toast-msg if available */
-/* Customize the restore notification via toast-msg styles */
-toast-msg::part(toast) {
-  --toast-bg: var(--color-surface-raised);
-  --toast-color: var(--color-text);
-}</code-block>
-
-    <p>All behavior is gated on <code>data-autosave-init</code>. Without JavaScript, the form works normally &mdash; data simply is not persisted to <code>localStorage</code>.</p>
-  </section>
-
-  <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li>The "Draft restored" toast notification is announced by screen readers via <code>toast-msg</code>'s accessible live region</li>
-      <li>Restored form state preserves the user's previous work, reducing frustration from accidental navigation</li>
-      <li>No visual layout changes occur during restore &mdash; fields are populated in place</li>
-      <li>Firing <code>input</code> events on restore ensures dependent enhancements (character counts, conditional fields) are in the correct state for assistive technology</li>
-      <li>Password and file fields are excluded from storage for security &mdash; users are not given a false sense of persistence for sensitive data</li>
-      <li>Without JavaScript, the form works as a standard HTML form &mdash; progressive enhancement</li>
-    </ul>
-  </section>
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/form/"><code>&lt;form&gt;</code></a> &mdash; the element this attribute goes on.</li>
+    <li><a href="/docs/attributes/data-wizard/"><code>data-wizard</code></a> &mdash; multi-step forms; <code>data-wizard-persist</code> keeps the current step and values with the same privacy filter. Use <code>data-autosave</code> for single-page forms, the wizard's persistence for stepped ones.</li>
+    <li><a href="/docs/concepts/vb-store/">VBStore</a> &mdash; the storage layer, its key format and <code>VB.store</code>.</li>
+    <li><a href="/docs/elements/web-components/toast/"><code>&lt;toast-msg&gt;</code></a> &mdash; shows the restore announcement.</li>
+    <li><a href="/docs/attributes/data-count/"><code>data-count</code></a>, <a href="/docs/attributes/data-grow/"><code>data-grow</code></a>, <a href="/docs/attributes/data-show-when/"><code>data-show-when</code></a> &mdash; enhancements that update after a restore.</li>
+    <li><a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; label, control and messages wrapper used in the examples.</li>
+  </ul>
+</section>

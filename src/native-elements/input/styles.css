@@ -158,6 +158,18 @@ textarea[data-grow] {
   );
 }
 
+/* Without JS, browsers with typed attr() read rows directly. Gated so other
+   browsers keep the 2-row floor instead of an invalid-at-computed-time value. */
+@supports (x: attr(x type(*))) {
+  textarea[data-grow] {
+    min-block-size: calc(
+      var(--grow-rows, attr(rows type(<number>), 2)) * 1lh
+      + 2 * var(--input-padding-inline, 0.5rem)
+      + 2 * var(--border-width-thin, 1px)
+    );
+  }
+}
+
 label {
   display: block;
   font-weight: 500;

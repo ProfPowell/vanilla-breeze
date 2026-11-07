@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-grow"
-description: "Auto-expand textareas as the user types. Uses CSS field-sizing where supported with a JavaScript scrollHeight fallback for older browsers."
+description: "Auto-expand a textarea as the user types, from its rows up to an optional data-max-rows cap. CSS field-sizing where supported, a JavaScript measuring fallback elsewhere."
 attributeName: data-grow
 category: form-behavior
 attributeType: data
@@ -12,191 +12,98 @@ crumbLabel: Data Attributes
 ---
 
 <section>
-    <h2>Overview</h2>
-    <p>The <code>data-grow</code> attribute makes a textarea automatically expand its height as the user types. It uses the modern CSS <code>field-sizing: content</code> property where supported, falling back to JavaScript <code>scrollHeight</code> measurement for older browsers.</p>
+  <h2>Overview</h2>
+  <p><code>data-grow</code> on a <code>&lt;textarea&gt;</code> makes it grow with its content and shrink back when text is removed. It starts at <code>rows</code> lines and, with <code>data-max-rows</code>, stops growing at that many lines and scrolls. Browsers with <code>field-sizing: content</code> do the sizing in CSS; elsewhere a script measures <code>scrollHeight</code>.</p>
+</section>
 
-    <browser-window
-      src="/docs/examples/demos/textarea-grow-basic.html"
-      url="https://vanilla-breeze.com/grow"
-      title="Auto-grow Textarea"
-      shadow>
-    </browser-window>
+<section>
+  <h2>Usage</h2>
 
-    <code-block language="html" show-lines label="Basic auto-grow textarea" data-escape><form-field>
-  <label for="comment">Comment</label>
-  <textarea id="comment" data-grow rows="2"></textarea>
+  <browser-window
+    src="/docs/examples/demos/textarea-grow-basic.html"
+    url="https://vanilla-breeze.com/grow"
+    title="Auto-grow textarea"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Unbounded, capped, and combined with a counter" data-escape><form-field>
+  <label for="comment">Comment (unlimited growth)</label>
+  <textarea id="comment" name="comment" data-grow rows="2"></textarea>
+</form-field>
+
+<form-field>
+  <label for="message">Message (max 8 rows)</label>
+  <textarea id="message" name="message" data-grow rows="2" data-max-rows="8"></textarea>
+</form-field>
+
+<form-field>
+  <label for="combined">Combined: grow + character count</label>
+  <textarea id="combined" name="combined" data-grow data-count maxlength="500" rows="2"></textarea>
 </form-field></code-block>
-  </section>
 
-  <section>
-    <h2>How It Works</h2>
-    <p>Add <code>data-grow</code> to any <code>&lt;textarea&gt;</code>. The CSS does the work where it can; the init script passes <code>rows</code> and <code>data-max-rows</code> to it as <code>--grow-rows</code> and <code>--grow-max-rows</code>, and runs a measuring fallback where it cannot.</p>
+  <h3>With field-sizing (CSS path)</h3>
+  <ol>
+    <li>CSS sets <code>field-sizing: content</code> and <code>resize: none</code> on <code>textarea[data-grow]</code>, so the textarea grows even before the script runs.</li>
+    <li>The minimum height is <code>rows</code> lines plus padding and border (<code>field-sizing</code> itself ignores <code>rows</code>, and VB's usual 8rem textarea minimum does not apply).</li>
+    <li>With <code>data-max-rows</code>, <code>max-block-size</code> is that many lines plus padding and border; past it the textarea scrolls.</li>
+    <li>The script only writes <code>--grow-rows</code> and <code>--grow-max-rows</code> and marks the textarea <code>data-grow-init=""</code>. Programmatic values resize on their own.</li>
+  </ol>
 
-    <h3>Modern Browsers (CSS field-sizing)</h3>
-    <ol>
-      <li>CSS sets <code>field-sizing: content</code> and <code>resize: none</code></li>
-      <li>The minimum height is <code>rows</code> lines plus padding and border. <code>field-sizing</code> ignores <code>rows</code>, and VB's usual <code>8rem</code> textarea minimum does not apply to <code>data-grow</code></li>
-      <li>With <code>data-max-rows</code>, <code>max-block-size</code> is that many lines plus padding and border. Past it the textarea stops growing and scrolls (<code>overflow-y: auto</code>)</li>
-    </ol>
+  <h3>Without field-sizing (JavaScript fallback)</h3>
+  <ol>
+    <li>The textarea is marked <code>data-grow-init="fallback"</code>; only this path hides overflow and the resize handle.</li>
+    <li>On <code>input</code>, <code>change</code> and after a form reset, the height is set to <code>auto</code> and then to <code>scrollHeight</code> plus the border, so it shrinks as well as grows.</li>
+    <li>With <code>data-max-rows</code> the height is capped at that many lines plus padding and border, and <code>overflow-y</code> switches to <code>auto</code> past the cap.</li>
+  </ol>
+</section>
 
-    <h3>Fallback (JavaScript scrollHeight)</h3>
-    <ol>
-      <li>Marks the textarea <code>data-grow-init="fallback"</code>; only this path hides overflow</li>
-      <li>On each <code>input</code> and <code>change</code> event, and after a form reset, resets height to <code>auto</code> then sets it to <code>scrollHeight</code> plus the border</li>
-      <li>If <code>data-max-rows</code> is set, caps growth at that many lines plus padding and border</li>
-      <li>Switches to <code>overflow-y: auto</code> when content exceeds the max height</li>
-    </ol>
+<section>
+  <h2>Options</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>data-grow</code></td>
+        <td>boolean</td>
+        <td>&mdash;</td>
+        <td>Turns auto-grow on.</td>
+      </tr>
+      <tr>
+        <td><code>rows</code></td>
+        <td>number</td>
+        <td>2</td>
+        <td>Native attribute. The starting and minimum height in lines; the textarea never shrinks below it.</td>
+      </tr>
+      <tr>
+        <td><code>data-max-rows</code></td>
+        <td>positive number</td>
+        <td>no cap</td>
+        <td>Lines after which the textarea stops growing and scrolls. <code>0</code> or an invalid value means no cap.</td>
+      </tr>
+      <tr>
+        <td><code>data-grow-init</code></td>
+        <td>set by the script</td>
+        <td>&mdash;</td>
+        <td><code>""</code> on the CSS path, <code>"fallback"</code> on the JavaScript path. Do not set it yourself. It is not the double-binding guard, so a cloned textarea (which copies it) is still wired.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
 
-    <p><code>data-grow-init</code> is set in both cases to prevent double-binding (empty on the CSS path, <code>"fallback"</code> on the JS path).</p>
-  </section>
-
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-grow</code></td>
-          <td>boolean</td>
-          <td>Enables auto-grow behavior on a textarea.</td>
-        </tr>
-        <tr>
-          <td><code>data-max-rows</code></td>
-          <td>number</td>
-          <td>Maximum number of rows the textarea can grow to. After this, the textarea scrolls.</td>
-        </tr>
-        <tr>
-          <td><code>rows</code></td>
-          <td>number</td>
-          <td>Standard HTML attribute. Sets the minimum number of visible rows (default 2). The textarea never shrinks below this.</td>
-        </tr>
-        <tr>
-          <td><code>data-grow-init</code></td>
-          <td>boolean</td>
-          <td>Set automatically to prevent double-binding: empty on the CSS path, <code>"fallback"</code> on the JS path. Do not set manually.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Basic Auto-Grow</h2>
-    <p>Without <code>data-max-rows</code>, the textarea grows indefinitely to fit its content. The <code>rows</code> attribute sets the initial minimum height.</p>
-
-    <div class="example">
-      <form-field>
-        <label for="comment-demo">Comment</label>
-        <textarea id="comment-demo" data-grow rows="2"></textarea>
-      </form-field>
-    </div>
-
-    <code-block language="html" show-lines label="Unbounded auto-grow" data-escape><form-field>
-  <label for="comment">Comment</label>
-  <textarea id="comment" data-grow rows="2"></textarea>
-</form-field></code-block>
-  </section>
-
-  <section>
-    <h2>Max Rows</h2>
-    <p>Set <code>data-max-rows</code> to cap the textarea height. Once it reaches this height, the textarea stops growing and the content scrolls instead.</p>
-
-    <div class="example">
-      <form-field>
-        <label for="maxrows-demo">Limited growth</label>
-        <textarea id="maxrows-demo" data-grow data-max-rows="10" rows="2"></textarea>
-      </form-field>
-    </div>
-
-    <code-block language="html" show-lines label="Max rows limit" data-escape><textarea data-grow data-max-rows="10" rows="2"></textarea></code-block>
-  </section>
-
-  <section>
-    <h2>Min and Max Rows</h2>
-    <p>Combine <code>rows</code> (minimum) and <code>data-max-rows</code> (maximum) to define a growth range. The textarea starts at the minimum and grows up to the maximum.</p>
-
-    <div class="example">
-      <form-field>
-        <label for="desc-demo">Description</label>
-        <textarea id="desc-demo" data-grow rows="4" data-max-rows="12"></textarea>
-      </form-field>
-    </div>
-
-    <code-block language="html" show-lines label="Min and max rows" data-escape><form-field>
-  <label for="description">Description</label>
-  <textarea id="description" data-grow rows="4" data-max-rows="12"></textarea>
-</form-field></code-block>
-  </section>
-
-  <section>
-    <h2>Combined with data-count</h2>
-    <p>Use <code>data-grow</code> alongside <code>data-count</code> for a textarea that grows while showing a live character or word count. Both attributes work independently on the same element.</p>
-
-    <div class="example">
-      <form-field>
-        <label for="combined-demo">Message</label>
-        <textarea id="combined-demo" data-grow data-count maxlength="500" rows="2"></textarea>
-      </form-field>
-    </div>
-
-    <code-block language="html" show-lines label="Auto-grow with character count" data-escape><form-field>
-  <label for="msg">Message</label>
-  <textarea id="msg" data-grow data-count maxlength="500" rows="2"></textarea>
-</form-field></code-block>
-  </section>
-
-  <section>
-    <h2>In a Form</h2>
-    <p>Auto-grow textareas work seamlessly in forms. The textarea submits its value normally regardless of its visual height.</p>
-
-    <code-block language="html" show-lines label="Auto-grow textarea in a form" data-escape><form class="stacked">
-  <form-field>
-    <label for="subject">Subject</label>
-    <input type="text" id="subject">
-  </form-field>
-  <form-field>
-    <label for="content">Content</label>
-    <textarea id="content" data-grow data-max-rows="15" rows="3"></textarea>
-  </form-field>
-  <button type="submit">Send</button>
-</form></code-block>
-  </section>
-
-  <section>
-    <h2>Shrinking Behavior</h2>
-    <p>The textarea shrinks back down when content is removed. It never shrinks below the initial <code>rows</code> height:</p>
-    <ul>
-      <li><strong>CSS field-sizing</strong> &mdash; the browser handles shrinking automatically based on content</li>
-      <li><strong>JS fallback</strong> &mdash; on each input event, the height resets to <code>auto</code> before measuring <code>scrollHeight</code>, allowing the textarea to shrink</li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>Events</h2>
-    <p>No custom events are dispatched. The textarea fires standard <code>input</code> and <code>change</code> events. You can observe height changes by reading <code>scrollHeight</code> or <code>style.height</code> on the textarea.</p>
-    <p>Setting <code>.value</code> from script fires no event. With <code>field-sizing</code> the height follows anyway; for the JS fallback (and for a <code>data-count</code> counter on the same textarea) dispatch an <code>input</code> event afterwards. Form resets are handled automatically.</p>
-    <code-block language="javascript" show-lines label="Refresh after a programmatic value" data-escape>textarea.value = savedDraft;
+<section>
+  <h2>Events</h2>
+  <p>No custom events. The fallback listens for <code>input</code> and <code>change</code>. Setting <code>.value</code> from script fires neither: with <code>field-sizing</code> the height follows anyway, but for the fallback (and for a <a href="/docs/attributes/data-count/"><code>data-count</code></a> counter on the same textarea) dispatch an <code>input</code> event afterwards. Form resets are handled for you.</p>
+  <code-block language="javascript" show-lines label="Refresh after a programmatic value" data-escape>textarea.value = savedDraft;
 textarea.dispatchEvent(new Event('input', { bubbles: true }));</code-block>
+</section>
 
-    <code-block language="javascript" show-lines label="Observing height changes" data-escape>const textarea = document.querySelector('[data-grow]');
+<section>
+  <h2>Styling</h2>
+  <p>No public custom properties: <code>--grow-rows</code> and <code>--grow-max-rows</code> are written by the script from <code>rows</code> and <code>data-max-rows</code>; set those attributes instead. The shipped rules:</p>
 
-// The textarea fires standard events — no custom events needed
-textarea.addEventListener('input', () => {
-  console.log('Height:', textarea.style.height || 'auto (CSS field-sizing)');
-  console.log('Scroll height:', textarea.scrollHeight);
-});</code-block>
-  </section>
-
-  <section>
-    <h2>Styling</h2>
-    <p>The sizing rules key on <code>[data-grow]</code> itself, so a supporting browser grows the textarea even before the script runs. Without JavaScript the minimum falls back to two rows, and without <code>field-sizing</code> support the textarea keeps its <code>rows</code> height and its resize handle.</p>
-
-    <code-block language="css" show-lines label="Auto-grow CSS" data-escape>/* native-elements/input/styles.css: start at rows, not 8rem */
+  <code-block language="css" show-lines label="Auto-grow CSS" data-escape>/* native-elements/input/styles.css: start at rows, not 8rem */
 textarea[data-grow] {
   min-block-size: calc(
     var(--grow-rows, 2) * 1lh
@@ -214,7 +121,7 @@ textarea[data-grow] {
 
   textarea[data-grow][data-max-rows] {
     max-block-size: calc(
-      var(--grow-max-rows, 999) * 1lh
+      var(--grow-max-rows, attr(data-max-rows type(<number>), 999)) * 1lh
       + 2 * var(--input-padding-inline, 0.5rem)
       + 2 * var(--border-width-thin, 1px)
     );
@@ -222,34 +129,85 @@ textarea[data-grow] {
   }
 }
 
-/* JS fallback only: hide the scrollbar while measuring */
+/* JavaScript fallback only */
 textarea[data-grow][data-grow-init="fallback"] {
   overflow: hidden;
   resize: none;
 }</code-block>
-  </section>
 
-  <section>
-    <h2>Dynamic Elements</h2>
-    <p>Textareas added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+  <h3>Without JavaScript</h3>
+  <ul>
+    <li>With <code>field-sizing</code> support the textarea still grows. Its minimum is two lines (the script is what reads <code>rows</code>).</li>
+    <li><code>data-max-rows</code> still caps it in browsers that support typed <code>attr()</code>, which read the attribute directly; in others the textarea grows without a cap.</li>
+    <li>Without <code>field-sizing</code> support it keeps its <code>rows</code> height and the native resize handle.</li>
+  </ul>
+</section>
 
-    <code-block language="javascript" show-lines label="Dynamically added auto-grow textareas" data-escape>// Dynamically added textareas are auto-enhanced via MutationObserver
-const textarea = document.createElement('textarea');
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The native <code>&lt;textarea&gt;</code> is untouched, so labels, keyboard use and screen-reader support are unchanged.</li>
+    <li>Growing shows all text without an inner scrollbar, which helps users who zoom or have trouble with nested scrolling. Past <code>data-max-rows</code> the textarea scrolls like any other.</li>
+    <li>The resize handle is removed while the textarea sizes itself; set a generous <code>data-max-rows</code> (or none) so long text stays readable.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Examples</h2>
+
+  <h3>Max rows</h3>
+  <browser-window
+    src="/docs/snippets/demos/data-grow-max-rows.html"
+    url="https://vanilla-breeze.com/grow-max-rows"
+    title="Capped growth"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Max rows limit" data-escape><form-field>
+  <label for="limited">Limited growth</label>
+  <textarea id="limited" name="limited" data-grow data-max-rows="10" rows="2"></textarea>
+</form-field></code-block>
+
+  <h3>Minimum and maximum rows</h3>
+  <p><code>rows</code> sets where it starts, <code>data-max-rows</code> where it stops.</p>
+  <browser-window
+    src="/docs/snippets/demos/data-grow-range.html"
+    url="https://vanilla-breeze.com/grow-range"
+    title="Growth range"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Min and max rows" data-escape><form-field>
+  <label for="description">Description</label>
+  <textarea id="description" name="description" data-grow rows="4" data-max-rows="12"></textarea>
+</form-field></code-block>
+
+  <h3>With data-count</h3>
+  <browser-window
+    src="/docs/snippets/demos/data-count-grow.html"
+    url="https://vanilla-breeze.com/count-grow"
+    title="Auto-grow with a counter"
+    shadow>
+  </browser-window>
+  <code-block language="html" show-lines label="Auto-grow with character count" data-escape><form-field>
+  <label for="msg">Message</label>
+  <textarea id="msg" name="msg" data-count data-grow maxlength="500" rows="2"></textarea>
+</form-field></code-block>
+
+  <h3>Added later</h3>
+  <p>Textareas added after load are enhanced automatically.</p>
+  <code-block language="javascript" show-lines label="Dynamically added textarea" data-escape>const textarea = document.createElement('textarea');
 textarea.dataset.grow = '';
 textarea.dataset.maxRows = '8';
 textarea.rows = 2;
-document.querySelector('form-field').appendChild(textarea);
-// textarea auto-grows immediately — no manual init needed</code-block>
-  </section>
+document.querySelector('form-field').append(textarea);</code-block>
+</section>
 
-  <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li>Content remains fully accessible &mdash; the textarea grows to show all text, reducing the need for scrolling</li>
-      <li>No manual resize is needed &mdash; the textarea adapts to content automatically, improving usability for all users</li>
-      <li>The native <code>&lt;textarea&gt;</code> element is preserved, maintaining full screen reader and keyboard support</li>
-      <li><code>rows</code> sets a visible minimum, ensuring the textarea is never unexpectedly small</li>
-      <li>When <code>data-max-rows</code> caps growth, <code>overflow-y: auto</code> enables scrolling with standard scroll accessibility</li>
-      <li>Without JavaScript, the textarea still grows where <code>field-sizing</code> is supported; elsewhere it renders at its <code>rows</code> height with the native resize handle</li>
-    </ul>
-  </section>
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/native/textarea/"><code>&lt;textarea&gt;</code></a> &mdash; the element this attribute goes on.</li>
+    <li><a href="/docs/attributes/data-count/"><code>data-count</code></a> &mdash; a live character or word counter; combines with <code>data-grow</code>.</li>
+    <li><a href="/docs/elements/web-components/chat-input/"><code>&lt;chat-input&gt;</code></a> &mdash; a message composer built on a <code>data-grow</code> textarea with send controls. Choose it for chat-style input; use plain <code>data-grow</code> in ordinary forms.</li>
+    <li><a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; the label and message wrapper used in the examples.</li>
+    <li><a href="/docs/attributes/data-autosave/"><code>data-autosave</code></a> &mdash; restored drafts re-measure the textarea.</li>
+  </ul>
+</section>

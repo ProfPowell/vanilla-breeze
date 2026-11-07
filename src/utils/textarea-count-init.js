@@ -26,16 +26,12 @@
  * <textarea data-count="words" data-maxwords="200"></textarea>
  */
 
-import { registerInit } from './_init-registry.js';
+import { registerInit, onFormReset } from './_init-registry.js';
 
 const SELECTOR = 'textarea[data-count]';
 const ANNOUNCE_DELAY = 700;
 let counterSeq = 0;
 
-/**
- * Enhance a textarea with a live counter
- * @param {HTMLTextAreaElement} textarea
- */
 const DEFAULT_LABELS = {
   characters: { one: '{count} character', other: '{count} characters' },
   words: { one: '{count} word', other: '{count} words' },
@@ -108,8 +104,16 @@ function countLabel(textarea, words, count) {
   return template.replaceAll('{count}', formatNumber(lang, count));
 }
 
+/**
+ * Enhance a textarea with a live counter
+ * @param {HTMLTextAreaElement} textarea
+ */
 function enhanceTextarea(textarea) {
-  if (textarea.hasAttribute('data-count-init')) return;
+  // The attribute flag is cloned with the element, so the WeakMap is the
+  // real guard: a clone (cloneNode, template, innerHTML round-trip) carries
+  // data-count-init but is not wired yet.
+  if (updaters.has(textarea)) return;
+  const stale = textarea.hasAttribute('data-count-init');
   textarea.setAttribute('data-count-init', '');
 
   const isWordMode = textarea.dataset.count === 'words';
@@ -117,27 +121,53 @@ function enhanceTextarea(textarea) {
     ? parseInt(textarea.dataset.maxwords ?? '0', 10) || 0
     : textarea.maxLength > 0 ? textarea.maxLength : 0;
 
+  const formField = textarea.closest('form-field');
+
+  // A clone may have brought its source's counter along: adopt it rather
+  // than adding a second one, and drop the copied id from aria-describedby.
+  /** @type {HTMLOutputElement | null} */
+  let counter = null;
+  /** @type {HTMLElement | null} */
+  let live = null;
+  if (stale) {
+    const candidate = formField
+      ? formField.querySelector(':scope > output.textarea-counter')
+      : textarea.nextElementSibling;
+    if (candidate?.matches('output.textarea-counter') && !owners.has(candidate)) {
+      counter = /** @type {HTMLOutputElement} */ (candidate);
+      const next = counter.nextElementSibling;
+      if (next?.matches('span.visually-hidden[aria-live="polite"]')) live = /** @type {HTMLElement} */ (next);
+      const oldId = counter.id;
+      const ids = (textarea.getAttribute('aria-describedby') ?? '').split(/\s+/).filter((id) => id && id !== oldId);
+      if (ids.length) textarea.setAttribute('aria-describedby', ids.join(' '));
+      else textarea.removeAttribute('aria-describedby');
+    }
+  }
+
   // Visible counter: not a live region (an <output> is role=status, which
   // would announce every keystroke). It describes the textarea instead.
-  const counter = document.createElement('output');
-  counter.className = 'textarea-counter';
+  if (!counter) {
+    counter = document.createElement('output');
+    counter.className = 'textarea-counter';
+    counter.setAttribute('aria-live', 'off');
+    // Insert after textarea (or after form-field's existing outputs)
+    if (formField) formField.append(counter);
+    else textarea.insertAdjacentElement('afterend', counter);
+  }
   counter.id = `${textarea.id || `textarea-${++counterSeq}`}-count`;
-  counter.setAttribute('aria-live', 'off');
+  if (document.getElementById(counter.id) !== counter) counter.id = `textarea-${++counterSeq}-count`;
+  owners.add(counter);
 
   // Announcements: only near/over the limit, after the typing pauses.
-  const live = document.createElement('span');
-  live.className = 'visually-hidden';
-  live.setAttribute('aria-live', 'polite');
-  live.setAttribute('aria-atomic', 'true');
-
-  // Insert after textarea (or after form-field's existing outputs)
-  const formField = textarea.closest('form-field');
-  if (formField) {
-    formField.append(counter, live);
-  } else {
-    textarea.insertAdjacentElement('afterend', counter);
+  if (!live) {
+    live = document.createElement('span');
+    live.className = 'visually-hidden';
+    live.setAttribute('aria-live', 'polite');
+    live.setAttribute('aria-atomic', 'true');
     counter.insertAdjacentElement('afterend', live);
   }
+  const liveRegion = live;
+  const out = counter;
 
   const describedBy = (textarea.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean);
   if (!describedBy.includes(counter.id)) {
@@ -154,43 +184,38 @@ function enhanceTextarea(textarea) {
       : value.length;
 
     if (max > 0) {
-      counter.textContent = limitLabel(textarea, isWordMode, current, max);
+      out.textContent = limitLabel(textarea, isWordMode, current, max);
       const ratio = current / max;
-      counter.dataset.state =
+      out.dataset.state =
         ratio >= 1 ? 'error' :
         ratio >= 0.8 ? 'warning' : '';
     } else {
-      counter.textContent = countLabel(textarea, isWordMode, current);
-      counter.dataset.state = '';
+      out.textContent = countLabel(textarea, isWordMode, current);
+      out.dataset.state = '';
     }
 
     clearTimeout(timer);
-    if (counter.dataset.state) {
-      const text = counter.textContent;
-      timer = setTimeout(() => { live.textContent = text; }, ANNOUNCE_DELAY);
+    if (out.dataset.state) {
+      const text = out.textContent;
+      timer = setTimeout(() => { liveRegion.textContent = text; }, ANNOUNCE_DELAY);
     } else {
-      live.textContent = '';
+      liveRegion.textContent = '';
     }
   }
 
   updaters.set(textarea, update);
   textarea.addEventListener('input', update);
+  // Form reset restores the default value without an input event.
+  onFormReset(textarea, update);
   update();
 }
 
 /** @type {WeakMap<HTMLTextAreaElement, () => void>} */
 const updaters = new WeakMap();
 
-// Form reset restores the default value without an input event. The reset
-// event fires before the values change, so recount on the next task.
-document.addEventListener('reset', (event) => {
-  const form = /** @type {HTMLFormElement} */ (event.target);
-  setTimeout(() => {
-    for (const ta of form.querySelectorAll(SELECTOR)) {
-      updaters.get(/** @type {HTMLTextAreaElement} */ (ta))?.();
-    }
-  }, 0);
-});
+/** Counters wired to a textarea (lets a clone tell its copied counter apart). */
+/** @type {WeakSet<Element>} */
+const owners = new WeakSet();
 
 /**
  * Initialize counters within a root

@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-strength"
-description: "Real-time password strength meter with configurable rules checklist. Shows weak/fair/good/strong levels as the user types."
+description: "Password strength meter and rules checklist for a password input inside form-field. Advisory by default; data-strength-min makes weak passwords invalid."
 attributeName: data-strength
 category: form-controls
 attributeType: data
@@ -12,250 +12,244 @@ crumbLabel: Data Attributes
 ---
 
 <section>
-    <h2>Overview</h2>
-    <p>The <code>data-strength</code> attribute adds a real-time password strength meter to any password input. A visual meter bar and rules checklist update as the user types, giving instant feedback on password quality.</p>
+  <h2>Overview</h2>
+  <p><code>data-strength</code> adds a strength meter and a rules checklist under a password input. Each rule in <code>data-rules</code> counts equally; the share of rules met gives the level: weak, fair, good or strong. The meter is a native <code>&lt;meter&gt;</code>, the level is also written as text, and each rule says whether it is met.</p>
+  <p>The input must be inside <a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a>; a bare input is not enhanced. The rules are <strong>advisory</strong> unless you add <code>data-strength-min</code>.</p>
+</section>
 
-    <browser-window
-      src="/docs/examples/demos/password-strength-basic.html"
-      url="https://vanilla-breeze.com/password-strength"
-      title="Password Strength"
-      shadow>
-    </browser-window>
+<section>
+  <h2>Usage</h2>
+  <browser-window
+    src="/docs/examples/demos/password-strength-basic.html"
+    url="https://vanilla-breeze.com/password-strength"
+    title="Password strength"
+    shadow>
+  </browser-window>
 
-    <code-block language="html" show-lines label="Basic password strength meter" data-escape><form-field>
+  <code-block language="html" show-lines label="Password strength meter" data-escape><form-field>
   <label for="password">Password</label>
-  <input type="password" id="password" data-strength
-    data-rules="length:8,uppercase,lowercase,number,special" required>
+  <input type="password" id="password" name="password" autocomplete="new-password" required
+    data-strength data-rules="length:8,uppercase,lowercase,number,special">
 </form-field></code-block>
-  </section>
 
-  <section>
-    <h2>How It Works</h2>
-    <p>Add <code>data-strength</code> to a password input inside a <code>&lt;form-field&gt;</code>. The init script:</p>
-    <ol>
-      <li>Parses the <code>data-rules</code> attribute into a list of validation rules</li>
-      <li>Creates a <code>.strength-meter</code> element with a fill bar after the input</li>
-      <li>Creates a <code>.strength-rules</code> checklist showing each rule and its status</li>
-      <li>Listens for <code>input</code> events and evaluates the password against each rule</li>
-      <li>Calculates a percentage score based on how many rules are met</li>
-      <li>Maps the percentage to a strength level: weak, fair, good, or strong</li>
-      <li>Updates the meter fill width, color, and ARIA attributes in real time</li>
-    </ol>
-    <p>The input must be inside a <code>&lt;form-field&gt;</code> so the meter and checklist render in the correct position within the field layout.</p>
-  </section>
+  <p>Every <code>input[type="password"]</code> inside <code>&lt;form-field&gt;</code> also gets a show/hide button automatically; there is no attribute to add. The meter and the toggle work together.</p>
+</section>
 
-  <section>
-    <h2>Attributes</h2>
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Attribute</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-strength</code></td>
-          <td>boolean</td>
-          <td>Enables the password strength meter on the input.</td>
-        </tr>
-        <tr>
-          <td><code>data-rules</code></td>
-          <td>string</td>
-          <td>Comma-separated list of rules. Available rules: <code>length:N</code>, <code>uppercase</code>, <code>lowercase</code>, <code>number</code>, <code>special</code>.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+<section>
+  <h2>Options</h2>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Values</th><th>Default</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-strength</code></td><td>boolean, on the input</td><td>&mdash;</td><td>Adds the meter, level text and rules checklist.</td></tr>
+      <tr><td><code>data-rules</code></td><td>comma-separated rules (below)</td><td><code>length:8</code></td><td>The rules to check. Unknown rules are skipped with a console warning.</td></tr>
+      <tr><td><code>data-strength-min</code></td><td><code>fair</code>, <code>good</code>, <code>strong</code></td><td>none (advisory)</td><td>A non-empty password below this level is invalid: the input gets a custom validity message and the form will not submit. An empty value is left to <code>required</code>.</td></tr>
+    </tbody>
+  </table>
 
-  <section>
-    <h2>Rules</h2>
-    <p>The <code>data-rules</code> attribute accepts a comma-separated list of validation rules. Each rule is evaluated independently and contributes equally to the overall score.</p>
+  <h3>Rules</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Rule</th><th>Met when the password has</th><th>Checklist text</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>length:N</code></td><td>at least N characters (code points; default 8)</td><td>"At least N characters"</td></tr>
+      <tr><td><code>uppercase</code></td><td>an uppercase letter in any script (<code>\p{Lu}</code>: A, É, Ж)</td><td>"One uppercase letter"</td></tr>
+      <tr><td><code>lowercase</code></td><td>a lowercase letter in any script (<code>\p{Ll}</code>)</td><td>"One lowercase letter"</td></tr>
+      <tr><td><code>number</code></td><td>a digit in any script (<code>\p{N}</code>)</td><td>"One number"</td></tr>
+      <tr><td><code>special</code></td><td>a character that is neither a letter nor a digit (space and punctuation count; Cyrillic letters do not)</td><td>"One special character"</td></tr>
+    </tbody>
+  </table>
 
-    <table class="props-table">
-      <thead>
-        <tr>
-          <th>Rule</th>
-          <th>Syntax</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Minimum length</td>
-          <td><code>length:N</code></td>
-          <td>Password must be at least N characters. Checklist shows "At least N characters".</td>
-        </tr>
-        <tr>
-          <td>Uppercase</td>
-          <td><code>uppercase</code></td>
-          <td>Must contain at least one uppercase letter (A&ndash;Z).</td>
-        </tr>
-        <tr>
-          <td>Lowercase</td>
-          <td><code>lowercase</code></td>
-          <td>Must contain at least one lowercase letter (a&ndash;z).</td>
-        </tr>
-        <tr>
-          <td>Number</td>
-          <td><code>number</code></td>
-          <td>Must contain at least one digit (0&ndash;9).</td>
-        </tr>
-        <tr>
-          <td>Special character</td>
-          <td><code>special</code></td>
-          <td>Must contain at least one special character (!@#$%^&amp;* etc.).</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+  <h3>Levels</h3>
+  <table class="props-table">
+    <thead>
+      <tr><th>Level</th><th>Rules met</th><th>Text colour token</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Weak</td><td>under 40%</td><td><code>--color-error-text</code></td></tr>
+      <tr><td>Fair</td><td>40% to under 75%</td><td><code>--color-warning-text</code></td></tr>
+      <tr><td>Good</td><td>75% to under 100%</td><td><code>--color-info-text</code></td></tr>
+      <tr><td>Strong</td><td>all</td><td><code>--color-success-text</code></td></tr>
+    </tbody>
+  </table>
+  <p>An empty input has no level. The value is checked when the field is set up (so prefilled or browser-restored values show at once), on every <code>input</code>, and after a form reset.</p>
 
-  <section>
-    <h2>Strength Levels</h2>
-    <p>The percentage of rules met determines the strength level:</p>
-    <ul>
-      <li><strong>Weak</strong> &mdash; less than 40% of rules met (<code>--color-error</code>)</li>
-      <li><strong>Fair</strong> &mdash; 40% to 74% of rules met (<code>--color-warning</code>)</li>
-      <li><strong>Good</strong> &mdash; 75% to 99% of rules met (<code>--color-info</code>)</li>
-      <li><strong>Strong</strong> &mdash; 100% of rules met (<code>--color-success</code>)</li>
-    </ul>
-    <p>The meter fill bar changes color and width to reflect the current level.</p>
-  </section>
+  <h3>Text</h3>
+  <p>All strings are <code>data-label-*</code> attributes on the <code>&lt;form-field&gt;</code>:</p>
+  <table class="props-table">
+    <thead>
+      <tr><th>Attribute</th><th>Default</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>data-label-strength</code></td><td>"Password strength" (meter name, announcement prefix)</td></tr>
+      <tr><td><code>data-label-strength-weak</code> / <code>-fair</code> / <code>-good</code> / <code>-strong</code></td><td>"Weak" / "Fair" / "Good" / "Strong"</td></tr>
+      <tr><td><code>data-label-strength-empty</code></td><td>"No password entered" (meter value text when empty)</td></tr>
+      <tr><td><code>data-label-strength-too-weak</code></td><td>"Choose a stronger password. Meet more of the requirements." (validity message with <code>data-strength-min</code>)</td></tr>
+      <tr><td><code>data-label-requirements</code></td><td>"Password requirements" (checklist name)</td></tr>
+      <tr><td><code>data-label-rule-length</code></td><td>"At least {n} characters"</td></tr>
+      <tr><td><code>data-label-rule-uppercase</code> / <code>-lowercase</code> / <code>-number</code> / <code>-special</code></td><td>"One uppercase letter" / "One lowercase letter" / "One number" / "One special character"</td></tr>
+      <tr><td><code>data-label-rule-met</code> / <code>data-label-rule-unmet</code></td><td>"met" / "not met" (hidden state text after each rule)</td></tr>
+      <tr><td><code>data-label-show-password</code> / <code>data-label-hide-password</code></td><td>"Show password" / "Hide password" (the toggle)</td></tr>
+    </tbody>
+  </table>
+</section>
 
-  <section>
-    <h2>Custom Rule Combinations</h2>
-    <p>Mix and match rules to set the appropriate strength requirements for your use case. Fewer rules make it easier to reach "strong"; more rules require a more complex password.</p>
+<section>
+  <h2>Events</h2>
+  <p>No custom events. Listen for the native <code>input</code> event and read the generated meter: <code>.strength-meter</code> carries <code>data-level</code> (<code>weak</code>, <code>fair</code>, <code>good</code>, <code>strong</code> or empty) and its <code>&lt;meter&gt;</code> holds the number of rules met.</p>
 
-    <div class="example">
-      <layout-stack data-layout-gap="l">
-        <form-field>
-          <label for="secure-demo">Strong requirements (12+ chars, all rules)</label>
-          <input type="password" id="secure-demo" data-strength data-rules="length:12,uppercase,lowercase,number,special" required>
-        </form-field>
-        <form-field>
-          <label for="moderate-demo">Moderate requirements (6+ chars, uppercase, number)</label>
-          <input type="password" id="moderate-demo" data-strength data-rules="length:6,uppercase,number" required>
-        </form-field>
-      </layout-stack>
-    </div>
+  <code-block language="javascript" show-lines label="Reading the level on input" data-escape>const input = document.querySelector('#password');
+const field = input.closest('form-field');
 
-    <code-block language="html" show-lines label="Custom rule combinations" data-escape><!-- Strong password: 12+ chars, mixed case, numbers, specials -->
-<form-field>
-  <label for="secure-pw">Password</label>
-  <input type="password" id="secure-pw" data-strength
-    data-rules="length:12,uppercase,lowercase,number,special" required>
-</form-field>
-
-<!-- Moderate: 6+ chars with numbers -->
-<form-field>
-  <label for="moderate-pw">Password</label>
-  <input type="password" id="moderate-pw" data-strength
-    data-rules="length:6,uppercase,number" required>
-</form-field></code-block>
-  </section>
-
-  <section>
-    <h2>With Password Toggle</h2>
-    <p>The strength meter works alongside the <code>data-show-password</code> toggle. Both enhancements coexist without conflict &mdash; the show/hide button and strength meter each enhance the same input independently.</p>
-
-    <code-block language="html" show-lines label="Strength meter with show/hide toggle" data-escape><form-field>
-  <label for="pw-toggle">Password</label>
-  <input type="password" id="pw-toggle" data-strength
-    data-rules="length:8,uppercase,lowercase,number,special"
-    data-show-password required>
-</form-field></code-block>
-  </section>
-
-  <section>
-    <h2>DOM Structure</h2>
-    <p>After initialization, the following elements are inserted after the password input within the <code>&lt;form-field&gt;</code>:</p>
-
-    <code-block language="html" show-lines label="Generated DOM structure" data-escape><!-- After init, the following structure is generated after the input -->
-<div class="strength-meter" data-level="weak">
-  <meter class="xs" aria-label="Password strength"
-         min="0" max="5" low="2" high="4" optimum="5" value="1"></meter>
-  <span class="strength-label">Weak</span>
-</div>
-
-<ul class="strength-rules" aria-label="Password requirements">
-  <li data-rule="length">At least 8 characters</li>
-  <li data-rule="uppercase">One uppercase letter</li>
-  <li data-rule="lowercase">One lowercase letter</li>
-  <li data-rule="number">One number</li>
-  <li data-rule="special">One special character</li>
-</ul></code-block>
-
-    <p>The <code>.strength-meter</code> wraps a native <code>&lt;meter&gt;</code> (one step per rule) and a text level. The <code>.strength-rules</code> checklist marks met rules with <code>data-met</code>. Moving the field never duplicates the meter.</p>
-    <p>All text is localizable with <code>data-label-*</code> on the <code>&lt;form-field&gt;</code>: <code>data-label-strength</code> ("Password strength"), <code>data-label-strength-weak</code> / <code>-fair</code> / <code>-good</code> / <code>-strong</code>, <code>data-label-requirements</code> ("Password requirements"), <code>data-label-rule-length</code> ("At least {n} characters"), <code>data-label-rule-uppercase</code>, <code>data-label-rule-lowercase</code>, <code>data-label-rule-number</code>, <code>data-label-rule-special</code>.</p>
-  </section>
-
-  <section>
-    <h2>Events</h2>
-    <p>The strength meter updates on native <code>input</code> events. You can read the current level and score from the generated DOM.</p>
-
-    <code-block language="javascript" show-lines label="Reading strength level on input" data-escape>const input = document.querySelector('[data-strength]');
-
-input.addEventListener('input', () => {
-  const meter = input.parentElement.querySelector('.strength-meter');
-  const level = meter.querySelector('.strength-fill').dataset.level;
-  const score = meter.getAttribute('aria-valuenow');
-  console.log('Level:', level, 'Score:', score + '%');
+// Listen on the field: the bubbling event reaches it after the meter's own
+// listener on the input has updated the level.
+field.addEventListener('input', () => {
+  const wrap = field.querySelector('.strength-meter');
+  const meter = wrap.querySelector('meter');
+  console.log('Level:', wrap.dataset.level, 'Rules met:', meter.value, 'of', meter.max);
 });</code-block>
-  </section>
+</section>
 
-  <section>
-    <h2>Styling</h2>
-    <p>The meter, fill bar, and rules checklist are fully customizable via CSS. Styles are scoped to the generated class names and the <code>data-level</code> attribute on the fill bar.</p>
+<section>
+  <h2>Styling</h2>
+  <p>No custom properties. The script inserts this after the input (or its show/hide wrapper):</p>
 
-    <code-block language="css" show-lines label="CSS custom properties and level colors" data-escape>/* Meter track */
-[data-strength][data-strength-init] ~ .strength-meter {
-  --strength-track-height: 0.375rem;
-  --strength-track-bg: var(--color-border);
-  --strength-track-radius: var(--radius-pill);
-}
+  <code-block language="html" show-lines label="Generated structure" data-escape><div class="strength-meter" data-level="fair">
+  <meter class="s" aria-label="Password strength" aria-valuetext="Fair"
+    min="0" max="5" low="2" high="4" optimum="5" value="3"></meter>
+  <span class="strength-label" aria-hidden="true">Fair</span>
+</div>
+<ul class="strength-rules" id="strength-1-rules" aria-label="Password requirements">
+  <li data-rule="length" data-met>At least 8 characters<span class="visually-hidden">: met</span></li>
+  <li data-rule="special">One special character<span class="visually-hidden">: not met</span></li>
+</ul>
+<span class="strength-status visually-hidden" role="status"></span></code-block>
 
-/* Meter fill — color changes per level */
-.strength-fill[data-level="weak"]   { background: var(--color-error);  width: 25%;  }
-.strength-fill[data-level="fair"]   { background: var(--color-warning); width: 50%;  }
-.strength-fill[data-level="good"]   { background: var(--color-info);    width: 75%;  }
-.strength-fill[data-level="strong"] { background: var(--color-success); width: 100%; }
+  <p>The bar is the standard VB <a href="/docs/elements/native/meter/"><code>&lt;meter&gt;</code></a> (size <code>s</code>, with a bordered track), so its fill colours come from the meter tokens <code>--meter-fill-even-less-good</code>, <code>--meter-fill-suboptimum</code> and <code>--meter-fill-optimum</code>. The shipped rules for the text:</p>
 
-/* Rules checklist */
-.strength-rules {
+  <code-block language="css" show-lines label="Shipped strength rules (excerpt)" data-escape>form-field .strength-meter[data-level="weak"]   .strength-label { color: var(--color-error-text); }
+form-field .strength-meter[data-level="fair"]   .strength-label { color: var(--color-warning-text); }
+form-field .strength-meter[data-level="good"]   .strength-label { color: var(--color-info-text); }
+form-field .strength-meter[data-level="strong"] .strength-label { color: var(--color-success-text); }
+
+form-field .strength-rules {
   list-style: none;
   padding: 0;
   font-size: var(--font-size-s);
   color: var(--color-text-muted);
 }
 
-.strength-rules li[data-met] {
-  color: var(--color-success);
-}</code-block>
-  </section>
+/* ::before draws a circle (unmet) or a check (met) */
+form-field .strength-rules li[data-met] { color: var(--color-success-text); }</code-block>
+</section>
 
-  <section>
-    <h2>Dynamic Elements</h2>
-    <p>Strength-enhanced inputs added to the DOM after page load are automatically enhanced via a MutationObserver. No manual initialization is needed.</p>
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li>The meter is a native <code>&lt;meter&gt;</code> named "Password strength" whose <code>aria-valuetext</code> is the level name, so it is read as "Fair", not "3".</li>
+    <li>Level changes are announced through a polite, visually hidden <code>role="status"</code> region, about half a second after typing pauses, so each keystroke does not interrupt.</li>
+    <li>The rules list is linked to the input with <code>aria-describedby</code>, and every rule ends in hidden "met" / "not met" text, so the state does not rely on the icon or colour.</li>
+    <li>The level text colours use the status <code>*-text</code> tokens, which keep 4.5:1 against the surface in light and dark mode. In forced-colours mode the rule icons use system colours.</li>
+    <li>The rules are advice. With <code>data-strength-min</code>, the browser's validation message explains why the form will not submit.</li>
+    <li>The input needs a visible <code>&lt;label&gt;</code>; use <code>autocomplete="new-password"</code> so password managers can suggest a strong one.</li>
+    <li>Without JavaScript the input is a normal password field.</li>
+  </ul>
+</section>
 
-    <code-block language="javascript" show-lines label="Dynamically added strength inputs" data-escape>// Dynamically added strength inputs are auto-enhanced via MutationObserver
-const input = document.createElement('input');
-input.type = 'password';
-input.dataset.strength = '';
-input.dataset.rules = 'length:8,uppercase,number';
-document.body.appendChild(input);
-// input is ready to use — no manual init needed</code-block>
-  </section>
+<section>
+  <h2>Examples</h2>
 
-  <section>
-    <h2>Accessibility</h2>
-    <ul>
-      <li>The meter uses <code>role="meter"</code> with <code>aria-label="Password strength"</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code>, <code>aria-valuenow</code>, and <code>aria-valuetext</code></li>
-      <li><code>aria-valuetext</code> is set to the current level name (weak, fair, good, strong) for screen reader announcements</li>
-      <li>The rules checklist uses <code>aria-label="Password requirements"</code> for context</li>
-      <li>Met rules are indicated with <code>data-met</code> and can be styled with a checkmark icon for visual feedback</li>
-      <li>Must be inside <code>&lt;form-field&gt;</code> for proper layout and association with the label</li>
-      <li>The password input requires a visible <code>&lt;label&gt;</code></li>
-      <li>Without JavaScript, the input works as a normal password field &mdash; progressive enhancement</li>
-    </ul>
-  </section>
+  <h3>Rule sets</h3>
+  <p>Fewer rules make "strong" easier to reach.</p>
+  <browser-window
+    src="/docs/snippets/demos/strength-rules.html"
+    url="https://vanilla-breeze.com/password-strength/rules"
+    title="Rule sets"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Two rule sets" data-escape><form-field>
+  <label for="str-secure">Password (12+ characters, all rules)</label>
+  <input type="password" id="str-secure" name="secure" autocomplete="new-password"
+    data-strength data-rules="length:12,uppercase,lowercase,number,special">
+</form-field>
+
+<form-field>
+  <label for="str-moderate">Password (6+ characters, uppercase, number)</label>
+  <input type="password" id="str-moderate" name="moderate" autocomplete="new-password"
+    data-strength data-rules="length:6,uppercase,number">
+</form-field></code-block>
+
+  <h3>Require a minimum level</h3>
+  <p>Submitting with a weak or fair password shows the validity message.</p>
+  <browser-window
+    src="/docs/snippets/demos/strength-min.html"
+    url="https://vanilla-breeze.com/password-strength/min"
+    title="Minimum level"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="data-strength-min" data-escape><form>
+  <form-field>
+    <label for="str-min">New password</label>
+    <input type="password" id="str-min" name="password" autocomplete="new-password" required
+      data-strength data-strength-min="good"
+      data-rules="length:10,uppercase,lowercase,number">
+  </form-field>
+  <button type="submit">Create account</button>
+  <button type="reset">Reset</button>
+</form></code-block>
+
+  <h3>Localized, with a prefilled value</h3>
+  <browser-window
+    src="/docs/snippets/demos/strength-localized.html"
+    url="https://vanilla-breeze.com/password-strength/fr"
+    title="Localized strength meter"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="French strings" data-escape><form lang="fr">
+  <form-field
+    data-label-strength="Robustesse du mot de passe"
+    data-label-strength-empty="Aucun mot de passe"
+    data-label-strength-weak="Faible"
+    data-label-strength-fair="Moyen"
+    data-label-strength-good="Bon"
+    data-label-strength-strong="Fort"
+    data-label-requirements="Exigences du mot de passe"
+    data-label-rule-length="Au moins {n} caractères"
+    data-label-rule-uppercase="Une majuscule"
+    data-label-rule-number="Un chiffre"
+    data-label-rule-met="respectée"
+    data-label-rule-unmet="non respectée"
+    data-label-show-password="Afficher le mot de passe"
+    data-label-hide-password="Masquer le mot de passe">
+    <label for="str-fr">Mot de passe</label>
+    <input type="password" id="str-fr" name="mdp" autocomplete="new-password"
+      data-strength data-rules="length:8,uppercase,number" value="Été2026">
+  </form-field>
+</form></code-block>
+
+  <h3>Fields added later</h3>
+  <p>A <code>&lt;form-field&gt;</code> added after load is enhanced automatically. The input must be inside the field when the field is inserted.</p>
+
+  <code-block language="javascript" show-lines label="Adding a strength field from script" data-escape>const field = document.createElement('form-field');
+field.innerHTML = `
+  <label for="new-pw">Password</label>
+  <input type="password" id="new-pw" name="password" autocomplete="new-password"
+    data-strength data-rules="length:8,uppercase,number">`;
+document.querySelector('form').append(field);
+// The meter, checklist and show/hide toggle are added on insertion</code-block>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/web-components/form-field/"><code>&lt;form-field&gt;</code></a> &mdash; required wrapper; also adds the show/hide password toggle.</li>
+    <li><a href="/docs/elements/native/input/"><code>&lt;input type="password"&gt;</code></a> &mdash; the native control, <code>autocomplete</code>, <code>minlength</code> and <code>pattern</code>.</li>
+    <li><a href="/docs/elements/native/meter/"><code>&lt;meter&gt;</code></a> &mdash; the element behind the bar, and its <code>low</code> / <code>high</code> / <code>optimum</code> colours.</li>
+    <li><a href="/docs/attributes/data-accept/"><code>data-accept</code></a> and <a href="/docs/attributes/data-mask/"><code>data-mask</code></a> &mdash; the other input enhancements for text-like fields.</li>
+  </ul>
+</section>

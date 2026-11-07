@@ -433,7 +433,7 @@ class SettingsPanel extends VBElement {
     const toggle = (key, attrs, on) => `
       <label class="toggle-row">
         <span>${t(key)}</span>
-        <input type="checkbox" name="settings-${key}-${u}" data-switch="sm" ${attrs} ${on ? 'checked' : ''} />
+        <input type="checkbox" name="settings-${key}-${u}" data-switch="s" ${attrs} ${on ? 'checked' : ''} />
       </label>`;
 
     const dirs = [['to bottom', 'dir-to-bottom'], ['to right', 'dir-to-right'], ['135deg', 'dir-135deg'], ['45deg', 'dir-45deg']];

@@ -92,6 +92,7 @@ export const CORE_GUARDS = /** @type {const} */ ([
   { selector: 'input[type="range"][data-range]', load: () => import('../utils/range-init.js') },
   { selector: 'input[type="number"][data-stepper]', load: () => import('../utils/number-init.js') },
   { selector: 'input[type="checkbox"][data-switch]', load: () => import('../utils/switch-init.js') },
+  { selector: 'input[type="color"][data-color]', load: () => import('../utils/color-init.js') },
   { selector: 'textarea[data-grow]', load: () => import('../utils/textarea-grow-init.js') },
   { selector: 'textarea[data-count]', load: () => import('../utils/textarea-count-init.js') },
   { selector: 'fieldset[data-toggle-tags][data-max]', load: () => import('../utils/toggle-tags-init.js') },

@@ -19,20 +19,23 @@
  * <textarea data-grow rows="2" data-max-rows="10"></textarea>
  */
 
-import { registerInit } from './_init-registry.js';
+import { registerInit, onFormReset } from './_init-registry.js';
 
 const SELECTOR = 'textarea[data-grow]';
 const supportsFieldSizing = CSS.supports('field-sizing', 'content');
 
-/** @type {WeakMap<HTMLTextAreaElement, () => void>} */
-const resizers = new WeakMap();
+/** @type {WeakSet<HTMLTextAreaElement>} */
+const wired = new WeakSet();
 
 /**
  * Enhance a textarea with auto-expanding behavior
  * @param {HTMLTextAreaElement} textarea
  */
 function enhanceTextarea(textarea) {
-  if (textarea.hasAttribute('data-grow-init')) return;
+  // The attribute flag is cloned with the element; `wired` is the real guard
+  // so a cloned textarea still gets its own listeners.
+  if (wired.has(textarea)) return;
+  wired.add(textarea);
 
   const maxRows = parseInt(textarea.dataset.maxRows ?? '0', 10) || 0;
 
@@ -74,22 +77,12 @@ function enhanceTextarea(textarea) {
     textarea.style.blockSize = target + 'px';
   }
 
-  resizers.set(textarea, resize);
   textarea.addEventListener('input', resize);
   textarea.addEventListener('change', resize);
+  // Form reset restores the default value without an input event.
+  onFormReset(textarea, resize);
   resize();
 }
-
-// Form reset restores the default value without an input event. The reset
-// event fires before the values change, so re-measure on the next task.
-document.addEventListener('reset', (event) => {
-  const form = /** @type {HTMLFormElement} */ (event.target);
-  setTimeout(() => {
-    for (const ta of form.querySelectorAll(SELECTOR)) {
-      resizers.get(/** @type {HTMLTextAreaElement} */ (ta))?.();
-    }
-  }, 0);
-});
 
 /**
  * Initialize auto-grow within a root
