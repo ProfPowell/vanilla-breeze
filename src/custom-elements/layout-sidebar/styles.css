@@ -91,6 +91,19 @@
   }
 }
 
+/* Inside a narrow page region (the <main> of a data-page-layout, named
+   region-main, under 40rem) the sidebar stacks: every child takes a full
+   row. One rule for both forms — it used to be an attribute-only
+   flex-direction:column in layout-attributes.css, which also overrode
+   data-layout-nowrap and turned the flex-basis into a height. The
+   :not(…) arm skips the same injected helpers as the content rule and
+   lifts specificity above it and the positional fallback. */
+@container region-main (width < 40rem) {
+  :is(layout-sidebar, [data-layout="sidebar"]):not([data-layout-nowrap]) > :not(hr, [role="separator"], template, script, style) {
+    flex-basis: 100%;
+  }
+}
+
 /* Sticky sidebar — only active when smart sticky system is enabled on :root.
    Always constrain to remaining viewport so the sidebar sticks cleanly and
    gains inner scroll when its content overflows the available space.

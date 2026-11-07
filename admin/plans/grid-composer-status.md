@@ -104,7 +104,7 @@ Token mapping for common values:
 | Composer layout | VB equivalent |
 |-----------------|---------------|
 | Header + main + footer, full width | `data-layout="page-stack"` |
-| Header, nav, main, aside, footer | `data-layout="holy-grail"` |
+| Header, nav, main, aside, footer | `data-page-layout="holy-grail"` (page templates are `data-page-layout` only; `data-layout="holy-grail"` was removed) |
 | Two columns (content + sidebar) | `data-layout="sidebar"` |
 | Two columns with ratio | `data-layout="split"` |
 | Full-width hero + content | `data-layout="cover"` + content |
@@ -144,11 +144,11 @@ With zero CSS needed from the user (VB provides it). This only works for page-le
 
 **Current:** Single fixed layout. No breakpoints.
 
-**VB convention:** Built-in layouts have responsive behavior (holy-grail stacks at `60rem`, sidebar collapses, dashboard sidebar goes offscreen at `48rem`). Two approaches:
+**VB convention:** Built-in layouts have responsive behavior (`data-page-layout` holy-grail/sidebar-* stack below `48rem`, sidebar collapses, the dashboard nav becomes a hidden off-canvas drawer below `48rem`). Two approaches:
 
 1. **Per-breakpoint placement editor** (spec's v1 plan) — a viewport width switcher in the toolbar with separate block positions per breakpoint, exported as `@media` rules.
 
-2. **VB-native responsive** — if exporting as `data-layout="holy-grail"`, responsive behavior comes free from VB's built-in CSS. No `@media` rules needed in export.
+2. **VB-native responsive** — if exporting as `data-page-layout="holy-grail"`, responsive behavior comes free from VB's built-in CSS. No `@media` rules needed in export.
 
 ### Content slots / placeholder content
 

@@ -90,17 +90,9 @@
     .demo-area[data-mockup-h="16rem"] { block-size: 16rem; }
     .demo-area[data-mockup-h="20rem"] { block-size: 20rem; }
 
-    .demo-area > [data-layout] {
+    .demo-area > :is([data-layout], [data-page-layout]) {
       block-size: 100%;
       min-block-size: 100%;
-    }
-
-    .demo-area[data-mockup-flavor="dashboard"] .hg-header,
-    .demo-area[data-mockup-flavor="dashboard"] .hg-nav {
-      position: static;
-    }
-    .demo-area[data-mockup-flavor="dashboard"] .hg-nav {
-      height: auto;
     }
 
     .code-area {
@@ -542,12 +534,12 @@
     </ul>
 
     <h2>Holy Grail Layout</h2>
-    <p>Classic 3-column layout with header/footer. Uses CSS Grid named areas targeting semantic elements.</p>
+    <p>Classic 3-column layout with header/footer. Whole-page templates live on <code>data-page-layout</code>, not <code>data-layout</code>; it works on any element, so the mockups below use a <code>&lt;section&gt;</code>.</p>
 
     <figure class="comparison-panel">
       <strong class="panel-label proposed">Full Holy Grail</strong>
       <aside class="demo-area" data-mockup-h="20rem" inert role="presentation">
-        <section data-layout="holy-grail">
+        <section data-page-layout="holy-grail">
           <header class="hg-header">Header</header>
           <nav class="hg-nav">Nav</nav>
           <main class="hg-main">Main Content</main>
@@ -556,7 +548,7 @@
         </section>
       </aside>
       <figcaption class="code-area">
-        <pre>&lt;body data-layout="holy-grail"&gt;
+        <pre>&lt;body data-page-layout="holy-grail"&gt;
   &lt;header&gt;Header&lt;/header&gt;
   &lt;nav&gt;Nav&lt;/nav&gt;
   &lt;main&gt;Main Content&lt;/main&gt;
@@ -571,7 +563,7 @@
     <figure class="comparison-panel">
       <strong class="panel-label proposed">Two-Column (no aside)</strong>
       <aside class="demo-area" data-mockup-h="16rem" inert role="presentation">
-        <section data-layout="holy-grail">
+        <section data-page-layout="holy-grail">
           <header class="hg-header">Header</header>
           <nav class="hg-nav">Nav</nav>
           <main class="hg-main">Main Content</main>
@@ -579,7 +571,7 @@
         </section>
       </aside>
       <figcaption class="code-area">
-        <pre>&lt;body data-layout="holy-grail"&gt;
+        <pre>&lt;body data-page-layout="holy-grail"&gt;
   &lt;header&gt;Header&lt;/header&gt;
   &lt;nav&gt;Nav&lt;/nav&gt;
   &lt;main&gt;Main Content&lt;/main&gt;
@@ -590,25 +582,28 @@
     </figure>
 
     <h2>Dashboard Layout</h2>
-    <p>App shell with sticky header and sidebar. Nav slides in on mobile (toggle with data-nav-open).</p>
+    <p>App shell: header over a side nav and main. Below 48rem the nav becomes an off-canvas drawer that stays hidden (out of the tab order) until it is opened &mdash; as a native popover, or by toggling <code>data-nav-open</code> on the layout.</p>
 
     <figure class="comparison-panel">
       <strong class="panel-label proposed">Dashboard App Shell</strong>
-      <aside class="demo-area" data-mockup-h="20rem" data-mockup-flavor="dashboard" inert role="presentation">
-        <section data-layout="dashboard">
+      <aside class="demo-area" data-mockup-h="20rem" inert role="presentation">
+        <section data-page-layout="dashboard">
           <header class="hg-header">Dashboard Header</header>
           <nav class="hg-nav">Navigation</nav>
           <main class="hg-main">Dashboard Content</main>
         </section>
       </aside>
       <figcaption class="code-area">
-        <pre>&lt;body data-layout="dashboard"&gt;
-  &lt;header&gt;Dashboard Header&lt;/header&gt;
-  &lt;nav&gt;Navigation&lt;/nav&gt;
+        <pre>&lt;body data-page-layout="dashboard"&gt;
+  &lt;header&gt;
+    Dashboard Header
+    &lt;button type="button" popovertarget="app-nav" data-nav-toggle&gt;Menu&lt;/button&gt;
+  &lt;/header&gt;
+  &lt;nav id="app-nav" popover aria-label="App"&gt;…&lt;/nav&gt;
   &lt;main&gt;Dashboard Content&lt;/main&gt;
 &lt;/body&gt;
 
-&lt;!-- Mobile: add data-nav-open to show nav --&gt;</pre>
+&lt;!-- Sticky header/nav: &lt;html data-sticky&gt; + data-layout-sticky on them --&gt;</pre>
       </figcaption>
     </figure>
 
@@ -758,16 +753,6 @@
           <td><code>sidebar</code></td>
           <td>No</td>
           <td>Responsive two-column</td>
-        </tr>
-        <tr>
-          <td><code>holy-grail</code></td>
-          <td>No</td>
-          <td>Classic 3-column pages</td>
-        </tr>
-        <tr>
-          <td><code>dashboard</code></td>
-          <td>No*</td>
-          <td>App shells (* data-nav-open toggle)</td>
         </tr>
         <tr>
           <td><code>cover</code></td>

@@ -155,14 +155,6 @@
       color: var(--color-text-muted);
     }
 
-    .demo-area[data-mockup-flavor="dashboard"] .demo-header,
-    .demo-area[data-mockup-flavor="dashboard"] .demo-nav {
-      position: relative;
-    }
-    .demo-area[data-mockup-flavor="dashboard"] .demo-nav {
-      max-height: none;
-    }
-
     .feature-box {
       padding: var(--size-m);
       background: var(--color-primary-subtle);
@@ -269,7 +261,8 @@
     <p>Grid templates are stored as CSS custom properties, making them reusable and easy to customize.</p>
 
     <figure class="token-display">
-<pre>:root {
+<pre>/* Declared on the layout host, so width modifiers reach them */
+[data-page-layout] {
   --tpl-stack:
     "body-header" auto
     "body-nav" auto
@@ -296,18 +289,18 @@
 
     <figure class="token-display">
 <pre>/* Semantic elements auto-register */
-body[data-layout] &gt; header { grid-area: body-header; }
-body[data-layout] &gt; nav    { grid-area: body-nav; }
-body[data-layout] &gt; main   { grid-area: body-main; }
-body[data-layout] &gt; aside  { grid-area: body-aside; }
-body[data-layout] &gt; footer { grid-area: body-footer; }</pre>
+[data-page-layout] &gt; header { grid-area: body-header; }
+[data-page-layout] &gt; nav    { grid-area: body-nav; }
+[data-page-layout] &gt; main   { grid-area: body-main; }
+[data-page-layout] &gt; aside  { grid-area: body-aside; }
+[data-page-layout] &gt; footer { grid-area: body-footer; }</pre>
     </figure>
 
     <h2>Body Sidebar Left Layout</h2>
     <p>Two-column layout with navigation on the left. Apply <code>data-page-layout="sidebar-left"</code> to the body.</p>
 
     <figure class="demo-panel">
-      <strong class="demo-label feature">body-sidebar-left</strong>
+      <strong class="demo-label feature">data-page-layout="sidebar-left"</strong>
       <section class="demo-area" data-mockup-h="350" inert>
         <section data-page-layout="sidebar-left">
           <header class="demo-header">Header</header>
@@ -337,7 +330,7 @@ body[data-layout] &gt; footer { grid-area: body-footer; }</pre>
     <p>Classic three-column layout with nav, main, and aside.</p>
 
     <figure class="demo-panel">
-      <strong class="demo-label feature">body-holy-grail</strong>
+      <strong class="demo-label feature">data-page-layout="holy-grail"</strong>
       <section class="demo-area" data-mockup-h="350" inert>
         <section data-page-layout="holy-grail">
           <header class="demo-header">Header</header>
@@ -411,11 +404,11 @@ body[data-page-layout="holy-grail"]:not(:has(&gt; aside)) {
     </figure>
 
     <h2>Body Dashboard Layout</h2>
-    <p>Admin panel style with sticky header and sidebar navigation.</p>
+    <p>Admin panel style: header over a side nav. Below 48rem the nav becomes an off-canvas drawer, hidden until opened (native popover, or <code>data-nav-open</code> on the layout).</p>
 
     <figure class="demo-panel">
-      <strong class="demo-label feature">body-dashboard</strong>
-      <section class="demo-area" data-mockup-h="350" data-mockup-flavor="dashboard" inert>
+      <strong class="demo-label feature">data-page-layout="dashboard"</strong>
+      <section class="demo-area" data-mockup-h="350" inert>
         <section data-page-layout="dashboard">
           <header class="demo-header">Dashboard Header</header>
           <nav class="demo-nav">
@@ -447,7 +440,7 @@ body[data-page-layout="holy-grail"]:not(:has(&gt; aside)) {
     <p>Centered content layout optimized for reading. Content is constrained to a readable width.</p>
 
     <figure class="demo-panel">
-      <strong class="demo-label feature">body-article</strong>
+      <strong class="demo-label feature">data-page-layout="article"</strong>
       <section class="demo-area" data-mockup-h="300" inert>
         <section data-page-layout="article">
           <header class="demo-header">Site Header</header>
@@ -481,7 +474,7 @@ body[data-page-layout="holy-grail"]:not(:has(&gt; aside)) {
 <pre>&lt;header data-layout-sticky&gt;Stays at top when scrolling&lt;/header&gt;
 
 /* CSS */
-body[data-layout] &gt; header[data-layout-sticky] {
+[data-page-layout] &gt; header[data-layout-sticky] {
   position: sticky;
   top: 0;
   z-index: var(--z-sticky, 100);
@@ -493,7 +486,7 @@ body[data-layout] &gt; header[data-layout-sticky] {
 <pre>&lt;nav data-layout-sticky&gt;Sticky navigation&lt;/nav&gt;
 
 /* CSS */
-body[data-layout] &gt; nav[data-layout-sticky] {
+[data-page-layout] &gt; nav[data-layout-sticky] {
   position: sticky;
   top: 0;
   align-self: start;
@@ -511,11 +504,11 @@ body[data-layout] &gt; nav[data-layout-sticky] {
 &lt;body data-page-layout="sidebar-left" data-sidebar="hidden"&gt;
 
 /* CSS */
-body[data-layout][data-sidebar="collapsed"] {
-  --_sidebar-width: var(--_sidebar-collapsed); /* 64px */
+[data-page-layout][data-sidebar="collapsed"] {
+  --_sidebar-width: var(--_sidebar-collapsed); /* 4rem */
 }
 
-body[data-layout][data-sidebar="hidden"] &gt; nav {
+[data-page-layout][data-sidebar="hidden"] &gt; nav {
   display: none;
 }</pre>
     </figure>
@@ -526,7 +519,7 @@ body[data-layout][data-sidebar="hidden"] &gt; nav {
 &lt;section data-layout-bleed&gt;Full-width banner&lt;/section&gt;
 
 /* CSS */
-body[data-layout] &gt; [data-layout-bleed] {
+[data-page-layout] &gt; [data-layout-bleed] {
   grid-column: 1 / -1;
 }</pre>
     </figure>
@@ -562,7 +555,7 @@ body[data-layout] &gt; [data-layout-bleed] {
       </figure>
     </section>
 
-    <h2>Available Body Layouts</h2>
+    <h2>Available Page Layouts</h2>
     <table class="layouts-table">
       <thead>
         <tr>
@@ -573,42 +566,42 @@ body[data-layout] &gt; [data-layout-bleed] {
       </thead>
       <tbody>
         <tr>
-          <td><code>body-stack</code></td>
+          <td><code>stack</code></td>
           <td><code>--tpl-stack</code></td>
           <td>Single column, mobile-first</td>
         </tr>
         <tr>
-          <td><code>body-sidebar-left</code></td>
+          <td><code>sidebar-left</code></td>
           <td><code>--tpl-sidebar-left</code></td>
           <td>Two-column with left nav</td>
         </tr>
         <tr>
-          <td><code>body-sidebar-right</code></td>
+          <td><code>sidebar-right</code></td>
           <td><code>--tpl-sidebar-right</code></td>
           <td>Two-column with right sidebar</td>
         </tr>
         <tr>
-          <td><code>body-holy-grail</code></td>
+          <td><code>holy-grail</code></td>
           <td><code>--tpl-holy-grail</code></td>
           <td>Three-column classic layout</td>
         </tr>
         <tr>
-          <td><code>body-app-shell</code></td>
+          <td><code>app-shell</code></td>
           <td><code>--tpl-app-shell</code></td>
           <td>Vertical nav bar</td>
         </tr>
         <tr>
-          <td><code>body-dashboard</code></td>
+          <td><code>dashboard</code></td>
           <td><code>--tpl-dashboard</code></td>
           <td>Admin panel style</td>
         </tr>
         <tr>
-          <td><code>body-article</code></td>
+          <td><code>article</code></td>
           <td><code>--tpl-article</code></td>
           <td>Centered reading layout</td>
         </tr>
         <tr>
-          <td><code>body-landing</code></td>
+          <td><code>landing</code></td>
           <td><code>--tpl-landing</code></td>
           <td>Marketing page sections</td>
         </tr>
@@ -616,7 +609,7 @@ body[data-layout] &gt; [data-layout-bleed] {
     </table>
 
     <h2>Component Regions</h2>
-    <p><code>data-layout="regions"</code> creates a header / content / footer grid on any element. Semantic children auto-place to named areas.</p>
+    <p><code>data-layout="regions"</code> stacks a header / content / footer column on any element: the header region first, the footer last (pinned to the bottom), every other child in between in DOM order. A <code>&lt;section&gt;</code> takes the free space.</p>
 
     <figure class="demo-panel">
       <strong class="demo-label feature">data-layout="regions"</strong>
