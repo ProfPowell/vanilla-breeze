@@ -1,0 +1,105 @@
+---
+layout: attribute
+title: "data-container"
+description: "Make any element a CSS size-query container (container-type: inline-size), optionally named card, panel or media, and keep sectioning children of content-sized layouts as containers on purpose."
+attributeName: data-container
+category: layout
+attributeType: data
+currentPath: /docs/attributes/data-container/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>data-container</code> sets <code>container-type: inline-size</code> on the element, so <code>@container</code> queries and <code>cqi</code> units inside it measure the element instead of the viewport. A value names the container, so component CSS can target it with <code>@container card (…)</code> rather than the nearest anonymous container.</p>
+  <p>It has two jobs:</p>
+  <ol>
+    <li><strong>Opt in</strong> &mdash; make a non-sectioning element (a <code>li</code>, a <code>figure</code>, a custom element) a query container.</li>
+    <li><strong>Escape hatch</strong> &mdash; keep a <code>main</code>, <code>article</code>, <code>section</code> or <code>aside</code> a container inside the layouts where VB otherwise switches containment off.</li>
+  </ol>
+
+  <browser-window
+    src="/docs/snippets/demos/data-container-basic.html"
+    url="https://vanilla-breeze.com/data-container"
+    title="Named container and the cluster escape hatch"
+    shadow>
+  </browser-window>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table class="prose">
+    <thead><tr><th>Value</th><th>CSS</th><th>Query with</th></tr></thead>
+    <tbody>
+      <tr><td>(bare) <code>data-container</code></td><td><code>container-type: inline-size</code></td><td><code>@container (width &lt; …)</code> (anonymous)</td></tr>
+      <tr><td><code>card</code></td><td>+ <code>container-name: card</code></td><td><code>@container card (…)</code></td></tr>
+      <tr><td><code>panel</code></td><td>+ <code>container-name: panel</code></td><td><code>@container panel (…)</code></td></tr>
+      <tr><td><code>media</code></td><td>+ <code>container-name: media</code></td><td><code>@container media (…)</code></td></tr>
+    </tbody>
+  </table>
+  <p>VB itself ships no rules that query <code>card</code>, <code>panel</code> or <code>media</code>; the names are for your component CSS. For any other name, set <code>container-name</code> in your own CSS alongside the bare attribute.</p>
+
+  <code-block language="html" show-lines label="A named container" data-escape><article data-container="card">
+  <h3>Downloads</h3>
+  <ul>
+    <li><strong>128</strong> today</li>
+    <li><strong>904</strong> this week</li>
+    <li><strong>3,410</strong> this month</li>
+  </ul>
+</article></code-block>
+
+  <code-block language="css" show-lines label="Component CSS that queries it" data-escape>[data-container="card"] ul {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@container card (width < 22rem) {
+  [data-container="card"] ul { grid-template-columns: 1fr; }
+}</code-block>
+</section>
+
+<section>
+  <h2>Where it applies</h2>
+  <p>VB already makes every <code>main</code>, <code>article</code>, <code>section</code> and <code>aside</code> (except floated <code>aside.float</code> / <code>aside.sidenote</code>) an inline-size container, so on those elements the bare attribute is only needed as an escape hatch. Size containment ignores the element's content when working out its width, so a container that is sized by its content collapses to zero width. VB therefore removes containment from sectioning elements that are <em>direct children</em> of:</p>
+  <ul>
+    <li><a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a> / <code>data-layout="cluster"</code></li>
+    <li><a href="/docs/elements/custom-elements/reel/"><code>&lt;layout-reel&gt;</code></a> / <code>data-layout="reel"</code></li>
+    <li><a href="/docs/elements/custom-elements/cover/"><code>&lt;layout-cover&gt;</code></a> / <code>data-layout="cover"</code> with <code>data-layout-centered</code></li>
+    <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> / <code>data-layout="stack"</code> with <code>data-layout-align</code> <code>start</code>, <code>center</code> or <code>end</code></li>
+    <li><a href="/docs/elements/custom-elements/grid/#subgrid"><code>&lt;layout-grid&gt;</code></a> / <code>data-layout="grid"</code> with <code>data-layout-subgrid</code>, for a different reason: a query container is laid out independently and cannot be a subgrid, so its rows would not line up with its siblings'</li>
+  </ul>
+  <p>Adding <code>data-container</code> to such a child excludes it from that reset, so it stays a container. In the flex layouts, give it a width (an explicit <code>inline-size</code>, a <code>flex-basis</code>, or a <code>--layout-*</code> one-off), or it collapses; in a subgrid, it keeps its width but sizes its own rows.</p>
+  <p>The same escape hatch applies to text layouts: a <a href="/docs/elements/custom-elements/layout-text/"><code>&lt;layout-text&gt;</code></a>, <code>data-layout="prose"</code>, <code>layout-columns</code> or <code>article[data-measure]</code> host stops being a container while it holds a <code>data-bleed</code> child (so the child can measure the outer container). <code>data-container</code> on the host keeps it a container.</p>
+
+  <code-block language="html" show-lines label="Keep one cluster child a container" data-escape><section data-layout="cluster" data-layout-gap="s">
+  <article>Content-sized, not a container</article>
+  <!-- Opt back in; it needs a width -->
+  <article data-container class="stat-card">Container</article>
+</section></code-block>
+</section>
+
+<section>
+  <h2>Related container names</h2>
+  <p>Page and main-level layouts name their regions for you; you do not need <code>data-container</code> on them. See <a href="/docs/attributes/data-page-layout/#container-queries"><code>data-page-layout</code></a> (<code>region-main</code>, <code>region-nav</code>, <code>region-aside</code>) and <a href="/docs/grid-identity/">Grid Identity</a> (<code>region-main-*</code>).</p>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><code>data-container</code> changes only how size is measured; it adds no role and no semantics.</li>
+    <li>Container queries respond to the space a component actually has, which also covers zoom and large text: at 200% zoom or with a larger root font size, containers measured in <code>rem</code> narrow and components switch to their compact form instead of overflowing (WCAG 1.4.10 Reflow).</li>
+    <li>When a query reorders content visually (for example with <code>order</code> or grid placement), keep the DOM order meaningful so keyboard and screen-reader order still match.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/custom-elements/stack/#semantic-children"><code>&lt;layout-stack&gt;</code></a>, <a href="/docs/elements/custom-elements/cluster/"><code>&lt;layout-cluster&gt;</code></a>, <a href="/docs/elements/custom-elements/cover/"><code>&lt;layout-cover&gt;</code></a> and <a href="/docs/elements/custom-elements/reel/"><code>&lt;layout-reel&gt;</code></a> and <a href="/docs/elements/custom-elements/grid/"><code>&lt;layout-grid&gt;</code></a> &mdash; the layouts that document <code>data-container</code> as a child attribute.</li>
+    <li><a href="/docs/elements/native/section/"><code>&lt;section&gt;</code></a> &mdash; container behaviour of sectioning elements.</li>
+    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> &mdash; the layout attribute hub.</li>
+    <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> &mdash; why the attribute form on sectioning elements creates containers.</li>
+  </ul>
+</section>

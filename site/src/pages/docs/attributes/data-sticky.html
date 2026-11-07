@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-sticky"
-description: "Activate viewport-aware sticky-positioning coordination. Set on <html> to enable the system; the StickyManager keeps a --sticky-offset custom property in sync with the actual sticky-header height so all sticky elements (sidebar, TOC, headings) line up correctly."
+description: "Sticky page chrome. On <header> or <footer> it pins the element on its own; on <html> it switches on the coordination system, which measures the sticky header into --sticky-offset so sticky sidebars, the TOC and anchor jumps all line up below it."
 attributeName: data-sticky
 category: layout
 attributeType: data
@@ -13,26 +13,58 @@ crumbLabel: Data Attributes
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>data-sticky</code> attribute on <code>&lt;html&gt;</code> turns on VB's sticky coordination system. Behind it, <code>StickyManager</code> measures the live sticky-header height and writes it to <code>--sticky-offset</code> on <code>:root</code>. Every sticky sidebar, TOC, scroll-padding setting, and "scroll into view" behavior reads that variable, so they all line up correctly without you hardcoding a header offset anywhere.</p>
-  <p>On <code>&lt;header&gt;</code> and <code>&lt;footer&gt;</code>, <code>data-sticky</code> marks the element as sticky. The first <code>&lt;header&gt;</code> in the document picks it up automatically when the system is active. Sidebars opt in with <a href="/docs/attributes/data-page-layout/"><code>data-layout-sticky</code></a> instead. Nothing sticks unless <code>&lt;html&gt;</code> has <code>data-sticky</code>: sticky is an enhancement, not a default.</p>
+  <p><code>data-sticky</code> works at two levels:</p>
+  <ul>
+    <li><strong>Standalone</strong> &mdash; <code>&lt;header data-sticky&gt;</code> or <code>&lt;footer data-sticky&gt;</code> sticks on its own. No other attribute or script is needed.</li>
+    <li><strong>Coordinated</strong> &mdash; <code>&lt;html data-sticky&gt;</code> turns on <code>StickyManager</code>. It marks the banner header sticky, measures its live height into <code>--sticky-offset</code> on <code>:root</code>, and enables the sidebar rules (<code>data-layout-sticky</code>), so every sticky region lines up below the header without a hardcoded offset.</li>
+  </ul>
+  <p>Sidebars (<code>&lt;nav&gt;</code> / <code>&lt;aside&gt;</code>) do not take <code>data-sticky</code>. They opt in with <code>data-layout-sticky</code>, which <em>only</em> works in coordinated mode.</p>
+
+  <aside class="note">
+    <p><strong>Not to be confused with</strong> <code>&lt;table data-sticky="header|column|both"&gt;</code>, a separate attribute that freezes a table's header row and/or first column (plus <code>data-sticky-column="2"</code> for two frozen columns). See <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a>.</p>
+  </aside>
 </section>
 
 <section>
-  <h2>Usage</h2>
-  <code-block language="html" show-lines label="Activate the system" data-escape><html lang="en" data-sticky>
-  <body>
-    <header>
-      <!-- Auto-marked data-sticky by StickyManager -->
-    </header>
-    <main>...</main>
-  </body>
-</html></code-block>
+  <h2>Standalone sticky header and footer</h2>
+  <p>A header or footer with <code>data-sticky</code> is always sticky: <code>position: sticky</code> at the top (header) or bottom (footer), <code>z-index: 100</code>, and an opaque surface background. It stays sticky at every viewport width.</p>
 
-  <code-block language="html" show-lines label="A sticky header with a sticky sidebar" data-escape><html lang="en" data-sticky>
+  <browser-window
+    src="/docs/snippets/demos/header-sticky.html"
+    url="https://vanilla-breeze.com/sticky/header"
+    title="Standalone sticky header"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Standalone sticky header" data-escape><body>
+  <header data-sticky class="site">...</header>
+  <main>...</main>
+</body></code-block>
+
+  <browser-window
+    src="/docs/snippets/demos/footer-sticky.html"
+    url="https://vanilla-breeze.com/sticky/footer"
+    title="Standalone sticky footer"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Sticky form actions" data-escape><form>
+  ...
+  <footer data-sticky>
+    <button type="submit">Save</button>
+  </footer>
+</form></code-block>
+
+  <p>Anchor jumps stay clear of a standalone sticky banner header: <code>scroll-padding-block-start</code> falls back to <code>--header-sticky-size</code> (set it on <code>:root</code> if your header is taller than the default site header). The footer pads its bottom edge for the on-screen keyboard and the device safe area.</p>
+</section>
+
+<section>
+  <h2>Coordinated mode: <code>&lt;html data-sticky&gt;</code></h2>
+  <code-block language="html" show-lines label="Header plus a sticky sidebar" data-escape><html lang="en" data-sticky>
   <body>
-    <header data-sticky>...</header>
+    <header>...</header>  <!-- marked data-sticky automatically -->
     <layout-sidebar>
-      <nav data-layout-sticky>
+      <nav aria-label="Sections" data-layout-sticky>
         <!-- Sticks below the header; scrolls on its own when taller than the viewport -->
       </nav>
       <article>...</article>
@@ -40,32 +72,36 @@ crumbLabel: Data Attributes
   </body>
 </html></code-block>
 
-  <p>Toggle the whole system from script with <code>document.documentElement.toggleAttribute('data-sticky')</code>. The <a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> has a Sticky Navigation toggle that does this and remembers the choice.</p>
+  <browser-window
+    src="/docs/snippets/demos/sidebar-sticky.html"
+    url="https://vanilla-breeze.com/sticky/sidebar"
+    title="Coordinated sticky sidebar"
+    shadow>
+  </browser-window>
+
+  <p>What switching it on adds, compared with standalone mode:</p>
+  <table class="prose">
+    <thead><tr><th>Feature</th><th>Standalone (<code>header/footer[data-sticky]</code>)</th><th>Coordinated (<code>html[data-sticky]</code>)</th></tr></thead>
+    <tbody>
+      <tr><td>Banner header marked sticky</td><td>You add <code>data-sticky</code></td><td>Added automatically to the banner header if missing (and removed again when the system is switched off)</td></tr>
+      <tr><td>Header stacking</td><td><code>z-index: 100</code></td><td><code>var(--z-sticky-header)</code> (200), above sticky sidebars and the TOC so dropdowns are not clipped</td></tr>
+      <tr><td><code>--sticky-offset</code></td><td>Not measured</td><td>Live header height in px, kept current by <code>StickyManager</code></td></tr>
+      <tr><td>Sidebars (<code>data-layout-sticky</code>)</td><td>No effect</td><td>Stick at <code>--sticky-offset + --sticky-gap</code>, capped at the remaining viewport height, scroll on their own</td></tr>
+      <tr><td>Below 48rem</td><td>Header stays sticky</td><td>Header returns to <code>position: static</code> to save screen space (the offset drops to 0)</td></tr>
+    </tbody>
+  </table>
+
+  <p>The <dfn>banner header</dfn> is the first <code>&lt;header&gt;</code> that is not inside an <code>article</code>, <code>aside</code>, <code>main</code>, <code>nav</code> or <code>section</code> (or their ARIA-role equivalents), so a card or article header is never made sticky.</p>
+  <p>Toggle the system from script with <code>document.documentElement.toggleAttribute('data-sticky')</code>. The <a href="/docs/elements/web-components/settings-panel/"><code>&lt;settings-panel&gt;</code></a> has a Sticky Navigation toggle that does this and remembers the choice.</p>
 </section>
 
 <section>
-  <h2>Two roles</h2>
-  <table class="prose">
-    <thead><tr><th>On</th><th>Effect</th></tr></thead>
-    <tbody>
-      <tr>
-        <td><code>&lt;html data-sticky&gt;</code></td>
-        <td>Enables the system. <code>StickyManager.init()</code> runs; auto-applies <code>data-sticky</code> to the first <code>&lt;header&gt;</code> if not already present; sets up <code>resize</code> + <code>fonts.ready</code> + <code>toggle</code> listeners to keep <code>--sticky-offset</code> current.</td>
-      </tr>
-      <tr>
-        <td><code>&lt;header data-sticky&gt;</code></td>
-        <td>Header opts in (or is auto-applied). Becomes <code>position: sticky</code> at <code>top: 0</code>; its height is what <code>StickyManager</code> measures.</td>
-      </tr>
-      <tr>
-        <td><code>&lt;footer data-sticky&gt;</code></td>
-        <td>Sticks to the bottom of the viewport.</td>
-      </tr>
-      <tr>
-        <td><code>&lt;nav data-layout-sticky&gt;</code> / <code>&lt;aside data-layout-sticky&gt;</code></td>
-        <td>Not <code>data-sticky</code>: sidebars use <code>data-layout-sticky</code>, as direct children of a <code>data-page-layout</code> body or a <code>sidebar</code> layout. They stick at <code>var(--sticky-offset) + var(--sticky-gap)</code>, are capped at the remaining viewport height, and scroll on their own when their content is taller.</td>
-      </tr>
-    </tbody>
-  </table>
+  <h2>Where <code>data-layout-sticky</code> applies</h2>
+  <p>In coordinated mode, <code>data-layout-sticky</code> pins these regions:</p>
+  <ul>
+    <li><code>&lt;nav&gt;</code> / <code>&lt;aside&gt;</code> that are direct children of a <a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> or <code>data-layout="sidebar"</code> element.</li>
+    <li><code>&lt;nav&gt;</code> / <code>&lt;aside&gt;</code> / <code>&lt;header&gt;</code> that are direct children of a <a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> element.</li>
+  </ul>
 </section>
 
 <section>
@@ -73,47 +109,61 @@ crumbLabel: Data Attributes
   <table class="prose">
     <thead><tr><th>Variable</th><th>Set by</th><th>Use for</th></tr></thead>
     <tbody>
-      <tr><td><code>--sticky-offset</code></td><td>StickyManager (px; <code>0px</code> until measured)</td><td>Top offset for any other sticky element so it stays below the header.</td></tr>
+      <tr><td><code>--sticky-offset</code></td><td><code>StickyManager</code> (px; <code>0px</code> until measured, and while the header is not sticky)</td><td>Top offset for any other sticky element so it stays below the header.</td></tr>
       <tr><td><code>--sticky-gap</code></td>   <td>theme / authors (default <code>var(--size-2xs)</code>)</td><td>Breathing room between the header and sticky sidebars or TOC.</td></tr>
-      <tr><td><code>--z-sticky-header</code></td><td>tokens (default <code>200</code>)</td><td>Header stacking, above other sticky elements so dropdowns are not clipped by the TOC.</td></tr>
-      <tr><td><code>--z-sticky</code></td><td>tokens (default <code>100</code>)</td><td>Footer and other sticky regions.</td></tr>
+      <tr><td><code>--z-sticky-header</code></td><td>tokens (default <code>200</code>)</td><td>Coordinated header stacking.</td></tr>
+      <tr><td><code>--z-sticky</code></td><td>tokens (default <code>100</code>)</td><td>Coordinated footer and other sticky regions.</td></tr>
+      <tr><td><code>--header-sticky-size</code></td><td>authors (optional)</td><td>Scroll padding for a standalone sticky header, which is not measured.</td></tr>
     </tbody>
   </table>
 
-  <code-block language="css" show-lines label="Pattern: a sticky aside with self-scroll" data-escape>aside[data-sticky] {
+  <code-block language="css" show-lines label="Pattern: your own sticky panel below the header" data-escape>.filter-panel {
   position: sticky;
-  inset-block-start: var(--sticky-offset, 0);
-  max-block-size: calc(100dvh - var(--sticky-offset) - var(--sticky-gap, 1rem));
+  inset-block-start: calc(var(--sticky-offset, 0px) + var(--sticky-gap, 0px));
+  max-block-size: calc(100dvh - var(--sticky-offset, 0px) - var(--sticky-gap, 0px));
   overflow-y: auto;
 }</code-block>
+  <p>For a sidebar inside a sidebar or page layout, use <code>data-layout-sticky</code> instead of writing this by hand.</p>
 </section>
 
 <section>
   <h2>What triggers a re-measure</h2>
   <ul>
-    <li><strong>Window resize</strong> &mdash; <code>resize</code> listener on <code>window</code> (passive).</li>
-    <li><strong>Fonts loaded</strong> &mdash; <code>document.fonts.ready</code> resolves and triggers a re-measure (header height often changes once webfonts arrive).</li>
-    <li><strong>Toggle events</strong> &mdash; any <code>&lt;details&gt;</code> opening / closing inside the header.</li>
-    <li><strong>Initial mount</strong> &mdash; immediate measure plus a follow-up in the next <code>requestAnimationFrame</code> after layout settles.</li>
+    <li><strong>Header size changes</strong> &mdash; a <code>ResizeObserver</code> on the banner header (banners appearing, responsive reflow, wrapping nav).</li>
+    <li><strong>Window resize</strong> &mdash; passive <code>resize</code> listener.</li>
+    <li><strong>Fonts loaded</strong> &mdash; <code>document.fonts.ready</code> (header height often changes once webfonts arrive).</li>
+    <li><strong>Toggle events</strong> &mdash; a document-level, capturing <code>toggle</code> listener, so any <code>&lt;details&gt;</code> or popover opening or closing anywhere on the page.</li>
+    <li><strong>Initial mount</strong> &mdash; an immediate measure plus a follow-up in the next animation frame.</li>
   </ul>
 </section>
 
 <section>
-  <h2>Composition</h2>
+  <h2>Accessibility</h2>
   <ul>
-    <li><a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a> &mdash; the TOC sidebar reads <code>--sticky-offset</code> for its own positioning.</li>
-    <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; its <code>nav</code> / <code>aside</code> regions take <code>data-layout-sticky</code>.</li>
-    <li><code>scroll-padding-block-start</code> on <code>:root</code> &mdash; set to <code>var(--sticky-offset) + var(--sticky-gap)</code> while the system is on, so anchor-link jumps land below the sticky header.</li>
-    <li>Below 48rem the sticky header is switched off (back to <code>position: static</code>) to save screen space.</li>
-    <li>Print stylesheet &mdash; <code>src/utils/print.css</code> disables sticky behavior automatically.</li>
+    <li>Sticky chrome covers content. Coordinated mode sets <code>scroll-padding-block-start</code> on <code>:root</code> to <code>--sticky-offset + --sticky-gap</code>, so in-page links and focused elements scrolled into view land below the header (WCAG 2.4.11 Focus Not Obscured). For a standalone header, set <code>--header-sticky-size</code> if it is taller than the default.</li>
+    <li>Keep sticky headers short. On small screens a tall pinned header can leave little room for content, which is why coordinated mode un-sticks it below 48rem; standalone headers do not, so keep them compact or use coordinated mode.</li>
+    <li>Sticky sidebars scroll on their own when taller than the viewport, so every link stays reachable by scrolling and by keyboard.</li>
+    <li>Users can switch the coordinated system off from the <code>&lt;settings-panel&gt;</code> Sticky Navigation toggle.</li>
+    <li>Print: <code>src/utils/print.css</code> returns sticky headers, footers and table cells to normal flow.</li>
   </ul>
 </section>
 
 <section>
   <h2>When NOT to use</h2>
   <ul>
-    <li>Pages with no sticky chrome &mdash; the system measures and sets variables every resize; that's cheap but pointless if nothing's sticky.</li>
-    <li>Inside scrollable subregions &mdash; <code>data-sticky</code> on a child of an overflowing container won't measure correctly; coordinate with the parent's scroll state instead.</li>
-    <li>Tables &mdash; <code>&lt;table data-sticky="header|column|both"&gt;</code> is a separate attribute for sticky rows and columns; see <a href="/docs/elements/native/table/"><code>&lt;table&gt;</code></a>.</li>
+    <li>Inside scrollable subregions &mdash; the coordination system measures against the viewport; a sticky element inside an overflowing container sticks to that container instead.</li>
+    <li>Tables &mdash; use the table's own <code>data-sticky</code> (see the note above).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; its <code>header</code>, <code>nav</code> and <code>aside</code> regions take <code>data-layout-sticky</code>.</li>
+    <li><a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> &mdash; sticky sidebar navigation.</li>
+    <li><a href="/docs/elements/web-components/page-toc/"><code>&lt;page-toc&gt;</code></a> &mdash; the TOC sidebar reads <code>--sticky-offset</code>.</li>
+    <li><a href="/docs/elements/native/header/"><code>&lt;header&gt;</code></a> and <a href="/docs/elements/native/footer/"><code>&lt;footer&gt;</code></a>.</li>
+    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> &mdash; the layout attribute hub.</li>
+    <li><a href="/docs/grid-identity/">Grid Identity</a> guide.</li>
   </ul>
 </section>

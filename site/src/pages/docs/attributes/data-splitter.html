@@ -38,7 +38,7 @@ crumbLabel: Data Attributes
 
   <section>
     <h2>How It Works</h2>
-    <p>Add <code>data-splitter</code> to a container with exactly two child elements. The init script:</p>
+    <p>Add <code>data-splitter</code> to a flex container with two child elements. The script needs at least two children and enhances only the first two; any further children are left alone and keep their normal flex sizing beside the second panel. The init script:</p>
     <ol>
       <li>Injects a <code>div.split-divider</code> between the two children</li>
       <li>Sets <code>role="separator"</code> on the divider with full ARIA attributes</li>
@@ -48,7 +48,7 @@ crumbLabel: Data Attributes
       <li>Clamps the initial 50% position into the <code>data-min</code> / <code>data-max</code> range</li>
       <li>Sets <code>data-splitter-init</code> (styling hook); removing and re-inserting the container never adds a second divider</li>
     </ol>
-    <p>The container should use <code>data-layout="sidebar"</code> for horizontal splits or <code>data-layout="stack"</code> for vertical splits.</p>
+    <p><strong>The container must be a flex container.</strong> The script sizes the first panel with <code>flex-basis</code> and never sets <code>display</code> itself, so a bare <code>&lt;section data-splitter&gt;</code>, or a grid layout such as <code>data-layout="split"</code> or <code>data-layout="grid"</code>, renders unchanged. Use <code>data-layout="sidebar"</code> (or <a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a>) or <code>data-layout="cluster"</code> for side-by-side panels. For <code>data-splitter="vertical"</code> the splitter sets <code>flex-direction: column</code> itself, so any flex container works; <code>data-layout="stack"</code> is the usual choice.</p>
   </section>
 
   <section>
@@ -75,12 +75,12 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>data-min</code></td>
           <td>First child</td>
-          <td>Minimum size of the first panel as a percentage (default: <code>10</code>).</td>
+          <td>Minimum size of the first panel as a percentage (default: <code>10</code>). <code>0</code> and non-numeric values fall back to the default.</td>
         </tr>
         <tr>
           <td><code>data-max</code></td>
           <td>First child</td>
-          <td>Maximum size of the first panel as a percentage (default: <code>90</code>).</td>
+          <td>Maximum size of the first panel as a percentage (default: <code>90</code>). <code>0</code> and non-numeric values fall back to the default.</td>
         </tr>
         <tr>
           <td><code>data-splitter-init</code></td>
@@ -179,7 +179,7 @@ crumbLabel: Data Attributes
         <tr>
           <td><code>splitter:resize</code></td>
           <td><code>{ position }</code></td>
-          <td>Fired during drag and keyboard resize (not on init). <code>position</code> is the first panel's size as a percentage.</td>
+          <td>Fired on the container during drag and keyboard resize (not on init); it bubbles. <code>position</code> is the first panel's size as a percentage. The position is not persisted &mdash; use <code>&lt;split-surface&gt;</code> for that.</td>
         </tr>
       </tbody>
     </table>
@@ -212,41 +212,34 @@ panel.addEventListener('splitter:resize', (e) => {
 
   <section>
     <h2>Styling</h2>
-    <p>The divider is a plain <code>div.split-divider</code> styled via CSS. A <code>::after</code> pseudo-element provides the grip indicator. All styles are gated on <code>[data-splitter-init]</code> so panels display in normal flow without JavaScript.</p>
+    <p>The divider is an injected <code>div.split-divider</code>; a <code>::after</code> pseudo-element draws the grip. The rules live in <code>src/web-components/split-surface/styles.css</code> and are shared with <code>&lt;split-surface&gt;</code>. Layout fixes are gated on <code>[data-splitter-init]</code>, so without JavaScript the panels stay in normal flow.</p>
 
-    <code-block language="css" show-lines label="Splitter CSS selectors" data-escape>/* The divider element */
-.split-divider {
-  background: var(--color-border);
-  transition: background 0.15s ease;
+    <table class="props-table">
+      <thead>
+        <tr><th>Part</th><th>Default</th><th>Override with</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Divider thickness</td><td>5px (inline size for side-by-side panels, block size for <code>vertical</code>)</td><td><code>.split-divider { inline-size: … }</code></td></tr>
+        <tr><td>Divider colour</td><td><code>--color-border</code></td><td>the token, or <code>background</code> on <code>.split-divider</code></td></tr>
+        <tr><td>Hover / dragging</td><td><code>--color-interactive</code></td><td>the token</td></tr>
+        <tr><td>Keyboard focus</td><td>3px <code>--color-focus</code> outline (inset by 1px)</td><td>the token</td></tr>
+        <tr><td>Grip</td><td>4&times;24px pill (24&times;4px when <code>vertical</code>), <code>--color-text-muted</code> at 50% opacity, 80% on hover</td><td><code>.split-divider::after</code></td></tr>
+        <tr><td>Cursor</td><td><code>col-resize</code> / <code>row-resize</code></td><td>&mdash;</td></tr>
+        <tr><td>Forced colours</td><td>Divider <code>CanvasText</code>, grip <code>Canvas</code>, hover/focus <code>Highlight</code></td><td>&mdash;</td></tr>
+        <tr><td>Reduced motion</td><td>Colour transition switched off</td><td>&mdash;</td></tr>
+      </tbody>
+    </table>
+
+    <code-block language="css" show-lines label="Theme the divider" data-escape>/* A thicker, brand-coloured divider in one region */
+.editor-panes {
+  --color-interactive: var(--color-primary);
 }
 
-/* Hover and focus states */
-.split-divider:hover,
-.split-divider:focus-visible {
-  background: var(--color-primary);
-}
-
-/* Horizontal divider dimensions */
-[data-splitter]:not([data-splitter="vertical"]) > .split-divider {
-  width: 4px;
-  cursor: col-resize;
-}
-
-/* Vertical divider dimensions */
-[data-splitter="vertical"] > .split-divider {
-  height: 4px;
-  cursor: row-resize;
-}
-
-/* Grip indicator (three dots/lines) */
-.split-divider::after {
-  content: '';
-  display: block;
-  width: 24px;
-  height: 2px;
-  background: var(--color-text-muted);
-  border-radius: var(--radius-pill);
+.editor-panes > .split-divider {
+  inline-size: 8px;
 }</code-block>
+
+    <p>Once enhanced, the container gets <code>flex-wrap: nowrap</code> (and <code>flex-direction: column</code> when <code>vertical</code>), and every panel loses its minimum content size so it can shrink beside the divider. The script also writes inline <code>flex-grow</code>, <code>flex-shrink</code>, <code>flex-basis</code> and <code>overflow: auto</code> on the first two panels, so your own CSS for those properties on the panels is overridden.</p>
   </section>
 
   <section>
@@ -279,8 +272,11 @@ document.body.appendChild(container);
   </section>
 
   <section>
-    <h2>See Also</h2>
+    <h2>Related</h2>
     <ul>
-      <li><a href="/docs/elements/web-components/splitter/">split-surface</a> &mdash; full web component with persistence, collapse/expand, and triple-pane layouts</li>
+      <li><a href="/docs/elements/web-components/splitter/"><code>&lt;split-surface&gt;</code></a> &mdash; full web component with persistence, collapse/expand, and triple-pane layouts</li>
+      <li><a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> &mdash; the usual container for a side-by-side splitter</li>
+      <li><a href="/docs/elements/custom-elements/stack/"><code>&lt;layout-stack&gt;</code></a> &mdash; the usual container for a vertical splitter</li>
+      <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> &mdash; the layout attribute hub</li>
     </ul>
   </section>

@@ -1,0 +1,87 @@
+---
+layout: attribute
+title: "data-canvas"
+description: "Turn any semantic element into an elevated surface: background, 1px edge, radius, shadow, padding and a centred max width. The attribute form of <layout-canvas>."
+attributeName: data-canvas
+category: layout
+attributeType: data
+currentPath: /docs/attributes/data-canvas/
+
+crumbHref: /docs/attributes/data/
+crumbLabel: Data Attributes
+---
+
+<section>
+  <h2>Overview</h2>
+  <p><code>data-canvas</code> gives the element it sits on a surface: <code>--color-surface</code> background, a 1px edge, <code>--radius-l</code> corners, <code>--shadow-l</code>, <code>--size-l</code> padding, full width up to a centred <code>min(72rem, 100%)</code>. It is the attribute form of <a href="/docs/elements/custom-elements/layout-canvas/"><code>&lt;layout-canvas&gt;</code></a>; both forms share the same rules.</p>
+  <p>Unlike <code>data-layout</code>, a canvas does not arrange its children. It is a surface, so its modifiers are bare <code>data-*</code> attributes (<code>data-max</code>, <code>data-padding</code>, <code>data-canvas-depth</code>), the same convention as <code>&lt;layout-card&gt;</code>. Combine it with <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> on the same element when the contents also need a layout.</p>
+
+  <browser-window
+    src="/docs/examples/demos/layout-canvas.html"
+    url="https://vanilla-breeze.com/canvas"
+    title="Canvas surfaces"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="A canvas article" data-escape><article data-canvas data-max="normal">
+  <h2>Quarterly report</h2>
+  <p>Content on an elevated surface.</p>
+</article></code-block>
+</section>
+
+<section>
+  <h2>Values</h2>
+  <table class="prose">
+    <thead><tr><th>Value</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td>(bare) <code>data-canvas</code></td><td>Default surface: radius, shadow, 1px edge, padding.</td></tr>
+      <tr><td><code>flush</code></td><td>No radius and no shadow; an edge-to-edge surface.</td></tr>
+      <tr><td><code>elevated</code></td><td>Larger radius (<code>--radius-xl</code>) and shadow (<code>--shadow-xl</code>) at 37.5rem and wider.</td></tr>
+    </tbody>
+  </table>
+  <p>On <code>&lt;layout-canvas&gt;</code> the variant goes in <code>data-variant</code> instead; <code>data-variant</code> has no effect next to <code>data-canvas</code>.</p>
+</section>
+
+<section>
+  <h2>Modifiers</h2>
+  <table class="prose">
+    <thead><tr><th>Attribute</th><th>Values</th><th>Default</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-max</code></td><td><code>narrow</code>, <code>normal</code>, <code>wide</code>, <code>prose</code></td><td><code>min(72rem, 100%)</code></td><td>Max inline size, still centred: <code>--content-narrow</code> / <code>--content-normal</code> / <code>--content-wide</code> (40 / 60 / 80rem by default) or 65ch.</td></tr>
+      <tr><td><code>data-padding</code></td><td><code>none</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td><td><code>l</code></td><td>Padding on all sides from the <code>--size-*</code> scale.</td></tr>
+      <tr><td><code>data-canvas-depth</code></td><td><code>1</code>, <code>2</code></td><td>&mdash;</td><td>One or two stacked "paper" sheets peeking out below the surface. Ignored on <code>flush</code> and below 37.5rem.</td></tr>
+    </tbody>
+  </table>
+  <p>The bare names are deliberate: <code>data-max</code> here is not <code>data-layout-max</code>. One-off values go in the <code>--canvas-*</code> custom properties (<code>--canvas-bg</code>, <code>--canvas-radius</code>, <code>--canvas-shadow</code>, <code>--canvas-padding-inline</code>, <code>--canvas-padding-block</code>, <code>--canvas-width</code>), for example <code>style="--canvas-width: 50rem"</code>.</p>
+  <p><code>data-canvas-depth</code> also has a page-level meaning: on <code>&lt;body&gt;</code> under <code>&lt;html data-backdrop&gt;</code> it adds the same sheets behind the page's <code>&lt;main&gt;</code>.</p>
+</section>
+
+<section>
+  <h2>Behaviour</h2>
+  <ul>
+    <li><strong>Nesting</strong> &mdash; a canvas inside a canvas switches <code>--canvas-bg</code> to <code>--color-surface-raised</code>, so the inner surface reads as a layer above the outer one.</li>
+    <li><strong>Edge</strong> &mdash; on a plain page the 1px edge is a <code>--color-border</code> hairline; under <code>data-backdrop</code> it is transparent because the tinted page already frames the surface.</li>
+    <li><strong>Small screens</strong> &mdash; below 37.5rem every canvas goes flush: no radius, no shadow, no depth sheets, full width, <code>--size-m</code> inline padding.</li>
+    <li><strong>Backdrop tokens</strong> &mdash; the <code>--canvas-*</code> tokens are shared with <code>data-backdrop</code>, so <code>&lt;html data-backdrop="flush"&gt;</code> flattens default canvases too (the <code>elevated</code> variant keeps its shadow).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Accessibility</h2>
+  <ul>
+    <li><code>data-canvas</code> is purely visual and adds no role. Put it on the element that carries the right meaning (<code>article</code>, <code>section</code> with a heading, <code>aside</code>), not on a generic wrapper.</li>
+    <li>In forced-colours mode backgrounds and shadows are flattened, so the edge is drawn in <code>CanvasText</code> and the surface stays visible.</li>
+    <li>The surface uses theme tokens, so text on it keeps the theme's contrast. If you override <code>--canvas-bg</code>, check the text contrast against the new colour.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/elements/custom-elements/layout-canvas/"><code>&lt;layout-canvas&gt;</code></a> &mdash; the element form, with more examples.</li>
+    <li><a href="/docs/elements/custom-elements/layout-card/"><code>&lt;layout-card&gt;</code></a> &mdash; a smaller surface for repeated items.</li>
+    <li><a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> &mdash; <code>data-backdrop</code>, the page-level surface system.</li>
+    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> &mdash; the layout attribute hub.</li>
+    <li><a href="/docs/attributes/data-page-layout/"><code>data-page-layout</code></a> &mdash; page templates that compose with a backdrop and canvases.</li>
+  </ul>
+</section>

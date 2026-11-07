@@ -1,7 +1,7 @@
 ---
 layout: attribute
 title: "data-page-layout"
-description: "Body-level page-shape template with semantic-element grid identity. Drop on <body> and the semantic children (header, nav, main, aside, footer) auto-assign to grid areas — no classes, no wrappers, no <div data-area>."
+description: "VB's page-template system. Put it on <body> and the semantic children (header, nav, main, aside, footer) auto-assign to named grid areas: no classes, no wrappers. Eight templates, sidebar width and gap modifiers, mobile collapse and an accessible dashboard drawer."
 attributeName: data-page-layout
 category: layout
 attributeType: data
@@ -13,125 +13,291 @@ crumbLabel: Data Attributes
 
 <section>
   <h2>Overview</h2>
-  <p>The <code>data-page-layout</code> attribute on <code>&lt;body&gt;</code> turns the page into a CSS grid where <em>semantic elements</em> are the grid items &mdash; <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;footer&gt;</code> auto-register to named grid areas. No classes, no wrappers, no <code>&lt;div data-area="main"&gt;</code> — the existing semantic markup IS the layout.</p>
-  <p>This is the <strong>page-shape</strong> sibling of <a href="/docs/attributes/data-layout/"><code>data-layout</code></a> (which lays out the children of <em>any</em> element). The hierarchy:</p>
-  <ul>
-    <li><code>data-page-layout</code> &mdash; on <code>&lt;body&gt;</code>, owns the page structure.</li>
-    <li><code>data-layout</code> &mdash; on any element, lays out a single component.</li>
-  </ul>
+  <p><code>data-page-layout</code> turns the page into a CSS grid where the <em>semantic elements</em> are the grid items: <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code> and <code>&lt;footer&gt;</code> auto-register to named areas. The semantic markup you already have IS the layout.</p>
+  <p>It is VB's <strong>only page-template system</strong>. Use it on <code>&lt;body&gt;</code>; the rules are not body-scoped (except the wide-screen cap), so the same templates also work on a <code>&lt;section&gt;</code> &mdash; which is how the demos below preview them.</p>
+
+  <browser-window
+    src="/docs/examples/demos/grid-identity.html"
+    url="https://vanilla-breeze.com/page-layouts"
+    title="Page templates"
+    shadow>
+  </browser-window>
 </section>
 
 <section>
   <h2>Usage</h2>
-  <code-block language="html" show-lines data-escape><body data-page-layout="sidebar-left">
+  <code-block language="html" show-lines label="A docs page with left navigation" data-escape><body data-page-layout="sidebar-left">
   <header>...</header>
-  <nav>...</nav>
+  <nav aria-label="Primary">...</nav>
   <main data-layout="stack">
     <article>...</article>
   </main>
   <footer>...</footer>
 </body></code-block>
-
-  <p>The semantic children land in the <code>body-header</code>, <code>body-nav</code>, <code>body-main</code>, <code>body-footer</code> grid areas automatically. A second <code>&lt;nav&gt;</code> (e.g. a secondary nav) goes to <code>body-nav-secondary</code>.</p>
+  <p>The children land in <code>body-header</code>, <code>body-nav</code>, <code>body-main</code> and <code>body-footer</code> automatically. Only <em>direct</em> children are placed.</p>
 </section>
 
 <section>
-  <h2>Layout values</h2>
+  <h2>Page layout vs <code>data-layout</code></h2>
+  <ul>
+    <li><strong><code>data-page-layout</code></strong> shapes the page: which region goes where, how they collapse on small screens. One per page, on <code>&lt;body&gt;</code>.</li>
+    <li><strong><a href="/docs/attributes/data-layout/"><code>data-layout</code></a></strong> lays out a component: the children of any element (a stack inside <code>&lt;main&gt;</code>, a cluster in a <code>&lt;nav&gt;</code>, a grid of cards). Use it inside the page regions.</li>
+  </ul>
+  <p><code>data-layout="holy-grail"</code> and <code>data-layout="dashboard"</code> no longer exist: they were a second copy of these templates with different area names and widths. Use <code>data-page-layout="holy-grail"</code> / <code>"dashboard"</code>. <code>data-layout="regions"</code> stays: it structures a component (a card's header/content/footer), not a page. For a sidebar <em>inside</em> the main region, use <code>&lt;main data-layout="sidebar-left|sidebar-right"&gt;</code> (see <a href="/docs/grid-identity/#main-level">Grid Identity</a>) or <a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a>.</p>
+</section>
+
+<section>
+  <h2>Templates</h2>
+  <p>Each template is a <code>grid-template</code> over named areas. The table shows the grid at 48rem and wider; <code>sw</code> is the sidebar width (16rem by default).</p>
   <table class="prose">
-    <thead><tr><th>Value</th><th>Shape</th><th>Notes</th></tr></thead>
+    <thead><tr><th>Value</th><th>Areas (rows / columns)</th><th>Children placed</th><th>Notes</th></tr></thead>
     <tbody>
-      <tr><td><code>stack</code></td>          <td>Vertical: header / nav / main / aside / footer</td><td>Default for content-first sites.</td></tr>
-      <tr><td><code>sidebar-left</code></td>   <td>Header / nav-on-left + main / footer</td>          <td>Docs sites, blogs.</td></tr>
-      <tr><td><code>sidebar-right</code></td>  <td>Header / main + aside-on-right / footer</td>       <td>Articles with TOC.</td></tr>
-      <tr><td><code>holy-grail</code></td>     <td>Header / nav-left + main + aside-right / footer</td><td>Classic three-column.</td></tr>
-      <tr><td><code>app-shell</code></td>      <td>Vertical nav bar beside header + main</td>          <td>Application chrome (gap: 0). On mobile the nav moves to the bottom.</td></tr>
-      <tr><td><code>dashboard</code></td>      <td>Header across the top, nav + main below</td>       <td>Admin / data-heavy UIs (gap: 0). Capped at 87.5rem wide on large screens.</td></tr>
-      <tr><td><code>article</code></td>        <td>Header / main / footer in one centered reading column</td><td>Long-form pages.</td></tr>
-      <tr><td><code>landing</code></td>        <td>Header / nav / hero / main / feature / cta / footer</td><td>Marketing pages; see <a href="#named-areas">named areas</a>.</td></tr>
+      <tr>
+        <td><code>stack</code> (or bare <code>data-page-layout</code>)</td>
+        <td><code>body-header</code> / <code>body-nav</code> / <code>body-main</code> (1fr) / <code>body-aside</code> / <code>body-footer</code>; one column</td>
+        <td>header, nav, main, aside, footer</td>
+        <td>Content-first sites; also the mobile shape of the sidebar templates.</td>
+      </tr>
+      <tr>
+        <td><code>sidebar-left</code></td>
+        <td>header across; <code>body-nav</code> | <code>body-main</code>; footer across. Columns <code>sw 1fr</code></td>
+        <td>header, nav, main, footer</td>
+        <td>Docs sites, blogs. No <code>&lt;nav&gt;</code>: one column.</td>
+      </tr>
+      <tr>
+        <td><code>sidebar-right</code></td>
+        <td>header across; <code>body-main</code> | <code>body-aside</code>; footer across. Columns <code>1fr sw</code></td>
+        <td>header, main, aside, footer</td>
+        <td>Articles with a TOC. No <code>&lt;aside&gt;</code>: one column.</td>
+      </tr>
+      <tr>
+        <td><code>holy-grail</code></td>
+        <td>header across; <code>body-nav</code> | <code>body-main</code> | <code>body-aside</code>; footer across. Columns <code>sw 1fr sw</code></td>
+        <td>header, nav, main, aside, footer</td>
+        <td>Classic three columns. Drops to two columns without the nav or the aside, one without both. Capped at 87.5rem on <code>&lt;body&gt;</code>.</td>
+      </tr>
+      <tr>
+        <td><code>app-shell</code></td>
+        <td><code>body-nav</code> spans both rows on the left; <code>body-header</code> above <code>body-main</code> (1fr). Columns <code>auto 1fr</code></td>
+        <td>nav, header, main</td>
+        <td>Application chrome, <code>gap: 0</code>. On mobile the nav moves to the bottom.</td>
+      </tr>
+      <tr>
+        <td><code>dashboard</code></td>
+        <td>header across; <code>body-nav</code> | <code>body-main</code> (1fr). Columns <code>auto 1fr</code></td>
+        <td>header, nav, main</td>
+        <td>Admin and data-heavy UIs, <code>gap: 0</code>. On mobile the nav becomes a <a href="#dashboard-drawer">drawer</a>. Capped at 87.5rem on <code>&lt;body&gt;</code>.</td>
+      </tr>
+      <tr>
+        <td><code>article</code></td>
+        <td><code>body-header</code> / <code>body-main</code> (1fr) / <code>body-footer</code>; one centred column, at most <code>--content-normal</code> wide</td>
+        <td>header, main, footer</td>
+        <td>Long-form reading pages.</td>
+      </tr>
+      <tr>
+        <td><code>landing</code></td>
+        <td><code>body-header</code> / <code>body-nav</code> / <code>hero</code> / <code>body-main</code> / <code>feature</code> / <code>cta</code> / <code>body-footer</code>; one column</td>
+        <td>header, nav, main, footer, plus <code>data-layout-area</code> children</td>
+        <td>Marketing pages; see <a href="#named-areas">named areas</a>.</td>
+      </tr>
     </tbody>
   </table>
+  <p>A child whose area the template does not define (an <code>&lt;aside&gt;</code> in <code>sidebar-left</code>, <code>app-shell</code> or <code>dashboard</code>; a <code>&lt;nav&gt;</code> in <code>sidebar-right</code>; a <code>&lt;footer&gt;</code> in <code>app-shell</code> or <code>dashboard</code>) gets an implicit grid track beside the template and lands out of place. Pick the template that has a slot for every region you use.</p>
 </section>
 
 <section>
   <h2>Semantic elements → grid areas</h2>
-  <p>Default mapping (apply to direct children of the <code>data-page-layout</code> element):</p>
   <table class="prose">
-    <thead><tr><th>Element</th><th>Grid area</th></tr></thead>
+    <thead><tr><th>Direct child</th><th>Grid area</th></tr></thead>
     <tbody>
       <tr><td><code>&lt;header&gt;</code></td><td><code>body-header</code></td></tr>
       <tr><td><code>&lt;nav&gt;</code></td>   <td><code>body-nav</code></td></tr>
       <tr><td><code>&lt;main&gt;</code></td>  <td><code>body-main</code></td></tr>
       <tr><td><code>&lt;aside&gt;</code></td> <td><code>body-aside</code></td></tr>
       <tr><td><code>&lt;footer&gt;</code></td><td><code>body-footer</code></td></tr>
-      <tr><td>second <code>&lt;nav&gt;</code></td><td><code>body-nav-secondary</code></td></tr>
-      <tr><td><code>&lt;nav class="bottom"&gt;</code></td><td><code>auto</code> (escape hatch — flows naturally)</td></tr>
+      <tr><td>second <code>&lt;nav&gt;</code></td><td><code>body-nav-secondary</code> &mdash; no built-in template defines it; add it in your own <a href="#custom-properties">template override</a></td></tr>
+      <tr><td><code>&lt;nav class="bottom"&gt;</code></td><td><code>auto</code> (escape hatch: flows into the next free cell)</td></tr>
+      <tr><td>any other element</td><td>auto-placed, unless it has <code>data-layout-area</code></td></tr>
     </tbody>
   </table>
 </section>
 
 <section>
-  <h2>Missing regions and small screens</h2>
+  <h2>Modifiers</h2>
+  <table class="prose">
+    <thead><tr><th>Attribute</th><th>On</th><th>Values</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-layout-gap</code></td><td>layout host</td><td><code>none</code>, <code>3xs</code> &hellip; <code>3xl</code></td><td>Gap between regions (default <code>m</code>; <code>app-shell</code> and <code>dashboard</code> default to 0).</td></tr>
+      <tr><td><code>data-layout-sidebar-width</code></td><td>layout host</td><td><code>narrow</code> (12rem), <code>normal</code> (16rem), <code>wide</code> (20rem)</td><td>Width of the sidebar columns. On <code>app-shell</code> and <code>dashboard</code>, whose nav column is otherwise sized to its content, it switches the column to that fixed width.</td></tr>
+      <tr><td><code>data-sidebar</code></td><td>layout host</td><td><code>collapsed</code>, <code>hidden</code></td><td><code>collapsed</code> narrows the sidebar columns to <code>--sidebar-collapsed</code> (default 4rem), for an icon rail; <code>hidden</code> hides the <code>&lt;nav&gt;</code> region and drops its column from the template (<code>sidebar-left</code> and <code>holy-grail</code> close up; no empty track is left).</td></tr>
+      <tr><td><code>data-layout-nowrap</code></td><td>layout host</td><td>boolean</td><td>Keep the wide shape on small screens (no collapse, no drawer).</td></tr>
+      <tr><td><code>data-layout-sticky</code></td><td>header, nav, aside</td><td>boolean</td><td>Stick the region while the page scrolls; nav and aside scroll on their own when taller than the viewport. Requires <a href="/docs/attributes/data-sticky/"><code>&lt;html data-sticky&gt;</code></a>.</td></tr>
+      <tr><td><code>data-layout-bleed</code></td><td>any direct child</td><td>boolean</td><td>Span every grid column. Only works on direct children of the layout host (not the same as <code>data-bleed</code>, which breaks a child out of a <a href="/docs/elements/custom-elements/layout-text/">text measure</a>).</td></tr>
+      <tr><td><code>data-layout-area</code></td><td>any direct child</td><td><code>hero</code>, <code>feature</code>, <code>cta</code></td><td>Place the child in a named area of the <code>landing</code> template.</td></tr>
+    </tbody>
+  </table>
+  <p><code>data-layout-order</code> does <strong>not</strong> apply to page-layout children: every region has an explicit grid area, and <code>order</code> only moves auto-placed items. Change the template (or the source order) instead.</p>
+</section>
+
+<section id="custom-properties">
+  <h2>Custom properties</h2>
+  <table class="prose">
+    <thead><tr><th>Property</th><th>Default</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>--sidebar-width</code></td><td><code>16rem</code></td><td>Default sidebar column width. Set it on the host, or on <code>:root</code> to inherit everywhere; the host resolves it into its own <code>--_sidebar-width</code>.</td></tr>
+      <tr><td><code>--sidebar-collapsed</code></td><td><code>4rem</code></td><td>Width used by <code>data-sidebar="collapsed"</code>.</td></tr>
+      <tr><td><code>--tpl-stack</code>, <code>--tpl-sidebar-left</code>, &hellip; <code>--tpl-landing</code></td><td>the templates above</td><td>Replace a template wholesale. Set it on the layout host (for example on <code>body</code>), not on <code>:root</code>: the templates are declared on the host.</td></tr>
+    </tbody>
+  </table>
+  <code-block language="html" show-lines label="One-off sidebar width" data-escape><body data-page-layout="sidebar-left" style="--sidebar-width: 18rem">
+  ...
+</body></code-block>
+</section>
+
+<section>
+  <h2>Small screens, wide screens and print</h2>
   <ul>
-    <li><code>sidebar-left</code> without a <code>&lt;nav&gt;</code>, or <code>sidebar-right</code> without an <code>&lt;aside&gt;</code>, becomes one column.</li>
-    <li><code>holy-grail</code> without one side becomes two columns, and without both becomes one.</li>
-    <li>Below 48rem, <code>sidebar-left</code>, <code>sidebar-right</code>, <code>holy-grail</code> and <code>dashboard</code> collapse to the <code>stack</code> shape; <code>app-shell</code> moves its nav to the bottom (with safe-area padding). <code>data-layout-nowrap</code> on the body opts out.</li>
+    <li><strong>Below 48rem</strong>, <code>sidebar-left</code>, <code>sidebar-right</code> and <code>holy-grail</code> collapse to the <code>stack</code> shape (header, nav, main, aside, footer). <code>app-shell</code> moves its nav below the main region as a bottom bar, with safe-area padding for notched devices. <code>dashboard</code> drops its nav column and turns the nav into a <a href="#dashboard-drawer">drawer</a>. <code>data-layout-nowrap</code> on the host opts out of all of these.</li>
+    <li><strong>At 87.5rem and wider</strong>, <code>body[data-page-layout="holy-grail"]</code> and <code>body[data-page-layout="dashboard"]</code> stop growing and centre.</li>
+    <li><strong>Print</strong>: the grid becomes a single block, and the nav and aside regions are hidden.</li>
   </ul>
 </section>
 
-<section>
-  <h2>Modifiers and utilities</h2>
-  <table class="prose">
-    <thead><tr><th>Attribute</th><th>On</th><th>Effect</th></tr></thead>
-    <tbody>
-      <tr><td><code>data-layout-gap</code></td><td>body</td><td>Gap between regions, <code>none</code> &hellip; <code>xl</code> (default <code>m</code>; <code>app-shell</code> and <code>dashboard</code> use 0).</td></tr>
-      <tr><td><code>data-layout-nowrap</code></td><td>body</td><td>Keep the multi-column shape on small screens.</td></tr>
-      <tr><td><code>data-sidebar="collapsed"</code></td><td>body</td><td>Narrow the sidebar to <code>--sidebar-collapsed</code> (default 64px).</td></tr>
-      <tr><td><code>data-sidebar="hidden"</code></td><td>body</td><td>Hide the <code>&lt;nav&gt;</code> region.</td></tr>
-      <tr><td><code>data-layout-sticky</code></td><td>header, nav, aside</td><td>Stick the region while scrolling. Requires <code>data-sticky</code> on <code>&lt;html&gt;</code>.</td></tr>
-      <tr><td><code>data-layout-bleed</code></td><td>any region</td><td>Span every grid column.</td></tr>
-      <tr><td><code>data-layout-area</code></td><td>any child</td><td>Place a child in a named area (see below).</td></tr>
-      <tr><td><code>data-layout-order</code></td><td>any child</td><td><code>-1</code>, <code>1</code> or <code>99</code> to reorder.</td></tr>
-    </tbody>
-  </table>
+<section id="dashboard-drawer">
+  <h2>Dashboard drawer</h2>
+  <p>Below 48rem the <code>dashboard</code> nav is an off-canvas drawer: fixed to the inline-start edge, full height, as wide as the sidebar width (16rem by default) or 85vw, whichever is smaller. Open, it covers the header too, toggle included. While closed it is <code>visibility: hidden</code>, so its links are out of the tab order and the accessibility tree, not just moved off-screen. It slides in when it opens (instantly with reduced motion), from the right in right-to-left pages. An element with <code>data-nav-toggle</code> inside the layout is hidden at 48rem and wider, where the nav is a normal column.</p>
+
+  <browser-window
+    src="/docs/snippets/demos/page-layout-dashboard-drawer.html"
+    url="https://vanilla-breeze.com/page-layout/dashboard"
+    title="Dashboard with a mobile drawer"
+    shadow>
+  </browser-window>
+
+  <h3>No script: a native popover</h3>
+  <p>Give the nav <code>popover</code> and an <code>id</code>, and point a button at it. The browser handles opening, Escape, light dismiss and focus return; from 48rem the nav renders as a normal column despite the <code>popover</code> attribute.</p>
+  <code-block language="html" show-lines label="Popover drawer" data-escape><body data-page-layout="dashboard">
+  <header>
+    <button type="button" popovertarget="dash-nav" data-nav-toggle>Menu</button>
+    <strong>Acme Analytics</strong>
+  </header>
+  <nav id="dash-nav" popover aria-label="Dashboard">...</nav>
+  <main>...</main>
+</body></code-block>
+
+  <h3>With script: <code>data-nav-open</code></h3>
+  <p>Or toggle <code>data-nav-open</code> on the layout host yourself. Keep <code>aria-expanded</code> on the button in sync and return focus to the button on close. The open drawer covers the header, toggle included, so the script must also close it on Escape <em>and</em> on a tap or click outside the nav (touch users have no Escape key), and the nav should carry its own close button.</p>
+  <code-block language="html" show-lines label="Attribute-driven drawer" data-escape><body data-page-layout="dashboard">
+  <header>
+    <button type="button" data-nav-toggle aria-controls="dash-nav" aria-expanded="false">Menu</button>
+  </header>
+  <nav id="dash-nav" aria-label="Dashboard">
+    <button type="button" data-nav-close>Close menu</button>
+    ...
+  </nav>
+  <main>...</main>
+  <script type="module">
+    const host = document.body;
+    const button = document.querySelector('[data-nav-toggle]');
+    const nav = document.getElementById('dash-nav');
+
+    function setOpen(open) {
+      host.toggleAttribute('data-nav-open', open);
+      button.setAttribute('aria-expanded', String(open));
+      if (open) nav.querySelector('a')?.focus();
+    }
+
+    function close() {
+      setOpen(false);
+      button.focus();
+    }
+
+    button.addEventListener('click', () => setOpen(!host.hasAttribute('data-nav-open')));
+    nav.querySelector('[data-nav-close]').addEventListener('click', close);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && host.hasAttribute('data-nav-open')) close();
+    });
+    // Outside tap or click closes it (touch users have no Escape key).
+    document.addEventListener('pointerdown', (event) => {
+      if (host.hasAttribute('data-nav-open') && !nav.contains(event.target)
+        && !button.contains(event.target)) close();
+    });
+  </script>
+</body></code-block>
 </section>
 
 <section id="named-areas">
   <h2>Named areas</h2>
-  <p><code>data-layout-area</code> places a child in a named area: <code>hero</code>, <code>banner</code>, <code>sidebar</code>, <code>content</code>, <code>feature</code>, <code>cta</code> or <code>toc</code>. The <code>landing</code> template has rows for <code>hero</code>, <code>feature</code> and <code>cta</code>. See <a href="/docs/grid-identity/">Grid Identity</a> and the <a href="/docs/examples/demos/page-layout-landing.html">landing page demo</a>.</p>
-  <code-block language="html" show-lines data-escape><body data-page-layout="landing">
+  <p><code>data-layout-area</code> places a direct child in one of the extra areas of the <code>landing</code> template: <code>hero</code>, <code>feature</code> or <code>cta</code>. No other template defines extra areas; an area name the active template lacks creates an implicit zero-width track and the child disappears.</p>
+
+  <browser-window
+    src="/docs/examples/demos/page-layout-landing.html"
+    url="https://vanilla-breeze.com/landing"
+    title="Landing page template"
+    shadow>
+  </browser-window>
+
+  <code-block language="html" show-lines label="Landing page" data-escape><body data-page-layout="landing">
   <header>...</header>
-  <section data-layout-area="hero">...</section>
+  <section data-layout-area="hero" aria-labelledby="hero-title">...</section>
   <main>...</main>
-  <section data-layout-area="feature">...</section>
-  <section data-layout-area="cta">...</section>
+  <section data-layout-area="feature" aria-labelledby="features-title">...</section>
+  <section data-layout-area="cta" aria-labelledby="cta-title">...</section>
   <footer>...</footer>
 </body></code-block>
 </section>
 
 <section>
-  <h2>Container queries</h2>
-  <p>Each major region also gets a CSS <code>container-name</code> so component CSS can adapt to the region it lives in:</p>
-  <ul>
-    <li><code>&lt;main&gt;</code>  &rarr; <code>container-name: region-main</code></li>
-    <li><code>&lt;nav&gt;</code>   &rarr; <code>container-name: region-nav</code></li>
-    <li><code>&lt;aside&gt;</code> &rarr; <code>container-name: region-aside</code></li>
-  </ul>
-  <code-block language="css" show-lines data-escape>/* A card knows it's in the main region vs the sidebar */
-@container region-aside (max-width: 16rem) {
-  .product-card { /* compact variant */ }
-}</code-block>
+  <h2>App shell</h2>
+  <p><code>app-shell</code> puts a vertical nav bar beside the header and main region, and moves it to a bottom tab bar on small screens.</p>
+  <browser-window
+    src="/docs/examples/demos/mobile-app-shell.html"
+    url="https://vanilla-breeze.com/app-shell"
+    title="App shell"
+    shadow>
+  </browser-window>
 </section>
 
-<section>
-  <h2>Composition</h2>
+<section id="container-queries">
+  <h2>Container queries</h2>
+  <p>The regions carry container names so component CSS can adapt to the region it sits in:</p>
   <ul>
-    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> on regions &mdash; nest a stack/grid/cluster inside <code>&lt;main&gt;</code> for the article body.</li>
-    <li><a href="/docs/attributes/data-layout-density/"><code>data-layout-density</code></a> &mdash; pair <code>compact</code> with <code>dashboard</code> / <code>app-shell</code>.</li>
-    <li><code>data-backdrop</code> on <code>&lt;html&gt;</code> &mdash; canvas backdrop renders behind the page-layout grid; the two compose cleanly.</li>
+    <li><code>&lt;main&gt;</code> &rarr; <code>region-main</code></li>
+    <li><code>&lt;aside&gt;</code> &rarr; <code>region-aside</code></li>
+    <li><code>&lt;nav&gt;</code> &rarr; <code>region-nav</code>, where the nav column has a definite width: <code>stack</code>, <code>sidebar-left</code>, <code>holy-grail</code>, <code>landing</code>, and <code>dashboard</code> with <code>data-layout-sidebar-width</code> or <code>data-sidebar="collapsed"</code>. In <code>app-shell</code>, a default <code>dashboard</code> and <code>nav.bottom</code> the nav is sized by its content, and making it a size container would collapse it.</li>
+  </ul>
+  <code-block language="css" show-lines label="A card that knows it is in the sidebar" data-escape>@container region-aside (width < 16rem) {
+  .product-card { /* compact variant */ }
+}</code-block>
+  <p>For containers anywhere else, see <a href="/docs/attributes/data-container/"><code>data-container</code></a>.</p>
+</section>
+
+<section id="accessibility">
+  <h2>Accessibility</h2>
+  <ul>
+    <li><strong>Landmarks come from the elements.</strong> As direct children of <code>&lt;body&gt;</code>, <code>header</code> and <code>footer</code> are the banner and contentinfo landmarks, and <code>main</code>, <code>nav</code> and <code>aside</code> are main, navigation and complementary. Name each <code>nav</code> and <code>aside</code> with <code>aria-label</code> when there is more than one. A <code>section</code> placed with <code>data-layout-area</code> is a region landmark only when named (<code>aria-labelledby</code>).</li>
+    <li><strong>Reading order is source order.</strong> Grid placement does not change keyboard or screen-reader order. Write regions in reading order (header, nav, main, aside, footer). In <code>app-shell</code> on small screens the nav is drawn as a bottom bar but is still read before the main content; a skip link to <code>&lt;main&gt;</code> keeps that quick to pass.</li>
+    <li><strong>Dashboard drawer.</strong> Closed, the nav is hidden from everyone (<code>visibility: hidden</code>), so focus cannot land on invisible links. The toggle must be a real <code>&lt;button&gt;</code> with a visible label; with the <code>data-nav-open</code> pattern, keep <code>aria-expanded</code> and <code>aria-controls</code> on it, close on Escape and on an outside tap, offer a close button inside the nav, and return focus. The popover pattern does all of this natively.</li>
+    <li><strong>Motion.</strong> The drawer slides only when the user has not asked for reduced motion.</li>
+    <li><strong>Sticky regions</strong> (<code>data-layout-sticky</code>) are capped at the viewport height and scroll on their own, so every link stays reachable; anchor jumps land below a sticky header (see <a href="/docs/attributes/data-sticky/"><code>data-sticky</code></a>).</li>
   </ul>
 </section>
 
 <section>
   <h2>Why a body-level attribute (not a custom element)</h2>
-  <p>A page shell is not a wrapper — it's <em>the page</em>. Wrapping <code>&lt;body&gt;</code> contents in <code>&lt;page-shell&gt;</code> would break document semantics (header / nav / main / aside / footer are direct children of the body for a reason — landmark roles, default styling, AT navigation). The attribute form preserves the semantics and adds the grid behavior on top.</p>
+  <p>A page shell is not a wrapper &mdash; it is <em>the page</em>. Wrapping the body's contents in a <code>&lt;page-shell&gt;</code> element would turn the <code>header</code> and <code>footer</code> into children of a generic element instead of the body. The attribute form keeps the document structure intact and adds the grid on top.</p>
+</section>
+
+<section>
+  <h2>Related</h2>
+  <ul>
+    <li><a href="/docs/attributes/data-layout/"><code>data-layout</code></a> &mdash; component layouts inside the regions.</li>
+    <li><a href="/docs/grid-identity/">Grid Identity</a> &mdash; the three tiers: page, main-level sidebars, component regions.</li>
+    <li><a href="/docs/semantic-layouts/">Semantic Layouts</a> &mdash; layout attributes on semantic elements.</li>
+    <li><a href="/docs/attributes/data-sticky/"><code>data-sticky</code></a> &mdash; sticky header and sidebars.</li>
+    <li><a href="/docs/attributes/data-layout-density/"><code>data-layout-density</code></a> &mdash; pair <code>compact</code> with <code>dashboard</code> or <code>app-shell</code>.</li>
+    <li><a href="/docs/elements/custom-elements/sidebar/"><code>&lt;layout-sidebar&gt;</code></a> &mdash; a sidebar at component level.</li>
+    <li><a href="/docs/attributes/data-canvas/"><code>data-canvas</code></a> and <code>data-backdrop</code> on <a href="/docs/elements/native/html/"><code>&lt;html&gt;</code></a> &mdash; surfaces that compose with page layouts.</li>
+    <li><a href="/docs/patterns/application/shells/">Shell patterns</a> &mdash; page layouts in practice.</li>
+  </ul>
 </section>
