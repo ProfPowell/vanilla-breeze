@@ -15,7 +15,7 @@ browser-support table). Keep this file current when a pattern changes.
 | `VB.swap(update)` | `src/lib/vb.js` | Author-facing. Also fires `vb:vt-update-done` on `[data-trigger~="vt"]` after `updateCallbackDone` so deferred entrance effects start in sync. |
 | `VB.transition(name, handler)` | `src/lib/vb.js`, presets in `src/lib/vb-transitions.js` | Handlers for the `data-transition` attribute. Late registrations re-wire elements already processed (the runtime self-boots before presets register). |
 | Keyframes, presets, tokens, reduced motion | `src/utils/vt-keyframes.css` | **Always shipped.** `vt-{fade,slide,scale}-{in,out}*` keyframes, `::view-transition-*(*.slide-left|slide-right|scale|fade|none)` presets, `--view-transition-duration[-fast|-slow]`, and the global reduced-motion rule. |
-| Cross-document opt-in | `src/utils/view-transitions.css` | **Opt-in, never bundled.** `@view-transition { navigation: auto }`, `data-vt` groups, `data-vt-class` mappings. Importing it changes every navigation on the site, which is why it stays out of the bundles. |
+| Cross-document opt-in | `src/utils/view-transitions.css` | **Opt-in, never bundled.** `@view-transition { navigation: auto }`, `data-vt` groups, `data-vt-class` mappings. Importing it changes every navigation on the site, which is why it stays out of the bundles. Built to `dist/cdn/view-transitions.css` (export `vanilla-breeze/view-transitions-css`). |
 
 ## Who does what today
 
@@ -68,7 +68,7 @@ transition (silently, page-wide). Rules of thumb:
 ### 3. Classes: presets or a component namespace
 
 `view-transition-class` selects the animation. Use a shared preset
-(`slide-left`, `slide-right`, `scale`, `fade`, `none`) when the component
+(`slide-left`, `slide-right`, `scale`, `fade`, `vt-none`) when the component
 has no opinion. Use `vt-<component>[-mode]` when its timing or direction
 differs. Don't invent unprefixed class names: they collide with the
 presets and with author CSS.

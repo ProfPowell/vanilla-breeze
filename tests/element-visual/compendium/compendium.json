@@ -331,6 +331,16 @@
           "id": "copied",
           "name": "Copy Button (Copied State)",
           "html": "<button data-copy=\"npm install vanilla-breeze\" data-state=\"copied\">Copied!</button>"
+        },
+        {
+          "id": "failed",
+          "name": "Copy Button (Failed State)",
+          "html": "<button data-copy=\"npm install vanilla-breeze\" data-state=\"failed\">Copy install command</button>"
+        },
+        {
+          "id": "pasted",
+          "name": "Paste Button (Pasted State)",
+          "html": "<input id=\"ev-paste-dest\" aria-label=\"Destination\"> <button data-paste-target=\"#ev-paste-dest\" data-state=\"pasted\">Paste</button>"
         }
       ]
     },
@@ -400,6 +410,11 @@
           "id": "lang",
           "name": "Nearest [lang] sets the locale",
           "html": "<p lang=\"de\"><time datetime=\"2026-02-09\" data-format-date=\"long\">9. Februar 2026</time></p>"
+        },
+        {
+          "id": "time-zone",
+          "name": "data-time-zone fixes the zone of an instant",
+          "html": "<p><time datetime=\"2026-03-12T18:30:00Z\" data-format-date=\"long\" data-format-time=\"short\" data-time-zone=\"Europe/Paris\">March 12, 2026 at 7:30 PM</time></p>"
         }
       ]
     },
@@ -890,6 +905,42 @@
       ]
     },
     {
+      "id": "attr-data-math",
+      "tag": "code",
+      "type": "attribute",
+      "category": "text",
+      "cssFile": "src/web-components/_shared/math.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "block",
+          "name": "Block equation (precompiled MathML)",
+          "html": "<code data-math data-mathml=\"&lt;math display=&#x27;block&#x27;&gt;&lt;mi&gt;E&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mi&gt;m&lt;/mi&gt;&lt;msup&gt;&lt;mi&gt;c&lt;/mi&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;/msup&gt;&lt;/math&gt;\">E = mc^2</code>",
+          "setup": "\n    await new Promise(r => setTimeout(r, 200));",
+          "interactive": true
+        },
+        {
+          "id": "inline",
+          "name": "Inline math",
+          "html": "<p>The area is <code data-math=\"inline\" data-mathml=\"&lt;math&gt;&lt;mi&gt;&amp;pi;&lt;/mi&gt;&lt;msup&gt;&lt;mi&gt;r&lt;/mi&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;/msup&gt;&lt;/math&gt;\">\\pi r^2</code>.</p>",
+          "setup": "\n    await new Promise(r => setTimeout(r, 200));",
+          "interactive": true
+        },
+        {
+          "id": "numbered-copyable",
+          "name": "Numbered + copyable (numbers in document order)",
+          "html": "<code data-math=\"numbered\" id=\"eq-one\" data-mathml=\"&lt;math&gt;&lt;mi&gt;a&lt;/mi&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;b&lt;/mi&gt;&lt;/math&gt;\">a + b</code>\n<code data-math=\"numbered copyable\" id=\"eq-two\" data-mathml=\"&lt;math display=&#x27;block&#x27;&gt;&lt;mi&gt;E&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mi&gt;m&lt;/mi&gt;&lt;msup&gt;&lt;mi&gt;c&lt;/mi&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;/msup&gt;&lt;/math&gt;\">E = mc^2</code>",
+          "setup": "\n    await new Promise(r => setTimeout(r, 200));",
+          "interactive": true
+        },
+        {
+          "id": "source-fallback",
+          "name": "No data-mathml: source shown",
+          "html": "<code data-math>E = mc^2</code>"
+        }
+      ]
+    },
+    {
       "id": "attr-data-numbered",
       "tag": "article",
       "type": "attribute",
@@ -1108,6 +1159,26 @@
       ]
     },
     {
+      "id": "attr-data-select-all",
+      "tag": "input",
+      "type": "attribute",
+      "category": "forms",
+      "cssFile": "src/web-components/index.css",
+      "jsRequired": true,
+      "variants": [
+        {
+          "id": "some",
+          "name": "Some selected (indeterminate master, disabled row skipped)",
+          "html": "<fieldset data-select-all-scope>\n  <legend>Files</legend>\n  <label><input type=\"checkbox\" data-select-all=\".file\"> Select all</label>\n  <label><input type=\"checkbox\" class=\"file\" checked> report.pdf</label>\n  <label><input type=\"checkbox\" class=\"file\"> notes.txt</label>\n  <label><input type=\"checkbox\" class=\"file\" disabled> locked.key</label>\n  <p><output data-selected-count>1</output> selected</p>\n</fieldset>"
+        },
+        {
+          "id": "all",
+          "name": "All enabled selected (master checked)",
+          "html": "<fieldset data-select-all-scope>\n  <legend>Files</legend>\n  <label><input type=\"checkbox\" data-select-all=\".file\"> Select all</label>\n  <label><input type=\"checkbox\" class=\"file\" checked> report.pdf</label>\n  <label><input type=\"checkbox\" class=\"file\" checked> notes.txt</label>\n  <label><input type=\"checkbox\" class=\"file\" disabled> locked.key</label>\n  <p><output data-selected-count>2</output> selected</p>\n</fieldset>"
+        }
+      ]
+    },
+    {
       "id": "attr-data-shimmer",
       "tag": "p",
       "type": "attribute",
@@ -1171,6 +1242,16 @@
           "id": "noise",
           "name": "Spoiler (Noise)",
           "html": "<div data-spoiler=\"noise\">The cake is a lie. After completing all the test chambers, the promised reward never materializes.</div>"
+        },
+        {
+          "id": "inline",
+          "name": "Inline spoiler in a paragraph",
+          "html": "<p>The movie ends when <span data-spoiler>the hero dies</span>, which nobody saw coming.</p>"
+        },
+        {
+          "id": "list-item",
+          "name": "Spoiler on list items (host keeps its role)",
+          "html": "<ol><li data-spoiler data-spoiler-label=\"Show answer\">Tokyo</li><li data-spoiler=\"solid\" data-spoiler-label=\"Show answer\">Ottawa</li></ol>"
         }
       ]
     },
@@ -2140,14 +2221,14 @@
         {
           "id": "format-bytes",
           "name": "Format Bytes",
-          "html": "<p>Small: <data value=\"1024\" data-format-bytes>1 KB</data></p>\n<p>Medium: <data value=\"1048576\" data-format-bytes>1 MB</data></p>\n<p>Large: <data value=\"1536000\" data-format-bytes=\"1\">1.5 MB</data></p>\n<p>Huge: <data value=\"1099511627776\" data-format-bytes>1 TB</data></p>",
+          "html": "<p>Small: <data value=\"1024\" data-format-bytes>1 kB</data></p>\n<p>Medium: <data value=\"1048576\" data-format-bytes>1 MB</data></p>\n<p>Large: <data value=\"1536000\" data-format-bytes=\"1\">1.5 MB</data></p>\n<p>Huge: <data value=\"1099511627776\" data-format-bytes>1 TB</data></p>",
           "setup": "\n    await new Promise(r => setTimeout(r, 200));",
           "interactive": true
         },
         {
           "id": "ticker",
           "name": "Ticker (Static Snapshot)",
-          "html": "<p>Users: <data value=\"24521\" data-effect=\"ticker\" data-trigger=\"scroll\">24,521</data></p>\n<p>Revenue: <data value=\"48200\" data-effect=\"ticker\" data-trigger=\"scroll\" data-format-number=\"currency\" data-currency=\"USD\">$48,200</data></p>",
+          "html": "<p>Users: <data value=\"24521\" data-effect=\"ticker\" data-trigger=\"scroll\">24,521</data></p>\n<p>Revenue: <data value=\"48200\" data-effect=\"ticker\" data-trigger=\"scroll\" data-format-number=\"currency\" data-currency=\"USD\">$48,200.00</data></p>",
           "setup": "\n    await new Promise(r => setTimeout(r, 500));",
           "interactive": true
         },
@@ -2155,6 +2236,20 @@
           "id": "mono",
           "name": "Monospace identifier",
           "html": "<p>Order <data value=\"ORD-7F3A-92C1\" data-variant=\"mono\">ORD-7F3A-92C1</data> shipped from <data value=\"WH-04\" data-variant=\"mono\">WH-04</data>.</p>"
+        },
+        {
+          "id": "format-bytes-locale",
+          "name": "Format Bytes (localised units, negative, sub-byte)",
+          "html": "<p>French: <data value=\"1572864\" data-format-bytes=\"1\" lang=\"fr\">1,5 Mo</data></p>\n<p>Delta: <data value=\"-1572864\" data-format-bytes=\"1\">-1.5 MB</data></p>\n<p>Tiny: <data value=\"512\" data-format-bytes>512 bytes</data></p>",
+          "setup": "\n    await new Promise(r => setTimeout(r, 200));",
+          "interactive": true
+        },
+        {
+          "id": "format-number-fraction-digits",
+          "name": "Format Number (data-fraction-digits, nearest lang)",
+          "html": "<p>Percent: <data value=\"0.024\" data-format-number=\"percent\" data-fraction-digits=\"1\">2.4%</data></p>\n<p>Compact: <data value=\"45600\" data-format-number=\"compact\" data-fraction-digits=\"1\">45.6K</data></p>\n<p lang=\"de\">Deutsch: <data value=\"1234567.5\" data-format-number>1.234.567,5</data></p>",
+          "setup": "\n    await new Promise(r => setTimeout(r, 200));",
+          "interactive": true
         }
       ]
     },
@@ -3103,7 +3198,7 @@
         {
           "id": "summary-visible",
           "name": "Error Summary (visible)",
-          "html": "<form class=\"stacked\" data-validate onsubmit=\"return false\"><section data-form-summary data-visible role=\"alert\" tabindex=\"-1\"><h2 data-summary-heading>Please fix 2 errors:</h2><ul data-summary-list><li><a href=\"#ev-fs-name\">Name: Please enter your name</a></li><li><a href=\"#ev-fs-t1\">Toppings: Select at least 2</a></li></ul></section><form-field data-invalid><label for=\"ev-fs-name\">Name</label><input id=\"ev-fs-name\" name=\"name\" required aria-invalid=\"true\"><output class=\"error\" for=\"ev-fs-name\">Please enter your name</output></form-field><fieldset data-min-checked=\"2\" data-invalid><legend>Toppings</legend><label><input type=\"checkbox\" id=\"ev-fs-t1\" name=\"t\" value=\"1\"> Cheese</label><label><input type=\"checkbox\" name=\"t\" value=\"2\"> Olives</label><output>Select at least 2</output></fieldset><footer class=\"actions end\"><button type=\"submit\">Send</button></footer></form>",
+          "html": "<form class=\"stacked\" data-validate onsubmit=\"return false\"><section data-form-summary data-state-visible role=\"alert\" tabindex=\"-1\"><h2 data-summary-heading>Please fix 2 errors:</h2><ul data-summary-list><li><a href=\"#ev-fs-name\">Name: Please enter your name</a></li><li><a href=\"#ev-fs-t1\">Toppings: Select at least 2</a></li></ul></section><form-field data-invalid><label for=\"ev-fs-name\">Name</label><input id=\"ev-fs-name\" name=\"name\" required aria-invalid=\"true\"><output class=\"error\" for=\"ev-fs-name\">Please enter your name</output></form-field><fieldset data-min-checked=\"2\" data-invalid><legend>Toppings</legend><label><input type=\"checkbox\" id=\"ev-fs-t1\" name=\"t\" value=\"1\"> Cheese</label><label><input type=\"checkbox\" name=\"t\" value=\"2\"> Olives</label><output>Select at least 2</output></fieldset><footer class=\"actions end\"><button type=\"submit\">Send</button></footer></form>",
           "fixtureWidth": "wide"
         },
         {

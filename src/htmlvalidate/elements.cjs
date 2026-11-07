@@ -1422,6 +1422,7 @@ module.exports = {
       "data-label-high-contrast": {},
       "data-label-large-text": {},
       "data-label-dyslexia": {},
+      "data-label-char-shortcuts": {},
       "data-label-layout": {},
       "data-label-fluid": {},
       "data-label-density": {},

@@ -122,7 +122,6 @@ const dataAttributes = {
       { name: 'data-format-number', type: 'formatting', href: '/docs/attributes/data-format-number/', description: 'Locale-aware number formatting via Intl.NumberFormat' },
       { name: 'data-format-date', type: 'formatting', href: '/docs/attributes/data-format-date/', description: 'Locale-aware date and relative time formatting' },
       { name: 'data-format-bytes', type: 'formatting', href: '/docs/attributes/data-format-bytes/', description: 'Human-readable file size formatting' },
-      { name: 'data-ticker', type: 'behavior', href: '/docs/attributes/data-ticker/', description: 'Animated number count-up on scroll', pack: 'effects' },
     ],
   },
   math: {
@@ -134,8 +133,7 @@ const dataAttributes = {
   clipboard: {
     label: 'Clipboard & Selection',
     items: [
-      { name: 'data-copy', type: 'behavior', href: '/docs/attributes/data-copy/', description: 'Copy text to clipboard on click with visual feedback' },
-      { name: 'data-select-all', type: 'behavior', href: '/docs/attributes/data-select-all/', description: 'Master checkbox for bulk selection' },
+      { name: 'data-copy', type: 'behavior', href: '/docs/attributes/data-copy/', description: 'Copy text (or paste) on click with announced success/failure, copy:done / paste:done events and an execCommand fallback' },
     ],
   },
   'visual-effects': {
@@ -152,9 +150,9 @@ const dataAttributes = {
   interaction: {
     label: 'Interaction',
     items: [
-      { name: 'data-hotkey', type: 'behavior', href: '/docs/attributes/data-hotkey/', description: 'Platform-aware keyboard shortcut display' },
-      { name: 'data-spoiler', type: 'behavior', href: '/docs/attributes/data-spoiler/', description: 'Content concealment with blur, solid, or noise effects' },
-      { name: 'data-animate-image', type: 'behavior', href: '/docs/attributes/data-animate-image/', description: 'Play/pause control for animated GIF, WebP, and APNG images', pack: 'effects' },
+      { name: 'data-hotkey', type: 'behavior', href: '/docs/attributes/data-hotkey/', description: 'Keyboard shortcuts: platform-aware <kbd> display and declarative action binding (aria-keyshortcuts, scoping, WCAG 2.1.4 single-key preference)' },
+      { name: 'data-spoiler', type: 'behavior', href: '/docs/attributes/data-spoiler/', description: 'Content concealment with blur, solid or noise effects; keeps host semantics, focus moves to revealed content, localisable, print opt-out' },
+      { name: 'data-effect="animate-image"', type: 'behavior', href: '/docs/attributes/data-animate-image/', description: 'Pause/play control for animated GIF, WebP and APNG images: real still or hidden fallback, reduced motion, <picture> support', pack: 'effects' },
       { name: 'data-splitter', type: 'behavior', href: '/docs/attributes/data-splitter/', description: 'Resizable drag divider between panels with keyboard support' },
       { name: 'data-paged', type: 'behavior', href: '/docs/attributes/data-paged/', description: 'Pagination for any list-shaped container: numbered, prev/next, load-more or infinite, with optional URL state' },
       { name: 'data-sortable', type: 'behavior', href: '/docs/attributes/data-sortable/', description: 'Client-side sorting for lists and tables via column headers or an external control; composes with data-paged' },
@@ -163,7 +161,7 @@ const dataAttributes = {
   responsive: {
     label: 'Responsive',
     items: [
-      { name: 'data-responsive', type: 'behavior', href: '/docs/attributes/data-responsive/', description: 'Simplified responsive images: auto-calculated sizes and srcset shorthand' },
+      { name: 'data-responsive', type: 'behavior', href: '/docs/attributes/data-responsive/', description: 'Responsive images: measured sizes, srcset shorthand and a dev source badge (img)' },
       { name: 'data-visible', type: 'styling', href: '/docs/attributes/data-visible/', description: 'Show or hide elements by viewport width without custom media queries' },
     ],
   },
@@ -190,6 +188,7 @@ const dataAttributes = {
       { name: 'data-autosave', type: 'behavior', href: '/docs/attributes/data-autosave/', description: 'Save form drafts to localStorage (24h); skips passwords, hidden fields, buttons, card and one-time codes' },
       { name: 'data-autosave-ignore', type: 'behavior', href: '/docs/attributes/data-autosave/#privacy', description: 'Keep a control or section out of autosave and wizard-persist drafts' },
       { name: 'data-wizard', type: 'behavior', href: '/docs/attributes/data-wizard/', description: 'Multi-step form wizard with per-step validation and progress tracking' },
+      { name: 'data-select-all', type: 'behavior', href: '/docs/attributes/data-select-all/', description: 'Master checkbox for bulk selection: indeterminate state, skips disabled items, live count, re-syncs on reset and added rows' },
     ],
   },
   styling: {
@@ -226,9 +225,9 @@ const dataAttributes = {
     label: 'Infrastructure',
     items: [
       { name: 'data-print', type: 'styling', href: '/docs/attributes/data-print/', description: 'Print optimization modes, visibility control, page breaks, and opt-out for printed output' },
-      { name: 'hide-until-ready', type: 'styling', href: '/docs/attributes/hide-until-ready/', description: 'Prevent FOUC by hiding elements until custom elements are defined' },
+      { name: 'hide-until-ready', type: 'styling', href: '/docs/attributes/hide-until-ready/', description: 'Hide a custom element until it is defined (never without JS; timeout reveal), or show a placeholder until then' },
       { name: 'view-transitions', type: 'behavior', href: '/docs/attributes/view-transitions/', description: 'CSS View Transitions with named groups, shared elements, and presets' },
-      { name: 'data-toc-ignore', type: 'behavior', href: '/docs/elements/web-components/page-toc/', description: 'Exclude headings or containers from page-toc generation' },
+      { name: 'data-toc-ignore', type: 'behavior', href: '/docs/attributes/data-toc-ignore/', description: 'Exclude headings or containers from page-toc and heading-links' },
     ],
   },
 };

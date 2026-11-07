@@ -266,7 +266,7 @@ Theme and runtime `<link>` hooks:
 - `data-vb-theme-state="loading|ready|error|timeout"`: set by the loader and the boot snippet.
 - `data-vb-theme-preload="<name>"`: the `rel="preload"` hint from `preloadTheme()` (at most one per theme), removed when the theme loads.
 - `data-vb-math-font`: `<link rel="stylesheet" href="{cdn}/fonts/math-fonts.css">`, injected by math-init. It points at the self-hosted `{cdn}/fonts/latinmodern-math.woff2`, the same face the core CSS declares for plain `<math>`.
-- `data-math="copyable"` renders `<button type="button" data-math-copy>` inside `[data-math-rendered]`. `data-label-copy` sets the button text (default "Copy LaTeX"); `data-label-copied` sets the announcement in the persistent `role="status"` span (default "Copied to clipboard").
+- `data-math="copyable"` renders `<button type="button" data-math-copy>` inside `[data-math-rendered]` (one delegated click listener per document, so clones work). `data-label-copy` sets the button text (default "Copy LaTeX"), `data-label-copied` (default "Copied to clipboard") and `data-label-copy-failed` (default "Copy failed") the messages, read from the element or nearest ancestor. Messages go through the shared announcer (`src/lib/announce.js`: polite on success, assertive on failure) and show on the button for 2 s with `data-state="copied|failed"`. Rendered `<math>` gets `alttext` = LaTeX source unless it has one. `data-equation-number` follows document order (renumbered on insert/removal; `VBMath.equations` rebuilt in order). No MathML support → source stays visible (`data-math-state="source"`). `data-math-init` is a state hook; enhancement is tracked in a WeakSet.
 - `data-mathml`: precompiled MathML string, passed through `sanitizeMathML()` (MathML-namespace elements only; no `on*`/`href`/`src`/`style`/`id`/`name`/`xlink:`/`xml:` attributes; no `mglyph`/`malignmark`) and inserted as nodes. Do not rely on it to carry anything but MathML.
 - Runtime `rel` reads are token-list and case-insensitive (`[rel~="x" i]`): `canonical` (share-wc resolves via `.href`; page-info and scripts/sign-pages.js both read the RAW href via `canonicalLinkHref()` so signer and verifier sign the same `url`), `author`, `license`, `author-key` (page-info, canonicalize).
 - `theme-loader.js` exports `getCdnBase()`, the detected CDN base (`__VB_THEME_BASE` → `setThemeBase()` → `<script src*="vanilla-breeze">` dir → `/cdn`).
@@ -484,7 +484,7 @@ Open dialogs are a flex column: `<header>` / `<footer>` fixed, body (`p`, `secti
 | `data-striped` | (boolean) | Alternating `--color-row-stripe` on odd *visible* body rows (skips `[data-state-hidden]`, `[hidden]`, `[data-expand-content]`); selected/highlighted rows keep their tint; kept in print |
 | `data-bordered` | (boolean) | Border on every cell (`--border-width-thin`, `--color-border`) |
 | `data-variant` | `minimal` | Low-ink: no header band, no hover, muted uppercase column headers |
-| `data-responsive` | `card` | Cards below a 500px container; thead visually hidden (kept in a11y tree); `card-init.js` restores table/rowgroup/row/columnheader/rowheader/cell roles and fills missing `data-label` from the column header |
+| `data-responsive` | `card` | Cards below a 500px container; thead visually hidden (kept in a11y tree); `card-init.js` restores table/rowgroup/row/columnheader/rowheader/cell roles and fills missing `data-label` from the column header (unrelated to `img[data-responsive]`, the responsive-image helper) |
 | `data-sort` | (on th) | Sortable column. `<data-table>`: sort TYPE `string`\|`number`\|`date`. `table[data-sortable]`: column KEY (type in `data-sort-type`). Both inject `<button data-sort-button>`; th keeps columnheader + `aria-sort`. Bare `th[data-sort]` has no behaviour/affordance |
 | `data-sort-value` | (on td) | Sort value override (`<data-table>` and `[data-sortable]`; `data-value` alias in `[data-sortable]`) |
 | `data-selected` | (on tr) | Selected: interactive tint + inline-start bar; `Highlight` in forced colors. `<data-table>` writes `data-state-selected` (styled the same). No semantics: pair with text/checkbox |
@@ -653,6 +653,8 @@ Themes restyle only plain rules (`hr:not([data-ornament], [class])`: any class o
 | `.thumbnail` | Border + background |
 | `.ratio-square`, `.ratio-video`, `.ratio-landscape`, `.ratio-portrait` | 1:1, 16:9, 4:3, 3:4 (object-fit cover) |
 | `data-outlined` | Faint inner outline (`img`, `picture[data-outlined] > img`) |
+| `data-responsive` | `<img>` (JS, lazy-guarded): measures the rendered width into `sizes` (only when `srcset` has `w` descriptors; authored `sizes` wins unless it starts with `auto` on an eager image; `auto` + `loading="lazy"` is left to the browser; only ever grows; stops on load error). A value `"400,800,1200"` generates `srcset` from `src` (`-{w}` before the extension of the last path segment, query/hash kept; no extension → skipped + console warning; authored `srcset` wins). Runs after the parser fetched `src`: shorthand costs a 2nd request, `loading`/`fetchpriority` must be in markup; adds only `decoding="async"`. Not to be confused with `table[data-responsive="card"]` |
+| `data-responsive-debug` | Dev badge `span[data-responsive-badge]` (aria-hidden) before the img or its `<picture>` (never inside), positioned by CSS |
 
 `picture > img` is never upscaled past its intrinsic width (`max-inline-size: 100%`); `[data-media] > picture > img` fills the ratio box. Missing source: `:not([src])` / `[src=""]` get a raised surface + 100px min height. No lazy-loading background.
 
@@ -976,6 +978,8 @@ Hook `--bubble-bg` (themes set this, not `background`; shadows via `filter: drop
 
 CSS-only custom HTML tags. No JavaScript required. Use as regular HTML elements.
 
+CSS-only custom elements (every `src/custom-elements/<tag>/` without JS: `layout-*`, `user-avatar`, `chat-*`, `calendar-event`, `hour-view`, `dl-item`, `fab-stack`, `loading-spinner`, `semantic-card`, `site-legal`, `site-tools`, `status-message`, `text-divider`, `token-swatch`) are defined inertly by `src/custom-elements/register.js` (`INERT_ELEMENTS`), so they match `:defined` (kept in sync by `tests/unit/inert-custom-elements.test.js`).
+
 ### Layout Primitives
 
 > **Layout values are a closed vocabulary.** Every `data-layout-*` value is a
@@ -1210,7 +1214,7 @@ Floating action stack (CSS-only; back-to-top reveal uses JS).
 - Order: `column-reverse` for bottom/center, `column` for `top-*`.
 - `<dialog>` / `[popover]` children are not flattened (top layer works).
 - Tokens: `--fab-stack-gap`, `--float-offset`, `--nav-bottom-height`, `--z-float`.
-- `[data-back-to-top]`: hidden until one viewport of scroll (`[data-visible]`, JS); hidden = `visibility: hidden` (not tabbable). Visible without JS.
+- `[data-back-to-top]`: hidden until one viewport of scroll (`[data-state-visible]`, JS — internal state, so an authored `data-visible` value is kept); hidden = `visibility: hidden` (not tabbable). Visible without JS.
 
 #### `<hour-view>`
 CSS-only hour slot holding `<calendar-event>` children: two half-hour rows (:00 top, :30 bottom). Placed by its parent (`<day-view>` column 2, `<week-view>` cell); generated automatically when day-view/week-view build their grid.
@@ -1349,7 +1353,7 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<notification-wc>` | `mode="banner"` dismissible strip (`persist`, `variant`, `position`, `expires`) or `mode="panel"` bell + drawer (static `<article data-id data-type data-date>` + `src` feed + `.notifications`), read state in VBStore; `data-label-*` | |
 | `<page-info>` | Document provenance disclosure. Static: enhances `time[data-relative]` (Intl.RelativeTimeFormat in closest `[lang]`, absolute date in `title`, future dates "in 3 days"), `[data-reading-time]` (outermost `[data-signable]` roots, 238 wpm / 500 CJK chars per min, skips `[data-signable=false]`/hidden/script), first `.page-info-badge` (trust tier + visible `.page-info-tier` text). `auto` renders from §10 metadata as text only (links only when http(s)); author is plain text in `<summary>`, link in the panel. `data-concept-base` (default `/topics/`), `data-heading-level` (2–6), `data-label-*` (headings, row labels, `tier-*`, `provenance-*`/`review-*`/`status-*`, `reading-time` template `~{n}`); event `page-info:verified` `{ status, tier, reason? }` (declared first, then the verification result) | (see §10) |
 | `<page-stats>` | Reading stats for `data-for` target: `data-show="reading-time,word-count,last-modified"`, `data-wpm` (238, shared with page-info), Intl.Segmenter word count (CJK timed by characters), skips script/style/template/[hidden]/[aria-hidden]/[inert]/`[data-stats-ignore]`; `data-label-reading-time`/`word-count`/`last-modified`, templates `data-label-min-read` (`{n} read`) and `data-label-words` (`{n} words`, plus `-one`/`-few`/… PluralRules overrides); last-modified only from `meta[name=last-modified]`/`article:modified_time`; own `<dl data-generated>` recomputed on attribute change, author `<dl>` adopted | ✓ |
-| `<page-toc>` | Table of contents with scroll-spy: auto-built from `levels` (default `h2,h3`) inside `scope` (CSS selector, first match; default `main`), or enhances authored `.details > .summary + .nav > .list > .item > .link` markup (nest `.list` for sub-sections); `data-title` (summary + nav label, default "On this page"); `orientation="horizontal"` scrollable bar; `data-toc-ignore` on headings/ancestors; `.entries`, `refresh()`; event `page-toc:navigate` `{ id }` | ✓ |
+| `<page-toc>` | Table of contents with scroll-spy: auto-built from `levels` (default `h2,h3`) inside `scope` (CSS selector, first match; default `main`), or enhances authored `.details > .summary + .nav > .list > .item > .link` markup (nest `.list` for sub-sections); `data-title` (summary + nav label, default "On this page"); `orientation="horizontal"` scrollable bar; `data-toc-ignore` on headings/ancestors (also skips `dialog`, `browser-window` — shared `_shared/toc-skip.js` with `<heading-links>` — headings without ids and unrendered headings; closed `<details>` kept); auto mode rebuilds live when headings are added/removed or `data-toc-ignore`/`id`/`hidden` change; `.entries`, `refresh()`; event `page-toc:navigate` `{ id }` | ✓ |
 | `<page-tools>` | Page-utility toolbar (`role="toolbar"`, roving tabindex with arrows/Home/End, `aria-orientation`): `data-position` sticky\|fixed\|inline, `data-orientation` auto\|vertical\|horizontal (reflected `data-resolved-orientation`), `data-gap`; collapses at/below `data-breakpoint` (default `48rem`) to a FAB (`data-fab-icon`, `data-fab-label`) opening a native popover above it (reflected `data-collapsed`); `.tools`; `--page-tools-*` custom properties | |
 | `<page-tour>` / `<tour-step>` | Guided spotlight tour over `<tour-step data-target>` children (no-JS: in-page step list, optional `details.page-tour-guide` + `.page-tour-start-btn`): `data-title` (default "Page Tour"), `data-trigger` auto/manual/button (+ `[data-tour="id"]` buttons), `data-mode` passive/active/forced (skipping only), `data-persist` none/session/local + `data-persist-key`, `data-spotlight-padding` (overrides `--tour-spotlight-padding`); step `data-placement` top/bottom/inline-start/inline-end/auto (anchor-positioned, centred, flips), `data-action` none/click/focus/input/change/custom (Next `aria-disabled` + hint until done; focus never moved), `data-action-hint` (text), `data-skippable="false"`, `data-scroll` auto/smooth/none; reflects `data-step`/`data-active`/`data-complete`; `start(step?)` (while running = go to step), `stop()`/`next()`/`prev()`/`goto(i)`/`skip()`/`reset()`; keys anywhere while active (Escape, arrows, Home/End, Tab trap incl. gated target); events `tour:start`/`step`/`action`/`complete`/`skip`; `data-label-step` ("Step {n} of {total}")/`skip`/`close`/`prev`/`next`/`finish`/`nav`/`ready` | |
 | `<pager-wc>` | Decoupled pagination controls for a `[data-paged]` container: `target` (selector) / `for` (id) / implicit preceding `[data-paged]` sibling (resolved lazily; must carry `data-paged`); `data-style` `numbered`\|`prev-next`\|`load-more` (load-more needs `data-paged-style="load-more"` on the target, plus `data-paged-controls="none"`); `data-label-nav`/`prev`/`next`/`page` ("Page {page}")/`status` ("Page {page} of {total}")/`load-more` ("Load more ({n})")/`no-more`/`missing`; focus kept across renders; event `pager-wc:navigate` `{ page }` (page navigations only, not cancelable) | |
@@ -1365,9 +1369,9 @@ JavaScript-powered custom elements. Import via `vanilla-breeze.js`.
 | `<recently-visited>` | Device-local history lens (localStorage only). Tracking is opt-in: `<meta name="vb:track-history" content="on">` or the element's presence; opt out with `<html data-vb-no-track>`, `<meta name="vb:no-track-history">` or the reader's Pause; query strings are stripped (allowlist with `vb:track-history-params`); 30-day TTL; 100-entry cap; current page excluded (`include-current`); `limit`, `data-heading-level` (0 = none), `data-label-*`; `.entries` | ✓ |
 | `<score-card>` | KPI tile: slots `title`/`value`/`change`/`sparkline`/`description`/`icon` (slotted children must be DIRECT children; block `<p>` children make the no-JS form stack); `trend` up\|down\|flat (change text `--color-success-text`/`--color-error-text`), `tone`, `layout` stack\|cluster\|compact, `loading` (skeleton + `aria-busy="true"`; forced-colours `GrayText` outline); wrap in `<a href>` for drill-down (`:state(interactive)`) | |
 | `<selection-menu>` | Floating toolbar on text selection (pointer or keyboard) for `for="id"` / `[data-selection-menu="<id>"]` targets: children move into a generated `<pop-over data-selection-menu-host role="toolbar">` (top layer); Alt+F10 focuses it, arrows/Home/End rove, Escape returns focus + selection; `data-label`; `getSelection()`, `dismiss()`, `actions` | ✓ |
-| `<settings-panel>` | Non-modal site settings dialog from a gear trigger (or an authored `button[data-trigger]` / first child `<button>`): six exclusive `<details>` sections (Appearance: mode + theme; Accessibility: high-contrast/large-text/dyslexia; Layout: fluid + density, canvas backdrop + style/chrome/fixed header/page background, sticky navigation; Effects: motion/sounds; Environment: time-of-day/seasonal; System: version, SW status `role="status"`, clear cache/check update); `open()` (moves focus in; queued before render) / `close({ returnFocus })` / `toggle()`, reflected `open`; Escape + close button return focus, Tab out or outside click closes, no trap; Reset uses an in-panel confirm; `data` `{ a11yThemes, extensions, sticky }` (setter applies + persists, safe before render) → `settings-panel:data-changed`; window events `vb:a11y-themes-change` / `vb:extensions-change` (sent and received; detail applied) + `vb:theme-change`; storage `vb:settings:a11y`/`extensions`/`sticky`; sticky toggle owns only `<html data-sticky>` (sticky-manager owns the banner header); `data-label-*` for every string (trigger, dialog, title, close, sections, controls, sw-*, reset-*) | |
+| `<settings-panel>` | Non-modal site settings dialog from a gear trigger (or an authored `button[data-trigger]` / first child `<button>`): six exclusive `<details>` sections (Appearance: mode + theme; Accessibility: high-contrast/large-text/dyslexia + Single-Key Shortcuts (`extensions.charShortcuts` → `<html data-char-shortcuts="off">`, WCAG 2.1.4; Reset returns to the page's authored state); Layout: fluid + density, canvas backdrop + style/chrome/fixed header/page background, sticky navigation; Effects: motion/sounds; Environment: time-of-day/seasonal; System: version, SW status `role="status"`, clear cache/check update); `open()` (moves focus in; queued before render) / `close({ returnFocus })` / `toggle()`, reflected `open`; Escape + close button return focus, Tab out or outside click closes, no trap; Reset uses an in-panel confirm; `data` `{ a11yThemes, extensions, sticky }` (setter applies + persists, safe before render) → `settings-panel:data-changed`; window events `vb:a11y-themes-change` / `vb:extensions-change` (sent and received; detail applied) + `vb:theme-change`; storage `vb:settings:a11y`/`extensions`/`sticky`; sticky toggle owns only `<html data-sticky>` (sticky-manager owns the banner header); `data-label-*` for every string (trigger, dialog, title, close, sections, controls, sw-*, reset-*) | |
 | `<share-wc>` | Social share: native share button (fails over to copy link), platform buttons, or enhanced slotted `a[data-platform]` with `{url}`/`{title}`/`{text}` tokens; in `<selection-menu>` shares/copies the quote with a `#:~:text=` link; `data-label-*`; `url`/`shareTitle`/`text`, `share()` | ✓ |
-| `<short-cuts>` | Keyboard shortcut dialog listing `[data-command][data-shortcut]` and `[data-hotkey]` actions (or the `shortcuts` property); `hotkey` (default `shift+?`, `none` off — WCAG 2.1.4); `show()`/`close()`/`toggle()`; `data-label-*` | ✓ |
+| `<short-cuts>` | Keyboard shortcut dialog listing `[data-command][data-shortcut]` and `[data-hotkey]` actions (or the `shortcuts` property); `hotkey` (default `shift+?`, `none` off — WCAG 2.1.4); honours the Single-Key Shortcuts preference (`<html data-char-shortcuts="off">`: its own `?` key stops and unscoped character-key shortcuts are left out of the list); `show()`/`close()`/`toggle()`; `data-label-*` | ✓ |
 | `<site-index>` | Enhances a hand-authored A–Z keyword index (or `src` JSON `[{ term, refs: [{ href, label, type? }] }]`, rendered as text, http(s)/relative hrefs only): filter (`filter` topic\|all) with a polite match count, jump strip from section ids (`letters` entries\|all\|none; Intl-sorted, `index-é` → É), counts, `limit`, `sort` alpha\|count; index nav = `nav[data-index]` or the direct-child `<nav>` of sections (any aria-label); controls are a `<search>` landmark; `data-label-*`. Nothing is derived from meta tags — the index is authored | |
 | `<site-map>` | `mode` nav-enhance (default: marks `current`, opens ancestor `<details>`, expand/collapse-all; `src` `{ children }`) \| ia-tree (`li[data-page-type data-template data-status]` → tree with badges, roving tabindex, Enter follows link, Space toggles, RTL-mirrored arrows; `title`, `collapsed`, `compact`; `data-view="visual"` SVG org chart with treeitems + `aria-activedescendant`, `data-orientation`, `data-detail` 0–4; `.pages`; events `site-map:ready`/`select`/`pages-changed`) | |
 | `<site-search>` | Pagefind-backed search in a native modal `<dialog>` (combobox + listbox + `role=status` count); `data-pagefind-path` (default `/pagefind/`), `data-base-url`; `data-label-*`; page-level Cmd/Ctrl+K opens the first visible instance | ✓ |
@@ -1736,7 +1740,7 @@ Theme picker UI (mode, accent, theme, sizing, a11y themes, extensions). `variant
 | `theme-picker:open`, `theme-picker:close` | — |
 | `theme-picker:dtcg-download` | `{ themeId, href }` |
 | `vb:a11y-themes-change` (on window; also listened for) | `string[]` of active `a11y-*` ids |
-| `vb:extensions-change` (on window; also listened for) | `{ motionFx, sounds }` |
+| `vb:extensions-change` (on window; also listened for) | `{ motionFx, sounds, charShortcuts }` |
 
 Methods: `open()`, `close()`, `toggle()`; property `isOpen`.
 
@@ -1936,6 +1940,8 @@ Keyboard shortcuts help dialog. Modal `<dialog>` named by its `<h2>` (`aria-labe
 | `data-label-title` / `-general` / `-self` / `-close` | string | `Keyboard shortcuts` / `General` / `Show keyboard shortcuts` / `Close` |
 
 Methods: `show()`, `close()`, `toggle()`; getters `open`, `hotkey` (null when off). `shortcuts` get/set `{ [group]: [{ label, shortcut }] } | null` (replaces the registries; re-renders an open dialog). Event: `short-cuts:shortcuts-changed` `{ shortcuts, source }`. Forced colors: dialog border `CanvasText`.
+
+While `<html data-char-shortcuts="off">` is set (settings-panel → Accessibility → Single-Key Shortcuts, stored as `vb:settings:extensions` `charShortcuts: false`), the hotkey-bind singleton skips every unscoped character-key binding — including this component's default `shift+?` — and the dialog omits them; entries from the hotkey-action registry carry `scoped`/`character` so scoped ones stay listed. An open dialog re-renders on `vb:char-shortcuts-change`.
 
 ### `<day-view>`
 Hour-grid schedule. Author `<ol>` > `<li>` > `<time datetime="HH:00">` + `<hour-view>`, or put `<calendar-event>` children directly inside to generate the grid.
@@ -2426,16 +2432,42 @@ Children: `<output data-empty>`, `<output data-loading>`, `<output data-error>`,
 |-----------|--------|-------------|
 | `data-vt` | `main`, `header`, `nav`, `sidebar`, `hero`, `footer` | Named transition group |
 | `data-vt-name` | string | Custom transition name |
-| `data-vt-class` | `slide-left`, `slide-right`, `scale`, `fade`, `none` | Animation preset |
+| `data-vt-class` | `slide-forward`, `slide-back` (follow dir), `slide-left`, `slide-right` (physical), `scale`, `fade`, `none` (→ class `vt-none`) | Animation preset; needs a `view-transition-name` (`data-vt` / `data-vt-name`) |
+
+Opt-in file `src/utils/view-transitions.css` (cross-document `@view-transition`, `data-vt`, `data-vt-class`) is built to `dist/cdn/view-transitions.css`, export `vanilla-breeze/view-transitions-css`; never in the bundles. `data-vt-name` is applied by `view-transition-init.js`, already in every JS bundle. The `none` preset's class is `vt-none` (`view-transition-class: none` means "no class"); `data-transition="none"` sets it too.
 
 ### Readiness (FOUC Prevention)
 
 | Attribute | Description |
 |-----------|-------------|
-| `hide-until-ready` | Hidden until custom element is defined |
-| `show-until-ready` | Visible until custom element is defined |
+| `hide-until-ready` | Custom elements only: `display: none !important` while `:not(:defined)` — only under `(scripting: enabled)` and only until `--vb-until-ready-timeout` (default `3s`; root animation flips `--vb-until-ready` waiting→expired, read by a container style query; runs only while such an element waits). Never hidden without JS or after the timeout; no hiding where style queries are unsupported |
+| `show-until-ready` | Custom elements only: `display: none !important` once `:defined` (same-tag placeholder also upgrades — prefer a sibling placeholder `x:has(+ tag:defined)`) |
 | `[data-requires-js]` | Hidden (`display: none !important`) under `@media (scripting: none)`: JS-only controls with no static equivalent |
 | `[data-js-enhanced]` | Hidden (`display: none`, overridable) under `@media (scripting: none)`: JS-driven internals of components with a static fallback |
+
+Gates live in the reset layer (imported from `src/main.css` / `main-core.css` with `layer(reset)`), so the `!important` beats structural `display: … !important` in later layers (content-swap) and unlayered author `display`.
+
+### Responsive Visibility (`data-visible`)
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-visible` | `mobile`, `desktop` | Viewport (not container) visibility at `--bp-m` (48rem): `mobile` hidden at ≥48rem, `desktop` hidden below. `display: none !important` in the reset layer (beats structural `!important` and author `display`). Screen-only queries: print shows `desktop`, hides `mobile`. Container variant: use `data-container` + `@container` |
+
+### Print (`src/utils/print.css`)
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `data-print` | `article`, `invoice`, `report` (on `<body>`/`<html>`/any) | Named `@page` (`vb-article` page numbers + section breaks for `section + section` directly in the element, its `<main>` or `<article>`; `vb-invoice` A4 tight; `vb-report` left/right binding). Skipped under `data-print-raw` |
+| `data-print="none"` | — | Element-level print hide (= `data-no-print`); on `<body>` prints blank pages |
+| `data-no-print`, `data-screen-only` | (boolean) | Hidden in print (`!important`) |
+| `data-print-only` | (boolean) | Hidden on screen; keeps its own display type in print (span inline, table table, li list-item) |
+| `data-print-keep` | (boolean) | Keeps a `<nav>` or an `[aria-hidden="true"]` element in print; keeps an `<aside>` out of the sidebar linearisation |
+| `data-print-background` | (boolean) | `print-color-adjust: exact` |
+| `data-break-before`, `data-break-after` | (boolean) | Forced page break |
+| `data-break-avoid` | (boolean) | `break-inside: avoid` |
+| `html[data-print-raw]` | (boolean) | Disables the print layer (only `@page` margins remain) |
+
+Auto-hidden in print: `nav` (no keep), `dialog`, `search`, non-submit buttons, range/switch inputs, `[role=toolbar]`, `[aria-hidden="true"]` (no keep), screen-only components incl. `fab-stack`, `[data-float]`, `[data-back-to-top]`. Break protection (`break-inside: avoid`): blockquote, pre, code, figure, li, hr, ul, ol, tr, img, picture, video, iframe, embed, object, details, fieldset — not table (rows + repeating thead/tfoot instead). Asides linearise except `[data-callout]`, `.note`, `[data-print-keep]`.
 
 ---
 
@@ -2463,7 +2495,7 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 | `data-autosave-retain` | `<form data-autosave>` | Space-separated allowlist of field names to persist (privacy filter still applies) |
 | `data-autosave-ignore` | control or container inside `<form data-autosave>` / `<form data-wizard-persist>` | Never persist this control / anything inside |
 | `data-label-restored` | `<form data-autosave>` | Restore announcement text (first `<toast-msg>`, created if absent; else a visually hidden `role="status"` `[data-autosave-status]` in the form) |
-| `data-select-all` | `<input type="checkbox">` | Select/deselect all checkboxes |
+| `data-select-all` | `<input type="checkbox">` | Master checkbox for the enabled matches of its selector in the nearest `[data-select-all-scope]` / `<table>` / `<form>` / `<fieldset>` (else document). Disabled targets are never toggled and not counted. Indeterminate when some are checked. Re-syncs on target change, form reset, rows added/removed, `disabled` changes and `data-select-all` changes; WeakMap state (clones work); torn down on removal. `[data-selected-count]` in the scope shows the `Intl`-formatted count (use `<output>` so it is announced). Event `select-all:change` `{ checked, total, selected }` |
 
 `data-show-when` / `data-hide-when`: hidden sections get `hidden` + `inert`; their controls are disabled (marked `data-conditional-disabled`), so they skip validation and are not submitted, and re-enabled on show; author-disabled controls stay disabled. Sections re-evaluate after form reset and work in forms added later and outside forms. Same condition language and disabling as `data-wizard-if`.
 
@@ -2489,24 +2521,36 @@ These `data-*` attributes add progressive JS behaviors. Import via `vanilla-bree
 
 | Attribute | Element | Description |
 |-----------|---------|-------------|
-| `data-copy` | `<button>` | Copy text to clipboard |
-| `data-copy-target` | CSS selector | Target element to copy from |
-| `data-hotkey` | `<kbd>` | Platform-aware key display (⌘/Ctrl). Caps `aria-hidden` + visually hidden spoken combo ("Command Shift P"). Modifiers `meta`/`cmd`, `alt`/`option`, `shift`, `ctrl`/`control`; named keys `escape` (Esc), `enter`, `tab`, `space`, `backspace`, `delete` (Del), `insert`, `home`, `end`, `pageup`/`pagedown` (PgUp/PgDn), `arrowup`/`down`/`left`/`right` (↑↓←→); plus key = `plus` or `ctrl++`. `data-label-<key>` (element or ancestor, e.g. `<html data-label-ctrl="Strg">`) localises labels/spoken names. LTR key order in RTL. `data-hotkey-init` = rendered combo (idempotent; changed combo re-renders) |
-| `data-spoiler` | any | Content concealment (`blur`, `solid`, `noise`) |
-| `data-effect="ticker"` | `<data>` | Animated number count-up (`--vb-ticker-duration`, `--vb-ticker-start`, `--vb-ticker-decimals`) |
+| `data-copy` | `<button>` | Copy the value to the clipboard. One delegated click listener (clones / late buttons work). Feedback: `data-state` `copied`\|`pasted`\|`failed` for 1.5 s (plus a ✓/✕ mark, empty alt; outline in forced colors), polite announcement via the shared body-level live region (`src/lib/announce.js`), events `copy:done` `{ text }` / `copy:error` `{ text, error }` (not the native `copy`). Falls back to `execCommand('copy')`; if that fails too, selects the source text and announces the failure. `data-label-copied` / `-copy-failed` (element or ancestor) |
+| `data-copy-target` | `<button>` | CSS selector of the element whose text is copied (`value` for `<input>`/`<textarea>`) |
+| `data-copy-attr` | `<button data-copy-target>` | Copy the named attribute of the target instead of its text |
+| `data-paste-target` | `<button>` | CSS selector of the element that receives clipboard text (`value` for form controls, else `textContent`; fires `input`). `data-state="pasted"`/`"failed"`; events `paste:done` `{ text, target }` / `paste:error` `{ target, error }`; `data-label-pasted` / `-paste-failed` |
+| `data-hotkey` | `<kbd>` | Platform-aware key display (⌘/Ctrl). Caps `aria-hidden` + visually hidden spoken combo ("Command Shift P"). Modifiers `meta`/`cmd`, `alt`/`option`, `shift`, `ctrl`/`control`; named keys `escape`/`esc` (Esc), `enter`/`return`, `tab`, `space`, `backspace`, `delete`/`del` (Del), `insert`, `home`, `end`, `pageup`/`pagedown` (PgUp/PgDn), `arrowup`/`up` … (↑↓←→); plus key = `plus` or `ctrl++`. `data-label-<key>` (element or ancestor, e.g. `<html data-label-ctrl="Strg">`) localises labels/spoken names. LTR key order in RTL. `data-hotkey-init` = rendered combo (idempotent; changed combo re-renders) |
+| `data-hotkey` | any other element | Shortcut action binding (hotkey-action-init): `data-hotkey-action` `click` (default)\|`focus`\|`submit`\|`toggle`, `data-hotkey-label` (default: accessible name without `<kbd>` hints), `data-hotkey-group` ("Page Actions"), `data-hotkey-global` (fires while typing), `data-hotkey-scope` (selector: active only while focus is inside the nearest matching ancestor, else first match; empty = the element). Same key names as `<kbd>`; `?`/`/`/`+`… match with or without Shift; Alt/Option letter combos match by physical key. Sets `aria-keyshortcuts` (unless authored). Unbound on removal, rebound on attribute change; hidden/inert/disabled targets ignored; key repeat, IME composition and already-handled events ignored. WCAG 2.1.4: unscoped single-character shortcuts are off while `<html data-char-shortcuts="off">` (settings-panel "Single-Key Shortcuts"). Listed in `<short-cuts>` |
+| `data-spoiler` | any | Content concealment (`blur`, `solid`, `noise`). Children move into `[data-spoiler-content]` (`<span>` unless the host takes flow content), `<button data-spoiler-trigger>` reveals and moves focus to the content; `<button data-spoiler-hide>` / Escape conceal and refocus the trigger. Host semantics kept (only a bare `<div>`/`<span>` gets `role="group"` + label). `data-spoiler-label` (reveal text), `data-spoiler-persist`, `data-spoiler-group` (mutual exclusion), `data-spoiler-print="hidden"` (stays concealed in print; default prints revealed). `data-label-spoiler-reveal` / `-spoiler-hide` ("Hide spoiler") / `-spoiler-revealed` / `-spoiler` (element or ancestor). Delegated listeners (clones work). Event `spoiler:toggle` `{ visible }` |
+| `data-effect="ticker"` | `<data>` | Animated number count-up (`--vb-ticker-duration` capped at 5s, `--vb-ticker-start`, `--vb-ticker-decimals` = fixed decimals on every frame). Uses the `data-format-number` options (incl. `data-fraction-digits`, `data-currency`, `data-locale`, nearest `[lang]`), so the last frame equals the static output. `aria-busy="true"` while counting |
 | `data-effect="blink"` | Any | Flashing that stops after `--vb-blink-count` cycles (default 5 ≈ 5s; `.slow` 2, `.fast` 12) |
 | `data-effect="flipboard"` | Any | Split-flap board; `--vb-flip-ms` = number of ms or CSS time (default 60) |
 | `data-effect="scramble"` | Any | `--vb-scramble-duration` (1500ms), `--vb-scramble-speed` (30ms), `--vb-scramble-chars` (quotes optional) |
 | `data-effect="typewriter"` | Any | `--vb-typewriter-speed` (50ms), `--vb-typewriter-delay` (0); `.loop` (honours `data-paused`), `.no-cursor` |
 | `data-effect="reveal"` / `"blur-reveal"` | Any | `--vb-reveal-delay` / `--vb-blur-reveal-delay` (80ms), `--vb-reveal-duration` (400ms); `.line` = stagger by rendered line (re-measured on resize) |
-| `data-format-number` | `<data>` | Locale-aware number formatting (`""`, `currency` + `data-currency` [defaults to USD], `percent`, `compact`); re-formats when `value` changes; empty/invalid `value` leaves the text |
-| `data-format-date` | `<time>` | Locale-aware date formatting (`short`/`medium`/`long`/`full`/`relative`; `data-format-time`, `data-locale`). Date-only `datetime` (`YYYY`, `YYYY-MM`, `YYYY-MM-DD`) formats in UTC at its own precision. Locale: `data-locale` → nearest `[lang]` → `<html lang>` → browser. Original text → `title` |
+| `data-format-number` | `<data>` | Locale-aware number formatting (`""`, `currency` + `data-currency` [defaults to USD], `percent`, `compact`; `data-fraction-digits` 0–20 fixes decimals). Locale: `data-locale` → nearest `[lang]` → `<html lang>` → browser. Re-formats when `value`, `data-format-number`, `data-currency`, `data-fraction-digits`, `data-locale` or any `lang` changes; empty/invalid `value` leaves the text. No `title` |
+| `data-format-date` | `<time>` | Locale-aware date formatting (`short`/`medium`/`long`/`full`/`relative`; `data-format-time`, `data-time-zone` [IANA, date-times only], `data-locale`). Date-only `datetime` (`YYYY`, `YYYY-MM`, `YYYY-MM-DD`) formats in UTC at its own precision. Locale: `data-locale` → nearest `[lang]` → `<html lang>` → browser. `title`: original text (absolute) or exact date + time (relative); an authored title is kept. Re-formats on `datetime`/style/zone/locale/`lang` changes; relative refresh is silent (no live region) |
 | `data-relative` | `<time>` | Past-only "3 days ago" text, 60s refresh, English unless nearest `[lang]` is non-English (Intl). Used by activity-feed, comment-thread, time-index. Prefer `data-format-date="relative"` for new content |
-| `data-format-bytes` | `<data>` | Byte size formatting (value = precision; `data-unit="decimal"` for ÷1000) |
-| `data-animate-image` | `<img>` | Play/pause for animated images |
+| `data-format-bytes` | `<data>` | Byte size formatting (value = decimal places 0–20; `data-unit="decimal"` for ÷1000). `Intl` unit style → localised labels (`kB`, `MB`, `Mo`…; `512 bytes`); negative keeps sign; < 1 byte stays in bytes. Locale: `data-locale` → nearest `[lang]` → `<html lang>`. Re-formats on `value`/`data-format-bytes`/`data-unit`/`data-locale`/`lang` changes. No `title` |
+| `data-effect="animate-image"` | `<img>` (optionally in `<picture>`) | Pause/play button (`aria-pressed`, name "Pause animation: <alt>", `data-label-animation-pause` with optional `{alt}`). Wraps the img or its whole `<picture>` in `<span class="animate-image-wrapper">`. Paused shows `data-poster`, else the captured first frame (srcset/`<source>` set aside and restored); no capturable frame (cross-origin) → animation hidden behind its alt text (`[data-animate-image-hidden]`, `.animate-image-placeholder`). Starts paused with `data-animate-image-paused` or reduced motion (`prefers-reduced-motion` or `<html data-motion-reduced>`, both watched at runtime). Effects pack |
 | `data-command` | `<button>` | Command palette trigger |
-| `data-paged` | list-shaped container (`ul`/`ol`/`table`/`card-list`…) | Pagination: `data-paged-size` (10; 0 = off), `data-paged-page`, `data-paged-style` `numbered`\|`prev-next`\|`load-more`\|`infinite`, `data-paged-window` (2), `data-paged-controls` `before`\|`after`\|`both`\|`none` (none also drops the load-more button), `data-paged-url` (History API; back/forward re-render, no param = page 1); events in `paged:goto` `{ page }`, `paged:loadmore`; out `paged:change` `{ page, size, total, totalPages, visible, style }` (bubbles). Drive from elsewhere with `<pager-wc>` |
-| `data-sortable` | `<table>` or list-shaped container | Client-side sort. Table: `th[data-sort="key"]` (+ `data-sort-type` `text`\|`number`\|`date`) gets a `<button data-sort-button>` (th keeps columnheader role + `aria-sort`), cycles asc→desc→none; cell value from `data-sort-value`/`data-value`, `<time datetime>`, text. Lists: external `[data-sort-target]` select/button, items `data-sort-{key}`. `data-sortable-default`; reflects `data-sort-by`/`data-sort-direction`; event `sort:change` `{ key, direction, total }`; composes with `data-paged` |
+| `data-paged` | list-shaped container (`ul`/`ol`/`table`/`card-list`…) | Pagination: `data-paged-size` (10; 0 = off), `data-paged-page`, `data-paged-style` `numbered`\|`prev-next`\|`load-more`\|`infinite` (prefer load-more: infinite strands footer content), `data-paged-window` (2), `data-paged-controls` `before`\|`after`\|`both`\|`none` (none also drops the load-more button), `data-paged-url` (History API; back/forward re-render, no param = page 1); `data-label-nav`/`prev`/`next`/`page`/`status`/`load-more`/`no-more`/`showing` (same set as `<pager-wc>`, read from the container or an ancestor, `Intl` numbers); numbered page changes and load-more ("Showing {visible} of {total}") announced; events in `paged:goto` `{ page }`, `paged:loadmore`; out `paged:change` `{ page, size, total, totalPages, visible, style }` (bubbles). Drive from elsewhere with `<pager-wc>` |
+| `data-sortable` | `<table>` or list-shaped container | Client-side sort. Table: `th[data-sort="key"]` (+ `data-sort-type` `text`\|`number`\|`date`) gets a `<button data-sort-button>` (th keeps columnheader role + `aria-sort`), cycles asc→desc→none; cell value from `data-sort-value`/`data-value`, `<time datetime>`, text. Lists: external `[data-sort-target]` select/button (target resolved at use, so controls may precede the container; a select's initial value applies when the container appears), items `data-sort-{key}`; buttons get `aria-pressed`; list sorts announced (`data-label-sorted`, "Sorted: {sort}. {count} items"). Text collates in the closest `[lang]`; numbers read formatted text ("1,234", "$5", "12 %"). `data-sortable-default`; reflects `data-sort-by`/`data-sort-direction`; event `sort:change` `{ key, direction, total }`; composes with `data-paged` |
+
+
+### Shared helpers
+
+- `src/lib/announce.js` — `announce(message, { politeness = 'polite', root = document.body })`: one visually hidden live region per politeness per document (`[data-vb-announcer]`, `role="status"` / `"alert"`), appended to body (never inside controls), cleared then written after 50 ms so repeats are announced, cleared after 7 s. `readLabel(el, name, fallback, values?)`: nearest `data-label-<name>` on the element or an ancestor, `{token}` filling. Used by data-copy, data-spoiler, data-sortable, data-paged, highlights, animate-image.
+- `src/lib/char-shortcuts.js` — `charShortcutsEnabled()`, `setCharShortcutsEnabled(on)` (fires window `vb:char-shortcuts-change` `{ enabled }`), `storedCharShortcuts()`; restores the stored choice on import.
+- `src/utils/hotkey-format.js` adds `normalizeKey`, `isCharacterShortcut`, `sameHotkey`, `toAriaKeyShortcuts`; `bindHotkey(combo, cb, { global, scope, enabled })`.
+- `src/web-components/_shared/toc-skip.js` — `SKIP_CONTEXT` + `isRenderedHeading()`, shared by `<page-toc>` and `<heading-links>` (`scripts/check-links.mjs` mirrors the constant).
+- `src/lib/number-format.js` — `formatLocale(el)`, `numberFormatOptions(el)`, `numberFormatter(el, extra)`: shared by `data-format-number` and `data-effect="ticker"` so the last ticker frame equals the static output.
 
 ---
 
@@ -2617,7 +2661,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-align` | Table cells — text alignment |
 | ~~`data-allow-custom`~~ | **Removed** — use `custom` on `<combo-box>` |
 | `data-anchor` | Tooltip — CSS anchor positioning |
-| `data-animate-image` | `<img>` — play/pause control |
+| `data-animate-image-paused` | `<img data-effect="animate-image">` — start paused (reflected) |
 | `data-announce` | `<ins>`, `<del>` or any ancestor — opt-in screen-reader start/end announcement |
 | `data-attention` | UI elements — attention indicator |
 | `data-auto` | Various — auto behavior |
@@ -2634,11 +2678,13 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-badge` | `<time>` only — bordered date chip |
 | `data-border-shape` | Wrapper of an image — shaped coloured frame (see §2 Shapes) |
 | `data-bordered` | `<table>`, `<dl>` — borders |
+| `data-break-after` / `data-break-before` / `data-break-avoid` | Any — print page-break control |
 | `data-bubble` | `input[data-range]` — value bubble over the thumb; any other element — chat bubble shape (`incoming`, `outgoing`, `assistant`, `thought`, `typing`, `error`, `system`, see §2 Shapes) |
 | `data-callout` | Block element — callout: kind `note`/`info`/`tip`/`warning`/`danger` + optional shape `speech`/`notched` (token list, see §2 Shapes) |
 | `data-callout-title` | First child of `[data-callout]` — the visible title |
 | `data-caption` | `<qr-code>` — `visible` shows the caption |
 | `data-center-label` | Pie chart — donut center text |
+| `data-char-shortcuts` | `<html>` — `off` disables unscoped single-character shortcuts (WCAG 2.1.4) |
 | `data-collapsed` | Breadcrumb — hide middle items |
 | ~~`data-collapsible`~~ | **Removed** — use `collapsible` on `<split-surface>` |
 | `data-color` | `<input type="color">` — swatch + hex display (not the badge/button colour variant) |
@@ -2647,8 +2693,9 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-completed` | Steps — completed state |
 | `data-clip` | `<img>`, `<figure>` — shape mask (see §2 Shapes) |
 | `data-container` | Any — `container-type: inline-size`; `card`/`panel`/`media` add a container name; escape hatch for sectioning children of cluster/reel/centred cover/aligned stack/subgrid grid and for text hosts with a `data-bleed` child |
-| `data-copy` | `<button>` — clipboard copy |
+| `data-copy` | `<button>` — clipboard copy (`copy:done` / `copy:error`) |
 | `data-copy-target` | `<button>` — copy source selector |
+| `data-copy-attr` | `<button data-copy-target>` — copy an attribute of the target |
 | `data-count` | `<textarea>` — character counter |
 | `data-cutout` | Any — punched hole (see §2 Shapes) |
 | `data-emoji` | Any container, input or textarea — replace `:shortcode:` with emoji |
@@ -2686,6 +2733,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-format-bytes` | `<data>` — byte formatting |
 | `data-format-date` | `<time>` — date formatting |
 | `data-format-number` | `<data>` — number formatting |
+| `data-fraction-digits` | `<data data-format-number>` — fixed decimal places (0–20) |
 | `data-gap` | Chart — element gap |
 | `data-glitch` | Text — glitch effect |
 | `data-gradient-text` | Text — gradient coloring |
@@ -2697,7 +2745,12 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-half` | Pie chart — semi-circle |
 | `data-hide-when` | Any — conditional hide |
 | `data-highlight` | Text — draw-in highlight |
-| `data-hotkey` | `<kbd>` — platform key display |
+| `data-hotkey` | `<kbd>` — platform key display; other elements — shortcut action |
+| `data-hotkey-action` | Element with `data-hotkey` — `click` / `focus` / `submit` / `toggle` |
+| `data-hotkey-global` | Element with `data-hotkey` — fire while typing |
+| `data-hotkey-group` | Element with `data-hotkey` — shortcuts-dialog group |
+| `data-hotkey-label` | Element with `data-hotkey` — shortcuts-dialog label |
+| `data-hotkey-scope` | Element with `data-hotkey` — active only with focus inside a region |
 | `data-icon` | `<status-message>` child — icon slot |
 | ~~`data-indicators`~~ | **Removed** — use `indicators` on `<carousel-wc>` |
 | `data-info` | Pagination — info text |
@@ -2705,11 +2758,15 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-items` | `<card-list>` — inline JSON data |
 | `data-key` | `<card-list>` — unique key field |
 | `data-label` | Table td — mobile card label; `<progress data-type="ring">` — centre label (`none` hides) |
-| `data-label-copied` | `<qr-code>` — copy announcement |
+| `data-label-animation-pause` | `<img data-effect="animate-image">` or ancestor — toggle name |
+| `data-label-copied` / `-pasted` / `-copy-failed` / `-paste-failed` | `data-copy` / `data-paste-target` buttons, `data-math="copyable"`, or an ancestor — feedback announcements (`<qr-code>`: copy announcement) |
 | `data-label-decrease` / `data-label-increase` | `input[data-stepper]`, `<stepper-wc>` — button names |
 | `data-label-prefix` | `<qr-code>` — canvas accessible name |
 | `data-label-raw` | `<print-page>` raw-toggle checkbox text |
 | `data-label-restored` | `<form data-autosave>` — restored-draft toast text |
+| `data-label-showing` | `[data-paged]` or ancestor — load-more announcement |
+| `data-label-sorted` | `[data-sortable]` list or ancestor — sort announcement |
+| `data-label-spoiler` / `-spoiler-reveal` / `-spoiler-hide` / `-spoiler-revealed` | `[data-spoiler]` or ancestor |
 | `data-labels` | Chart — show value labels |
 | `data-layout` | Any — layout mode (see §5) |
 | `data-layout-*` | Layout elements — modifiers (see §5) |
@@ -2734,6 +2791,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-nav-toggle` | Button inside `data-page-layout="dashboard"` — drawer toggle, hidden at 48rem+ |
 | `data-next` | Pagination button — next page |
 | `data-no-icon` | `<a>`, `<form-field>` — suppress icons |
+| `data-no-print` | Any — hidden in print |
 | `data-numeric` | Table th/td — right-align |
 | `data-open` | Various WC — open state |
 | ~~`data-direction`~~ | **Removed** — use `direction` on `<split-surface>` |
@@ -2744,8 +2802,13 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-pattern` | `[data-mask="custom"]` — mask format |
 | ~~`data-persist`~~ | **Removed** — use `persist` on `<split-surface>` |
 | `data-position` | Various — positioning |
+| `data-poster` | `<img data-effect="animate-image">` — still shown while paused |
 | `data-prefix` / `data-suffix` | `input[data-range]` — bubble + `aria-valuetext` affixes |
 | `data-prev` | Pagination button — previous page |
+| `data-print` | `<body>`/`<html>`/any — print page mode `article`/`invoice`/`report`; `none` = hide element in print |
+| `data-print-background` | Any — print backgrounds (`print-color-adjust: exact`) |
+| `data-print-keep` | `<nav>`, `<aside>`, `[aria-hidden]` — keep in print |
+| `data-print-only` | Any — print-only (hidden on screen, own display in print) |
 | `data-provenance` | Content blocks, `<html>` — authorship claim (see §10) |
 | `data-radius` | `[data-media]` — border radius |
 | `data-range` | `<input type="range">` — enhanced range |
@@ -2756,15 +2819,18 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | ~~`data-readonly`~~ | **Removed** — use `readonly` on `<star-rating>` |
 | `data-reason` | `<ins>`, `<del>` — visible change-reason tag |
 | ~~`data-required`~~ | **Removed** — use `required` on `<combo-box>` |
-| `data-responsive` | Table — mobile layout |
+| `data-responsive` | `<img>` — measured `sizes` / srcset shorthand; Table — `card` mobile layout |
+| `data-responsive-debug` | `<img data-responsive>` — dev source badge |
 | `data-reveal` | Text — reveal entrance |
 | `data-review` | Content blocks, `<html>` — review state (see §10) |
 | `data-ring` | `<user-avatar>` — decorative ring (kept in overlap groups) |
 | `data-scramble` | Text — decode effect |
+| `data-screen-only` | Any — hidden in print (alias of `data-no-print`) |
 | `data-scrollbar` | `<html>` or any scroller — scrollbar style |
-| `data-select-all` | Checkbox — select-all toggle |
+| `data-select-all` | Checkbox — master for the enabled targets in its scope |
+| `data-select-all-scope` | Any — limits `data-select-all` targets and count |
 | `data-selected` | Table row — row highlight |
-| `data-selected-count` | `<data-table>` — selection count display |
+| `data-selected-count` | Element in a `data-select-all` scope (use `<output>`) or `<data-table>` — selection count |
 | `data-separator` | Breadcrumb — separator char |
 | `data-series` | Chart elements — series color |
 | `data-shape` | `<layout-badge>` (square + ribbon/notch/flag/double-arrow/stamp), `<user-avatar>` — shape variant |
@@ -2779,6 +2845,10 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-sort-button` | `<th data-sort>` — generated sort button inside the header |
 | `data-sort-value` | Table td — custom sort value |
 | `data-spoiler` | Any — content concealment |
+| `data-spoiler-group` | `[data-spoiler]` — mutual exclusion |
+| `data-spoiler-label` | `[data-spoiler]` — reveal text |
+| `data-spoiler-persist` | `[data-spoiler]` — one-way reveal |
+| `data-spoiler-print` | `[data-spoiler]` — `hidden` keeps it concealed in print |
 | `data-stack` | `<brand-mark>` — vertical layout |
 | `data-stacked` | Chart — stacked series |
 | `data-striped` | `<table>`, `<dl>` — row stripes (`--color-row-stripe`) |
@@ -2786,6 +2856,7 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-state-expanded` | Table row — expanded |
 | `data-state-hidden` | Table row — hidden |
 | `data-state-selected` | Table row — selection state |
+| `data-state-visible` | Internal — back-to-top, page-tour backdrop, image-map tooltip, form error summary shown state (was `data-visible`) |
 | `data-status` | Avatar child — online status; content blocks, `<html>` — publication state (see §10) |
 | `data-stepper` | Number input — +/- buttons. See [numeric-inputs decision guide](/docs/concepts/numeric-inputs/) for when to reach for [`<stepper-wc>`](/docs/elements/web-components/stepper-wc/) instead. Native spinners are hidden only once upgraded (`[data-stepper-init]`). A plain `type="number"` keeps the browser spinners. |
 | `data-sticky` | Table — sticky header/column; `<header>`, `<footer>` — sticky; `<html>` — sticky header system |
@@ -2798,7 +2869,9 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-table-status` | `<data-table>` — visually hidden live region (generated) |
 | `data-theme` | `<html>` — active theme |
 | ~~`data-ticker`~~ | **Removed** — use `data-effect="ticker"` on `<data>` |
+| `data-time-zone` | `<time data-format-date>` — IANA time zone for date-time values |
 | `data-title` | Various — title text (`<page-toc>`: ToC title / nav label) |
+| `data-toc-ignore` | Heading or ancestor — left out of `<page-toc>` (and `<heading-links>`) |
 | `data-toggle-tags` | `<fieldset>` — pill chip toggle |
 | `data-tooltip` | Chart td — tooltip text |
 | `data-trust` | `.page-info-badge` only — verification tier (runtime-computed; see §10) |
@@ -2813,15 +2886,17 @@ Alphabetical index of every `data-*` attribute with where it applies.
 | `data-truncated` | Breadcrumb li — truncate text |
 | `data-type` | Chart, `<form-field>`, `<progress>` (`ring`) — type variant |
 | ~~`data-typewriter`~~ | **Removed** — use `data-effect="typewriter"` |
-| `data-unit` | `<data data-format-bytes>` — `decimal` for 1000-based sizes |
+| `data-unit` | `<data data-format-bytes>` — `decimal` for 1000-based sizes (labels stay `kB`/`MB`; Intl has no KiB) |
 | `data-upload` | File input — drop zone |
 | `data-value` | Various — value binding |
 | `data-variant` | Various — style variant |
+| `data-visible` | Any — `mobile` / `desktop` viewport visibility |
 | `data-vt` | Any — view transition group |
-| `data-vt-class` | Any — transition animation |
+| `data-vt-class` | Any (with a vt name) — transition animation preset (`none` → class `vt-none`; `slide-forward`/`slide-back` follow dir) |
 | `data-vt-name` | Any — custom transition name (sets `view-transition-name`; no marker attribute, so clones / value changes / removal re-apply) |
 | `data-parallax` | Media layer inside a section — scroll-driven depth (CSS only). Values: (empty), `subtle`, `medium`, `strong`. Props `--vb-parallax-from` / `-to` / `-scale`. Off under prefers-reduced-motion and `:root[data-motion-reduced]` |
 | `data-parallax-group` | Section holding a `data-parallax` layer — `overflow: clip` + `isolation: isolate` |
+| `data-paste-target` | `<button>` — paste destination selector (`paste:done` / `paste:error`) |
 | `data-animate` | Any — scroll-driven reveal: `fade-up`, `fade-in`, `slide-left`, `scale-up`, `blur-in` (off under both reduced-motion switches) |
 | `data-wf-label` | Wireframe — custom element label |
 | `data-wireframe` | `<html>` — wireframe mode |

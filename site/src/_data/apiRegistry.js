@@ -12372,6 +12372,14 @@ export default {
         "description": "Text for the \"Dyslexia-Friendly\" string."
       },
       {
+        "name": "data-label-char-shortcuts",
+        "kind": "data",
+        "purpose": "config",
+        "type": "string",
+        "default": "Single-Key Shortcuts",
+        "description": "Text for the \"Single-Key Shortcuts\" toggle (WCAG 2.1.4: turns off every unscoped single-character shortcut, stored as extensions.charShortcuts)."
+      },
+      {
         "name": "data-label-layout",
         "kind": "data",
         "purpose": "config",
@@ -12815,8 +12823,8 @@ export default {
     "properties": [
       {
         "name": "data",
-        "type": "{ a11yThemes: string[], extensions: { motionFx: boolean, sounds: boolean }, sticky: boolean }",
-        "description": "Settings snapshot. The setter applies each provided field to the page at once (a11y themes on <html data-theme>, extensions, <html data-sticky>), writes it through to VBStore (vb:settings:a11y / extensions / sticky), updates the controls, and fires settings-panel:data-changed when the writes finish. Safe before the panel renders."
+        "type": "{ a11yThemes: string[], extensions: { motionFx: boolean, sounds: boolean, charShortcuts: boolean }, sticky: boolean }",
+        "description": "Settings snapshot. The setter applies each provided field to the page at once (a11y themes on <html data-theme>, extensions incl. <html data-motion-reduced> and <html data-char-shortcuts=\"off\">, <html data-sticky>), writes it through to VBStore (vb:settings:a11y / extensions / sticky), updates the controls, and fires settings-panel:data-changed when the writes finish. Safe before the panel renders."
       }
     ],
     "methods": [
@@ -12853,7 +12861,7 @@ export default {
       },
       {
         "name": "vb:extensions-change",
-        "detail": "{ motionFx, sounds }",
+        "detail": "{ motionFx, sounds, charShortcuts }",
         "description": "Dispatched on window (not the host) when the effects preferences change; also listened for (theme-picker dispatches it too)."
       }
     ],
@@ -13100,7 +13108,7 @@ export default {
         "purpose": "config",
         "type": "string",
         "default": "shift+?",
-        "description": "Key combo that toggles the dialog; \"none\" disables the character-key shortcut (WCAG 2.1.4). Observed."
+        "description": "Key combo that toggles the dialog; \"none\" disables the character-key shortcut (WCAG 2.1.4). A character-key combo also stops firing, and unscoped character-key shortcuts are left out of the dialog, while <html data-char-shortcuts=\"off\"> is set (settings-panel Single-Key Shortcuts preference). Observed."
       },
       {
         "name": "data-label-title",
